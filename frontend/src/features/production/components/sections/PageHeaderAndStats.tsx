@@ -41,15 +41,19 @@ export function StatsStrip() {
 
   const now = new Date();
   const activeBatches = batches.filter(b => b.status === "active" || b.status === "draft");
+  // "Produced" means Worker Staff has actually received the saree from the
+  // weaver/loom — an assigned-but-not-yet-received row isn't produced yet.
   const sareesInProduction = activeBatches.reduce(
-    (sum, b) => sum + b.rows.filter(r => r.sareeId && !r.qcPassed).length,
+    (sum, b) => sum + b.rows.filter(r => r.sareeId && r.receivedAt && !r.qcPassed).length,
     0,
   );
   const sareesCompletedThisMonth = qcRecords.filter(
     r => r.result === "PASSED" && isSameMonth(r.qcDate, now),
   ).length;
+  // Only rows Worker Staff has actually received count as "waiting for QC" —
+  // matches WorkerQC's own pending-queue definition (see WorkerQC.tsx).
   const sareesWaitingQc = batches.reduce(
-    (sum, b) => sum + b.rows.filter(r => r.sareeId && !r.qcPassed && b.status !== "draft").length,
+    (sum, b) => sum + b.rows.filter(r => r.sareeId && r.receivedAt && !r.qcPassed && b.status !== "draft").length,
     0,
   );
 

@@ -213,9 +213,6 @@ export function BatchTable({
                       </Button>
                     ) : <EmptyCell />}
                   </td>
-                  <td style={{ ...td, minWidth: 130 }}>
-                    <EmptyCell />
-                  </td>
                   <td style={{ ...td, minWidth: 90 }}>
                     {row.recipientType === "factoryLoom" ? (
                       <EmptyCell />

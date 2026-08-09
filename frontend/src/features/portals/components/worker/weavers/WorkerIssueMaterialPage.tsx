@@ -6,7 +6,6 @@ import {
 } from "lucide-react";
 import { C, F, card } from "../tokens";
 import { FieldLabel, SectionLabel, PageHeader, type IssueSource } from "./shared";
-import { WEAVERS as FALLBACK_WEAVERS } from "./weaversData";
 import { weaversApi } from "../../../../../shared/api/weavers";
 import { Button, Input, Select, SelectItem } from "../../../../../shared/ui/primitives";
 

@@ -28,6 +28,13 @@ export interface CreatePurchaseOrderPayload {
   deliveryDate?: string;
   totalValue?: number;
   urgency?: string;
+  items?: {
+    materialType: string;
+    name: string;
+    quantity: number;
+    unit?: string;
+    unitPrice?: number;
+  }[];
 }
 
 interface PaginatedResponse<T> {
@@ -45,5 +52,7 @@ export const purchaseOrdersApi = {
   approve: (id: string) => apiClient.post<BackendPurchaseOrder>(`/purchase-orders/${id}/approve`, {}),
   reject: (id: string, reason?: string) =>
     apiClient.post<BackendPurchaseOrder>(`/purchase-orders/${id}/reject`, { reason }),
-  receiveGrn: (id: string) => apiClient.post<BackendPurchaseOrder>(`/purchase-orders/${id}/grn`, {}),
+  receiveGrn: (id: string, payload: { grnReceiptId?: string; actorId?: string } = {}) =>
+    apiClient.post<BackendPurchaseOrder>(`/purchase-orders/${id}/grn`, payload),
+  remove: (id: string) => apiClient.delete<void>(`/purchase-orders/${id}`),
 };

@@ -4,8 +4,8 @@ import { useDesignLibrary } from "../../design-library/contexts/DesignLibraryCon
 import { useBulkOrders } from "../../bulk-orders/contexts/BulkOrderContext";
 import { useBatches } from "../../production/contexts/BatchContext";
 import { useFirms } from "../../firms/contexts/FirmsContext";
-import { getSareeTypeByCode } from "../../pricing/components/RatesPricingPage";
-import { WHOLESALE_CUSTOMERS } from "../components/data";
+import { useRatesPricing } from "../../pricing/contexts/RatesContext";
+import { useCustomers } from "../../customers/contexts/CustomersContext";
 import { TransportData, InvoiceData, InventoryRecord } from "../components/types";
 import { rowToDispatchSaree } from "../components/modals/shared/SareePicker";
 import { WeaverSareeRow } from "../../weavers/components/WeaverSareesSection";
@@ -16,10 +16,12 @@ export function useInventoryPageState() {
   const { bulkOrders, markDispatched } = useBulkOrders();
   const { batches } = useBatches();
   const { firms } = useFirms();
+  const { wholesaleCustomers = [] } = useCustomers() || {};
 
   // ── Clickable code modals ───────────────────────────────────────────────────
   const [openDesignCode, setOpenDesignCode] = useState<string | null>(null);
   const [openSareeTypeCode, setOpenSareeTypeCode] = useState<string | null>(null);
+  const { getSareeTypeByCode } = useRatesPricing();
   const openDesign = openDesignCode ? getDesign(openDesignCode) : undefined;
   const openSareeType = openSareeTypeCode ? getSareeTypeByCode(openSareeTypeCode) : undefined;
 
@@ -175,7 +177,7 @@ export function useInventoryPageState() {
     const sareeIds = opts?.picked?.length
       ? opts.picked.map(s => s.sareeId || s.id)
       : quotationDispatch ? quotationDispatchSarees.map(r => r.sareeId) : dispatchableSelected.map(r => r.id);
-    const customer = WHOLESALE_CUSTOMERS.find(c => c.id === customerId);
+    const customer = wholesaleCustomers.find(c => c.id === customerId);
     const subtotal = sareeIds.reduce((sum, id) => sum + (parseFloat(inv.prices[id]) || 0), 0);
     const gstAmount = inv.applyGst ? subtotal * (parseFloat(inv.gstPct) || 0) / 100 : 0;
     const dispatchId = dispatchSarees(sareeIds, {
@@ -209,7 +211,7 @@ export function useInventoryPageState() {
   };
 
   const handleRaiseQuotation = (inv: InvoiceData, customerId: string, bulkOrderRef?: string, picked?: FinishingReturn[]) => {
-    const customer = WHOLESALE_CUSTOMERS.find(c => c.id === customerId);
+    const customer = wholesaleCustomers.find(c => c.id === customerId);
     const quoteSarees = (picked?.length ? picked : selectedSarees).map(s => ({
       id: s.sareeId || s.id,
       designCode: s.designCode,

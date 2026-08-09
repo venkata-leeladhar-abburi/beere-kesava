@@ -24,6 +24,14 @@ export class MaterialIssuesService {
       throw new BadRequestException("Provide exactly one of weaverId or factoryLoomId");
     }
 
+    // Jari is always counted in Reels/Buns, never a weight unit — grams/kg
+    // would silently corrupt the "Issued to Weavers" reel/bun totals.
+    for (const item of dto.items) {
+      if (item.materialType === "JARI" && !["REEL", "REELS", "BUN", "BUNS"].includes(item.unit.trim().toUpperCase())) {
+        throw new BadRequestException(`Jari must be issued in Reels or Buns, not "${item.unit}"`);
+      }
+    }
+
     const issuer = await this.prisma.user.findUnique({ where: { id: dto.issuedById } });
     if (!issuer) {
       throw new NotFoundException(`User ${dto.issuedById} not found`);
@@ -153,5 +161,29 @@ export class MaterialIssuesService {
       data: { status: MaterialIssueStatus.CANCELLED },
       include: includeItems,
     });
+  }
+
+  // Hard-deletes the record (items cascade) and restores the stock that was
+  // deducted on create — otherwise deleting a wrong/test issue would leave
+  // that material permanently under-counted in RawMaterialStock.
+  async remove(id: string) {
+    const record = await this.findOne(id);
+
+    for (const item of record.items) {
+      const stock = await this.prisma.rawMaterialStock.findFirst({
+        where: { materialType: item.materialType },
+      });
+      if (stock) {
+        const stockGrams = toGrams(Number(stock.currentStock), stock.unit);
+        const restoredGrams = toGrams(Number(item.quantity), item.unit);
+        const newStock = fromGrams(stockGrams + restoredGrams, stock.unit);
+        await this.prisma.rawMaterialStock.update({
+          where: { id: stock.id },
+          data: { currentStock: newStock },
+        });
+      }
+    }
+
+    await this.prisma.materialIssueRecord.delete({ where: { id } });
   }
 }

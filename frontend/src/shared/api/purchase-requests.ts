@@ -1,11 +1,12 @@
 import { apiClient } from "./client";
 
-// TODO(auth): there is no real login/session yet, so /purchase-requests'
-// requestedById/decidedById (required real User FKs) can't come from a
-// logged-in user. Stopgap until JWT/OTP auth lands: a single real "System
-// Admin" User row was seeded for this purpose (EMP-010) — every request
-// raised/decided from this frontend is attributed to that user until then.
-export const STOPGAP_ACTING_USER_ID = "8a14068c-5adc-489d-b00d-11a43495774c";
+// TODO(auth): callers that have a real logged-in user should pass their own
+// id instead of this fallback (see useAuth().user?.id in QcContext,
+// FinishingContext, MaterialIssueContext). This module has no access to
+// AuthContext, so it always falls back to the seeded ADMIN-001 "Store Admin"
+// user — the previous EMP-010 placeholder id didn't exist in the database,
+// so every call using it was silently failing with a 404.
+export const STOPGAP_ACTING_USER_ID = "9e7ec2bf-93bf-4cf4-87ce-03856eb6cc4c";
 
 export type BackendPurchaseRequestStatus = "PENDING" | "APPROVED" | "REJECTED";
 

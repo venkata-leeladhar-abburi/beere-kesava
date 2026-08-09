@@ -499,6 +499,13 @@ model BatchSareeRow {
   qcPassed      Boolean?
   createdAt     DateTime      @default(now())
 
+  // Set when Worker Staff physically receives the finished saree from the
+  // weaver/loom — a row must be received before it enters the QC queue.
+  receivedAt     DateTime?
+  receivedWeight Decimal?  @db.Decimal(8, 2)
+  receivedColor  String?
+  receivedPhotoUrl String?
+
   qcRecord             QcRecord?
   finishingAssignment  FinishingAssignment?
 

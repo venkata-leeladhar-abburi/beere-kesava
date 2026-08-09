@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { z } from "zod";
 import { motion, AnimatePresence } from "motion/react";
+import { toast } from "sonner";
 import { X, Plus, FileText, ClipboardList, Building2 } from "lucide-react";
 import { PurchaseOrder } from "../contexts/POContext";
 import { useFirms } from "../../firms/contexts/FirmsContext";
@@ -17,7 +18,7 @@ const poFormSchema = z
     firm: z.string().min(1, "Please select a purchasing firm"),
     vendor: z.string().min(1, "Please select a vendor"),
     deliveryDate: z.string().min(1, "Please select a delivery date"),
-    materials: z.array(z.object({ _key: z.string(), quantity: z.number() })),
+    materials: z.array(z.object({ _key: z.union([z.string(), z.number()]), quantity: z.number() })),
   })
   .superRefine((data, ctx) => {
     data.materials.forEach((m, i) => {
@@ -99,37 +100,41 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
       return true;
     }
     const e: Record<string, string> = {};
+    const missing: string[] = [];
     for (const issue of result.error.issues) {
       if (issue.path[0] === "materials" && typeof issue.path[1] === "number") {
         const key = materials[issue.path[1]]?._key;
         if (key) e[`mat-${key}-qty`] = issue.message;
+        if (!missing.includes("material quantity")) missing.push("material quantity");
         continue;
       }
       const field = issue.path[0];
-      if (typeof field === "string" && !e[field]) e[field] = issue.message;
+      if (typeof field === "string") {
+        if (!e[field]) e[field] = issue.message;
+        const label = field === "firm" ? "Purchasing Firm" : field === "vendor" ? "Vendor" : field === "deliveryDate" ? "Expected Delivery Date" : field;
+        if (!missing.includes(label)) missing.push(label);
+      }
     }
     setErrors(e);
+    if (missing.length > 0) {
+      toast.error(`Please fill in: ${missing.join(", ")}`);
+    }
     return false;
   };
 
   const handleSubmit = async () => {
     if (!validate()) return;
-    const created = await purchaseOrdersApi.create({
-      vendorId: vendor!.id,
-      deliveryDate: deliveryDate || undefined,
-      urgency,
-    });
     const po: PurchaseOrder = {
-      id: created.id,
-      poNumber: created.poNumber,
+      id: "temp-" + Date.now().toString(),
+      poNumber: nextPONumber || `PO-${new Date().getFullYear()}-XXX`,
       vendorId: vendor!.id,
       vendor: vendor!.name,
-      vendorCity: vendor!.city,
+      vendorCity: vendor!.city || "",
       vendorContact: vendorContact || undefined,
       firmName: selectedFirm?.firmName,
-      deliveryDate,
+      deliveryDate: deliveryDate || new Date().toISOString().split("T")[0],
       materials: materials.map(m => ({
-        materialType: m.materialType,
+        materialType: m.materialType as any,
         subtype: m.subtype,
         description: m.description,
         quantity: m.quantity,
@@ -137,7 +142,7 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
         pricePerUnit: 0,
         subtotal: 0,
       })),
-      totalValue: Number(created.totalValue),
+      totalValue: 0,
       notesVendor: notesVendor || undefined,
       notesAdmin: notesAdmin || undefined,
       urgency,

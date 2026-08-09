@@ -14,16 +14,3 @@ export interface SareeTypeRecord {
   jariWeight: string;
   changed: string;
 }
-
-export const INITIAL_RATES: SareeTypeRecord[] = [];
-
-// ═══════════════════════════════════════════════════════════════════════════
-// LOOKUP HELPERS — resolve saree type records by code/name from other pages
-// ═══════════════════════════════════════════════════════════════════════════
-export function getSareeTypeByCode(code: string): SareeTypeRecord | undefined {
-  return INITIAL_RATES.find(r => r.code === code);
-}
-
-export function getSareeTypeByName(name: string): SareeTypeRecord | undefined {
-  return INITIAL_RATES.find(r => r.type === name);
-}

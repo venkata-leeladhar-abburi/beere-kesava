@@ -42,10 +42,14 @@ export function MaterialsPage({ onNavigate }: { onNavigate?: (tab: string, ctx?:
   const [viewPO, setViewPO] = useState<PurchaseOrder | null>(null);
   const [successPOId, setSuccessPOId] = useState<string | null>(null);
 
-  const handlePOSubmit = (po: PurchaseOrder) => {
-    addPO(po);
-    setSuccessPOId(po.poNumber);
-    toast.success(`${po.poNumber} submitted for Superadmin approval`);
+  const handlePOSubmit = async (po: PurchaseOrder) => {
+    try {
+      await addPO(po);
+      setSuccessPOId(po.poNumber);
+      toast.success(`${po.poNumber} submitted for Superadmin approval`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to submit the purchase order. Please try again.");
+    }
   };
 
   if (showAllPurchases) {

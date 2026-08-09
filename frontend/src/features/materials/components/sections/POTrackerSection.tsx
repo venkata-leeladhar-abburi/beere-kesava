@@ -1,12 +1,15 @@
 import React, { useContext, useState } from "react";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
+import { Trash2 } from "lucide-react";
 import { usePO, PurchaseOrder } from "../../../purchasing/contexts/POContext";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER } from "../../../../shared/ui/DateFilterBar";
+import { ConfirmDialog } from "../../../../shared/ui/ConfirmDialog";
+import { ApiError } from "../../../../shared/api/client";
 import { T, F, MobileCtx } from "../theme";
 import { PO_STATUS_CFG, MAT_TAG } from "../materialConfig";
 import type { POFilter } from "../types";
 import { FadeUp } from "../common/primitives";
-import { Button } from "../../../../shared/ui/primitives";
+import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { POVendorDetailModal } from "../modals/ReportModals";
 
 export function POTrackerSection({
@@ -19,10 +22,33 @@ export function POTrackerSection({
   onNavigate?: (tab: string, ctx?: any) => void;
 }) {
   const { px } = useContext(MobileCtx);
-  const { pos, isError } = usePO();
+  const { pos, isError, deletePO } = usePO();
   const [filter, setFilter] = useState<POFilter>("all");
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [selectedPO, setSelectedPO] = useState<PurchaseOrder | null>(null);
+  const [deletingPO, setDeletingPO] = useState<PurchaseOrder | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  function cancelDelete() {
+    if (deleting) return;
+    setDeletingPO(null);
+    setDeleteError(null);
+  }
+
+  async function confirmDelete() {
+    if (!deletingPO || deleting) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await deletePO(deletingPO.id);
+      setDeletingPO(null);
+    } catch (err) {
+      setDeleteError(err instanceof ApiError ? err.message : `Could not delete ${deletingPO.poNumber}. Please try again.`);
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   const counts = {
     all: pos.length,
@@ -255,6 +281,15 @@ export function POTrackerSection({
                     >
                       📄 View PO
                     </Button>
+                    {po.status !== "received" && (
+                      <IconButton
+                        onClick={(e) => { e.stopPropagation(); setDeletingPO(po); }}
+                        icon={Trash2}
+                        label="Delete purchase order"
+                        variant="ghost"
+                        className="w-[38px] h-[38px] shrink-0 text-[#C0392B] bg-[#C0392B]/10 hover:bg-[#C0392B]/20"
+                      />
+                    )}
                   </div>
                 </div>
               </motion.div>
@@ -264,6 +299,19 @@ export function POTrackerSection({
       )}
     </FadeUp>
     <POVendorDetailModal po={selectedPO} onClose={() => setSelectedPO(null)} />
+    <AnimatePresence>
+      {deletingPO && (
+        <ConfirmDialog
+          title={`Delete ${deletingPO.poNumber}?`}
+          message={`This permanently deletes the purchase order for ${deletingPO.vendor}. This can't be undone.`}
+          confirmLabel="Delete Permanently"
+          loading={deleting}
+          error={deleteError}
+          onConfirm={() => void confirmDelete()}
+          onCancel={cancelDelete}
+        />
+      )}
+    </AnimatePresence>
     </>
   );
 }

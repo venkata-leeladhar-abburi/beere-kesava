@@ -6,9 +6,9 @@ import { ListFinishingAssignmentsQueryDto } from "./dto/list-finishing-assignmen
 import { ReceiveFinishingReturnDto } from "./dto/receive-finishing-return.dto";
 import { FinishingAssignmentsService } from "./finishing-assignments.service";
 
-// Production/operational module — WORKER access only.
+// Production/operational module — WORKER access only (plus Admins).
 @Controller("finishing/assignments")
-@RequireRoles(UserRole.WORKER)
+@RequireRoles(UserRole.WORKER, UserRole.ADMIN, UserRole.SUPERADMIN)
 export class FinishingAssignmentsController {
   constructor(private readonly finishingAssignmentsService: FinishingAssignmentsService) {}
 

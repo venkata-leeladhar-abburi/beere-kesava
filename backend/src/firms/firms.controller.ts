@@ -8,13 +8,13 @@ import { ListFirmsQueryDto } from "./dto/list-firms-query.dto";
 import { UpdateFirmDto } from "./dto/update-firm.dto";
 import { FirmsService } from "./firms.service";
 
-// Firm ledgers — financial, ACCOUNTANT access only.
+// Firm ledgers — financial, ACCOUNTANT access only for mutations.
 @Controller("firms")
-@RequireRoles(UserRole.ACCOUNTANT)
 export class FirmsController {
   constructor(private readonly firmsService: FirmsService) {}
 
   @Post()
+  @RequireRoles(UserRole.ACCOUNTANT, UserRole.SUPERADMIN)
   create(@Body() dto: CreateFirmDto) {
     return this.firmsService.create(dto);
   }
@@ -30,11 +30,13 @@ export class FirmsController {
   }
 
   @Patch(":id")
+  @RequireRoles(UserRole.ACCOUNTANT, UserRole.SUPERADMIN)
   update(@Param("id") id: string, @Body() dto: UpdateFirmDto) {
     return this.firmsService.update(id, dto);
   }
 
   @Post(":id/entries")
+  @RequireRoles(UserRole.ACCOUNTANT, UserRole.SUPERADMIN)
   addEntry(@Param("id") id: string, @Body() dto: CreateFinancialEntryDto) {
     return this.firmsService.addEntry(id, dto);
   }

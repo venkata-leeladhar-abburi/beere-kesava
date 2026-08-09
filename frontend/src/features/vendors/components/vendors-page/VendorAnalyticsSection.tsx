@@ -102,13 +102,17 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
       m.set(r.vendorId, e);
     });
     return [...m.entries()]
-      .map(([id, agg]) => {
-        const v = vendors.find(x => x.id === id)!;
-        return {
+      // A PO's vendorId can outlive the vendor row it points to (vendor
+      // deleted, or the vendors list here is paginated/filtered) — skip
+      // rather than crash the whole analytics page on a missing lookup.
+      .flatMap(([id, agg]) => {
+        const v = vendors.find(x => x.id === id);
+        if (!v) return [];
+        return [{
           id, name: v.name,
           short: v.name.length > 18 ? v.name.slice(0, 17) + "…" : v.name,
           initials: v.initials, status: v.status, ...agg,
-        };
+        }];
       })
       .sort((a, b) => b.spend - a.spend)
       .slice(0, 5);

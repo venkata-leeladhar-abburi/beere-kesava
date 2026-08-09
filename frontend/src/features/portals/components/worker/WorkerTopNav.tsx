@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { motion } from "motion/react";
@@ -10,17 +10,36 @@ import { C, F } from "./tokens";
 import { imgBKLogo } from "../../../../shared/constants/weaverImages";
 import type { IconComponent } from "../../../../lib/icon";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
+import { BackendNotification, notificationsApi } from "../../../../shared/api/notifications";
 
 type Tab = "home" | "qc" | "weavers" | "finishing" | "dispatch" | "profile";
 type NavTab = "home" | "qc" | "weavers" | "finishing" | "dispatch";
 
-const TOPNAV_ITEMS: { id: NavTab; Icon: IconComponent; label: string; badge?: number }[] = [
-  { id: "home",      Icon: Home,     label: "Home" },
-  { id: "qc",        Icon: Search,   label: "Quality Check", badge: 6 },
-  { id: "weavers",   Icon: Users,    label: "Receive Sarees" },
-  { id: "finishing", Icon: Sparkles, label: "Finishing" },
-  { id: "dispatch",  Icon: Truck,    label: "Dispatch" },
-];
+function topNavItems(pendingQcCount: number): { id: NavTab; Icon: IconComponent; label: string; badge?: number }[] {
+  return [
+    { id: "home",      Icon: Home,     label: "Home" },
+    { id: "qc",        Icon: Search,   label: "Quality Check", badge: pendingQcCount || undefined },
+    { id: "weavers",   Icon: Users,    label: "Receive Sarees" },
+    { id: "finishing", Icon: Sparkles, label: "Finishing" },
+    { id: "dispatch",  Icon: Truck,    label: "Dispatch" },
+  ];
+}
+
+function notifEmoji(type: string): string {
+  if (type.includes("qc")) return "🔍";
+  if (type.includes("receive") || type.includes("weaver")) return "🧵";
+  if (type.includes("pass") || type.includes("complete")) return "✅";
+  return "🔔";
+}
+
+function formatRelativeTime(iso: string): string {
+  const diffMin = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+  if (diffMin < 1) return "Now";
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffHrs = Math.round(diffMin / 60);
+  if (diffHrs < 24) return `${diffHrs}h ago`;
+  return `${Math.round(diffHrs / 24)}d ago`;
+}
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
@@ -29,14 +48,30 @@ interface WorkerTopNavProps {
   onSelect: (t: Tab) => void;
   onBack?: () => void;
   bp: "tablet" | "desktop";
+  pendingQcCount?: number;
 }
 
-export function WorkerTopNav({ active, onSelect, onBack, bp }: WorkerTopNavProps) {
-  const { selectRole } = useAuth();
+function initialsOf(name: string): string {
+  return name.split(" ").filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase() || "—";
+}
+
+export function WorkerTopNav({ active, onSelect, onBack, bp, pendingQcCount = 0 }: WorkerTopNavProps) {
+  const { selectRole, user } = useAuth();
   const navigate = useNavigate();
   const [showNotif, setShowNotif] = useState(false);
   const [showUser, setShowUser] = useState(false);
+  const [notifications, setNotifications] = useState<BackendNotification[]>([]);
   const isTablet = bp === "tablet";
+
+  useEffect(() => {
+    notificationsApi.list({ role: "WORKER", pageSize: 5 })
+      .then(res => setNotifications(res.items))
+      .catch(() => setNotifications([]));
+  }, []);
+
+  const name = user?.name || "—";
+  const initials = initialsOf(name);
+  const subtitle = user?.empId ? `${user.empId} · Worker Staff` : "Worker Staff";
 
   const closeAll = () => { setShowNotif(false); setShowUser(false); };
 
@@ -72,7 +107,7 @@ export function WorkerTopNav({ active, onSelect, onBack, bp }: WorkerTopNavProps
 
       {/* Nav tabs */}
       <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: isTablet ? 2 : 6, overflowX: "auto", minWidth: 0 }}>
-        {TOPNAV_ITEMS.map(item => {
+        {topNavItems(pendingQcCount).map(item => {
           const isActive = active === item.id;
           return (
             <Button
@@ -114,20 +149,20 @@ export function WorkerTopNav({ active, onSelect, onBack, bp }: WorkerTopNavProps
                 <span style={{ fontFamily: F.d, fontSize: 14, fontWeight: 600, color: C.dark }}>Notifications</span>
                 <span style={{ fontFamily: F.u, fontSize: 12, color: C.gold, cursor: "pointer" }}>Mark all read</span>
               </div>
-              {[
-                { emoji: "🔍", title: "6 sarees awaiting QC", desc: "BATCH-086, BATCH-081 need inspection", time: "Now" },
-                { emoji: "🧵", title: "8 sarees received from weavers", desc: "Ready to record weight and details", time: "1h ago" },
-                { emoji: "✅", title: "6 sarees cleared QC", desc: "BATCH-086 ready for stock", time: "2h ago" },
-              ].map((n, i) => (
-                <div key={i} style={{ padding: "10px 16px", borderBottom: i < 2 ? `1px solid rgba(110,15,45,0.06)` : "none", display: "flex", gap: 10, alignItems: "flex-start", cursor: "pointer" }}
+              {notifications.length === 0 ? (
+                <div style={{ padding: "20px 16px", textAlign: "center" as const, fontFamily: F.u, fontSize: 13, color: C.muted }}>No notifications.</div>
+              ) : notifications.map((n, i) => (
+                <div key={n.id} style={{ padding: "10px 16px", borderBottom: i < notifications.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", display: "flex", gap: 10, alignItems: "flex-start", cursor: "pointer" }}
                   onMouseEnter={e => e.currentTarget.style.background = "rgba(110,15,45,0.03)"}
                   onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                  <span style={{ fontSize: 14, flexShrink: 0 }}>{n.emoji}</span>
+                  <span style={{ fontSize: 14, flexShrink: 0 }}>{notifEmoji(n.type)}</span>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.dark, marginBottom: 2 }}>{n.title}</div>
-                    <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{n.desc}</div>
+                    <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.dark, marginBottom: 2 }}>{n.type.replace(/_/g, " ")}</div>
+                    {n.payload && Object.keys(n.payload).length > 0 && (
+                      <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{JSON.stringify(n.payload)}</div>
+                    )}
                   </div>
-                  <span style={{ fontFamily: F.m, fontSize: 12, color: C.muted, flexShrink: 0 }}>{n.time}</span>
+                  <span style={{ fontFamily: F.m, fontSize: 12, color: C.muted, flexShrink: 0 }}>{formatRelativeTime(n.createdAt)}</span>
                 </div>
               ))}
             </div>
@@ -143,16 +178,16 @@ export function WorkerTopNav({ active, onSelect, onBack, bp }: WorkerTopNavProps
             style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", padding: "5px 10px 5px 5px", borderRadius: 10, border: `1px solid rgba(110,15,45,0.10)`, backgroundColor: "rgba(110,15,45,0.02)" }}
           >
             <div style={{ width: 28, height: 28, borderRadius: 8, background: C.burg, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 12, color: "#FFF" }}>RK</span>
+              <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 12, color: "#FFF" }}>{initials}</span>
             </div>
-            <span style={{ fontFamily: F.u, fontWeight: 500, fontSize: 13, color: C.dark }}>Ravi Kumar</span>
+            <span style={{ fontFamily: F.u, fontWeight: 500, fontSize: 13, color: C.dark }}>{name}</span>
             <ChevronDown size={12} color={C.muted} />
           </motion.div>
           {showUser && (
             <div style={{ position: "absolute", top: 44, right: 0, width: 210, background: "#FFFDF9", borderRadius: 14, border: `1px solid rgba(110,15,45,0.12)`, boxShadow: "0 12px 40px rgba(44,24,16,0.18)", zIndex: 200, overflow: "hidden" }}>
               <div style={{ padding: "14px 16px", borderBottom: `1px solid rgba(110,15,45,0.08)` }}>
-                <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: C.dark }}>Ravi Kumar</div>
-                <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>WK-042 · Floor Supervisor</div>
+                <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: C.dark }}>{name}</div>
+                <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>{subtitle}</div>
               </div>
               <Button variant="tertiary" fullWidth iconLeft={User} onClick={() => { onSelect("profile"); closeAll(); }}
                 className="justify-start gap-2 rounded-none border-0 px-4 py-2.5 text-[13px] text-[#1A0A0F]">

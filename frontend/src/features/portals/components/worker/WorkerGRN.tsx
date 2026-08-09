@@ -9,6 +9,8 @@ import { GRNPODropdown } from "./GRNPODropdown";
 import { Button, Input, CheckboxField } from "../../../../shared/ui/primitives";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { rawMaterialsApi, CreateGrnPayload } from "../../../../shared/api/rawMaterials";
+import { purchaseOrdersApi } from "../../../../shared/api/purchase-orders";
+import { useAuth } from "../../../../contexts/AuthContext";
 
 type GRNStep = "form" | "success" | "print";
 
@@ -75,20 +77,37 @@ export function WorkerGRN({
 } = {}) {
   const { pos } = usePO();
   const approvedPOs = pos.filter(p => p.status === "approved");
+  const { user } = useAuth();
 
   const [step, setStep] = useState<GRNStep>("form");
   const [selectedPO, setSelectedPO] = useState<PurchaseOrder | null>(null);
   const [showPODrop, setShowPODrop] = useState(false);
   const [localHistory, setLocalHistory] = useState<ReceiptRecord[]>(INITIAL_HISTORY);
-  
+
   const queryClient = useQueryClient();
 
   const createGrnMutation = useMutation({
     mutationFn: (payload: CreateGrnPayload) => rawMaterialsApi.createGrn(payload),
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       queryClient.invalidateQueries({ queryKey: ["grn-receipts"] });
       // Update grnBatchId with the real one returned from backend
       setGrnBatchId(data.id);
+
+      // Link this GRN back to the PO it was received against — without this
+      // the PO stays stuck at "approved" forever even after stock arrives,
+      // and nothing (including the superadmin notification) ever fires.
+      if (selectedPO) {
+        try {
+          await purchaseOrdersApi.receiveGrn(selectedPO.id, { grnReceiptId: data.id, actorId: user?.id });
+          queryClient.invalidateQueries({ queryKey: ["purchaseOrders"] });
+        } catch (err) {
+          // The material receipt itself already succeeded and stock is
+          // updated — don't block the worker's success screen on this
+          // secondary linking step failing.
+          console.error("Failed to link GRN to purchase order:", err);
+        }
+      }
+
       setStep("success");
     },
     onError: (err) => {

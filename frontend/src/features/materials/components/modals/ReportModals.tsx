@@ -173,12 +173,21 @@ export function ThresholdsModal({ open, onClose, stockItems, onSave }: {
 }) {
   const queryClient = useQueryClient();
   const [levels, setLevels] = useState<Record<string, number>>({});
+  const types = ["WARP", "RESHAM", "JARI"] as const;
+  const aggregatedItems = types.map(type => {
+    const items = stockItems.filter(i => i.materialType === type);
+    const currentStock = items.reduce((s, i) => s + Number(i.currentStock), 0);
+    const unit = items.length > 0 ? items[0].unit : (type === "JARI" ? "Reels" : "KG");
+    return { type, currentStock, unit, items };
+  });
 
   React.useEffect(() => {
     if (open) {
       const initial: Record<string, number> = {};
-      stockItems.forEach(item => {
-        initial[item.id] = Number(item.reorderLevel);
+      aggregatedItems.forEach(agg => {
+        // use max reorder level found for this type as the "global" threshold
+        const reorder = Math.max(...agg.items.map(i => Number(i.reorderLevel)), 0);
+        initial[agg.type] = reorder;
       });
       setLevels(initial);
     }
@@ -199,10 +208,16 @@ export function ThresholdsModal({ open, onClose, stockItems, onSave }: {
   });
 
   const handleSave = () => {
-    const payload = {
-      thresholds: Object.entries(levels).map(([id, val]) => ({ id, reorderLevel: val }))
-    };
-    saveMutation.mutate(payload);
+    // apply the updated type-level threshold to ALL individual items of that type
+    const thresholdsToUpdate = stockItems.map(item => ({
+      id: item.id,
+      reorderLevel: levels[item.materialType] || 0
+    }));
+    if (thresholdsToUpdate.length > 0) {
+      saveMutation.mutate({ thresholds: thresholdsToUpdate });
+    } else {
+      onClose();
+    }
   };
 
   const rowStyle: React.CSSProperties = { display: "flex", alignItems: "center", gap: 12, background: T.silkCream, borderRadius: 12, padding: "14px 16px" };
@@ -226,32 +241,27 @@ export function ThresholdsModal({ open, onClose, stockItems, onSave }: {
       <ModalHeader title="Set Alert Thresholds" subtitle="Define minimum stock levels that trigger a low-stock alert" onClose={onClose} />
       <div style={{ padding: "26px 28px 28px", display: "flex", flexDirection: "column", gap: 14 }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 12, maxHeight: 350, overflowY: "auto", paddingRight: 4 }}>
-          {stockItems.map(item => {
-            const { col, bg } = getChipColors(item.materialType);
-            const displayName = [item.name, item.color, item.grade].filter(Boolean).join(" - ");
+          {aggregatedItems.map(agg => {
+            const { col, bg } = getChipColors(agg.type);
+            const displayName = agg.type.charAt(0) + agg.type.slice(1).toLowerCase() + " (All Variations)";
             return (
-              <div key={item.id} style={rowStyle}>
+              <div key={agg.type} style={rowStyle}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={chipStyle(col, bg)}>{item.materialType}</span>
+                    <span style={chipStyle(col, bg)}>{agg.type}</span>
                     <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: T.luxuryBrown, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{displayName}</span>
                   </div>
                   <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
-                    Current Stock: {Number(item.currentStock)} {item.unit}
+                    Total Current Stock: {agg.currentStock} {agg.unit}
                   </span>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-                  <Input type="number" value={levels[item.id] ?? ""} onChange={e => setLevels(prev => ({ ...prev, [item.id]: parseFloat(e.target.value) || 0 }))} className="w-[90px]" />
-                  <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{item.unit}</span>
+                  <Input type="number" value={levels[agg.type] ?? ""} onChange={e => setLevels(prev => ({ ...prev, [agg.type]: parseFloat(e.target.value) || 0 }))} className="w-[90px]" />
+                  <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{agg.unit}</span>
                 </div>
               </div>
             );
           })}
-          {stockItems.length === 0 && (
-            <div style={{ textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe, padding: "20px 0" }}>
-              No material stock records found.
-            </div>
-          )}
         </div>
         <div style={{ display: "flex", gap: 12, paddingTop: 8 }}>
           <Button onClick={onClose} variant="secondary" size="md" className="flex-1" disabled={saveMutation.isPending}>

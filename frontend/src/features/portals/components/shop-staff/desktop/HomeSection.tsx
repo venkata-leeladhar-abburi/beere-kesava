@@ -175,7 +175,7 @@ export function HomeSection({
                 <AlertTriangle size={24} color={C.crim} />
                 <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 18, color: C.crim }}>Stock Alert</div>
               </div>
-              <div style={{ fontFamily: F.u, fontSize: 14, color: C.text, marginBottom: 6 }}>Only <strong>84 sarees</strong> remaining in shop stock.</div>
+              <div style={{ fontFamily: F.u, fontSize: 14, color: C.text, marginBottom: 6 }}>Only <strong>{inventoryList.length} sarees</strong> remaining in shop stock.</div>
               <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginBottom: 18 }}>Stock is running low. Notify admin to arrange restocking from factory.</div>
               {invLowStockSent ? (
                 <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(30,102,64,0.10)", border: "1px solid rgba(30,102,64,0.25)", borderRadius: 12, padding: "12px 16px" }}>

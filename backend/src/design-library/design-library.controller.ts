@@ -16,7 +16,7 @@ export class DesignLibraryController {
   constructor(private readonly designLibraryService: DesignLibraryService) {}
 
   @Post()
-  @RequireRoles(UserRole.WORKER)
+  @RequireRoles(UserRole.WORKER, UserRole.ADMIN, UserRole.SUPERADMIN)
   create(@Body() dto: CreateDesignDto) {
     return this.designLibraryService.create(dto);
   }
@@ -32,13 +32,13 @@ export class DesignLibraryController {
   }
 
   @Patch(":code")
-  @RequireRoles(UserRole.WORKER)
+  @RequireRoles(UserRole.WORKER, UserRole.ADMIN, UserRole.SUPERADMIN)
   update(@Param("code") code: string, @Body() dto: UpdateDesignDto) {
     return this.designLibraryService.update(code, dto);
   }
 
   @Post(":code/dispatch")
-  @RequireRoles(UserRole.WORKER)
+  @RequireRoles(UserRole.WORKER, UserRole.ADMIN, UserRole.SUPERADMIN)
   dispatch(@Param("code") code: string, @Body() dto: DispatchDesignDto) {
     return this.designLibraryService.dispatch(code, dto);
   }

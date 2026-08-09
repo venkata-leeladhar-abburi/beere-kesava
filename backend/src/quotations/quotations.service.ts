@@ -6,10 +6,16 @@ import { PrismaService } from "../prisma/prisma.service";
 import { CreateQuotationDto } from "./dto/create-quotation.dto";
 import { ListQuotationsQueryDto } from "./dto/list-quotations-query.dto";
 import { ReceiveQuotationSareesDto } from "./dto/receive-quotation-sarees.dto";
+import { AssignQuotationFinishingDto } from "./dto/assign-quotation-finishing.dto";
 
 const QUOTATION_ID_PREFIX = "QUO";
 
-const include = { sarees: true, customer: true, bulkOrder: true } satisfies Prisma.QuotationInclude;
+const include = { 
+  sarees: true, 
+  customer: true, 
+  bulkOrder: true,
+  finishingAssignments: { include: { finishingStaff: true } } 
+} satisfies Prisma.QuotationInclude;
 
 @Injectable()
 export class QuotationsService {
@@ -87,19 +93,41 @@ export class QuotationsService {
     return quotation;
   }
 
-  // Marks every saree on the quotation as in-finishing — the quotation-driven
-  // parallel to a plain FinishingAssignment (frontend's assignQuotationFinishing).
-  async assignFinishing(id: string) {
+  // Marks a subset (or all) of the quotation's sarees as in-finishing,
+  // and creates FinishingAssignment records for them.
+  async assignFinishing(id: string, dto: AssignQuotationFinishingDto) {
     const quotation = await this.findOne(id);
-    if (quotation.status !== QuotationStatus.RAISED) {
+    if (quotation.status !== QuotationStatus.RAISED && quotation.status !== QuotationStatus.IN_FINISHING) {
       throw new BadRequestException(
-        `Quotation must be RAISED to assign finishing (currently ${quotation.status})`,
+        `Quotation must be RAISED or IN_FINISHING to assign finishing (currently ${quotation.status})`,
       );
     }
+
+    const staff = await this.prisma.finishingStaff.findUnique({ where: { id: dto.staffId } });
+    if (!staff) {
+      throw new NotFoundException(`Finishing Staff ${dto.staffId} not found`);
+    }
+
+    const ids = new Set(quotation.sarees.map((s) => s.sareeId));
+    const missing = dto.sareeIds.filter((sareeId) => !ids.has(sareeId));
+    if (missing.length > 0) {
+      throw new BadRequestException(`Saree(s) not on this quotation: ${missing.join(", ")}`);
+    }
+
     await this.prisma.$transaction([
       this.prisma.quotationSaree.updateMany({
-        where: { quotationId: id },
+        where: { quotationId: id, sareeId: { in: dto.sareeIds } },
         data: { finishingStatus: QuotationSareeStatus.IN_FINISHING },
+      }),
+      this.prisma.finishingAssignment.createMany({
+        data: dto.sareeIds.map((sareeId) => ({
+          sareeId,
+          finishingStaffId: dto.staffId,
+          assignedById: dto.assignedById,
+          quotationRef: id,
+          status: "AWAITING_RETURN",
+        })),
+        skipDuplicates: true,
       }),
       this.prisma.quotation.update({
         where: { id },
@@ -120,10 +148,16 @@ export class QuotationsService {
       throw new BadRequestException(`Saree(s) not on this quotation: ${missing.join(", ")}`);
     }
 
-    await this.prisma.quotationSaree.updateMany({
-      where: { quotationId: id, sareeId: { in: dto.sareeIds } },
-      data: { finishingStatus: QuotationSareeStatus.RECEIVED },
-    });
+    await this.prisma.$transaction([
+      this.prisma.quotationSaree.updateMany({
+        where: { quotationId: id, sareeId: { in: dto.sareeIds } },
+        data: { finishingStatus: QuotationSareeStatus.RECEIVED },
+      }),
+      this.prisma.finishingAssignment.updateMany({
+        where: { quotationRef: id, sareeId: { in: dto.sareeIds }, status: "AWAITING_RETURN" },
+        data: { status: "RETURNED" },
+      }),
+    ]);
 
     const remaining = await this.prisma.quotationSaree.count({
       where: { quotationId: id, finishingStatus: { not: QuotationSareeStatus.RECEIVED } },
@@ -136,6 +170,24 @@ export class QuotationsService {
       },
     });
 
+    return this.findOne(id);
+  }
+
+  // Every saree on the quotation must be back from finishing before it can
+  // leave the building — mirrors the plain-dispatch rule in DispatchService
+  // (InventoryRecord.status must be FINISHING_COMPLETE), applied here at the
+  // quotation level instead of per-saree.
+  async dispatch(id: string) {
+    const quotation = await this.findOne(id);
+    if (quotation.status !== QuotationStatus.RECEIVED) {
+      throw new BadRequestException(
+        `Quotation must be RECEIVED (all sarees back from finishing) to dispatch (currently ${quotation.status})`,
+      );
+    }
+    await this.prisma.quotation.update({
+      where: { id },
+      data: { status: QuotationStatus.DISPATCHED },
+    });
     return this.findOne(id);
   }
 }

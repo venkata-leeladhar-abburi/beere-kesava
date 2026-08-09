@@ -24,6 +24,10 @@ export interface SareeRow {
   bulkOrderRef: string | null;   // null = General Stock
   bulkOrderLabel: string | null;
   qcPassed?: boolean;            // true once Worker Staff confirms QC passed for this saree
+  receivedAt: string | null;     // set once Worker Staff receives the finished saree from the weaver/loom
+  receivedWeight: string | null;
+  receivedColor: string | null;
+  receivedPhotoUrl: string | null;
 }
 
 export interface BatchRecord {
@@ -54,6 +58,7 @@ interface BatchContextValue {
   // returned id rather than assuming their local batchId was persisted.
   saveDraft: (batch: BatchRecord) => Promise<string>;
   updateBatch: (batchId: string, patch: Partial<BatchRecord>) => void;
+  receiveRow: (batchId: string, serial: number, payload: { weight: number; color?: string; photoUrl?: string }) => Promise<void>;
   finalizeBatch: (batchId: string) => Promise<void>;
   // Rejects with the backend's message when the batch has existing records
   // (materials issued, QC, finishing) attached — deletion is blocked, not
@@ -103,6 +108,10 @@ function backendBatchToRecord(
         bulkOrderRef: r.bulkOrderRef,
         bulkOrderLabel: r.bulkOrderRef,
         qcPassed: r.qcPassed ?? undefined,
+        receivedAt: r.receivedAt,
+        receivedWeight: r.receivedWeight,
+        receivedColor: r.receivedColor,
+        receivedPhotoUrl: r.receivedPhotoUrl,
       };
     }),
   };
@@ -111,12 +120,14 @@ function backendBatchToRecord(
 export function BatchProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
   const [pendingOpenBatchId, setPendingOpenBatchId] = useState<string | null>(null);
-  // /factory-looms is WORKER-only on the backend (ADMIN/SUPERADMIN bypass
-  // every role check) — a WEAVER caller (this provider is also mounted in
-  // WeaverLayout) would always 403 here, so skip the call rather than let
-  // it fail every time.
+  // /factory-looms is WORKER-only and /rates is ACCOUNTANT-only on the
+  // backend (ADMIN/SUPERADMIN bypass every role check) — a WEAVER caller
+  // (this provider is also mounted in WeaverLayout) would always 403 on
+  // both, so skip each call for roles that can't read it rather than firing
+  // a guaranteed-403 request just to fall back to an empty lookup.
   const { role } = useAuth();
   const canReadFactoryLooms = role === "worker" || role === "admin" || role === "superadmin";
+  const canReadRates = role === "accountant" || role === "admin" || role === "superadmin";
 
   const { data: batches = [], isError, error } = useQuery({
     queryKey: QUERY_KEY,
@@ -137,7 +148,7 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
       const [weaversRes, loomsRes, ratesRes] = await Promise.all([
         weaversApi.list().catch(() => ({ items: [] })),
         canReadFactoryLooms ? factoryLoomsApi.list().catch(() => ({ items: [] })) : Promise.resolve({ items: [] }),
-        ratesApi.list().catch(() => ({ items: [] })),
+        canReadRates ? ratesApi.list().catch(() => ({ items: [] })) : Promise.resolve({ items: [] }),
       ]);
       const weaverLookup = new Map(
         (weaversRes?.items || []).map(w => [w.id, { name: w.name, initials: w.initials }]),
@@ -200,6 +211,18 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
       ),
   });
 
+  const receiveRowMutation = useMutation({
+    mutationFn: (args: { batchId: string; serial: number; payload: { weight: number; color?: string; photoUrl?: string } }) =>
+      batchesApi.receiveRow(args.batchId, args.serial, args.payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+    },
+    onError: (err) => {
+      // eslint-disable-next-line no-console -- surface receive failures instead of failing silently
+      console.error("Failed to receive batch row:", err);
+    },
+  });
+
   const finalizeBatchMutation = useMutation({
     mutationFn: (batchId: string) => batchesApi.finalize(batchId),
     onSuccess: () => {
@@ -220,6 +243,8 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
 
   const saveDraft = (batch: BatchRecord) => saveDraftMutation.mutateAsync(batch);
   const updateBatch = (batchId: string, patch: Partial<BatchRecord>) => updateBatchMutation.mutate({ batchId, patch });
+  const receiveRow = (batchId: string, serial: number, payload: { weight: number; color?: string; photoUrl?: string }) =>
+    receiveRowMutation.mutateAsync({ batchId, serial, payload }).then(() => undefined);
   const finalizeBatch = (batchId: string) => finalizeBatchMutation.mutateAsync(batchId).then(() => undefined);
   // A 404 here means the batch is already gone (another tab deleted it, or
   // it's a stale entry) — that's the caller's desired end state either way,
@@ -248,7 +273,7 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
   const safeBatches = Array.isArray(batches) ? batches : [];
 
   return (
-    <BatchContext.Provider value={{ batches: safeBatches, saveDraft, updateBatch, finalizeBatch, deleteBatch, isError, error, nextBatchId, pendingOpenBatchId, setPendingOpenBatchId }}>
+    <BatchContext.Provider value={{ batches: safeBatches, saveDraft, updateBatch, receiveRow, finalizeBatch, deleteBatch, isError, error, nextBatchId, pendingOpenBatchId, setPendingOpenBatchId }}>
       {children}
     </BatchContext.Provider>
   );

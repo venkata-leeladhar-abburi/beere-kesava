@@ -111,10 +111,11 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
   const qc = useQueryClient();
   // This provider is mounted globally (App.tsx) for every role, but the
   // backend restricts /suppliers, /payments/suppliers and /purchase-requests
-  // to ACCOUNTANT — skip the fetch entirely for every other role rather
-  // than firing a request that's guaranteed to 403.
+  // to ACCOUNTANT (ADMIN/SUPERADMIN bypass every role check there) — skip
+  // the fetch for every other role rather than firing a request that's
+  // guaranteed to 403.
   const { role } = useAuth();
-  const enabled = role === "accountant";
+  const enabled = role === "accountant" || role === "admin" || role === "superadmin";
 
   const { data: suppliers = [], isError: isSuppliersError, error: suppliersError } = useQuery({
     queryKey: SUPPLIERS_KEY,

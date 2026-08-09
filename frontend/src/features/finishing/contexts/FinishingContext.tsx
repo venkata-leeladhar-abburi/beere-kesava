@@ -2,7 +2,8 @@ import React, { createContext, useContext, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 export * from "./finishing-types";
 import { ReadySaree, FinishingAssignment, FinishingReturn, DispatchRecord, Quotation, QuotationSaree, FinishingContextValue } from "./finishing-types";
-import { getSareeTypeByCode } from "../../pricing/components/RatesPricingPage";
+import { useRatesPricing } from "../../pricing/contexts/RatesContext";
+import { type SareeTypeRecord } from "../../pricing/components/RatesPricingPage";
 import {
   BackendFinishingAssignment,
   BackendFinishingCondition,
@@ -28,7 +29,10 @@ const DAMAGE_SEVERITY_TO_BACKEND: Record<"Minor" | "Moderate" | "Severe", Backen
   Minor: "MINOR", Moderate: "MODERATE", Severe: "SEVERE",
 };
 
-function backendAssignmentToFrontend(a: BackendFinishingAssignment): FinishingAssignment {
+function backendAssignmentToFrontend(
+  a: BackendFinishingAssignment,
+  getSareeTypeByCode: (code: string) => SareeTypeRecord | undefined
+): FinishingAssignment {
   return {
     id: a.id,
     sareeId: a.sareeId,
@@ -52,7 +56,10 @@ function backendAssignmentToFrontend(a: BackendFinishingAssignment): FinishingAs
 // A "return" isn't a separate backend record — it's a RETURNED-status
 // assignment carrying its own condition/damage fields. Derived here instead
 // of fetched, since the backend merges the two concepts onto one row.
-function assignmentToReturn(a: BackendFinishingAssignment): FinishingReturn {
+function assignmentToReturn(
+  a: BackendFinishingAssignment,
+  getSareeTypeByCode: (code: string) => SareeTypeRecord | undefined
+): FinishingReturn {
   return {
     id: a.id,
     assignmentId: a.id,
@@ -113,9 +120,13 @@ function backendQuotationToFrontend(
   q: BackendQuotation,
   rowLookup: Map<string, BackendBatchSareeRow>,
   weaverLookup: Map<string, string>,
+  getSareeTypeByCode: (code: string) => SareeTypeRecord | undefined
 ): Quotation {
   const sarees: QuotationSaree[] = q.sarees.map((s) => {
     const row = rowLookup.get(s.sareeId);
+    // Find the latest finishing assignment for this saree, if any.
+    // If the saree is in multiple states, we pick the first match (typically there's only one per quotation)
+    const assignment = q.finishingAssignments?.find(a => a.sareeId === s.sareeId);
     return {
       sareeId: s.sareeId,
       designCode: row?.designCode ?? "—",
@@ -123,6 +134,7 @@ function backendQuotationToFrontend(
       sareeType: row?.sareeTypeCode ? (getSareeTypeByCode(row.sareeTypeCode)?.type ?? row.sareeTypeCode) : "—",
       weaverName: (row?.weaverId ? weaverLookup.get(row.weaverId) : undefined) ?? "—",
       finishingStatus: s.finishingStatus === "PENDING" ? "pending" : s.finishingStatus === "IN_FINISHING" ? "in-finishing" : "received",
+      finishingStaffName: assignment ? `${assignment.finishingStaff.firstName} ${assignment.finishingStaff.lastName}` : undefined,
     };
   });
   return {
@@ -146,6 +158,7 @@ function backendQuotationToFrontend(
     grandTotal: Number(q.grandTotal),
     raisedBy: "Admin (Kesava Rao)",
     status: QUOTATION_STATUS_FROM_BACKEND[q.status],
+    finishingStaffName: sarees.find(s => s.finishingStaffName)?.finishingStaffName,
     createdAt: new Date(q.createdAt).getTime(),
   };
 }
@@ -155,9 +168,11 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
   // Mounted globally (App.tsx) for every role. The backend restricts these
   // to WORKER (ADMIN/SUPERADMIN bypass every role check) — dispatch also
   // allows SHOP. Skip the fetch for roles that would just get a 403.
-  const { role } = useAuth();
+  const { role, user } = useAuth();
   const workerScoped = role === "worker" || role === "admin" || role === "superadmin";
   const dispatchEnabled = workerScoped || role === "shop";
+  const actingUserId = user?.id ?? STOPGAP_ACTING_USER_ID;
+  const { getSareeTypeByCode } = useRatesPricing();
 
   const { data: readySarees = [], isError: isReadyError, error: readyError } = useQuery({
     queryKey: READY_KEY,
@@ -200,32 +215,30 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
         batchesRes.items.flatMap(b => b.rows.filter(r => r.sareeId).map(r => [r.sareeId as string, r] as const)),
       );
       const weaverLookup = new Map(weaversRes.items.map(w => [w.id, w.name]));
-      return quotationsRes.items.map(q => backendQuotationToFrontend(q, rowLookup, weaverLookup));
+      return quotationsRes.items.map(q => backendQuotationToFrontend(q, rowLookup, weaverLookup, getSareeTypeByCode));
     },
   });
   const isError = isReadyError || isAssignmentsError || isDispatchesError || isQuotationsError;
   const error = readyError ?? assignmentsError ?? dispatchesError ?? quotationsError ?? null;
 
   const assignments = useMemo(
-    () => backendAssignments.map(backendAssignmentToFrontend),
-    [backendAssignments],
+    () => backendAssignments.map(a => backendAssignmentToFrontend(a, getSareeTypeByCode)),
+    [backendAssignments, getSareeTypeByCode],
   );
   const returns = useMemo(
-    () => backendAssignments.filter(a => a.status === "RETURNED").map(assignmentToReturn),
-    [backendAssignments],
+    () => backendAssignments.filter(a => a.status === "RETURNED").map(a => assignmentToReturn(a, getSareeTypeByCode)),
+    [backendAssignments, getSareeTypeByCode],
   );
 
   const setDispatches = (updater: (prev: DispatchRecord[]) => DispatchRecord[]) =>
     qc.setQueryData<DispatchRecord[]>(DISPATCHES_KEY, prev => updater(prev ?? []));
-  const setQuotations = (updater: (prev: Quotation[]) => Quotation[]) =>
-    qc.setQueryData<Quotation[]>(QUOTATIONS_KEY, prev => updater(prev ?? []));
 
   const assignSareesMutation = useMutation({
     mutationFn: (args: { sareeIds: string[]; staff: { id: string; name: string }; assignedBy: string }) =>
       finishingAssignmentsApi.create({
         sareeIds: args.sareeIds,
         finishingStaffId: args.staff.id,
-        assignedById: STOPGAP_ACTING_USER_ID,
+        assignedById: actingUserId,
       }),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ASSIGNMENTS_KEY });
@@ -324,7 +337,7 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
         applyGst: q.applyGst,
         gstPct: q.applyGst ? Number(q.gstPct) : undefined,
         firmId: q.firmId,
-        raisedById: STOPGAP_ACTING_USER_ID,
+        raisedById: actingUserId,
         sarees: q.sarees.map(s => ({ sareeId: s.sareeId, price: Number(q.prices[s.sareeId] ?? 0) })),
       }),
     onSuccess: () => {
@@ -335,16 +348,13 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
-  // NOTE(backend gap): POST /quotations/:id/assign-finishing takes no body —
-  // it marks every pending saree on the whole quotation as in-finishing in
-  // one shot and doesn't record a finishing-staff assignment at all (no
-  // FinishingAssignment rows are created for quotation sarees). The
-  // per-saree / per-staff selection this UI offers isn't something the
-  // backend supports yet, so sareeIds/staff are accepted for interface
-  // compatibility but not sent.
   const assignQuotationFinishingMutation = useMutation({
     mutationFn: (args: { quotationId: string; sareeIds: string[]; staff: { id: string; name: string }; assignedBy: string }) =>
-      quotationsApi.assignFinishing(args.quotationId),
+      quotationsApi.assignFinishing(args.quotationId, {
+        sareeIds: args.sareeIds,
+        staffId: args.staff.id,
+        assignedById: args.assignedBy,
+      }),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: QUOTATIONS_KEY });
     },
@@ -364,12 +374,14 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
-  // NOTE(backend gap): there is no endpoint to mark a quotation dispatched
-  // (status only advances via assign-finishing/receive), so this stays an
-  // optimistic client-only patch until one exists.
   const markQuotationDispatchedMutation = useMutation({
-    mutationFn: (quotationId: string) => Promise.resolve(quotationId),
-    onSuccess: (quotationId) => setQuotations(prev => prev.map(q => q.id === quotationId ? { ...q, status: "dispatched" } : q)),
+    mutationFn: (quotationId: string) => quotationsApi.dispatch(quotationId),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: QUOTATIONS_KEY });
+    },
+    onError: (err) => {
+      console.error("Failed to mark quotation dispatched:", err);
+    },
   });
 
   const assignSarees = (sareeIds: string[], staff: { id: string; name: string }, assignedBy: string) =>

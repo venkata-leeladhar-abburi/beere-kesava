@@ -48,6 +48,21 @@ export function PaymentsSection({ bp, isTablet }: { bp: "tablet" | "desktop"; is
   const defectiveRecords = thisMonthQcRecords.filter(q => q.result === "defective" || q.deduction > 0);
   const myPayments = weaverId ? getPaymentsForWeaver(weaverId) : [];
 
+  // Gross charges broken down by saree type — count x that type's making
+  // charge (the real per-saree rate recorded at QC time, not a re-derived
+  // estimate), so the weaver can see exactly which saree type earned what.
+  const chargesByType = Object.values(
+    thisMonthQcRecords.reduce((acc, q) => {
+      const key = q.sareeTypeCode ?? "—";
+      if (!acc[key]) {
+        acc[key] = { code: key, name: q.sareeTypeName ?? key, count: 0, rate: Number(q.makingCharge) || 0, subtotal: 0 };
+      }
+      acc[key].count += 1;
+      acc[key].subtotal += Number(q.makingCharge) || 0;
+      return acc;
+    }, {} as Record<string, { code: string; name: string; count: number; rate: number; subtotal: number }>)
+  ).sort((a, b) => b.subtotal - a.subtotal);
+
   return (
     <>
       <DesktopHero
@@ -75,6 +90,42 @@ export function PaymentsSection({ bp, isTablet }: { bp: "tablet" | "desktop"; is
         <div style={{ display: "grid", gridTemplateColumns: isTablet ? "1fr" : "1fr 360px", gap: 36, alignItems: "start" }}>
           {/* Left: Deductions + History table */}
           <div>
+            <DSectionHeader label="Charges by Saree Type" />
+            <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginBottom: 22 }}>Your gross making charge this month, broken down by saree type — sarees × rate for that type.</div>
+
+            {chargesByType.length === 0 ? (
+              <div style={{ background: C.cream, border: `1px solid ${C.bdr}`, borderRadius: 20, padding: "28px 24px", textAlign: "center" as const, marginBottom: 40 }}>
+                <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>No sarees QC'd yet this month.</div>
+              </div>
+            ) : (
+              <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 20, overflow: isTablet ? "auto" : "hidden", boxShadow: "0 4px 20px rgba(44,24,16,0.08)", marginBottom: 40 }}>
+                <div style={{ minWidth: isTablet ? 520 : undefined }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", padding: "14px 26px", borderBottom: `1px solid ${C.bdr}`, background: "#FAFAF8" }}>
+                    {["Saree Type", "Sarees", "Rate / Saree", "Subtotal"].map(h => (
+                      <div key={h} style={{ fontFamily: F.u, fontSize: 13, fontWeight: 700, color: C.muted, letterSpacing: 0.4 }}>{h}</div>
+                    ))}
+                  </div>
+                  {chargesByType.map((t, i) => (
+                    <div key={t.code} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", padding: "18px 26px", borderBottom: i < chargesByType.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", alignItems: "center" }}>
+                      <div>
+                        <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 15, color: C.text }}>{t.name}</div>
+                        <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>{t.code}</div>
+                      </div>
+                      <div style={{ fontFamily: F.u, fontSize: 15, color: C.text }}>{t.count}</div>
+                      <div style={{ fontFamily: F.m, fontSize: 14, color: C.muted }}>₹{t.rate.toLocaleString("en-IN")}</div>
+                      <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 16, color: C.burg }}>₹{t.subtotal.toLocaleString("en-IN")}</div>
+                    </div>
+                  ))}
+                  <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", padding: "16px 26px", background: C.cream, alignItems: "center" }}>
+                    <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>Total</div>
+                    <div style={{ fontFamily: F.u, fontSize: 14, color: C.text }}>{sareesProduced}</div>
+                    <div />
+                    <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 17, color: C.gold }}>₹{grossCharges.toLocaleString("en-IN")}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <DSectionHeader label="Deductions This Month" />
             <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginBottom: 22 }}>Amounts deducted from your gross making charges this month.</div>
 

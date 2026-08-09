@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { useDesignLibrary } from "../../design-library/contexts/DesignLibraryContext";
 import { DesignCodeCard } from "../../design-library/components/DesignLibraryPage";
-import { SareeTypeCard, getSareeTypeByCode } from "../../pricing/components/RatesPricingPage";
+import { SareeTypeCard } from "../../pricing/components/RatesPricingPage";
+import { useRatesPricing } from "../../pricing/contexts/RatesContext";
 import { BulkOrderDetailPage } from "../../bulk-orders/components/BulkOrderDetailPage";
 
 import { F } from "./theme";
@@ -30,6 +31,7 @@ import { DesignLibraryLinkCard, AllSareesSection } from "./sections/MiscCards";
 export function ProductionPage({ superadmin = false, onNavigate }: { superadmin?: boolean; onNavigate?: (tab: string) => void }) {
   const { getDesign } = useDesignLibrary();
   const [openDesignCode, setOpenDesignCode] = useState<string | null>(null);
+  const { getSareeTypeByCode } = useRatesPricing();
   const [openSareeTypeCode, setOpenSareeTypeCode] = useState<string | null>(null);
   const openDesign = openDesignCode ? getDesign(openDesignCode) : undefined;
   const openSareeType = openSareeTypeCode ? getSareeTypeByCode(openSareeTypeCode) : undefined;

@@ -2,15 +2,16 @@ import React, { useState, useMemo } from "react";
 import { useBatches } from "../../../production/contexts/BatchContext";
 import { useFinishing } from "../../../finishing/contexts/FinishingContext";
 import { useDesignLibrary } from "../../../design-library/contexts/DesignLibraryContext";
-import { useQc, makingChargeFor } from "../../../qc/contexts/QcContext";
+import { useQc } from "../../../qc/contexts/QcContext";
 import { DesignCodeCard } from "../../../design-library/components/DesignLibraryPage";
-import { SareeTypeCard, getSareeTypeByName, getSareeTypeByCode } from "../../../pricing/components/RatesPricingPage";
+import { SareeTypeCard } from "../../../pricing/components/RatesPricingPage";
+import { useRatesPricing } from "../../../pricing/contexts/RatesContext";
 import { AnimatePresence } from "motion/react";
 import {
-  ChevronLeft, CheckCircle2, Search, ChevronRight, Package,
+  ChevronLeft, CheckCircle2, Search, ChevronRight, Package, AlertTriangle,
 } from "lucide-react";
 import {
-  T, F, baseCard, SareeItem, InspectionResult, QUEUE, DEFECTIVE_LOG, initials, splitDesignField,
+  T, F, baseCard, SareeItem, InspectionResult, DefectiveLogItem, initials, splitDesignField,
 } from "./WorkerQCTypes";
 import { WorkerQCInspectionScreen } from "./WorkerQCInspectionScreen";
 import { WorkerQCSareeCard } from "./WorkerQCSareeCard";
@@ -22,8 +23,9 @@ import { IconButton, Input } from "../../../../shared/ui/primitives";
 export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTablet?: boolean }) {
   const { batches } = useBatches();
   const { addReadySaree } = useFinishing();
-  const { recordQc } = useQc();
+  const { recordQc, qcRecords } = useQc();
   const { getDesign } = useDesignLibrary();
+  const { getSareeTypeByName, getSareeTypeByCode } = useRatesPricing();
   const [openDesignCode, setOpenDesignCode] = useState<string | null>(null);
   const [openSareeTypeCode, setOpenSareeTypeCode] = useState<string | null>(null);
   const openDesign = openDesignCode ? getDesign(openDesignCode) : undefined;
@@ -34,7 +36,11 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
       .filter(b => b.status === "active")
       .flatMap(b =>
         b.rows
-          .filter(r => r.sareeId && r.weaverName)
+          // qcPassed stays null/undefined until a QC record exists for the
+          // row — once set (pass or fail), it must drop out of the queue.
+          // receivedAt gates entry: a saree only enters QC once Worker Staff
+          // has actually received it from the weaver/loom.
+          .filter(r => r.sareeId && r.weaverName && r.receivedAt && r.qcPassed == null)
           .map(r => ({
             id: r.sareeId!,
             batch: b.batchId,
@@ -53,10 +59,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
       );
   }, [batches]);
 
-  const ALL_QUEUE = useMemo<SareeItem[]>(() => {
-    const staticIds = new Set(QUEUE.map(q => q.id));
-    return [...QUEUE, ...contextRows.filter(r => !staticIds.has(r.id))];
-  }, [contextRows]);
+  const ALL_QUEUE = contextRows;
 
   const [inspecting, setInspecting] = useState<SareeItem | null>(null);
   const [result, setResult] = useState<InspectionResult>(null);
@@ -66,7 +69,23 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
   const [deductionAmount, setDeductionAmount] = useState<number | "">("");
   const [defectSubmitted, setDefectSubmitted] = useState(false);
   const [inspected, setInspected] = useState<Set<string>>(new Set());
-  const [defLog, setDefLog] = useState(DEFECTIVE_LOG);
+  const [errorToast, setErrorToast] = useState("");
+  const showError = (msg: string) => {
+    setErrorToast(msg);
+    setTimeout(() => setErrorToast(""), 4000);
+  };
+  // Derived straight from real QC records — recordQc's refetch keeps this
+  // current, so there's no local mutation to make when a defect is logged.
+  const defLog = useMemo<DefectiveLogItem[]>(() => qcRecords
+    .filter(r => r.result === "defective" || r.result === "semi")
+    .map(r => ({
+      id: r.sareeId,
+      weaver: r.weaverName ?? "—",
+      defects: r.defects,
+      date: new Date(r.qcDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short" }),
+      deduction: `₹${r.deduction}`,
+    })),
+  [qcRecords]);
   const [defFilter, setDefFilter] = useState("Today");
 
   const [qcTab, setQcTab] = useState<"weavers" | "batches">("weavers");
@@ -75,6 +94,18 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
   const [weaverSearch, setWeaverSearch] = useState("");
 
   const pending = ALL_QUEUE.filter(s => !inspected.has(s.id));
+
+  const passedThisMonthCount = useMemo(() => {
+    const now = new Date();
+    return qcRecords.filter(r => {
+      const d = new Date(r.qcDate);
+      return r.result === "passed" && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    }).length;
+  }, [qcRecords]);
+
+  const rejectedCount = useMemo(() => {
+    return qcRecords.filter(r => r.result === "defective").length;
+  }, [qcRecords]);
 
   const weaverGroups = Object.values(
     pending.reduce((acc, s) => {
@@ -108,11 +139,15 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
   const typeCodeOf = (s: SareeItem) =>
     s.sareeTypeCode ?? getSareeTypeByName(splitDesignField(s.design).typeName)?.code ?? "";
 
-  const makingChargeOf = (s: SareeItem | null) => (s ? makingChargeFor(typeCodeOf(s)) : 0);
+  const makingChargeOf = (s: SareeItem | null) => {
+    if (!s) return 0;
+    const rate = getSareeTypeByCode(typeCodeOf(s));
+    return rate ? Number(rate.charge) || 0 : 0;
+  };
 
   const saveQc = (s: SareeItem, result: "passed" | "semi" | "defective", semiDeduction = 0) => {
     const { typeName } = splitDesignField(s.design);
-    recordQc({
+    return recordQc({
       sareeId: s.id,
       weaverId: s.wcode || null,
       weaverName: s.weaver,
@@ -130,24 +165,27 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
   };
 
   const markPassedDirect = (s: SareeItem) => {
-    setInspected(p => new Set(p).add(s.id));
-    saveQc(s, "passed");
+    saveQc(s, "passed").then(() => {
+      setInspected(p => new Set(p).add(s.id));
 
-    const { code: designCode, typeName } = splitDesignField(s.design);
-    const sareeTypeCode = s.sareeTypeCode ?? getSareeTypeByName(typeName)?.code ?? "";
-    const qcPassDate = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+      const { code: designCode, typeName } = splitDesignField(s.design);
+      const sareeTypeCode = s.sareeTypeCode ?? getSareeTypeByName(typeName)?.code ?? "";
+      const qcPassDate = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 
-    addReadySaree({
-      id: s.id,
-      weaverId: s.wcode || undefined,
-      weaverName: s.weaver,
-      designCode,
-      sareeTypeCode,
-      sareeType: typeName,
-      weight: s.weight ? `${s.weight}g` : undefined,
-      qcPassDate,
-      bulkOrderRef: s.bulkOrderRef,
-      status: "qc-passed-pending-finishing",
+      addReadySaree({
+        id: s.id,
+        weaverId: s.wcode || undefined,
+        weaverName: s.weaver,
+        designCode,
+        sareeTypeCode,
+        sareeType: typeName,
+        weight: s.weight ? `${s.weight}g` : undefined,
+        qcPassDate,
+        bulkOrderRef: s.bulkOrderRef,
+        status: "qc-passed-pending-finishing",
+      });
+    }).catch((err) => {
+      showError(`Failed to save QC result for ${s.id}: ${err instanceof Error ? err.message : "Unknown error"}`);
     });
   };
 
@@ -161,10 +199,13 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
 
   const confirmDefective = () => {
     if (!inspecting) return;
-    saveQc(inspecting, "defective");
-    setDefLog(p => [{ id: inspecting.id, weaver: inspecting.weaver, defects: defectTypes, date: "13 Jun", deduction: `₹${makingChargeOf(inspecting)}` }, ...p]);
-    setInspected(p => new Set(p).add(inspecting.id));
-    setDefectSubmitted(true);
+    const s = inspecting;
+    saveQc(s, "defective").then(() => {
+      setInspected(p => new Set(p).add(s.id));
+      setDefectSubmitted(true);
+    }).catch((err) => {
+      showError(`Failed to save QC result for ${s.id}: ${err instanceof Error ? err.message : "Unknown error"}`);
+    });
   };
 
   const startSemiApproved = (s: SareeItem) => {
@@ -175,26 +216,29 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
 
   const confirmSemiApproved = () => {
     if (!inspecting) return;
-    saveQc(inspecting, "semi", Number(deductionAmount) || 0);
-    setDefLog(p => [{ id: inspecting.id, weaver: inspecting.weaver, defects: defectTypes, date: "13 Jun", deduction: `₹${deductionAmount || 0}` }, ...p]);
-    setInspected(p => new Set(p).add(inspecting.id));
-    setDefectSubmitted(true);
+    const s = inspecting;
+    saveQc(s, "semi", Number(deductionAmount) || 0).then(() => {
+      setInspected(p => new Set(p).add(s.id));
+      setDefectSubmitted(true);
 
-    const { code: designCode, typeName } = splitDesignField(inspecting.design);
-    const sareeTypeCode = inspecting.sareeTypeCode ?? getSareeTypeByName(typeName)?.code ?? "";
-    const qcPassDate = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+      const { code: designCode, typeName } = splitDesignField(s.design);
+      const sareeTypeCode = s.sareeTypeCode ?? getSareeTypeByName(typeName)?.code ?? "";
+      const qcPassDate = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 
-    addReadySaree({
-      id: inspecting.id,
-      weaverId: inspecting.wcode || undefined,
-      weaverName: inspecting.weaver,
-      designCode,
-      sareeTypeCode,
-      sareeType: typeName,
-      weight: inspecting.weight ? `${inspecting.weight}g` : undefined,
-      qcPassDate,
-      bulkOrderRef: inspecting.bulkOrderRef,
-      status: "qc-passed-pending-finishing",
+      addReadySaree({
+        id: s.id,
+        weaverId: s.wcode || undefined,
+        weaverName: s.weaver,
+        designCode,
+        sareeTypeCode,
+        sareeType: typeName,
+        weight: s.weight ? `${s.weight}g` : undefined,
+        qcPassDate,
+        bulkOrderRef: s.bulkOrderRef,
+        status: "qc-passed-pending-finishing",
+      });
+    }).catch((err) => {
+      showError(`Failed to save QC result for ${s.id}: ${err instanceof Error ? err.message : "Unknown error"}`);
     });
   };
 
@@ -307,6 +351,8 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
     <div style={{ paddingBottom: 28 }}>
       <WorkerQCQueueHeader
         pendingLength={pending.length}
+        passedThisMonthCount={passedThisMonthCount}
+        rejectedCount={rejectedCount}
         qcTab={qcTab}
         setQcTab={setQcTab}
         setWeaverSearch={setWeaverSearch}
@@ -358,6 +404,12 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
         {openDesign && <DesignCodeCard design={openDesign} onClose={() => setOpenDesignCode(null)} />}
         {openSareeType && <SareeTypeCard sareeType={openSareeType} onClose={() => setOpenSareeTypeCode(null)} />}
       </AnimatePresence>
+
+      {errorToast && (
+        <div style={{ position: "fixed", bottom: 84, left: "50%", transform: "translateX(-50%)", zIndex: 600, background: T.crim, color: "#FFF", borderRadius: 999, padding: "11px 22px", fontFamily: F.u, fontSize: 13, fontWeight: 600, boxShadow: "0 8px 28px rgba(192,57,43,0.32)", display: "flex", alignItems: "center", gap: 8, maxWidth: "90vw" }}>
+          <AlertTriangle size={15} style={{ flexShrink: 0 }} /> <span>{errorToast}</span>
+        </div>
+      )}
     </div>
   );
 }

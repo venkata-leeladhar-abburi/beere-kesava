@@ -8,7 +8,7 @@ import { FactoryLoomsService } from "./factory-looms.service";
 
 // Production/operational module — WORKER access only.
 @Controller("factory-looms")
-@RequireRoles(UserRole.WORKER)
+@RequireRoles(UserRole.WORKER, UserRole.ADMIN, UserRole.SUPERADMIN)
 export class FactoryLoomsController {
   constructor(private readonly factoryLoomsService: FactoryLoomsService) {}
 

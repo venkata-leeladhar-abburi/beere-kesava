@@ -8,7 +8,8 @@ import {
   bulkOrdersApi,
 } from "../../../shared/api/bulk-orders";
 import { customersApi } from "../../../shared/api/customers";
-import { getSareeTypeByCode } from "../../pricing/components/RatesPricingPage";
+import { useRatesPricing } from "../../pricing/contexts/RatesContext";
+import { type SareeTypeRecord } from "../../pricing/components/RatesPricingPage";
 
 // ─── BulkOrder Interface ──────────────────────────────────────────────────────
 export interface BulkOrder {
@@ -68,7 +69,11 @@ function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 }
 
-function backendOrderToFrontend(o: BackendBulkOrder, customerLookup: Map<string, string>): BulkOrder {
+function backendOrderToFrontend(
+  o: BackendBulkOrder,
+  customerLookup: Map<string, string>,
+  getSareeTypeByCode: (code: string) => SareeTypeRecord | undefined
+): BulkOrder {
   const due = new Date(o.dueDate);
   const now = new Date();
   const dayMs = 24 * 60 * 60 * 1000;
@@ -124,13 +129,14 @@ const QUERY_KEY = ["bulkOrders"] as const;
 
 export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
+  const { getSareeTypeByCode } = useRatesPricing();
 
   const { data: bulkOrders = [], isError, error } = useQuery({
     queryKey: QUERY_KEY,
     queryFn: async () => {
       const [ordersRes, customersRes] = await Promise.all([bulkOrdersApi.list(), customersApi.list()]);
       const customerLookup = new Map(customersRes.items.map(c => [c.id, c.name]));
-      return ordersRes.items.map(o => backendOrderToFrontend(o, customerLookup));
+      return ordersRes.items.map(o => backendOrderToFrontend(o, customerLookup, getSareeTypeByCode));
     },
   });
 

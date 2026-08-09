@@ -146,7 +146,7 @@ function BusinessOverview({ onGoToFirm }: { onGoToFirm?: (firmId: string) => voi
 }
 
 // ─── Firm card ────────────────────────────────────────────────────────────────
-function FirmCard({ firm, onEdit, onView }: { firm: Firm; onEdit: () => void; onView: () => void }) {
+const FirmCard = React.forwardRef<HTMLDivElement, { firm: Firm; onEdit: () => void; onView: () => void }>(({ firm, onEdit, onView }, ref) => {
   const { getFirmFinancials } = useFirms();
   const [hov, setHov] = useState(false);
   const color = cardColor(firm.id);
@@ -157,7 +157,7 @@ function FirmCard({ firm, onEdit, onView }: { firm: Firm; onEdit: () => void; on
   const net = inc - exp;
 
   return (
-    <motion.div layout initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.97 }}
+    <motion.div ref={ref} layout initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.97 }}
       onHoverStart={() => setHov(true)} onHoverEnd={() => setHov(false)}
       style={{ background: "#FFF", borderRadius: 18, border: `1.5px solid ${hov ? T.royalBurgundy : T.borderDef}`, boxShadow: hov ? "0 8px 32px rgba(110,15,45,0.12)" : "0 2px 12px rgba(44,24,16,0.06)", overflow: "hidden", transition: "border-color 0.2s, box-shadow 0.2s", display: "flex", flexDirection: "column" }}>
 
@@ -244,7 +244,8 @@ function FirmCard({ firm, onEdit, onView }: { firm: Firm; onEdit: () => void; on
       </div>
     </motion.div>
   );
-}
+});
+FirmCard.displayName = "FirmCard";
 
 import { FirmFormModal, FirmDetailModal } from "./FirmModals";
 const BLANK = { firmName: "", gstNumber: "", address: "", accountNumber: "", ifscCode: "", bankName: "", contactPersonName: "", contactPersonPhone: "", purchaseAmount: undefined };

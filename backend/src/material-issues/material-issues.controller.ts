@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -27,7 +28,7 @@ import { MaterialIssuesService } from "./material-issues.service";
 // so the weaver portal can show what they've received; issuing, signing
 // and cancelling stay WORKER-only.
 @Controller("material-issues")
-@RequireRoles(UserRole.WORKER)
+@RequireRoles(UserRole.WORKER, UserRole.ADMIN, UserRole.SUPERADMIN)
 export class MaterialIssuesController {
   constructor(private readonly materialIssuesService: MaterialIssuesService) {}
 
@@ -65,5 +66,11 @@ export class MaterialIssuesController {
   @HttpCode(HttpStatus.OK)
   cancel(@Param("id") id: string) {
     return this.materialIssuesService.cancel(id);
+  }
+
+  @Delete(":id")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remove(@Param("id") id: string) {
+    return this.materialIssuesService.remove(id);
   }
 }

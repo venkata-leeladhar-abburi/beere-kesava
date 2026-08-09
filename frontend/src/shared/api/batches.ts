@@ -15,6 +15,10 @@ export interface BackendBatchSareeRow {
   sareeTypeCode: string | null;
   bulkOrderRef: string | null;
   qcPassed: boolean | null;
+  receivedAt: string | null;
+  receivedWeight: string | null;
+  receivedColor: string | null;
+  receivedPhotoUrl: string | null;
 }
 
 export interface BackendBatch {
@@ -51,6 +55,12 @@ export interface AssignBatchRowPayload {
   // bulk_orders table, so any non-existent ref would fail with a 500/FK error.
 }
 
+export interface ReceiveBatchRowPayload {
+  weight: number;
+  color?: string;
+  photoUrl?: string;
+}
+
 export const batchesApi = {
   list: (pageSize = 100) =>
     apiClient.get<PaginatedResponse<BackendBatch>>(`/batches?pageSize=${pageSize}`),
@@ -59,6 +69,9 @@ export const batchesApi = {
 
   assignRow: (batchId: string, serial: number, payload: AssignBatchRowPayload) =>
     apiClient.patch<BackendBatchSareeRow>(`/batches/${batchId}/rows/${serial}`, payload),
+
+  receiveRow: (batchId: string, serial: number, payload: ReceiveBatchRowPayload) =>
+    apiClient.patch<BackendBatchSareeRow>(`/batches/${batchId}/rows/${serial}/receive`, payload),
 
   finalize: (batchId: string) => apiClient.post<BackendBatch>(`/batches/${batchId}/finalize`, {}),
 

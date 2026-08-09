@@ -7,7 +7,7 @@ import { WholesaleTermsSection } from "./rates-pricing/WholesaleTermsSection";
 import { JariSettingsSection } from "./rates-pricing/JariSettingsSection";
 import { RateHistorySection } from "./rates-pricing/RateHistorySection";
 import { SareeTypeCard } from "./rates-pricing/SareeTypeCard";
-import { INITIAL_RATES, type SareeTypeRecord } from "./rates-pricing/sareeTypeData";
+import type { SareeTypeRecord } from "./rates-pricing/sareeTypeData";
 import { ratesApi, backendRateToDisplayRecord, type BackendRate } from "../../../shared/api/rates";
 import { Button } from "../../../shared/ui/primitives";
 
@@ -19,7 +19,6 @@ const imgRatesHero = "https://images.unsplash.com/photo-1527751171053-6ac5ec5000
 // RE-EXPORTS — preserved for external consumers of this module's public API
 // ═══════════════════════════════════════════════════════════════════════════
 export type { SareeTypeRecord } from "./rates-pricing/sareeTypeData";
-export { INITIAL_RATES, getSareeTypeByCode, getSareeTypeByName } from "./rates-pricing/sareeTypeData";
 export { SareeTypeCard } from "./rates-pricing/SareeTypeCard";
 export {
   JARI_BUNS_PER_REEL, JARI_GRAMS_PER_REEL,

@@ -4,11 +4,13 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "../lib/queryClient";
 import { composeProviders } from "../lib/composeProviders";
 import { AuthProvider } from "../contexts/AuthContext";
+import { RatesProvider } from "../features/pricing/contexts/RatesContext";
 import { FinishingProvider, FinishingStaffProvider, QcProvider, SupplierProvider } from "../contexts";
 
 // Shared across every portal (worker, admin, superadmin, accountant) so finishing
 // assignments/returns/quotations raised in one show up identically in the others.
 const SharedContexts = composeProviders([
+  RatesProvider,
   FinishingStaffProvider,
   FinishingProvider,
   QcProvider,

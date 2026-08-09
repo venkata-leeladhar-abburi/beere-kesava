@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { weaversApi, BackendWeaver } from "../../../../shared/api/weavers";
-import { batchesApi } from "../../../../shared/api/batches";
+import { useBatches } from "../../../production/contexts/BatchContext";
 
 export function useCurrentWeaver() {
   const { user } = useAuth();
@@ -16,14 +16,17 @@ export function useCurrentWeaver() {
     retry: 2,
   });
 
-  const { data: batchesData } = useQuery({
-    queryKey: ["batches"],
-    queryFn: () => batchesApi.list(),
-    retry: 2,
-  });
+  // Reuse BatchContext's already-fetched, already-mapped batches instead of
+  // a second useQuery — a prior version ran its own query under the exact
+  // same key ["batches"] that BatchContext uses, but with a raw (unmapped)
+  // queryFn. Both shared one cache entry in the global QueryClient, so
+  // whichever query last wrote that entry clobbered the other's shape —
+  // BatchContext's consumers (every batches list in the app, including
+  // Active Batches here) could end up reading the raw paginated response
+  // object instead of the mapped BatchRecord[] array, or vice versa.
+  const { batches: allBatches } = useBatches();
 
   const allWeavers = weaversList?.items ?? [];
-  const allBatches = batchesData?.items ?? [];
 
   // The JWT already carries the caller's real weaverId for a WEAVER-role
   // login — use it directly rather than re-deriving it by matching against

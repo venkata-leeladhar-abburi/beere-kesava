@@ -4,7 +4,7 @@ import { customersApi } from '../../../../shared/api/customers';
 import { 
   IndianRupee, Plus, Wallet, CreditCard, Check,
 } from 'lucide-react';
-import { getSareeTypeByCode } from '../../../pricing/components/RatesPricingPage';
+import { useRatesPricing } from "../../../pricing/contexts/RatesContext";
 import { useResponsive } from "../../../../hooks/useResponsive";
 import { C, F, Card, Btn, Chip, useCanSeePrices, HeroHeader } from './theme';
 import { NewSaleBillModal } from './NewSaleBillModal';
@@ -19,6 +19,7 @@ import { Button, Input } from '../../../../shared/ui/primitives';
 export function NewSaleFlow() {
   const canSeePrices = useCanSeePrices();
   const { isMobile, isTablet } = useResponsive();
+  const { getSareeTypeByCode } = useRatesPricing();
   const [step, setStep] = useState<1 | 2 | 3 | 4 | "success">(1);
   const [sareeFound, setSareeFound] = useState(false);
   const [manualId, setManualId] = useState("");

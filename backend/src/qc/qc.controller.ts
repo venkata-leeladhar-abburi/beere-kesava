@@ -12,12 +12,12 @@ import { QcService } from "./qc.service";
 // only read their own records (self-scoped in the service, same pattern as
 // BatchesController) so their portal can show real QC pass rate/earnings.
 @Controller("qc")
-@RequireRoles(UserRole.WORKER, UserRole.WEAVER)
+@RequireRoles(UserRole.WORKER, UserRole.WEAVER, UserRole.ADMIN, UserRole.SUPERADMIN)
 export class QcController {
   constructor(private readonly qcService: QcService) {}
 
   @Post()
-  @RequireRoles(UserRole.WORKER)
+  @RequireRoles(UserRole.WORKER, UserRole.ADMIN, UserRole.SUPERADMIN)
   create(@Body() dto: CreateQcRecordDto) {
     return this.qcService.create(dto);
   }
@@ -29,7 +29,7 @@ export class QcController {
   }
 
   @Get("ready-for-finishing")
-  @RequireRoles(UserRole.WORKER)
+  @RequireRoles(UserRole.WORKER, UserRole.ADMIN, UserRole.SUPERADMIN)
   findReadyForFinishing() {
     return this.qcService.findReadyForFinishing();
   }

@@ -70,9 +70,10 @@ function toPurchaseOrder(po: BackendPurchaseOrder, materials: POItem[] = []): Pu
 // ─── Context ──────────────────────────────────────────────────────────────────
 interface POContextValue {
   pos: PurchaseOrder[];
-  addPO: (po: PurchaseOrder) => void;
+  addPO: (po: PurchaseOrder) => Promise<void>;
   approvePO: (id: string) => void;
   rejectPO: (id: string, reason?: string) => void;
+  deletePO: (id: string) => Promise<void>;
   setMaterialInvoiceAmount: (poId: string, materialIndex: number, amount: number) => void;
   nextPONumber: string;
   isError: boolean;
@@ -97,26 +98,28 @@ export function POProvider({ children }: { children: React.ReactNode }) {
 
   const addPOMutation = useMutation({
     mutationFn: async (po: PurchaseOrder) => {
-      try {
-        let vendorId = (po as any).vendorId;
-        if (!vendorId) {
-          const vendorsRes = await vendorsApi.list(100);
-          const match = vendorsRes.items.find(v => v.name.toLowerCase() === po.vendor.toLowerCase());
-          vendorId = match?.id ?? vendorsRes.items[0]?.id;
-        }
-        if (vendorId) {
-          const created = await purchaseOrdersApi.create({
-            vendorId,
-            deliveryDate: po.deliveryDate || undefined,
-            totalValue: po.totalValue || 0,
-            urgency: po.urgency,
-          });
-          return toPurchaseOrder(created, po.materials);
-        }
-      } catch (err) {
-        console.error("Failed to persist PO to backend:", err);
+      let vendorId = (po as any).vendorId;
+      if (!vendorId) {
+        const vendorsRes = await vendorsApi.list(100);
+        const match = vendorsRes.items.find(v => v.name.toLowerCase() === po.vendor.toLowerCase());
+        vendorId = match?.id ?? vendorsRes.items[0]?.id;
       }
-      return po;
+      if (!vendorId) {
+        throw new Error(`Could not find vendor "${po.vendor}" to create the purchase order.`);
+      }
+      const created = await purchaseOrdersApi.create({
+        vendorId,
+        deliveryDate: po.deliveryDate || undefined,
+        totalValue: po.totalValue || 0,
+        urgency: po.urgency,
+        items: po.materials.map(m => ({
+          materialType: m.materialType.toUpperCase(),
+          name: m.subtype,
+          quantity: m.quantity,
+          unit: m.unit,
+        })),
+      });
+      return toPurchaseOrder(created, po.materials);
     },
     onSuccess: (po) => setPos(prev => [po, ...prev.filter(p => p.id !== po.id)]),
   });
@@ -145,6 +148,11 @@ export function POProvider({ children }: { children: React.ReactNode }) {
       ),
   });
 
+  const deletePOMutation = useMutation({
+    mutationFn: (id: string) => purchaseOrdersApi.remove(id),
+    onSuccess: (_void, id) => setPos(prev => prev.filter(p => p.id !== id)),
+  });
+
   const setMaterialInvoiceAmountMutation = useMutation({
     mutationFn: (args: { poId: string; materialIndex: number; amount: number }) => Promise.resolve(args),
     onSuccess: ({ poId, materialIndex, amount }) =>
@@ -157,9 +165,10 @@ export function POProvider({ children }: { children: React.ReactNode }) {
       ),
   });
 
-  const addPO = (po: PurchaseOrder) => addPOMutation.mutate(po);
+  const addPO = (po: PurchaseOrder): Promise<void> => addPOMutation.mutateAsync(po).then(() => undefined);
   const approvePO = (id: string) => approvePOMutation.mutate(id);
   const rejectPO = (id: string, reason?: string) => rejectPOMutation.mutate({ id, reason });
+  const deletePO = (id: string): Promise<void> => deletePOMutation.mutateAsync(id).then(() => undefined);
   const setMaterialInvoiceAmount = (poId: string, materialIndex: number, amount: number) =>
     setMaterialInvoiceAmountMutation.mutate({ poId, materialIndex, amount });
 
@@ -176,7 +185,7 @@ export function POProvider({ children }: { children: React.ReactNode }) {
   }, [pos]);
 
   return (
-    <POContext.Provider value={{ pos, addPO, approvePO, rejectPO, setMaterialInvoiceAmount, nextPONumber, isError, error }}>
+    <POContext.Provider value={{ pos, addPO, approvePO, rejectPO, deletePO, setMaterialInvoiceAmount, nextPONumber, isError, error }}>
       {children}
     </POContext.Provider>
   );

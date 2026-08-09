@@ -142,6 +142,7 @@ export function POVendorDetailsSection({
           onChange={e => { setDeliveryDate(e.target.value); setErrors(prev => ({ ...prev, deliveryDate: "" })); }}
         />
         {errors.deliveryDate && <div style={{ color: T.crimson, fontSize: 12, marginTop: 4 }}>{errors.deliveryDate}</div>}
+        <div style={{ color: T.taupe, fontSize: 12, marginTop: 4 }}>Must be at least 3 days from today.</div>
       </div>
     </div>
   );

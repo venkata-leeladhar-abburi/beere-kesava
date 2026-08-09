@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronDown, Calendar, Users, Download, Eye } from "lucide-react";
-import { getSareeTypeByName } from "../../../pricing/components/RatesPricingPage";
+import { useRatesPricing } from "../../../pricing/contexts/RatesContext";
 import { T, F } from "../theme";
 import type { CodeCallbacks } from "../types";
 import type { HistoryBatch } from "../types";
@@ -34,6 +34,7 @@ function HistoryDropBtn({ label, icon }: { label: string; icon?: React.ReactNode
 }
 
 export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
+  const { getSareeTypeByName } = useRatesPricing();
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const { batches } = useBatches();

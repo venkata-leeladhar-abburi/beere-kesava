@@ -4,7 +4,8 @@ import { AnimatePresence, motion } from "motion/react";
 
 import { useBatches } from "../../../production/contexts/BatchContext";
 import { useDesignLibrary } from "../../../design-library/contexts/DesignLibraryContext";
-import { SareeTypeCard, getSareeTypeByCode } from "../../../pricing/components/RatesPricingPage";
+import { SareeTypeCard } from "../../../pricing/components/RatesPricingPage";
+import { useRatesPricing } from "../../../pricing/contexts/RatesContext";
 import { useWeaverPayments } from "../../../weavers/contexts/WeaverPaymentsContext";
 import { EASE, F, T } from "../../theme";
 import { WeaverRecord } from "../../types";
@@ -19,6 +20,7 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
   const { getPaymentsForWeaver, getEarningsForWeaver } = useWeaverPayments();
   const { batches } = useBatches();
   const { getDesign } = useDesignLibrary();
+  const { getSareeTypeByCode } = useRatesPricing();
 
   const [openSareeTypeCode, setOpenSareeTypeCode] = useState<string | null>(null);
 
