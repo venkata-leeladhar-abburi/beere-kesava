@@ -1,28 +1,45 @@
-import { motion } from "motion/react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { IconButton } from "../../../../shared/ui/primitives";
+import { Popover } from "../../../../shared/ui/overlay";
 import { T, F } from "./theme";
 import { jariFromReels, jariGrams, trimNum } from "./jariUtils";
 import type { SareeTypeRecord } from "./sareeTypeData";
 
 // ═══════════════════════════════════════════════════════════════════════════
-// SAREE TYPE CARD — reusable exported modal (also used from Batch Creation)
+// SAREE TYPE CARD — reusable exported popover (also used from Batch Creation)
+// Built on the shared Popover primitive (design-system/05-OVERLAYS.md Part F):
+// Radix gives Escape-to-close-with-focus-return, click-outside-close and
+// aria-expanded/aria-controls for free. This card has no single DOM trigger
+// (it's opened imperatively from row/list clicks across several pages), so
+// it anchors to a fixed viewport-center point and overrides Content's own
+// positioning/styling to reproduce the original centered-card layout exactly.
 // ═══════════════════════════════════════════════════════════════════════════
 export function SareeTypeCard({ sareeType, onClose }: { sareeType: SareeTypeRecord; onClose: () => void }) {
   return (
-    <div style={{
-      position: "fixed", inset: 0, zIndex: "var(--z-popover)",
-      background: "var(--surface-scrim)",
-      display: "flex", alignItems: "center", justifyContent: "center",
-      backdropFilter: "blur(4px)",
-    }} onClick={onClose}>
-      <motion.div
-        initial={{ opacity: 0, scale: 0.94, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.94, y: 10 }}
-        transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-        onClick={e => e.stopPropagation()}
+    <Popover open onOpenChange={next => { if (!next) onClose(); }}>
+      {createPortal(
+        <div
+          style={{
+            position: "fixed", inset: 0, zIndex: "var(--z-popover)",
+            background: "var(--surface-scrim)", backdropFilter: "blur(4px)",
+          }}
+        />,
+        document.body
+      )}
+      <Popover.Anchor asChild>
+        <div style={{ position: "fixed", top: "50%", left: "50%", width: 0, height: 0, pointerEvents: "none" }} />
+      </Popover.Anchor>
+      <Popover.Content
+        elevated
+        side="bottom"
+        align="center"
+        sideOffset={0}
+        collisionPadding={24}
+        onOpenAutoFocus={e => e.preventDefault()}
+        className="p-0 max-w-none"
         style={{
+          transform: "translateY(-50%)",
           background: "#FFFDF9", borderRadius: 20, width: 480, maxWidth: "calc(100vw - 48px)",
           boxShadow: "0 24px 80px rgba(44,6,27,0.28)", overflow: "hidden",
           border: `1px solid ${T.borderDef}`,
@@ -105,7 +122,7 @@ export function SareeTypeCard({ sareeType, onClose }: { sareeType: SareeTypeReco
             Last updated: {sareeType.changed}
           </div>
         </div>
-      </motion.div>
-    </div>
+      </Popover.Content>
+    </Popover>
   );
 }
