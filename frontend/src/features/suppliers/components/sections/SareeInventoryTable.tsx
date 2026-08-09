@@ -2,11 +2,13 @@
 // expanded purchase row of the Order History tab.
 
 import React, { useState } from "react";
-import { AnimatePresence, motion } from "motion/react";
+import * as Dialog from "@radix-ui/react-dialog";
+import { motion } from "motion/react";
 import { Image as ImageIcon } from "lucide-react";
 import { T, F } from "../theme";
 import { SareeTag, formatINR } from "../../contexts/SupplierContext";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { Modal } from "../../../../shared/ui/overlay";
 
 type SareeRow = SareeTag & { purchaseId: string; invoiceNumber: string };
 
@@ -92,15 +94,15 @@ export function SareeInventoryTable({ rows }: { rows: SareeRow[] }) {
         emptyTitle="No sarees match this filter"
       />
 
-      <AnimatePresence>
-        {preview && (
-          <div onClick={() => setPreview(null)}
-            style={{ position: "fixed", inset: 0, zIndex: "var(--z-modal)", background: "var(--surface-scrim)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 40 }}>
-            <motion.img initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
-              src={preview} alt="Saree" style={{ maxWidth: "90vw", maxHeight: "85vh", borderRadius: 14, boxShadow: "0 30px 80px rgba(0,0,0,0.5)" }} />
-          </div>
-        )}
-      </AnimatePresence>
+      <Modal open={!!preview} onOpenChange={o => { if (!o) setPreview(null); }} size="xl">
+        <Dialog.Title className="sr-only">Saree photo preview</Dialog.Title>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+          {preview && (
+            <motion.img initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+              src={preview} alt="Saree" style={{ maxWidth: "100%", maxHeight: "80vh", borderRadius: 14, boxShadow: "0 30px 80px rgba(0,0,0,0.5)" }} />
+          )}
+        </div>
+      </Modal>
     </>
   );
 }
