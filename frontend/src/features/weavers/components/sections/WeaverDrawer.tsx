@@ -24,6 +24,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { weaversApi } from "../../../../shared/api/weavers";
 import { toast } from "sonner";
 import { Button, Field, Input, NumberInput } from "../../../../shared/ui/primitives";
+import { Breadcrumbs } from "../../../../shared/ui/nav/Breadcrumbs";
 
 export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { weaver: typeof WEAVERS[0] | null; onClose: () => void; initialMode?: "view" | "edit"; onNavigate?: (tab: string) => void }) {
   const [tab, setTab] = useState("overview");
@@ -148,6 +149,16 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
             <ChevronLeftIcon size={20} /> Back to Weavers
           </Button>
           <span style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "1px", textTransform: "uppercase", color: T.taupe }}>Weaver Profile</span>
+        </div>
+
+        <div style={{ padding: "16px 48px 0", background: "#FFFFFF" }}>
+          <Breadcrumbs
+            items={[
+              { key: "people", label: "People", onClick: onClose },
+              { key: "weavers", label: "Weavers", onClick: onClose },
+              { key: "weaver", label: weaver.name },
+            ]}
+          />
         </div>
 
         <div style={{ padding: "40px 48px", background: "#FFFFFF", borderBottom: `1px solid ${T.borderDef}` }}>

@@ -12,6 +12,7 @@ import { PaymentHistoryTab } from "./PaymentHistoryTab";
 import { ContactDetailsTab } from "./ContactDetailsTab";
 import { EditProfileTab } from "./EditProfileTab";
 import { Button } from "../../../../../shared/ui/primitives";
+import { Breadcrumbs } from "../../../../../shared/ui/nav/Breadcrumbs";
 
 export interface WholesaleDetailSectionProps {
   customer: WholesaleCustomer;
@@ -55,6 +56,15 @@ export function WholesaleDetailSection({
 
   return (
     <div style={{ padding: "48px 56px" }}>
+      <div style={{ marginBottom: 16 }}>
+        <Breadcrumbs
+          items={[
+            { key: "people", label: "People", onClick: onBack },
+            { key: "customers", label: "Customers", onClick: onBack },
+            { key: "customer", label: customer.name },
+          ]}
+        />
+      </div>
       {/* Header row with Back button */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32 }}>
         <Button onClick={onBack} variant="secondary" size="sm">
