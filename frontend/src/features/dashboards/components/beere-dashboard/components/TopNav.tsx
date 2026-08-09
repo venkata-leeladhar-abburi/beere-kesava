@@ -1,5 +1,5 @@
-import React, { useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import React from 'react';
+import { motion } from 'motion/react';
 import {
   ChevronLeft, ChevronRight, ChevronDown, Bell, Search,
   LogOut, UserRound, AlertTriangle, CheckCircle2, AlertCircle,
@@ -35,23 +35,14 @@ export function TopNav({
   const compact = w < 1320;
   const [showNotif, setShowNotif] = React.useState(false);
   const [showProfile, setShowProfile] = React.useState(false);
+  // Groups with >1 page open a DropdownMenu on click (design-system/05-OVERLAYS.md
+  // Part O.2) — this replaces the previous mouseenter + 140ms-timer hover pattern,
+  // which had no aria-expanded/aria-haspopup and didn't work on touch.
   const [openGroup, setOpenGroup] = React.useState<string | null>(null);
-  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const unreadCount = 0;
 
   const activeGroup = findNavGroup(active);
   const showSubNav = activeGroup.pages.length > 1;
-
-  const groupBtnRefs = useRef<Record<string, HTMLDivElement | null>>({});
-
-  const openGroupNow = (key: string) => {
-    if (closeTimer.current) clearTimeout(closeTimer.current);
-    setOpenGroup(key);
-  };
-  const closeGroupSoon = () => {
-    if (closeTimer.current) clearTimeout(closeTimer.current);
-    closeTimer.current = setTimeout(() => setOpenGroup(null), 140);
-  };
 
   return (
     <motion.div
@@ -95,7 +86,10 @@ export function TopNav({
           )}
         </motion.div>
 
-        {/* Group nav */}
+        {/* Group nav — groups with >1 page open a DropdownMenu on click
+            (design-system/05-OVERLAYS.md Part O.2), via the shared
+            DropdownMenu primitive (shared/ui/overlay/DropdownMenu.tsx),
+            replacing the previous mouseenter + 140ms-timer hover pattern. */}
         <div className="admin-topnav-groups" style={{ display: "flex", height: "100%", alignItems: "stretch", gap: 12, overflowX: "auto", overflowY: "visible", minWidth: 0, scrollbarWidth: "none" } as React.CSSProperties}>
           <style>{`.admin-topnav-groups::-webkit-scrollbar { display: none; }`}</style>
           {NAV_GROUPS.map((g, i) => {
@@ -103,111 +97,95 @@ export function TopNav({
             const isOpen = openGroup === g.key;
             const hasDropdown = g.pages.length > 1;
             const Icon = g.icon;
-            return (
-              <div
-                key={g.key}
-                ref={el => { groupBtnRefs.current[g.key] = el; }}
-                style={{ position: "relative", height: "100%" }}
-                onMouseEnter={() => hasDropdown && openGroupNow(g.key)}
-                onMouseLeave={closeGroupSoon}
+
+            const trigger = (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.1 + i * 0.05, ease: EASE }}
+                whileHover={{ backgroundColor: "rgba(245,232,208,0.06)" }}
+                style={{ height: "100%" }}
               >
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.1 + i * 0.05, ease: EASE }}
-                  whileHover={{ backgroundColor: "rgba(245,232,208,0.06)" }}
-                  style={{ height: "100%" }}
+                <Button
+                  onClick={() => {
+                    if (hasDropdown) {
+                      setOpenGroup(prev => (prev === g.key ? null : g.key));
+                    } else {
+                      set(g.pages[0].key);
+                    }
+                  }}
+                  variant="tertiary"
+                  aria-current={isActive ? "page" : undefined}
+                  aria-haspopup={hasDropdown ? "menu" : undefined}
+                  aria-expanded={hasDropdown ? isOpen : undefined}
+                  className={`!h-full ${compact ? "!px-2" : "!px-3"} !shrink-0 !border-none !bg-transparent !flex-col !gap-1.5 !rounded-none hover:!bg-transparent`}
                 >
-                  <Button
-                    onClick={() => { set(g.pages[0].key); setOpenGroup(null); }}
-                    variant="tertiary"
-                    className={`!h-full ${compact ? "!px-2" : "!px-3"} !shrink-0 !border-none !bg-transparent !flex-col !gap-1.5 !rounded-none hover:!bg-transparent`}
-                  >
-                    <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                      <Icon size={15} color={isActive ? T.warmCream : "rgba(245,232,208,0.55)"} />
-                      <span style={{
-                        fontFamily: F.ui, fontWeight: isActive ? 600 : 400, fontSize: 13,
-                        color: isActive ? T.warmCream : "rgba(245,232,208,0.72)",
-                        whiteSpace: "nowrap", letterSpacing: "0.1px",
-                        transition: "color 0.2s",
-                      }}>{g.label}</span>
-                      {hasDropdown && (
-                        <ChevronDown
-                          size={12}
-                          color={isActive ? "rgba(245,232,208,0.85)" : "rgba(245,232,208,0.45)"}
-                          style={{ transform: isOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}
-                        />
-                      )}
-                    </div>
-                    {isActive && (
-                      <motion.div
-                        layoutId="group-nav-underline"
-                        transition={{ type: "spring", stiffness: 420, damping: 34 }}
-                        style={{ height: 2, width: "100%", background: T.royalBurgundy }}
+                  <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                    <Icon size={15} color={isActive ? T.warmCream : "rgba(245,232,208,0.55)"} />
+                    <span style={{
+                      fontFamily: F.ui, fontWeight: isActive ? 600 : 400, fontSize: 13,
+                      color: isActive ? T.warmCream : "rgba(245,232,208,0.72)",
+                      whiteSpace: "nowrap", letterSpacing: "0.1px",
+                      transition: "color 0.2s",
+                    }}>{g.label}</span>
+                    {hasDropdown && (
+                      <ChevronDown
+                        size={12}
+                        color={isActive ? "rgba(245,232,208,0.85)" : "rgba(245,232,208,0.45)"}
+                        style={{ transform: isOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}
                       />
                     )}
-                    {!isActive && <div style={{ height: 2, width: "100%", background: "transparent" }} />}
-                  </Button>
-                </motion.div>
-              </div>
+                  </div>
+                  {isActive && (
+                    <motion.div
+                      layoutId="group-nav-underline"
+                      transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                      style={{ height: 2, width: "100%", background: T.royalBurgundy }}
+                    />
+                  )}
+                  {!isActive && <div style={{ height: 2, width: "100%", background: "transparent" }} />}
+                </Button>
+              </motion.div>
+            );
+
+            if (!hasDropdown) {
+              return <div key={g.key} style={{ position: "relative", height: "100%" }}>{trigger}</div>;
+            }
+
+            return (
+              <DropdownMenu key={g.key} open={isOpen} onOpenChange={o => setOpenGroup(o ? g.key : null)}>
+                <div style={{ position: "relative", height: "100%" }}>
+                  <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
+                </div>
+                <DropdownMenuContent
+                  align="start"
+                  sideOffset={6}
+                  className="!min-w-[200px] !p-2 !rounded-[16px]"
+                  style={{ background: "#FFFDF9", border: `1px solid ${T.borderDef}`, boxShadow: "0 16px 48px rgba(44,24,16,0.18)" }}
+                >
+                  {g.pages.map(p => {
+                    const pActive = active === p.key;
+                    return (
+                      <DropdownMenuItem
+                        key={p.key}
+                        aria-current={pActive ? "page" : undefined}
+                        onClick={() => { set(p.key); setOpenGroup(null); }}
+                        className={`!h-auto !justify-between !py-[13px] !px-3.5 !mb-0.5 !rounded-[10px] !text-sm ${
+                          pActive
+                            ? "!bg-[rgba(110,15,45,0.07)] !text-[#6E0F2D] !font-semibold data-[highlighted]:!bg-[rgba(110,15,45,0.07)] data-[highlighted]:!text-[#6E0F2D]"
+                            : "!bg-transparent !text-[#3B2314] !font-normal data-[highlighted]:!bg-[rgba(110,15,45,0.04)] data-[highlighted]:!text-[#3B2314]"
+                        }`}
+                      >
+                        {p.label}
+                        {pActive && <div style={{ width: 6, height: 6, borderRadius: "50%", background: T.royalBurgundy, marginLeft: "auto" }} />}
+                      </DropdownMenuItem>
+                    );
+                  })}
+                </DropdownMenuContent>
+              </DropdownMenu>
             );
           })}
         </div>
-
-        {/* Fixed dropdown overlay */}
-        <AnimatePresence>
-          {openGroup && (() => {
-            const g = NAV_GROUPS.find(gr => gr.key === openGroup);
-            if (!g || g.pages.length <= 1) return null;
-            const btnEl = groupBtnRefs.current[openGroup];
-            const rect = btnEl?.getBoundingClientRect();
-            const left = rect ? rect.left : 0;
-            const top = rect ? rect.bottom + 6 : 80;
-
-            return (
-              <motion.div
-                key={openGroup}
-                initial={{ opacity: 0, y: -6, scale: 0.97 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -6, scale: 0.97 }}
-                transition={{ duration: 0.15 }}
-                onMouseEnter={() => openGroupNow(openGroup)}
-                onMouseLeave={closeGroupSoon}
-                style={{
-                  position: "fixed",
-                  top, left,
-                  zIndex: 999,
-                  background: "#FFFDF9",
-                  borderRadius: 16,
-                  border: `1px solid ${T.borderDef}`,
-                  boxShadow: "0 16px 48px rgba(44,24,16,0.18)",
-                  padding: 8,
-                  minWidth: 200,
-                }}
-              >
-                {g.pages.map(p => {
-                  const pActive = active === p.key;
-                  return (
-                    <Button
-                      key={p.key}
-                      onClick={() => { set(p.key); setOpenGroup(null); }}
-                      variant="tertiary"
-                      fullWidth
-                      className={`!justify-between !py-[13px] !px-3.5 !mb-0.5 !rounded-[10px] !text-sm ${
-                        pActive
-                          ? "!bg-[rgba(110,15,45,0.07)] !text-[#6E0F2D] !font-semibold hover:!bg-[rgba(110,15,45,0.07)] hover:!text-[#6E0F2D]"
-                          : "!bg-transparent !text-[#3B2314] !font-normal hover:!bg-[rgba(110,15,45,0.04)] hover:!text-[#3B2314]"
-                      }`}
-                    >
-                      {p.label}
-                      {pActive && <div style={{ width: 6, height: 6, borderRadius: "50%", background: T.royalBurgundy }} />}
-                    </Button>
-                  );
-                })}
-              </motion.div>
-            );
-          })()}
-        </AnimatePresence>
 
         {/* Right actions */}
         <div style={{ display: "flex", alignItems: "center", gap: compact ? 6 : 10, flexShrink: 0 }}>
