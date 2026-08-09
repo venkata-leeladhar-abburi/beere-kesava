@@ -5,6 +5,9 @@ import {
 } from "lucide-react";
 import { C, F } from "./tokens";
 import { Button } from "../../../../shared/ui/primitives";
+import { useAuth } from "../../../../contexts/AuthContext";
+import { useBatches } from "../../../production/contexts/BatchContext";
+import { useQc } from "../../../qc/contexts/QcContext";
 
 type Tab = "home" | "qc" | "weavers";
 type WeaversSubPage = "menu" | "design" | "issue" | "receive-sarees";
@@ -29,29 +32,51 @@ function FadeUp({ children, delay = 0, style }: { children: React.ReactNode; del
   );
 }
 
-const tasks = [
-  {
-    icon: Package, iconBg: "#B8860B", accentColor: "#B8860B",
-    title: "Sarees Received — Record Them",
-    badge: "8 sarees", badgeColor: C.burg,
-    sub: "Completed sarees submitted by weavers — enter weight and details",
-    tab: "weavers" as Tab, sub2: "receive-sarees" as WeaversSubPage,
-  },
-  {
-    icon: Shield, iconBg: C.crim, accentColor: C.crim,
-    title: "Sarees Awaiting Quality Check",
-    badge: "6 pending", badgeColor: C.crim,
-    sub: "Inspect sarees submitted by weavers before they move to stock",
-    tab: "qc" as Tab,
-  },
-];
 
-const activities = [
-  { dot: C.green, desc: "6 sarees received from Suresh Murti",  time: "Today · 11:42 AM", id: "BATCH-081"     },
-  { dot: C.gold,  desc: "Saree PADMA-L1-004 passed quality check", time: "Today · 10:30 AM", id: "BATCH-086"  },
-];
 
 export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
+  const { user } = useAuth();
+  const { batches } = useBatches();
+  const { qcRecords } = useQc();
+
+  const firstName = user?.name ? user.name.split(" ")[0] : "Staff";
+
+  const pendingReceiptCount = batches
+    .filter(b => b.status === "active")
+    .flatMap(b => b.rows)
+    .filter(r => r.sareeId && !r.receivedAt).length;
+
+  const pendingQcCount = batches
+    .filter(b => b.status === "active")
+    .flatMap(b => b.rows)
+    .filter(r => r.sareeId && r.receivedAt && r.qcPassed == null).length;
+
+  const tasks = [
+    {
+      icon: Package, iconBg: "#B8860B", accentColor: "#B8860B",
+      title: "Sarees Received — Record Them",
+      badge: `${pendingReceiptCount} sarees`, badgeColor: C.burg,
+      sub: "Completed sarees submitted by weavers — enter weight and details",
+      tab: "weavers" as Tab, sub2: "receive-sarees" as WeaversSubPage,
+    },
+    {
+      icon: Shield, iconBg: C.crim, accentColor: C.crim,
+      title: "Sarees Awaiting Quality Check",
+      badge: `${pendingQcCount} pending`, badgeColor: C.crim,
+      sub: "Inspect sarees submitted by weavers before they move to stock",
+      tab: "qc" as Tab,
+    },
+  ];
+
+  const totalTasks = (pendingReceiptCount > 0 ? 1 : 0) + (pendingQcCount > 0 ? 1 : 0);
+
+  const activities = qcRecords.slice(0, 5).map(r => ({
+    dot: r.result === "passed" ? C.gold : C.crim,
+    desc: `Saree ${r.sareeId} ${r.result === "passed" ? "passed" : "failed"} quality check`,
+    time: new Date(r.qcDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }),
+    id: r.batchId || "QC",
+  }));
+
   const today = new Date().toLocaleDateString("en-IN", { weekday: "long", day: "2-digit", month: "long", year: "numeric" });
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
@@ -86,7 +111,7 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
               transition={{ duration: 0.85, delay: 0.2, ease: EASE }}
               style={{ fontFamily: F.d, fontSize: "clamp(30px, 3vw, 48px)", fontWeight: 700, color: "#FFFDF9", lineHeight: 1.1, letterSpacing: "-0.5px" }}
             >
-              {greeting}, Ravi 👋
+              {greeting}, {firstName} 👋
             </motion.div>
           </div>
 
@@ -96,7 +121,7 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
             transition={{ duration: 0.7, delay: 0.45 }}
             style={{ fontFamily: F.u, fontSize: 16, color: "rgba(245,232,208,0.75)", margin: "0 0 28px", maxWidth: 520, lineHeight: 1.7 }}
           >
-            Here's what needs your attention today. You have <strong style={{ color: C.gold }}>2 active tasks</strong> waiting.
+            Here's what needs your attention today. You have <strong style={{ color: C.gold }}>{totalTasks} active tasks</strong> waiting.
           </motion.p>
 
           <motion.div
@@ -139,7 +164,7 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
                   <div style={{ width: 4, height: 26, background: C.gold, borderRadius: 2 }} />
                   <span style={{ fontFamily: F.d, fontSize: 24, fontWeight: 700, color: C.dark }}>Today's Tasks</span>
                 </div>
-                <span style={{ fontFamily: F.u, fontSize: 14, color: C.gold, cursor: "pointer", fontWeight: 600 }}>2 pending →</span>
+                <span style={{ fontFamily: F.u, fontSize: 14, color: C.gold, cursor: "pointer", fontWeight: 600 }}>{totalTasks} pending →</span>
               </div>
             </FadeUp>
 

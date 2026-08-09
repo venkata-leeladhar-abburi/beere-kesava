@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { getSareeTypeByCode, INITIAL_RATES } from "../../pricing/components/RatesPricingPage";
+import { useRatesPricing } from "../../pricing/contexts/RatesContext";
+import { type SareeTypeRecord } from "../../pricing/components/RatesPricingPage";
 import { BackendQcRecord, BackendQcResult, qcApi } from "../../../shared/api/qc";
 import { weaversApi, BackendWeaver } from "../../../shared/api/weavers";
 import { factoryLoomsApi, BackendFactoryLoom } from "../../../shared/api/factory-looms";
@@ -64,13 +64,7 @@ const RESULT_FROM_BACKEND: Record<BackendQcResult, QcResult> = {
   DEFECTIVE: "defective",
 };
 
-// ─── Payment rules ────────────────────────────────────────────────────────────
-/** Making charge per saree for a saree type code, from the rate card. */
-export function makingChargeFor(sareeTypeCode: string | null | undefined): number {
-  if (!sareeTypeCode) return 0;
-  const rate = INITIAL_RATES.find(r => r.code === sareeTypeCode);
-  return rate ? Number(rate.charge) || 0 : 0;
-}
+
 
 /**
  * Single source of truth for how a QC outcome hits the weaver's payment.
@@ -124,7 +118,7 @@ export interface RecordQcInput {
 
 interface QcContextValue {
   qcRecords: QcRecord[];
-  recordQc: (input: RecordQcInput) => void;
+  recordQc: (input: RecordQcInput) => Promise<void>;
   getQcForSaree: (sareeId: string) => QcRecord | undefined;
   getQcForWeaver: (weaverId: string) => QcRecord[];
   getQcForLoom: (factoryLoomId: string) => QcRecord[];
@@ -141,6 +135,7 @@ function backendRecordToFrontend(
   weaverLookup: Map<string, string>,
   loomLookup: Map<string, string>,
   rowLookup: Map<string, BackendBatchSareeRow>,
+  getSareeTypeByCode: (code: string) => SareeTypeRecord | undefined
 ): QcRecord {
   const row = rowLookup.get(r.sareeId);
   return {
@@ -175,8 +170,9 @@ export function QcProvider({ children }: { children: React.ReactNode }) {
   // call wasn't caught, that 403 rejected the whole Promise.all and wiped
   // out the weaver's own QC records too. Skip the call for roles that can
   // never read it, and fall back gracefully either way.
-  const { role } = useAuth();
+  const { role, user } = useAuth();
   const canReadFactoryLooms = role === "worker" || role === "admin" || role === "superadmin";
+  const { getSareeTypeByCode } = useRatesPricing();
 
   const { data: qcRecords = [], isError, error } = useQuery({
     queryKey: QUERY_KEY,
@@ -194,7 +190,7 @@ export function QcProvider({ children }: { children: React.ReactNode }) {
       const rowLookup = new Map(
         batchesRes.items.flatMap(b => b.rows.filter(r => r.sareeId).map(r => [r.sareeId as string, r] as const)),
       );
-      return qcRes.items.map(r => backendRecordToFrontend(r, weaverLookup, loomLookup, rowLookup));
+      return qcRes.items.map(r => backendRecordToFrontend(r, weaverLookup, loomLookup, rowLookup, getSareeTypeByCode));
     },
   });
 
@@ -207,24 +203,21 @@ export function QcProvider({ children }: { children: React.ReactNode }) {
         semiDeduction: input.result === "semi" ? (input.semiDeduction ?? 0) : undefined,
         notes: input.notes,
         photoUrl: input.photoUrl ?? undefined,
-        inspectedById: STOPGAP_ACTING_USER_ID,
+        inspectedById: user?.id ?? STOPGAP_ACTING_USER_ID,
       }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       // The backend derives the ready-for-finishing queue from QC results,
       // so a new QC record can change it too.
       void queryClient.invalidateQueries({ queryKey: ["finishing", "readySarees"] });
-      toast.success("QC result recorded");
     },
     onError: (err) => {
       console.error("Failed to record QC result:", err);
-      toast.error(err instanceof Error ? err.message : "Failed to record QC result");
     },
   });
 
-  const recordQc = (input: RecordQcInput): void => {
-    recordQcMutation.mutate(input);
-  };
+  const recordQc = (input: RecordQcInput): Promise<void> =>
+    recordQcMutation.mutateAsync(input).then(() => undefined);
 
   const getQcForSaree = useCallback(
     (sareeId: string) => qcRecords.find(r => r.sareeId === sareeId),
@@ -250,7 +243,7 @@ export function QcProvider({ children }: { children: React.ReactNode }) {
 
 const FALLBACK: QcContextValue = {
   qcRecords: [],
-  recordQc: () => { throw new Error("recordQc requires a QcProvider"); },
+  recordQc: () => Promise.reject(new Error("recordQc requires a QcProvider")),
   getQcForSaree: () => undefined,
   getQcForWeaver: () => [],
   getQcForLoom: () => [],

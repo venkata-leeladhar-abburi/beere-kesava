@@ -23,21 +23,51 @@ export function StockOverview({ onSeeFullReports }: { onSeeFullReports: () => vo
 
   const warpStock = stockItems.filter(i => i.materialType === "WARP").reduce((s, i) => s + Number(i.currentStock), 0);
   const reshamStock = stockItems.filter(i => i.materialType === "RESHAM").reduce((s, i) => s + Number(i.currentStock), 0);
-  const jariStock = stockItems.filter(i => i.materialType === "JARI").reduce((s, i) => s + Number(i.currentStock), 0);
+
+  // Jari is always shown in Reels — never grams/kg, regardless of what unit
+  // any individual stock row happens to be in (1 Bun = 4 Reels).
+  const jariStock = stockItems
+    .filter(i => i.materialType === "JARI")
+    .reduce((s, i) => {
+      const qty = Number(i.currentStock);
+      const unit = (i.unit || "").trim().toUpperCase();
+      return s + (unit.startsWith("BUN") ? qty * 4 : qty);
+    }, 0);
 
   const warpUnit = stockItems.find(i => i.materialType === "WARP")?.unit ?? "kg";
   const reshamUnit = stockItems.find(i => i.materialType === "RESHAM")?.unit ?? "kg";
-  const jariUnit = stockItems.find(i => i.materialType === "JARI")?.unit ?? "Reels";
+  const jariUnit = "Reels";
 
   const cards = MAT_CARDS_TEMPLATE.map(card => {
     if (card.name.toLowerCase().includes("warp")) {
-      return { ...card, stock: `${warpStock} ${warpUnit}` };
+      return { 
+        ...card, 
+        stock: `${warpStock} ${warpUnit}`,
+        note: warpStock > 0 ? "Active usage" : "Requires restocking",
+        badge: warpStock > 0 ? "In Stock" : "Out of Stock",
+        green: warpStock > 0,
+        pct: warpStock > 0 ? 100 : 0
+      };
     }
     if (card.name.toLowerCase().includes("resham")) {
-      return { ...card, stock: `${reshamStock} ${reshamUnit}` };
+      return { 
+        ...card, 
+        stock: `${reshamStock} ${reshamUnit}`,
+        note: reshamStock > 0 ? "Available for design" : "Requires restocking",
+        badge: reshamStock > 0 ? "In Stock" : "Out of Stock",
+        green: reshamStock > 0,
+        pct: reshamStock > 0 ? 100 : 0
+      };
     }
     if (card.name.toLowerCase().includes("jari")) {
-      return { ...card, stock: `${jariStock} ${jariUnit}` };
+      return { 
+        ...card, 
+        stock: `${jariStock} ${jariUnit}`,
+        note: jariStock > 0 ? "Available" : "Requires restocking",
+        badge: jariStock > 0 ? "In Stock" : "Out of Stock",
+        green: jariStock > 0,
+        pct: jariStock > 0 ? 100 : 0
+      };
     }
     return card;
   });

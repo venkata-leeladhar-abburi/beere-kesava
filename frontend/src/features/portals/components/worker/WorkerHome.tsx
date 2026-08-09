@@ -1,7 +1,11 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { ChevronRight, Package, Shield, Sparkles } from "lucide-react";
 import { C, F } from "./tokens";
 import { useResponsive } from "../../../../hooks/useResponsive";
+import { useAuth } from "../../../../contexts/AuthContext";
+import { useBatches } from "../../../production/contexts/BatchContext";
+import { useFinishing } from "../../../finishing/contexts/FinishingContext";
+import { useQc } from "../../../qc/contexts/QcContext";
 import { Button } from "../../../../shared/ui/primitives";
 
 type Tab = "home" | "qc" | "weavers" | "finishing";
@@ -48,17 +52,47 @@ const NAV_CARDS: {
   },
 ];
 
-const activities = [
-  { dot: C.green,  desc: "6 sarees received from Suresh Murti",       time: "Today · 11:42 AM", id: "BATCH-081" },
-  { dot: C.gold,   desc: "Saree PADMA-L1-004 passed quality check",    time: "Today · 10:30 AM", id: "BATCH-086" },
-  { dot: "#B85C00",desc: "3 sarees assigned to Priya finishing staff", time: "Yesterday · 3:20 PM", id: "BATCH-089" },
-];
+function initialsOf(name: string): string {
+  return name.split(" ").filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase() || "—";
+}
 
 export function WorkerHome({ onNavigate }: WorkerHomeProps) {
   const { cols } = useResponsive();
+  const { user } = useAuth();
+  const { batches } = useBatches();
+  const { assignments } = useFinishing();
+  const { qcRecords } = useQc();
   const today = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+  const name = user?.name || "—";
+  const subtitle = user?.empId ? `${user.empId} · Worker Staff` : "Worker Staff";
+
+  const pendingQcCount = useMemo(() => batches
+    .filter(b => b.status === "active")
+    .flatMap(b => b.rows)
+    .filter(r => r.sareeId && r.weaverName && r.receivedAt && r.qcPassed == null).length,
+  [batches]);
+  const withFinishingCount = assignments.filter(a => a.status === "awaiting-return").length;
+  const doneTodayCount = useMemo(() => {
+    const now = new Date();
+    return qcRecords.filter(r => {
+      const d = new Date(r.qcDate);
+      return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+    }).length;
+  }, [qcRecords]);
+
+  const activities = useMemo(() => qcRecords
+    .slice()
+    .sort((a, b) => new Date(b.qcDate).getTime() - new Date(a.qcDate).getTime())
+    .slice(0, 3)
+    .map(r => ({
+      dot: r.result === "passed" ? C.green : r.result === "defective" ? "#C0392B" : C.gold,
+      desc: `Saree ${r.sareeId} ${r.result === "passed" ? "passed" : r.result === "defective" ? "failed" : "semi-passed"} quality check`,
+      time: new Date(r.qcDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short" }),
+      id: r.batchId ?? "—",
+    })),
+  [qcRecords]);
 
   return (
     <div style={{ paddingBottom: 32 }}>
@@ -70,13 +104,13 @@ export function WorkerHome({ onNavigate }: WorkerHomeProps) {
             background: "rgba(255,255,255,0.15)", border: "2px solid rgba(255,255,255,0.30)",
             display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
           }}>
-            <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: "#FFF" }}>RK</span>
+            <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: "#FFF" }}>{initialsOf(name)}</span>
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 400, color: "rgba(255,255,255,0.60)", marginBottom: 2 }}>{greeting},</div>
-            <div style={{ fontFamily: F.d, fontSize: 18, fontWeight: 700, color: "#FFF", lineHeight: 1.2 }}>Ravi Kumar</div>
+            <div style={{ fontFamily: F.d, fontSize: 18, fontWeight: 700, color: "#FFF", lineHeight: 1.2 }}>{name}</div>
             <div style={{ marginTop: 5, display: "inline-block", background: "rgba(196,146,58,0.25)", border: "1px solid rgba(196,146,58,0.45)", borderRadius: 999, padding: "2px 10px" }}>
-              <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.gold }}>Floor Supervisor · WK-042</span>
+              <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.gold }}>{subtitle}</span>
             </div>
           </div>
           <div style={{ fontFamily: F.m, fontSize: 12, color: "rgba(255,255,255,0.50)", background: "rgba(255,255,255,0.09)", padding: "5px 9px", borderRadius: 7, textAlign: "right" as const }}>
@@ -88,9 +122,9 @@ export function WorkerHome({ onNavigate }: WorkerHomeProps) {
       {/* Quick Stats */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: "#FFF", borderBottom: `1px solid ${C.bdr}`, boxShadow: "0 2px 10px rgba(107,26,42,0.05)" }}>
         {[
-          { val: "6", label: "Pending QC", col: "#C0392B" },
-          { val: "2", label: "With Finishing", col: "#B85C00" },
-          { val: "14", label: "Done Today", col: C.green },
+          { val: String(pendingQcCount), label: "Pending QC", col: "#C0392B" },
+          { val: String(withFinishingCount), label: "With Finishing", col: "#B85C00" },
+          { val: String(doneTodayCount), label: "Done Today", col: C.green },
         ].map((s, i) => (
           <div key={i} style={{ padding: "12px 8px", textAlign: "center" as const, borderRight: i < 2 ? `1px solid ${C.bdr}` : "none" }}>
             <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: s.col, marginBottom: 2 }}>{s.val}</div>

@@ -6,9 +6,9 @@ import { ListFinishingStaffQueryDto } from "./dto/list-finishing-staff-query.dto
 import { UpdateFinishingStaffDto } from "./dto/update-finishing-staff.dto";
 import { FinishingStaffService } from "./finishing-staff.service";
 
-// Production/operational module — WORKER access only.
+// Production/operational module — WORKER access only (plus Admins).
 @Controller("finishing/staff")
-@RequireRoles(UserRole.WORKER)
+@RequireRoles(UserRole.WORKER, UserRole.ADMIN, UserRole.SUPERADMIN)
 export class FinishingStaffController {
   constructor(private readonly finishingStaffService: FinishingStaffService) {}
 

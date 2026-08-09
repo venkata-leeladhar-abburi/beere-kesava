@@ -28,6 +28,7 @@ export function useBatchFormHandlers(bulkOrders: any[]) {
       factoryLoomId: null, factoryLoomNumber: null,
       designCode: null, sareeTypeCode: null, sareeTypeName: null,
       bulkOrderRef: null, bulkOrderLabel: null,
+      receivedAt: null, receivedWeight: null, receivedColor: null, receivedPhotoUrl: null,
     })));
     setSelected(new Set());
     setGenerated(true);

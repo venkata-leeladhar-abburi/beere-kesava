@@ -216,6 +216,7 @@ interface MaterialIssueContextValue {
   issueRecords: MaterialIssueRecord[];
   receivedSarees: ReceivedSareeRecord[];
   addIssueRecord: (input: AddIssueRecordInput) => Promise<MaterialIssueRecord>;
+  deleteIssueRecord: (id: string) => Promise<void>;
   addReceivedSaree: (rec: ReceivedSareeRecord) => void;
   getRecordsForWeaver: (weaverId: string) => MaterialIssueRecord[];
   getReceivedForWeaver: (weaverId: string) => ReceivedSareeRecord[];
@@ -240,8 +241,9 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
   // this call previously had no .catch() — a WEAVER caller's 403 here
   // rejected the whole Promise.all and wiped out their own material-issue
   // records (breaking the Confirm Materials tab).
-  const { role } = useAuth();
+  const { role, user } = useAuth();
   const canReadFactoryLooms = role === "worker" || role === "admin" || role === "superadmin";
+  const actingUserId = user?.id ?? STOPGAP_ACTING_USER_ID;
 
   const { data: issueRecords = [], isError, error } = useQuery({
     queryKey: ISSUE_RECORDS_KEY,
@@ -272,7 +274,7 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
         factoryLoomId: input.factoryLoomId,
         loomNumber: input.loomNumber,
         batchId: input.batchId,
-        issuedById: STOPGAP_ACTING_USER_ID,
+        issuedById: actingUserId,
         signatureMethod: input.signatureMethod === "remote" ? "REMOTE" : "HERE",
         notes: input.notes,
         items: input.materials.map(frontendItemToPayload),
@@ -292,6 +294,13 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
     },
     onError: (err: unknown) => {
       toast.error(err instanceof Error ? err.message : "Failed to issue materials");
+    },
+  });
+
+  const deleteIssueRecordMutation = useMutation({
+    mutationFn: (id: string) => materialIssuesApi.remove(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ISSUE_RECORDS_KEY });
     },
   });
 
@@ -335,6 +344,9 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
     );
     return backendRecordToFrontend(created, weaverLookup, loomLookup);
   };
+
+  const deleteIssueRecord = (id: string): Promise<void> =>
+    deleteIssueRecordMutation.mutateAsync(id).then(() => undefined);
 
   const getRecordsForWeaver = useCallback((weaverId: string) => {
     return issueRecords.filter(r => r.weaverId === weaverId);
@@ -384,7 +396,7 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
     updateSignatureStatusMutation.mutate({ recordId, method });
 
   return (
-    <MaterialIssueContext.Provider value={{ issueRecords, receivedSarees, addIssueRecord, addReceivedSaree, getRecordsForWeaver, getReceivedForWeaver, getReceivedForBatch, getMaterialSummaryForWeaver, getMaterialSummaryByBatch, updateSignatureStatus, finalizeReceivedWeight, isError, error }}>
+    <MaterialIssueContext.Provider value={{ issueRecords, receivedSarees, addIssueRecord, deleteIssueRecord, addReceivedSaree, getRecordsForWeaver, getReceivedForWeaver, getReceivedForBatch, getMaterialSummaryForWeaver, getMaterialSummaryByBatch, updateSignatureStatus, finalizeReceivedWeight, isError, error }}>
       {children}
     </MaterialIssueContext.Provider>
   );

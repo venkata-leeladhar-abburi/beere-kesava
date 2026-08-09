@@ -24,5 +24,5 @@ export { CustomersProvider, useCustomers } from "../features/customers/contexts/
 export type { Customer } from "../features/customers/contexts/CustomersContext";
 export { SupplierProvider, useSuppliers } from "../features/suppliers/contexts/SupplierContext";
 export type { Supplier, Purchase, SareeTag, SupplierPayment, PurchaseRequest } from "../features/suppliers/contexts/SupplierContext";
-export { QcProvider, useQc, computeQcPayment, makingChargeFor, QC_RESULT_LABEL } from "../features/qc/contexts/QcContext";
+export { QcProvider, useQc, computeQcPayment, QC_RESULT_LABEL } from "../features/qc/contexts/QcContext";
 export type { QcRecord, QcResult } from "../features/qc/contexts/QcContext";

@@ -1,26 +1,42 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { C, F } from "../tokens";
 import { type ReceivedSareeLog } from "./shared";
 import { Button, Input } from "../../../../../shared/ui/primitives";
+import { useQc } from "../../../../qc/contexts/QcContext";
 
-// ─── History Section ─────────────────────────────────────────────────────────
-const HISTORY_DATA: (ReceivedSareeLog & { sareeType: string })[] = [
-  { id: "PADMA-L1-004", weaver: "Padma Veni", wcode: "8937070a-ea63-43f3-9cb4-dcbcfd362ff7", batch: "BATCH-086", weight: "842g", date: "16 Jul 2026", sareeType: "Self Brocade", color: "Gold",   status: "Passed QC" },
-  { id: "RAVI-L2-008",  weaver: "Ravi Kumar", wcode: "b5f9178c-b1b9-4871-a7c3-0d68a462d57a", batch: "BATCH-089", weight: "918g", date: "16 Jul 2026", sareeType: "Heavy Zari",  color: "Maroon", status: "Passed QC" },
-  { id: "SURESH-L2-003",weaver: "Suresh Murti",wcode:"11278a51-a26d-4eaa-adbf-bedbfa7fdf46",batch: "BATCH-081", weight: "856g", date: "15 Jul 2026", sareeType: "Gadwal Cotton",color: "Red",    status: "Defective" },
-  { id: "PADMA-L1-005", weaver: "Padma Veni", wcode: "8937070a-ea63-43f3-9cb4-dcbcfd362ff7", batch: "BATCH-086", weight: "848g", date: "15 Jul 2026", sareeType: "Self Brocade", color: "Green",  status: "Passed QC" },
-  { id: "RAVI-L2-009",  weaver: "Ravi Kumar", wcode: "b5f9178c-b1b9-4871-a7c3-0d68a462d57a", batch: "BATCH-089", weight: "903g", date: "14 Jul 2026", sareeType: "Heavy Zari",  color: "Blue",   status: "Passed QC" },
-  { id: "BKB-L3-002",   weaver: "Own Loom 3", wcode: "",        batch: "BATCH-OWN",weight: "774g", date: "14 Jul 2026", sareeType: "Kanjivaram",   color: "Cream",  status: "Passed QC" },
-];
+const QC_RESULT_TO_STATUS: Record<string, ReceivedSareeLog["status"]> = {
+  passed: "Passed QC",
+  semi: "Pending QC",
+  defective: "Defective",
+};
 
 export function HistorySection({ liveRecords = [] }: { liveRecords?: ReceivedSareeLog[] }) {
   const [view, setView] = useState<"day" | "weaver">("day");
   const [search, setSearch] = useState("");
+  const { qcRecords } = useQc();
+
+  // Real QC-inspection history — the closest genuine equivalent to a
+  // "received from weaver" log this schema actually has (weight/color/photo
+  // aren't recorded anywhere yet, so they're omitted rather than faked).
+  const qcHistory: (ReceivedSareeLog & { sareeType?: string })[] = useMemo(() => qcRecords
+    .filter(r => r.weaverId && r.weaverName)
+    .map(r => ({
+      id: r.sareeId,
+      weaver: r.weaverName as string,
+      wcode: r.weaverId as string,
+      batch: r.batchId ?? "—",
+      weight: "—",
+      color: "—",
+      date: new Date(r.qcDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
+      status: QC_RESULT_TO_STATUS[r.result] ?? "Pending QC",
+      sareeType: r.sareeTypeName ?? undefined,
+    })),
+  [qcRecords]);
 
   const allData: (ReceivedSareeLog & { sareeType?: string })[] = [
     ...liveRecords.map(r => ({ ...r, sareeType: "—" })),
-    ...HISTORY_DATA,
+    ...qcHistory,
   ];
 
   const filtered = allData.filter(h =>

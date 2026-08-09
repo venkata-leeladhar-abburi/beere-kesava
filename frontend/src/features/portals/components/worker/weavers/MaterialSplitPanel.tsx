@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { C, F } from "../tokens";
 import {
-  getSareeTypeByCode, jariFromReels, jariGrams, jariToReels, trimNum,
+  jariFromReels, jariGrams, jariToReels, trimNum,
   type JariUnit, type SareeTypeRecord,
 } from "../../../../pricing/components/RatesPricingPage";
+import { useRatesPricing } from "../../../../pricing/contexts/RatesContext";
 import { Button, Input } from "../../../../../shared/ui/primitives";
 
 // ─── Material weight split (warp / resham / jari) ────────────────────────────
@@ -12,8 +13,11 @@ import { Button, Input } from "../../../../../shared/ui/primitives";
 // weight entered at receipt is scaled against that standard.
 export type MatSplit = { warp: string; resham: string; jari: string };
 
-export function autoMaterialSplit(typeCode: string | undefined, weightStr: string):
-  (MatSplit & { factor: number; rate: SareeTypeRecord }) | null {
+export function autoMaterialSplit(
+  typeCode: string | undefined, 
+  weightStr: string,
+  getSareeTypeByCode: (code: string) => SareeTypeRecord | undefined
+): (MatSplit & { factor: number; rate: SareeTypeRecord }) | null {
   const rate = typeCode ? getSareeTypeByCode(typeCode) : undefined;
   const weight = parseFloat(weightStr);
   const std = rate ? parseFloat(rate.stdWeight) : NaN;
@@ -36,8 +40,9 @@ interface MaterialSplitPanelProps {
 }
 
 export function MaterialSplitPanel({ typeCode, weight, edits, onEdit }: MaterialSplitPanelProps) {
+  const { getSareeTypeByCode } = useRatesPricing();
   const [jariUnit, setJariUnit] = useState<JariUnit>("reels");
-  const auto = autoMaterialSplit(typeCode, weight);
+  const auto = autoMaterialSplit(typeCode, weight, getSareeTypeByCode);
 
   if (!auto) {
     return (

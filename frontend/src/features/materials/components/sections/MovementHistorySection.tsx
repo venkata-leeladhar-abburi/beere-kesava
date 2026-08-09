@@ -1,12 +1,15 @@
 import React, { useContext, useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { motion } from "motion/react";
-import { Download } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { motion, AnimatePresence } from "motion/react";
+import { Download, Trash2 } from "lucide-react";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER } from "../../../../shared/ui/DateFilterBar";
+import { ConfirmDialog } from "../../../../shared/ui/ConfirmDialog";
+import { ApiError } from "../../../../shared/api/client";
 import { T, F, EASE, MobileCtx } from "../theme";
 import { SectionHeader, FadeUp } from "../common/primitives";
 import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
 import { materialIssuesApi } from "../../../../shared/api/material-issues";
+import { IconButton } from "../../../../shared/ui/primitives";
 
 function parseKg(quantity: number | string | null | undefined, unit?: string | null): number {
   const q = Number(quantity || 0);
@@ -19,6 +22,34 @@ function parseKg(quantity: number | string | null | undefined, unit?: string | n
 export function MovementHistorySection({ onDownloadMovementReport }: { onDownloadMovementReport: () => void }) {
   const { isMobile, px } = useContext(MobileCtx);
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const queryClient = useQueryClient();
+  const [deletingRef, setDeletingRef] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  function cancelDelete() {
+    if (deleting) return;
+    setDeletingRef(null);
+    setDeleteError(null);
+  }
+
+  async function confirmDelete() {
+    if (!deletingRef || deleting) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await materialIssuesApi.remove(deletingRef);
+      void queryClient.invalidateQueries({ queryKey: ["material-issues"] });
+      void queryClient.invalidateQueries({ queryKey: ["materialIssue", "issueRecords"] });
+      void queryClient.invalidateQueries({ queryKey: ["raw-material-stock"] });
+      void queryClient.invalidateQueries({ queryKey: ["raw-material-stock-list"] });
+      setDeletingRef(null);
+    } catch (err) {
+      setDeleteError(err instanceof ApiError ? err.message : `Could not delete ${deletingRef}. Please try again.`);
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   const { data: rawGrns } = useQuery({
     queryKey: ["grn-receipts"],
@@ -226,11 +257,36 @@ export function MovementHistorySection({ onDownloadMovementReport }: { onDownloa
                 <div style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, letterSpacing: "0.5px", background: "rgba(110,15,45,0.05)", padding: "4px 8px", borderRadius: 6, flexShrink: 0 }}>
                   {entry.ref}
                 </div>
+
+                {entry.type === "out" && (
+                  <IconButton
+                    onClick={() => setDeletingRef(entry.ref)}
+                    icon={Trash2}
+                    label="Delete material issue"
+                    variant="ghost"
+                    size="sm"
+                    className="w-8 h-8 shrink-0 text-[#C0392B] bg-[#C0392B]/10 hover:bg-[#C0392B]/20"
+                  />
+                )}
               </motion.div>
             ))}
           </div>
         </div>
       </FadeUp>
+
+      <AnimatePresence>
+        {deletingRef && (
+          <ConfirmDialog
+            title={`Delete ${deletingRef}?`}
+            message="This permanently deletes the material-issue record and restores the deducted quantity back to stock. This can't be undone."
+            confirmLabel="Delete Permanently"
+            loading={deleting}
+            error={deleteError}
+            onConfirm={() => void confirmDelete()}
+            onCancel={cancelDelete}
+          />
+        )}
+      </AnimatePresence>
     </section>
   );
 }

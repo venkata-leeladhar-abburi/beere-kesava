@@ -5,6 +5,7 @@ import { ArrowRight, Search, Star } from "lucide-react";
 import { C, F, ShopDesktopHero, SILK_BG } from "../theme";
 import { Button, Input } from "../../../../../shared/ui/primitives";
 import { customersApi } from "../../../../../shared/api/customers";
+import { salesApi } from "../../../../../shared/api/sales";
 
 type ShopCustomer = { name: string; phone: string; purchases: number; total: string; lastPurchase?: string; last?: string; initials: string; regular?: boolean; [key: string]: any };
 
@@ -19,18 +20,39 @@ export function CustomersSection({
     queryFn: () => customersApi.list(),
   });
 
+  const { data: salesRes } = useQuery({
+    queryKey: ["shop-sales-list-customers-desktop"],
+    queryFn: () => salesApi.list(100),
+  });
+  
+  const salesList = salesRes?.items ?? [];
+
   const customers: ShopCustomer[] = React.useMemo(() => {
     if (!custRes?.items) return [];
-    return custRes.items.map(c => ({
-      name: c.name,
-      phone: c.phone || "—",
-      purchases: 0,
-      total: "₹0",
-      last: c.createdAt ? new Date(c.createdAt).toLocaleDateString("en-IN") : "—",
-      regular: c.type === "RETAIL",
-      initials: c.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase(),
-    }));
-  }, [custRes]);
+    
+    const salesByCustomer = new Map<string, any[]>();
+    for (const sale of salesList) {
+      if (!sale.customerId) continue;
+      const list = salesByCustomer.get(sale.customerId) || [];
+      list.push(sale);
+      salesByCustomer.set(sale.customerId, list);
+    }
+    
+    return custRes.items.map(c => {
+      const customerSales = salesByCustomer.get(c.id) || [];
+      const totalAmount = customerSales.reduce((acc, curr) => acc + Number(curr.amount), 0);
+      
+      return {
+        name: c.name,
+        phone: c.phone || "—",
+        purchases: customerSales.length,
+        total: `₹${totalAmount.toLocaleString('en-IN')}`,
+        last: c.createdAt ? new Date(c.createdAt).toLocaleDateString("en-IN") : "—",
+        regular: c.type === "WHOLESALE",
+        initials: c.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase(),
+      };
+    });
+  }, [custRes, salesList]);
 
   const totalCustomers = customers.length;
   const regularCustomers = customers.filter(c => c.regular).length;

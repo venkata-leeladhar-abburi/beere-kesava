@@ -5,7 +5,7 @@ import { useFirms } from "../../../../firms/contexts/FirmsContext";
 import { useBulkOrders } from "../../../../bulk-orders/contexts/BulkOrderContext";
 import { useBatches } from "../../../../production/contexts/BatchContext";
 import { T, F, inp } from "../../theme";
-import { WHOLESALE_CUSTOMERS } from "../../data";
+import { WholesaleCustomer } from "../../../../bulk-orders/components/WholesaleCustomerSelectSection";
 import { TransportData, InvoiceData } from "../../types";
 import { Field, TextInput, SelectInput } from "../../common/primitives";
 import { Button, CurrencyInput, NumberInput, Checkbox, Textarea } from "../../../../../shared/ui/primitives";
@@ -17,7 +17,7 @@ export function InvoiceGenerator({
   mode = "invoice", embedded = false,
 }: {
   sarees: FinishingReturn[];
-  customer: typeof WHOLESALE_CUSTOMERS[0] | null;
+  customer: WholesaleCustomer | null;
   transport: TransportData;
   data: InvoiceData;
   onChange: (d: InvoiceData) => void;

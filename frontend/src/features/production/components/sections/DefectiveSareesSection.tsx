@@ -64,7 +64,27 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
     [qcRecords, weaverLookup],
   );
 
-  const totalDeduction = DEFECTIVE_DATA.reduce((sum, r) => sum + parseInt(r.deduction.replace(/[₹,]/g, "")), 0);
+  const uniqueWeavers = useMemo(() => {
+    const weavers = new Set<string>();
+    DEFECTIVE_DATA.forEach(r => weavers.add(r.weaver));
+    return Array.from(weavers).sort();
+  }, [DEFECTIVE_DATA]);
+
+  const uniqueDefects = useMemo(() => {
+    const defects = new Set<string>();
+    DEFECTIVE_DATA.forEach(r => r.defects.forEach(d => defects.add(d)));
+    return Array.from(defects).sort();
+  }, [DEFECTIVE_DATA]);
+
+  const filteredData = useMemo(() => {
+    return DEFECTIVE_DATA.filter(r => {
+      if (weaverFilter !== "All Weavers" && r.weaver !== weaverFilter) return false;
+      if (defectFilter !== "All Defect Types" && !r.defects.includes(defectFilter)) return false;
+      return true;
+    });
+  }, [DEFECTIVE_DATA, weaverFilter, defectFilter]);
+
+  const totalDeduction = filteredData.reduce((sum, r) => sum + parseInt(r.deduction.replace(/[₹,]/g, "")), 0);
 
   const columns: ColumnDef<DefectiveRow>[] = [
     { id: "sareeId", header: "Saree ID", accessor: r => r.id, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 600 }}>{r.id}</span> },
@@ -145,7 +165,7 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
               <div style={{ borderLeft: `1px solid ${T.borderDef}`, paddingLeft: 24 }}>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 6 }}>Total Defective Sarees All Time</div>
                 <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.1, marginBottom: 4 }}>
-                  {DEFECTIVE_DATA.length} sarees
+                  {filteredData.length} sarees
                 </div>
                 <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>🔒 Superadmin only — not visible to Admin</div>
               </div>
@@ -161,18 +181,15 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
           </div>
           <Select value={weaverFilter} onValueChange={setWeaverFilter} size="sm">
             <SelectItem value="All Weavers">All Weavers</SelectItem>
-            <SelectItem value="Padma Veni">Padma Veni</SelectItem>
-            <SelectItem value="Ravi Kumar">Ravi Kumar</SelectItem>
-            <SelectItem value="Suresh Murti">Suresh Murti</SelectItem>
-            <SelectItem value="Own Factory">Own Factory</SelectItem>
+            {uniqueWeavers.map(w => (
+              <SelectItem key={w} value={w}>{w}</SelectItem>
+            ))}
           </Select>
           <Select value={defectFilter} onValueChange={setDefectFilter} size="sm">
             <SelectItem value="All Defect Types">All Defect Types</SelectItem>
-            <SelectItem value="Thread Break">Thread Break</SelectItem>
-            <SelectItem value="Design Error">Design Error</SelectItem>
-            <SelectItem value="Jari Issue">Jari Issue</SelectItem>
-            <SelectItem value="Weight Problem">Weight Problem</SelectItem>
-            <SelectItem value="Measurement Error">Measurement Error</SelectItem>
+            {uniqueDefects.map(d => (
+              <SelectItem key={d} value={d}>{d}</SelectItem>
+            ))}
           </Select>
         </div>
 
@@ -180,7 +197,7 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
           <div style={{ overflowX: "auto", minWidth: 1100 }}>
             <DataTable
               columns={columns}
-              data={DEFECTIVE_DATA}
+              data={filteredData}
               getRowId={r => r.id}
               loading={qcLoading}
               error={qcError}
@@ -189,7 +206,7 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
           </div>
           <div style={{ background: T.warmCream, borderTop: `1px solid ${T.borderDef}`, padding: "12px 16px" }}>
             <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>
-              Total defective this month: <strong>{DEFECTIVE_DATA.length} sarees</strong> · Total deductions applied: <strong style={{ fontFamily: F.mono, color: T.crimson }}>₹{totalDeduction.toLocaleString("en-IN")}</strong>
+              Total defective displayed: <strong>{filteredData.length} sarees</strong> · Total deductions applied: <strong style={{ fontFamily: F.mono, color: T.crimson }}>₹{totalDeduction.toLocaleString("en-IN")}</strong>
             </span>
           </div>
         </div>
@@ -212,21 +229,18 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
                   <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown, marginBottom: 8 }}>Filter by Weaver</div>
                   <Select value={dlWeaver} onValueChange={setDlWeaver}>
                     <SelectItem value="All Weavers">All Weavers</SelectItem>
-                    <SelectItem value="Padma Veni">Padma Veni</SelectItem>
-                    <SelectItem value="Ravi Kumar">Ravi Kumar</SelectItem>
-                    <SelectItem value="Suresh Murti">Suresh Murti</SelectItem>
-                    <SelectItem value="Own Factory">Own Factory</SelectItem>
+                    {uniqueWeavers.map(w => (
+                      <SelectItem key={w} value={w}>{w}</SelectItem>
+                    ))}
                   </Select>
                 </div>
                 <div>
                   <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown, marginBottom: 8 }}>Filter by Defect Type</div>
                   <Select value={dlDefectType} onValueChange={setDlDefectType}>
                     <SelectItem value="All Defect Types">All Defect Types</SelectItem>
-                    <SelectItem value="Thread Break">Thread Break</SelectItem>
-                    <SelectItem value="Design Error">Design Error</SelectItem>
-                    <SelectItem value="Jari Issue">Jari Issue</SelectItem>
-                    <SelectItem value="Weight Problem">Weight Problem</SelectItem>
-                    <SelectItem value="Measurement Error">Measurement Error</SelectItem>
+                    {uniqueDefects.map(d => (
+                      <SelectItem key={d} value={d}>{d}</SelectItem>
+                    ))}
                   </Select>
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>

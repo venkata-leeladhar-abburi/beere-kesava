@@ -32,6 +32,7 @@ export interface BackendQuotation {
   sarees: BackendQuotationSaree[];
   customer: { id: string; name: string; city: string | null; phone: string | null; address: string | null; gstCode: string | null } | null;
   bulkOrder: { ref: string } | null;
+  finishingAssignments?: { sareeId: string; finishingStaff: { id: string; firstName: string; lastName: string } }[];
 }
 
 interface PaginatedResponse<T> {
@@ -59,8 +60,11 @@ export const quotationsApi = {
 
   create: (payload: CreateQuotationPayload) => apiClient.post<BackendQuotation>("/quotations", payload),
 
-  assignFinishing: (id: string) => apiClient.post<BackendQuotation>(`/quotations/${id}/assign-finishing`, {}),
+  assignFinishing: (id: string, payload: { sareeIds: string[]; staffId: string; assignedById: string }) => 
+    apiClient.post<BackendQuotation>(`/quotations/${id}/assign-finishing`, payload),
 
   receiveSarees: (id: string, sareeIds: string[]) =>
     apiClient.post<BackendQuotation>(`/quotations/${id}/receive`, { sareeIds }),
+
+  dispatch: (id: string) => apiClient.post<BackendQuotation>(`/quotations/${id}/dispatch`, {}),
 };

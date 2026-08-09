@@ -637,14 +637,6 @@ export type QuotationUpdateOneWithoutFinishingAssignmentsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.QuotationUpdateToOneWithWhereWithoutFinishingAssignmentsInput, Prisma.QuotationUpdateWithoutFinishingAssignmentsInput>, Prisma.QuotationUncheckedUpdateWithoutFinishingAssignmentsInput>
 }
 
-export type NullableDecimalFieldUpdateOperationsInput = {
-  set?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  increment?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  decrement?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  multiply?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  divide?: runtime.Decimal | runtime.DecimalJsLike | number | string
-}
-
 export type EnumQuotationStatusFieldUpdateOperationsInput = {
   set?: $Enums.QuotationStatus
 }

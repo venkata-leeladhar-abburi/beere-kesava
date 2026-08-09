@@ -95,4 +95,6 @@ export const materialIssuesApi = {
   },
 
   cancel: (id: string) => apiClient.post<BackendMaterialIssueRecord>(`/material-issues/${id}/cancel`, {}),
+
+  remove: (id: string) => apiClient.delete<void>(`/material-issues/${id}`),
 };

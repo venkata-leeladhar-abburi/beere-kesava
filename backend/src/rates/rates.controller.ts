@@ -6,13 +6,13 @@ import { ListRatesQueryDto } from "./dto/list-rates-query.dto";
 import { UpdateRateDto } from "./dto/update-rate.dto";
 import { RatesService } from "./rates.service";
 
-// Rate card management — financial, ACCOUNTANT access only.
+// Rate card management — financial, ACCOUNTANT access only for mutations.
 @Controller("rates")
-@RequireRoles(UserRole.ACCOUNTANT)
 export class RatesController {
-  constructor(private readonly ratesService: RatesService) {}
+  constructor(private readonly ratesService: RatesService) { }
 
   @Post()
+  @RequireRoles(UserRole.ACCOUNTANT, UserRole.SUPERADMIN)
   create(@Body() dto: CreateRateDto) {
     return this.ratesService.create(dto);
   }
@@ -28,6 +28,7 @@ export class RatesController {
   }
 
   @Patch(":code")
+  @RequireRoles(UserRole.ACCOUNTANT, UserRole.SUPERADMIN)
   update(@Param("code") code: string, @Body() dto: UpdateRateDto) {
     return this.ratesService.update(code, dto);
   }

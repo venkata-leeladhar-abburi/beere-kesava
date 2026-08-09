@@ -15,6 +15,7 @@ import { C, F, TEAL, Card, Btn, Chip, CUSTOMER_PURCHASES, useCanSeePrices } from
 import { Button, IconButton, Input } from "../../../../shared/ui/primitives";
 import { useQuery } from '@tanstack/react-query';
 import { customersApi } from '../../../../shared/api/customers';
+import { salesApi } from '../../../../shared/api/sales';
 
 function CustomerProfiles() {
   const canSeePrices = useCanSeePrices();
@@ -27,26 +28,46 @@ function CustomerProfiles() {
     queryFn: () => customersApi.list(100),
   });
 
+  const { data: salesRes } = useQuery({
+    queryKey: ["shop-sales-list-customers"],
+    queryFn: () => salesApi.list(100),
+  });
+
+  const salesList = salesRes?.items ?? [];
+
   const customers = useMemo(() => {
     const raw = customersRes?.items ?? [];
     if (raw.length === 0) return [];
+
+    const salesByCustomer = new Map<string, any[]>();
+    for (const sale of salesList) {
+      if (!sale.customerId) continue;
+      const list = salesByCustomer.get(sale.customerId) || [];
+      list.push(sale);
+      salesByCustomer.set(sale.customerId, list);
+    }
+
     return raw.map(c => {
       const parts = c.name.split(" ").filter(Boolean);
       const initials = parts.length >= 2 ? `${parts[0][0]}${parts[1][0]}`.toUpperCase() : c.name.slice(0, 2).toUpperCase();
+      
+      const customerSales = salesByCustomer.get(c.id) || [];
+      const totalAmount = customerSales.reduce((acc, curr) => acc + Number(curr.amount), 0);
+
       return {
         id: c.id,
         name: c.name,
         phone: c.phone ?? "—",
         city: c.city ?? "Dharmavaram",
         type: c.type,
-        purchases: 1,
-        total: "₹12,500",
-        last: new Date(c.createdAt).toLocaleDateString("en-IN", { month: "short", day: "numeric" }),
+        purchases: customerSales.length,
+        total: `₹${totalAmount.toLocaleString('en-IN')}`,
+        last: c.createdAt ? new Date(c.createdAt).toLocaleDateString("en-IN", { month: "short", day: "numeric" }) : "—",
         regular: c.type === "WHOLESALE",
         initials,
       };
     });
-  }, [customersRes]);
+  }, [customersRes, salesList]);
 
   const filtered = customers.filter(c =>
     !search || c.name.toLowerCase().includes(search.toLowerCase()) || c.phone.includes(search)
@@ -54,7 +75,18 @@ function CustomerProfiles() {
 
   const activeCustomer = selected !== null ? customers[selected] : null;
 
-  const activePurchases = activeCustomer ? (CUSTOMER_PURCHASES[activeCustomer.name] || []) : [];
+  const activePurchases = useMemo(() => {
+    if (!activeCustomer) return [];
+    const customerSales = salesList.filter(s => s.customerId === activeCustomer.id);
+    return customerSales.map(s => ({
+      date: new Date(s.saleDate).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" }),
+      id: s.sareeId,
+      design: s.channel === "WHOLESALE" ? "Wholesale" : "Retail",
+      price: `₹${Number(s.amount).toLocaleString('en-IN')}`,
+      amt: `₹${Number(s.amount).toLocaleString('en-IN')}`,
+      pay: "Counter"
+    }));
+  }, [activeCustomer, salesList]);
 
   return (
     <div style={{ paddingBottom: 32 }}>
@@ -70,26 +102,26 @@ function CustomerProfiles() {
         <div style={{ flex: "1 1 100%", background: C.dark, borderRadius: 16, padding: "18px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
             <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12, color: C.gold, marginBottom: 6 }}>Total Customers</div>
-            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.gold, lineHeight: 1 }}>242</div>
+            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.gold, lineHeight: 1 }}>{customers.length}</div>
           </div>
           <div style={{ fontFamily: F.u, fontSize: 12, color: "rgba(255,255,255,0.55)", textAlign: "right" as const }}>Active this year</div>
         </div>
         <div style={{ flex: "1 1 calc(50% - 5px)", background: "rgba(107,26,42,0.08)", border: `1px solid ${C.bdr}`, borderRadius: 16, padding: "16px 18px" }}>
-          <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12, color: C.text, marginBottom: 6 }}>New Signups</div>
-          <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.text, lineHeight: 1.2 }}>+14</div>
-          <div style={{ fontFamily: F.u, fontSize: 12, color: "rgba(26,10,15,0.55)", marginTop: 4 }}>June 2026</div>
+          <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12, color: C.text, marginBottom: 6 }}>Regular Customers</div>
+          <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.text, lineHeight: 1.2 }}>{customers.filter(c => c.regular).length}</div>
+          <div style={{ fontFamily: F.u, fontSize: 12, color: "rgba(26,10,15,0.55)", marginTop: 4 }}>Wholesale & repeat</div>
         </div>
         {canSeePrices ? (
           <div style={{ flex: "1 1 calc(50% - 5px)", background: "rgba(196,146,58,0.12)", border: `1px solid rgba(196,146,58,0.30)`, borderRadius: 16, padding: "16px 18px" }}>
-            <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12, color: C.burg, marginBottom: 6 }}>Top Spender</div>
-            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.burg, lineHeight: 1.2 }}>₹1,84,000</div>
-            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 4 }}>Smt. Annapurna</div>
+            <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12, color: C.burg, marginBottom: 6 }}>Active Today</div>
+            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.burg, lineHeight: 1.2 }}>{salesList.filter(s => new Date(s.saleDate).toDateString() === new Date().toDateString()).length}</div>
+            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 4 }}>Transactions</div>
           </div>
         ) : (
           <div style={{ flex: "1 1 calc(50% - 5px)", background: "rgba(196,146,58,0.12)", border: `1px solid rgba(196,146,58,0.30)`, borderRadius: 16, padding: "16px 18px" }}>
-            <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12, color: C.burg, marginBottom: 6 }}>Most Frequent</div>
-            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.burg, lineHeight: 1.2 }}>18 visits</div>
-            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 4 }}>Smt. Annapurna</div>
+            <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12, color: C.burg, marginBottom: 6 }}>Active Today</div>
+            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.burg, lineHeight: 1.2 }}>{salesList.filter(s => new Date(s.saleDate).toDateString() === new Date().toDateString()).length}</div>
+            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 4 }}>Transactions</div>
           </div>
         )}
       </div>
@@ -204,22 +236,7 @@ function CustomerProfiles() {
                     {canSeePrices && <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 16, color: C.gold, flexShrink: 0 }}>{p.price}</div>}
                   </div>
                 ))}
-                {/* Frequency Analysis */}
-                <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 16, color: C.text, margin: "20px 0 12px", display: "flex", alignItems: "center", gap: 10 }}>
-                  <div style={{ width: 4, height: 18, background: C.burg, borderRadius: 2 }} /> Frequency Analysis
-                </div>
-                <div style={{ background: "#F8F4F0", borderRadius: 14, padding: "6px 16px", marginBottom: 24 }}>
-                  {[
-                    ["Visits per month", "1.5 average"],
-                    ["Last visit", activeCustomer.last],
-                    ["Preferred design", "BKB-045"],
-                  ].map(([k, v], i) => (
-                    <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "12px 0", borderBottom: i < 2 ? `1px solid ${C.bdr}` : "none" }}>
-                      <span style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>{k}</span>
-                      <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text }}>{v}</span>
-                    </div>
-                  ))}
-                </div>
+
                 {/* Actions */}
                 <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
                   <Button fullWidth className="h-[52px] rounded-full border-none bg-[#6B1A2A] font-bold text-sm text-white gap-2 shadow-[0_4px_16px_rgba(107,26,42,0.30)]">

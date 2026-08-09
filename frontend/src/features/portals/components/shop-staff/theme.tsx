@@ -174,64 +174,7 @@ function Chip({ label, color, bg }: { label: string; color: string; bg: string }
 }
 
 // ─── PAGE 01 — SHOP HOME ────────────────────────────────────────────────────
-const CUSTOMER_PURCHASES: Record<string, { date: string; id: string; design: string; price: string; amt: string; pay: string }[]> = {
-  "Smt. Annapurna Devi": [
-    { date: "10 Jun 2026", id: "PADMA-L1-004", design: "HZ-003 · Cream Zari Border Saree", price: "₹8,500", amt: "₹8,500", pay: "UPI" },
-    { date: "08 Jun 2026", id: "RAVI-L2-008", design: "HZ-003 · Maroon Heavy Zari Saree", price: "₹12,000", amt: "₹12,000", pay: "Card" },
-    { date: "24 May 2026", id: "BKB-L3-002", design: "PS-002 · Cream Plain Silk Saree", price: "₹5,500", amt: "₹5,500", pay: "Cash" },
-    { date: "18 May 2026", id: "EXT-RAVI-001", design: "EXT-01 · Silk Checks Saree", price: "₹6,200", amt: "₹6,200", pay: "UPI" },
-    { date: "12 May 2026", id: "EXT-RAVI-002", design: "EXT-02 · Floral Design Saree", price: "₹7,800", amt: "₹7,800", pay: "UPI" },
-    { date: "05 May 2026", id: "PADMA-L1-003", design: "HZ-003 · Cream Zari Border Saree", price: "₹8,500", amt: "₹8,500", pay: "Cash" },
-    { date: "28 Apr 2026", id: "ANAND-L3-001", design: "SB-001 · Self Brocade Saree", price: "₹9,500", amt: "₹9,500", pay: "Card" },
-    { date: "15 Apr 2026", id: "MEENA-L4-001", design: "SB-001 · Self Brocade Saree", price: "₹9,500", amt: "₹9,500", pay: "UPI" },
-    { date: "02 Apr 2026", id: "SURESH-L2-001", design: "HZ-003 · Maroon Heavy Saree", price: "₹12,000", amt: "₹12,000", pay: "Cash" },
-    { date: "20 Mar 2026", id: "KAMALA-L1-001", design: "HZ-003 · Maroon Heavy Saree", price: "₹12,000", amt: "₹12,000", pay: "Card" },
-    { date: "10 Mar 2026", id: "VENKAT-L3-001", design: "HZ-003 · Maroon Heavy Saree", price: "₹12,000", amt: "₹12,000", pay: "UPI" },
-    { date: "25 Feb 2026", id: "LAKSHMI-L2-001", design: "BS-004 · Bridal Special Saree", price: "₹15,000", amt: "₹15,000", pay: "Card" },
-    { date: "14 Feb 2026", id: "RAVI-L2-004", design: "SB-001 · Self Brocade Saree", price: "₹9,500", amt: "₹9,500", pay: "UPI" },
-    { date: "02 Feb 2026", id: "RAVI-L2-005", design: "SB-001 · Self Brocade Saree", price: "₹9,500", amt: "₹9,500", pay: "Cash" },
-    { date: "19 Jan 2026", id: "RAVI-L2-006", design: "SB-001 · Self Brocade Saree", price: "₹9,500", amt: "₹9,500", pay: "Card" },
-    { date: "05 Jan 2026", id: "RAVI-L2-007", design: "SB-001 · Self Brocade Saree", price: "₹9,500", amt: "₹9,500", pay: "UPI" },
-    { date: "15 Dec 2025", id: "PADMA-L1-001", design: "SB-001 · Self Brocade Saree", price: "₹9,500", amt: "₹9,500", pay: "Cash" },
-    { date: "10 Nov 2025", id: "PADMA-L1-002", design: "SB-001 · Self Brocade Saree", price: "₹9,500", amt: "₹9,500", pay: "Card" },
-  ],
-  "Smt. Lakshmi Bai": [
-    { date: "09 Jun 2026", id: "RAVI-L2-008", design: "HZ-003 · Maroon Heavy Zari Saree", price: "₹12,000", amt: "₹12,000", pay: "Card" },
-    { date: "01 Jun 2026", id: "BKB-L3-002", design: "PS-002 · Cream Plain Silk Saree", price: "₹5,500", amt: "₹5,500", pay: "UPI" },
-    { date: "15 May 2026", id: "EXT-RAVI-001", design: "EXT-01 · Silk Checks Saree", price: "₹6,200", amt: "₹6,200", pay: "Cash" },
-    { date: "10 May 2026", id: "PADMA-L1-003", design: "HZ-003 · Cream Zari Border Saree", price: "₹8,500", amt: "₹8,500", pay: "UPI" },
-    { date: "29 Apr 2026", id: "ANAND-L3-002", design: "SB-001 · Self Brocade Saree", price: "₹9,500", amt: "₹9,500", pay: "Card" },
-    { date: "14 Apr 2026", id: "MEENA-L4-002", design: "SB-001 · Self Brocade Saree", price: "₹9,500", amt: "₹9,500", pay: "UPI" },
-    { date: "01 Apr 2026", id: "SURESH-L2-002", design: "HZ-003 · Maroon Heavy Saree", price: "₹12,000", amt: "₹12,000", pay: "Cash" },
-    { date: "18 Mar 2026", id: "KAMALA-L1-002", design: "HZ-003 · Maroon Heavy Saree", price: "₹12,000", amt: "₹12,000", pay: "Card" },
-    { date: "05 Mar 2026", id: "VENKAT-L3-002", design: "HZ-003 · Maroon Heavy Saree", price: "₹12,000", amt: "₹12,000", pay: "UPI" },
-    { date: "20 Feb 2026", id: "LAKSHMI-L2-002", design: "BS-004 · Bridal Special Saree", price: "₹15,000", amt: "₹15,000", pay: "Card" },
-    { date: "11 Feb 2026", id: "RAVI-L2-004", design: "SB-001 · Self Brocade Saree", price: "₹9,500", amt: "₹9,500", pay: "UPI" },
-    { date: "01 Feb 2026", id: "RAVI-L2-005", design: "SB-001 · Self Brocade Saree", price: "₹9,500", amt: "₹9,500", pay: "Cash" },
-  ],
-  "Sri Ramesh K.": [
-    { date: "10 Jun 2026", id: "PADMA-L1-004", design: "HZ-003 · Cream Zari Border Saree", price: "₹8,500", amt: "₹8,500", pay: "UPI" },
-    { date: "24 May 2026", id: "BKB-L3-002", design: "PS-002 · Cream Plain Silk Saree", price: "₹5,500", amt: "₹5,500", pay: "Cash" },
-    { date: "12 May 2026", id: "EXT-RAVI-002", design: "EXT-02 · Floral Design Saree", price: "₹7,800", amt: "₹7,800", pay: "UPI" },
-    { date: "02 Apr 2026", id: "SURESH-L2-001", design: "HZ-003 · Maroon Heavy Saree", price: "₹12,000", amt: "₹12,000", pay: "Card" },
-  ],
-  "Smt. Padmavathi": [
-    { date: "10 Jun 2026", id: "PADMA-L1-004", design: "HZ-003 · Cream Zari Border Saree", price: "₹8,500", amt: "₹8,500", pay: "UPI" },
-  ],
-  "Smt. Saraswathi": [
-    { date: "10 Jun 2026", id: "PADMA-L1-004", design: "HZ-003 · Cream Zari Border Saree", price: "₹8,500", amt: "₹8,500", pay: "UPI" },
-    { date: "08 Jun 2026", id: "RAVI-L2-008", design: "HZ-003 · Maroon Heavy Zari Saree", price: "₹12,000", amt: "₹12,000", pay: "Card" },
-    { date: "24 May 2026", id: "BKB-L3-002", design: "PS-002 · Cream Plain Silk Saree", price: "₹5,500", amt: "₹5,500", pay: "Cash" },
-    { date: "18 May 2026", id: "EXT-RAVI-001", design: "EXT-01 · Silk Checks Saree", price: "₹6,200", amt: "₹6,200", pay: "UPI" },
-    { date: "12 May 2026", id: "EXT-RAVI-002", design: "EXT-02 · Floral Design Saree", price: "₹7,800", amt: "₹7,800", pay: "UPI" },
-    { date: "05 May 2026", id: "PADMA-L1-003", design: "HZ-003 · Cream Zari Border Saree", price: "₹8,500", amt: "₹8,500", pay: "Cash" },
-    { date: "28 Apr 2026", id: "ANAND-L3-001", design: "SB-001 · Self Brocade Saree", price: "₹9,500", amt: "₹9,500", pay: "Card" },
-  ],
-  "Smt. Rajeshwari": [
-    { date: "10 Jun 2026", id: "PADMA-L1-004", design: "HZ-003 · Cream Zari Border Saree", price: "₹8,500", amt: "₹8,500", pay: "UPI" },
-    { date: "08 Jun 2026", id: "RAVI-L2-008", design: "HZ-003 · Maroon Heavy Zari Saree", price: "₹12,000", amt: "₹12,000", pay: "Card" },
-  ],
-};
+const CUSTOMER_PURCHASES: Record<string, { date: string; id: string; design: string; price: string; amt: string; pay: string }[]> = {};
 
 // ─── PAGE 05 — CUSTOMER PROFILES ─────────────────────────────────────────────
 export { ShopPriceContext, C, F, TEAL, SHOP_BG, SILK_BG, ShopDesktopHero, SectionTitle, HeroHeader, StatsStrip, Card, Btn, Chip, CUSTOMER_PURCHASES };

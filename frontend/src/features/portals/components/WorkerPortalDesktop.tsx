@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ChevronDown } from "lucide-react";
 import { C, F } from "./worker/tokens";
+import { useAuth } from "../../../contexts/AuthContext";
+import { useBatches } from "../../production/contexts/BatchContext";
 import { WorkerHomeDesktop } from "./worker/WorkerHomeDesktop";
 import { WorkerWeavers } from "./worker/WorkerWeavers";
 import { WorkerQC } from "./worker/WorkerQC";
@@ -25,6 +27,10 @@ interface WorkerPortalDesktopProps {
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
+function initialsOf(name: string): string {
+  return name.split(" ").filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase() || "—";
+}
+
 function PageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
     <div style={{ marginBottom: 20 }}>
@@ -38,68 +44,39 @@ function PageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
 }
 
 function DesktopProfile() {
+  const { user } = useAuth();
+  const name = user?.name || "—";
+  const initials = name.split(" ").filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase() || "—";
+  const subtitle = user?.empId ? `${user.empId} · Worker Staff` : "Worker Staff";
+
   return (
     <div style={{ padding: "28px 40px" }}>
-      <PageHeader title="My Profile" subtitle="Your worker identity and shift information." />
+      <PageHeader title="My Profile" subtitle="Your worker identity." />
 
       <div style={{ background: `linear-gradient(135deg, ${C.dark} 0%, ${C.burg} 60%, #8B1A30 100%)`, borderRadius: 18, padding: "28px 36px", marginBottom: 24, display: "flex", alignItems: "center", gap: 28 }}>
         <div style={{ width: 80, height: 80, borderRadius: "50%", background: "rgba(255,255,255,0.15)", border: "2px solid rgba(255,255,255,0.35)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          <span style={{ fontFamily: F.d, fontSize: 30, fontWeight: 700, color: "#FFF" }}>RK</span>
+          <span style={{ fontFamily: F.d, fontSize: 30, fontWeight: 700, color: "#FFF" }}>{initials}</span>
         </div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontFamily: F.d, fontSize: 24, fontWeight: 700, color: "#FFF", marginBottom: 6 }}>Ravi Kumar</div>
-          <div style={{ fontFamily: F.m, fontSize: 13, color: "rgba(255,255,255,0.65)" }}>WK-042 · Floor Supervisor</div>
-          <div style={{ fontFamily: F.m, fontSize: 13, color: "#845E04", marginTop: 4 }}>Morning Shift · 6:00 AM – 2:00 PM</div>
-        </div>
-        <div style={{ display: "flex", gap: 24 }}>
-          {[{ val: "8 yrs", label: "Tenure" }, { val: "Active", label: "Status" }, { val: "4", label: "Batches Today" }].map((s, i) => (
-            <div key={i} style={{ textAlign: "center" }}>
-              <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: "#FFF" }}>{s.val}</div>
-              <div style={{ fontFamily: F.u, fontSize: 12, color: "rgba(255,255,255,0.55)", marginTop: 2 }}>{s.label}</div>
-            </div>
-          ))}
+          <div style={{ fontFamily: F.d, fontSize: 24, fontWeight: 700, color: "#FFF", marginBottom: 6 }}>{name}</div>
+          <div style={{ fontFamily: F.m, fontSize: 13, color: "rgba(255,255,255,0.65)" }}>{subtitle}</div>
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
-        <div style={{ background: "#FFF", border: `1px solid rgba(110,15,45,0.10)`, borderRadius: 16, overflow: "hidden" }}>
-          <div style={{ padding: "14px 20px", borderBottom: `1px solid rgba(110,15,45,0.08)` }}>
-            <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 700, color: C.dark, letterSpacing: "0.5px", textTransform: "uppercase" }}>Work Details</span>
-          </div>
-          {[
-            { label: "Worker ID", value: "WK-042", mono: true },
-            { label: "Role", value: "Floor Supervisor", mono: false },
-            { label: "Shift", value: "Morning · 6:00 AM – 2:00 PM", mono: false },
-            { label: "Factory", value: "Beere Kesava & Brothers Silks", mono: false },
-            { label: "Joined", value: "March 2018", mono: false },
-          ].map((item, i, arr) => (
-            <div key={item.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "13px 20px", borderBottom: i < arr.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none" }}>
-              <span style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>{item.label}</span>
-              <span style={{ fontFamily: item.mono ? F.m : F.u, fontSize: 14, fontWeight: 500, color: item.mono ? C.burg : C.dark }}>{item.value}</span>
-            </div>
-          ))}
+      <div style={{ background: "#FFF", border: `1px solid rgba(110,15,45,0.10)`, borderRadius: 16, overflow: "hidden" }}>
+        <div style={{ padding: "14px 20px", borderBottom: `1px solid rgba(110,15,45,0.08)` }}>
+          <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 700, color: C.dark, letterSpacing: "0.5px", textTransform: "uppercase" }}>Work Details</span>
         </div>
-
-        <div style={{ background: "#FFF", border: `1px solid rgba(110,15,45,0.10)`, borderRadius: 16, overflow: "hidden" }}>
-          <div style={{ padding: "14px 20px", borderBottom: `1px solid rgba(110,15,45,0.08)` }}>
-            <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 700, color: C.dark, letterSpacing: "0.5px", textTransform: "uppercase" }}>Permissions</span>
+        {[
+          { label: "Worker ID", value: user?.empId || "—", mono: true },
+          { label: "Mobile", value: user?.mobile || "—", mono: true },
+          { label: "Factory", value: "Beere Kesava & Brothers Silks", mono: false },
+        ].map((item, i, arr) => (
+          <div key={item.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "13px 20px", borderBottom: i < arr.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none" }}>
+            <span style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>{item.label}</span>
+            <span style={{ fontFamily: item.mono ? F.m : F.u, fontSize: 14, fontWeight: 500, color: item.mono ? C.burg : C.dark }}>{item.value}</span>
           </div>
-          <div style={{ padding: "16px 20px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-            {[
-              { label: "Quality Check", on: true },
-              { label: "Issue Material", on: false },
-              { label: "Warp Requests", on: false },
-              { label: "Receive Stock", on: false },
-              { label: "Reports", on: false },
-              { label: "Admin Panel", on: false },
-            ].map(p => (
-              <div key={p.label} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: p.on ? "rgba(30,102,64,0.05)" : "rgba(0,0,0,0.02)", border: `1px solid ${p.on ? "rgba(30,102,64,0.15)" : "rgba(0,0,0,0.06)"}`, borderRadius: 10 }}>
-                <div style={{ width: 8, height: 8, borderRadius: "50%", background: p.on ? C.green : "#CCC", flexShrink: 0 }} />
-                <span style={{ fontFamily: F.u, fontSize: 13, color: p.on ? C.dark : C.muted }}>{p.label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+        ))}
       </div>
     </div>
   );
@@ -108,6 +85,31 @@ function DesktopProfile() {
 export function WorkerPortalDesktop({ onBack, bp = "desktop", activeTab, setActiveTab }: WorkerPortalDesktopProps) {
   const isTablet = bp === "tablet";
   const [weaversSub, setWeaversSub] = useState<WeaversSubPage>("menu");
+  const { batches } = useBatches();
+
+  const pendingQcCount = useMemo(() => batches
+    .filter(b => b.status === "active")
+    .flatMap(b => b.rows)
+    .filter(r => r.sareeId && r.weaverName && r.receivedAt && r.qcPassed == null).length,
+  [batches]);
+
+  // Weavers with at least one row still outstanding (not yet assigned a
+  // saree) in an active batch — real progress, not a fixed sample list.
+  const activeWeavers = useMemo(() => {
+    const byWeaver = new Map<string, { name: string; initials: string; batchId: string; done: number; total: number }>();
+    for (const b of batches) {
+      if (b.status !== "active") continue;
+      for (const r of b.rows) {
+        if (!r.weaverId || !r.weaverName) continue;
+        const key = r.weaverId;
+        const entry = byWeaver.get(key) ?? { name: r.weaverName, initials: r.weaverInitials || initialsOf(r.weaverName), batchId: b.batchId, done: 0, total: 0 };
+        entry.total += 1;
+        if (r.sareeId) entry.done += 1;
+        byWeaver.set(key, entry);
+      }
+    }
+    return Array.from(byWeaver.values()).filter(w => w.done < w.total).slice(0, 5);
+  }, [batches]);
 
   const handleNavigate = (tab: Tab, sub?: WeaversSubPage) => {
     setActiveTab(tab);
@@ -125,6 +127,7 @@ export function WorkerPortalDesktop({ onBack, bp = "desktop", activeTab, setActi
         onSelect={setActiveTab}
         onBack={onBack}
         bp={bp}
+        pendingQcCount={pendingQcCount}
       />
 
       <div style={{ flex: 1 }}>
@@ -161,18 +164,16 @@ export function WorkerPortalDesktop({ onBack, bp = "desktop", activeTab, setActi
                   <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                     <div style={{ background: "#FFF", borderRadius: 16, border: `1px solid rgba(110,15,45,0.10)`, padding: "18px 20px" }}>
                       <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 700, color: C.dark, marginBottom: 12, textTransform: "uppercase", letterSpacing: "0.5px" }}>Active Weavers</div>
-                      {[
-                        { name: "Padma Veni",  code: "8937070a-ea63-43f3-9cb4-dcbcfd362ff7", batch: "BATCH-086", progress: "3/5", avatar: "PV" },
-                        { name: "Ravi Kumar",  code: "b5f9178c-b1b9-4871-a7c3-0d68a462d57a", batch: "BATCH-089", progress: "4/8", avatar: "RK" },
-                        { name: "Suresh Murti", code: "11278a51-a26d-4eaa-adbf-bedbfa7fdf46", batch: "BATCH-081", progress: "2/4", avatar: "SM" },
-                      ].map((w, i) => (
-                        <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: i < 2 ? `1px solid rgba(110,15,45,0.06)` : "none" }}>
+                      {activeWeavers.length === 0 ? (
+                        <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, padding: "6px 0" }}>No weavers with outstanding sarees right now.</div>
+                      ) : activeWeavers.map((w, i) => (
+                        <div key={w.batchId + w.name} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: i < activeWeavers.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none" }}>
                           <div style={{ width: 32, height: 32, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                            <span style={{ fontFamily: F.d, fontSize: 12, fontWeight: 700, color: "#FFF" }}>{w.avatar}</span>
+                            <span style={{ fontFamily: F.d, fontSize: 12, fontWeight: 700, color: "#FFF" }}>{w.initials}</span>
                           </div>
                           <div style={{ flex: 1 }}>
                             <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 500, color: C.dark }}>{w.name}</div>
-                            <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{w.batch} · {w.progress} sarees</div>
+                            <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{w.batchId} · {w.done}/{w.total} sarees</div>
                           </div>
                         </div>
                       ))}

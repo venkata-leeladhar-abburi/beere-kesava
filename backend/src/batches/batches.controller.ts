@@ -20,17 +20,18 @@ import { ActorOnlyDto } from "./dto/actor-only.dto";
 import { AssignBatchRowDto } from "./dto/assign-batch-row.dto";
 import { CreateBatchDto } from "./dto/create-batch.dto";
 import { ListBatchesQueryDto } from "./dto/list-batches-query.dto";
+import { ReceiveBatchRowDto } from "./dto/receive-batch-row.dto";
 import { BatchesService } from "./batches.service";
 
 // Production module — WORKER has full read/write; WEAVER can only read
 // batches that include rows assigned to them (self-scoped in the service).
 @Controller("batches")
-@RequireRoles(UserRole.WORKER, UserRole.WEAVER)
+@RequireRoles(UserRole.WORKER, UserRole.WEAVER, UserRole.ADMIN, UserRole.SUPERADMIN)
 export class BatchesController {
   constructor(private readonly batchesService: BatchesService) {}
 
   @Post()
-  @RequireRoles(UserRole.WORKER)
+  @RequireRoles(UserRole.WORKER, UserRole.ADMIN, UserRole.SUPERADMIN)
   create(@Body() dto: CreateBatchDto) {
     return this.batchesService.create(dto);
   }
@@ -48,7 +49,7 @@ export class BatchesController {
   }
 
   @Patch(":id/rows/:serial")
-  @RequireRoles(UserRole.WORKER)
+  @RequireRoles(UserRole.WORKER, UserRole.ADMIN, UserRole.SUPERADMIN)
   assignRow(
     @Param("id") id: string,
     @Param("serial", ParseIntPipe) serial: number,
@@ -57,16 +58,26 @@ export class BatchesController {
     return this.batchesService.assignRow(id, serial, dto);
   }
 
+  @Patch(":id/rows/:serial/receive")
+  @RequireRoles(UserRole.WORKER, UserRole.ADMIN, UserRole.SUPERADMIN)
+  receiveRow(
+    @Param("id") id: string,
+    @Param("serial", ParseIntPipe) serial: number,
+    @Body() dto: ReceiveBatchRowDto,
+  ) {
+    return this.batchesService.receiveRow(id, serial, dto);
+  }
+
   @Post(":id/finalize")
   @HttpCode(HttpStatus.OK)
-  @RequireRoles(UserRole.WORKER)
+  @RequireRoles(UserRole.WORKER, UserRole.ADMIN, UserRole.SUPERADMIN)
   finalize(@Param("id") id: string, @Query() dto: ActorOnlyDto) {
     return this.batchesService.finalize(id, dto);
   }
 
   @Delete(":id")
   @HttpCode(HttpStatus.NO_CONTENT)
-  @RequireRoles(UserRole.WORKER)
+  @RequireRoles(UserRole.WORKER, UserRole.ADMIN, UserRole.SUPERADMIN)
   remove(@Param("id") id: string, @Query() dto: ActorOnlyDto) {
     return this.batchesService.remove(id, dto);
   }

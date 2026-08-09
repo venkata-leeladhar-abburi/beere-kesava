@@ -1,7 +1,7 @@
 import React from "react";
 import { CheckCircle2, AlertTriangle, XCircle } from "lucide-react";
 import { T, F, baseCard, SareeItem, variance, splitDesignField } from "./WorkerQCTypes";
-import { getSareeTypeByName } from "../../../pricing/components/RatesPricingPage";
+import { useRatesPricing } from "../../../pricing/contexts/RatesContext";
 import { Button } from "../../../../shared/ui/primitives";
 
 interface WorkerQCSareeCardProps {
@@ -23,6 +23,7 @@ export function WorkerQCSareeCard({
   onOpenDesignCode,
   onOpenSareeTypeCode,
 }: WorkerQCSareeCardProps) {
+  const { getSareeTypeByName } = useRatesPricing();
   const v = variance(s.weight, s.std);
   const btnH = 52;
   const idSize = isDesktop ? 13 : 11;

@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { IdGeneratorService } from "../id-generator/id-generator.service";
 import { AuditLogService } from "../audit-log/audit-log.service";
@@ -52,6 +52,15 @@ export class RawMaterialsService {
   }
 
   async createGrn(dto: CreateGrnDto) {
+    // Jari is always counted in Reels/Buns, never a weight unit — grams/kg
+    // would silently corrupt reel/bun stock totals (see toGrams/fromGrams).
+    for (const item of dto.items) {
+      const unit = (item.unit || "KG").trim().toUpperCase();
+      if (item.materialType === MaterialType.JARI && !["REEL", "REELS", "BUN", "BUNS"].includes(unit)) {
+        throw new BadRequestException(`Jari must be received in Reels or Buns, not "${item.unit}"`);
+      }
+    }
+
     const grnId = await this.idGenerator.nextFormatted("GRN-2026");
 
     const grn = await this.prisma.$transaction(async (tx) => {

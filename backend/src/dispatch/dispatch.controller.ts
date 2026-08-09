@@ -13,7 +13,7 @@ export class DispatchController {
   constructor(private readonly dispatchService: DispatchService) {}
 
   @Post()
-  @RequireRoles(UserRole.WORKER)
+  @RequireRoles(UserRole.WORKER, UserRole.ADMIN, UserRole.SUPERADMIN)
   create(@Body() dto: CreateDispatchDto) {
     return this.dispatchService.create(dto);
   }

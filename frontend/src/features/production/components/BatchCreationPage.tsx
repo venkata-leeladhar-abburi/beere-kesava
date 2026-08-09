@@ -4,6 +4,7 @@ import { Save as FloppyDisk, CheckCircle2 as CheckCircle } from "lucide-react";
 import { useBatches, SareeRow, BatchRecord } from "../contexts/BatchContext";
 import { useBulkOrders } from "../../bulk-orders/contexts/BulkOrderContext";
 import { SareeTypeCard, SareeTypeRecord } from "../../pricing/components/RatesPricingPage";
+import { useRatesPricing } from "../../pricing/contexts/RatesContext";
 import { useMaterialIssue } from "../../materials/contexts/MaterialIssueContext";
 import { DateFilterState, DEFAULT_DATE_FILTER } from "../../../shared/ui/DateFilterBar";
 import { weaversApi } from "../../../shared/api/weavers";
@@ -26,6 +27,7 @@ import { BatchSetupStep } from "./BatchSetupStep";
 import { useBatchFormHandlers, WeaverOption, LoomOption } from "./useBatchFormHandlers";
 
 export function BatchCreationPage() {
+  const { rates, getSareeTypeByName, getSareeTypeByCode } = useRatesPricing();
   const { batches, saveDraft, finalizeBatch, nextBatchId, pendingOpenBatchId, setPendingOpenBatchId } = useBatches();
   const { bulkOrders } = useBulkOrders();
   const { issueRecords } = useMaterialIssue();
@@ -39,13 +41,12 @@ export function BatchCreationPage() {
   // Real saree-type rate catalog (Rates & Pricing) — the picker and the card
   // view both read from this instead of the old hardcoded SAREE_TYPES_BRIEF
   // list, so the making charge shown always matches what's configured there.
-  const [rates, setRates] = useState<BackendRate[]>([]);
   const [directoryError, setDirectoryError] = useState<string | null>(null);
 
   const loadDirectories = useCallback(async () => {
     try {
-      const [weaversRes, loomsRes, ratesRes] = await Promise.all([
-        weaversApi.list(), factoryLoomsApi.list(), ratesApi.list(),
+      const [weaversRes, loomsRes] = await Promise.all([
+        weaversApi.list(), factoryLoomsApi.list(),
       ]);
       setWeavers(weaversRes.items.map(w => ({ id: w.id, name: w.name, initials: w.initials, looms: w.looms })));
       setLooms(loomsRes.items.map(l => ({
@@ -53,7 +54,6 @@ export function BatchCreationPage() {
         operatorName: l.operatorName ?? "", operatorPhone: l.operatorPhone ?? "",
         installedYear: l.installedYear, notes: l.notes ?? "",
       })));
-      setRates(ratesRes.items);
       setDirectoryError(null);
     } catch (err) {
       setDirectoryError(err instanceof Error ? err.message : "Could not load weavers/looms/rates.");
@@ -227,7 +227,7 @@ export function BatchCreationPage() {
 
   function openSareeTypeCard(code: string) {
     const r = rates.find(x => x.code === code);
-    if (r) setViewSareeType(backendRateToDisplayRecord(r));
+    if (r) setViewSareeType(r);
   }
 
   const drafts = batches.filter(b => b.status === "draft");
@@ -362,7 +362,7 @@ export function BatchCreationPage() {
         {picker === "saretype"   && (
           <SareeTypePickerModal
             key="sp"
-            sareeTypes={rates.map(r => ({ code: r.code, name: r.type, charge: Number(r.makingCharge) }))}
+            sareeTypes={rates.map(r => ({ code: r.code, name: r.type, charge: Number(r.charge) }))}
             onClose={() => setPicker(null)}
             onSelect={applySareeType}
           />

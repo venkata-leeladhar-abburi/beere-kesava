@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Camera, UploadCloud, CheckCircle2, AlertTriangle, Plus, Printer } from "lucide-react";
 import { C, F, card } from "../tokens";
-import { INITIAL_RATES } from "../../../../pricing/components/RatesPricingPage";
+import { useRatesPricing } from "../../../../pricing/contexts/RatesContext";
 import { FieldLabel } from "./shared";
 import { MaterialSplitPanel, type MatSplit } from "./MaterialSplitPanel";
 import { WeaverSigBlock } from "./WeaverSigBlock";
@@ -12,8 +12,15 @@ import { Button, Input, Select, SelectItem } from "../../../../../shared/ui/prim
 // this tab's state is entirely self-contained (does not interact with the
 // outsourced-weaver flow), so it lives as its own component.
 export function OwnFactoryReceiveTab() {
+  const { rates } = useRatesPricing();
   const [ownMatEdits, setOwnMatEdits] = useState<Partial<MatSplit>>({});
-  const [ownTypeCode, setOwnTypeCode] = useState(INITIAL_RATES[0].code);
+  const [ownTypeCode, setOwnTypeCode] = useState(rates[0]?.code || "");
+
+  React.useEffect(() => {
+    if (!ownTypeCode && rates.length > 0) {
+      setOwnTypeCode(rates[0].code);
+    }
+  }, [rates, ownTypeCode]);
   const [sareeCount] = useState(4);
   const [loomNum, setLoomNum] = useState("");
   const [ownWeight, setOwnWeight] = useState("");
@@ -73,7 +80,7 @@ export function OwnFactoryReceiveTab() {
         <div style={{ marginBottom: 10 }}>
           <FieldLabel>Saree Type</FieldLabel>
           <Select value={ownTypeCode} onValueChange={v => { setOwnTypeCode(v); setOwnMatEdits({}); }}>
-            {INITIAL_RATES.map(r => <SelectItem key={r.code} value={r.code}>{r.code} · {r.type}</SelectItem>)}
+            {rates.map(r => <SelectItem key={r.code} value={r.code}>{r.code} · {r.type}</SelectItem>)}
           </Select>
         </div>
 

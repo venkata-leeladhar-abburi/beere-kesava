@@ -82,6 +82,23 @@ function SalesReport() {
     { design: "Returns", count: returnsList.length },
   ];
 
+  const currentMonth = new Date().getMonth();
+  const totalMonthSales = salesList.filter(s => new Date(s.saleDate).getMonth() === currentMonth);
+  const totalMonthReturns = returnsList.filter(r => new Date(r.returnDate).getMonth() === currentMonth);
+  const monthRevenue = totalMonthSales.reduce((acc, curr) => acc + Number(curr.amount), 0);
+  const avgSale = totalMonthSales.length > 0 ? Math.round(monthRevenue / totalMonthSales.length) : 0;
+  const monthReturnsAmount = totalMonthReturns.reduce((acc, curr) => acc + Number(curr.refundAmount || 0), 0);
+
+  const designMap = new Map<string, number>();
+  totalMonthSales.forEach(s => {
+      designMap.set(s.sareeId, (designMap.get(s.sareeId) || 0) + 1);
+  });
+  let topDesign = "None";
+  let maxCount = 0;
+  designMap.forEach((count, id) => {
+      if (count > maxCount) { maxCount = count; topDesign = id; }
+  });
+
   const topCustomers = useMemo(() => {
     const map = new Map<string, { name: string; purchases: number; total: number }>();
     for (const s of salesList) {
@@ -143,7 +160,7 @@ function SalesReport() {
             <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, letterSpacing: 0.5, color: "rgba(255,255,255,0.60)", marginBottom: 6 }}>Sarees Sold Today</div>
             <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 30, color: "#FFF", lineHeight: 1 }}>{dailySales.length}</div>
           </div>
-          <div style={{ fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.55)" }}>13 Jun 2026</div>
+          <div style={{ fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.55)" }}>{new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</div>
         </div>
         {canSeePrices && (
           <>
@@ -154,17 +171,17 @@ function SalesReport() {
             </div>
             <div style={{ flex: "1 1 calc(50% - 5px)", background: "rgba(196,146,58,0.12)", border: `1px solid rgba(196,146,58,0.30)`, borderRadius: 16, padding: "16px 18px" }}>
               <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12, color: C.burg, marginBottom: 6 }}>This Month Revenue</div>
-              <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.burg, lineHeight: 1.2 }}>₹18,40,000</div>
-              <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 4 }}>June 2026</div>
+              <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.burg, lineHeight: 1.2 }}>{fmtINR(monthRevenue)}</div>
+              <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 4 }}>{new Date().toLocaleDateString("en-IN", { month: "long", year: "numeric" })}</div>
             </div>
           </>
         )}
         <div style={{ flex: "1 1 100%", background: "rgba(192,57,43,0.08)", border: `1px solid rgba(192,57,43,0.25)`, borderRadius: 16, padding: "16px 18px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
             <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12, color: C.crim, marginBottom: 6 }}>Returns This Month</div>
-            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.crim, lineHeight: 1.1 }}>3 returns</div>
+            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.crim, lineHeight: 1.1 }}>{totalMonthReturns.length} returns</div>
           </div>
-          {canSeePrices && <div style={{ fontFamily: F.u, fontSize: 13, color: C.crim, opacity: 0.85 }}>₹26,000</div>}
+          {canSeePrices && <div style={{ fontFamily: F.u, fontSize: 13, color: C.crim, opacity: 0.85 }}>{fmtINR(monthReturnsAmount)}</div>}
         </div>
       </div>
 
@@ -185,7 +202,7 @@ function SalesReport() {
       {/* Daily Sales Table */}
       <div id="shoprep-today-sales" style={{ display: "flex", alignItems: "center", margin: "20px 20px 12px", gap: 10 }}>
         <div style={{ width: 4, height: 20, background: C.burg, borderRadius: 2, flexShrink: 0 }} />
-        <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 16, color: C.text, flex: 1 }}>Today's Sales — 13 Jun 2026</span>
+        <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 16, color: C.text, flex: 1 }}>Today's Sales — {new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
         <Button onClick={() => { setExportDone(false); setShowExport(true); }} size="sm" className="gap-1.5 rounded-full bg-[#6B1A2A] border-none font-semibold text-[13px] text-white shadow-[0_2px_10px_rgba(107,26,42,0.28)] shrink-0">
           <FileText size={14} color="#FFF" /> Export
         </Button>
@@ -214,17 +231,17 @@ function SalesReport() {
       </Card>
 
       {/* Monthly Totals */}
-      <SectionTitle id="shoprep-monthly-totals" title="This Month — Jun 2026" />
+      <SectionTitle id="shoprep-monthly-totals" title={`This Month — ${new Date().toLocaleDateString("en-IN", { month: "short", year: "numeric" })}`} />
       <div style={{ margin: "0 20px", display: "flex", flexWrap: "wrap" as const, gap: 10 }}>
         {[
-          { label: "Total Sales", val: "248 sarees" },
+          { label: "Total Sales", val: `${totalMonthSales.length} sarees` },
           ...(canSeePrices ? [
-            { label: "Revenue", val: "₹18,40,000" },
-            { label: "Avg per sale", val: "₹7,419" },
+            { label: "Revenue", val: fmtINR(monthRevenue) },
+            { label: "Avg per sale", val: fmtINR(avgSale) },
           ] : []),
-          { label: "Returns", val: "3 sarees" },
-          ...(canSeePrices ? [{ label: "Net Revenue", val: "₹18,18,000" }] : []),
-          { label: "Most sold", val: "BKB-045" },
+          { label: "Returns", val: `${totalMonthReturns.length} sarees` },
+          ...(canSeePrices ? [{ label: "Net Revenue", val: fmtINR(monthRevenue - monthReturnsAmount) }] : []),
+          { label: "Most sold", val: topDesign },
         ].map((s, i) => (
           <Card key={i} style={{ flex: "1 1 calc(50% - 5px)", padding: "14px 16px" }}>
             <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginBottom: 5 }}>{s.label}</div>

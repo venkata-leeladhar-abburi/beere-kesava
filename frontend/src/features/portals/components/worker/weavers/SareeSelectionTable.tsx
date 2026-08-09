@@ -61,7 +61,7 @@ export function SareeSelectionTable({
       id: "sareeId", header: "Saree ID", accessor: s => s.no,
       cell: (_v, s) => {
         const isSel = selectedSareeNo === s.no;
-        const rowSareeId = `${selectedWeaver.name.split(" ")[0].toUpperCase()}-L${selectedWeaver.looms}-00${s.no}`;
+        const rowSareeId = s.sareeId;
         return s.status === "pending" ? (
           <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 700, color: isSel ? "#FFF" : C.burg, background: isSel ? C.burg : "rgba(107,26,42,0.08)", borderRadius: 6, padding: "3px 8px" }}>
             {rowSareeId}

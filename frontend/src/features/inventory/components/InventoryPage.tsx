@@ -7,7 +7,6 @@ import { WeaverSareesSection } from "../../weavers/components/WeaverSareesSectio
 import { MoneyAccessProvider } from "../../../shared/ui/MoneyAccess";
 
 import { T, F, card } from "./theme";
-import { WHOLESALE_CUSTOMERS } from "./data";
 import { TransportData, InvoiceData, InventoryRecord } from "./types";
 import { getLoomForRecord, getSareeColor } from "./utils";
 import { Toast } from "./common/primitives";
@@ -216,10 +215,7 @@ export function InventoryPage({
           const selectedRecords = allRecords.filter(r => dispatchableSelected.some(d => d.id === r.id));
           const detectedRef = selectedRecords.find(r => r.bulkOrderRef)?.bulkOrderRef;
           const detectedOrder = detectedRef ? bulkOrders.find(o => o.ref === detectedRef) : undefined;
-          // Map bulk order customerId to WHOLESALE_CUSTOMERS
-          const detectedCustomerId = detectedOrder?.customerId
-            ? WHOLESALE_CUSTOMERS.find(c => c.id === detectedOrder.customerId)?.id
-            : undefined;
+          const detectedCustomerId = detectedOrder?.customerId;
           return (
             <DispatchWholesaleModal
               key="wholesale-modal"
@@ -236,9 +232,7 @@ export function InventoryPage({
           const selectedRecords = allRecords.filter(r => dispatchableSelected.some(d => d.id === r.id));
           const detectedRef = selectedRecords.find(r => r.bulkOrderRef)?.bulkOrderRef;
           const detectedOrder = detectedRef ? bulkOrders.find(o => o.ref === detectedRef) : undefined;
-          const detectedCustomerId = detectedOrder?.customerId
-            ? WHOLESALE_CUSTOMERS.find(c => c.id === detectedOrder.customerId)?.id
-            : undefined;
+          const detectedCustomerId = detectedOrder?.customerId;
           return (
             <RaiseQuotationModal
               key="quotation-modal"

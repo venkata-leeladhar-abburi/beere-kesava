@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Camera, UploadCloud, CheckCircle2, AlertTriangle,
@@ -6,10 +6,12 @@ import {
 } from "lucide-react";
 import { C, F, card } from "../tokens";
 import { FieldLabel, PageHeader, type ReceivedSareeLog } from "./shared";
-import { MaterialSplitPanel, autoMaterialSplit, type MatSplit } from "./MaterialSplitPanel";
-import { WEAVERS as FALLBACK_WEAVERS, WEAVER_BATCHES, type WeaverBatchData } from "./weaversData";
+import { MaterialSplitPanel, type MatSplit } from "./MaterialSplitPanel";
+import { type WeaverBatchData } from "./weaversData";
 import { weaversApi } from "../../../../../shared/api/weavers";
 import { WeaverSigBlock } from "./WeaverSigBlock";
+import { useRatesPricing } from "../../../../pricing/contexts/RatesContext";
+import { useBatches } from "../../../../production/contexts/BatchContext";
 import { DefectPhotoPrompt } from "./DefectPhotoPrompt";
 import { OwnFactoryReceiveTab } from "./OwnFactoryReceiveTab";
 import { SareeSelectionTable } from "./SareeSelectionTable";
@@ -24,11 +26,12 @@ interface RejectedSaree {
 }
 
 export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => void; onSareeReceived?: (rec: ReceivedSareeLog) => void }) {
+  const { getSareeTypeByCode } = useRatesPricing();
   const { data: weaversRes } = useQuery({
     queryKey: ["worker-receive-weavers"],
     queryFn: () => weaversApi.list(),
   });
-  const WEAVERS = React.useMemo(() => {
+  const WEAVERS = useMemo(() => {
     if (!weaversRes?.items) return [];
     return weaversRes.items.map(w => ({
       name: w.name,
@@ -38,12 +41,42 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
     }));
   }, [weaversRes]);
 
+  const { batches: allBatches, receiveRow } = useBatches();
+
   const [activeSection, setActiveSection] = useState<"outsourced" | "own">("outsourced");
-  const [selectedWeaver, setSelectedWeaver] = useState<typeof WEAVERS[0] | null>(WEAVERS[0] ?? null);
-  const [batches, setBatches] = useState<Record<string, WeaverBatchData[]>>(() => JSON.parse(JSON.stringify(WEAVER_BATCHES)));
-  const [selectedBatchId, setSelectedBatchId] = useState<string | null>(WEAVER_BATCHES[WEAVERS[0]?.code]?.[0]?.id ?? null);
+  const [selectedWeaver, setSelectedWeaver] = useState<typeof WEAVERS[0] | null>(null);
+  const [selectedBatchId, setSelectedBatchId] = useState<string | null>(null);
   const [selectedSareeNo, setSelectedSareeNo] = useState<number | null>(null);
   const [sareeSort, setSareeSort] = useState<"serial" | "status">("serial");
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Default to the first weaver once the real list loads.
+  useEffect(() => {
+    if (!selectedWeaver && WEAVERS.length > 0) setSelectedWeaver(WEAVERS[0]);
+  }, [WEAVERS, selectedWeaver]);
+
+  // Real per-weaver batches, built from active batches' rows that have
+  // already been assigned a sareeId (by admin) but not yet received.
+  // Only rows still pending receipt are shown — once received, a saree
+  // moves into the QC queue instead of staying in this list.
+  const batches = useMemo<Record<string, WeaverBatchData[]>>(() => {
+    const result: Record<string, WeaverBatchData[]> = {};
+    for (const b of allBatches) {
+      if (b.status !== "active") continue;
+      for (const r of b.rows) {
+        if (!r.weaverId || !r.sareeId || r.receivedAt) continue;
+        if (!result[r.weaverId]) result[r.weaverId] = [];
+        let wb = result[r.weaverId].find(x => x.id === b.batchId);
+        if (!wb) {
+          wb = { id: b.batchId, total: 0, sareeTypeCode: r.sareeTypeCode ?? "—", bulkOrderLabel: r.bulkOrderLabel ?? undefined, sarees: [] };
+          result[r.weaverId].push(wb);
+        }
+        wb.sarees.push({ no: r.serial, sareeId: r.sareeId, serial: r.serial, status: "pending" });
+        wb.total += 1;
+      }
+    }
+    return result;
+  }, [allBatches]);
 
   const [sareeColor, setSareeColor] = useState("");
   const [sareeWeight, setSareeWeight] = useState("");
@@ -64,8 +97,8 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
 
   const weightNum = sareeWeight ? parseFloat(sareeWeight) : null;
   const weightOk = weightNum !== null && weightNum >= 600;
-  const sareeId = selectedWeaver && currentBatch && selectedSareeNo
-    ? `${selectedWeaver.name.split(" ")[0].toUpperCase()}-L${selectedWeaver.looms}-00${selectedSareeNo}` : "—";
+  const selectedSaree = currentBatch?.sarees.find(s => s.no === selectedSareeNo) ?? null;
+  const sareeId = selectedSaree?.sareeId ?? "—";
 
   const pickWeaver = (name: string) => {
     const w = WEAVERS.find(w => w.name === name) || null;
@@ -88,29 +121,25 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
     setSareeColor(""); setSareeWeight(""); setHasPhoto(false); setMatEdits({});
   };
 
-  const canSaveSaree = !!sareeColor && !!sareeWeight && hasPhoto;
+  const canSaveSaree = !!sareeColor && !!sareeWeight && hasPhoto && !isSaving;
 
-  const saveSaree = () => {
+  const saveSaree = async () => {
     if (!selectedWeaver || !currentBatch || !selectedSareeNo || !canSaveSaree) return;
-    setBatches(prev => {
-      const next = JSON.parse(JSON.stringify(prev)) as Record<string, WeaverBatchData[]>;
-      const b = next[selectedWeaver.code].find(b => b.id === currentBatch.id)!;
-      const s = b.sarees.find(s => s.no === selectedSareeNo)!;
-      s.status = "received"; s.color = sareeColor; s.weight = sareeWeight;
-      const split = autoMaterialSplit(currentBatch.sareeTypeCode, sareeWeight);
-      if (split) {
-        s.warp = matEdits.warp ?? split.warp;
-        s.resham = matEdits.resham ?? split.resham;
-        s.jari = matEdits.jari ?? split.jari;
-      }
-      return next;
-    });
-    onSareeReceived?.({
-      id: sareeId, weaver: selectedWeaver.name, wcode: selectedWeaver.code, batch: currentBatch.id,
-      weight: `${sareeWeight}g`, date: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
-      color: sareeColor, status: "Pending QC",
-    });
-    setSelectedSareeNo(null); setSareeColor(""); setSareeWeight(""); setHasPhoto(false); setMatEdits({});
+    setIsSaving(true);
+    try {
+      await receiveRow(currentBatch.id, selectedSareeNo, {
+        weight: parseFloat(sareeWeight),
+        color: sareeColor,
+      });
+      onSareeReceived?.({
+        id: sareeId, weaver: selectedWeaver.name, wcode: selectedWeaver.code, batch: currentBatch.id,
+        weight: `${sareeWeight}g`, date: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
+        color: sareeColor, status: "Pending QC",
+      });
+      setSelectedSareeNo(null); setSareeColor(""); setSareeWeight(""); setHasPhoto(false); setMatEdits({});
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   if (showTagPrint) {
@@ -298,13 +327,6 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
                 onCancel={() => setShowDefectPrompt(false)}
                 onCapture={() => {
                   if (selectedWeaver && currentBatch && selectedSareeNo) {
-                    setBatches(prev => {
-                      const next = JSON.parse(JSON.stringify(prev)) as Record<string, WeaverBatchData[]>;
-                      const b = next[selectedWeaver.code].find(b => b.id === currentBatch.id)!;
-                      const s = b.sarees.find(s => s.no === selectedSareeNo)!;
-                      s.status = "defective"; s.color = sareeColor || undefined; s.weight = sareeWeight || undefined;
-                      return next;
-                    });
                     setRejectedSarees(prev => [
                       {
                         id: sareeId,

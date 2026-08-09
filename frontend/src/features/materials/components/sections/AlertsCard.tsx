@@ -19,22 +19,30 @@ export function AlertsCard({ onCreatePO }: { onCreatePO?: () => void }) {
 
   const stockItems = stockRes?.items ?? [];
 
-  const dynamicAlerts = stockItems
-    .filter(item => Number(item.currentStock) < Number(item.reorderLevel))
-    .map(item => {
-      const current = Number(item.currentStock);
-      const reorder = Number(item.reorderLevel);
-      const pct = Math.min(100, Math.round((current / Math.max(1, reorder)) * 100));
-      const displayName = [item.name, item.color, item.grade].filter(Boolean).join(" - ");
-      return {
-        id: item.id,
-        type: item.materialType,
-        displayName,
-        current: `${current} ${item.unit}`,
-        minLabel: `${reorder} ${item.unit}`,
-        pct,
-      };
-    });
+  const types = ["WARP", "RESHAM", "JARI"] as const;
+  const dynamicAlerts = types.map(type => {
+    const items = stockItems.filter(i => i.materialType === type);
+    // If no items, we don't alert (or maybe we do if reorder > 0, but here we'll skip)
+    if (items.length === 0) return null;
+    
+    const current = items.reduce((s, i) => s + Number(i.currentStock), 0);
+    const reorder = Math.max(...items.map(i => Number(i.reorderLevel)), 0); // use max reorder level found for this type
+    
+    if (current >= reorder) return null;
+    
+    const unit = items[0].unit || (type === "JARI" ? "Reels" : "KG");
+    const pct = Math.min(100, Math.round((current / Math.max(1, reorder)) * 100));
+    const displayName = type.charAt(0) + type.slice(1).toLowerCase() + " (Total)";
+    
+    return {
+      id: type,
+      type: type,
+      displayName,
+      current: `${current} ${unit}`,
+      minLabel: `${reorder} ${unit}`,
+      pct,
+    };
+  }).filter(Boolean) as any[];
 
   return (
     <FadeUp id="mat-alerts" style={{ padding: `28px ${px}px 0` }}>

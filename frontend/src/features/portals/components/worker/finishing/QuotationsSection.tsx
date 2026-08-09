@@ -1,11 +1,11 @@
 import { useState, useMemo } from "react";
 import { AnimatePresence } from "motion/react";
-import { CheckSquare, Square, Users, X, Package, ArrowDownToLine, FileText, Building2 } from "lucide-react";
+import { Users, Package, ArrowDownToLine, FileText, Building2 } from "lucide-react";
 import { C, F, card } from "../tokens";
 import { useFinishing, Quotation } from "../../../../finishing/contexts/FinishingContext";
 import { WORKER_NAME, SectionHeader, Toast } from "./shared";
 import { StaffPickerModal } from "./StaffPickerModal";
-import { Button, IconButton } from "../../../../../shared/ui/primitives";
+import { Button } from "../../../../../shared/ui/primitives";
 
 // ── Quotations — assign for finishing & receive back against a quotation ───────
 
@@ -26,7 +26,6 @@ function QuotationStatusBadge({ status }: { status: Quotation["status"] }) {
 export function QuotationsSection({ isMobile }: { isMobile?: boolean }) {
   const { quotations, assignQuotationFinishing, receiveQuotationSarees } = useFinishing();
   const [pickerFor, setPickerFor] = useState<string | null>(null);
-  const [selections, setSelections] = useState<Record<string, Set<string>>>({});
   const [toast, setToast] = useState("");
 
   const active = useMemo(
@@ -34,49 +33,25 @@ export function QuotationsSection({ isMobile }: { isMobile?: boolean }) {
     [quotations]
   );
 
-  const selectionFor = (qid: string) => selections[qid] ?? new Set<string>();
-
-  const statusOf = (q: Quotation, sareeId: string) => q.sarees.find(s => s.sareeId === sareeId)?.finishingStatus;
-
-  // Toggling a row clears the selection if it would mix pending + in-finishing sarees —
-  // assigning and receiving are different actions and can't be done in the same click.
-  const toggleSaree = (q: Quotation, sareeId: string) => {
-    setSelections(prev => {
-      const current = new Set(prev[q.id] ?? []);
-      if (current.has(sareeId)) {
-        current.delete(sareeId);
-      } else {
-        const clickedStatus = statusOf(q, sareeId);
-        const existingStatus = current.size > 0 ? statusOf(q, [...current][0]) : undefined;
-        if (existingStatus && existingStatus !== clickedStatus) current.clear();
-        current.add(sareeId);
-      }
-      return { ...prev, [q.id]: current };
-    });
-  };
-
-  const selectAllOfStatus = (q: Quotation, status: "pending" | "in-finishing") => {
-    setSelections(prev => ({ ...prev, [q.id]: new Set(q.sarees.filter(s => s.finishingStatus === status).map(s => s.sareeId)) }));
-  };
-
-  const clearSelection = (qid: string) => setSelections(prev => ({ ...prev, [qid]: new Set() }));
-
   const handleAssign = (staff: { id: string; name: string }) => {
     if (pickerFor) {
-      const ids = [...selectionFor(pickerFor)];
-      assignQuotationFinishing(pickerFor, ids, staff, WORKER_NAME);
-      setToast(`${ids.length} saree${ids.length > 1 ? "s" : ""} assigned to ${staff.name} for finishing`);
-      clearSelection(pickerFor);
+      const q = active.find(x => x.id === pickerFor);
+      if (q) {
+        const pendingIds = q.sarees.filter(s => s.finishingStatus === "pending").map(s => s.sareeId);
+        if (pendingIds.length > 0) {
+          assignQuotationFinishing(q.id, pendingIds, staff, WORKER_NAME);
+          setToast(`${pendingIds.length} saree${pendingIds.length > 1 ? "s" : ""} assigned to ${staff.name} for finishing`);
+        }
+      }
     }
     setPickerFor(null);
   };
 
   const handleReceive = (q: Quotation) => {
-    const ids = [...selectionFor(q.id)];
-    if (ids.length === 0) return;
-    receiveQuotationSarees(q.id, ids, WORKER_NAME);
-    setToast(`${ids.length} saree${ids.length > 1 ? "s" : ""} received against ${q.quotationNumber}`);
-    clearSelection(q.id);
+    const inFinishingIds = q.sarees.filter(s => s.finishingStatus === "in-finishing").map(s => s.sareeId);
+    if (inFinishingIds.length === 0) return;
+    receiveQuotationSarees(q.id, inFinishingIds, WORKER_NAME);
+    setToast(`${inFinishingIds.length} saree${inFinishingIds.length > 1 ? "s" : ""} received against ${q.quotationNumber}`);
   };
 
   return (
@@ -97,10 +72,9 @@ export function QuotationsSection({ isMobile }: { isMobile?: boolean }) {
             const received = q.sarees.filter(s => s.finishingStatus === "received").length;
             const pendingSarees = q.sarees.filter(s => s.finishingStatus === "pending");
             const inFinishingSarees = q.sarees.filter(s => s.finishingStatus === "in-finishing");
-            const selected = selectionFor(q.id);
-            const selectionStatus = selected.size > 0 ? statusOf(q, [...selected][0]) : undefined;
-            const canAssign = selectionStatus === "pending";
-            const canReceive = selectionStatus === "in-finishing";
+            const canAssign = pendingSarees.length > 0;
+            const canReceive = inFinishingSarees.length > 0;
+
             return (
               <div key={q.id} style={{ border: `1px solid rgba(107,26,42,0.12)`, borderRadius: 14, overflow: "hidden", background: "#FFF" }}>
                 {/* Header */}
@@ -123,37 +97,14 @@ export function QuotationsSection({ isMobile }: { isMobile?: boolean }) {
                   </div>
                 </div>
 
-                {/* Select-all shortcuts */}
-                {(pendingSarees.length > 0 || inFinishingSarees.length > 0) && (
-                  <div style={{ display: "flex", gap: 14, padding: "8px 14px 0", flexWrap: "wrap" as const }}>
-                    {pendingSarees.length > 0 && (
-                      <Button variant="link" onClick={() => selectAllOfStatus(q, "pending")} className="gap-1 p-0 text-xs text-[#69635E]">
-                        <CheckSquare size={13} color={C.muted} /> Select all pending ({pendingSarees.length})
-                      </Button>
-                    )}
-                    {inFinishingSarees.length > 0 && (
-                      <Button variant="link" onClick={() => selectAllOfStatus(q, "in-finishing")} className="gap-1 p-0 text-xs text-[#69635E]">
-                        <CheckSquare size={13} color={C.muted} /> Select all in finishing ({inFinishingSarees.length})
-                      </Button>
-                    )}
-                  </div>
-                )}
-
                 {/* Sarees */}
                 <div>
                   {q.sarees.map((s, i) => {
-                    const isSelectable = s.finishingStatus === "pending" || s.finishingStatus === "in-finishing";
-                    const isChecked = selected.has(s.sareeId);
                     return (
                       <div key={s.sareeId}
-                        onClick={() => isSelectable && toggleSaree(q, s.sareeId)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => isSelectable && toggleSaree(q, s.sareeId))?.(); } }}
-                        style={{ display: "flex", alignItems: "center", gap: 12, padding: "9px 14px", borderBottom: i < q.sarees.length - 1 ? `1px solid rgba(107,26,42,0.06)` : "none", cursor: isSelectable ? "pointer" : "default", background: isChecked ? "rgba(107,26,42,0.04)" : "transparent" }}
+                        style={{ display: "flex", alignItems: "center", gap: 12, padding: "9px 14px", borderBottom: i < q.sarees.length - 1 ? `1px solid rgba(107,26,42,0.06)` : "none" }}
                       >
-                        {isSelectable ? (
-                          isChecked ? <CheckSquare size={15} color={C.burg} style={{ flexShrink: 0 }} /> : <Square size={15} color={C.muted} style={{ flexShrink: 0 }} />
-                        ) : (
-                          <Package size={14} color={C.muted} style={{ flexShrink: 0 }} />
-                        )}
+                        <Package size={14} color={C.muted} style={{ flexShrink: 0 }} />
                         <div style={{ flex: 1 }}>
                           <div style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, color: C.burg }}>{s.sareeId}</div>
                           <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{s.sareeTypeCode || s.designCode} · {s.sareeType}</div>
@@ -172,21 +123,19 @@ export function QuotationsSection({ isMobile }: { isMobile?: boolean }) {
                 </div>
 
                 {/* Actions */}
-                {selected.size > 0 && (canAssign || canReceive) && (
+                {(canAssign || canReceive) && (
                   <div style={{ padding: "12px 14px", borderTop: `1px solid rgba(107,26,42,0.08)`, display: "flex", gap: 8 }}>
                     {canAssign && (
                       <Button variant="primary" fullWidth iconLeft={Users} onClick={() => setPickerFor(q.id)} className="h-[42px] rounded-xl bg-[#6B1A2A] hover:bg-[#6B1A2A]">
-                        Assign {selected.size} Saree{selected.size > 1 ? "s" : ""} for Finishing
+                        Assign {pendingSarees.length} Saree{pendingSarees.length > 1 ? "s" : ""} for Finishing
                       </Button>
                     )}
                     {canReceive && (
                       <Button variant="primary" fullWidth iconLeft={ArrowDownToLine} onClick={() => handleReceive(q)}
                         className="h-[42px] rounded-xl bg-gradient-to-br from-[#1E5A3A] to-[#1E6640] text-sm font-bold hover:from-[#1E5A3A] hover:to-[#1E6640]">
-                        Receive {selected.size} Saree{selected.size > 1 ? "s" : ""} from Finishing
+                        Receive {inFinishingSarees.length} Saree{inFinishingSarees.length > 1 ? "s" : ""} from Finishing
                       </Button>
                     )}
-                    <IconButton icon={X} label="Clear selection" variant="secondary" onClick={() => clearSelection(q.id)}
-                      className="w-[42px] h-[42px] flex-shrink-0 rounded-xl border-[rgba(139,26,46,0.30)] text-[#6B1A2A]" />
                   </div>
                 )}
               </div>
