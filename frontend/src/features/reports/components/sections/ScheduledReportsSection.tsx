@@ -10,6 +10,7 @@ import { Button, IconButton, Select, SelectItem, Input, CheckboxField } from "..
 // admin UI, it does not itself trigger any cron/queue job or WhatsApp delivery.
 // The actual scheduled-delivery executor is a separate, not-yet-built system.
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { reportsApi } from "../../../../shared/api/reports";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { useConfirm } from "../../../../shared/ui/overlay";
@@ -43,6 +44,10 @@ export function ScheduledReportsSection() {
       invalidate();
       setShowForm(false);
       setRecipientEmail("");
+      toast.success("Report schedule created");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to create report schedule");
     },
   });
 
@@ -50,11 +55,20 @@ export function ScheduledReportsSection() {
     mutationFn: (vars: { id: string; active: boolean }) =>
       reportsApi.updateSchedule(vars.id, { active: vars.active, actorId: user?.id }),
     onSuccess: invalidate,
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to update report schedule");
+    },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => reportsApi.deleteSchedule(id),
-    onSuccess: invalidate,
+    onSuccess: () => {
+      invalidate();
+      toast.success("Report schedule deleted");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to delete report schedule");
+    },
   });
 
   const scheduleIcons: React.ReactNode[] = [

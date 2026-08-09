@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle } from "lucide-react";
+import { toast } from "sonner";
 import { F, T } from "./labelSettings/primitives";
 import { LabelPreviewCard } from "./labelSettings/LabelPreviewCard";
 import { LabelDimensionsCard } from "./labelSettings/LabelDimensionsCard";
@@ -112,6 +113,10 @@ export function LabelSettingsPage() {
     onSuccess: (updated) => {
       queryClient.setQueryData(["label-settings"], updated);
       setLastSavedLabel(`Last saved: ${new Date(updated.updatedAt).toLocaleString()}`);
+      toast.success("Label settings saved");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to save label settings");
     },
   });
 
