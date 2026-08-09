@@ -13,6 +13,7 @@ import {
 import { SupplierFormValues } from "../../types";
 import { FadeUp, StatusPill, StarRating } from "../../common/primitives";
 import { Button } from "../../../../../shared/ui/primitives";
+import { Breadcrumbs } from "../../../../../shared/ui/nav/Breadcrumbs";
 import { OverviewTab } from "./OverviewTab";
 import { OrdersTab } from "./OrdersTab";
 import { PaymentsTab } from "./PaymentsTab";
@@ -138,6 +139,15 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
 
   return (
     <div style={{ padding: "40px 56px", background: T.silkCream, minHeight: "100dvh" }}>
+      <div style={{ marginBottom: 16 }}>
+        <Breadcrumbs
+          items={[
+            { key: "people", label: "People", onClick: onBack },
+            { key: "suppliers", label: "Suppliers", onClick: onBack },
+            { key: "supplier", label: supplier.name },
+          ]}
+        />
+      </div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28 }}>
         <Button variant="tertiary" size="md" iconLeft={ArrowLeft} onClick={onBack}>
           Back to Suppliers

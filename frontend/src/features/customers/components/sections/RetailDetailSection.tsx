@@ -3,6 +3,7 @@ import { T, F } from "../theme";
 import { RetailCustomer } from "../types";
 import { Button } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { Breadcrumbs } from "../../../../shared/ui/nav/Breadcrumbs";
 
 interface RetailPurchaseRow {
   date: string;
@@ -61,6 +62,15 @@ export function RetailDetailSection({
 
   return (
     <div style={{ padding: "48px 56px" }}>
+      <div style={{ marginBottom: 16 }}>
+        <Breadcrumbs
+          items={[
+            { key: "people", label: "People", onClick: onBack },
+            { key: "customers", label: "Customers", onClick: onBack },
+            { key: "customer", label: customer.name },
+          ]}
+        />
+      </div>
       {/* Header row with Back button */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32 }}>
         <Button onClick={onBack} variant="secondary" size="sm">

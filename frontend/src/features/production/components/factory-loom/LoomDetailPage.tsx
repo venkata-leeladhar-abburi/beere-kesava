@@ -17,6 +17,7 @@ import { STATUS_CFG } from "./types";
 import { LoomMaterialsTab } from "./LoomMaterialsTab";
 import { Button } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { Breadcrumbs } from "../../../../shared/ui/nav/Breadcrumbs";
 
 const fmtIssueDate = (iso: string) => {
   const d = new Date(iso);
@@ -98,6 +99,16 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
           Back to Factory Looms
         </Button>
         <span style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "1px", textTransform: "uppercase" as const, color: T.taupe }}>Factory Loom Profile</span>
+      </div>
+
+      <div style={{ padding: "16px 48px 0", background: "#FFFFFF" }}>
+        <Breadcrumbs
+          items={[
+            { key: "people", label: "People", onClick: onBack },
+            { key: "factory-looms", label: "Factory Looms", onClick: onBack },
+            { key: "loom", label: loom.loomNumber },
+          ]}
+        />
       </div>
 
       <div style={{ padding: "40px 48px", background: "#FFFFFF", borderBottom: `1px solid ${T.borderDef}` }}>

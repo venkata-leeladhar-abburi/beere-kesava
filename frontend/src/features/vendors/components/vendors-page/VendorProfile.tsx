@@ -19,6 +19,7 @@ import { vendorBillsApi, VendorBillStatus } from "../../../../shared/api/vendor-
 import { vendorPaymentsApi } from "../../../../shared/api/payments";
 import { useMoneyVisible } from "../../../../shared/ui/MoneyValue";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { Breadcrumbs } from "../../../../shared/ui/nav/Breadcrumbs";
 
 export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; onBack: () => void; onUpdate?: (v: Vendor) => void }) {
   const [tab, setTab] = useState<"overview" | "orders" | "payments" | "contact" | "edit">("overview");
@@ -185,6 +186,15 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
 
   return (
     <div style={{ padding: "40px 56px" }}>
+      <div style={{ marginBottom: 16 }}>
+        <Breadcrumbs
+          items={[
+            { key: "people", label: "People", onClick: onBack },
+            { key: "vendors", label: "Vendors", onClick: onBack },
+            { key: "vendor", label: vendor.name },
+          ]}
+        />
+      </div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28 }}>
         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} style={{ display: "inline-block" }}>
           <Button onClick={onBack} variant="secondary" iconLeft="back" className="rounded-lg text-[#6E0F2D]">

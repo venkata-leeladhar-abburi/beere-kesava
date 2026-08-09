@@ -17,6 +17,7 @@ import { BulkOrderSareesTab, LinkedSaree } from "./BulkOrderSareesTab";
 import { BulkOrderOverviewTab, BulkOrderPaymentsTab } from "./BulkOrderOverviewPaymentsTabs";
 import { Button } from "../../../shared/ui/primitives";
 import { Modal } from "../../../shared/ui/overlay";
+import { Breadcrumbs } from "../../../shared/ui/nav/Breadcrumbs";
 
 const T = {
   silkCream: "#F7F2EA", royalBurgundy: "#6E0F2D",
@@ -153,6 +154,15 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
   return (
     <div style={{ background: T.silkCream, minHeight: "100dvh", paddingBottom: 100 }}>
       <div style={{ padding: "40px 56px 0" }}>
+        <div style={{ marginBottom: 16 }}>
+          <Breadcrumbs
+            items={[
+              { key: "production", label: "Production", onClick: onBack },
+              { key: "bulk-orders", label: "Bulk Orders", onClick: onBack },
+              { key: "order", label: live.ref },
+            ]}
+          />
+        </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28 }}>
           <Button onClick={onBack} variant="tertiary" size="md" iconLeft={ArrowLeft}>
             Back to Bulk Orders
