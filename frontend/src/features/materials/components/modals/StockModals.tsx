@@ -7,6 +7,7 @@ import type { BatchRow } from "../types";
 import { ModalOverlay, ModalHeader } from "../common/primitives";
 import { Button, Field, Input, Textarea } from "../../../../shared/ui/primitives";
 import { DatePicker, formatDate } from "../../../../shared/ui/date";
+import { useDocument } from "../../../../shared/ui/document";
 
 // ─── ADD NEW STOCK MODAL ──────────────────────────────────────────────────────
 export function AddNewStockModal({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -239,15 +240,45 @@ export function BatchViewDetailsModal({ batch, onClose }: { batch: BatchRow | nu
 
 // ─── PRINT BARCODE MODAL ──────────────────────────────────────────────────────
 export function PrintBarcodeModal({ batch, onClose }: { batch: BatchRow | null; onClose: () => void }) {
+  const { print } = useDocument();
   if (!batch) return null;
   const mt = MAT_TAG[batch.type];
   const barPattern = batch.id.split("").map(c => c.charCodeAt(0));
+
+  // Same JSX that used to sit under `.print-area` — now portaled through
+  // useDocument() (design-system/07-DOCUMENTS.md Part C.3) instead of a raw
+  // call to window's print method, which used to print the whole app (nav,
+  // scrim, modal chrome) around it. Kept as its own small print root rather
+  // than the A4 DocumentPage anatomy — a barcode label isn't a GST document.
+  const label = (
+    <div style={{ background: "#FFFFFF", padding: "16mm", display: "flex", justifyContent: "center" }}>
+      <div style={{ border: `2px dashed rgba(110,15,45,0.20)`, borderRadius: 16, padding: "28px 28px 24px", textAlign: "center", width: "100mm" }}>
+        <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "2px", color: T.taupe, textTransform: "uppercase", marginBottom: 10 }}>Beere Kesava & Brothers Silks</div>
+        <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: T.luxuryBrown, marginBottom: 4 }}>{batch.type} — {batch.details}</div>
+        <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 18 }}>{batch.vendor} · {batch.date}</div>
+
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 2, height: 60, marginBottom: 10 }}>
+          {barPattern.slice(0, 32).map((v, i) => (
+            <div key={i} style={{ width: i % 3 === 0 ? 3 : 1.5, height: `${40 + (v % 20)}%`, background: T.darkBurgundy, borderRadius: 1 }} />
+          ))}
+        </div>
+
+        <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.luxuryBrown, letterSpacing: "3px", marginBottom: 14 }}>{batch.id}</div>
+
+        <div style={{ display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
+          <span style={{ fontFamily: F.mono, fontSize: 12, color: mt.col, background: mt.bg, padding: "4px 12px", borderRadius: 6, letterSpacing: "1px" }}>{batch.type}</span>
+          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, background: T.silkCream, padding: "4px 12px", borderRadius: 6 }}>Received: {batch.received} {batch.type === "Jari" ? "Reels" : "kg"}</span>
+          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, background: T.silkCream, padding: "4px 12px", borderRadius: 6 }}>Remaining: {batch.remaining} {batch.type === "Jari" ? "Reels" : "kg"}</span>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <ModalOverlay open={!!batch} onClose={onClose}>
       <ModalHeader title="Print Barcode" subtitle={`Barcode label for batch ${batch.id}`} onClose={onClose} />
       <div style={{ padding: "26px 28px 28px" }}>
-        <div className="print-area" style={{ background: "#FFFFFF", border: `2px dashed rgba(110,15,45,0.20)`, borderRadius: 16, padding: "28px 28px 24px", marginBottom: 22, textAlign: "center" }}>
+        <div style={{ background: "#FFFFFF", border: `2px dashed rgba(110,15,45,0.20)`, borderRadius: 16, padding: "28px 28px 24px", marginBottom: 22, textAlign: "center" }}>
           <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "2px", color: T.taupe, textTransform: "uppercase", marginBottom: 10 }}>Beere Kesava & Brothers Silks</div>
           <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: T.luxuryBrown, marginBottom: 4 }}>{batch.type} — {batch.details}</div>
           <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 18 }}>{batch.vendor} · {batch.date}</div>
@@ -277,7 +308,7 @@ export function PrintBarcodeModal({ batch, onClose }: { batch: BatchRow | null; 
           <Button onClick={onClose} variant="secondary" size="md" className="flex-1">
             Cancel
           </Button>
-          <Button onClick={() => { window.print(); }} variant="primary" size="md" iconLeft={Printer} className="flex-[2]">
+          <Button onClick={() => print(label)} variant="primary" size="md" iconLeft={Printer} className="flex-[2]">
             Print Barcode Label
           </Button>
         </div>

@@ -15,7 +15,7 @@ export interface TotalsRow {
 
 export function TotalsBlock({ rows }: { rows: TotalsRow[] }) {
   return (
-    <div className="bk-doc__totals" style={{ marginTop: "6mm", display: "flex", justifyContent: "flex-end" }}>
+    <div className="bk-doc__totals" style={{ display: "flex", justifyContent: "flex-end" }}>
       <div className="bk-doc__totals-card">
         {rows.map((r, i) =>
           r.grand ? (

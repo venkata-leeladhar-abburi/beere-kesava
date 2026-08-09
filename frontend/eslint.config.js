@@ -384,13 +384,35 @@ export default tseslint.config(
   },
 
   /**
-   * PHASE-4 ENFORCEMENT LAYER (design-system/04-DATA-DISPLAY.md, Part M Step 7)
+   * PHASE 3–7 RATCHET LAYER — consolidated (design-system/0{3,4,5,6,7}-*.md)
    * ═══════════════════════════════════════════════════════════════════════════
-   * `warn`, not `error` — a handful of files (financial-statement layouts,
-   * inline-edit-row tables, expandable sub-row tables) are documented,
-   * deliberate exceptions the current DataTable API can't express yet. This
-   * is a ratchet, like the Phase-1 block above: visible and countable without
-   * blocking the build. Excludes test files (fixture markup, not app UI).
+   * These used to be 4 separate config objects (one appended per phase),
+   * each independently setting `rules: { "no-restricted-syntax": [...] }`
+   * against the *same* "src/features, any depth, .tsx" glob. ESLint flat config
+   * does not merge same-named-rule settings across matching config objects
+   * — the last one wins outright. Confirmed via
+   * `eslint --print-config <file> | jq .rules["no-restricted-syntax"]`:
+   * only the most-recently-appended block's selectors were actually being
+   * checked; every earlier phase's raw-<table>, gold-chart-fill, z-index,
+   * native-date, and (this pass's) ₹/mono/toLocaleString rules were being
+   * silently skipped app-wide the moment the next phase's block was added.
+   * Merged into one block so every selector is actually live. window.print()
+   * stays a separate block below since it's the one `error`-severity rule —
+   * a single `no-restricted-syntax` call can't mix severities per selector.
+   *
+   * `warn`, not `error`, for all of these — none of the backlogs are
+   * cleared (raw <table> 2 remaining, 416 `₹` literals, 1,084
+   * `fontFamily: F.mono`, 150+ `rgba(0,0,0,x)` zIndex-adjacent literals,
+   * 62 parseFloat calls never individually audited). This is a ratchet:
+   * stop new instances while the real migrations (mostly Phase 8's job)
+   * are still in progress, without failing the build on pre-existing code.
+   *
+   * The `₹` selector uses a regex, not an exact-match literal like
+   * design-system/06-DOMAIN.md Part I Step 7's own pseudocode
+   * (`Literal[value="₹"]`) — an exact match only catches a bare `"₹"`
+   * string standing completely alone and misses every `` `₹${amount}` ``
+   * template literal, which is how most real call sites write it. A second
+   * selector catches the template-literal form specifically.
    */
   {
     files: ["src/features/**/*.tsx"],
@@ -410,24 +432,6 @@ export default tseslint.config(
           selector: "JSXAttribute[name.name='fill'] MemberExpression[property.name=/^(antiqueGold|goldLight)$/]",
           message: "Gold is decorative, never a chart data colour. Use semantic.chart.series[i] from design-system/tokens — design-system/04-DATA-DISPLAY.md Part K.1.",
         },
-      ],
-    },
-  },
-
-  /**
-   * PHASE-5 ENFORCEMENT LAYER (design-system/05-OVERLAYS.md, Part P Step 8)
-   * ═══════════════════════════════════════════════════════════════════════════
-   * `warn`, not `error` — the 63-modal migration and the native-date-input
-   * replacement are Phase 8/5 follow-up work, not done in this pass. This is
-   * a ratchet: it stops new 4+-digit z-index literals and new native date
-   * inputs from being added while the real migration is still in progress.
-   */
-  {
-    files: ["src/features/**/*.tsx"],
-    ignores: ["**/*.test.tsx", "**/*.spec.tsx"],
-    rules: {
-      "no-restricted-syntax": [
-        "warn",
         {
           selector: "Property[key.name='zIndex'] Literal[value=/^[0-9]{4,}$/]",
           message: "Use the --z-* ladder from styles/tokens.css, not a raw literal — design-system/05-OVERLAYS.md Part C.1.",
@@ -435,6 +439,60 @@ export default tseslint.config(
         {
           selector: "JSXAttribute[name.name='type'] Literal[value='date']",
           message: "Use <DatePicker> from shared/ui/date, not a native type=\"date\" input — design-system/05-OVERLAYS.md Part K.4.",
+        },
+        {
+          selector: "Literal[value=/₹/]",
+          message: "Use <Money> from shared/ui/domain instead of a hand-placed ₹ literal — design-system/06-DOMAIN.md Part E.4.",
+        },
+        {
+          selector: "TemplateElement[value.raw=/₹/]",
+          message: "Use <Money> from shared/ui/domain instead of a ₹ template literal — design-system/06-DOMAIN.md Part E.4.",
+        },
+        {
+          selector: "CallExpression[callee.property.name='toLocaleString'][arguments.length=0]",
+          message: "Bare toLocaleString() is locale-dependent (renders 1,00,000 as 100,000 in en-US). Use formatMoney/formatQuantity or an explicit en-IN formatter — design-system/06-DOMAIN.md Part F.3.",
+        },
+        {
+          selector: "Property[key.name='fontFamily'] MemberExpression[property.name='mono']",
+          message: "Mono is for entity codes only. Use <EntityCode> from shared/ui/domain, or Inter + tabular figures — design-system/06-DOMAIN.md Part C.4/M7.",
+        },
+        {
+          selector: "CallExpression[callee.name='parseFloat']",
+          message: "If this is money, use lib/gst's integer-paise helpers instead — parseFloat on currency reintroduces float-drift totals that don't reconcile. design-system/07-DOCUMENTS.md Part A.4/I.5.",
+        },
+      ],
+    },
+  },
+
+  /**
+   * PHASE-7 window.print() — deliberately `error`, not `warn`
+   * (design-system/07-DOCUMENTS.md, Part N Step 9). This one has no backlog
+   * to grandfather: all 6 flagged call sites (Part A.1) were migrated to
+   * useDocument() in the same pass that added this rule, confirmed via
+   * `rg "window\.print\(\)"` returning zero app-code hits. A new raw call
+   * silently reintroduces "printing prints the whole app." Scoped wider
+   * than the ratchet block above (`shared` too, minus `shared/ui/document`
+   * itself, which legitimately owns the one real `window.print()` call
+   * inside `useDocument()`).
+   *
+   * Uses `no-restricted-properties`, a DIFFERENT rule name from
+   * `no-restricted-syntax` above, on purpose — not just "the right tool for
+   * a single object.property check." Two config objects that both match
+   * `src/features/**` and both set the *same* rule name collide (see the
+   * consolidation comment above); giving this its own rule name is what
+   * lets it coexist at a different severity without re-triggering that bug,
+   * regardless of which block happens to be listed last.
+   */
+  {
+    files: ["src/features/**/*.tsx", "src/shared/**/*.tsx"],
+    ignores: ["**/*.test.tsx", "**/*.spec.tsx", "src/shared/ui/document/**"],
+    rules: {
+      "no-restricted-properties": [
+        "error",
+        {
+          object: "window",
+          property: "print",
+          message: "Use useDocument().print() from shared/ui/document, not a raw window.print() — it prints the whole app (nav, scrim, modal chrome). design-system/07-DOCUMENTS.md Part C.3.",
         },
       ],
     },

@@ -4,6 +4,7 @@ import { FinishingReturn } from "../../../../finishing/contexts/FinishingContext
 import { useBatches } from "../../../../production/contexts/BatchContext";
 import { T, F } from "../../theme";
 import { StatusBadge } from "../../common/primitives";
+import { toPaise, fromPaise } from "../../../../../lib/gst";
 
 // ── Saree review list (shared by the quotation / invoice review steps) ────────
 export function SareeReviewList({ sarees, prices, applyGst, gstPct, docLabel }: {
@@ -14,8 +15,12 @@ export function SareeReviewList({ sarees, prices, applyGst, gstPct, docLabel }: 
   docLabel: string;
 }) {
   const { batches } = useBatches();
-  const subtotal = sarees.reduce((sum, s) => sum + (parseFloat(prices[s.sareeId || s.id]) || 0), 0);
-  const gstAmount = applyGst ? subtotal * (parseFloat(gstPct) || 0) / 100 : 0;
+  // Part A.4/I.5 — sum in integer paise, not floats (see the identical fix
+  // and comment in InvoiceGenerator.tsx, which this list is reviewed after).
+  const subtotalPaise = sarees.reduce((sum, s) => sum + toPaise(Number(prices[s.sareeId || s.id]) || 0), 0);
+  const gstPaise = applyGst ? Math.round(subtotalPaise * (Number(gstPct) || 0) / 100) : 0;
+  const subtotal = fromPaise(subtotalPaise);
+  const gstAmount = fromPaise(gstPaise);
 
   return (
     <div>

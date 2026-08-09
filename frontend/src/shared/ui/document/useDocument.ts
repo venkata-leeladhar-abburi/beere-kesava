@@ -18,6 +18,8 @@
  */
 import * as React from "react";
 import { createRoot, type Root } from "react-dom/client";
+import { toast } from "sonner";
+import { useDownloadsAllowed } from "../DownloadAccess";
 
 const ASSET_TIMEOUT_MS = 3000;
 
@@ -98,21 +100,40 @@ async function renderAndPrint(node: React.ReactNode) {
 }
 
 export function useDocument() {
+  const downloadsAllowed = useDownloadsAllowed();
+
+  // Print (Part L.3's table) is available to every role — physical printing
+  // is a legitimate, universal action and this app has no way to tell a
+  // real printer from a "Print to PDF" virtual one at the JS layer, so print
+  // itself is never gated here.
   const print = React.useCallback((node: React.ReactNode) => {
     void renderAndPrint(node);
   }, []);
 
   /**
-   * Same render path as print(). There is no backend PDF service yet
-   * (07-DOCUMENTS.md Part L is deferred), and the browser's own
-   * "Save as PDF" print destination produces the identical tree and
-   * stylesheet — which is exactly the "download must be the same document"
-   * requirement. Swapping in a server-rendered PDF later replaces just
-   * this function.
+   * Same render path as print(), but GATED — this is the PrintGate/L.3 half
+   * of Phase 7: "an accountant blocked from exporting can still Print → Save
+   * as PDF" is exactly the bypass this closes for the direct Download
+   * button. It is a partial fix, not a complete one, and that's worth being
+   * honest about: because download() and print() still share one
+   * window.print() call (no backend PDF service exists yet — Part L is
+   * deferred), a blocked user can still reach the identical output by
+   * clicking Print and choosing "Save as PDF" from the OS dialog, since
+   * nothing in the browser lets JS distinguish that choice from sending to
+   * a physical printer. Closing that path for real needs Part L's
+   * server-rendered PDF, gated at the backend endpoint instead of in the
+   * browser. Until then this stops the direct, one-click bypass and leaves
+   * an honest audit trail (the toast) for the indirect one.
    */
   const download = React.useCallback((node: React.ReactNode) => {
+    if (!downloadsAllowed) {
+      toast.error("Your account can't download documents.", {
+        description: "Contact an admin if you need this file exported.",
+      });
+      return;
+    }
     void renderAndPrint(node);
-  }, []);
+  }, [downloadsAllowed]);
 
-  return { print, download };
+  return { print, download, downloadsAllowed };
 }

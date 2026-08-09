@@ -9,19 +9,19 @@ import { T, F } from "../theme";
 import { Button, IconButton } from "../../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
 import { Modal } from "../../../../../shared/ui/overlay";
+import { useDocument } from "../../../../../shared/ui/document";
 
 /** Full saree/barcode breakdown for one purchase — one row per physical piece. */
 export function SareeListModal({
   purchase,
   onClose,
   onPrint,
-  onPrintAll,
 }: {
   purchase: Purchase;
   onClose: () => void;
   onPrint: (saree: SareeTag) => void;
-  onPrintAll: () => void;
 }) {
+  const { print } = useDocument();
   // One row per physical saree — a line bought in bulk is tagged piece by piece.
   const pieces = expandSareePieces(purchase.sarees);
   type Piece = (typeof pieces)[number];
@@ -88,6 +88,56 @@ export function SareeListModal({
 
   const totals = purchaseTotals(purchase.sarees);
 
+  // A plain print table, not <DataTable> — DataTable's sort/hover chrome and
+  // the per-row "Print" barcode button aren't meaningful on paper. Same data,
+  // same column order minus the interactive Barcode column.
+  const printTable = (
+    <div style={{ padding: "16mm" }}>
+      <div style={{ marginBottom: "4mm" }}>
+        <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "14pt", color: "var(--doc-burgundy)" }}>
+          {purchase.id} — Saree Details
+        </div>
+        <div style={{ fontFamily: "var(--font-code)", fontSize: "var(--doc-code)", color: "var(--doc-muted)" }}>{purchase.supplier}</div>
+      </div>
+      <table className="bk-doc__table">
+        <thead>
+          <tr>
+            {["S.No", "Saree Code", "Line Serial", "Saree Type", "Colour", "Weight", "Buying Price", "Sell %", "Selling Price", "Profit", "Notes"].map(h => (
+              <th key={h} style={{ textAlign: /Price|Profit|%/.test(h) ? "end" : "start" }}>{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {pieces.map((s, i) => (
+            <tr key={s.id}>
+              <td>{i + 1}</td>
+              <td style={{ fontFamily: "var(--font-code)" }}>{s.id}</td>
+              <td style={{ fontFamily: "var(--font-code)" }}>{s.lineCode} · pc {s.pieceNo}/{s.lineQuantity}</td>
+              <td>{s.sareeType || "—"}</td>
+              <td>{s.color || "—"}</td>
+              <td>{s.weight}</td>
+              <td data-num>{formatINR(s.price)}</td>
+              <td data-num>{s.sellPercent}%</td>
+              <td data-num>{formatINR(s.finalAmount)}</td>
+              <td data-num>{formatINR(lineProfit(s))}</td>
+              <td>{s.notes || "—"}</td>
+            </tr>
+          ))}
+        </tbody>
+        <tfoot>
+          <tr style={{ fontWeight: 700 }}>
+            <td colSpan={6}>Totals — {totals.pieces} piece{totals.pieces !== 1 ? "s" : ""}</td>
+            <td data-num>{formatINR(totals.buying)}</td>
+            <td></td>
+            <td data-num>{formatINR(totals.selling)}</td>
+            <td data-num>{formatINR(totals.profit)}</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  );
+
   return (
     <Modal open onOpenChange={o => { if (!o) onClose(); }} size="xl">
       <div
@@ -130,7 +180,7 @@ export function SareeListModal({
             </Dialog.Close>
           </div>
 
-          <div className="print-area" style={{ overflow: "auto", flex: 1 }}>
+          <div style={{ overflow: "auto", flex: 1 }}>
             <DataTable columns={columns} data={pieces} getRowId={s => s.id} />
             {/* DataTable has no tfoot support — totals row rendered as a matching footer bar. */}
             <div
@@ -165,7 +215,7 @@ export function SareeListModal({
             <Button
               variant="primary"
               iconLeft={Printer}
-              onClick={onPrintAll}
+              onClick={() => print(printTable)}
               fullWidth
               className="rounded-full"
             >

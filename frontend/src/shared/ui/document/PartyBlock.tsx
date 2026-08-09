@@ -31,8 +31,8 @@ export interface PartyBlockProps {
 
 export function PartyBlock({ parties, meta }: PartyBlockProps) {
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1.15fr 1fr", gap: "5mm", marginTop: "7mm", alignItems: "start" }}>
-      <div style={{ display: "flex", flexDirection: "column", gap: "3.5mm" }}>
+    <div style={{ display: "grid", gridTemplateColumns: "1.15fr 1fr", gap: "5mm", marginTop: "5mm", alignItems: "start" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "3mm" }}>
         {parties.map((p, i) => (
           <div key={i} className="bk-doc__card bk-doc__card--accent">
             <div className="bk-doc__eyebrow">{p.label}</div>

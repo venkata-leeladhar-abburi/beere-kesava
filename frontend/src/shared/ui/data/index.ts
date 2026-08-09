@@ -6,3 +6,4 @@ export {
   columnAlign, defaultSort,
   type ColumnDef, type ColumnType, type ColumnAlign, type SortDirection,
 } from "./columns";
+export { exportTable, type ExportTableOptions } from "./exportTable";

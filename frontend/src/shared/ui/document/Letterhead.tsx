@@ -39,29 +39,30 @@ export interface LetterheadProps {
 export function Letterhead({ firm = DEFAULT_LETTERHEAD_FIRM, title, documentNumber, copyLabel }: LetterheadProps) {
   return (
     <div className="bk-doc__band">
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "8mm" }}>
-        <div style={{ display: "flex", gap: "4.5mm", alignItems: "flex-start" }}>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "6mm" }}>
+        <div style={{ display: "flex", gap: "4mm", alignItems: "flex-start", minWidth: 0 }}>
           <img src={imgBKLogo} alt="" className="bk-doc__logo" />
           <div>
             <div
               style={{
                 fontFamily: "var(--font-display)", fontSize: "var(--doc-brand-size)",
-                fontWeight: 600, lineHeight: 1.12, color: "#FFFDF9", letterSpacing: "0.01em",
+                fontWeight: 600, lineHeight: 1.1, color: "#FFFFFF", letterSpacing: "0.01em",
+                textWrap: "balance",
               }}
             >
               {firm.name}
             </div>
             {firm.tagline && (
-              <div style={{ fontSize: "var(--doc-small)", color: "#E7C983", marginTop: "1.2mm", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+              <div style={{ fontSize: "var(--doc-small)", color: "var(--doc-gold-bright)", marginTop: "1mm", letterSpacing: "0.06em", textTransform: "uppercase" }}>
                 {firm.tagline}
               </div>
             )}
             {firm.address && (
-              <div style={{ fontSize: "var(--doc-small)", color: "rgba(255,253,249,0.78)", marginTop: "1.8mm", maxWidth: "88mm", lineHeight: 1.45 }}>
+              <div style={{ fontSize: "var(--doc-small)", color: "rgba(255,253,249,0.80)", marginTop: "1.4mm", maxWidth: "92mm", lineHeight: 1.35 }}>
                 {firm.address}
               </div>
             )}
-            <div style={{ display: "flex", gap: "5mm", marginTop: "1mm", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: "4mm", marginTop: "1.2mm", flexWrap: "wrap" }}>
               {firm.gstin && (
                 <span style={{ fontFamily: "var(--font-code)", fontSize: "var(--doc-code)", color: "rgba(255,253,249,0.78)" }}>
                   GSTIN {firm.gstin}

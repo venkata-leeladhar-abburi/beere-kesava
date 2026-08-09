@@ -6,6 +6,7 @@ import { W_STATUS } from "../materialConfig";
 import type { WeaverMat } from "../types";
 import { ModalOverlay, ModalHeader } from "../common/primitives";
 import { Button } from "../../../../shared/ui/primitives";
+import { useDocument } from "../../../../shared/ui/document";
 
 // ─── WEAVER VIEW DETAILS MODAL ────────────────────────────────────────────────
 export function WeaverViewDetailsModal({ weaver, onClose }: { weaver: WeaverMat | null; onClose: () => void }) {
@@ -87,15 +88,16 @@ export function WeaverViewDetailsModal({ weaver, onClose }: { weaver: WeaverMat 
 
 // ─── ISSUE SLIP MODAL ─────────────────────────────────────────────────────────
 export function IssueSlipModal({ weaver, onClose }: { weaver: WeaverMat | null; onClose: () => void }) {
+  const { print } = useDocument();
   if (!weaver) return null;
   const today = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" });
   const slipNo = `ISS-${weaver.id}-${weaver.batch}-${Date.now().toString().slice(-4)}`;
 
-  return (
-    <ModalOverlay open={!!weaver} onClose={onClose}>
-      <ModalHeader title="Issue Slip" subtitle="Material issue record for weaver" onClose={onClose} />
-      <div style={{ padding: "26px 28px 28px" }}>
-        <div className="print-area" style={{ background: "#FFFFFF", border: `1.5px solid rgba(110,15,45,0.15)`, borderRadius: 16, padding: "24px 26px", marginBottom: 22 }}>
+  // Same JSX rendered on screen and portaled to #document-print-root via
+  // useDocument() (07-DOCUMENTS.md Part C.3) — not a raw window call to `print`,
+  // which used to print the whole app around this slip.
+  const slip = (
+    <div style={{ background: "#FFFFFF", border: `1.5px solid rgba(110,15,45,0.15)`, borderRadius: 16, padding: "24px 26px" }}>
           <div style={{ textAlign: "center", borderBottom: `1.5px solid rgba(110,15,45,0.12)`, paddingBottom: 18, marginBottom: 18 }}>
             <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: T.luxuryBrown, marginBottom: 2 }}>Beere Kesava & Brothers Silks</div>
             <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "2.5px", textTransform: "uppercase", color: T.taupe, marginBottom: 10 }}>Material Issue Slip</div>
@@ -146,13 +148,20 @@ export function IssueSlipModal({ weaver, onClose }: { weaver: WeaverMat | null; 
               </div>
             ))}
           </div>
-        </div>
+    </div>
+  );
+
+  return (
+    <ModalOverlay open={!!weaver} onClose={onClose}>
+      <ModalHeader title="Issue Slip" subtitle="Material issue record for weaver" onClose={onClose} />
+      <div style={{ padding: "26px 28px 28px" }}>
+        <div style={{ marginBottom: 22 }}>{slip}</div>
 
         <div style={{ display: "flex", gap: 12 }}>
           <Button onClick={onClose} variant="secondary" size="md" className="flex-1">
             Close
           </Button>
-          <Button onClick={() => window.print()} variant="primary" size="md" iconLeft={Printer} className="flex-[2]">
+          <Button onClick={() => print(<div style={{ padding: "16mm" }}>{slip}</div>)} variant="primary" size="md" iconLeft={Printer} className="flex-[2]">
             Print Issue Slip
           </Button>
         </div>

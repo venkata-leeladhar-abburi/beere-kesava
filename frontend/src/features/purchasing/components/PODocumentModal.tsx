@@ -1,9 +1,10 @@
 import * as Dialog from "@radix-ui/react-dialog";
-import { X, Printer, Share2, Download } from "lucide-react";
+import { X, Share2 } from "lucide-react";
 import { PurchaseOrder } from "../contexts/POContext";
 import { toast } from "sonner";
 import { Button, IconButton } from "../../../shared/ui/primitives";
 import { Modal } from "../../../shared/ui/overlay";
+import { DocumentViewer, PurchaseOrderDocument, DEFAULT_LETTERHEAD_FIRM } from "../../../shared/ui/document";
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const T = {
@@ -63,226 +64,75 @@ export function PODocumentModal({ open, onClose, po, isApproved }: PODocumentMod
   const showApproved = isApproved || po.status === "approved" || po.status === "received";
 
   return (
-    <Modal open={open} onOpenChange={o => !o && onClose()} size="md">
-            {/* Header */}
-            <div style={{
-              background: T.darkBurgundy,
-              padding: "20px 28px",
-              display: "flex",
-              alignItems: "flex-start",
-              justifyContent: "space-between",
-              flexShrink: 0,
-            }}>
-              <div>
-                <Dialog.Title asChild>
-                  <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9", marginBottom: 6 }}>
-                    Purchase Order Document
-                  </div>
-                </Dialog.Title>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <span style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold }}>{po.poNumber}</span>
-                  <StatusBadge status={po.status} />
-                  {po.urgency === "Urgent" && (
-                    <span style={{ fontFamily: F.mono, fontSize: 12, color: T.crimson, background: "rgba(192,57,43,0.20)", padding: "2px 8px", borderRadius: 5 }}>🔴 URGENT</span>
-                  )}
-                </div>
+    <Modal open={open} onOpenChange={o => !o && onClose()} size="xl">
+      <div style={{ display: "flex", flexDirection: "column", height: "85vh" }}>
+        {/* Header */}
+        <div style={{
+          background: T.darkBurgundy,
+          padding: "16px 20px",
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          flexShrink: 0,
+        }}>
+          <div>
+            <Dialog.Title asChild>
+              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: "#FFFDF9", marginBottom: 4 }}>
+                Purchase Order Document
               </div>
-              <Dialog.Close asChild>
-                <IconButton
-                  label="Close"
-                  icon={X}
-                  variant="secondary"
-                  size="md"
-                  shape="circle"
-                  className="bg-white/10 border-white/20 text-white"
-                />
-              </Dialog.Close>
+            </Dialog.Title>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold }}>{po.poNumber}</span>
+              <StatusBadge status={po.status} />
+              {po.urgency === "Urgent" && (
+                <span style={{ fontFamily: F.mono, fontSize: 12, color: T.crimson, background: "rgba(192,57,43,0.20)", padding: "2px 8px", borderRadius: 5 }}>🔴 URGENT</span>
+              )}
             </div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <Button
+              onClick={() => toast.success("PO document ready — share with vendor via WhatsApp or email")}
+              variant="secondary" size="sm" iconLeft={Share2}
+              className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+            >
+              Share with Vendor
+            </Button>
+            <Dialog.Close asChild>
+              <IconButton
+                label="Close"
+                icon={X}
+                variant="secondary"
+                size="md"
+                shape="circle"
+                className="bg-white/10 border-white/20 text-white"
+              />
+            </Dialog.Close>
+          </div>
+        </div>
 
-            {/* Document body */}
-            <div style={{ flex: 1, overflowY: "auto", padding: "28px 32px" }}>
-              {/* PO Document card */}
-              <div className="print-area" style={{
-                background: "#FFFFFF",
-                border: `1.5px solid ${T.borderDef}`,
-                borderRadius: 14,
-                overflow: "hidden",
-              }}>
-                {/* Document header strip */}
-                <div style={{
-                  background: T.darkBurgundy,
-                  padding: "22px 28px",
-                  textAlign: "center",
-                }}>
-                  <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: "#FFFDF9", marginBottom: 3 }}>
-                    🪷 Beere Kesava &amp; Brothers Silks
-                  </div>
-                  <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, letterSpacing: "2px" }}>Est. 1999</div>
-                  <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.65)", marginTop: 4 }}>
-                    Guntur, Andhra Pradesh, India
-                  </div>
-                </div>
-
-                <div style={{ padding: "24px 28px" }}>
-                  {/* Reference row */}
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18, paddingBottom: 14, borderBottom: `1px solid ${T.borderDef}` }}>
-                    <div>
-                      <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700 }}>
-                        Purchase Order No: {po.poNumber}
-                      </span>
-                    </div>
-                    <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
-                      Date: {new Date(po.submittedDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
-                    </span>
-                  </div>
-
-                  {/* Vendor + Delivery row */}
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 20 }}>
-                    <div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 500, marginBottom: 5 }}>Vendor:</div>
-                      <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 14, color: T.luxuryBrown, marginBottom: 3 }}>{po.vendor}</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-                        {[po.vendorCity, po.vendorContact].filter(Boolean).join(" · ")}
-                      </div>
-                    </div>
-                    <div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 500, marginBottom: 5 }}>Expected Delivery:</div>
-                      <div style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown, fontWeight: 600 }}>
-                        {po.deliveryDate ? new Date(po.deliveryDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—"}
-                      </div>
-                      {po.urgency === "Urgent" && (
-                        <div style={{ marginTop: 6 }}>
-                          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.crimson, background: "rgba(192,57,43,0.10)", padding: "3px 9px", borderRadius: 5 }}>
-                            🔴 Urgent — Low Stock Alert
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Materials table */}
-                  <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 10, overflow: "hidden", marginBottom: 18 }}>
-                    <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr", background: T.silkCream, padding: "10px 16px", gap: 8 }}>
-                      {["Material", "Description", "Quantity"].map(h => (
-                        <span key={h} style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, fontWeight: 600, letterSpacing: "0.8px", textTransform: "uppercase" }}>{h}</span>
-                      ))}
-                    </div>
-                    {po.materials.map((m, i) => (
-                      <div key={i} style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr", padding: "11px 16px", gap: 8, background: i % 2 === 0 ? "#FFFFFF" : T.warmIvory, borderTop: `1px solid ${T.borderDef}` }}>
-                        <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{m.materialType}</span>
-                        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{m.subtype || "—"}</span>
-                        <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{m.quantity} {m.unit}</span>
-                      </div>
-                    ))}
-                    {/* Total row */}
-                    <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr", padding: "13px 16px", gap: 8, background: T.warmCream, borderTop: `2px solid ${T.borderGold}` }}>
-                      <span style={{ fontFamily: F.display, fontSize: 13, fontWeight: 700, color: T.luxuryBrown, gridColumn: "1 / 3" }}>Estimated Total</span>
-                      <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.antiqueGold }}>
-                        ₹{po.totalValue?.toLocaleString("en-IN")}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Notes */}
-                  {(po.notesVendor || po.notesAdmin) && (
-                    <div style={{ marginBottom: 18 }}>
-                      {po.notesVendor && (
-                        <div style={{ background: T.silkCream, borderRadius: 9, padding: "12px 15px", marginBottom: 10 }}>
-                          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 500, marginBottom: 5 }}>Instructions for Vendor:</div>
-                          <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{po.notesVendor}</div>
-                        </div>
-                      )}
-                      {po.notesAdmin && (
-                        <div style={{ background: "rgba(200,155,71,0.07)", borderRadius: 9, padding: "12px 15px", border: `1px solid ${T.borderGold}` }}>
-                          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.antiqueGold, fontWeight: 500, marginBottom: 5 }}>Admin's Note:</div>
-                          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, fontStyle: "italic" }}>{po.notesAdmin}</div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Raised by */}
-                  <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 18 }}>
-                    Raised by: <strong style={{ color: T.luxuryBrown }}>{po.raisedBy}</strong>
-                    &nbsp;·&nbsp;
-                    Submitted: <span style={{ fontFamily: F.mono }}>{new Date(po.submittedDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>
-                  </div>
-
-                  {/* Signature block */}
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 28, marginBottom: 18 }}>
-                    <div>
-                      <div style={{ height: 40, borderBottom: `1.5px solid rgba(110,15,45,0.18)`, marginBottom: 7 }} />
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Prepared by: _____________</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>Admin</div>
-                    </div>
-                    <div>
-                      <div style={{ height: 40, borderBottom: `1.5px solid rgba(110,15,45,0.18)`, marginBottom: 7, position: "relative" }}>
-                        {showApproved && (
-                          <div style={{ position: "absolute", bottom: 10, left: 0, fontFamily: F.display, fontSize: 12, color: T.green, fontWeight: 600 }}>
-                            Superadmin
-                          </div>
-                        )}
-                      </div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-                        Approved by: {showApproved ? <span style={{ color: T.green, fontWeight: 600 }}>Superadmin</span> : "_____________"}
-                      </div>
-                      {showApproved && (
-                        <div style={{ fontFamily: F.mono, fontSize: 12, color: T.green, marginTop: 4 }}>{approvedDisplay}</div>
-                      )}
-                      {!showApproved && (
-                        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>Superadmin</div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Document footer */}
-                  <div style={{ textAlign: "center", paddingTop: 14, borderTop: `1px solid ${T.borderDef}` }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Beere Kesava &amp; Brothers Silks · Est. 1999</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, marginTop: 3, letterSpacing: "1.5px" }}>
-                      Tradition · Trust · Timeless Quality
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Footer buttons */}
-            <div style={{
-              padding: "18px 28px",
-              borderTop: `1px solid ${T.borderDef}`,
-              background: T.warmIvory,
-              display: "flex",
-              gap: 10,
-              flexShrink: 0,
-            }}>
-              <Button
-                onClick={() => window.print()}
-                variant="primary" size="lg" fullWidth className="flex-1" iconLeft={Printer}
-              >
-                Print PO Document
-              </Button>
-
-              <Button
-                onClick={() => toast.success("PO document ready — share with vendor via WhatsApp or email")}
-                variant="primary" size="lg" fullWidth className="flex-1" iconLeft={Share2}
-              >
-                Share with Vendor
-              </Button>
-
-              <Button
-                onClick={() => window.print()}
-                variant="secondary" size="lg" fullWidth className="flex-1" iconLeft={Download}
-              >
-                Download as PDF
-              </Button>
-
-              <Button
-                onClick={onClose}
-                variant="secondary" size="sm" className="flex-[0.6]"
-              >
-                × Close
-              </Button>
-            </div>
+        {/* Document body — the real Part H.3 PurchaseOrderDocument, rendered
+            once and reused for screen preview, Print and Download via
+            DocumentViewer/useDocument (Part C.1). Replaces the bespoke
+            print-area card and its raw calls to window's print method. */}
+        <DocumentViewer>
+          <PurchaseOrderDocument
+            poNumber={po.poNumber}
+            submittedDate={new Date(po.submittedDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
+            deliveryDate={po.deliveryDate ? new Date(po.deliveryDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : undefined}
+            firm={DEFAULT_LETTERHEAD_FIRM}
+            supplier={{ name: po.vendor, city: po.vendorCity, contact: po.vendorContact }}
+            materials={po.materials}
+            totalValue={po.totalValue}
+            urgency={po.urgency}
+            notesVendor={po.notesVendor}
+            notesAdmin={po.notesAdmin}
+            raisedBy={po.raisedBy}
+            approvedBy={showApproved ? "Superadmin" : undefined}
+            approvedDate={showApproved ? approvedDisplay : undefined}
+            statusLabel={po.status === "rejected" ? "REJECTED" : po.status === "received" ? "RECEIVED" : undefined}
+          />
+        </DocumentViewer>
+      </div>
     </Modal>
   );
 }

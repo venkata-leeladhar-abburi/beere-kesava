@@ -110,7 +110,13 @@ export function InvoiceDocument({
 
   const grandTotalExact = subtotalPaise + totalTaxPaise;
   const { roundedPaise, adjustmentPaise } = roundOff(grandTotalExact);
-  const headlineRate = hsnRate(items[0]?.hsn || DEFAULT_SAREE_HSN);
+  // Only name a rate in the totals labels when the document actually carries
+  // exactly one. With mixed HSN slabs (e.g. 5% sarees + 12% zari) the summed
+  // tax belongs to no single rate, and printing "IGST @ 5%" against a figure
+  // that includes 12% tax misstates the document — the rate-wise TaxSummary
+  // above is what carries the per-slab breakdown in that case.
+  const singleRate = byHsn.size === 1 ? hsnRate(items[0]?.hsn || DEFAULT_SAREE_HSN) : null;
+  const rateSuffix = (share: number) => (singleRate === null ? "" : ` @ ${singleRate * share}%`);
 
   const meta: MetaField[] = [
     { label: "Invoice No", value: invoiceNumber, code: true },
@@ -124,10 +130,10 @@ export function InvoiceDocument({
     ...(applyGst
       ? kind === "intra"
         ? [
-            { label: `CGST @ ${headlineRate / 2}%`, amount: formatPaise(totalTaxPaise / 2) },
-            { label: `SGST @ ${headlineRate / 2}%`, amount: formatPaise(totalTaxPaise / 2) },
+            { label: `CGST${rateSuffix(0.5)}`, amount: formatPaise(totalTaxPaise / 2) },
+            { label: `SGST${rateSuffix(0.5)}`, amount: formatPaise(totalTaxPaise / 2) },
           ]
-        : [{ label: `IGST @ ${headlineRate}%`, amount: formatPaise(totalTaxPaise) }]
+        : [{ label: `IGST${rateSuffix(1)}`, amount: formatPaise(totalTaxPaise) }]
       : []),
     ...(adjustmentPaise !== 0
       ? [{ label: "Round Off", amount: `${adjustmentPaise > 0 ? "+" : "−"}${formatPaise(Math.abs(adjustmentPaise))}` }]
@@ -173,16 +179,23 @@ export function InvoiceDocument({
         columns={[
           { header: "#", align: "center", width: "9mm", cell: (_row, i) => i + 1 },
           {
-            header: "Description", width: "78mm",
+            header: "Description", width: "82mm",
             cell: row => (
               <div>
-                <div style={{ fontFamily: "var(--font-code)", fontSize: "var(--doc-code)", fontWeight: 600, color: "var(--doc-burgundy)" }}>
-                  {row.id}
+                {/* Entity code and batch share one line — they're both codes,
+                    and appending the batch to the prose description was
+                    wrapping most rows onto a third line. */}
+                <div style={{ display: "flex", alignItems: "baseline", gap: "2.5mm", flexWrap: "wrap" }}>
+                  <span style={{ fontFamily: "var(--font-code)", fontSize: "var(--doc-code)", fontWeight: 600, color: "var(--doc-burgundy)" }}>
+                    {row.id}
+                  </span>
+                  {row.batchLabel && (
+                    <span style={{ fontFamily: "var(--font-code)", fontSize: "var(--doc-small)", color: "var(--doc-faint)" }}>
+                      {row.batchLabel}
+                    </span>
+                  )}
                 </div>
-                <div style={{ color: "var(--doc-muted)", marginTop: "0.4mm" }}>
-                  {row.description}
-                  {row.batchLabel ? ` · ${row.batchLabel}` : ""}
-                </div>
+                <div style={{ color: "var(--doc-muted)", marginTop: "0.3mm", lineHeight: 1.3 }}>{row.description}</div>
               </div>
             ),
           },
@@ -194,13 +207,24 @@ export function InvoiceDocument({
         rows={items}
       />
 
-      <TotalsBlock rows={totalsRows} />
-
-      {applyGst && taxSummaryRows.length > 0 && (
+      {/* Part I.3 makes the rate-wise summary mandatory only when the document
+          carries MORE THAN ONE GST rate. On a single-rate invoice it just
+          restates the totals block line for line, and costs a third of a page
+          doing it — so it renders only when it actually adds information. */}
+      {applyGst && byHsn.size > 1 && (
         <TaxSummary rows={taxSummaryRows} totalRow={taxSummaryTotal} interState={kind === "inter"} />
       )}
 
-      <AmountInWords words={amountInWords(roundedPaise)} />
+      {/* Amount-in-words beside the money, rather than stacked above it — the
+          conventional Indian tax-invoice arrangement, and it keeps a typical
+          invoice on one sheet instead of spilling a near-empty second page. */}
+      <div
+        className="bk-doc__summary"
+        style={{ display: "grid", gridTemplateColumns: "1fr 88mm", gap: "5mm", marginTop: "5mm", alignItems: "start" }}
+      >
+        <AmountInWords words={amountInWords(roundedPaise)} />
+        <TotalsBlock rows={totalsRows} />
+      </div>
 
       <TermsBlock
         bank={bank}

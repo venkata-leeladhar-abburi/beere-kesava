@@ -1,31 +1,19 @@
 /**
  * Avatar — design-system/03-PRIMITIVES.md Part M.
- * Fallback colours are the verified 8-colour set (Phase 1 ramps at -800,
- * all >=7:1 against white initials), deterministic from a hash of the
- * name — replacing the arbitrary hand-picked set in the current app
- * (bg: "#9B6B8A", "#5A3E6B", "#2D6B6B", "#4A6B4A", …).
+ * Fallback colours are the verified 8-colour set (design-system/06-DOMAIN.md
+ * Part G.3 — Phase 1 ramps at -800, all >=7:1 against white initials),
+ * deterministic from a hash of the name — replacing the arbitrary
+ * hand-picked set in the current app (bg: "#9B6B8A", "#5A3E6B", "#2D6B6B",
+ * "#4A6B4A", …). Previously only 6 colours with neutral-800 standing in for
+ * teal-800; now the full 8, sourced from `shared/ui/domain/avatarColor`.
  */
 import * as React from "react";
 import * as AvatarPrimitive from "@radix-ui/react-avatar";
 import { cn } from "../utils";
+import { avatarColorFor } from "../domain/avatarColor";
 
 const SIZE_PX = { xs: 24, sm: 32, md: 40, lg: 48, xl: 64, "2xl": 96 } as const;
 export type AvatarSize = keyof typeof SIZE_PX;
-
-const FALLBACK_COLORS = [
-  "var(--bk-burgundy-800)",
-  "var(--bk-blue-800)",
-  "var(--bk-neutral-800)", // stands in for teal-800 until that ramp token exists
-  "var(--bk-amber-800)",
-  "var(--bk-green-800)",
-  "var(--bk-red-800)",
-] as const;
-
-function hashName(name: string): number {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) hash = (hash << 5) - hash + name.charCodeAt(i);
-  return Math.abs(hash);
-}
 
 function initialsOf(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -50,7 +38,7 @@ const STATUS_COLOR: Record<NonNullable<AvatarProps["status"]>, string> = {
 
 export function Avatar({ src, name, size = "md", status, className, ...props }: AvatarProps) {
   const px = SIZE_PX[size];
-  const color = FALLBACK_COLORS[hashName(name) % FALLBACK_COLORS.length];
+  const color = avatarColorFor(name);
 
   return (
     <AvatarPrimitive.Root

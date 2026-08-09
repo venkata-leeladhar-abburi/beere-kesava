@@ -5,6 +5,8 @@ import {
 } from "lucide-react";
 import { FinishingReturn } from "../../../finishing/contexts/FinishingContext";
 import { useBulkOrders } from "../../../bulk-orders/contexts/BulkOrderContext";
+import { useFirms } from "../../../firms/contexts/FirmsContext";
+import { useBatches } from "../../../production/contexts/BatchContext";
 import { T, F } from "../theme";
 import { Button, IconButton, SearchInput } from "../../../../shared/ui/primitives";
 import { useAllWholesaleCustomers } from "../../../bulk-orders/components/WholesaleCustomerSelectSection";
@@ -12,9 +14,9 @@ import { InvoiceData } from "../types";
 import { SareePicker } from "./shared/SareePicker";
 import { NoSareesNotice } from "./shared/NoSareesNotice";
 import { InvoiceGenerator } from "./shared/InvoiceGenerator";
-import { SareeReviewList } from "./shared/SareeReviewList";
 import { SelectInput } from "../common/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
+import { DocumentViewer, QuotationDocument, toQuotationItems, DEFAULT_LETTERHEAD_FIRM } from "../../../../shared/ui/document";
 
 // ── Raise Quotation modal (Customer → Quotation → Sarees) ─────────────────────
 // Sarees are added inside the Quotation step — by scan or from inventory — so
@@ -33,6 +35,8 @@ export function RaiseQuotationModal({ sarees, available, onConfirm, onClose, ini
   const [customerSearch, setCustomerSearch] = useState("");
   const [bulkOrderRef, setBulkOrderRef] = useState(initialBulkOrderRef || "");
   const { bulkOrders } = useBulkOrders();
+  const { firms } = useFirms();
+  const { batches } = useBatches();
   const [picked, setPicked] = useState<FinishingReturn[]>(sarees);
   const [inv, setInv] = useState<InvoiceData>({ invoiceNumber: `QT-2026-${String(Date.now()).slice(-3)}`, invoiceDate: today, prices: {}, applyGst: false, gstPct: "5", firmId: "", paymentDueDate: "", invoiceNotes: "" });
 
@@ -44,7 +48,7 @@ export function RaiseQuotationModal({ sarees, available, onConfirm, onClose, ini
   const noSarees = picked.length === 0;
   // Every picked saree must carry a price — an empty map would pass the length
   // check on its own, so the count is guarded explicitly.
-  const pricesComplete = picked.every(s => parseFloat(inv.prices[s.sareeId || s.id]) > 0);
+  const pricesComplete = picked.every(s => (Number(inv.prices[s.sareeId || s.id]) || 0) > 0);
   const canQuote = !noSarees && !!inv.invoiceNumber.trim() && !!inv.firmId && pricesComplete;
 
   const STEPS = ["Customer", "Quotation", "Sarees"];
@@ -156,15 +160,31 @@ export function RaiseQuotationModal({ sarees, available, onConfirm, onClose, ini
             </div>
           )}
 
-          {/* Step 3 — Sarees review */}
+          {/* Step 3 — the real QuotationDocument (Part H.2), not the old
+              hand-rolled review list — this is the actual document that gets
+              printed/sent, so what's reviewed here is what the customer
+              sees, not a summary of it. */}
           {step === 3 && (
-            <SareeReviewList
-              sarees={picked}
-              prices={inv.prices}
-              applyGst={inv.applyGst}
-              gstPct={inv.gstPct}
-              docLabel="Quotation"
-            />
+            <div style={{ height: "60vh", border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden" }}>
+              <DocumentViewer>
+                <QuotationDocument
+                  quotationNumber={inv.invoiceNumber}
+                  quotationDate={inv.invoiceDate || today}
+                  firm={firms.find(f => f.id === inv.firmId)
+                    ? { name: firms.find(f => f.id === inv.firmId)!.firmName, address: firms.find(f => f.id === inv.firmId)!.address, gstin: firms.find(f => f.id === inv.firmId)!.gstNumber }
+                    : DEFAULT_LETTERHEAD_FIRM}
+                  customer={{ name: selectedCustomer?.name ?? "—", address: selectedCustomer?.address, phone: selectedCustomer?.phone, city: selectedCustomer?.city }}
+                  items={toQuotationItems(
+                    picked.map(s => ({ id: s.id, sareeId: s.sareeId, designCode: s.designCode, sareeType: s.sareeType })),
+                    sId => batches.find(b => b.rows.some(row => row.sareeId === sId))?.batchId,
+                    inv.prices
+                  )}
+                  estGstPct={inv.applyGst ? Number(inv.gstPct) || undefined : undefined}
+                  bulkOrderRef={bulkOrderRef || undefined}
+                  notes={inv.invoiceNotes || undefined}
+                />
+              </DocumentViewer>
+            </div>
           )}
         </div>
 
