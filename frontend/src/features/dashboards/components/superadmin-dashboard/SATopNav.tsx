@@ -139,7 +139,11 @@ export function SATopNav({ active, set, onBack, sections, onProfile }: { active:
                 </div>
                 <DropdownMenuContent
                   align={alignRight ? "end" : "start"}
-                  sideOffset={8}
+                  // Same fix as the admin dashboard's TopNav.tsx: the sub-nav
+                  // pill bar sits directly beneath the topbar with no gap, so
+                  // a flat offset put the menu right at the seam between the
+                  // two bars instead of clearing the sub-nav row entirely.
+                  sideOffset={showSubNav ? SUB_NAV_H + 8 : 8}
                   className="!min-w-[250px] !p-2.5 !rounded-2xl"
                   style={{ background: "#FFFFFF", border: "1px solid rgba(110,15,45,0.10)", boxShadow: "0 16px 40px rgba(0,0,0,0.28)" }}
                 >

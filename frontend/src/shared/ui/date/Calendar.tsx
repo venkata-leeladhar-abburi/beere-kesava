@@ -115,8 +115,10 @@ export function Calendar({
     onMonthChange?.(next);
   }
 
+  // 7 columns × w-11 (44px) = 308px exactly — matches the cell/head_cell
+  // width below so no column needs to flex-shrink to fit.
   return (
-    <div className={cn("select-none", className)} style={{ width: numberOfMonths > 1 ? undefined : 296 }}>
+    <div className={cn("select-none", className)} style={{ width: numberOfMonths > 1 ? undefined : 308 }}>
       {view === "select" ? (
         <div>
           <div className="flex h-11 items-center justify-center bk-label-lg" style={{ color: "var(--text-primary)" }}>
@@ -176,8 +178,13 @@ export function Calendar({
             months: "flex flex-col",
             month: "space-y-1",
             table: "w-full border-collapse",
-            head_row: "flex",
-            head_cell: cn("h-9 w-[36px] font-normal text-[11px] uppercase tracking-wide flex items-center justify-center", "text-[var(--text-tertiary)]"),
+            head_row: "flex w-full",
+            // Must match `cell`'s width (w-11 = 44px) below, not the smaller
+            // day-button size (w-9 = 36px) — a mismatch here means each header
+            // label (MO/TU/…) sits 8px narrower than the day column beneath
+            // it, drifting further out of alignment with every column, worst
+            // by the last one (Sunday).
+            head_cell: cn("h-9 w-11 font-normal text-[11px] uppercase tracking-wide flex items-center justify-center", "text-[var(--text-tertiary)]"),
             row: "flex w-full mt-0.5",
             cell: "h-11 w-11 flex items-center justify-center p-0 relative",
             day: cn(

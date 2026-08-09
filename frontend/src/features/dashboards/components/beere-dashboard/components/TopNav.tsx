@@ -159,7 +159,14 @@ export function TopNav({
                 </div>
                 <DropdownMenuContent
                   align="start"
-                  sideOffset={6}
+                  // The sub-nav pill bar sits directly beneath the topbar with
+                  // no gap. A flat 6px offset (measured from the trigger, which
+                  // lives in the topbar) put the menu right at the seam between
+                  // the two bars, so it visually punched through the sub-nav
+                  // row instead of clearing it. When the sub-nav is showing,
+                  // clear its full height too, so the menu opens cleanly below
+                  // the whole nav complex.
+                  sideOffset={showSubNav ? SUB_NAV_H + 6 : 6}
                   className="!min-w-[200px] !p-2 !rounded-[16px]"
                   style={{ background: "#FFFDF9", border: `1px solid ${T.borderDef}`, boxShadow: "0 16px 48px rgba(44,24,16,0.18)" }}
                 >
