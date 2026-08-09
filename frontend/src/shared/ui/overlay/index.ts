@@ -1,4 +1,5 @@
 export { Modal, type ModalProps, type ModalSize } from "./Modal";
+export { Drawer, type DrawerProps, type DrawerSide, type DrawerSize } from "./Drawer";
 export { ConfirmProvider, useConfirm, type ConfirmOptions } from "./ConfirmDialog";
 export {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
