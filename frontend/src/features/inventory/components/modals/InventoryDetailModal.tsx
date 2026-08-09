@@ -1,5 +1,5 @@
 import React from "react";
-import { motion } from "motion/react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { Package, X, Hash, FileText, Truck, AlertTriangle, Clock, CheckCircle2 } from "lucide-react";
 import { FinishingReturn, DispatchRecord } from "../../../finishing/contexts/FinishingContext";
 import { T, F } from "../theme";
@@ -7,9 +7,9 @@ import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { InventoryRecord } from "../types";
 import { getSareeColor } from "../utils";
 import { StatusBadge } from "../common/primitives";
+import { Modal } from "../../../../shared/ui/overlay";
 
 // ── Inventory Detail Modal ────────────────────────────────────────────────────
-const INV_EASE = [0.25, 0.1, 0.25, 1] as const;
 export function InventoryDetailModal({
   item, dispatches, returns, onClose
 }: {
@@ -29,29 +29,24 @@ export function InventoryDetailModal({
   );
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 800, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      {/* Backdrop */}
-      <div style={{ position: 'absolute', inset: 0, background: 'rgba(61,14,26,0.55)', backdropFilter: 'blur(5px)' }} onClick={onClose} />
-      <motion.div
-        initial={{ opacity: 0, scale: 0.96, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.94, y: 10 }}
-        transition={{ duration: 0.25, ease: INV_EASE }}
-        style={{ position: 'relative', width: 520, maxHeight: '88vh', display: 'flex', flexDirection: 'column', background: '#FFFDF9', borderRadius: 20, boxShadow: '0 32px 80px rgba(61,14,26,0.28)', overflow: 'hidden', border: `1px solid ${T.borderDef}` }}
-      >
+    <Modal open onOpenChange={o => !o && onClose()} size="sm">
         {/* Header */}
         <div style={{ background: T.deepWine, padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <Package size={18} color={T.antiqueGold} />
-            <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: '#FFF' }}>Saree Record</span>
+            <Dialog.Title asChild>
+              <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: '#FFF' }}>Saree Record</span>
+            </Dialog.Title>
           </div>
-          <IconButton
-            icon={X}
-            label="Close"
-            onClick={onClose}
-            size="sm"
-            className="bg-white/12 text-white hover:bg-white/20 active:bg-white/25"
-          />
+          <Dialog.Close asChild>
+            <IconButton
+              icon={X}
+              label="Close"
+              onClick={onClose}
+              size="sm"
+              className="bg-white/12 text-white hover:bg-white/20 active:bg-white/25"
+            />
+          </Dialog.Close>
         </div>
 
         {/* Body */}
@@ -155,7 +150,6 @@ export function InventoryDetailModal({
             Close
           </Button>
         </div>
-      </motion.div>
-    </div>
+    </Modal>
   );
 }

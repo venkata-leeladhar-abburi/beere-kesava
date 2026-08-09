@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { X, Save } from "lucide-react";
 import {
   useSuppliers, SareeTag,
@@ -11,6 +11,7 @@ import { FormState } from "../../types";
 import { nextRowUid, toSareeRow } from "../../utils";
 import { SupplierSection } from "./SupplierSection";
 import { SareeDetailsEditor } from "./SareeDetailsEditor";
+import { Modal } from "../../../../../../shared/ui/overlay";
 
 /**
  * Add/Edit External Purchase modal — composition of the supplier/basic-fields
@@ -103,119 +104,81 @@ export function PurchaseFormModal({
     });
 
   return (
-    <AnimatePresence>
+    <Modal open onOpenChange={o => !o && onClose()} size="md">
       <div
         style={{
-          position: "fixed",
-          inset: 0,
-          zIndex: "var(--z-modal)",
+          background: T.darkBurgundy,
+          padding: "18px 26px",
           display: "flex",
           alignItems: "center",
-          justifyContent: "center",
+          justifyContent: "space-between",
+          flexShrink: 0,
         }}
       >
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onClose}
-          style={{
-            position: "absolute",
-            inset: 0,
-            background: "rgba(27,12,8,0.55)",
-            backdropFilter: "blur(4px)",
-          }}
-        />
-        <motion.div
-          initial={{ scale: 0.95, opacity: 0, y: 16 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.95, opacity: 0 }}
-          transition={{ type: "spring", damping: 26, stiffness: 280 }}
-          style={{
-            position: "relative",
-            zIndex: 1,
-            width: "min(92vw, 620px)",
-            maxHeight: "88vh",
-            background: "#FFFFFF",
-            borderRadius: 18,
-            overflow: "hidden",
-            boxShadow: "0 32px 80px rgba(27,12,8,0.28)",
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          <div
-            style={{
-              background: T.darkBurgundy,
-              padding: "18px 26px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              flexShrink: 0,
-            }}
-          >
-            <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: "#FFF" }}>
-              {mode === "add" ? "Add External Purchase" : `Edit Purchase — ${initial.supplier}`}
-            </div>
-            <IconButton
-              icon={X}
-              label="Close"
-              onClick={onClose}
-              className="rounded-full bg-white/12 text-white hover:bg-white/20"
-            />
+        <Dialog.Title asChild>
+          <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: "#FFF" }}>
+            {mode === "add" ? "Add External Purchase" : `Edit Purchase — ${initial.supplier}`}
           </div>
-
-          <div style={{ padding: "22px 26px", overflowY: "auto", flex: 1 }}>
-            <SupplierSection
-              form={form}
-              setForm={setForm}
-              set={set}
-              suppliers={suppliers}
-              selectedSupplier={selectedSupplier}
-              pieceCount={pieceCount}
-              sareeDetailsCount={sareeDetails.length}
-              handleInvoiceFile={handleInvoiceFile}
-            />
-
-            <SareeDetailsEditor
-              sareeDetails={sareeDetails}
-              supplier={form.supplier}
-              invoiceNumber={form.invoiceNumber}
-              addSareeRow={addSareeRow}
-              updateSareeRow={updateSareeRow}
-              removeSareeRow={removeSareeRow}
-            />
-          </div>
-
-          <div
-            style={{
-              padding: "16px 26px",
-              borderTop: `1px solid ${T.borderDef}`,
-              display: "flex",
-              gap: 10,
-              flexShrink: 0,
-            }}
-          >
-            <Button
-              variant="primary"
-              disabled={!valid}
-              onClick={() => valid && onSubmit(form, buildFinalSarees())}
-              iconLeft={Save}
-              fullWidth
-              className="rounded-full"
-            >
-              {mode === "add" ? "Add Purchase & Generate Barcodes" : "Save Changes"}
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={onClose}
-              className="flex-none rounded-full"
-            >
-              Cancel
-            </Button>
-          </div>
-        </motion.div>
+        </Dialog.Title>
+        <Dialog.Close asChild>
+          <IconButton
+            icon={X}
+            label="Close"
+            onClick={onClose}
+            className="rounded-full bg-white/12 text-white hover:bg-white/20"
+          />
+        </Dialog.Close>
       </div>
-    </AnimatePresence>
+
+      <div style={{ padding: "22px 26px", overflowY: "auto", flex: 1 }}>
+        <SupplierSection
+          form={form}
+          setForm={setForm}
+          set={set}
+          suppliers={suppliers}
+          selectedSupplier={selectedSupplier}
+          pieceCount={pieceCount}
+          sareeDetailsCount={sareeDetails.length}
+          handleInvoiceFile={handleInvoiceFile}
+        />
+
+        <SareeDetailsEditor
+          sareeDetails={sareeDetails}
+          supplier={form.supplier}
+          invoiceNumber={form.invoiceNumber}
+          addSareeRow={addSareeRow}
+          updateSareeRow={updateSareeRow}
+          removeSareeRow={removeSareeRow}
+        />
+      </div>
+
+      <div
+        style={{
+          padding: "16px 26px",
+          borderTop: `1px solid ${T.borderDef}`,
+          display: "flex",
+          gap: 10,
+          flexShrink: 0,
+        }}
+      >
+        <Button
+          variant="primary"
+          disabled={!valid}
+          onClick={() => valid && onSubmit(form, buildFinalSarees())}
+          iconLeft={Save}
+          fullWidth
+          className="rounded-full"
+        >
+          {mode === "add" ? "Add Purchase & Generate Barcodes" : "Save Changes"}
+        </Button>
+        <Button
+          variant="secondary"
+          onClick={onClose}
+          className="flex-none rounded-full"
+        >
+          Cancel
+        </Button>
+      </div>
+    </Modal>
   );
 }

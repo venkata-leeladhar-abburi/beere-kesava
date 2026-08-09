@@ -1,10 +1,12 @@
 import React, { useMemo, useState } from "react";
 import { motion } from "motion/react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { Palette, ArrowRight } from "lucide-react";
 import { useDesignLibrary } from "../../../../design-library/contexts/DesignLibraryContext";
 import type { BatchRecord, SareeRow } from "../../../contexts/BatchContext";
 import { T, F } from "../../theme";
 import { Button, IconButton, SearchInput, Select, SelectItem } from "../../../../../shared/ui/primitives";
+import { Modal } from "../../../../../shared/ui/overlay";
 
 const imgSaree = "https://images.unsplash.com/photo-1588140686379-1b76a52103dc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
 
@@ -184,9 +186,7 @@ export function ContextBatchDetailsDialog({ b, onClose, onOpenCreation }: { b: B
   const designImage = designObj?.colorSlipPhoto || designObj?.designGraph || imgSaree;
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: "var(--z-modal)", background: "var(--surface-scrim)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-      <motion.div initial={{ y: 18, scale: 0.96 }} animate={{ y: 0, scale: 1 }} exit={{ y: 18, scale: 0.96 }} onClick={e => e.stopPropagation()} style={{ width: 640, maxWidth: "100%", background: "#FFFFFF", borderRadius: 24, border: `1px solid ${T.borderDef}`, boxShadow: "0 30px 90px rgba(0,0,0,0.25)", overflow: "hidden", display: "flex", flexDirection: "column", maxHeight: "90vh" }}>
-
+    <Modal open onOpenChange={o => !o && onClose()} size="md">
         <div style={{ height: 180, position: "relative", overflow: "hidden", background: T.silkCream, flexShrink: 0 }}>
           <img src={designImage} alt="Design image" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.6) 100%)" }} />
@@ -194,16 +194,20 @@ export function ContextBatchDetailsDialog({ b, onClose, onOpenCreation }: { b: B
           <div style={{ position: "absolute", bottom: 16, left: 24, right: 24, display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
             <div>
               <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.goldLight, letterSpacing: "0.5px", marginBottom: 4 }}>{b.batchId}</div>
-              <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 800, color: "#FFFFFF" }}>
-                {firstRow ? firstRow.sareeTypeName : "Batch"} Production
-              </div>
+              <Dialog.Title asChild>
+                <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 800, color: "#FFFFFF" }}>
+                  {firstRow ? firstRow.sareeTypeName : "Batch"} Production
+                </div>
+              </Dialog.Title>
             </div>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: F.ui, fontSize: 12, fontWeight: 800, color: b.status === "active" ? "#FFFFFF" : T.luxuryBrown, background: b.status === "active" ? "#2ECC71" : T.antiqueGold, borderRadius: 99, padding: "4px 10px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
               {b.status === "active" ? "Active" : "Draft"}
             </span>
           </div>
-          <IconButton icon="close" label="Close" onClick={onClose} variant="ghost" size="sm"
-            className="absolute top-4 right-4 rounded-[10px] border border-white/22 bg-[rgba(26,10,15,0.45)] text-white hover:bg-[rgba(26,10,15,0.6)]" />
+          <Dialog.Close asChild>
+            <IconButton icon="close" label="Close" onClick={onClose} variant="ghost" size="sm"
+              className="absolute top-4 right-4 rounded-[10px] border border-white/22 bg-[rgba(26,10,15,0.45)] text-white hover:bg-[rgba(26,10,15,0.6)]" />
+          </Dialog.Close>
         </div>
 
         <div style={{ padding: 24, overflowY: "auto", display: "flex", flexDirection: "column", gap: 20, flex: 1 }}>
@@ -327,7 +331,6 @@ export function ContextBatchDetailsDialog({ b, onClose, onOpenCreation }: { b: B
             Open in Batch Creation
           </Button>
         </div>
-      </motion.div>
-    </motion.div>
+    </Modal>
   );
 }

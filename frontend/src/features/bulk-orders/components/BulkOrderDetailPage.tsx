@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import * as Dialog from "@radix-ui/react-dialog";
 import {
   ArrowLeft, MapPin, Phone, Package,
   CheckCircle2, FileText, ClipboardCheck,
@@ -15,6 +16,7 @@ import { DispatchDetailPanel } from "./DispatchDetailPanel";
 import { BulkOrderSareesTab, LinkedSaree } from "./BulkOrderSareesTab";
 import { BulkOrderOverviewTab, BulkOrderPaymentsTab } from "./BulkOrderOverviewPaymentsTabs";
 import { Button } from "../../../shared/ui/primitives";
+import { Modal } from "../../../shared/ui/overlay";
 
 const T = {
   silkCream: "#F7F2EA", royalBurgundy: "#6E0F2D",
@@ -339,46 +341,44 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
         {dispatchPanel && <DispatchDetailPanel dispatch={dispatchPanel} onClose={() => setDispatchPanel(null)} />}
       </AnimatePresence>
 
-      <AnimatePresence>
-        {tallyPrompt && (
-          <div style={{ position: "fixed", inset: 0, zIndex: 950, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--surface-scrim)", backdropFilter: "blur(4px)" }} onClick={() => setTallyPrompt(false)}>
-            <motion.div initial={{ opacity: 0, scale: 0.95, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
-              onClick={e => e.stopPropagation()}
-              style={{ width: 420, maxWidth: "92vw", background: "#FFF", borderRadius: 18, padding: 26, boxShadow: "0 30px 80px rgba(0,0,0,0.25)" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                <ClipboardCheck size={20} color={T.royalBurgundy} />
+      {tallyPrompt && (
+        <Modal open onOpenChange={o => !o && setTallyPrompt(false)} size="xs">
+          <div style={{ padding: 26 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+              <ClipboardCheck size={20} color={T.royalBurgundy} />
+              <Dialog.Title asChild>
                 <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown }}>Tally this order</div>
-              </div>
-              <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, lineHeight: 1.6, margin: "0 0 16px" }}>
-                Confirms the physical saree count for {live.ref} matches the {linkedSarees.length} saree{linkedSarees.length === 1 ? "" : "s"} listed against it.
-              </p>
-              <div style={{ position: "relative", width: "100%", height: 50, background: "rgba(110,15,45,0.06)", borderRadius: 12, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", marginTop: 20 }}>
-                <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.taupe }}>
-                  Swipe to confirm tally
-                </span>
-                <motion.div
-                  drag="x"
-                  dragConstraints={{ left: 0, right: 318 }}
-                  dragElastic={0}
-                  onDragEnd={(e, info) => {
-                    if (info.offset.x > 250) {
-                      tallyOrder(live.ref, "Admin");
-                      setTallyPrompt(false);
-                    }
-                  }}
-                  style={{
-                    position: "absolute", left: 0, top: 0, bottom: 0, width: 50, background: T.royalBurgundy, borderRadius: 12,
-                    display: "flex", alignItems: "center", justifyContent: "center", cursor: "grab"
-                  }}
-                  whileTap={{ cursor: "grabbing" }}
-                >
-                  <ArrowRight size={20} color="#FFF" />
-                </motion.div>
-              </div>
-            </motion.div>
+              </Dialog.Title>
+            </div>
+            <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, lineHeight: 1.6, margin: "0 0 16px" }}>
+              Confirms the physical saree count for {live.ref} matches the {linkedSarees.length} saree{linkedSarees.length === 1 ? "" : "s"} listed against it.
+            </p>
+            <div style={{ position: "relative", width: "100%", height: 50, background: "rgba(110,15,45,0.06)", borderRadius: 12, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", marginTop: 20 }}>
+              <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.taupe }}>
+                Swipe to confirm tally
+              </span>
+              <motion.div
+                drag="x"
+                dragConstraints={{ left: 0, right: 318 }}
+                dragElastic={0}
+                onDragEnd={(e, info) => {
+                  if (info.offset.x > 250) {
+                    tallyOrder(live.ref, "Admin");
+                    setTallyPrompt(false);
+                  }
+                }}
+                style={{
+                  position: "absolute", left: 0, top: 0, bottom: 0, width: 50, background: T.royalBurgundy, borderRadius: 12,
+                  display: "flex", alignItems: "center", justifyContent: "center", cursor: "grab"
+                }}
+                whileTap={{ cursor: "grabbing" }}
+              >
+                <ArrowRight size={20} color="#FFF" />
+              </motion.div>
+            </div>
           </div>
-        )}
-      </AnimatePresence>
+        </Modal>
+      )}
     </div>
   );
 }
