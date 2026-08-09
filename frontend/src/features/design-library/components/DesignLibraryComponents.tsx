@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, useInView, AnimatePresence } from "motion/react";
+import * as Dialog from "@radix-ui/react-dialog";
 import {
   Hash, Image as ImageSquare, Palette as Swatches, Workflow as Graph, CheckCircle2 as CheckCircle,
   Eye as PhEye, Upload as UploadSimple,
@@ -8,6 +9,7 @@ import {
 import { DesignEntry } from "../contexts/DesignLibraryContext";
 import { T, F, G } from "./theme";
 import { Button, IconButton, Input } from "../../../shared/ui/primitives";
+import { Modal } from "../../../shared/ui/overlay";
 
 export { AddDesignModal, SlipModal } from "./DesignModals";
 
@@ -121,35 +123,33 @@ export function UploadZone({ label, hint, icon: Icon, preview, onFile }: {
 
 export function DesignCodeCard({ design, onClose }: { design: DesignEntry; onClose: () => void }) {
   return (
-    <div
-      onClick={onClose}
-      style={{ position: "fixed", inset: 0, zIndex: "var(--z-modal)", background: "var(--surface-scrim)", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}
-    >
-      <motion.div
-        onClick={e => e.stopPropagation()}
-        initial={{ opacity: 0, scale: 0.94, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.94, y: 10 }}
-        transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-        style={{ background: T.warmIvory, borderRadius: 20, width: 520, maxWidth: "calc(100vw - 48px)", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 80px rgba(44,6,27,0.28)", border: `1px solid ${T.borderDef}` }}
-      >
+    <Modal open onOpenChange={o => !o && onClose()} size="sm">
+      <div style={{ display: "flex", flexDirection: "column", overflowY: "auto", maxHeight: "calc(100dvh - 96px)" }}>
         {design.colorSlipPhoto ? (
-          <div style={{ height: 200, position: "relative", borderRadius: "20px 20px 0 0", overflow: "hidden" }}>
+          <div style={{ height: 200, position: "relative", borderRadius: "var(--radius-xl) var(--radius-xl) 0 0", overflow: "hidden", flexShrink: 0 }}>
             <img src={design.colorSlipPhoto} alt={design.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(61,14,26,0.7) 0%, transparent 55%)" }} />
-            <div style={{ position: "absolute", bottom: 16, left: 20, fontFamily: F.mono, fontSize: 16, fontWeight: 700, color: T.goldLight, letterSpacing: "0.5px" }}>{design.code}</div>
-            <IconButton onClick={onClose} label="Close" icon={PhX} variant="secondary" size="sm" shape="circle"
-              className="absolute top-[14px] right-[14px] bg-[rgba(61,14,26,0.55)] text-white/85 border-none" />
+            <Dialog.Title asChild>
+              <div style={{ position: "absolute", bottom: 16, left: 20, fontFamily: F.mono, fontSize: 16, fontWeight: 700, color: T.goldLight, letterSpacing: "0.5px" }}>{design.code}</div>
+            </Dialog.Title>
+            <Dialog.Close asChild>
+              <IconButton label="Close" icon={PhX} variant="secondary" size="sm" shape="circle"
+                className="absolute top-[14px] right-[14px] bg-[rgba(61,14,26,0.55)] text-white/85 border-none" />
+            </Dialog.Close>
           </div>
         ) : (
-          <div style={{ background: T.darkBurgundy, padding: "24px 24px 20px", borderRadius: "20px 20px 0 0", position: "relative" }}>
+          <div style={{ background: T.darkBurgundy, padding: "24px 24px 20px", borderRadius: "var(--radius-xl) var(--radius-xl) 0 0", position: "relative", flexShrink: 0 }}>
             <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "0.14em", color: T.antiqueGold, textTransform: "uppercase", marginBottom: 8 }}>Design Code</div>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <span style={{ fontFamily: F.mono, fontSize: 14, color: T.antiqueGold, background: "rgba(200,155,71,0.15)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 6, padding: "4px 10px" }}>{design.code}</span>
-              <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#fff" }}>{design.name || design.code}</span>
+              <Dialog.Title asChild>
+                <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#fff" }}>{design.name || design.code}</span>
+              </Dialog.Title>
             </div>
-            <IconButton onClick={onClose} label="Close" icon={PhX} variant="secondary" size="sm" shape="circle"
-              className="absolute top-[18px] right-[18px] bg-white/10 text-white/70 border-none" />
+            <Dialog.Close asChild>
+              <IconButton label="Close" icon={PhX} variant="secondary" size="sm" shape="circle"
+                className="absolute top-[18px] right-[18px] bg-white/10 text-white/70 border-none" />
+            </Dialog.Close>
           </div>
         )}
 
@@ -227,8 +227,8 @@ export function DesignCodeCard({ design, onClose }: { design: DesignEntry; onClo
             Close
           </Button>
         </div>
-      </motion.div>
-    </div>
+      </div>
+    </Modal>
   );
 }
 

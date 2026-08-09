@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { Package, BarChart2, FileText, AlertTriangle, Download, Check, X } from "lucide-react";
 import type { PurchaseOrder } from "../../../purchasing/contexts/POContext";
 import { T, F } from "../theme";
@@ -268,35 +269,36 @@ export function ThresholdsModal({ open, onClose, stockItems, onSave }: {
 
 // ── PO VENDOR DETAIL PANEL ────────────────────────────────────────────────────
 export function POVendorDetailModal({ po, onClose }: { po: PurchaseOrder | null; onClose: () => void }) {
-  if (!po) return null;
-  const cfg = PO_STATUS_CFG[po.status];
   const MT: Record<string, { col: string; bg: string }> = {
     Warp:   { col: T.royalBurgundy, bg: "rgba(110,15,45,0.09)"  },
     Resham: { col: "#7A5E1C",       bg: "rgba(200,155,71,0.13)" },
     Jari:   { col: T.luxuryBrown,   bg: "rgba(59,35,20,0.09)"   },
   };
+  const cfg = po ? PO_STATUS_CFG[po.status] : null;
   return (
-    <AnimatePresence>
-      <motion.div
-        key="po-overlay"
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-        onClick={onClose}
-        style={{ position: "fixed", inset: 0, zIndex: "var(--z-modal)", background: "var(--surface-scrim)", display: "flex", alignItems: "center", justifyContent: "flex-end" }}
-      >
-        <motion.div
-          key="po-panel"
-          initial={{ x: 360, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 360, opacity: 0 }}
-          transition={{ type: "spring", stiffness: 320, damping: 32 }}
-          onClick={e => e.stopPropagation()}
-          style={{ width: 430, maxWidth: "95vw", height: "100dvh", background: "#FFFDF9", display: "flex", flexDirection: "column", boxShadow: "-24px 0 64px rgba(74,6,27,0.20)", overflowY: "auto" }}
+    <Dialog.Root open={!!po} onOpenChange={o => { if (!o) onClose(); }}>
+      <Dialog.Portal>
+        <Dialog.Overlay
+          className="fixed inset-0 data-[state=open]:animate-in data-[state=open]:fade-in data-[state=closed]:animate-out data-[state=closed]:fade-out"
+          style={{ background: "var(--surface-scrim)", zIndex: "var(--z-modal)" }}
+        />
+        <Dialog.Content
+          className="fixed right-0 top-0 flex flex-col data-[state=open]:animate-in data-[state=open]:slide-in-from-right data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right"
+          style={{ width: 430, maxWidth: "95vw", height: "100dvh", background: "#FFFDF9", boxShadow: "-24px 0 64px rgba(74,6,27,0.20)", overflowY: "auto", zIndex: "var(--z-modal)" }}
         >
+        {po && cfg && (
+          <>
           <div style={{ background: `linear-gradient(135deg, ${T.darkBurgundy} 0%, ${T.royalBurgundy} 100%)`, padding: "22px 24px 20px", flexShrink: 0 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
               <div>
                 <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.antiqueGold, letterSpacing: "1.5px", textTransform: "uppercase" as const, marginBottom: 4 }}>Purchase Order</div>
-                <div style={{ fontFamily: F.display, fontWeight: 800, fontSize: 20, color: "#FFFDF9", letterSpacing: "-0.3px" }}>{po.poNumber}</div>
+                <Dialog.Title asChild>
+                  <div style={{ fontFamily: F.display, fontWeight: 800, fontSize: 20, color: "#FFFDF9", letterSpacing: "-0.3px" }}>{po.poNumber}</div>
+                </Dialog.Title>
               </div>
-              <IconButton icon={X} label="Close" onClick={onClose} size="md" variant="secondary" className="bg-white/10 text-white border-white/22 hover:bg-white/18" />
+              <Dialog.Close asChild>
+                <IconButton icon={X} label="Close" size="md" variant="secondary" className="bg-white/10 text-white border-white/22 hover:bg-white/18" />
+              </Dialog.Close>
             </div>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 8, padding: "5px 12px" }}>
               <div style={{ width: 6, height: 6, borderRadius: "50%", background: cfg.badgeColor }} />
@@ -388,9 +390,11 @@ export function POVendorDetailModal({ po, onClose }: { po: PurchaseOrder | null;
               </div>
             )}
           </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
+          </>
+        )}
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }
 
