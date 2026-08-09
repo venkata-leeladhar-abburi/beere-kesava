@@ -1,79 +1,190 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   BK LOOM DESIGN SYSTEM — PHASE 7: DOCUMENT PRINT SYSTEM
+   BK LOOM DESIGN SYSTEM — PHASE 7: DOCUMENT SYSTEM
    design-system/07-DOCUMENTS.md Parts C, D, E, F, J, K.
 
    #document-print-root is a portal target declared in index.html, a sibling
    of #root. useDocument() portals a <DocumentPage> into it; window.print()
    then has exactly one thing to print — this is the fix for "printing an
    invoice prints the entire application" (Part A.1).
+
+   NOTE ON COLOUR: the spec's Part F prescribes an ink-economy print palette
+   (near-monochrome, brand colour at most twice). This implementation
+   deliberately departs from that: the brief is that the printed/downloaded
+   document must look *exactly* like the on-screen preview, in full brand
+   colour. Every tinted surface therefore carries print-color-adjust: exact
+   so browsers don't strip the backgrounds.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Part F.1 — print colour palette ──
-   Declared unconditionally first (screen-preview values, close to but not
-   identical to the print set — --print-ink is the app's own --text-primary
-   on screen since true black reads harsh against the cream canvas) then
-   overridden inside @media print, later in source order, so the print
-   block correctly wins once actually printing — component CSS references
-   these variables unconditionally either way. */
 :root {
-  --print-ink:        #1D1814;
-  --print-ink-muted:  #4A4A4A;
-  --print-ink-faint:  #767676;
-  --print-rule:       #B0B0B0;
-  --print-rule-light: #DCDCDC;
-  --print-fill:       #F2F2F2;
-  --print-brand:      #6E0F2D;
-  --print-accent:     #8A6D2F;
-}
-
-@media print {
-  :root {
-    --print-ink:        #000000;
-    --print-ink-muted:  #4A4A4A;
-    --print-ink-faint:  #767676;
-    --print-rule:       #B0B0B0;
-    --print-rule-light: #DCDCDC;
-    --print-fill:       #F2F2F2;
-    --print-brand:      #6E0F2D;
-    --print-accent:     #8A6D2F;
-  }
+  /* Document palette — drawn straight from the Phase 1 brand ramps so the
+     document reads as the same product as the app chrome. */
+  --doc-wine:        #4A061B;   /* bk-burgundy-950 */
+  --doc-burgundy:    #6E0F2D;   /* bk-burgundy-900 — brand primary */
+  --doc-burgundy-mid:#872D44;   /* bk-burgundy-800 */
+  --doc-gold:        #C89B47;   /* bk-gold-500 — decorative only, never text */
+  --doc-gold-text:   #845E04;   /* bk-gold-700 — the readable gold */
+  --doc-gold-soft:   #EDDCC1;   /* bk-gold-200 */
+  --doc-cream:       #FFFDF9;
+  --doc-cream-2:     #FAF5EC;
+  --doc-warm:        #F5E8D0;
+  --doc-ink:         #2C1810;
+  --doc-ink-soft:    #3B2314;
+  --doc-muted:       #69635E;
+  --doc-rule:        rgba(110, 15, 45, 0.14);
+  --doc-rule-soft:   rgba(110, 15, 45, 0.07);
 }
 
 /* ── Part E — print type scale (pt, not px — paper is ~300dpi at ~35cm) ── */
 :root {
-  --doc-brand:         20pt;
-  --doc-title:         16pt;
+  --doc-brand-size:    19pt;
+  --doc-title:         15pt;
   --doc-heading:       10pt;
   --doc-body:          9pt;
   --doc-table:         8.5pt;
   --doc-table-head:    8pt;
   --doc-small:         7.5pt;
   --doc-code:          8.5pt;
-  --doc-total:         11pt;
+  --doc-total:         12pt;
   --doc-amount-words:  8.5pt;
 }
 
-/* ── Part D.1 — A4 geometry ── */
+/* The print portal target is never part of the on-screen layout — without
+   this it renders a second, full-size copy of the document below the app
+   for as long as the tree stays mounted. It is promoted back to visible
+   inside @media print below. */
+#document-print-root { display: none; }
+
+/* ── Part D.1 — A4 geometry ──
+   Padding lives on .bk-doc__body, not the sheet, so the letterhead band can
+   run full-bleed to the paper edge. */
 .bk-doc {
   width: 210mm;
   min-height: 297mm;
-  padding: 18mm 15mm 20mm 15mm; /* top right bottom left */
-  background: #FFFFFF;
-  color: var(--print-ink);
+  padding: 0;
+  background: var(--doc-cream);
+  color: var(--doc-ink);
   box-sizing: border-box;
   font-family: var(--font-ui);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+.bk-doc__body {
+  padding: 0 15mm 16mm;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
-/* ── Part D.2 — screen preview chrome (grey backdrop, like a PDF viewer) ── */
+/* ── ① Letterhead band — full-bleed brand gradient ── */
+.bk-doc__band {
+  background: linear-gradient(135deg, var(--doc-wine) 0%, var(--doc-burgundy) 58%, #7E1233 100%);
+  padding: 11mm 15mm 9mm;
+  color: var(--doc-cream);
+  position: relative;
+}
+.bk-doc__band::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 1.2mm;
+  background: linear-gradient(90deg, var(--doc-gold) 0%, #E7C983 45%, var(--doc-gold) 100%);
+}
+.bk-doc__logo {
+  width: 16mm; height: 16mm;
+  border-radius: 2.5mm;
+  background: var(--doc-cream);
+  padding: 1.6mm;
+  object-fit: contain;
+  flex-shrink: 0;
+  box-shadow: 0 1mm 3mm rgba(0, 0, 0, 0.18);
+}
+
+/* ── ③ Party / meta cards ── */
+.bk-doc__card {
+  background: var(--doc-cream-2);
+  border: 0.3mm solid var(--doc-rule);
+  border-radius: 2mm;
+  padding: 4mm 4.5mm;
+}
+.bk-doc__card--accent { border-left: 1.2mm solid var(--doc-gold); }
+
+.bk-doc__eyebrow {
+  font-size: var(--doc-table-head);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+  color: var(--doc-gold-text);
+}
+
+/* ── ④ Line-item table (Part J) — page-break-aware, not Phase 4's DataTable ── */
+.bk-doc__table { width: 100%; border-collapse: collapse; font-size: var(--doc-table); }
+.bk-doc__table thead th {
+  font-size: var(--doc-table-head); font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--doc-warm);
+  background: var(--doc-burgundy);
+  padding: 2.6mm 2.5mm;
+  text-align: start;
+}
+.bk-doc__table thead th:first-child { border-top-left-radius: 1.5mm; }
+.bk-doc__table thead th:last-child  { border-top-right-radius: 1.5mm; }
+.bk-doc__table td {
+  padding: 2.4mm 2.5mm;
+  border-bottom: 0.25mm solid var(--doc-rule-soft);
+  vertical-align: top;
+  color: var(--doc-ink-soft);
+}
+.bk-doc__table tbody tr:nth-child(even) td { background: var(--doc-cream-2); }
+.bk-doc__table [data-num] {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+.bk-doc__table thead { display: table-header-group; }
+
+/* Tax summary shares the table skin but sits quieter than the line items */
+.bk-doc__tax-summary thead th {
+  background: var(--doc-warm);
+  color: var(--doc-ink);
+}
+.bk-doc__tax-summary tfoot td {
+  border-top: 0.4mm solid var(--doc-rule);
+  font-weight: 700;
+}
+
+/* ── ⑤ Totals ── */
+.bk-doc__totals-card {
+  width: 82mm;
+  border: 0.3mm solid var(--doc-rule);
+  border-radius: 2mm;
+  overflow: hidden;
+  background: var(--doc-cream-2);
+}
+.bk-doc__totals-grand {
+  background: linear-gradient(120deg, var(--doc-burgundy) 0%, var(--doc-wine) 100%);
+  color: var(--doc-cream);
+}
+
+/* ── ⑦ Amount in words ── */
+.bk-doc__words {
+  background: linear-gradient(90deg, rgba(200,155,71,0.16) 0%, rgba(200,155,71,0.05) 100%);
+  border-left: 1.2mm solid var(--doc-gold);
+  border-radius: 1.5mm;
+  padding: 3mm 4mm;
+}
+
+/* ── Part D.2 — screen preview backdrop (grey, like a PDF viewer) ── */
 .bk-doc-viewport {
   background: var(--bk-neutral-200);
   padding: var(--space-8);
   overflow: auto;
 }
 .bk-doc-viewport .bk-doc {
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 18px 48px rgba(44, 6, 27, 0.22);
   margin-inline: auto;
   margin-block-end: var(--space-6);
+  border-radius: 2mm;
+  overflow: hidden;
 }
 @media (max-width: 900px) {
   .bk-doc-viewport .bk-doc {
@@ -82,28 +193,6 @@
   }
 }
 
-/* ── Part J — line-item table (page-break-aware, not Phase 4's DataTable) ── */
-.bk-doc__table { width: 100%; border-collapse: collapse; font-size: var(--doc-table); }
-.bk-doc__table thead th {
-  font-size: var(--doc-table-head); font-weight: 600;
-  text-transform: uppercase; letter-spacing: 0.04em;
-  color: var(--print-ink);
-  background: var(--print-fill);
-  border-block: 0.5pt solid var(--print-rule);
-  padding: 2mm 1.5mm;
-  text-align: start;
-}
-.bk-doc__table td {
-  padding: 1.8mm 1.5mm;
-  border-bottom: 0.25pt solid var(--print-rule-light);
-  vertical-align: top;
-}
-.bk-doc__table [data-num] {
-  text-align: end;
-  font-variant-numeric: tabular-nums;
-}
-.bk-doc__table thead { display: table-header-group; }
-
 /* ── Part C.2 — print isolation: hide everything except the document ── */
 @media print {
   @page {
@@ -111,12 +200,20 @@
     margin: 0;
   }
 
-  body > * { display: none !important; }
+  /* Isolation is scoped to `body[data-printing-document]`, an attribute
+     useDocument() sets for the duration of the print. That matters:
+     globals.css carries an older, still-live print mechanism for five
+     legacy modals that opt in with `.print-area`, and an unconditional
+     `body > * { display: none }` here would remove #root from the page and
+     silently break every one of them. Scoped this way the two mechanisms
+     coexist — legacy prints are untouched, document prints get the full
+     Phase 7 treatment. */
+  body[data-printing-document] > * { display: none !important; }
 
-  #document-print-root,
+  body[data-printing-document] > #document-print-root,
   #document-print-root * { display: revert !important; }
 
-  #document-print-root {
+  body[data-printing-document] > #document-print-root {
     display: block !important;
     position: static !important;
     margin: 0 !important;
@@ -125,6 +222,12 @@
     box-shadow: none !important;
     background: #FFFFFF !important;
   }
+
+  /* globals.css sets `body * { visibility: hidden }` for the legacy
+     `.print-area` flow. Visibility inherits, so without this the document
+     tree prints as a blank page even though its layout is correct. */
+  #document-print-root,
+  #document-print-root * { visibility: visible !important; }
 
   [data-print="hide"],
   .bk-shell__topbar, .bk-shell__groupbar, .bk-shell__footer,
@@ -141,12 +244,22 @@
   .bk-doc {
     box-shadow: none !important;
     margin: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  /* The whole document is brand-coloured by design (see header note), so
+     colour adjustment is forced on every tinted surface, not just bands. */
+  #document-print-root,
+  #document-print-root * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   /* Part K — multi-page rules */
   .bk-doc__totals,
   .bk-doc__tax-summary,
   .bk-doc__signature,
+  .bk-doc__words,
   .bk-doc__terms { break-inside: avoid; }
 
   .bk-doc__signature { break-before: avoid; }
@@ -155,10 +268,4 @@
 
   h1, h2, h3 { break-after: avoid; }
   p { orphans: 3; widows: 3; }
-
-  /* Part F.2 — print-color-adjust on tinted bands, or browsers strip them */
-  .bk-doc__totals, .bk-doc__table thead {
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
 }

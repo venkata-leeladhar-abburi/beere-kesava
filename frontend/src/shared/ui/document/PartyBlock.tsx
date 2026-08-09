@@ -1,18 +1,19 @@
 /**
  * PartyBlock — design-system/07-DOCUMENTS.md Part G.1 ③.
  * ═══════════════════════════════════════════════════════════════════════════
- * Two-column, 50/50: the counterparty (Bill To / Ship To / Supplier —
- * varies per document type) on the left, document metadata on the right.
+ * Counterparty card(s) on the left (Bill To / Ship To / Supplier — varies
+ * per document type), document metadata card on the right.
  * "Place of supply" is mandatory on tax documents — it's what drives the
  * CGST/SGST vs IGST split (Part I.1).
  */
 import * as React from "react";
 
 export interface PartyDetail {
-  /** e.g. "BILL TO", "SHIP TO", "SUPPLIER" */
+  /** e.g. "Bill To", "Ship To", "Supplier" */
   label: string;
   name: string;
   address?: string;
+  phone?: string;
   gstin?: string;
   placeOfSupply?: string;
 }
@@ -28,50 +29,62 @@ export interface PartyBlockProps {
   meta: MetaField[];
 }
 
-function Label({ children }: { children: React.ReactNode }) {
-  return (
-    <div style={{ fontSize: "var(--doc-table-head)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--print-ink-muted)" }}>
-      {children}
-    </div>
-  );
-}
-
 export function PartyBlock({ parties, meta }: PartyBlockProps) {
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6mm", marginTop: "6mm" }}>
-      <div style={{ display: "flex", flexDirection: "column", gap: "4mm" }}>
+    <div style={{ display: "grid", gridTemplateColumns: "1.15fr 1fr", gap: "5mm", marginTop: "7mm", alignItems: "start" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "3.5mm" }}>
         {parties.map((p, i) => (
-          <div key={i}>
-            <Label>{p.label}</Label>
-            <div style={{ fontSize: "var(--doc-body)", fontWeight: 600, color: "var(--print-ink)", marginTop: "1mm" }}>{p.name}</div>
+          <div key={i} className="bk-doc__card bk-doc__card--accent">
+            <div className="bk-doc__eyebrow">{p.label}</div>
+            <div style={{ fontSize: "var(--doc-heading)", fontWeight: 700, color: "var(--doc-ink)", marginTop: "1.5mm" }}>{p.name}</div>
             {p.address && (
-              <div style={{ fontSize: "var(--doc-body)", color: "var(--print-ink)", marginTop: "0.5mm", lineHeight: 1.4 }}>{p.address}</div>
+              <div style={{ fontSize: "var(--doc-body)", color: "var(--doc-muted)", marginTop: "1mm", lineHeight: 1.5 }}>{p.address}</div>
+            )}
+            {p.phone && (
+              <div style={{ fontFamily: "var(--font-code)", fontSize: "var(--doc-code)", color: "var(--doc-muted)", marginTop: "0.8mm" }}>{p.phone}</div>
             )}
             {p.gstin && (
-              <div style={{ fontFamily: "var(--font-code)", fontSize: "var(--doc-code)", color: "var(--print-ink)", marginTop: "0.5mm" }}>GSTIN {p.gstin}</div>
+              <div style={{ fontFamily: "var(--font-code)", fontSize: "var(--doc-code)", color: "var(--doc-burgundy)", fontWeight: 600, marginTop: "0.8mm" }}>
+                GSTIN {p.gstin}
+              </div>
             )}
             {p.placeOfSupply && (
-              <div style={{ fontSize: "var(--doc-body)", color: "var(--print-ink-muted)", marginTop: "0.5mm" }}>Place of supply: {p.placeOfSupply}</div>
+              <div style={{ fontSize: "var(--doc-small)", color: "var(--doc-muted)", marginTop: "0.8mm" }}>
+                Place of supply: {p.placeOfSupply}
+              </div>
             )}
           </div>
         ))}
       </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: "1.5mm", alignItems: "flex-end" }}>
-        {meta.map((m, i) => (
-          <div key={i} style={{ display: "flex", justifyContent: "space-between", gap: "6mm", width: "100%" }}>
-            <span style={{ fontSize: "var(--doc-table-head)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--print-ink-muted)" }}>{m.label}</span>
-            <span
+
+      <div className="bk-doc__card">
+        <div style={{ display: "flex", flexDirection: "column", gap: "2mm" }}>
+          {meta.map((m, i) => (
+            <div
+              key={i}
               style={{
-                fontSize: m.code ? "var(--doc-code)" : "var(--doc-body)",
-                fontFamily: m.code ? "var(--font-code)" : "var(--font-ui)",
-                color: "var(--print-ink)",
-                textAlign: "right",
+                display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "5mm",
+                paddingBottom: i < meta.length - 1 ? "2mm" : 0,
+                borderBottom: i < meta.length - 1 ? "0.25mm solid var(--doc-rule-soft)" : "none",
               }}
             >
-              {m.value}
-            </span>
-          </div>
-        ))}
+              <span style={{ fontSize: "var(--doc-table-head)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--doc-muted)" }}>
+                {m.label}
+              </span>
+              <span
+                style={{
+                  fontSize: m.code ? "var(--doc-code)" : "var(--doc-body)",
+                  fontFamily: m.code ? "var(--font-code)" : "var(--font-ui)",
+                  fontWeight: 600,
+                  color: "var(--doc-ink)",
+                  textAlign: "right",
+                }}
+              >
+                {m.value}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
