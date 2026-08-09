@@ -1,5 +1,4 @@
 import React, { useContext, useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Tag, Layers, FileText, Boxes, Calendar, Package, ArrowRight, CheckCircle2,
@@ -12,6 +11,7 @@ import type { BatchRow, StatusType } from "../types";
 import { SectionHeader, FadeUp } from "../common/primitives";
 import { BatchViewDetailsModal, PrintBarcodeModal } from "../modals/StockModals";
 import { Button, SearchInput } from "../../../../shared/ui/primitives";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "../../../../shared/ui/overlay";
 import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
@@ -279,52 +279,36 @@ export function BatchesSection({ onAddNewStock }: { onAddNewStock: () => void })
             />
           </div>
 
-          <div style={{ position: "relative" }}>
-            <Button
-              onClick={() => setStatusDropOpen(o => !o)}
-              variant={statusFilter !== "All Status" ? "primary" : "secondary"}
-              size="sm"
-              iconLeft={Filter}
-              iconRight={statusDropOpen ? ChevronUp : ChevronDown}
-            >
-              {statusFilter}
-            </Button>
-            <AnimatePresence>
-              {statusDropOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: -8, scale: 0.96 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -8, scale: 0.96 }}
-                  transition={{ duration: 0.18 }}
-                  style={{
-                    position: "absolute", top: "calc(100% + 6px)", right: 0, zIndex: 200,
-                    background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`,
-                    boxShadow: "0 12px 40px rgba(74,6,27,0.15)", minWidth: 160, overflow: "hidden",
-                  }}
-                >
-                  {STATUS_FILTERS.map(f => {
-                    const colors: Record<string, string> = { "In Stock": T.green, "Running Low": "#7A5E1C", "Very Low": T.crimson, "All Used Up": T.taupe, "All Status": T.luxuryBrown };
-                    return (
-                      <Button
-                        key={f}
-                        onClick={() => { setStatusFilter(f); setStatusDropOpen(false); }}
-                        variant="ghost"
-                        size="sm"
-                        fullWidth
-                        className={`justify-start rounded-none ${statusFilter === f ? "font-bold" : "font-medium"}`}
-                      >
-                        {f !== "All Status" && (
-                          <div style={{ width: 8, height: 8, borderRadius: "50%", background: colors[f], flexShrink: 0 }} />
-                        )}
-                        <span style={{ color: statusFilter === f ? colors[f] : T.luxuryBrown }}>{f}</span>
-                        {statusFilter === f && <Check size={13} color={colors[f]} style={{ marginLeft: "auto" }} />}
-                      </Button>
-                    );
-                  })}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+          <DropdownMenu open={statusDropOpen} onOpenChange={setStatusDropOpen}>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant={statusFilter !== "All Status" ? "primary" : "secondary"}
+                size="sm"
+                iconLeft={Filter}
+                iconRight={statusDropOpen ? ChevronUp : ChevronDown}
+              >
+                {statusFilter}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="!min-w-[160px] !p-0 !rounded-xl !overflow-hidden" style={{ background: "#FFFFFF", border: `1px solid ${T.borderDef}` }}>
+              {STATUS_FILTERS.map(f => {
+                const colors: Record<string, string> = { "In Stock": T.green, "Running Low": "#7A5E1C", "Very Low": T.crimson, "All Used Up": T.taupe, "All Status": T.luxuryBrown };
+                return (
+                  <DropdownMenuItem
+                    key={f}
+                    onClick={() => setStatusFilter(f)}
+                    className={`!rounded-none ${statusFilter === f ? "!font-bold" : "!font-medium"}`}
+                  >
+                    {f !== "All Status" && (
+                      <div style={{ width: 8, height: 8, borderRadius: "50%", background: colors[f], flexShrink: 0 }} />
+                    )}
+                    <span style={{ color: statusFilter === f ? colors[f] : T.luxuryBrown }}>{f}</span>
+                    {statusFilter === f && <Check size={13} color={colors[f]} style={{ marginLeft: "auto" }} />}
+                  </DropdownMenuItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <div style={{ display: "flex", gap: 6 }}>
             {([["table", LayoutList, "Table"], ["card", LayoutGrid, "Card"]] as const).map(([v, Icon, label]) => (
