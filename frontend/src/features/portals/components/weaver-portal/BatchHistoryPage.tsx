@@ -28,6 +28,7 @@ import {
   C, F, SAREE_TYPE_RATES, DesignDetailCard, SareeTypeDetailCard, SectionTitle, Card, ProgressBar, StatusBadge, SignatureCanvas, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid, MobileBatchCard, CompletedBatchCard, BATCH_QUICK_FILTERS, BatchQuickFilterPills, WN_T, WN_G, WN_EASE, WN_NUM, WN_DATA, WN_PRIORITY, WN_CATEGORY, WN_FILTERS, WNFadeUp, BATCH_STATUS_CFG, FadeUpBatch, BG_IMAGE, FABRIC_BG, MyBatchEntry
 } from './theme';
 import { Button, Input } from '../../../../shared/ui/primitives';
+import { Breadcrumbs } from '../../../../shared/ui/nav/Breadcrumbs';
 
 
 export function BatchHistoryPage({ onBack, defaultFilter = "all" }: { onBack: () => void; defaultFilter?: "all" | "active" | "completed" }) {
@@ -89,6 +90,15 @@ export function BatchHistoryPage({ onBack, defaultFilter = "all" }: { onBack: ()
           <Button onClick={onBack} variant="ghost" className="flex items-center gap-2 h-auto bg-white/10 border border-white/[0.18] rounded-full px-[18px] py-2 text-[13px] text-white/80 mb-7 font-medium hover:bg-white/10">
             <ChevronLeft size={15} color="rgba(255,255,255,0.80)" /> Back to My Batches
           </Button>
+          <div style={{ marginBottom: 16 }}>
+            <Breadcrumbs
+              items={[
+                { key: "my-batches", label: "My Batches", onClick: onBack },
+                { key: "batches", label: "Batches", onClick: onBack },
+                { key: "batch-history", label: defaultFilter === "completed" ? "Completed Batches" : "Batch History" },
+              ]}
+            />
+          </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
             <div style={{ width: 20, height: 1, background: T2.antiqueGold, opacity: 0.6 }} />
             <span style={{ fontFamily: F.m, fontWeight: 600, fontSize: 12, color: "rgba(200,155,71,0.80)", letterSpacing: "3px", textTransform: "uppercase" as const }}>{weaver?.name ?? "Weaver"} · Weaver History</span>

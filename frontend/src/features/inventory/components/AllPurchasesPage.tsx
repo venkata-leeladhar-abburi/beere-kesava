@@ -7,6 +7,7 @@ import { ViewPurchaseModal, PrintPurchaseModal, Purchase, MatType } from "./Purc
 import { PurchaseCard } from "./PurchaseCard";
 import { Pagination, usePagination } from "../../../shared/ui/DataPagination";
 import { Button, SearchInput } from "../../../shared/ui/primitives";
+import { Breadcrumbs } from "../../../shared/ui/nav/Breadcrumbs";
 
 const T = {
   silkCream:     "#F7F2EA",
@@ -95,6 +96,16 @@ export function AllPurchasesPage({ onBack }: { onBack: () => void }) {
           >
             Back to Materials
           </Button>
+
+          <div style={{ marginBottom: 14 }}>
+            <Breadcrumbs
+              items={[
+                { key: "materials", label: "Materials", onClick: onBack },
+                { key: "purchases", label: "Purchases", onClick: onBack },
+                { key: "all-purchases", label: "All Purchases" },
+              ]}
+            />
+          </div>
 
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, ease: EASE }}
             style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
