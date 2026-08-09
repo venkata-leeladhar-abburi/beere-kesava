@@ -6,6 +6,7 @@ import { F, T, useFirms } from "../../theme";
 import { Invoice } from "../../types";
 import { Button, CurrencyInput, Field, IconButton, Input, Select, SelectItem, Textarea } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
+import { DatePicker, formatDate } from "../../../../shared/ui/date";
 
 // ── Record Payment Modal ──────────────────────────────────────────────────────
 export function RecordPaymentModal({ inv, onClose, onSave }: { inv: Invoice; onClose: () => void; onSave: (amount: number, firmId: string, utr: string, date: string, method: string) => void }) {
@@ -104,7 +105,7 @@ export function RecordPaymentModal({ inv, onClose, onSave }: { inv: Invoice; onC
             <CurrencyInput value={amount === "" ? "" : Number(amount)} onValueChange={v => setAmount(v === "" ? "" : String(v))} />
           </Field>
           <Field label="Payment Date" required id="payment-date">
-            <Input type="date" value={date} onChange={e => setDate(e.target.value)} />
+            <DatePicker value={date ? new Date(date) : null} onChange={d => setDate(d ? formatDate(d, "iso") : "")} />
           </Field>
           <Field label="UTR Number" required id="utr-number">
             <Input value={utr} onChange={e => setUtr(e.target.value)} placeholder="e.g. UTR2026042812345" />

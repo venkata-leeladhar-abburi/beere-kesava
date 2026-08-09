@@ -6,6 +6,7 @@ import { STATUS_CFG, MAT_TAG } from "../materialConfig";
 import type { BatchRow } from "../types";
 import { ModalOverlay, ModalHeader } from "../common/primitives";
 import { Button, Field, Input, Textarea } from "../../../../shared/ui/primitives";
+import { DatePicker, formatDate } from "../../../../shared/ui/date";
 
 // ─── ADD NEW STOCK MODAL ──────────────────────────────────────────────────────
 export function AddNewStockModal({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -76,7 +77,7 @@ export function AddNewStockModal({ open, onClose }: { open: boolean; onClose: ()
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
               <Field label="Date Received" required>
-                <Input type="date" value={form.receivedDate} onChange={e => set("receivedDate", e.target.value)} />
+                <DatePicker value={form.receivedDate ? new Date(form.receivedDate) : null} onChange={d => set("receivedDate", d ? formatDate(d, "iso") : "")} />
               </Field>
               <div>
                 <label style={labelStyle}>

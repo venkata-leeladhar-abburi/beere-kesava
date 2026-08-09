@@ -8,6 +8,7 @@ import { VendorPayment } from "../../types";
 import { Button, CurrencyInput, Field, IconButton, Input, Select, SelectItem, Textarea } from "../../../../shared/ui/primitives";
 import { vendorPaymentsApi } from "../../../../shared/api/payments";
 import { Modal } from "../../../../shared/ui/overlay";
+import { DatePicker, formatDate } from "../../../../shared/ui/date";
 
 export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; onClose: () => void; onSave: (amount: number, firmId: string, utr: string) => void }) {
   const { firms } = useFirms();
@@ -116,7 +117,7 @@ export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; 
               <CurrencyInput value={amount === "" ? "" : Number(amount)} onValueChange={v => setAmount(v === "" ? "" : String(v))} />
             </Field>
             <Field label="Payment Date" required id="payment-date">
-              <Input type="date" value={date} onChange={e => setDate(e.target.value)} />
+              <DatePicker value={date ? new Date(date) : null} onChange={d => setDate(d ? formatDate(d, "iso") : "")} />
             </Field>
             <Field label="UTR Number" required id="utr-number">
               <Input value={utr} onChange={e => setUtr(e.target.value)} placeholder="e.g. UTR2026053012345" />

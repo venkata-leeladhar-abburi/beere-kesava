@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { Package } from "lucide-react";
 import { T, F, Vendor } from "./POTypesAndVendors";
 import { Input, Button, Select, SelectItem } from "../../../shared/ui/primitives";
+import { DatePicker, formatDate } from "../../../shared/ui/date";
 
 interface POVendorDetailsSectionProps {
   vendors: Vendor[];
@@ -135,11 +136,11 @@ export function POVendorDetailsSection({
 
       <div>
         <label style={labelStyle} htmlFor="expected-delivery-date">Expected Delivery Date *</label>
-        <Input id="expected-delivery-date"
-          type="date"
-          value={deliveryDate}
-          min={(() => { const d = new Date(); d.setDate(d.getDate() + 3); return d.toISOString().split("T")[0]; })()}
-          onChange={e => { setDeliveryDate(e.target.value); setErrors(prev => ({ ...prev, deliveryDate: "" })); }}
+        <DatePicker
+          id="expected-delivery-date"
+          value={deliveryDate ? new Date(deliveryDate) : null}
+          min={(() => { const d = new Date(); d.setDate(d.getDate() + 3); return d; })()}
+          onChange={date => { setDeliveryDate(date ? formatDate(date, "iso") : ""); setErrors(prev => ({ ...prev, deliveryDate: "" })); }}
         />
         {errors.deliveryDate && <div style={{ color: T.crimson, fontSize: 12, marginTop: 4 }}>{errors.deliveryDate}</div>}
       </div>

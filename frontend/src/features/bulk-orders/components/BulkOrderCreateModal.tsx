@@ -6,6 +6,7 @@ import { BulkOrder } from "../contexts/BulkOrderContext";
 import { WholesaleCustomerSelectSection, useAllWholesaleCustomers } from "./WholesaleCustomerSelectSection";
 import { Button, IconButton, Field, Input, NumberInput, Textarea } from "../../../shared/ui/primitives";
 import { Modal } from "../../../shared/ui/overlay";
+import { DatePicker, formatDate } from "../../../shared/ui/date";
 
 // Validation schema for the raw string form fields (inputs are all `type="text"`-shaped
 // under the hood, so numeric/date fields are validated as strings and coerced on submit).
@@ -232,12 +233,11 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
                   </Field>
 
                   <Field label="Delivery Deadline" error={errors.deliveryDate} id="delivery-deadline">
-                    <Input id="delivery-deadline"
-                      type="date"
-                      min={minDate}
-                      value={deliveryDate}
-                      onChange={e => setDeliveryDate(e.target.value)}
-                      invalid={!!errors.deliveryDate}
+                    <DatePicker
+                      id="delivery-deadline"
+                      min={today}
+                      value={deliveryDate ? new Date(deliveryDate) : null}
+                      onChange={date => setDeliveryDate(date ? formatDate(date, "iso") : "")}
                     />
                   </Field>
 

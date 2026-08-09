@@ -2,6 +2,7 @@ import React from "react";
 import { F, T } from "../../theme";
 import { VendorPayment } from "../../types";
 import { Button, CurrencyInput, Field, Input, Select, SelectItem } from "../../../../shared/ui/primitives";
+import { DatePicker, formatDate } from "../../../../shared/ui/date";
 
 interface RecordVendorPaymentSidebarProps {
   vendorPayments: VendorPayment[];
@@ -77,7 +78,7 @@ export function RecordVendorPaymentSidebar({
           />
         </Field>
         <Field label="Payment Date" id="payment-date">
-          <Input type="date" value={payDate} onChange={e => setPayDate(e.target.value)} />
+          <DatePicker value={payDate ? new Date(payDate) : null} onChange={d => setPayDate(d ? formatDate(d, "iso") : "")} />
         </Field>
         <Field label="Payment Method" id="payment-method">
           <Select value={payMethod} onValueChange={setPayMethod}>
