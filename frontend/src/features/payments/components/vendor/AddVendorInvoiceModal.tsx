@@ -7,6 +7,7 @@ import { F, T } from "../../theme";
 import { VendorPayment } from "../../types";
 import { Button, Field, IconButton, Input } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
+import { DatePicker, formatDate } from "../../../../shared/ui/date";
 
 // ── Vendor Pay Now Modal ──────────────────────────────────────────────────────
 export function AddVendorInvoiceModal({ vp, onClose }: { vp: VendorPayment; onClose: () => void }) {
@@ -64,7 +65,7 @@ export function AddVendorInvoiceModal({ vp, onClose }: { vp: VendorPayment; onCl
             <Input value={invoiceNo} onChange={e => setInvoiceNo(e.target.value)} placeholder="e.g. INV-4821" />
           </Field>
           <Field label="Invoice Date" id="invoice-date">
-            <Input type="date" value={date} onChange={e => setDate(e.target.value)} />
+            <DatePicker value={date ? new Date(date) : null} onChange={d => setDate(d ? formatDate(d, "iso") : "")} />
           </Field>
         </div>
 
