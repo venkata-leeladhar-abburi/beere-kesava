@@ -43,9 +43,11 @@ export function useDashboardAnalytics() {
     staleTime: 10_000,
   });
 
+  // pageSize 100 (not 1) — the tile needs the actual dispatched sarees, which
+  // only come back on the `sarees` array of each item, not from `total` alone.
   const dispatches = useQuery({
     queryKey: ["dispatch", "dashboard-analytics"],
-    queryFn: () => dispatchApi.list(1),
+    queryFn: () => dispatchApi.list(100),
     staleTime: 10_000,
   });
 
@@ -84,7 +86,18 @@ export function useDashboardAnalytics() {
   // would count every unproduced row too.
   const totalSareesProduced = production.data?.totalSareesProduced ?? 0;
 
-  const inStockSareesCount = qc?.PASSED ?? 0;
+  // Sarees dispatched, not dispatch *records* — dispatches.data.total counts
+  // history entries (one truck run can carry many sarees), so it undercounts
+  // what the "Dispatch" tile is meant to report.
+  const dispatchedSareeIds = new Set(
+    (dispatches.data?.items ?? []).flatMap((d) => d.sarees.map((s) => s.sareeId)),
+  );
+  const dispatchedCount = dispatchedSareeIds.size;
+
+  // QC-passed sarees still sitting in the warehouse — a saree that passed QC
+  // but has since gone out the door on a dispatch is no longer "in stock",
+  // so it has to be subtracted rather than counting every pass ever recorded.
+  const inStockSareesCount = Math.max(0, (qc?.PASSED ?? 0) - dispatchedSareeIds.size);
 
   const overdueInvoicesCount = (outstanding.data?.items ?? []).filter((i) => i.status === "OVERDUE").length;
 
@@ -93,8 +106,6 @@ export function useDashboardAnalytics() {
   const paymentsCollectedPct = totalInvoiced > 0 ? Math.round((totalCollected / totalInvoiced) * 100) : 0;
 
   const pendingApprovalsCount = (purchaseRequests.data?.items ?? []).filter((r) => r.status === "PENDING").length;
-
-  const dispatchedCount = dispatches.data?.total ?? 0;
 
   return {
     isLoading,

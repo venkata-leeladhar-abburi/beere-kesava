@@ -119,4 +119,30 @@ export class DispatchService {
     }
     return record;
   }
+
+  async remove(id: string, actorId: string) {
+    const record = await this.findOne(id);
+    const sareeIds = record.sarees.map((s) => s.sareeId);
+
+    // Revert inventory status for all associated sarees
+    if (sareeIds.length > 0) {
+      await this.prisma.inventoryRecord.updateMany({
+        where: { sareeId: { in: sareeIds } },
+        data: { status: "FINISHING_COMPLETE" },
+      });
+    }
+
+    await this.prisma.dispatchRecord.delete({ where: { id } });
+
+    await this.auditLog.recordAction({
+      actorId,
+      module: "DISPATCH",
+      action: `Deleted dispatch record (${record.sarees.length} sarees)`,
+      entityType: "DispatchRecord",
+      entityId: id,
+      recordLabel: record.lrNumber ?? record.invoiceNumber ?? id,
+    });
+
+    return { success: true };
+  }
 }

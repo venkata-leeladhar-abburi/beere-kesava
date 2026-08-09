@@ -70,7 +70,10 @@ export function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive,
   const myDefectiveSarees = useMemo(() => {
     return batches.flatMap(b =>
       b.rows
-        .filter(r => r.weaverId === weaverId && r.qcPassed === false)
+        // qcPassed is false for BOTH defective and semi-approved sarees, and a
+        // semi-approved one is a rework, not a rejection — key off the verdict
+        // itself so reworks don't get reported as defects.
+        .filter(r => r.weaverId === weaverId && r.qcResult === "defective")
         .map(r => ({
           sareeId: r.sareeId,
           batchId: b.batchId,

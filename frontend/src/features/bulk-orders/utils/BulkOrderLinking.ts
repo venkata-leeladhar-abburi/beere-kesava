@@ -5,6 +5,7 @@
 // pulled out here — used by both InventoryPage and the bulk order detail page —
 // to keep them from silently drifting apart.
 import type { BulkOrder } from "../contexts/BulkOrderContext";
+import type { ReadySaree, FinishingReturn, Quotation } from "../../finishing/contexts/finishing-types";
 
 /** Invoice shape this module needs — kept structural so PaymentsPage stays uncoupled. */
 interface InvoiceLike {
@@ -44,6 +45,43 @@ export function resolveOrderMoney(
     invoiceId: matched?.id,
     payments: matched?.payments ?? [],
   };
+}
+
+/**
+ * Every distinct saree actually produced for a bulk order — same matching
+ * rules as BulkOrderDetailPage's linkedSarees (explicit bulkOrderRef, a
+ * linked quotation, or the design+type fallback), but as a plain id set so
+ * card-style summaries (BulkOrderCard on the list pages) can show a real
+ * "N of total done" instead of the order's own `done` column, which nothing
+ * keeps in sync with actual production and so drifts to 0/stale.
+ */
+export function computeBulkOrderProducedSareeIds(
+  orderRef: string,
+  bulkOrders: BulkOrder[],
+  readySarees: ReadySaree[],
+  returns: FinishingReturn[],
+  quotations: Quotation[],
+): Set<string> {
+  const linkedQuotations = quotations.filter(q => q.bulkOrderRef === orderRef);
+  const quotationRefBySaree = new Map<string, string>();
+  linkedQuotations.forEach(q => q.sarees.forEach(s => quotationRefBySaree.set(s.sareeId, q.quotationNumber)));
+
+  const ids = new Set<string>();
+
+  readySarees.forEach(s => {
+    const boRef = resolveBulkOrderRef((s as { bulkOrderRef?: string }).bulkOrderRef, s.designCode, s.sareeType, bulkOrders);
+    if (boRef === orderRef || quotationRefBySaree.has(s.id)) ids.add(s.id);
+  });
+
+  returns.forEach(r => {
+    const boRef = resolveBulkOrderRef(undefined, r.designCode, r.sareeType, bulkOrders);
+    const isQuotationLinked = !!r.quotationRef && linkedQuotations.some(q => q.quotationNumber === r.quotationRef);
+    if (boRef === orderRef || isQuotationLinked || quotationRefBySaree.has(r.sareeId)) ids.add(r.sareeId);
+  });
+
+  linkedQuotations.forEach(q => q.sarees.forEach(s => ids.add(s.sareeId)));
+
+  return ids;
 }
 
 export function resolveBulkOrderRef(

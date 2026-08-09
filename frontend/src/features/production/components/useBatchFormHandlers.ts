@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from "sonner";
 import { SareeRow, generateSareeId } from "../contexts/BatchContext";
 import type { ActivePicker } from "./batch-creation/types";
 
@@ -29,6 +30,7 @@ export function useBatchFormHandlers(bulkOrders: any[]) {
       designCode: null, sareeTypeCode: null, sareeTypeName: null,
       bulkOrderRef: null, bulkOrderLabel: null,
       receivedAt: null, receivedWeight: null, receivedColor: null, receivedPhotoUrl: null,
+      receivedWarpG: null, receivedReshamG: null, receivedJariReels: null,
     })));
     setSelected(new Set());
     setGenerated(true);
@@ -95,8 +97,8 @@ export function useBatchFormHandlers(bulkOrders: any[]) {
         ...r, recipientType: "factoryLoom" as const,
         weaverId: null, weaverName: null, weaverInitials: null, weaverLoom: null,
         factoryLoomId: loom.id, factoryLoomNumber: loom.loomNumber,
-        // Matches backend buildSareeId(): {loomNumber}-{seq3}, not {id}-{seq3}.
-        sareeId: `${loom.loomNumber}-${String(seq).padStart(3, "0")}`,
+        // Matches backend buildSareeId(): {loomNumber}-B{batchSeq}-{seq3}. We don't have batchSeq yet so use B***.
+        sareeId: `${loom.loomNumber}-B***-${String(seq).padStart(3, "0")}`,
       };
     }));
     setPicker(null);
@@ -115,11 +117,37 @@ export function useBatchFormHandlers(bulkOrders: any[]) {
       } else {
         sareeTypeName = order.sareeType;
       }
-      designCode = order.design;
+      // designCode is a real FK on the backend (DesignLibrary.code) — an
+      // empty string isn't null/undefined, so it would survive to the save
+      // request and trip the foreign-key constraint on save. A bulk order
+      // without a design set must leave this null, not "".
+      designCode = order.design || null;
     }
+
+    // A bulk order only has room for as many sarees as it was placed for —
+    // don't let it silently absorb more than that. Cap the assignment at the
+    // order's remaining capacity (its total, minus rows already on it
+    // elsewhere in this batch); anything selected past the cap goes to
+    // General Stock instead, for the admin to route separately.
+    const selectedSerials = rows
+      .filter(r => selected.has(r.serial))
+      .map(r => r.serial)
+      .sort((a, b) => a - b);
+    let capacity = selectedSerials.length;
+    if (order) {
+      const alreadyOnOrder = rows.filter(r => r.bulkOrderRef === ref && !selected.has(r.serial)).length;
+      capacity = Math.max(0, order.total - alreadyOnOrder);
+    }
+    const capped = new Set(selectedSerials.slice(0, capacity));
+    const overflow = selectedSerials.length - capped.size;
 
     setRows(prev => prev.map(r => {
       if (!selected.has(r.serial)) return r;
+      if (order && !capped.has(r.serial)) {
+        // Past this order's capacity — route to General Stock rather than
+        // leaving it silently tied to an order it can't actually belong to.
+        return { ...r, bulkOrderRef: null, bulkOrderLabel: null };
+      }
       return {
         ...r,
         bulkOrderRef: ref,
@@ -128,6 +156,12 @@ export function useBatchFormHandlers(bulkOrders: any[]) {
       };
     }));
     setPicker(null);
+
+    if (order && overflow > 0) {
+      toast.warning(
+        `${order.ref} only has room for ${capacity} more saree${capacity === 1 ? "" : "s"} — ${overflow} of your ${selectedSerials.length} selected rows went to General Stock instead.`,
+      );
+    }
   }
 
   function applyDesign(code: string) {

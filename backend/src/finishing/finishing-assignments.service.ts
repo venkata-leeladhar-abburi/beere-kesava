@@ -7,8 +7,14 @@ import { CreateFinishingAssignmentDto } from "./dto/create-finishing-assignment.
 import { ListFinishingAssignmentsQueryDto } from "./dto/list-finishing-assignments-query.dto";
 import { ReceiveFinishingReturnDto } from "./dto/receive-finishing-return.dto";
 
+// `qcRecords` is newest-first / take 1: a saree accumulates one record per
+// SEMI-rework round, and only the latest is its current verdict.
+const latestQc = { orderBy: { qcDate: "desc" }, take: 1 } as const;
+
 const include = {
-  batchSareeRow: { include: { design: true, weaver: true, qcRecord: { select: { result: true } } } },
+  batchSareeRow: {
+    include: { design: true, weaver: true, qcRecords: { ...latestQc, select: { result: true } } },
+  },
   finishingStaff: true,
 } satisfies Prisma.FinishingAssignmentInclude;
 
@@ -35,7 +41,7 @@ export class FinishingAssignmentsService {
 
     const rows = await this.prisma.batchSareeRow.findMany({
       where: { sareeId: { in: dto.sareeIds } },
-      include: { qcRecord: true, finishingAssignment: true },
+      include: { qcRecords: latestQc, finishingAssignment: true },
     });
     const foundIds = new Set(rows.map((r) => r.sareeId));
     const missing = dto.sareeIds.filter((id) => !foundIds.has(id));
@@ -43,7 +49,9 @@ export class FinishingAssignmentsService {
       throw new NotFoundException(`Saree(s) not found: ${missing.join(", ")}`);
     }
     for (const row of rows) {
-      if (!row.qcRecord || row.qcRecord.result !== QcResult.PASSED) {
+      // A SEMI verdict leaves a record behind but sends the saree back for
+      // rework, so only the latest result being PASSED makes it assignable.
+      if (row.qcRecords[0]?.result !== QcResult.PASSED) {
         throw new BadRequestException(`Saree ${row.sareeId} has not passed QC`);
       }
       if (row.finishingAssignment) {

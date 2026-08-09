@@ -11,7 +11,7 @@ import { rowToDispatchSaree } from "../components/modals/shared/SareePicker";
 import { WeaverSareeRow } from "../../weavers/components/WeaverSareesSection";
 
 export function useInventoryPageState() {
-  const { returns, dispatches, dispatchSarees, updateDispatch, readySarees, raiseQuotation, quotations, markQuotationDispatched } = useFinishing();
+  const { returns, dispatches, dispatchSarees, updateDispatch, deleteDispatch, readySarees, raiseQuotation, quotations, markQuotationDispatched } = useFinishing();
   const { getDesign } = useDesignLibrary();
   const { bulkOrders, markDispatched } = useBulkOrders();
   const { batches } = useBatches();
@@ -121,7 +121,14 @@ export function useInventoryPageState() {
     }));
   }, [mirroredRows, selected]);
 
-  const availableSarees = useMemo<FinishingReturn[]>(() => mirroredRows.map(rowToDispatchSaree), [mirroredRows]);
+  // A saree already on a dispatch record (including one dispatched via a
+  // previously raised quotation) is gone from the shelf — it must not be
+  // offered again as a pick for a *new* quotation/dispatch, even though the
+  // underlying table still lists it (under its Dispatched tab) for audit.
+  const availableSarees = useMemo<FinishingReturn[]>(
+    () => mirroredRows.filter(r => !r.dispatched).map(rowToDispatchSaree),
+    [mirroredRows],
+  );
 
   const selectedSarees = useMemo(
     () => availableSarees.filter(s => selected.has(s.sareeId)),
@@ -292,6 +299,8 @@ export function useInventoryPageState() {
     setQuotationDispatch,
     resumeDispatch,
     setResumeDispatch,
+    deleteDispatch,
+    markQuotationDispatched,
     allRecords,
     total,
     pendingCount,

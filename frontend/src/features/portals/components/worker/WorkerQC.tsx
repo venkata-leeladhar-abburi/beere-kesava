@@ -22,8 +22,15 @@ import { IconButton, Input } from "../../../../shared/ui/primitives";
 
 export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTablet?: boolean }) {
   const { batches } = useBatches();
-  const { addReadySaree } = useFinishing();
+  const { addReadySaree, dispatches } = useFinishing();
   const { recordQc, qcRecords } = useQc();
+  // A saree already on a dispatch record has left the premises — it has no
+  // business sitting in the inspection queue even if its receipt/QC fields
+  // say otherwise (mis-sequenced dispatch, or a late-entered QC result).
+  const dispatchedSareeIds = useMemo(
+    () => new Set(dispatches.flatMap(d => d.sareeIds)),
+    [dispatches],
+  );
   const { getDesign } = useDesignLibrary();
   const { getSareeTypeByName, getSareeTypeByCode } = useRatesPricing();
   const [openDesignCode, setOpenDesignCode] = useState<string | null>(null);
@@ -40,7 +47,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
           // row — once set (pass or fail), it must drop out of the queue.
           // receivedAt gates entry: a saree only enters QC once Worker Staff
           // has actually received it from the weaver/loom.
-          .filter(r => r.sareeId && r.weaverName && r.receivedAt && r.qcPassed == null)
+          .filter(r => r.sareeId && r.weaverName && r.receivedAt && r.qcPassed == null && !dispatchedSareeIds.has(r.sareeId))
           .map(r => ({
             id: r.sareeId!,
             batch: b.batchId,
@@ -57,7 +64,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
             loomNumber: r.weaverLoom ?? null,
           }))
       );
-  }, [batches]);
+  }, [batches, dispatchedSareeIds]);
 
   const ALL_QUEUE = contextRows;
 
@@ -214,29 +221,17 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
     setResult("semi_approved");
   };
 
+  // Semi-approved is NOT a pass: the saree goes back to the weaver for rework
+  // rather than on to finishing, so it must not be added to the ready queue
+  // (the backend also refuses to assign it, and rejects a second QC entry
+  // until Worker Staff has received the saree back). It reappears in the
+  // receive queue flagged as a rework, and returns here after that.
   const confirmSemiApproved = () => {
     if (!inspecting) return;
     const s = inspecting;
     saveQc(s, "semi", Number(deductionAmount) || 0).then(() => {
       setInspected(p => new Set(p).add(s.id));
       setDefectSubmitted(true);
-
-      const { code: designCode, typeName } = splitDesignField(s.design);
-      const sareeTypeCode = s.sareeTypeCode ?? getSareeTypeByName(typeName)?.code ?? "";
-      const qcPassDate = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
-
-      addReadySaree({
-        id: s.id,
-        weaverId: s.wcode || undefined,
-        weaverName: s.weaver,
-        designCode,
-        sareeTypeCode,
-        sareeType: typeName,
-        weight: s.weight ? `${s.weight}g` : undefined,
-        qcPassDate,
-        bulkOrderRef: s.bulkOrderRef,
-        status: "qc-passed-pending-finishing",
-      });
     }).catch((err) => {
       showError(`Failed to save QC result for ${s.id}: ${err instanceof Error ? err.message : "Unknown error"}`);
     });

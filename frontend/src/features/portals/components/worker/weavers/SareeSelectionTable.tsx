@@ -105,8 +105,12 @@ export function SareeSelectionTable({
     {
       id: "status", header: "Status", accessor: s => s.status, type: "status",
       cell: (_v, s) => {
+        // A rework saree is "pending" like any other, but it is coming back a
+        // second time after a semi-approval — worth calling out so staff know
+        // to check the reworked flaw rather than treating it as a first receipt.
         const statusCfg = s.status === "received" ? { label: "Received", bg: "rgba(30,102,64,0.10)", col: C.green }
           : s.status === "defective" ? { label: "Defective", bg: "rgba(220,53,69,0.10)", col: C.crim }
+          : s.isRework ? { label: "Rework — Receive Again", bg: "rgba(107,26,42,0.10)", col: C.burg }
           : { label: "Pending", bg: "rgba(196,146,58,0.12)", col: C.gold };
         return <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: statusCfg.col, background: statusCfg.bg, borderRadius: 999, padding: "3px 9px" }}>{statusCfg.label}</span>;
       },

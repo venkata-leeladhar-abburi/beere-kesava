@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { AnimatePresence } from "motion/react";
-import { Layers, Package } from "lucide-react";
+import { Layers, Package, RotateCcw } from "lucide-react";
 import { C, F, SareeTypeDetailCard, ProgressBar, MyBatchEntry } from "../theme";
 import { DispatchInstructionsBlock, MaterialsGivenBlock } from "./batchCardHelpers";
 import { Button } from "../../../../../shared/ui/primitives";
@@ -15,8 +15,10 @@ export function DesktopActiveBatchCard({ b, idx, bp = "desktop" }: { b: MyBatchE
   const generalStock   = b.myRows.filter(r => !r.bulkOrderLabel).length;
   const qcPassedCount  = b.myRows.filter(r => r.qcPassed === true).length;
   // Produced = QC-passed OR finished via the Raise Quotation receive flow —
-  // either milestone alone counts a saree as produced.
+  // either milestone alone counts a saree as produced. A semi-approved saree
+  // meets neither: it is back with the weaver for rework.
   const producedCount  = b.myRows.filter(r => r.qcPassed === true || r.finished === true).length;
+  const reworkCount    = b.myRows.filter(r => r.awaitingRework === true).length;
 
   return (
     <div style={{ background: "#FFFDF9", borderRadius: 24, border: `1px solid rgba(110,15,45,0.10)`, borderLeft: `4px solid ${borderColor}`, boxShadow: "0px 4px 18px rgba(74,6,27,0.07)", overflow: "hidden", display: "flex", flexDirection: "column" as const }}>
@@ -57,6 +59,17 @@ export function DesktopActiveBatchCard({ b, idx, bp = "desktop" }: { b: MyBatchE
               </div>
               <ProgressBar pct={(qcPassedCount / b.myRows.length) * 100} height={8} />
             </div>
+
+            {/* Semi-approved sarees are back with the weaver — called out here
+                so the gap between Produced and the batch total is explained. */}
+            {reworkCount > 0 && (
+              <div style={{ display: "flex", alignItems: "center", gap: 7, background: "rgba(196,146,58,0.10)", border: "1px solid rgba(196,146,58,0.30)", borderRadius: 9, padding: "7px 11px" }}>
+                <RotateCcw size={13} color={C.gold} style={{ flexShrink: 0 }} />
+                <span style={{ fontFamily: F.u, fontSize: 12.5, color: C.text }}>
+                  <strong>{reworkCount}</strong> semi-approved — rework and hand in again
+                </span>
+              </div>
+            )}
           </div>
         </div>
 

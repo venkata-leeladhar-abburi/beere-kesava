@@ -67,4 +67,6 @@ export const dispatchApi = {
   findOne: (id: string) => apiClient.get<BackendDispatchRecord>(`/dispatch/${id}`),
 
   create: (payload: CreateDispatchPayload) => apiClient.post<BackendDispatchRecord>("/dispatch", payload),
+
+  delete: (id: string, actorId: string) => apiClient.delete(`/dispatch/${id}?actorId=${actorId}`),
 };

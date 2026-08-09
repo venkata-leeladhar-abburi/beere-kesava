@@ -43,7 +43,7 @@ export interface WeaverSareeRow {
 
 export type TabKey =
   | "assigned" | "produced" | "qcpassed" | "semi"
-  | "defective" | "finishing" | "sold" | "outstanding" | "shortage" | "external";
+  | "defective" | "finishing" | "sold" | "outstanding" | "shortage" | "external" | "dispatched";
 
 /** Which date each tab filters and sorts on. */
 export function tabDate(row: WeaverSareeRow, tab: TabKey): string | null {
@@ -58,5 +58,6 @@ export function tabDate(row: WeaverSareeRow, tab: TabKey): string | null {
     case "outstanding": return row.stock?.qcDate ?? null;
     case "shortage": return row.finishingCompletedDate ?? row.qcDate ?? null;
     case "external": return row.stock?.purchaseDate ?? row.stock?.qcDate ?? null;
+    case "dispatched": return row.stock?.sale?.date ?? row.finishingCompletedDate ?? null;
   }
 }

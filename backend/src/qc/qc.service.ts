@@ -35,13 +35,31 @@ export class QcService {
   async create(dto: CreateQcRecordDto) {
     const row = await this.prisma.batchSareeRow.findUnique({
       where: { sareeId: dto.sareeId },
-      include: { qcRecord: true, sareeType: true },
+      include: {
+        // Newest first — a saree accumulates one record per rework round, and
+        // only the latest one describes its current state.
+        qcRecords: { orderBy: { qcDate: "desc" }, take: 1 },
+        sareeType: true,
+      },
     });
     if (!row) {
       throw new NotFoundException(`Saree ${dto.sareeId} not found`);
     }
-    if (row.qcRecord) {
-      throw new BadRequestException(`Saree ${dto.sareeId} has already been QC-inspected`);
+    const latestQc = row.qcRecords[0];
+    if (latestQc) {
+      // PASSED is terminal — the saree moves on to finishing.
+      // Both SEMI and DEFECTIVE send the saree back to the weaver for rework.
+      if (latestQc.result === QcResult.PASSED) {
+        throw new BadRequestException(`Saree ${dto.sareeId} has already been QC-inspected`);
+      }
+      // A SEMI verdict clears receivedAt (see below) so the saree re-enters
+      // the receive queue. Re-inspecting before it has physically come back
+      // would just be re-recording a verdict on a saree that isn't here.
+      if (!row.receivedAt) {
+        throw new BadRequestException(
+          `Saree ${dto.sareeId} is awaiting rework — receive it back from the weaver before inspecting it again`,
+        );
+      }
     }
     if (!row.sareeTypeCode || !row.sareeType) {
       throw new BadRequestException(`Saree ${dto.sareeId} has no saree type assigned yet`);
@@ -58,9 +76,11 @@ export class QcService {
     const makingCharge = Number(row.sareeType.makingCharge);
     const { deduction, payable } = computeQcPayment(dto.result, makingCharge, dto.semiDeduction);
 
+    // Falls back to the row's actual receipt date so a SEMI round keeps a
+    // record of when that saree came in — receivedAt itself is cleared below.
     const receivedDate = dto.receivedDaysAgo
       ? new Date(Date.now() - dto.receivedDaysAgo * 24 * 60 * 60 * 1000)
-      : new Date();
+      : (row.receivedAt ?? new Date());
 
     const [record] = await this.prisma.$transaction([
       this.prisma.qcRecord.create({
@@ -85,7 +105,22 @@ export class QcService {
         // Only a clean PASSED counts as "QC passed" — SEMI and DEFECTIVE
         // both fall short of that everywhere this flag is read (finishing
         // eligibility, weaver "produced" stats, batch progress, etc.).
-        data: { qcPassed: dto.result === QcResult.PASSED },
+        //
+        // SEMI and DEFECTIVE additionally go back to the weaver for rework, so the
+        // receipt is undone: with receivedAt cleared the saree drops out of
+        // the QC queue and reappears in Worker Staff's receive queue, to be
+        // received (and re-inspected) again once the weaver returns it. The
+        // original receipt details stay on the QcRecord above.
+        data:
+          dto.result === QcResult.SEMI || dto.result === QcResult.DEFECTIVE
+            ? {
+                qcPassed: false,
+                receivedAt: null,
+                receivedWeight: null,
+                receivedColor: null,
+                receivedPhotoUrl: null,
+              }
+            : { qcPassed: dto.result === QcResult.PASSED },
       }),
     ]);
 
@@ -127,8 +162,13 @@ export class QcService {
     return { items, total, page: query.page, pageSize: query.pageSize };
   }
 
+  // Returns the *current* verdict for a saree — the newest record, since a
+  // saree can carry several after SEMI-rework rounds.
   async findOne(sareeId: string, weaverScope?: string) {
-    const record = await this.prisma.qcRecord.findUnique({ where: { sareeId } });
+    const record = await this.prisma.qcRecord.findFirst({
+      where: { sareeId },
+      orderBy: { qcDate: "desc" },
+    });
     if (!record) {
       throw new NotFoundException(`QC record for ${sareeId} not found`);
     }

@@ -2,7 +2,11 @@ import React, { createContext, useContext, useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ApiError } from "../../../shared/api/client";
-import { BackendBatch, batchesApi } from "../../../shared/api/batches";
+import { BackendBatch, batchesApi, ReceiveBatchRowPayload } from "../../../shared/api/batches";
+import type { BackendQcResult } from "../../../shared/api/qc";
+// Type-only: QcContext imports from this module's sibling API layer, so a
+// value import here would close a cycle at runtime.
+import type { QcResult } from "../../qc/contexts/QcContext";
 import { weaversApi } from "../../../shared/api/weavers";
 import { factoryLoomsApi } from "../../../shared/api/factory-looms";
 import { ratesApi } from "../../../shared/api/rates";
@@ -25,6 +29,16 @@ export interface SareeRow {
   bulkOrderRef: string | null;   // null = General Stock
   bulkOrderLabel: string | null;
   qcPassed?: boolean;            // true once Worker Staff confirms QC passed for this saree
+  // Current QC verdict — the latest of possibly several, since anything short
+  // of a pass sends the saree back to the weaver to be inspected again.
+  // undefined until it has been inspected at all, which qcPassed alone
+  // can't express (it is false for both "semi" and "defective").
+  qcResult?: QcResult;
+  // Failed QC (semi or defective) and sent back to the weaver, not yet
+  // received again — the saree is neither produced nor in the QC queue, it is
+  // out with the weaver being reworked. Worker Staff's receive queue lists it
+  // as a rework.
+  awaitingRework?: boolean;
   // True once the saree comes back from finishing — via either the plain
   // Worker Staff receive-back flow or the Raise Quotation receive flow, both
   // of which mark the FinishingAssignment RETURNED.
@@ -37,6 +51,12 @@ export interface SareeRow {
   receivedWeight: string | null;
   receivedColor: string | null;
   receivedPhotoUrl: string | null;
+  // Actual material split entered at receipt (warp/resham in grams, jari in
+  // reels) — Worker Staff's own entry (auto-computed from the rate card by
+  // default, but editable), not a re-derived estimate.
+  receivedWarpG: string | null;
+  receivedReshamG: string | null;
+  receivedJariReels: string | null;
 }
 
 export interface BatchRecord {
@@ -50,12 +70,12 @@ export interface BatchRecord {
 }
 
 // ─── Saree ID generation ──────────────────────────────────────────────────────
-// Format: {FIRSTNAME_UPPER}-L{LOOM}-{SEQ_3DIGIT}  e.g. RAVI-L2-001
+// Format: {FIRSTNAME_UPPER}-L{LOOM}-B***-{SEQ_3DIGIT}  e.g. RAVI-L2-B***-001
 export function generateSareeId(weaverName: string, loom: number, seq: number): string {
   // split() on a non-empty separator regex always yields at least one
   // element, but the type system can't see that — narrow explicitly.
   const first = (weaverName.split(/[\s.]+/)[0] ?? weaverName).toUpperCase();
-  return `${first}-L${loom}-${String(seq).padStart(3, "0")}`;
+  return `${first}-L${loom}-B***-${String(seq).padStart(3, "0")}`;
 }
 
 // ─── Context ──────────────────────────────────────────────────────────────────
@@ -67,7 +87,7 @@ interface BatchContextValue {
   // returned id rather than assuming their local batchId was persisted.
   saveDraft: (batch: BatchRecord) => Promise<string>;
   updateBatch: (batchId: string, patch: Partial<BatchRecord>) => void;
-  receiveRow: (batchId: string, serial: number, payload: { weight: number; color?: string; photoUrl?: string }) => Promise<void>;
+  receiveRow: (batchId: string, serial: number, payload: ReceiveBatchRowPayload) => Promise<void>;
   finalizeBatch: (batchId: string) => Promise<void>;
   // Rejects with the backend's message when the batch has existing records
   // (materials issued, QC, finishing) attached — deletion is blocked, not
@@ -86,6 +106,12 @@ const BatchContext = createContext<BatchContextValue | null>(null);
 
 const QUERY_KEY = ["batches"] as const;
 
+const QC_RESULT_FROM_BACKEND: Record<BackendQcResult, QcResult> = {
+  PASSED: "passed",
+  SEMI: "semi",
+  DEFECTIVE: "defective",
+};
+
 function backendBatchToRecord(
   b: BackendBatch,
   weaverLookup: Map<string, { name: string; initials: string }>,
@@ -101,6 +127,7 @@ function backendBatchToRecord(
     updatedAt: b.updatedAt,
     rows: b.rows.map((r): SareeRow => {
       const weaver = r.weaverId ? weaverLookup.get(r.weaverId) : undefined;
+      const qcResult = r.qcRecords?.[0] ? QC_RESULT_FROM_BACKEND[r.qcRecords[0].result] : undefined;
       return {
         serial: r.serial,
         sareeId: r.sareeId,
@@ -117,12 +144,20 @@ function backendBatchToRecord(
         bulkOrderRef: r.bulkOrderRef,
         bulkOrderLabel: r.bulkOrderRef,
         qcPassed: r.qcPassed ?? undefined,
+        qcResult,
+        // The backend clears receivedAt on a semi or defective verdict precisely so the
+        // saree falls back into the receive queue, so "semi/defective + not received"
+        // is exactly the out-for-rework state.
+        awaitingRework: (qcResult === "semi" || qcResult === "defective") && !r.receivedAt,
         finished: r.finishingAssignment?.status === "RETURNED",
         finishedAt: r.finishingAssignment?.status === "RETURNED" ? r.finishingAssignment.updatedAt : null,
         receivedAt: r.receivedAt,
         receivedWeight: r.receivedWeight,
         receivedColor: r.receivedColor,
         receivedPhotoUrl: r.receivedPhotoUrl,
+        receivedWarpG: r.receivedWarpG,
+        receivedReshamG: r.receivedReshamG,
+        receivedJariReels: r.receivedJariReels,
       };
     }),
   };
@@ -196,6 +231,14 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
           factoryLoomId: row.factoryLoomId ?? undefined,
           designCode: row.designCode ?? undefined,
           sareeTypeCode: row.sareeTypeCode,
+          // Persists the row's bulk-order link so it survives a refetch —
+          // previously withheld because the backend wrote an unvalidated FK
+          // (any bad ref 500'd); assignRow now validates it and returns a
+          // clean 404 instead, so it's safe to send. Without this, a saree's
+          // link to its bulk order lived only in local draft state and was
+          // lost the moment the batch list refetched, leaving the order's
+          // Sarees tab to rely entirely on a fragile design/type name match.
+          bulkOrderRef: row.bulkOrderRef ?? undefined,
           loomNumber: row.weaverLoom ?? undefined,
         });
       }
@@ -225,7 +268,7 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
   });
 
   const receiveRowMutation = useMutation({
-    mutationFn: (args: { batchId: string; serial: number; payload: { weight: number; color?: string; photoUrl?: string } }) =>
+    mutationFn: (args: { batchId: string; serial: number; payload: ReceiveBatchRowPayload }) =>
       batchesApi.receiveRow(args.batchId, args.serial, args.payload),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
@@ -266,7 +309,7 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
 
   const saveDraft = (batch: BatchRecord) => saveDraftMutation.mutateAsync(batch);
   const updateBatch = (batchId: string, patch: Partial<BatchRecord>) => updateBatchMutation.mutate({ batchId, patch });
-  const receiveRow = (batchId: string, serial: number, payload: { weight: number; color?: string; photoUrl?: string }) =>
+  const receiveRow = (batchId: string, serial: number, payload: ReceiveBatchRowPayload) =>
     receiveRowMutation.mutateAsync({ batchId, serial, payload }).then(() => undefined);
   const finalizeBatch = (batchId: string) => finalizeBatchMutation.mutateAsync(batchId).then(() => undefined);
   // A 404 here means the batch is already gone (another tab deleted it, or

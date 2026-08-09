@@ -27,12 +27,16 @@ export function rowToDispatchSaree(r: WeaverSareeRow): FinishingReturn {
 // ── Saree picker (scan + pick from inventory) ─────────────────────────────────
 // "Select from Inventory" embeds the very same inventory table the page shows —
 // identical columns, tabs and filters — so nothing has to be learned twice.
-export function SareePicker({ available, picked, onChange, label, onBrowseChange }: {
+export function SareePicker({ available, picked, onChange, label, onBrowseChange, requireFinishingComplete = true }: {
   available: FinishingReturn[];
   picked: FinishingReturn[];
   onChange: (next: FinishingReturn[]) => void;
   label: string;
   onBrowseChange?: (open: boolean) => void;
+  /** False lets a QC-passed-but-not-yet-finished saree be picked — only
+   * RaiseQuotationModal sets this, since raising a quotation has no backend
+   * eligibility check (unlike an actual dispatch, which does). */
+  requireFinishingComplete?: boolean;
 }) {
   const [browse, setBrowse] = useState(false);
   const [scanMsg, setScanMsg] = useState("");
@@ -114,6 +118,7 @@ export function SareePicker({ available, picked, onChange, label, onBrowseChange
           <WeaverSareesSection
             ownerType="all"
             selectable
+            requireFinishingComplete={requireFinishingComplete}
             selectedIds={pickedIds}
             onToggleRow={toggleRow}
             onToggleAll={toggleAll}

@@ -30,7 +30,7 @@ function Chip({ label, color }: { label: string; color: string }) {
 
 
 // ── Main section ─────────────────────────────────────────────────────────────
-export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver", selectable = false, selectedIds, onToggleRow, onToggleAll, onVisibleChange }: {
+export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver", selectable = false, requireFinishingComplete = true, selectedIds, onToggleRow, onToggleAll, onVisibleChange }: {
   /** Weaver id (WV-00X) or factory loom id (FL-00X), depending on ownerType. Unused when ownerType is "all". */
   weaverId?: string;
   weaverName?: string;
@@ -38,6 +38,9 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
   ownerType?: "weaver" | "loom" | "all";
   /** When true, renders a checkbox column (main table only) driven by the props below. */
   selectable?: boolean;
+  /** Passed straight through to MainSareesTable — see its doc comment. Only
+   * RaiseQuotationModal's picker sets this false. */
+  requireFinishingComplete?: boolean;
   selectedIds?: Set<string>;
   onToggleRow?: (sareeId: string) => void;
   onToggleAll?: (visibleIds: string[]) => void;
@@ -79,6 +82,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
       case "outstanding": return r.stock !== null && r.stock.origin !== "external" && isOutstanding(r.stock);
       case "shortage": return !!r.bulkOrderLabel && (r.qcStatus === "defective" || r.finishingStatus === "rejected");
       case "external": return r.stock !== null && r.stock.origin === "external";
+      case "dispatched": return r.dispatched;
     }
   };
 
@@ -160,17 +164,24 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
     return true;
   };
 
+  // Selectable mode (InventoryPage's main table, the Raise Quotation / Dispatch
+  // pickers) is exclusively for picking sarees to dispatch — a saree already on
+  // a dispatch record has nothing to offer there, so it's dropped from every
+  // tab except "Dispatched" itself (kept as an audit view, not a pick list).
+  // Read-only usages (production audit, weaver drawer) are unaffected.
+  const rowsForTab = (t: TabKey) => (selectable && t !== "dispatched") ? rows.filter(r => !r.dispatched) : rows;
+
   const counts = useMemo(() => {
     const c = {} as Record<TabKey, number>;
-    (["assigned", "produced", "qcpassed", "semi", "defective", "finishing", "sold", "outstanding", "shortage", "external"] as TabKey[])
+    (["assigned", "produced", "qcpassed", "semi", "defective", "finishing", "sold", "outstanding", "shortage", "external", "dispatched"] as TabKey[])
       .forEach(t => {
-        c[t] = rows.filter(r => inTab(r, t) && passesFilters(r) && matchesDateFilter(tabDate(r, t), dateFilter)).length;
+        c[t] = rowsForTab(t).filter(r => inTab(r, t) && passesFilters(r) && matchesDateFilter(tabDate(r, t), dateFilter)).length;
       });
     return c;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rows, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier, fPurchaseOrder, fSerial]);
+  }, [rows, selectable, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier, fPurchaseOrder, fSerial]);
 
-  const visible = useMemo(() => rows
+  const visible = useMemo(() => rowsForTab(tab)
     .filter(r => inTab(r, tab) && passesFilters(r) && matchesDateFilter(tabDate(r, tab), dateFilter))
     .sort((a, b) => {
       const da = tabDate(a, tab), db = tabDate(b, tab);
@@ -178,7 +189,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
       return a.sareeId.localeCompare(b.sareeId);
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [rows, tab, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier, fPurchaseOrder, fSerial]);
+    [rows, selectable, tab, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier, fPurchaseOrder, fSerial]);
 
   // Pagination applies only to what's rendered — `visible` itself stays the full
   // filtered set so select-all and the parent's onVisibleChange (scan / bulk
@@ -204,6 +215,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
     { key: "sold", label: "Sold", color: T.blue },
     { key: "outstanding", label: "Outstanding", color: T.orange },
     { key: "shortage", label: "Shortage Sarees", color: T.crimson },
+    { key: "dispatched", label: "Dispatched", color: T.taupe },
     ...(isAll ? [{ key: "external" as TabKey, label: "External Purchases", color: T.taupe }] : []),
   ];
 
@@ -234,7 +246,8 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
                 : tab === "sold" ? "Sold On"
                   : tab === "shortage" ? "Rejected On"
                     : tab === "external" ? "Purchase Date"
-                      : "In Stock Since";
+                      : tab === "dispatched" ? "Dispatched On"
+                        : "In Stock Since";
 
   return (
     <div>
@@ -316,6 +329,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
           pageRows={pageRows}
           visible={visible}
           selectable={selectable}
+          requireFinishingComplete={requireFinishingComplete}
           selectedIds={selectedIds}
           onToggleAll={onToggleAll}
           onToggleRow={onToggleRow}

@@ -4616,7 +4616,10 @@ export const BatchSareeRowScalarFieldEnum = {
   receivedAt: 'receivedAt',
   receivedWeight: 'receivedWeight',
   receivedColor: 'receivedColor',
-  receivedPhotoUrl: 'receivedPhotoUrl'
+  receivedPhotoUrl: 'receivedPhotoUrl',
+  receivedWarpG: 'receivedWarpG',
+  receivedReshamG: 'receivedReshamG',
+  receivedJariReels: 'receivedJariReels'
 } as const
 
 export type BatchSareeRowScalarFieldEnum = (typeof BatchSareeRowScalarFieldEnum)[keyof typeof BatchSareeRowScalarFieldEnum]

@@ -1,5 +1,5 @@
 import React from "react";
-import { AlertCircle, AlertTriangle, CheckCircle2, ClipboardCheck, CreditCard, History, ListChecks, Package, ArrowRight } from "lucide-react";
+import { AlertCircle, AlertTriangle, CheckCircle2, ClipboardCheck, CreditCard, History, ListChecks, Package, ArrowRight, RotateCcw } from "lucide-react";
 import { C, F, BG_IMAGE, MyBatchEntry, Tab5 } from "../theme";
 import { BatchHistoryPage } from "../BatchHistoryPage";
 import { DesktopHero } from "./DesktopHero";
@@ -48,12 +48,37 @@ export function BatchesSection({
     return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
   });
   const myRows = weaverId ? batches.flatMap(b => b.rows.filter(r => r.weaverId === weaverId)) : [];
-  const producedThisMonth = myRows.filter(r => {
-    if (!r.receivedAt) return false;
-    const d = new Date(r.receivedAt);
+  // Produced means the saree is done — QC-passed, or finished via the Raise
+  // Quotation receive flow. Merely having been received doesn't qualify: a
+  // saree can be received and then semi-approved, which sends it back to the
+  // weaver for rework, so counting receipts reported every saree as produced
+  // while one was still out being redone.
+  const isSameMonth = (iso: string) => {
+    const d = new Date(iso);
     return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  };
+  const qcPassDateBySaree = new Map(
+    weaverQcRecords.filter(q => q.result === "passed").map(q => [q.sareeId, q.qcDate]),
+  );
+  const producedThisMonth = myRows.filter(r => {
+    // Credit a saree to the month it actually finished, falling back to the
+    // month it passed QC — mirrors finishedAt's purpose in SareeRow.
+    if (r.finished === true && r.finishedAt) return isSameMonth(r.finishedAt);
+    const passedAt = r.sareeId ? qcPassDateBySaree.get(r.sareeId) : undefined;
+    return passedAt ? isSameMonth(passedAt) : false;
   });
   const sareesThisMonth = producedThisMonth.length;
+  // Semi-approved and back with the weaver — not produced, not in QC, waiting
+  // to be reworked and handed in again. Defective sarees go back for rework
+  // too, but they already have their own (red) alert below, so they're left
+  // out here rather than being announced twice.
+  const reworkSarees = weaverId
+    ? batches.flatMap(b =>
+        b.rows
+          .filter(r => r.weaverId === weaverId && r.awaitingRework === true && r.qcResult === "semi")
+          .map(r => ({ sareeId: r.sareeId, batchId: b.batchId, sareeTypeName: r.sareeTypeName })),
+      )
+    : [];
   const passedCount = weaverQcRecords.filter(q => q.result === "passed").length;
   const qcPassPct = weaverQcRecords.length > 0 ? Math.round((passedCount / weaverQcRecords.length) * 100) : 100;
   const rejectedThisMonth = thisMonthQc.filter(q => q.result === "defective").length;
@@ -123,6 +148,21 @@ export function BatchesSection({
                 <span>QC Date: {ds.date}</span>
                 <span>•</span>
                 <span style={{ fontStyle: "italic" }}>Defect photo has been shared with you via WhatsApp</span>
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {/* Semi-approved sarees sent back for rework — these are NOT produced
+            and have to be handed in again, so they get their own callout
+            rather than being folded into the produced/QC counts. */}
+        {reworkSarees.map(rs => (
+          <div key={rs.sareeId} style={{ background: "rgba(196,146,58,0.07)", border: `1.5px solid ${C.gold}`, borderRadius: 16, padding: "20px 24px", marginBottom: 28, display: "flex", gap: 16, alignItems: "flex-start" }}>
+            <RotateCcw size={24} color={C.gold} style={{ flexShrink: 0, marginTop: 2 }} />
+            <div>
+              <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 16.5, color: C.gold, marginBottom: 6 }}>Semi-Approved — Rework Needed</div>
+              <div style={{ fontFamily: F.u, fontSize: 14, color: C.text, lineHeight: 1.6 }}>
+                Saree <strong>{rs.sareeId}</strong> in batch <strong>{rs.batchId}</strong> ({rs.sareeTypeName || "Self Brocade"}) was semi-approved at quality check and sent back to you. It does <strong>not</strong> count as produced yet — rework it and hand it in again, and it will be received and re-inspected.
               </div>
             </div>
           </div>

@@ -406,6 +406,26 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
+  const deleteDispatchMutation = useMutation({
+    mutationFn: (args: { id: string; actorId: string }) => dispatchApi.delete(args.id, args.actorId),
+    onMutate: async ({ id }) => {
+      await qc.cancelQueries({ queryKey: DISPATCHES_KEY });
+      const previous = qc.getQueryData<DispatchRecord[]>(DISPATCHES_KEY);
+      qc.setQueryData<DispatchRecord[]>(DISPATCHES_KEY, old => (old || []).filter(d => d.id !== id));
+      return { previous };
+    },
+    onError: (err, variables, context) => {
+      console.error("Failed to delete dispatch:", err);
+      if (context?.previous) {
+        qc.setQueryData(DISPATCHES_KEY, context.previous);
+      }
+    },
+    onSettled: () => {
+      void qc.invalidateQueries({ queryKey: DISPATCHES_KEY });
+      void qc.invalidateQueries({ queryKey: ["finishing", "ready"] });
+    },
+  });
+
   const assignSarees = (sareeIds: string[], staff: { id: string; name: string }, assignedBy: string) =>
     assignSareesMutation.mutate({ sareeIds, staff, assignedBy });
   const addReadySaree = (saree: ReadySaree) => addReadySareeMutation.mutate(saree);
@@ -431,9 +451,10 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
   const receiveQuotationSarees = (quotationId: string, sareeIds: string[], receivedBy: string) =>
     receiveQuotationSareesMutation.mutate({ quotationId, sareeIds, receivedBy });
   const markQuotationDispatched = (quotationId: string, _dispatchId: string) => markQuotationDispatchedMutation.mutate(quotationId);
+  const deleteDispatch = (id: string, actorId: string) => deleteDispatchMutation.mutate({ id, actorId });
 
   return (
-    <FinishingContext.Provider value={{ readySarees, assignments, returns, dispatches, assignSarees, addReadySaree, receiveReturn, dispatchSarees, updateDispatch, quotations, raiseQuotation, assignQuotationFinishing, receiveQuotationSarees, markQuotationDispatched, isError, error }}>
+    <FinishingContext.Provider value={{ readySarees, assignments, returns, dispatches, assignSarees, addReadySaree, receiveReturn, dispatchSarees, updateDispatch, deleteDispatch, quotations, raiseQuotation, assignQuotationFinishing, receiveQuotationSarees, markQuotationDispatched, isError, error }}>
       {children}
     </FinishingContext.Provider>
   );
