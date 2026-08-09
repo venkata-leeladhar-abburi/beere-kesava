@@ -69,15 +69,20 @@ export function DateRangePicker({ value, onChange, minDate, maxDate, placeholder
 
   return (
     <Popover.Root open={open} onOpenChange={setOpen}>
-      <Popover.Trigger asChild>
-        <Input
-          readOnly
-          disabled={disabled}
-          iconLeft="calendar"
-          value={value.from ? formatRange(value.from, value.to) : ""}
-          placeholder={placeholder}
-          className={cn("cursor-pointer", className)}
-        />
+      <Popover.Trigger asChild disabled={disabled}>
+        {/* Wrap in a div so the whole visible field — including the calendar
+            icon, which is a sibling <span> of the actual <input> — is the
+            click target, not just the <input> element itself. */}
+        <div style={{ position: "relative" }}>
+          <Input
+            readOnly
+            disabled={disabled}
+            iconLeft="calendar"
+            value={value.from ? formatRange(value.from, value.to) : ""}
+            placeholder={placeholder}
+            className={cn("cursor-pointer", className)}
+          />
+        </div>
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Content

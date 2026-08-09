@@ -12,7 +12,7 @@ import { imgBKLogo } from '../../../../../shared/constants/weaverImages';
 import { SectionNavigator, MAIN_NAV_H, SUB_NAV_H } from '../../../../../shared/ui/SectionNavigator';
 import { T, F, G, EASE, findNavGroup, NAV_GROUPS } from '../theme';
 import { Button, IconButton } from '../../../../../shared/ui/primitives';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '../../../../../shared/ui/overlay';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, Popover } from '../../../../../shared/ui/overlay';
 
 export function TopNav({
   active,
@@ -49,7 +49,7 @@ export function TopNav({
       initial={{ y: -90, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.7, ease: EASE }}
-      style={{ position: "sticky", top: 0, zIndex: 100 }}
+      style={{ position: "sticky", top: 0, zIndex: "var(--z-nav)" }}
     >
       <nav
         style={{
@@ -106,14 +106,14 @@ export function TopNav({
                 whileHover={{ backgroundColor: "rgba(245,232,208,0.06)" }}
                 style={{ height: "100%" }}
               >
+                {/* Dropdown groups no longer toggle state here — the
+                    surrounding DropdownMenu/DropdownMenuTrigger below
+                    already does that via Radix. Doing both raced: this
+                    handler and Radix's own trigger click both fired for
+                    the same click, off stale state from the same render,
+                    which could reopen/reclose the menu unpredictably. */}
                 <Button
-                  onClick={() => {
-                    if (hasDropdown) {
-                      setOpenGroup(prev => (prev === g.key ? null : g.key));
-                    } else {
-                      set(g.pages[0].key);
-                    }
-                  }}
+                  onClick={hasDropdown ? undefined : () => set(g.pages[0].key)}
                   variant="tertiary"
                   aria-current={isActive ? "page" : undefined}
                   aria-haspopup={hasDropdown ? "menu" : undefined}
@@ -199,36 +199,42 @@ export function TopNav({
               />
             </motion.div>
           )}
-          <div style={{ position: "relative" }}>
-            <motion.div initial={{ backgroundColor: "rgba(245,232,208,0.06)" }} whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.94 }} style={{ borderRadius: 12, position: "relative" }}>
-              <IconButton
-                icon={Bell}
-                label="Notifications"
-                onClick={() => setShowNotif(p => !p)}
-                variant="ghost"
-                className={`!size-[38px] !rounded-xl !border !border-white/14 !bg-white/6 hover:!bg-white/12 ${
-                  active === "Notifications" ? "!text-[#C89B47] hover:!text-[#C89B47]" : "!text-[rgba(245,232,208,0.75)] hover:!text-[rgba(245,232,208,0.75)]"
-                }`}
-              />
-              {unreadCount > 0 && (
-                <div style={{ position: "absolute", top: 6, right: 6, width: 8, height: 8, borderRadius: "50%", background: T.antiqueGold, border: `1.5px solid ${T.darkBurgundy}`, pointerEvents: "none" }} />
-              )}
-            </motion.div>
-            {showNotif && (
-              <div style={{ position: "absolute", top: 48, right: 0, width: 360, background: "#FFFDF9", borderRadius: 16, border: `1px solid rgba(110,15,45,0.12)`, boxShadow: "0 16px 48px rgba(44,24,16,0.18)", zIndex: 200, overflow: "hidden" }}>
-                <div style={{ padding: "16px 20px", borderBottom: `1px solid rgba(110,15,45,0.08)`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>Notifications</span>
-                    <span style={{ background: T.royalBurgundy, color: "#FFFDF9", fontFamily: F.mono, fontSize: 12, fontWeight: 700, borderRadius: 999, padding: "2px 7px" }}>{unreadCount}</span>
-                  </div>
-                  <span style={{ fontFamily: F.ui, fontSize: 12, color: T.antiqueGold, cursor: "pointer" }}>Mark all read</span>
+          {/* The notification bell used to be a hand-rolled showNotif useState
+              + an absolutely-positioned div — its own separate overlay
+              pattern, styled close to but not quite matching the shared
+              DropdownMenu/Popover tokens (hardcoded #FFFDF9/16px/etc. instead
+              of --surface-overlay/--radius-lg/--shadow-lg). Rebuilt on the
+              shared Popover primitive so it's visually and behaviorally
+              identical to every other overlay in this nav. */}
+          <Popover open={showNotif} onOpenChange={o => { setShowNotif(o); if (o) setShowProfile(false); }}>
+            <Popover.Trigger asChild>
+              <motion.div initial={{ backgroundColor: "rgba(245,232,208,0.06)" }} whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.94 }} style={{ borderRadius: 12, position: "relative" }}>
+                <IconButton
+                  icon={Bell}
+                  label="Notifications"
+                  variant="ghost"
+                  className={`!size-[38px] !rounded-xl !border !border-white/14 !bg-white/6 hover:!bg-white/12 ${
+                    active === "Notifications" ? "!text-[#C89B47] hover:!text-[#C89B47]" : "!text-[rgba(245,232,208,0.75)] hover:!text-[rgba(245,232,208,0.75)]"
+                  }`}
+                />
+                {unreadCount > 0 && (
+                  <div style={{ position: "absolute", top: 6, right: 6, width: 8, height: 8, borderRadius: "50%", background: T.antiqueGold, border: `1.5px solid ${T.darkBurgundy}`, pointerEvents: "none" }} />
+                )}
+              </motion.div>
+            </Popover.Trigger>
+            <Popover.Content align="end" sideOffset={10} className="!w-[360px] !max-w-[360px] !p-0 !overflow-hidden">
+              <div style={{ padding: "16px 20px", borderBottom: `1px solid rgba(110,15,45,0.08)`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>Notifications</span>
+                  <span style={{ background: T.royalBurgundy, color: "#FFFDF9", fontFamily: F.mono, fontSize: 12, fontWeight: 700, borderRadius: 999, padding: "2px 7px" }}>{unreadCount}</span>
                 </div>
-                <div style={{ padding: "24px 20px", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
-                  No new notifications.
-                </div>
+                <span style={{ fontFamily: F.ui, fontSize: 12, color: T.antiqueGold, cursor: "pointer" }}>Mark all read</span>
               </div>
-            )}
-          </div>
+              <div style={{ padding: "24px 20px", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+                No new notifications.
+              </div>
+            </Popover.Content>
+          </Popover>
           <DropdownMenu open={showProfile} onOpenChange={o => { setShowProfile(o); if (o) setShowNotif(false); }}>
             <DropdownMenuTrigger asChild>
               <motion.div

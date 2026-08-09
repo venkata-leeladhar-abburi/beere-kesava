@@ -32,7 +32,7 @@ export function SATopNav({ active, set, onBack, sections, onProfile }: { active:
       initial={{ y: -90, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.7, ease: EASE }}
-      style={{ position: "sticky", top: 0, zIndex: 100 }}
+      style={{ position: "sticky", top: 0, zIndex: "var(--z-nav)" }}
     >
       <nav
         style={{
@@ -85,14 +85,15 @@ export function SATopNav({ active, set, onBack, sections, onProfile }: { active:
                 whileHover={{ backgroundColor: "rgba(245,232,208,0.06)" }}
                 style={{ height: "100%" }}
               >
+                {/* Dropdown groups no longer toggle state here — the
+                    surrounding DropdownMenu/DropdownMenuTrigger below
+                    already does that via Radix. Doing both raced: this
+                    handler and Radix's own trigger click both fired for
+                    the same click, off stale state from the same render,
+                    which could reopen/reclose the menu unpredictably
+                    (same bug fixed in the admin dashboard's TopNav.tsx). */}
                 <Button
-                  onClick={() => {
-                    if (hasDropdown) {
-                      setOpenGroup(prev => (prev === g.key ? null : g.key));
-                    } else {
-                      set(g.pages[0].key);
-                    }
-                  }}
+                  onClick={hasDropdown ? undefined : () => set(g.pages[0].key)}
                   variant="tertiary"
                   aria-current={isActive ? "page" : undefined}
                   aria-haspopup={hasDropdown ? "menu" : undefined}

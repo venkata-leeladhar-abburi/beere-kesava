@@ -83,34 +83,42 @@ export function DatePicker({
   return (
     <Popover.Root open={open} onOpenChange={setOpen}>
       <Popover.Anchor asChild>
-        <Input
-          id={resolvedId}
-          iconLeft="calendar"
-          value={text}
-          placeholder={placeholder}
-          disabled={disabled}
-          clearable={clearable}
-          onClear={() => {
-            setText("");
-            onInvalid?.(null);
-            onChange(null);
-            setDirty(false);
-          }}
-          onChange={e => {
-            setText(e.target.value);
-            setDirty(true);
-          }}
-          onFocus={() => setOpen(true)}
-          onBlur={e => commitText(e.target.value)}
-          onKeyDown={e => {
-            if (e.key === "Enter") {
-              commitText((e.target as HTMLInputElement).value);
-              setOpen(false);
-            }
-            if (e.key === "Escape") setOpen(false);
-          }}
-          className={className}
-        />
+        {/* A plain wrapping div — not just the bare <input> — is the anchor/click
+            target here. The calendar icon Input renders is a sibling <span>, not
+            part of the <input> itself, so relying on the input's onFocus alone
+            (as this used to) misses clicks on the icon, and never reopens the
+            calendar once the input is already focused but closed (e.g. after
+            Escape) since a focus event only fires on a focus *transition*. */}
+        <div style={{ position: "relative" }} onMouseDown={() => { if (!disabled) setOpen(true); }}>
+          <Input
+            id={resolvedId}
+            iconLeft="calendar"
+            value={text}
+            placeholder={placeholder}
+            disabled={disabled}
+            clearable={clearable}
+            onClear={() => {
+              setText("");
+              onInvalid?.(null);
+              onChange(null);
+              setDirty(false);
+            }}
+            onChange={e => {
+              setText(e.target.value);
+              setDirty(true);
+            }}
+            onFocus={() => setOpen(true)}
+            onBlur={e => commitText(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === "Enter") {
+                commitText((e.target as HTMLInputElement).value);
+                setOpen(false);
+              }
+              if (e.key === "Escape") setOpen(false);
+            }}
+            className={className}
+          />
+        </div>
       </Popover.Anchor>
       <Popover.Portal>
         <Popover.Content
