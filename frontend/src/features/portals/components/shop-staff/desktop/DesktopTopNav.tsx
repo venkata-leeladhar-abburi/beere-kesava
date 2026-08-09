@@ -3,6 +3,7 @@ import { Bell, ChevronLeft, LogOut, RotateCcw, UserRound } from "lucide-react";
 import { imgBKLogo } from "../../../../../shared/constants/weaverImages";
 import { C, F, TEAL } from "../theme";
 import { Button, IconButton, SearchInput } from "../../../../../shared/ui/primitives";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "../../../../../shared/ui/overlay";
 
 type TabId = "home" | "sale" | "inventory" | "customers" | "reports";
 
@@ -89,64 +90,62 @@ export function DesktopTopNav({
           <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 12, letterSpacing: "1px", textTransform: "uppercase" as const, color: TEAL, background: "rgba(15,118,110,0.10)", border: `1px solid rgba(15,118,110,0.25)`, borderRadius: 999, padding: "5px 12px" }}>
             Shop Staff
           </span>
-          <div style={{ position: "relative" as const }}>
-            <Button
-              onClick={() => setShowProfile(p => !p)}
-              variant="ghost"
-              className={
-                "flex items-center gap-2.5 h-auto px-3.5 py-1.5 rounded-full border " +
-                (showProfile ? "bg-[rgba(0,128,128,0.12)] border-[#008080]" : "bg-[rgba(0,128,128,0.07)] border-[rgba(0,128,128,0.20)]")
-              }
-            >
-              <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#008080", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <span style={{ fontFamily: F.d, fontSize: 12, fontWeight: 700, color: "#FFF" }}>PS</span>
-              </div>
-              <div style={{ textAlign: "left" as const }}>
-                <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.text, lineHeight: 1.2 }}>Priya Sharma</div>
-                <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>SS · Shop Staff</div>
-              </div>
-              <ChevronLeft size={13} color={C.muted} style={{ transform: "rotate(-90deg)", transition: "transform 0.2s" }} />
-            </Button>
-            {showProfile && (
-              <div style={{ position: "absolute" as const, top: "calc(100% + 8px)", right: 0, zIndex: 300, background: C.white, borderRadius: 14, border: `1px solid ${C.bdr}`, boxShadow: "0 8px 32px rgba(44,24,16,0.14)", minWidth: 240, overflow: "hidden" }}>
-                <div style={{ padding: "16px 18px", background: "rgba(0,128,128,0.05)", borderBottom: `1px solid ${C.bdr}`, display: "flex", alignItems: "center", gap: 12 }}>
-                  <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#008080", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 3px 12px rgba(0,128,128,0.28)" }}>
-                    <span style={{ fontFamily: F.d, fontSize: 16, fontWeight: 700, color: "#FFF" }}>PS</span>
-                  </div>
-                  <div>
-                    <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>Priya Sharma</div>
-                    <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>SS-001 · Shop Staff</div>
-                  </div>
+          <DropdownMenu open={showProfile} onOpenChange={setShowProfile}>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className={
+                  "flex items-center gap-2.5 h-auto px-3.5 py-1.5 rounded-full border " +
+                  (showProfile ? "bg-[rgba(0,128,128,0.12)] border-[#008080]" : "bg-[rgba(0,128,128,0.07)] border-[rgba(0,128,128,0.20)]")
+                }
+              >
+                <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#008080", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <span style={{ fontFamily: F.d, fontSize: 12, fontWeight: 700, color: "#FFF" }}>PS</span>
                 </div>
-                <div style={{ padding: "6px 0" }}>
-                  <Button onClick={() => { setShowProfile(false); setShowProfileModal(true); }} variant="ghost" className="flex items-center gap-2.5 w-full h-auto px-[18px] py-2.5 border-none bg-transparent justify-start text-sm text-[#1A0A0F] rounded-none hover:bg-[rgba(0,128,128,0.05)]">
-                    <UserRound size={15} color={C.muted} /> View Profile
-                  </Button>
-                  <div style={{ height: 1, background: C.bdr, margin: "4px 0" }} />
-                  {localStorage.getItem("bk_original_admin_role") ? (
-                    <Button onClick={() => {
-                      setShowProfile(false);
-                      const origAdminRole = localStorage.getItem("bk_original_admin_role");
-                      if (origAdminRole) {
-                        localStorage.removeItem("bk_original_admin_role");
-                        selectRole(origAdminRole as any);
-                        routerNavigate(origAdminRole === "superadmin" ? "/superadmin" : "/admin");
-                      }
-                    }} variant="ghost" className="flex items-center gap-2.5 w-full h-auto px-[18px] py-2.5 border-none bg-transparent justify-start text-sm text-[#1A0A0F] rounded-none hover:bg-[rgba(0,128,128,0.05)]">
-                      <ChevronLeft size={15} color={C.muted} /> My Portal
-                    </Button>
-                  ) : (
-                    <Button onClick={() => { setShowProfile(false); onBack?.(); }} variant="ghost" className="flex items-center gap-2.5 w-full h-auto px-[18px] py-2.5 border-none bg-transparent justify-start text-sm text-[#1A0A0F] rounded-none hover:bg-[rgba(0,128,128,0.05)]">
-                      <ChevronLeft size={15} color={C.muted} /> Switch Portal
-                    </Button>
-                  )}
-                  <Button onClick={() => { setShowProfile(false); handleLogout(); }} variant="ghost" className="flex items-center gap-2.5 w-full h-auto px-[18px] py-2.5 border-none bg-transparent justify-start text-sm text-[#C0392B] rounded-none hover:bg-[rgba(192,57,43,0.05)]">
-                    <LogOut size={15} color="#C0392B" /> Logout
-                  </Button>
+                <div style={{ textAlign: "left" as const }}>
+                  <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.text, lineHeight: 1.2 }}>Priya Sharma</div>
+                  <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>SS · Shop Staff</div>
+                </div>
+                <ChevronLeft size={13} color={C.muted} style={{ transform: "rotate(-90deg)", transition: "transform 0.2s" }} />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="!min-w-[240px] !p-0 !rounded-[14px] !overflow-hidden" style={{ background: C.white, border: `1px solid ${C.bdr}` }}>
+              <div style={{ padding: "16px 18px", background: "rgba(0,128,128,0.05)", borderBottom: `1px solid ${C.bdr}`, display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#008080", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 3px 12px rgba(0,128,128,0.28)" }}>
+                  <span style={{ fontFamily: F.d, fontSize: 16, fontWeight: 700, color: "#FFF" }}>PS</span>
+                </div>
+                <div>
+                  <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>Priya Sharma</div>
+                  <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>SS-001 · Shop Staff</div>
                 </div>
               </div>
-            )}
-          </div>
+              <div style={{ padding: "6px 0" }}>
+                <DropdownMenuItem onClick={() => setShowProfileModal(true)} className="!h-auto !py-2.5 !px-[18px] !text-sm !text-[#1A0A0F]">
+                  <UserRound size={15} color={C.muted} /> View Profile
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                {localStorage.getItem("bk_original_admin_role") ? (
+                  <DropdownMenuItem onClick={() => {
+                    const origAdminRole = localStorage.getItem("bk_original_admin_role");
+                    if (origAdminRole) {
+                      localStorage.removeItem("bk_original_admin_role");
+                      selectRole(origAdminRole as any);
+                      routerNavigate(origAdminRole === "superadmin" ? "/superadmin" : "/admin");
+                    }
+                  }} className="!h-auto !py-2.5 !px-[18px] !text-sm !text-[#1A0A0F]">
+                    <ChevronLeft size={15} color={C.muted} /> My Portal
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem onClick={() => onBack?.()} className="!h-auto !py-2.5 !px-[18px] !text-sm !text-[#1A0A0F]">
+                    <ChevronLeft size={15} color={C.muted} /> Switch Portal
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem onClick={handleLogout} destructive className="!h-auto !py-2.5 !px-[18px] !text-sm">
+                  <LogOut size={15} color="#C0392B" /> Logout
+                </DropdownMenuItem>
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </div>

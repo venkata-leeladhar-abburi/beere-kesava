@@ -41,7 +41,7 @@ export function Select({ size = "md", placeholder, invalid: invalidProp, classNa
         aria-describedby={describedBy}
         aria-required={field?.required || undefined}
         className={cn(
-          "flex w-full items-center justify-between gap-2 rounded-[var(--radius-md)] border transition-colors",
+          "flex min-w-[120px] items-center justify-between gap-2 rounded-[var(--radius-md)] border transition-colors",
           "duration-[var(--duration-fast)] ease-[var(--ease-standard)]",
           "bg-[var(--surface-raised)] text-[var(--text-primary)]",
           "data-[placeholder]:text-[var(--text-placeholder)]",

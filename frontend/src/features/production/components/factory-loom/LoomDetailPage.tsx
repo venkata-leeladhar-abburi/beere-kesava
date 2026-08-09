@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Edit2, ArrowLeft, FileText, Factory, Package, Layers, Sparkles,
@@ -43,6 +43,15 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
   const [dispatchDateFilter, setDispatchDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [viewDispatches, setViewDispatches] = useState<{ weaverName: string; records: DispatchRecord[] } | null>(null);
   const [zoomImage, setZoomImage] = useState<{ url: string; label: string } | null>(null);
+
+  // Escape closes the image zoom overlay — Part C.3's focus contract applies
+  // to every scrim-backed overlay, not just the named Modal/Drawer/Popover.
+  useEffect(() => {
+    if (!zoomImage) return;
+    const onKeyDown = (e: KeyboardEvent) => { if (e.key === "Escape") setZoomImage(null); };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [zoomImage]);
 
   const { batches } = useBatches();
   const { dispatches } = useDesignLibrary();
@@ -370,9 +379,10 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
     <AnimatePresence>
       {viewDispatches && <DispatchDetailsModal key="dd" weaverName={viewDispatches.weaverName} records={viewDispatches.records} onClose={() => setViewDispatches(null)} />}
       {zoomImage && (
-        <motion.div key="zoom" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        <motion.div key="zoom" role="dialog" aria-modal="true" aria-label={zoomImage.label}
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
           onClick={() => setZoomImage(null)}
-          style={{ position: "fixed" as const, inset: 0, background: "var(--surface-scrim)", zIndex: 200, display: "flex", flexDirection: "column" as const, alignItems: "center", justifyContent: "center", gap: 14, cursor: "zoom-out" }}>
+          style={{ position: "fixed" as const, inset: 0, background: "var(--surface-scrim)", zIndex: "var(--z-modal)", display: "flex", flexDirection: "column" as const, alignItems: "center", justifyContent: "center", gap: 14, cursor: "zoom-out" }}>
           <img src={zoomImage.url} alt={zoomImage.label} style={{ maxWidth: "80vw", maxHeight: "75vh", borderRadius: 12, boxShadow: "0 20px 60px rgba(0,0,0,0.4)" }} />
           <span style={{ fontFamily: F.ui, fontSize: 13, color: "#fff", fontWeight: 600 }}>{zoomImage.label}</span>
         </motion.div>

@@ -15,6 +15,7 @@ import { monthsSinceLabel } from "./utils";
 import { retailData, inactiveData, wholesaleData } from "./data";
 import { WholesaleCustomer, RetailCustomer, WholesaleTab } from "./types";
 import { useCustomers } from "../contexts/CustomersContext";
+import { useUrlFilters } from "../../../shared/ui/filter";
 
 /**
  * Composition root for the Customers feature (Wholesale + Retail + Analytics
@@ -74,14 +75,31 @@ export function CustomersPage() {
   const [retailModalTab, setRetailModalTab] = useState<"history" | "profile">("history");
   const [viewingCard, setViewingCard] = useState<string | null>(null);
   const [retailOverviewDateFilter, setRetailOverviewDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
-  const [retailSearch, setRetailSearch] = useState("");
-  const [retailStatusFilter, setRetailStatusFilter] = useState<"all" | "regular" | "inactive">("all");
-  const [retailCityFilter, setRetailCityFilter] = useState<"all" | string>("all");
-  const [retailSort, setRetailSort] = useState<"spend" | "purchases" | "recent">("spend");
-  const [inactiveSearch, setInactiveSearch] = useState("");
-  const [inactiveTypeFilter, setInactiveTypeFilter] = useState<"all" | "Wholesale" | "Retail">("all");
-  const [inactiveCityFilter, setInactiveCityFilter] = useState<"all" | string>("all");
-  const [inactiveTimelineFilter, setInactiveTimelineFilter] = useState<"all" | "6" | "8" | "10" | "12">("all");
+
+  // Filter-bar state lives in the URL (design-system/05-OVERLAYS.md Part J) —
+  // bookmarkable, shareable, survives refresh, back/forward just works.
+  // Public shape below (retailSearch/setRetailSearch/...) is unchanged so
+  // RetailCustomersSection/InactiveCustomersSection need zero edits.
+  const retailFilters = useUrlFilters({ retailSearch: "", retailStatus: "all", retailCity: "all", retailSort: "spend" });
+  const retailSearch = retailFilters.filters.retailSearch;
+  const setRetailSearch = (s: string) => retailFilters.setFilter("retailSearch", s);
+  const retailStatusFilter = retailFilters.filters.retailStatus as "all" | "regular" | "inactive";
+  const setRetailStatusFilter = (s: "all" | "regular" | "inactive") => retailFilters.setFilter("retailStatus", s);
+  const retailCityFilter = retailFilters.filters.retailCity;
+  const setRetailCityFilter = (s: string) => retailFilters.setFilter("retailCity", s);
+  const retailSort = retailFilters.filters.retailSort as "spend" | "purchases" | "recent";
+  const setRetailSort = (s: "spend" | "purchases" | "recent") => retailFilters.setFilter("retailSort", s);
+
+  const inactiveFilters = useUrlFilters({ inactiveSearch: "", inactiveType: "all", inactiveCity: "all", inactiveTimeline: "all" });
+  const inactiveSearch = inactiveFilters.filters.inactiveSearch;
+  const setInactiveSearch = (s: string) => inactiveFilters.setFilter("inactiveSearch", s);
+  const inactiveTypeFilter = inactiveFilters.filters.inactiveType as "all" | "Wholesale" | "Retail";
+  const setInactiveTypeFilter = (t: "all" | "Wholesale" | "Retail") => inactiveFilters.setFilter("inactiveType", t);
+  const inactiveCityFilter = inactiveFilters.filters.inactiveCity;
+  const setInactiveCityFilter = (c: string) => inactiveFilters.setFilter("inactiveCity", c);
+  const inactiveTimelineFilter = inactiveFilters.filters.inactiveTimeline as "all" | "6" | "8" | "10" | "12";
+  const setInactiveTimelineFilter = (t: "all" | "6" | "8" | "10" | "12") => inactiveFilters.setFilter("inactiveTimeline", t);
+  const clearInactiveFilters = inactiveFilters.clearAll;
   // Opening a bulk order from a customer's page hands off to the same full order
   // page used from Production / All Orders, so there is one place order details live.
   const [viewingBulkOrder, setViewingBulkOrder] = useState<{ order: BulkOrder; tab: "overview" | "sarees" | "payments" | "quotations" } | null>(null);
@@ -237,6 +255,7 @@ export function CustomersPage() {
             inactiveDataLength={inactiveData.length}
             wholesaleCount={inactiveData.filter(r => r.type === "Wholesale").length}
             retailCount={inactiveData.filter(r => r.type === "Retail").length}
+            onClearAllFilters={clearInactiveFilters}
           />
         </>
       )}

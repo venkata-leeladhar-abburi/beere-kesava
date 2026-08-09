@@ -1,17 +1,18 @@
 import React, { useState } from "react";
 import { X } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
+import * as Dialog from "@radix-ui/react-dialog";
 
 import { useBatches } from "../../../production/contexts/BatchContext";
 import { useDesignLibrary } from "../../../design-library/contexts/DesignLibraryContext";
 import { SareeTypeCard } from "../../../pricing/components/RatesPricingPage";
 import { useRatesPricing } from "../../../pricing/contexts/RatesContext";
 import { useWeaverPayments } from "../../../weavers/contexts/WeaverPaymentsContext";
-import { EASE, F, T } from "../../theme";
+import { F, T } from "../../theme";
 import { WeaverRecord } from "../../types";
 import { calcCharges } from "../../utils/charges";
 import { Pip, StatusBadge } from "../common/primitives";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
+import { Modal } from "../../../../shared/ui/overlay";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import type { WeaverEarningsBreakdown } from "../../../../shared/api/payments";
 
@@ -67,34 +68,34 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
   ];
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(30,10,20,0.55)", zIndex: 400, display: "flex", alignItems: "center", justifyContent: "center", padding: 24, backdropFilter: "blur(4px)" }} onClick={onClose}>
-      <motion.div
-        initial={{ opacity: 0, scale: 0.94, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.94, y: 10 }}
-        transition={{ duration: 0.22, ease: EASE }} onClick={e => e.stopPropagation()}
-        style={{ background: T.warmIvory, borderRadius: 20, width: 680, maxWidth: "100%", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 80px rgba(44,6,27,0.28)", border: `1px solid ${T.borderDef}` }}
-      >
-        {/* Header */}
-        <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "24px 28px", position: "relative", display: "flex", alignItems: "center", gap: 14 }}>
+    <Modal open={!!weaver} onOpenChange={o => !o && onClose()} size="lg">
+      <>
+        {/* Header — bespoke gradient, doesn't fit Modal.Header's plain title/subtitle API */}
+        <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "24px 28px", position: "relative", display: "flex", alignItems: "center", gap: 14, flexShrink: 0, borderRadius: "var(--radius-xl) var(--radius-xl) 0 0" }}>
           <Pip initials={weaver.initials} bg={weaver.bg} size={46} />
           <div style={{ flex: 1 }}>
-            <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#FFFDF9" }}>{weaver.name}</div>
+            <Dialog.Title asChild>
+              <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#FFFDF9" }}>{weaver.name}</div>
+            </Dialog.Title>
             <div style={{ fontFamily: F.mono, fontSize: 12, color: T.goldLight, marginTop: 2 }}>{weaver.id}</div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.70)", marginTop: 2 }}>📍 {weaver.village}</div>
           </div>
           <StatusBadge status={weaver.status} />
           <span style={{ position: "absolute", top: 16, right: 16, display: "inline-block", background: "rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.85)", borderRadius: 8 }}>
-            <IconButton
-              icon={X}
-              label="Close"
-              variant="ghost"
-              size="md"
-              onClick={onClose}
-            />
+            <Dialog.Close asChild>
+              <IconButton
+                icon={X}
+                label="Close"
+                variant="ghost"
+                size="md"
+                onClick={onClose}
+              />
+            </Dialog.Close>
           </span>
         </div>
 
         {/* Body */}
-        <div style={{ padding: "24px 28px 28px", display: "flex", flexDirection: "column", gap: 26 }}>
+        <Modal.Body className="px-7 pt-6 pb-7 flex flex-col gap-[26px]">
 
           {/* Section 1 — Making Charges Breakdown */}
           <div>
@@ -176,18 +177,15 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
               </div>
             )}
           </div>
-        </div>
+      </Modal.Body>
 
-        {/* Footer */}
-        <div style={{ padding: "18px 28px", borderTop: `1px solid ${T.borderDef}`, display: "flex", justifyContent: "flex-end" }}>
-          <Button variant="primary" size="md" onClick={onClose}>Close</Button>
-        </div>
-      </motion.div>
+      {/* Footer */}
+      <Modal.Footer>
+        <Button variant="primary" size="md" onClick={onClose}>Close</Button>
+      </Modal.Footer>
+      </>
 
-      <AnimatePresence>
-
-        {openSareeType && <SareeTypeCard sareeType={openSareeType} onClose={() => setOpenSareeTypeCode(null)} />}
-      </AnimatePresence>
-    </div>
+      {openSareeType && <SareeTypeCard sareeType={openSareeType} onClose={() => setOpenSareeTypeCode(null)} />}
+    </Modal>
   );
 }

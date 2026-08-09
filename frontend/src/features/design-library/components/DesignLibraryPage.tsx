@@ -59,6 +59,15 @@ export function DesignLibraryPage() {
   const [historyDateFilter, setHistoryDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [zoomImage, setZoomImage] = useState<{ url: string; label: string } | null>(null);
 
+  // Escape closes the image zoom overlay — Part C.3's focus contract applies
+  // to every scrim-backed overlay, not just the named Modal/Drawer/Popover.
+  useEffect(() => {
+    if (!zoomImage) return;
+    const onKeyDown = (e: KeyboardEvent) => { if (e.key === "Escape") setZoomImage(null); };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [zoomImage]);
+
   const selectedWeaver = weaversList.find(w => w.id === activeWeaverId);
 
   const handleSendDispatch = () => {
@@ -337,7 +346,8 @@ export function DesignLibraryPage() {
           />
         )}
         {zoomImage && (
-          <motion.div key="zoom" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          <motion.div key="zoom" role="dialog" aria-modal="true" aria-label={zoomImage.label}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             onClick={() => setZoomImage(null)}
             style={{ position: "fixed", inset: 0, zIndex: "var(--z-modal)", background: "var(--surface-scrim)", display: "flex", alignItems: "center", justifyContent: "center", padding: 40 }}>
             <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}

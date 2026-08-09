@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useRef } from "react";
 import { motion, useInView } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -9,6 +9,7 @@ import { Rows3 as Rows } from "lucide-react";
 import { weaversApi, BackendWeaver, BackendWeaverStats } from "../../../shared/api/weavers";
 import { resolveAssetUrl } from "../../../shared/api/uploads";
 import { Button, SearchInput, Select, SelectItem } from "../../../shared/ui/primitives";
+import { useUrlFilters } from "../../../shared/ui/filter";
 
 // ── Design tokens ─────────────────────────────────────────────────────────
 const T = {
@@ -126,10 +127,19 @@ function FadeUp({ children, delay = 0, style }: { children: React.ReactNode; del
 
 // ── Main component ────────────────────────────────────────────────────────
 export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: any) => void } = {}) {
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | Status>("all");
-  const [villageFilter, setVillageFilter] = useState<"all" | string>("all");
-  const [sortBy, setSortBy] = useState<"name" | "output" | "looms">("name");
+  // Filter/search state lives in the URL (?weaverSearch=&weaverStatus=&...)
+  // via useUrlFilters — see design-system/05-OVERLAYS.md Part J. Local
+  // variable names below are unchanged so the rest of this component (and
+  // its JSX) needs no further edits.
+  const weaverFilters = useUrlFilters({ weaverSearch: "", weaverStatus: "all", weaverVillage: "all", weaverSort: "name" });
+  const search = weaverFilters.filters.weaverSearch;
+  const setSearch = (s: string) => weaverFilters.setFilter("weaverSearch", s);
+  const statusFilter = weaverFilters.filters.weaverStatus as "all" | Status;
+  const setStatusFilter = (s: "all" | Status) => weaverFilters.setFilter("weaverStatus", s);
+  const villageFilter = weaverFilters.filters.weaverVillage;
+  const setVillageFilter = (s: string) => weaverFilters.setFilter("weaverVillage", s);
+  const sortBy = weaverFilters.filters.weaverSort as "name" | "output" | "looms";
+  const setSortBy = (s: "name" | "output" | "looms") => weaverFilters.setFilter("weaverSort", s);
 
   // Real weaver roster/identity records from the backend.
   const { data: weaversRes, isLoading: rosterLoading, isError: rosterError } = useQuery({

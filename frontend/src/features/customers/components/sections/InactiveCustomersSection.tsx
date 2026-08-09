@@ -3,6 +3,7 @@ import { SectionTitle, Pill } from "../common/primitives";
 import { monthsSinceLabel } from "../utils";
 import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { FilterBarActive, type ActiveFilter } from "../../../../shared/ui/filter";
 
 export interface InactiveCustomerRow {
   name: string;
@@ -26,15 +27,25 @@ export interface InactiveCustomersSectionProps {
   inactiveDataLength: number;
   wholesaleCount: number;
   retailCount: number;
+  /** Fires when "Clear all" is pressed in the active-filters row. Omit to hide the row entirely. */
+  onClearAllFilters?: () => void;
 }
+
+const TIMELINE_LABEL: Record<string, string> = { "6": "6+ months", "8": "8+ months", "10": "10+ months", "12": "12+ months" };
 
 // ── SECTION 6: INACTIVE CUSTOMERS ───────────────────────────────────────────
 export function InactiveCustomersSection({
   inactiveSearch, setInactiveSearch, inactiveTypeFilter, setInactiveTypeFilter,
   inactiveCityFilter, setInactiveCityFilter, inactiveTimelineFilter, setInactiveTimelineFilter,
   inactiveCities, filteredInactive, inactiveDataLength, wholesaleCount, retailCount,
+  onClearAllFilters,
 }: InactiveCustomersSectionProps) {
   type Row = InactiveCustomerRow & { _rowIndex: number };
+
+  const activeFilters: ActiveFilter[] = [
+    ...(inactiveCityFilter !== "all" ? [{ key: "city", label: `City: ${inactiveCityFilter}`, onRemove: () => setInactiveCityFilter("all") }] : []),
+    ...(inactiveTimelineFilter !== "all" ? [{ key: "timeline", label: TIMELINE_LABEL[inactiveTimelineFilter], onRemove: () => setInactiveTimelineFilter("all") }] : []),
+  ];
 
   const inactiveColumns: ColumnDef<Row>[] = [
     {
@@ -134,6 +145,10 @@ export function InactiveCustomersSection({
           </Button>
         ))}
       </div>
+
+      {onClearAllFilters && (
+        <FilterBarActive filters={activeFilters} onClearAll={activeFilters.length > 0 ? onClearAllFilters : undefined} className="mb-4" />
+      )}
 
       <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 12 }}>{filteredInactive.length} customer{filteredInactive.length !== 1 ? "s" : ""} found</div>
 

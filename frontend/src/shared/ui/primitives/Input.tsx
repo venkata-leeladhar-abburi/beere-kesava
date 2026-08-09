@@ -93,7 +93,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(function Inp
         aria-describedby={describedBy}
         aria-required={field?.required || undefined}
         className={cn(
-          "flex-1 min-w-0 bg-transparent outline-none border-none",
+          "flex-1 min-w-0 bg-transparent outline-none focus-visible:!outline-none border-none",
           "placeholder:text-[var(--text-placeholder)]",
           "disabled:text-[var(--text-disabled)] disabled:cursor-not-allowed",
           "text-[var(--text-primary)]",

@@ -11,6 +11,7 @@ import { MATS } from "./data";
 import { SectionHeader, AnimatedNumber } from "./atoms";
 import { SAWeaverSection } from "./SAWeaverSection";
 import { Button } from "../../../../shared/ui/primitives";
+import { Alert } from "../../../../shared/ui/feedback";
 import { useDashboardMetrics } from "../beere-dashboard/hooks/useDashboardMetrics";
 import { useDashboardAnalytics } from "../beere-dashboard/hooks/useDashboardAnalytics";
 import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
@@ -154,11 +155,10 @@ function SAMetricsBar() {
 
 function SAAlertStrip() {
   return (
-    <div style={{ margin: "36px 48px 0", padding: "14px 22px", borderRadius: 14, background: "rgba(196,146,58,0.10)", border: "none", borderLeft: "3px solid #C4923A", display: "flex", alignItems: "center", gap: 12 }}>
-      <Shield size={16} color="#845E04" />
-      <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 13, color: T.luxuryBrown, letterSpacing: "0.1px" }}>
-        You are in <strong style={{ color: "#845E04" }}>Superadmin mode</strong>. All data is visible and editable. Actions here affect the entire system.
-      </span>
+    <div style={{ margin: "36px 48px 0" }}>
+      <Alert tone="warning" title="You are in Superadmin mode">
+        All data is visible and editable. Actions here affect the entire system.
+      </Alert>
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { Bell, ChevronLeft, LogOut, UserRound } from "lucide-react";
 import { imgBKLogo } from "../../../../../shared/constants/weaverImages";
 import { C, F, Tab5 } from "../theme";
 import { Button, IconButton, SearchInput } from "../../../../../shared/ui/primitives";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "../../../../../shared/ui/overlay";
 import { useAuth } from "../../../../../contexts/AuthContext";
 
 import { useCurrentWeaver } from "../useCurrentWeaver";
@@ -91,64 +92,62 @@ export function TopNav({
             />
             <span style={{ position: "absolute" as const, top: 4, right: 4, width: 10, height: 10, background: "#FF3B30", borderRadius: "50%", border: "2px solid #FFF", pointerEvents: "none" as const }} />
           </div>
-          <div style={{ position: "relative" as const }}>
-            <Button
-              onClick={() => setShowProfile(p => !p)}
-              variant="ghost"
-              className={
-                "flex items-center gap-2.5 h-auto px-3.5 py-1.5 rounded-full border " +
-                (showProfile ? "bg-[rgba(110,15,45,0.10)] border-[#6E0F2D]" : "bg-[rgba(110,15,45,0.06)] border-[rgba(110,15,45,0.10)]")
-              }
-            >
-              <div style={{ width: 32, height: 32, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <span style={{ fontFamily: F.d, fontSize: 12, fontWeight: 700, color: "#FFF" }}>{initials}</span>
-              </div>
-              <div style={{ textAlign: "left" as const }}>
-                <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.text, lineHeight: 1.2 }}>{name}</div>
-                <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{subtitle}</div>
-              </div>
-              <ChevronLeft size={13} color={C.muted} style={{ transform: showProfile ? "rotate(-90deg)" : "rotate(-90deg)", transition: "transform 0.2s" }} />
-            </Button>
-            {showProfile && (
-              <div style={{ position: "absolute" as const, top: "calc(100% + 8px)", right: 0, zIndex: 300, background: "#FFF", borderRadius: 14, border: `1px solid ${C.bdr}`, boxShadow: "0 8px 32px rgba(44,24,16,0.14)", minWidth: 240, overflow: "hidden" }}>
-                <div style={{ padding: "16px 18px", background: "rgba(110,15,45,0.04)", borderBottom: `1px solid ${C.bdr}`, display: "flex", alignItems: "center", gap: 12 }}>
-                  <div style={{ width: 44, height: 44, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 3px 12px rgba(110,15,45,0.28)" }}>
-                    <span style={{ fontFamily: F.d, fontSize: 16, fontWeight: 700, color: "#FFF" }}>{initials}</span>
-                  </div>
-                  <div>
-                    <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>{name}</div>
-                    <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>{user?.empId ? `${user.empId} · Handloom Weaver` : "Handloom Weaver"}</div>
-                  </div>
+          <DropdownMenu open={showProfile} onOpenChange={setShowProfile}>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className={
+                  "flex items-center gap-2.5 h-auto px-3.5 py-1.5 rounded-full border " +
+                  (showProfile ? "bg-[rgba(110,15,45,0.10)] border-[#6E0F2D]" : "bg-[rgba(110,15,45,0.06)] border-[rgba(110,15,45,0.10)]")
+                }
+              >
+                <div style={{ width: 32, height: 32, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <span style={{ fontFamily: F.d, fontSize: 12, fontWeight: 700, color: "#FFF" }}>{initials}</span>
                 </div>
-                <div style={{ padding: "6px 0" }}>
-                  <Button onClick={() => { setShowProfile(false); onProfile?.(); }} variant="ghost" className="flex items-center gap-2.5 w-full h-auto px-[18px] py-2.5 border-none bg-transparent justify-start text-sm text-[#3B2314] rounded-none hover:bg-[rgba(110,15,45,0.04)]">
-                    <UserRound size={15} color={C.muted} /> View Profile
-                  </Button>
-                  <div style={{ height: 1, background: C.bdr, margin: "4px 0" }} />
-                  {localStorage.getItem("bk_original_admin_role") ? (
-                    <Button onClick={() => {
-                      setShowProfile(false);
-                      const origAdminRole = localStorage.getItem("bk_original_admin_role");
-                      if (origAdminRole) {
-                        localStorage.removeItem("bk_original_admin_role");
-                        selectRole(origAdminRole as any);
-                        navigate(origAdminRole === "superadmin" ? "/superadmin" : "/admin");
-                      }
-                    }} variant="ghost" className="flex items-center gap-2.5 w-full h-auto px-[18px] py-2.5 border-none bg-transparent justify-start text-sm text-[#3B2314] rounded-none hover:bg-[rgba(110,15,45,0.04)]">
-                      <ChevronLeft size={15} color={C.muted} /> My Portal
-                    </Button>
-                  ) : (
-                    <Button onClick={() => { setShowProfile(false); selectRole(null); navigate("/select-role"); }} variant="ghost" className="flex items-center gap-2.5 w-full h-auto px-[18px] py-2.5 border-none bg-transparent justify-start text-sm text-[#3B2314] rounded-none hover:bg-[rgba(110,15,45,0.04)]">
-                      <ChevronLeft size={15} color={C.muted} /> Switch Portal
-                    </Button>
-                  )}
-                  <Button onClick={() => { setShowProfile(false); logout(); navigate("/login"); }} variant="ghost" className="flex items-center gap-2.5 w-full h-auto px-[18px] py-2.5 border-none bg-transparent justify-start text-sm text-[#C0392B] rounded-none hover:bg-[rgba(192,57,43,0.05)]">
-                    <LogOut size={15} color="#C0392B" /> Logout
-                  </Button>
+                <div style={{ textAlign: "left" as const }}>
+                  <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.text, lineHeight: 1.2 }}>{name}</div>
+                  <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{subtitle}</div>
+                </div>
+                <ChevronLeft size={13} color={C.muted} style={{ transform: "rotate(-90deg)", transition: "transform 0.2s" }} />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="!min-w-[240px] !p-0 !rounded-[14px] !overflow-hidden" style={{ background: "#FFF", border: `1px solid ${C.bdr}` }}>
+              <div style={{ padding: "16px 18px", background: "rgba(110,15,45,0.04)", borderBottom: `1px solid ${C.bdr}`, display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ width: 44, height: 44, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 3px 12px rgba(110,15,45,0.28)" }}>
+                  <span style={{ fontFamily: F.d, fontSize: 16, fontWeight: 700, color: "#FFF" }}>{initials}</span>
+                </div>
+                <div>
+                  <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>{name}</div>
+                  <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>{user?.empId ? `${user.empId} · Handloom Weaver` : "Handloom Weaver"}</div>
                 </div>
               </div>
-            )}
-          </div>
+              <div style={{ padding: "6px 0" }}>
+                <DropdownMenuItem onClick={() => onProfile?.()} className="!h-auto !py-2.5 !px-[18px] !text-sm !text-[#3B2314]">
+                  <UserRound size={15} color={C.muted} /> View Profile
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                {localStorage.getItem("bk_original_admin_role") ? (
+                  <DropdownMenuItem onClick={() => {
+                    const origAdminRole = localStorage.getItem("bk_original_admin_role");
+                    if (origAdminRole) {
+                      localStorage.removeItem("bk_original_admin_role");
+                      selectRole(origAdminRole as any);
+                      navigate(origAdminRole === "superadmin" ? "/superadmin" : "/admin");
+                    }
+                  }} className="!h-auto !py-2.5 !px-[18px] !text-sm !text-[#3B2314]">
+                    <ChevronLeft size={15} color={C.muted} /> My Portal
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem onClick={() => { selectRole(null); navigate("/select-role"); }} className="!h-auto !py-2.5 !px-[18px] !text-sm !text-[#3B2314]">
+                    <ChevronLeft size={15} color={C.muted} /> Switch Portal
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem onClick={() => { logout(); navigate("/login"); }} destructive className="!h-auto !py-2.5 !px-[18px] !text-sm">
+                  <LogOut size={15} color="#C0392B" /> Logout
+                </DropdownMenuItem>
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </div>

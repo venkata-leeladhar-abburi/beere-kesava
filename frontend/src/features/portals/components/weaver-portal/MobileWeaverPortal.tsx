@@ -10,6 +10,7 @@ import {
 } from './theme';
 import { useCurrentWeaver } from './useCurrentWeaver';
 import { Button, IconButton } from '../../../../shared/ui/primitives';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '../../../../shared/ui/overlay';
 import { MobileNav, type MobileNavItem } from '../../../../shared/ui/nav/MobileNav';
 
 import { MyBatchesPage } from './MyBatchesPage';
@@ -68,44 +69,43 @@ export function MobileWeaverPortal({ onBack, active, setActive, onProfile }: { o
             />
             <span style={{ position: 'absolute' as const, top: 2, right: 4, width: 8, height: 8, background: '#FF3B30', borderRadius: '50%', pointerEvents: 'none' as const }} />
           </div>
-          <div style={{ position: 'relative' as const }}>
-            <Button onClick={() => { setShowProfile(v => !v); setShowNotifs(false); }} className="w-[30px] h-[30px] p-0 rounded-[9px] border border-white/30 bg-white/12 flex-shrink-0">
-              <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 12, color: '#FFF' }}>{initials}</span>
-            </Button>
-            {showProfile && (
-              <div style={{ position: 'absolute' as const, top: 'calc(100% + 8px)', right: 0, zIndex: 300, background: '#FFFDF9', borderRadius: 14, border: `1px solid ${C.bdr}`, boxShadow: '0 8px 32px rgba(44,24,16,0.18)', minWidth: 200, overflow: 'hidden' }}>
-                <div style={{ padding: '14px 16px', background: 'rgba(110,15,45,0.04)', borderBottom: `1px solid ${C.bdr}` }}>
-                  <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>{name}</div>
-                  <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>{user?.empId ? `${user.empId} · Handloom Weaver` : "Handloom Weaver"}</div>
-                </div>
-                <div style={{ padding: '6px 0' }}>
-                  <Button onClick={() => { setShowProfile(false); onProfile?.(); }} variant="ghost" className="flex items-center gap-2.5 w-full h-auto px-4 py-2.5 border-none bg-transparent justify-start text-[13px] text-[#3B2314]">
-                    <UserRound size={14} color={C.muted} /> View Profile
-                  </Button>
-                  {localStorage.getItem('bk_original_admin_role') ? (
-                    <Button onClick={() => {
-                      setShowProfile(false);
-                      const origAdminRole = localStorage.getItem('bk_original_admin_role');
-                      if (origAdminRole) {
-                        localStorage.removeItem('bk_original_admin_role');
-                        selectRole(origAdminRole as any);
-                        navigate(origAdminRole === 'superadmin' ? '/superadmin' : '/admin');
-                      }
-                    }} variant="ghost" className="flex items-center gap-2.5 w-full h-auto px-4 py-2.5 border-none bg-transparent justify-start text-[13px] text-[#3B2314]">
-                      <ChevronLeft size={14} color={C.muted} /> My Portal
-                    </Button>
-                  ) : (
-                    <Button onClick={() => { setShowProfile(false); selectRole(null); navigate('/select-role'); }} variant="ghost" className="flex items-center gap-2.5 w-full h-auto px-4 py-2.5 border-none bg-transparent justify-start text-[13px] text-[#3B2314]">
-                      <ChevronLeft size={14} color={C.muted} /> Switch Portal
-                    </Button>
-                  )}
-                  <Button onClick={() => { setShowProfile(false); logout(); navigate('/login'); }} variant="ghost" className="flex items-center gap-2.5 w-full h-auto px-4 py-2.5 border-none bg-transparent justify-start text-[13px] text-[#C0392B]">
-                    <LogOut size={14} color="#C0392B" /> Logout
-                  </Button>
-                </div>
+          <DropdownMenu open={showProfile} onOpenChange={o => { setShowProfile(o); if (o) setShowNotifs(false); }}>
+            <DropdownMenuTrigger asChild>
+              <Button className="w-[30px] h-[30px] p-0 rounded-[9px] border border-white/30 bg-white/12 flex-shrink-0">
+                <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 12, color: '#FFF' }}>{initials}</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="!min-w-[200px] !p-0 !rounded-[14px] !overflow-hidden" style={{ background: '#FFFDF9', border: `1px solid ${C.bdr}` }}>
+              <div style={{ padding: '14px 16px', background: 'rgba(110,15,45,0.04)', borderBottom: `1px solid ${C.bdr}` }}>
+                <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>{name}</div>
+                <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>{user?.empId ? `${user.empId} · Handloom Weaver` : "Handloom Weaver"}</div>
               </div>
-            )}
-          </div>
+              <div style={{ padding: '6px 0' }}>
+                <DropdownMenuItem onClick={() => onProfile?.()} className="!h-auto !py-2.5 !px-4 !text-[13px] !text-[#3B2314]">
+                  <UserRound size={14} color={C.muted} /> View Profile
+                </DropdownMenuItem>
+                {localStorage.getItem('bk_original_admin_role') ? (
+                  <DropdownMenuItem onClick={() => {
+                    const origAdminRole = localStorage.getItem('bk_original_admin_role');
+                    if (origAdminRole) {
+                      localStorage.removeItem('bk_original_admin_role');
+                      selectRole(origAdminRole as any);
+                      navigate(origAdminRole === 'superadmin' ? '/superadmin' : '/admin');
+                    }
+                  }} className="!h-auto !py-2.5 !px-4 !text-[13px] !text-[#3B2314]">
+                    <ChevronLeft size={14} color={C.muted} /> My Portal
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem onClick={() => { selectRole(null); navigate('/select-role'); }} className="!h-auto !py-2.5 !px-4 !text-[13px] !text-[#3B2314]">
+                    <ChevronLeft size={14} color={C.muted} /> Switch Portal
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem onClick={() => { logout(); navigate('/login'); }} destructive className="!h-auto !py-2.5 !px-4 !text-[13px]">
+                  <LogOut size={14} color="#C0392B" /> Logout
+                </DropdownMenuItem>
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
