@@ -4,7 +4,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import {
   ArrowLeft, MapPin, Phone, Package,
   CheckCircle2, FileText, ClipboardCheck,
-  Send, ArrowRight, Truck, Scale, AlertTriangle,
+  Send, ArrowRight, Truck, Scale, AlertTriangle, Trash2,
 } from "lucide-react";
 import type { BulkOrder } from "../contexts/BulkOrderContext";
 import { useBulkOrders } from "../contexts/BulkOrderContext";
@@ -53,7 +53,7 @@ const QUOTE_STATUS_CFG: Record<Quotation["status"], { bg: string; color: string 
 export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: {
   order: BulkOrder; onBack: () => void; initialTab?: "overview" | "sarees" | "payments" | "quotations";
 }) {
-  const { bulkOrders, tallyOrder } = useBulkOrders();
+  const { bulkOrders, tallyOrder, deleteBulkOrder } = useBulkOrders();
   const live = bulkOrders.find(o => o.ref === order.ref) ?? order;
   const { readySarees, returns, dispatches, quotations } = useFinishing();
   const { batches } = useBatches();
@@ -67,6 +67,8 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
   const [sareeTypeFilter, setSareeTypeFilter] = useState("All");
   const [dispatchPanel, setDispatchPanel] = useState<DispatchRecord | null>(null);
   const [tallyPrompt, setTallyPrompt] = useState(false);
+  const [deletePrompt, setDeletePrompt] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const cfg = ORDER_STATUS_CFG[live.status];
 
@@ -243,6 +245,9 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
             <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: cfg.bg, color: cfg.color, padding: "5px 13px", borderRadius: 20 }}>{cfg.label}</span>
             <span style={{ fontFamily: F.mono, fontSize: 13, background: T.silkCream, border: `1px solid ${T.borderDef}`, padding: "5px 12px", borderRadius: 6, color: T.luxuryBrown, fontWeight: 600 }}>{live.ref}</span>
+            <Button onClick={() => setDeletePrompt(true)} variant="tertiary" size="md" iconLeft={Trash2}>
+              Delete Order
+            </Button>
           </div>
         </div>
 
@@ -501,6 +506,45 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
               >
                 <ArrowRight size={20} color="#FFF" />
               </motion.div>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {deletePrompt && (
+        <Modal open onOpenChange={o => !o && setDeletePrompt(false)} size="xs">
+          <div style={{ padding: 26 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+              <AlertTriangle size={20} color={T.crimson} />
+              <Dialog.Title asChild>
+                <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown }}>Delete this order?</div>
+              </Dialog.Title>
+            </div>
+            <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, lineHeight: 1.6, margin: "0 0 20px" }}>
+              This permanently removes {live.ref} ({live.customer}). Batches, quotations, and dispatches already linked to it are kept, just unlinked from this order — this can&apos;t be undone.
+            </p>
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+              <Button onClick={() => setDeletePrompt(false)} variant="secondary" size="md" disabled={deleting}>
+                Cancel
+              </Button>
+              <Button
+                onClick={async () => {
+                  setDeleting(true);
+                  try {
+                    await deleteBulkOrder(live.ref);
+                    setDeletePrompt(false);
+                    onBack();
+                  } finally {
+                    setDeleting(false);
+                  }
+                }}
+                variant="danger"
+                size="md"
+                iconLeft={Trash2}
+                loading={deleting}
+              >
+                Delete Order
+              </Button>
             </div>
           </div>
         </Modal>

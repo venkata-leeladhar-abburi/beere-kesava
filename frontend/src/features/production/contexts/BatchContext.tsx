@@ -296,6 +296,14 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
     mutationFn: (batchId: string) => batchesApi.remove(batchId),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      // The backend cascades the delete onto that batch's QC records,
+      // finishing assignments, and inventory/saree rows — so anything
+      // derived from those (readySarees, finishing assignments/returns,
+      // quotations, and the bulk-order "produced" counts computed from
+      // them) is now stale and needs refetching too, or a deleted batch's
+      // saree keeps showing as "produced" until a full page reload.
+      void queryClient.invalidateQueries({ queryKey: ["finishing"] });
+      void queryClient.invalidateQueries({ queryKey: ["bulkOrders"] });
       toast.success("Batch deleted");
     },
     onError: (err) => {

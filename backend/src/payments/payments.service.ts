@@ -70,7 +70,7 @@ export class PaymentsService {
       weaverId: query.weaverId,
       firmId: query.firmId,
     };
-    const [items, total] = await this.prisma.$transaction([
+    const [items, total] = await Promise.all([
       this.prisma.weaverPayment.findMany({
         where,
         skip: (query.page - 1) * query.pageSize,
@@ -118,7 +118,7 @@ export class PaymentsService {
       supplierId: query.supplierId,
       firmId: query.firmId,
     };
-    const [items, total] = await this.prisma.$transaction([
+    const [items, total] = await Promise.all([
       this.prisma.supplierPayment.findMany({
         where,
         skip: (query.page - 1) * query.pageSize,
@@ -186,7 +186,7 @@ export class PaymentsService {
       vendorId: query.vendorId,
       firmId: query.firmId,
     };
-    const [items, total] = await this.prisma.$transaction([
+    const [items, total] = await Promise.all([
       this.prisma.vendorPayment.findMany({
         where,
         skip: (query.page - 1) * query.pageSize,
