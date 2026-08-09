@@ -75,7 +75,11 @@ export function SATopNav({ active, set, onBack, sections, onProfile }: { active:
             const isOpen = openGroup === g.key;
             const hasDropdown = g.pages.length > 1;
             const Icon = g.icon;
-            const alignRight = NAV_GROUPS.indexOf(g) >= NAV_GROUPS.length - 2;
+            // Widened from the last 2 groups to the last 4 (Materials onward)
+            // — the same right-edge crowding (next trigger, then search/
+            // bell/avatar) that made the admin dashboard's un-aligned menus
+            // clip/go offscreen starts one group earlier than this covered.
+            const alignRight = NAV_GROUPS.indexOf(g) >= NAV_GROUPS.length - 4;
 
             const trigger = (
               <motion.div
@@ -139,12 +143,10 @@ export function SATopNav({ active, set, onBack, sections, onProfile }: { active:
                 </div>
                 <DropdownMenuContent
                   align={alignRight ? "end" : "start"}
-                  // Same fix as the admin dashboard's TopNav.tsx: the sub-nav
-                  // pill bar sits directly beneath the topbar with no gap, so
-                  // a flat offset put the menu right at the seam between the
-                  // two bars instead of clearing the sub-nav row entirely.
-                  sideOffset={showSubNav ? SUB_NAV_H + 8 : 8}
-                  className="!min-w-[250px] !p-2.5 !rounded-2xl"
+                  // Opens right below the topbar, on top of the sub-nav row —
+                  // not below it — per the admin dashboard's identical fix.
+                  sideOffset={8}
+                  className="!w-max !min-w-[250px] !max-w-[calc(100vw-32px)] !p-2.5 !rounded-2xl"
                   style={{ background: "#FFFFFF", border: "1px solid rgba(110,15,45,0.10)", boxShadow: "0 16px 40px rgba(0,0,0,0.28)" }}
                 >
                   <div style={{ padding: "10px 14px 8px", fontFamily: F.ui, fontWeight: 700, fontSize: 12, color: T.taupe, letterSpacing: "1.2px", textTransform: "uppercase" as const }}>

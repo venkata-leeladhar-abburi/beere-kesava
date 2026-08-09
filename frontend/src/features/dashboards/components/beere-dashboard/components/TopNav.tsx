@@ -97,6 +97,14 @@ export function TopNav({
             const isOpen = openGroup === g.key;
             const hasDropdown = g.pages.length > 1;
             const Icon = g.icon;
+            // Groups toward the right of the row (Materials onward) don't
+            // have enough room to their right for a left-aligned ("start")
+            // menu before it runs into the next trigger, the search/bell/
+            // avatar icons, or the viewport edge — Radix's own collision
+            // shifting wasn't enough to keep it fully visible/clickable for
+            // Finance/People/Operations. Align those from their right edge
+            // instead, so the menu opens toward the (roomier) left.
+            const alignRight = NAV_GROUPS.indexOf(g) >= NAV_GROUPS.length - 4;
 
             const trigger = (
               <motion.div
@@ -158,16 +166,14 @@ export function TopNav({
                   <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
                 </div>
                 <DropdownMenuContent
-                  align="start"
-                  // The sub-nav pill bar sits directly beneath the topbar with
-                  // no gap. A flat 6px offset (measured from the trigger, which
-                  // lives in the topbar) put the menu right at the seam between
-                  // the two bars, so it visually punched through the sub-nav
-                  // row instead of clearing it. When the sub-nav is showing,
-                  // clear its full height too, so the menu opens cleanly below
-                  // the whole nav complex.
-                  sideOffset={showSubNav ? SUB_NAV_H + 6 : 6}
-                  className="!min-w-[200px] !p-2 !rounded-[16px]"
+                  align={alignRight ? "end" : "start"}
+                  // Opens right below the topbar (small gap), on top of the
+                  // sub-nav row beneath it — not below the sub-nav — so it's
+                  // unambiguously the topmost layer, not tucked behind
+                  // anything. The opaque background + shadow already make
+                  // that clear once it isn't fighting the sub-nav for space.
+                  sideOffset={6}
+                  className="!w-max !min-w-[200px] !max-w-[calc(100vw-32px)] !p-2 !rounded-[16px]"
                   style={{ background: "#FFFDF9", border: `1px solid ${T.borderDef}`, boxShadow: "0 16px 48px rgba(44,24,16,0.18)" }}
                 >
                   {g.pages.map(p => {

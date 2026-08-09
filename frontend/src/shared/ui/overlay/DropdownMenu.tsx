@@ -47,7 +47,7 @@ export function DropdownMenuItem({
   return (
     <RadixDropdown.Item
       className={cn(
-        "flex h-10 items-center gap-2 rounded-[var(--radius-sm)] px-3 text-sm cursor-pointer outline-none select-none",
+        "flex h-10 items-center gap-2 rounded-[var(--radius-sm)] px-3 text-sm cursor-pointer outline-none focus-visible:!outline-none select-none",
         "data-[highlighted]:bg-[var(--bk-neutral-50)]",
         "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
         inset && "pl-8",
@@ -65,7 +65,7 @@ export function DropdownMenuCheckboxItem({ className, children, ...props }: Reac
   return (
     <RadixDropdown.CheckboxItem
       className={cn(
-        "relative flex h-10 items-center gap-2 rounded-[var(--radius-sm)] pl-8 pr-3 text-sm cursor-pointer outline-none select-none",
+        "relative flex h-10 items-center gap-2 rounded-[var(--radius-sm)] pl-8 pr-3 text-sm cursor-pointer outline-none focus-visible:!outline-none select-none",
         "text-[var(--text-primary)] data-[highlighted]:bg-[var(--bk-neutral-50)]",
         "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
         className
@@ -84,7 +84,7 @@ export function DropdownMenuRadioItem({ className, children, ...props }: React.C
   return (
     <RadixDropdown.RadioItem
       className={cn(
-        "relative flex h-10 items-center gap-2 rounded-[var(--radius-sm)] pl-8 pr-3 text-sm cursor-pointer outline-none select-none",
+        "relative flex h-10 items-center gap-2 rounded-[var(--radius-sm)] pl-8 pr-3 text-sm cursor-pointer outline-none focus-visible:!outline-none select-none",
         "text-[var(--text-primary)] data-[highlighted]:bg-[var(--bk-neutral-50)]",
         "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
         className
@@ -135,7 +135,7 @@ export function DropdownMenuSubTrigger({ className, children, ...props }: React.
   return (
     <RadixDropdown.SubTrigger
       className={cn(
-        "flex h-10 items-center gap-2 rounded-[var(--radius-sm)] px-3 text-sm cursor-pointer outline-none select-none",
+        "flex h-10 items-center gap-2 rounded-[var(--radius-sm)] px-3 text-sm cursor-pointer outline-none focus-visible:!outline-none select-none",
         "text-[var(--text-primary)] data-[highlighted]:bg-[var(--bk-neutral-50)] data-[state=open]:bg-[var(--bk-neutral-50)]",
         className
       )}
