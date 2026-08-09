@@ -1,0 +1,164 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   BK LOOM DESIGN SYSTEM — PHASE 7: DOCUMENT PRINT SYSTEM
+   design-system/07-DOCUMENTS.md Parts C, D, E, F, J, K.
+
+   #document-print-root is a portal target declared in index.html, a sibling
+   of #root. useDocument() portals a <DocumentPage> into it; window.print()
+   then has exactly one thing to print — this is the fix for "printing an
+   invoice prints the entire application" (Part A.1).
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Part F.1 — print colour palette ──
+   Declared unconditionally first (screen-preview values, close to but not
+   identical to the print set — --print-ink is the app's own --text-primary
+   on screen since true black reads harsh against the cream canvas) then
+   overridden inside @media print, later in source order, so the print
+   block correctly wins once actually printing — component CSS references
+   these variables unconditionally either way. */
+:root {
+  --print-ink:        #1D1814;
+  --print-ink-muted:  #4A4A4A;
+  --print-ink-faint:  #767676;
+  --print-rule:       #B0B0B0;
+  --print-rule-light: #DCDCDC;
+  --print-fill:       #F2F2F2;
+  --print-brand:      #6E0F2D;
+  --print-accent:     #8A6D2F;
+}
+
+@media print {
+  :root {
+    --print-ink:        #000000;
+    --print-ink-muted:  #4A4A4A;
+    --print-ink-faint:  #767676;
+    --print-rule:       #B0B0B0;
+    --print-rule-light: #DCDCDC;
+    --print-fill:       #F2F2F2;
+    --print-brand:      #6E0F2D;
+    --print-accent:     #8A6D2F;
+  }
+}
+
+/* ── Part E — print type scale (pt, not px — paper is ~300dpi at ~35cm) ── */
+:root {
+  --doc-brand:         20pt;
+  --doc-title:         16pt;
+  --doc-heading:       10pt;
+  --doc-body:          9pt;
+  --doc-table:         8.5pt;
+  --doc-table-head:    8pt;
+  --doc-small:         7.5pt;
+  --doc-code:          8.5pt;
+  --doc-total:         11pt;
+  --doc-amount-words:  8.5pt;
+}
+
+/* ── Part D.1 — A4 geometry ── */
+.bk-doc {
+  width: 210mm;
+  min-height: 297mm;
+  padding: 18mm 15mm 20mm 15mm; /* top right bottom left */
+  background: #FFFFFF;
+  color: var(--print-ink);
+  box-sizing: border-box;
+  font-family: var(--font-ui);
+}
+
+/* ── Part D.2 — screen preview chrome (grey backdrop, like a PDF viewer) ── */
+.bk-doc-viewport {
+  background: var(--bk-neutral-200);
+  padding: var(--space-8);
+  overflow: auto;
+}
+.bk-doc-viewport .bk-doc {
+  box-shadow: var(--shadow-lg);
+  margin-inline: auto;
+  margin-block-end: var(--space-6);
+}
+@media (max-width: 900px) {
+  .bk-doc-viewport .bk-doc {
+    transform: scale(var(--doc-zoom, 0.55));
+    transform-origin: top center;
+  }
+}
+
+/* ── Part J — line-item table (page-break-aware, not Phase 4's DataTable) ── */
+.bk-doc__table { width: 100%; border-collapse: collapse; font-size: var(--doc-table); }
+.bk-doc__table thead th {
+  font-size: var(--doc-table-head); font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.04em;
+  color: var(--print-ink);
+  background: var(--print-fill);
+  border-block: 0.5pt solid var(--print-rule);
+  padding: 2mm 1.5mm;
+  text-align: start;
+}
+.bk-doc__table td {
+  padding: 1.8mm 1.5mm;
+  border-bottom: 0.25pt solid var(--print-rule-light);
+  vertical-align: top;
+}
+.bk-doc__table [data-num] {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+.bk-doc__table thead { display: table-header-group; }
+
+/* ── Part C.2 — print isolation: hide everything except the document ── */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+
+  body > * { display: none !important; }
+
+  #document-print-root,
+  #document-print-root * { display: revert !important; }
+
+  #document-print-root {
+    display: block !important;
+    position: static !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    box-shadow: none !important;
+    background: #FFFFFF !important;
+  }
+
+  [data-print="hide"],
+  .bk-shell__topbar, .bk-shell__groupbar, .bk-shell__footer,
+  .bk-scrim, .bk-mobilenav, [role="tooltip"], [data-sonner-toaster] {
+    display: none !important;
+  }
+
+  html, body {
+    background: #FFFFFF !important;
+    overflow: visible !important;
+    height: auto !important;
+  }
+
+  .bk-doc {
+    box-shadow: none !important;
+    margin: 0 !important;
+  }
+
+  /* Part K — multi-page rules */
+  .bk-doc__totals,
+  .bk-doc__tax-summary,
+  .bk-doc__signature,
+  .bk-doc__terms { break-inside: avoid; }
+
+  .bk-doc__signature { break-before: avoid; }
+  .bk-doc__table tbody tr { break-inside: avoid; }
+  .bk-doc__table tfoot { display: table-footer-group; }
+
+  h1, h2, h3 { break-after: avoid; }
+  p { orphans: 3; widows: 3; }
+
+  /* Part F.2 — print-color-adjust on tinted bands, or browsers strip them */
+  .bk-doc__totals, .bk-doc__table thead {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
