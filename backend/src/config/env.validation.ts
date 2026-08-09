@@ -14,10 +14,6 @@ class EnvironmentVariables {
   @Min(1)
   @Max(65535)
   PORT!: number;
-
-  @IsString()
-  @IsNotEmpty()
-  REDIS_URL!: string;
 }
 
 export function validateEnv(config: Record<string, unknown>): EnvironmentVariables {

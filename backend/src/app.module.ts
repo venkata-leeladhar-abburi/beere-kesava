@@ -1,6 +1,5 @@
-import { BullModule } from "@nestjs/bullmq";
 import { Module } from "@nestjs/common";
-import { ConfigModule, ConfigService } from "@nestjs/config";
+import { ConfigModule } from "@nestjs/config";
 import { ScheduleModule } from "@nestjs/schedule";
 import { ApprovalsModule } from "./approvals/approvals.module";
 import { AppController } from "./app.controller";
@@ -54,12 +53,6 @@ import { AuthModule } from "./auth/auth.module";
       validate: validateEnv,
     }),
     ScheduleModule.forRoot(),
-    BullModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        connection: { url: configService.getOrThrow<string>("REDIS_URL") },
-      }),
-    }),
     PrismaModule,
     IdGeneratorModule,
     UsersModule,

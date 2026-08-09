@@ -7,13 +7,9 @@ import { ImportResult, weaverPaymentsApi } from "../../../../shared/api/payments
 import { EASE, F, T } from "../../theme";
 import { Button, Input } from "../../../../shared/ui/primitives";
 
-function sleep(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
 // ── Bank Upload Panel ─────────────────────────────────────────────────────────
-// Uploads straight to the real backend import job (POST /payments/weavers/import,
-// processed async via BullMQ against real Weaver rows) instead of parsing/matching
+// Uploads straight to the real backend import endpoint (POST /payments/weavers/import),
+// processed synchronously against real Weaver rows, instead of parsing/matching
 // the file client-side — the backend is the single source of truth for which
 // weaverId values actually exist.
 export function BankUploadPanel({ onReset }: { onMatchUpdate?: (matched: unknown[]) => void; onReset?: () => void }) {
@@ -23,33 +19,20 @@ export function BankUploadPanel({ onReset }: { onMatchUpdate?: (matched: unknown
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 
-  const pollJob = useCallback(async (jobId: string): Promise<ImportResult> => {
-    for (let attempt = 0; attempt < 60; attempt++) {
-      const status = await weaverPaymentsApi.getImportStatus(jobId);
-      if (status.state === "completed" && status.result) return status.result;
-      if (status.state === "failed") {
-        throw new Error(status.failedReason ?? "Import job failed");
-      }
-      await sleep(1000);
-    }
-    throw new Error("Import is taking longer than expected — please check back shortly.");
-  }, []);
-
   const handleFile = useCallback(async (file: File) => {
     setUploading(true);
     setError(null);
     setResult(null);
     setFileName(file.name);
     try {
-      const { jobId } = await weaverPaymentsApi.importExcel(file);
-      const finalResult = await pollJob(jobId);
+      const finalResult = await weaverPaymentsApi.importExcel(file);
       setResult(finalResult);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : err instanceof Error ? err.message : "Failed to import this file.");
     } finally {
       setUploading(false);
     }
-  }, [pollJob]);
+  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

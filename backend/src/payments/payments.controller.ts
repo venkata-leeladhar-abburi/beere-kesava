@@ -1,18 +1,14 @@
-import { InjectQueue } from "@nestjs/bullmq";
 import {
   BadRequestException,
   Body,
   Controller,
   Get,
-  NotFoundException,
-  Param,
   Post,
   Query,
   UploadedFile,
   UseInterceptors,
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { Queue } from "bullmq";
 import { CurrentUser } from "../auth/decorators/current-user.decorator";
 import { RequireRoles } from "../auth/decorators/require-roles.decorator";
 import type { AuthenticatedUser } from "../auth/strategies/jwt.strategy";
@@ -25,8 +21,7 @@ import { ListSupplierPaymentsQueryDto } from "./dto/list-supplier-payments-query
 import { ListVendorPaymentsQueryDto } from "./dto/list-vendor-payments-query.dto";
 import { ListWeaverPaymentsQueryDto } from "./dto/list-weaver-payments-query.dto";
 import { WeaverEarningsQueryDto } from "./dto/weaver-earnings-query.dto";
-import { ImportResult, PaymentsService } from "./payments.service";
-import { WEAVER_PAYMENTS_IMPORT_QUEUE } from "./weaver-payments-import.processor";
+import { PaymentsService } from "./payments.service";
 
 // Financial module — ACCOUNTANT access by default. The one exception is
 // GET /payments/weavers, which a WEAVER may also call to see their own
@@ -35,10 +30,7 @@ import { WEAVER_PAYMENTS_IMPORT_QUEUE } from "./weaver-payments-import.processor
 @Controller("payments")
 @RequireRoles(UserRole.ACCOUNTANT)
 export class PaymentsController {
-  constructor(
-    private readonly paymentsService: PaymentsService,
-    @InjectQueue(WEAVER_PAYMENTS_IMPORT_QUEUE) private readonly importQueue: Queue,
-  ) {}
+  constructor(private readonly paymentsService: PaymentsService) {}
 
   @Get("summary")
   getPaymentSummary() {
@@ -82,26 +74,7 @@ export class PaymentsController {
     if (!file) {
       throw new BadRequestException("No file uploaded");
     }
-    const job = await this.importQueue.add("import", {
-      fileBase64: file.buffer.toString("base64"),
-    });
-    return { jobId: job.id };
-  }
-
-  @Get("weavers/import/:jobId/status")
-  async getImportStatus(@Param("jobId") jobId: string) {
-    const job = await this.importQueue.getJob(jobId);
-    if (!job) {
-      throw new NotFoundException(`Import job ${jobId} not found`);
-    }
-    const state = await job.getState();
-    const result = state === "completed" ? (job.returnvalue as ImportResult) : undefined;
-    return {
-      jobId: job.id,
-      state,
-      result,
-      failedReason: state === "failed" ? job.failedReason : undefined,
-    };
+    return this.paymentsService.importWeaverPaymentsFromExcel(file.buffer);
   }
 
   @Post("vendors")
