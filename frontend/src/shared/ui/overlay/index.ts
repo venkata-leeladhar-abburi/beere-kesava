@@ -7,3 +7,4 @@ export {
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuGroup,
   DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent,
 } from "./DropdownMenu";
+export { Popover, type PopoverProps, type PopoverContentProps } from "./Popover";
