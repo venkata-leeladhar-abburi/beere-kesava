@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { getSareeTypeByCode, INITIAL_RATES } from "../../pricing/components/RatesPricingPage";
 import { BackendQcRecord, BackendQcResult, qcApi } from "../../../shared/api/qc";
 import { weaversApi, BackendWeaver } from "../../../shared/api/weavers";
@@ -213,9 +214,11 @@ export function QcProvider({ children }: { children: React.ReactNode }) {
       // The backend derives the ready-for-finishing queue from QC results,
       // so a new QC record can change it too.
       void queryClient.invalidateQueries({ queryKey: ["finishing", "readySarees"] });
+      toast.success("QC result recorded");
     },
     onError: (err) => {
       console.error("Failed to record QC result:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to record QC result");
     },
   });
 

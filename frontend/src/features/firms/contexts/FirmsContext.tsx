@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   firmsApi,
   type BackendFinancialEntry,
@@ -167,19 +168,35 @@ export function FirmsProvider({ children }: { children: React.ReactNode }) {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: FIRMS_KEY });
       void queryClient.invalidateQueries({ queryKey: FINANCIALS_KEY });
+      toast.success("Firm added");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to add firm");
     },
   });
 
   const updateFirmMutation = useMutation({
     mutationFn: (args: { id: string; updates: Omit<Firm, "id" | "createdAt"> }) =>
       firmsApi.update(args.id, args.updates),
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: FIRMS_KEY }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: FIRMS_KEY });
+      toast.success("Firm updated");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to update firm");
+    },
   });
 
   const addEntryMutation = useMutation({
     mutationFn: (args: { firmId: string; payload: CreateFinancialEntryPayload }) =>
       firmsApi.addEntry(args.firmId, args.payload),
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: FINANCIALS_KEY }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: FINANCIALS_KEY });
+      toast.success("Entry added");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to add entry");
+    },
   });
 
   const bulkAddEntriesMutation = useMutation({
@@ -188,7 +205,13 @@ export function FirmsProvider({ children }: { children: React.ReactNode }) {
         await firmsApi.addEntry(args.firmId, payload);
       }
     },
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: FINANCIALS_KEY }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: FINANCIALS_KEY });
+      toast.success("Entries added");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to add entries");
+    },
   });
 
   const addFirm = (data: Omit<Firm, "id" | "createdAt">) => addFirmMutation.mutate(data);

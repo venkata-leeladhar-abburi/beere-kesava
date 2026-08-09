@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { BackendDesign, designLibraryApi } from "../../../shared/api/design-library";
 import { designDispatchesApi, BackendDesignDispatch } from "../../../shared/api/design-dispatches";
 
@@ -131,13 +132,18 @@ export function DesignLibraryProvider({ children }: { children: React.ReactNode 
         color: d.color || undefined,
         notesForWeaver: d.notesForWeaver || undefined,
       }),
-    onSuccess: (created) =>
+    onSuccess: (created) => {
       queryClient.setQueryData<DesignEntry[]>(DESIGNS_KEY, prev => {
         const list = prev ?? [];
         const entry = backendDesignToEntry(created);
         if (list.some(x => x.code === entry.code)) return list;
         return [entry, ...list];
-      }),
+      });
+      toast.success("Design added");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to add design");
+    },
   });
 
   // Local-only: notesForWeaver/weaverName patches used for the design-detail
@@ -146,10 +152,12 @@ export function DesignLibraryProvider({ children }: { children: React.ReactNode 
   // silently failing against the API.
   const updateDesignMutation = useMutation({
     mutationFn: (args: { code: string; patch: Partial<DesignEntry> }) => Promise.resolve(args),
-    onSuccess: ({ code, patch }) =>
+    onSuccess: ({ code, patch }) => {
       queryClient.setQueryData<DesignEntry[]>(DESIGNS_KEY, prev =>
         (prev ?? []).map(d => d.code === code ? { ...d, ...patch } : d)
-      ),
+      );
+      toast.success("Design updated");
+    },
   });
 
   const addDispatchMutation = useMutation({
@@ -163,11 +171,16 @@ export function DesignLibraryProvider({ children }: { children: React.ReactNode 
         designGraphImageUrl: d.designGraphImage,
         batches: d.batches,
       }),
-    onSuccess: (created: BackendDesignDispatch) =>
+    onSuccess: (created: BackendDesignDispatch) => {
       queryClient.setQueryData<DispatchRecord[]>(DISPATCHES_KEY, prev => {
         const list = prev ?? [];
         return [backendDispatchToRecord(created), ...list];
-      }),
+      });
+      toast.success("Design dispatched");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to dispatch design");
+    },
   });
 
   const addDesign = (d: DesignEntry) => addDesignMutation.mutate(d);

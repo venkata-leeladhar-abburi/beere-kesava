@@ -6,6 +6,7 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { T, F } from "../theme";
 import { FadeUp } from "../common/primitives";
 import { weaversApi, CreateWeaverPayload } from "../../../../shared/api/weavers";
@@ -49,9 +50,12 @@ export function NewWeaverModal({ expanded, setExpanded }: { expanded: boolean; s
       setForm(EMPTY_FORM);
       setError(null);
       setExpanded(false);
+      toast.success("Weaver registered");
     },
     onError: (err: unknown) => {
-      setError(err instanceof Error ? err.message : "Failed to save weaver. Please try again.");
+      const message = err instanceof Error ? err.message : "Failed to save weaver. Please try again.";
+      setError(message);
+      toast.error(message);
     },
   });
 

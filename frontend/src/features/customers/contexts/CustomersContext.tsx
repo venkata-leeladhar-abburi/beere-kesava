@@ -1,5 +1,6 @@
 import React, { createContext, useContext } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { BackendCustomer, CreateCustomerPayload, customersApi, UpdateCustomerPayload } from "../../../shared/api/customers";
 
 // Thin real-backend directory of Customer{id,name,type,...} records — the
@@ -36,6 +37,10 @@ export function CustomersProvider({ children }: { children: React.ReactNode }) {
     mutationFn: (payload: CreateCustomerPayload) => customersApi.create(payload),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      toast.success("Customer added");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to add customer");
     },
   });
 
@@ -44,6 +49,10 @@ export function CustomersProvider({ children }: { children: React.ReactNode }) {
       customersApi.update(args.id, args.payload),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      toast.success("Customer updated");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to update customer");
     },
   });
 

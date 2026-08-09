@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 export * from "./finishing-types";
 import { ReadySaree, FinishingAssignment, FinishingReturn, DispatchRecord, Quotation, QuotationSaree, FinishingContextValue } from "./finishing-types";
 import { getSareeTypeByCode } from "../../pricing/components/RatesPricingPage";
@@ -230,9 +231,11 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ASSIGNMENTS_KEY });
       void qc.invalidateQueries({ queryKey: READY_KEY });
+      toast.success("Sarees assigned to finishing");
     },
     onError: (err) => {
       console.error("Failed to assign sarees to finishing:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to assign sarees to finishing");
     },
   });
 
@@ -263,9 +266,11 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
     },
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ASSIGNMENTS_KEY });
+      toast.success("Finishing return recorded");
     },
     onError: (err) => {
       console.error("Failed to record finishing return:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to record finishing return");
     },
   });
 
@@ -303,9 +308,11 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
       void qc.invalidateQueries({ queryKey: DISPATCHES_KEY });
       void qc.invalidateQueries({ queryKey: READY_KEY });
       void qc.invalidateQueries({ queryKey: ASSIGNMENTS_KEY });
+      toast.success("Sarees dispatched");
     },
     onError: (err) => {
       console.error("Failed to dispatch sarees:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to dispatch sarees");
     },
   });
 
@@ -313,7 +320,10 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
   // stays an optimistic client-only patch until one exists.
   const updateDispatchMutation = useMutation({
     mutationFn: (args: { id: string; patch: Partial<DispatchRecord> }) => Promise.resolve(args),
-    onSuccess: ({ id, patch }) => setDispatches(prev => prev.map(d => d.id === id ? { ...d, ...patch } : d)),
+    onSuccess: ({ id, patch }) => {
+      setDispatches(prev => prev.map(d => d.id === id ? { ...d, ...patch } : d));
+      toast.success("Dispatch updated");
+    },
   });
 
   const raiseQuotationMutation = useMutation({
@@ -329,9 +339,11 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
       }),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: QUOTATIONS_KEY });
+      toast.success("Quotation raised");
     },
     onError: (err) => {
       console.error("Failed to raise quotation:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to raise quotation");
     },
   });
 
@@ -347,9 +359,11 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
       quotationsApi.assignFinishing(args.quotationId),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: QUOTATIONS_KEY });
+      toast.success("Quotation sent to finishing");
     },
     onError: (err) => {
       console.error("Failed to assign quotation to finishing:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to assign quotation to finishing");
     },
   });
 
@@ -358,9 +372,11 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
       quotationsApi.receiveSarees(args.quotationId, args.sareeIds),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: QUOTATIONS_KEY });
+      toast.success("Quotation sarees received");
     },
     onError: (err) => {
       console.error("Failed to receive quotation sarees:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to receive quotation sarees");
     },
   });
 
@@ -369,7 +385,10 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
   // optimistic client-only patch until one exists.
   const markQuotationDispatchedMutation = useMutation({
     mutationFn: (quotationId: string) => Promise.resolve(quotationId),
-    onSuccess: (quotationId) => setQuotations(prev => prev.map(q => q.id === quotationId ? { ...q, status: "dispatched" } : q)),
+    onSuccess: (quotationId) => {
+      setQuotations(prev => prev.map(q => q.id === quotationId ? { ...q, status: "dispatched" } : q));
+      toast.success("Quotation marked dispatched");
+    },
   });
 
   const assignSarees = (sareeIds: string[], staff: { id: string; name: string }, assignedBy: string) =>

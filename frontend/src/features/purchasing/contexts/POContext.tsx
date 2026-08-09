@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { BackendPurchaseOrder, purchaseOrdersApi } from "../../../shared/api/purchase-orders";
 import { vendorsApi } from "../../../shared/api/vendors";
 
@@ -118,43 +119,58 @@ export function POProvider({ children }: { children: React.ReactNode }) {
       }
       return po;
     },
-    onSuccess: (po) => setPos(prev => [po, ...prev.filter(p => p.id !== po.id)]),
+    onSuccess: (po) => {
+      setPos(prev => [po, ...prev.filter(p => p.id !== po.id)]);
+      toast.success("Purchase order created");
+    },
   });
 
   const approvePOMutation = useMutation({
     mutationFn: (id: string) => purchaseOrdersApi.approve(id),
-    onSuccess: (updated) =>
+    onSuccess: (updated) => {
       setPos(prev =>
         prev.map(p =>
           p.id === updated.id
             ? { ...p, status: "approved" as const, approvedDate: new Date().toISOString().split("T")[0] }
             : p
         )
-      ),
+      );
+      toast.success("Purchase order approved");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to approve purchase order");
+    },
   });
 
   const rejectPOMutation = useMutation({
     mutationFn: (args: { id: string; reason?: string }) => purchaseOrdersApi.reject(args.id, args.reason),
-    onSuccess: (updated) =>
+    onSuccess: (updated) => {
       setPos(prev =>
         prev.map(p =>
           p.id === updated.id
             ? { ...p, status: "rejected" as const, rejectionReason: updated.rejectionReason ?? undefined }
             : p
         )
-      ),
+      );
+      toast.success("Purchase order rejected");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to reject purchase order");
+    },
   });
 
   const setMaterialInvoiceAmountMutation = useMutation({
     mutationFn: (args: { poId: string; materialIndex: number; amount: number }) => Promise.resolve(args),
-    onSuccess: ({ poId, materialIndex, amount }) =>
+    onSuccess: ({ poId, materialIndex, amount }) => {
       setPos(prev =>
         prev.map(p =>
           p.id === poId
             ? { ...p, materials: p.materials.map((m, i) => i === materialIndex ? { ...m, invoiceAmount: amount } : m) }
             : p
         )
-      ),
+      );
+      toast.success("Invoice amount saved");
+    },
   });
 
   const addPO = (po: PurchaseOrder) => addPOMutation.mutate(po);

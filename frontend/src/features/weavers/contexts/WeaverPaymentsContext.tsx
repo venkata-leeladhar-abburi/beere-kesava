@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { BackendWeaverPayment, weaverPaymentsApi, WeaverEarnings } from "../../../shared/api/payments";
 import { weaversApi } from "../../../shared/api/weavers";
 import { firmsApi, BackendFirm } from "../../../shared/api/firms";
@@ -109,9 +110,11 @@ export function WeaverPaymentsProvider({ children }: { children: React.ReactNode
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      toast.success("Weaver payment recorded");
     },
     onError: (err) => {
       console.error("Failed to record weaver payment(s):", err);
+      toast.error(err instanceof Error ? err.message : "Failed to record weaver payment");
     },
   });
 

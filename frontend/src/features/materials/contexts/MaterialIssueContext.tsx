@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   BackendJariGrade,
   BackendMaterialIssueRecord,
@@ -287,33 +288,43 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ISSUE_RECORDS_KEY });
+      toast.success("Materials issued");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to issue materials");
     },
   });
 
   const addReceivedSareeMutation = useMutation({
     mutationFn: (rec: ReceivedSareeRecord) => Promise.resolve(rec),
-    onSuccess: (rec) =>
-      queryClient.setQueryData<ReceivedSareeRecord[]>(RECEIVED_SAREES_KEY, prev => [rec, ...(prev ?? [])]),
+    onSuccess: (rec) => {
+      queryClient.setQueryData<ReceivedSareeRecord[]>(RECEIVED_SAREES_KEY, prev => [rec, ...(prev ?? [])]);
+      toast.success("Saree received");
+    },
   });
 
   const updateSignatureStatusMutation = useMutation({
     mutationFn: (args: { recordId: string; method: "here" | "remote" }) => Promise.resolve(args),
-    onSuccess: ({ recordId, method }) =>
+    onSuccess: ({ recordId, method }) => {
       queryClient.setQueryData<MaterialIssueRecord[]>(ISSUE_RECORDS_KEY, prev =>
         (prev ?? []).map(r =>
           r.id === recordId
             ? { ...r, signatureMethod: method, signatureCaptured: true, signatureTimestamp: new Date().toISOString(), status: "signed" as const }
             : r
         )
-      ),
+      );
+      toast.success("Signature captured");
+    },
   });
 
   const finalizeReceivedWeightMutation = useMutation({
     mutationFn: (args: { id: string; finalWeightGrams: number }) => Promise.resolve(args),
-    onSuccess: ({ id, finalWeightGrams }) =>
+    onSuccess: ({ id, finalWeightGrams }) => {
       queryClient.setQueryData<ReceivedSareeRecord[]>(RECEIVED_SAREES_KEY, prev =>
         (prev ?? []).map(r => (r.id === id ? { ...r, finalWeightGrams, tallied: true } : r))
-      ),
+      );
+      toast.success("Weight finalized");
+    },
   });
 
   const addIssueRecord = async (input: AddIssueRecordInput): Promise<MaterialIssueRecord> => {

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { ApiError } from "../../../shared/api/client";
 import { BackendBatch, batchesApi } from "../../../shared/api/batches";
 import { weaversApi } from "../../../shared/api/weavers";
@@ -182,10 +183,12 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      toast.success("Batch saved");
     },
     onError: (err) => {
       // eslint-disable-next-line no-console -- surface save failures instead of failing silently
       console.error("Failed to save batch draft:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to save batch draft");
     },
   });
 
@@ -204,10 +207,12 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
     mutationFn: (batchId: string) => batchesApi.finalize(batchId),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      toast.success("Batch finalized");
     },
     onError: (err) => {
       // eslint-disable-next-line no-console -- surface finalize failures instead of failing silently
       console.error("Failed to finalize batch:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to finalize batch");
     },
   });
 
@@ -215,6 +220,14 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
     mutationFn: (batchId: string) => batchesApi.remove(batchId),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      toast.success("Batch deleted");
+    },
+    onError: (err) => {
+      // A 404 here means the batch is already gone — deleteBatch() below
+      // treats that as the caller's desired end state, not a real failure,
+      // so it shouldn't surface as an error toast.
+      if (err instanceof ApiError && err.statusCode === 404) return;
+      toast.error(err instanceof Error ? err.message : "Failed to delete batch");
     },
   });
 
