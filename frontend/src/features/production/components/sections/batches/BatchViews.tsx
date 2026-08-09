@@ -175,8 +175,9 @@ export function BatchCard({ b, onView, onSlip, onEdit }: { b: Batch; expandedId:
           <div style={{ marginTop: "auto" }}>
             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 8 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Produced</span>
                 <span style={{ fontFamily: F.display, fontSize: 24, fontWeight: 800, color: T.luxuryBrown }}>{b.done}</span>
-                <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>/ {b.total} Sarees Completed</span>
+                <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>of {b.total} Assigned</span>
               </div>
               <span style={{ fontFamily: F.display, fontSize: 18, fontWeight: 800, color: T.antiqueGold }}>{pct}%</span>
             </div>
@@ -198,11 +199,19 @@ export function BatchCard({ b, onView, onSlip, onEdit }: { b: Batch; expandedId:
                     ✨ Finishing: {b.finishingDone} of {b.total}
                   </div>
                 )}
-                {b.qcPassed !== undefined && (
-                  <div style={{ background: "rgba(110,15,45,0.04)", border: `1px solid ${T.borderDef}`, borderRadius: 8, padding: "4px 10px", fontFamily: F.ui, fontSize: 12, color: T.royalBurgundy, fontWeight: 600 }}>
-                    ✓ QC Passed: {b.qcPassed} {b.done - b.qcPassed > 0 && `(Rejected: ${b.done - b.qcPassed})`}
-                  </div>
-                )}
+                {b.qcPassed !== undefined && (() => {
+                  // "done" is QC-passed OR finished-via-quotation, so the gap
+                  // between them is sarees produced through Raise Quotation —
+                  // not a rejection. Rejected is tracked separately.
+                  const viaQuotation = Math.max(0, b.done - b.qcPassed);
+                  return (
+                    <div style={{ background: "rgba(110,15,45,0.04)", border: `1px solid ${T.borderDef}`, borderRadius: 8, padding: "4px 10px", fontFamily: F.ui, fontSize: 12, color: T.royalBurgundy, fontWeight: 600 }}>
+                      ✓ QC Passed: {b.qcPassed}
+                      {viaQuotation > 0 && ` · Via Quotation: ${viaQuotation}`}
+                      {!!b.rejected && ` · Rejected: ${b.rejected}`}
+                    </div>
+                  );
+                })()}
                 {b.late && (
                   <div style={{ background: "rgba(192,57,43,0.07)", border: "1px solid rgba(192,57,43,0.18)", borderRadius: 8, padding: "4px 10px", fontFamily: F.ui, fontSize: 12, color: T.crimson, fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>
                     <WarningCircle size={13} /> Running {b.late}d late
@@ -272,7 +281,7 @@ export function BatchListView({ batches, onView, onEdit }: { batches: Batch[]; o
         const pct = Math.round((b.done / b.total) * 100);
         return (
           <div>
-            <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, fontWeight: 700, marginBottom: 5 }}>{b.done}/{b.total}</div>
+            <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, fontWeight: 700, marginBottom: 5 }}>Produced {b.done} / Assigned {b.total}</div>
             <div style={{ height: 6, background: "rgba(110,15,45,0.08)", borderRadius: 99, overflow: "hidden", width: 110 }}>
               <div style={{ height: "100%", width: `${pct}%`, background: cfg.border, borderRadius: 99 }} />
             </div>
@@ -359,11 +368,11 @@ export function BatchTableView({ batches, onView, onEdit }: { batches: Batch[]; 
       cell: (_v, b) => <span style={{ fontFamily: F.ui, fontSize: 13, color: b.late ? T.crimson : T.taupe, whiteSpace: "nowrap", fontWeight: b.late ? 600 : 400 }}>{b.submitted ?? b.expected}</span>,
     },
     {
-      id: "total", header: "Target", accessor: b => b.total, align: "center",
+      id: "total", header: "Assigned", accessor: b => b.total, align: "center",
       cell: (_v, b) => <span style={{ fontFamily: F.display, fontSize: 16, color: T.luxuryBrown }}>{b.total}</span>,
     },
     {
-      id: "done", header: "Done", accessor: b => b.done, align: "center",
+      id: "done", header: "Produced", accessor: b => b.done, align: "center",
       cell: (_v, b) => <span style={{ fontFamily: F.display, fontSize: 16, color: T.antiqueGold }}>{b.done}</span>,
     },
     {

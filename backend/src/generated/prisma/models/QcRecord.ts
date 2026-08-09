@@ -39,6 +39,7 @@ export type QcRecordSumAggregateOutputType = {
 }
 
 export type QcRecordMinAggregateOutputType = {
+  id: string | null
   sareeId: string | null
   weaverId: string | null
   factoryLoomId: string | null
@@ -56,6 +57,7 @@ export type QcRecordMinAggregateOutputType = {
 }
 
 export type QcRecordMaxAggregateOutputType = {
+  id: string | null
   sareeId: string | null
   weaverId: string | null
   factoryLoomId: string | null
@@ -73,6 +75,7 @@ export type QcRecordMaxAggregateOutputType = {
 }
 
 export type QcRecordCountAggregateOutputType = {
+  id: number
   sareeId: number
   weaverId: number
   factoryLoomId: number
@@ -105,6 +108,7 @@ export type QcRecordSumAggregateInputType = {
 }
 
 export type QcRecordMinAggregateInputType = {
+  id?: true
   sareeId?: true
   weaverId?: true
   factoryLoomId?: true
@@ -122,6 +126,7 @@ export type QcRecordMinAggregateInputType = {
 }
 
 export type QcRecordMaxAggregateInputType = {
+  id?: true
   sareeId?: true
   weaverId?: true
   factoryLoomId?: true
@@ -139,6 +144,7 @@ export type QcRecordMaxAggregateInputType = {
 }
 
 export type QcRecordCountAggregateInputType = {
+  id?: true
   sareeId?: true
   weaverId?: true
   factoryLoomId?: true
@@ -244,6 +250,7 @@ export type QcRecordGroupByArgs<ExtArgs extends runtime.Types.Extensions.Interna
 }
 
 export type QcRecordGroupByOutputType = {
+  id: string
   sareeId: string
   weaverId: string | null
   factoryLoomId: string | null
@@ -285,6 +292,7 @@ export type QcRecordWhereInput = {
   AND?: Prisma.QcRecordWhereInput | Prisma.QcRecordWhereInput[]
   OR?: Prisma.QcRecordWhereInput[]
   NOT?: Prisma.QcRecordWhereInput | Prisma.QcRecordWhereInput[]
+  id?: Prisma.StringFilter<"QcRecord"> | string
   sareeId?: Prisma.StringFilter<"QcRecord"> | string
   weaverId?: Prisma.StringNullableFilter<"QcRecord"> | string | null
   factoryLoomId?: Prisma.StringNullableFilter<"QcRecord"> | string | null
@@ -307,6 +315,7 @@ export type QcRecordWhereInput = {
 }
 
 export type QcRecordOrderByWithRelationInput = {
+  id?: Prisma.SortOrder
   sareeId?: Prisma.SortOrder
   weaverId?: Prisma.SortOrderInput | Prisma.SortOrder
   factoryLoomId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -329,10 +338,11 @@ export type QcRecordOrderByWithRelationInput = {
 }
 
 export type QcRecordWhereUniqueInput = Prisma.AtLeast<{
-  sareeId?: string
+  id?: string
   AND?: Prisma.QcRecordWhereInput | Prisma.QcRecordWhereInput[]
   OR?: Prisma.QcRecordWhereInput[]
   NOT?: Prisma.QcRecordWhereInput | Prisma.QcRecordWhereInput[]
+  sareeId?: Prisma.StringFilter<"QcRecord"> | string
   weaverId?: Prisma.StringNullableFilter<"QcRecord"> | string | null
   factoryLoomId?: Prisma.StringNullableFilter<"QcRecord"> | string | null
   batchId?: Prisma.StringNullableFilter<"QcRecord"> | string | null
@@ -351,9 +361,10 @@ export type QcRecordWhereUniqueInput = Prisma.AtLeast<{
   weaver?: Prisma.XOR<Prisma.WeaverNullableScalarRelationFilter, Prisma.WeaverWhereInput> | null
   factoryLoom?: Prisma.XOR<Prisma.FactoryLoomNullableScalarRelationFilter, Prisma.FactoryLoomWhereInput> | null
   inspectedBy?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
-}, "sareeId">
+}, "id">
 
 export type QcRecordOrderByWithAggregationInput = {
+  id?: Prisma.SortOrder
   sareeId?: Prisma.SortOrder
   weaverId?: Prisma.SortOrderInput | Prisma.SortOrder
   factoryLoomId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -380,6 +391,7 @@ export type QcRecordScalarWhereWithAggregatesInput = {
   AND?: Prisma.QcRecordScalarWhereWithAggregatesInput | Prisma.QcRecordScalarWhereWithAggregatesInput[]
   OR?: Prisma.QcRecordScalarWhereWithAggregatesInput[]
   NOT?: Prisma.QcRecordScalarWhereWithAggregatesInput | Prisma.QcRecordScalarWhereWithAggregatesInput[]
+  id?: Prisma.StringWithAggregatesFilter<"QcRecord"> | string
   sareeId?: Prisma.StringWithAggregatesFilter<"QcRecord"> | string
   weaverId?: Prisma.StringNullableWithAggregatesFilter<"QcRecord"> | string | null
   factoryLoomId?: Prisma.StringNullableWithAggregatesFilter<"QcRecord"> | string | null
@@ -398,6 +410,7 @@ export type QcRecordScalarWhereWithAggregatesInput = {
 }
 
 export type QcRecordCreateInput = {
+  id?: string
   batchId?: string | null
   loomNumber?: string | null
   result: $Enums.QcResult
@@ -409,13 +422,14 @@ export type QcRecordCreateInput = {
   qcDate?: Date | string
   photoUrl?: string | null
   notes?: string | null
-  batchSareeRow: Prisma.BatchSareeRowCreateNestedOneWithoutQcRecordInput
+  batchSareeRow: Prisma.BatchSareeRowCreateNestedOneWithoutQcRecordsInput
   weaver?: Prisma.WeaverCreateNestedOneWithoutQcRecordsInput
   factoryLoom?: Prisma.FactoryLoomCreateNestedOneWithoutQcRecordsInput
   inspectedBy: Prisma.UserCreateNestedOneWithoutInspectedQcRecordsInput
 }
 
 export type QcRecordUncheckedCreateInput = {
+  id?: string
   sareeId: string
   weaverId?: string | null
   factoryLoomId?: string | null
@@ -434,6 +448,7 @@ export type QcRecordUncheckedCreateInput = {
 }
 
 export type QcRecordUpdateInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
   batchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   loomNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   result?: Prisma.EnumQcResultFieldUpdateOperationsInput | $Enums.QcResult
@@ -445,13 +460,14 @@ export type QcRecordUpdateInput = {
   qcDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  batchSareeRow?: Prisma.BatchSareeRowUpdateOneRequiredWithoutQcRecordNestedInput
+  batchSareeRow?: Prisma.BatchSareeRowUpdateOneRequiredWithoutQcRecordsNestedInput
   weaver?: Prisma.WeaverUpdateOneWithoutQcRecordsNestedInput
   factoryLoom?: Prisma.FactoryLoomUpdateOneWithoutQcRecordsNestedInput
   inspectedBy?: Prisma.UserUpdateOneRequiredWithoutInspectedQcRecordsNestedInput
 }
 
 export type QcRecordUncheckedUpdateInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
   sareeId?: Prisma.StringFieldUpdateOperationsInput | string
   weaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   factoryLoomId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -470,6 +486,7 @@ export type QcRecordUncheckedUpdateInput = {
 }
 
 export type QcRecordCreateManyInput = {
+  id?: string
   sareeId: string
   weaverId?: string | null
   factoryLoomId?: string | null
@@ -488,6 +505,7 @@ export type QcRecordCreateManyInput = {
 }
 
 export type QcRecordUpdateManyMutationInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
   batchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   loomNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   result?: Prisma.EnumQcResultFieldUpdateOperationsInput | $Enums.QcResult
@@ -502,6 +520,7 @@ export type QcRecordUpdateManyMutationInput = {
 }
 
 export type QcRecordUncheckedUpdateManyInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
   sareeId?: Prisma.StringFieldUpdateOperationsInput | string
   weaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   factoryLoomId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -529,12 +548,8 @@ export type QcRecordOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
-export type QcRecordNullableScalarRelationFilter = {
-  is?: Prisma.QcRecordWhereInput | null
-  isNot?: Prisma.QcRecordWhereInput | null
-}
-
 export type QcRecordCountOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   sareeId?: Prisma.SortOrder
   weaverId?: Prisma.SortOrder
   factoryLoomId?: Prisma.SortOrder
@@ -559,6 +574,7 @@ export type QcRecordAvgOrderByAggregateInput = {
 }
 
 export type QcRecordMaxOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   sareeId?: Prisma.SortOrder
   weaverId?: Prisma.SortOrder
   factoryLoomId?: Prisma.SortOrder
@@ -576,6 +592,7 @@ export type QcRecordMaxOrderByAggregateInput = {
 }
 
 export type QcRecordMinOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   sareeId?: Prisma.SortOrder
   weaverId?: Prisma.SortOrder
   factoryLoomId?: Prisma.SortOrder
@@ -724,36 +741,46 @@ export type QcRecordUncheckedUpdateManyWithoutFactoryLoomNestedInput = {
   deleteMany?: Prisma.QcRecordScalarWhereInput | Prisma.QcRecordScalarWhereInput[]
 }
 
-export type QcRecordCreateNestedOneWithoutBatchSareeRowInput = {
-  create?: Prisma.XOR<Prisma.QcRecordCreateWithoutBatchSareeRowInput, Prisma.QcRecordUncheckedCreateWithoutBatchSareeRowInput>
-  connectOrCreate?: Prisma.QcRecordCreateOrConnectWithoutBatchSareeRowInput
-  connect?: Prisma.QcRecordWhereUniqueInput
+export type QcRecordCreateNestedManyWithoutBatchSareeRowInput = {
+  create?: Prisma.XOR<Prisma.QcRecordCreateWithoutBatchSareeRowInput, Prisma.QcRecordUncheckedCreateWithoutBatchSareeRowInput> | Prisma.QcRecordCreateWithoutBatchSareeRowInput[] | Prisma.QcRecordUncheckedCreateWithoutBatchSareeRowInput[]
+  connectOrCreate?: Prisma.QcRecordCreateOrConnectWithoutBatchSareeRowInput | Prisma.QcRecordCreateOrConnectWithoutBatchSareeRowInput[]
+  createMany?: Prisma.QcRecordCreateManyBatchSareeRowInputEnvelope
+  connect?: Prisma.QcRecordWhereUniqueInput | Prisma.QcRecordWhereUniqueInput[]
 }
 
-export type QcRecordUncheckedCreateNestedOneWithoutBatchSareeRowInput = {
-  create?: Prisma.XOR<Prisma.QcRecordCreateWithoutBatchSareeRowInput, Prisma.QcRecordUncheckedCreateWithoutBatchSareeRowInput>
-  connectOrCreate?: Prisma.QcRecordCreateOrConnectWithoutBatchSareeRowInput
-  connect?: Prisma.QcRecordWhereUniqueInput
+export type QcRecordUncheckedCreateNestedManyWithoutBatchSareeRowInput = {
+  create?: Prisma.XOR<Prisma.QcRecordCreateWithoutBatchSareeRowInput, Prisma.QcRecordUncheckedCreateWithoutBatchSareeRowInput> | Prisma.QcRecordCreateWithoutBatchSareeRowInput[] | Prisma.QcRecordUncheckedCreateWithoutBatchSareeRowInput[]
+  connectOrCreate?: Prisma.QcRecordCreateOrConnectWithoutBatchSareeRowInput | Prisma.QcRecordCreateOrConnectWithoutBatchSareeRowInput[]
+  createMany?: Prisma.QcRecordCreateManyBatchSareeRowInputEnvelope
+  connect?: Prisma.QcRecordWhereUniqueInput | Prisma.QcRecordWhereUniqueInput[]
 }
 
-export type QcRecordUpdateOneWithoutBatchSareeRowNestedInput = {
-  create?: Prisma.XOR<Prisma.QcRecordCreateWithoutBatchSareeRowInput, Prisma.QcRecordUncheckedCreateWithoutBatchSareeRowInput>
-  connectOrCreate?: Prisma.QcRecordCreateOrConnectWithoutBatchSareeRowInput
-  upsert?: Prisma.QcRecordUpsertWithoutBatchSareeRowInput
-  disconnect?: Prisma.QcRecordWhereInput | boolean
-  delete?: Prisma.QcRecordWhereInput | boolean
-  connect?: Prisma.QcRecordWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.QcRecordUpdateToOneWithWhereWithoutBatchSareeRowInput, Prisma.QcRecordUpdateWithoutBatchSareeRowInput>, Prisma.QcRecordUncheckedUpdateWithoutBatchSareeRowInput>
+export type QcRecordUpdateManyWithoutBatchSareeRowNestedInput = {
+  create?: Prisma.XOR<Prisma.QcRecordCreateWithoutBatchSareeRowInput, Prisma.QcRecordUncheckedCreateWithoutBatchSareeRowInput> | Prisma.QcRecordCreateWithoutBatchSareeRowInput[] | Prisma.QcRecordUncheckedCreateWithoutBatchSareeRowInput[]
+  connectOrCreate?: Prisma.QcRecordCreateOrConnectWithoutBatchSareeRowInput | Prisma.QcRecordCreateOrConnectWithoutBatchSareeRowInput[]
+  upsert?: Prisma.QcRecordUpsertWithWhereUniqueWithoutBatchSareeRowInput | Prisma.QcRecordUpsertWithWhereUniqueWithoutBatchSareeRowInput[]
+  createMany?: Prisma.QcRecordCreateManyBatchSareeRowInputEnvelope
+  set?: Prisma.QcRecordWhereUniqueInput | Prisma.QcRecordWhereUniqueInput[]
+  disconnect?: Prisma.QcRecordWhereUniqueInput | Prisma.QcRecordWhereUniqueInput[]
+  delete?: Prisma.QcRecordWhereUniqueInput | Prisma.QcRecordWhereUniqueInput[]
+  connect?: Prisma.QcRecordWhereUniqueInput | Prisma.QcRecordWhereUniqueInput[]
+  update?: Prisma.QcRecordUpdateWithWhereUniqueWithoutBatchSareeRowInput | Prisma.QcRecordUpdateWithWhereUniqueWithoutBatchSareeRowInput[]
+  updateMany?: Prisma.QcRecordUpdateManyWithWhereWithoutBatchSareeRowInput | Prisma.QcRecordUpdateManyWithWhereWithoutBatchSareeRowInput[]
+  deleteMany?: Prisma.QcRecordScalarWhereInput | Prisma.QcRecordScalarWhereInput[]
 }
 
-export type QcRecordUncheckedUpdateOneWithoutBatchSareeRowNestedInput = {
-  create?: Prisma.XOR<Prisma.QcRecordCreateWithoutBatchSareeRowInput, Prisma.QcRecordUncheckedCreateWithoutBatchSareeRowInput>
-  connectOrCreate?: Prisma.QcRecordCreateOrConnectWithoutBatchSareeRowInput
-  upsert?: Prisma.QcRecordUpsertWithoutBatchSareeRowInput
-  disconnect?: Prisma.QcRecordWhereInput | boolean
-  delete?: Prisma.QcRecordWhereInput | boolean
-  connect?: Prisma.QcRecordWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.QcRecordUpdateToOneWithWhereWithoutBatchSareeRowInput, Prisma.QcRecordUpdateWithoutBatchSareeRowInput>, Prisma.QcRecordUncheckedUpdateWithoutBatchSareeRowInput>
+export type QcRecordUncheckedUpdateManyWithoutBatchSareeRowNestedInput = {
+  create?: Prisma.XOR<Prisma.QcRecordCreateWithoutBatchSareeRowInput, Prisma.QcRecordUncheckedCreateWithoutBatchSareeRowInput> | Prisma.QcRecordCreateWithoutBatchSareeRowInput[] | Prisma.QcRecordUncheckedCreateWithoutBatchSareeRowInput[]
+  connectOrCreate?: Prisma.QcRecordCreateOrConnectWithoutBatchSareeRowInput | Prisma.QcRecordCreateOrConnectWithoutBatchSareeRowInput[]
+  upsert?: Prisma.QcRecordUpsertWithWhereUniqueWithoutBatchSareeRowInput | Prisma.QcRecordUpsertWithWhereUniqueWithoutBatchSareeRowInput[]
+  createMany?: Prisma.QcRecordCreateManyBatchSareeRowInputEnvelope
+  set?: Prisma.QcRecordWhereUniqueInput | Prisma.QcRecordWhereUniqueInput[]
+  disconnect?: Prisma.QcRecordWhereUniqueInput | Prisma.QcRecordWhereUniqueInput[]
+  delete?: Prisma.QcRecordWhereUniqueInput | Prisma.QcRecordWhereUniqueInput[]
+  connect?: Prisma.QcRecordWhereUniqueInput | Prisma.QcRecordWhereUniqueInput[]
+  update?: Prisma.QcRecordUpdateWithWhereUniqueWithoutBatchSareeRowInput | Prisma.QcRecordUpdateWithWhereUniqueWithoutBatchSareeRowInput[]
+  updateMany?: Prisma.QcRecordUpdateManyWithWhereWithoutBatchSareeRowInput | Prisma.QcRecordUpdateManyWithWhereWithoutBatchSareeRowInput[]
+  deleteMany?: Prisma.QcRecordScalarWhereInput | Prisma.QcRecordScalarWhereInput[]
 }
 
 export type QcRecordCreatedefectsInput = {
@@ -770,6 +797,7 @@ export type QcRecordUpdatedefectsInput = {
 }
 
 export type QcRecordCreateWithoutInspectedByInput = {
+  id?: string
   batchId?: string | null
   loomNumber?: string | null
   result: $Enums.QcResult
@@ -781,12 +809,13 @@ export type QcRecordCreateWithoutInspectedByInput = {
   qcDate?: Date | string
   photoUrl?: string | null
   notes?: string | null
-  batchSareeRow: Prisma.BatchSareeRowCreateNestedOneWithoutQcRecordInput
+  batchSareeRow: Prisma.BatchSareeRowCreateNestedOneWithoutQcRecordsInput
   weaver?: Prisma.WeaverCreateNestedOneWithoutQcRecordsInput
   factoryLoom?: Prisma.FactoryLoomCreateNestedOneWithoutQcRecordsInput
 }
 
 export type QcRecordUncheckedCreateWithoutInspectedByInput = {
+  id?: string
   sareeId: string
   weaverId?: string | null
   factoryLoomId?: string | null
@@ -833,6 +862,7 @@ export type QcRecordScalarWhereInput = {
   AND?: Prisma.QcRecordScalarWhereInput | Prisma.QcRecordScalarWhereInput[]
   OR?: Prisma.QcRecordScalarWhereInput[]
   NOT?: Prisma.QcRecordScalarWhereInput | Prisma.QcRecordScalarWhereInput[]
+  id?: Prisma.StringFilter<"QcRecord"> | string
   sareeId?: Prisma.StringFilter<"QcRecord"> | string
   weaverId?: Prisma.StringNullableFilter<"QcRecord"> | string | null
   factoryLoomId?: Prisma.StringNullableFilter<"QcRecord"> | string | null
@@ -851,6 +881,7 @@ export type QcRecordScalarWhereInput = {
 }
 
 export type QcRecordCreateWithoutWeaverInput = {
+  id?: string
   batchId?: string | null
   loomNumber?: string | null
   result: $Enums.QcResult
@@ -862,12 +893,13 @@ export type QcRecordCreateWithoutWeaverInput = {
   qcDate?: Date | string
   photoUrl?: string | null
   notes?: string | null
-  batchSareeRow: Prisma.BatchSareeRowCreateNestedOneWithoutQcRecordInput
+  batchSareeRow: Prisma.BatchSareeRowCreateNestedOneWithoutQcRecordsInput
   factoryLoom?: Prisma.FactoryLoomCreateNestedOneWithoutQcRecordsInput
   inspectedBy: Prisma.UserCreateNestedOneWithoutInspectedQcRecordsInput
 }
 
 export type QcRecordUncheckedCreateWithoutWeaverInput = {
+  id?: string
   sareeId: string
   factoryLoomId?: string | null
   batchId?: string | null
@@ -911,6 +943,7 @@ export type QcRecordUpdateManyWithWhereWithoutWeaverInput = {
 }
 
 export type QcRecordCreateWithoutFactoryLoomInput = {
+  id?: string
   batchId?: string | null
   loomNumber?: string | null
   result: $Enums.QcResult
@@ -922,12 +955,13 @@ export type QcRecordCreateWithoutFactoryLoomInput = {
   qcDate?: Date | string
   photoUrl?: string | null
   notes?: string | null
-  batchSareeRow: Prisma.BatchSareeRowCreateNestedOneWithoutQcRecordInput
+  batchSareeRow: Prisma.BatchSareeRowCreateNestedOneWithoutQcRecordsInput
   weaver?: Prisma.WeaverCreateNestedOneWithoutQcRecordsInput
   inspectedBy: Prisma.UserCreateNestedOneWithoutInspectedQcRecordsInput
 }
 
 export type QcRecordUncheckedCreateWithoutFactoryLoomInput = {
+  id?: string
   sareeId: string
   weaverId?: string | null
   batchId?: string | null
@@ -971,6 +1005,7 @@ export type QcRecordUpdateManyWithWhereWithoutFactoryLoomInput = {
 }
 
 export type QcRecordCreateWithoutBatchSareeRowInput = {
+  id?: string
   batchId?: string | null
   loomNumber?: string | null
   result: $Enums.QcResult
@@ -988,6 +1023,7 @@ export type QcRecordCreateWithoutBatchSareeRowInput = {
 }
 
 export type QcRecordUncheckedCreateWithoutBatchSareeRowInput = {
+  id?: string
   weaverId?: string | null
   factoryLoomId?: string | null
   batchId?: string | null
@@ -1009,52 +1045,29 @@ export type QcRecordCreateOrConnectWithoutBatchSareeRowInput = {
   create: Prisma.XOR<Prisma.QcRecordCreateWithoutBatchSareeRowInput, Prisma.QcRecordUncheckedCreateWithoutBatchSareeRowInput>
 }
 
-export type QcRecordUpsertWithoutBatchSareeRowInput = {
-  update: Prisma.XOR<Prisma.QcRecordUpdateWithoutBatchSareeRowInput, Prisma.QcRecordUncheckedUpdateWithoutBatchSareeRowInput>
-  create: Prisma.XOR<Prisma.QcRecordCreateWithoutBatchSareeRowInput, Prisma.QcRecordUncheckedCreateWithoutBatchSareeRowInput>
-  where?: Prisma.QcRecordWhereInput
+export type QcRecordCreateManyBatchSareeRowInputEnvelope = {
+  data: Prisma.QcRecordCreateManyBatchSareeRowInput | Prisma.QcRecordCreateManyBatchSareeRowInput[]
+  skipDuplicates?: boolean
 }
 
-export type QcRecordUpdateToOneWithWhereWithoutBatchSareeRowInput = {
-  where?: Prisma.QcRecordWhereInput
+export type QcRecordUpsertWithWhereUniqueWithoutBatchSareeRowInput = {
+  where: Prisma.QcRecordWhereUniqueInput
+  update: Prisma.XOR<Prisma.QcRecordUpdateWithoutBatchSareeRowInput, Prisma.QcRecordUncheckedUpdateWithoutBatchSareeRowInput>
+  create: Prisma.XOR<Prisma.QcRecordCreateWithoutBatchSareeRowInput, Prisma.QcRecordUncheckedCreateWithoutBatchSareeRowInput>
+}
+
+export type QcRecordUpdateWithWhereUniqueWithoutBatchSareeRowInput = {
+  where: Prisma.QcRecordWhereUniqueInput
   data: Prisma.XOR<Prisma.QcRecordUpdateWithoutBatchSareeRowInput, Prisma.QcRecordUncheckedUpdateWithoutBatchSareeRowInput>
 }
 
-export type QcRecordUpdateWithoutBatchSareeRowInput = {
-  batchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  loomNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  result?: Prisma.EnumQcResultFieldUpdateOperationsInput | $Enums.QcResult
-  defects?: Prisma.QcRecordUpdatedefectsInput | string[]
-  makingCharge?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  deduction?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  payable?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  receivedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  qcDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  weaver?: Prisma.WeaverUpdateOneWithoutQcRecordsNestedInput
-  factoryLoom?: Prisma.FactoryLoomUpdateOneWithoutQcRecordsNestedInput
-  inspectedBy?: Prisma.UserUpdateOneRequiredWithoutInspectedQcRecordsNestedInput
-}
-
-export type QcRecordUncheckedUpdateWithoutBatchSareeRowInput = {
-  weaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  factoryLoomId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  batchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  loomNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  result?: Prisma.EnumQcResultFieldUpdateOperationsInput | $Enums.QcResult
-  defects?: Prisma.QcRecordUpdatedefectsInput | string[]
-  makingCharge?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  deduction?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  payable?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  receivedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  qcDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  inspectedById?: Prisma.StringFieldUpdateOperationsInput | string
+export type QcRecordUpdateManyWithWhereWithoutBatchSareeRowInput = {
+  where: Prisma.QcRecordScalarWhereInput
+  data: Prisma.XOR<Prisma.QcRecordUpdateManyMutationInput, Prisma.QcRecordUncheckedUpdateManyWithoutBatchSareeRowInput>
 }
 
 export type QcRecordCreateManyInspectedByInput = {
+  id?: string
   sareeId: string
   weaverId?: string | null
   factoryLoomId?: string | null
@@ -1072,6 +1085,7 @@ export type QcRecordCreateManyInspectedByInput = {
 }
 
 export type QcRecordUpdateWithoutInspectedByInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
   batchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   loomNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   result?: Prisma.EnumQcResultFieldUpdateOperationsInput | $Enums.QcResult
@@ -1083,12 +1097,13 @@ export type QcRecordUpdateWithoutInspectedByInput = {
   qcDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  batchSareeRow?: Prisma.BatchSareeRowUpdateOneRequiredWithoutQcRecordNestedInput
+  batchSareeRow?: Prisma.BatchSareeRowUpdateOneRequiredWithoutQcRecordsNestedInput
   weaver?: Prisma.WeaverUpdateOneWithoutQcRecordsNestedInput
   factoryLoom?: Prisma.FactoryLoomUpdateOneWithoutQcRecordsNestedInput
 }
 
 export type QcRecordUncheckedUpdateWithoutInspectedByInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
   sareeId?: Prisma.StringFieldUpdateOperationsInput | string
   weaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   factoryLoomId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1106,6 +1121,7 @@ export type QcRecordUncheckedUpdateWithoutInspectedByInput = {
 }
 
 export type QcRecordUncheckedUpdateManyWithoutInspectedByInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
   sareeId?: Prisma.StringFieldUpdateOperationsInput | string
   weaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   factoryLoomId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1123,6 +1139,7 @@ export type QcRecordUncheckedUpdateManyWithoutInspectedByInput = {
 }
 
 export type QcRecordCreateManyWeaverInput = {
+  id?: string
   sareeId: string
   factoryLoomId?: string | null
   batchId?: string | null
@@ -1140,6 +1157,7 @@ export type QcRecordCreateManyWeaverInput = {
 }
 
 export type QcRecordUpdateWithoutWeaverInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
   batchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   loomNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   result?: Prisma.EnumQcResultFieldUpdateOperationsInput | $Enums.QcResult
@@ -1151,12 +1169,13 @@ export type QcRecordUpdateWithoutWeaverInput = {
   qcDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  batchSareeRow?: Prisma.BatchSareeRowUpdateOneRequiredWithoutQcRecordNestedInput
+  batchSareeRow?: Prisma.BatchSareeRowUpdateOneRequiredWithoutQcRecordsNestedInput
   factoryLoom?: Prisma.FactoryLoomUpdateOneWithoutQcRecordsNestedInput
   inspectedBy?: Prisma.UserUpdateOneRequiredWithoutInspectedQcRecordsNestedInput
 }
 
 export type QcRecordUncheckedUpdateWithoutWeaverInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
   sareeId?: Prisma.StringFieldUpdateOperationsInput | string
   factoryLoomId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   batchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1174,6 +1193,7 @@ export type QcRecordUncheckedUpdateWithoutWeaverInput = {
 }
 
 export type QcRecordUncheckedUpdateManyWithoutWeaverInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
   sareeId?: Prisma.StringFieldUpdateOperationsInput | string
   factoryLoomId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   batchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1191,6 +1211,7 @@ export type QcRecordUncheckedUpdateManyWithoutWeaverInput = {
 }
 
 export type QcRecordCreateManyFactoryLoomInput = {
+  id?: string
   sareeId: string
   weaverId?: string | null
   batchId?: string | null
@@ -1208,6 +1229,7 @@ export type QcRecordCreateManyFactoryLoomInput = {
 }
 
 export type QcRecordUpdateWithoutFactoryLoomInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
   batchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   loomNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   result?: Prisma.EnumQcResultFieldUpdateOperationsInput | $Enums.QcResult
@@ -1219,12 +1241,13 @@ export type QcRecordUpdateWithoutFactoryLoomInput = {
   qcDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  batchSareeRow?: Prisma.BatchSareeRowUpdateOneRequiredWithoutQcRecordNestedInput
+  batchSareeRow?: Prisma.BatchSareeRowUpdateOneRequiredWithoutQcRecordsNestedInput
   weaver?: Prisma.WeaverUpdateOneWithoutQcRecordsNestedInput
   inspectedBy?: Prisma.UserUpdateOneRequiredWithoutInspectedQcRecordsNestedInput
 }
 
 export type QcRecordUncheckedUpdateWithoutFactoryLoomInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
   sareeId?: Prisma.StringFieldUpdateOperationsInput | string
   weaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   batchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1242,8 +1265,81 @@ export type QcRecordUncheckedUpdateWithoutFactoryLoomInput = {
 }
 
 export type QcRecordUncheckedUpdateManyWithoutFactoryLoomInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
   sareeId?: Prisma.StringFieldUpdateOperationsInput | string
   weaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  batchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  loomNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  result?: Prisma.EnumQcResultFieldUpdateOperationsInput | $Enums.QcResult
+  defects?: Prisma.QcRecordUpdatedefectsInput | string[]
+  makingCharge?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  deduction?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  payable?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  receivedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  qcDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  inspectedById?: Prisma.StringFieldUpdateOperationsInput | string
+}
+
+export type QcRecordCreateManyBatchSareeRowInput = {
+  id?: string
+  weaverId?: string | null
+  factoryLoomId?: string | null
+  batchId?: string | null
+  loomNumber?: string | null
+  result: $Enums.QcResult
+  defects?: Prisma.QcRecordCreatedefectsInput | string[]
+  makingCharge: runtime.Decimal | runtime.DecimalJsLike | number | string
+  deduction?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  payable: runtime.Decimal | runtime.DecimalJsLike | number | string
+  receivedDate?: Date | string | null
+  qcDate?: Date | string
+  photoUrl?: string | null
+  notes?: string | null
+  inspectedById: string
+}
+
+export type QcRecordUpdateWithoutBatchSareeRowInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  batchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  loomNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  result?: Prisma.EnumQcResultFieldUpdateOperationsInput | $Enums.QcResult
+  defects?: Prisma.QcRecordUpdatedefectsInput | string[]
+  makingCharge?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  deduction?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  payable?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  receivedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  qcDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  weaver?: Prisma.WeaverUpdateOneWithoutQcRecordsNestedInput
+  factoryLoom?: Prisma.FactoryLoomUpdateOneWithoutQcRecordsNestedInput
+  inspectedBy?: Prisma.UserUpdateOneRequiredWithoutInspectedQcRecordsNestedInput
+}
+
+export type QcRecordUncheckedUpdateWithoutBatchSareeRowInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  weaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  factoryLoomId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  batchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  loomNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  result?: Prisma.EnumQcResultFieldUpdateOperationsInput | $Enums.QcResult
+  defects?: Prisma.QcRecordUpdatedefectsInput | string[]
+  makingCharge?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  deduction?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  payable?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  receivedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  qcDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  photoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  inspectedById?: Prisma.StringFieldUpdateOperationsInput | string
+}
+
+export type QcRecordUncheckedUpdateManyWithoutBatchSareeRowInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  weaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  factoryLoomId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   batchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   loomNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   result?: Prisma.EnumQcResultFieldUpdateOperationsInput | $Enums.QcResult
@@ -1261,6 +1357,7 @@ export type QcRecordUncheckedUpdateManyWithoutFactoryLoomInput = {
 
 
 export type QcRecordSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
+  id?: boolean
   sareeId?: boolean
   weaverId?: boolean
   factoryLoomId?: boolean
@@ -1283,6 +1380,7 @@ export type QcRecordSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
 }, ExtArgs["result"]["qcRecord"]>
 
 export type QcRecordSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
+  id?: boolean
   sareeId?: boolean
   weaverId?: boolean
   factoryLoomId?: boolean
@@ -1305,6 +1403,7 @@ export type QcRecordSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
 }, ExtArgs["result"]["qcRecord"]>
 
 export type QcRecordSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
+  id?: boolean
   sareeId?: boolean
   weaverId?: boolean
   factoryLoomId?: boolean
@@ -1327,6 +1426,7 @@ export type QcRecordSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
 }, ExtArgs["result"]["qcRecord"]>
 
 export type QcRecordSelectScalar = {
+  id?: boolean
   sareeId?: boolean
   weaverId?: boolean
   factoryLoomId?: boolean
@@ -1344,7 +1444,7 @@ export type QcRecordSelectScalar = {
   inspectedById?: boolean
 }
 
-export type QcRecordOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"sareeId" | "weaverId" | "factoryLoomId" | "batchId" | "loomNumber" | "result" | "defects" | "makingCharge" | "deduction" | "payable" | "receivedDate" | "qcDate" | "photoUrl" | "notes" | "inspectedById", ExtArgs["result"]["qcRecord"]>
+export type QcRecordOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "sareeId" | "weaverId" | "factoryLoomId" | "batchId" | "loomNumber" | "result" | "defects" | "makingCharge" | "deduction" | "payable" | "receivedDate" | "qcDate" | "photoUrl" | "notes" | "inspectedById", ExtArgs["result"]["qcRecord"]>
 export type QcRecordInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   batchSareeRow?: boolean | Prisma.BatchSareeRowDefaultArgs<ExtArgs>
   weaver?: boolean | Prisma.QcRecord$weaverArgs<ExtArgs>
@@ -1373,6 +1473,7 @@ export type $QcRecordPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     inspectedBy: Prisma.$UserPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
+    id: string
     sareeId: string
     weaverId: string | null
     factoryLoomId: string | null
@@ -1471,8 +1572,8 @@ export interface QcRecordDelegate<ExtArgs extends runtime.Types.Extensions.Inter
    * // Get first 10 QcRecords
    * const qcRecords = await prisma.qcRecord.findMany({ take: 10 })
    * 
-   * // Only select the `sareeId`
-   * const qcRecordWithSareeIdOnly = await prisma.qcRecord.findMany({ select: { sareeId: true } })
+   * // Only select the `id`
+   * const qcRecordWithIdOnly = await prisma.qcRecord.findMany({ select: { id: true } })
    * 
    */
   findMany<T extends QcRecordFindManyArgs>(args?: Prisma.SelectSubset<T, QcRecordFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$QcRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
@@ -1516,9 +1617,9 @@ export interface QcRecordDelegate<ExtArgs extends runtime.Types.Extensions.Inter
    *   ]
    * })
    * 
-   * // Create many QcRecords and only return the `sareeId`
-   * const qcRecordWithSareeIdOnly = await prisma.qcRecord.createManyAndReturn({
-   *   select: { sareeId: true },
+   * // Create many QcRecords and only return the `id`
+   * const qcRecordWithIdOnly = await prisma.qcRecord.createManyAndReturn({
+   *   select: { id: true },
    *   data: [
    *     // ... provide data here
    *   ]
@@ -1607,9 +1708,9 @@ export interface QcRecordDelegate<ExtArgs extends runtime.Types.Extensions.Inter
    *   ]
    * })
    * 
-   * // Update zero or more QcRecords and only return the `sareeId`
-   * const qcRecordWithSareeIdOnly = await prisma.qcRecord.updateManyAndReturn({
-   *   select: { sareeId: true },
+   * // Update zero or more QcRecords and only return the `id`
+   * const qcRecordWithIdOnly = await prisma.qcRecord.updateManyAndReturn({
+   *   select: { id: true },
    *   where: {
    *     // ... provide filter here
    *   },
@@ -1815,6 +1916,7 @@ export interface Prisma__QcRecordClient<T, Null = never, ExtArgs extends runtime
  * Fields of the QcRecord model
  */
 export interface QcRecordFieldRefs {
+  readonly id: Prisma.FieldRef<"QcRecord", 'String'>
   readonly sareeId: Prisma.FieldRef<"QcRecord", 'String'>
   readonly weaverId: Prisma.FieldRef<"QcRecord", 'String'>
   readonly factoryLoomId: Prisma.FieldRef<"QcRecord", 'String'>

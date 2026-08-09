@@ -1,8 +1,8 @@
 import React from "react";
-import { CheckCircle2, AlertTriangle, Square } from "lucide-react";
+import { CheckCircle2, AlertTriangle, Square, CheckSquare } from "lucide-react";
 import { C, F } from "../tokens";
 import { type WeaverBatchData, type WEAVERS } from "./weaversData";
-import { IconButton, Select, SelectItem } from "../../../../../shared/ui/primitives";
+import { Button, IconButton, Select, SelectItem } from "../../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
 
 interface SareeSelectionTableProps {
@@ -11,8 +11,9 @@ interface SareeSelectionTableProps {
   doneCount: number;
   sareeSort: "serial" | "status";
   setSareeSort: (sort: "serial" | "status") => void;
-  selectedSareeNo: number | null;
+  selectedSareeNos: Set<number>;
   selectSareeSlot: (no: number) => void;
+  onToggleAll: () => void;
 }
 
 export function SareeSelectionTable({
@@ -21,17 +22,20 @@ export function SareeSelectionTable({
   doneCount,
   sareeSort,
   setSareeSort,
-  selectedSareeNo,
+  selectedSareeNos,
   selectSareeSlot,
+  onToggleAll,
 }: SareeSelectionTableProps) {
   const sortedSarees = [...currentBatch.sarees]
     .sort((a, b) => sareeSort === "status" ? a.status.localeCompare(b.status) : a.no - b.no);
+  const pendingSarees = currentBatch.sarees.filter(s => s.status === "pending");
+  const allPendingSelected = pendingSarees.length > 0 && pendingSarees.every(s => selectedSareeNos.has(s.no));
 
   const columns: ColumnDef<(typeof sortedSarees)[number]>[] = [
     {
       id: "select", header: "", accessor: () => null,
       cell: (_v, s) => {
-        const isSel = selectedSareeNo === s.no;
+        const isSel = selectedSareeNos.has(s.no);
         return s.status === "pending" ? (
           <IconButton
             icon={isSel ? CheckCircle2 : Square}
@@ -60,7 +64,7 @@ export function SareeSelectionTable({
     {
       id: "sareeId", header: "Saree ID", accessor: s => s.no,
       cell: (_v, s) => {
-        const isSel = selectedSareeNo === s.no;
+        const isSel = selectedSareeNos.has(s.no);
         const rowSareeId = s.sareeId;
         return s.status === "pending" ? (
           <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 700, color: isSel ? "#FFF" : C.burg, background: isSel ? C.burg : "rgba(107,26,42,0.08)", borderRadius: 6, padding: "3px 8px" }}>
@@ -122,7 +126,13 @@ export function SareeSelectionTable({
               {doneCount} complete
             </span>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {pendingSarees.length > 0 && (
+              <Button variant="link" onClick={onToggleAll} className="gap-1.5 p-0 px-1.5 py-1 text-xs text-[#69635E]">
+                {allPendingSelected ? <CheckSquare size={15} color={C.burg} /> : <Square size={15} color={C.muted} />}
+                {allPendingSelected ? "Deselect All" : "Select All"}
+              </Button>
+            )}
             <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Sort by</span>
             <Select value={sareeSort} onValueChange={v => setSareeSort(v as "serial" | "status")} size="sm">
               <SelectItem value="serial">Default (#)</SelectItem>
@@ -137,7 +147,7 @@ export function SareeSelectionTable({
             data={sortedSarees}
             getRowId={s => String(s.no)}
             onRowClick={s => { if (s.status === "pending") selectSareeSlot(s.no); }}
-            rowClassName={s => (selectedSareeNo === s.no ? "bk-saree-row-selected" : undefined)}
+            rowClassName={s => (selectedSareeNos.has(s.no) ? "bk-saree-row-selected" : undefined)}
           />
           <style>{`.bk-saree-row-selected { background: rgba(107,26,42,0.05) !important; }`}</style>
         </div>

@@ -36,7 +36,7 @@ export function BatchesSection({
   setActive: (t: Tab5) => void;
 }) {
   const { user } = useAuth();
-  const { error: batchesError } = useBatches();
+  const { batches, error: batchesError } = useBatches();
   const { weaverId } = useCurrentWeaver();
   const { getQcForWeaver } = useQc();
   const { getPaymentsForWeaver } = useWeaverPayments();
@@ -47,7 +47,13 @@ export function BatchesSection({
     const d = new Date(q.qcDate);
     return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
   });
-  const sareesThisMonth = thisMonthQc.length;
+  const myRows = weaverId ? batches.flatMap(b => b.rows.filter(r => r.weaverId === weaverId)) : [];
+  const producedThisMonth = myRows.filter(r => {
+    if (!r.receivedAt) return false;
+    const d = new Date(r.receivedAt);
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  });
+  const sareesThisMonth = producedThisMonth.length;
   const passedCount = weaverQcRecords.filter(q => q.result === "passed").length;
   const qcPassPct = weaverQcRecords.length > 0 ? Math.round((passedCount / weaverQcRecords.length) * 100) : 100;
   const rejectedThisMonth = thisMonthQc.filter(q => q.result === "defective").length;

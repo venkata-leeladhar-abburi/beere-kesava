@@ -35,6 +35,21 @@ export class ReportsService {
     private readonly auditLog: AuditLogService,
   ) {}
 
+  // "Produced" = QC-passed OR finished via the Raise Quotation receive flow
+  // (FinishingAssignment.status RETURNED) — either milestone alone counts a
+  // saree as produced. Deduplicated by saree ID since a saree can satisfy
+  // both. Single source of truth so every admin-overview metric agrees.
+  private async getProducedSareeCount(): Promise<number> {
+    const [qcPassedRows, returnedAssignments] = await Promise.all([
+      this.prisma.batchSareeRow.findMany({ where: { qcPassed: true }, select: { sareeId: true } }),
+      this.prisma.finishingAssignment.findMany({ where: { status: "RETURNED" }, select: { sareeId: true } }),
+    ]);
+    const producedIds = new Set<string>();
+    qcPassedRows.forEach((r) => r.sareeId && producedIds.add(r.sareeId));
+    returnedAssignments.forEach((r) => producedIds.add(r.sareeId));
+    return producedIds.size;
+  }
+
   async getOutstandingPayments() {
     const [invoices, bulkOrders] = await Promise.all([
       this.prisma.invoice.findMany({
@@ -86,7 +101,7 @@ export class ReportsService {
 
   async getProductionSummary() {
     const [totalSarees, qcCounts, finishingCounts] = await Promise.all([
-      this.prisma.batchSareeRow.count({ where: { receivedAt: { not: null } } }),
+      this.getProducedSareeCount(),
       this.prisma.qcRecord.groupBy({ by: ["result"], _count: { _all: true } }),
       this.prisma.finishingAssignment.groupBy({ by: ["status"], _count: { _all: true } }),
     ]);
@@ -141,7 +156,7 @@ export class ReportsService {
       dispatchedCount,
     ] = await Promise.all([
       this.prisma.weaver.count({ where: { status: "ACTIVE" } }),
-      this.prisma.batchSareeRow.count({ where: { receivedAt: { not: null } } }),
+      this.getProducedSareeCount(),
       this.prisma.invoice.aggregate({
         where: { status: { in: [InvoiceStatus.PENDING, InvoiceStatus.PARTIAL, InvoiceStatus.OVERDUE] } },
         _sum: { total: true, paid: true },

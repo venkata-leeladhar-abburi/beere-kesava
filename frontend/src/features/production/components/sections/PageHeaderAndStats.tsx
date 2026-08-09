@@ -41,15 +41,32 @@ export function StatsStrip() {
 
   const now = new Date();
   const activeBatches = batches.filter(b => b.status === "active" || b.status === "draft");
-  // "Produced" means Worker Staff has actually received the saree from the
-  // weaver/loom — an assigned-but-not-yet-received row isn't produced yet.
-  const sareesInProduction = activeBatches.reduce(
-    (sum, b) => sum + b.rows.filter(r => r.sareeId && r.receivedAt && !r.qcPassed).length,
+  // "Sarees being produced" = every assigned saree, across every batch, that
+  // hasn't finished the pipeline yet — not QC-passed and not finished
+  // (finishing complete via either the Worker Staff receive-back flow or the
+  // Raise Quotation receive flow). Covers the whole in-progress lifecycle,
+  // not just rows Worker Staff has already received.
+  const sareesInProduction = batches.reduce(
+    (sum, b) => sum + b.rows.filter(r => r.sareeId && !r.qcPassed && !r.finished).length,
     0,
   );
-  const sareesCompletedThisMonth = qcRecords.filter(
-    r => r.result === "PASSED" && isSameMonth(r.qcDate, now),
-  ).length;
+  // "Completed this month" credits a saree either for passing QC this month
+  // or for finishing this month (via the Worker Staff receive-back flow or
+  // the Raise Quotation receive flow) — a saree whose QC pass fell in an
+  // earlier month still counts once it's actually finished this month.
+  // Deduplicated by saree ID so one saree can't be counted twice.
+  const completedThisMonthIds = new Set<string>();
+  qcRecords.forEach(r => {
+    if (r.result === "PASSED" && isSameMonth(r.qcDate, now)) completedThisMonthIds.add(r.sareeId);
+  });
+  batches.forEach(b => {
+    b.rows.forEach(r => {
+      if (r.sareeId && r.finished && r.finishedAt && isSameMonth(r.finishedAt, now)) {
+        completedThisMonthIds.add(r.sareeId);
+      }
+    });
+  });
+  const sareesCompletedThisMonth = completedThisMonthIds.size;
   // Only rows Worker Staff has actually received count as "waiting for QC" —
   // matches WorkerQC's own pending-queue definition (see WorkerQC.tsx).
   const sareesWaitingQc = batches.reduce(

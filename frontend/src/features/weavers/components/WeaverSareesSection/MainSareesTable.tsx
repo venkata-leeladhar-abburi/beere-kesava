@@ -45,7 +45,7 @@ export function MainSareesTable({
     ...(selectable ? [{
       id: "select",
       header: (() => {
-        const dispatchableVisible = visible.filter(r => r.finishingStatus === "completed").map(r => r.sareeId);
+        const dispatchableVisible = visible.filter(r => r.finishingStatus === "completed" && !r.dispatched).map(r => r.sareeId);
         return (
           <Checkbox
             checked={dispatchableVisible.length > 0 && dispatchableVisible.every(id => selectedIds?.has(id))}
@@ -57,7 +57,9 @@ export function MainSareesTable({
       cell: (_v: unknown, r: WeaverSareeRow) => {
         // Only sarees that finished the finishing step have an InventoryRecord
         // with status FINISHING_COMPLETE — dispatch 404s on anything else.
-        const dispatchable = r.finishingStatus === "completed";
+        // Already-dispatched sarees (including via a raised quotation)
+        // shouldn't be offered for dispatch again.
+        const dispatchable = r.finishingStatus === "completed" && !r.dispatched;
         return (
           <Checkbox
             checked={!!selectedIds?.has(r.sareeId)}

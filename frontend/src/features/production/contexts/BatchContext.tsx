@@ -25,6 +25,14 @@ export interface SareeRow {
   bulkOrderRef: string | null;   // null = General Stock
   bulkOrderLabel: string | null;
   qcPassed?: boolean;            // true once Worker Staff confirms QC passed for this saree
+  // True once the saree comes back from finishing — via either the plain
+  // Worker Staff receive-back flow or the Raise Quotation receive flow, both
+  // of which mark the FinishingAssignment RETURNED.
+  finished?: boolean;
+  // When `finished` became true (FinishingAssignment.updatedAt) — lets stats
+  // credit a saree to the month it actually finished, not the month it
+  // originally passed QC.
+  finishedAt?: string | null;
   receivedAt: string | null;     // set once Worker Staff receives the finished saree from the weaver/loom
   receivedWeight: string | null;
   receivedColor: string | null;
@@ -109,6 +117,8 @@ function backendBatchToRecord(
         bulkOrderRef: r.bulkOrderRef,
         bulkOrderLabel: r.bulkOrderRef,
         qcPassed: r.qcPassed ?? undefined,
+        finished: r.finishingAssignment?.status === "RETURNED",
+        finishedAt: r.finishingAssignment?.status === "RETURNED" ? r.finishingAssignment.updatedAt : null,
         receivedAt: r.receivedAt,
         receivedWeight: r.receivedWeight,
         receivedColor: r.receivedColor,

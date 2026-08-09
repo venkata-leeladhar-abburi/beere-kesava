@@ -9,6 +9,8 @@ import { WEAVERS } from "./data";
 import { ActionDialog } from "./common/primitives";
 import { PageHeader, StatsStrip, WeaverStatTile } from "./sections/PageHeaderAndStats";
 import { weaversApi } from "../../../shared/api/weavers";
+import { warpRequestsApi } from "../../../shared/api/warpRequests";
+import { paymentsApi } from "../../../shared/api/payments";
 import { resolveAssetUrl } from "../../../shared/api/uploads";
 import { WarpRequestsSection } from "./sections/WarpRequestsSection";
 import { AllWeaversControls } from "./sections/WeaverDirectoryControls";
@@ -110,12 +112,25 @@ export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: a
   const totalActiveWeavers = roster.filter(w => w.status === "ACTIVE").length;
   const totalSareesWoven = allStats.reduce((s, st) => s + st.totalSareesWoven, 0);
   const avgPassRate = allStats.length ? Math.round(allStats.reduce((s, st) => s + st.qcPassRate, 0) / allStats.length) : 0;
+
+  const { data: pendingWarpRequestsRes } = useQuery({
+    queryKey: ["warp-requests-pending", "weavers-page-stats"],
+    queryFn: () => warpRequestsApi.list("PENDING"),
+  });
+  const warpRequestsPending = pendingWarpRequestsRes?.items.length ?? 0;
+
+  const { data: paymentSummary } = useQuery({
+    queryKey: ["payments-summary", "weavers-page-stats"],
+    queryFn: () => paymentsApi.getSummary(),
+  });
+  const totalPaidToWeavers = paymentSummary?.weaverTotal ?? 0;
+
   const realStats: WeaverStatTile[] = [
     { label: "TOTAL ACTIVE WEAVERS", value: `${totalActiveWeavers}`, sub: "All currently working with the firm", gold: false, crimson: false },
     { label: "TOTAL SAREES WOVEN", value: `${totalSareesWoven}`, sub: "All-time, across all weavers", gold: false, crimson: false },
     { label: "QUALITY CHECK PASS RATE", value: `${avgPassRate}%`, sub: "Average across all weavers", gold: true, crimson: false },
-    { label: "WARP REQUESTS PENDING", value: "—", sub: "Not tracked by the backend yet", gold: false, crimson: false },
-    { label: "TOTAL PAID TO WEAVERS", value: "—", sub: "Not tracked by the backend yet", gold: false, crimson: false },
+    { label: "WARP REQUESTS PENDING", value: `${warpRequestsPending}`, sub: "Awaiting admin approval", gold: false, crimson: warpRequestsPending > 0 },
+    { label: "TOTAL PAID TO WEAVERS", value: `₹${totalPaidToWeavers.toLocaleString("en-IN")}`, sub: "All-time payments recorded", gold: false, crimson: false },
   ];
 
   if (activeWeaver) {

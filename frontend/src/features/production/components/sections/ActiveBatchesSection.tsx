@@ -29,9 +29,17 @@ export function ActiveBatchesSection({ onNavigate }: { onNavigate?: (tab: string
   const mappedContextBatches: Batch[] = contextBatches.map(br => {
     const completeCount = br.rows.filter(rowComplete).length;
     const qcPassedCount = br.rows.filter(r => r.qcPassed).length;
+    // "Produced" / "complete" — QC-passed OR finished via the Raise
+    // Quotation receive flow (either milestone alone counts a saree as
+    // produced). The batch reaches "finishing"/locked-from-edits once every
+    // assigned saree is produced by that definition.
+    const producedCount = br.rows.filter(r => r.qcPassed === true || r.finished === true).length;
+    // Only an explicit QC fail counts as rejected — a saree produced via the
+    // Raise Quotation flow without its own QC-pass flag isn't a rejection.
+    const rejectedCount = br.rows.filter(r => r.qcPassed === false).length;
 
     let stage: BatchStage = "weaving";
-    if (br.status === "completed") {
+    if (producedCount > 0 && producedCount === br.totalCount) {
       stage = "finishing";
     } else if (qcPassedCount > 0 && qcPassedCount === br.totalCount) {
       stage = "qc-passed";
@@ -82,10 +90,13 @@ export function ActiveBatchesSection({ onNavigate }: { onNavigate?: (tab: string
       started: formatDate(br.createdAt),
       expected: formatDate(br.dueDate),
       submitted: stage === "submitted" || stage === "qc-passed" || stage === "finishing" ? formatDate(br.updatedAt) : undefined,
-      done: completeCount,
+      done: producedCount,
       total: br.totalCount,
       qcPassed: qcPassedCount > 0 ? qcPassedCount : undefined,
-      isLive: true
+      rejected: rejectedCount,
+      // Not editable once every assigned saree has been produced (finished) —
+      // the batch is locked at that point.
+      isLive: producedCount < br.totalCount,
     };
   });
 

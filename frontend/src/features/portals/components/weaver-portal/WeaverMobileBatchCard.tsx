@@ -29,6 +29,9 @@ export function MobileBatchCard({ b, idx }: { b: MyBatchEntry; idx: number }) {
   const readyCount = b.myRows.filter(r => r.sareeId).length;
   const pendingCount = myCount - readyCount;
   const qcPassedCount = b.myRows.filter(r => r.qcPassed === true).length;
+  // Produced = QC-passed OR finished via the Raise Quotation receive flow —
+  // either milestone alone counts a saree as produced.
+  const producedCount = b.myRows.filter(r => r.qcPassed === true || r.finished === true).length;
   const sareeTypePairs = Array.from(new Map(b.myRows.filter(r => r.sareeTypeCode && r.sareeTypeName).map(r => [r.sareeTypeCode!, r.sareeTypeName!])).entries());
   const bulkOrders    = Array.from(new Set(b.myRows.map(r => r.bulkOrderLabel).filter(Boolean))) as string[];
   const generalStock  = b.myRows.filter(r => !r.bulkOrderLabel).length;
@@ -56,6 +59,16 @@ export function MobileBatchCard({ b, idx }: { b: MyBatchEntry; idx: number }) {
               {readyCount} with ID · {pendingCount} pending setup
             </div>
           )}
+        </div>
+
+        {/* Produced progress indicator — finished via either the Worker
+            Staff receive-back flow or the Raise Quotation receive flow */}
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
+            <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Produced: {producedCount} of {myCount}</span>
+            <span style={{ fontFamily: F.m, fontSize: 12, color: C.text, fontWeight: 600 }}>{Math.round((producedCount / myCount) * 100)}%</span>
+          </div>
+          <ProgressBar pct={(producedCount / myCount) * 100} height={7} />
         </div>
 
         {/* QC progress indicator */}
@@ -138,7 +151,7 @@ export function MobileBatchCard({ b, idx }: { b: MyBatchEntry; idx: number }) {
 
 // Completed batch card — shown only once ALL of the weaver's sarees in the batch have passed QC
 export function CompletedBatchCard({ b }: { b: MyBatchEntry }) {
-  const produced = b.myRows.length;
+  const produced = b.myRows.filter(r => r.qcPassed === true || r.finished === true).length;
   return (
     <div style={{ margin: "0 16px 12px", background: C.white, borderRadius: 18, border: `1px solid ${C.bdr}`, overflow: "hidden", boxShadow: "0 2px 16px rgba(44,24,16,0.07)" }}>
       {/* Color band + batch id */}

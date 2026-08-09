@@ -314,7 +314,7 @@ export type BatchSareeRowWhereInput = {
   design?: Prisma.XOR<Prisma.DesignLibraryNullableScalarRelationFilter, Prisma.DesignLibraryWhereInput> | null
   sareeType?: Prisma.XOR<Prisma.SareeTypeRateNullableScalarRelationFilter, Prisma.SareeTypeRateWhereInput> | null
   bulkOrder?: Prisma.XOR<Prisma.BulkOrderNullableScalarRelationFilter, Prisma.BulkOrderWhereInput> | null
-  qcRecord?: Prisma.XOR<Prisma.QcRecordNullableScalarRelationFilter, Prisma.QcRecordWhereInput> | null
+  qcRecords?: Prisma.QcRecordListRelationFilter
   finishingAssignment?: Prisma.XOR<Prisma.FinishingAssignmentNullableScalarRelationFilter, Prisma.FinishingAssignmentWhereInput> | null
 }
 
@@ -341,7 +341,7 @@ export type BatchSareeRowOrderByWithRelationInput = {
   design?: Prisma.DesignLibraryOrderByWithRelationInput
   sareeType?: Prisma.SareeTypeRateOrderByWithRelationInput
   bulkOrder?: Prisma.BulkOrderOrderByWithRelationInput
-  qcRecord?: Prisma.QcRecordOrderByWithRelationInput
+  qcRecords?: Prisma.QcRecordOrderByRelationAggregateInput
   finishingAssignment?: Prisma.FinishingAssignmentOrderByWithRelationInput
 }
 
@@ -372,7 +372,7 @@ export type BatchSareeRowWhereUniqueInput = Prisma.AtLeast<{
   design?: Prisma.XOR<Prisma.DesignLibraryNullableScalarRelationFilter, Prisma.DesignLibraryWhereInput> | null
   sareeType?: Prisma.XOR<Prisma.SareeTypeRateNullableScalarRelationFilter, Prisma.SareeTypeRateWhereInput> | null
   bulkOrder?: Prisma.XOR<Prisma.BulkOrderNullableScalarRelationFilter, Prisma.BulkOrderWhereInput> | null
-  qcRecord?: Prisma.XOR<Prisma.QcRecordNullableScalarRelationFilter, Prisma.QcRecordWhereInput> | null
+  qcRecords?: Prisma.QcRecordListRelationFilter
   finishingAssignment?: Prisma.XOR<Prisma.FinishingAssignmentNullableScalarRelationFilter, Prisma.FinishingAssignmentWhereInput> | null
 }, "id" | "sareeId" | "batchId_serial">
 
@@ -439,7 +439,7 @@ export type BatchSareeRowCreateInput = {
   design?: Prisma.DesignLibraryCreateNestedOneWithoutBatchSareeRowsInput
   sareeType?: Prisma.SareeTypeRateCreateNestedOneWithoutBatchSareeRowsInput
   bulkOrder?: Prisma.BulkOrderCreateNestedOneWithoutBatchSareeRowsInput
-  qcRecord?: Prisma.QcRecordCreateNestedOneWithoutBatchSareeRowInput
+  qcRecords?: Prisma.QcRecordCreateNestedManyWithoutBatchSareeRowInput
   finishingAssignment?: Prisma.FinishingAssignmentCreateNestedOneWithoutBatchSareeRowInput
 }
 
@@ -460,7 +460,7 @@ export type BatchSareeRowUncheckedCreateInput = {
   receivedWeight?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedColor?: string | null
   receivedPhotoUrl?: string | null
-  qcRecord?: Prisma.QcRecordUncheckedCreateNestedOneWithoutBatchSareeRowInput
+  qcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutBatchSareeRowInput
   finishingAssignment?: Prisma.FinishingAssignmentUncheckedCreateNestedOneWithoutBatchSareeRowInput
 }
 
@@ -481,7 +481,7 @@ export type BatchSareeRowUpdateInput = {
   design?: Prisma.DesignLibraryUpdateOneWithoutBatchSareeRowsNestedInput
   sareeType?: Prisma.SareeTypeRateUpdateOneWithoutBatchSareeRowsNestedInput
   bulkOrder?: Prisma.BulkOrderUpdateOneWithoutBatchSareeRowsNestedInput
-  qcRecord?: Prisma.QcRecordUpdateOneWithoutBatchSareeRowNestedInput
+  qcRecords?: Prisma.QcRecordUpdateManyWithoutBatchSareeRowNestedInput
   finishingAssignment?: Prisma.FinishingAssignmentUpdateOneWithoutBatchSareeRowNestedInput
 }
 
@@ -502,7 +502,7 @@ export type BatchSareeRowUncheckedUpdateInput = {
   receivedWeight?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   receivedPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  qcRecord?: Prisma.QcRecordUncheckedUpdateOneWithoutBatchSareeRowNestedInput
+  qcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutBatchSareeRowNestedInput
   finishingAssignment?: Prisma.FinishingAssignmentUncheckedUpdateOneWithoutBatchSareeRowNestedInput
 }
 
@@ -870,18 +870,18 @@ export type NullableDecimalFieldUpdateOperationsInput = {
   divide?: runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
-export type BatchSareeRowCreateNestedOneWithoutQcRecordInput = {
-  create?: Prisma.XOR<Prisma.BatchSareeRowCreateWithoutQcRecordInput, Prisma.BatchSareeRowUncheckedCreateWithoutQcRecordInput>
-  connectOrCreate?: Prisma.BatchSareeRowCreateOrConnectWithoutQcRecordInput
+export type BatchSareeRowCreateNestedOneWithoutQcRecordsInput = {
+  create?: Prisma.XOR<Prisma.BatchSareeRowCreateWithoutQcRecordsInput, Prisma.BatchSareeRowUncheckedCreateWithoutQcRecordsInput>
+  connectOrCreate?: Prisma.BatchSareeRowCreateOrConnectWithoutQcRecordsInput
   connect?: Prisma.BatchSareeRowWhereUniqueInput
 }
 
-export type BatchSareeRowUpdateOneRequiredWithoutQcRecordNestedInput = {
-  create?: Prisma.XOR<Prisma.BatchSareeRowCreateWithoutQcRecordInput, Prisma.BatchSareeRowUncheckedCreateWithoutQcRecordInput>
-  connectOrCreate?: Prisma.BatchSareeRowCreateOrConnectWithoutQcRecordInput
-  upsert?: Prisma.BatchSareeRowUpsertWithoutQcRecordInput
+export type BatchSareeRowUpdateOneRequiredWithoutQcRecordsNestedInput = {
+  create?: Prisma.XOR<Prisma.BatchSareeRowCreateWithoutQcRecordsInput, Prisma.BatchSareeRowUncheckedCreateWithoutQcRecordsInput>
+  connectOrCreate?: Prisma.BatchSareeRowCreateOrConnectWithoutQcRecordsInput
+  upsert?: Prisma.BatchSareeRowUpsertWithoutQcRecordsInput
   connect?: Prisma.BatchSareeRowWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.BatchSareeRowUpdateToOneWithWhereWithoutQcRecordInput, Prisma.BatchSareeRowUpdateWithoutQcRecordInput>, Prisma.BatchSareeRowUncheckedUpdateWithoutQcRecordInput>
+  update?: Prisma.XOR<Prisma.XOR<Prisma.BatchSareeRowUpdateToOneWithWhereWithoutQcRecordsInput, Prisma.BatchSareeRowUpdateWithoutQcRecordsInput>, Prisma.BatchSareeRowUncheckedUpdateWithoutQcRecordsInput>
 }
 
 export type BatchSareeRowCreateNestedOneWithoutFinishingAssignmentInput = {
@@ -956,7 +956,7 @@ export type BatchSareeRowCreateWithoutWeaverInput = {
   design?: Prisma.DesignLibraryCreateNestedOneWithoutBatchSareeRowsInput
   sareeType?: Prisma.SareeTypeRateCreateNestedOneWithoutBatchSareeRowsInput
   bulkOrder?: Prisma.BulkOrderCreateNestedOneWithoutBatchSareeRowsInput
-  qcRecord?: Prisma.QcRecordCreateNestedOneWithoutBatchSareeRowInput
+  qcRecords?: Prisma.QcRecordCreateNestedManyWithoutBatchSareeRowInput
   finishingAssignment?: Prisma.FinishingAssignmentCreateNestedOneWithoutBatchSareeRowInput
 }
 
@@ -976,7 +976,7 @@ export type BatchSareeRowUncheckedCreateWithoutWeaverInput = {
   receivedWeight?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedColor?: string | null
   receivedPhotoUrl?: string | null
-  qcRecord?: Prisma.QcRecordUncheckedCreateNestedOneWithoutBatchSareeRowInput
+  qcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutBatchSareeRowInput
   finishingAssignment?: Prisma.FinishingAssignmentUncheckedCreateNestedOneWithoutBatchSareeRowInput
 }
 
@@ -1044,7 +1044,7 @@ export type BatchSareeRowCreateWithoutFactoryLoomInput = {
   design?: Prisma.DesignLibraryCreateNestedOneWithoutBatchSareeRowsInput
   sareeType?: Prisma.SareeTypeRateCreateNestedOneWithoutBatchSareeRowsInput
   bulkOrder?: Prisma.BulkOrderCreateNestedOneWithoutBatchSareeRowsInput
-  qcRecord?: Prisma.QcRecordCreateNestedOneWithoutBatchSareeRowInput
+  qcRecords?: Prisma.QcRecordCreateNestedManyWithoutBatchSareeRowInput
   finishingAssignment?: Prisma.FinishingAssignmentCreateNestedOneWithoutBatchSareeRowInput
 }
 
@@ -1064,7 +1064,7 @@ export type BatchSareeRowUncheckedCreateWithoutFactoryLoomInput = {
   receivedWeight?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedColor?: string | null
   receivedPhotoUrl?: string | null
-  qcRecord?: Prisma.QcRecordUncheckedCreateNestedOneWithoutBatchSareeRowInput
+  qcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutBatchSareeRowInput
   finishingAssignment?: Prisma.FinishingAssignmentUncheckedCreateNestedOneWithoutBatchSareeRowInput
 }
 
@@ -1110,7 +1110,7 @@ export type BatchSareeRowCreateWithoutDesignInput = {
   factoryLoom?: Prisma.FactoryLoomCreateNestedOneWithoutBatchSareeRowsInput
   sareeType?: Prisma.SareeTypeRateCreateNestedOneWithoutBatchSareeRowsInput
   bulkOrder?: Prisma.BulkOrderCreateNestedOneWithoutBatchSareeRowsInput
-  qcRecord?: Prisma.QcRecordCreateNestedOneWithoutBatchSareeRowInput
+  qcRecords?: Prisma.QcRecordCreateNestedManyWithoutBatchSareeRowInput
   finishingAssignment?: Prisma.FinishingAssignmentCreateNestedOneWithoutBatchSareeRowInput
 }
 
@@ -1130,7 +1130,7 @@ export type BatchSareeRowUncheckedCreateWithoutDesignInput = {
   receivedWeight?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedColor?: string | null
   receivedPhotoUrl?: string | null
-  qcRecord?: Prisma.QcRecordUncheckedCreateNestedOneWithoutBatchSareeRowInput
+  qcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutBatchSareeRowInput
   finishingAssignment?: Prisma.FinishingAssignmentUncheckedCreateNestedOneWithoutBatchSareeRowInput
 }
 
@@ -1176,7 +1176,7 @@ export type BatchSareeRowCreateWithoutSareeTypeInput = {
   factoryLoom?: Prisma.FactoryLoomCreateNestedOneWithoutBatchSareeRowsInput
   design?: Prisma.DesignLibraryCreateNestedOneWithoutBatchSareeRowsInput
   bulkOrder?: Prisma.BulkOrderCreateNestedOneWithoutBatchSareeRowsInput
-  qcRecord?: Prisma.QcRecordCreateNestedOneWithoutBatchSareeRowInput
+  qcRecords?: Prisma.QcRecordCreateNestedManyWithoutBatchSareeRowInput
   finishingAssignment?: Prisma.FinishingAssignmentCreateNestedOneWithoutBatchSareeRowInput
 }
 
@@ -1196,7 +1196,7 @@ export type BatchSareeRowUncheckedCreateWithoutSareeTypeInput = {
   receivedWeight?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedColor?: string | null
   receivedPhotoUrl?: string | null
-  qcRecord?: Prisma.QcRecordUncheckedCreateNestedOneWithoutBatchSareeRowInput
+  qcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutBatchSareeRowInput
   finishingAssignment?: Prisma.FinishingAssignmentUncheckedCreateNestedOneWithoutBatchSareeRowInput
 }
 
@@ -1242,7 +1242,7 @@ export type BatchSareeRowCreateWithoutBatchInput = {
   design?: Prisma.DesignLibraryCreateNestedOneWithoutBatchSareeRowsInput
   sareeType?: Prisma.SareeTypeRateCreateNestedOneWithoutBatchSareeRowsInput
   bulkOrder?: Prisma.BulkOrderCreateNestedOneWithoutBatchSareeRowsInput
-  qcRecord?: Prisma.QcRecordCreateNestedOneWithoutBatchSareeRowInput
+  qcRecords?: Prisma.QcRecordCreateNestedManyWithoutBatchSareeRowInput
   finishingAssignment?: Prisma.FinishingAssignmentCreateNestedOneWithoutBatchSareeRowInput
 }
 
@@ -1262,7 +1262,7 @@ export type BatchSareeRowUncheckedCreateWithoutBatchInput = {
   receivedWeight?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedColor?: string | null
   receivedPhotoUrl?: string | null
-  qcRecord?: Prisma.QcRecordUncheckedCreateNestedOneWithoutBatchSareeRowInput
+  qcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutBatchSareeRowInput
   finishingAssignment?: Prisma.FinishingAssignmentUncheckedCreateNestedOneWithoutBatchSareeRowInput
 }
 
@@ -1292,7 +1292,7 @@ export type BatchSareeRowUpdateManyWithWhereWithoutBatchInput = {
   data: Prisma.XOR<Prisma.BatchSareeRowUpdateManyMutationInput, Prisma.BatchSareeRowUncheckedUpdateManyWithoutBatchInput>
 }
 
-export type BatchSareeRowCreateWithoutQcRecordInput = {
+export type BatchSareeRowCreateWithoutQcRecordsInput = {
   id?: string
   serial: number
   sareeId?: string | null
@@ -1312,7 +1312,7 @@ export type BatchSareeRowCreateWithoutQcRecordInput = {
   finishingAssignment?: Prisma.FinishingAssignmentCreateNestedOneWithoutBatchSareeRowInput
 }
 
-export type BatchSareeRowUncheckedCreateWithoutQcRecordInput = {
+export type BatchSareeRowUncheckedCreateWithoutQcRecordsInput = {
   id?: string
   batchId: string
   serial: number
@@ -1332,23 +1332,23 @@ export type BatchSareeRowUncheckedCreateWithoutQcRecordInput = {
   finishingAssignment?: Prisma.FinishingAssignmentUncheckedCreateNestedOneWithoutBatchSareeRowInput
 }
 
-export type BatchSareeRowCreateOrConnectWithoutQcRecordInput = {
+export type BatchSareeRowCreateOrConnectWithoutQcRecordsInput = {
   where: Prisma.BatchSareeRowWhereUniqueInput
-  create: Prisma.XOR<Prisma.BatchSareeRowCreateWithoutQcRecordInput, Prisma.BatchSareeRowUncheckedCreateWithoutQcRecordInput>
+  create: Prisma.XOR<Prisma.BatchSareeRowCreateWithoutQcRecordsInput, Prisma.BatchSareeRowUncheckedCreateWithoutQcRecordsInput>
 }
 
-export type BatchSareeRowUpsertWithoutQcRecordInput = {
-  update: Prisma.XOR<Prisma.BatchSareeRowUpdateWithoutQcRecordInput, Prisma.BatchSareeRowUncheckedUpdateWithoutQcRecordInput>
-  create: Prisma.XOR<Prisma.BatchSareeRowCreateWithoutQcRecordInput, Prisma.BatchSareeRowUncheckedCreateWithoutQcRecordInput>
+export type BatchSareeRowUpsertWithoutQcRecordsInput = {
+  update: Prisma.XOR<Prisma.BatchSareeRowUpdateWithoutQcRecordsInput, Prisma.BatchSareeRowUncheckedUpdateWithoutQcRecordsInput>
+  create: Prisma.XOR<Prisma.BatchSareeRowCreateWithoutQcRecordsInput, Prisma.BatchSareeRowUncheckedCreateWithoutQcRecordsInput>
   where?: Prisma.BatchSareeRowWhereInput
 }
 
-export type BatchSareeRowUpdateToOneWithWhereWithoutQcRecordInput = {
+export type BatchSareeRowUpdateToOneWithWhereWithoutQcRecordsInput = {
   where?: Prisma.BatchSareeRowWhereInput
-  data: Prisma.XOR<Prisma.BatchSareeRowUpdateWithoutQcRecordInput, Prisma.BatchSareeRowUncheckedUpdateWithoutQcRecordInput>
+  data: Prisma.XOR<Prisma.BatchSareeRowUpdateWithoutQcRecordsInput, Prisma.BatchSareeRowUncheckedUpdateWithoutQcRecordsInput>
 }
 
-export type BatchSareeRowUpdateWithoutQcRecordInput = {
+export type BatchSareeRowUpdateWithoutQcRecordsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   serial?: Prisma.IntFieldUpdateOperationsInput | number
   sareeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1368,7 +1368,7 @@ export type BatchSareeRowUpdateWithoutQcRecordInput = {
   finishingAssignment?: Prisma.FinishingAssignmentUpdateOneWithoutBatchSareeRowNestedInput
 }
 
-export type BatchSareeRowUncheckedUpdateWithoutQcRecordInput = {
+export type BatchSareeRowUncheckedUpdateWithoutQcRecordsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   batchId?: Prisma.StringFieldUpdateOperationsInput | string
   serial?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1405,7 +1405,7 @@ export type BatchSareeRowCreateWithoutFinishingAssignmentInput = {
   design?: Prisma.DesignLibraryCreateNestedOneWithoutBatchSareeRowsInput
   sareeType?: Prisma.SareeTypeRateCreateNestedOneWithoutBatchSareeRowsInput
   bulkOrder?: Prisma.BulkOrderCreateNestedOneWithoutBatchSareeRowsInput
-  qcRecord?: Prisma.QcRecordCreateNestedOneWithoutBatchSareeRowInput
+  qcRecords?: Prisma.QcRecordCreateNestedManyWithoutBatchSareeRowInput
 }
 
 export type BatchSareeRowUncheckedCreateWithoutFinishingAssignmentInput = {
@@ -1425,7 +1425,7 @@ export type BatchSareeRowUncheckedCreateWithoutFinishingAssignmentInput = {
   receivedWeight?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedColor?: string | null
   receivedPhotoUrl?: string | null
-  qcRecord?: Prisma.QcRecordUncheckedCreateNestedOneWithoutBatchSareeRowInput
+  qcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutBatchSareeRowInput
 }
 
 export type BatchSareeRowCreateOrConnectWithoutFinishingAssignmentInput = {
@@ -1461,7 +1461,7 @@ export type BatchSareeRowUpdateWithoutFinishingAssignmentInput = {
   design?: Prisma.DesignLibraryUpdateOneWithoutBatchSareeRowsNestedInput
   sareeType?: Prisma.SareeTypeRateUpdateOneWithoutBatchSareeRowsNestedInput
   bulkOrder?: Prisma.BulkOrderUpdateOneWithoutBatchSareeRowsNestedInput
-  qcRecord?: Prisma.QcRecordUpdateOneWithoutBatchSareeRowNestedInput
+  qcRecords?: Prisma.QcRecordUpdateManyWithoutBatchSareeRowNestedInput
 }
 
 export type BatchSareeRowUncheckedUpdateWithoutFinishingAssignmentInput = {
@@ -1481,7 +1481,7 @@ export type BatchSareeRowUncheckedUpdateWithoutFinishingAssignmentInput = {
   receivedWeight?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   receivedPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  qcRecord?: Prisma.QcRecordUncheckedUpdateOneWithoutBatchSareeRowNestedInput
+  qcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutBatchSareeRowNestedInput
 }
 
 export type BatchSareeRowCreateWithoutBulkOrderInput = {
@@ -1500,7 +1500,7 @@ export type BatchSareeRowCreateWithoutBulkOrderInput = {
   factoryLoom?: Prisma.FactoryLoomCreateNestedOneWithoutBatchSareeRowsInput
   design?: Prisma.DesignLibraryCreateNestedOneWithoutBatchSareeRowsInput
   sareeType?: Prisma.SareeTypeRateCreateNestedOneWithoutBatchSareeRowsInput
-  qcRecord?: Prisma.QcRecordCreateNestedOneWithoutBatchSareeRowInput
+  qcRecords?: Prisma.QcRecordCreateNestedManyWithoutBatchSareeRowInput
   finishingAssignment?: Prisma.FinishingAssignmentCreateNestedOneWithoutBatchSareeRowInput
 }
 
@@ -1520,7 +1520,7 @@ export type BatchSareeRowUncheckedCreateWithoutBulkOrderInput = {
   receivedWeight?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedColor?: string | null
   receivedPhotoUrl?: string | null
-  qcRecord?: Prisma.QcRecordUncheckedCreateNestedOneWithoutBatchSareeRowInput
+  qcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutBatchSareeRowInput
   finishingAssignment?: Prisma.FinishingAssignmentUncheckedCreateNestedOneWithoutBatchSareeRowInput
 }
 
@@ -1584,7 +1584,7 @@ export type BatchSareeRowUpdateWithoutWeaverInput = {
   design?: Prisma.DesignLibraryUpdateOneWithoutBatchSareeRowsNestedInput
   sareeType?: Prisma.SareeTypeRateUpdateOneWithoutBatchSareeRowsNestedInput
   bulkOrder?: Prisma.BulkOrderUpdateOneWithoutBatchSareeRowsNestedInput
-  qcRecord?: Prisma.QcRecordUpdateOneWithoutBatchSareeRowNestedInput
+  qcRecords?: Prisma.QcRecordUpdateManyWithoutBatchSareeRowNestedInput
   finishingAssignment?: Prisma.FinishingAssignmentUpdateOneWithoutBatchSareeRowNestedInput
 }
 
@@ -1604,7 +1604,7 @@ export type BatchSareeRowUncheckedUpdateWithoutWeaverInput = {
   receivedWeight?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   receivedPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  qcRecord?: Prisma.QcRecordUncheckedUpdateOneWithoutBatchSareeRowNestedInput
+  qcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutBatchSareeRowNestedInput
   finishingAssignment?: Prisma.FinishingAssignmentUncheckedUpdateOneWithoutBatchSareeRowNestedInput
 }
 
@@ -1660,7 +1660,7 @@ export type BatchSareeRowUpdateWithoutFactoryLoomInput = {
   design?: Prisma.DesignLibraryUpdateOneWithoutBatchSareeRowsNestedInput
   sareeType?: Prisma.SareeTypeRateUpdateOneWithoutBatchSareeRowsNestedInput
   bulkOrder?: Prisma.BulkOrderUpdateOneWithoutBatchSareeRowsNestedInput
-  qcRecord?: Prisma.QcRecordUpdateOneWithoutBatchSareeRowNestedInput
+  qcRecords?: Prisma.QcRecordUpdateManyWithoutBatchSareeRowNestedInput
   finishingAssignment?: Prisma.FinishingAssignmentUpdateOneWithoutBatchSareeRowNestedInput
 }
 
@@ -1680,7 +1680,7 @@ export type BatchSareeRowUncheckedUpdateWithoutFactoryLoomInput = {
   receivedWeight?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   receivedPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  qcRecord?: Prisma.QcRecordUncheckedUpdateOneWithoutBatchSareeRowNestedInput
+  qcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutBatchSareeRowNestedInput
   finishingAssignment?: Prisma.FinishingAssignmentUncheckedUpdateOneWithoutBatchSareeRowNestedInput
 }
 
@@ -1736,7 +1736,7 @@ export type BatchSareeRowUpdateWithoutDesignInput = {
   factoryLoom?: Prisma.FactoryLoomUpdateOneWithoutBatchSareeRowsNestedInput
   sareeType?: Prisma.SareeTypeRateUpdateOneWithoutBatchSareeRowsNestedInput
   bulkOrder?: Prisma.BulkOrderUpdateOneWithoutBatchSareeRowsNestedInput
-  qcRecord?: Prisma.QcRecordUpdateOneWithoutBatchSareeRowNestedInput
+  qcRecords?: Prisma.QcRecordUpdateManyWithoutBatchSareeRowNestedInput
   finishingAssignment?: Prisma.FinishingAssignmentUpdateOneWithoutBatchSareeRowNestedInput
 }
 
@@ -1756,7 +1756,7 @@ export type BatchSareeRowUncheckedUpdateWithoutDesignInput = {
   receivedWeight?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   receivedPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  qcRecord?: Prisma.QcRecordUncheckedUpdateOneWithoutBatchSareeRowNestedInput
+  qcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutBatchSareeRowNestedInput
   finishingAssignment?: Prisma.FinishingAssignmentUncheckedUpdateOneWithoutBatchSareeRowNestedInput
 }
 
@@ -1812,7 +1812,7 @@ export type BatchSareeRowUpdateWithoutSareeTypeInput = {
   factoryLoom?: Prisma.FactoryLoomUpdateOneWithoutBatchSareeRowsNestedInput
   design?: Prisma.DesignLibraryUpdateOneWithoutBatchSareeRowsNestedInput
   bulkOrder?: Prisma.BulkOrderUpdateOneWithoutBatchSareeRowsNestedInput
-  qcRecord?: Prisma.QcRecordUpdateOneWithoutBatchSareeRowNestedInput
+  qcRecords?: Prisma.QcRecordUpdateManyWithoutBatchSareeRowNestedInput
   finishingAssignment?: Prisma.FinishingAssignmentUpdateOneWithoutBatchSareeRowNestedInput
 }
 
@@ -1832,7 +1832,7 @@ export type BatchSareeRowUncheckedUpdateWithoutSareeTypeInput = {
   receivedWeight?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   receivedPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  qcRecord?: Prisma.QcRecordUncheckedUpdateOneWithoutBatchSareeRowNestedInput
+  qcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutBatchSareeRowNestedInput
   finishingAssignment?: Prisma.FinishingAssignmentUncheckedUpdateOneWithoutBatchSareeRowNestedInput
 }
 
@@ -1888,7 +1888,7 @@ export type BatchSareeRowUpdateWithoutBatchInput = {
   design?: Prisma.DesignLibraryUpdateOneWithoutBatchSareeRowsNestedInput
   sareeType?: Prisma.SareeTypeRateUpdateOneWithoutBatchSareeRowsNestedInput
   bulkOrder?: Prisma.BulkOrderUpdateOneWithoutBatchSareeRowsNestedInput
-  qcRecord?: Prisma.QcRecordUpdateOneWithoutBatchSareeRowNestedInput
+  qcRecords?: Prisma.QcRecordUpdateManyWithoutBatchSareeRowNestedInput
   finishingAssignment?: Prisma.FinishingAssignmentUpdateOneWithoutBatchSareeRowNestedInput
 }
 
@@ -1908,7 +1908,7 @@ export type BatchSareeRowUncheckedUpdateWithoutBatchInput = {
   receivedWeight?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   receivedPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  qcRecord?: Prisma.QcRecordUncheckedUpdateOneWithoutBatchSareeRowNestedInput
+  qcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutBatchSareeRowNestedInput
   finishingAssignment?: Prisma.FinishingAssignmentUncheckedUpdateOneWithoutBatchSareeRowNestedInput
 }
 
@@ -1964,7 +1964,7 @@ export type BatchSareeRowUpdateWithoutBulkOrderInput = {
   factoryLoom?: Prisma.FactoryLoomUpdateOneWithoutBatchSareeRowsNestedInput
   design?: Prisma.DesignLibraryUpdateOneWithoutBatchSareeRowsNestedInput
   sareeType?: Prisma.SareeTypeRateUpdateOneWithoutBatchSareeRowsNestedInput
-  qcRecord?: Prisma.QcRecordUpdateOneWithoutBatchSareeRowNestedInput
+  qcRecords?: Prisma.QcRecordUpdateManyWithoutBatchSareeRowNestedInput
   finishingAssignment?: Prisma.FinishingAssignmentUpdateOneWithoutBatchSareeRowNestedInput
 }
 
@@ -1984,7 +1984,7 @@ export type BatchSareeRowUncheckedUpdateWithoutBulkOrderInput = {
   receivedWeight?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   receivedPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  qcRecord?: Prisma.QcRecordUncheckedUpdateOneWithoutBatchSareeRowNestedInput
+  qcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutBatchSareeRowNestedInput
   finishingAssignment?: Prisma.FinishingAssignmentUncheckedUpdateOneWithoutBatchSareeRowNestedInput
 }
 
@@ -2006,6 +2006,35 @@ export type BatchSareeRowUncheckedUpdateManyWithoutBulkOrderInput = {
   receivedPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
+
+/**
+ * Count Type BatchSareeRowCountOutputType
+ */
+
+export type BatchSareeRowCountOutputType = {
+  qcRecords: number
+}
+
+export type BatchSareeRowCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  qcRecords?: boolean | BatchSareeRowCountOutputTypeCountQcRecordsArgs
+}
+
+/**
+ * BatchSareeRowCountOutputType without action
+ */
+export type BatchSareeRowCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the BatchSareeRowCountOutputType
+   */
+  select?: Prisma.BatchSareeRowCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * BatchSareeRowCountOutputType without action
+ */
+export type BatchSareeRowCountOutputTypeCountQcRecordsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.QcRecordWhereInput
+}
 
 
 export type BatchSareeRowSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -2031,8 +2060,9 @@ export type BatchSareeRowSelect<ExtArgs extends runtime.Types.Extensions.Interna
   design?: boolean | Prisma.BatchSareeRow$designArgs<ExtArgs>
   sareeType?: boolean | Prisma.BatchSareeRow$sareeTypeArgs<ExtArgs>
   bulkOrder?: boolean | Prisma.BatchSareeRow$bulkOrderArgs<ExtArgs>
-  qcRecord?: boolean | Prisma.BatchSareeRow$qcRecordArgs<ExtArgs>
+  qcRecords?: boolean | Prisma.BatchSareeRow$qcRecordsArgs<ExtArgs>
   finishingAssignment?: boolean | Prisma.BatchSareeRow$finishingAssignmentArgs<ExtArgs>
+  _count?: boolean | Prisma.BatchSareeRowCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["batchSareeRow"]>
 
 export type BatchSareeRowSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -2112,8 +2142,9 @@ export type BatchSareeRowInclude<ExtArgs extends runtime.Types.Extensions.Intern
   design?: boolean | Prisma.BatchSareeRow$designArgs<ExtArgs>
   sareeType?: boolean | Prisma.BatchSareeRow$sareeTypeArgs<ExtArgs>
   bulkOrder?: boolean | Prisma.BatchSareeRow$bulkOrderArgs<ExtArgs>
-  qcRecord?: boolean | Prisma.BatchSareeRow$qcRecordArgs<ExtArgs>
+  qcRecords?: boolean | Prisma.BatchSareeRow$qcRecordsArgs<ExtArgs>
   finishingAssignment?: boolean | Prisma.BatchSareeRow$finishingAssignmentArgs<ExtArgs>
+  _count?: boolean | Prisma.BatchSareeRowCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type BatchSareeRowIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   batch?: boolean | Prisma.BatchDefaultArgs<ExtArgs>
@@ -2141,7 +2172,7 @@ export type $BatchSareeRowPayload<ExtArgs extends runtime.Types.Extensions.Inter
     design: Prisma.$DesignLibraryPayload<ExtArgs> | null
     sareeType: Prisma.$SareeTypeRatePayload<ExtArgs> | null
     bulkOrder: Prisma.$BulkOrderPayload<ExtArgs> | null
-    qcRecord: Prisma.$QcRecordPayload<ExtArgs> | null
+    qcRecords: Prisma.$QcRecordPayload<ExtArgs>[]
     finishingAssignment: Prisma.$FinishingAssignmentPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -2561,7 +2592,7 @@ export interface Prisma__BatchSareeRowClient<T, Null = never, ExtArgs extends ru
   design<T extends Prisma.BatchSareeRow$designArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BatchSareeRow$designArgs<ExtArgs>>): Prisma.Prisma__DesignLibraryClient<runtime.Types.Result.GetResult<Prisma.$DesignLibraryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   sareeType<T extends Prisma.BatchSareeRow$sareeTypeArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BatchSareeRow$sareeTypeArgs<ExtArgs>>): Prisma.Prisma__SareeTypeRateClient<runtime.Types.Result.GetResult<Prisma.$SareeTypeRatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   bulkOrder<T extends Prisma.BatchSareeRow$bulkOrderArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BatchSareeRow$bulkOrderArgs<ExtArgs>>): Prisma.Prisma__BulkOrderClient<runtime.Types.Result.GetResult<Prisma.$BulkOrderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-  qcRecord<T extends Prisma.BatchSareeRow$qcRecordArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BatchSareeRow$qcRecordArgs<ExtArgs>>): Prisma.Prisma__QcRecordClient<runtime.Types.Result.GetResult<Prisma.$QcRecordPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  qcRecords<T extends Prisma.BatchSareeRow$qcRecordsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BatchSareeRow$qcRecordsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$QcRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   finishingAssignment<T extends Prisma.BatchSareeRow$finishingAssignmentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BatchSareeRow$finishingAssignmentArgs<ExtArgs>>): Prisma.Prisma__FinishingAssignmentClient<runtime.Types.Result.GetResult<Prisma.$FinishingAssignmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -3104,9 +3135,9 @@ export type BatchSareeRow$bulkOrderArgs<ExtArgs extends runtime.Types.Extensions
 }
 
 /**
- * BatchSareeRow.qcRecord
+ * BatchSareeRow.qcRecords
  */
-export type BatchSareeRow$qcRecordArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type BatchSareeRow$qcRecordsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
    * Select specific fields to fetch from the QcRecord
    */
@@ -3120,6 +3151,11 @@ export type BatchSareeRow$qcRecordArgs<ExtArgs extends runtime.Types.Extensions.
    */
   include?: Prisma.QcRecordInclude<ExtArgs> | null
   where?: Prisma.QcRecordWhereInput
+  orderBy?: Prisma.QcRecordOrderByWithRelationInput | Prisma.QcRecordOrderByWithRelationInput[]
+  cursor?: Prisma.QcRecordWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.QcRecordScalarFieldEnum | Prisma.QcRecordScalarFieldEnum[]
 }
 
 /**

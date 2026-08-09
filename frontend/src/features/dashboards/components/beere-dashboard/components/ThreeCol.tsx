@@ -128,7 +128,7 @@ export function SareesProduced({ compact }: { compact?: boolean }) {
 }
 
 export function FeaturedProduct({ compact }: { compact?: boolean }) {
-  const { weaversWorkingCount, designCodesCount, qcPassRate, overdueInvoicesCount, inStockSareesCount, isLoading, isError } = useDashboardAnalytics();
+  const { weaversWorkingCount, designCodesCount, qcPassRate, overdueInvoicesCount, inStockSareesCount, dispatchedCount, isLoading, isError } = useDashboardAnalytics();
   const v = (n: number) => (isError ? "Error" : isLoading ? "—" : String(n));
   return (
     <Card style={{ flex: 1, display: "flex", flexDirection: "column", padding: 0, overflow: "hidden" }}>
@@ -139,7 +139,7 @@ export function FeaturedProduct({ compact }: { compact?: boolean }) {
           { label: "QC Pass", val: `${v(qcPassRate)}%`, vc: T.green, rb: true, bb: true },
           { label: "Overdue", val: `${v(overdueInvoicesCount)} invoices`, vc: "#C0392B", rb: false, bb: true, alert: overdueInvoicesCount > 0 },
           { label: "Inventory", val: `${v(inStockSareesCount)} in stock`, vc: T.luxuryBrown, rb: true, bb: false },
-          { label: "Dispatch", val: "No data", vc: T.taupe, rb: false, bb: false },
+          { label: "Dispatch", val: `${v(dispatchedCount)} dispatched`, vc: T.luxuryBrown, rb: false, bb: false },
         ].map((s, idx) => (
           <div key={s.label} style={{
             display: "flex", flexDirection: "column", justifyContent: "center",

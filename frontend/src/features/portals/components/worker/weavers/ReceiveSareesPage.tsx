@@ -46,7 +46,7 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
   const [activeSection, setActiveSection] = useState<"outsourced" | "own">("outsourced");
   const [selectedWeaver, setSelectedWeaver] = useState<typeof WEAVERS[0] | null>(null);
   const [selectedBatchId, setSelectedBatchId] = useState<string | null>(null);
-  const [selectedSareeNo, setSelectedSareeNo] = useState<number | null>(null);
+  const [selectedSareeNos, setSelectedSareeNos] = useState<Set<number>>(new Set());
   const [sareeSort, setSareeSort] = useState<"serial" | "status">("serial");
   const [isSaving, setIsSaving] = useState(false);
 
@@ -64,7 +64,7 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
     for (const b of allBatches) {
       if (b.status !== "active") continue;
       for (const r of b.rows) {
-        if (!r.weaverId || !r.sareeId || r.receivedAt) continue;
+        if (!r.weaverId || !r.sareeId || r.receivedAt || r.finished || r.qcPassed !== undefined) continue;
         if (!result[r.weaverId]) result[r.weaverId] = [];
         let wb = result[r.weaverId].find(x => x.id === b.batchId);
         if (!wb) {
@@ -97,46 +97,65 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
 
   const weightNum = sareeWeight ? parseFloat(sareeWeight) : null;
   const weightOk = weightNum !== null && weightNum >= 600;
-  const selectedSaree = currentBatch?.sarees.find(s => s.no === selectedSareeNo) ?? null;
-  const sareeId = selectedSaree?.sareeId ?? "—";
+  const selectedSarees = currentBatch ? currentBatch.sarees.filter(s => selectedSareeNos.has(s.no)) : [];
+  // Single-selection views (tag preview, saree-ID readout) key off the first
+  // selected saree — multi-select still supports these incidentally.
+  const sareeId = selectedSarees[0]?.sareeId ?? "—";
 
   const pickWeaver = (name: string) => {
     const w = WEAVERS.find(w => w.name === name) || null;
     setSelectedWeaver(w);
     setSelectedBatchId(w ? (batches[w.code]?.[0]?.id ?? null) : null);
-    setSelectedSareeNo(null);
+    setSelectedSareeNos(new Set());
     setSareeColor(""); setSareeWeight(""); setHasPhoto(false); setMatEdits({});
   };
 
   const pickBatch = (batchId: string) => {
     setSelectedBatchId(batchId);
-    setSelectedSareeNo(null);
+    setSelectedSareeNos(new Set());
     setSareeColor(""); setSareeWeight(""); setHasPhoto(false); setMatEdits({});
   };
 
   const selectSareeSlot = (no: number) => {
     const s = currentBatch?.sarees.find(s => s.no === no);
     if (!s || s.status !== "pending") return;
-    setSelectedSareeNo(prev => prev === no ? null : no);
+    setSelectedSareeNos(prev => {
+      const next = new Set(prev);
+      if (next.has(no)) next.delete(no);
+      else next.add(no);
+      return next;
+    });
     setSareeColor(""); setSareeWeight(""); setHasPhoto(false); setMatEdits({});
   };
 
-  const canSaveSaree = !!sareeColor && !!sareeWeight && hasPhoto && !isSaving;
+  const toggleAllSarees = () => {
+    const pending = currentBatch?.sarees.filter(s => s.status === "pending") ?? [];
+    const allSelected = pending.length > 0 && pending.every(s => selectedSareeNos.has(s.no));
+    setSelectedSareeNos(allSelected ? new Set() : new Set(pending.map(s => s.no)));
+    setSareeColor(""); setSareeWeight(""); setHasPhoto(false); setMatEdits({});
+  };
+
+  const canSaveSaree = selectedSareeNos.size > 0 && !!sareeColor && !!sareeWeight && hasPhoto && !isSaving;
 
   const saveSaree = async () => {
-    if (!selectedWeaver || !currentBatch || !selectedSareeNo || !canSaveSaree) return;
+    if (!selectedWeaver || !currentBatch || selectedSareeNos.size === 0 || !canSaveSaree) return;
     setIsSaving(true);
     try {
-      await receiveRow(currentBatch.id, selectedSareeNo, {
-        weight: parseFloat(sareeWeight),
-        color: sareeColor,
-      });
-      onSareeReceived?.({
-        id: sareeId, weaver: selectedWeaver.name, wcode: selectedWeaver.code, batch: currentBatch.id,
-        weight: `${sareeWeight}g`, date: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
-        color: sareeColor, status: "Pending QC",
-      });
-      setSelectedSareeNo(null); setSareeColor(""); setSareeWeight(""); setHasPhoto(false); setMatEdits({});
+      const dateStr = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+      for (const no of selectedSareeNos) {
+        const s = currentBatch.sarees.find(x => x.no === no);
+        if (!s) continue;
+        await receiveRow(currentBatch.id, no, {
+          weight: parseFloat(sareeWeight),
+          color: sareeColor,
+        });
+        onSareeReceived?.({
+          id: s.sareeId, weaver: selectedWeaver.name, wcode: selectedWeaver.code, batch: currentBatch.id,
+          weight: `${sareeWeight}g`, date: dateStr,
+          color: sareeColor, status: "Pending QC",
+        });
+      }
+      setSelectedSareeNos(new Set()); setSareeColor(""); setSareeWeight(""); setHasPhoto(false); setMatEdits({});
     } finally {
       setIsSaving(false);
     }
@@ -230,16 +249,24 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
                 doneCount={doneCount}
                 sareeSort={sareeSort}
                 setSareeSort={setSareeSort}
-                selectedSareeNo={selectedSareeNo}
+                selectedSareeNos={selectedSareeNos}
                 selectSareeSlot={selectSareeSlot}
+                onToggleAll={toggleAllSarees}
               />
             )}
 
-            {selectedSareeNo && currentBatch && (
+            {selectedSareeNos.size > 0 && currentBatch && (
               <div style={{ ...card, margin: "10px 16px 10px", padding: 14 }}>
                 <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.text, marginBottom: 12 }}>
-                  Saree #{selectedSareeNo} — {currentBatch.id}
+                  {selectedSareeNos.size === 1
+                    ? `Saree #${[...selectedSareeNos][0]} — ${currentBatch.id}`
+                    : `${selectedSareeNos.size} sarees selected — ${currentBatch.id}`}
                 </div>
+                {selectedSareeNos.size > 1 && (
+                  <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 10 }}>
+                    Color, weight and photo entered below apply to all {selectedSareeNos.size} selected sarees.
+                  </div>
+                )}
 
                 <div style={{ marginBottom: 10 }}>
                   <FieldLabel>Saree Color</FieldLabel>
@@ -295,30 +322,34 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
 
                 {sareeColor && sareeWeight && hasPhoto && (
                   <div style={{ textAlign: "center", marginBottom: 10 }}>
-                    <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 2 }}>Saree ID</div>
-                    <div style={{ fontFamily: F.m, fontSize: 16, fontWeight: 600, color: C.burg }}>{sareeId}</div>
+                    <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 2 }}>
+                      {selectedSareeNos.size === 1 ? "Saree ID" : `Saree IDs (${selectedSareeNos.size})`}
+                    </div>
+                    <div style={{ fontFamily: F.m, fontSize: 16, fontWeight: 600, color: C.burg }}>
+                      {selectedSareeNos.size === 1 ? sareeId : selectedSarees.map(s => s.sareeId).join(", ")}
+                    </div>
                   </div>
                 )}
 
                 <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
                   <Button variant="secondary" fullWidth size="sm" iconLeft={Printer} onClick={() => setShowTagPrint(true)} className="h-[42px] rounded-full border-[#C4923A] text-[#C4923A]">
-                    Print Tag
+                    Print Tag{selectedSareeNos.size > 1 ? "s" : ""}
                   </Button>
                   <Button variant="secondary" fullWidth size="sm" iconLeft={Plus} onClick={saveSaree} disabled={!canSaveSaree}
                     className="h-[42px] rounded-full border-[#6B1A2A] text-[#6B1A2A]">
-                    Next Saree
+                    {selectedSareeNos.size > 1 ? `Save ${selectedSareeNos.size} Sarees` : "Next Saree"}
                   </Button>
                 </div>
                 <Button variant="secondary" fullWidth size="sm" iconLeft={AlertTriangle} onClick={() => setShowDefectPrompt(true)}
                   className="h-[38px] rounded-full border-[rgba(220,53,69,0.25)] bg-[rgba(220,53,69,0.06)] text-[#C0392B] hover:bg-[rgba(220,53,69,0.06)]">
-                  Mark as Defective
+                  Mark {selectedSareeNos.size > 1 ? `${selectedSareeNos.size} Sarees` : "as"} Defective
                 </Button>
               </div>
             )}
 
-            {currentBatch && !selectedSareeNo && !allDone && (
+            {currentBatch && selectedSareeNos.size === 0 && !allDone && (
               <div style={{ margin: "10px 16px 0", padding: "10px 14px", background: "rgba(107,26,42,0.04)", border: `1px dashed ${C.bdr}`, borderRadius: 10, textAlign: "center" }}>
-                <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Tap a pending saree above to record its color, weight and photo.</span>
+                <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Tap one or more pending sarees above (or Select All) to record color, weight and photo.</span>
               </div>
             )}
 
@@ -326,25 +357,28 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
               <DefectPhotoPrompt
                 onCancel={() => setShowDefectPrompt(false)}
                 onCapture={() => {
-                  if (selectedWeaver && currentBatch && selectedSareeNo) {
-                    setRejectedSarees(prev => [
-                      {
-                        id: sareeId,
-                        weaver: selectedWeaver.name,
-                        weight: sareeWeight ? `${sareeWeight}g` : "—",
-                        date: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
-                        photoUrl: "captured-defect-photo",
-                      },
-                      ...prev,
-                    ]);
-                    onSareeReceived?.({
-                      id: sareeId, weaver: selectedWeaver.name, wcode: selectedWeaver.code, batch: currentBatch.id,
-                      weight: sareeWeight ? `${sareeWeight}g` : "—", date: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
-                      color: sareeColor || "—", status: "Defective",
+                  if (selectedWeaver && currentBatch && selectedSareeNos.size > 0) {
+                    const dateStr = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+                    selectedSarees.forEach(s => {
+                      setRejectedSarees(prev => [
+                        {
+                          id: s.sareeId,
+                          weaver: selectedWeaver.name,
+                          weight: sareeWeight ? `${sareeWeight}g` : "—",
+                          date: dateStr,
+                          photoUrl: "captured-defect-photo",
+                        },
+                        ...prev,
+                      ]);
+                      onSareeReceived?.({
+                        id: s.sareeId, weaver: selectedWeaver.name, wcode: selectedWeaver.code, batch: currentBatch.id,
+                        weight: sareeWeight ? `${sareeWeight}g` : "—", date: dateStr,
+                        color: sareeColor || "—", status: "Defective",
+                      });
                     });
                   }
                   setShowDefectPrompt(false);
-                  setSelectedSareeNo(null);
+                  setSelectedSareeNos(new Set());
                   setSareeColor(""); setSareeWeight(""); setHasPhoto(false); setMatEdits({});
                 }}
               />

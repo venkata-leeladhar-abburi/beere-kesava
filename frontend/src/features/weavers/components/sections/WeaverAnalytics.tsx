@@ -12,6 +12,7 @@ import { STATUS_MIX_META, CLUSTER_FILLS } from "../data";
 import { FadeUp, qcColor } from "../common/primitives";
 import { WeaverLeaderboardClusterRow } from "./WeaverLeaderboardClusterRow";
 import { weaversApi, BackendWeaverStats } from "../../../../shared/api/weavers";
+import { weaverPaymentsApi } from "../../../../shared/api/payments";
 import { resolveAssetUrl } from "../../../../shared/api/uploads";
 import { semantic } from "../../../../design-system/tokens";
 import { ChartFigure } from "../../../../shared/ui/data";
@@ -37,6 +38,12 @@ export function WeaverAnalytics() {
     queryFn: () => Promise.all(roster.map(w => weaversApi.getStats(w.id))),
     enabled: roster.length > 0,
   });
+  const { data: earningsList } = useQuery({
+    queryKey: ["weaver-analytics-earnings"],
+    queryFn: () => weaverPaymentsApi.earnings(),
+  });
+  const earningsById = new Map((earningsList ?? []).map(e => [e.weaverId, e]));
+
   const isLoading = rosterLoading || (roster.length > 0 && statsLoading);
   const isError = rosterError || statsError;
   const statsById = new Map((statsList ?? []).map(s => [s.weaverId, s]));
@@ -58,13 +65,13 @@ export function WeaverAnalytics() {
         initials: w.initials,
         bg: AVATAR_PALETTE[i % AVATAR_PALETTE.length],
         produced, passed,
-        payout: 0, // Not tracked by the backend yet
+        payout: earningsById.get(w.id)?.totalEarned ?? 0,
         periodPassRate: s?.qcPassRate ?? 0,
         perLoom: w.looms ? produced / w.looms : 0,
       };
     }).filter(w => w.produced > 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roster, statsList]);
+  }, [roster, statsList, earningsList]);
 
   const totalProduced = perWeaver.reduce((a, w) => a + w.produced, 0);
   const totalPassed = perWeaver.reduce((a, w) => a + w.passed, 0);
@@ -134,7 +141,7 @@ export function WeaverAnalytics() {
             {[
               { label: "SAREES WOVEN", value: totalProduced.toLocaleString("en-IN"), color: T.royalBurgundy },
               { label: "QC PASS RATE", value: `${overallPassRate}%`, color: qcColor(overallPassRate) },
-              { label: "MAKING CHARGES", value: "—", color: T.luxuryBrown },
+              { label: "MAKING CHARGES", value: `₹${totalPayout.toLocaleString("en-IN")}`, color: T.luxuryBrown },
             ].map(k => (
               <div key={k.label}>
                 <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, letterSpacing: "1px", color: T.taupe }}>{k.label}</div>

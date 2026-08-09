@@ -198,18 +198,37 @@ export class PaymentsService {
     return { items, total, page: query.page, pageSize: query.pageSize };
   }
 
-  // Earnings a weaver is owed for completed work: every QC-passed
-  // BatchSareeRow assigned to them, priced at that saree type's making
-  // charge (SareeTypeRate.makingCharge) — never a hardcoded/mock figure.
-  // This is what a weaver has *earned*, distinct from WeaverPayment rows
-  // (which record what's actually been paid out so far).
+  // Earnings a weaver is owed for completed work: every BatchSareeRow that's
+  // QC-passed OR finished via the Raise Quotation receive flow (either
+  // milestone alone counts it), deduplicated per saree, priced at that saree
+  // type's making charge (SareeTypeRate.makingCharge) — never a
+  // hardcoded/mock figure. This is what a weaver has *earned*, distinct from
+  // WeaverPayment rows (which record what's actually been paid out so far).
   async getWeaverEarnings(weaverId?: string) {
-    const rows = await this.prisma.batchSareeRow.findMany({
-      where: {
-        qcPassed: true,
-        weaverId: weaverId ?? { not: null },
-      },
-      select: { weaverId: true, sareeTypeCode: true },
+    const rowWhere = weaverId ? { weaverId } : { weaverId: { not: null } };
+    const [qcPassedRows, returnedAssignments] = await Promise.all([
+      this.prisma.batchSareeRow.findMany({
+        where: { ...rowWhere, qcPassed: true },
+        select: { sareeId: true, weaverId: true, sareeTypeCode: true },
+      }),
+      this.prisma.finishingAssignment.findMany({
+        where: { status: "RETURNED", batchSareeRow: rowWhere },
+        select: {
+          sareeId: true,
+          batchSareeRow: { select: { weaverId: true, sareeTypeCode: true } },
+        },
+      }),
+    ]);
+
+    const rows = new Map<string, { weaverId: string; sareeTypeCode: string | null }>();
+    qcPassedRows.forEach((r) => {
+      if (r.sareeId && r.weaverId) rows.set(r.sareeId, { weaverId: r.weaverId, sareeTypeCode: r.sareeTypeCode });
+    });
+    returnedAssignments.forEach((r) => {
+      const wId = r.batchSareeRow.weaverId;
+      if (wId && !rows.has(r.sareeId)) {
+        rows.set(r.sareeId, { weaverId: wId, sareeTypeCode: r.batchSareeRow.sareeTypeCode });
+      }
     });
 
     const rates = await this.prisma.sareeTypeRate.findMany({
@@ -217,7 +236,7 @@ export class PaymentsService {
     });
     const rateByCode = new Map(rates.map((r) => [r.code, r]));
 
-    const weaverIds = Array.from(new Set(rows.map((r) => r.weaverId).filter((id): id is string => !!id)));
+    const weaverIds = Array.from(new Set(Array.from(rows.values()).map((r) => r.weaverId)));
     const weavers = await this.prisma.weaver.findMany({
       where: { id: { in: weaverIds } },
       select: { id: true, firstName: true, lastName: true },
@@ -226,8 +245,8 @@ export class PaymentsService {
 
     // weaverId -> sareeTypeCode -> count
     const counts = new Map<string, Map<string, number>>();
-    for (const row of rows) {
-      if (!row.weaverId || !row.sareeTypeCode) continue;
+    for (const row of rows.values()) {
+      if (!row.sareeTypeCode) continue;
       const byType = counts.get(row.weaverId) ?? new Map<string, number>();
       byType.set(row.sareeTypeCode, (byType.get(row.sareeTypeCode) ?? 0) + 1);
       counts.set(row.weaverId, byType);

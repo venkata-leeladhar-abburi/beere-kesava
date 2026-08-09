@@ -5,7 +5,7 @@ import { BatchRecord, useBatches } from "../../contexts/BatchContext";
 import { DateFilterBar, DateFilterState, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { ConfirmDialog } from "../../../../shared/ui/ConfirmDialog";
 import { ApiError } from "../../../../shared/api/client";
-import { T, F, rowComplete } from "./constants";
+import { T, F } from "./constants";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
 
 export function DraftsTab({
@@ -60,7 +60,9 @@ export function DraftsTab({
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <DateFilterBar filter={batchDateFilter} onChange={setBatchDateFilter} />
           {batches.filter(b => matchesDateFilter(b.createdAt, batchDateFilter)).map(b => {
-            const done = b.rows.filter(rowComplete).length;
+            // "Complete" = QC-passed OR finished via the Raise Quotation
+            // receive flow — either milestone alone counts a saree as done.
+            const done = b.rows.filter(r => r.qcPassed === true || r.finished === true).length;
             const pct = b.totalCount > 0 ? Math.round((done / b.totalCount) * 100) : 0;
             const isCompleted = b.status === "completed" || (b.totalCount > 0 && done === b.totalCount);
             const isActive = b.status === "active" && !isCompleted;
@@ -100,7 +102,11 @@ export function DraftsTab({
                   <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>{pct}% complete · Updated {new Date(b.updatedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</div>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
-                  {!isCompleted && (
+                  {isCompleted ? (
+                    <Button onClick={() => openDraft(b)} variant="secondary" size="md" className="shrink-0">
+                      View <ArrowRight size={14} />
+                    </Button>
+                  ) : (
                     <Button onClick={() => openDraft(b)} variant="primary" size="md" className="shrink-0 bg-[linear-gradient(135deg,#6E0F2D_0%,#4A061B_100%)] hover:opacity-90">
                       {isDraft ? "Continue Editing" : "Open & Edit"} <ArrowRight size={14} />
                     </Button>

@@ -29,6 +29,8 @@ export interface WeaverSareeRow {
   finishingStatus: FinishingStatus;
   finishingAssignedDate: string | null;
   finishingCompletedDate: string | null;
+  /** true once this saree appears in a real DispatchRecord — already dispatched, including via a raised quotation. */
+  dispatched: boolean;
 
   /** present when the saree exists in the sales / stock ledger */
   stock: UnifiedSaree | null;

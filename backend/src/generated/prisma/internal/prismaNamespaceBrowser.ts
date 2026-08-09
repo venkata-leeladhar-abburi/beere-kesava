@@ -350,6 +350,7 @@ export type MaterialIssueItemScalarFieldEnum = (typeof MaterialIssueItemScalarFi
 
 
 export const QcRecordScalarFieldEnum = {
+  id: 'id',
   sareeId: 'sareeId',
   weaverId: 'weaverId',
   factoryLoomId: 'factoryLoomId',
@@ -400,7 +401,8 @@ export const FinishingAssignmentScalarFieldEnum = {
   damageSeverity: 'damageSeverity',
   damageNotes: 'damageNotes',
   damagePhotoUrl: 'damagePhotoUrl',
-  quotationRef: 'quotationRef'
+  quotationRef: 'quotationRef',
+  updatedAt: 'updatedAt'
 } as const
 
 export type FinishingAssignmentScalarFieldEnum = (typeof FinishingAssignmentScalarFieldEnum)[keyof typeof FinishingAssignmentScalarFieldEnum]

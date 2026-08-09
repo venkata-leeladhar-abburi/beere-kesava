@@ -42,7 +42,7 @@ export function BatchHistoryPage({ onBack, defaultFilter = "all" }: { onBack: ()
     .filter(b => b.status !== "draft")
     .map(b => ({ ...b, myRows: b.rows.filter(r => r.weaverId === weaverId) }))
     .filter(b => b.myRows.length > 0)
-    .map(b => ({ ...b, derivedStatus: b.myRows.every(r => r.qcPassed === true) ? "completed" as const : "active" as const }));
+    .map(b => ({ ...b, derivedStatus: b.myRows.every(r => r.finished === true) ? "completed" as const : "active" as const }));
 
   const filtered = myWeaverBatches.filter(b => {
     const matchSearch = !search || b.batchId.toLowerCase().includes(search.toLowerCase());

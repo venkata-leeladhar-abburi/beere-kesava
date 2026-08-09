@@ -4,6 +4,7 @@ import { batchesApi } from "../../../../../shared/api/batches";
 import { weaversApi } from "../../../../../shared/api/weavers";
 import { designLibraryApi } from "../../../../../shared/api/design-library";
 import { purchaseRequestsApi } from "../../../../../shared/api/purchase-requests";
+import { dispatchApi } from "../../../../../shared/api/dispatch";
 
 export function useDashboardAnalytics() {
   const production = useQuery({
@@ -42,6 +43,12 @@ export function useDashboardAnalytics() {
     staleTime: 10_000,
   });
 
+  const dispatches = useQuery({
+    queryKey: ["dispatch", "dashboard-analytics"],
+    queryFn: () => dispatchApi.list(1),
+    staleTime: 10_000,
+  });
+
   const isLoading =
     production.isLoading && batches.isLoading && weavers.isLoading;
 
@@ -72,8 +79,10 @@ export function useDashboardAnalytics() {
   );
   const designCodesCount = new Set([...designCodesFromLibrary, ...designCodesFromBatches]).size;
 
-  const totalBatchRows = allBatches.reduce((sum, b) => sum + (b.rows?.length ?? 0), 0);
-  const totalSareesProduced = Math.max(production.data?.totalSareesProduced ?? 0, totalBatchRows);
+  // Backend already computes this as QC-passed OR finished-via-quotation,
+  // deduplicated by saree — do not clamp it up to the raw row count, which
+  // would count every unproduced row too.
+  const totalSareesProduced = production.data?.totalSareesProduced ?? 0;
 
   const inStockSareesCount = qc?.PASSED ?? 0;
 
@@ -84,6 +93,8 @@ export function useDashboardAnalytics() {
   const paymentsCollectedPct = totalInvoiced > 0 ? Math.round((totalCollected / totalInvoiced) * 100) : 0;
 
   const pendingApprovalsCount = (purchaseRequests.data?.items ?? []).filter((r) => r.status === "PENDING").length;
+
+  const dispatchedCount = dispatches.data?.total ?? 0;
 
   return {
     isLoading,
@@ -97,5 +108,6 @@ export function useDashboardAnalytics() {
     overdueInvoicesCount,
     paymentsCollectedPct,
     pendingApprovalsCount,
+    dispatchedCount,
   };
 }

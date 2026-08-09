@@ -8,7 +8,7 @@ import { ListFinishingAssignmentsQueryDto } from "./dto/list-finishing-assignmen
 import { ReceiveFinishingReturnDto } from "./dto/receive-finishing-return.dto";
 
 const include = {
-  batchSareeRow: { include: { design: true, weaver: true } },
+  batchSareeRow: { include: { design: true, weaver: true, qcRecord: { select: { result: true } } } },
   finishingStaff: true,
 } satisfies Prisma.FinishingAssignmentInclude;
 
@@ -43,7 +43,7 @@ export class FinishingAssignmentsService {
       throw new NotFoundException(`Saree(s) not found: ${missing.join(", ")}`);
     }
     for (const row of rows) {
-      if (!row.qcRecord || row.qcRecord.result === QcResult.DEFECTIVE) {
+      if (!row.qcRecord || row.qcRecord.result !== QcResult.PASSED) {
         throw new BadRequestException(`Saree ${row.sareeId} has not passed QC`);
       }
       if (row.finishingAssignment) {

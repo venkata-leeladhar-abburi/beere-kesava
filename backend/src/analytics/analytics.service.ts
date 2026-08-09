@@ -189,30 +189,44 @@ export class AnalyticsService {
     const buckets = this.buildMonthBuckets(n);
     const rangeStart = buckets[0].start;
 
-    const [qcRecords, batchRows] = await Promise.all([
+    const [qcRecords, returnedAssignments] = await Promise.all([
       this.prisma.qcRecord.findMany({
         where: { qcDate: { gte: rangeStart } },
-        select: { qcDate: true, result: true },
+        select: { sareeId: true, qcDate: true, result: true },
       }),
-      this.prisma.batchSareeRow.findMany({
-        where: { createdAt: { gte: rangeStart } },
-        select: { createdAt: true },
+      // A saree finished via the Raise Quotation receive flow — set here
+      // even when it wasn't otherwise flagged PASSED in qcRecord.
+      this.prisma.finishingAssignment.findMany({
+        where: { status: "RETURNED", updatedAt: { gte: rangeStart } },
+        select: { sareeId: true, updatedAt: true },
       }),
     ]);
 
     const map: Record<string, { month: string; produced: number; passed: number }> = {};
     buckets.forEach((b) => (map[b.key] = { month: b.key, produced: 0, passed: 0 }));
 
-    batchRows.forEach((r) => {
-      const key = this.monthKey(new Date(r.createdAt));
-      if (map[key]) map[key].produced += 1;
-    });
+    // "Produced" = QC-passed OR finished via Raise Quotation, deduplicated
+    // per saree per month so a saree isn't double-counted if both happened
+    // in the same month.
+    const producedIdsByMonth: Record<string, Set<string>> = {};
+    buckets.forEach((b) => (producedIdsByMonth[b.key] = new Set()));
 
     qcRecords.forEach((r) => {
       const key = this.monthKey(new Date(r.qcDate));
       if (!map[key]) return;
-      if (r.result === "PASSED") map[key].passed += 1;
+      if (r.result === "PASSED") {
+        map[key].passed += 1;
+        producedIdsByMonth[key].add(r.sareeId);
+      }
     });
+
+    returnedAssignments.forEach((r) => {
+      const key = this.monthKey(new Date(r.updatedAt));
+      if (!map[key]) return;
+      producedIdsByMonth[key].add(r.sareeId);
+    });
+
+    buckets.forEach((b) => (map[b.key].produced = producedIdsByMonth[b.key].size));
 
     return { items: buckets.map((b) => map[b.key]) };
   }

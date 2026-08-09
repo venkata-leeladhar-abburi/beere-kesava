@@ -1,11 +1,9 @@
 import React, { useState } from "react";
-import { Plus } from "lucide-react";
 import { C, F } from "./tokens";
 import { useMaterialIssue } from "../../../materials/contexts/MaterialIssueContext";
 import { DesignPlanningPage } from "./weavers/DesignPlanningPage";
 import { ReceiveSareesPage } from "./weavers/ReceiveSareesPage";
 import { HistorySection } from "./weavers/HistorySection";
-import { ManualEntryModal } from "./weavers/ManualEntryModal";
 import { type WeaversPage, type ReceivedSareeLog } from "./weavers/shared";
 import { Button } from "../../../../shared/ui/primitives";
 
@@ -20,7 +18,6 @@ interface WorkerWeaversProps {
 
 export function WorkerWeavers({ subPage, onSubPageChange }: WorkerWeaversProps) {
   const [localPage, setLocalPage] = useState<WeaversPage>("receive");
-  const [showManual, setShowManual] = useState(false);
   const [liveRecords, setLiveRecords] = useState<ReceivedSareeLog[]>([]);
   const { addReceivedSaree } = useMaterialIssue();
   const page = subPage ?? localPage;
@@ -47,7 +44,6 @@ export function WorkerWeavers({ subPage, onSubPageChange }: WorkerWeaversProps) 
 
   return (
     <>
-      {showManual && <ManualEntryModal onClose={() => setShowManual(false)} />}
       <div style={{ paddingBottom: 20 }}>
         {/* Page header strip */}
         <div style={{ background: `linear-gradient(135deg, ${C.dark} 0%, ${C.burg} 100%)`, padding: "16px 16px 14px" }}>
@@ -56,10 +52,6 @@ export function WorkerWeavers({ subPage, onSubPageChange }: WorkerWeaversProps) 
               <div style={{ fontFamily: F.d, fontSize: 18, fontWeight: 700, color: "#FFF", marginBottom: 2 }}>Receive Sarees</div>
               <div style={{ fontFamily: F.u, fontSize: 12, color: "rgba(255,255,255,0.60)" }}>Record completed sarees from weavers</div>
             </div>
-            <Button variant="secondary" size="sm" iconLeft={Plus} onClick={() => setShowManual(true)}
-              className="rounded-xl border border-white/28 bg-white/13 text-white hover:bg-white/13">
-              Add Manually
-            </Button>
           </div>
         </div>
 

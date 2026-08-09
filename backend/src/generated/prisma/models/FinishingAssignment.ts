@@ -39,6 +39,7 @@ export type FinishingAssignmentMinAggregateOutputType = {
   damageNotes: string | null
   damagePhotoUrl: string | null
   quotationRef: string | null
+  updatedAt: Date | null
 }
 
 export type FinishingAssignmentMaxAggregateOutputType = {
@@ -56,6 +57,7 @@ export type FinishingAssignmentMaxAggregateOutputType = {
   damageNotes: string | null
   damagePhotoUrl: string | null
   quotationRef: string | null
+  updatedAt: Date | null
 }
 
 export type FinishingAssignmentCountAggregateOutputType = {
@@ -73,6 +75,7 @@ export type FinishingAssignmentCountAggregateOutputType = {
   damageNotes: number
   damagePhotoUrl: number
   quotationRef: number
+  updatedAt: number
   _all: number
 }
 
@@ -92,6 +95,7 @@ export type FinishingAssignmentMinAggregateInputType = {
   damageNotes?: true
   damagePhotoUrl?: true
   quotationRef?: true
+  updatedAt?: true
 }
 
 export type FinishingAssignmentMaxAggregateInputType = {
@@ -109,6 +113,7 @@ export type FinishingAssignmentMaxAggregateInputType = {
   damageNotes?: true
   damagePhotoUrl?: true
   quotationRef?: true
+  updatedAt?: true
 }
 
 export type FinishingAssignmentCountAggregateInputType = {
@@ -126,6 +131,7 @@ export type FinishingAssignmentCountAggregateInputType = {
   damageNotes?: true
   damagePhotoUrl?: true
   quotationRef?: true
+  updatedAt?: true
   _all?: true
 }
 
@@ -216,6 +222,7 @@ export type FinishingAssignmentGroupByOutputType = {
   damageNotes: string | null
   damagePhotoUrl: string | null
   quotationRef: string | null
+  updatedAt: Date
   _count: FinishingAssignmentCountAggregateOutputType | null
   _min: FinishingAssignmentMinAggregateOutputType | null
   _max: FinishingAssignmentMaxAggregateOutputType | null
@@ -254,6 +261,7 @@ export type FinishingAssignmentWhereInput = {
   damageNotes?: Prisma.StringNullableFilter<"FinishingAssignment"> | string | null
   damagePhotoUrl?: Prisma.StringNullableFilter<"FinishingAssignment"> | string | null
   quotationRef?: Prisma.StringNullableFilter<"FinishingAssignment"> | string | null
+  updatedAt?: Prisma.DateTimeFilter<"FinishingAssignment"> | Date | string
   batchSareeRow?: Prisma.XOR<Prisma.BatchSareeRowScalarRelationFilter, Prisma.BatchSareeRowWhereInput>
   finishingStaff?: Prisma.XOR<Prisma.FinishingStaffScalarRelationFilter, Prisma.FinishingStaffWhereInput>
   assignedBy?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -275,6 +283,7 @@ export type FinishingAssignmentOrderByWithRelationInput = {
   damageNotes?: Prisma.SortOrderInput | Prisma.SortOrder
   damagePhotoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   quotationRef?: Prisma.SortOrderInput | Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
   batchSareeRow?: Prisma.BatchSareeRowOrderByWithRelationInput
   finishingStaff?: Prisma.FinishingStaffOrderByWithRelationInput
   assignedBy?: Prisma.UserOrderByWithRelationInput
@@ -299,6 +308,7 @@ export type FinishingAssignmentWhereUniqueInput = Prisma.AtLeast<{
   damageNotes?: Prisma.StringNullableFilter<"FinishingAssignment"> | string | null
   damagePhotoUrl?: Prisma.StringNullableFilter<"FinishingAssignment"> | string | null
   quotationRef?: Prisma.StringNullableFilter<"FinishingAssignment"> | string | null
+  updatedAt?: Prisma.DateTimeFilter<"FinishingAssignment"> | Date | string
   batchSareeRow?: Prisma.XOR<Prisma.BatchSareeRowScalarRelationFilter, Prisma.BatchSareeRowWhereInput>
   finishingStaff?: Prisma.XOR<Prisma.FinishingStaffScalarRelationFilter, Prisma.FinishingStaffWhereInput>
   assignedBy?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -320,6 +330,7 @@ export type FinishingAssignmentOrderByWithAggregationInput = {
   damageNotes?: Prisma.SortOrderInput | Prisma.SortOrder
   damagePhotoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   quotationRef?: Prisma.SortOrderInput | Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
   _count?: Prisma.FinishingAssignmentCountOrderByAggregateInput
   _max?: Prisma.FinishingAssignmentMaxOrderByAggregateInput
   _min?: Prisma.FinishingAssignmentMinOrderByAggregateInput
@@ -343,6 +354,7 @@ export type FinishingAssignmentScalarWhereWithAggregatesInput = {
   damageNotes?: Prisma.StringNullableWithAggregatesFilter<"FinishingAssignment"> | string | null
   damagePhotoUrl?: Prisma.StringNullableWithAggregatesFilter<"FinishingAssignment"> | string | null
   quotationRef?: Prisma.StringNullableWithAggregatesFilter<"FinishingAssignment"> | string | null
+  updatedAt?: Prisma.DateTimeWithAggregatesFilter<"FinishingAssignment"> | Date | string
 }
 
 export type FinishingAssignmentCreateInput = {
@@ -356,6 +368,7 @@ export type FinishingAssignmentCreateInput = {
   damageSeverity?: $Enums.DamageSeverity | null
   damageNotes?: string | null
   damagePhotoUrl?: string | null
+  updatedAt?: Date | string
   batchSareeRow: Prisma.BatchSareeRowCreateNestedOneWithoutFinishingAssignmentInput
   finishingStaff: Prisma.FinishingStaffCreateNestedOneWithoutAssignmentsInput
   assignedBy: Prisma.UserCreateNestedOneWithoutAssignedFinishingsInput
@@ -377,6 +390,7 @@ export type FinishingAssignmentUncheckedCreateInput = {
   damageNotes?: string | null
   damagePhotoUrl?: string | null
   quotationRef?: string | null
+  updatedAt?: Date | string
 }
 
 export type FinishingAssignmentUpdateInput = {
@@ -390,6 +404,7 @@ export type FinishingAssignmentUpdateInput = {
   damageSeverity?: Prisma.NullableEnumDamageSeverityFieldUpdateOperationsInput | $Enums.DamageSeverity | null
   damageNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   damagePhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   batchSareeRow?: Prisma.BatchSareeRowUpdateOneRequiredWithoutFinishingAssignmentNestedInput
   finishingStaff?: Prisma.FinishingStaffUpdateOneRequiredWithoutAssignmentsNestedInput
   assignedBy?: Prisma.UserUpdateOneRequiredWithoutAssignedFinishingsNestedInput
@@ -411,6 +426,7 @@ export type FinishingAssignmentUncheckedUpdateInput = {
   damageNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   damagePhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quotationRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type FinishingAssignmentCreateManyInput = {
@@ -428,6 +444,7 @@ export type FinishingAssignmentCreateManyInput = {
   damageNotes?: string | null
   damagePhotoUrl?: string | null
   quotationRef?: string | null
+  updatedAt?: Date | string
 }
 
 export type FinishingAssignmentUpdateManyMutationInput = {
@@ -441,6 +458,7 @@ export type FinishingAssignmentUpdateManyMutationInput = {
   damageSeverity?: Prisma.NullableEnumDamageSeverityFieldUpdateOperationsInput | $Enums.DamageSeverity | null
   damageNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   damagePhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type FinishingAssignmentUncheckedUpdateManyInput = {
@@ -458,6 +476,7 @@ export type FinishingAssignmentUncheckedUpdateManyInput = {
   damageNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   damagePhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quotationRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type FinishingAssignmentListRelationFilter = {
@@ -490,6 +509,7 @@ export type FinishingAssignmentCountOrderByAggregateInput = {
   damageNotes?: Prisma.SortOrder
   damagePhotoUrl?: Prisma.SortOrder
   quotationRef?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
 }
 
 export type FinishingAssignmentMaxOrderByAggregateInput = {
@@ -507,6 +527,7 @@ export type FinishingAssignmentMaxOrderByAggregateInput = {
   damageNotes?: Prisma.SortOrder
   damagePhotoUrl?: Prisma.SortOrder
   quotationRef?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
 }
 
 export type FinishingAssignmentMinOrderByAggregateInput = {
@@ -524,6 +545,7 @@ export type FinishingAssignmentMinOrderByAggregateInput = {
   damageNotes?: Prisma.SortOrder
   damagePhotoUrl?: Prisma.SortOrder
   quotationRef?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
 }
 
 export type FinishingAssignmentCreateNestedManyWithoutAssignedByInput = {
@@ -707,6 +729,7 @@ export type FinishingAssignmentCreateWithoutAssignedByInput = {
   damageSeverity?: $Enums.DamageSeverity | null
   damageNotes?: string | null
   damagePhotoUrl?: string | null
+  updatedAt?: Date | string
   batchSareeRow: Prisma.BatchSareeRowCreateNestedOneWithoutFinishingAssignmentInput
   finishingStaff: Prisma.FinishingStaffCreateNestedOneWithoutAssignmentsInput
   quotation?: Prisma.QuotationCreateNestedOneWithoutFinishingAssignmentsInput
@@ -726,6 +749,7 @@ export type FinishingAssignmentUncheckedCreateWithoutAssignedByInput = {
   damageNotes?: string | null
   damagePhotoUrl?: string | null
   quotationRef?: string | null
+  updatedAt?: Date | string
 }
 
 export type FinishingAssignmentCreateOrConnectWithoutAssignedByInput = {
@@ -772,6 +796,7 @@ export type FinishingAssignmentScalarWhereInput = {
   damageNotes?: Prisma.StringNullableFilter<"FinishingAssignment"> | string | null
   damagePhotoUrl?: Prisma.StringNullableFilter<"FinishingAssignment"> | string | null
   quotationRef?: Prisma.StringNullableFilter<"FinishingAssignment"> | string | null
+  updatedAt?: Prisma.DateTimeFilter<"FinishingAssignment"> | Date | string
 }
 
 export type FinishingAssignmentCreateWithoutBatchSareeRowInput = {
@@ -785,6 +810,7 @@ export type FinishingAssignmentCreateWithoutBatchSareeRowInput = {
   damageSeverity?: $Enums.DamageSeverity | null
   damageNotes?: string | null
   damagePhotoUrl?: string | null
+  updatedAt?: Date | string
   finishingStaff: Prisma.FinishingStaffCreateNestedOneWithoutAssignmentsInput
   assignedBy: Prisma.UserCreateNestedOneWithoutAssignedFinishingsInput
   quotation?: Prisma.QuotationCreateNestedOneWithoutFinishingAssignmentsInput
@@ -804,6 +830,7 @@ export type FinishingAssignmentUncheckedCreateWithoutBatchSareeRowInput = {
   damageNotes?: string | null
   damagePhotoUrl?: string | null
   quotationRef?: string | null
+  updatedAt?: Date | string
 }
 
 export type FinishingAssignmentCreateOrConnectWithoutBatchSareeRowInput = {
@@ -833,6 +860,7 @@ export type FinishingAssignmentUpdateWithoutBatchSareeRowInput = {
   damageSeverity?: Prisma.NullableEnumDamageSeverityFieldUpdateOperationsInput | $Enums.DamageSeverity | null
   damageNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   damagePhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finishingStaff?: Prisma.FinishingStaffUpdateOneRequiredWithoutAssignmentsNestedInput
   assignedBy?: Prisma.UserUpdateOneRequiredWithoutAssignedFinishingsNestedInput
   quotation?: Prisma.QuotationUpdateOneWithoutFinishingAssignmentsNestedInput
@@ -852,6 +880,7 @@ export type FinishingAssignmentUncheckedUpdateWithoutBatchSareeRowInput = {
   damageNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   damagePhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quotationRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type FinishingAssignmentCreateWithoutFinishingStaffInput = {
@@ -865,6 +894,7 @@ export type FinishingAssignmentCreateWithoutFinishingStaffInput = {
   damageSeverity?: $Enums.DamageSeverity | null
   damageNotes?: string | null
   damagePhotoUrl?: string | null
+  updatedAt?: Date | string
   batchSareeRow: Prisma.BatchSareeRowCreateNestedOneWithoutFinishingAssignmentInput
   assignedBy: Prisma.UserCreateNestedOneWithoutAssignedFinishingsInput
   quotation?: Prisma.QuotationCreateNestedOneWithoutFinishingAssignmentsInput
@@ -884,6 +914,7 @@ export type FinishingAssignmentUncheckedCreateWithoutFinishingStaffInput = {
   damageNotes?: string | null
   damagePhotoUrl?: string | null
   quotationRef?: string | null
+  updatedAt?: Date | string
 }
 
 export type FinishingAssignmentCreateOrConnectWithoutFinishingStaffInput = {
@@ -923,6 +954,7 @@ export type FinishingAssignmentCreateWithoutQuotationInput = {
   damageSeverity?: $Enums.DamageSeverity | null
   damageNotes?: string | null
   damagePhotoUrl?: string | null
+  updatedAt?: Date | string
   batchSareeRow: Prisma.BatchSareeRowCreateNestedOneWithoutFinishingAssignmentInput
   finishingStaff: Prisma.FinishingStaffCreateNestedOneWithoutAssignmentsInput
   assignedBy: Prisma.UserCreateNestedOneWithoutAssignedFinishingsInput
@@ -942,6 +974,7 @@ export type FinishingAssignmentUncheckedCreateWithoutQuotationInput = {
   damageSeverity?: $Enums.DamageSeverity | null
   damageNotes?: string | null
   damagePhotoUrl?: string | null
+  updatedAt?: Date | string
 }
 
 export type FinishingAssignmentCreateOrConnectWithoutQuotationInput = {
@@ -984,6 +1017,7 @@ export type FinishingAssignmentCreateManyAssignedByInput = {
   damageNotes?: string | null
   damagePhotoUrl?: string | null
   quotationRef?: string | null
+  updatedAt?: Date | string
 }
 
 export type FinishingAssignmentUpdateWithoutAssignedByInput = {
@@ -997,6 +1031,7 @@ export type FinishingAssignmentUpdateWithoutAssignedByInput = {
   damageSeverity?: Prisma.NullableEnumDamageSeverityFieldUpdateOperationsInput | $Enums.DamageSeverity | null
   damageNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   damagePhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   batchSareeRow?: Prisma.BatchSareeRowUpdateOneRequiredWithoutFinishingAssignmentNestedInput
   finishingStaff?: Prisma.FinishingStaffUpdateOneRequiredWithoutAssignmentsNestedInput
   quotation?: Prisma.QuotationUpdateOneWithoutFinishingAssignmentsNestedInput
@@ -1016,6 +1051,7 @@ export type FinishingAssignmentUncheckedUpdateWithoutAssignedByInput = {
   damageNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   damagePhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quotationRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type FinishingAssignmentUncheckedUpdateManyWithoutAssignedByInput = {
@@ -1032,6 +1068,7 @@ export type FinishingAssignmentUncheckedUpdateManyWithoutAssignedByInput = {
   damageNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   damagePhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quotationRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type FinishingAssignmentCreateManyFinishingStaffInput = {
@@ -1048,6 +1085,7 @@ export type FinishingAssignmentCreateManyFinishingStaffInput = {
   damageNotes?: string | null
   damagePhotoUrl?: string | null
   quotationRef?: string | null
+  updatedAt?: Date | string
 }
 
 export type FinishingAssignmentUpdateWithoutFinishingStaffInput = {
@@ -1061,6 +1099,7 @@ export type FinishingAssignmentUpdateWithoutFinishingStaffInput = {
   damageSeverity?: Prisma.NullableEnumDamageSeverityFieldUpdateOperationsInput | $Enums.DamageSeverity | null
   damageNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   damagePhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   batchSareeRow?: Prisma.BatchSareeRowUpdateOneRequiredWithoutFinishingAssignmentNestedInput
   assignedBy?: Prisma.UserUpdateOneRequiredWithoutAssignedFinishingsNestedInput
   quotation?: Prisma.QuotationUpdateOneWithoutFinishingAssignmentsNestedInput
@@ -1080,6 +1119,7 @@ export type FinishingAssignmentUncheckedUpdateWithoutFinishingStaffInput = {
   damageNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   damagePhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quotationRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type FinishingAssignmentUncheckedUpdateManyWithoutFinishingStaffInput = {
@@ -1096,6 +1136,7 @@ export type FinishingAssignmentUncheckedUpdateManyWithoutFinishingStaffInput = {
   damageNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   damagePhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quotationRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type FinishingAssignmentCreateManyQuotationInput = {
@@ -1112,6 +1153,7 @@ export type FinishingAssignmentCreateManyQuotationInput = {
   damageSeverity?: $Enums.DamageSeverity | null
   damageNotes?: string | null
   damagePhotoUrl?: string | null
+  updatedAt?: Date | string
 }
 
 export type FinishingAssignmentUpdateWithoutQuotationInput = {
@@ -1125,6 +1167,7 @@ export type FinishingAssignmentUpdateWithoutQuotationInput = {
   damageSeverity?: Prisma.NullableEnumDamageSeverityFieldUpdateOperationsInput | $Enums.DamageSeverity | null
   damageNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   damagePhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   batchSareeRow?: Prisma.BatchSareeRowUpdateOneRequiredWithoutFinishingAssignmentNestedInput
   finishingStaff?: Prisma.FinishingStaffUpdateOneRequiredWithoutAssignmentsNestedInput
   assignedBy?: Prisma.UserUpdateOneRequiredWithoutAssignedFinishingsNestedInput
@@ -1144,6 +1187,7 @@ export type FinishingAssignmentUncheckedUpdateWithoutQuotationInput = {
   damageSeverity?: Prisma.NullableEnumDamageSeverityFieldUpdateOperationsInput | $Enums.DamageSeverity | null
   damageNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   damagePhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type FinishingAssignmentUncheckedUpdateManyWithoutQuotationInput = {
@@ -1160,6 +1204,7 @@ export type FinishingAssignmentUncheckedUpdateManyWithoutQuotationInput = {
   damageSeverity?: Prisma.NullableEnumDamageSeverityFieldUpdateOperationsInput | $Enums.DamageSeverity | null
   damageNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   damagePhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 
@@ -1179,6 +1224,7 @@ export type FinishingAssignmentSelect<ExtArgs extends runtime.Types.Extensions.I
   damageNotes?: boolean
   damagePhotoUrl?: boolean
   quotationRef?: boolean
+  updatedAt?: boolean
   batchSareeRow?: boolean | Prisma.BatchSareeRowDefaultArgs<ExtArgs>
   finishingStaff?: boolean | Prisma.FinishingStaffDefaultArgs<ExtArgs>
   assignedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -1200,6 +1246,7 @@ export type FinishingAssignmentSelectCreateManyAndReturn<ExtArgs extends runtime
   damageNotes?: boolean
   damagePhotoUrl?: boolean
   quotationRef?: boolean
+  updatedAt?: boolean
   batchSareeRow?: boolean | Prisma.BatchSareeRowDefaultArgs<ExtArgs>
   finishingStaff?: boolean | Prisma.FinishingStaffDefaultArgs<ExtArgs>
   assignedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -1221,6 +1268,7 @@ export type FinishingAssignmentSelectUpdateManyAndReturn<ExtArgs extends runtime
   damageNotes?: boolean
   damagePhotoUrl?: boolean
   quotationRef?: boolean
+  updatedAt?: boolean
   batchSareeRow?: boolean | Prisma.BatchSareeRowDefaultArgs<ExtArgs>
   finishingStaff?: boolean | Prisma.FinishingStaffDefaultArgs<ExtArgs>
   assignedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -1242,9 +1290,10 @@ export type FinishingAssignmentSelectScalar = {
   damageNotes?: boolean
   damagePhotoUrl?: boolean
   quotationRef?: boolean
+  updatedAt?: boolean
 }
 
-export type FinishingAssignmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "sareeId" | "designCode" | "sareeType" | "finishingStaffId" | "assignedById" | "assignedDate" | "status" | "condition" | "damageType" | "damageSeverity" | "damageNotes" | "damagePhotoUrl" | "quotationRef", ExtArgs["result"]["finishingAssignment"]>
+export type FinishingAssignmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "sareeId" | "designCode" | "sareeType" | "finishingStaffId" | "assignedById" | "assignedDate" | "status" | "condition" | "damageType" | "damageSeverity" | "damageNotes" | "damagePhotoUrl" | "quotationRef" | "updatedAt", ExtArgs["result"]["finishingAssignment"]>
 export type FinishingAssignmentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   batchSareeRow?: boolean | Prisma.BatchSareeRowDefaultArgs<ExtArgs>
   finishingStaff?: boolean | Prisma.FinishingStaffDefaultArgs<ExtArgs>
@@ -1287,6 +1336,7 @@ export type $FinishingAssignmentPayload<ExtArgs extends runtime.Types.Extensions
     damageNotes: string | null
     damagePhotoUrl: string | null
     quotationRef: string | null
+    updatedAt: Date
   }, ExtArgs["result"]["finishingAssignment"]>
   composites: {}
 }
@@ -1728,6 +1778,7 @@ export interface FinishingAssignmentFieldRefs {
   readonly damageNotes: Prisma.FieldRef<"FinishingAssignment", 'String'>
   readonly damagePhotoUrl: Prisma.FieldRef<"FinishingAssignment", 'String'>
   readonly quotationRef: Prisma.FieldRef<"FinishingAssignment", 'String'>
+  readonly updatedAt: Prisma.FieldRef<"FinishingAssignment", 'DateTime'>
 }
     
 

@@ -7,6 +7,8 @@ import { useCurrentWeaver } from "../useCurrentWeaver";
 import { useAuth } from "../../../../../contexts/AuthContext";
 import { useQc } from "../../../../qc/contexts/QcContext";
 import { useWeaverPayments } from "../../../../weavers/contexts/WeaverPaymentsContext";
+import { useBatches } from "../../../../production/contexts/BatchContext";
+import { useRatesPricing } from "../../../../pricing/contexts/RatesContext";
 
 function DSectionHeader({ label, link, onLink }: { label: string; link?: string; onLink?: () => void }) {
   return (
@@ -27,21 +29,38 @@ export function PaymentsSection({ bp, isTablet }: { bp: "tablet" | "desktop"; is
   const { user } = useAuth();
   const { getQcForWeaver } = useQc();
   const { getPaymentsForWeaver } = useWeaverPayments();
+  const { batches } = useBatches();
+  const { getSareeTypeByCode } = useRatesPricing();
 
   const identityBadge = user?.name ? (weaverCode ? `${user.name} · ${weaverCode}` : user.name) : "—";
 
   const weaverQcRecords = weaverId ? getQcForWeaver(weaverId) : [];
   const now = new Date();
   const monthName = now.toLocaleDateString("en-IN", { month: "short", year: "numeric" });
-
-  const thisMonthQcRecords = weaverQcRecords.filter(q => {
-    const d = new Date(q.qcDate);
+  const isThisMonth = (iso: string) => {
+    const d = new Date(iso);
     return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
-  });
+  };
 
-  const sareesProduced = thisMonthQcRecords.length;
-  const passedCount = thisMonthQcRecords.filter(q => q.result === "passed").length;
-  const grossCharges = thisMonthQcRecords.reduce((sum, q) => sum + (Number(q.makingCharge) || 0), 0);
+  const thisMonthQcRecords = weaverQcRecords.filter(q => isThisMonth(q.qcDate));
+
+  // "Produced" = QC-passed this month OR finished via the Raise Quotation
+  // receive flow this month — a saree can complete that flow without a QC
+  // record showing up here, so counting QC records alone undercounts it.
+  const myRows = weaverId ? batches.flatMap(b => b.rows.filter(r => r.weaverId === weaverId)) : [];
+  const qcProducedIds = new Set(thisMonthQcRecords.filter(q => q.result === "passed").map(q => q.sareeId));
+  const quotationFinishedRows = myRows.filter(
+    r => r.sareeId && r.finished && r.finishedAt && isThisMonth(r.finishedAt) && !qcProducedIds.has(r.sareeId),
+  );
+
+  const passedCount = qcProducedIds.size;
+  const sareesProduced = qcProducedIds.size + quotationFinishedRows.length;
+  const grossFromQc = thisMonthQcRecords.filter(q => q.result === "passed").reduce((sum, q) => sum + (Number(q.makingCharge) || 0), 0);
+  const grossFromQuotation = quotationFinishedRows.reduce(
+    (sum, r) => sum + (r.sareeTypeCode ? Number(getSareeTypeByCode(r.sareeTypeCode)?.charge ?? 0) : 0),
+    0,
+  );
+  const grossCharges = grossFromQc + grossFromQuotation;
   const totalDeductions = thisMonthQcRecords.reduce((sum, q) => sum + (Number(q.deduction) || 0), 0);
   const netAmount = Math.max(0, grossCharges - totalDeductions);
 
@@ -49,19 +68,33 @@ export function PaymentsSection({ bp, isTablet }: { bp: "tablet" | "desktop"; is
   const myPayments = weaverId ? getPaymentsForWeaver(weaverId) : [];
 
   // Gross charges broken down by saree type — count x that type's making
-  // charge (the real per-saree rate recorded at QC time, not a re-derived
-  // estimate), so the weaver can see exactly which saree type earned what.
+  // charge, combining QC-passed records with quotation-finished rows so the
+  // breakdown matches the "Sarees Produced" total above.
   const chargesByType = Object.values(
-    thisMonthQcRecords.reduce((acc, q) => {
-      const key = q.sareeTypeCode ?? "—";
-      if (!acc[key]) {
-        acc[key] = { code: key, name: q.sareeTypeName ?? key, count: 0, rate: Number(q.makingCharge) || 0, subtotal: 0 };
+    [
+      ...thisMonthQcRecords
+        .filter(q => q.result === "passed")
+        .map(q => ({ code: q.sareeTypeCode ?? "—", name: q.sareeTypeName ?? q.sareeTypeCode ?? "—", rate: Number(q.makingCharge) || 0 })),
+      ...quotationFinishedRows.map(r => ({
+        code: r.sareeTypeCode ?? "—",
+        name: r.sareeTypeName ?? r.sareeTypeCode ?? "—",
+        rate: r.sareeTypeCode ? Number(getSareeTypeByCode(r.sareeTypeCode)?.charge ?? 0) : 0,
+      })),
+    ].reduce((acc, entry) => {
+      if (!acc[entry.code]) {
+        acc[entry.code] = { code: entry.code, name: entry.name, count: 0, rate: entry.rate, subtotal: 0 };
       }
-      acc[key].count += 1;
-      acc[key].subtotal += Number(q.makingCharge) || 0;
+      acc[entry.code].count += 1;
+      acc[entry.code].subtotal += entry.rate;
       return acc;
     }, {} as Record<string, { code: string; name: string; count: number; rate: number; subtotal: number }>)
   ).sort((a, b) => b.subtotal - a.subtotal);
+
+  const formatCurrency = (n: number) => {
+    if (n >= 100_000) return `₹${(n / 100_000).toFixed(1)}L`;
+    if (n >= 1_000) return `₹${(n / 1_000).toFixed(1)}K`;
+    return `₹${n.toLocaleString("en-IN")}`;
+  };
 
   return (
     <>
@@ -80,7 +113,7 @@ export function PaymentsSection({ bp, isTablet }: { bp: "tablet" | "desktop"; is
         alertBadge={myPayments.length > 0 ? "Payment Recorded" : "Payment Pending"}
         stats={[
           { label: "Sarees Produced", val: `${sareesProduced}`, sub: `${passedCount} passed QC this month` },
-          { label: "Gross Making Charges", val: `₹${grossCharges.toLocaleString("en-IN")}`, sub: "Before any deductions", highlight: true },
+          { label: "Gross Making Charges", val: formatCurrency(grossCharges), sub: "Before any deductions", highlight: true },
           { label: "Total Deductions", val: `₹${totalDeductions.toLocaleString("en-IN")}`, sub: `${defectiveRecords.length} defective item${defectiveRecords.length === 1 ? "" : "s"}` },
           { label: "Net Amount to Pay", val: `₹${netAmount.toLocaleString("en-IN")}`, sub: `Expected by end of ${monthName}` },
         ]}

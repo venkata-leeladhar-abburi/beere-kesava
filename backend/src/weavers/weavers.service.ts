@@ -200,36 +200,70 @@ export class WeaversService {
     }
   }
 
+  // "Produced" (== "sarees woven" in the UI) = QC-passed OR finished via the
+  // Raise Quotation receive flow, deduplicated per saree — not the separate,
+  // disconnected `Saree` table (legacy/unused) and not `receivedAt` alone.
+  // Shared by getWeaverStats/getLeaderboard so every weaver-facing number
+  // agrees. Pass weaverIds to scope the query; omit for all weavers.
+  private async getProducedCountsByWeaver(
+    weaverIds?: string[],
+  ): Promise<Map<string, { produced: Set<string>; qcPassCount: number }>> {
+    const [passedRecords, returnedAssignments] = await Promise.all([
+      this.prisma.qcRecord.findMany({
+        where: { weaverId: weaverIds ? { in: weaverIds } : { not: null }, result: "PASSED" },
+        select: { weaverId: true, sareeId: true },
+      }),
+      this.prisma.finishingAssignment.findMany({
+        where: {
+          status: "RETURNED",
+          batchSareeRow: { weaverId: weaverIds ? { in: weaverIds } : { not: null } },
+        },
+        select: { sareeId: true, batchSareeRow: { select: { weaverId: true } } },
+      }),
+    ]);
+
+    const byWeaver = new Map<string, { produced: Set<string>; qcPassCount: number }>();
+    const entry = (weaverId: string) => {
+      const e = byWeaver.get(weaverId) ?? { produced: new Set<string>(), qcPassCount: 0 };
+      byWeaver.set(weaverId, e);
+      return e;
+    };
+    passedRecords.forEach((r) => {
+      if (!r.weaverId) return;
+      const e = entry(r.weaverId);
+      e.produced.add(r.sareeId);
+      e.qcPassCount += 1;
+    });
+    returnedAssignments.forEach((r) => {
+      const weaverId = r.batchSareeRow.weaverId;
+      if (!weaverId) return;
+      entry(weaverId).produced.add(r.sareeId);
+    });
+    return byWeaver;
+  }
+
   /** Returns live-calculated performance metrics for a single weaver. */
   async getWeaverStats(id: string): Promise<WeaverStats> {
     await this.findOne(id); // throws 404 if not found
 
-    const [totalSareesWoven, qcPassCount, activeBatchRowsCount, materialIssueCount] =
-      await this.prisma.$transaction([
-        // All sarees attributed to this weaver
-        this.prisma.saree.count({ where: { weaverId: id } }),
+    const [producedByWeaver, activeBatchRowsCount, materialIssueCount] = await Promise.all([
+      this.getProducedCountsByWeaver([id]),
+      // Active batch rows currently assigned to this weaver
+      this.prisma.batchSareeRow.count({
+        where: {
+          weaverId: id,
+          batch: { status: "ACTIVE" },
+        },
+      }),
+      // Material issues sent to this weaver
+      this.prisma.materialIssueRecord.count({
+        where: { weaverId: id },
+      }),
+    ]);
 
-        // QC records where this weaver's saree passed
-        this.prisma.qcRecord.count({
-          where: {
-            weaverId: id,
-            result: "PASSED",
-          },
-        }),
-
-        // Active batch rows currently assigned to this weaver
-        this.prisma.batchSareeRow.count({
-          where: {
-            weaverId: id,
-            batch: { status: "ACTIVE" },
-          },
-        }),
-
-        // Material issues sent to this weaver
-        this.prisma.materialIssueRecord.count({
-          where: { weaverId: id },
-        }),
-      ]);
+    const stats = producedByWeaver.get(id);
+    const totalSareesWoven = stats?.produced.size ?? 0;
+    const qcPassCount = stats?.qcPassCount ?? 0;
 
     const qcPassRate =
       totalSareesWoven > 0
@@ -256,22 +290,15 @@ export class WeaversService {
         initials: true,
         photoUrl: true,
         village: true,
-        _count: {
-          select: {
-            // Total sarees attributed to this weaver
-            sarees: true,
-            // QC records that passed — filtered count requires Prisma >= 4.3
-            qcRecords: {
-              where: { result: "PASSED" },
-            },
-          },
-        },
       },
     });
 
+    const producedByWeaver = await this.getProducedCountsByWeaver(weavers.map((w) => w.id));
+
     const entries: WeaverLeaderboardEntry[] = weavers.map((w) => {
-      const totalSareesWoven = w._count.sarees;
-      const qcPassCount = w._count.qcRecords;
+      const stats = producedByWeaver.get(w.id);
+      const totalSareesWoven = stats?.produced.size ?? 0;
+      const qcPassCount = stats?.qcPassCount ?? 0;
       const qcPassRate =
         totalSareesWoven > 0
           ? Math.round((qcPassCount / totalSareesWoven) * 100 * 10) / 10
@@ -298,46 +325,63 @@ export class WeaversService {
   }
 
   /**
-   * Returns the top-5 weaver leaderboard ranked by PRODUCTION VOLUME (QC
-   * records recorded) within a trailing window, rather than QC pass rate.
-   * Used by the Production Analytics "Top Weavers" chart, which cares about
-   * output within the selected period, not all-time quality.
+   * Returns the top-5 weaver leaderboard ranked by PRODUCTION VOLUME within
+   * a trailing window, rather than QC pass rate. "Produced" here means
+   * QC-passed OR finished via the Raise Quotation receive flow — a saree
+   * returned through that flow counts even without its own QC pass record —
+   * deduplicated per saree so one saree can't be counted twice. Used by the
+   * Production Analytics "Top Weavers" chart, which cares about output
+   * within the selected period, not all-time quality.
    */
   async getProductionLeaderboard(months = 6): Promise<WeaverProductionLeaderboardEntry[]> {
     const cutoff = new Date();
     cutoff.setMonth(cutoff.getMonth() - months);
 
-    const grouped = await this.prisma.qcRecord.groupBy({
-      by: ["weaverId"],
-      where: { weaverId: { not: null }, qcDate: { gte: cutoff } },
-      _count: { sareeId: true },
-      orderBy: { _count: { sareeId: "desc" } },
-      take: 5,
-    });
+    const [passedRecords, returnedAssignments] = await Promise.all([
+      this.prisma.qcRecord.findMany({
+        where: { weaverId: { not: null }, qcDate: { gte: cutoff }, result: "PASSED" },
+        select: { weaverId: true, sareeId: true },
+      }),
+      this.prisma.finishingAssignment.findMany({
+        where: { status: "RETURNED", updatedAt: { gte: cutoff } },
+        select: { sareeId: true, batchSareeRow: { select: { weaverId: true } } },
+      }),
+    ]);
 
-    const weaverIds = grouped
-      .map((g) => g.weaverId)
-      .filter((id): id is string => !!id);
+    const producedByWeaver = new Map<string, Set<string>>();
+    const addProduced = (weaverId: string | null | undefined, sareeId: string) => {
+      if (!weaverId) return;
+      const set = producedByWeaver.get(weaverId) ?? new Set<string>();
+      set.add(sareeId);
+      producedByWeaver.set(weaverId, set);
+    };
+    passedRecords.forEach((r) => addProduced(r.weaverId, r.sareeId));
+    returnedAssignments.forEach((r) => addProduced(r.batchSareeRow.weaverId, r.sareeId));
 
-    if (weaverIds.length === 0) return [];
+    const ranked = Array.from(producedByWeaver.entries())
+      .map(([weaverId, sareeIds]) => ({ weaverId, count: sareeIds.size }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    if (ranked.length === 0) return [];
 
     const weavers = await this.prisma.weaver.findMany({
-      where: { id: { in: weaverIds } },
+      where: { id: { in: ranked.map((r) => r.weaverId) } },
       select: { id: true, name: true, initials: true, photoUrl: true, village: true },
     });
     const weaverMap = new Map(weavers.map((w) => [w.id, w]));
 
-    return grouped
-      .filter((g) => g.weaverId && weaverMap.has(g.weaverId))
-      .map((g) => {
-        const w = weaverMap.get(g.weaverId as string)!;
+    return ranked
+      .filter((r) => weaverMap.has(r.weaverId))
+      .map((r) => {
+        const w = weaverMap.get(r.weaverId)!;
         return {
           weaverId: w.id,
           name: w.name,
           initials: w.initials,
           photoUrl: w.photoUrl,
           village: w.village,
-          sareesProduced: g._count.sareeId,
+          sareesProduced: r.count,
         };
       });
   }

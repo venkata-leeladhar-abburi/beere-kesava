@@ -19,6 +19,7 @@ export interface BackendBatchSareeRow {
   receivedWeight: string | null;
   receivedColor: string | null;
   receivedPhotoUrl: string | null;
+  finishingAssignment: { status: string; updatedAt: string } | null;
 }
 
 export interface BackendBatch {

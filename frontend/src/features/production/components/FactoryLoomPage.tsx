@@ -96,7 +96,7 @@ export function FactoryLoomPage() {
       date: new Date(item.updatedAt).toLocaleDateString("en-IN"),
       materialType: item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari",
       description: item.name,
-      quantity: item.currentStock,
+      quantity: Number(item.currentStock),
       unit: item.unit,
       grnBatch: `GRN-${item.id.slice(-6).toUpperCase()}`,
       issuedBy: "Admin",

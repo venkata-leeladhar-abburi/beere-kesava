@@ -56,10 +56,10 @@ export function MyBatchesPage() {
   const isBatchDone = (b: MyBatchEntry) => {
     if (b.status === "completed") return true;
     if (b.myRows.length === 0) return false;
-    return b.myRows.every(r => r.qcPassed === true);
+    return b.myRows.every(r => r.finished === true);
   };
 
-  // Completed: batch status is completed OR every saree row assigned to this weaver has passed QC
+  // Completed: batch status is completed OR every saree row assigned to this weaver is finished (produced)
   const completedBatches: MyBatchEntry[] = myWeaverBatches.filter(isBatchDone);
   // Active: anything not yet completed
   const myActiveBatches: MyBatchEntry[] = myWeaverBatches.filter(b => !isBatchDone(b));
@@ -153,9 +153,9 @@ export function MyBatchesPage() {
       {/* Stats Strip — spacious, clearly readable */}
       {(() => {
         const allMyRows = myWeaverBatches.flatMap(b => b.myRows);
-        const producedCount = allMyRows.length;
+        const producedCount = allMyRows.filter(r => r.qcPassed === true || r.finished === true).length;
         const qcPassedCount = allMyRows.filter(r => r.qcPassed === true).length;
-        const qcPassPct = producedCount > 0 ? Math.round((qcPassedCount / producedCount) * 100) : 0;
+        const qcPassPct = allMyRows.length > 0 ? Math.round((qcPassedCount / allMyRows.length) * 100) : 0;
         const earnedTotal = weaverId ? getPaymentsForWeaver(weaverId).reduce((sum, p) => sum + p.amountPaid, 0) : 0;
         const statsData = [
           { label: "Produced", val: `${producedCount}` },

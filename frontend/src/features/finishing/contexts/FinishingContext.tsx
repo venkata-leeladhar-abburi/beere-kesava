@@ -222,13 +222,21 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
   const error = readyError ?? assignmentsError ?? dispatchesError ?? quotationsError ?? null;
 
   const assignments = useMemo(
-    () => backendAssignments.map(a => backendAssignmentToFrontend(a, getSareeTypeByCode)),
+    () => backendAssignments
+      // A saree that's SEMI or DEFECTIVE should never have reached finishing
+      // in the first place — hide any such legacy/bad assignment from the
+      // queue rather than surface it as something to receive back.
+      .filter(a => !a.batchSareeRow.qcRecord || a.batchSareeRow.qcRecord.result === "PASSED")
+      .map(a => backendAssignmentToFrontend(a, getSareeTypeByCode)),
     [backendAssignments, getSareeTypeByCode],
   );
-  const returns = useMemo(
-    () => backendAssignments.filter(a => a.status === "RETURNED").map(a => assignmentToReturn(a, getSareeTypeByCode)),
-    [backendAssignments, getSareeTypeByCode],
-  );
+  const returns = useMemo(() => {
+    const dispatchedSareeIds = new Set(dispatches.flatMap(d => d.sareeIds));
+    return backendAssignments
+      .filter(a => a.status === "RETURNED")
+      .map(a => assignmentToReturn(a, getSareeTypeByCode))
+      .map(r => dispatchedSareeIds.has(r.sareeId) ? { ...r, inventoryStatus: "Dispatched" as const } : r);
+  }, [backendAssignments, dispatches, getSareeTypeByCode]);
 
   const setDispatches = (updater: (prev: DispatchRecord[]) => DispatchRecord[]) =>
     qc.setQueryData<DispatchRecord[]>(DISPATCHES_KEY, prev => updater(prev ?? []));

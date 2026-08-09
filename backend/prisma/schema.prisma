@@ -506,7 +506,9 @@ model BatchSareeRow {
   receivedColor  String?
   receivedPhotoUrl String?
 
-  qcRecord             QcRecord?
+  // History: a saree can be re-inspected after a SEMI verdict sends it back
+  // to the weaver for rework, so this is one-to-many, newest last by qcDate.
+  qcRecords            QcRecord[]
   finishingAssignment  FinishingAssignment?
 
   @@unique([batchId, serial])
@@ -564,7 +566,10 @@ model MaterialIssueItem {
 // ─────────────────────────────────────────────────────────────────────────
 
 model QcRecord {
-  sareeId       String        @id
+  id            String        @id @default(uuid())
+  // Not unique — a saree can accumulate multiple QC records over successive
+  // SEMI-rework rounds. Always read the latest by qcDate as "current".
+  sareeId       String
   batchSareeRow BatchSareeRow @relation(fields: [sareeId], references: [sareeId])
   weaverId      String?
   weaver        Weaver?       @relation(fields: [weaverId], references: [id])
@@ -584,6 +589,7 @@ model QcRecord {
   inspectedById String
   inspectedBy   User          @relation("InspectedBy", fields: [inspectedById], references: [id])
 
+  @@index([sareeId])
   @@index([weaverId])
   @@index([factoryLoomId])
   @@index([result])
@@ -627,6 +633,7 @@ model FinishingAssignment {
   damagePhotoUrl   String?
   quotationRef     String?
   quotation        Quotation?                @relation(fields: [quotationRef], references: [id])
+  updatedAt        DateTime                  @default(now()) @updatedAt
 
   @@index([sareeId])
   @@index([finishingStaffId])

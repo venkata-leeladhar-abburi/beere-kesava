@@ -2,9 +2,8 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Check, XOctagon } from "lucide-react";
-import { Package, CheckCircle2 as CheckCircle, XCircle, Clock, AlertCircle as WarningCircle, BarChart3 as ChartBar } from "lucide-react";
+import { Package, CheckCircle2 as CheckCircle, XCircle, Clock, AlertCircle as WarningCircle } from "lucide-react";
 import { T, F } from "../theme";
-import { WARP_REQUESTS } from "../data";
 import { FadeUp, ActionDialog } from "../common/primitives";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -65,15 +64,20 @@ export function WarpRequestsSection() {
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(192,57,43,0.30)", border: "1px solid rgba(192,57,43,0.45)", borderRadius: 10, padding: "8px 16px" }}>
               <Clock size={18} color="#F4A6A6" />
-              <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 600, color: "#F4A6A6", letterSpacing: "0.3px" }}>3 requests pending</span>
+              <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 600, color: "#F4A6A6", letterSpacing: "0.3px" }}>{requests.length} request{requests.length === 1 ? "" : "s"} pending</span>
             </div>
           </div>
 
           {/* Cards grid */}
+          {isLoading ? (
+            <div style={{ padding: "40px 28px", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Loading warp requests…</div>
+          ) : requests.length === 0 ? (
+            <div style={{ padding: "40px 28px", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No warp requests waiting for approval.</div>
+          ) : (
           <div style={{ padding: "28px 28px 28px", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 22, alignItems: "stretch" }}>
-            {WARP_REQUESTS.map((r, idx) => (
+            {requests.map((r, idx) => (
               <motion.div
-                key={r.code}
+                key={r.id}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -86,13 +90,13 @@ export function WarpRequestsSection() {
 
                 {/* Weaver identity */}
                 <div style={{ padding: "22px 22px 18px", display: "flex", alignItems: "center", gap: 16 }}>
-                  <div style={{ width: 64, height: 64, borderRadius: "50%", overflow: "hidden", flexShrink: 0, border: `3px solid ${T.antiqueGold}` }}>
-                    <img src={r.photo} alt={r.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  <div style={{ width: 64, height: 64, borderRadius: "50%", overflow: "hidden", flexShrink: 0, border: `3px solid ${T.antiqueGold}`, display: "flex", alignItems: "center", justifyContent: "center", background: T.royalBurgundy, fontFamily: F.display, fontSize: 22, fontWeight: 700, color: "#FFF" }}>
+                    {r.weaver.initials}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: F.display, fontSize: 20, color: T.luxuryBrown, fontWeight: 700, lineHeight: 1.2, marginBottom: 4 }}>{r.name}</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, letterSpacing: "0.4px", marginBottom: 3 }}>{r.code}</div>
-                    <div style={{ display: "inline-block", fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 7, padding: "3px 10px" }}>{r.batch}</div>
+                    <div style={{ fontFamily: F.display, fontSize: 20, color: T.luxuryBrown, fontWeight: 700, lineHeight: 1.2, marginBottom: 4 }}>{r.weaver.name}</div>
+                    {r.weaver.village && <div style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, letterSpacing: "0.4px", marginBottom: 3 }}>{r.weaver.village}</div>}
+                    {r.loomNumber && <div style={{ display: "inline-block", fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 7, padding: "3px 10px" }}>Loom {r.loomNumber}</div>}
                   </div>
                 </div>
 
@@ -109,7 +113,7 @@ export function WarpRequestsSection() {
                     </div>
                     <div>
                       <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 500, color: T.taupe, letterSpacing: "1.6px", textTransform: "uppercase", marginBottom: 3 }}>Request raised</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{r.raised}</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{new Date(r.requestedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</div>
                     </div>
                   </div>
 
@@ -120,32 +124,8 @@ export function WarpRequestsSection() {
                     </div>
                     <div>
                       <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 500, color: T.taupe, letterSpacing: "1.6px", textTransform: "uppercase", marginBottom: 3 }}>Material requested</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, marginBottom: 2 }}>{r.material}</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, lineHeight: 1.45 }}>{r.reason}</div>
-                    </div>
-                  </div>
-
-                  {/* Progress */}
-                  <div style={{ display: "flex", alignItems: "flex-start", gap: 13 }}>
-                    <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <ChartBar size={20} color={T.royalBurgundy} />
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 500, color: T.taupe, letterSpacing: "1.6px", textTransform: "uppercase", marginBottom: 6 }}>Batch progress</div>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
-                        <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{r.done} of {r.total} sarees done</div>
-                        <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.antiqueGold }}>{r.pct}%</div>
-                      </div>
-                      {/* Progress bar */}
-                      <div style={{ height: 10, background: "rgba(110,15,45,0.09)", borderRadius: 99, overflow: "hidden" }}>
-                        <motion.div
-                          initial={{ width: 0 }}
-                          whileInView={{ width: `${r.pct}%` }}
-                          viewport={{ once: true }}
-                          transition={{ duration: 0.8, delay: 0.2 + idx * 0.1, ease: [0.25, 0.1, 0.25, 1] }}
-                          style={{ height: "100%", background: `linear-gradient(90deg, ${T.antiqueGold}, ${T.goldLight})`, borderRadius: 99 }}
-                        />
-                      </div>
+                      <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, marginBottom: 2 }}>{r.warpType} · {r.lengthMeters}m{r.color ? ` · ${r.color}` : ""}</div>
+                      {r.notes && <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, lineHeight: 1.45 }}>{r.notes}</div>}
                     </div>
                   </div>
 
@@ -176,6 +156,7 @@ export function WarpRequestsSection() {
               </motion.div>
             ))}
           </div>
+          )}
 
         </div>
       </FadeUp>

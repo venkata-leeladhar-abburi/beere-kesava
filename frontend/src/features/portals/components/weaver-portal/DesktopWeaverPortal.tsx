@@ -59,10 +59,10 @@ export function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive,
   const isBatchDone = (b: MyBatchEntry) => {
     if (b.status === "completed") return true;
     if (b.myRows.length === 0) return false;
-    return b.myRows.every(r => r.qcPassed === true);
+    return b.myRows.every(r => r.finished === true);
   };
 
-  // Completed: batch status is completed OR every saree assigned to this weaver has passed QC
+  // Completed: batch status is completed OR every saree assigned to this weaver is finished (produced)
   const completedBatches: MyBatchEntry[] = myWeaverBatches.filter(isBatchDone);
   // Active: anything not yet completed
   const myActiveBatches: MyBatchEntry[] = myWeaverBatches.filter(b => !isBatchDone(b));

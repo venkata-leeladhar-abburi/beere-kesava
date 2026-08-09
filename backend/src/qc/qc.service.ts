@@ -82,7 +82,10 @@ export class QcService {
       }),
       this.prisma.batchSareeRow.update({
         where: { sareeId: dto.sareeId },
-        data: { qcPassed: dto.result !== QcResult.DEFECTIVE },
+        // Only a clean PASSED counts as "QC passed" — SEMI and DEFECTIVE
+        // both fall short of that everywhere this flag is read (finishing
+        // eligibility, weaver "produced" stats, batch progress, etc.).
+        data: { qcPassed: dto.result === QcResult.PASSED },
       }),
     ]);
 
@@ -135,13 +138,14 @@ export class QcService {
     return record;
   }
 
-  // Sarees that passed/semi-passed QC and have no finishing assignment yet —
-  // the "ready for finishing" queue (frontend's ReadySaree list, derived
-  // rather than stored per the schema's design).
+  // Sarees that fully passed QC and have no finishing assignment yet — the
+  // "ready for finishing" queue (frontend's ReadySaree list, derived rather
+  // than stored per the schema's design). Semi and defective sarees are
+  // excluded — only a clean PASSED result may go to finishing.
   async findReadyForFinishing() {
     return this.prisma.qcRecord.findMany({
       where: {
-        result: { in: [QcResult.PASSED, QcResult.SEMI] },
+        result: QcResult.PASSED,
         batchSareeRow: { finishingAssignment: null },
       },
       include: {

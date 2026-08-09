@@ -12,6 +12,17 @@ import { ReceiveBatchRowDto } from "./dto/receive-batch-row.dto";
 
 const BATCH_ID_PREFIX = "BATCH";
 
+// A saree row counts as "finished" for the weaver-portal Produced bar once its
+// FinishingAssignment comes back RETURNED — set by both the plain finishing
+// receive flow and the raise-quotation receive flow (see
+// FinishingAssignmentsService.receiveReturn / QuotationsService.receive).
+const rowsInclude = {
+  rows: {
+    orderBy: { serial: "asc" as const },
+    include: { finishingAssignment: { select: { status: true, updatedAt: true } } },
+  },
+} satisfies Prisma.BatchInclude;
+
 @Injectable()
 export class BatchesService {
   constructor(
@@ -57,7 +68,7 @@ export class BatchesService {
   async findAll(
     query: ListBatchesQueryDto,
     weaverId?: string,
-  ): Promise<PaginatedResult<Prisma.BatchGetPayload<{ include: { rows: true } }>>> {
+  ): Promise<PaginatedResult<Prisma.BatchGetPayload<{ include: typeof rowsInclude }>>> {
     const where: Prisma.BatchWhereInput = {
       status: query.status,
       ...(weaverId ? { rows: { some: { weaverId } } } : {}),
@@ -69,7 +80,7 @@ export class BatchesService {
         skip: (query.page - 1) * query.pageSize,
         take: query.pageSize,
         orderBy: { createdAt: "desc" },
-        include: { rows: { orderBy: { serial: "asc" } } },
+        include: rowsInclude,
       }),
       this.prisma.batch.count({ where }),
     ]);
@@ -80,7 +91,7 @@ export class BatchesService {
   async findOne(id: string, weaverId?: string) {
     const batch = await this.prisma.batch.findUnique({
       where: { id },
-      include: { rows: { orderBy: { serial: "asc" } } },
+      include: rowsInclude,
     });
     if (!batch) {
       throw new NotFoundException(`Batch ${id} not found`);

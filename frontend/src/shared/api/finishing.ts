@@ -74,6 +74,7 @@ export interface BackendFinishingAssignment {
     designCode: string | null;
     design: { code: string; name: string } | null;
     weaver: { id: string; name: string } | null;
+    qcRecord: { result: "PASSED" | "SEMI" | "DEFECTIVE" } | null;
   };
   finishingStaff: BackendFinishingStaff;
 }

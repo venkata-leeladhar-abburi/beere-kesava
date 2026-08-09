@@ -15,7 +15,7 @@ interface UseWeaverSareeRowsOptions {
 export function useWeaverSareeRows({ weaverId, isLoom, isAll }: UseWeaverSareeRowsOptions): WeaverSareeRow[] {
   const { batches } = useBatches();
   const { qcRecords: allQcRecords, getQcForWeaver, getQcForLoom } = useQc();
-  const { readySarees, assignments, returns } = useFinishing();
+  const { readySarees, assignments, returns, dispatches } = useFinishing();
   const { sarees: allStock } = useSales();
   const { getDesign } = useDesignLibrary();
 
@@ -30,7 +30,7 @@ export function useWeaverSareeRows({ weaverId, isLoom, isAll }: UseWeaverSareeRo
       isAssigned: false, assignedDate: null, qcStatus: "pending",
       receivedDate: null, qcDate: null, defects: [], makingCharge: null, deduction: null,
       payable: null, finishingStatus: "none", finishingAssignedDate: null,
-      finishingCompletedDate: null, stock: null,
+      finishingCompletedDate: null, stock: null, dispatched: false,
       ownerKind: null, ownerId: null, ownerLabel: null,
     });
 
@@ -132,6 +132,13 @@ export function useWeaverSareeRows({ weaverId, isLoom, isAll }: UseWeaverSareeRo
       row.color = row.designCode ? (getDesign(row.designCode)?.color || null) : null;
     });
 
+    // 6. Already-dispatched — including via a raised quotation — so callers
+    // (e.g. the Inventory dispatch table) can exclude these from selection.
+    const dispatchedSareeIds = new Set(dispatches.flatMap(d => d.sareeIds));
+    byId.forEach(row => {
+      row.dispatched = dispatchedSareeIds.has(row.sareeId);
+    });
+
     return [...byId.values()];
-  }, [batches, qcRecords, allStock, returns, assignments, readySarees, weaverId, isLoom, isAll, getDesign]);
+  }, [batches, qcRecords, allStock, returns, assignments, readySarees, dispatches, weaverId, isLoom, isAll, getDesign]);
 }

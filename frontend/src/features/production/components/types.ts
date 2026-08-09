@@ -40,7 +40,7 @@ export interface Batch {
   id: string; stage: BatchStage; sareeCode: string; sareeTypeName: string; rate: number;
   design: string; designName: string; weavers: WeaverRef[];
   materials: string; started: string; expected?: string; submitted?: string;
-  done: number; total: number; late?: number; qcPassed?: number; finishingDone?: number;
+  done: number; total: number; late?: number; qcPassed?: number; finishingDone?: number; rejected?: number;
   isLive?: boolean;
 }
 

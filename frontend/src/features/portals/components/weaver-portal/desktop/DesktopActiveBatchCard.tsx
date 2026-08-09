@@ -14,6 +14,9 @@ export function DesktopActiveBatchCard({ b, idx, bp = "desktop" }: { b: MyBatchE
   const bulkOrders     = Array.from(new Set(b.myRows.map(r => r.bulkOrderLabel).filter(Boolean))) as string[];
   const generalStock   = b.myRows.filter(r => !r.bulkOrderLabel).length;
   const qcPassedCount  = b.myRows.filter(r => r.qcPassed === true).length;
+  // Produced = QC-passed OR finished via the Raise Quotation receive flow —
+  // either milestone alone counts a saree as produced.
+  const producedCount  = b.myRows.filter(r => r.qcPassed === true || r.finished === true).length;
 
   return (
     <div style={{ background: "#FFFDF9", borderRadius: 24, border: `1px solid rgba(110,15,45,0.10)`, borderLeft: `4px solid ${borderColor}`, boxShadow: "0px 4px 18px rgba(74,6,27,0.07)", overflow: "hidden", display: "flex", flexDirection: "column" as const }}>
@@ -27,7 +30,7 @@ export function DesktopActiveBatchCard({ b, idx, bp = "desktop" }: { b: MyBatchE
           </span>
         </div>
 
-        {/* Saree count + QC progress: side by side on desktop, stacked on tablet */}
+        {/* Saree count + Produced/QC progress: side by side on desktop, stacked on tablet */}
         <div style={{ display: "flex", flexDirection: isTablet ? "column" as const : "row" as const, gap: 14, alignItems: isTablet ? "stretch" : "center" }}>
           <div style={{ background: C.cream, borderRadius: 12, padding: "14px 18px", textAlign: "center" as const, flex: isTablet ? undefined : "0 0 auto", minWidth: isTablet ? undefined : 160 }}>
             <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 4 }}>Sarees assigned to you</div>
@@ -35,13 +38,25 @@ export function DesktopActiveBatchCard({ b, idx, bp = "desktop" }: { b: MyBatchE
             {b.dueDate && <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 4 }}>Due by <span style={{ color: C.text, fontWeight: 600 }}>{b.dueDate}</span></div>}
           </div>
 
-          {/* QC progress indicator */}
-          <div style={{ flex: 1 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-              <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>QC: {qcPassedCount} of {b.myRows.length} passed</span>
-              <span style={{ fontFamily: F.m, fontSize: 13, color: C.text, fontWeight: 600 }}>{Math.round((qcPassedCount / b.myRows.length) * 100)}%</span>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column" as const, gap: 10 }}>
+            {/* Produced progress indicator — finished via either the Worker
+                Staff receive-back flow or the Raise Quotation receive flow */}
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>Produced: {producedCount} of {b.myRows.length}</span>
+                <span style={{ fontFamily: F.m, fontSize: 13, color: C.text, fontWeight: 600 }}>{Math.round((producedCount / b.myRows.length) * 100)}%</span>
+              </div>
+              <ProgressBar pct={(producedCount / b.myRows.length) * 100} height={8} />
             </div>
-            <ProgressBar pct={(qcPassedCount / b.myRows.length) * 100} height={8} />
+
+            {/* QC progress indicator */}
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>QC: {qcPassedCount} of {b.myRows.length} passed</span>
+                <span style={{ fontFamily: F.m, fontSize: 13, color: C.text, fontWeight: 600 }}>{Math.round((qcPassedCount / b.myRows.length) * 100)}%</span>
+              </div>
+              <ProgressBar pct={(qcPassedCount / b.myRows.length) * 100} height={8} />
+            </div>
           </div>
         </div>
 
