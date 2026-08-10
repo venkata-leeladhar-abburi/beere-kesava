@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router";
 import { BulkOrder } from "../../bulk-orders/contexts/BulkOrderContext";
 import { DateFilterState, DEFAULT_DATE_FILTER } from "../../../shared/ui/DateFilterBar";
 import { BulkOrderDetailPage } from "../../bulk-orders/components/BulkOrderDetailPage";
@@ -26,9 +27,12 @@ import { useUrlFilters } from "../../../shared/ui/filter";
  * you need to trace exactly what moved where.
  */
 export function CustomersPage() {
+  const location = useLocation();
   const [wholesaleView, setWholesaleView] = useState<"card"|"list"|"table">("card");
   const [retailView, setRetailView] = useState<"card"|"list">("card");
-  const [showAddWholesale, setShowAddWholesale] = useState(false);  const { customers = [], updateCustomer } = useCustomers() ?? {};
+  // Command palette "New Customer" action deep-links here with ?new=1 to open
+  // the add-wholesale-customer form straight away.
+  const [showAddWholesale, setShowAddWholesale] = useState(() => new URLSearchParams(location.search).get("new") === "1");  const { customers = [], updateCustomer } = useCustomers() ?? {};
 
   const wholesaleList = React.useMemo(() => {
     const backendWholesale = customers.filter(c => c.type === "WHOLESALE");

@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { useLocation } from "react-router";
 import { AnimatePresence } from "motion/react";
 import {
   useSuppliers, Supplier, SareeTag,
@@ -29,8 +30,11 @@ export function SuppliersPage() {
   // `raiseRequest` and `requests` (below, for `pendingRequests`) are kept for
   // parity with the pre-split file — both were already unused dead code there.
   const { suppliers, statsFor, addSupplier, raiseRequest, requests, purchases, addPurchase, nextSupplierId } = useSuppliers();
+  const location = useLocation();
   const [selected, setSelected] = useState<Supplier | null>(null);
-  const [showAdd, setShowAdd] = useState(false);
+  // Command palette "New Supplier" action deep-links here with ?new=1 to open
+  // the add-supplier form straight away.
+  const [showAdd, setShowAdd] = useState(() => new URLSearchParams(location.search).get("new") === "1");
   const [requestFor, setRequestFor] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");

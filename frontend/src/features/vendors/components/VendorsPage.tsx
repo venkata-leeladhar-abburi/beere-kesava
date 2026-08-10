@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router";
 import { AnimatePresence } from "motion/react";
 import { T } from "./vendors-page/theme";
 import { Vendor } from "./vendors-page/types";
@@ -38,9 +39,12 @@ function toVendor(v: BackendVendor): Vendor {
 }
 
 export function VendorsPage() {
+  const location = useLocation();
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
-  const [showAddForm, setShowAddForm] = useState(false);
+  // Command palette "New Vendor" action deep-links here with ?new=1 to open
+  // the add-vendor form straight away.
+  const [showAddForm, setShowAddForm] = useState(() => new URLSearchParams(location.search).get("new") === "1");
 
   useEffect(() => {
     vendorsApi.list().then(res => setVendors(res.items.map(toVendor))).catch(() => setVendors([]));

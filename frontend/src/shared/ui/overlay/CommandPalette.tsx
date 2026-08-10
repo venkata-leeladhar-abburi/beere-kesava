@@ -12,13 +12,19 @@
  * NAVIGATE → entity results):
  *   - NAVIGATE is built for real below, from the app's actual router config
  *     (src/app/App.tsx + the admin tab routing in BeereDashboard.tsx).
- *   - RECENT, ACTIONS and the async entity search (Weavers/Sarees/Batches/
+ *   - ACTIONS is built for real below too: a small static "quick actions"
+ *     registry (ACTION_ITEMS) covering the handful of "create X" flows whose
+ *     target page keeps its create-modal/expand state as a simple boolean
+ *     unentangled with other data loading, so a `?new=1` query param read in
+ *     that state's `useState` initializer can safely open it on mount. Other
+ *     "New X" flows (e.g. nested behind selection state, or requiring data
+ *     loaded first) were deliberately left off rather than forced.
+ *   - RECENT and the async entity search (Weavers/Sarees/Batches/
  *     Invoices/Customers) are deliberately deferred — they need app-wide
- *     state (a recently-viewed record tracker, a per-feature quick-action
- *     registry, and backend search endpoints) that doesn't exist yet.
- *     TODO(command-palette): add RECENT (recently-viewed records), ACTIONS
- *     (quick-action registry) and async entity search groups once that
- *     infrastructure lands.
+ *     state (a recently-viewed record tracker and backend search endpoints)
+ *     that doesn't exist yet.
+ *     TODO(command-palette): add RECENT (recently-viewed records) and async
+ *     entity search groups once that infrastructure lands.
  */
 import * as React from "react";
 import { Command } from "cmdk";
@@ -37,6 +43,8 @@ import {
   Warehouse,
   Building2,
   Bell,
+  UserPlus,
+  PlusCircle,
 } from "lucide-react";
 import { cn } from "../utils";
 
@@ -65,6 +73,31 @@ const NAVIGATE_ITEMS: NavigateItem[] = [
   { key: "suppliers",  label: "Suppliers",  path: "/admin/suppliers",  icon: Warehouse, keywords: ["partners"] },
   { key: "firms",      label: "Firms",      path: "/admin/firms",      icon: Building2 },
   { key: "notifications", label: "Notifications", path: "/admin/notifications", icon: Bell },
+];
+
+interface ActionItem {
+  key: string;
+  label: string;
+  path: string;
+  icon: React.ElementType;
+  keywords?: string[];
+}
+
+// Quick "create" actions. Each target page reads the `?new=1` query param on
+// mount to open its create form immediately (an additive `useState` initializer
+// next to the page's existing modal/expand state — see VendorsPage,
+// SuppliersPage, FirmsPage, WeaversPage, CustomersPage). Kept to the handful
+// of pages where that state is a simple boolean/flag unentangled with other
+// data loading, per the scoping note above — not every "New X" flow in the
+// app qualifies (e.g. batch creation already opens on its "new" tab by
+// default, and several add-forms are nested behind selection state that
+// isn't safe to force open from a cold deep link).
+const ACTION_ITEMS: ActionItem[] = [
+  { key: "new-vendor",   label: "New Vendor",   path: "/admin/vendors?new=1",   icon: PlusCircle, keywords: ["add", "create"] },
+  { key: "new-supplier", label: "New Supplier", path: "/admin/suppliers?new=1", icon: PlusCircle, keywords: ["add", "create"] },
+  { key: "new-weaver",   label: "New Weaver",   path: "/admin/weavers?new=1",   icon: UserPlus,   keywords: ["add", "create", "register"] },
+  { key: "new-firm",     label: "New Firm",     path: "/admin/firms?new=1",     icon: PlusCircle, keywords: ["add", "create"] },
+  { key: "new-customer", label: "New Customer", path: "/admin/customers?new=1", icon: UserPlus,   keywords: ["add", "create", "wholesale"] },
 ];
 
 export interface CommandPaletteProps {
@@ -128,8 +161,34 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
 
         {/* TODO(command-palette): RECENT group — recently-viewed records,
             needs a global recently-viewed tracker. */}
-        {/* TODO(command-palette): ACTIONS group — per-feature quick actions,
-            needs a quick-action registry. */}
+
+        <Command.Group
+          heading="Actions"
+          className={cn(
+            "[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:bk-caption",
+            "[&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wide",
+            "[&_[cmdk-group-heading]]:text-[var(--text-tertiary)]"
+          )}
+        >
+          {ACTION_ITEMS.map((item) => {
+            const ItemIcon = item.icon;
+            return (
+              <Command.Item
+                key={item.key}
+                value={[item.label, ...(item.keywords ?? [])].join(" ")}
+                onSelect={() => runNavigate(item.path)}
+                className={cn(
+                  "flex h-10 items-center gap-2.5 rounded-[var(--radius-sm)] px-3 text-[14px] cursor-pointer select-none outline-none",
+                  "text-[var(--text-primary)]",
+                  "data-[selected=true]:bg-[var(--bk-neutral-50)]"
+                )}
+              >
+                <ItemIcon size={16} style={{ color: "var(--text-tertiary)" }} />
+                {item.label}
+              </Command.Item>
+            );
+          })}
+        </Command.Group>
 
         <Command.Group
           heading="Navigate"
