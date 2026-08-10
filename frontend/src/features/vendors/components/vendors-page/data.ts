@@ -1,6 +1,15 @@
 import { T, MONTH_ABBR } from "./theme";
 import { Vendor, PurchaseTxn, VendorBill, VendorPaymentTxn } from "./types";
 
+/** Purchase-order lifecycle labels used in this feature's seed ledger — not
+ *  one of the lib/domain/status.ts taxonomies (values like "Delivered" have
+ *  no exact match there), kept as this page's real states. */
+const PO_STATUS = {
+  Delivered: "Delivered",
+  Pending: "Pending",
+  Approved: "Approved",
+} as const;
+
 export const INITIAL_VENDORS: Vendor[] = [];
 
 export const PAYMENT_TERMS = ["30 days", "15 days", "45 days", "60 days", "90 days", "Advance"];
@@ -90,20 +99,20 @@ export function buildVendorOrders(vendor: Vendor) {
   const t1 = vendor.type.split(" / ")[0] || "Warp";
   const t2 = vendor.type.split(" / ")[1] || "Resham";
   return [
-    { id: "PO-2026-041", invoiceNo: `INV-${vendor.initials}-2026-041`, date: "15 Jun 2026", status: "Delivered", grnId: "GRN-2026-MAY-814", firmName: "Beere Kesava Silks (Head Firm)", receivedDate: "20 May 2026", receiveStatus: "Match",
+    { id: "PO-2026-041", invoiceNo: `INV-${vendor.initials}-2026-041`, date: "15 Jun 2026", status: PO_STATUS.Delivered, grnId: "GRN-2026-MAY-814", firmName: "Beere Kesava Silks (Head Firm)", receivedDate: "20 May 2026", receiveStatus: "Match",
       materials: [
         { type: t1, description: "Premium quality raw threads", qty: "60 kg", invoiceAmount: "₹1,20,000" },
         { type: t2, description: "Standard dye grade lot", qty: "60 kg", invoiceAmount: "₹1,20,000" },
       ], totalAmount: "₹2,40,000", amount: 240000 },
-    { id: "PO-2026-028", invoiceNo: `INV-${vendor.initials}-2026-028`, date: "02 May 2026", status: "Delivered", grnId: "GRN-2026-MAY-011", firmName: "Beere Kesava Silks (Head Firm)", receivedDate: "17 May 2026", receiveStatus: "Short",
+    { id: "PO-2026-028", invoiceNo: `INV-${vendor.initials}-2026-028`, date: "02 May 2026", status: PO_STATUS.Delivered, grnId: "GRN-2026-MAY-011", firmName: "Beere Kesava Silks (Head Firm)", receivedDate: "17 May 2026", receiveStatus: "Short",
       materials: [
         { type: t1, description: "Red 30 kg", qty: "30 kg", invoiceAmount: "₹1,25,000" },
         { type: t2, description: "Gold 24 kg", qty: "24 kg", invoiceAmount: "₹1,00,000" },
       ], totalAmount: "₹2,25,000", amount: 225000 },
-    { id: "PO-2026-014", invoiceNo: `INV-${vendor.initials}-2026-014`, date: "10 Mar 2026", status: "Pending",
+    { id: "PO-2026-014", invoiceNo: `INV-${vendor.initials}-2026-014`, date: "10 Mar 2026", status: PO_STATUS.Pending,
       materials: [{ type: t1, description: "Polyester 2G Gold 6 Buns", qty: "6 Buns", invoiceAmount: "₹65,000" }],
       totalAmount: "₹65,000", amount: 65000 },
-    { id: "PO-2026-005", invoiceNo: `INV-${vendor.initials}-2026-005`, date: "18 Jan 2026", status: "Approved",
+    { id: "PO-2026-005", invoiceNo: `INV-${vendor.initials}-2026-005`, date: "18 Jan 2026", status: PO_STATUS.Approved,
       materials: [{ type: t1, description: "Bulk replenishment stock", qty: "100 kg", invoiceAmount: "₹2,00,000" }],
       totalAmount: "₹2,00,000", amount: 200000 },
   ];

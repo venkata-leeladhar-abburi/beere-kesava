@@ -3,7 +3,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, Plus, FileText, ClipboardList, Building2 } from "lucide-react";
-import { PurchaseOrder } from "../contexts/POContext";
+import { PurchaseOrder, PO_STATUS } from "../contexts/POContext";
 import { useFirms } from "../../firms/contexts/FirmsContext";
 import { T, F, Vendor, ExtItem, emptyItem } from "./POTypesAndVendors";
 import { PODocPreview } from "./PODocPreview";
@@ -147,7 +147,7 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
       notesVendor: notesVendor || undefined,
       notesAdmin: notesAdmin || undefined,
       urgency,
-      status: "pending",
+      status: PO_STATUS.Pending,
       submittedDate: today,
       raisedBy: "Admin (BK)",
     };

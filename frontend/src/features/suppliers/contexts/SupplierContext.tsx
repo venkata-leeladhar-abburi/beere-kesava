@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { useAuth } from "../../../contexts/AuthContext";
 
 export * from "./supplier-types";
-import { Supplier, Purchase, SupplierPayment, PurchaseRequest, initialsOf, totalPieces, purchaseTotals, parseINR, computeFinalAmount, buildSareeCode, buildSareePieceCode, pieceCodeFromLineCode, expandSareePieces, formatINR } from "./supplier-types";
+import { Supplier, Purchase, SupplierPayment, PurchaseRequest, initialsOf, totalPieces, purchaseTotals, parseINR, computeFinalAmount, buildSareeCode, buildSareePieceCode, pieceCodeFromLineCode, expandSareePieces, formatINR, type PurchaseRequestStatus, PURCHASE_PAYMENT_STATUS } from "./supplier-types";
 import { SEED_PURCHASES } from "./supplier-seed";
 import { BackendSupplier, suppliersApi } from "../../../shared/api/suppliers";
 import { supplierPaymentsApi } from "../../../shared/api/payments";
@@ -60,7 +60,7 @@ interface SupplierContextValue {
 
   addPayment: (p: Omit<SupplierPayment, "id">) => void;
   raiseRequest: (r: Omit<PurchaseRequest, "id" | "status">) => void;
-  decideRequest: (id: string, status: "approved" | "rejected", decidedBy: string, note?: string) => void;
+  decideRequest: (id: string, status: Extract<PurchaseRequestStatus, "approved" | "rejected">, decidedBy: string, note?: string) => void;
 
   /** Purchases + payment totals + outstanding for one supplier. */
   statsFor: (supplierId: string) => {
@@ -271,7 +271,7 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
   });
 
   const decideRequestMutation = useMutation({
-    mutationFn: (args: { id: string; status: "approved" | "rejected"; note?: string }) =>
+    mutationFn: (args: { id: string; status: Extract<PurchaseRequestStatus, "approved" | "rejected">; note?: string }) =>
       purchaseRequestsApi.decide(args.id, {
         decision: args.status === "approved" ? "APPROVED" : "REJECTED",
         decisionNote: args.note,
@@ -297,7 +297,7 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
           gstNumber: local.gstNumber ?? "",
           invoiceNumber: local.invoiceNumber ?? "",
           billAmount: local.billAmount || `₹${Math.round(purchaseTotals(local.sarees).selling).toLocaleString("en-IN")}`,
-          status: "Pending",
+          status: PURCHASE_PAYMENT_STATUS.Pending,
           notes: local.notes ?? "",
           invoiceFileName: local.invoiceFileName,
           sarees: local.sarees,
@@ -326,7 +326,7 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
 
   const addPayment = (p: Omit<SupplierPayment, "id">) => addPaymentMutation.mutate(p);
   const raiseRequest = (r: Omit<PurchaseRequest, "id" | "status">) => raiseRequestMutation.mutate(r);
-  const decideRequest = (id: string, status: "approved" | "rejected", _decidedBy: string, note?: string) =>
+  const decideRequest = (id: string, status: Extract<PurchaseRequestStatus, "approved" | "rejected">, _decidedBy: string, note?: string) =>
     decideRequestMutation.mutate({ id, status, note });
 
   const statsFor = useCallback((supplierId: string) => {

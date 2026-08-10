@@ -1,5 +1,11 @@
 // ── Types ─────────────────────────────────────────────────────────────────────
 
+/** Quotation lifecycle — its own document-adjacent state machine (not one of
+ *  the 6-tone lib/domain/status.ts taxonomies verbatim: "in-finishing" /
+ *  "partially-received" don't exist in DocumentStatus, so this keeps the
+ *  real values this feature uses instead of forcing a taxonomy fit). */
+export type QuotationLifecycleStatus = "raised" | "in-finishing" | "partially-received" | "received" | "dispatched";
+
 export interface ReadySaree {
   id: string;
   designCode: string;
@@ -84,7 +90,7 @@ export interface Quotation {
   subtotal: number;
   grandTotal: number;
   raisedBy: string;
-  status: "raised" | "in-finishing" | "partially-received" | "received" | "dispatched";
+  status: QuotationLifecycleStatus;
   finishingStaffId?: string;
   finishingStaffName?: string;
   assignedDate?: string;

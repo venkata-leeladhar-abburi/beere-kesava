@@ -8,6 +8,7 @@ import {
   SEED_PURCHASE_SUMMARIES,
 } from "./sales-seed";
 import type { UnifiedSaree } from "./sales-types";
+import { SALE_STATUS } from "./sales-types";
 
 function makeSaree(overrides: Partial<UnifiedSaree>): UnifiedSaree {
   return {
@@ -22,7 +23,7 @@ function makeSaree(overrides: Partial<UnifiedSaree>): UnifiedSaree {
     costPrice: 3500,
     sellPercent: 25,
     finalAmount: 4375,
-    status: "unsold",
+    status: SALE_STATUS.Unsold,
     sale: null,
     ret: null,
     ageDays: 10,
@@ -32,13 +33,13 @@ function makeSaree(overrides: Partial<UnifiedSaree>): UnifiedSaree {
 
 describe("isOutstanding", () => {
   it("counts unsold sarees as outstanding", () => {
-    expect(isOutstanding(makeSaree({ status: "unsold" }))).toBe(true);
+    expect(isOutstanding(makeSaree({ status: SALE_STATUS.Unsold }))).toBe(true);
   });
 
   it("counts a returned-and-restocked saree as outstanding", () => {
     expect(
       isOutstanding(
-        makeSaree({ status: "returned", ret: { returnRef: "RET-1", date: "x", reason: "x", refundAmount: 100, restocked: true } }),
+        makeSaree({ status: SALE_STATUS.Returned, ret: { returnRef: "RET-1", date: "x", reason: "x", refundAmount: 100, restocked: true } }),
       ),
     ).toBe(true);
   });
@@ -46,23 +47,23 @@ describe("isOutstanding", () => {
   it("does not count a returned-but-not-restocked saree as outstanding", () => {
     expect(
       isOutstanding(
-        makeSaree({ status: "returned", ret: { returnRef: "RET-1", date: "x", reason: "x", refundAmount: 100, restocked: false } }),
+        makeSaree({ status: SALE_STATUS.Returned, ret: { returnRef: "RET-1", date: "x", reason: "x", refundAmount: 100, restocked: false } }),
       ),
     ).toBe(false);
   });
 
   it("does not count sold sarees as outstanding", () => {
-    expect(isOutstanding(makeSaree({ status: "retail" }))).toBe(false);
-    expect(isOutstanding(makeSaree({ status: "wholesale" }))).toBe(false);
+    expect(isOutstanding(makeSaree({ status: SALE_STATUS.Retail }))).toBe(false);
+    expect(isOutstanding(makeSaree({ status: SALE_STATUS.Wholesale }))).toBe(false);
   });
 });
 
 describe("isSold", () => {
   it("is true for retail and wholesale, false otherwise", () => {
-    expect(isSold(makeSaree({ status: "retail" }))).toBe(true);
-    expect(isSold(makeSaree({ status: "wholesale" }))).toBe(true);
-    expect(isSold(makeSaree({ status: "unsold" }))).toBe(false);
-    expect(isSold(makeSaree({ status: "returned" }))).toBe(false);
+    expect(isSold(makeSaree({ status: SALE_STATUS.Retail }))).toBe(true);
+    expect(isSold(makeSaree({ status: SALE_STATUS.Wholesale }))).toBe(true);
+    expect(isSold(makeSaree({ status: SALE_STATUS.Unsold }))).toBe(false);
+    expect(isSold(makeSaree({ status: SALE_STATUS.Returned }))).toBe(false);
   });
 });
 
@@ -85,11 +86,11 @@ describe("ageBucket", () => {
 describe("rankSellers", () => {
   it("aggregates produced/sold/revenue per weaver and computes sell-through", () => {
     const sarees: UnifiedSaree[] = [
-      makeSaree({ sareeId: "A", origin: "weaver", weaverId: "b5f9178c-b1b9-4871-a7c3-0d68a462d57a", weaverName: "Ravi Kumar", weaverLoom: 2, status: "retail", sale: { saleRef: "S1", channel: "retail", date: "x", customer: "c", amount: 1000 } }),
-      makeSaree({ sareeId: "B", origin: "weaver", weaverId: "b5f9178c-b1b9-4871-a7c3-0d68a462d57a", weaverName: "Ravi Kumar", weaverLoom: 2, status: "unsold" }),
-      makeSaree({ sareeId: "C", origin: "weaver", weaverId: "8937070a-ea63-43f3-9cb4-dcbcfd362ff7", weaverName: "Padma Veni", weaverLoom: 1, status: "wholesale", sale: { saleRef: "S2", channel: "wholesale", date: "x", customer: "c", amount: 2000 } }),
+      makeSaree({ sareeId: "A", origin: "weaver", weaverId: "b5f9178c-b1b9-4871-a7c3-0d68a462d57a", weaverName: "Ravi Kumar", weaverLoom: 2, status: SALE_STATUS.Retail, sale: { saleRef: "S1", channel: "retail", date: "x", customer: "c", amount: 1000 } }),
+      makeSaree({ sareeId: "B", origin: "weaver", weaverId: "b5f9178c-b1b9-4871-a7c3-0d68a462d57a", weaverName: "Ravi Kumar", weaverLoom: 2, status: SALE_STATUS.Unsold }),
+      makeSaree({ sareeId: "C", origin: "weaver", weaverId: "8937070a-ea63-43f3-9cb4-dcbcfd362ff7", weaverName: "Padma Veni", weaverLoom: 1, status: SALE_STATUS.Wholesale, sale: { saleRef: "S2", channel: "wholesale", date: "x", customer: "c", amount: 2000 } }),
       // Different origin — must not be counted for the "weaver" ranking.
-      makeSaree({ sareeId: "D", origin: "factoryLoom", factoryLoomId: "FL-001", factoryLoomNumber: "Loom F-01", status: "retail" }),
+      makeSaree({ sareeId: "D", origin: "factoryLoom", factoryLoomId: "FL-001", factoryLoomNumber: "Loom F-01", status: SALE_STATUS.Retail }),
     ];
 
     const ranked = rankSellers(sarees, "weaver");
@@ -110,9 +111,9 @@ describe("rankSellers", () => {
 
   it("sorts descending by sold count, then by revenue", () => {
     const sarees: UnifiedSaree[] = [
-      makeSaree({ sareeId: "A", weaverId: "WV-LOW", weaverName: "Low seller", status: "retail", sale: { saleRef: "S1", channel: "retail", date: "x", customer: "c", amount: 500 } }),
-      makeSaree({ sareeId: "B", weaverId: "WV-HIGH", weaverName: "High seller", status: "retail", sale: { saleRef: "S2", channel: "retail", date: "x", customer: "c", amount: 100 } }),
-      makeSaree({ sareeId: "C", weaverId: "WV-HIGH", weaverName: "High seller", status: "retail", sale: { saleRef: "S3", channel: "retail", date: "x", customer: "c", amount: 100 } }),
+      makeSaree({ sareeId: "A", weaverId: "WV-LOW", weaverName: "Low seller", status: SALE_STATUS.Retail, sale: { saleRef: "S1", channel: "retail", date: "x", customer: "c", amount: 500 } }),
+      makeSaree({ sareeId: "B", weaverId: "WV-HIGH", weaverName: "High seller", status: SALE_STATUS.Retail, sale: { saleRef: "S2", channel: "retail", date: "x", customer: "c", amount: 100 } }),
+      makeSaree({ sareeId: "C", weaverId: "WV-HIGH", weaverName: "High seller", status: SALE_STATUS.Retail, sale: { saleRef: "S3", channel: "retail", date: "x", customer: "c", amount: 100 } }),
     ];
     const ranked = rankSellers(sarees, "weaver");
     expect(ranked[0].key).toBe("WV-HIGH");
@@ -124,9 +125,9 @@ describe("purchaseOutstanding", () => {
   it("rolls up unsold/returned/dueAmount per seeded external purchase", () => {
     const purchaseId = SEED_PURCHASE_SUMMARIES[0].id;
     const sarees: UnifiedSaree[] = [
-      makeSaree({ sareeId: "P1", origin: "external", purchaseId, status: "unsold", costPrice: 400, finalAmount: 500 }),
-      makeSaree({ sareeId: "P2", origin: "external", purchaseId, status: "retail" }),
-      makeSaree({ sareeId: "P3", origin: "external", purchaseId, status: "returned", ret: { returnRef: "R1", date: "x", reason: "x", refundAmount: 300, restocked: false } }),
+      makeSaree({ sareeId: "P1", origin: "external", purchaseId, status: SALE_STATUS.Unsold, costPrice: 400, finalAmount: 500 }),
+      makeSaree({ sareeId: "P2", origin: "external", purchaseId, status: SALE_STATUS.Retail }),
+      makeSaree({ sareeId: "P3", origin: "external", purchaseId, status: SALE_STATUS.Returned, ret: { returnRef: "R1", date: "x", reason: "x", refundAmount: 300, restocked: false } }),
     ];
     const result = purchaseOutstanding(sarees);
     const row = result.find(r => r.id === purchaseId)!;

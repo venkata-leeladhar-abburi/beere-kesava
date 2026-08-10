@@ -9,6 +9,10 @@ interface PaginatedResponse<T> {
 
 // ─── Finishing staff ────────────────────────────────────────────────────────
 export type BackendActiveStatus = "ACTIVE" | "INACTIVE";
+export const BACKEND_ACTIVE_STATUS = {
+  Active: "ACTIVE",
+  Inactive: "INACTIVE",
+} as const satisfies Record<string, BackendActiveStatus>;
 
 export interface BackendFinishingStaff {
   id: string;

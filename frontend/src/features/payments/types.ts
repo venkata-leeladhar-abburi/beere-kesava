@@ -1,9 +1,15 @@
 import { Receipt } from "lucide-react";
 
+export type WeaverPayStatus = "Paid" | "Pending";
+export const WEAVER_PAY_STATUS = {
+  Paid: "Paid",
+  Pending: "Pending",
+} as const satisfies Record<string, WeaverPayStatus>;
+
 export interface WeaverRecord {
   id: string; name: string; initials: string; bg: string;
   village: string; sb: number; hz: number; ps: number; bs: number; st: number;
-  advance: number; status: "Paid" | "Pending";
+  advance: number; status: WeaverPayStatus;
   // Uploaded overrides
   uploadedAmount?: number;
   uploadedDeduction?: number;
@@ -83,6 +89,11 @@ export interface VendorUploadResult {
 export type PayHistType   = "Vendor Payment" | "Weaver Payment" | "Customer Receipt" | "Supplier Payment";
 
 export type PayHistStatus = "Paid" | "Partial" | "Pending";
+export const PAY_HIST_STATUS = {
+  Paid: "Paid",
+  Partial: "Partial",
+  Pending: "Pending",
+} as const satisfies Record<string, PayHistStatus>;
 
 export interface PayHistRecord {
   id: string; date: string; type: PayHistType;

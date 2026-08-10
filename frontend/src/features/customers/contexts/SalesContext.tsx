@@ -4,7 +4,7 @@ import { toast } from "sonner";
 
 export * from "./sales-types";
 export * from "./sales-seed";
-import { UnifiedSaree, SaleInfo, ReturnInfo, SalesContextValue, SareeOrigin, SareeSaleStatus } from "./sales-types";
+import { UnifiedSaree, SaleInfo, ReturnInfo, SalesContextValue, SareeOrigin, SareeSaleStatus, SALE_STATUS } from "./sales-types";
 import { SEED_UNIFIED_SAREES, SEED_PURCHASE_SUMMARIES } from "./sales-seed";
 
 import { inventoryApi } from "../../../shared/api/inventory";
@@ -114,7 +114,7 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
     onSuccess: ({ sareeId, ret }) => {
       queryClient.setQueryData<UnifiedSaree[]>(QUERY_KEY, prev =>
         (prev ?? []).map(s => s.sareeId === sareeId
-          ? { ...s, status: "returned", ret }
+          ? { ...s, status: SALE_STATUS.Returned, ret }
           : s)
       );
       toast.success("Return recorded");

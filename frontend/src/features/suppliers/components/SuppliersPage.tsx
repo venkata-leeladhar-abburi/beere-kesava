@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { AnimatePresence } from "motion/react";
 import {
-  useSuppliers, Supplier, SareeTag,
+  useSuppliers, Supplier, SareeTag, SUPPLIER_STATUS,
 } from "../contexts/SupplierContext";
 import { PurchaseFormModal, FormState as PurchaseFormState, EMPTY_FORM as EMPTY_PURCHASE_FORM } from "../../inventory/components/ExternalPurchasesPage";
 
@@ -166,7 +166,7 @@ export function SuppliersPage() {
                 name: v.name, contactName: v.contactName, phone: v.phone, whatsapp: v.whatsapp,
                 city: v.city, state: v.state, address: v.address, gstCode: v.gstCode,
                 specialty: v.specialty, terms: v.terms, bankName: v.bankName, accountNo: v.accountNo,
-                notes: v.notes, visitingCard: cardUrl || undefined, status: "active", rating: 3,
+                notes: v.notes, visitingCard: cardUrl || undefined, status: SUPPLIER_STATUS.Active, rating: 3,
               });
               setShowAdd(false);
               setToast(`Supplier ${v.name} added`);

@@ -25,6 +25,11 @@ import { useUrlFilters } from "../../../shared/ui/filter";
  * under this same directory. See git history for the pre-split version if
  * you need to trace exactly what moved where.
  */
+/** Dues status for a freshly-onboarded backend customer (no orders yet, so
+ *  always "no dues") — matches WholesaleCustomersSection's "clear"/"overdue"/
+ *  "pending" dues-badge states, not the domain lifecycle taxonomies. */
+const WHOLESALE_DUES_CLEAR = "clear" as const;
+
 export function CustomersPage() {
   const [wholesaleView, setWholesaleView] = useState<"card"|"list"|"table">("card");
   const [retailView, setRetailView] = useState<"card"|"list">("card");
@@ -37,7 +42,7 @@ export function CustomersPage() {
       name: c.name,
       code: c.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase(),
       city: c.city || "—",
-      status: "clear" as const,
+      status: WHOLESALE_DUES_CLEAR,
       orders: 0,
       spend: "0",
       out: "0",

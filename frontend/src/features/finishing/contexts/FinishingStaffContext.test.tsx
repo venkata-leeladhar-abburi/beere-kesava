@@ -3,7 +3,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen, waitFor, fireEvent } from "@testing-library/react";
 import { renderWithQueryClient } from "../../../test/render";
 import { FinishingStaffProvider, useFinishingStaff } from "./FinishingStaffContext";
-import { finishingStaffApi, type BackendFinishingStaff } from "../../../shared/api/finishing";
+import { finishingStaffApi, type BackendFinishingStaff, BACKEND_ACTIVE_STATUS } from "../../../shared/api/finishing";
+import { PERSON_STATUS } from "@/lib/domain/status";
 
 vi.mock("../../../shared/api/finishing", async (importOriginal) => {
   const mod = await importOriginal<typeof import("../../../shared/api/finishing")>();
@@ -28,7 +29,7 @@ const MOCK_STAFF: BackendFinishingStaff[] = [
     email: "anand@example.com",
     specialisation: "Ironing",
     notes: "",
-    status: "ACTIVE",
+    status: BACKEND_ACTIVE_STATUS.Active,
     createdAt: "2026-01-01T00:00:00.000Z",
   },
   {
@@ -40,7 +41,7 @@ const MOCK_STAFF: BackendFinishingStaff[] = [
     email: "",
     specialisation: "Polishing",
     notes: "",
-    status: "ACTIVE",
+    status: BACKEND_ACTIVE_STATUS.Active,
     createdAt: "2026-01-01T00:00:00.000Z",
   },
   {
@@ -52,7 +53,7 @@ const MOCK_STAFF: BackendFinishingStaff[] = [
     email: "",
     specialisation: "Packing",
     notes: "",
-    status: "ACTIVE",
+    status: BACKEND_ACTIVE_STATUS.Active,
     createdAt: "2026-01-01T00:00:00.000Z",
   },
   {
@@ -64,7 +65,7 @@ const MOCK_STAFF: BackendFinishingStaff[] = [
     email: "",
     specialisation: "Fold",
     notes: "",
-    status: "INACTIVE",
+    status: BACKEND_ACTIVE_STATUS.Inactive,
     createdAt: "2026-01-01T00:00:00.000Z",
   },
 ];
@@ -87,7 +88,7 @@ function Harness() {
             email: "",
             specialisation: "",
             notes: "",
-            status: "Active",
+            status: PERSON_STATUS.active.label,
           })
         }
       >
@@ -139,7 +140,7 @@ describe("FinishingStaffContext", () => {
     renderHarness();
     await waitFor(() => expect(screen.getByTestId("member-fs-seed-001")).toHaveTextContent("Anand — Active"));
     fireEvent.click(screen.getByText("Toggle first"));
-    await waitFor(() => expect(finishingStaffApi.update).toHaveBeenCalledWith("fs-seed-001", { status: "INACTIVE" }));
+    await waitFor(() => expect(finishingStaffApi.update).toHaveBeenCalledWith("fs-seed-001", { status: BACKEND_ACTIVE_STATUS.Inactive }));
   });
 
   it("throws when used outside a FinishingStaffProvider", () => {

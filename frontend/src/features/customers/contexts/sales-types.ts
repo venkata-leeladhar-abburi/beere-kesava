@@ -16,6 +16,14 @@ export type SareeOrigin = "weaver" | "factoryLoom" | "external";
 export type SaleChannel = "retail" | "wholesale";
 /** unsold = outstanding stock. returned = was sold retail, customer brought it back. */
 export type SareeSaleStatus = "unsold" | "retail" | "wholesale" | "returned";
+/** Typed constants for `SareeSaleStatus` values — reference these instead of
+ *  bare string literals so call sites stay type-checked (design-system/06-DOMAIN.md Part D). */
+export const SALE_STATUS = {
+  Unsold: "unsold",
+  Retail: "retail",
+  Wholesale: "wholesale",
+  Returned: "returned",
+} as const satisfies Record<string, SareeSaleStatus>;
 
 export interface SaleInfo {
   saleRef: string;
@@ -84,9 +92,19 @@ export interface PurchaseSummary {
   gstNumber: string;
   billAmount: number;
   paidAmount: number;
-  status: "Paid" | "Pending" | "Partial";
+  status: ExternalPurchaseStatus;
   sareeCount: number;
 }
+
+/** External-purchase payment status — a 3-state variant distinct from the
+ *  richer 8-state `PaymentStatus` taxonomy (lib/domain/status.ts); the exact
+ *  values here are what this codebase's purchase records actually use. */
+export type ExternalPurchaseStatus = "Paid" | "Pending" | "Partial";
+export const PURCHASE_STATUS = {
+  Paid: "Paid",
+  Pending: "Pending",
+  Partial: "Partial",
+} as const satisfies Record<string, ExternalPurchaseStatus>;
 
 // ─── Context ──────────────────────────────────────────────────────────────────
 export interface SalesContextValue {

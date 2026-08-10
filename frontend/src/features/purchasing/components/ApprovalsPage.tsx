@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { usePO } from "../contexts/POContext";
-import { useSuppliers } from "../../suppliers/contexts/SupplierContext";
+import { useSuppliers, type PurchaseRequestStatus } from "../../suppliers/contexts/SupplierContext";
 import { PODocumentModal } from "./PODocumentModal";
 import { toast } from "sonner";
 
@@ -40,7 +40,7 @@ export function ApprovalsPage() {
   const { requests, decideRequest } = useSuppliers();
   const pendingRequests = requests.filter(r => r.status === "pending");
 
-  const decideExternal = (id: string, status: "approved" | "rejected") => {
+  const decideExternal = (id: string, status: Extract<PurchaseRequestStatus, "approved" | "rejected">) => {
     decideRequest(id, status, "Superadmin");
     const req = requests.find(r => r.id === id);
     toast[status === "approved" ? "success" : "info"](

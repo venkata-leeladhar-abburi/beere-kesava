@@ -15,6 +15,9 @@ import { STOPGAP_ACTING_USER_ID } from "../../../shared/api/purchase-requests";
 import { useAuth } from "../../../contexts/AuthContext";
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
+/** Typed constant for MaterialIssueRecord["status"]'s "signed" value. */
+const MATERIAL_ISSUE_STATUS = { Signed: "signed" } as const;
+
 export interface IssuedMaterialItem {
   materialType: "Warp" | "Resham" | "Jari";
   warpSubtype?: "Resham Warp" | "Jari Warp";  // only for Warp type
@@ -157,8 +160,12 @@ export interface ReceivedSareeRecord {
   tallied?: boolean;          // true once admin has confirmed the tally for this series
   receivedAt: string;  // ISO date-time
   color?: string;
-  status: "received" | "defective";
+  status: ReceivedSareeStatus;
 }
+
+/** received/defective — not one of INVENTORY_STATUS's exact 8 states
+ *  (lib/domain/status.ts), kept as this feature's real 2-state receipt outcome. */
+export type ReceivedSareeStatus = "received" | "defective";
 
 const INITIAL_RECEIVED_SAREES: ReceivedSareeRecord[] = [];
 
@@ -318,7 +325,7 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
       queryClient.setQueryData<MaterialIssueRecord[]>(ISSUE_RECORDS_KEY, prev =>
         (prev ?? []).map(r =>
           r.id === recordId
-            ? { ...r, signatureMethod: method, signatureCaptured: true, signatureTimestamp: new Date().toISOString(), status: "signed" as const }
+            ? { ...r, signatureMethod: method, signatureCaptured: true, signatureTimestamp: new Date().toISOString(), status: MATERIAL_ISSUE_STATUS.Signed }
             : r
         )
       );

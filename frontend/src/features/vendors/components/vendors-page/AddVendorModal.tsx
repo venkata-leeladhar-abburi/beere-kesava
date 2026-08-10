@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Star } from "lucide-react";
 import { T, F } from "./theme";
-import { Vendor } from "./types";
+import { Vendor, VENDOR_STATUS } from "./types";
 import { PAYMENT_TERMS, STATES } from "./data";
 import { Button, Field, Input, Textarea, Select, SelectItem, CheckboxField } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
@@ -46,7 +46,7 @@ export function AddVendorModal({ onSave, onCancel, nextId }: { onSave: (v: Vendo
       address: form.address, gstCode: form.gstCode, type: form.types.join(" / "),
       terms: form.terms, bankName: form.bankName, accountNo: form.accountNo,
       notes: form.notes, visitingCard: cardPreview || undefined,
-      status: "active", totalOrders: 0, totalSpend: "0",
+      status: VENDOR_STATUS.Active, totalOrders: 0, totalSpend: "0",
       outstanding: "0", lastOrder: "—", rating: form.rating,
     } as any);
   };

@@ -5,6 +5,16 @@ import { BackendPurchaseOrder, purchaseOrdersApi } from "../../../shared/api/pur
 import { vendorsApi } from "../../../shared/api/vendors";
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
+/** Purchase-order approval lifecycle — 4-state, distinct from
+ *  PurchaseRequestStatus (suppliers feature) which lacks "received". */
+export type POStatus = "pending" | "approved" | "rejected" | "received";
+export const PO_STATUS = {
+  Pending: "pending",
+  Approved: "approved",
+  Rejected: "rejected",
+  Received: "received",
+} as const satisfies Record<string, POStatus>;
+
 export interface POItem {
   materialType: "Warp" | "Resham" | "Jari";
   subtype: string;
@@ -30,7 +40,7 @@ export interface PurchaseOrder {
   notesVendor?: string;
   notesAdmin?: string;
   urgency: "Normal" | "Urgent";
-  status: "pending" | "approved" | "rejected" | "received";
+  status: POStatus;
   submittedDate: string;
   approvedDate?: string;
   rejectionReason?: string;
@@ -134,7 +144,7 @@ export function POProvider({ children }: { children: React.ReactNode }) {
       setPos(prev =>
         prev.map(p =>
           p.id === updated.id
-            ? { ...p, status: "approved" as const, approvedDate: new Date().toISOString().split("T")[0] }
+            ? { ...p, status: PO_STATUS.Approved, approvedDate: new Date().toISOString().split("T")[0] }
             : p
         )
       );
@@ -151,7 +161,7 @@ export function POProvider({ children }: { children: React.ReactNode }) {
       setPos(prev =>
         prev.map(p =>
           p.id === updated.id
-            ? { ...p, status: "rejected" as const, rejectionReason: updated.rejectionReason ?? undefined }
+            ? { ...p, status: PO_STATUS.Rejected, rejectionReason: updated.rejectionReason ?? undefined }
             : p
         )
       );

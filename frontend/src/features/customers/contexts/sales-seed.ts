@@ -1,4 +1,4 @@
-import { UnifiedSaree, SaleInfo, ReturnInfo, PurchaseSummary, SareeOrigin, SareeSaleStatus } from "./sales-types";
+import { UnifiedSaree, SaleInfo, ReturnInfo, PurchaseSummary, SareeOrigin, SareeSaleStatus, PURCHASE_STATUS } from "./sales-types";
 
 // ─── Seed reference data (codes match the source pages exactly) ───────────────
 const WEAVERS = [
@@ -24,12 +24,12 @@ const FACTORY_LOOMS = [
 const PURCHASES_RAW: (Omit<PurchaseSummary, "billAmount" | "paidAmount"> & {
   billAmount: number; paidPct: number; sareeType: string;
 })[] = [
-  { id: "EXT-2026-0001", supplier: "Ravi Silks",               location: "Dharmavaram, AP",  date: "01 Jun 2026", invoiceNumber: "INV-RS-2026-118", gstNumber: "37ABCRS1234F1Z5", billAmount:  34000, paidPct: 1,    status: "Paid",    sareeCount: 4,  sareeType: "Plain Silk"  },
-  { id: "EXT-2026-0002", supplier: "Mysore Sarees",            location: "Mysore, KA",       date: "05 Jun 2026", invoiceNumber: "INV-MS-2026-552", gstNumber: "29MYSRS5678K1Z2", billAmount:  74400, paidPct: 0,    status: "Pending", sareeCount: 12, sareeType: "Mysore Silk" },
-  { id: "EXT-2026-0003", supplier: "Chennai Silks",            location: "Chennai, TN",      date: "08 Jun 2026", invoiceNumber: "INV-CS-2026-073", gstNumber: "33CHNSK9012L1Z8", billAmount:  66000, paidPct: 0.4,  status: "Partial", sareeCount: 6,  sareeType: "Kanjivaram"  },
-  { id: "EXT-2026-0004", supplier: "Kanchipuram House",        location: "Kanchipuram, TN",  date: "10 Jun 2026", invoiceNumber: "INV-KH-2026-209", gstNumber: "33KNCH3456M1Z1", billAmount:  88000, paidPct: 1,    status: "Paid",    sareeCount: 8,  sareeType: "Kanjivaram"  },
-  { id: "EXT-2026-0005", supplier: "Venkateshwara Handlooms",  location: "Ongole, AP",       date: "11 Jun 2026", invoiceNumber: "INV-VH-2026-014", gstNumber: "37VENK7890N1Z6", billAmount:  22500, paidPct: 1,    status: "Paid",    sareeCount: 3,  sareeType: "Plain Silk"  },
-  { id: "EXT-2026-0006", supplier: "Pochampally Coop",         location: "Pochampally, TG",  date: "11 Jun 2026", invoiceNumber: "INV-PC-2026-301", gstNumber: "36POCH2345P1Z9", billAmount: 120000, paidPct: 0,    status: "Pending", sareeCount: 15, sareeType: "Patola"      },
+  { id: "EXT-2026-0001", supplier: "Ravi Silks",               location: "Dharmavaram, AP",  date: "01 Jun 2026", invoiceNumber: "INV-RS-2026-118", gstNumber: "37ABCRS1234F1Z5", billAmount:  34000, paidPct: 1,    status: PURCHASE_STATUS.Paid,    sareeCount: 4,  sareeType: "Plain Silk"  },
+  { id: "EXT-2026-0002", supplier: "Mysore Sarees",            location: "Mysore, KA",       date: "05 Jun 2026", invoiceNumber: "INV-MS-2026-552", gstNumber: "29MYSRS5678K1Z2", billAmount:  74400, paidPct: 0,    status: PURCHASE_STATUS.Pending, sareeCount: 12, sareeType: "Mysore Silk" },
+  { id: "EXT-2026-0003", supplier: "Chennai Silks",            location: "Chennai, TN",      date: "08 Jun 2026", invoiceNumber: "INV-CS-2026-073", gstNumber: "33CHNSK9012L1Z8", billAmount:  66000, paidPct: 0.4,  status: PURCHASE_STATUS.Partial, sareeCount: 6,  sareeType: "Kanjivaram"  },
+  { id: "EXT-2026-0004", supplier: "Kanchipuram House",        location: "Kanchipuram, TN",  date: "10 Jun 2026", invoiceNumber: "INV-KH-2026-209", gstNumber: "33KNCH3456M1Z1", billAmount:  88000, paidPct: 1,    status: PURCHASE_STATUS.Paid,    sareeCount: 8,  sareeType: "Kanjivaram"  },
+  { id: "EXT-2026-0005", supplier: "Venkateshwara Handlooms",  location: "Ongole, AP",       date: "11 Jun 2026", invoiceNumber: "INV-VH-2026-014", gstNumber: "37VENK7890N1Z6", billAmount:  22500, paidPct: 1,    status: PURCHASE_STATUS.Paid,    sareeCount: 3,  sareeType: "Plain Silk"  },
+  { id: "EXT-2026-0006", supplier: "Pochampally Coop",         location: "Pochampally, TG",  date: "11 Jun 2026", invoiceNumber: "INV-PC-2026-301", gstNumber: "36POCH2345P1Z9", billAmount: 120000, paidPct: 0,    status: PURCHASE_STATUS.Pending, sareeCount: 15, sareeType: "Patola"      },
 ];
 
 export const SEED_PURCHASE_SUMMARIES: PurchaseSummary[] = PURCHASES_RAW.map(p => ({

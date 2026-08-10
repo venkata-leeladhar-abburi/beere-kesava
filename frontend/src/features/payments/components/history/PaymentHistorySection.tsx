@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { EASE, F, T, DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../theme";
-import { Invoice, PayHistRecord } from "../../types";
+import { Invoice, PayHistRecord, PAY_HIST_STATUS } from "../../types";
 import { FadeUp } from "../common/motion";
 import { HIST_STATUS_CFG, HIST_TYPE_CFG, HistoryCard, getHistTypeIcon } from "./HistoryCard";
 import { vendorsApi } from "../../../../shared/api/vendors";
@@ -65,7 +65,7 @@ export function PaymentHistorySection() {
       refNo: p.id,
       description: "Vendor payment",
       amount: Number(p.amount),
-      status: "Paid",
+      status: PAY_HIST_STATUS.Paid,
       mode: p.method ?? "—",
       utr: p.utr ?? undefined,
       recordedBy: "Admin",
@@ -79,7 +79,7 @@ export function PaymentHistorySection() {
       refNo: p.id,
       description: "Supplier payment",
       amount: Number(p.amount),
-      status: "Paid",
+      status: PAY_HIST_STATUS.Paid,
       mode: p.method ?? "—",
       utr: p.utr ?? undefined,
       recordedBy: "Admin",
@@ -93,7 +93,7 @@ export function PaymentHistorySection() {
       refNo: p.weaverId,
       description: "Making charges",
       amount: Number(p.amountPaid),
-      status: "Paid",
+      status: PAY_HIST_STATUS.Paid,
       mode: "Bank Transfer",
       utr: p.utrNumber ?? undefined,
       recordedBy: "Admin",

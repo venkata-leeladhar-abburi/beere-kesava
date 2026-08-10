@@ -7,6 +7,12 @@ import {
   finishingStaffApi,
 } from "../../../shared/api/finishing";
 import { useAuth } from "../../../contexts/AuthContext";
+import { PERSON_STATUS } from "@/lib/domain/status";
+
+/** Mirrors the PERSON_STATUS "active"/"inactive" pair (lib/domain/status.ts)
+ *  at its display-cased labels — this is what the finishing-staff backend
+ *  and UI actually persist/compare, not the taxonomy's kebab-case keys. */
+export type FinishingStaffStatus = typeof PERSON_STATUS.active.label | typeof PERSON_STATUS.inactive.label;
 
 export interface FinishingStaffMember {
   id: string;
@@ -18,7 +24,7 @@ export interface FinishingStaffMember {
   specialisation: string;
   notes: string;
   dateAdded: string;
-  status: "Active" | "Inactive";
+  status: FinishingStaffStatus;
 }
 
 interface FinishingStaffContextValue {
@@ -35,8 +41,8 @@ const FinishingStaffContext = createContext<FinishingStaffContextValue | null>(n
 const QUERY_KEY = ["finishingStaff"] as const;
 
 const STATUS_TO_BACKEND: Record<FinishingStaffMember["status"], BackendActiveStatus> = {
-  Active: "ACTIVE",
-  Inactive: "INACTIVE",
+  [PERSON_STATUS.active.label]: "ACTIVE",
+  [PERSON_STATUS.inactive.label]: "INACTIVE",
 };
 
 function backendToMember(s: BackendFinishingStaff): FinishingStaffMember {

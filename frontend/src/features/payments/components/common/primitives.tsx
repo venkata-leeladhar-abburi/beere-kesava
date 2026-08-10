@@ -5,6 +5,7 @@ import { CheckCircle2, Clock } from "lucide-react";
 import { F, T } from "../../theme";
 import { Button, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
+import type { WeaverPayStatus } from "../../types";
 
 // helper: initials avatar
 export function Pip({ initials, bg, size = 36 }: { initials: string; bg: string; size?: number }) {
@@ -16,7 +17,7 @@ export function Pip({ initials, bg, size = 36 }: { initials: string; bg: string;
 }
 
 // helper: status badge
-export function StatusBadge({ status }: { status: "Paid" | "Pending" }) {
+export function StatusBadge({ status }: { status: WeaverPayStatus }) {
   const paid = status === "Paid";
   return (
     <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 9px", borderRadius: 20, fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: paid ? "rgba(30,102,64,0.10)" : "rgba(196,146,58,0.12)", color: paid ? T.green : "#8B6018" }}>

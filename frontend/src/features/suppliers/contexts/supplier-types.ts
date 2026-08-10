@@ -37,6 +37,15 @@ export interface Purchase {
   sarees: SareeTag[];
 }
 
+/** Purchase.status's real values — same 3-state concept as
+ *  customers/contexts/sales-types.ts's ExternalPurchaseStatus, kept local
+ *  here since Purchase.status is typed loosely as `string`. */
+export const PURCHASE_PAYMENT_STATUS = {
+  Paid: "Paid",
+  Pending: "Pending",
+  Partial: "Partial",
+} as const;
+
 export interface SupplierPayment {
   id: string;
   supplierId: string;
@@ -48,6 +57,16 @@ export interface SupplierPayment {
   purchaseId?: string;
   notes?: string;
 }
+
+/** Approval lifecycle for an external-purchase request — "pending" isn't in
+ *  DocumentStatus (lib/domain/status.ts), so this keeps its own type rather
+ *  than force-fitting the 8-state document taxonomy. */
+export type PurchaseRequestStatus = "pending" | "approved" | "rejected";
+export const PURCHASE_REQUEST_STATUS = {
+  Pending: "pending",
+  Approved: "approved",
+  Rejected: "rejected",
+} as const satisfies Record<string, PurchaseRequestStatus>;
 
 /** An external-purchase request raised by an admin, awaiting superadmin approval. */
 export interface PurchaseRequest {
@@ -61,7 +80,7 @@ export interface PurchaseRequest {
   estimatedAmount: number;
   urgency: "Normal" | "Urgent";
   reason: string;
-  status: "pending" | "approved" | "rejected";
+  status: PurchaseRequestStatus;
   decidedBy?: string;
   decidedDate?: string;
   decisionNote?: string;
@@ -102,9 +121,18 @@ export interface Supplier {
   accountNo?: string;
   notes?: string;
   visitingCard?: string;
-  status: "active" | "inactive" | "overdue";
+  status: SupplierStatus;
   rating: number;
 }
+
+/** Supplier account status — like PersonStatus (lib/domain/status.ts) but this
+ *  feature's real states add "overdue", so it keeps its own type. */
+export type SupplierStatus = "active" | "inactive" | "overdue";
+export const SUPPLIER_STATUS = {
+  Active: "active",
+  Inactive: "inactive",
+  Overdue: "overdue",
+} as const satisfies Record<string, SupplierStatus>;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers shared by the suppliers + external purchases pages

@@ -2,6 +2,7 @@ import React from "react";
 import { DateFilterBar, DateFilterState, matchesDateFilter } from "../../../../../shared/ui/DateFilterBar";
 import { T, F } from "../../theme";
 import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
+import { PAYMENT_STATUS } from "@/lib/domain/status";
 
 interface PaymentRow {
   rec: string;
@@ -13,9 +14,9 @@ interface PaymentRow {
 }
 
 const PAYMENTS: PaymentRow[] = [
-  { rec: "REC-90821", date: "02 May 2026", utr: "UTR9832104523", amt: "₹1,80,000", ded: "₹0", status: "Settled" },
-  { rec: "REC-90145", date: "15 Apr 2026", utr: "UTR8293108420", amt: "₹2,60,000", ded: "₹20,000", status: "Settled" },
-  { rec: "REC-89234", date: "18 Dec 2025", utr: "UTR7489312048", amt: "₹1,00,000", ded: "₹5,000", status: "Settled" },
+  { rec: "REC-90821", date: "02 May 2026", utr: "UTR9832104523", amt: "₹1,80,000", ded: "₹0", status: PAYMENT_STATUS.settled.label },
+  { rec: "REC-90145", date: "15 Apr 2026", utr: "UTR8293108420", amt: "₹2,60,000", ded: "₹20,000", status: PAYMENT_STATUS.settled.label },
+  { rec: "REC-89234", date: "18 Dec 2025", utr: "UTR7489312048", amt: "₹1,00,000", ded: "₹5,000", status: PAYMENT_STATUS.settled.label },
 ];
 
 const columns: ColumnDef<PaymentRow>[] = [
