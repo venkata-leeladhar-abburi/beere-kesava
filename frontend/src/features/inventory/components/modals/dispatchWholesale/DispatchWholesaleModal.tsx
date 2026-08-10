@@ -18,6 +18,8 @@ import { InvoiceGenerator } from "../shared/InvoiceGenerator";
 import { SareeReviewList } from "../shared/SareeReviewList";
 import { SelectInput } from "../../common/primitives";
 import { Modal } from "../../../../../shared/ui/overlay";
+import { rupees } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 
 // ── Dispatch to Wholesale modal ───────────────────────────────────────────────
 // Customer → Quotation (optional) → Tax Invoice → Sarees → Transport → Receipt.
@@ -241,7 +243,7 @@ export function DispatchWholesaleModal({ sarees, available, onConfirm, onClose, 
                           </div>
                         </div>
                         <div style={{ textAlign: "right" as const, flexShrink: 0 }}>
-                          <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>₹{q.grandTotal.toLocaleString("en-IN")}</div>
+                          <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}><Money value={rupees(q.grandTotal)} /></div>
                           {on && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.royalBurgundy, fontWeight: 700, marginTop: 3 }}>Tap to unlink</div>}
                         </div>
                         {on && <CheckCircle2 size={18} color={T.royalBurgundy} style={{ flexShrink: 0 }} />}

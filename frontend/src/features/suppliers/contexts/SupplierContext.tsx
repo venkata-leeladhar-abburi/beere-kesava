@@ -9,6 +9,7 @@ import { SEED_PURCHASES } from "./supplier-seed";
 import { BackendSupplier, suppliersApi } from "../../../shared/api/suppliers";
 import { supplierPaymentsApi } from "../../../shared/api/payments";
 import { BackendPurchaseRequest, purchaseRequestsApi } from "../../../shared/api/purchase-requests";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 // suppliers + payments + requests are wired to the real backend; purchases
 // keep their rich per-saree line-item detail (price/photo/weight per piece)
@@ -296,7 +297,7 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
           sareeCount: totalPieces(local.sarees),
           gstNumber: local.gstNumber ?? "",
           invoiceNumber: local.invoiceNumber ?? "",
-          billAmount: local.billAmount || `₹${Math.round(purchaseTotals(local.sarees).selling).toLocaleString("en-IN")}`,
+          billAmount: local.billAmount || formatMoney(rupees(purchaseTotals(local.sarees).selling)),
           status: "Pending",
           notes: local.notes ?? "",
           invoiceFileName: local.invoiceFileName,

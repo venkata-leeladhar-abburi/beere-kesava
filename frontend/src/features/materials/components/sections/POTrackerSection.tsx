@@ -11,6 +11,8 @@ import type { POFilter } from "../types";
 import { FadeUp } from "../common/primitives";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { POVendorDetailModal } from "../modals/ReportModals";
+import { rupees } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 
 export function POTrackerSection({
   onCreatePO,
@@ -196,7 +198,7 @@ export function POTrackerSection({
                               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#FDFBF7", padding: "6px 10px", borderRadius: 6, border: `1px solid ${T.borderGold}40` }}>
                                 <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Invoice Amount</span>
                                 <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: m.invoiceAmount ? "#8B6018" : T.taupe }}>
-                                  {m.invoiceAmount ? `₹${m.invoiceAmount.toLocaleString("en-IN")}` : "Not yet invoiced"}
+                                  {m.invoiceAmount ? <Money value={rupees(m.invoiceAmount)} /> : "Not yet invoiced"}
                                 </span>
                               </div>
                             </div>
@@ -232,7 +234,7 @@ export function POTrackerSection({
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                           <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe }}>Total Invoice Value</span>
                           <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 800, color: "#8B6018" }}>
-                            ₹{totalInvoiceAmount.toLocaleString("en-IN")}
+                            <Money value={rupees(totalInvoiceAmount)} />
                           </span>
                         </div>
                       </div>

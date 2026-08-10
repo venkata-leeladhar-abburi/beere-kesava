@@ -11,6 +11,8 @@ import { Button, IconButton, Input } from "../../../../shared/ui/primitives";
 import { materialIssuesApi } from "../../../../shared/api/material-issues";
 import { rawMaterialsApi, RawMaterialStockItem } from "../../../../shared/api/rawMaterials";
 import { toast } from "sonner";
+import { rupees } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 
 // ─── FULL REPORTS MODAL ───────────────────────────────────────────────────────
 export function FullReportsModal({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -363,7 +365,7 @@ export function POVendorDetailModal({ po, onClose }: { po: PurchaseOrder | null;
                       </div>
                       <div style={{ textAlign: "right" as const, flexShrink: 0 }}>
                         <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>{m.quantity} {m.unit}</div>
-                        {m.pricePerUnit > 0 && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 1 }}>₹{m.pricePerUnit.toLocaleString("en-IN")}/{m.unit}</div>}
+                        {m.pricePerUnit > 0 && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 1 }}><Money value={rupees(m.pricePerUnit)} />/{m.unit}</div>}
                       </div>
                     </div>
                   );
@@ -374,7 +376,7 @@ export function POVendorDetailModal({ po, onClose }: { po: PurchaseOrder | null;
             <div style={{ background: "linear-gradient(135deg, rgba(200,155,71,0.08) 0%, rgba(200,155,71,0.02) 100%)", border: `1.5px solid ${T.borderGold}`, borderRadius: 14, padding: "14px 16px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.taupe }}>Total Order Value</span>
-                <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 800, color: "#8B6018" }}>₹{po.totalValue.toLocaleString("en-IN")}</span>
+                <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 800, color: "#8B6018" }}><Money value={rupees(po.totalValue)} /></span>
               </div>
               {po.urgency === "Urgent" && (
                 <div style={{ marginTop: 8, display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(192,57,43,0.10)", border: "1px solid rgba(192,57,43,0.25)", borderRadius: 6, padding: "4px 10px" }}>

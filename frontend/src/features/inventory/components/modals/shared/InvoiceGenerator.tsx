@@ -11,6 +11,8 @@ import { Field, TextInput, SelectInput } from "../../common/primitives";
 import { Button, CurrencyInput, NumberInput, Checkbox, Textarea } from "../../../../../shared/ui/primitives";
 import { DatePicker, formatDate } from "../../../../../shared/ui/date";
 import { toPaise, fromPaise, formatPaise } from "../../../../../lib/gst";
+import { rupees } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 
 // ── Invoice generator (wholesale step 5) ─────────────────────────────────────
 export function InvoiceGenerator({
@@ -122,7 +124,7 @@ export function InvoiceGenerator({
 
           <Field label="Total Amount">
             <div style={{ ...inp, background: "rgba(245,232,208,0.40)", color: T.royalBurgundy, fontFamily: F.mono, fontWeight: 600, display: "flex", alignItems: "center" }}>
-              ₹{subtotal.toLocaleString("en-IN")}
+              <Money value={rupees(subtotal)} />
             </div>
           </Field>
 
@@ -142,12 +144,12 @@ export function InvoiceGenerator({
                 className="w-[70px] text-center font-code text-[13px]"
               />
             )}
-            {data.applyGst && <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>% GST = ₹{gstAmount.toLocaleString("en-IN")}</span>}
+            {data.applyGst && <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>% GST = <Money value={rupees(gstAmount)} /></span>}
           </div>
 
           <div style={{ gridColumn: "1 / -1", background: T.bgGold, border: `1px solid ${T.borderGold}`, borderRadius: 10, padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>Grand Total</span>
-            <span style={{ fontFamily: F.mono, fontSize: 20, fontWeight: 700, color: T.royalBurgundy }}>₹{grandTotal.toLocaleString("en-IN")}</span>
+            <span style={{ fontFamily: F.mono, fontSize: 20, fontWeight: 700, color: T.royalBurgundy }}><Money value={rupees(grandTotal)} /></span>
           </div>
 
           <div style={{ gridColumn: "1 / -1" }}>
@@ -254,7 +256,7 @@ export function InvoiceGenerator({
                     </div>
                     <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{s.designCode} · {s.sareeType}</div>
                   </div>
-                  <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, textAlign: "right" as const }}>₹{p ? p.toLocaleString("en-IN") : "—"}</div>
+                  <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, textAlign: "right" as const }}>{p ? <Money value={rupees(p)} /> : "—"}</div>
                 </div>
               );
             })}
@@ -267,17 +269,17 @@ export function InvoiceGenerator({
           <div style={{ borderTop: `1.5px solid ${T.borderDef}`, paddingTop: 12, display: "flex", flexDirection: "column", gap: 4 }}>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Subtotal ({qty} sarees)</span>
-              <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>₹{subtotal.toLocaleString("en-IN")}</span>
+              <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}><Money value={rupees(subtotal)} /></span>
             </div>
             {data.applyGst && (
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>GST ({data.gstPct}%)</span>
-                <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>₹{gstAmount.toLocaleString("en-IN")}</span>
+                <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}><Money value={rupees(gstAmount)} /></span>
               </div>
             )}
             <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6, paddingTop: 8, borderTop: `1px solid ${T.borderDef}` }}>
               <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>Grand Total</span>
-              <span style={{ fontFamily: F.mono, fontSize: 16, fontWeight: 700, color: T.royalBurgundy }}>₹{grandTotal.toLocaleString("en-IN")}</span>
+              <span style={{ fontFamily: F.mono, fontSize: 16, fontWeight: 700, color: T.royalBurgundy }}><Money value={rupees(grandTotal)} /></span>
             </div>
             {data.paymentDueDate && (
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>Payment due: {data.paymentDueDate}</div>

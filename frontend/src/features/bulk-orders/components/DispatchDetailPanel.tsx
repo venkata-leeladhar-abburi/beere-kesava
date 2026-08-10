@@ -4,6 +4,7 @@ import { Truck, X, AlertTriangle } from "lucide-react";
 import { DispatchRecord } from "../../finishing/contexts/FinishingContext";
 import { IconButton } from "../../../shared/ui/primitives";
 import { Drawer } from "../../../shared/ui/overlay";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 const T = {
   royalBurgundy: "#6E0F2D",
@@ -37,8 +38,8 @@ export function DispatchDetailPanel({ dispatch, onClose }: DispatchDetailPanelPr
     ["Invoice Date", dispatch.invoiceDate || "—"],
     ["Firm", dispatch.firmName || "—"],
     ["Customer", dispatch.customerName || "—"],
-    ["Total Amount", dispatch.totalAmount ? `₹${dispatch.totalAmount.toLocaleString("en-IN")}` : "—"],
-    ["Grand Total", dispatch.grandTotal ? `₹${dispatch.grandTotal.toLocaleString("en-IN")}` : "—"],
+    ["Total Amount", dispatch.totalAmount ? formatMoney(rupees(dispatch.totalAmount)) : "—"],
+    ["Grand Total", dispatch.grandTotal ? formatMoney(rupees(dispatch.grandTotal)) : "—"],
     ["Expected Delivery", dispatch.expectedDelivery || "—"],
     ["Payment Due Date", dispatch.paymentDueDate || "—"],
   ];

@@ -5,6 +5,7 @@ import { T, F } from "./theme";
 import { Vendor } from "./types";
 import { StatusPill, StarRating } from "./SharedBits";
 import { Button } from "../../../../shared/ui/primitives";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 export function VendorCard({ vendor, onView }: { vendor: Vendor; onView: (v: Vendor) => void }) {
   const [hov, setHov] = useState(false);
@@ -35,7 +36,7 @@ export function VendorCard({ vendor, onView }: { vendor: Vendor; onView: (v: Ven
           <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 12, color: T.taupe }}><Package size={13} color={T.royalBurgundy} />{vendor.type}</div>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 0, background: T.silkCream, borderRadius: 10, overflow: "hidden", border: `1px solid ${T.borderDef}` }}>
-          {[{ label: "Orders", value: String(vendor.totalOrders) }, { label: "Total Spend", value: `₹${vendor.totalSpend}` }, { label: "Outstanding", value: vendor.outstanding === "0" ? "₹0" : `₹${vendor.outstanding}` }].map((s, i) => (
+          {[{ label: "Orders", value: String(vendor.totalOrders) }, { label: "Total Spend", value: formatMoney(rupees(Number(vendor.totalSpend) || 0)) }, { label: "Outstanding", value: formatMoney(rupees(Number(vendor.outstanding) || 0)) }].map((s, i) => (
             <div key={s.label} style={{ padding: "10px 12px", borderRight: i < 2 ? `1px solid ${T.borderDef}` : "none", textAlign: "center" }}>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, letterSpacing: "0.5px", marginBottom: 3 }}>{s.label}</div>
               <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: s.label === "Outstanding" && vendor.outstanding !== "0" ? T.crimson : T.luxuryBrown }}>{s.value}</div>

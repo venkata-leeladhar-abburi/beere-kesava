@@ -8,6 +8,8 @@ import { ModalOverlay, ModalHeader } from "../common/primitives";
 import { Button, Field, Input, Textarea } from "../../../../shared/ui/primitives";
 import { DatePicker, formatDate } from "../../../../shared/ui/date";
 import { useDocument } from "../../../../shared/ui/document";
+import { rupees } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 
 // ─── ADD NEW STOCK MODAL ──────────────────────────────────────────────────────
 export function AddNewStockModal({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -126,7 +128,7 @@ export function AddNewStockModal({ open, onClose }: { open: boolean; onClose: ()
               <Input type="number" value={form.pricePerKg} onChange={e => set("pricePerKg", e.target.value)} placeholder="e.g. 280" />
               {form.quantity && form.pricePerKg && (
                 <div style={{ marginTop: 8, fontFamily: F.ui, fontSize: 13, color: T.antiqueGold, fontWeight: 600 }}>
-                  Total value: ₹{(parseFloat(form.quantity) * parseFloat(form.pricePerKg)).toLocaleString("en-IN")}
+                  Total value: <Money value={rupees(parseFloat(form.quantity) * parseFloat(form.pricePerKg))} />
                 </div>
               )}
             </Field>

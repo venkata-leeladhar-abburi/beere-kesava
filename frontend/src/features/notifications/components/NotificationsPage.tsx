@@ -8,6 +8,7 @@ import { NotificationStatStrip } from "./NotificationStatStrip";
 import { NotificationDetailPanel } from "./NotificationDetailPanel";
 import { BackendNotification, connectNotificationsSocket, notificationsApi } from "../../../shared/api/notifications";
 import { useAuth, Role } from "../../../contexts/AuthContext";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 const ROLE_TO_BACKEND: Record<Role, string> = {
   admin: "ADMIN",
@@ -34,7 +35,7 @@ const TYPE_CONFIG: Record<string, {
     category: "payment",
     priority: "critical",
     title: p => `Invoice Overdue${p.invoiceNumber ? ` — ${String(p.invoiceNumber)}` : ""}`,
-    body: p => `Outstanding amount ₹${Number(p.outstandingAmount ?? 0).toLocaleString("en-IN")} is more than 45 days overdue.`,
+    body: p => `Outstanding amount ${formatMoney(rupees(Number(p.outstandingAmount ?? 0)))} is more than 45 days overdue.`,
   },
 };
 

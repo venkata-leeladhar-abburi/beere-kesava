@@ -4,11 +4,12 @@ import { Building2, CheckCircle2, IndianRupee, AlertTriangle, TrendingUp } from 
 import { T, F } from "./theme";
 import { Vendor } from "./types";
 import { Button } from "../../../../shared/ui/primitives";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 export function VendorsHeroStats({ vendors, onAddClick }: { vendors: Vendor[]; onAddClick: () => void }) {
   const totalSpendVal = React.useMemo(() => {
     const total = vendors.reduce((acc, v) => acc + (parseFloat(v.totalSpend.replace(/,/g, "")) || 0), 0);
-    return `₹${(total / 100000).toFixed(1)}L`;
+    return formatMoney(rupees(total), { compact: true });
   }, [vendors]);
 
   return (
