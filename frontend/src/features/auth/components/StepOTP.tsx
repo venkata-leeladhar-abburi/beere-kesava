@@ -5,6 +5,7 @@ import { Button, CodeInput } from "../../../shared/ui/primitives";
 
 const C = {
   burgundy:      "#6B1A2A",
+  burgundyDeep:  "#4A0A16",
   burgundyHover: "#8B1A2E",
   gold:          "#C4923A",
   textPrimary:   "#1A0A0F",
@@ -125,10 +126,10 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
       transition={{ duration: 0.4 }}
     >
       <div style={{ textAlign: "center" as const, marginBottom: 28 }}>
-        <div style={{ width: 64, height: 64, borderRadius: "50%", background: "rgba(107,26,42,0.08)", display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 18 }}>
+        <div style={{ width: 76, height: 76, borderRadius: 18, background: "#FFFFFF", border: `1px solid ${C.gold}`, boxShadow: "0 4px 18px rgba(107,26,42,0.10), inset 0 0 0 4px rgba(255,255,255,0.9)", display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 18 }}>
           <Phone size={32} color={C.burgundy} />
         </div>
-        <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 38, color: C.textPrimary, lineHeight: 1.1, marginBottom: 8 }}>Check Your Phone</div>
+        <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 38, color: C.burgundyDeep, lineHeight: 1.1, marginBottom: 8 }}>Check Your Phone</div>
         <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 14, color: C.textMuted, marginBottom: 6 }}>We sent a 6-digit code to</div>
         <div style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 16, color: C.burgundy, marginBottom: 6 }}>{formatted}</div>
         <Button variant="link" size="sm" onClick={onBack} className="underline">
@@ -204,7 +205,7 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
         disabled={otp.length !== 6}
         onClick={() => otp.length === 6 && handleVerify(otp)}
         iconLeft={Check}
-        className="rounded-full"
+        className="!h-[58px] !rounded-[14px] !text-[16px] !font-semibold shadow-[0_8px_22px_rgba(74,10,22,0.28)] ring-1 ring-[rgba(196,146,58,0.65)]"
       >
         Verify and Login
       </Button>

@@ -14,7 +14,7 @@ import { ImageWithFallback } from "../../../../shared/ui/ImageWithFallback";
 import { useNavigate } from 'react-router';
 import { useInView } from 'motion/react';
 import { useAuth } from '../../../../contexts/AuthContext';
-import { imgBKLogo, imgSareeFooter } from '../../../../shared/constants/weaverImages';
+import { imgBKLogo, imgSareeFooter, imgShowroom } from '../../../../shared/constants/weaverImages';
 import { T, F, G, NUM, DARK_MAROON, EASE, findNavGroup, NAV_GROUPS, NAV_GROUP_FALLBACK } from './theme';
 import { FadeUp, FadeIn, AnimatedNumber, AnimatedBar, SectionHeader, Card, Label, Body, Donut, BarChart } from './ui';
 import { useDashboardMetrics } from './hooks/useDashboardMetrics';
@@ -33,7 +33,6 @@ const METRIC_ICONS = [
 ];
 
 const imgSaree       = "https://images.unsplash.com/photo-1588140686379-1b76a52103dc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
-const imgShowroom    = "https://images.unsplash.com/photo-1756267318202-afebdffc107a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
 
 import { MobileMenuDrawer, MobileTopNav } from './MobileNavDrawer';
 import { Button } from "../../../../shared/ui/primitives";
