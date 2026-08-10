@@ -20,6 +20,7 @@ import { vendorPaymentsApi } from "../../../../shared/api/payments";
 import { useMoneyVisible } from "../../../../shared/ui/MoneyValue";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { Breadcrumbs } from "../../../../shared/ui/nav/Breadcrumbs";
+import { EntityCode } from "../../../../shared/ui/domain";
 
 export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; onBack: () => void; onUpdate?: (v: Vendor) => void }) {
   const [tab, setTab] = useState<"overview" | "orders" | "payments" | "contact" | "edit">("overview");
@@ -203,7 +204,7 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
         </motion.div>
         <div style={{ display: "flex", gap: 10 }}>
           <StatusPill status={vendor.status} />
-          <span style={{ fontFamily: F.mono, fontSize: 13, background: T.silkCream, border: `1px solid ${T.borderDef}`, padding: "5px 12px", borderRadius: 6, color: T.luxuryBrown, fontWeight: 600 }}>{vendor.id}</span>
+          <EntityCode type="vendor" value={vendor.id} />
         </div>
       </div>
 

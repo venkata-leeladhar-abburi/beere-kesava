@@ -18,6 +18,7 @@ import { LoomMaterialsTab } from "./LoomMaterialsTab";
 import { Button } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { Breadcrumbs } from "../../../../shared/ui/nav/Breadcrumbs";
+import { EntityCode } from "../../../../shared/ui/domain";
 
 const fmtIssueDate = (iso: string) => {
   const d = new Date(iso);
@@ -128,7 +129,7 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
           <div style={{ flex: "1 1 320px" }}>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: sc.color, background: sc.bg, borderRadius: 99, padding: "5px 14px", marginBottom: 12 }}>{sc.icon}{sc.label}</span>
             <div style={{ fontFamily: F.display, fontSize: 30, color: "#1A0A0F", lineHeight: 1.2, fontWeight: 600 }}>{loom.loomNumber}</div>
-            <div style={{ fontFamily: F.mono, fontSize: 14, color: T.royalBurgundy, marginTop: 6 }}>{loom.id}</div>
+            <div style={{ marginTop: 6 }}><EntityCode type="loom" value={loom.id} size="md" /></div>
           </div>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap" as const }}>
             {[
