@@ -4,11 +4,19 @@ import { C, F } from "../tokens";
 import { type ReceivedSareeLog } from "./shared";
 import { Button, Input } from "../../../../../shared/ui/primitives";
 import { useQc } from "../../../../qc/contexts/QcContext";
+import { StatusPill } from "../../../../../shared/ui/domain";
+import type { StatusValueOf } from "@/lib/domain/status";
 
 const QC_RESULT_TO_STATUS: Record<string, ReceivedSareeLog["status"]> = {
   passed: "Passed QC",
   semi: "Pending QC",
   defective: "Defective",
+};
+
+const HISTORY_STATUS_TO_PRODUCTION: Record<ReceivedSareeLog["status"], StatusValueOf<"production">> = {
+  "Passed QC": "qc-passed",
+  "Pending QC": "qc-pending",
+  "Defective": "qc-failed",
 };
 
 export function HistorySection({ liveRecords = [] }: { liveRecords?: ReceivedSareeLog[] }) {
@@ -55,14 +63,12 @@ export function HistorySection({ liveRecords = [] }: { liveRecords?: ReceivedSar
   const byWeaver: Record<string, typeof filtered> = {};
   filtered.forEach(h => { if (!byWeaver[h.weaver]) byWeaver[h.weaver] = []; byWeaver[h.weaver].push(h); });
 
-  const statusColor = (s: string) => s === "Passed QC" ? C.green : s === "Defective" ? C.crim : C.gold;
-
   const SareeRow = ({ h, last }: { h: typeof filtered[0]; last: boolean }) => (
     <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderBottom: last ? "none" : `1px solid rgba(107,26,42,0.06)` }}>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
           <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, color: C.burg }}>{h.id}</span>
-          <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "#FFF", background: statusColor(h.status), padding: "1px 6px", borderRadius: 999 }}>{h.status}</span>
+          <StatusPill taxonomy="production" status={HISTORY_STATUS_TO_PRODUCTION[h.status]} size="sm" />
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.u, fontSize: 12, color: C.muted }}>
           {h.sareeType && h.sareeType !== "—" && <>{h.sareeType} · </>}

@@ -3,12 +3,12 @@ import { motion } from "motion/react";
 import { FileText, Factory } from "lucide-react";
 import { FactoryLoom } from "../../data/factoryLooms";
 import { T, F } from "./theme";
-import { STATUS_CFG, LoomBatch, LoomSaree } from "./types";
+import { LoomBatch, LoomSaree, LOOM_STATUS_TO_CONDITION } from "./types";
 import { Button } from "../../../../shared/ui/primitives";
+import { StatusPill } from "../../../../shared/ui/domain";
 
 // ── Loom Card ─────────────────────────────────────────────────────────────────
 export function LoomCard({ loom, batches, sarees, onView }: { loom: FactoryLoom; batches: LoomBatch[]; sarees: LoomSaree[]; onView: () => void }) {
-  const sc = STATUS_CFG[loom.status];
   const ab = batches.filter(b => b.loomId === loom.id && b.status === "active").length;
   const done = sarees.filter(s => s.loomId === loom.id && s.status === "complete").length;
   const tb = batches.filter(b => b.loomId === loom.id).length;
@@ -26,7 +26,7 @@ export function LoomCard({ loom, batches, sarees, onView }: { loom: FactoryLoom;
               <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2 }}>{loom.id}</div>
             </div>
           </div>
-          <span style={{ background: sc.bg, color: sc.color, borderRadius: 999, padding: "4px 10px", fontFamily: F.ui, fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>{sc.icon}{sc.label}</span>
+          <StatusPill taxonomy="condition" status={LOOM_STATUS_TO_CONDITION[loom.status]} />
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 14 }}>
           {[{ l: "Location", v: loom.location }, { l: "Operator", v: loom.operatorName }, { l: "Installed", v: loom.installedYear || "—" }].map(f => (

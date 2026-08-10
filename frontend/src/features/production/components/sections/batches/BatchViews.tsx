@@ -7,10 +7,23 @@ import {
 import { useMaterialIssue } from "../../../../materials/contexts/MaterialIssueContext";
 import { T, F, EASE } from "../../theme";
 import { STAGE_CFG } from "../../data";
-import type { Batch } from "../../types";
+import type { Batch, BatchStage } from "../../types";
 import { FadeUp, Pip, ProductionDialog } from "../../common/primitives";
 import { Button, NumberInput } from "../../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
+import { StatusPill } from "../../../../../shared/ui/domain";
+import type { StatusValueOf } from "@/lib/domain/status";
+
+// A batch's `stage` is this feature's own BatchStage union — "submitted"
+// (sarees submitted, waiting for QC) doesn't have its own key in the shared
+// production taxonomy, so it normalizes onto "qc-pending", the taxonomy's
+// equivalent "waiting for QC" state.
+const STAGE_TO_PRODUCTION: Record<BatchStage, StatusValueOf<"production">> = {
+  weaving: "weaving",
+  submitted: "qc-pending",
+  "qc-passed": "qc-passed",
+  finishing: "finishing",
+};
 
 export function SwipeToTally({ tallied, onOpen }: { tallied?: boolean; onOpen?: () => void }) {
   if (tallied) {
@@ -135,10 +148,7 @@ export function BatchCard({ b, onView, onSlip, onEdit }: { b: Batch; expandedId:
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", padding: "18px 20px 14px" }}>
           <div>
             <div style={{ fontFamily: F.mono, fontSize: 16, fontWeight: 700, color: T.royalBurgundy, marginBottom: 8, letterSpacing: "0.2px" }}>{b.id}</div>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: cfg.badgeColor, background: cfg.badgeBg, borderRadius: 99, padding: "6px 14px", border: `1px solid ${cfg.border}22`, boxShadow: `0 2px 10px ${cfg.badgeBg}` }}>
-              <span className="pulse-dot" style={{ width: 6, height: 6, borderRadius: "50%", background: cfg.badgeColor, boxShadow: `0 0 6px ${cfg.badgeColor}` }} />
-              {cfg.label}
-            </span>
+            <StatusPill taxonomy="production" status={STAGE_TO_PRODUCTION[b.stage]} />
           </div>
         </div>
         <div style={{ padding: "0 20px 18px", display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
@@ -257,10 +267,7 @@ export function BatchListView({ batches, onView, onEdit }: { batches: Batch[]; o
     },
     {
       id: "stage", header: "Stage", accessor: b => b.stage, type: "status",
-      cell: (_v, b) => {
-        const cfg = STAGE_CFG[b.stage];
-        return <span style={{ display: "inline-block", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: cfg.badgeColor, background: cfg.badgeBg, borderRadius: 99, padding: "4px 10px", whiteSpace: "nowrap" }}>{cfg.label}</span>;
-      },
+      cell: (_v, b) => <StatusPill taxonomy="production" status={STAGE_TO_PRODUCTION[b.stage]} />,
     },
     {
       id: "weavers", header: "Weavers", accessor: b => b.weavers,
@@ -338,10 +345,7 @@ export function BatchTableView({ batches, onView, onEdit }: { batches: Batch[]; 
     },
     {
       id: "stage", header: "Stage", accessor: b => b.stage, type: "status",
-      cell: (_v, b) => {
-        const cfg = STAGE_CFG[b.stage];
-        return <span style={{ display: "inline-block", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: cfg.badgeColor, background: cfg.badgeBg, borderRadius: 99, padding: "4px 10px", whiteSpace: "nowrap" }}>{cfg.label}</span>;
-      },
+      cell: (_v, b) => <StatusPill taxonomy="production" status={STAGE_TO_PRODUCTION[b.stage]} />,
     },
     {
       id: "weavers", header: "Weaver(s)", accessor: b => b.weavers,

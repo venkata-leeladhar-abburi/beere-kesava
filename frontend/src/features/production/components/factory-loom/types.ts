@@ -1,6 +1,7 @@
 import React from "react";
 import { CheckCircle2, Clock, AlertTriangle } from "lucide-react";
 import { T } from "./theme";
+import type { StatusValueOf } from "@/lib/domain/status";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 export interface LoomBatch {
@@ -24,6 +25,17 @@ export const STATUS_CFG: Record<string, { label: string; color: string; bg: stri
   active:      { label: "Active",      color: T.green,       bg: "rgba(30,102,64,0.10)",  icon: React.createElement(CheckCircle2, { size: 12 }) },
   idle:        { label: "Idle",        color: T.antiqueGold, bg: "rgba(200,155,71,0.12)", icon: React.createElement(Clock, { size: 12 }) },
   maintenance: { label: "Maintenance", color: T.crimson,     bg: "rgba(192,57,43,0.10)",  icon: React.createElement(AlertTriangle, { size: 12 }) },
+};
+
+// A loom's own status vocabulary ("active" = currently weaving) maps onto
+// the shared `condition` taxonomy (design-system/06-DOMAIN.md Part G.2 calls
+// out ResourceCondition/Loom cards specifically) — "active" normalizes onto
+// "in-use", the taxonomy's equivalent state; "idle"/"maintenance" match keys
+// directly.
+export const LOOM_STATUS_TO_CONDITION: Record<"active" | "idle" | "maintenance", StatusValueOf<"condition">> = {
+  active: "in-use",
+  idle: "idle",
+  maintenance: "maintenance",
 };
 export const BATCH_STATUS: Record<string, { label: string; color: string; bg: string }> = {
   active:    { label: "Active",    color: T.royalBurgundy, bg: "rgba(110,15,45,0.08)" },

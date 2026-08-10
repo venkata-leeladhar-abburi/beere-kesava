@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { Button, IconButton } from "../../../shared/ui/primitives";
 import { Modal } from "../../../shared/ui/overlay";
 import { DocumentViewer, PurchaseOrderDocument, DEFAULT_LETTERHEAD_FIRM } from "../../../shared/ui/document";
+import { StatusPill } from "../../../shared/ui/domain";
+import type { StatusValueOf } from "@/lib/domain/status";
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const T = {
@@ -28,22 +30,18 @@ const F = {
   mono:    "'JetBrains Mono', monospace",
 };
 
+// PurchaseOrder["status"] doesn't have its own "pending approval" key in the
+// shared document taxonomy — a PO awaiting approval is the same lifecycle
+// point as a "raised" document, so it normalizes onto that.
+const PO_STATUS_TO_DOCUMENT: Record<PurchaseOrder["status"], StatusValueOf<"document">> = {
+  pending: "raised",
+  approved: "approved",
+  rejected: "rejected",
+  received: "received",
+};
+
 function StatusBadge({ status }: { status: PurchaseOrder["status"] }) {
-  const cfg = {
-    pending:  { text: "Pending Approval", color: T.antiqueGold, bg: "rgba(200,155,71,0.12)" },
-    approved: { text: "Approved",         color: T.green,       bg: "rgba(30,102,64,0.10)" },
-    rejected: { text: "Rejected",         color: T.crimson,     bg: "rgba(192,57,43,0.10)" },
-    received: { text: "Received",         color: T.taupe,       bg: "rgba(139,112,96,0.12)" },
-  }[status];
-  return (
-    <span style={{
-      fontFamily: F.mono, fontSize: 12, fontWeight: 600,
-      color: cfg.color, background: cfg.bg,
-      padding: "3px 10px", borderRadius: 6,
-    }}>
-      {cfg.text}
-    </span>
-  );
+  return <StatusPill taxonomy="document" status={PO_STATUS_TO_DOCUMENT[status]} />;
 }
 
 interface PODocumentModalProps {

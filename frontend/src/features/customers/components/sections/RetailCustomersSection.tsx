@@ -15,6 +15,7 @@ import { RetailChartsRow1, RetailChartsRow2 } from "./RetailCharts";
 import { useCustomers } from "../../contexts/CustomersContext";
 import { salesApi } from "../../../../shared/api/sales";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { StatusPill } from "../../../../shared/ui/domain";
 
 interface RetailFormState {
   name: string;
@@ -147,11 +148,7 @@ export function RetailCustomersSection({
     },
     {
       id: "status", header: "Status", accessor: r => r.inactive, type: "status",
-      cell: (_v, r) => r.inactive ? (
-        <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.crimson, background: T.crimsonBg, padding: "2px 6px", borderRadius: 4 }}>Inactive</span>
-      ) : (
-        <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.greenMid, background: T.greenBg, padding: "2px 6px", borderRadius: 4 }}>Active</span>
-      ),
+      cell: (_v, r) => <StatusPill taxonomy="person" status={r.inactive ? "inactive" : "active"} />,
     },
     {
       id: "actions", header: "Actions", accessor: () => null, type: "actions",
