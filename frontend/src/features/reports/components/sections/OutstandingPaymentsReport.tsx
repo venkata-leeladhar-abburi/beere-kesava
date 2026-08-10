@@ -5,6 +5,8 @@ import { T, F } from "../theme";
 import { FadeUp, SumCard, TabTitle, StatusPill } from "../common/primitives";
 import { reportsApi, OutstandingPaymentItem } from "../../../../shared/api/reports";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { rupees, formatMoney } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 
 const SOURCE_LABEL: Record<string, string> = { invoice: "Invoice", bulk_order: "Bulk Order" };
 
@@ -29,9 +31,9 @@ export function OutstandingPaymentsReport() {
     },
     { id: "reference", header: "Reference", accessor: r => r.id, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.id}</span> },
     { id: "customer", header: "Customer", accessor: r => r.customerName, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.customerName}</span> },
-    { id: "total", header: "Total", accessor: r => r.total, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700 }}>₹{r.total.toLocaleString("en-IN")}</span> },
-    { id: "paid", header: "Paid", accessor: r => r.paid, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, color: T.green }}>₹{r.paid.toLocaleString("en-IN")}</span> },
-    { id: "outstanding", header: "Outstanding", accessor: r => r.outstanding, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.crimson }}>₹{r.outstanding.toLocaleString("en-IN")}</span> },
+    { id: "total", header: "Total", accessor: r => r.total, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700 }}><Money value={rupees(r.total)} /></span> },
+    { id: "paid", header: "Paid", accessor: r => r.paid, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, color: T.green }}><Money value={rupees(r.paid)} /></span> },
+    { id: "outstanding", header: "Outstanding", accessor: r => r.outstanding, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.crimson }}><Money value={rupees(r.outstanding)} /></span> },
     {
       id: "dueDate", header: "Due Date", accessor: r => r.dueDate,
       cell: (_v, r) => r.dueDate ? (
@@ -55,7 +57,7 @@ export function OutstandingPaymentsReport() {
       />
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, marginBottom: 32, alignItems: "stretch" }}>
-        <SumCard icon={<Wallet size={22} color={T.crimson} />} label="Total Outstanding" value={`₹${(data?.totalOutstanding ?? 0).toLocaleString("en-IN")}`} sub={`${data?.count ?? 0} records`} crimsonHi />
+        <SumCard icon={<Wallet size={22} color={T.crimson} />} label="Total Outstanding" value={formatMoney(rupees(data?.totalOutstanding ?? 0))} sub={`${data?.count ?? 0} records`} crimsonHi />
         <SumCard icon={<Receipt size={22} color={T.royalBurgundy} />} label="Unpaid Invoices" value={`${invoiceCount}`} sub="From /invoices" />
         <SumCard icon={<ShoppingBag size={22} color={T.antiqueGold} />} label="Unpaid Bulk Orders" value={`${bulkOrderCount}`} sub="From /bulk-orders" hi />
       </div>

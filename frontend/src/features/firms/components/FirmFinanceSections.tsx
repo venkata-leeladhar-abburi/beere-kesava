@@ -10,6 +10,7 @@ import { T, F, EASE, INCOME_CATS, EXPENSE_CATS } from "./theme";
 import { fmtFull, today } from "./utils";
 import { Button, Input, Select, SelectItem } from "../../../shared/ui/primitives";
 import { DatePicker, formatDate } from "../../../shared/ui/date";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 function Inp({ value, onChange, placeholder, type = "text", mono }: {
   value: string; onChange: (v: string) => void;
@@ -169,7 +170,7 @@ export function EntryRow({ entry, type }: { entry: FinancialEntry | MiscEntry; t
     <div style={{ display: "grid", gridTemplateColumns: "1fr 120px 110px 160px 30px", gap: 0, padding: "10px 14px", alignItems: "center", borderBottom: `1px solid ${T.borderDef}`, background: "#FFFDF9" }}>
       <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, paddingRight: 12, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{entry.description}</div>
       <div style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 13, color: isIncome ? T.green : T.crimson }}>
-        {isIncome ? "+" : "−"}₹{entry.amount.toLocaleString("en-IN")}
+        {isIncome ? "+" : "−"}{formatMoney(rupees(entry.amount))}
       </div>
       <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{entry.date}</div>
       <div>

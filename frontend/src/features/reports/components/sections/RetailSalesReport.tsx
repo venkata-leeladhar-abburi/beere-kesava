@@ -9,6 +9,8 @@ import { salesApi } from "../../../../shared/api/sales";
 import { customersApi } from "../../../../shared/api/customers";
 import { batchesApi } from "../../../../shared/api/batches";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { rupees, formatMoney } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 
 interface RetailSaleRow {
   id: string;
@@ -25,7 +27,7 @@ function RetailWeeklyTooltip({ active, payload, label }: any) {
   return (
     <div style={{ background: "#FFFFFF", border: `1px solid ${T.borderDef}`, borderRadius: 8, padding: "8px 12px", boxShadow: "0 4px 16px rgba(74,6,27,0.12)" }}>
       <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, fontWeight: 600 }}>
-        {label} — {d.sarees} sarees sold — ₹{d.revenue.toLocaleString("en-IN")} revenue
+        {label} — {d.sarees} sarees sold — {formatMoney(rupees(d.revenue))} revenue
       </span>
     </div>
   );
@@ -177,7 +179,7 @@ export function RetailSalesReport() {
       id: "price", header: "Retail Price", accessor: r => r.price, align: "end",
       cell: (_v, r) => (
         <span style={{ fontFamily: F.mono, fontWeight: 700, color: r.price < 0 ? T.crimson : T.green }}>
-          {r.price < 0 ? `−₹${Math.abs(r.price).toLocaleString("en-IN")}` : `₹${r.price.toLocaleString("en-IN")}`}
+          <Money value={rupees(r.price)} sign={r.price < 0} />
         </span>
       ),
     },
@@ -204,7 +206,7 @@ export function RetailSalesReport() {
               </div>
               <div>
                 <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Revenue This Month</div>
-                <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.green }}>₹{retailWeeklyData.reduce((s, w) => s + w.revenue, 0).toLocaleString("en-IN")}</div>
+                <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.green }}><Money value={rupees(retailWeeklyData.reduce((s, w) => s + w.revenue, 0))} /></div>
               </div>
             </div>
           </div>
@@ -253,7 +255,7 @@ export function RetailSalesReport() {
                   <Pie key="ret-rev-pie" data={retailRevenueDonut} cx="50%" cy="50%" innerRadius={45} outerRadius={65} dataKey="value" stroke="none" paddingAngle={3}>
                     {retailRevenueDonut.map(e => <Cell key={`ret-rev-cell-${e.name}`} fill={e.color} />)}
                   </Pie>
-                  <Tooltip key="ret-rev-tip" formatter={(v: any, n: any) => [`₹${Number(v).toLocaleString("en-IN")}`, n]} contentStyle={{ fontFamily: F.ui, fontSize: 12, borderRadius: 8 }} />
+                  <Tooltip key="ret-rev-tip" formatter={(v: any, n: any) => [formatMoney(rupees(Number(v))), n]} contentStyle={{ fontFamily: F.ui, fontSize: 12, borderRadius: 8 }} />
                 </PieChart>
               </ResponsiveContainer>
               <div style={{ display: "flex", flexDirection: "column", gap: 5, padding: "0 4px" }}>
@@ -263,7 +265,7 @@ export function RetailSalesReport() {
                       <div style={{ width: 9, height: 9, borderRadius: "50%", background: d.color }} />
                       <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{d.name}</span>
                     </div>
-                    <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: d.color }}>₹{d.value.toLocaleString("en-IN")}</span>
+                    <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: d.color }}><Money value={rupees(d.value)} /></span>
                   </div>
                 ))}
               </div>
@@ -274,8 +276,8 @@ export function RetailSalesReport() {
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 24, alignItems: "stretch" }}>
         <SumCard icon={<Tag size={22} color={T.royalBurgundy} />} label="Total Sarees Sold at Shop" value={`${retailRows.length - returnsTotal} sarees`} sub="All recorded retail sales" />
-        <SumCard icon={<Banknote size={22} color={T.green} />} label="Total Retail Revenue" value={`₹${totalRevenue.toLocaleString("en-IN")}`} sub="All-time" greenHi />
-        <SumCard icon={<Percent size={22} color={T.antiqueGold} />} label="Average Sale Value" value={avgSale > 0 ? `₹${Math.round(avgSale).toLocaleString("en-IN")}` : "—"} sub="Per saree" hi />
+        <SumCard icon={<Banknote size={22} color={T.green} />} label="Total Retail Revenue" value={formatMoney(rupees(totalRevenue))} sub="All-time" greenHi />
+        <SumCard icon={<Percent size={22} color={T.antiqueGold} />} label="Average Sale Value" value={avgSale > 0 ? formatMoney(rupees(avgSale)) : "—"} sub="Per saree" hi />
         <SumCard icon={<RefreshCcw size={22} color={T.crimson} />} label="Total Returns at Shop" value={`${returnsTotal} sarees`} sub="All-time" crimsonHi />
       </div>
 

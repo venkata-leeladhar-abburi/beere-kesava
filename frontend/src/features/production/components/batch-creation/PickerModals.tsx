@@ -8,6 +8,8 @@ import { useDesignLibrary, DesignEntry } from "../../../design-library/contexts/
 import { T, F, fld, lbl } from "./constants";
 import { Pip } from "./constants";
 import type { WeaverOption, LoomOption } from "../useBatchFormHandlers";
+import { rupees } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 import { Button, IconButton, Input, SearchInput, Textarea } from "../../../../shared/ui/primitives";
 import { Modal, type ModalSize } from "../../../../shared/ui/overlay";
 
@@ -256,7 +258,7 @@ export function SareeTypePickerModal({ sareeTypes, onClose, onSelect }: {
               <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{t.name}</div>
               <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{t.code}</div>
             </div>
-            <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.green }}>₹{t.charge.toLocaleString("en-IN")}</div>
+            <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.green }}><Money value={rupees(t.charge)} /></div>
           </Button>
         ))}
       </div>

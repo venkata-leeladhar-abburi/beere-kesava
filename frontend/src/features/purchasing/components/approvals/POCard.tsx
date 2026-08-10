@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { T, F } from "./tokens";
 import { GreenBtn, CrimsonBtn, InfoStrip } from "./SharedUI";
 import { Button } from "../../../../shared/ui/primitives";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 // Shape rendered by POCard — built from the real backend PurchaseOrder
 // (see ApprovalsPage.tsx's contextPendingItems, sourced from PurchaseOrdersContext).
@@ -125,7 +126,7 @@ export function POCard({
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Estimated Total:</span>
         <span style={{ fontFamily: F.display, fontSize: 18, fontWeight: 600, color: T.antiqueGold }}>
-          {item.estimated || (item.totalValue ? `₹${item.totalValue.toLocaleString("en-IN")}` : "—")}
+          {item.estimated || (item.totalValue ? formatMoney(rupees(item.totalValue)) : "—")}
         </span>
       </div>
 

@@ -6,6 +6,7 @@ import { GreenBtn, CrimsonBtn } from "./SharedUI";
 
 import { BackendRateChangeRequest, rateRequestsApi } from "../../../../shared/api/rateRequests";
 import { toast } from "sonner";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 // ─── Rate Card ────────────────────────────────────────────────────────────────
 export function RateCard({ item, onAction }: { item: BackendRateChangeRequest; onAction: (id: string) => void }) {
@@ -30,7 +31,7 @@ export function RateCard({ item, onAction }: { item: BackendRateChangeRequest; o
   };
 
   const diff = Number(item.newMakingCharge) - Number(item.oldMakingCharge);
-  const diffLabel = (diff >= 0 ? `+₹${diff}` : `-₹${Math.abs(diff)}`);
+  const diffLabel = formatMoney(rupees(diff), { sign: true });
 
   return (
     <motion.div
@@ -91,7 +92,7 @@ export function RateCard({ item, onAction }: { item: BackendRateChangeRequest; o
             CURRENT RATE
           </div>
           <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.crimson }}>
-            ₹{Number(item.oldMakingCharge).toLocaleString("en-IN")}
+            {formatMoney(rupees(Number(item.oldMakingCharge)))}
           </div>
         </div>
 
@@ -107,7 +108,7 @@ export function RateCard({ item, onAction }: { item: BackendRateChangeRequest; o
             REQUESTED RATE
           </div>
           <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.green }}>
-            ₹{Number(item.newMakingCharge).toLocaleString("en-IN")}
+            {formatMoney(rupees(Number(item.newMakingCharge)))}
           </div>
         </div>
       </div>

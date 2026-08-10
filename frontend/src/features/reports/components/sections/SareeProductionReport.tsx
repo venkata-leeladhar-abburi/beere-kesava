@@ -19,6 +19,8 @@ import { weaversApi } from "../../../../shared/api/weavers";
 import { reportsApi } from "../../../../shared/api/reports";
 import { purchasesApi, BackendPurchase } from "../../../../shared/api/purchases";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { rupees, formatMoney } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 
 // Helper: week label for a Date (e.g. "W1", "W2"...)
 function getISOWeekLabel(d: Date): string {
@@ -51,7 +53,7 @@ export function ExternalPurchasesSection() {
     },
     { id: "gst", header: "GST Number", accessor: r => r.gstNumber || r.supplier.gstCode, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{r.gstNumber || r.supplier.gstCode || "—"}</span> },
     { id: "invoice", header: "Invoice Number", accessor: r => r.invoiceNumber, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.invoiceNumber || "—"}</span> },
-    { id: "billAmount", header: "Bill Amount", accessor: r => r.billAmount, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700 }}>₹{Number(r.billAmount).toLocaleString("en-IN")}</span> },
+    { id: "billAmount", header: "Bill Amount", accessor: r => r.billAmount, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700 }}><Money value={rupees(Number(r.billAmount))} /></span> },
     { id: "sarees", header: "Sarees", accessor: r => r.sareeCount, align: "center", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700 }}>{r.sareeCount}</span> },
     { id: "date", header: "Date", accessor: r => r.date, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{fmtDate(r.date)}</span> },
     {
@@ -68,7 +70,7 @@ export function ExternalPurchasesSection() {
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 18 }}>
           <SumCard icon={<Package size={22} color={T.royalBurgundy} />} label="Total External Sarees Purchased" value={`${totalSarees} sarees`} sub="All recorded purchases" />
-          <SumCard icon={<IndianRupee size={22} color={T.antiqueGold} />} label="Total Bill Amount" value={`₹${totalBill.toLocaleString("en-IN")}`} sub="Across all suppliers" hi />
+          <SumCard icon={<IndianRupee size={22} color={T.antiqueGold} />} label="Total Bill Amount" value={formatMoney(rupees(totalBill))} sub="Across all suppliers" hi />
         </div>
 
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
@@ -216,7 +218,7 @@ export function SareeProductionReport() {
       cell: (_v, r) => <StatusPill label={`${r.passRate}%`} type={r.passRate >= 95 ? "ok" : r.passRate >= 85 ? "warn" : "bad"} />,
     },
     { id: "designs", header: "Designs Worked On", accessor: r => r.designs, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.designs}</span> },
-    { id: "charges", header: "Making Charges", accessor: r => r.charges, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.royalBurgundy }}>₹{r.charges.toLocaleString("en-IN")}</span> },
+    { id: "charges", header: "Making Charges", accessor: r => r.charges, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.royalBurgundy }}><Money value={rupees(r.charges)} /></span> },
   ];
 
   // Compute weekly production trend from batch createdAt (last 4 weeks vs prior 4 weeks)
@@ -435,7 +437,7 @@ export function SareeProductionReport() {
               <span style={{ fontFamily: F.mono, fontWeight: 700 }}>{prodTableRows.reduce((s, r) => s + r.produced, 0)}</span>
               <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.green }}>{prodTableRows.reduce((s, r) => s + r.passed, 0)}</span>
               <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.crimson }}>{prodTableRows.reduce((s, r) => s + r.rejected, 0)}</span>
-              <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.royalBurgundy }}>₹{prodTableRows.reduce((s, r) => s + r.charges, 0).toLocaleString("en-IN")}</span>
+              <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.royalBurgundy }}>{formatMoney(rupees(prodTableRows.reduce((s, r) => s + r.charges, 0)))}</span>
             </div>
           )}
           <TablePager total={prodTableRows.length} showing={prodTableRows.length} />

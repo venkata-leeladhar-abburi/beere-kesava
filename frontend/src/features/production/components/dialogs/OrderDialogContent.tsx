@@ -5,6 +5,8 @@ import { INVOICES } from "../../../payments/data/invoices";
 import { T, F } from "../theme";
 import type { BulkOrder } from "../types";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
+import { rupees, formatMoney } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 
 interface PreviewInvoice {
   id: string;
@@ -57,13 +59,13 @@ export function OrderDialogContent({ order, mode }: { order: BulkOrder; mode: "v
 
         <div style={{ background: "rgba(200,155,71,0.10)", border: `1px solid ${T.borderGold}`, borderRadius: 10, padding: "14px 16px", textAlign: "center", marginBottom: 8 }}>
           <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Outstanding Balance</div>
-          <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.antiqueGold }}>₹{balance.toLocaleString("en-IN")}</div>
+          <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.antiqueGold }}>{formatMoney(rupees(balance))}</div>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
           {[
-            { label: "Est. Value", val: amountDue > 0 ? `₹${amountDue.toLocaleString("en-IN")}` : "—" },
-            { label: "Amount Paid", val: amountPaid > 0 ? `₹${amountPaid.toLocaleString("en-IN")}` : "₹0" },
+            { label: "Est. Value", val: amountDue > 0 ? formatMoney(rupees(amountDue)) : "—" },
+            { label: "Amount Paid", val: amountPaid > 0 ? formatMoney(rupees(amountPaid)) : "₹0" },
           ].map(({ label, val }) => (
             <div key={label} style={{ background: "rgba(110,15,45,0.04)", borderRadius: 10, padding: "12px 14px", border: "1px solid rgba(110,15,45,0.10)" }}>
               <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 6 }}>{label}</div>
@@ -109,7 +111,7 @@ export function OrderDialogContent({ order, mode }: { order: BulkOrder; mode: "v
                       </div>
                       <div style={{ textAlign: "right", display: "flex", alignItems: "center", gap: 16 }}>
                         <div style={{ textAlign: "right" }}>
-                          <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>₹{inv.amount.toLocaleString("en-IN")}</div>
+                          <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}><Money value={rupees(inv.amount)} /></div>
                           <span style={{ display: "inline-block", fontSize: 12, fontFamily: F.mono, fontWeight: 700, background: inv.status === "paid" ? "rgba(30,102,64,0.11)" : "rgba(200,155,71,0.11)", color: inv.status === "paid" ? T.green : T.antiqueGold, padding: "2px 6px", borderRadius: 4, textTransform: "uppercase", marginTop: 4 }}>{inv.status}</span>
                         </div>
                         <Button onClick={() => setPreviewInvoice(inv)} variant="ghost" size="sm" iconLeft={Eye}
@@ -137,7 +139,7 @@ export function OrderDialogContent({ order, mode }: { order: BulkOrder; mode: "v
                     <div key={idx} style={{ display: "flex", flexDirection: "column", gap: 8, padding: "12px 14px", background: T.warmIvory, borderRadius: 10, border: "1px solid rgba(110,15,45,0.06)", borderLeft: `4px solid ${T.antiqueGold}` }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                         <div>
-                          <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 14, color: T.royalBurgundy }}>₹{p.amount.toLocaleString("en-IN")}</div>
+                          <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 14, color: T.royalBurgundy }}><Money value={rupees(p.amount)} /></div>
                           <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 3 }}>{p.utr} · {p.method}</div>
                         </div>
                         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
@@ -203,18 +205,18 @@ export function OrderDialogContent({ order, mode }: { order: BulkOrder; mode: "v
                         </div>
                         <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{order.design} · {order.sareeType}</div>
                       </div>
-                      <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, textAlign: "right" }}>₹{previewInvoice.amount.toLocaleString("en-IN")}</div>
+                      <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, textAlign: "right" }}>{formatMoney(rupees(previewInvoice.amount))}</div>
                     </div>
                   </div>
 
                   <div style={{ borderTop: `1.5px solid ${T.borderDef}`, paddingTop: 12, display: "flex", flexDirection: "column", gap: 4 }}>
                     <div style={{ display: "flex", justifyContent: "space-between" }}>
                       <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Subtotal ({order.total || 0} sarees)</span>
-                      <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>₹{previewInvoice.amount.toLocaleString("en-IN")}</span>
+                      <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{formatMoney(rupees(previewInvoice.amount))}</span>
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6, paddingTop: 8, borderTop: `1px solid ${T.borderDef}` }}>
                       <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>Grand Total</span>
-                      <span style={{ fontFamily: F.mono, fontSize: 16, fontWeight: 700, color: T.royalBurgundy }}>₹{previewInvoice.amount.toLocaleString("en-IN")}</span>
+                      <span style={{ fontFamily: F.mono, fontSize: 16, fontWeight: 700, color: T.royalBurgundy }}>{formatMoney(rupees(previewInvoice.amount))}</span>
                     </div>
                   </div>
 
@@ -296,7 +298,7 @@ export function OrderDialogContent({ order, mode }: { order: BulkOrder; mode: "v
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
         <div style={{ padding: "12px 14px", background: "rgba(200,155,71,0.07)", borderRadius: 10, border: "1px solid rgba(200,155,71,0.20)", display: "flex", flexDirection: "column" }}>
           <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 6 }}>Estimated Value (₹)</span>
-          <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: "#8B6018" }}>₹{amountDue.toLocaleString("en-IN")}</span>
+          <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: "#8B6018" }}>{formatMoney(rupees(amountDue))}</span>
         </div>
         <div style={{ background: "rgba(110,15,45,0.04)", borderRadius: 10, padding: "12px 14px", border: "1px solid rgba(110,15,45,0.10)", display: "flex", flexDirection: "column" }}>
           <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 6 }}>Priority</div>
