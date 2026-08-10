@@ -2,7 +2,7 @@
 // Contact Details / Edit Profile tabs). Split into one file per tab under
 // this supplierProfile/ subfolder, composed here.
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ArrowLeft, MapPin, Package, Send } from "lucide-react";
 import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../../shared/ui/DateFilterBar";
@@ -14,6 +14,7 @@ import { SupplierFormValues } from "../../types";
 import { FadeUp, StatusPill, StarRating } from "../../common/primitives";
 import { Button } from "../../../../../shared/ui/primitives";
 import { Breadcrumbs } from "../../../../../shared/ui/nav/Breadcrumbs";
+import { recordView } from "../../../../../shared/ui/overlay";
 import { OverviewTab } from "./OverviewTab";
 import { OrdersTab } from "./OrdersTab";
 import { PaymentsTab } from "./PaymentsTab";
@@ -27,6 +28,12 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
 }) {
   const { statsFor, payments, requests, updateSupplier } = useSuppliers();
   const [tab, setTab] = useState<"overview" | "orders" | "payments" | "contact" | "edit">("overview");
+
+  // Command palette RECENT group (design-system/05-OVERLAYS.md Part H) —
+  // record this profile as viewed once per mount.
+  useEffect(() => {
+    recordView({ key: `supplier:${supplier.id}`, label: supplier.name, path: "/admin/suppliers", kind: "Supplier" });
+  }, [supplier.id, supplier.name]);
   const tabs = [
     { key: "overview", label: "Overview" },
     { key: "orders",   label: "Order History" },
