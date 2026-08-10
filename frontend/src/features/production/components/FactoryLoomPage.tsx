@@ -7,7 +7,8 @@ import {
 } from "lucide-react";
 import { FactoryLoom } from "../data/factoryLooms";
 import { T, F } from "./factory-loom/theme";
-import { STATUS_CFG, LoomBatch, LoomMaterial, LoomSaree } from "./factory-loom/types";
+import { LoomBatch, LoomMaterial, LoomSaree, LOOM_STATUS_TO_CONDITION } from "./factory-loom/types";
+import { StatusPill } from "../../../shared/ui/domain";
 import { AddLoomModal } from "./factory-loom/AddLoomModal";
 import { LoomDetailPage } from "./factory-loom/LoomDetailPage";
 import { LoomCard } from "./factory-loom/LoomCard";
@@ -312,11 +313,7 @@ export function FactoryLoomPage() {
                 },
                 {
                   id: "status", header: "Status", accessor: l => l.status, type: "status",
-                  cell: (_v, l) => (
-                    <span style={{ padding: "4px 10px", borderRadius: 12, fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: STATUS_CFG[l.status].bg, color: STATUS_CFG[l.status].color }}>
-                      {STATUS_CFG[l.status].label}
-                    </span>
-                  ),
+                  cell: (_v, l) => <StatusPill taxonomy="condition" status={LOOM_STATUS_TO_CONDITION[l.status]} />,
                 },
                 {
                   id: "actions", header: "Actions", accessor: () => null, type: "actions",

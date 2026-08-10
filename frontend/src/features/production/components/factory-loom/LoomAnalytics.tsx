@@ -9,9 +9,10 @@ import {
 import { FactoryLoom } from "../../data/factoryLooms";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { T, F, FadeUp } from "./theme";
-import { LoomBatch, LoomMaterial, LoomSaree, MAT_TAG, STATUS_CFG } from "./types";
+import { LoomBatch, LoomMaterial, LoomSaree, MAT_TAG, LOOM_STATUS_TO_CONDITION } from "./types";
 import { LoomThroughputAndAvailability, LoomMaterialDesignRow } from "./LoomAnalyticsCharts";
 import { ChartFigure } from "../../../../shared/ui/data";
+import { StatusPill } from "../../../../shared/ui/domain";
 
 const LA_MONTH_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const UTIL_META: Record<string, { label: string; color: string }> = {
@@ -230,16 +231,13 @@ export function LoomAnalytics({ looms, batches, materials, sarees }: {
               </ResponsiveContainer>
             </ChartFigure>
             <div style={{ display: "flex", gap: 8, borderTop: `1px solid ${T.borderDef}`, paddingTop: 14, marginTop: 6 }}>
-              {rankedLooms.slice(0, 4).map((l, i) => {
-                const sc = STATUS_CFG[l.status];
-                return (
-                  <div key={l.id} style={{ flex: 1, minWidth: 0, background: i === 0 && l.produced > 0 ? "rgba(200,155,71,0.08)" : T.silkCream, border: `1px solid ${i === 0 && l.produced > 0 ? T.borderGold : T.borderDef}`, borderRadius: 12, padding: "10px 12px" }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis" }}>{l.short}</div>
-                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis", marginTop: 2 }}>{l.operatorName}</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 12, color: sc.color, marginTop: 4, fontWeight: 700 }}>{sc.label}</div>
-                  </div>
-                );
-              })}
+              {rankedLooms.slice(0, 4).map((l, i) => (
+                <div key={l.id} style={{ flex: 1, minWidth: 0, background: i === 0 && l.produced > 0 ? "rgba(200,155,71,0.08)" : T.silkCream, border: `1px solid ${i === 0 && l.produced > 0 ? T.borderGold : T.borderDef}`, borderRadius: 12, padding: "10px 12px" }}>
+                  <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis" }}>{l.short}</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis", marginTop: 2 }}>{l.operatorName}</div>
+                  <div style={{ marginTop: 4 }}><StatusPill taxonomy="condition" status={LOOM_STATUS_TO_CONDITION[l.status]} size="sm" /></div>
+                </div>
+              ))}
             </div>
           </div>
 

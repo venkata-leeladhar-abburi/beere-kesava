@@ -12,7 +12,18 @@ import { materialIssuesApi } from "../../../../shared/api/material-issues";
 import { rawMaterialsApi, RawMaterialStockItem } from "../../../../shared/api/rawMaterials";
 import { toast } from "sonner";
 import { rupees } from "@/lib/domain/money";
-import { Money } from "@/shared/ui/domain";
+import { Money, StatusPill } from "@/shared/ui/domain";
+import type { StatusValueOf } from "@/lib/domain/status";
+
+// PurchaseOrder["status"] doesn't have its own "pending approval" key in the
+// shared document taxonomy — a PO awaiting approval is the same lifecycle
+// point as a "raised" document, so it normalizes onto that.
+const PO_STATUS_TO_DOCUMENT: Record<PurchaseOrder["status"], StatusValueOf<"document">> = {
+  pending: "raised",
+  approved: "approved",
+  rejected: "rejected",
+  received: "received",
+};
 
 // ─── FULL REPORTS MODAL ───────────────────────────────────────────────────────
 export function FullReportsModal({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -312,10 +323,7 @@ export function POVendorDetailModal({ po, onClose }: { po: PurchaseOrder | null;
                 <IconButton icon={X} label="Close" size="md" variant="secondary" className="bg-white/10 text-white border-white/22 hover:bg-white/18" />
               </Dialog.Close>
             </div>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 8, padding: "5px 12px" }}>
-              <div style={{ width: 6, height: 6, borderRadius: "50%", background: cfg.badgeColor }} />
-              <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.92)" }}>{cfg.label}</span>
-            </div>
+            <StatusPill taxonomy="document" status={PO_STATUS_TO_DOCUMENT[po.status]} />
           </div>
 
           <div style={{ padding: "22px 24px", display: "flex", flexDirection: "column", gap: 18, flex: 1 }}>
