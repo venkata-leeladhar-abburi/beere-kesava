@@ -14,7 +14,7 @@ import { SectionTitle } from "../common/primitives";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { ChartFigure } from "../../../../shared/ui/data";
 import { downloadDataAsCSV } from "../utils";
-import { rupees, formatMoney } from "@/lib/domain/money";
+import { rupees, formatMoney, CURRENCY_SYMBOL } from "@/lib/domain/money";
 
 import { useQuery } from "@tanstack/react-query";
 import { analyticsApi } from "../../../../shared/api/analytics";
@@ -216,7 +216,7 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
             <DownloadGate><IconButton
               icon={Download}
               label="Download CSV"
-              onClick={() => downloadDataAsCSV("top_10_customers.csv", ["Rank", "Customer Name", "Total Spend (₹)"], top10Customers.map((c, i) => [i + 1, c.name, c.spend]))}
+              onClick={() => downloadDataAsCSV("top_10_customers.csv", ["Rank", "Customer Name", `Total Spend (${CURRENCY_SYMBOL})`], top10Customers.map((c, i) => [i + 1, c.name, c.spend]))}
               title="Download CSV"
               variant="ghost"
               shape="circle"

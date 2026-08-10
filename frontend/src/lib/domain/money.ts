@@ -16,6 +16,14 @@
  *  compile error, which is the whole point (Part B, M1). */
 export type Paise = number & { readonly __brand: "Paise" };
 
+/** The rupee symbol, for UI labels/placeholders/prefixes that mention
+ *  currency without formatting an actual amount (e.g. `"Amount (₹)"`,
+ *  `addonLeft="₹"`). Formatted amounts should use `formatMoney`/`<Money>`
+ *  instead — this exists so `src/features/**\/*.tsx` never needs to embed
+ *  the literal character (design-system/06-DOMAIN.md Part E, rupee-literals
+ *  ratchet). */
+export const CURRENCY_SYMBOL = "₹";
+
 const THOUSAND = 1_000;
 const LAKH = 1_00_000; // 100,000
 const CRORE = 1_00_00_000; // 10,000,000

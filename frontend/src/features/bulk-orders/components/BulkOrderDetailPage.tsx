@@ -197,7 +197,7 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
             </div>
             <div style={{ textAlign: "right" as const }}>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.55)", marginBottom: 4 }}>OUTSTANDING</div>
-              <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: balance > 0 ? "#F87171" : T.goldLight }}>{balance > 0 ? inr(balance) : "₹0"}</div>
+              <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: balance > 0 ? "#F87171" : T.goldLight }}>{inr(balance > 0 ? balance : 0)}</div>
             </div>
           </div>
         </div>

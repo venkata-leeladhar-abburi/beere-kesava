@@ -2,20 +2,21 @@ import React from "react";
 import { DateFilterBar, DateFilterState, matchesDateFilter } from "../../../../../shared/ui/DateFilterBar";
 import { T, F } from "../../theme";
 import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 interface PaymentRow {
   rec: string;
   date: string;
   utr: string;
-  amt: string;
-  ded: string;
+  amt: number;
+  ded: number;
   status: string;
 }
 
 const PAYMENTS: PaymentRow[] = [
-  { rec: "REC-90821", date: "02 May 2026", utr: "UTR9832104523", amt: "₹1,80,000", ded: "₹0", status: "Settled" },
-  { rec: "REC-90145", date: "15 Apr 2026", utr: "UTR8293108420", amt: "₹2,60,000", ded: "₹20,000", status: "Settled" },
-  { rec: "REC-89234", date: "18 Dec 2025", utr: "UTR7489312048", amt: "₹1,00,000", ded: "₹5,000", status: "Settled" },
+  { rec: "REC-90821", date: "02 May 2026", utr: "UTR9832104523", amt: 180000, ded: 0, status: "Settled" },
+  { rec: "REC-90145", date: "15 Apr 2026", utr: "UTR8293108420", amt: 260000, ded: 20000, status: "Settled" },
+  { rec: "REC-89234", date: "18 Dec 2025", utr: "UTR7489312048", amt: 100000, ded: 5000, status: "Settled" },
 ];
 
 const columns: ColumnDef<PaymentRow>[] = [
@@ -33,11 +34,11 @@ const columns: ColumnDef<PaymentRow>[] = [
   },
   {
     id: "amt", header: "Amount Paid", accessor: p => p.amt,
-    cell: (_v, p) => <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.green }}>{p.amt}</span>,
+    cell: (_v, p) => <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.green }}>{formatMoney(rupees(p.amt))}</span>,
   },
   {
     id: "ded", header: "Deductions", accessor: p => p.ded,
-    cell: (_v, p) => <span style={{ fontFamily: F.display, fontSize: 14, color: T.crimson }}>{p.ded}</span>,
+    cell: (_v, p) => <span style={{ fontFamily: F.display, fontSize: 14, color: T.crimson }}>{formatMoney(rupees(p.ded))}</span>,
   },
   {
     id: "status", header: "Status", accessor: p => p.status, type: "status",

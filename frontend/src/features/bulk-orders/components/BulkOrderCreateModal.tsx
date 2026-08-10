@@ -7,6 +7,7 @@ import { WholesaleCustomerSelectSection, useAllWholesaleCustomers } from "./Whol
 import { Button, IconButton, Field, Input, NumberInput, Textarea } from "../../../shared/ui/primitives";
 import { Modal } from "../../../shared/ui/overlay";
 import { DatePicker, formatDate } from "../../../shared/ui/date";
+import { CURRENCY_SYMBOL } from "@/lib/domain/money";
 
 // Validation schema for the raw string form fields (inputs are all `type="text"`-shaped
 // under the hood, so numeric/date fields are validated as strings and coerced on submit).
@@ -242,7 +243,7 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
                   </Field>
 
                   <div style={{ gridColumn: "1 / -1" }}>
-                    <Field label="Estimated Value (₹)" id="estimated-value">
+                    <Field label={`Estimated Value (${CURRENCY_SYMBOL})`} id="estimated-value">
                       <Input id="estimated-value"
                         type="number"
                         min="0"
