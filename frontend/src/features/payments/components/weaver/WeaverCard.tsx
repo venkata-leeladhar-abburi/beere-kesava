@@ -7,6 +7,8 @@ import { WeaverRecord } from "../../types";
 import { calcCharges, calcCompletedSarees, calcNet } from "../../utils/charges";
 import { Pip, StatusBadge } from "../common/primitives";
 import { Button, Checkbox } from "../../../../shared/ui/primitives";
+import { rupees } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 
 // Weaver card (card view)
 export function WeaverCard({ w, onViewDetails, selected, onToggleSelect }: { w: WeaverRecord, onViewDetails?: () => void, selected: boolean, onToggleSelect: () => void }) {
@@ -78,18 +80,18 @@ export function WeaverCard({ w, onViewDetails, selected, onToggleSelect }: { w: 
         <div style={{ background: "linear-gradient(135deg, #FFFDF9 0%, #FDFBF7 100%)", border: `1.5px solid ${T.borderDef}`, borderRadius: 12, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontFamily: F.ui, color: T.taupe }}>
             <span>Gross Charges</span>
-            <span style={{ fontFamily: F.mono, fontWeight: 600, color: T.luxuryBrown }}>₹{charges.toLocaleString("en-IN")}</span>
+            <span style={{ fontFamily: F.mono, fontWeight: 600, color: T.luxuryBrown }}><Money value={rupees(charges)} /></span>
           </div>
           {((w.uploadedDeduction !== undefined ? w.uploadedDeduction : w.advance) > 0) && (
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontFamily: F.ui, color: T.crimson }}>
               <span>Deductions</span>
-              <span style={{ fontFamily: F.mono, fontWeight: 600 }}>−₹{(w.uploadedDeduction !== undefined ? w.uploadedDeduction : w.advance).toLocaleString("en-IN")}</span>
+              <span style={{ fontFamily: F.mono, fontWeight: 600 }}>−<Money value={rupees(w.uploadedDeduction !== undefined ? w.uploadedDeduction : w.advance)} /></span>
             </div>
           )}
           <div style={{ borderTop: `1.5px dashed ${T.borderDef}`, paddingTop: 6, display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
             <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>Net Payable</span>
             <span style={{ fontFamily: F.display, fontSize: 18, fontWeight: 800, color: paid ? T.green : T.royalBurgundy }}>
-              ₹{net.toLocaleString("en-IN")}
+              <Money value={rupees(net)} />
             </span>
           </div>
         </div>

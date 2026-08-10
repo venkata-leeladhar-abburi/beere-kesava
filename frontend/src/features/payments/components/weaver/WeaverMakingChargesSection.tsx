@@ -19,6 +19,8 @@ import { exportTable, type ColumnDef } from "../../../../shared/ui/data";
 import { BankUploadPanel } from "./BankUploadPanel";
 import { WeaverCard } from "./WeaverCard";
 import { WeaverPaymentDetailModal } from "./WeaverPaymentDetailModal";
+import { rupees, formatMoney } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 
 const AVATAR_PALETTE = ["#5A3E6B", "#6E0F2D", "#2D6B6B", "#4A6B4A", "#9B6B8A", "#2D7D6B", "#4A5E7A", "#7A2040"];
 
@@ -227,7 +229,7 @@ export function WeaverMakingChargesSection() {
   const totalGross = weaversList.reduce((acc, w) => acc + calcCharges(w), 0);
   const totalDeductions = weaversList.reduce((acc, w) => acc + (w.uploadedDeduction !== undefined ? w.uploadedDeduction : w.advance), 0);
   const totalNet = weaversList.reduce((acc, w) => acc + calcNet(w), 0);
-  const formatINR = (n: number) => `₹${n.toLocaleString("en-IN")}`;
+  const formatINR = (n: number) => formatMoney(rupees(n));
 
   return (
     <div id="pay-making-charges" style={{ padding: "36px 40px 0" }}>
@@ -441,15 +443,15 @@ export function WeaverMakingChargesSection() {
                   </div>
                   <div style={{ flex: "0 0 120px" }}>
                     <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Gross Charges</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown, fontWeight: 600 }}>₹{charges.toLocaleString("en-IN")}</div>
+                    <div style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown, fontWeight: 600 }}><Money value={rupees(charges)} /></div>
                   </div>
                   <div style={{ flex: "0 0 120px" }}>
                     <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Deductions</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 13, color: T.crimson, fontWeight: 600 }}>−₹{deduction.toLocaleString("en-IN")}</div>
+                    <div style={{ fontFamily: F.mono, fontSize: 13, color: T.crimson, fontWeight: 600 }}>−<Money value={rupees(deduction)} /></div>
                   </div>
                   <div style={{ flex: "0 0 130px" }}>
                     <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Net Payable</div>
-                    <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 800, color: w.status === "Paid" ? T.green : T.royalBurgundy }}>₹{net.toLocaleString("en-IN")}</div>
+                    <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 800, color: w.status === "Paid" ? T.green : T.royalBurgundy }}><Money value={rupees(net)} /></div>
                   </div>
                   <div style={{ flex: "0 0 110px" }}>
                     <StatusBadge status={w.status} />

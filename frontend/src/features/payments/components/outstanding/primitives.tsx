@@ -4,8 +4,9 @@ import { T, F } from "../../theme";
 import { ageBucket } from "../../../customers/contexts/SalesContext";
 import { useDownloadsAllowed } from "../../../../shared/ui/DownloadAccess";
 import { Button } from "../../../../shared/ui/primitives";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
-export const inr = (n: number) => "₹" + Math.round(n).toLocaleString("en-IN");
+export const inr = (n: number) => formatMoney(rupees(n));
 
 export const AGE_BUCKETS = ["0-30", "31-60", "61-90", "90+"] as const;
 export type AgeKey = typeof AGE_BUCKETS[number] | "all";

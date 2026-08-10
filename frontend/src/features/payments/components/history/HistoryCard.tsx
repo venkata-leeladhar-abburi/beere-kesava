@@ -5,6 +5,8 @@ import { motion } from "motion/react";
 import { F, T } from "../../theme";
 import { Invoice, PayHistRecord, PayHistStatus, PayHistType } from "../../types";
 import { Button } from "../../../../shared/ui/primitives";
+import { rupees } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 
 export const HIST_TYPE_CFG: Record<PayHistType, { bg: string; color: string; border: string }> = {
   "Vendor Payment":   { bg: "rgba(200,155,71,0.12)",  color: "#8B6018",       border: "#C89B47" },
@@ -63,7 +65,7 @@ export function HistoryCard({ r }: { r: PayHistRecord }) {
             {isReceipt ? "Amount Received" : "Amount Paid"}
           </div>
           <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 800, color: isReceipt ? T.green : T.crimson }}>
-            {isReceipt ? "+" : "−"}₹{r.amount.toLocaleString("en-IN")}
+            {isReceipt ? "+" : "−"}<Money value={rupees(r.amount)} />
           </div>
         </div>
         <div style={{ textAlign: "right" as const }}>

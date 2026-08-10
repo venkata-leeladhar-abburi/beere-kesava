@@ -7,6 +7,8 @@ import { Invoice } from "../../types";
 import { AnimBar } from "../common/motion";
 import { INV_STATUS_CFG, InvBadge } from "./InvBadge";
 import { Button } from "../../../../shared/ui/primitives";
+import { rupees } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 
 export function CustomerCard({ inv, onViewInvoice, onRecordPayment, bulkOrderRef, bulkOrderData }: { inv: Invoice, onViewInvoice?: () => void, onRecordPayment?: () => void, bulkOrderRef?: string, bulkOrderData?: BulkOrder }) {
   const remaining = inv.total - inv.paid;
@@ -83,18 +85,18 @@ export function CustomerCard({ inv, onViewInvoice, onRecordPayment, bulkOrderRef
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, borderBottom: `1px solid rgba(110,15,45,0.06)`, paddingBottom: 10 }}>
           <div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 2 }}>Invoiced Amount</div>
-            <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>₹{inv.total.toLocaleString("en-IN")}</div>
+            <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}><Money value={rupees(inv.total)} /></div>
           </div>
           <div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 2 }}>Amount Collected</div>
-            <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.green }}>₹{inv.paid.toLocaleString("en-IN")}</div>
+            <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.green }}><Money value={rupees(inv.paid)} /></div>
           </div>
         </div>
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 2 }}>
           <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>Outstanding Balance</span>
           <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 800, color: isPaid ? T.green : inv.status === "Overdue" ? T.crimson : T.antiqueGold }}>
-            {isPaid ? "Fully Settled ✓" : `₹${remaining.toLocaleString("en-IN")}`}
+            {isPaid ? "Fully Settled ✓" : <Money value={rupees(remaining)} />}
           </span>
         </div>
         

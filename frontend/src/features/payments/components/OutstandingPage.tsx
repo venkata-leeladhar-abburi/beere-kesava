@@ -13,9 +13,10 @@ import { InHouseOutstanding } from "./outstanding/InHouseOutstanding";
 import { BatchOutstanding } from "./outstanding/BatchOutstanding";
 import { ExternalOutstanding } from "./outstanding/ExternalOutstanding";
 import { TopSellers } from "./outstanding/TopSellers";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 const G = { card: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)" };
-const inr = (n: number) => "₹" + Math.round(n).toLocaleString("en-IN");
+const inr = (n: number) => formatMoney(rupees(n));
 
 // ── Main page ────────────────────────────────────────────────────────────────
 type OutTab = "weaver" | "factoryLoom" | "external" | "batch" | "ranking";

@@ -7,6 +7,8 @@ import { F, T } from "../../theme";
 import { Invoice, VendorPayment } from "../../types";
 import { VENDOR_STATUS_CFG, VendorBadge } from "./VendorBadge";
 import { Button, CurrencyInput } from "../../../../shared/ui/primitives";
+import { rupees } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 
 export function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoice, selected }: { vp: VendorPayment; matchedPO?: PurchaseOrder; onPay: (id: string) => void; onView?: () => void; onViewPO?: () => void; onAddInvoice?: () => void; selected: boolean }) {
   const balance = vp.invoiceAmt - vp.paidAmt;
@@ -94,7 +96,7 @@ export function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoic
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#FDFBF7", padding: "6px 10px", borderRadius: 6, border: `1px solid ${T.borderGold}40` }}>
                         <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Invoice Amount</span>
                         <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: "#8B6018" }}>
-                          ₹{m.invoiceAmount.toLocaleString("en-IN")}
+                          <Money value={rupees(m.invoiceAmount)} />
                         </span>
                       </div>
                     ) : (
@@ -133,16 +135,16 @@ export function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoic
         <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: 8 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
             <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Invoice Amount</span>
-            <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>₹{vp.invoiceAmt.toLocaleString("en-IN")}</span>
+            <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}><Money value={rupees(vp.invoiceAmt)} /></span>
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
             <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Paid</span>
-            <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 600, color: T.green }}>₹{vp.paidAmt.toLocaleString("en-IN")}</span>
+            <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 600, color: T.green }}><Money value={rupees(vp.paidAmt)} /></span>
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", borderTop: `1px dashed ${T.borderDef}`, paddingTop: 8, marginTop: 4 }}>
             <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>Balance</span>
             <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: isPaid ? T.green : vp.status === "Overdue" ? T.crimson : T.antiqueGold }}>
-              {isPaid ? "Fully Paid ✓" : `₹${balance.toLocaleString("en-IN")}`}
+              {isPaid ? "Fully Paid ✓" : <Money value={rupees(balance)} />}
             </span>
           </div>
         </div>

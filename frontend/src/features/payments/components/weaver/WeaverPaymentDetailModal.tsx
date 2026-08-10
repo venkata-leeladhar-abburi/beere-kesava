@@ -15,6 +15,8 @@ import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import type { WeaverEarningsBreakdown } from "../../../../shared/api/payments";
+import { rupees } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 
 // ── Weaver Payment Detail Modal ───────────────────────────────────────────────
 export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRecord | null; onClose: () => void }) {
@@ -59,11 +61,11 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
     { id: "completedCount", header: "Count", accessor: r => r.completedCount, type: "number" },
     {
       id: "ratePerSaree", header: "Rate", accessor: r => r.ratePerSaree,
-      cell: (_v, r) => <span style={{ fontFamily: F.mono }}>₹{r.ratePerSaree}</span>,
+      cell: (_v, r) => <span style={{ fontFamily: F.mono }}><Money value={rupees(r.ratePerSaree)} /></span>,
     },
     {
       id: "amount", header: "Subtotal", accessor: r => r.amount,
-      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 600 }}>₹{r.amount.toLocaleString("en-IN")}</span>,
+      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 600 }}><Money value={rupees(r.amount)} /></span>,
     },
   ];
 
@@ -109,7 +111,7 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
               <DataTable columns={chargeColumns} data={chargeRows} getRowId={r => r.sareeTypeCode} />
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", background: T.warmCream, borderTop: `1px solid ${T.borderDef}` }}>
                 <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, fontWeight: 700 }}>Total Making Charges</span>
-                <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: T.royalBurgundy }}>₹{totalCharges.toLocaleString("en-IN")}</span>
+                <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: T.royalBurgundy }}><Money value={rupees(totalCharges)} /></span>
               </div>
             </div>
           </div>
@@ -127,7 +129,7 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
                   <div key={i} style={{ background: "#FFFFFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, padding: "12px 16px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 10, alignItems: "center" }}>
                     <div>
                       <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>Amount Paid</div>
-                      <div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.green }}>₹{p.amountPaid.toLocaleString("en-IN")}</div>
+                      <div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.green }}><Money value={rupees(p.amountPaid)} /></div>
                     </div>
                     <div>
                       <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>UTR Number</div>

@@ -15,6 +15,8 @@ import { vendorPaymentsApi, weaverPaymentsApi, supplierPaymentsApi } from "../..
 import { invoicesApi } from "../../../../shared/api/invoices";
 import { Button, IconButton, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { rupees, formatMoney } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 
 function formatHistDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
@@ -161,7 +163,7 @@ export function PaymentHistorySection() {
       id: "amount", header: "Amount (₹)", accessor: r => r.amount, align: "end",
       cell: (_v, r) => (
         <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: r.type === "Customer Receipt" ? T.green : T.crimson }}>
-          {r.type !== "Customer Receipt" && "−"}₹{r.amount.toLocaleString("en-IN")}
+          {r.type !== "Customer Receipt" && "−"}<Money value={rupees(r.amount)} />
         </span>
       ),
     },
@@ -199,9 +201,9 @@ export function PaymentHistorySection() {
   ];
 
   const HIST_STATS = [
-    { icon: <ArrowDownCircle size={22} color={T.green}         />, iconBg: T.greenBg,                 iconBorder: "rgba(30,102,64,0.18)",  label: "Total Collected",  value: `₹${totalIn.toLocaleString("en-IN")}`,           sub: "Customer receipts · period", color: T.green,         hi: false },
-    { icon: <ArrowUpCircle   size={22} color={T.crimson}       />, iconBg: T.crimsonBg,               iconBorder: "rgba(192,57,43,0.18)",  label: "Total Paid Out",   value: `₹${totalOut.toLocaleString("en-IN")}`,          sub: "Vendor & weaver payments",   color: T.crimson,       hi: false },
-    { icon: <TrendingUp      size={22} color={T.antiqueGold}   />, iconBg: "rgba(200,155,71,0.12)",   iconBorder: T.borderGold,            label: "Net Cash Flow",    value: `₹${Math.abs(netFlow).toLocaleString("en-IN")}`, sub: netFlow >= 0 ? "Positive flow" : "Net outflow", color: netFlow >= 0 ? T.green : T.crimson, hi: true },
+    { icon: <ArrowDownCircle size={22} color={T.green}         />, iconBg: T.greenBg,                 iconBorder: "rgba(30,102,64,0.18)",  label: "Total Collected",  value: formatMoney(rupees(totalIn)),           sub: "Customer receipts · period", color: T.green,         hi: false },
+    { icon: <ArrowUpCircle   size={22} color={T.crimson}       />, iconBg: T.crimsonBg,               iconBorder: "rgba(192,57,43,0.18)",  label: "Total Paid Out",   value: formatMoney(rupees(totalOut)),          sub: "Vendor & weaver payments",   color: T.crimson,       hi: false },
+    { icon: <TrendingUp      size={22} color={T.antiqueGold}   />, iconBg: "rgba(200,155,71,0.12)",   iconBorder: T.borderGold,            label: "Net Cash Flow",    value: formatMoney(rupees(Math.abs(netFlow))), sub: netFlow >= 0 ? "Positive flow" : "Net outflow", color: netFlow >= 0 ? T.green : T.crimson, hi: true },
   ];
 
   return (
@@ -373,7 +375,7 @@ export function PaymentHistorySection() {
                   {/* Amount */}
                   <div style={{ flex: "0 0 120px", textAlign: "right" as const }}>
                     <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: isReceipt ? T.green : T.crimson }}>
-                      {isReceipt ? "+" : "−"}₹{r.amount.toLocaleString("en-IN")}
+                      {isReceipt ? "+" : "−"}<Money value={rupees(r.amount)} />
                     </div>
                     {r.utr && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.green, marginTop: 2 }}>{r.utr}</div>}
                   </div>
@@ -399,9 +401,9 @@ export function PaymentHistorySection() {
               <div style={{ padding: "14px 20px", borderTop: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between", background: T.warmCream }}>
                 <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{filtered.length} transaction{filtered.length > 1 ? "s" : ""}</span>
                 <div style={{ display: "flex", gap: 24 }}>
-                  <span style={{ fontFamily: F.mono, fontSize: 13, color: T.green, fontWeight: 700 }}>+₹{totalIn.toLocaleString("en-IN")}</span>
-                  <span style={{ fontFamily: F.mono, fontSize: 13, color: T.crimson, fontWeight: 700 }}>−₹{totalOut.toLocaleString("en-IN")}</span>
-                  <span style={{ fontFamily: F.mono, fontSize: 13, color: netFlow >= 0 ? T.green : T.crimson, fontWeight: 700, borderLeft: `1px solid ${T.borderDef}`, paddingLeft: 24 }}>Net: {netFlow >= 0 ? "+" : "−"}₹{Math.abs(netFlow).toLocaleString("en-IN")}</span>
+                  <span style={{ fontFamily: F.mono, fontSize: 13, color: T.green, fontWeight: 700 }}>+<Money value={rupees(totalIn)} /></span>
+                  <span style={{ fontFamily: F.mono, fontSize: 13, color: T.crimson, fontWeight: 700 }}>−<Money value={rupees(totalOut)} /></span>
+                  <span style={{ fontFamily: F.mono, fontSize: 13, color: netFlow >= 0 ? T.green : T.crimson, fontWeight: 700, borderLeft: `1px solid ${T.borderDef}`, paddingLeft: 24 }}>Net: {netFlow >= 0 ? "+" : "−"}<Money value={rupees(Math.abs(netFlow))} /></span>
                 </div>
               </div>
             )}
@@ -419,9 +421,9 @@ export function PaymentHistorySection() {
                 <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: "#FFFDF9" }}>TOTALS FOR SELECTED PERIOD</span>
                 <span style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,253,249,0.50)" }}>{filtered.length} rows</span>
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3 }}>
-                  <span style={{ fontFamily: F.mono, fontSize: 12, color: T.goldLight }}>+₹{totalIn.toLocaleString("en-IN")}</span>
-                  <span style={{ fontFamily: F.mono, fontSize: 12, color: "#F47B72"  }}>−₹{totalOut.toLocaleString("en-IN")}</span>
-                  <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.antiqueGold }}>₹{totalAmt.toLocaleString("en-IN")}</span>
+                  <span style={{ fontFamily: F.mono, fontSize: 12, color: T.goldLight }}>+<Money value={rupees(totalIn)} /></span>
+                  <span style={{ fontFamily: F.mono, fontSize: 12, color: "#F47B72"  }}>−<Money value={rupees(totalOut)} /></span>
+                  <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.antiqueGold }}><Money value={rupees(totalAmt)} /></span>
                 </div>
               </div>
             )}

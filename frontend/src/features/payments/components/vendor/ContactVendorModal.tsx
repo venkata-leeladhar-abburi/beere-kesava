@@ -9,6 +9,8 @@ import { VendorPayment } from "../../types";
 import { vendorsApi } from "../../../../shared/api/vendors";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
+import { rupees, formatMoney } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 
 // ── Contact Vendor Modal ──────────────────────────────────────────────────────
 export function ContactVendorModal({ vendors, onClose }: { vendors: VendorPayment[]; onClose: () => void }) {
@@ -56,7 +58,7 @@ export function ContactVendorModal({ vendors, onClose }: { vendors: VendorPaymen
 
 This is a payment reminder from Beers Keshara & Brothers Silks regarding PO ${vp?.poNumber}.
 
-Outstanding Balance: ₹${balance.toLocaleString("en-IN")}
+Outstanding Balance: ${formatMoney(rupees(balance))}
 Original Due Date: ${vp?.dueDate ?? "—"}${vp?.daysOverdue ? `\nDays Overdue: ${vp.daysOverdue} days` : ""}
 
 Please advise on payment status at your earliest convenience.
@@ -117,7 +119,7 @@ Thank you.`;
                       <div style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, marginTop: 2 }}>{v.poNumber}</div>
                     </div>
                     <div style={{ textAlign: "right" as const, flexShrink: 0 }}>
-                      <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.crimson }}>₹{bal.toLocaleString("en-IN")}</div>
+                      <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.crimson }}><Money value={rupees(bal)} /></div>
                       {v.daysOverdue && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.crimson, background: "rgba(192,57,43,0.10)", padding: "1px 6px", borderRadius: 4, marginTop: 2 }}>{v.daysOverdue}d overdue</div>}
                     </div>
                     {isSelected && <div style={{ width: 20, height: 20, borderRadius: "50%", background: T.royalBurgundy, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><CheckCircle2 size={12} color="#FFF" /></div>}

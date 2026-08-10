@@ -7,6 +7,7 @@ import { F, T } from "../../theme";
 import { Invoice } from "../../types";
 import { Button, Checkbox, IconButton, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 // ── Payment Reminders Modal ───────────────────────────────────────────────────
 export function PaymentRemindersModal({ open, onClose, overdueInvoices }: { open: boolean; onClose: () => void; overdueInvoices: Invoice[] }) {
@@ -35,7 +36,7 @@ export function PaymentRemindersModal({ open, onClose, overdueInvoices }: { open
   const getPreviewText = (inv: Invoice) => {
     if (!inv) return "";
     const balance = inv.total - inv.paid;
-    return `Dear ${inv.customer},\n\nThis is a friendly reminder from Beere Kesava & Brothers Silks. Your invoice ${inv.id} for ₹${balance.toLocaleString("en-IN")} was due on ${inv.dueDate} (${inv.daysOverdue || 0} days overdue).\n\nPlease process the payment at your earliest convenience. If already paid, please share the UTR reference.\n\nRegards,\nAccounts Team\nBeere Kesava & Brothers Silks`;
+    return `Dear ${inv.customer},\n\nThis is a friendly reminder from Beere Kesava & Brothers Silks. Your invoice ${inv.id} for ${formatMoney(rupees(balance))} was due on ${inv.dueDate} (${inv.daysOverdue || 0} days overdue).\n\nPlease process the payment at your earliest convenience. If already paid, please share the UTR reference.\n\nRegards,\nAccounts Team\nBeere Kesava & Brothers Silks`;
   };
 
   return (
@@ -63,7 +64,7 @@ export function PaymentRemindersModal({ open, onClose, overdueInvoices }: { open
             <Select value={selectedInvoiceId} onValueChange={setSelectedInvoiceId} className="w-full">
               {overdueInvoices.map(i => (
                 <SelectItem key={i.id} value={i.id}>
-                  {i.customer} ({i.id}) — ₹{(i.total - i.paid).toLocaleString("en-IN")} ({i.daysOverdue}d late)
+                  {i.customer} ({i.id}) — {formatMoney(rupees(i.total - i.paid))} ({i.daysOverdue}d late)
                 </SelectItem>
               ))}
             </Select>

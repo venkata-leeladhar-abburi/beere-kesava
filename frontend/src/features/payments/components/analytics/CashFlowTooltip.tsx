@@ -1,5 +1,7 @@
 import React from "react";
 import { F, T } from "../../theme";
+import { rupees } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 
 export function CashFlowTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
@@ -10,7 +12,7 @@ export function CashFlowTooltip({ active, payload, label }: any) {
         <div key={p.name} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
           <div style={{ width: 8, height: 8, borderRadius: "50%", background: p.fill || p.stroke }} />
           <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.name}:</span>
-          <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>₹{Number(p.value).toLocaleString("en-IN")}</span>
+          <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}><Money value={rupees(Number(p.value))} /></span>
         </div>
       ))}
     </div>

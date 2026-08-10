@@ -5,6 +5,8 @@ import { motion } from "motion/react";
 import { EASE, F, T } from "../../theme";
 import { VendorExcelRow, VendorMatchedRow, VendorPayment, VendorUnmatchedRow, VendorUploadResult } from "../../types";
 import { Button, Input } from "../../../../shared/ui/primitives";
+import { rupees } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 
 // ── Vendor Payment Excel Upload Panel ─────────────────────────────────────────
 export function VendorUploadPanel({ vendorPayments, onMatched }: { vendorPayments: VendorPayment[]; onMatched: (matched: VendorMatchedRow[]) => void }) {
@@ -159,7 +161,7 @@ export function VendorUploadPanel({ vendorPayments, onMatched }: { vendorPayment
                       <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{m.poNumber}</span>
                     </div>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 16px" }}>
-                      <div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const }}>Amount</div><div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.green }}>₹{m.amountPaid.toLocaleString("en-IN")}</div></div>
+                      <div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const }}>Amount</div><div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.green }}><Money value={rupees(m.amountPaid)} /></div></div>
                       <div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const }}>UTR</div><div style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{m.utrNumber || "—"}</div></div>
                       <div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const }}>Date</div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{m.paymentDate}</div></div>
                       <div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const }}>Firm</div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{m.firmName || "—"}</div></div>

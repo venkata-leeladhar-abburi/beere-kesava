@@ -23,6 +23,8 @@ import { VendorUploadPanel } from "./VendorUploadPanel";
 import { RecordVendorPaymentSidebar } from "./RecordVendorPaymentSidebar";
 import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { rupees, formatMoney } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 
 const SHOW_OVERDUE_ALERT = false;
 
@@ -65,7 +67,7 @@ export function VendorPaymentsSection() {
       ? { ...v, paidAmt: Math.min(v.invoiceAmt, v.paidAmt + amount), status: (v.paidAmt + amount) >= v.invoiceAmt ? "Paid" : "Partial", utr }
       : v));
     addExpenseEntry(firmId, { description: `Vendor payment — ${payNow.vendor} (${payNow.poNumber})`, amount, date: new Date().toISOString().slice(0, 10), category: "Material Purchase" });
-    toast.success(`Payment of ₹${amount.toLocaleString("en-IN")} recorded for ${payNow.vendor}`);
+    toast.success(`Payment of ${formatMoney(rupees(amount))} recorded for ${payNow.vendor}`);
     setPayNow(null);
   };
 
@@ -119,11 +121,11 @@ export function VendorPaymentsSection() {
     },
     {
       id: "invoiceAmt", header: "Invoice Amt", accessor: vp => vp.invoiceAmt, type: "number",
-      cell: (_v, vp) => <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14 }}>₹{vp.invoiceAmt.toLocaleString("en-IN")}</span>,
+      cell: (_v, vp) => <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14 }}><Money value={rupees(vp.invoiceAmt)} /></span>,
     },
     {
       id: "paidAmt", header: "Paid Amt", accessor: vp => vp.paidAmt, type: "number",
-      cell: (_v, vp) => <span style={{ fontFamily: F.mono, color: T.green, fontWeight: 600 }}>₹{vp.paidAmt.toLocaleString("en-IN")}</span>,
+      cell: (_v, vp) => <span style={{ fontFamily: F.mono, color: T.green, fontWeight: 600 }}><Money value={rupees(vp.paidAmt)} /></span>,
     },
     {
       id: "balance", header: "Balance Due", accessor: vp => vp.invoiceAmt - vp.paidAmt, type: "number",
@@ -131,7 +133,7 @@ export function VendorPaymentsSection() {
         const balance = vp.invoiceAmt - vp.paidAmt;
         return (
           <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: balance === 0 ? T.green : vp.status === "Overdue" ? T.crimson : T.antiqueGold }}>
-            {balance === 0 ? "Paid ✓" : `₹${balance.toLocaleString("en-IN")}`}
+            {balance === 0 ? "Paid ✓" : <Money value={rupees(balance)} />}
           </span>
         );
       },
@@ -202,7 +204,7 @@ export function VendorPaymentsSection() {
               icon: <Wallet size={22} color={T.royalBurgundy} />,
               iconBg: "rgba(110,15,45,0.08)",
               label: "Total Vendor Payments",
-              value: `₹${totalVendorPaymentsRecorded.toLocaleString("en-IN")}`,
+              value: formatMoney(rupees(totalVendorPaymentsRecorded)),
               sub: "All recorded vendor payments",
               hi: false, crimson: false, green: false,
             },
@@ -210,7 +212,7 @@ export function VendorPaymentsSection() {
               icon: <CircleAlert size={22} color={T.crimson} />,
               iconBg: "rgba(192,57,43,0.08)",
               label: "Pending Balance",
-              value: `₹${pendingBalance.toLocaleString("en-IN")}`,
+              value: formatMoney(rupees(pendingBalance)),
               sub: "Outstanding to vendors",
               hi: false, crimson: true, green: false,
             },
@@ -253,7 +255,7 @@ export function VendorPaymentsSection() {
               <CircleAlert size={18} style={{ color: T.crimson, flexShrink: 0 }} />
               <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.crimson }}>
                 {overdueVendors.length} vendor bill{overdueVendors.length > 1 ? "s are" : " is"} overdue — Total pending:{" "}
-                <span style={{ fontFamily: F.mono }}>₹{overdueVendors.reduce((s, v) => s + v.invoiceAmt - v.paidAmt, 0).toLocaleString("en-IN")}</span>
+                <span style={{ fontFamily: F.mono }}><Money value={rupees(overdueVendors.reduce((s, v) => s + v.invoiceAmt - v.paidAmt, 0))} /></span>
               </span>
             </div>
             <Button variant="danger" size="md" onClick={() => setContactModal(true)} className="flex-shrink-0 rounded-[8px]">
@@ -309,9 +311,9 @@ export function VendorPaymentsSection() {
                     <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{vp.vendor}</div>
                     <div style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, marginTop: 2 }}>{vp.poNumber}</div>
                   </div>
-                  <div style={{ flex: 1, fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>₹{vp.invoiceAmt.toLocaleString("en-IN")}</div>
+                  <div style={{ flex: 1, fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}><Money value={rupees(vp.invoiceAmt)} /></div>
                   <div style={{ flex: 1, fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: balance === 0 ? T.green : vp.status === "Overdue" ? T.crimson : T.antiqueGold }}>
-                    {balance === 0 ? "Paid ✓" : `₹${balance.toLocaleString("en-IN")}`}
+                    {balance === 0 ? "Paid ✓" : <Money value={rupees(balance)} />}
                   </div>
                   <div style={{ flex: "0 0 120px", fontFamily: F.ui, fontSize: 13, color: vp.status === "Overdue" ? T.crimson : T.taupe, fontWeight: vp.status === "Overdue" ? 600 : 400 }}>
                     {vp.dueDate}

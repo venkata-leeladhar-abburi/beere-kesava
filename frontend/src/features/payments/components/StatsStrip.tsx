@@ -8,6 +8,7 @@ import { invoicesApi } from "../../../shared/api/invoices";
 import { EASE, F, T } from "../theme";
 import { AnimCount } from "./common/motion";
 import { useMoneyVisible } from "../../../shared/ui/MoneyValue";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 export function StatsStrip() {
   // Same live data sources as PaymentAnalyticsSection.tsx: weaver/vendor/
@@ -45,7 +46,7 @@ export function StatsStrip() {
   }, [supplierPaymentsRes, collectedFromCustomers, totalVendorPayments, paidToWeavers]);
 
   const moneyVisible = useMoneyVisible();
-  const fmt = (n: number) => (moneyVisible ? `${n < 0 ? "−" : ""}₹${Math.abs(n).toLocaleString("en-IN")}` : "—");
+  const fmt = (n: number) => (moneyVisible ? formatMoney(rupees(n)) : "—");
 
   const STATS = [
     {

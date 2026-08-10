@@ -17,6 +17,8 @@ import { RecordPaymentModal } from "./RecordPaymentModal";
 import { ViewInvoiceModal } from "./ViewInvoiceModal";
 import { WholesaleTableView } from "./WholesaleTableView";
 import { Button, SearchInput } from "../../../../shared/ui/primitives";
+import { rupees, formatMoney } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 
 const INVOICES_QUERY_KEY = ["invoices"] as const;
 
@@ -129,7 +131,7 @@ export function WholesaleCollectionsSection() {
     if (firmId) {
       addIncomeEntry(firmId, { description: `Wholesale payment — ${recordPayment.customer} (${recordPayment.id})`, amount, date, category: "Wholesale Sale" });
     }
-    toast.success(`Payment of ₹${amount.toLocaleString("en-IN")} recorded for ${recordPayment.customer}`);
+    toast.success(`Payment of ${formatMoney(rupees(amount))} recorded for ${recordPayment.customer}`);
     setRecordPayment(null);
   };
 
@@ -143,7 +145,7 @@ export function WholesaleCollectionsSection() {
   const totalInvoiced = invoices.reduce((s, i) => s + i.total, 0);
   const totalOutstanding = invoices.reduce((s, i) => s + (i.total - i.paid), 0);
   const totalCollected = invoices.reduce((s, i) => s + i.paid, 0);
-  const formatRupees = (n: number) => `₹${n.toLocaleString("en-IN")}`;
+  const formatRupees = (n: number) => formatMoney(rupees(n));
 
   const filtered = invoices.filter(inv => {
     const matchSearch = !search || inv.customer.toLowerCase().includes(search.toLowerCase()) || inv.id.toLowerCase().includes(search.toLowerCase());
@@ -255,7 +257,7 @@ export function WholesaleCollectionsSection() {
               <CircleAlert size={18} style={{ color: T.crimson, flexShrink: 0 }} />
               <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.crimson }}>
                 {overdueInvs.length} invoices are overdue (60+ days) — Total overdue amount:{" "}
-                <span style={{ fontFamily: F.mono }}>₹{overdueTotal.toLocaleString("en-IN")}</span>
+                <span style={{ fontFamily: F.mono }}><Money value={rupees(overdueTotal)} /></span>
               </span>
             </div>
             <Button variant="danger" size="md" onClick={() => setRemindersModal(true)} className="flex-shrink-0 rounded-[8px]">

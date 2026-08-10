@@ -5,6 +5,8 @@ import { Invoice } from "../../types";
 import { INV_STATUS_CFG, InvBadge } from "./InvBadge";
 import { Button } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { rupees } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 
 interface WholesaleTableViewProps {
   view: "list" | "table";
@@ -44,12 +46,12 @@ export function WholesaleTableView({ view, filtered, setViewInvoice, setRecordPa
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Invoice Total</div>
-                <div style={{ fontFamily: F.mono, fontSize: 14, color: T.luxuryBrown, fontWeight: 700 }}>₹{inv.total.toLocaleString("en-IN")}</div>
+                <div style={{ fontFamily: F.mono, fontSize: 14, color: T.luxuryBrown, fontWeight: 700 }}><Money value={rupees(inv.total)} /></div>
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Remaining Due</div>
                 <div style={{ fontFamily: F.mono, fontSize: 13, color: rem === 0 ? T.green : T.crimson, fontWeight: 700 }}>
-                  {rem === 0 ? "Paid ✓" : `₹${rem.toLocaleString("en-IN")}`}
+                  {rem === 0 ? "Paid ✓" : <Money value={rupees(rem)} />}
                 </div>
               </div>
               <div style={{ flex: "0 0 130px" }}>
@@ -102,11 +104,11 @@ export function WholesaleTableView({ view, filtered, setViewInvoice, setRecordPa
     },
     {
       id: "total", header: "Total Amount", accessor: inv => inv.total, align: "end",
-      cell: (_v, inv) => <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>₹{inv.total.toLocaleString("en-IN")}</span>,
+      cell: (_v, inv) => <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}><Money value={rupees(inv.total)} /></span>,
     },
     {
       id: "paid", header: "Paid Amount", accessor: inv => inv.paid, align: "end",
-      cell: (_v, inv) => <span style={{ fontFamily: F.mono, fontWeight: 600, fontSize: 13, color: T.green }}>₹{inv.paid.toLocaleString("en-IN")}</span>,
+      cell: (_v, inv) => <span style={{ fontFamily: F.mono, fontWeight: 600, fontSize: 13, color: T.green }}><Money value={rupees(inv.paid)} /></span>,
     },
     {
       id: "remaining", header: "Remaining Due", accessor: inv => inv.total - inv.paid, align: "end",
@@ -114,7 +116,7 @@ export function WholesaleTableView({ view, filtered, setViewInvoice, setRecordPa
         const rem = inv.total - inv.paid;
         return (
           <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: rem === 0 ? T.green : inv.status === "Overdue" ? T.crimson : T.antiqueGold }}>
-            {rem === 0 ? "Paid ✓" : `₹${rem.toLocaleString("en-IN")}`}
+            {rem === 0 ? "Paid ✓" : <Money value={rupees(rem)} />}
           </span>
         );
       },
@@ -158,13 +160,13 @@ export function WholesaleTableView({ view, filtered, setViewInvoice, setRecordPa
         </span>
         <div style={{ display: "flex", gap: 20 }}>
           <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>
-            ₹{filtered.reduce((s, inv) => s + inv.total, 0).toLocaleString("en-IN")}
+            <Money value={rupees(filtered.reduce((s, inv) => s + inv.total, 0))} />
           </span>
           <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 13, color: T.green }}>
-            ₹{filtered.reduce((s, inv) => s + inv.paid, 0).toLocaleString("en-IN")}
+            <Money value={rupees(filtered.reduce((s, inv) => s + inv.paid, 0))} />
           </span>
           <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: T.crimson }}>
-            ₹{filtered.reduce((s, inv) => s + (inv.total - inv.paid), 0).toLocaleString("en-IN")}
+            <Money value={rupees(filtered.reduce((s, inv) => s + (inv.total - inv.paid), 0))} />
           </span>
         </div>
       </div>

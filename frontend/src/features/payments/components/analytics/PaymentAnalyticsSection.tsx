@@ -14,6 +14,8 @@ import { weaverPaymentsApi, vendorPaymentsApi, supplierPaymentsApi } from "../..
 import { invoicesApi } from "../../../../shared/api/invoices";
 import { Button } from "../../../../shared/ui/primitives";
 import { ChartFigure } from "../../../../shared/ui/data";
+import { rupees, formatMoney } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 
 const DIST_PALETTE = ["#4A061B", "#6E0F2D", "#8B3050", "#845E04", "#69635E"];
 
@@ -124,7 +126,7 @@ export function PaymentAnalyticsSection() {
       iconBg: T.greenBg,
       iconBorder: "rgba(30,102,64,0.18)",
       label: "Net Income (All-Time)",
-      value: `${netIncome < 0 ? "−" : ""}₹${Math.abs(netIncome).toLocaleString("en-IN")}`,
+      value: `${netIncome < 0 ? "−" : ""}${formatMoney(rupees(Math.abs(netIncome)))}`,
       sub: "Customer collections minus vendor/supplier/weaver payouts",
       color: netIncome >= 0 ? T.green : T.crimson,
       hi: false,
@@ -134,7 +136,7 @@ export function PaymentAnalyticsSection() {
       iconBg: T.crimsonBg,
       iconBorder: "rgba(192,57,43,0.18)",
       label: "Outstanding from Customers",
-      value: `₹${outstandingFromCustomers.toLocaleString("en-IN")}`,
+      value: formatMoney(rupees(outstandingFromCustomers)),
       sub: "Pending invoice collections",
       color: T.crimson,
       hi: false,
@@ -144,7 +146,7 @@ export function PaymentAnalyticsSection() {
       iconBg: "rgba(110,15,45,0.08)",
       iconBorder: T.borderDef,
       label: "Paid to Top 5 Weavers",
-      value: `₹${totalTop5.toLocaleString("en-IN")}`,
+      value: formatMoney(rupees(totalTop5)),
       sub: "Making charges · all recorded payments",
       color: T.royalBurgundy,
       hi: false,
@@ -154,7 +156,7 @@ export function PaymentAnalyticsSection() {
       iconBg: "rgba(200,155,71,0.12)",
       iconBorder: T.borderGold,
       label: "Total Vendor Payments",
-      value: `₹${totalVendorPayments.toLocaleString("en-IN")}`,
+      value: formatMoney(rupees(totalVendorPayments)),
       sub: "Raw materials & supplies",
       color: T.antiqueGold,
       hi: true,
@@ -256,7 +258,7 @@ export function PaymentAnalyticsSection() {
                   <BarChart data={cashFlowData} barGap={4} barCategoryGap="28%">
                     <CartesianGrid key="cf-grid"     strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
                     <XAxis         key="cf-xaxis"    dataKey="month" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
-                    <YAxis         key="cf-yaxis"    tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `₹${v}`} width={46} />
+                    <YAxis         key="cf-yaxis"    tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => formatMoney(rupees(v), { compact: true })} width={46} />
                     <Tooltip       key="cf-tooltip"  content={<CashFlowTooltip />} cursor={{ fill: "rgba(110,15,45,0.04)" }} />
                     <Bar           key="cf-income"   dataKey="income"   name="Income"   fill={T.green}  radius={[5,5,0,0] as any} />
                     <Bar           key="cf-expenses" dataKey="expenses" name="Expenses" fill={T.crimson} radius={[5,5,0,0] as any} opacity={0.80} />
@@ -362,7 +364,7 @@ export function PaymentAnalyticsSection() {
                       </div>
                       <span style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, fontWeight: 600 }}>{d.name}</span>
                     </div>
-                    <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}>₹{d.amount.toLocaleString("en-IN")}</span>
+                    <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}><Money value={rupees(d.amount)} /></span>
                   </div>
                   <div style={{ height: 7, background: "rgba(110,15,45,0.08)", borderRadius: 99, overflow: "hidden" }}>
                     <motion.div

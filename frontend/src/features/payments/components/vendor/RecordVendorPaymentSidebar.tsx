@@ -3,6 +3,8 @@ import { F, T } from "../../theme";
 import { VendorPayment } from "../../types";
 import { Button, CurrencyInput, Field, Input, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { DatePicker, formatDate } from "../../../../shared/ui/date";
+import { rupees, formatMoney } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 
 interface RecordVendorPaymentSidebarProps {
   vendorPayments: VendorPayment[];
@@ -55,8 +57,8 @@ export function RecordVendorPaymentSidebar({
         <div style={{ background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 9, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 7 }}>
           {[
             { label: "PO Number",     val: selVP.poNumber,                         color: T.royalBurgundy },
-            { label: "Invoice Total",  val: `₹${selVP.invoiceAmt.toLocaleString("en-IN")}`, color: T.luxuryBrown },
-            { label: "Previous Paid",  val: `₹${selVP.paidAmt.toLocaleString("en-IN")}`,   color: T.green },
+            { label: "Invoice Total",  val: formatMoney(rupees(selVP.invoiceAmt)), color: T.luxuryBrown },
+            { label: "Previous Paid",  val: formatMoney(rupees(selVP.paidAmt)),   color: T.green },
           ].map(row => (
             <div key={row.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.6px" }}>{row.label}</span>
@@ -66,7 +68,7 @@ export function RecordVendorPaymentSidebar({
           <div style={{ height: 1, background: T.borderDef, margin: "2px 0" }} />
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.6px" }}>Balance Due</span>
-            <span style={{ fontFamily: F.mono, fontSize: 14, color: T.crimson, fontWeight: 700 }}>₹{selBalance.toLocaleString("en-IN")}</span>
+            <span style={{ fontFamily: F.mono, fontSize: 14, color: T.crimson, fontWeight: 700 }}><Money value={rupees(selBalance)} /></span>
           </div>
         </div>
 
@@ -92,7 +94,7 @@ export function RecordVendorPaymentSidebar({
           <div style={{ background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 9, padding: "12px 14px" }}>
             <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 6 }}>Balance After This Payment</div>
             <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: afterPay <= 0 ? T.green : T.royalBurgundy }}>
-              {afterPay <= 0 ? "Fully Paid ✓" : `₹${afterPay.toLocaleString("en-IN")}`}
+              {afterPay <= 0 ? "Fully Paid ✓" : <Money value={rupees(afterPay)} />}
             </div>
           </div>
         )}
