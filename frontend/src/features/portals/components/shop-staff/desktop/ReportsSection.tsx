@@ -9,6 +9,8 @@ import { DSH } from "./DSH";
 import { Button } from "../../../../../shared/ui/primitives";
 import { semantic } from "../../../../../design-system/tokens";
 import { ChartFigure } from "../../../../../shared/ui/data";
+import { rupees, formatMoney } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 
 function timeLabel(iso: string) {
   const d = new Date(iso);
@@ -56,7 +58,7 @@ export function ReportsSection({
     customer: s.customerId ? (customerMap.get(s.customerId) ?? `Customer ${s.customerId.slice(0, 6)}`) : "Walk-in Customer",
     design: s.channel === "WHOLESALE" ? "Wholesale" : "Retail",
     pay: "Counter",
-    amt: `₹${Number(s.amount).toLocaleString("en-IN")}`,
+    amt: formatMoney(rupees(Number(s.amount))),
     src: "factory",
   }));
 
@@ -75,13 +77,13 @@ export function ReportsSection({
       return customersRes.items.slice(0, 5).map(c => ({
         name: c.name,
         purchases: 0,
-        amt: "₹0",
+        amt: formatMoney(rupees(0)),
       }));
     }
     return sorted.map(c => ({
       name: c.name,
       purchases: c.purchases,
-      amt: `₹${c.total.toLocaleString("en-IN")}`,
+      amt: formatMoney(rupees(c.total)),
     }));
   }, [salesList, customerMap, customersRes]);
 
@@ -93,12 +95,12 @@ export function ReportsSection({
         titleMain="Sales Report"
         titleSub="& Analytics"
         description="Review all sales, revenue, customer trends, and return patterns. Use the period selector to view different time ranges."
-        pills={[{ text: "Today's View" }, { text: `${totalSalesCount} Sarees Total` }, ...(canSeePrices ? [{ text: `₹${totalRevenue.toLocaleString("en-IN")} Revenue` }] : [])]}
+        pills={[{ text: "Today's View" }, { text: `${totalSalesCount} Sarees Total` }, ...(canSeePrices ? [{ text: `${formatMoney(rupees(totalRevenue))} Revenue` }] : [])]}
         stats={[
           { label: "TOTAL SALES", val: String(totalSalesCount), sub: "Sarees sold" },
-          ...(canSeePrices ? [{ label: "TOTAL REVENUE", val: `₹${totalRevenue.toLocaleString("en-IN")}`, sub: "Gross sales", highlight: true }] : []),
+          ...(canSeePrices ? [{ label: "TOTAL REVENUE", val: formatMoney(rupees(totalRevenue)), sub: "Gross sales", highlight: true }] : []),
           { label: "RETURNS", val: String(returnsList.length), sub: "Recorded returns", crimson: true },
-          ...(canSeePrices ? [{ label: "AVERAGE PER SALE", val: `₹${avgRevenue.toLocaleString("en-IN")}`, sub: "Per saree" }] : []),
+          ...(canSeePrices ? [{ label: "AVERAGE PER SALE", val: formatMoney(rupees(avgRevenue)), sub: "Per saree" }] : []),
         ]}
         bgUrl={SHOP_BG}
       />
@@ -139,7 +141,7 @@ export function ReportsSection({
               {canSeePrices && (
                 <div style={{ padding: "16px 24px", background: "#FAFAF8", borderTop: `1px solid ${C.bdr}`, display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 12 }}>
                   <span style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: C.text }}>Total Today:</span>
-                  <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.gold }}>₹{totalRevenue.toLocaleString("en-IN")}</span>
+                  <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.gold }}><Money value={rupees(totalRevenue)} /></span>
                 </div>
               )}
             </div>
@@ -163,7 +165,7 @@ export function ReportsSection({
                       </div>
                       <div style={{ fontFamily: F.u, fontSize: 14, color: C.text }}>Returned Saree · {r.reason}</div>
                     </div>
-                    {canSeePrices && <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.crim }}>{r.refundAmount ? `₹${Number(r.refundAmount).toLocaleString("en-IN")}` : "₹0"}</div>}
+                    {canSeePrices && <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.crim }}><Money value={rupees(Number(r.refundAmount ?? 0))} /></div>}
                   </div>
                 ))
               )}

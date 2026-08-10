@@ -8,6 +8,7 @@ import { useAuth } from "../../../../../contexts/AuthContext";
 import { C, F, ShopDesktopHero, SHOP_BG } from "../theme";
 import { DSH } from "./DSH";
 import { Button } from "../../../../../shared/ui/primitives";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 type TabId = "home" | "sale" | "inventory" | "customers" | "reports";
 
@@ -63,7 +64,7 @@ export function HomeSection({
     customer: s.customerId ? (customerMap.get(s.customerId) ?? `Customer ${s.customerId.slice(0, 6)}`) : "Retail Counter",
     design: s.channel === "WHOLESALE" ? "Wholesale" : "Retail",
     pay: "Counter",
-    amt: `₹${Number(s.amount).toLocaleString("en-IN")}`,
+    amt: formatMoney(rupees(Number(s.amount))),
     time: dateLabel(s.saleDate),
     color: "#6B1A2A",
     ext: false,
@@ -80,11 +81,11 @@ export function HomeSection({
         titleMain="Shop Home"
         titleSub="& Today's Overview"
         description="Today's sales, current inventory, and quick actions for the shop counter. Track every transaction and customer in real time."
-        pills={[{ text: `${todaySales.length} Sales Today`, color: C.gold }, ...(canSeePrices ? [{ text: `₹${todayRevenue.toLocaleString("en-IN")} Revenue` }] : []), { text: `${inventoryList.length} Sarees in Stock` }, { text: `${todayReturns.length} Return${todayReturns.length !== 1 ? "s" : ""} Processed` }]}
+        pills={[{ text: `${todaySales.length} Sales Today`, color: C.gold }, ...(canSeePrices ? [{ text: `${formatMoney(rupees(todayRevenue))} Revenue` }] : []), { text: `${inventoryList.length} Sarees in Stock` }, { text: `${todayReturns.length} Return${todayReturns.length !== 1 ? "s" : ""} Processed` }]}
         alertBadge={`${staffName} · Shop Staff`}
         stats={[
           { label: "TODAY'S SALES", val: String(todaySales.length), sub: "Recorded today" },
-          ...(canSeePrices ? [{ label: "TODAY'S REVENUE", val: `₹${todayRevenue.toLocaleString("en-IN")}`, sub: `From ${todaySales.length} sales`, highlight: true }] : []),
+          ...(canSeePrices ? [{ label: "TODAY'S REVENUE", val: formatMoney(rupees(todayRevenue)), sub: `From ${todaySales.length} sales`, highlight: true }] : []),
           { label: "SHOP INVENTORY", val: String(inventoryList.length), sub: "Sarees currently in stock" },
           { label: "RETURNS TODAY", val: String(todayReturns.length), sub: "Processed and recorded", crimson: true },
         ]}
@@ -153,7 +154,7 @@ export function HomeSection({
                     <div style={{ fontFamily: F.m, fontSize: 14, fontWeight: 700, color: C.burg, marginBottom: 4 }}>{latestReturn.sareeId}</div>
                     <div style={{ fontFamily: F.u, fontSize: 14, color: C.text }}>
                       {latestReturn.reason}
-                      {canSeePrices && latestReturn.refundAmount ? ` · ₹${Number(latestReturn.refundAmount).toLocaleString("en-IN")}` : ""}
+                      {canSeePrices && latestReturn.refundAmount ? ` · ${formatMoney(rupees(Number(latestReturn.refundAmount)))}` : ""}
                     </div>
                   </div>
                   <div>

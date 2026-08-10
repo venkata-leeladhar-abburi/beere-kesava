@@ -9,6 +9,8 @@ import { useQc } from "../../../../qc/contexts/QcContext";
 import { useWeaverPayments } from "../../../../weavers/contexts/WeaverPaymentsContext";
 import { useBatches } from "../../../../production/contexts/BatchContext";
 import { useRatesPricing } from "../../../../pricing/contexts/RatesContext";
+import { rupees, formatMoney } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 
 function DSectionHeader({ label, link, onLink }: { label: string; link?: string; onLink?: () => void }) {
   return (
@@ -90,11 +92,7 @@ export function PaymentsSection({ bp, isTablet }: { bp: "tablet" | "desktop"; is
     }, {} as Record<string, { code: string; name: string; count: number; rate: number; subtotal: number }>)
   ).sort((a, b) => b.subtotal - a.subtotal);
 
-  const formatCurrency = (n: number) => {
-    if (n >= 100_000) return `₹${(n / 100_000).toFixed(1)}L`;
-    if (n >= 1_000) return `₹${(n / 1_000).toFixed(1)}K`;
-    return `₹${n.toLocaleString("en-IN")}`;
-  };
+  const formatCurrency = (n: number) => formatMoney(rupees(n), { compact: true });
 
   return (
     <>
@@ -107,15 +105,15 @@ export function PaymentsSection({ bp, isTablet }: { bp: "tablet" | "desktop"; is
         pills={[
           { text: identityBadge },
           { text: `${monthName} · Current Month` },
-          { text: `₹${netAmount.toLocaleString("en-IN")} Net — ${myPayments.length > 0 ? "Processed" : "Pending Payment"}`, color: C.gold },
+          { text: `${formatMoney(rupees(netAmount))} Net — ${myPayments.length > 0 ? "Processed" : "Pending Payment"}`, color: C.gold },
           { text: "Payment by Month End" },
         ]}
         alertBadge={myPayments.length > 0 ? "Payment Recorded" : "Payment Pending"}
         stats={[
           { label: "Sarees Produced", val: `${sareesProduced}`, sub: `${passedCount} passed QC this month` },
           { label: "Gross Making Charges", val: formatCurrency(grossCharges), sub: "Before any deductions", highlight: true },
-          { label: "Total Deductions", val: `₹${totalDeductions.toLocaleString("en-IN")}`, sub: `${defectiveRecords.length} defective item${defectiveRecords.length === 1 ? "" : "s"}` },
-          { label: "Net Amount to Pay", val: `₹${netAmount.toLocaleString("en-IN")}`, sub: `Expected by end of ${monthName}` },
+          { label: "Total Deductions", val: formatMoney(rupees(totalDeductions)), sub: `${defectiveRecords.length} defective item${defectiveRecords.length === 1 ? "" : "s"}` },
+          { label: "Net Amount to Pay", val: formatMoney(rupees(netAmount)), sub: `Expected by end of ${monthName}` },
         ]}
         bgUrl={FABRIC_BG}
       />
@@ -145,15 +143,15 @@ export function PaymentsSection({ bp, isTablet }: { bp: "tablet" | "desktop"; is
                         <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>{t.code}</div>
                       </div>
                       <div style={{ fontFamily: F.u, fontSize: 15, color: C.text }}>{t.count}</div>
-                      <div style={{ fontFamily: F.m, fontSize: 14, color: C.muted }}>₹{t.rate.toLocaleString("en-IN")}</div>
-                      <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 16, color: C.burg }}>₹{t.subtotal.toLocaleString("en-IN")}</div>
+                      <div style={{ fontFamily: F.m, fontSize: 14, color: C.muted }}><Money value={rupees(t.rate)} /></div>
+                      <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 16, color: C.burg }}><Money value={rupees(t.subtotal)} /></div>
                     </div>
                   ))}
                   <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", padding: "16px 26px", background: C.cream, alignItems: "center" }}>
                     <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>Total</div>
                     <div style={{ fontFamily: F.u, fontSize: 14, color: C.text }}>{sareesProduced}</div>
                     <div />
-                    <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 17, color: C.gold }}>₹{grossCharges.toLocaleString("en-IN")}</div>
+                    <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 17, color: C.gold }}><Money value={rupees(grossCharges)} /></div>
                   </div>
                 </div>
               </div>
@@ -175,7 +173,7 @@ export function PaymentsSection({ bp, isTablet }: { bp: "tablet" | "desktop"; is
                       <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 20, color: C.crim }}>Defective Saree Deduction</div>
                       <div style={{ fontFamily: F.m, fontSize: 14, color: C.burg, marginTop: 6 }}>{d.sareeId}</div>
                     </div>
-                    <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 38, color: C.crim }}>₹{Number(d.deduction || 0).toLocaleString("en-IN")}</div>
+                    <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 38, color: C.crim }}><Money value={rupees(Number(d.deduction || 0))} /></div>
                   </div>
                   <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 10 }}>
                     <span style={{ background: "rgba(192,57,43,0.10)", color: C.crim, borderRadius: 999, padding: "5px 14px", fontFamily: F.m, fontSize: 13 }}>{d.defects?.join(", ") || "Defect Registered"}</span>
@@ -205,7 +203,7 @@ export function PaymentsSection({ bp, isTablet }: { bp: "tablet" | "desktop"; is
                         {new Date(p.paymentDate || p.uploadedAt).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}
                       </div>
                       <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>{p.noOfSarees ? `${p.noOfSarees} sarees` : "—"}</div>
-                      <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 18, color: C.gold }}>₹{p.amountPaid.toLocaleString("en-IN")}</div>
+                      <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 18, color: C.gold }}><Money value={rupees(p.amountPaid)} /></div>
                       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                         <Check size={15} color={C.green} />
                         <span style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{p.utrNumber || "N/A"}</span>
@@ -222,7 +220,7 @@ export function PaymentsSection({ bp, isTablet }: { bp: "tablet" | "desktop"; is
             {/* Payout card */}
             <div style={{ background: `linear-gradient(135deg, ${C.dark} 0%, #4A061B 100%)`, borderRadius: 20, padding: "30px 28px", boxShadow: "0 6px 28px rgba(61,14,26,0.22)" }}>
               <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.40)", letterSpacing: 1.4, textTransform: "uppercase" as const, marginBottom: 12 }}>THIS MONTH'S PAYOUT</div>
-              <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 54, color: C.gold, lineHeight: 1, marginBottom: 10 }}>₹{netAmount.toLocaleString("en-IN")}</div>
+              <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 54, color: C.gold, lineHeight: 1, marginBottom: 10 }}><Money value={rupees(netAmount)} /></div>
               <div style={{ fontFamily: F.u, fontSize: 14, color: "rgba(255,255,255,0.55)", marginBottom: 20 }}>Net amount after deductions</div>
               <div style={{ display: "inline-block", background: "rgba(196,146,58,0.22)", border: `1px solid ${C.gold}`, borderRadius: 999, padding: "8px 18px", fontFamily: F.m, fontSize: 13, color: C.gold }}>
                 Payment for {monthName}

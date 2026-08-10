@@ -7,6 +7,8 @@ import {
   T, F, baseCard, SareeItem, InspectionResult, DEFECT_TYPES, variance,
 } from "./WorkerQCTypes";
 import { Button, IconButton, Input, Textarea } from "../../../../shared/ui/primitives";
+import { rupees, formatMoney } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 
 interface WorkerQCInspectionScreenProps {
   inspecting: SareeItem;
@@ -79,11 +81,11 @@ export function WorkerQCInspectionScreen({
                 const payable = Math.max(charge - ded, 0);
                 return (
                   <div style={{ marginBottom: 18 }}>
-                    <div style={{ fontFamily: F.m, fontSize: 14, fontWeight: 700, color: result === "semi_approved" ? T.gold : T.crim }}>₹{ded} deducted</div>
+                    <div style={{ fontFamily: F.m, fontSize: 14, fontWeight: 700, color: result === "semi_approved" ? T.gold : T.crim }}><Money value={rupees(ded)} /> deducted</div>
                     <div style={{ fontFamily: F.u, fontSize: 12, color: T.muted, marginTop: 4 }}>
                       {result === "semi_approved"
-                        ? `Weaver earns ₹${payable} of the ₹${charge} making charge.`
-                        : `Weaver earns nothing for this saree (full ₹${charge} making charge withheld).`}
+                        ? `Weaver earns ${formatMoney(rupees(payable))} of the ${formatMoney(rupees(charge))} making charge.`
+                        : `Weaver earns nothing for this saree (full ${formatMoney(rupees(charge))} making charge withheld).`}
                     </div>
                   </div>
                 );
@@ -190,8 +192,8 @@ export function WorkerQCInspectionScreen({
                 <AlertTriangle size={14} color={result === "semi_approved" ? T.gold : T.crim} style={{ flexShrink: 0, marginTop: 1 }} />
                 <div style={{ fontFamily: F.u, fontSize: 12, color: result === "semi_approved" ? T.gold : T.crim, lineHeight: 1.5 }}>
                   {result === "semi_approved"
-                    ? `₹${Number(deductionAmount) || 0} of the ₹${makingChargeOf(inspecting)} making charge will be deducted from ${inspecting.source === "outsourced" ? inspecting.weaver : "this loom"}'s payment.`
-                    : `${inspecting.source === "outsourced" ? inspecting.weaver : "This loom"} will not be paid for this saree — the full ₹${makingChargeOf(inspecting)} making charge is withheld.`}
+                    ? `${formatMoney(rupees(Number(deductionAmount) || 0))} of the ${formatMoney(rupees(makingChargeOf(inspecting)))} making charge will be deducted from ${inspecting.source === "outsourced" ? inspecting.weaver : "this loom"}'s payment.`
+                    : `${inspecting.source === "outsourced" ? inspecting.weaver : "This loom"} will not be paid for this saree — the full ${formatMoney(rupees(makingChargeOf(inspecting)))} making charge is withheld.`}
                   {" "}Weaver notified via WhatsApp.
                 </div>
               </div>

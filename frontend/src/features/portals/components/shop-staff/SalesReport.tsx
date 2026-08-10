@@ -24,6 +24,7 @@ import { useQuery } from "@tanstack/react-query";
 import { salesApi } from "../../../../shared/api/sales";
 import { customersApi } from "../../../../shared/api/customers";
 import { ChartFigure } from "../../../../shared/ui/data";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 function dateLabel(iso: string) {
   const d = new Date(iso);
@@ -69,12 +70,12 @@ function SalesReport() {
     design: s.channel === "WHOLESALE" ? "Wholesale" : "Retail",
     customer: s.customerId ? (customerMap.get(s.customerId) ?? `Customer ${s.customerId.slice(0, 6)}`) : "Walk-in Customer",
     pay: "Counter",
-    amt: `₹${Number(s.amount).toLocaleString("en-IN")}`,
+    amt: formatMoney(rupees(Number(s.amount))),
     src: "factory",
   }));
 
   const totalToday = salesList.reduce((sum, s) => sum + Number(s.amount), 0);
-  const fmtINR = (n: number) => `₹${n.toLocaleString("en-IN")}`;
+  const fmtINR = (n: number) => formatMoney(rupees(n));
 
   const designData = [
     { design: "Retail Sales", count: salesList.filter(s => s.channel === "RETAIL").length },
@@ -114,13 +115,13 @@ function SalesReport() {
       return customersRes.items.slice(0, 5).map(c => ({
         name: c.name,
         purchases: 0,
-        amt: "₹0",
+        amt: formatMoney(rupees(0)),
       }));
     }
     return sorted.map(c => ({
       name: c.name,
       purchases: c.purchases,
-      amt: `₹${c.total.toLocaleString("en-IN")}`,
+      amt: formatMoney(rupees(c.total)),
     }));
   }, [salesList, customerMap, customersRes]);
 
@@ -129,7 +130,7 @@ function SalesReport() {
     id: r.sareeId,
     customer: "Returned Item",
     reason: r.reason,
-    amt: r.refundAmount ? `₹${Number(r.refundAmount).toLocaleString("en-IN")}` : "₹0",
+    amt: r.refundAmount ? formatMoney(rupees(Number(r.refundAmount))) : formatMoney(rupees(0)),
   }));
 
   return (

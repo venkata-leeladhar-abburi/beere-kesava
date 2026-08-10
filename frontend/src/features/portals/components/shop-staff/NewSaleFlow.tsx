@@ -15,6 +15,7 @@ import { ApiError } from "../../../../shared/api/client";
 import { scanApi } from "../../../../shared/api/scan";
 import { salesApi } from "../../../../shared/api/sales";
 import { Button, Input } from '../../../../shared/ui/primitives';
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 export function NewSaleFlow() {
   const canSeePrices = useCanSeePrices();
@@ -43,7 +44,7 @@ export function NewSaleFlow() {
   const originalPrice = Number(getSareeTypeByCode(saree.typeCode)?.retail ?? 0);
   const [soldPrice, setSoldPrice] = useState(originalPrice);
   const priceDiscount = originalPrice - soldPrice;
-  const fmtPrice = (n: number) => `₹${n.toLocaleString("en-IN")}`;
+  const fmtPrice = (n: number) => formatMoney(rupees(n));
 
   const { data: customersRes } = useQuery({
     queryKey: ["customers-list-newsale"],
