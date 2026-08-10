@@ -3,6 +3,13 @@ import { Receipt } from "lucide-react";
 export interface WeaverRecord {
   id: string; name: string; initials: string; bg: string;
   village: string; sb: number; hz: number; ps: number; bs: number; st: number;
+  // A genuine PAYMENT_STATUS value ("Paid"→paid, "Pending"→unpaid — lib/domain/status.ts)
+  // left untyped here rather than retyped to PaymentStatus: this literal union is
+  // compared with `=== "Paid"` / keyed into dropdown filters across several
+  // out-of-scope call sites (WeaverCard.tsx, WeaverPaymentDetailModal.tsx,
+  // WeaverMakingChargesSection.tsx) — retyping would ripple into those files.
+  // StatusBadge (components/common/primitives.tsx) renders it through
+  // <StatusPill taxonomy="payment"> at the render boundary instead.
   advance: number; status: "Paid" | "Pending";
   // Uploaded overrides
   uploadedAmount?: number;
@@ -39,6 +46,10 @@ export interface UploadResult {
   unmatched: UnmatchedRow[];
 }
 
+// PAYMENT_STATUS values, same deferral as WeaverRecord.status above — threaded
+// through several out-of-scope files (WholesaleCollectionsSection.tsx,
+// CustomerCard.tsx, ViewInvoiceModal.tsx, WholesaleTableView.tsx, InvBadge.tsx)
+// doing exact-literal comparisons/keyed lookups.
 export type InvoiceStatus = "Paid" | "Partial" | "Pending" | "Overdue";
 
 export interface InvoicePayment {
@@ -58,6 +69,9 @@ export interface Invoice {
   dispatchId?: string | null;
 }
 
+// PAYMENT_STATUS values, same deferral — threaded through out-of-scope files
+// (VendorDetailModal.tsx, VendorBadge.tsx, RecordVendorPaymentSidebar.tsx,
+// VendorPaymentsSection.tsx) doing exact-literal comparisons.
 export type VendorStatus = "Paid" | "Partial" | "Overdue" | "Pending";
 
 export interface VendorPayment {
@@ -82,6 +96,11 @@ export interface VendorUploadResult {
 
 export type PayHistType   = "Vendor Payment" | "Weaver Payment" | "Customer Receipt" | "Supplier Payment";
 
+// PAYMENT_STATUS values ("Paid"→paid, "Partial"→partial, "Pending"→unpaid).
+// Left as-is: HistoryCard.tsx keys its own HIST_STATUS_CFG off these exact
+// literals. PaymentHistorySection.tsx (in scope) already renders through
+// <StatusPill taxonomy="payment"> via a local payHistStatusKey() mapper at
+// its own render boundary instead of retyping this field.
 export type PayHistStatus = "Paid" | "Partial" | "Pending";
 
 export interface PayHistRecord {

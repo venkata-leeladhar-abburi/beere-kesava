@@ -1,5 +1,7 @@
 import { Building2, Users, IndianRupee, AlertTriangle, UserPlus } from "lucide-react";
 import { imgShowroom } from "../../../../shared/constants/weaverImages";
+import { Money } from "../../../../shared/ui/domain/Money";
+import { paise } from "../../../../lib/domain/money";
 import { T, F } from "../theme";
 
 import { useCustomers } from "../../contexts/CustomersContext";
@@ -65,8 +67,8 @@ export function StatsStrip() {
         {[
           { ico: <Building2 size={22} color="rgba(245,232,208,0.90)" />, label: "Wholesale Customers", val: String(wholesaleCustomers.length), sub: "Active business relationships", hi: false },
           { ico: <Users size={22} color="rgba(245,232,208,0.90)" />, label: "Retail Customers", val: String(retailCustomers.length), sub: "Profiles at point of sale", hi: false },
-          { ico: <IndianRupee size={22} color="rgba(231,201,131,0.95)" />, label: "Total Revenue", val: "₹0", sub: "Live Database", hi: true },
-          { ico: <AlertTriangle size={22} color="rgba(245,232,208,0.90)" />, label: "Customers with Dues", val: "0", sub: "Total dues: ₹0", hi: false },
+          { ico: <IndianRupee size={22} color="rgba(231,201,131,0.95)" />, label: "Total Revenue", val: <Money value={paise(0)} />, sub: "Live Database", hi: true },
+          { ico: <AlertTriangle size={22} color="rgba(245,232,208,0.90)" />, label: "Customers with Dues", val: "0", sub: <>Total dues: <Money value={paise(0)} /></>, hi: false },
           { ico: <UserPlus size={22} color="rgba(245,232,208,0.90)" />, label: "Total Customers", val: String(customers.length), sub: `${retailCustomers.length} retail · ${wholesaleCustomers.length} wholesale`, hi: false },
         ].map((m, i, arr) => (
           <div key={m.label} style={{

@@ -27,6 +27,13 @@ export interface LinkedSaree {
   sareeTypeCode?: string;
   weaverName: string;
   batchId?: string;
+  // A bulk-order-specific fulfillment status, not a single lib/domain/status.ts
+  // taxonomy: "QC Passed" reads as PRODUCTION_STATUS's qc-passed, but
+  // "Dispatched"/"Damaged — Review Needed" read as INVENTORY_STATUS's
+  // dispatched/damaged, and "Finishing complete" matches neither exactly.
+  // Since the four values span two taxonomies rather than living in one,
+  // this stays a local literal union (also relied on verbatim by the status
+  // filter Select below) instead of being forced onto either.
   status: "QC Passed" | "Finishing complete" | "Dispatched" | "Damaged — Review Needed";
   date: string;
   quotationRef?: string;

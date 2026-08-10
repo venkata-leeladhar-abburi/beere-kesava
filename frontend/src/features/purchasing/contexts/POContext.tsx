@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { BackendPurchaseOrder, purchaseOrdersApi } from "../../../shared/api/purchase-orders";
 import { vendorsApi } from "../../../shared/api/vendors";
+import type { DocumentStatus } from "@/lib/domain/status";
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 export interface POItem {
@@ -30,7 +31,7 @@ export interface PurchaseOrder {
   notesVendor?: string;
   notesAdmin?: string;
   urgency: "Normal" | "Urgent";
-  status: "pending" | "approved" | "rejected" | "received";
+  status: DocumentStatus;
   submittedDate: string;
   approvedDate?: string;
   rejectionReason?: string;

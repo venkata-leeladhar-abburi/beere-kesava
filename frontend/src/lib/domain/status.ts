@@ -107,6 +107,7 @@ export type PaymentStatus = keyof typeof PAYMENT_STATUS;
 
 export const DOCUMENT_STATUS = taxonomy({
   draft: { label: "Draft", tone: "neutral", icon: FileText },
+  pending: { label: "Pending", tone: "warning", icon: Clock },
   raised: { label: "Raised", tone: "info", icon: FileSignature },
   sent: { label: "Sent", tone: "info", icon: Send },
   approved: { label: "Approved", tone: "success", icon: CheckCircle2 },

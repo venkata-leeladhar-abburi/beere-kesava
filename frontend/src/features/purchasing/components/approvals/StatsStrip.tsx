@@ -1,6 +1,6 @@
 import React from "react";
 import { T, F } from "./tokens";
-import { formatINR } from "../../../suppliers/contexts/SupplierContext";
+import { formatMoney, rupees } from "@/lib/domain/money";
 
 // ─── 2. STATS STRIP ─────────────────────────────────────────────────────────
 export function StatsStrip({
@@ -61,7 +61,7 @@ export function StatsStrip({
         </div>
         <div style={{ fontFamily: F.display, fontSize: 38, fontWeight: 700, color: "#FFF", lineHeight: 1 }}>{externalCount}</div>
         <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.50)", marginTop: 6 }}>
-          {formatINR(externalTotal)} to approve
+          {formatMoney(rupees(externalTotal))} to approve
         </div>
       </div>
 

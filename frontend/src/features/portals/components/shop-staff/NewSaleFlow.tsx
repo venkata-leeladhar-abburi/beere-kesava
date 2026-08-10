@@ -60,7 +60,7 @@ export function NewSaleFlow() {
         name: c.name,
         phone: c.phone ?? "—",
         purchases: 1,
-        total: "₹12,500",
+        total: formatMoney(rupees(12500)),
         lastPurchase: new Date(c.createdAt).toLocaleDateString("en-IN", { month: "short", day: "numeric" }),
         initials,
       };

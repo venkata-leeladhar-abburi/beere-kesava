@@ -7,6 +7,7 @@ import { Button, Input } from "../../../../shared/ui/primitives";
 import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
 import { jariToReels } from "../../../../shared/lib/weightUnits";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import type { ReconResult } from "@/lib/domain/status";
 
 export interface ReceiptRecord {
   grnId: string;
@@ -16,13 +17,16 @@ export interface ReceiptRecord {
   dateReceived: string;
   materialsSummary: string;
   receivedBy: string;
-  status: "Match" | "Short" | "Excess";
+  // Reconciliation result of a GRN receipt against its PO — lib/domain/status.ts's
+  // `ReconResult` (Part D.1: found living inside `status` as "Match"/"Short"/
+  // "Excess", not a lifecycle state, so it's its own typed column, not a StatusPill).
+  status: ReconResult;
 }
 
-const HIST_STATUS_CFG: Record<ReceiptRecord["status"], { color: string; bg: string }> = {
-  Match:  { color: C.green, bg: "rgba(30,102,64,0.10)" },
-  Short:  { color: C.gold,  bg: "rgba(196,146,58,0.14)" },
-  Excess: { color: "#1565C0", bg: "rgba(21,101,192,0.10)" },
+const HIST_STATUS_CFG: Record<ReconResult, { label: string; color: string; bg: string }> = {
+  match:  { label: "Match",  color: C.green, bg: "rgba(30,102,64,0.10)" },
+  short:  { label: "Short",  color: C.gold,  bg: "rgba(196,146,58,0.14)" },
+  excess: { label: "Excess", color: "#1565C0", bg: "rgba(21,101,192,0.10)" },
 };
 
 function renderMaterialsSummary(summary: string) {
@@ -92,7 +96,7 @@ export function ReceiptHistoryTable({ receiptHistory: propReceiptHistory, compac
             return `${i.materialType === "WARP" ? "Warp" : i.materialType === "RESHAM" ? "Resham" : "Jari"} - ${i.name} (${qty} ${unit})`;
           }).join(", "),
           receivedBy: "—",
-          status: (anyRejected ? "Short" : "Match") as ReceiptRecord["status"],
+          status: (anyRejected ? "short" : "match") as ReconResult,
         };
       });
     }
@@ -123,7 +127,7 @@ export function ReceiptHistoryTable({ receiptHistory: propReceiptHistory, compac
       id: "status", header: "Status", accessor: r => r.status, type: "status",
       cell: (_v, r) => {
         const sc = HIST_STATUS_CFG[r.status];
-        return <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: sc.color, background: sc.bg, padding: compact ? "3px 9px" : "4px 10px", borderRadius: 999, whiteSpace: "nowrap" }}>{r.status}</span>;
+        return <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: sc.color, background: sc.bg, padding: compact ? "3px 9px" : "4px 10px", borderRadius: 999, whiteSpace: "nowrap" }}>{sc.label}</span>;
       },
     },
   ];

@@ -5,7 +5,8 @@ import { useState } from "react";
 import { T, F } from "../theme";
 import { PayStatusPill } from "../common/primitives";
 import { SareeInventoryTable } from "./SareeInventoryTable";
-import { Purchase, formatINR, purchaseTotals } from "../../contexts/SupplierContext";
+import { Purchase, purchaseTotals } from "../../contexts/SupplierContext";
+import { formatMoney, rupees } from "@/lib/domain/money";
 import { FileText } from "lucide-react";
 import { Button } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
@@ -52,15 +53,15 @@ export function PurchaseHistoryTable({ purchases }: { purchases: Purchase[] }) {
     },
     {
       id: "buying", header: "Buying Price", accessor: p => purchaseTotals(p.sarees).buying,
-      cell: v => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, whiteSpace: "nowrap" }}>{formatINR(v as number)}</span>,
+      cell: v => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, whiteSpace: "nowrap" }}>{formatMoney(rupees(v as number))}</span>,
     },
     {
       id: "selling", header: "Selling Price", accessor: p => purchaseTotals(p.sarees).selling,
-      cell: v => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.antiqueGold, whiteSpace: "nowrap" }}>{formatINR(v as number)}</span>,
+      cell: v => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.antiqueGold, whiteSpace: "nowrap" }}>{formatMoney(rupees(v as number))}</span>,
     },
     {
       id: "profit", header: "Profit", accessor: p => purchaseTotals(p.sarees).profit,
-      cell: v => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.green, whiteSpace: "nowrap" }}>{formatINR(v as number)}</span>,
+      cell: v => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.green, whiteSpace: "nowrap" }}>{formatMoney(rupees(v as number))}</span>,
     },
     {
       id: "billAmount", header: "Bill Amount", accessor: p => p.billAmount,

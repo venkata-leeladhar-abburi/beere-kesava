@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { useAuth } from "../../../contexts/AuthContext";
 
 export * from "./supplier-types";
-import { Supplier, Purchase, SupplierPayment, PurchaseRequest, initialsOf, totalPieces, purchaseTotals, parseINR, computeFinalAmount, buildSareeCode, buildSareePieceCode, pieceCodeFromLineCode, expandSareePieces, formatINR } from "./supplier-types";
+import { Supplier, Purchase, SupplierPayment, PurchaseRequest, initialsOf, totalPieces, purchaseTotals, parseINR, computeFinalAmount, buildSareeCode, buildSareePieceCode, pieceCodeFromLineCode, expandSareePieces } from "./supplier-types";
 import { SEED_PURCHASES } from "./supplier-seed";
 import { BackendSupplier, suppliersApi } from "../../../shared/api/suppliers";
 import { supplierPaymentsApi } from "../../../shared/api/payments";

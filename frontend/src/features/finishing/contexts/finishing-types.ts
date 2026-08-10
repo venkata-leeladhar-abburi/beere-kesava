@@ -84,6 +84,11 @@ export interface Quotation {
   subtotal: number;
   grandTotal: number;
   raisedBy: string;
+  // A quotation-fulfillment status, not a single lib/domain/status.ts
+  // taxonomy: "raised"/"received" match DOCUMENT_STATUS keys, "dispatched"
+  // matches INVENTORY_STATUS, and "in-finishing"/"partially-received" match
+  // neither — since the values span two taxonomies (plus two that fit
+  // nowhere), this stays a local literal union rather than forced onto one.
   status: "raised" | "in-finishing" | "partially-received" | "received" | "dispatched";
   finishingStaffId?: string;
   finishingStaffName?: string;

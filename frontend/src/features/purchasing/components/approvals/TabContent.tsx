@@ -86,6 +86,8 @@ export function TabContent({
   approvePO: (id: string) => void;
   rejectPO: (id: string) => void;
   setViewDocPOId: (id: string | null) => void;
+  // See ApprovalsPage.tsx's decideExternal — mirrors SupplierContext's
+  // out-of-scope decideRequest signature, kept as a local literal union.
   decideExternal: (id: string, status: "approved" | "rejected") => void;
   setWarpList?: any;
   setRateList?: any;

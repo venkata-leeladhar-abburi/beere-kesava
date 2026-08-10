@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
 import { FileText, Receipt, CalendarClock, ShoppingBag, Eye } from "lucide-react";
 import { INVOICES } from "../../../payments/data/invoices";
 import { T, F } from "../theme";
@@ -7,6 +6,7 @@ import type { BulkOrder } from "../types";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
+import { Modal } from "../../../../shared/ui/overlay";
 
 interface PreviewInvoice {
   id: string;
@@ -65,7 +65,7 @@ export function OrderDialogContent({ order, mode }: { order: BulkOrder; mode: "v
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
           {[
             { label: "Est. Value", val: amountDue > 0 ? formatMoney(rupees(amountDue)) : "—" },
-            { label: "Amount Paid", val: amountPaid > 0 ? formatMoney(rupees(amountPaid)) : "₹0" },
+            { label: "Amount Paid", val: amountPaid > 0 ? formatMoney(rupees(amountPaid)) : <Money value={rupees(0)} /> },
           ].map(({ label, val }) => (
             <div key={label} style={{ background: "rgba(110,15,45,0.04)", borderRadius: 10, padding: "12px 14px", border: "1px solid rgba(110,15,45,0.10)" }}>
               <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 6 }}>{label}</div>
@@ -157,10 +157,9 @@ export function OrderDialogContent({ order, mode }: { order: BulkOrder; mode: "v
           )}
         </div>
 
-        <AnimatePresence>
+        <Modal open={!!previewInvoice} onOpenChange={(o) => { if (!o) setPreviewInvoice(null); }} size="sm">
           {previewInvoice && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: "fixed", inset: 0, zIndex: "var(--z-popover)", background: "var(--surface-scrim)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-              <motion.div initial={{ y: 20, scale: 0.95 }} animate={{ y: 0, scale: 1 }} exit={{ y: 20, scale: 0.95 }} style={{ width: "100%", maxWidth: 550, background: "#FDFCF7", borderRadius: 12, overflow: "hidden", display: "flex", flexDirection: "column", boxShadow: "0 20px 40px rgba(0,0,0,0.2)", border: `1px solid ${T.borderGold}` }}>
+            <div style={{ width: "100%", background: "#FDFCF7", borderRadius: 12, overflow: "hidden", display: "flex", flexDirection: "column", border: `1px solid ${T.borderGold}` }}>
                 <div style={{ padding: "24px", background: T.royalBurgundy, color: "#FFF", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                   <div>
                     <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFF" }}>Beere Kesava & Brothers Silks</div>
@@ -241,10 +240,9 @@ export function OrderDialogContent({ order, mode }: { order: BulkOrder; mode: "v
                     </div>
                   </div>
                 </div>
-              </motion.div>
-            </motion.div>
+            </div>
           )}
-        </AnimatePresence>
+        </Modal>
       </div>
     );
   }

@@ -12,9 +12,19 @@
  */
 
 // ─── Types ────────────────────────────────────────────────────────────────────
+import type { EntityType } from "@/lib/domain/status";
+
 export type SareeOrigin = "weaver" | "factoryLoom" | "external";
-export type SaleChannel = "retail" | "wholesale";
-/** unsold = outstanding stock. returned = was sold retail, customer brought it back. */
+export type SaleChannel = EntityType;
+/** unsold = outstanding stock. returned = was sold retail, customer brought it back.
+ *
+ * Deliberately not one of lib/domain/status.ts's 6 taxonomies: it fuses
+ * "not yet sold" with "sold via channel X" with "returned" into one field.
+ * INVENTORY_STATUS has a "returned" key but no "unsold" key, and doesn't
+ * track sale channel — splitting this into isSold + SaleChannel + a returned
+ * flag would need touching every consumer (SalesContext.tsx, reports,
+ * payments/outstanding/*, weavers/WeaverSareesSection/*), most of which are
+ * outside this pass's assigned files. Left as a documented custom type. */
 export type SareeSaleStatus = "unsold" | "retail" | "wholesale" | "returned";
 
 export interface SaleInfo {
@@ -84,6 +94,13 @@ export interface PurchaseSummary {
   gstNumber: string;
   billAmount: number;
   paidAmount: number;
+  // PAYMENT_STATUS-shaped ("Paid"→paid, "Pending"→unpaid, "Partial"→partial)
+  // but already consumed via direct string comparison and raw-label
+  // rendering in payments/components/outstanding/ExternalOutstanding.tsx
+  // (`p.status === "Paid"`, `<Pill label={p.status} />`), which is outside
+  // this pass's assigned files and — per git status — is being actively
+  // edited by another concurrent agent right now. Retyping here without
+  // updating that consumer would break it. Left as a documented exception.
   status: "Paid" | "Pending" | "Partial";
   sareeCount: number;
 }

@@ -11,7 +11,8 @@ import { WholesaleCustomer, ViewMode } from "../types";
 import { Button, IconButton, Field, Input, SearchInput, Select, SelectItem, Textarea } from "../../../../shared/ui/primitives";
 import { useCustomers } from "../../contexts/CustomersContext";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
-import { rupees, formatMoney } from "@/lib/domain/money";
+import { rupees, formatMoney, paise } from "@/lib/domain/money";
+import { Money } from "../../../../shared/ui/domain/Money";
 
 interface WholesaleFormState {
   name: string;
@@ -204,7 +205,7 @@ export function WholesaleCustomersSection({
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 18, marginBottom: 28, alignItems: "stretch" }}>
         {[
           { ico: <Building2 size={24} color={T.royalBurgundy} />, bg: "rgba(110,15,45,0.07)", l: "Total Wholesale Customers", v: String(wholesaleList.length), c: T.luxuryBrown, sub: "Active business relationships" },
-          { ico: <AlertTriangle size={24} color={T.crimson} />, bg: T.crimsonBg, l: "Total Outstanding", v: "₹0", c: T.crimson, sub: "Across all overdue accounts" },
+          { ico: <AlertTriangle size={24} color={T.crimson} />, bg: T.crimsonBg, l: "Total Outstanding", v: <Money value={paise(0)} />, c: T.crimson, sub: "Across all overdue accounts" },
           { ico: <Eye size={24} color={T.antiqueGold} />, bg: "rgba(200,155,71,0.09)", l: "Active Orders Right Now", v: "0", c: T.antiqueGold, sub: "Bulk orders in production" },
           { ico: <Users size={24} color={T.taupe} />, bg: "rgba(139,112,96,0.08)", l: "Inactive Customers", v: "0", c: T.taupe, sub: "No order in 6+ months" },
         ].map((st, i) => (

@@ -8,7 +8,7 @@ import {
 } from "recharts";
 import { TrendingUp } from "lucide-react";
 import { T, F } from "../../theme";
-import { formatINR } from "../../../contexts/SupplierContext";
+import { formatMoney, rupees } from "@/lib/domain/money";
 import { ChartFigure } from "../../../../../shared/ui/data";
 
 export function PurchaseTrendCard({
@@ -38,9 +38,9 @@ export function PurchaseTrendCard({
           </div>
         )}
       </div>
-      <div style={{ fontFamily: F.display, fontSize: 38, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.1, margin: "8px 0 2px" }}>{formatINR(billed)}</div>
+      <div style={{ fontFamily: F.display, fontSize: 38, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.1, margin: "8px 0 2px" }}>{formatMoney(rupees(billed))}</div>
       <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 8 }}>{buysCount} invoices · {pieces} sarees</div>
-      <ChartFigure title="Purchase Value & Volume" summary={`${formatINR(billed)} billed across ${buysCount} invoices, ${pieces} sarees received.`}>
+      <ChartFigure title="Purchase Value & Volume" summary={`${formatMoney(rupees(billed))} billed across ${buysCount} invoices, ${pieces} sarees received.`}>
         <ResponsiveContainer width="100%" height={205}>
           <ComposedChart data={monthly} barSize={26}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
@@ -48,7 +48,7 @@ export function PurchaseTrendCard({
             <YAxis yAxisId="l" hide />
             <YAxis yAxisId="r" orientation="right" hide />
             <RechartsTooltip contentStyle={tip}
-              formatter={(v: any, n: any) => n === "Purchased" ? [formatINR(v), n] : [`${v} sarees`, n]} />
+              formatter={(v: any, n: any) => n === "Purchased" ? [formatMoney(rupees(v)), n] : [`${v} sarees`, n]} />
             <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, paddingTop: 8 }} />
             <Bar yAxisId="l" name="Purchased" dataKey="spend" fill={T.royalBurgundy} radius={[6, 6, 0, 0]} />
             <Line yAxisId="r" name="Sarees" dataKey="pieces" stroke={semantic.chart.series[1]} strokeWidth={2.5} dot={{ r: 4, fill: semantic.chart.series[1], strokeWidth: 0 }} activeDot={{ r: 6 }} />

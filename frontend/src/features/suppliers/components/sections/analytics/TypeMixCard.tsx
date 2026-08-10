@@ -4,7 +4,7 @@ import React from "react";
 import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts";
 import { Layers } from "lucide-react";
 import { T, F } from "../../theme";
-import { formatINR } from "../../../contexts/SupplierContext";
+import { formatMoney, rupees } from "@/lib/domain/money";
 import { ChartFigure } from "../../../../../shared/ui/data";
 
 export interface ByTypeEntry {
@@ -35,7 +35,7 @@ export function TypeMixCard({
               <Pie data={byType} dataKey="cost" nameKey="type" cx="50%" cy="50%" innerRadius={48} outerRadius={74} paddingAngle={3} stroke="none">
                 {byType.map((d, i) => <Cell key={i} fill={d.fill} />)}
               </Pie>
-              <RechartsTooltip contentStyle={tip} formatter={(v: any, _n: any, p: any) => [`${formatINR(v)} · ${p.payload.qty} pcs`, p.payload.type]} />
+              <RechartsTooltip contentStyle={tip} formatter={(v: any, _n: any, p: any) => [`${formatMoney(rupees(v))} · ${p.payload.qty} pcs`, p.payload.type]} />
             </PieChart>
           </ResponsiveContainer>
           <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>

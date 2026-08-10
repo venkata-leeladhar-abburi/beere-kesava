@@ -10,6 +10,7 @@ import { FadeUp, qcColor } from "../common/primitives";
 import { weaversApi, BackendWeaverStats } from "../../../../shared/api/weavers";
 import { Button } from "../../../../shared/ui/primitives";
 import { resolveAssetUrl } from "../../../../shared/api/uploads";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
 export function useRealWeavers(extraWeavers: typeof WEAVERS = []) {
   const { data: weaversRes, isLoading: rosterLoading, isError: rosterError } = useQuery({
@@ -267,72 +268,87 @@ export function WeaverListView({ onSelect, extraWeavers = [] }: { onSelect: (w: 
     );
   }
 
-  return (
-    <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 4px 18px rgba(74,6,27,0.06)" }}>
-      {/* Header row */}
-      <div style={{ display: "grid", gridTemplateColumns: "2.2fr 1.5fr 1.2fr 110px 90px 70px 100px", padding: "14px 26px", background: T.warmCream, borderBottom: `1px solid ${T.borderDef}` }}>
-        {["Weaver", "Village / Area", "Status", "This Month", "Pass Rate", "Looms", "Action"].map(h => (
-          <div key={h} style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1.2px", fontWeight: 500 }}>{h}</div>
-        ))}
-      </div>
-      {visible.map((w, i) => {
+  type VisibleWeaver = (typeof visible)[number];
+
+  const columns: ColumnDef<VisibleWeaver>[] = [
+    {
+      id: "weaver", header: "Weaver", accessor: w => w.name, priority: 1,
+      cell: (_v, w) => (
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <div style={{ width: 54, height: 54, borderRadius: "50%", overflow: "hidden", border: `2.5px solid ${T.antiqueGold}`, flexShrink: 0 }}>
+            {w.photo
+              ? <img src={w.photo} alt={w.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              : <div style={{ width: "100%", height: "100%", background: w.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <span style={{ fontFamily: F.display, fontSize: 20, color: "#FFFDF9" }}>{w.initials}</span>
+              </div>
+            }
+          </div>
+          <div>
+            <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 16, color: T.luxuryBrown, marginBottom: 4 }}>{w.name}</div>
+            <div style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, letterSpacing: "0.4px" }}>{w.code ?? w.id}</div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "village", header: "Village / Area", accessor: w => w.village,
+      cell: (_v, w) => (
+        <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+          <PhMapPin size={15} color={T.taupe} />
+          <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>{w.village}</span>
+        </div>
+      ),
+    },
+    {
+      id: "status", header: "Status", accessor: w => w.status,
+      cell: (_v, w) => {
         const cfg = STATUS_CFG[w.status];
         return (
-          <motion.div
-            key={w.id}
-            initial={{ opacity: 0, x: -8 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
-            transition={{ duration: 0.38, delay: i * 0.05 }}
-            style={{ display: "grid", gridTemplateColumns: "2.2fr 1.5fr 1.2fr 110px 90px 70px 100px", alignItems: "center", padding: "18px 26px", background: i % 2 === 1 ? "rgba(247,242,234,0.55)" : "#FFFFFF", borderBottom: `1px solid rgba(110,15,45,0.06)`, minHeight: 88 }}
-          >
-            {/* Weaver identity */}
-            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-              <div style={{ width: 54, height: 54, borderRadius: "50%", overflow: "hidden", border: `2.5px solid ${T.antiqueGold}`, flexShrink: 0 }}>
-                {w.photo
-                  ? <img src={w.photo} alt={w.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                  : <div style={{ width: "100%", height: "100%", background: w.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <span style={{ fontFamily: F.display, fontSize: 20, color: "#FFFDF9" }}>{w.initials}</span>
-                  </div>
-                }
-              </div>
-              <div>
-                <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 16, color: T.luxuryBrown, marginBottom: 4 }}>{w.name}</div>
-                <div style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, letterSpacing: "0.4px" }}>{w.code ?? w.id}</div>
-              </div>
-            </div>
-            {/* Village */}
-            <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-              <PhMapPin size={15} color={T.taupe} />
-              <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>{w.village}</span>
-            </div>
-            {/* Status */}
-            <div>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: cfg.color, background: cfg.badge, borderRadius: 99, padding: "6px 14px", whiteSpace: "nowrap" }}>
-                {w.status === "active" ? "● Weaving" : w.status === "qc" ? "● QC Check" : "○ Idle"}
-              </span>
-            </div>
-            {/* This month */}
-            <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.antiqueGold }}>{w.thisMonth} <span style={{ fontSize: 13, fontFamily: F.ui, color: T.taupe }}>sarees</span></div>
-            {/* Pass rate */}
-            <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: qcColor(w.passRate) }}>{w.passRate}%</div>
-            {/* Looms */}
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <Rows size={16} color={T.taupe} />
-              <span style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 600, color: T.luxuryBrown }}>{w.looms}</span>
-            </div>
-            {/* Action */}
-            <div>
-              <Button
-                onClick={() => onSelect(w)}
-                variant="secondary"
-                size="sm"
-                className="rounded-[10px] bg-[rgba(110,15,45,0.05)] text-[#6E0F2D] border-[1.5px] border-[rgba(110,15,45,0.18)]"
-              >
-                <PhEye size={18} /> View
-              </Button>
-            </div>
-          </motion.div>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: cfg.color, background: cfg.badge, borderRadius: 99, padding: "6px 14px", whiteSpace: "nowrap" }}>
+            {w.status === "active" ? "● Weaving" : w.status === "qc" ? "● QC Check" : "○ Idle"}
+          </span>
         );
-      })}
+      },
+    },
+    {
+      id: "thisMonth", header: "This Month", accessor: w => w.thisMonth, type: "number", sortable: true,
+      cell: (_v, w) => <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.antiqueGold }}>{w.thisMonth} <span style={{ fontSize: 13, fontFamily: F.ui, color: T.taupe }}>sarees</span></div>,
+    },
+    {
+      id: "passRate", header: "Pass Rate", accessor: w => w.passRate, type: "number", sortable: true,
+      cell: (_v, w) => <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: qcColor(w.passRate) }}>{w.passRate}%</div>,
+    },
+    {
+      id: "looms", header: "Looms", accessor: w => w.looms, type: "number",
+      cell: (_v, w) => (
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <Rows size={16} color={T.taupe} />
+          <span style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 600, color: T.luxuryBrown }}>{w.looms}</span>
+        </div>
+      ),
+    },
+    {
+      id: "action", header: "Action", accessor: () => null, type: "actions", exportable: false,
+      cell: (_v, w) => (
+        <Button
+          onClick={() => onSelect(w)}
+          variant="secondary"
+          size="sm"
+          className="rounded-[10px] bg-[rgba(110,15,45,0.05)] text-[#6E0F2D] border-[1.5px] border-[rgba(110,15,45,0.18)]"
+        >
+          <PhEye size={18} /> View
+        </Button>
+      ),
+    },
+  ];
+
+  return (
+    <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 4px 18px rgba(74,6,27,0.06)" }}>
+      <DataTable
+        columns={columns}
+        data={visible}
+        getRowId={w => w.id}
+      />
       {!showAll && (
         <div style={{ padding: "22px 26px", textAlign: "center", borderTop: `1px solid ${T.borderDef}` }}>
           <Button onClick={() => setShowAll(true)} variant="link" className="text-[16px] font-bold text-[#6E0F2D] underline decoration-[rgba(110,15,45,0.35)]">Load More Weavers</Button>

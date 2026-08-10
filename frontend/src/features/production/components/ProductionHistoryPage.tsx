@@ -10,7 +10,7 @@ import { DataTable, type ColumnDef } from "../../../shared/ui/data";
 import { useBatches } from "../contexts/BatchContext";
 import { qcApi } from "../../../shared/api/qc";
 import type { HistoryBatch } from "./types";
-import { rupees, formatMoney } from "@/lib/domain/money";
+import { rupees, formatMoney, addMoney, type Paise } from "@/lib/domain/money";
 
 // ── Design Tokens ─────────────────────────────────────────────────────────────
 const T = {
@@ -50,20 +50,23 @@ const PIP_COLORS = ["#7C3AED", "#C0392B", "#0F766E", "#B45309"];
 // workflow tracked by the backend, so status is always "Printing Completed"
 // for every batch here (kept for label continuity with the styling, not a
 // tracked backend state).
-function useHistoryBatches(): { batches: HistoryBatch[]; isLoading: boolean } {
+function useHistoryBatches(): { batches: HistoryBatch[]; isLoading: boolean; totalMakingCharges: Paise } {
   const { batches } = useBatches();
   const { data: qcRecords = [], isLoading } = useQuery({
     queryKey: ["qc", "all"],
     queryFn: () => qcApi.list().then(r => r.items),
   });
 
-  const historyBatches = useMemo(() => {
+  const { historyBatches, totalMakingCharges } = useMemo(() => {
     const completed = batches.filter(b => b.status === "completed");
-    return completed.map((b): HistoryBatch => {
+    const makingChargesPaise: Paise[] = [];
+    const list = completed.map((b): HistoryBatch => {
       const batchQc = qcRecords.filter(r => r.batchId === b.batchId);
       const okPieces = batchQc.filter(r => r.result === "PASSED" || r.result === "SEMI").length;
       const found = batchQc.filter(r => r.result === "DEFECTIVE").length;
       const makingCharges = batchQc.reduce((sum, r) => sum + Number(r.makingCharge), 0);
+      const makingChargesAmount = rupees(makingCharges);
+      makingChargesPaise.push(makingChargesAmount);
 
       const seenWeavers = new Map<string, { initials: string; bg: string }>();
       b.rows.forEach(r => {
@@ -84,14 +87,15 @@ function useHistoryBatches(): { batches: HistoryBatch[]; isLoading: boolean } {
         okPieces: batchQc.length > 0 ? okPieces : null,
         found: batchQc.length > 0 ? found : null,
         status: "Printing Completed",
-        makingCharges: formatMoney(rupees(makingCharges)),
+        makingCharges: formatMoney(makingChargesAmount),
         completedOn: new Date(b.updatedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
         bulkOrder: b.rows.find(r => r.bulkOrderRef)?.bulkOrderRef ?? undefined,
       };
     });
+    return { historyBatches: list, totalMakingCharges: addMoney(...makingChargesPaise) };
   }, [batches, qcRecords]);
 
-  return { batches: historyBatches, isLoading };
+  return { batches: historyBatches, isLoading, totalMakingCharges };
 }
 
 // ── Weaver avatar pip ─────────────────────────────────────────────────────────
@@ -203,11 +207,7 @@ function FilterBar() {
 }
 
 // ── Section 3: Stats bar ──────────────────────────────────────────────────────
-function StatsBar({ batches }: { batches: HistoryBatch[] }) {
-  const totalMakingCharges = batches.reduce(
-    (sum, b) => sum + parseInt(b.makingCharges.replace(/[₹,]/g, "") || "0", 10),
-    0,
-  );
+function StatsBar({ batches, totalMakingCharges }: { batches: HistoryBatch[]; totalMakingCharges: Paise }) {
   return (
     <div style={{
       background: T.silkCream, padding: "11px 40px",
@@ -224,7 +224,7 @@ function StatsBar({ batches }: { batches: HistoryBatch[] }) {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 500 }}>Total Making Charges:</span>
-          <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.green }}>{formatMoney(rupees(totalMakingCharges))}</span>
+          <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.green }}>{formatMoney(totalMakingCharges)}</span>
         </div>
       </div>
     </div>
@@ -354,12 +354,12 @@ function TableSection({ batches, isLoading }: { batches: HistoryBatch[]; isLoadi
 }
 
 export function ProductionHistoryPage() {
-  const { batches, isLoading } = useHistoryBatches();
+  const { batches, isLoading, totalMakingCharges } = useHistoryBatches();
   return (
     <div style={{ minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui }}>
       <PageHeader />
       <FilterBar />
-      <StatsBar batches={batches} />
+      <StatsBar batches={batches} totalMakingCharges={totalMakingCharges} />
       <TableSection batches={batches} isLoading={isLoading} />
       <ProductionHistoryFooter />
     </div>

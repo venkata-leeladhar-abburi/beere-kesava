@@ -34,10 +34,15 @@ const F = {
 // shared document taxonomy — a PO awaiting approval is the same lifecycle
 // point as a "raised" document, so it normalizes onto that.
 const PO_STATUS_TO_DOCUMENT: Record<PurchaseOrder["status"], StatusValueOf<"document">> = {
+  draft: "draft",
   pending: "raised",
+  raised: "raised",
+  sent: "sent",
   approved: "approved",
   rejected: "rejected",
+  signed: "signed",
   received: "received",
+  void: "void",
 };
 
 function StatusBadge({ status }: { status: PurchaseOrder["status"] }) {

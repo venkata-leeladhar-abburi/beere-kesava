@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import {
-  formatINR,
   parseINR,
   supplierPrefix,
   buildSareeCode,
@@ -17,16 +16,7 @@ import {
   type SareeTag,
 } from "./supplier-types";
 
-describe("formatINR / parseINR", () => {
-  it("formats a number as an Indian-grouped rupee string", () => {
-    expect(formatINR(120000)).toBe("₹1,20,000");
-  });
-
-  it("rounds and floors negative numbers to zero", () => {
-    expect(formatINR(-500)).toBe("₹0");
-    expect(formatINR(199.6)).toBe("₹200");
-  });
-
+describe("parseINR", () => {
   it("parses a formatted rupee string back into a number", () => {
     expect(parseINR("₹1,20,000")).toBe(120000);
   });

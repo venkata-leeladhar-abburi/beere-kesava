@@ -18,6 +18,8 @@ import {
 import { C, F, TEAL, Card, Btn, Chip } from './theme';
 import { Button, Input } from "../../../../shared/ui/primitives";
 import { scanApi, ScanLookupResult } from "../../../../shared/api/scan";
+import { Money } from "@/shared/ui/domain/Money";
+import { rupees } from "@/lib/domain/money";
 
 function ShopInventory() {
   const canSeePrices = useCanSeePrices();
@@ -51,7 +53,7 @@ function ShopInventory() {
       color: "#6B1A2A",
       sareeColor: "Silk",
       type: item.sareeTypeCode ?? "Standard",
-      price: "₹8,500",
+      price: 8500,
       received: item.qcDate ? `Received ${new Date(item.qcDate).toLocaleDateString("en-IN", { month: "short", day: "numeric" })}` : "In Stock",
       status: (item.status === "sold" ? "reserved" : "available") as "available" | "reserved",
       supplier: item.customer ?? null,
@@ -235,7 +237,7 @@ function ShopInventory() {
                 {s.loom && <Chip label={`Loom ${s.loom}`} color={TEAL} bg="rgba(15,118,110,0.10)" />}
               </div>
             )}
-            {canSeePrices && <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.gold, marginBottom: 6 }}>Retail: {s.price}</div>}
+            {canSeePrices && <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.gold, marginBottom: 6 }}>Retail: <Money value={rupees(s.price)} /></div>}
             <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginBottom: 6, lineHeight: 1.4 }}>{s.received} {s.src === "factory" ? "· From factory dispatch" : "· External purchase"}</div>
             {s.supplier && <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginBottom: 6, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" as const }}>Supplier: {s.supplier} · <span style={{ fontFamily: F.m, fontSize: 12, background: "rgba(196,146,58,0.12)", color: C.gold, borderRadius: 999, padding: "2px 9px" }}>{s.id}</span></div>}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginTop: 8, flexWrap: "wrap" as const }}>

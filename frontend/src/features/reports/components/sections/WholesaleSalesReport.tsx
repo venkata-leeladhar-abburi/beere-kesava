@@ -3,7 +3,7 @@ import { ReceiptText, Banknote, CheckCircle2, BellRing } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { useBulkOrders } from "../../../bulk-orders/contexts/BulkOrderContext";
 import { T, F } from "../theme";
-import { FadeUp, ChartCard, SumCard, TabTitle, ReportDLBar, ChartTip, AnimBar, TablePager } from "../common/primitives";
+import { FadeUp, ChartCard, SumCard, TabTitle, ReportDLBar, AnimBar, TablePager } from "../common/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { semantic } from "../../../../design-system/tokens";
 import type { BulkOrder } from "../../../bulk-orders/contexts/BulkOrderContext";
@@ -28,6 +28,26 @@ function WholesaleWeeklyTooltip({ active, payload, label }: any) {
       <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, fontWeight: 600 }}>
         {label} — {d.sarees} sarees dispatched — {formatMoney(rupees(d.revenue))} revenue
       </span>
+    </div>
+  );
+}
+
+// Same shape as reports/common/primitives.tsx's ChartTip, but routes the
+// value through the Money system (formatMoney/rupees) instead of a raw "₹"
+// prefix + toLocaleString — ChartTip itself is shared across non-money chart
+// tooltips (kg, customers, sarees) and is out of scope for this pass.
+function MoneyChartTip({ active, payload, label }: any) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div style={{ background: "#FFFDF9", border: `1px solid ${T.borderDef}`, borderRadius: 9, padding: "10px 14px", boxShadow: "0 4px 16px rgba(74,6,27,0.12)" }}>
+      {label && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginBottom: 5, textTransform: "uppercase" }}>{label}</div>}
+      {payload.map((p: any, i: number) => (
+        <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
+          <div style={{ width: 8, height: 8, borderRadius: "50%", background: p.color || p.fill || p.stroke }} />
+          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.name}:</span>
+          <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{typeof p.value === "number" ? formatMoney(rupees(p.value)) : p.value}</span>
+        </div>
+      ))}
     </div>
   );
 }
@@ -201,7 +221,7 @@ export function WholesaleSalesReport() {
                 <CartesianGrid key="ws-grid" strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
                 <XAxis key="ws-x" dataKey="month" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
                 <YAxis key="ws-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => formatMoney(rupees(v))} width={55} />
-                <Tooltip key="ws-tip" content={<ChartTip prefix="₹" />} />
+                <Tooltip key="ws-tip" content={<MoneyChartTip />} />
                 <Bar key="ws-rev" dataKey="rev" name="Revenue">
                   {wsMonthlyRev.map((e, i) => <Cell key={`ws-cell-${e.month}`} fill={i === wsMonthlyRev.length - 1 ? semantic.chart.series[0] : "rgba(154,45,74,0.35)"} />)}
                 </Bar>

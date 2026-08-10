@@ -9,7 +9,7 @@ import {
 } from "recharts";
 import { Star, Wallet, Clock } from "lucide-react";
 import { T, F } from "../../theme";
-import { Supplier, formatINR } from "../../../contexts/SupplierContext";
+import { Supplier } from "../../../contexts/SupplierContext";
 import { PerSupplierEntry } from "./TopSuppliersCard";
 import { ChartFigure } from "../../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
@@ -73,18 +73,18 @@ export function PaymentModeCard({
         <Wallet size={16} color={T.royalBurgundy} />
         <div style={cardTitle}>Payments by Mode</div>
       </div>
-      <div style={cardSub}>How suppliers were settled · {formatINR(settled)}</div>
+      <div style={cardSub}>How suppliers were settled · {formatMoney(rupees(settled))}</div>
       {byMode.length === 0 ? (
         <div style={{ padding: "56px 0", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No payments in this period.</div>
       ) : (
         <>
-          <ChartFigure title="Payments by Mode" summary={`${formatINR(settled)} settled: ${byMode.map(d => `${d.mode} ${formatINR(d.amount)}`).join(", ")}.`}>
+          <ChartFigure title="Payments by Mode" summary={`${formatMoney(rupees(settled))} settled: ${byMode.map(d => `${d.mode} ${formatMoney(rupees(d.amount))}`).join(", ")}.`}>
             <ResponsiveContainer width="100%" height={168}>
               <PieChart>
                 <Pie data={byMode} dataKey="amount" nameKey="mode" cx="50%" cy="50%" innerRadius={44} outerRadius={72} paddingAngle={3} stroke="none">
                   {byMode.map((d, i) => <Cell key={i} fill={d.fill} />)}
                 </Pie>
-                <RechartsTooltip contentStyle={tip} formatter={(v: any, _n: any, p: any) => [formatINR(v), p.payload.mode]} />
+                <RechartsTooltip contentStyle={tip} formatter={(v: any, _n: any, p: any) => [formatMoney(rupees(v)), p.payload.mode]} />
               </PieChart>
             </ResponsiveContainer>
           </ChartFigure>

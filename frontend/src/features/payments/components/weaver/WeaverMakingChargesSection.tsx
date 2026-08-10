@@ -229,7 +229,6 @@ export function WeaverMakingChargesSection() {
   const totalGross = weaversList.reduce((acc, w) => acc + calcCharges(w), 0);
   const totalDeductions = weaversList.reduce((acc, w) => acc + (w.uploadedDeduction !== undefined ? w.uploadedDeduction : w.advance), 0);
   const totalNet = weaversList.reduce((acc, w) => acc + calcNet(w), 0);
-  const formatINR = (n: number) => formatMoney(rupees(n));
 
   return (
     <div id="pay-making-charges" style={{ padding: "36px 40px 0" }}>
@@ -279,7 +278,7 @@ export function WeaverMakingChargesSection() {
               icon: <Wallet size={22} color={T.royalBurgundy} />,
               iconBg: "rgba(110,15,45,0.08)",
               label: "Total Making Charges",
-              value: formatINR(totalGross),
+              value: formatMoney(rupees(totalGross)),
               sub: "Gross charges for May 2026",
               hi: false,
             },
@@ -287,7 +286,7 @@ export function WeaverMakingChargesSection() {
               icon: <MinusCircle size={22} color={T.crimson} />,
               iconBg: "rgba(192,57,43,0.08)",
               label: "Total Deductions Applied",
-              value: formatINR(totalDeductions),
+              value: formatMoney(rupees(totalDeductions)),
               sub: "Advance amount deducted",
               hi: false,
             },
@@ -295,7 +294,7 @@ export function WeaverMakingChargesSection() {
               icon: <BadgeCheck size={22} color={T.antiqueGold} />,
               iconBg: "rgba(200,155,71,0.16)",
               label: "Net Amount to Pay",
-              value: formatINR(totalNet),
+              value: formatMoney(rupees(totalNet)),
               sub: "After all deductions",
               hi: true,
             },

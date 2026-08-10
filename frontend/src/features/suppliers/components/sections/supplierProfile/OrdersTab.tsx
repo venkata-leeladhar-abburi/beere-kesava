@@ -3,7 +3,8 @@
 import React from "react";
 import { DateFilterBar, DateFilterState } from "../../../../../shared/ui/DateFilterBar";
 import { T, F } from "../../theme";
-import { Purchase, formatINR, parseINR } from "../../../contexts/SupplierContext";
+import { Purchase, parseINR } from "../../../contexts/SupplierContext";
+import { formatMoney, rupees } from "@/lib/domain/money";
 import { PurchaseHistoryTable } from "../PurchaseHistoryTable";
 
 export function OrdersTab({
@@ -24,7 +25,7 @@ export function OrdersTab({
               {filteredOrders.length} purchase{filteredOrders.length !== 1 ? "s" : ""}
             </span>
             <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: "#8B6018", background: "rgba(200,155,71,0.13)", padding: "6px 12px", borderRadius: 8 }}>
-              {formatINR(filteredOrders.reduce((sum, p) => sum + parseINR(p.billAmount), 0))}
+              {formatMoney(rupees(filteredOrders.reduce((sum, p) => sum + parseINR(p.billAmount), 0)))}
             </span>
           </div>
         </div>

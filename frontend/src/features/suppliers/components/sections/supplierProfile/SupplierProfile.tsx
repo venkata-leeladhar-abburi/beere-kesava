@@ -8,8 +8,9 @@ import { ArrowLeft, MapPin, Package, Send } from "lucide-react";
 import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../../shared/ui/DateFilterBar";
 import { T, F } from "../../theme";
 import {
-  useSuppliers, Supplier, formatINR, parseINR,
+  useSuppliers, Supplier, parseINR,
 } from "../../../contexts/SupplierContext";
+import { formatMoney, rupees } from "@/lib/domain/money";
 import { SupplierFormValues } from "../../types";
 import { FadeUp, StatusPill, StarRating } from "../../common/primitives";
 import { Button } from "../../../../../shared/ui/primitives";
@@ -191,9 +192,9 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
           </div>
           <div style={{ display: "flex", gap: 44, alignItems: "center" }}>
             {[
-              { label: "TOTAL PURCHASED", value: formatINR(stats.totalPurchased), color: T.goldLight },
-              { label: "TOTAL PAID",      value: formatINR(stats.totalPaid),      color: "#7EE2A8" },
-              { label: "OUTSTANDING",     value: formatINR(stats.outstanding),    color: stats.outstanding > 0 ? "#F87171" : T.goldLight },
+              { label: "TOTAL PURCHASED", value: formatMoney(rupees(stats.totalPurchased)), color: T.goldLight },
+              { label: "TOTAL PAID",      value: formatMoney(rupees(stats.totalPaid)),      color: "#7EE2A8" },
+              { label: "OUTSTANDING",     value: formatMoney(rupees(stats.outstanding)),    color: stats.outstanding > 0 ? "#F87171" : T.goldLight },
             ].map(m => (
               <div key={m.label} style={{ textAlign: "right" }}>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.55)", marginBottom: 4 }}>{m.label}</div>

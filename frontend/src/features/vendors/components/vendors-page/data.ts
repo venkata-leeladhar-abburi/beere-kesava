@@ -86,6 +86,12 @@ function fmtDate(d: Date): string {
   return `${String(d.getDate()).padStart(2, "0")} ${MONTH_ABBR[d.getMonth()]} ${d.getFullYear()}`;
 }
 
+// PO `status` ("Delivered"/"Pending"/"Approved") and `receiveStatus`
+// ("Match"/"Short") below are genuine DOCUMENT_STATUS / ReconResult concepts
+// (lib/domain/status.ts) but are left as free-form strings: the only
+// consumer, PurchaseOrderHistoryTable.tsx (out of scope for this pass), does
+// exact literal comparisons (`o.status === "Delivered"`) — retyping here
+// would silently break that rendering rather than raise a compile error.
 export function buildVendorOrders(vendor: Vendor) {
   const t1 = vendor.type.split(" / ")[0] || "Warp";
   const t2 = vendor.type.split(" / ")[1] || "Resham";

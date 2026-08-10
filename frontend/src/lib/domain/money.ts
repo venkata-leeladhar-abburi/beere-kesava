@@ -1,15 +1,14 @@
 /**
  * The money system — design-system/06-DOMAIN.md Part E.
  * ═══════════════════════════════════════════════════════════════════════════
- * `lib/formatters.ts`'s `formatINR` was already patched for the 10× compact-
- * mode bug (see design-system/RATCHET.md history), but it still takes a raw
- * float rupee `number` — this file is the spec's actual Part B fix: money is
- * stored as an integer number of paise, so `1234.567` rupees cannot exist and
- * float drift (`0.1 + 0.2 = 0.30000000000000004`) never reaches a total.
+ * The sole money formatter — `lib/formatters.ts`'s `formatINR`/
+ * `formatINRDecimal` were retired once their last call site migrated here.
+ * Money is stored as an integer number of paise, so `1234.567` rupees cannot
+ * exist and float drift (`0.1 + 0.2 = 0.30000000000000004`) never reaches a
+ * total.
  *
- * `<Money>` (shared/ui/domain/Money.tsx) is the only consumer that should
- * need to import from here directly; everything else keeps using
- * `lib/formatters.ts` until a Phase 8 migration moves call sites over.
+ * `<Money>` (shared/ui/domain/Money.tsx) and feature code both import
+ * `formatMoney`/`rupees`/`paise` directly from here.
  */
 
 /** A branded integer — passing a raw `number` where `Paise` is expected is a

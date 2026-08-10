@@ -1,6 +1,7 @@
 import React from "react";
 import { Eye, Edit2, Trash2, Tag } from "lucide-react";
-import { Purchase, formatINR, purchaseTotals } from "../../../../suppliers/contexts/SupplierContext";
+import { Purchase, purchaseTotals } from "../../../../suppliers/contexts/SupplierContext";
+import { formatMoney, rupees } from "@/lib/domain/money";
 import { T, F } from "../theme";
 import { StatusPill } from "../common/primitives";
 import { Button, IconButton } from "../../../../../shared/ui/primitives";
@@ -74,15 +75,15 @@ export function PurchasesTable({
     },
     {
       id: "buying", header: "Buying Price", accessor: row => purchaseTotals(row.sarees).buying, type: "number", sortable: true,
-      cell: (_v, row) => <span style={mono(T.luxuryBrown)}>{formatINR(purchaseTotals(row.sarees).buying)}</span>,
+      cell: (_v, row) => <span style={mono(T.luxuryBrown)}>{formatMoney(rupees(purchaseTotals(row.sarees).buying))}</span>,
     },
     {
       id: "selling", header: "Selling Price", accessor: row => purchaseTotals(row.sarees).selling, type: "number", sortable: true,
-      cell: (_v, row) => <span style={mono(T.antiqueGold, { fontWeight: 600 })}>{formatINR(purchaseTotals(row.sarees).selling)}</span>,
+      cell: (_v, row) => <span style={mono(T.antiqueGold, { fontWeight: 600 })}>{formatMoney(rupees(purchaseTotals(row.sarees).selling))}</span>,
     },
     {
       id: "profit", header: "Profit", accessor: row => purchaseTotals(row.sarees).profit, type: "number", sortable: true,
-      cell: (_v, row) => <span style={mono(T.green, { fontWeight: 700 })}>{formatINR(purchaseTotals(row.sarees).profit)}</span>,
+      cell: (_v, row) => <span style={mono(T.green, { fontWeight: 700 })}>{formatMoney(rupees(purchaseTotals(row.sarees).profit))}</span>,
     },
     {
       id: "billAmount", header: "Bill Amount", accessor: row => row.billAmount,

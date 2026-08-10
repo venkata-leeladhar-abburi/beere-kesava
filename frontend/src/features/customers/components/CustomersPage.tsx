@@ -41,6 +41,16 @@ export function CustomersPage() {
       name: c.name,
       code: c.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase(),
       city: c.city || "—",
+      // NOT a filter-UI sentinel — verified by reading WholesaleCustomersSection.tsx
+      // and WholesaleDetailSection.tsx, which render this as a colored dues-status
+      // pill and compare it against "overdue"/"clear". It's a genuine
+      // PAYMENT_STATUS-shaped field, but WholesaleCustomer is `typeof
+      // wholesaleData[number]` off a retired empty mock array (effectively
+      // `any`), and its real consumers (WholesaleCustomersSection.tsx,
+      // WholesaleDetailSection.tsx, wholesaleDetail/EditProfileTab.tsx) are
+      // outside this pass's assigned files — WholesaleCustomersSection.tsx is
+      // already being edited by another concurrent agent per git status.
+      // Left as a documented exception rather than a partial retype.
       status: "clear" as const,
       orders: 0,
       spend: "0",

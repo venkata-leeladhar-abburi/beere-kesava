@@ -13,6 +13,7 @@ import { DatePicker, formatDate } from "../../../../../shared/ui/date";
 import { toPaise, fromPaise, formatPaise } from "../../../../../lib/gst";
 import { rupees } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
+import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
 
 // ── Invoice generator (wholesale step 5) ─────────────────────────────────────
 export function InvoiceGenerator({
@@ -234,32 +235,42 @@ export function InvoiceGenerator({
             </div>
           </div>
 
-          {/* Sarees table */}
+          {/* Sarees table — migrated onto <DataTable>, design-system/04-DATA-DISPLAY.md
+              Part S. Display-only change (header spec + real table semantics);
+              no totals/arithmetic touched. */}
           <div style={{ marginBottom: 14 }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 100px", padding: "6px 0", borderBottom: `1.5px solid ${T.borderDef}`, marginBottom: 4 }}>
-              {["Item", "Amount (₹)"].map((h, i) => (
-                <div key={i} style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em", textAlign: i > 0 ? "right" as const : "left" as const }}>{h}</div>
-              ))}
-            </div>
-            {sarees.slice(0, 4).map((s, i) => {
-              const sId = s.sareeId || s.id;
-              const sareeBatch = batches.find(b => b.rows.some(row => row.sareeId === sId))?.batchId;
-              const p = parseFloat(data.prices[sId]) || 0;
-              return (
-                <div key={s.id} style={{ display: "grid", gridTemplateColumns: "1fr 100px", padding: "5px 0", borderBottom: i < Math.min(sarees.length, 4) - 1 ? `1px solid rgba(110,15,45,0.06)` : "none" }}>
-                  <div>
-                    <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
-                      <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 600 }}>{sId}</span>
-                      {sareeBatch && (
-                        <span style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, background: "rgba(200,155,71,0.08)", border: "1px solid rgba(200,155,71,0.18)", padding: "1px 5px", borderRadius: 4 }}>{sareeBatch}</span>
-                      )}
-                    </div>
-                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{s.designCode} · {s.sareeType}</div>
-                  </div>
-                  <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, textAlign: "right" as const }}>{p ? <Money value={rupees(p)} /> : "—"}</div>
-                </div>
-              );
-            })}
+            <DataTable
+              columns={([
+                {
+                  id: "item", header: "Item", accessor: s => s.sareeId || s.id,
+                  cell: (_v, s) => {
+                    const sId = s.sareeId || s.id;
+                    const sareeBatch = batches.find(b => b.rows.some(row => row.sareeId === sId))?.batchId;
+                    return (
+                      <div>
+                        <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+                          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 600 }}>{sId}</span>
+                          {sareeBatch && (
+                            <span style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, background: "rgba(200,155,71,0.08)", border: "1px solid rgba(200,155,71,0.18)", padding: "1px 5px", borderRadius: 4 }}>{sareeBatch}</span>
+                          )}
+                        </div>
+                        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{s.designCode} · {s.sareeType}</div>
+                      </div>
+                    );
+                  },
+                },
+                {
+                  id: "amount", header: "Amount (₹)", width: 100,
+                  accessor: s => parseFloat(data.prices[s.sareeId || s.id]) || 0,
+                  cell: (_v, s) => {
+                    const p = parseFloat(data.prices[s.sareeId || s.id]) || 0;
+                    return <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{p ? <Money value={rupees(p)} /> : "—"}</span>;
+                  },
+                },
+              ] as ColumnDef<FinishingReturn>[])}
+              data={sarees.slice(0, 4)}
+              getRowId={s => s.id}
+            />
             {sarees.length > 4 && (
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, padding: "5px 0" }}>+ {sarees.length - 4} more sarees…</div>
             )}

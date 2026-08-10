@@ -5,11 +5,12 @@ import { Button } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { Breadcrumbs } from "../../../../shared/ui/nav/Breadcrumbs";
 import { rupees, formatMoney } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 
 interface RetailPurchaseRow {
   date: string;
   items: { id: string; type: string }[];
-  price: string;
+  price: number;
 }
 
 export interface RetailDetailSectionProps {
@@ -45,7 +46,7 @@ export function RetailDetailSection({
     },
     {
       id: "price", header: "Price Paid", accessor: r => r.price,
-      cell: (_v, r) => <span style={{ color: T.antiqueGold, fontWeight: 600 }}>{r.price}</span>,
+      cell: (_v, r) => <span style={{ color: T.antiqueGold, fontWeight: 600 }}><Money value={rupees(r.price)} /></span>,
     },
     {
       id: "return", header: "Return", accessor: () => "—",
@@ -54,11 +55,11 @@ export function RetailDetailSection({
   ];
 
   const retailPurchaseRows: RetailPurchaseRow[] = [
-    { date: customer.lastVisit, items: [{ id: "RAVI-L2-008", type: "Heavy Zari" }], price: "₹14,500" },
-    { date: "12 Feb 2026", items: [{ id: "PADMA-L1-012", type: "Plain Silk" }, { id: "PADMA-L1-013", type: "Plain Silk" }], price: "₹44,000" },
-    { date: "08 Jan 2026", items: [{ id: "BKB-L3-004", type: "Self Brocade" }], price: "₹9,800" },
-    { date: "14 Dec 2025", items: [{ id: "SURESH-L2-007", type: "Bridal Special" }], price: "₹38,500" },
-    { date: "02 Nov 2025", items: [{ id: "RAVI-L2-003", type: "Heavy Zari" }], price: "₹16,200" },
+    { date: customer.lastVisit, items: [{ id: "RAVI-L2-008", type: "Heavy Zari" }], price: 14500 },
+    { date: "12 Feb 2026", items: [{ id: "PADMA-L1-012", type: "Plain Silk" }, { id: "PADMA-L1-013", type: "Plain Silk" }], price: 44000 },
+    { date: "08 Jan 2026", items: [{ id: "BKB-L3-004", type: "Self Brocade" }], price: 9800 },
+    { date: "14 Dec 2025", items: [{ id: "SURESH-L2-007", type: "Bridal Special" }], price: 38500 },
+    { date: "02 Nov 2025", items: [{ id: "RAVI-L2-003", type: "Heavy Zari" }], price: 16200 },
   ].filter(row => matchesDateFilter(row.date, retailPurchaseDateFilter));
 
   return (

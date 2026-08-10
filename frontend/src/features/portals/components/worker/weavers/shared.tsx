@@ -6,6 +6,12 @@ import { IconButton } from "../../../../../shared/ui/primitives";
 export type WeaversPage = "menu" | "design" | "issue" | "receive";
 export type IssueSource = "own" | "outsourced" | null;
 
+// status is a genuine PRODUCTION_STATUS match (Passed QC → qc-passed, Pending QC →
+// qc-pending, Defective → qc-failed — see HistorySection.tsx's HISTORY_STATUS_TO_PRODUCTION,
+// which already renders this via <StatusPill taxonomy="production">). Left as raw strings
+// here rather than retyped to ProductionStatus because WorkerWeavers.tsx and
+// HistorySection.tsx both compare/lookup against these exact literals and are outside
+// this pass's file list — retyping needs a follow-up touching those two call sites too.
 export interface ReceivedSareeLog {
   id: string; weaver: string; wcode: string; batch: string;
   weight: string; date: string; color: string; status: "Passed QC" | "Defective" | "Pending QC";

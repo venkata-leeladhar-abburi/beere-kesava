@@ -64,6 +64,12 @@ export interface BatchRecord {
   totalCount: number;
   dueDate: string;
   rows: SareeRow[];
+  // Raw literal union intentionally, not lib/domain/status.ts's ProductionStatus:
+  // this is a coarse 3-state batch lifecycle (draft → active → completed) and
+  // PRODUCTION_STATUS has no "active" key (its in-progress states are the
+  // granular warping/weaving/finishing/qc-* stages) — forcing this onto that
+  // taxonomy would misrepresent "active" as one of those specific stages,
+  // which the backend doesn't track for a batch as a whole.
   status: "draft" | "active" | "completed";
   createdAt: string;
   updatedAt: string;

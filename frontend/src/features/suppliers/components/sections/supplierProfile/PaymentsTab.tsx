@@ -3,7 +3,8 @@
 import React from "react";
 import { DateFilterBar, DateFilterState } from "../../../../../shared/ui/DateFilterBar";
 import { T, F } from "../../theme";
-import { SupplierPayment, formatINR } from "../../../contexts/SupplierContext";
+import { SupplierPayment } from "../../../contexts/SupplierContext";
+import { formatMoney, rupees } from "@/lib/domain/money";
 import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
 
 const paymentColumns: ColumnDef<SupplierPayment>[] = [
@@ -29,7 +30,7 @@ const paymentColumns: ColumnDef<SupplierPayment>[] = [
   },
   {
     id: "amount", header: "Amount", accessor: p => p.amount,
-    cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.green }}>{formatINR(p.amount)}</span>,
+    cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.green }}>{formatMoney(rupees(p.amount))}</span>,
   },
 ];
 
@@ -48,9 +49,9 @@ export function PaymentsTab({
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16 }}>
         {[
-          { label: "Paid in Range",  value: formatINR(filteredPaidSum),      color: T.green },
-          { label: "Paid All Time",  value: formatINR(totalPaid),      color: T.luxuryBrown },
-          { label: "Outstanding",    value: formatINR(outstanding),    color: outstanding > 0 ? T.crimson : T.green },
+          { label: "Paid in Range",  value: formatMoney(rupees(filteredPaidSum)),      color: T.green },
+          { label: "Paid All Time",  value: formatMoney(rupees(totalPaid)),      color: T.luxuryBrown },
+          { label: "Outstanding",    value: formatMoney(rupees(outstanding)),    color: outstanding > 0 ? T.crimson : T.green },
         ].map(s => (
           <div key={s.label} style={{ ...card, padding: "20px 22px" }}>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 8 }}>{s.label}</div>

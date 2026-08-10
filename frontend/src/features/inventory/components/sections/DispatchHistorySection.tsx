@@ -3,6 +3,7 @@ import { Truck, Users, ShoppingBag, Clock, CheckCircle2, Trash2, FileText } from
 import { DispatchRecord } from "../../../finishing/contexts/FinishingContext";
 import { T, F, card } from "../theme";
 import { Button } from "../../../../shared/ui/primitives";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
 // ── Dispatch History section ──────────────────────────────────────────────────
 // Exported for the Worker Staff portal — same component, same markup, so the two
@@ -43,78 +44,111 @@ export function DispatchHistorySection({ dispatches, firms, onResume, onDelete, 
         </div>
       </div>
 
-      {/* Header row */}
-      <div style={{ display: "grid", gridTemplateColumns: "110px 90px 1fr 130px 100px 80px 110px 130px 100px", gap: 0, padding: "11px 24px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${T.borderDef}` }}>
-        {["Date", "Type", "Destination", "LR / Transport", "Invoice", "Sarees", "Firm", "Status", "Actions"].map((h, i) => (
-          <div key={i} style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>{h}</div>
-        ))}
-      </div>
-
-      {rows.length === 0 ? (
-        <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No dispatches yet.</div>
-      ) : rows.map((d, i) => {
-        const firm = firms.find(f => f.id === d.firmId);
-        const incomplete = d.pendingTransport || d.pendingReceipt;
-        return (
-          <div key={d.id} style={{ display: "grid", gridTemplateColumns: "110px 90px 1fr 130px 100px 80px 110px 130px 100px", gap: 0, padding: "13px 24px", borderBottom: i < rows.length - 1 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 0 ? "#FFF" : T.warmIvory, alignItems: "center" }}>
-            <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{d.dispatchDate}</div>
-            <div>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: d.type === "wholesale" ? "rgba(110,15,45,0.08)" : "rgba(200,155,71,0.14)", color: d.type === "wholesale" ? T.royalBurgundy : "#8B6018", border: `1px solid ${d.type === "wholesale" ? "rgba(110,15,45,0.18)" : "rgba(200,155,71,0.32)"}`, borderRadius: 999, padding: "2px 9px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, textTransform: "capitalize" as const }}>
-                {d.type === "wholesale" ? <Users size={10} /> : <ShoppingBag size={10} />}{d.type}
-              </span>
-            </div>
-            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{d.type === "wholesale" ? (d.customerName ?? "—") : "Shop / Showroom"}</div>
-            <div>
-              <div style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{d.lrNumber || "—"}</div>
-              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>{d.transportCompany || "—"}</div>
-            </div>
-            <div style={{ fontFamily: F.mono, fontSize: 12, color: d.invoiceNumber ? T.luxuryBrown : T.taupe }}>{d.invoiceNumber || "—"}</div>
-            <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{d.sareeIds.length}</div>
-            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{d.firmName || firm?.firmName || "—"}</div>
-            <div>
-              {incomplete ? (
-                <Button
-                  onClick={() => onResume(d)}
-                  variant="secondary"
-                  size="sm"
-                  iconLeft={Clock}
-                  className="rounded-full bg-[rgba(200,155,71,0.14)] border-[rgba(200,155,71,0.32)] text-[#8B6018] hover:bg-[rgba(200,155,71,0.22)] whitespace-nowrap"
-                >
-                  Complete Details
-                </Button>
-              ) : (
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.green }}>
-                  <CheckCircle2 size={12} /> Complete
-                </span>
-              )}
-            </div>
-            <div style={{ display: "flex", gap: 8 }}>
-              {onViewInvoice && (
-                <button
-                  onClick={() => onViewInvoice(d)}
-                  style={{ background: "none", border: "none", padding: 4, cursor: "pointer", color: T.luxuryBrown }}
-                  title="Invoice"
-                >
-                  <FileText size={16} />
-                </button>
-              )}
-              {onDelete && (
-                <button
-                  onClick={() => {
-                    if (confirm("Are you sure you want to delete this dispatch? The sarees will be returned to 'Ready for Dispatch'.")) {
-                      onDelete(d);
-                    }
-                  }}
-                  style={{ background: "none", border: "none", padding: 4, cursor: "pointer", color: T.royalBurgundy }}
-                  title="Delete Dispatch"
-                >
-                  <Trash2 size={16} />
-                </button>
-              )}
-            </div>
-          </div>
-        );
-      })}
+      <DataTableBody rows={rows} firms={firms} onResume={onResume} onDelete={onDelete} onViewInvoice={onViewInvoice} />
     </div>
+  );
+}
+
+function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { rows: DispatchRecord[]; firms: { id: string; firmName: string }[]; onResume: (d: DispatchRecord) => void; onDelete?: (d: DispatchRecord) => void; onViewInvoice?: (d: DispatchRecord) => void; }) {
+  const columns: ColumnDef<DispatchRecord>[] = [
+    {
+      id: "date", header: "Date", accessor: d => d.dispatchDate, width: 110,
+      cell: (_v, d) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{d.dispatchDate}</span>,
+    },
+    {
+      id: "type", header: "Type", accessor: d => d.type, width: 90,
+      cell: (_v, d) => (
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: d.type === "wholesale" ? "rgba(110,15,45,0.08)" : "rgba(200,155,71,0.14)", color: d.type === "wholesale" ? T.royalBurgundy : "#8B6018", border: `1px solid ${d.type === "wholesale" ? "rgba(110,15,45,0.18)" : "rgba(200,155,71,0.32)"}`, borderRadius: 999, padding: "2px 9px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, textTransform: "capitalize" as const }}>
+          {d.type === "wholesale" ? <Users size={10} /> : <ShoppingBag size={10} />}{d.type}
+        </span>
+      ),
+    },
+    {
+      id: "destination", header: "Destination", accessor: d => d.customerName ?? "",
+      cell: (_v, d) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{d.type === "wholesale" ? (d.customerName ?? "—") : "Shop / Showroom"}</span>,
+    },
+    {
+      id: "lr", header: "LR / Transport", accessor: d => d.lrNumber, width: 130,
+      cell: (_v, d) => (
+        <div>
+          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{d.lrNumber || "—"}</div>
+          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>{d.transportCompany || "—"}</div>
+        </div>
+      ),
+    },
+    {
+      id: "invoice", header: "Invoice", accessor: d => d.invoiceNumber, width: 100,
+      cell: (_v, d) => <span style={{ fontFamily: F.mono, fontSize: 12, color: d.invoiceNumber ? T.luxuryBrown : T.taupe }}>{d.invoiceNumber || "—"}</span>,
+    },
+    {
+      id: "sarees", header: "Sarees", accessor: d => d.sareeIds.length, type: "number", width: 80,
+      cell: (_v, d) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{d.sareeIds.length}</span>,
+    },
+    {
+      id: "firm", header: "Firm", accessor: d => d.firmName, width: 110,
+      cell: (_v, d) => {
+        const firm = firms.find(f => f.id === d.firmId);
+        return <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{d.firmName || firm?.firmName || "—"}</span>;
+      },
+    },
+    {
+      id: "status", header: "Status", accessor: d => (d.pendingTransport || d.pendingReceipt) ? "incomplete" : "complete", type: "status", width: 130,
+      cell: (_v, d) => {
+        const incomplete = d.pendingTransport || d.pendingReceipt;
+        return incomplete ? (
+          <Button
+            onClick={() => onResume(d)}
+            variant="secondary"
+            size="sm"
+            iconLeft={Clock}
+            className="rounded-full bg-[rgba(200,155,71,0.14)] border-[rgba(200,155,71,0.32)] text-[#8B6018] hover:bg-[rgba(200,155,71,0.22)] whitespace-nowrap"
+          >
+            Complete Details
+          </Button>
+        ) : (
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.green }}>
+            <CheckCircle2 size={12} /> Complete
+          </span>
+        );
+      },
+    },
+    {
+      id: "actions", header: "Actions", accessor: () => null, type: "actions", width: 100, exportable: false,
+      cell: (_v, d) => (
+        <div style={{ display: "flex", gap: 8 }}>
+          {onViewInvoice && (
+            <button
+              onClick={() => onViewInvoice(d)}
+              style={{ background: "none", border: "none", padding: 4, cursor: "pointer", color: T.luxuryBrown }}
+              title="Invoice"
+            >
+              <FileText size={16} />
+            </button>
+          )}
+          {onDelete && (
+            <button
+              onClick={() => {
+                if (confirm("Are you sure you want to delete this dispatch? The sarees will be returned to 'Ready for Dispatch'.")) {
+                  onDelete(d);
+                }
+              }}
+              style={{ background: "none", border: "none", padding: 4, cursor: "pointer", color: T.royalBurgundy }}
+              title="Delete Dispatch"
+            >
+              <Trash2 size={16} />
+            </button>
+          )}
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <DataTable
+      columns={columns}
+      data={rows}
+      getRowId={d => d.id}
+      emptyTitle="No dispatches yet."
+    />
   );
 }

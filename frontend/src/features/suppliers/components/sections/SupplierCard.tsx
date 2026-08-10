@@ -5,7 +5,8 @@ import { motion } from "motion/react";
 import { MapPin, Phone, Package, Eye } from "lucide-react";
 import { T, F } from "../theme";
 import { StatusPill, StarRating } from "../common/primitives";
-import { useSuppliers, Supplier, formatINR } from "../../contexts/SupplierContext";
+import { useSuppliers, Supplier } from "../../contexts/SupplierContext";
+import { formatMoney, rupees } from "@/lib/domain/money";
 import { Button } from "../../../../shared/ui/primitives";
 
 export function SupplierCard({ supplier, onView }: { supplier: Supplier; onView: (s: Supplier) => void }) {
@@ -45,7 +46,7 @@ export function SupplierCard({ supplier, onView }: { supplier: Supplier; onView:
           {[
             { label: "Purchases", value: String(stats.purchases.length) },
             { label: "Sarees",    value: String(stats.sareeCount) },
-            { label: "Outstanding", value: formatINR(stats.outstanding), alert: stats.outstanding > 0 },
+            { label: "Outstanding", value: formatMoney(rupees(stats.outstanding)), alert: stats.outstanding > 0 },
           ].map((s, i) => (
             <div key={s.label} style={{ padding: "10px 12px", borderRight: i < 2 ? `1px solid ${T.borderDef}` : "none", textAlign: "center" }}>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, letterSpacing: "0.5px", marginBottom: 3 }}>{s.label}</div>

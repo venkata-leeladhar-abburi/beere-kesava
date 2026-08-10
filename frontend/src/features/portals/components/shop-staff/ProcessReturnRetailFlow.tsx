@@ -3,6 +3,8 @@ import { motion } from "motion/react";
 import { Camera, Check, AlertTriangle, RotateCcw } from "lucide-react";
 import { C, F, Card, Btn } from "./theme";
 import { Button, Input, Textarea } from "../../../../shared/ui/primitives";
+import { Money } from "../../../../shared/ui/domain/Money";
+import { rupees } from "../../../../lib/domain/money";
 
 interface ProcessReturnRetailFlowProps {
   step: 1 | 2 | 3;
@@ -115,12 +117,12 @@ export function ProcessReturnRetailFlow({
                     ["Design", "BKB-045 · Cream Zari Border Saree", false],
                     ["Sale Date", "05 Jun 2026", true],
                     ["Customer", "Smt. Meenakshi", false],
-                    ...(canSeePrices ? [["Amount Paid", "₹8,500", false]] : []),
+                    ...(canSeePrices ? [["Amount Paid", <Money value={rupees(8500)} />, false]] : []),
                     ["Payment Method", "UPI", true],
                   ].map(([k, v, mono], i) => (
                     <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12, paddingBottom: 12, borderBottom: `1px solid ${C.bdr}` }}>
-                      <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{k as string}</span>
-                      <span style={{ fontFamily: mono ? F.m : F.u, fontWeight: 600, fontSize: 13, color: (k as string) === "Amount Paid" ? C.gold : C.text, textAlign: "right" as const }}>{v as string}</span>
+                      <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{k as React.ReactNode}</span>
+                      <span style={{ fontFamily: mono ? F.m : F.u, fontWeight: 600, fontSize: 13, color: k === "Amount Paid" ? C.gold : C.text, textAlign: "right" as const }}>{v as React.ReactNode}</span>
                     </div>
                   ))}
                 </div>

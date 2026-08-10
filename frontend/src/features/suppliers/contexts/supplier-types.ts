@@ -1,4 +1,4 @@
-import { formatMoney, rupees } from "../../../lib/domain/money";
+import type { DocumentStatus } from "../../../lib/domain/status";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -63,7 +63,7 @@ export interface PurchaseRequest {
   estimatedAmount: number;
   urgency: "Normal" | "Urgent";
   reason: string;
-  status: "pending" | "approved" | "rejected";
+  status: DocumentStatus;
   decidedBy?: string;
   decidedDate?: string;
   decisionNote?: string;
@@ -111,10 +111,6 @@ export interface Supplier {
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers shared by the suppliers + external purchases pages
 // ─────────────────────────────────────────────────────────────────────────────
-
-export function formatINR(n: number): string {
-  return formatMoney(rupees(Math.max(0, Math.round(n))));
-}
 
 /** Parses "₹1,20,000" / "1,20,000" into a number. */
 export function parseINR(s: string | undefined | null): number {

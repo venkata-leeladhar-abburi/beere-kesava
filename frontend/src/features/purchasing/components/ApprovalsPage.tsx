@@ -41,6 +41,11 @@ export function ApprovalsPage() {
   const { requests, decideRequest } = useSuppliers();
   const pendingRequests = requests.filter(r => r.status === "pending");
 
+  // Mirrors SupplierContext.decideRequest's own "approved" | "rejected"
+  // param type (features/suppliers, out of this pass's scope) — both values
+  // already match DOCUMENT_STATUS's canonical spelling, but widening this to
+  // DocumentStatus would stop type-checking against that out-of-scope
+  // function's narrower signature, so it stays a local 2-value literal union.
   const decideExternal = (id: string, status: "approved" | "rejected") => {
     decideRequest(id, status, "Superadmin");
     const req = requests.find(r => r.id === id);

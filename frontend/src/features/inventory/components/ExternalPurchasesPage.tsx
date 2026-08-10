@@ -17,6 +17,7 @@ import { DetailDrawer } from "./externalPurchases/sections/DetailDrawer";
 import { PurchaseFormModal } from "./externalPurchases/modals/purchaseForm/PurchaseFormModal";
 import { SareeListModal } from "./externalPurchases/modals/SareeListModal";
 import { useConfirm } from "../../../shared/ui/overlay";
+import { formatMoney, paise } from "@/lib/domain/money";
 
 // Re-exported so existing imports of `PurchaseFormModal` / `FormState` / `EMPTY_FORM`
 // from this file (e.g. SuppliersPage) keep working unchanged.
@@ -134,7 +135,7 @@ export function ExternalPurchasesPage() {
       sareeCount: totalPieces(sarees),
       gstNumber: form.gstNumber,
       invoiceNumber: form.invoiceNumber,
-      billAmount: form.billAmount || "₹0",
+      billAmount: form.billAmount || formatMoney(paise(0)),
       status: form.status,
       notes: form.notes,
       addedBy: "Admin",

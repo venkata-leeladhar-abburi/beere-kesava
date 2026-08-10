@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { weaversApi, BackendWeaver } from "../../../../../shared/api/weavers";
 import { resolveAssetUrl } from "../../../../../shared/api/uploads";
+import type { PersonStatus } from "@/lib/domain/status";
 
 /** Background colours for initials avatars (cycles through 5 options). */
 const BG_COLORS = ["#9B6B8A", "#5A3E6B", "#2D6B6B", "#4A6B4A", "#6B4A3E"];
@@ -13,7 +14,7 @@ export interface DashboardWeaver {
   village: string | null;
   mobile: string;
   looms: number;
-  status: "active" | "inactive";
+  status: PersonStatus;
   bg: string;
 }
 

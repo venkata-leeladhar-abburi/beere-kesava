@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { CheckCircle2, Clock } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 
 import { F, T } from "../../theme";
 import { Button, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
+import { StatusPill } from "@/shared/ui/domain";
+import type { PaymentStatus } from "@/lib/domain/status";
 
 // helper: initials avatar
 export function Pip({ initials, bg, size = 36 }: { initials: string; bg: string; size?: number }) {
@@ -15,14 +17,17 @@ export function Pip({ initials, bg, size = 36 }: { initials: string; bg: string;
   );
 }
 
-// helper: status badge
+// helper: status badge — a genuine PAYMENT_STATUS lifecycle value
+// (design-system/06-DOMAIN.md Part D), rendered through the shared taxonomy.
+// The prop stays "Paid" | "Pending" rather than the taxonomy's own key type:
+// WeaverRecord.status (payments/types.ts) is threaded through several
+// out-of-scope call sites (WeaverCard.tsx, WeaverPaymentDetailModal.tsx,
+// WeaverMakingChargesSection.tsx) doing exact `=== "Paid"` comparisons and
+// dropdown-filter matches — retyping the field would ripple into those files.
+// This translates to the canonical key only at the render boundary.
 export function StatusBadge({ status }: { status: "Paid" | "Pending" }) {
-  const paid = status === "Paid";
-  return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 9px", borderRadius: 20, fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: paid ? "rgba(30,102,64,0.10)" : "rgba(196,146,58,0.12)", color: paid ? T.green : "#8B6018" }}>
-      {paid ? <CheckCircle2 size={11} /> : <Clock size={11} />}{status}
-    </span>
-  );
+  const key: PaymentStatus = status === "Paid" ? "paid" : "unpaid";
+  return <StatusPill taxonomy="payment" status={key} />;
 }
 
 // helper: ActionModal

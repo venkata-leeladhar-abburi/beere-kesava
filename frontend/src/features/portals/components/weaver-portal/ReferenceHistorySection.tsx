@@ -4,6 +4,7 @@ import { ChevronRight, Check } from "lucide-react";
 import { MaterialIssueRecord } from "../../../materials/contexts/MaterialIssueContext";
 import { C, F, SectionTitle } from "./theme";
 import { Button } from "../../../../shared/ui/primitives";
+import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
 interface SareeLogItem {
   batchId: string;
@@ -102,21 +103,16 @@ export function ReferenceHistorySection({
               ) : (
                 <div style={{ margin: "16px 20px", background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, overflowX: isTablet ? "auto" : "hidden" }}>
                   <div style={{ minWidth: isTablet ? 560 : undefined }}>
-                    <div style={{ display: "grid", gridTemplateColumns: "1.2fr 2fr 1.2fr 1.2fr", padding: "10px 16px", borderBottom: `1px solid ${C.bdr}`, background: C.cream }}>
-                      {["Date", "Materials", "MIR ID", "Status"].map(h => (
-                        <div key={h} style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted }}>{h}</div>
-                      ))}
-                    </div>
-                    {signedRecords.map(r => (
-                      <div key={r.id} style={{ display: "grid", gridTemplateColumns: "1.2fr 2fr 1.2fr 1.2fr", padding: "12px 16px", borderBottom: `1px solid rgba(110,15,45,0.06)`, alignItems: "center" }}>
-                        <div style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{new Date(r.issuedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</div>
-                        <div style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{r.materials.map(m => `${m.materialType} ${m.quantity}${m.unit}`).join(" · ")}</div>
-                        <div style={{ fontFamily: F.m, fontSize: 12, color: C.burg }}>{r.id}</div>
-                        <div style={{ fontFamily: F.u, fontSize: 12, color: C.green, display: "flex", alignItems: "center", gap: 5 }}>
-                          <Check size={12} /> Confirmed
-                        </div>
-                      </div>
-                    ))}
+                    <DataTable<MaterialIssueRecord>
+                      columns={[
+                        { id: "date", header: "Date", accessor: r => r.issuedAt, cell: (_v, r) => <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{new Date(r.issuedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span> },
+                        { id: "materials", header: "Materials", accessor: r => r.materials, cell: (_v, r) => <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{r.materials.map(m => `${m.materialType} ${m.quantity}${m.unit}`).join(" · ")}</span> },
+                        { id: "mirId", header: "MIR ID", accessor: r => r.id, cell: (_v, r) => <span style={{ fontFamily: F.m, fontSize: 12, color: C.burg }}>{r.id}</span> },
+                        { id: "status", header: "Status", accessor: () => "Confirmed", cell: () => <span style={{ fontFamily: F.u, fontSize: 12, color: C.green, display: "flex", alignItems: "center", gap: 5 }}><Check size={12} /> Confirmed</span> },
+                      ] as ColumnDef<MaterialIssueRecord>[]}
+                      data={signedRecords}
+                      getRowId={r => r.id}
+                    />
                   </div>
                 </div>
               )
@@ -152,23 +148,16 @@ export function ReferenceHistorySection({
               ) : (
                 <div style={{ margin: "16px 20px", background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, overflowX: isTablet ? "auto" : "hidden" }}>
                   <div style={{ minWidth: isTablet ? 560 : undefined }}>
-                    <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1.5fr 1.5fr 1.2fr", padding: "10px 16px", borderBottom: `1px solid ${C.bdr}`, background: C.cream }}>
-                      {["Batch ID", "Status", "Progress", "Due Date"].map(h => (
-                        <div key={h} style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted }}>{h}</div>
-                      ))}
-                    </div>
-                    {myWeavingBatches.map(b => (
-                      <div key={b.batchId} style={{ display: "grid", gridTemplateColumns: "1.2fr 1.5fr 1.5fr 1.2fr", padding: "12px 16px", borderBottom: `1px solid rgba(110,15,45,0.06)`, alignItems: "center" }}>
-                        <div style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{b.batchId}</div>
-                        <div style={{ fontFamily: F.u, fontSize: 12, color: b.status === "active" ? C.green : C.gold, fontWeight: 600 }}>
-                          {b.status === "active" ? "🟢 Active" : "🟡 Draft"}
-                        </div>
-                        <div style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>
-                          {b.passedCount} / {b.rowsCount} wove & passed
-                        </div>
-                        <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{b.dueDate || "—"}</div>
-                      </div>
-                    ))}
+                    <DataTable<WeavingBatchItem>
+                      columns={[
+                        { id: "batchId", header: "Batch ID", accessor: b => b.batchId, cell: (_v, b) => <span style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{b.batchId}</span> },
+                        { id: "status", header: "Status", accessor: b => b.status, cell: (_v, b) => <span style={{ fontFamily: F.u, fontSize: 12, color: b.status === "active" ? C.green : C.gold, fontWeight: 600 }}>{b.status === "active" ? "🟢 Active" : "🟡 Draft"}</span> },
+                        { id: "progress", header: "Progress", accessor: b => b.passedCount, cell: (_v, b) => <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{b.passedCount} / {b.rowsCount} wove & passed</span> },
+                        { id: "dueDate", header: "Due Date", accessor: b => b.dueDate, cell: (_v, b) => <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{b.dueDate || "—"}</span> },
+                      ] as ColumnDef<WeavingBatchItem>[]}
+                      data={myWeavingBatches}
+                      getRowId={b => b.batchId}
+                    />
                   </div>
                 </div>
               )
@@ -202,24 +191,17 @@ export function ReferenceHistorySection({
               ) : (
                 <div style={{ margin: "16px 20px", background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, overflowX: isTablet ? "auto" : "hidden" }}>
                   <div style={{ minWidth: isTablet ? 640 : undefined }}>
-                    <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1.5fr 1fr 1.5fr", padding: "10px 16px", borderBottom: `1px solid ${C.bdr}`, background: C.cream }}>
-                      {["Saree ID", "Batch ID", "Saree Type", "Loom", "QC Status"].map(h => (
-                        <div key={h} style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted }}>{h}</div>
-                      ))}
-                    </div>
-                    {mySarees.map((s, i) => (
-                      <div key={i} style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1.5fr 1fr 1.5fr", padding: "12px 16px", borderBottom: `1px solid rgba(110,15,45,0.06)`, alignItems: "center" }}>
-                        <div style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{s.sareeId}</div>
-                        <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{s.batchId}</div>
-                        <div style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>
-                          <strong>{s.sareeTypeCode}</strong> · {s.sareeTypeName}
-                        </div>
-                        <div style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>Loom {s.loom}</div>
-                        <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: s.qcPassed === true ? C.green : s.qcPassed === false ? C.crim : C.gold }}>
-                          {s.qcPassed === true ? "✓ Passed QC" : s.qcPassed === false ? "❌ Defective" : "⏳ In Progress"}
-                        </div>
-                      </div>
-                    ))}
+                    <DataTable<SareeLogItem>
+                      columns={[
+                        { id: "sareeId", header: "Saree ID", accessor: s => s.sareeId, cell: (_v, s) => <span style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{s.sareeId}</span> },
+                        { id: "batchId", header: "Batch ID", accessor: s => s.batchId, cell: (_v, s) => <span style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{s.batchId}</span> },
+                        { id: "sareeType", header: "Saree Type", accessor: s => s.sareeTypeName, cell: (_v, s) => <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}><strong>{s.sareeTypeCode}</strong> · {s.sareeTypeName}</span> },
+                        { id: "loom", header: "Loom", accessor: s => s.loom, cell: (_v, s) => <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>Loom {s.loom}</span> },
+                        { id: "qcStatus", header: "QC Status", accessor: s => s.qcPassed, cell: (_v, s) => <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: s.qcPassed === true ? C.green : s.qcPassed === false ? C.crim : C.gold }}>{s.qcPassed === true ? "✓ Passed QC" : s.qcPassed === false ? "❌ Defective" : "⏳ In Progress"}</span> },
+                      ] as ColumnDef<SareeLogItem>[]}
+                      data={mySarees}
+                      getRowId={s => s.sareeId}
+                    />
                   </div>
                 </div>
               )

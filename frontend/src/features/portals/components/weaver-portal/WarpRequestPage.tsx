@@ -31,6 +31,7 @@ import {
   C, F, SAREE_TYPE_RATES, DesignDetailCard, SareeTypeDetailCard, SectionTitle, Card, ProgressBar, StatusBadge, SignatureCanvas, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid, MobileBatchCard, CompletedBatchCard, BATCH_QUICK_FILTERS, BatchQuickFilterPills, WN_T, WN_G, WN_EASE, WN_NUM, WN_DATA, WN_PRIORITY, WN_CATEGORY, WN_FILTERS, WNFadeUp, BATCH_STATUS_CFG, BatchCard, FadeUpBatch, BG_IMAGE, FABRIC_BG
 } from './theme';
 import { Button, Input, Textarea, Field } from '../../../../shared/ui/primitives';
+import { DataTable, type ColumnDef } from '../../../../shared/ui/data';
 
 const MATERIAL_TO_WARP_TYPE: Record<"warp" | "resham" | "jari", string> = {
   warp: "WARP", resham: "RESHAM", jari: "JARI",
@@ -324,23 +325,17 @@ export function WarpRequestPage() {
             </div>
           ));
         }
+        const warpColumns: ColumnDef<(typeof rows)[number]>[] = [
+          { id: "id", header: "Request ID", accessor: r => r.id, cell: (_v, r) => <span style={{ fontFamily: F.m, fontSize: 12, color: C.burg }}>{r.id}</span> },
+          { id: "material", header: "Material", accessor: r => r.material, cell: (_v, r) => <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{r.material}</span> },
+          { id: "batch", header: "Loom", accessor: r => r.batch, cell: (_v, r) => <span style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{r.batch}</span> },
+          { id: "status", header: "Status", accessor: r => r.status, cell: (_v, r) => <StatusBadge label={r.status} color={r.color} bg={r.bg} /> },
+          { id: "date", header: "Date", accessor: r => r.date, cell: (_v, r) => <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{r.date}</span> },
+        ];
         return (
           <div style={{ margin: "0 20px 8px", background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, overflowX: isTablet ? "auto" : "hidden" }}>
             <div style={{ minWidth: isTablet ? 640 : undefined }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1.4fr 1fr 1fr 1fr", padding: "10px 16px", borderBottom: `1px solid ${C.bdr}`, background: C.cream }}>
-                {["Request ID", "Material", "Loom", "Status", "Date"].map(h => (
-                  <div key={h} style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted }}>{h}</div>
-                ))}
-              </div>
-              {rows.map((r, i) => (
-                <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1.4fr 1fr 1fr 1fr", padding: "12px 16px", borderBottom: i < rows.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", alignItems: "center" }}>
-                  <div style={{ fontFamily: F.m, fontSize: 12, color: C.burg }}>{r.id}</div>
-                  <div style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{r.material}</div>
-                  <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{r.batch}</div>
-                  <div><StatusBadge label={r.status} color={r.color} bg={r.bg} /></div>
-                  <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{r.date}</div>
-                </div>
-              ))}
+              <DataTable columns={warpColumns} data={rows} getRowId={r => r.id} />
             </div>
           </div>
         );

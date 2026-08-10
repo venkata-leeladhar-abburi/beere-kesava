@@ -11,6 +11,7 @@ import { useBatches } from "../../../../production/contexts/BatchContext";
 import { useRatesPricing } from "../../../../pricing/contexts/RatesContext";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
+import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
 
 function DSectionHeader({ label, link, onLink }: { label: string; link?: string; onLink?: () => void }) {
   return (
@@ -94,6 +95,63 @@ export function PaymentsSection({ bp, isTablet }: { bp: "tablet" | "desktop"; is
 
   const formatCurrency = (n: number) => formatMoney(rupees(n), { compact: true });
 
+  /**
+   * Migrated onto <DataTable> — design-system/04-DATA-DISPLAY.md Part S.
+   * Was a hand-rolled grid-as-table; cells keep their original font/colour
+   * via `cell` overrides. Header row now uses DataTable's 12px Inter spec.
+   */
+  const chargesByTypeColumns: ColumnDef<typeof chargesByType[number]>[] = [
+    {
+      id: "type", header: "Saree Type", accessor: t => t.name,
+      cell: (_v, t) => (
+        <div>
+          <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 15, color: C.text }}>{t.name}</div>
+          <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>{t.code}</div>
+        </div>
+      ),
+    },
+    {
+      id: "count", header: "Sarees", accessor: t => t.count,
+      cell: (_v, t) => <span style={{ fontFamily: F.u, fontSize: 15, color: C.text }}>{t.count}</span>,
+    },
+    {
+      id: "rate", header: "Rate / Saree", accessor: t => t.rate,
+      cell: (_v, t) => <span style={{ fontFamily: F.m, fontSize: 14, color: C.muted }}><Money value={rupees(t.rate)} /></span>,
+    },
+    {
+      id: "subtotal", header: "Subtotal", accessor: t => t.subtotal,
+      cell: (_v, t) => <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 16, color: C.burg }}><Money value={rupees(t.subtotal)} /></span>,
+    },
+  ];
+
+  const paymentHistoryColumns: ColumnDef<typeof myPayments[number]>[] = [
+    {
+      id: "date", header: "Payment Date", accessor: p => p.paymentDate || p.uploadedAt,
+      cell: (_v, p) => (
+        <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 15, color: C.text }}>
+          {new Date(p.paymentDate || p.uploadedAt).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}
+        </span>
+      ),
+    },
+    {
+      id: "sarees", header: "Sarees", accessor: p => p.noOfSarees,
+      cell: (_v, p) => <span style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>{p.noOfSarees ? `${p.noOfSarees} sarees` : "—"}</span>,
+    },
+    {
+      id: "amount", header: "Amount", accessor: p => p.amountPaid,
+      cell: (_v, p) => <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 18, color: C.gold }}><Money value={rupees(p.amountPaid)} /></span>,
+    },
+    {
+      id: "utr", header: "UTR Reference", accessor: p => p.utrNumber,
+      cell: (_v, p) => (
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <Check size={15} color={C.green} />
+          <span style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{p.utrNumber || "N/A"}</span>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <>
       <DesktopHero
@@ -131,22 +189,7 @@ export function PaymentsSection({ bp, isTablet }: { bp: "tablet" | "desktop"; is
             ) : (
               <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 20, overflow: isTablet ? "auto" : "hidden", boxShadow: "0 4px 20px rgba(44,24,16,0.08)", marginBottom: 40 }}>
                 <div style={{ minWidth: isTablet ? 520 : undefined }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", padding: "14px 26px", borderBottom: `1px solid ${C.bdr}`, background: "#FAFAF8" }}>
-                    {["Saree Type", "Sarees", "Rate / Saree", "Subtotal"].map(h => (
-                      <div key={h} style={{ fontFamily: F.u, fontSize: 13, fontWeight: 700, color: C.muted, letterSpacing: 0.4 }}>{h}</div>
-                    ))}
-                  </div>
-                  {chargesByType.map((t, i) => (
-                    <div key={t.code} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", padding: "18px 26px", borderBottom: i < chargesByType.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", alignItems: "center" }}>
-                      <div>
-                        <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 15, color: C.text }}>{t.name}</div>
-                        <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>{t.code}</div>
-                      </div>
-                      <div style={{ fontFamily: F.u, fontSize: 15, color: C.text }}>{t.count}</div>
-                      <div style={{ fontFamily: F.m, fontSize: 14, color: C.muted }}><Money value={rupees(t.rate)} /></div>
-                      <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 16, color: C.burg }}><Money value={rupees(t.subtotal)} /></div>
-                    </div>
-                  ))}
+                  <DataTable columns={chargesByTypeColumns} data={chargesByType} getRowId={t => t.code} />
                   <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", padding: "16px 26px", background: C.cream, alignItems: "center" }}>
                     <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>Total</div>
                     <div style={{ fontFamily: F.u, fontSize: 14, color: C.text }}>{sareesProduced}</div>
@@ -192,24 +235,7 @@ export function PaymentsSection({ bp, isTablet }: { bp: "tablet" | "desktop"; is
             ) : (
               <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 20, overflow: isTablet ? "auto" : "hidden", boxShadow: "0 4px 20px rgba(44,24,16,0.08)" }}>
                 <div style={{ minWidth: isTablet ? 560 : undefined }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", padding: "14px 26px", borderBottom: `1px solid ${C.bdr}`, background: "#FAFAF8" }}>
-                    {["Payment Date", "Sarees", "Amount", "UTR Reference"].map(h => (
-                      <div key={h} style={{ fontFamily: F.u, fontSize: 13, fontWeight: 700, color: C.muted, letterSpacing: 0.4 }}>{h}</div>
-                    ))}
-                  </div>
-                  {myPayments.map((p, i) => (
-                    <div key={p.id || i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", padding: "20px 26px", borderBottom: i < myPayments.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", alignItems: "center" }}>
-                      <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 15, color: C.text }}>
-                        {new Date(p.paymentDate || p.uploadedAt).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}
-                      </div>
-                      <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>{p.noOfSarees ? `${p.noOfSarees} sarees` : "—"}</div>
-                      <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 18, color: C.gold }}><Money value={rupees(p.amountPaid)} /></div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                        <Check size={15} color={C.green} />
-                        <span style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{p.utrNumber || "N/A"}</span>
-                      </div>
-                    </div>
-                  ))}
+                  <DataTable columns={paymentHistoryColumns} data={myPayments} getRowId={p => p.id ?? `${p.paymentDate ?? p.uploadedAt}-${p.amountPaid}-${p.utrNumber ?? ""}`} />
                 </div>
               </div>
             )}

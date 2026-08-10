@@ -11,7 +11,7 @@ import { qcApi } from "../../../../shared/api/qc";
 import { FadeUp, Pip, ClickableCode, ProductionDialog } from "../common/primitives";
 import { Button, SearchInput, Select, SelectItem, Checkbox, IconButton } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
-import { rupees, formatMoney } from "@/lib/domain/money";
+import { rupees, formatMoney, addMoney, type Paise } from "@/lib/domain/money";
 
 const PIP_COLORS = ["#7C3AED", T.royalBurgundy, T.taupe, "#B45309"];
 
@@ -50,13 +50,16 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
   // workflow tracked by the backend, so status is simply "Printing
   // Completed" for every finalized batch here (kept for label continuity
   // with the rest of the section's styling, not a tracked backend state).
-  const HISTORY_BATCHES: HistoryBatch[] = useMemo(() => {
+  const { HISTORY_BATCHES, totalMakingCharges } = useMemo(() => {
     const completed = batches.filter(b => b.status === "completed");
-    return completed.map((b): HistoryBatch => {
+    const makingChargesPaise: Paise[] = [];
+    const list: HistoryBatch[] = completed.map((b): HistoryBatch => {
       const batchQc = qcRecords.filter(r => r.batchId === b.batchId);
       const okPieces = batchQc.filter(r => r.result === "PASSED" || r.result === "SEMI").length;
       const found = batchQc.filter(r => r.result === "DEFECTIVE").length;
       const makingCharges = batchQc.reduce((sum, r) => sum + Number(r.makingCharge), 0);
+      const makingChargesAmount = rupees(makingCharges);
+      makingChargesPaise.push(makingChargesAmount);
 
       const seenWeavers = new Map<string, { initials: string; bg: string }>();
       b.rows.forEach(r => {
@@ -77,11 +80,12 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
         okPieces: batchQc.length > 0 ? okPieces : null,
         found: batchQc.length > 0 ? found : null,
         status: "Printing Completed",
-        makingCharges: formatMoney(rupees(makingCharges)),
+        makingCharges: formatMoney(makingChargesAmount),
         completedOn: new Date(b.updatedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
         bulkOrder: b.rows.find(r => r.bulkOrderRef)?.bulkOrderRef ?? undefined,
       };
     });
+    return { HISTORY_BATCHES: list, totalMakingCharges: addMoney(...makingChargesPaise) };
   }, [batches, qcRecords]);
   const [showReportDialog, setShowReportDialog] = useState(false);
   const [rPeriod, setRPeriod] = useState("This Month");
@@ -216,7 +220,7 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
             <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Total Making Charges:</span>
               <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.green }}>
-                {formatMoney(rupees(HISTORY_BATCHES.reduce((sum, b) => sum + parseInt(b.makingCharges.replace(/[₹,]/g, "") || "0", 10), 0)))}
+                {formatMoney(totalMakingCharges)}
               </span>
             </div>
           </div>

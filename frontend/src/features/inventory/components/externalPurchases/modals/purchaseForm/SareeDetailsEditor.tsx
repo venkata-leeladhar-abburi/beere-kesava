@@ -1,6 +1,7 @@
 import React from "react";
 import { Plus } from "lucide-react";
-import { formatINR, purchaseTotals } from "../../../../../suppliers/contexts/SupplierContext";
+import { purchaseTotals } from "../../../../../suppliers/contexts/SupplierContext";
+import { formatMoney, rupees } from "@/lib/domain/money";
 import { T, F } from "../../theme";
 import { Button } from "../../../../../../shared/ui/primitives";
 import { SareeRow } from "../../types";
@@ -64,7 +65,7 @@ export function SareeDetailsEditor({
               <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: 0.6, marginBottom: 4 }}>
                 {label}
               </div>
-              <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color }}>{formatINR(value)}</div>
+              <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color }}>{formatMoney(rupees(value))}</div>
             </div>
           ))}
         </div>
@@ -90,9 +91,9 @@ export function SareeDetailsEditor({
             Total — {pieceCount} piece{pieceCount !== 1 ? "s" : ""}
           </span>
           <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
-            buying {formatINR(totals.buying)} · selling{" "}
-            <strong style={{ color: T.royalBurgundy }}>{formatINR(totals.selling)}</strong> · profit{" "}
-            <strong style={{ color: T.green }}>{formatINR(totals.profit)}</strong>
+            buying {formatMoney(rupees(totals.buying))} · selling{" "}
+            <strong style={{ color: T.royalBurgundy }}>{formatMoney(rupees(totals.selling))}</strong> · profit{" "}
+            <strong style={{ color: T.green }}>{formatMoney(rupees(totals.profit))}</strong>
           </span>
         </div>
       )}

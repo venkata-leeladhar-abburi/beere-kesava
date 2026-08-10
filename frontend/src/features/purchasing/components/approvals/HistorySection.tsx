@@ -23,6 +23,48 @@ type HistoryRow = {
   decision: "Approved" | "Rejected";
 };
 
+const historyColumns: ColumnDef<HistoryRow>[] = [
+  {
+    id: "date", header: "Date & Time", accessor: row => row.date,
+    cell: (_v, row) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{row.date}</span>,
+  },
+  {
+    id: "type", header: "Type", accessor: row => row.type,
+    cell: (_v, row) => <TypePill type={row.type} typeColor={T.royalBurgundy} />,
+  },
+  {
+    id: "by", header: "Requested By", accessor: row => row.by,
+    cell: (_v, row) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{row.by}</span>,
+  },
+  {
+    id: "details", header: "Details", accessor: row => row.details,
+    cell: (_v, row) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{row.details}</span>,
+  },
+  {
+    id: "decision", header: "Decision", accessor: row => row.decision,
+    cell: (_v, row) => (
+      <span style={{
+        background: row.decision === "Approved" ? T.greenBg : T.crimsonBg,
+        color: row.decision === "Approved" ? T.green : T.crimson,
+        borderRadius: 6, padding: "3px 10px",
+        fontFamily: F.ui, fontSize: 12, fontWeight: 600,
+        display: "inline-flex", alignItems: "center", gap: 4,
+      }}>
+        {row.decision === "Approved" ? <Check size={11} /> : <X size={11} />}
+        {row.decision}
+      </span>
+    ),
+  },
+  {
+    id: "notified", header: "Notified", accessor: () => "Sent",
+    cell: () => (
+      <span style={{ fontFamily: F.ui, fontSize: 12, color: T.green, display: "flex", alignItems: "center", gap: 4 }}>
+        <Check size={11} /> Sent
+      </span>
+    ),
+  },
+];
+
 function monthsAgo(n: number): Date {
   const d = new Date();
   d.setMonth(d.getMonth() - n);
@@ -125,71 +167,14 @@ export function HistorySection({
         boxShadow: "0 2px 12px rgba(44,24,16,0.07)",
         overflow: "hidden",
       }}>
-        {/* Table header */}
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "200px 140px 130px 1fr 120px 90px",
-          background: T.cream,
-          borderBottom: "1px solid " + T.borderDef,
-          padding: "10px 20px",
-          gap: 8,
-        }}>
-          {["Date & Time", "Type", "Requested By", "Details", "Decision", "Notified"].map(h => (
-            <span key={h} style={{
-              fontFamily: F.mono, fontSize: 12, color: T.taupe,
-              textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 600,
-            }}>
-              {h}
-            </span>
-          ))}
-        </div>
-
-        {isLoading ? (
-          <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
-            Loading approval history…
-          </div>
-        ) : isError ? (
-          <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.crimson }}>
-            Failed to load approval history. Please try again.
-          </div>
-        ) : filteredRows.length === 0 ? (
-          <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
-            No approval decisions recorded for this filter yet.
-          </div>
-        ) : (
-          filteredRows.map((row, i) => (
-            <div
-              key={i}
-              style={{
-                display: "grid",
-                gridTemplateColumns: "200px 140px 130px 1fr 120px 90px",
-                padding: "13px 20px",
-                gap: 8,
-                borderBottom: i < filteredRows.length - 1 ? "1px solid " + T.borderDef : "none",
-                background: i % 2 === 0 ? "#FFF" : T.warmIvory,
-                alignItems: "center",
-              }}
-            >
-              <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{row.date}</span>
-              <TypePill type={row.type} typeColor={T.royalBurgundy} />
-              <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{row.by}</span>
-              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{row.details}</span>
-              <span style={{
-                background: row.decision === "Approved" ? T.greenBg : T.crimsonBg,
-                color: row.decision === "Approved" ? T.green : T.crimson,
-                borderRadius: 6, padding: "3px 10px",
-                fontFamily: F.ui, fontSize: 12, fontWeight: 600,
-                display: "inline-flex", alignItems: "center", gap: 4,
-              }}>
-                {row.decision === "Approved" ? <Check size={11} /> : <X size={11} />}
-                {row.decision}
-              </span>
-              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.green, display: "flex", alignItems: "center", gap: 4 }}>
-                <Check size={11} /> Sent
-              </span>
-            </div>
-          ))
-        )}
+        <DataTable<HistoryRow>
+          columns={historyColumns}
+          data={filteredRows}
+          getRowId={row => `${row.date}-${row.by}-${row.details}`}
+          loading={isLoading}
+          error={isError}
+          emptyTitle="No approval decisions recorded for this filter yet."
+        />
       </div>
 
       {/* Permanent record note */}

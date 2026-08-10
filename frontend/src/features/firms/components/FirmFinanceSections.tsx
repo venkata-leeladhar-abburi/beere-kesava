@@ -11,6 +11,7 @@ import { fmtFull, today } from "./utils";
 import { Button, Input, Select, SelectItem } from "../../../shared/ui/primitives";
 import { DatePicker, formatDate } from "../../../shared/ui/date";
 import { rupees, formatMoney } from "@/lib/domain/money";
+import { DataTable, type ColumnDef } from "../../../shared/ui/data";
 
 function Inp({ value, onChange, placeholder, type = "text", mono }: {
   value: string; onChange: (v: string) => void;
@@ -160,26 +161,64 @@ export function ExcelUploadBtn({ onImport, type }: { onImport: (rows: Omit<Finan
   );
 }
 
-export function EntryRow({ entry, type }: { entry: FinancialEntry | MiscEntry; type?: "income" | "expense" }) {
-  const isMisc   = "type" in entry;
-  const isIncome = isMisc ? (entry as MiscEntry).type === "income" : (type === "income");
-  const cat      = "category" in entry ? entry.category : (entry as MiscEntry).type === "income" ? "Income" : "Expense";
-  const catChipBg = isIncome ? T.greenBg : cat === "Factory Maintenance" || cat === "Shop Maintenance" ? "rgba(200,155,71,0.10)" : cat === "Salaries" ? "rgba(74,107,138,0.10)" : T.crimsonBg;
-  const catChipColor = isIncome ? T.green : cat === "Factory Maintenance" || cat === "Shop Maintenance" ? "#8B6018" : cat === "Salaries" ? "#2E5A8A" : T.crimson;
+/**
+ * Migrated onto <DataTable> — design-system/04-DATA-DISPLAY.md Part S.
+ * Was a hand-rolled grid-as-table (header divs + EntryRow grid divs) with no
+ * <th>/<table> semantics; every cell keeps its original font/colour/format
+ * via a `cell` override. Header row now uses DataTable's 12px Inter spec.
+ */
+function EntryTable({ entries, type }: { entries: (FinancialEntry | MiscEntry)[]; type?: "income" | "expense" }) {
+  function isIncomeOf(entry: FinancialEntry | MiscEntry): boolean {
+    const isMisc = "type" in entry;
+    return isMisc ? (entry as MiscEntry).type === "income" : (type === "income");
+  }
+  function catOf(entry: FinancialEntry | MiscEntry): string {
+    return "category" in entry ? entry.category : (entry as MiscEntry).type === "income" ? "Income" : "Expense";
+  }
+
+  const columns: ColumnDef<FinancialEntry | MiscEntry>[] = [
+    {
+      id: "description", header: "Description", accessor: e => e.description,
+      cell: (_v, e) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.description}</span>,
+    },
+    {
+      id: "amount", header: "Amount", accessor: e => e.amount,
+      cell: (_v, e) => {
+        const isIncome = isIncomeOf(e);
+        return (
+          <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 13, color: isIncome ? T.green : T.crimson }}>
+            {isIncome ? "+" : "−"}{formatMoney(rupees(e.amount))}
+          </span>
+        );
+      },
+    },
+    {
+      id: "date", header: "Date", accessor: e => e.date,
+      cell: (_v, e) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{e.date}</span>,
+    },
+    {
+      id: "category", header: type ? "Category" : "Type", accessor: e => catOf(e),
+      cell: (_v, e) => {
+        const isIncome = isIncomeOf(e);
+        const cat = catOf(e);
+        const catChipBg = isIncome ? T.greenBg : cat === "Factory Maintenance" || cat === "Shop Maintenance" ? "rgba(200,155,71,0.10)" : cat === "Salaries" ? "rgba(74,107,138,0.10)" : T.crimsonBg;
+        const catChipColor = isIncome ? T.green : cat === "Factory Maintenance" || cat === "Shop Maintenance" ? "#8B6018" : cat === "Salaries" ? "#2E5A8A" : T.crimson;
+        return (
+          <span style={{ display: "inline-block", background: catChipBg, border: `1px solid ${catChipColor}22`, borderRadius: 999, padding: "3px 9px", fontFamily: F.ui, fontSize: 12, color: catChipColor, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", maxWidth: 150, textOverflow: "ellipsis" }}>
+            {cat}
+          </span>
+        );
+      },
+    },
+    { id: "spacer", header: "", accessor: () => null, width: 30 },
+  ];
+
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 120px 110px 160px 30px", gap: 0, padding: "10px 14px", alignItems: "center", borderBottom: `1px solid ${T.borderDef}`, background: "#FFFDF9" }}>
-      <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, paddingRight: 12, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{entry.description}</div>
-      <div style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 13, color: isIncome ? T.green : T.crimson }}>
-        {isIncome ? "+" : "−"}{formatMoney(rupees(entry.amount))}
-      </div>
-      <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{entry.date}</div>
-      <div>
-        <span style={{ display: "inline-block", background: catChipBg, border: `1px solid ${catChipColor}22`, borderRadius: 999, padding: "3px 9px", fontFamily: F.ui, fontSize: 12, color: catChipColor, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", maxWidth: 150, textOverflow: "ellipsis" }}>
-          {cat}
-        </span>
-      </div>
-      <div />
-    </div>
+    <DataTable
+      columns={columns}
+      data={entries}
+      getRowId={e => e.id}
+    />
   );
 }
 
@@ -226,20 +265,13 @@ export function FinSection({ title, icon, entries, color, bg, onAdd, onBulkImpor
                 </div>
               )}
             </AnimatePresence>
-            {entries.length > 0 && (
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 120px 110px 160px 30px", gap: 0, padding: "8px 14px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${T.borderDef}` }}>
-                {["Description", "Amount", "Date", "Category", ""].map((h, i) => (
-                  <div key={i} style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.05em" }}>{h}</div>
-                ))}
-              </div>
-            )}
             {entries.length === 0 && !adding ? (
               <div style={{ padding: "24px 18px", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe, background: "#FFF" }}>
                 No {title.toLowerCase()} recorded yet. Add entries manually or import from Excel.
               </div>
-            ) : (
+            ) : entries.length > 0 && (
               <div style={{ background: "#FFF" }}>
-                {entries.map(e => <EntryRow key={e.id} entry={e} type={type} />)}
+                <EntryTable entries={entries} type={type} />
               </div>
             )}
           </motion.div>
@@ -282,18 +314,11 @@ export function MiscSection({ entries, onAdd }: { entries: MiscEntry[]; onAdd: (
                 </div>
               )}
             </AnimatePresence>
-            {entries.length > 0 && (
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 120px 110px 160px 30px", gap: 0, padding: "8px 14px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${T.borderDef}` }}>
-                {["Description", "Amount", "Date", "Type", ""].map((h, i) => (
-                  <div key={i} style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.05em" }}>{h}</div>
-                ))}
-              </div>
-            )}
             {entries.length === 0 && !adding ? (
               <div style={{ padding: "24px 18px", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe, background: "#FFF" }}>No miscellaneous entries yet.</div>
-            ) : (
+            ) : entries.length > 0 && (
               <div style={{ background: "#FFF" }}>
-                {entries.map(e => <EntryRow key={e.id} entry={e} />)}
+                <EntryTable entries={entries} />
               </div>
             )}
           </motion.div>

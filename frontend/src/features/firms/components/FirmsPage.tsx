@@ -17,9 +17,86 @@ import {
 import { T, F, EASE } from "./theme";
 import { fmtAmt, fmtFull, initials, cardColor } from "./utils";
 import { Button, IconButton, SearchInput } from "../../../shared/ui/primitives";
+import { Money } from "../../../shared/ui/domain";
+import { rupees } from "@/lib/domain/money";
+import { DataTable, type ColumnDef } from "../../../shared/ui/data";
 
 
 
+
+type OverviewRow = { firm: Firm; inc: number; exp: number; net: number; entryCount: number; color: string };
+
+function overviewColumns(onGoToFirm?: (firmId: string) => void): ColumnDef<OverviewRow>[] {
+  return [
+    {
+      id: "firm", header: "Firm", accessor: r => r.firm.firmName,
+      cell: (_v, r) => (
+        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "16px 0", borderLeft: `4px solid ${r.color}`, marginLeft: -4, paddingLeft: 16 }}>
+          <div style={{ width: 38, height: 38, borderRadius: 11, background: r.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: `0 3px 10px ${r.color}40` }}>
+            <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 12, color: "#FFF" }}>{initials(r.firm.firmName)}</span>
+          </div>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis" }}>{r.firm.firmName}</div>
+            <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2 }}>{r.firm.id}{r.firm.gstNumber ? ` · ${r.firm.gstNumber}` : ""}</div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "income", header: "Income", type: "currency", align: "end", accessor: r => r.inc,
+      cell: (_v, r) => (
+        <div style={{ textAlign: "right" as const }}>
+          <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.green }}>{fmtFull(r.inc)}</div>
+          {r.inc > 0 && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>↑ earned</div>}
+        </div>
+      ),
+    },
+    {
+      id: "expenses", header: "Expenses", type: "currency", align: "end", accessor: r => r.exp,
+      cell: (_v, r) => (
+        <div style={{ textAlign: "right" as const }}>
+          <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.crimson }}>{fmtFull(r.exp)}</div>
+          {r.exp > 0 && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>↓ spent</div>}
+        </div>
+      ),
+    },
+    {
+      id: "net", header: "Net Balance", type: "currency", align: "end", accessor: r => r.net,
+      cell: (_v, r) => (
+        <div style={{ textAlign: "right" as const }}>
+          <span style={{ display: "inline-block", fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: r.net >= 0 ? T.green : T.crimson, background: r.net >= 0 ? T.greenBg : T.crimsonBg, border: `1px solid ${r.net >= 0 ? "rgba(30,102,64,0.18)" : "rgba(192,57,43,0.18)"}`, borderRadius: 8, padding: "4px 10px" }}>
+            {r.net >= 0 ? "+" : ""}{fmtFull(r.net)}
+          </span>
+        </div>
+      ),
+    },
+    {
+      id: "entries", header: "Entries", align: "end", accessor: r => r.entryCount,
+      cell: (_v, r) => (
+        <div style={{ textAlign: "right" as const }}>
+          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, background: "rgba(139,112,96,0.09)", border: `1px solid ${T.borderDef}`, borderRadius: 6, padding: "3px 8px" }}>
+            {r.entryCount} entries
+          </span>
+        </div>
+      ),
+    },
+    {
+      id: "actions", header: "", type: "actions", accessor: () => null,
+      cell: (_v, r) => (
+        <div style={{ display: "flex", justifyContent: "flex-end" as const }}>
+          <IconButton
+            icon={ArrowRight}
+            label={`Go to ${r.firm.firmName}`}
+            variant="tertiary"
+            size="sm"
+            onClick={() => onGoToFirm?.(r.firm.id)}
+            className="size-7"
+          />
+        </div>
+      ),
+    },
+  ];
+}
 
 // ─── Business Overview section (redesigned premium table) ─────────────────────
 function BusinessOverview({ onGoToFirm }: { onGoToFirm?: (firmId: string) => void }) {
@@ -69,61 +146,11 @@ function BusinessOverview({ onGoToFirm }: { onGoToFirm?: (firmId: string) => voi
       <AnimatePresence>
         {open && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.22, ease: EASE }} style={{ overflow: "hidden" }}>
-            {/* Table header */}
-            <div style={{ display: "grid", gridTemplateColumns: "2fr 130px 130px 150px 80px 36px", gap: 0, padding: "10px 28px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${T.borderDef}` }}>
-              {["Firm", "Income", "Expenses", "Net Balance", "Entries", ""].map((h, i) => (
-                <div key={i} style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em", textAlign: (i > 0 ? "right" : "left") as any }}>{h}</div>
-              ))}
-            </div>
-            {rows.map((r, i) => {
-              const color = FIRM_COLORS[parseInt(r.firm.id.replace("FIRM-",""), 10) % FIRM_COLORS.length];
-              return (
-                <motion.div
-                  key={r.firm.id}
-                  initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: i * 0.04 }}
-                  style={{ display: "grid", gridTemplateColumns: "2fr 130px 130px 150px 80px 36px", gap: 0, padding: "0 28px", borderBottom: i < rows.length - 1 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 0 ? "#FFF" : "#FFFDF9", alignItems: "center", borderLeft: `4px solid ${color}` }}
-                >
-                  <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "16px 0" }}>
-                    <div style={{ width: 38, height: 38, borderRadius: 11, background: color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: `0 3px 10px ${color}40` }}>
-                      <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 12, color: "#FFF" }}>{initials(r.firm.firmName)}</span>
-                    </div>
-                    <div style={{ minWidth: 0 }}>
-                      <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis" }}>{r.firm.firmName}</div>
-                      <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2 }}>{r.firm.id}{r.firm.gstNumber ? ` · ${r.firm.gstNumber}` : ""}</div>
-                    </div>
-                  </div>
-                  <div style={{ textAlign: "right" as const }}>
-                    <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.green }}>{fmtFull(r.inc)}</div>
-                    {r.inc > 0 && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>↑ earned</div>}
-                  </div>
-                  <div style={{ textAlign: "right" as const }}>
-                    <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.crimson }}>{fmtFull(r.exp)}</div>
-                    {r.exp > 0 && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>↓ spent</div>}
-                  </div>
-                  <div style={{ textAlign: "right" as const }}>
-                    <span style={{ display: "inline-block", fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: r.net >= 0 ? T.green : T.crimson, background: r.net >= 0 ? T.greenBg : T.crimsonBg, border: `1px solid ${r.net >= 0 ? "rgba(30,102,64,0.18)" : "rgba(192,57,43,0.18)"}`, borderRadius: 8, padding: "4px 10px" }}>
-                      {r.net >= 0 ? "+" : ""}{fmtFull(r.net)}
-                    </span>
-                  </div>
-                  <div style={{ textAlign: "right" as const }}>
-                    <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, background: "rgba(139,112,96,0.09)", border: `1px solid ${T.borderDef}`, borderRadius: 6, padding: "3px 8px" }}>
-                      {r.entryCount} entries
-                    </span>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "flex-end" as const }}>
-                    <IconButton
-                      icon={ArrowRight}
-                      label={`Go to ${r.firm.firmName}`}
-                      variant="tertiary"
-                      size="sm"
-                      onClick={() => onGoToFirm?.(r.firm.id)}
-                      className="size-7"
-                    />
-                  </div>
-                </motion.div>
-              );
-            })}
+            <DataTable<OverviewRow>
+              columns={overviewColumns(onGoToFirm)}
+              data={rows.map(r => ({ ...r, color: FIRM_COLORS[parseInt(r.firm.id.replace("FIRM-",""), 10) % FIRM_COLORS.length] }))}
+              getRowId={r => r.firm.id}
+            />
             {/* Totals row */}
             <div style={{ display: "grid", gridTemplateColumns: "2fr 130px 130px 150px 80px 36px", gap: 0, padding: "16px 28px", background: T.bgGold, borderTop: `1.5px solid ${T.borderGold}`, borderLeft: `4px solid ${T.antiqueGold}` }}>
               <div>
@@ -314,7 +341,7 @@ export function FirmsPage() {
             { label: "REGISTERED FIRMS",   val: String(firms.length),    sub: "Active vendor accounts",         hi: false, crimson: false, goldVal: false },
             { label: "TOTAL PURCHASES",    val: fmtAmt(totalPurchase),   sub: "Across all registered firms",    hi: true,  crimson: false, goldVal: true  },
             { label: "FIRMS WITH BALANCE", val: String(firms.filter(f => (f.purchaseAmount ?? 0) > 0).length), sub: "Active purchase records", hi: false, crimson: false, goldVal: false },
-            { label: "AVG PURCHASE",       val: firms.length ? fmtAmt(totalPurchase / firms.length) : "₹0", sub: "Per registered firm", hi: false, crimson: false, goldVal: false },
+            { label: "AVG PURCHASE",       val: firms.length ? fmtAmt(totalPurchase / firms.length) : <Money value={rupees(0)} />, sub: "Per registered firm", hi: false, crimson: false, goldVal: false },
           ].map((m, i) => (
             <motion.div
               key={m.label}

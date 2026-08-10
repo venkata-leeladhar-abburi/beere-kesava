@@ -26,6 +26,13 @@ interface CustomerRow {
   spend: number;
   due: number;
   lastPurchase: string;
+  // "Active"/"Overdue" here means "has an outstanding due, or not" — closest
+  // is PAYMENT_STATUS, but that taxonomy has no plain "current/no-dues" key
+  // (only unpaid/partial/paid/overdue/due-soon/settled/refunded/written-off),
+  // and this row also renders through the local `StatusPill` in
+  // reports/components/common/primitives.tsx (tone="ok"/"bad"), not the
+  // shared domain StatusPill. No taxonomy key fits cleanly — documented
+  // exception rather than a force-fit.
   status: "Active" | "Overdue";
 }
 

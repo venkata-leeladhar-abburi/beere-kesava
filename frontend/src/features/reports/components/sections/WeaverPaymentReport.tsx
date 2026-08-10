@@ -6,11 +6,31 @@ import { useWeaverPayments } from "../../../weavers/contexts/WeaverPaymentsConte
 import { weaversApi } from "../../../../shared/api/weavers";
 import { qcApi } from "../../../../shared/api/qc";
 import { T, F } from "../theme";
-import { FadeUp, ChartCard, SumCard, TabTitle, ReportDLBar, ChartTip, AnimBar, TablePager } from "../common/primitives";
+import { FadeUp, ChartCard, SumCard, TabTitle, ReportDLBar, AnimBar, TablePager } from "../common/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { semantic } from "../../../../design-system/tokens";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
+
+// Same shape as reports/common/primitives.tsx's ChartTip, but routes the
+// value through the Money system (formatMoney/rupees) instead of a raw "₹"
+// prefix + toLocaleString — ChartTip itself is shared across non-money chart
+// tooltips (kg, customers, sarees) and is out of scope for this pass.
+function MoneyChartTip({ active, payload, label }: any) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div style={{ background: "#FFFDF9", border: `1px solid ${T.borderDef}`, borderRadius: 9, padding: "10px 14px", boxShadow: "0 4px 16px rgba(74,6,27,0.12)" }}>
+      {label && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginBottom: 5, textTransform: "uppercase" }}>{label}</div>}
+      {payload.map((p: any, i: number) => (
+        <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
+          <div style={{ width: 8, height: 8, borderRadius: "50%", background: p.color || p.fill || p.stroke }} />
+          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.name}:</span>
+          <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{typeof p.value === "number" ? formatMoney(rupees(p.value)) : p.value}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export function WeaverPaymentReport() {
   const { payments } = useWeaverPayments();
@@ -113,7 +133,7 @@ export function WeaverPaymentReport() {
                 <CartesianGrid key="wp-grid" strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
                 <XAxis key="wp-x" dataKey="month" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
                 <YAxis key="wp-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => formatMoney(rupees(v))} width={55} />
-                <Tooltip key="wp-tip" content={<ChartTip prefix="₹" />} />
+                <Tooltip key="wp-tip" content={<MoneyChartTip />} />
                 <Bar key="wp-amt" dataKey="amt" name="Making Charges">
                   {weaverPayMonthly.map((e, i) => (
                     <Cell key={`wp-cell-${e.month}`} fill={i === weaverPayMonthly.length - 1 ? semantic.chart.series[0] : "rgba(154,45,74,0.35)"} />

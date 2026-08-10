@@ -18,6 +18,13 @@ export interface FinishingStaffMember {
   specialisation: string;
   notes: string;
   dateAdded: string;
+  // Genuinely matches lib/domain/status.ts's PERSON_STATUS ("active"/
+  // "inactive"), but this type is also imported and rendered directly by
+  // several files under features/users/ (UserTable.tsx, EditModal.tsx,
+  // ViewProfileModal.tsx, AddUserPage.tsx, utils.ts) that are outside this
+  // pass's scope — retyping to PersonStatus here without updating those
+  // would break their string comparisons/renders, so left as its own
+  // "Active" | "Inactive" literal union rather than migrated.
   status: "Active" | "Inactive";
 }
 

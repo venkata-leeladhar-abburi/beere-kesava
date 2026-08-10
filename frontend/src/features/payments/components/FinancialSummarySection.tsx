@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 
 import { DownloadGate } from "../../../shared/ui/DownloadAccess";
 import { F, T } from "../theme";
-import { formatINR } from "@/lib/formatters";
+import { formatMoney, rupees } from "@/lib/domain/money";
 import { AnimBar, FadeUp } from "./common/motion";
 import { ActionModal } from "./common/primitives";
 import { Button } from "../../../shared/ui/primitives";
@@ -38,14 +38,14 @@ export function FinancialSummarySection() {
   const supplierTotal = summary?.supplierTotal ?? 0;
 
   const dynamicComingIn = [
-    { label: "Retail & Wholesale Sales", value: formatINR(totalIn) },
-    { label: "Advance Collections", value: "₹0" },
+    { label: "Retail & Wholesale Sales", value: formatMoney(rupees(totalIn)) },
+    { label: "Advance Collections", value: formatMoney(rupees(0)) },
   ];
 
   const dynamicGoingOut = [
-    { label: "Weavers Paid", value: formatINR(weaverTotal) },
-    { label: "Vendors Paid", value: formatINR(vendorTotal) },
-    { label: "Raw Material Suppliers", value: formatINR(supplierTotal) },
+    { label: "Weavers Paid", value: formatMoney(rupees(weaverTotal)) },
+    { label: "Vendors Paid", value: formatMoney(rupees(vendorTotal)) },
+    { label: "Raw Material Suppliers", value: formatMoney(rupees(supplierTotal)) },
   ];
 
   const pctIn  = Math.min(100, Math.round((totalIn  / (totalIn + 1841000 || 1)) * 100));
@@ -97,7 +97,7 @@ export function FinancialSummarySection() {
                 <ArrowDownCircle size={15} color={T.green} />
               </div>
             </div>
-            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 800, color: T.green, lineHeight: 1.1, marginBottom: 16 }}>{formatINR(totalIn)}</div>
+            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 800, color: T.green, lineHeight: 1.1, marginBottom: 16 }}>{formatMoney(rupees(totalIn))}</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
               {dynamicComingIn.map(item => (
                 <div key={item.label} style={{ display: "flex", alignItems: "center", gap: 7, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
@@ -128,7 +128,7 @@ export function FinancialSummarySection() {
                 <ArrowUpCircle size={15} color={T.crimson} />
               </div>
             </div>
-            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 800, color: T.crimson, lineHeight: 1.1, marginBottom: 16 }}>{formatINR(totalOut)}</div>
+            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 800, color: T.crimson, lineHeight: 1.1, marginBottom: 16 }}>{formatMoney(rupees(totalOut))}</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
               {dynamicGoingOut.map(item => (
                 <div key={item.label} style={{ display: "flex", alignItems: "center", gap: 7, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
@@ -159,7 +159,7 @@ export function FinancialSummarySection() {
                 <Wallet size={15} color={T.royalBurgundy} />
               </div>
             </div>
-            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 800, color: T.royalBurgundy, lineHeight: 1.1, marginBottom: 16 }}>{formatINR(netCash)}</div>
+            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 800, color: T.royalBurgundy, lineHeight: 1.1, marginBottom: 16 }}>{formatMoney(rupees(netCash))}</div>
             <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, lineHeight: 1.6, margin: 0 }}>
               This is the remaining cash in hand after settling all weaver making charges and vendor raw material bills this month.
             </p>
@@ -177,7 +177,7 @@ export function FinancialSummarySection() {
                 <CalendarClock size={15} color={T.antiqueGold} />
               </div>
             </div>
-            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 800, color: T.antiqueGold, lineHeight: 1.1, marginBottom: 16 }}>{formatINR(totalIn + (summary?.outstandingAmount ?? 0))}</div>
+            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 800, color: T.antiqueGold, lineHeight: 1.1, marginBottom: 16 }}>{formatMoney(rupees(totalIn + (summary?.outstandingAmount ?? 0)))}</div>
             <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, lineHeight: 1.6, margin: 0 }}>
               The total potential revenue for this month, calculated if all outstanding wholesale invoices are paid in full.
             </p>

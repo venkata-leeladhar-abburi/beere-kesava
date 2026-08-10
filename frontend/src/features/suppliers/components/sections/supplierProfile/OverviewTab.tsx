@@ -10,7 +10,8 @@ import {
 import { Package, FileText, Wallet, IndianRupee } from "lucide-react";
 import { DateFilterBar, DateFilterState } from "../../../../../shared/ui/DateFilterBar";
 import { T, F } from "../../theme";
-import { Purchase, SareeTag, PurchaseRequest, formatINR, purchaseTotals } from "../../../contexts/SupplierContext";
+import { Purchase, SareeTag, PurchaseRequest, purchaseTotals } from "../../../contexts/SupplierContext";
+import { formatMoney, rupees } from "@/lib/domain/money";
 import { SareeInventoryTable } from "../SareeInventoryTable";
 import { SearchInput, Select, SelectItem } from "../../../../../shared/ui/primitives";
 import { ChartFigure } from "../../../../../shared/ui/data";
@@ -58,9 +59,9 @@ export function OverviewTab({
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16 }}>
         {[
           { label: "Purchases in Range", value: String(rangePurchases.length),        sub: `${filteredSarees.length} sarees`,                     color: T.luxuryBrown, Icon: Package },
-          { label: "Billed in Range",    value: formatINR(rangeBilled),               sub: "Total invoiced by supplier",                          color: "#8B6018",     Icon: FileText },
-          { label: "Paid in Range",      value: formatINR(rangePaid),                 sub: "Amount settled to supplier",                          color: T.green,       Icon: Wallet },
-          { label: "Balance in Range",   value: formatINR(rangeBilled - rangePaid),   sub: rangeBilled - rangePaid > 0 ? "Still to be paid" : "Fully settled", color: rangeBilled - rangePaid > 0 ? T.crimson : T.green, Icon: IndianRupee },
+          { label: "Billed in Range",    value: formatMoney(rupees(rangeBilled)),               sub: "Total invoiced by supplier",                          color: "#8B6018",     Icon: FileText },
+          { label: "Paid in Range",      value: formatMoney(rupees(rangePaid)),                 sub: "Amount settled to supplier",                          color: T.green,       Icon: Wallet },
+          { label: "Balance in Range",   value: formatMoney(rupees(rangeBilled - rangePaid)),   sub: rangeBilled - rangePaid > 0 ? "Still to be paid" : "Fully settled", color: rangeBilled - rangePaid > 0 ? T.crimson : T.green, Icon: IndianRupee },
         ].map(s => (
           <div key={s.label} style={{ ...card, padding: "20px 22px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
@@ -80,13 +81,13 @@ export function OverviewTab({
           {spendByMonth.length === 0 ? (
             <div style={{ padding: "40px 0", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No purchases recorded yet.</div>
           ) : (
-            <ChartFigure title="Purchase Spend by Month" summary={`Monthly spend for ${supplierName} across ${spendByMonth.length} months, totalling ${formatINR(rangeBilled)}.`}>
+            <ChartFigure title="Purchase Spend by Month" summary={`Monthly spend for ${supplierName} across ${spendByMonth.length} months, totalling ${formatMoney(rupees(rangeBilled))}.`}>
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={spendByMonth} barSize={28}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
                   <XAxis dataKey="month" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
                   <YAxis hide />
-                  <RechartsTooltip formatter={(v: any) => [formatINR(Number(v)), "Spend"]} contentStyle={{ fontFamily: F.ui, fontSize: 12, borderRadius: 10, border: `1px solid ${T.borderDef}` }} />
+                  <RechartsTooltip formatter={(v: any) => [formatMoney(rupees(Number(v))), "Spend"]} contentStyle={{ fontFamily: F.ui, fontSize: 12, borderRadius: 10, border: `1px solid ${T.borderDef}` }} />
                   <Bar dataKey="spend" fill={T.royalBurgundy} radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
@@ -100,13 +101,13 @@ export function OverviewTab({
             <div style={{ padding: "40px 0", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No purchases recorded yet.</div>
           ) : (
             <>
-              <ChartFigure title="Purchases by Payment Status" summary={paymentStatusBreakdown.map(s => `${s.name} ${formatINR(s.value)}`).join(", ") + "."}>
+              <ChartFigure title="Purchases by Payment Status" summary={paymentStatusBreakdown.map(s => `${s.name} ${formatMoney(rupees(s.value))}`).join(", ") + "."}>
                 <ResponsiveContainer width="100%" height={160}>
                   <PieChart>
                     <Pie data={paymentStatusBreakdown} dataKey="value" cx="50%" cy="50%" outerRadius={60} innerRadius={32}>
                       {paymentStatusBreakdown.map((e, i) => <Cell key={i} fill={e.fill} />)}
                     </Pie>
-                    <RechartsTooltip formatter={(v: any) => [formatINR(Number(v))]} contentStyle={{ fontFamily: F.ui, fontSize: 12, borderRadius: 10, border: `1px solid ${T.borderDef}` }} />
+                    <RechartsTooltip formatter={(v: any) => [formatMoney(rupees(Number(v)))]} contentStyle={{ fontFamily: F.ui, fontSize: 12, borderRadius: 10, border: `1px solid ${T.borderDef}` }} />
                   </PieChart>
                 </ResponsiveContainer>
               </ChartFigure>
@@ -117,7 +118,7 @@ export function OverviewTab({
                       <div style={{ width: 10, height: 10, borderRadius: 3, background: s.fill }} />
                       <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{s.name}</span>
                     </div>
-                    <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{formatINR(s.value)}</span>
+                    <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{formatMoney(rupees(s.value))}</span>
                   </div>
                 ))}
               </div>
@@ -146,9 +147,9 @@ export function OverviewTab({
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 10, marginBottom: 14 }}>
                 {[
                   { label: "Pieces", text: String(t.pieces), color: T.luxuryBrown, bg: T.silkCream, border: T.borderDef },
-                  { label: "Buying Price", text: formatINR(t.buying), color: T.luxuryBrown, bg: T.silkCream, border: T.borderDef },
-                  { label: "Selling Price", text: formatINR(t.selling), color: T.antiqueGold, bg: "rgba(200,155,71,0.10)", border: T.borderGold },
-                  { label: "Profit", text: formatINR(t.profit), color: T.green, bg: T.greenBg, border: "rgba(30,102,64,0.20)" },
+                  { label: "Buying Price", text: formatMoney(rupees(t.buying)), color: T.luxuryBrown, bg: T.silkCream, border: T.borderDef },
+                  { label: "Selling Price", text: formatMoney(rupees(t.selling)), color: T.antiqueGold, bg: "rgba(200,155,71,0.10)", border: T.borderGold },
+                  { label: "Profit", text: formatMoney(rupees(t.profit)), color: T.green, bg: T.greenBg, border: "rgba(30,102,64,0.20)" },
                 ].map(({ label, text, color, bg, border }) => (
                   <div key={label} style={{ background: bg, border: `1px solid ${border}`, borderRadius: 10, padding: "10px 12px" }}>
                     <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: 0.6, marginBottom: 4 }}>{label}</div>
@@ -196,7 +197,7 @@ export function OverviewTab({
                 <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{r.quantity} × {r.sareeType}</div>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{r.reason}</div>
               </div>
-              <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: "#8B6018" }}>{formatINR(r.estimatedAmount)}</div>
+              <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: "#8B6018" }}>{formatMoney(rupees(r.estimatedAmount))}</div>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{r.requestedDate}</div>
               <span style={{
                 fontFamily: F.ui, fontSize: 12, fontWeight: 700, padding: "3px 10px", borderRadius: 20,

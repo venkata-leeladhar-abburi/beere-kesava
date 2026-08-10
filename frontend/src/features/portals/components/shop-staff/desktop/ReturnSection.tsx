@@ -2,6 +2,8 @@ import React from "react";
 import { RotateCcw } from "lucide-react";
 import { C, F, ShopDesktopHero, SILK_BG } from "../theme";
 import { ProcessReturn } from "../ProcessReturn";
+import { Money } from "../../../../../shared/ui/domain/Money";
+import { rupees } from "../../../../../lib/domain/money";
 
 export function ReturnSection({
   bp, isTablet, canSeePrices, setShowReturn,
@@ -53,7 +55,7 @@ export function ReturnSection({
                 </div>
                 <div>
                   <div style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg, marginBottom: 3 }}>RAVI-L2-007</div>
-                  <div style={{ fontFamily: F.u, fontSize: 14, color: C.text }}>Smt. Meenakshi{canSeePrices ? " · ₹12,000" : ""}</div>
+                  <div style={{ fontFamily: F.u, fontSize: 14, color: C.text }}>Smt. Meenakshi{canSeePrices ? <> · <Money value={rupees(12000)} /></> : ""}</div>
                   <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>Wrong Design · 9:10 AM</div>
                 </div>
               </div>

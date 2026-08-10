@@ -168,6 +168,13 @@ export function AddUserPage() {
 
     if (isFinishing) {
       const empId = nextFinishingEmpId;
+      // "Active" matches FinishingStaffContext's FinishingStaffMember.status
+      // ("Active"|"Inactive"), a genuine PERSON_STATUS-shaped field — but
+      // that type, plus its ~6 other consumers (UserTable.tsx, UserBadges.tsx's
+      // StatusBadge, EditModal.tsx, ViewProfileModal.tsx, and this file's own
+      // weaverToTableRow/backendUserToTableRow), are all outside this pass's
+      // assigned files. Left as a documented exception rather than a partial
+      // retype that would desync from its own type definition.
       addMember({ empId, firstName, lastName, mobile, email, specialisation, notes, status: "Active" });
       setCreatedUser({ name: `${firstName} ${lastName}`, role, mobile, empId });
       setShowSuccess(true);

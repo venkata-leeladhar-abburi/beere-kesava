@@ -1,9 +1,10 @@
 import React from "react";
 import { X, UploadCloud } from "lucide-react";
 import {
-  formatINR, buildSareeCode, computeFinalAmount,
+  buildSareeCode, computeFinalAmount,
   lineBuying, lineSelling, lineProfit, pieceCodeFromLineCode,
 } from "../../../../../suppliers/contexts/SupplierContext";
+import { formatMoney, rupees } from "@/lib/domain/money";
 import { T, F } from "../../theme";
 import { SareeRow } from "../../types";
 import { inputStyle, labelStyle } from "../../common/primitives";
@@ -113,10 +114,10 @@ export function SareeRowCard({
         <div>
           <label style={labelStyle}>Buying Price</label>
           <div style={{ ...inputStyle, height: 36, fontSize: 12, display: "flex", alignItems: "center", fontFamily: F.mono, fontWeight: 700, color: T.luxuryBrown, background: T.silkCream }}>
-            {formatINR(buying)}
+            {formatMoney(rupees(buying))}
           </div>
           <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 3 }}>
-            {formatINR(price)} × {quantity}
+            {formatMoney(rupees(price))} × {quantity}
           </div>
         </div>
       </div>
@@ -134,16 +135,16 @@ export function SareeRowCard({
         <div>
           <label style={labelStyle}>Selling Price</label>
           <div style={{ ...inputStyle, height: 36, fontSize: 12, display: "flex", alignItems: "center", fontFamily: F.mono, fontWeight: 700, color: T.royalBurgundy, background: T.cream }}>
-            {formatINR(selling)}
+            {formatMoney(rupees(selling))}
           </div>
           <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 3 }}>
-            {formatINR(computeFinalAmount(price, sellPercent))} × {quantity}
+            {formatMoney(rupees(computeFinalAmount(price, sellPercent)))} × {quantity}
           </div>
         </div>
         <div>
           <label style={labelStyle}>Profit</label>
           <div style={{ ...inputStyle, height: 36, fontSize: 12, display: "flex", alignItems: "center", fontFamily: F.mono, fontWeight: 700, color: T.green, background: "rgba(30,102,64,0.07)", borderColor: "rgba(30,102,64,0.22)" }}>
-            {formatINR(profit)}
+            {formatMoney(rupees(profit))}
           </div>
           <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 3 }}>
             selling − buying

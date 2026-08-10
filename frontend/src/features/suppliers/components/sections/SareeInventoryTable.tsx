@@ -6,7 +6,8 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { motion } from "motion/react";
 import { Image as ImageIcon } from "lucide-react";
 import { T, F } from "../theme";
-import { SareeTag, formatINR } from "../../contexts/SupplierContext";
+import { SareeTag } from "../../contexts/SupplierContext";
+import { formatMoney, rupees } from "@/lib/domain/money";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { Modal } from "../../../../shared/ui/overlay";
 
@@ -69,7 +70,7 @@ export function SareeInventoryTable({ rows }: { rows: SareeRow[] }) {
     },
     {
       id: "buying", header: "Buying Price", accessor: s => s.price,
-      cell: (_v, s) => <span style={mono(T.luxuryBrown)}>{formatINR(s.price)}</span>,
+      cell: (_v, s) => <span style={mono(T.luxuryBrown)}>{formatMoney(rupees(s.price))}</span>,
     },
     {
       id: "sellPct", header: "Sell %", accessor: s => s.sellPercent,
@@ -77,11 +78,11 @@ export function SareeInventoryTable({ rows }: { rows: SareeRow[] }) {
     },
     {
       id: "selling", header: "Selling Price", accessor: s => s.finalAmount,
-      cell: (_v, s) => <span style={mono("#8B6018", { fontWeight: 700 })}>{formatINR(s.finalAmount)}</span>,
+      cell: (_v, s) => <span style={mono("#8B6018", { fontWeight: 700 })}>{formatMoney(rupees(s.finalAmount))}</span>,
     },
     {
       id: "profit", header: "Profit", accessor: s => (s.finalAmount - s.price) * s.quantity,
-      cell: (_v, s) => <span style={mono(T.green, { fontWeight: 700 })}>{formatINR((s.finalAmount - s.price) * s.quantity)}</span>,
+      cell: (_v, s) => <span style={mono(T.green, { fontWeight: 700 })}>{formatMoney(rupees((s.finalAmount - s.price) * s.quantity))}</span>,
     },
   ];
 

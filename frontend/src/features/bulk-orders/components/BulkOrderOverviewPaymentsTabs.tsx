@@ -82,7 +82,7 @@ export function BulkOrderOverviewTab({
             ["Invoice Number", live.invoiceId || matchedInvoice?.id || "—"],
             ["Payment Status", live.paymentStatus ?? "pending"],
             ["Estimated Value", amountDue ? inr(amountDue) : "—"],
-            ["Amount Paid", amountPaid ? inr(amountPaid) : "₹0"],
+            ["Amount Paid", amountPaid ? inr(amountPaid) : inr(0)],
           ].map(([k, v]) => (
             <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "9px 0", borderBottom: `1px solid ${T.borderDef}`, textTransform: k.includes("Status") ? "capitalize" as const : "none" as const }}>
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{k}</span>

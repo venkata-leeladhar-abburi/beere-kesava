@@ -2,13 +2,14 @@ import React, { useState } from "react";
 import { motion } from "motion/react";
 import { Check, X, Package } from "lucide-react";
 import {
-  PurchaseRequest, formatINR,
+  PurchaseRequest,
   purchaseTotals, expandSareePieces, lineProfit,
 } from "../../../suppliers/contexts/SupplierContext";
 import { T, F } from "./tokens";
 import { GreenBtn, CrimsonBtn } from "./SharedUI";
 import { Button } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { formatMoney, rupees } from "@/lib/domain/money";
 
 // ─── External purchase request card ───────────────────────────────────────────
 // Shows the whole purchase the admin filled in — supplier, invoice, and every
@@ -60,7 +61,7 @@ export function ExternalPurchaseCard({
     },
     {
       id: "price", header: "Buying Price", accessor: s => s.price,
-      cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{formatINR(s.price)}</span>,
+      cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{formatMoney(rupees(s.price))}</span>,
     },
     {
       id: "sellPercent", header: "Sell %", accessor: s => s.sellPercent,
@@ -68,11 +69,11 @@ export function ExternalPurchaseCard({
     },
     {
       id: "finalAmount", header: "Selling Price", accessor: s => s.finalAmount,
-      cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.antiqueGold }}>{formatINR(s.finalAmount)}</span>,
+      cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.antiqueGold }}>{formatMoney(rupees(s.finalAmount))}</span>,
     },
     {
       id: "profit", header: "Profit", accessor: s => lineProfit(s),
-      cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.green }}>{formatINR(lineProfit(s))}</span>,
+      cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.green }}>{formatMoney(rupees(lineProfit(s)))}</span>,
     },
   ];
 
@@ -128,7 +129,7 @@ export function ExternalPurchaseCard({
         <div style={{ textAlign: "right" }}>
           <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, letterSpacing: 1.2, marginBottom: 4 }}>ESTIMATED VALUE</div>
           <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.antiqueGold }}>
-            {formatINR(req.estimatedAmount)}
+            {formatMoney(rupees(req.estimatedAmount))}
           </div>
         </div>
       </div>
@@ -137,9 +138,9 @@ export function ExternalPurchaseCard({
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 10 }}>
         {[
           { label: "Pieces", text: String(totals.pieces), color: T.luxuryBrown, bg: T.silkCream, border: T.borderDef },
-          { label: "Buying Price", text: formatINR(totals.buying), color: T.luxuryBrown, bg: T.silkCream, border: T.borderDef },
-          { label: "Selling Price", text: formatINR(totals.selling), color: T.antiqueGold, bg: "rgba(200,155,71,0.10)", border: T.borderGold },
-          { label: "Profit", text: formatINR(totals.profit), color: T.green, bg: T.greenBg, border: "rgba(30,102,64,0.20)" },
+          { label: "Buying Price", text: formatMoney(rupees(totals.buying)), color: T.luxuryBrown, bg: T.silkCream, border: T.borderDef },
+          { label: "Selling Price", text: formatMoney(rupees(totals.selling)), color: T.antiqueGold, bg: "rgba(200,155,71,0.10)", border: T.borderGold },
+          { label: "Profit", text: formatMoney(rupees(totals.profit)), color: T.green, bg: T.greenBg, border: "rgba(30,102,64,0.20)" },
         ].map(({ label, text, color, bg, border }) => (
           <div key={label} style={{ background: bg, border: `1px solid ${border}`, borderRadius: 10, padding: "10px 12px" }}>
             <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.taupe, letterSpacing: 0.6, marginBottom: 4 }}>
@@ -193,9 +194,9 @@ export function ExternalPurchaseCard({
                   Totals — {totals.pieces} piece{totals.pieces !== 1 ? "s" : ""}
                 </span>
                 <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{formatINR(totals.buying)}</span>
-                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.antiqueGold }}>{formatINR(totals.selling)}</span>
-                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.green }}>{formatINR(totals.profit)}</span>
+                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{formatMoney(rupees(totals.buying))}</span>
+                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.antiqueGold }}>{formatMoney(rupees(totals.selling))}</span>
+                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.green }}>{formatMoney(rupees(totals.profit))}</span>
                 </div>
               </div>
             </div>

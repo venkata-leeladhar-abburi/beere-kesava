@@ -3,29 +3,10 @@
  * Pure utility functions — no React dependencies.
  */
 
-// ── Currency ───────────────────────────────────────────────────────────────────
-export function formatINR(amount: number, compact = false): string {
-  if (compact) {
-    if (amount >= 1_00_00_000) return `₹${(amount / 1_00_00_000).toFixed(2)}Cr`;
-    if (amount >= 1_00_000)    return `₹${(amount / 1_00_000).toFixed(2)}L`;
-    if (amount >= 1_000)       return `₹${(amount / 1_000).toFixed(1)}K`;
-    return `₹${amount}`;
-  }
-  return new Intl.NumberFormat("en-IN", {
-    style:    "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
-export function formatINRDecimal(amount: number): string {
-  return new Intl.NumberFormat("en-IN", {
-    style:                  "currency",
-    currency:               "INR",
-    minimumFractionDigits:  2,
-    maximumFractionDigits:  2,
-  }).format(amount);
-}
+// Currency formatting lives in lib/domain/money.ts (formatMoney) — money is
+// always branded integer Paise there, never a raw float rupee number. This
+// file's own formatINR/formatINRDecimal were retired once their last call
+// site migrated (design-system Phase 6 — one money formatter, Part J.4).
 
 // ── Date & Time ────────────────────────────────────────────────────────────────
 export function formatDate(date: Date | string, style: "short" | "medium" | "long" = "medium"): string {

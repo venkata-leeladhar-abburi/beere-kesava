@@ -7,6 +7,11 @@ import type { StatusValueOf } from "@/lib/domain/status";
 export interface LoomBatch {
   batchId: string; loomId: string; sareeCount: number; completedCount: number;
   dueDate: string; designCode: string; designName: string; orderRef: string;
+  // Same batch-lifecycle vocabulary as BatchContext.tsx's BatchRecord.status —
+  // left as a raw literal union rather than lib/domain/status.ts's
+  // ProductionStatus because "active" has no PRODUCTION_STATUS equivalent
+  // (that taxonomy's in-progress states are the granular warping/weaving/
+  // finishing/qc-* stages, not a single coarse "active").
   status: "active" | "completed" | "draft"; startDate: string;
 }
 export interface LoomMaterial {
@@ -16,6 +21,9 @@ export interface LoomMaterial {
 }
 export interface LoomSaree {
   sareeId: string; loomId: string; batchId: string; sareeType: string;
+  // Per-saree progress on a loom, not a taxonomy match: "in-progress" doesn't
+  // correspond to any single PRODUCTION_STATUS key (weaving/finishing/etc are
+  // more granular than this field tracks), so kept as its own literal union.
   status: "complete" | "in-progress" | "pending";
   completedDate?: string; qualityStatus?: "pass" | "fail" | "pending";
 }

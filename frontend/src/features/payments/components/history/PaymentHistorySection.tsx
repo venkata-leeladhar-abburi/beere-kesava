@@ -7,7 +7,7 @@ import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { EASE, F, T, DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../theme";
 import { Invoice, PayHistRecord } from "../../types";
 import { FadeUp } from "../common/motion";
-import { HIST_STATUS_CFG, HIST_TYPE_CFG, HistoryCard, getHistTypeIcon } from "./HistoryCard";
+import { HIST_TYPE_CFG, HistoryCard, getHistTypeIcon } from "./HistoryCard";
 import { vendorsApi } from "../../../../shared/api/vendors";
 import { suppliersApi } from "../../../../shared/api/suppliers";
 import { weaversApi } from "../../../../shared/api/weavers";
@@ -16,10 +16,20 @@ import { invoicesApi } from "../../../../shared/api/invoices";
 import { Button, IconButton, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
-import { Money } from "@/shared/ui/domain";
+import { Money, StatusPill } from "@/shared/ui/domain";
+import type { PaymentStatus } from "@/lib/domain/status";
 
 function formatHistDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+// PayHistRecord.status ("Paid"/"Partial"/"Pending", payments/types.ts) is a
+// genuine PAYMENT_STATUS lifecycle value, but the field itself stays as-is
+// because HistoryCard.tsx (out of scope here) keys its own HIST_STATUS_CFG
+// off those exact literals — this only translates to the canonical taxonomy
+// key at this component's own render boundary.
+function payHistStatusKey(status: PayHistRecord["status"]): PaymentStatus {
+  return status === "Paid" ? "paid" : status === "Partial" ? "partial" : "unpaid";
 }
 
 export function PaymentHistorySection() {
@@ -169,14 +179,7 @@ export function PaymentHistorySection() {
     },
     {
       id: "status", header: "Status", accessor: r => r.status, type: "status", align: "center",
-      cell: (_v, r) => {
-        const stsCfg = HIST_STATUS_CFG[r.status];
-        return (
-          <span style={{ display: "inline-block", padding: "4px 10px", borderRadius: 20, fontFamily: F.mono, fontSize: 12, fontWeight: 700, background: stsCfg.bg, color: stsCfg.color }}>
-            {r.status === "Paid" ? "✓ Paid" : r.status === "Partial" ? "◑ Partial" : "⏱ Pending"}
-          </span>
-        );
-      },
+      cell: (_v, r) => <StatusPill taxonomy="payment" status={payHistStatusKey(r.status)} />,
     },
     { id: "mode", header: "Payment Mode", accessor: r => r.mode, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{r.mode}</span> },
     {
@@ -332,7 +335,6 @@ export function PaymentHistorySection() {
               </div>
             ) : filtered.map((r, i) => {
               const typeCfg = HIST_TYPE_CFG[r.type];
-              const stsCfg  = HIST_STATUS_CFG[r.status];
               const { Icon: HistIcon, color: iconColor, iconBg } = getHistTypeIcon(r.type);
               const isReceipt = r.type === "Customer Receipt";
               return (
@@ -381,9 +383,7 @@ export function PaymentHistorySection() {
                   </div>
 
                   {/* Status badge */}
-                  <span style={{ display: "inline-block", padding: "4px 11px", borderRadius: 20, fontFamily: F.mono, fontSize: 12, fontWeight: 700, background: stsCfg.bg, color: stsCfg.color, flexShrink: 0 }}>
-                    {r.status === "Paid" ? "✓ Paid" : r.status === "Partial" ? "◑ Partial" : "⏱ Pending"}
-                  </span>
+                  <StatusPill taxonomy="payment" status={payHistStatusKey(r.status)} className="shrink-0" />
 
                   {/* Mode + Recorded */}
                   <div style={{ flex: "0 0 100px", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>

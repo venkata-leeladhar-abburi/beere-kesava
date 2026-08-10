@@ -3,8 +3,9 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { X, Printer } from "lucide-react";
 import {
   Purchase, SareeTag,
-  formatINR, lineProfit, purchaseTotals, expandSareePieces,
+  lineProfit, purchaseTotals, expandSareePieces,
 } from "../../../../suppliers/contexts/SupplierContext";
+import { formatMoney, rupees } from "@/lib/domain/money";
 import { T, F } from "../theme";
 import { Button, IconButton } from "../../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
@@ -58,7 +59,7 @@ export function SareeListModal({
     },
     {
       id: "buying", header: "Buying Price", accessor: s => s.price,
-      cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>{formatINR(s.price)}</span>,
+      cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>{formatMoney(rupees(s.price))}</span>,
     },
     {
       id: "sellPct", header: "Sell %", accessor: s => s.sellPercent,
@@ -66,11 +67,11 @@ export function SareeListModal({
     },
     {
       id: "selling", header: "Selling Price", accessor: s => s.finalAmount,
-      cell: (_v, s) => <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 12, color: T.antiqueGold, whiteSpace: "nowrap" as const }}>{formatINR(s.finalAmount)}</span>,
+      cell: (_v, s) => <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 12, color: T.antiqueGold, whiteSpace: "nowrap" as const }}>{formatMoney(rupees(s.finalAmount))}</span>,
     },
     {
       id: "profit", header: "Profit", accessor: s => lineProfit(s),
-      cell: (_v, s) => <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 12, color: T.green, whiteSpace: "nowrap" as const }}>{formatINR(lineProfit(s))}</span>,
+      cell: (_v, s) => <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 12, color: T.green, whiteSpace: "nowrap" as const }}>{formatMoney(rupees(lineProfit(s)))}</span>,
     },
     {
       id: "notes", header: "Notes", accessor: s => s.notes,
@@ -116,10 +117,10 @@ export function SareeListModal({
               <td>{s.sareeType || "—"}</td>
               <td>{s.color || "—"}</td>
               <td>{s.weight}</td>
-              <td data-num>{formatINR(s.price)}</td>
+              <td data-num>{formatMoney(rupees(s.price))}</td>
               <td data-num>{s.sellPercent}%</td>
-              <td data-num>{formatINR(s.finalAmount)}</td>
-              <td data-num>{formatINR(lineProfit(s))}</td>
+              <td data-num>{formatMoney(rupees(s.finalAmount))}</td>
+              <td data-num>{formatMoney(rupees(lineProfit(s)))}</td>
               <td>{s.notes || "—"}</td>
             </tr>
           ))}
@@ -127,10 +128,10 @@ export function SareeListModal({
         <tfoot>
           <tr style={{ fontWeight: 700 }}>
             <td colSpan={6}>Totals — {totals.pieces} piece{totals.pieces !== 1 ? "s" : ""}</td>
-            <td data-num>{formatINR(totals.buying)}</td>
+            <td data-num>{formatMoney(rupees(totals.buying))}</td>
             <td></td>
-            <td data-num>{formatINR(totals.selling)}</td>
-            <td data-num>{formatINR(totals.profit)}</td>
+            <td data-num>{formatMoney(rupees(totals.selling))}</td>
+            <td data-num>{formatMoney(rupees(totals.profit))}</td>
             <td></td>
           </tr>
         </tfoot>
@@ -197,9 +198,9 @@ export function SareeListModal({
               <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>
                 Totals — {totals.pieces} piece{totals.pieces !== 1 ? "s" : ""}
               </span>
-              <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>Buying {formatINR(totals.buying)}</span>
-              <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.antiqueGold, whiteSpace: "nowrap" as const }}>Selling {formatINR(totals.selling)}</span>
-              <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.green, whiteSpace: "nowrap" as const }}>Profit {formatINR(totals.profit)}</span>
+              <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>Buying {formatMoney(rupees(totals.buying))}</span>
+              <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.antiqueGold, whiteSpace: "nowrap" as const }}>Selling {formatMoney(rupees(totals.selling))}</span>
+              <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.green, whiteSpace: "nowrap" as const }}>Profit {formatMoney(rupees(totals.profit))}</span>
             </div>
           </div>
 

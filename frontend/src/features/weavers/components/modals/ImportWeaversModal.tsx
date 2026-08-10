@@ -7,6 +7,7 @@ import { Status, ParsedWeaverRow } from "../types";
 import type { ImportedWeaver } from "../data";
 import { Button, IconButton, Input } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 export function ImportWeaversModal({ open, onClose, onImport, nextIdStart }: {
   open: boolean; onClose: () => void; onImport: (rows: ImportedWeaver[]) => void; nextIdStart: number;
@@ -59,6 +60,12 @@ export function ImportWeaversModal({ open, onClose, onImport, nextIdStart }: {
           return;
         }
 
+        // `status` here is the local weavers `Status` ("active"|"qc"|"idle" —
+        // see ../types.ts), not one of lib/domain/status.ts's taxonomies: it
+        // mixes a person-engagement concept ("active") with a production
+        // concept ("qc") and a resource-condition concept ("idle") in one
+        // union, and `types.ts` is shared by several weavers-feature files
+        // outside this pass's scope. Left as a documented exception.
         const okRows: ParsedWeaverRow[] = [];
         const badRows: { row: number; reason: string }[] = [];
 
@@ -99,7 +106,7 @@ export function ImportWeaversModal({ open, onClose, onImport, nextIdStart }: {
       initials: initialsOf(v.name), bg: palette[(nextIdStart + i) % palette.length],
       status: v.status, thisMonth: 0, passRate: 0, totalEver: 0,
       looms: v.looms, batch: null, design: null, mobile: v.mobile,
-      totalPaid: "₹0", lastActive: "Just imported",
+      totalPaid: formatMoney(rupees(0)), lastActive: "Just imported",
     }));
     onImport(rows);
     reset();

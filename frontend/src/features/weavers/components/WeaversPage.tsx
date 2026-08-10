@@ -69,6 +69,10 @@ export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: a
         cluster: navWeaver.cluster || "—",
         mobile: navWeaver.phone || "—",
         looms: navWeaver.looms,
+        // Local weavers `Status` ("active"|"qc"|"idle" — ../types.ts), not
+        // lib/domain/status.ts's taxonomy: mixes person/production/condition
+        // concepts in one union and `types.ts` is shared outside this pass's
+        // scope. Documented exception, not a raw-literal bug.
         status: "idle" as const,
         batch: "",
         design: "—",
