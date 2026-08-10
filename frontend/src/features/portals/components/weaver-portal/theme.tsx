@@ -33,7 +33,7 @@ import {
 export type { MyBatchEntry, BatchQuickFilter } from "./WeaverMobileBatchCard";
 import {
   WN_T, WN_G, WN_EASE, WN_NUM, WN_DATA, WN_PRIORITY, WN_CATEGORY, WN_FILTERS, WNFadeUp,
-  BATCH_STATUS_CFG, BatchCard, FadeUpBatch, BG_IMAGE, FABRIC_BG,
+  BatchCard, FadeUpBatch, BG_IMAGE, FABRIC_BG,
 } from "./WeaverBatchNotifData";
 import type { WeaverBatch } from "./WeaverBatchNotifData";
 export type { WNPriority, WNCategory, WNFilter, WeaverNotif, WeaverBatch } from "./WeaverBatchNotifData";
@@ -388,7 +388,6 @@ export {
   WN_CATEGORY,
   WN_FILTERS,
   WNFadeUp,
-  BATCH_STATUS_CFG,
   BatchCard,
   FadeUpBatch,
   BG_IMAGE,

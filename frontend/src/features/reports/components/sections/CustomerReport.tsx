@@ -13,6 +13,7 @@ import { salesApi } from "../../../../shared/api/sales";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
+import { PAYMENT_STATUS, type StatusValueOf } from "@/lib/domain/status";
 
 interface CustomerRow {
   id: string;
@@ -26,14 +27,13 @@ interface CustomerRow {
   spend: number;
   due: number;
   lastPurchase: string;
-  // "Active"/"Overdue" here means "has an outstanding due, or not" — closest
-  // is PAYMENT_STATUS, but that taxonomy has no plain "current/no-dues" key
-  // (only unpaid/partial/paid/overdue/due-soon/settled/refunded/written-off),
-  // and this row also renders through the local `StatusPill` in
-  // reports/components/common/primitives.tsx (tone="ok"/"bad"), not the
-  // shared domain StatusPill. No taxonomy key fits cleanly — documented
-  // exception rather than a force-fit.
-  status: "Active" | "Overdue";
+  // "has an outstanding due, or not" — maps onto PAYMENT_STATUS's "overdue"
+  // (has a due) and "paid" (fully settled / no outstanding balance) keys.
+  // Rendering still goes through the local `StatusPill` in
+  // reports/components/common/primitives.tsx (tone="ok"/"bad", out of this
+  // pass's assigned files) rather than the shared domain `<StatusPill>`, but
+  // the stored value itself is now a canonical taxonomy key.
+  status: StatusValueOf<"payment">;
 }
 
 function downloadCustomerData(r: CustomerRow) {
@@ -46,7 +46,7 @@ function downloadCustomerData(r: CustomerRow) {
     ["Total Spend (₹)", String(r.spend)],
     ["Outstanding Due (₹)", String(r.due)],
     ["Last Purchase Date", r.lastPurchase],
-    ["Status", r.status],
+    ["Status", PAYMENT_STATUS[r.status].label],
   ];
   const csv = rows.map(row => row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -94,7 +94,7 @@ export function CustomerReport() {
           city: c.city ?? "—", address: c.address ?? "—", gstCode: c.gstCode ?? "—",
           purchases: custInvoices.length, spend, due,
           lastPurchase: dates.length > 0 ? new Date(dates[dates.length - 1]).toLocaleDateString("en-IN") : "—",
-          status: due > 0 ? "Overdue" as const : "Active" as const,
+          status: due > 0 ? "overdue" as const : "paid" as const,
         };
       }
       const custSales = sales.filter(s => s.customerId === c.id);
@@ -105,7 +105,7 @@ export function CustomerReport() {
         city: c.city ?? "—", address: c.address ?? "—", gstCode: c.gstCode ?? "—",
         purchases: custSales.length, spend, due: 0,
         lastPurchase: dates.length > 0 ? new Date(dates[dates.length - 1]).toLocaleDateString("en-IN") : "—",
-        status: "Active" as const,
+        status: "paid" as const,
       };
     });
   }, [customersRes, invoicesRes, salesRes]);
@@ -143,7 +143,7 @@ export function CustomerReport() {
     { name: "Retail",    value: retailSpend,    color: T.antiqueGold },
   ].filter(d => d.value > 0);
   const activeCount = custRows.filter(c => c.purchases > 0).length;
-  const overdueCount = custRows.filter(c => c.status === "Overdue").length;
+  const overdueCount = custRows.filter(c => c.status === "overdue").length;
   const now = new Date();
   const newThisMonthCount = (customersRes?.items ?? []).filter(c => {
     const d = new Date(c.createdAt);
@@ -181,7 +181,7 @@ export function CustomerReport() {
     },
     {
       id: "status", header: "Status", accessor: r => r.status, align: "center", type: "status",
-      cell: (_v, r) => <StatusPill label={r.status} type={r.status === "Active" ? "ok" : "bad"} />,
+      cell: (_v, r) => <StatusPill label={PAYMENT_STATUS[r.status].label} type={r.status === "paid" ? "ok" : "bad"} />,
     },
   ];
 

@@ -8,7 +8,7 @@ import { PurchaseCard } from "./PurchaseCard";
 import { Pagination, usePagination } from "../../../shared/ui/DataPagination";
 import { Button, SearchInput } from "../../../shared/ui/primitives";
 import { Breadcrumbs } from "../../../shared/ui/nav/Breadcrumbs";
-import { rupees, formatMoney } from "@/lib/domain/money";
+import { rupees, formatMoney, sumMoney } from "@/lib/domain/money";
 
 const T = {
   silkCream:     "#F7F2EA",
@@ -33,22 +33,22 @@ const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 const NUM: React.CSSProperties = { fontVariantNumeric: "tabular-nums", fontFeatureSettings: '"tnum" 1, "lnum" 1' };
 
 const ALL_PURCHASES: Purchase[] = [
-  { id: "PUR-001", po: "PO-SVT-2026-042", date: "01 May 2026", vendor: "Sri Venkateswara Textiles", vendorCity: "Ongole, AP",      firmName: "Beere Kesava & Brothers Silks", material: "Cotton/Silk",           type: "Warp",   quantity: "50 kg",  totalPaid: "₹14,000",  status: "complete", grn: "GRN-WRP-SVT-20260501-001" },
-  { id: "PUR-002", po: "PO-KNC-2026-118", date: "02 May 2026", vendor: "Kanchipuram Silks",         vendorCity: "Kanchipuram, TN", firmName: "Beere Kesava & Brothers Silks", material: "Red + Blue",            type: "Resham", quantity: "58 kg",  totalPaid: "₹87,000",  status: "complete", grn: "GRN-RSM-KNC-20260430-001" },
-  { id: "PUR-003", po: "PO-SZW-2026-033", date: "01 May 2026", vendor: "Surat Zari Works",          vendorCity: "Surat, GJ",       firmName: "Beere Kesava & Brothers Silks", material: "Polyester 2G Gold",     type: "Jari",   quantity: "5 Buns", totalPaid: "₹64,000",  status: "complete", grn: "GRN-JRI-SZW-20260428-001" },
-  { id: "PUR-004", po: "PO-MSC-2026-056", date: "28 Apr 2026", vendor: "Mysore Silk Co.",           vendorCity: "Mysore, KA",      firmName: "Beere Kesava & Brothers Silks", material: "Gold",                  type: "Resham", quantity: "25 kg",  totalPaid: "₹37,000",  status: "complete", grn: "GRN-RSM-MSC-20260426-001" },
-  { id: "PUR-005", po: "PO-LTH-2026-029", date: "28 Apr 2026", vendor: "Lakshmi Thread House",      vendorCity: "Chennai, TN",     firmName: "Beere Kesava & Brothers Silks", material: "Cotton/Silk",           type: "Warp",   quantity: "40 kg",  totalPaid: "₹11,000",  status: "complete", grn: "GRN-WRP-LTH-20260428-001" },
-  { id: "PUR-006", po: "PO-VZH-2026-021", date: "28 Apr 2026", vendor: "Varanasi Zari House",       vendorCity: "Varanasi, UP",    firmName: "Beere Kesava & Brothers Silks", material: "Silk Fast 2G Gold",     type: "Jari",   quantity: "2 Buns", totalPaid: "₹27,360",  status: "complete", grn: "GRN-JRI-VZH-20260428-001" },
-  { id: "PUR-007", po: "PO-KNC-2026-109", date: "15 Apr 2026", vendor: "Kanchipuram Silks",         vendorCity: "Kanchipuram, TN", firmName: "Beere Kesava & Brothers Silks", material: "Blue",                  type: "Resham", quantity: "28 kg",  totalPaid: "₹42,000",  status: "complete", grn: "GRN-RSM-KNC-20260415-001" },
-  { id: "PUR-008", po: "PO-SVT-2026-038", date: "20 Apr 2026", vendor: "Sri Venkateswara Textiles", vendorCity: "Ongole, AP",      firmName: "Beere Kesava & Brothers Silks", material: "Cotton/Silk",           type: "Warp",   quantity: "35 kg",  totalPaid: "₹9,800",   status: "complete", grn: "GRN-WRP-SVT-20260420-001" },
-  { id: "PUR-009", po: "PO-SZW-2026-028", date: "20 Apr 2026", vendor: "Surat Zari Works",          vendorCity: "Surat, GJ",       firmName: "Beere Kesava & Brothers Silks", material: "Polyester 3G Copper",   type: "Jari",   quantity: "1 Bun",  totalPaid: "₹12,800",  status: "complete", grn: "GRN-JRI-SZW-20260420-001" },
-  { id: "PUR-010", po: "PO-VZH-2026-018", date: "20 Apr 2026", vendor: "Varanasi Zari House",       vendorCity: "Varanasi, UP",    firmName: "Beere Kesava & Brothers Silks", material: "Silk Fast 1G Blue",     type: "Jari",   quantity: "1 Bun",  totalPaid: "₹9,120",   status: "complete", grn: "GRN-JRI-VZH-20260420-001" },
-  { id: "PUR-011", po: "PO-MSC-2026-048", date: "10 Apr 2026", vendor: "Mysore Silk Co.",           vendorCity: "Mysore, KA",      firmName: "Beere Kesava & Brothers Silks", material: "Gold + Red",            type: "Resham", quantity: "30 kg",  totalPaid: "₹44,400",  status: "complete", grn: "GRN-RSM-MSC-20260410-001" },
-  { id: "PUR-012", po: "PO-LTH-2026-022", date: "05 Apr 2026", vendor: "Lakshmi Thread House",      vendorCity: "Chennai, TN",     firmName: "Beere Kesava & Brothers Silks", material: "Cotton/Silk",           type: "Warp",   quantity: "45 kg",  totalPaid: "₹12,375",  status: "complete", grn: "GRN-WRP-LTH-20260405-001" },
-  { id: "PUR-013", po: "PO-KNC-2026-101", date: "01 Apr 2026", vendor: "Kanchipuram Silks",         vendorCity: "Kanchipuram, TN", firmName: "Beere Kesava & Brothers Silks", material: "Green",                 type: "Resham", quantity: "22 kg",  totalPaid: "₹33,000",  status: "complete", grn: "GRN-RSM-KNC-20260401-001" },
-  { id: "PUR-014", po: "PO-SZW-2026-019", date: "28 Mar 2026", vendor: "Surat Zari Works",          vendorCity: "Surat, GJ",       firmName: "Beere Kesava & Brothers Silks", material: "Polyester 1G Silver",   type: "Jari",   quantity: "1 Bun",  totalPaid: "₹9,600",   status: "complete", grn: "GRN-JRI-SZW-20260328-001" },
-  { id: "PUR-015", po: "PO-SVT-2026-031", date: "20 Mar 2026", vendor: "Sri Venkateswara Textiles", vendorCity: "Ongole, AP",      firmName: "Beere Kesava & Brothers Silks", material: "Cotton/Silk",           type: "Warp",   quantity: "60 kg",  totalPaid: "₹16,800",  status: "complete", grn: "GRN-WRP-SVT-20260320-001" },
-  { id: "PUR-016", po: "PO-VZH-2026-014", date: "15 Mar 2026", vendor: "Varanasi Zari House",       vendorCity: "Varanasi, UP",    firmName: "Beere Kesava & Brothers Silks", material: "Silk Fast 3G Pink",     type: "Jari",   quantity: "1 Bun",  totalPaid: "₹13,680",  status: "pending", grn: "GRN-JRI-VZH-20260315-001", notes: "Partial shipment, remaining stock expected by 25 Mar" },
+  { id: "PUR-001", po: "PO-SVT-2026-042", date: "01 May 2026", vendor: "Sri Venkateswara Textiles", vendorCity: "Ongole, AP",      firmName: "Beere Kesava & Brothers Silks", material: "Cotton/Silk",           type: "Warp",   quantity: "50 kg",  totalPaid: rupees(14000),  status: "received", grn: "GRN-WRP-SVT-20260501-001" },
+  { id: "PUR-002", po: "PO-KNC-2026-118", date: "02 May 2026", vendor: "Kanchipuram Silks",         vendorCity: "Kanchipuram, TN", firmName: "Beere Kesava & Brothers Silks", material: "Red + Blue",            type: "Resham", quantity: "58 kg",  totalPaid: rupees(87000),  status: "received", grn: "GRN-RSM-KNC-20260430-001" },
+  { id: "PUR-003", po: "PO-SZW-2026-033", date: "01 May 2026", vendor: "Surat Zari Works",          vendorCity: "Surat, GJ",       firmName: "Beere Kesava & Brothers Silks", material: "Polyester 2G Gold",     type: "Jari",   quantity: "5 Buns", totalPaid: rupees(64000),  status: "received", grn: "GRN-JRI-SZW-20260428-001" },
+  { id: "PUR-004", po: "PO-MSC-2026-056", date: "28 Apr 2026", vendor: "Mysore Silk Co.",           vendorCity: "Mysore, KA",      firmName: "Beere Kesava & Brothers Silks", material: "Gold",                  type: "Resham", quantity: "25 kg",  totalPaid: rupees(37000),  status: "received", grn: "GRN-RSM-MSC-20260426-001" },
+  { id: "PUR-005", po: "PO-LTH-2026-029", date: "28 Apr 2026", vendor: "Lakshmi Thread House",      vendorCity: "Chennai, TN",     firmName: "Beere Kesava & Brothers Silks", material: "Cotton/Silk",           type: "Warp",   quantity: "40 kg",  totalPaid: rupees(11000),  status: "received", grn: "GRN-WRP-LTH-20260428-001" },
+  { id: "PUR-006", po: "PO-VZH-2026-021", date: "28 Apr 2026", vendor: "Varanasi Zari House",       vendorCity: "Varanasi, UP",    firmName: "Beere Kesava & Brothers Silks", material: "Silk Fast 2G Gold",     type: "Jari",   quantity: "2 Buns", totalPaid: rupees(27360),  status: "received", grn: "GRN-JRI-VZH-20260428-001" },
+  { id: "PUR-007", po: "PO-KNC-2026-109", date: "15 Apr 2026", vendor: "Kanchipuram Silks",         vendorCity: "Kanchipuram, TN", firmName: "Beere Kesava & Brothers Silks", material: "Blue",                  type: "Resham", quantity: "28 kg",  totalPaid: rupees(42000),  status: "received", grn: "GRN-RSM-KNC-20260415-001" },
+  { id: "PUR-008", po: "PO-SVT-2026-038", date: "20 Apr 2026", vendor: "Sri Venkateswara Textiles", vendorCity: "Ongole, AP",      firmName: "Beere Kesava & Brothers Silks", material: "Cotton/Silk",           type: "Warp",   quantity: "35 kg",  totalPaid: rupees(9800),   status: "received", grn: "GRN-WRP-SVT-20260420-001" },
+  { id: "PUR-009", po: "PO-SZW-2026-028", date: "20 Apr 2026", vendor: "Surat Zari Works",          vendorCity: "Surat, GJ",       firmName: "Beere Kesava & Brothers Silks", material: "Polyester 3G Copper",   type: "Jari",   quantity: "1 Bun",  totalPaid: rupees(12800),  status: "received", grn: "GRN-JRI-SZW-20260420-001" },
+  { id: "PUR-010", po: "PO-VZH-2026-018", date: "20 Apr 2026", vendor: "Varanasi Zari House",       vendorCity: "Varanasi, UP",    firmName: "Beere Kesava & Brothers Silks", material: "Silk Fast 1G Blue",     type: "Jari",   quantity: "1 Bun",  totalPaid: rupees(9120),   status: "received", grn: "GRN-JRI-VZH-20260420-001" },
+  { id: "PUR-011", po: "PO-MSC-2026-048", date: "10 Apr 2026", vendor: "Mysore Silk Co.",           vendorCity: "Mysore, KA",      firmName: "Beere Kesava & Brothers Silks", material: "Gold + Red",            type: "Resham", quantity: "30 kg",  totalPaid: rupees(44400),  status: "received", grn: "GRN-RSM-MSC-20260410-001" },
+  { id: "PUR-012", po: "PO-LTH-2026-022", date: "05 Apr 2026", vendor: "Lakshmi Thread House",      vendorCity: "Chennai, TN",     firmName: "Beere Kesava & Brothers Silks", material: "Cotton/Silk",           type: "Warp",   quantity: "45 kg",  totalPaid: rupees(12375),  status: "received", grn: "GRN-WRP-LTH-20260405-001" },
+  { id: "PUR-013", po: "PO-KNC-2026-101", date: "01 Apr 2026", vendor: "Kanchipuram Silks",         vendorCity: "Kanchipuram, TN", firmName: "Beere Kesava & Brothers Silks", material: "Green",                 type: "Resham", quantity: "22 kg",  totalPaid: rupees(33000),  status: "received", grn: "GRN-RSM-KNC-20260401-001" },
+  { id: "PUR-014", po: "PO-SZW-2026-019", date: "28 Mar 2026", vendor: "Surat Zari Works",          vendorCity: "Surat, GJ",       firmName: "Beere Kesava & Brothers Silks", material: "Polyester 1G Silver",   type: "Jari",   quantity: "1 Bun",  totalPaid: rupees(9600),   status: "received", grn: "GRN-JRI-SZW-20260328-001" },
+  { id: "PUR-015", po: "PO-SVT-2026-031", date: "20 Mar 2026", vendor: "Sri Venkateswara Textiles", vendorCity: "Ongole, AP",      firmName: "Beere Kesava & Brothers Silks", material: "Cotton/Silk",           type: "Warp",   quantity: "60 kg",  totalPaid: rupees(16800),  status: "received", grn: "GRN-WRP-SVT-20260320-001" },
+  { id: "PUR-016", po: "PO-VZH-2026-014", date: "15 Mar 2026", vendor: "Varanasi Zari House",       vendorCity: "Varanasi, UP",    firmName: "Beere Kesava & Brothers Silks", material: "Silk Fast 3G Pink",     type: "Jari",   quantity: "1 Bun",  totalPaid: rupees(13680),  status: "pending", grn: "GRN-JRI-VZH-20260315-001", notes: "Partial shipment, remaining stock expected by 25 Mar" },
 ];
 
 export function AllPurchasesPage({ onBack }: { onBack: () => void }) {
@@ -69,10 +69,7 @@ export function AllPurchasesPage({ onBack }: { onBack: () => void }) {
 
   const pag = usePagination(filtered, 25);
 
-  const totalSpend = ALL_PURCHASES.reduce((sum, p) => {
-    const num = parseInt(p.totalPaid.replace(/[₹,]/g, ""));
-    return sum + (isNaN(num) ? 0 : num);
-  }, 0);
+  const totalSpend = sumMoney(ALL_PURCHASES.map(p => p.totalPaid));
 
   const warpCount   = ALL_PURCHASES.filter(p => p.type === "Warp").length;
   const reshamCount = ALL_PURCHASES.filter(p => p.type === "Resham").length;
@@ -147,7 +144,7 @@ export function AllPurchasesPage({ onBack }: { onBack: () => void }) {
               { label: "Total Warp Purchased",   val: "2,840 kg",                   sub: "From 2 vendors",         Icon: Layers,      hi: false },
               { label: "Total Resham Purchased", val: "1,240 kg",                   sub: "All colors combined",    Icon: Tag,         hi: false },
               { label: "Total Jari Purchased",   val: "680 kg",                     sub: "All types and grades",   Icon: Sparkles,    hi: false },
-              { label: "Total Amount Spent",     val: formatMoney(rupees(totalSpend), { compact: true }), sub: "All materials combined", Icon: IndianRupee, hi: true  },
+              { label: "Total Amount Spent",     val: formatMoney(totalSpend, { compact: true }), sub: "All materials combined", Icon: IndianRupee, hi: true  },
               { label: "Active Vendors",         val: "6",                          sub: "Across 3 states",        Icon: Building2,   hi: false },
             ].map((m, i) => (
               <div key={m.label} style={{ flex: 1, padding: "18px 18px", borderRight: i < 4 ? "1px solid rgba(245,232,208,0.07)" : "none", display: "flex", alignItems: "center", gap: 12 }}>

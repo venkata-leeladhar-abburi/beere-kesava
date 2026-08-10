@@ -34,7 +34,7 @@ function formatDuration(minutes: number | null): string | null {
 function toLoginEvent(log: BackendAuditLog): LoginEvent {
   return {
     id: log.id,
-    status: log.status === "LOGIN" ? "login" : log.status === "LOGOUT" ? "logout" : "failed",
+    event: log.status === "LOGIN" ? "login" : log.status === "LOGOUT" ? "logout" : "failed",
     user: log.user ? `${log.user.firstName} ${log.user.lastName}` : "Unknown",
     role: log.user?.role ?? "—",
     time: formatTime(log.createdAt),
@@ -63,14 +63,14 @@ export function LoginHistorySection() {
       cell: (_v, e) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{e.role}</span>,
     },
     {
-      id: "event", header: "Event", accessor: e => e.status,
+      id: "event", header: "Event", accessor: e => e.event,
       cell: (_v, e) => (
         <span style={{
-          background: e.status === "login" ? "rgba(30,102,64,0.10)" : e.status === "logout" ? "rgba(139,112,96,0.10)" : "rgba(192,57,43,0.08)",
-          color: e.status === "login" ? T.green : e.status === "logout" ? T.taupe : T.crimson,
+          background: e.event === "login" ? "rgba(30,102,64,0.10)" : e.event === "logout" ? "rgba(139,112,96,0.10)" : "rgba(192,57,43,0.08)",
+          color: e.event === "login" ? T.green : e.event === "logout" ? T.taupe : T.crimson,
           fontFamily: F.ui, fontSize: 12, fontWeight: 600, padding: "2px 9px", borderRadius: 999, whiteSpace: "nowrap",
         }}>
-          {e.status === "login" ? "✓ Login" : e.status === "logout" ? "→ Logout" : "✗ Failed Login"}
+          {e.event === "login" ? "✓ Login" : e.event === "logout" ? "→ Logout" : "✗ Failed Login"}
         </span>
       ),
     },
@@ -87,21 +87,21 @@ export function LoginHistorySection() {
       id: "duration", header: "Session Duration", accessor: e => e.duration,
       cell: (_v, e) => e.duration ? (
         <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>{e.duration}</span>
-      ) : e.status === "login" ? (
+      ) : e.event === "login" ? (
         <span style={{ color: T.antiqueGold, fontFamily: F.mono, fontSize: 12 }}>Ongoing</span>
       ) : (
         <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>—</span>
       ),
     },
     {
-      id: "status", header: "Status", accessor: e => e.status, type: "status",
+      id: "status", header: "Status", accessor: e => e.event, type: "status",
       cell: (_v, e) => (
         <span style={{
-          background: e.status === "login" ? "rgba(30,102,64,0.10)" : e.status === "logout" ? "rgba(139,112,96,0.10)" : "rgba(192,57,43,0.08)",
-          color: e.status === "login" ? T.green : e.status === "logout" ? T.taupe : T.crimson,
+          background: e.event === "login" ? "rgba(30,102,64,0.10)" : e.event === "logout" ? "rgba(139,112,96,0.10)" : "rgba(192,57,43,0.08)",
+          color: e.event === "login" ? T.green : e.event === "logout" ? T.taupe : T.crimson,
           fontFamily: F.ui, fontSize: 12, fontWeight: 600, padding: "2px 9px", borderRadius: 999, whiteSpace: "nowrap",
         }}>
-          {e.status === "login" ? "Active" : e.status === "logout" ? "Ended" : "Failed"}
+          {e.event === "login" ? "Active" : e.event === "logout" ? "Ended" : "Failed"}
         </span>
       ),
     },
@@ -177,8 +177,8 @@ export function LoginHistorySection() {
             }} />
 
             {entries.map(entry => {
-              const circleColor = entry.status === "login" ? T.green : entry.status === "logout" ? T.taupe : T.crimson;
-              const circleInitial = entry.status === "login" ? "IN" : entry.status === "logout" ? "OUT" : "!";
+              const circleColor = entry.event === "login" ? T.green : entry.event === "logout" ? T.taupe : T.crimson;
+              const circleInitial = entry.event === "login" ? "IN" : entry.event === "logout" ? "OUT" : "!";
               return (
                 <div key={entry.id} style={{ display: "flex", gap: 20, marginBottom: 14, position: "relative" }}>
                   {/* Circle */}
@@ -212,19 +212,19 @@ export function LoginHistorySection() {
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         {/* Status badge */}
                         <span style={{
-                          background: entry.status === "login"
+                          background: entry.event === "login"
                             ? "rgba(30,102,64,0.10)"
-                            : entry.status === "logout"
+                            : entry.event === "logout"
                             ? "rgba(139,112,96,0.10)"
                             : "rgba(192,57,43,0.08)",
-                          color: entry.status === "login" ? T.green : entry.status === "logout" ? T.taupe : T.crimson,
+                          color: entry.event === "login" ? T.green : entry.event === "logout" ? T.taupe : T.crimson,
                           fontFamily: F.ui,
                           fontSize: 12,
                           fontWeight: 600,
                           padding: "2px 9px",
                           borderRadius: 999,
                         }}>
-                          {entry.status === "login" ? "✓ Login" : entry.status === "logout" ? "→ Logout" : "✗ Failed Login"}
+                          {entry.event === "login" ? "✓ Login" : entry.event === "logout" ? "→ Logout" : "✗ Failed Login"}
                         </span>
                         <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: T.luxuryBrown }}>
                           {entry.user}

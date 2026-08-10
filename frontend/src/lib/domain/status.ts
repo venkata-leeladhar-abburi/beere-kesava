@@ -185,7 +185,7 @@ export type ResourceCondition = "available" | "reserved" | "in-use" | "idle" | "
 
 /** Was found living inside `status` as `"login"` / `"logout"` — belongs in
  *  an audit log's own event column, never a status pill. */
-export type AuditEvent = "login" | "logout" | "create" | "update" | "delete" | "export";
+export type AuditEvent = "login" | "logout" | "failed" | "create" | "update" | "delete" | "export";
 
 /** Was found living inside `status` as `"Match"` / `"Short"` / `"Excess"` —
  *  a reconciliation result, its own column with a distinct visual treatment. */

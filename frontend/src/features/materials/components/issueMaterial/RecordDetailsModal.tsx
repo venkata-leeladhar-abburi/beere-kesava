@@ -9,8 +9,19 @@ import { materialIcon } from "./materialFormatters";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { Modal } from "../../../../shared/ui/overlay";
+import { StatusPill } from "../../../../shared/ui/domain/StatusPill";
+import type { StatusValueOf } from "@/lib/domain/status";
 
 type MaterialLine = MaterialIssueRecord["materials"][number];
+
+// MaterialIssueRecord["status"] ("pending-signature" | "signed" | "cancelled")
+// onto the shared document taxonomy (lib/domain/status.ts) — a material issue
+// slip is a document awaiting a weaver's signature.
+const ISSUE_STATUS_TO_DOCUMENT: Record<MaterialIssueRecord["status"], StatusValueOf<"document">> = {
+  "pending-signature": "pending",
+  signed: "signed",
+  cancelled: "void",
+};
 
 // ── View Details Modal ────────────────────────────────────────────────────────
 export function RecordDetailsModal({ record, onClose }: { record: MaterialIssueRecord; onClose: () => void }) {
@@ -62,13 +73,16 @@ export function RecordDetailsModal({ record, onClose }: { record: MaterialIssueR
               { label: "Issued By", val: record.issuedBy },
               { label: "Issued At", val: new Date(record.issuedAt).toLocaleString("en-IN") },
               { label: "Signature Method", val: record.signatureMethod === "here" ? "Signed on Admin device" : "Sent to weaver's phone" },
-              { label: "Status", val: record.status.replace("-", " ") },
             ].map(r => (
               <div key={r.label} style={{ background: "#FFF", borderRadius: 10, padding: "10px 14px", border: `1px solid ${T.borderDef}` }}>
                 <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.6px", marginBottom: 3 }}>{r.label}</div>
                 <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, textTransform: "capitalize" as const }}>{r.val}</div>
               </div>
             ))}
+            <div style={{ background: "#FFF", borderRadius: 10, padding: "10px 14px", border: `1px solid ${T.borderDef}` }}>
+              <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.6px", marginBottom: 3 }}>Status</div>
+              <StatusPill taxonomy="document" status={ISSUE_STATUS_TO_DOCUMENT[record.status]} size="sm" />
+            </div>
           </div>
 
           <div>

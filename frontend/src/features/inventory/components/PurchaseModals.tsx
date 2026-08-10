@@ -6,6 +6,9 @@ import {
 import { Button, IconButton } from "../../../shared/ui/primitives";
 import { Modal } from "../../../shared/ui/overlay";
 import { useDocument } from "../../../shared/ui/document";
+import { Money } from "../../../shared/ui/domain/Money";
+import { StatusPill } from "../../../shared/ui/domain/StatusPill";
+import type { Paise } from "@/lib/domain/money";
 
 const T = {
   silkCream:     "#F7F2EA",
@@ -43,8 +46,10 @@ export interface Purchase {
   material: string;
   type: MatType;
   quantity: string;
-  totalPaid: string;
-  status: "complete" | "pending" | "partial";
+  totalPaid: Paise;
+  /** GRN entry lifecycle — maps onto `DOCUMENT_STATUS` ("received" = entry
+   *  complete / goods received, "pending" = still pending / partial). */
+  status: "received" | "pending";
   grn: string;
   notes?: string;
 }
@@ -53,12 +58,6 @@ export const MAT_CFG: Record<MatType, { col: string; bg: string; Icon: React.Ele
   Warp:   { col: T.royalBurgundy, bg: "rgba(110,15,45,0.09)",   Icon: Layers   },
   Resham: { col: "#7A5E1C",       bg: "rgba(200,155,71,0.13)",  Icon: Tag      },
   Jari:   { col: T.luxuryBrown,   bg: "rgba(59,35,20,0.09)",    Icon: Sparkles },
-};
-
-export const STATUS_CFG = {
-  complete: { label: "Entry Complete",  color: T.green,        bg: "rgba(30,102,64,0.10)",  border: "rgba(30,102,64,0.22)" },
-  pending:  { label: "Pending / Partial", color: "#7A5E1C",   bg: "rgba(200,155,71,0.12)", border: "rgba(200,155,71,0.28)" },
-  partial:  { label: "Partial Entry",   color: "#7A5E1C",     bg: "rgba(200,155,71,0.12)", border: "rgba(200,155,71,0.28)" },
 };
 
 function ModalOverlay({ open, onClose, children }: { open: boolean; onClose: () => void; children: React.ReactNode }) {
@@ -94,19 +93,16 @@ function ModalHeader({ title, subtitle, onClose }: { title: string; subtitle?: s
 export function ViewPurchaseModal({ purchase, onClose }: { purchase: Purchase | null; onClose: () => void }) {
   if (!purchase) return null;
   const mc = MAT_CFG[purchase.type];
-  const sc = STATUS_CFG[purchase.status];
   const MatIcon = mc.Icon;
 
   return (
     <ModalOverlay open={!!purchase} onClose={onClose}>
       <ModalHeader title="Purchase Details" subtitle={`Full record for ${purchase.po}`} onClose={onClose} />
       <div style={{ padding: "26px 28px 28px" }}>
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 22 }}>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 22 }}>
           <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "5px 12px", borderRadius: 8 }}>{purchase.po}</span>
           <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, background: T.silkCream, padding: "5px 12px", borderRadius: 8, border: `1px solid ${T.borderDef}` }}>{purchase.grn}</span>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: sc.color, background: sc.bg, border: `1px solid ${sc.border}`, borderRadius: 20, padding: "5px 12px" }}>
-            <Check size={12} /> {sc.label}
-          </span>
+          <StatusPill taxonomy="document" status={purchase.status} size="sm" />
         </div>
 
         <div style={{ background: mc.bg, borderRadius: 14, padding: "16px 20px", marginBottom: 18, display: "flex", alignItems: "center", gap: 16 }}>
@@ -142,7 +138,7 @@ export function ViewPurchaseModal({ purchase, onClose }: { purchase: Purchase | 
         <div style={{ background: G.card, borderRadius: 14, padding: "20px 22px", marginBottom: 18, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
             <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(200,155,71,0.80)", letterSpacing: "2px", textTransform: "uppercase", marginBottom: 6 }}>Total Amount Paid</div>
-            <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 38, color: T.goldLight, lineHeight: 1, ...NUM }}>{purchase.totalPaid}</div>
+            <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 38, color: T.goldLight, lineHeight: 1, ...NUM }}><Money value={purchase.totalPaid} /></div>
           </div>
           <div style={{ width: 52, height: 52, borderRadius: 15, background: "rgba(200,155,71,0.15)", border: "1px solid rgba(200,155,71,0.25)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <IndianRupee size={24} color={T.antiqueGold} />
@@ -210,11 +206,11 @@ export function PrintPurchaseModal({ purchase, onClose }: { purchase: Purchase |
                 <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{purchase.material}</span>
               </div>
               <span style={{ fontFamily: F.mono, fontSize: 13, color: T.taupe }}>{purchase.quantity}</span>
-              <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.antiqueGold }}>{purchase.totalPaid}</span>
+              <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.antiqueGold }}><Money value={purchase.totalPaid} /></span>
             </div>
             <div style={{ padding: "10px 16px", background: T.warmCream, display: "flex", justifyContent: "flex-end", gap: 24 }}>
               <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 14, color: T.taupe }}>Grand Total:</span>
-              <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: T.antiqueGold }}>{purchase.totalPaid}</span>
+              <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: T.antiqueGold }}><Money value={purchase.totalPaid} /></span>
             </div>
           </div>
 

@@ -1,10 +1,12 @@
 import React, { useRef } from "react";
 import { motion, useInView } from "motion/react";
 import {
-  Package, Tag, Eye, Printer, Calendar, IndianRupee, Check, FileText, Hash,
+  Package, Tag, Eye, Printer, Calendar, IndianRupee, FileText, Hash,
 } from "lucide-react";
-import { Purchase, MAT_CFG, STATUS_CFG } from "./PurchaseModals";
+import { Purchase, MAT_CFG } from "./PurchaseModals";
 import { Button } from "../../../shared/ui/primitives";
+import { Money } from "../../../shared/ui/domain/Money";
+import { StatusPill } from "../../../shared/ui/domain/StatusPill";
 
 const T = {
   silkCream:     "#F7F2EA",
@@ -42,7 +44,6 @@ function FadeUp({ children, delay = 0, style }: { children: React.ReactNode; del
 
 export function PurchaseCard({ p, onView, onPrint, index }: { p: Purchase; onView: (p: Purchase) => void; onPrint: (p: Purchase) => void; index: number }) {
   const mc = MAT_CFG[p.type];
-  const sc = STATUS_CFG[p.status];
   const MatIcon = mc.Icon;
 
   return (
@@ -66,9 +67,7 @@ export function PurchaseCard({ p, onView, onPrint, index }: { p: Purchase; onVie
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.antiqueGold, fontWeight: 600, marginTop: 2 }}>{p.firmName}</div>
               </div>
             </div>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: sc.color, background: sc.bg, border: `1px solid ${sc.border}`, borderRadius: 20, padding: "4px 10px", flexShrink: 0 }}>
-              <Check size={11} /> {sc.label}
-            </span>
+            <StatusPill taxonomy="document" status={p.status} size="sm" className="shrink-0" />
           </div>
         </div>
 
@@ -102,7 +101,7 @@ export function PurchaseCard({ p, onView, onPrint, index }: { p: Purchase; onVie
           <div style={{ background: G.card, borderRadius: 12, padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div>
               <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(200,155,71,0.75)", letterSpacing: "2px", textTransform: "uppercase", marginBottom: 4 }}>Total Paid</div>
-              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 24, color: T.goldLight, lineHeight: 1, ...NUM }}>{p.totalPaid}</div>
+              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 24, color: T.goldLight, lineHeight: 1, ...NUM }}><Money value={p.totalPaid} /></div>
             </div>
             <div style={{ width: 38, height: 38, borderRadius: 11, background: "rgba(200,155,71,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <IndianRupee size={18} color={T.antiqueGold} />

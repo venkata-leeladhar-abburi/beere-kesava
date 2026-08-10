@@ -45,7 +45,7 @@ const columns: ColumnDef<PaymentRow>[] = [
   },
   {
     id: "status", header: "Status", accessor: p => p.status, type: "status",
-    cell: (_v, p) => <span style={{ background: T.greenBg, color: T.green, padding: "3px 8px", borderRadius: 6, fontSize: 12, fontWeight: 700 }}>{p.status}</span>,
+    cell: (_v, p) => <StatusPill taxonomy="payment" status={p.status} />,
   },
 ];
 

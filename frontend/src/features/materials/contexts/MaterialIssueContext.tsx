@@ -43,6 +43,10 @@ export interface MaterialIssueRecord {
   signatureTimestamp?: string;
   signatureUrl?: string;    // resolved URL of the captured signature image (HERE method only)
   notes?: string;
+  // Rendered via <StatusPill taxonomy="document" .../> in RecordDetailsModal.tsx
+  // through ISSUE_STATUS_TO_DOCUMENT (pending-signature → pending, signed →
+  // signed, cancelled → void) — a material issue slip is a document awaiting
+  // the weaver's signature.
   status: "pending-signature" | "signed" | "cancelled";
 }
 
@@ -157,6 +161,13 @@ export interface ReceivedSareeRecord {
   tallied?: boolean;          // true once admin has confirmed the tally for this series
   receivedAt: string;  // ISO date-time
   color?: string;
+  // No taxonomy pill wired here — this field has no rendering call site today
+  // (only ever set, never displayed as a badge); adding a home would be
+  // speculative. "received" would fit `document`'s "received" key and
+  // "defective" is closest to `inventory`'s "damaged", but they'd need two
+  // different taxonomies for one field, which the single-taxonomy
+  // `<StatusPill>` API can't express — flag for a follow-up if/when this
+  // becomes visible in the UI.
   status: "received" | "defective";
 }
 

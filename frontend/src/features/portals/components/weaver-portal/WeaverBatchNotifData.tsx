@@ -3,6 +3,7 @@ import { motion, useInView } from "motion/react";
 import { useRef } from "react";
 import { Flower2, ChevronRight } from "lucide-react";
 import { AlertTriangle, AlertCircle, Info, CheckCircle2, Package, Wallet, ArrowUpRight } from "lucide-react";
+import { resolveStatus, type StatusValueOf } from "@/lib/domain/status";
 
 // ─── Shared tokens (local copy for this file) ────────────────────────────────
 const C = {
@@ -87,14 +88,21 @@ export interface WeaverBatch {
 // Removed: BATCH_LIST held hardcoded demo batches (BATCH-086, ...).
 // Weaver batches come from BatchContext (GET /batches) only.
 
-export const BATCH_STATUS_CFG = {
-  active:    { label: "Weaving in Progress", dot: C.green,   textColor: C.green },
-  completed: { label: "Completed",           dot: "#1D4ED8", textColor: "#1D4ED8" },
-  qc:        { label: "Pending QC",          dot: "#8B6018", textColor: "#8B6018" },
+// `WeaverBatch["status"]` maps directly onto `PRODUCTION_STATUS` (active →
+// weaving, completed → completed, qc → qc-pending) — design-system/06-DOMAIN.md
+// Part D. Dot colours below are pulled from the taxonomy's own tone.
+const BATCH_STATUS_TO_PRODUCTION: Record<WeaverBatch["status"], StatusValueOf<"production">> = {
+  active: "weaving",
+  completed: "completed",
+  qc: "qc-pending",
+};
+const TONE_DOT: Record<string, string> = {
+  info: "#1D4ED8", success: C.green, warning: "#8B6018", danger: "#C0392B", neutral: C.muted, brand: C.burg,
 };
 
 export function BatchCard({ b }: { b: WeaverBatch }) {
-  const cfg = BATCH_STATUS_CFG[b.status];
+  const entry = resolveStatus("production", BATCH_STATUS_TO_PRODUCTION[b.status]);
+  const cfg = { label: entry.label, dot: TONE_DOT[entry.tone] ?? C.muted };
   const qcColor = b.passRate >= 95 ? C.green : b.passRate >= 85 ? "#8B6018" : C.crim;
   return (
     <motion.div
