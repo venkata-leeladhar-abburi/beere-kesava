@@ -3,9 +3,9 @@ import { T, F } from "../theme";
 import {
   Select as DsSelect,
   SelectItem,
-  StatusPill as DsStatusPill,
-  type StatusTone,
 } from "../../../../../shared/ui/primitives";
+import { StatusPill as DomainStatusPill } from "../../../../../shared/ui/domain";
+import type { StatusValueOf } from "../../../../../lib/domain/status";
 
 export function Select({ value, options, onChange }: {
   value: string; options: string[]; onChange: (v: string) => void;
@@ -19,14 +19,17 @@ export function Select({ value, options, onChange }: {
   );
 }
 
-const STATUS_TONE: Record<string, StatusTone> = {
-  Paid: "success",
-  Pending: "warning",
-  Partial: "danger",
+// "Paid" | "Pending" | "Partial" (external purchase payment status) —
+// normalized onto the shared payment taxonomy (lib/domain/status.ts)
+// per design-system/06-DOMAIN.md Part D.
+const STATUS_KEY: Record<string, StatusValueOf<"payment">> = {
+  Paid: "paid",
+  Pending: "unpaid",
+  Partial: "partial",
 };
 
 export function StatusPill({ status }: { status: string }) {
-  return <DsStatusPill tone={STATUS_TONE[status] ?? "neutral"} label={status} />;
+  return <DomainStatusPill taxonomy="payment" status={STATUS_KEY[status] ?? "unpaid"} />;
 }
 
 export const inputStyle: React.CSSProperties = {

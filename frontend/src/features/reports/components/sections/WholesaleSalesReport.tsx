@@ -3,12 +3,22 @@ import { ReceiptText, Banknote, CheckCircle2, BellRing } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { useBulkOrders } from "../../../bulk-orders/contexts/BulkOrderContext";
 import { T, F } from "../theme";
-import { FadeUp, ChartCard, SumCard, TabTitle, ReportDLBar, ChartTip, AnimBar, TablePager, StatusPill } from "../common/primitives";
+import { FadeUp, ChartCard, SumCard, TabTitle, ReportDLBar, ChartTip, AnimBar, TablePager } from "../common/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { semantic } from "../../../../design-system/tokens";
 import type { BulkOrder } from "../../../bulk-orders/contexts/BulkOrderContext";
 import { rupees, formatMoney } from "@/lib/domain/money";
-import { Money } from "@/shared/ui/domain";
+import { Money, StatusPill } from "@/shared/ui/domain";
+import type { StatusValueOf } from "@/lib/domain/status";
+
+// BulkOrder.paymentStatus ("pending" | "partial" | "paid") normalized onto
+// the shared payment taxonomy (lib/domain/status.ts) per
+// design-system/06-DOMAIN.md Part D.
+const PAYMENT_STATUS_KEY: Record<string, StatusValueOf<"payment">> = {
+  paid: "paid",
+  partial: "partial",
+  pending: "unpaid",
+};
 
 function WholesaleWeeklyTooltip({ active, payload, label }: any) {
   if (!active || !payload || !payload.length) return null;
@@ -138,9 +148,7 @@ export function WholesaleSalesReport() {
     },
     {
       id: "status", header: "Status", accessor: o => o.paymentStatus, type: "status", align: "center",
-      cell: (_v, o) => (
-        <StatusPill label={o.paymentStatus === "paid" ? "✓ Paid" : o.paymentStatus === "partial" ? "◑ Partial" : "⚠ Pending"} type={o.paymentStatus === "paid" ? "ok" : o.paymentStatus === "partial" ? "warn" : "bad"} />
-      ),
+      cell: (_v, o) => <StatusPill taxonomy="payment" status={PAYMENT_STATUS_KEY[o.paymentStatus ?? "pending"] ?? "unpaid"} />,
     },
   ];
 
