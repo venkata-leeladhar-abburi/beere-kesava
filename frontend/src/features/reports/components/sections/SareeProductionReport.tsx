@@ -19,6 +19,17 @@ import { weaversApi } from "../../../../shared/api/weavers";
 import { reportsApi } from "../../../../shared/api/reports";
 import { purchasesApi, BackendPurchase } from "../../../../shared/api/purchases";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { StatusPill as DomainStatusPill } from "../../../../shared/ui/domain";
+import type { StatusValueOf } from "../../../../lib/domain/status";
+
+// BackendPurchase.status ("PAID" | "PENDING" | "PARTIAL") normalized onto
+// the shared payment taxonomy (lib/domain/status.ts) per
+// design-system/06-DOMAIN.md Part D.
+const PURCHASE_STATUS_KEY: Record<string, StatusValueOf<"payment">> = {
+  PAID: "paid",
+  PARTIAL: "partial",
+  PENDING: "unpaid",
+};
 
 // Helper: week label for a Date (e.g. "W1", "W2"...)
 function getISOWeekLabel(d: Date): string {
@@ -56,7 +67,7 @@ export function ExternalPurchasesSection() {
     { id: "date", header: "Date", accessor: r => r.date, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{fmtDate(r.date)}</span> },
     {
       id: "status", header: "Status", accessor: r => r.status, type: "status",
-      cell: (_v, r) => <StatusPill label={r.status} type={r.status === "PAID" ? "ok" : r.status === "PARTIAL" ? "warn" : "bad"} />,
+      cell: (_v, r) => <DomainStatusPill taxonomy="payment" status={PURCHASE_STATUS_KEY[r.status] ?? "unpaid"} />,
     },
   ];
 

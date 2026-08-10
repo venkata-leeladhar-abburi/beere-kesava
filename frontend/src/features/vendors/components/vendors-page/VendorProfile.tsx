@@ -8,8 +8,10 @@ import {
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { T, F } from "./theme";
 import { Vendor, VendorBill, VendorPaymentTxn } from "./types";
-import { PAY_MODE_FILL, BILL_STATUS_CFG } from "./data";
+import { PAY_MODE_FILL } from "./data";
 import { StatusPill, StarRating } from "./SharedBits";
+import { StatusPill as DomainStatusPill } from "../../../../shared/ui/domain";
+import type { StatusValueOf } from "../../../../lib/domain/status";
 import { PurchaseOrderHistoryTable } from "./PurchaseOrderHistoryTable";
 import { FadeUp } from "./FadeUp";
 import { VendorEditFormTab } from "./VendorEditFormTab";
@@ -50,6 +52,11 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
 
   const BILL_STATUS_LABEL: Record<VendorBillStatus, VendorBill["status"]> = {
     PAID: "Paid", PARTIAL: "Partial", PENDING: "Pending", OVERDUE: "Overdue",
+  };
+  // VendorBill.status normalized onto the shared payment taxonomy
+  // (lib/domain/status.ts) per design-system/06-DOMAIN.md Part D.
+  const BILL_STATUS_KEY: Record<VendorBill["status"], StatusValueOf<"payment">> = {
+    Paid: "paid", Partial: "partial", Pending: "unpaid", Overdue: "overdue",
   };
 
   const ledger = React.useMemo(() => {
@@ -160,10 +167,7 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
     { id: "balance", header: "Balance", accessor: b => b.balance, cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: b.balance > 0 ? T.crimson : T.taupe }}>{b.balance > 0 ? inr(b.balance) : "—"}</span> },
     {
       id: "status", header: "Status", accessor: b => b.status, type: "status",
-      cell: (_v, b) => {
-        const cfg = BILL_STATUS_CFG[b.status];
-        return <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, padding: "4px 11px", borderRadius: 20, background: cfg.bg, color: cfg.color, whiteSpace: "nowrap" as const }}>{b.status}</span>;
-      },
+      cell: (_v, b) => <DomainStatusPill taxonomy="payment" status={BILL_STATUS_KEY[b.status]} />,
     },
   ];
 

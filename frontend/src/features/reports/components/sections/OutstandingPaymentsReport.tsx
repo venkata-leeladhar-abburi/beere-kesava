@@ -2,15 +2,22 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Wallet, Receipt, ShoppingBag, Clock } from "lucide-react";
 import { T, F } from "../theme";
-import { FadeUp, SumCard, TabTitle, StatusPill } from "../common/primitives";
+import { FadeUp, SumCard, TabTitle } from "../common/primitives";
 import { reportsApi, OutstandingPaymentItem } from "../../../../shared/api/reports";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { StatusPill } from "../../../../shared/ui/domain";
+import type { StatusValueOf } from "../../../../lib/domain/status";
 
 const SOURCE_LABEL: Record<string, string> = { invoice: "Invoice", bulk_order: "Bulk Order" };
 
-function statusTone(status: string): "bad" | "warn" {
-  return status === "OVERDUE" ? "bad" : "warn";
-}
+// Invoice/BulkOrder payment status ("PENDING" | "PARTIAL" | "OVERDUE" from
+// the backend) normalized onto the shared payment taxonomy
+// (lib/domain/status.ts) per design-system/06-DOMAIN.md Part D.
+const PAYMENT_STATUS_KEY: Record<string, StatusValueOf<"payment">> = {
+  PENDING: "unpaid",
+  PARTIAL: "partial",
+  OVERDUE: "overdue",
+};
 
 export function OutstandingPaymentsReport() {
   const { data, isLoading, isError } = useQuery({
@@ -43,7 +50,7 @@ export function OutstandingPaymentsReport() {
     },
     {
       id: "status", header: "Status", accessor: r => r.status, type: "status", align: "center",
-      cell: (_v, r) => <StatusPill label={r.status} type={statusTone(r.status)} />,
+      cell: (_v, r) => <StatusPill taxonomy="payment" status={PAYMENT_STATUS_KEY[r.status] ?? "unpaid"} />,
     },
   ];
 

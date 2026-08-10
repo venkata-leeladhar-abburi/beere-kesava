@@ -4,6 +4,8 @@ import React, { useRef } from "react";
 import { motion, useInView } from "motion/react";
 import { Star, CheckCircle2 } from "lucide-react";
 import { T, F, EASE } from "../theme";
+import { StatusPill as DomainStatusPill } from "../../../../shared/ui/domain";
+import type { StatusValueOf } from "../../../../lib/domain/status";
 
 export function FadeUp({ children, delay = 0, style }: { children: React.ReactNode; delay?: number; style?: React.CSSProperties }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -38,14 +40,17 @@ export function StatusPill({ status }: { status: string }) {
   return <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: s.bg, color: s.color, padding: "3px 10px", borderRadius: 20 }}>{s.label}</span>;
 }
 
+// "Paid" | "Pending" | "Partial" (Purchase.status, free-form) — normalized
+// onto the shared payment taxonomy (lib/domain/status.ts) rather than a
+// hand-rolled colour map, per design-system/06-DOMAIN.md Part D.
+const PAY_STATUS_KEY: Record<string, StatusValueOf<"payment">> = {
+  Paid: "paid",
+  Pending: "unpaid",
+  Partial: "partial",
+};
+
 export function PayStatusPill({ status }: { status: string }) {
-  const styles: Record<string, { color: string; bg: string }> = {
-    Paid:    { color: T.green, bg: "rgba(30,102,64,0.09)" },
-    Pending: { color: "rgba(230,126,34,1)", bg: "rgba(230,126,34,0.12)" },
-    Partial: { color: T.crimson, bg: "rgba(192,57,43,0.08)" },
-  };
-  const s = styles[status] || { color: T.taupe, bg: T.cream };
-  return <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: s.color, background: s.bg, borderRadius: 999, padding: "3px 10px", display: "inline-block" }}>{status}</span>;
+  return <DomainStatusPill taxonomy="payment" status={PAY_STATUS_KEY[status] ?? "unpaid"} />;
 }
 
 export function StarRating({ rating }: { rating: number }) {
