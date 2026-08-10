@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, Query } from "@nestjs/common";
 import { RequireRoles } from "../auth/decorators/require-roles.decorator";
 import { UserRole } from "../generated/prisma/client";
 import { CreateDispatchDto } from "./dto/create-dispatch.dto";
@@ -26,5 +26,11 @@ export class DispatchController {
   @Get(":id")
   findOne(@Param("id") id: string) {
     return this.dispatchService.findOne(id);
+  }
+
+  @Delete(":id")
+  @RequireRoles(UserRole.WORKER, UserRole.ADMIN, UserRole.SUPERADMIN)
+  remove(@Param("id") id: string, @Query("actorId") actorId?: string) {
+    return this.dispatchService.remove(id, actorId || "unknown");
   }
 }

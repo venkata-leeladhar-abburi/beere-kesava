@@ -505,6 +505,14 @@ model BatchSareeRow {
   receivedWeight Decimal?  @db.Decimal(8, 2)
   receivedColor  String?
   receivedPhotoUrl String?
+  // Actual material split entered at receipt (grams for warp/resham, reels
+  // for jari) — defaults to the rate card's standard split scaled to the
+  // entered weight, but Worker Staff can override it. Persisted separately
+  // from receivedWeight so a bulk order's material tally reflects what was
+  // actually recorded, not a re-derived estimate.
+  receivedWarpG      Decimal? @db.Decimal(8, 2)
+  receivedReshamG    Decimal? @db.Decimal(8, 2)
+  receivedJariReels  Decimal? @db.Decimal(8, 2)
 
   // History: a saree can be re-inspected after a SEMI verdict sends it back
   // to the weaver for rework, so this is one-to-many, newest last by qcDate.

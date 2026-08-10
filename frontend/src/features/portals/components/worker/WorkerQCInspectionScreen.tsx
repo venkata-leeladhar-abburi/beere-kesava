@@ -70,7 +70,9 @@ export function WorkerQCInspectionScreen({
                 <div style={{ fontFamily: F.d, fontSize: 16, fontWeight: 700, color: T.brown }}>{inspecting.id} — {result === "semi_approved" ? "SEMI-APPROVED" : "DEFECTIVE"}</div>
               </div>
               <div style={{ fontFamily: F.u, fontSize: 13, color: T.muted, lineHeight: 1.5, marginBottom: 12 }}>
-                {result === "semi_approved" ? "Saree passed QC with deduction applied. WhatsApp sent." : "Stored in defective inventory. No payment for this saree. WhatsApp sent."}
+                {result === "semi_approved"
+                  ? "Sent back to the weaver for rework with the deduction applied — it does not count as produced yet. Receive it again once the weaver returns it, then re-inspect. WhatsApp sent."
+                  : "Sent back to the weaver for rework — no payment for this round. Receive it again once the weaver returns it, then re-inspect. WhatsApp sent."}
               </div>
               <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginBottom: 10 }}>
                 {defectTypes.map(d => <span key={d} style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#FFF", background: result === "semi_approved" ? T.gold : T.crim, padding: "2px 9px", borderRadius: 999 }}>{d}</span>)}
@@ -192,8 +194,8 @@ export function WorkerQCInspectionScreen({
                 <AlertTriangle size={14} color={result === "semi_approved" ? T.gold : T.crim} style={{ flexShrink: 0, marginTop: 1 }} />
                 <div style={{ fontFamily: F.u, fontSize: 12, color: result === "semi_approved" ? T.gold : T.crim, lineHeight: 1.5 }}>
                   {result === "semi_approved"
-                    ? `${formatMoney(rupees(Number(deductionAmount) || 0))} of the ${formatMoney(rupees(makingChargeOf(inspecting)))} making charge will be deducted from ${inspecting.source === "outsourced" ? inspecting.weaver : "this loom"}'s payment.`
-                    : `${inspecting.source === "outsourced" ? inspecting.weaver : "This loom"} will not be paid for this saree — the full ${formatMoney(rupees(makingChargeOf(inspecting)))} making charge is withheld.`}
+                    ? `${formatMoney(rupees(Number(deductionAmount) || 0))} of the ${formatMoney(rupees(makingChargeOf(inspecting)))} making charge will be deducted from ${inspecting.source === "outsourced" ? inspecting.weaver : "this loom"}'s payment, and the saree goes back for rework — it will reappear in the receive queue instead of moving on to finishing.`
+                    : `${inspecting.source === "outsourced" ? inspecting.weaver : "This loom"} will not be paid for this saree — the full ${formatMoney(rupees(makingChargeOf(inspecting)))} making charge is withheld, and the saree goes back for rework — it will reappear in the receive queue instead of moving on to finishing.`}
                   {" "}Weaver notified via WhatsApp.
                 </div>
               </div>

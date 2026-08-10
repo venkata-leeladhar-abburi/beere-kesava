@@ -4,12 +4,15 @@ import * as Dialog from "@radix-ui/react-dialog";
 import {
   ArrowLeft, MapPin, Phone, Package,
   CheckCircle2, FileText, ClipboardCheck,
-  Send, ArrowRight, Truck,
+  Send, ArrowRight, Truck, Scale, AlertTriangle, Trash2,
 } from "lucide-react";
 import type { BulkOrder } from "../contexts/BulkOrderContext";
 import { useBulkOrders } from "../contexts/BulkOrderContext";
 import { useFinishing, DispatchRecord, Quotation } from "../../finishing/contexts/FinishingContext";
 import { useBatches } from "../../production/contexts/BatchContext";
+import { useRatesPricing } from "../../pricing/contexts/RatesContext";
+import { autoMaterialSplit } from "../../portals/components/worker/weavers/MaterialSplitPanel";
+import { trimNum } from "../../pricing/components/rates-pricing/jariUtils";
 import { INVOICES } from "../../payments/data/invoices";
 import { resolveBulkOrderRef, resolveOrderMoney } from "../utils/BulkOrderLinking";
 import { DispatchDetailPanel } from "./DispatchDetailPanel";
@@ -51,7 +54,7 @@ const QUOTE_STATUS_CFG: Record<Quotation["status"], { bg: string; color: string 
 export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: {
   order: BulkOrder; onBack: () => void; initialTab?: "overview" | "sarees" | "payments" | "quotations";
 }) {
-  const { bulkOrders, tallyOrder } = useBulkOrders();
+  const { bulkOrders, tallyOrder, deleteBulkOrder } = useBulkOrders();
   const live = bulkOrders.find(o => o.ref === order.ref) ?? order;
   const { readySarees, returns, dispatches, quotations } = useFinishing();
   const { batches } = useBatches();
@@ -65,9 +68,10 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
   const [sareeTypeFilter, setSareeTypeFilter] = useState("All");
   const [dispatchPanel, setDispatchPanel] = useState<DispatchRecord | null>(null);
   const [tallyPrompt, setTallyPrompt] = useState(false);
+  const [deletePrompt, setDeletePrompt] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const cfg = ORDER_STATUS_CFG[live.status];
-  const pct = live.total > 0 ? Math.round((live.done / live.total) * 100) : 0;
 
   // Quotations raised against this order
   const linkedQuotations = useMemo(
@@ -137,6 +141,77 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
 
   const dispatchedCount = linkedSarees.filter(s => s.dispatch).length;
   const damagedCount = linkedSarees.filter(s => s.status === "Damaged — Review Needed").length;
+  // "Completed" — every saree actually linked to this order has at least
+  // passed QC (that's the earliest stage linkedSarees tracks), so its count
+  // is the real produced total. live.done is a separate, manually-set DB
+  // column nothing keeps in sync with production, so it drifts to 0 and
+  // never reflects a saree that's actually been produced for the order.
+  const producedCount = linkedSarees.length;
+  const pct = live.total > 0 ? Math.round((producedCount / live.total) * 100) : 0;
+
+  // ── Weight & material tally ──────────────────────────────────────────────
+  // Every saree carries the weight AND the actual warp/resham/jari split
+  // Worker Staff entered at receipt (BatchSareeRow.received{Weight,WarpG,
+  // ReshamG,JariReels}) — not a re-derived estimate. Cross-checking the sum
+  // of those, per saree, against what the order's saree type calls for
+  // surfaces shortfalls (skimmed material, under-weight sarees) the
+  // per-saree list alone doesn't make obvious.
+  const { getSareeTypeByCode } = useRatesPricing();
+  const sareeReceiptById = useMemo(() => {
+    const m = new Map<string, { weight: number; warpG?: number; reshamG?: number; jariReels?: number }>();
+    batches.forEach(b => b.rows.forEach(r => {
+      if (r.sareeId && r.receivedWeight) {
+        m.set(r.sareeId, {
+          weight: parseFloat(r.receivedWeight),
+          warpG: r.receivedWarpG ? parseFloat(r.receivedWarpG) : undefined,
+          reshamG: r.receivedReshamG ? parseFloat(r.receivedReshamG) : undefined,
+          jariReels: r.receivedJariReels ? parseFloat(r.receivedJariReels) : undefined,
+        });
+      }
+    }));
+    return m;
+  }, [batches]);
+
+  const weightTally = useMemo(() => {
+    let actualWeight = 0, warpG = 0, reshamG = 0, jariReels = 0, weighedCount = 0;
+    linkedSarees.forEach(s => {
+      const receipt = sareeReceiptById.get(s.id);
+      if (!receipt) return;
+      weighedCount += 1;
+      actualWeight += receipt.weight;
+      // Actual entry wins wherever Worker Staff recorded one; only a saree
+      // received before this was tracked (or where the entry was somehow
+      // blank) falls back to the standard-rate estimate for its weight.
+      if (receipt.warpG !== undefined || receipt.reshamG !== undefined || receipt.jariReels !== undefined) {
+        warpG += receipt.warpG ?? 0;
+        reshamG += receipt.reshamG ?? 0;
+        jariReels += receipt.jariReels ?? 0;
+      } else {
+        const split = autoMaterialSplit(s.sareeTypeCode, String(receipt.weight), getSareeTypeByCode);
+        if (split) {
+          warpG += parseFloat(split.warp) || 0;
+          reshamG += parseFloat(split.resham) || 0;
+          jariReels += parseFloat(split.jari) || 0;
+        }
+      }
+    });
+
+    // Expected side: the order's own saree type standard, scaled to every
+    // saree it calls for (live.total) — a bulk order is placed for a single
+    // saree type, so one rate card covers the whole thing.
+    const orderTypeCode = live.sareeType?.split(" · ").pop()?.trim();
+    const rate = orderTypeCode ? getSareeTypeByCode(orderTypeCode) : undefined;
+    const std = rate ? parseFloat(rate.stdWeight) || 0 : 0;
+    const expectedWeight = std * live.total;
+    const expectedWarpG = rate ? (parseFloat(rate.warpWeight) || 0) * live.total : 0;
+    const expectedReshamG = rate ? (parseFloat(rate.reshamWeight) || 0) * live.total : 0;
+    const expectedJariReels = rate ? (parseFloat(rate.jariWeight) || 0) * live.total : 0;
+
+    return {
+      weighedCount, actualWeight, warpG, reshamG, jariReels,
+      rate, expectedWeight, expectedWarpG, expectedReshamG, expectedJariReels,
+    };
+  }, [linkedSarees, sareeReceiptById, getSareeTypeByCode, live.sareeType, live.total]);
 
   const money = resolveOrderMoney(live, INVOICES);
   const { amountDue, amountPaid, balance, payments } = money;
@@ -171,6 +246,9 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
             <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: cfg.bg, color: cfg.color, padding: "5px 13px", borderRadius: 20 }}>{cfg.label}</span>
             <span style={{ fontFamily: F.mono, fontSize: 13, background: T.silkCream, border: `1px solid ${T.borderDef}`, padding: "5px 12px", borderRadius: 6, color: T.luxuryBrown, fontWeight: 600 }}>{live.ref}</span>
+            <Button onClick={() => setDeletePrompt(true)} variant="tertiary" size="md" iconLeft={Trash2}>
+              Delete Order
+            </Button>
           </div>
         </div>
 
@@ -189,7 +267,7 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
           <div style={{ display: "flex", gap: 40, alignItems: "center", flexWrap: "wrap" as const }}>
             <div>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.55)", marginBottom: 4 }}>PROGRESS</div>
-              <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.goldLight }}>{live.done}/{live.total} <span style={{ fontSize: 16 }}>({pct}%)</span></div>
+              <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.goldLight }}>{producedCount}/{live.total} <span style={{ fontSize: 16 }}>({pct}%)</span></div>
             </div>
             <div>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.55)", marginBottom: 4 }}>DELIVERY DEADLINE</div>
@@ -224,6 +302,48 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
           )}
         </div>
 
+        {/* Weight & material tally */}
+        <div style={{ marginBottom: 24, background: "#FFF", border: `1.5px solid ${T.borderDef}`, borderRadius: 16, padding: "18px 22px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+            <Scale size={18} color={T.royalBurgundy} />
+            <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>Weight & Material Tally</span>
+          </div>
+          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 16 }}>
+            {weightTally.rate
+              ? `${weightTally.weighedCount} of ${live.total} sarees weighed so far, against the ${weightTally.rate.code} standard (${weightTally.rate.stdWeight}g/saree).`
+              : `${weightTally.weighedCount} of ${live.total} sarees weighed so far — no rate card found for "${live.sareeType}", so expected figures can't be computed.`}
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14 }}>
+            {[
+              { label: "Total Weight", actual: weightTally.actualWeight, expected: weightTally.expectedWeight, unit: "g" },
+              { label: "Warp", actual: weightTally.warpG, expected: weightTally.expectedWarpG, unit: "g" },
+              { label: "Resham", actual: weightTally.reshamG, expected: weightTally.expectedReshamG, unit: "g" },
+              { label: "Jari", actual: weightTally.jariReels, expected: weightTally.expectedJariReels, unit: "reels" },
+            ].map(m => {
+              // Only flag a shortfall once every saree has actually been
+              // weighed — a partial tally is expected to read low and isn't a
+              // discrepancy worth calling out yet.
+              const complete = weightTally.weighedCount >= live.total && live.total > 0;
+              const short = complete && m.expected > 0 && m.actual < m.expected * 0.95;
+              return (
+                <div key={m.label} style={{ background: short ? "rgba(192,57,43,0.05)" : T.silkCream, border: `1px solid ${short ? "rgba(192,57,43,0.20)" : T.borderDef}`, borderRadius: 12, padding: "12px 14px" }}>
+                  <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: 6 }}>{m.label}</div>
+                  <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: short ? T.crimson : T.luxuryBrown, display: "flex", alignItems: "baseline", gap: 4 }}>
+                    {trimNum(m.actual, m.unit === "reels" ? 2 : 0)}
+                    <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 400, color: T.taupe }}>{m.unit}</span>
+                  </div>
+                  {weightTally.rate && (
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3, display: "flex", alignItems: "center", gap: 4 }}>
+                      of {trimNum(m.expected, m.unit === "reels" ? 2 : 0)}{m.unit} expected
+                      {short && <AlertTriangle size={12} color={T.crimson} />}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Tabs */}
         <div style={{ display: "flex", gap: 0, borderBottom: `2px solid ${T.borderDef}`, marginBottom: 28 }}>
           {tabs.map(t => (
@@ -241,6 +361,7 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
             {tab === "overview" && (
               <BulkOrderOverviewTab
                 live={live}
+                producedCount={producedCount}
                 dispatchedCount={dispatchedCount}
                 damagedCount={damagedCount}
                 matchedInvoice={matchedInvoice}
@@ -386,6 +507,45 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
               >
                 <ArrowRight size={20} color="#FFF" />
               </motion.div>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {deletePrompt && (
+        <Modal open onOpenChange={o => !o && setDeletePrompt(false)} size="xs">
+          <div style={{ padding: 26 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+              <AlertTriangle size={20} color={T.crimson} />
+              <Dialog.Title asChild>
+                <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown }}>Delete this order?</div>
+              </Dialog.Title>
+            </div>
+            <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, lineHeight: 1.6, margin: "0 0 20px" }}>
+              This permanently removes {live.ref} ({live.customer}). Batches, quotations, and dispatches already linked to it are kept, just unlinked from this order — this can&apos;t be undone.
+            </p>
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+              <Button onClick={() => setDeletePrompt(false)} variant="secondary" size="md" disabled={deleting}>
+                Cancel
+              </Button>
+              <Button
+                onClick={async () => {
+                  setDeleting(true);
+                  try {
+                    await deleteBulkOrder(live.ref);
+                    setDeletePrompt(false);
+                    onBack();
+                  } finally {
+                    setDeleting(false);
+                  }
+                }}
+                variant="danger"
+                size="md"
+                iconLeft={Trash2}
+                loading={deleting}
+              >
+                Delete Order
+              </Button>
             </div>
           </div>
         </Modal>

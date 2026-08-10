@@ -9,7 +9,7 @@ import { useFirms } from "../../../firms/contexts/FirmsContext";
 import { DispatchHistorySection, ResumeDispatchModal } from "../../../inventory/components/InventoryPage";
 
 export function WorkerDispatch({ isDesktop = false }: { isDesktop?: boolean }) {
-  const { dispatches, updateDispatch, returns } = useFinishing();
+  const { dispatches, updateDispatch, returns, deleteDispatch } = useFinishing();
   const { firms } = useFirms();
   const [resume, setResume] = useState<DispatchRecord | null>(null);
   const [toast, setToast] = useState("");
@@ -93,7 +93,13 @@ export function WorkerDispatch({ isDesktop = false }: { isDesktop?: boolean }) {
           its fixed column grid intact on narrow screens. */}
       <div style={{ overflowX: "auto" }}>
         <div style={{ minWidth: 900 }}>
-          <DispatchHistorySection dispatches={dispatches} firms={firms} onResume={setResume} />
+          <DispatchHistorySection 
+            dispatches={dispatches} 
+            firms={firms} 
+            onResume={setResume} 
+            onDelete={(d) => deleteDispatch(d.id, "worker-staff")}
+            onViewInvoice={(d) => alert("Invoice viewing coming soon")}
+          />
         </div>
       </div>
 

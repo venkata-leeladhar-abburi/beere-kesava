@@ -36,9 +36,12 @@ export function useWeaverDashboardMetrics() {
 
   // "Produced" = QC-passed OR finished via the Raise Quotation receive flow —
   // a saree returned through that flow can be produced without ever showing
-  // up as a plain QC pass here, so counting QC alone undercounts it.
+  // up as a plain QC pass here, so counting QC alone undercounts it. A
+  // semi-approved saree is neither: it went back to the weaver for rework and
+  // has to be handed in and received again.
   const producedRows = myRows.filter(r => r.qcPassed === true || r.finished === true);
   const producedCount = producedRows.length;
+  const reworkCount = myRows.filter(r => r.awaitingRework === true).length;
   const totalCharge = producedRows.reduce(
     (sum, r) => sum + (r.sareeTypeCode ? Number(getSareeTypeByCode(r.sareeTypeCode)?.charge ?? 0) : 0),
     0,

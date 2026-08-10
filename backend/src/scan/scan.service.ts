@@ -14,7 +14,9 @@ export class ScanService {
         factoryLoom: true,
         design: true,
         sareeType: true,
-        qcRecord: true,
+        // Newest first — after a SEMI-rework round a saree has several QC
+        // records and only the latest is its current verdict.
+        qcRecords: { orderBy: { qcDate: "desc" }, take: 1 },
         finishingAssignment: { include: { finishingStaff: true } },
       },
     });
@@ -24,6 +26,7 @@ export class ScanService {
     }
 
     const inventory = await this.prisma.inventoryRecord.findUnique({ where: { sareeId } });
+    const latestQc = row.qcRecords[0];
 
     return {
       sareeId,
@@ -35,8 +38,8 @@ export class ScanService {
         : null,
       design: row.design ? { code: row.design.code, name: row.design.name } : null,
       sareeType: row.sareeType ? { code: row.sareeType.code, type: row.sareeType.type } : null,
-      qc: row.qcRecord
-        ? { result: row.qcRecord.result, payable: row.qcRecord.payable, date: row.qcRecord.qcDate }
+      qc: latestQc
+        ? { result: latestQc.result, payable: latestQc.payable, date: latestQc.qcDate }
         : null,
       finishing: row.finishingAssignment
         ? {

@@ -26,6 +26,7 @@ import { weaversApi } from "../../../../shared/api/weavers";
 import { toast } from "sonner";
 import { Button, Field, Input, NumberInput } from "../../../../shared/ui/primitives";
 import { Breadcrumbs } from "../../../../shared/ui/nav/Breadcrumbs";
+import { recordView } from "../../../../shared/ui/overlay";
 
 export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { weaver: typeof WEAVERS[0] | null; onClose: () => void; initialMode?: "view" | "edit"; onNavigate?: (tab: string) => void }) {
   const [tab, setTab] = useState("overview");
@@ -95,6 +96,16 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
   const { bulkOrders } = useBulkOrders();
   const { dispatches } = useDesignLibrary();
   const [viewDispatches, setViewDispatches] = useState<{ weaverName: string; records: DispatchRecord[] } | null>(null);
+
+  // Command palette RECENT group (design-system/05-OVERLAYS.md Part H) —
+  // record this profile as viewed once per mount. Kept above the `!weaver`
+  // guard below so this hook always runs (rules of hooks); it no-ops until
+  // a weaver is actually loaded.
+  useEffect(() => {
+    if (!weaver) return;
+    recordView({ key: `weaver:${weaver.id}`, label: weaver.name, path: "/admin/weavers", kind: "Weaver" });
+  }, [weaver?.id, weaver?.name]);
+
   if (!weaver) return null;
   const weaverPayments = getPaymentsForWeaver(weaver.id);
   const materialRecords = getRecordsForWeaver(weaver.id);

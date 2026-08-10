@@ -1,4 +1,5 @@
 import { apiClient } from "./client";
+import { BackendQcResult } from "./qc";
 
 export type BackendBatchStatus = "DRAFT" | "ACTIVE" | "COMPLETED";
 export type BackendRecipientType = "WEAVER" | "FACTORY_LOOM";
@@ -19,7 +20,18 @@ export interface BackendBatchSareeRow {
   receivedWeight: string | null;
   receivedColor: string | null;
   receivedPhotoUrl: string | null;
+  // Actual material split entered at receipt (warp/resham in grams, jari in
+  // reels) — Worker Staff's entry, not a re-derived estimate.
+  receivedWarpG: string | null;
+  receivedReshamG: string | null;
+  receivedJariReels: string | null;
   finishingAssignment: { status: string; updatedAt: string } | null;
+  // Latest QC verdict only (newest-first, capped at one server-side). A saree
+  // gets a fresh record each round, because a SEMI verdict sends it back to
+  // the weaver for rework and it is inspected again once received back.
+  // Optional: endpoints other than list/findOne (create, assignRow, finalize)
+  // return rows without it.
+  qcRecords?: { result: BackendQcResult; qcDate: string }[];
 }
 
 export interface BackendBatch {
@@ -50,16 +62,17 @@ export interface AssignBatchRowPayload {
   factoryLoomId?: string;
   designCode?: string;
   sareeTypeCode: string;
+  bulkOrderRef?: string;
   loomNumber?: number;
-  // NOTE: bulkOrderRef intentionally not sent — no backend Bulk Orders module
-  // exists yet (Phase 5), and BatchSareeRow.bulkOrderRef has a real FK to a
-  // bulk_orders table, so any non-existent ref would fail with a 500/FK error.
 }
 
 export interface ReceiveBatchRowPayload {
   weight: number;
   color?: string;
   photoUrl?: string;
+  warpG?: number;
+  reshamG?: number;
+  jariReels?: number;
 }
 
 export const batchesApi = {

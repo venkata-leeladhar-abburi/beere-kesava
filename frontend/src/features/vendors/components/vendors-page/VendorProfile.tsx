@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -21,9 +21,16 @@ import { useMoneyVisible } from "../../../../shared/ui/MoneyValue";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { Breadcrumbs } from "../../../../shared/ui/nav/Breadcrumbs";
 import { rupees, formatMoney } from "@/lib/domain/money";
+import { recordView } from "../../../../shared/ui/overlay";
 
 export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; onBack: () => void; onUpdate?: (v: Vendor) => void }) {
   const [tab, setTab] = useState<"overview" | "orders" | "payments" | "contact" | "edit">("overview");
+
+  // Command palette RECENT group (design-system/05-OVERLAYS.md Part H) —
+  // record this profile as viewed once per mount.
+  useEffect(() => {
+    recordView({ key: `vendor:${vendor.id}`, label: vendor.name, path: "/admin/vendors", kind: "Vendor" });
+  }, [vendor.id, vendor.name]);
   const tabs = [
     { key: "overview", label: "Overview" },
     { key: "orders", label: "Order History" },

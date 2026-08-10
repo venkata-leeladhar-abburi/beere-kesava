@@ -2,16 +2,17 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Camera, UploadCloud, CheckCircle2, AlertTriangle,
-  Plus, Printer,
+  Plus, Printer, RotateCcw,
 } from "lucide-react";
 import { C, F, card } from "../tokens";
 import { FieldLabel, PageHeader, type ReceivedSareeLog } from "./shared";
-import { MaterialSplitPanel, type MatSplit } from "./MaterialSplitPanel";
+import { MaterialSplitPanel, autoMaterialSplit, type MatSplit } from "./MaterialSplitPanel";
 import { type WeaverBatchData } from "./weaversData";
 import { weaversApi } from "../../../../../shared/api/weavers";
 import { WeaverSigBlock } from "./WeaverSigBlock";
 import { useRatesPricing } from "../../../../pricing/contexts/RatesContext";
 import { useBatches } from "../../../../production/contexts/BatchContext";
+import { useFinishing } from "../../../../finishing/contexts/FinishingContext";
 import { DefectPhotoPrompt } from "./DefectPhotoPrompt";
 import { OwnFactoryReceiveTab } from "./OwnFactoryReceiveTab";
 import { SareeSelectionTable } from "./SareeSelectionTable";
@@ -42,6 +43,15 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
   }, [weaversRes]);
 
   const { batches: allBatches, receiveRow } = useBatches();
+  const { dispatches } = useFinishing();
+  // A saree that has already left the premises on a dispatch has no business
+  // reappearing in a receive queue, no matter what its QC verdict says — this
+  // is a data-hygiene backstop for a saree that was dispatched (by mistake,
+  // or before a late-entered QC result) rather than the normal path.
+  const dispatchedSareeIds = useMemo(
+    () => new Set(dispatches.flatMap(d => d.sareeIds)),
+    [dispatches],
+  );
 
   const [activeSection, setActiveSection] = useState<"outsourced" | "own">("outsourced");
   const [selectedWeaver, setSelectedWeaver] = useState<typeof WEAVERS[0] | null>(null);
@@ -59,24 +69,33 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
   // already been assigned a sareeId (by admin) but not yet received.
   // Only rows still pending receipt are shown — once received, a saree
   // moves into the QC queue instead of staying in this list.
+  //
+  // Rework rounds land back here: a semi-approved or defective saree goes back
+  // to the weaver with its receipt cleared, so it shows up again (flagged as a
+  // rework) and has to be received a second time. Only a passed verdict is
+  // final enough to keep a saree out of this list for good — and regardless
+  // of verdict, a saree already on a dispatch record is gone from the
+  // premises and must not linger here either.
   const batches = useMemo<Record<string, WeaverBatchData[]>>(() => {
     const result: Record<string, WeaverBatchData[]> = {};
     for (const b of allBatches) {
       if (b.status !== "active") continue;
       for (const r of b.rows) {
-        if (!r.weaverId || !r.sareeId || r.receivedAt || r.finished || r.qcPassed !== undefined) continue;
+        if (!r.weaverId || !r.sareeId || r.receivedAt || r.finished) continue;
+        if (r.qcResult === "passed") continue;
+        if (dispatchedSareeIds.has(r.sareeId)) continue;
         if (!result[r.weaverId]) result[r.weaverId] = [];
         let wb = result[r.weaverId].find(x => x.id === b.batchId);
         if (!wb) {
           wb = { id: b.batchId, total: 0, sareeTypeCode: r.sareeTypeCode ?? "—", bulkOrderLabel: r.bulkOrderLabel ?? undefined, sarees: [] };
           result[r.weaverId].push(wb);
         }
-        wb.sarees.push({ no: r.serial, sareeId: r.sareeId, serial: r.serial, status: "pending" });
+        wb.sarees.push({ no: r.serial, sareeId: r.sareeId, serial: r.serial, status: "pending", isRework: r.awaitingRework === true });
         wb.total += 1;
       }
     }
     return result;
-  }, [allBatches]);
+  }, [allBatches, dispatchedSareeIds]);
 
   const [sareeColor, setSareeColor] = useState("");
   const [sareeWeight, setSareeWeight] = useState("");
@@ -94,6 +113,7 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
   const currentBatch = weaverBatches.find(b => b.id === selectedBatchId) ?? weaverBatches[0] ?? null;
   const doneCount = currentBatch ? currentBatch.sarees.filter(s => s.status !== "pending").length : 0;
   const allDone = currentBatch ? doneCount === currentBatch.total : false;
+  const reworkSarees = currentBatch ? currentBatch.sarees.filter(s => s.isRework) : [];
 
   const weightNum = sareeWeight ? parseFloat(sareeWeight) : null;
   const weightOk = weightNum !== null && weightNum >= 600;
@@ -142,12 +162,24 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
     setIsSaving(true);
     try {
       const dateStr = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+      // Whatever's on screen for this saree right now — the auto split from
+      // the rate card, or Worker Staff's own edit on top of it — is what
+      // actually gets recorded per saree, so a bulk order's material tally
+      // reflects real entries instead of a re-derived guess later.
+      const auto = autoMaterialSplit(currentBatch.sareeTypeCode, sareeWeight, getSareeTypeByCode);
+      const warpG = matEdits.warp !== undefined ? parseFloat(matEdits.warp) : (auto ? parseFloat(auto.warp) : undefined);
+      const reshamG = matEdits.resham !== undefined ? parseFloat(matEdits.resham) : (auto ? parseFloat(auto.resham) : undefined);
+      const jariReels = matEdits.jari !== undefined ? parseFloat(matEdits.jari) : (auto ? parseFloat(auto.jari) : undefined);
+
       for (const no of selectedSareeNos) {
         const s = currentBatch.sarees.find(x => x.no === no);
         if (!s) continue;
         await receiveRow(currentBatch.id, no, {
           weight: parseFloat(sareeWeight),
           color: sareeColor,
+          warpG: Number.isFinite(warpG) ? warpG : undefined,
+          reshamG: Number.isFinite(reshamG) ? reshamG : undefined,
+          jariReels: Number.isFinite(jariReels) ? jariReels : undefined,
         });
         onSareeReceived?.({
           id: s.sareeId, weaver: selectedWeaver.name, wcode: selectedWeaver.code, batch: currentBatch.id,
@@ -239,6 +271,20 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
                     </div>
                   </div>
                 )}
+              </div>
+            )}
+
+            {reworkSarees.length > 0 && (
+              <div style={{ margin: "10px 16px 0", padding: "10px 14px", background: "rgba(107,26,42,0.05)", border: `1px solid rgba(107,26,42,0.20)`, borderRadius: 10, display: "flex", alignItems: "flex-start", gap: 8 }}>
+                <RotateCcw size={15} color={C.burg} style={{ flexShrink: 0, marginTop: 1 }} />
+                <div>
+                  <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.burg }}>
+                    {reworkSarees.length} saree{reworkSarees.length > 1 ? "s" : ""} back for rework
+                  </div>
+                  <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>
+                    {reworkSarees.map(s => s.sareeId).join(", ")} {reworkSarees.length > 1 ? "were" : "was"} semi-approved or marked defective at QC and sent back to the weaver. Receive {reworkSarees.length > 1 ? "them" : "it"} again to send {reworkSarees.length > 1 ? "them" : "it"} back through quality check.
+                  </div>
+                </div>
               </div>
             )}
 

@@ -18,6 +18,7 @@ import { LoomMaterialsTab } from "./LoomMaterialsTab";
 import { Button } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { Breadcrumbs } from "../../../../shared/ui/nav/Breadcrumbs";
+import { recordView } from "../../../../shared/ui/overlay";
 
 const fmtIssueDate = (iso: string) => {
   const d = new Date(iso);
@@ -52,6 +53,12 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [zoomImage]);
+
+  // Command palette RECENT group (design-system/05-OVERLAYS.md Part H) —
+  // record this profile as viewed once per mount.
+  useEffect(() => {
+    recordView({ key: `loom:${loom.id}`, label: loom.loomNumber, path: "/admin/production", kind: "Loom" });
+  }, [loom.id, loom.loomNumber]);
 
   const { batches } = useBatches();
   const { dispatches } = useDesignLibrary();

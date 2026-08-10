@@ -1,12 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { reportsApi } from "../../../../../shared/api/reports";
 import { weaversApi } from "../../../../../shared/api/weavers";
+import { dispatchApi } from "../../../../../shared/api/dispatch";
 
 /**
  * Fetches live dashboard metrics from:
  *  - GET /reports/outstanding-payments  (pending payments total)
  *  - GET /reports/production-summary    (sarees produced, QC ready)
- *  - GET /reports/sales-summary         (dispatched count)
+ *  - GET /dispatch                      (dispatched sarees, wholesale-only)
  *  - GET /weavers                       (active weaver count)
  */
 export function useDashboardMetrics() {
@@ -22,9 +23,12 @@ export function useDashboardMetrics() {
     staleTime: 60_000,
   });
 
-  const sales = useQuery({
-    queryKey: ["reports", "sales-summary"],
-    queryFn: () => reportsApi.salesSummary(),
+  // pageSize 100 (not sales-summary's record count) — the tiles need the
+  // actual dispatched sarees, which only come back on each record's `sarees`
+  // array.
+  const dispatches = useQuery({
+    queryKey: ["dispatch", "dashboard-metrics"],
+    queryFn: () => dispatchApi.list(100),
     staleTime: 60_000,
   });
 
@@ -39,19 +43,34 @@ export function useDashboardMetrics() {
   });
 
   const isLoading =
-    outstanding.isLoading || production.isLoading || sales.isLoading || weavers.isLoading;
+    outstanding.isLoading || production.isLoading || dispatches.isLoading || weavers.isLoading;
 
   const isError =
-    outstanding.isError || production.isError || sales.isError || weavers.isError;
+    outstanding.isError || production.isError || dispatches.isError || weavers.isError;
 
   const activeWeavers = weavers.data ?? 0;
   const totalProduced = production.data?.totalSareesProduced ?? 0;
   const pendingPaymentsTotal = outstanding.data?.totalOutstanding ?? 0;
   const pendingOverdue = outstanding.data?.items.filter((i) => i.status === "OVERDUE").length ?? 0;
+
+  // All dispatched sarees, deduplicated by ID — used to size down "produced"
+  // into what's actually still on the shelf below.
+  const dispatchedSareeIds = new Set(
+    (dispatches.data?.items ?? []).flatMap((d) => d.sarees.map((s) => s.sareeId)),
+  );
+  // Wholesale-only, matching this tile's "Wholesale dispatches" sub-label —
+  // counts sarees dispatched, not dispatch runs (one truck can carry many).
+  const wholesaleDispatchedCount = (dispatches.data?.items ?? [])
+    .filter((d) => d.type === "WHOLESALE")
+    .reduce((sum, d) => sum + d.sarees.length, 0);
+
+  // QC-passed sarees still on the shelf: a SEMI verdict sends a saree back to
+  // the weaver for rework rather than to sale, so it no longer belongs here,
+  // and anything already dispatched has to be subtracted too — otherwise this
+  // just grows forever instead of reflecting current stock.
   const qcPassed = production.data?.qcByResult?.PASSED ?? 0;
-  const qcSemi = production.data?.qcByResult?.SEMI ?? 0;
-  const readyForSale = qcPassed + qcSemi;
-  const dispatchedCount = sales.data?.wholesale.count ?? 0;
+  const readyForSale = Math.max(0, qcPassed - dispatchedSareeIds.size);
+  const dispatchedCount = wholesaleDispatchedCount;
 
   const formatCurrency = (n: number) => {
     if (n >= 100_000) return `₹${(n / 100_000).toFixed(1)}L`;

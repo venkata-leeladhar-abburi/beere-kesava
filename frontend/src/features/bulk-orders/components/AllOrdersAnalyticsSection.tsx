@@ -10,7 +10,9 @@ import {
 } from "recharts";
 import { BulkOrder } from "../../production/components/ProductionPage";
 import { DateFilterState } from "../../../shared/ui/DateFilterBar";
-import { resolveOrderMoney } from "../utils/BulkOrderLinking";
+import { resolveOrderMoney, computeBulkOrderProducedSareeIds } from "../utils/BulkOrderLinking";
+import { useBulkOrders } from "../contexts/BulkOrderContext";
+import { useFinishing } from "../../finishing/contexts/FinishingContext";
 import { INVOICES } from "../../payments/data/invoices";
 import { ChartFigure } from "../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
@@ -47,6 +49,21 @@ interface AllOrdersAnalyticsSectionProps {
 }
 
 export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrdersAnalyticsSectionProps) {
+  const { bulkOrders } = useBulkOrders();
+  const { readySarees, returns, quotations } = useFinishing();
+  // o.done is a manually-set DB column nothing keeps in sync with actual
+  // production — derive the real per-order produced count the same way the
+  // order detail page's Sarees tab (and BulkOrderCard) do, so every view of
+  // "sarees done" agrees.
+  const producedByRef = useMemo(() => {
+    const m = new Map<string, number>();
+    filteredOrders.forEach(o => {
+      m.set(o.ref, computeBulkOrderProducedSareeIds(o.ref, bulkOrders, readySarees, returns, quotations).size);
+    });
+    return m;
+  }, [filteredOrders, bulkOrders, readySarees, returns, quotations]);
+  const producedOf = (o: BulkOrder) => producedByRef.get(o.ref) ?? 0;
+
   const periodLabel = useMemo(() => {
     if (dateFilter.mode === "day" && dateFilter.day) return new Date(dateFilter.day).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
     if (dateFilter.mode === "range") return `${dateFilter.from || "start"} → ${dateFilter.to || "today"}`;
@@ -61,7 +78,7 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
   );
 
   const totalOrdered = filteredOrders.reduce((a, o) => a + o.total, 0);
-  const totalDone = filteredOrders.reduce((a, o) => a + o.done, 0);
+  const totalDone = filteredOrders.reduce((a, o) => a + producedOf(o), 0);
   const totalShortage = filteredOrders.reduce((a, o) => a + (o.shortage ?? 0), 0);
   const completionPct = totalOrdered ? Math.round((totalDone / totalOrdered) * 100) : 0;
   const billed = filteredOrders.reduce((a, o) => a + (money.get(o.ref)?.amountDue ?? 0), 0);
@@ -77,7 +94,7 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
       if (isNaN(d.getTime())) return;
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
       const e = m.get(key) || { ordered: 0, done: 0, orders: 0 };
-      e.ordered += o.total; e.done += o.done; e.orders += 1;
+      e.ordered += o.total; e.done += producedOf(o); e.orders += 1;
       m.set(key, e);
     });
     return [...m.entries()].sort((a, b) => a[0].localeCompare(b[0])).map(([key, v]) => ({
@@ -85,7 +102,8 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
       ...v,
       rate: v.ordered ? Math.round((v.done / v.ordered) * 100) : 0,
     }));
-  }, [filteredOrders]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filteredOrders, producedByRef]);
 
   const statusMix = useMemo(() => (["on-track", "at-risk", "overdue"] as const)
     .map(s => ({ name: STATUS_META[s].label, value: filteredOrders.filter(o => o.status === s).length, color: STATUS_META[s].color }))
@@ -110,10 +128,13 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
     .map(o => {
       const due = new Date(o.due);
       const daysLeft = isNaN(due.getTime()) ? null : Math.ceil((due.getTime() - today.getTime()) / 86400000);
-      return { ...o, daysToGo: daysLeft, pct: o.total ? Math.round((o.done / o.total) * 100) : 0 };
+      const done = producedOf(o);
+      return { ...o, done, daysToGo: daysLeft, pct: o.total ? Math.round((done / o.total) * 100) : 0 };
     })
     .sort((a, b) => (a.daysToGo ?? 9999) - (b.daysToGo ?? 9999))
-    .slice(0, 6), [filteredOrders]);
+    .slice(0, 6),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [filteredOrders, producedByRef]);
 
   const byType = useMemo(() => {
     const m = new Map<string, number>();

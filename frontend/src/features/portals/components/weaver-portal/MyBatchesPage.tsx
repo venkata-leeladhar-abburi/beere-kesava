@@ -71,7 +71,10 @@ export function MyBatchesPage() {
   const myDefectiveSarees = useMemo(() => {
     return batches.flatMap(b =>
       b.rows
-        .filter(r => r.weaverId === weaverId && r.qcPassed === false)
+        // qcPassed is false for BOTH defective and semi-approved sarees, and a
+        // semi-approved one is a rework, not a rejection — key off the verdict
+        // itself so reworks don't get reported as defects.
+        .filter(r => r.weaverId === weaverId && r.qcResult === "defective")
         .map(r => ({
           sareeId: r.sareeId,
           batchId: b.batchId,
@@ -84,6 +87,18 @@ export function MyBatchesPage() {
         }))
     );
   }, [batches]);
+
+  // Semi-approved at QC and sent back — not produced, and waiting to be
+  // reworked and handed in again so it can be received a second time.
+  // Defective sarees also go back for rework, but they already get their own
+  // alert above via myDefectiveSarees, so they're excluded here.
+  const myReworkSarees = useMemo(() => {
+    return batches.flatMap(b =>
+      b.rows
+        .filter(r => r.weaverId === weaverId && r.awaitingRework === true && r.qcResult === "semi")
+        .map(r => ({ sareeId: r.sareeId, batchId: b.batchId, sareeTypeName: r.sareeTypeName }))
+    );
+  }, [batches, weaverId]);
 
   // Quick filter — narrows which of the two sections below are shown, and which batches within them
   const showActiveSection = quickFilter === "all" || quickFilter === "active" || quickFilter === "qc-pending" || quickFilter === "draft";
@@ -140,8 +155,23 @@ export function MyBatchesPage() {
         </div>
       ))}
 
+      {/* Semi-Approved — Rework Alerts. Separate from the defective alerts
+          above: the saree isn't rejected, it goes back to the weaver and has
+          to be handed in (and received) again before it counts as produced. */}
+      {myReworkSarees.map(rs => (
+        <div key={rs.sareeId} style={{ margin: "16px 20px 0 20px", background: "rgba(196,146,58,0.08)", border: `1.5px solid ${C.gold}`, borderRadius: 16, padding: "16px 20px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+            <RotateCcw size={18} color={C.gold} />
+            <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.gold }}>Semi-Approved — Rework Needed</span>
+          </div>
+          <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, lineHeight: 1.5 }}>
+            Saree <strong>{rs.sareeId}</strong> in batch <strong>{rs.batchId}</strong> ({rs.sareeTypeName || "Self Brocade"}) was semi-approved at quality check and sent back to you. It does <strong>not</strong> count as produced yet — rework it and hand it in again.
+          </div>
+        </div>
+      ))}
+
       {/* Weaver Identity */}
-      <div style={{ background: C.dark, padding: "16px 20px 18px", display: "flex", alignItems: "center", gap: 14, marginTop: myDefectiveSarees.length > 0 ? 16 : 0 }}>
+      <div style={{ background: C.dark, padding: "16px 20px 18px", display: "flex", alignItems: "center", gap: 14, marginTop: (myDefectiveSarees.length > 0 || myReworkSarees.length > 0) ? 16 : 0 }}>
         <div style={{ width: 56, height: 56, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
           <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: "#FFF" }}>{weaver?.initials ?? "—"}</span>
         </div>

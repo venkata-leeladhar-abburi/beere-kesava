@@ -82,6 +82,7 @@ export function InventoryPage({
     setQuotationDispatch,
     resumeDispatch,
     setResumeDispatch,
+    deleteDispatch,
     allRecords,
     total,
     pendingCount,
@@ -183,7 +184,13 @@ export function InventoryPage({
       {/* ── DISPATCH HISTORY ─────────────────────────────────────────────── */}
       {showDispatchHistory && (
         <div style={{ padding: "0 48px 80px", marginTop: 24 }}>
-          <DispatchHistorySection dispatches={dispatches} firms={firms} onResume={setResumeDispatch} />
+          <DispatchHistorySection 
+            dispatches={dispatches} 
+            firms={firms} 
+            onResume={setResumeDispatch} 
+            onDelete={(d) => deleteDispatch(d.id, "admin-staff")}
+            onViewInvoice={(d) => alert("Invoice viewing coming soon")}
+          />
         </div>
       )}
 

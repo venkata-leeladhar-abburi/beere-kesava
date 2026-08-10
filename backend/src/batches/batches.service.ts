@@ -1,7 +1,7 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
-import { BatchStatus, Prisma, RecipientType } from "../generated/prisma/client";
+import { BatchStatus, Prisma, QcResult, RecipientType } from "../generated/prisma/client";
 import { IdGeneratorService } from "../id-generator/id-generator.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { ActorOnlyDto } from "./dto/actor-only.dto";
@@ -16,10 +16,19 @@ const BATCH_ID_PREFIX = "BATCH";
 // FinishingAssignment comes back RETURNED — set by both the plain finishing
 // receive flow and the raise-quotation receive flow (see
 // FinishingAssignmentsService.receiveReturn / QuotationsService.receive).
+//
+// `qcRecords` is newest-first / take 1: a saree gets one record per QC round
+// (a SEMI verdict sends it back to the weaver and it is inspected again after
+// rework), so only the latest describes where the saree stands now. Consumers
+// need it to tell "awaiting rework" — latest SEMI, receivedAt cleared — apart
+// from "never inspected", which qcPassed alone can't distinguish.
 const rowsInclude = {
   rows: {
     orderBy: { serial: "asc" as const },
-    include: { finishingAssignment: { select: { status: true, updatedAt: true } } },
+    include: {
+      finishingAssignment: { select: { status: true, updatedAt: true } },
+      qcRecords: { orderBy: { qcDate: "desc" as const }, take: 1, select: { result: true, qcDate: true } },
+    },
   },
 } satisfies Prisma.BatchInclude;
 
@@ -126,10 +135,26 @@ export class BatchesService {
       );
     }
 
-    if (dto.designCode) {
-      const design = await this.prisma.designLibrary.findUnique({ where: { code: dto.designCode } });
+    // Both designCode and bulkOrderRef are real FKs (DesignLibrary.code,
+    // BulkOrder.ref) — an unvalidated write of a bogus or empty-string value
+    // trips the DB's foreign-key constraint, which surfaces as an unhandled
+    // Prisma error (opaque 500) rather than the clean 404 a caller mistake
+    // deserves. Normalizing "" to null up front means a falsy value is always
+    // treated as "not set", both for the existence check below and for what
+    // actually gets written.
+    const designCode = dto.designCode || null;
+    const bulkOrderRef = dto.bulkOrderRef || null;
+
+    if (designCode) {
+      const design = await this.prisma.designLibrary.findUnique({ where: { code: designCode } });
       if (!design) {
-        throw new NotFoundException(`Design ${dto.designCode} not found`);
+        throw new NotFoundException(`Design ${designCode} not found`);
+      }
+    }
+    if (bulkOrderRef) {
+      const bulkOrder = await this.prisma.bulkOrder.findUnique({ where: { ref: bulkOrderRef } });
+      if (!bulkOrder) {
+        throw new NotFoundException(`Bulk order ${bulkOrderRef} not found`);
       }
     }
     const sareeType = await this.prisma.sareeTypeRate.findUnique({
@@ -139,7 +164,7 @@ export class BatchesService {
       throw new NotFoundException(`Saree type ${dto.sareeTypeCode} not found`);
     }
 
-    const sareeId = await this.buildSareeId(dto, serial);
+    const sareeId = await this.buildSareeId(batchId, dto, serial);
 
     const updatedRow = await this.prisma.batchSareeRow.update({
       where: { batchId_serial: { batchId, serial } },
@@ -148,9 +173,9 @@ export class BatchesService {
         recipientType: dto.recipientType,
         weaverId: dto.weaverId,
         factoryLoomId: dto.factoryLoomId,
-        designCode: dto.designCode,
+        designCode,
         sareeTypeCode: dto.sareeTypeCode,
-        bulkOrderRef: dto.bulkOrderRef,
+        bulkOrderRef,
       },
     });
 
@@ -171,6 +196,7 @@ export class BatchesService {
 
     const row = await this.prisma.batchSareeRow.findUnique({
       where: { batchId_serial: { batchId, serial } },
+      include: { qcRecords: { orderBy: { qcDate: "desc" }, take: 1, select: { result: true } } },
     });
     if (!row) {
       throw new NotFoundException(`Row ${serial} not found in batch ${batchId}`);
@@ -178,8 +204,20 @@ export class BatchesService {
     if (!row.sareeId) {
       throw new BadRequestException(`Row ${serial} of batch ${batchId} has not been assigned yet`);
     }
+    // A SEMI or DEFECTIVE verdict sends the saree back to the weaver for
+    // rework and clears its receipt (QcService.create), so a second receipt is
+    // exactly what is expected here. A row still holding a receivedAt has not
+    // been sent back — receiving it again would be a double entry.
     if (row.receivedAt) {
       throw new ConflictException(`Row ${serial} of batch ${batchId} was already received`);
+    }
+    // PASSED is terminal: the saree moves on to finishing and never returns to
+    // the weaver, so it has no business being received again even if its
+    // receipt were somehow cleared.
+    if (row.qcRecords[0]?.result === QcResult.PASSED) {
+      throw new ConflictException(
+        `Saree ${row.sareeId} has already passed QC and cannot be received again`,
+      );
     }
 
     const updatedRow = await this.prisma.batchSareeRow.update({
@@ -189,6 +227,13 @@ export class BatchesService {
         receivedWeight: dto.weight,
         receivedColor: dto.color,
         receivedPhotoUrl: dto.photoUrl,
+        receivedWarpG: dto.warpG,
+        receivedReshamG: dto.reshamG,
+        receivedJariReels: dto.jariReels,
+        // Clears the failed SEMI verdict's flag so the reworked saree re-enters
+        // the QC queue (which keys off qcPassed being null). No-op on a first
+        // receipt, where it is already null. The QcRecord history is untouched.
+        qcPassed: null,
       },
     });
 
@@ -273,7 +318,8 @@ export class BatchesService {
 
   // Matches the frontend's generateSareeId(weaverName, loom, seq) convention:
   // weaver -> {FIRSTNAME}-L{loom}-{seq3}; factory loom -> {loomNumber}-{seq3}.
-  private async buildSareeId(dto: AssignBatchRowDto, serial: number): Promise<string> {
+  private async buildSareeId(batchId: string, dto: AssignBatchRowDto, serial: number): Promise<string> {
+    const batchSeq = batchId.split("-").pop() || batchId;
     const seq3 = String(serial).padStart(3, "0");
 
     if (dto.recipientType === RecipientType.WEAVER) {
@@ -282,7 +328,7 @@ export class BatchesService {
         throw new NotFoundException(`Weaver ${dto.weaverId} not found`);
       }
       const loomNumber = dto.loomNumber ?? 1;
-      return `${weaver.firstName.toUpperCase()}-L${loomNumber}-${seq3}`;
+      return `${weaver.firstName.toUpperCase()}-L${loomNumber}-B${batchSeq}-${seq3}`;
     }
 
     const factoryLoom = await this.prisma.factoryLoom.findUnique({
@@ -291,6 +337,6 @@ export class BatchesService {
     if (!factoryLoom) {
       throw new NotFoundException(`Factory loom ${dto.factoryLoomId} not found`);
     }
-    return `${factoryLoom.loomNumber}-${seq3}`;
+    return `${factoryLoom.loomNumber}-B${batchSeq}-${seq3}`;
   }
 }

@@ -70,4 +70,6 @@ export const bulkOrdersApi = {
 
   update: (ref: string, payload: UpdateBulkOrderPayload) =>
     apiClient.patch<BackendBulkOrder>(`/bulk-orders/${ref}`, payload),
+
+  remove: (ref: string) => apiClient.delete<void>(`/bulk-orders/${ref}`),
 };

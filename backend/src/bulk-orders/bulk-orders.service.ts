@@ -4,6 +4,7 @@ import { PaginatedResult } from "../common/pagination";
 import { Prisma } from "../generated/prisma/client";
 import { IdGeneratorService } from "../id-generator/id-generator.service";
 import { PrismaService } from "../prisma/prisma.service";
+import { ActorOnlyDto } from "./dto/actor-only.dto";
 import { CreateBulkOrderDto } from "./dto/create-bulk-order.dto";
 import { ListBulkOrdersQueryDto } from "./dto/list-bulk-orders-query.dto";
 import { UpdateBulkOrderDto } from "./dto/update-bulk-order.dto";
@@ -111,5 +112,32 @@ export class BulkOrdersService {
     });
 
     return updated;
+  }
+
+  // Batches, quotations, dispatches, and inventory records are their own
+  // real, independent records — deleting the order shouldn't delete them
+  // too, just unlink them from an order that no longer exists (their
+  // bulkOrderRef FK is nullable for exactly this). Done in one transaction
+  // so a failure partway through rolls back rather than leaving some
+  // records unlinked and others still pointing at a deleted ref.
+  async remove(ref: string, dto?: ActorOnlyDto) {
+    await this.findOne(ref);
+
+    await this.prisma.$transaction([
+      this.prisma.batchSareeRow.updateMany({ where: { bulkOrderRef: ref }, data: { bulkOrderRef: null } }),
+      this.prisma.quotation.updateMany({ where: { bulkOrderRef: ref }, data: { bulkOrderRef: null } }),
+      this.prisma.dispatchRecord.updateMany({ where: { bulkOrderRef: ref }, data: { bulkOrderRef: null } }),
+      this.prisma.inventoryRecord.updateMany({ where: { bulkOrderRef: ref }, data: { bulkOrderRef: null } }),
+      this.prisma.bulkOrder.delete({ where: { ref } }),
+    ]);
+
+    await this.auditLog.recordAction({
+      actorId: dto?.actorId,
+      module: "BULK_ORDERS",
+      action: `Deleted bulk order ${ref}`,
+      entityType: "BulkOrder",
+      entityId: ref,
+      recordLabel: ref,
+    });
   }
 }

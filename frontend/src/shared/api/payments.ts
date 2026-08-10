@@ -11,17 +11,6 @@ export interface ImportResult {
   errors: ImportRowError[];
 }
 
-export interface StartImportResponse {
-  jobId: string;
-}
-
-export interface ImportStatusResponse {
-  jobId: string;
-  state: "waiting" | "active" | "completed" | "failed" | "delayed" | "unknown";
-  result?: ImportResult;
-  failedReason?: string;
-}
-
 export interface CreateSupplierPaymentPayload {
   supplierId: string;
   amount: number;
@@ -107,10 +96,8 @@ export const weaverPaymentsApi = {
   importExcel: (file: File) => {
     const formData = new FormData();
     formData.append("file", file);
-    return apiClient.postForm<StartImportResponse>("/payments/weavers/import", formData);
+    return apiClient.postForm<ImportResult>("/payments/weavers/import", formData);
   },
-  getImportStatus: (jobId: string) =>
-    apiClient.get<ImportStatusResponse>(`/payments/weavers/import/${jobId}/status`),
 
   create: (payload: CreateWeaverPaymentPayload) =>
     apiClient.post<BackendWeaverPayment>("/payments/weavers", payload),

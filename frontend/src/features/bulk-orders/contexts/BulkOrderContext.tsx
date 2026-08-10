@@ -120,6 +120,7 @@ interface BulkOrderContextValue {
   markDispatched: (ref: string, invoiceId?: string) => void;
   recordPayment: (ref: string, amount: number) => void;
   tallyOrder: (ref: string, by: string) => void;
+  deleteBulkOrder: (ref: string) => Promise<void>;
   isError: boolean;
   error: unknown;
 }
@@ -251,11 +252,29 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
+  // Batches, quotations, dispatches, and inventory records that referenced
+  // this order are unlinked (not deleted) by the backend, so their own
+  // caches (finishing/* — readySarees, assignments, quotations) need
+  // refetching too or they'd keep showing a bulkOrderRef that's now gone.
+  const deleteBulkOrderMutation = useMutation({
+    mutationFn: (ref: string) => bulkOrdersApi.remove(ref),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      void queryClient.invalidateQueries({ queryKey: ["finishing"] });
+      toast.success("Bulk order deleted");
+    },
+    onError: (err) => {
+      console.error("Failed to delete bulk order:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to delete bulk order");
+    },
+  });
+
   const addBulkOrder = (order: BulkOrder) => addBulkOrderMutation.mutate(order);
   const updateBulkOrder = (ref: string, updates: Partial<BulkOrder>) => updateBulkOrderMutation.mutate({ ref, updates });
   const markDispatched = (ref: string, invoiceId?: string) => markDispatchedMutation.mutate({ ref, invoiceId });
   const recordPayment = (ref: string, amount: number) => recordPaymentMutation.mutate({ ref, amount });
   const tallyOrder = (ref: string, by: string) => tallyOrderMutation.mutate({ ref, by });
+  const deleteBulkOrder = (ref: string) => deleteBulkOrderMutation.mutateAsync(ref).then(() => undefined);
 
   const nextOrderRef = useMemo(() => {
     const allNums = bulkOrders
@@ -269,7 +288,7 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
   }, [bulkOrders]);
 
   return (
-    <BulkOrderContext.Provider value={{ bulkOrders, addBulkOrder, updateBulkOrder, nextOrderRef, markDispatched, recordPayment, tallyOrder, isError, error }}>
+    <BulkOrderContext.Provider value={{ bulkOrders, addBulkOrder, updateBulkOrder, nextOrderRef, markDispatched, recordPayment, tallyOrder, deleteBulkOrder, isError, error }}>
       {children}
     </BulkOrderContext.Provider>
   );

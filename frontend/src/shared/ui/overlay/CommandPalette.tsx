@@ -12,13 +12,16 @@
  * NAVIGATE → entity results):
  *   - NAVIGATE is built for real below, from the app's actual router config
  *     (src/app/App.tsx + the admin tab routing in BeereDashboard.tsx).
- *   - RECENT, ACTIONS and the async entity search (Weavers/Sarees/Batches/
- *     Invoices/Customers) are deliberately deferred — they need app-wide
- *     state (a recently-viewed record tracker, a per-feature quick-action
- *     registry, and backend search endpoints) that doesn't exist yet.
- *     TODO(command-palette): add RECENT (recently-viewed records), ACTIONS
- *     (quick-action registry) and async entity search groups once that
- *     infrastructure lands.
+ *   - RECENT is built for real below too, off `useRecentlyViewed`
+ *     (./useRecentlyViewed.ts) — a `localStorage`-backed tracker that a
+ *     handful of detail pages call `recordView()` into on mount. There's no
+ *     per-entity route yet, so a RECENT item navigates to the record's list
+ *     page, not a deep link to the record itself.
+ *   - ACTIONS and the async entity search (Weavers/Sarees/Batches/Invoices/
+ *     Customers) are still deliberately deferred — they need a per-feature
+ *     quick-action registry and backend search endpoints that don't exist
+ *     yet. TODO(command-palette): add ACTIONS (quick-action registry) and
+ *     async entity search groups once that infrastructure lands.
  */
 import * as React from "react";
 import { Command } from "cmdk";
@@ -37,8 +40,10 @@ import {
   Warehouse,
   Building2,
   Bell,
+  Clock,
 } from "lucide-react";
 import { cn } from "../utils";
+import { useRecentlyViewed } from "./useRecentlyViewed";
 
 interface NavigateItem {
   key: string;
@@ -74,6 +79,7 @@ export interface CommandPaletteProps {
 
 export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   const navigate = useNavigate();
+  const recentItems = useRecentlyViewed();
 
   const runNavigate = (path: string) => {
     onOpenChange(false);
@@ -126,8 +132,38 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
           No results found.
         </Command.Empty>
 
-        {/* TODO(command-palette): RECENT group — recently-viewed records,
-            needs a global recently-viewed tracker. */}
+        {recentItems.length > 0 && (
+          <Command.Group
+            heading="Recent"
+            className={cn(
+              "[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:bk-caption",
+              "[&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wide",
+              "[&_[cmdk-group-heading]]:text-[var(--text-tertiary)]"
+            )}
+          >
+            {recentItems.map((item) => (
+              <Command.Item
+                key={item.key}
+                value={[item.label, item.kind ?? ""].join(" ")}
+                onSelect={() => runNavigate(item.path)}
+                className={cn(
+                  "flex h-10 items-center gap-2.5 rounded-[var(--radius-sm)] px-3 text-[14px] cursor-pointer select-none outline-none",
+                  "text-[var(--text-primary)]",
+                  "data-[selected=true]:bg-[var(--bk-neutral-50)]"
+                )}
+              >
+                <Clock size={16} style={{ color: "var(--text-tertiary)" }} />
+                {item.label}
+                {item.kind && (
+                  <span className="ml-auto bk-caption" style={{ color: "var(--text-tertiary)" }}>
+                    {item.kind}
+                  </span>
+                )}
+              </Command.Item>
+            ))}
+          </Command.Group>
+        )}
+
         {/* TODO(command-palette): ACTIONS group — per-feature quick actions,
             needs a quick-action registry. */}
 

@@ -22,6 +22,7 @@ const F = {
 
 interface OverviewTabProps {
   live: BulkOrder;
+  producedCount: number;
   dispatchedCount: number;
   damagedCount: number;
   matchedInvoice: { id: string } | null;
@@ -32,6 +33,7 @@ interface OverviewTabProps {
 
 export function BulkOrderOverviewTab({
   live,
+  producedCount,
   dispatchedCount,
   damagedCount,
   matchedInvoice,
@@ -45,7 +47,7 @@ export function BulkOrderOverviewTab({
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 24 }}>
         {[
           { label: "Total Sarees", value: String(live.total) },
-          { label: "Completed", value: String(live.done), color: T.green },
+          { label: "Completed", value: String(producedCount), color: T.green },
           { label: "Dispatched", value: String(dispatchedCount), color: T.royalBurgundy },
           { label: "Damaged / Review", value: String(damagedCount), color: damagedCount ? T.crimson : T.green },
         ].map(s => (

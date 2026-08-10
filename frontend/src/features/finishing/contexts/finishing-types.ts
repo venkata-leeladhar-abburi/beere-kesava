@@ -145,6 +145,7 @@ export interface FinishingContextValue {
   }) => void;
   dispatchSarees: (sareeIds: string[], record: Omit<DispatchRecord, "id">) => string;
   updateDispatch: (id: string, patch: Partial<DispatchRecord>) => void;
+  deleteDispatch: (id: string, actorId: string) => void;
   quotations: Quotation[];
   raiseQuotation: (q: Omit<Quotation, "id" | "createdAt">) => string;
   assignQuotationFinishing: (quotationId: string, sareeIds: string[], staff: { id: string; name: string }, assignedBy: string) => void;

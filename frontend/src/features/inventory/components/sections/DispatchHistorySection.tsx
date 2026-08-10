@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { Truck, Users, ShoppingBag, Clock, CheckCircle2 } from "lucide-react";
+import { Truck, Users, ShoppingBag, Clock, CheckCircle2, Trash2, FileText } from "lucide-react";
 import { DispatchRecord } from "../../../finishing/contexts/FinishingContext";
 import { T, F, card } from "../theme";
 import { Button } from "../../../../shared/ui/primitives";
@@ -7,7 +7,7 @@ import { Button } from "../../../../shared/ui/primitives";
 // ── Dispatch History section ──────────────────────────────────────────────────
 // Exported for the Worker Staff portal — same component, same markup, so the two
 // screens cannot fall out of step.
-export function DispatchHistorySection({ dispatches, firms, onResume }: { dispatches: DispatchRecord[]; firms: { id: string; firmName: string }[]; onResume: (d: DispatchRecord) => void }) {
+export function DispatchHistorySection({ dispatches, firms, onResume, onDelete, onViewInvoice }: { dispatches: DispatchRecord[]; firms: { id: string; firmName: string }[]; onResume: (d: DispatchRecord) => void; onDelete?: (d: DispatchRecord) => void; onViewInvoice?: (d: DispatchRecord) => void; }) {
   const [tab, setTab] = useState<"all" | "shop" | "wholesale">("all");
   const rows = useMemo(() =>
     [...dispatches]
@@ -16,9 +16,9 @@ export function DispatchHistorySection({ dispatches, firms, onResume }: { dispat
   [dispatches, tab]);
 
   const TABS: { key: typeof tab; label: string; count: number }[] = [
-    { key: "all",       label: "All",       count: dispatches.length },
-    { key: "shop",      label: "To Shop",   count: dispatches.filter(d => d.type === "shop").length },
-    { key: "wholesale", label: "Wholesale", count: dispatches.filter(d => d.type === "wholesale").length },
+    { key: "all",       label: "All",       count: dispatches.reduce((acc, d) => acc + d.sareeIds.length, 0) },
+    { key: "shop",      label: "To Shop",   count: dispatches.filter(d => d.type === "shop").reduce((acc, d) => acc + d.sareeIds.length, 0) },
+    { key: "wholesale", label: "Wholesale", count: dispatches.filter(d => d.type === "wholesale").reduce((acc, d) => acc + d.sareeIds.length, 0) },
   ];
 
   return (
@@ -44,8 +44,8 @@ export function DispatchHistorySection({ dispatches, firms, onResume }: { dispat
       </div>
 
       {/* Header row */}
-      <div style={{ display: "grid", gridTemplateColumns: "110px 90px 1fr 130px 100px 80px 110px 150px", gap: 0, padding: "11px 24px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${T.borderDef}` }}>
-        {["Date", "Type", "Destination", "LR / Transport", "Invoice", "Sarees", "Firm", "Status"].map((h, i) => (
+      <div style={{ display: "grid", gridTemplateColumns: "110px 90px 1fr 130px 100px 80px 110px 130px 100px", gap: 0, padding: "11px 24px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${T.borderDef}` }}>
+        {["Date", "Type", "Destination", "LR / Transport", "Invoice", "Sarees", "Firm", "Status", "Actions"].map((h, i) => (
           <div key={i} style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>{h}</div>
         ))}
       </div>
@@ -56,7 +56,7 @@ export function DispatchHistorySection({ dispatches, firms, onResume }: { dispat
         const firm = firms.find(f => f.id === d.firmId);
         const incomplete = d.pendingTransport || d.pendingReceipt;
         return (
-          <div key={d.id} style={{ display: "grid", gridTemplateColumns: "110px 90px 1fr 130px 100px 80px 110px 150px", gap: 0, padding: "13px 24px", borderBottom: i < rows.length - 1 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 0 ? "#FFF" : T.warmIvory, alignItems: "center" }}>
+          <div key={d.id} style={{ display: "grid", gridTemplateColumns: "110px 90px 1fr 130px 100px 80px 110px 130px 100px", gap: 0, padding: "13px 24px", borderBottom: i < rows.length - 1 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 0 ? "#FFF" : T.warmIvory, alignItems: "center" }}>
             <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{d.dispatchDate}</div>
             <div>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: d.type === "wholesale" ? "rgba(110,15,45,0.08)" : "rgba(200,155,71,0.14)", color: d.type === "wholesale" ? T.royalBurgundy : "#8B6018", border: `1px solid ${d.type === "wholesale" ? "rgba(110,15,45,0.18)" : "rgba(200,155,71,0.32)"}`, borderRadius: 999, padding: "2px 9px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, textTransform: "capitalize" as const }}>
@@ -86,6 +86,30 @@ export function DispatchHistorySection({ dispatches, firms, onResume }: { dispat
                 <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.green }}>
                   <CheckCircle2 size={12} /> Complete
                 </span>
+              )}
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              {onViewInvoice && (
+                <button
+                  onClick={() => onViewInvoice(d)}
+                  style={{ background: "none", border: "none", padding: 4, cursor: "pointer", color: T.luxuryBrown }}
+                  title="Invoice"
+                >
+                  <FileText size={16} />
+                </button>
+              )}
+              {onDelete && (
+                <button
+                  onClick={() => {
+                    if (confirm("Are you sure you want to delete this dispatch? The sarees will be returned to 'Ready for Dispatch'.")) {
+                      onDelete(d);
+                    }
+                  }}
+                  style={{ background: "none", border: "none", padding: 4, cursor: "pointer", color: T.royalBurgundy }}
+                  title="Delete Dispatch"
+                >
+                  <Trash2 size={16} />
+                </button>
               )}
             </div>
           </div>

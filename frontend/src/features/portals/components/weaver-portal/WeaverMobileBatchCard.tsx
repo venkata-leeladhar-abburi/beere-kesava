@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Flower2, Clock, Layers, Package } from "lucide-react";
+import { Flower2, Clock, Layers, Package, RotateCcw } from "lucide-react";
 import { SareeRow } from "../../../production/contexts/BatchContext";
 import { Card, ProgressBar, StatusBadge, SareeTypeDetailCard } from "./theme";
 import { Button } from "../../../../shared/ui/primitives";
@@ -30,8 +30,10 @@ export function MobileBatchCard({ b, idx }: { b: MyBatchEntry; idx: number }) {
   const pendingCount = myCount - readyCount;
   const qcPassedCount = b.myRows.filter(r => r.qcPassed === true).length;
   // Produced = QC-passed OR finished via the Raise Quotation receive flow —
-  // either milestone alone counts a saree as produced.
+  // either milestone alone counts a saree as produced. A semi-approved saree
+  // meets neither: it is back with the weaver for rework.
   const producedCount = b.myRows.filter(r => r.qcPassed === true || r.finished === true).length;
+  const reworkCount = b.myRows.filter(r => r.awaitingRework === true).length;
   const sareeTypePairs = Array.from(new Map(b.myRows.filter(r => r.sareeTypeCode && r.sareeTypeName).map(r => [r.sareeTypeCode!, r.sareeTypeName!])).entries());
   const bulkOrders    = Array.from(new Set(b.myRows.map(r => r.bulkOrderLabel).filter(Boolean))) as string[];
   const generalStock  = b.myRows.filter(r => !r.bulkOrderLabel).length;
@@ -79,6 +81,17 @@ export function MobileBatchCard({ b, idx }: { b: MyBatchEntry; idx: number }) {
           </div>
           <ProgressBar pct={(qcPassedCount / myCount) * 100} height={7} />
         </div>
+
+        {/* Semi-approved sarees are back with the weaver — called out here so
+            the gap between Produced and the batch total is explained. */}
+        {reworkCount > 0 && (
+          <div style={{ display: "flex", alignItems: "center", gap: 7, background: "rgba(196,146,58,0.10)", border: "1px solid rgba(196,146,58,0.30)", borderRadius: 9, padding: "8px 12px", marginBottom: 12 }}>
+            <RotateCcw size={13} color={C.gold} style={{ flexShrink: 0 }} />
+            <span style={{ fontFamily: F.u, fontSize: 12, color: C.text }}>
+              <strong>{reworkCount}</strong> semi-approved — rework and hand in again
+            </span>
+          </div>
+        )}
 
         {/* Clickable saree type chips */}
         {sareeTypePairs.length > 0 && (

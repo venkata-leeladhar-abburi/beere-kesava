@@ -7,6 +7,8 @@ import {
 } from "lucide-react";
 import { X as XIcon } from "lucide-react";
 import { useBulkOrders } from "../../../bulk-orders/contexts/BulkOrderContext";
+import { useFinishing } from "../../../finishing/contexts/FinishingContext";
+import { computeBulkOrderProducedSareeIds } from "../../../bulk-orders/utils/BulkOrderLinking";
 import { BulkOrderCreateModal } from "../../../bulk-orders/components/BulkOrderCreateModal";
 import { T, F } from "../theme";
 import { ORDER_CFG, STATUS_LABELS } from "../data";
@@ -18,8 +20,15 @@ import { Money } from "@/shared/ui/domain";
 
 export function BulkOrderCard({ o, onView, onSlip, superadmin = false }: { o: BulkOrder; onView?: (o: BulkOrder) => void; onSlip?: (o: BulkOrder) => void; superadmin?: boolean }) {
   const cfg = ORDER_CFG[o.status];
-  const pct = o.total > 0 ? Math.round((o.done / o.total) * 100) : 0;
-  const remaining = o.total - o.done;
+  const { bulkOrders } = useBulkOrders();
+  const { readySarees, returns, quotations } = useFinishing();
+  // o.done is a manually-set DB column nothing keeps in sync with actual
+  // production — it drifts to 0/stale even once sarees have genuinely passed
+  // QC for this order. Derive the real count the same way the order detail
+  // page's Sarees tab does, so this card and that tab can't disagree.
+  const producedCount = computeBulkOrderProducedSareeIds(o.ref, bulkOrders, readySarees, returns, quotations).size;
+  const pct = o.total > 0 ? Math.round((producedCount / o.total) * 100) : 0;
+  const remaining = o.total - producedCount;
   const PhStatusIcon = cfg.PhIcon;
   // Tally state now lives on the order itself (BulkOrderContext) so it survives
   // navigating away to the full order page and back.
@@ -71,7 +80,7 @@ export function BulkOrderCard({ o, onView, onSlip, superadmin = false }: { o: Bu
         <div>
           <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 10 }}>
             <div>
-              <span style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1 }}>{o.done}</span>
+              <span style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1 }}>{producedCount}</span>
               <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginLeft: 6 }}>of {o.total} sarees done</span>
             </div>
             <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: cfg.barColor }}>{pct}%</span>
