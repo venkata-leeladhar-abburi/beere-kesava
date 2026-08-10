@@ -16,6 +16,12 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     });
     super({
       adapter: new PrismaPg(pool),
+      // The remote Supabase pooler can be slow to respond after being idle
+      // (free-tier projects cold-start), so the 5s Prisma default is too
+      // tight for the $transaction([...]) batches used across services
+      // (e.g. findMany + count) — bump both so a slow-but-live connection
+      // doesn't 500 the request.
+      transactionOptions: { timeout: 20_000, maxWait: 10_000 },
     });
     this.pool = pool;
   }
