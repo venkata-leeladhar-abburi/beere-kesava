@@ -13,6 +13,11 @@ import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "../../../../shared/ui/overlay";
 import { NAV_GROUPS, findNavGroup } from "./data";
 
+// Deliberately NOT built on shared/ui/nav's Topbar+Groupbar — same decision
+// and reasoning as the admin dashboard's TopNav.tsx (see its comment): a
+// mocked two-row version was compared side-by-side and rejected as a real
+// visual-hierarchy regression, not a restyle. Permanent exception.
+
 export function SATopNav({ active, set, onBack, sections, onProfile }: { active: string; set: (v: string) => void; onBack?: () => void; sections?: SectionNavItem[]; onProfile?: () => void }) {
   const navigate = useNavigate();
   const { selectRole } = useAuth();

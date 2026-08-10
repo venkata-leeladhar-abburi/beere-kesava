@@ -14,6 +14,20 @@ import { T, F, G, EASE, findNavGroup, NAV_GROUPS } from '../theme';
 import { Button, IconButton } from '../../../../../shared/ui/primitives';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, Popover } from '../../../../../shared/ui/overlay';
 
+// Deliberately NOT built on shared/ui/nav's Topbar+Groupbar (design-system/
+// 05-OVERLAYS.md Part O.1/O.2). Those primitives are two stacked sticky bars
+// (brand/search/actions, then a separate group row); this file's brand +
+// groups + actions live in one combined row instead. A mechanical swap was
+// mocked side-by-side via nav-preview.html (?which=mock, now removed) and
+// rejected: splitting into two rows visibly demotes the nav groups from
+// primary-navigation weight (dark burgundy) to a secondary-looking strip —
+// a real UX regression, not a restyle, for a purely internal DRY benefit.
+// This nav already has everything the primitives exist to guarantee
+// (Radix DropdownMenu, aria-current/aria-haspopup/aria-expanded, z-index
+// tokens) via its own migration — see the Part O.2 comment below. Treat as
+// a permanent exception, same category as ProfitLossReport/WeaverDrawer
+// elsewhere in this project.
+
 export function TopNav({
   active,
   set,
