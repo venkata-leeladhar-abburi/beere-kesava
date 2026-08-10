@@ -4,6 +4,7 @@ import { monthsSinceLabel } from "../utils";
 import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { FilterBarActive, type ActiveFilter } from "../../../../shared/ui/filter";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 export interface InactiveCustomerRow {
   name: string;
@@ -81,7 +82,7 @@ export function InactiveCustomersSection({
     },
     {
       id: "spend", header: "Total Spend Ever", accessor: row => row.spend,
-      cell: (_v, row) => <span style={{ color: T.luxuryBrown, fontFamily: F.mono }}>₹{row.spend}</span>,
+      cell: (_v, row) => <span style={{ color: T.luxuryBrown, fontFamily: F.mono }}>{formatMoney(rupees(Number(String(row.spend).replace(/,/g, "")) || 0))}</span>,
     },
     {
       id: "action", header: "Action", accessor: () => null, type: "actions",

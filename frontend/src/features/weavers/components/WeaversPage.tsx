@@ -12,6 +12,7 @@ import { weaversApi } from "../../../shared/api/weavers";
 import { warpRequestsApi } from "../../../shared/api/warpRequests";
 import { paymentsApi } from "../../../shared/api/payments";
 import { resolveAssetUrl } from "../../../shared/api/uploads";
+import { rupees, formatMoney } from "@/lib/domain/money";
 import { WarpRequestsSection } from "./sections/WarpRequestsSection";
 import { AllWeaversControls } from "./sections/WeaverDirectoryControls";
 import { WeaverDirectory } from "./sections/WeaverTableAndDirectory";
@@ -130,7 +131,7 @@ export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: a
     { label: "TOTAL SAREES WOVEN", value: `${totalSareesWoven}`, sub: "All-time, across all weavers", gold: false, crimson: false },
     { label: "QUALITY CHECK PASS RATE", value: `${avgPassRate}%`, sub: "Average across all weavers", gold: true, crimson: false },
     { label: "WARP REQUESTS PENDING", value: `${warpRequestsPending}`, sub: "Awaiting admin approval", gold: false, crimson: warpRequestsPending > 0 },
-    { label: "TOTAL PAID TO WEAVERS", value: `₹${totalPaidToWeavers.toLocaleString("en-IN")}`, sub: "All-time payments recorded", gold: false, crimson: false },
+    { label: "TOTAL PAID TO WEAVERS", value: formatMoney(rupees(totalPaidToWeavers)), sub: "All-time payments recorded", gold: false, crimson: false },
   ];
 
   if (activeWeaver) {

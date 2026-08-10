@@ -5,6 +5,7 @@ import { OrderMoney } from "../../../../bulk-orders/utils/BulkOrderLinking";
 import { T, F } from "../../theme";
 import { Button } from "../../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 const ORDER_STATUS_META: Record<string, { label: string; color: string; bg: string }> = {
   "on-track": { label: "On Track", color: T.green, bg: T.greenBg },
@@ -16,7 +17,7 @@ const PAY_STATUS_META: Record<string, { label: string; color: string; bg: string
   partial: { label: "Partial", color: "#8B6018", bg: "rgba(200,155,71,0.14)" },
   pending: { label: "Pending", color: T.crimson, bg: T.crimsonBg },
 };
-const inr = (n: number) => `₹${n.toLocaleString("en-IN")}`;
+const inr = (n: number) => formatMoney(rupees(n));
 
 export interface OrderHistoryTabProps {
   custOrders: BulkOrder[];

@@ -5,6 +5,7 @@ import { Popover } from "../../../../shared/ui/overlay";
 import { T, F } from "./theme";
 import { jariFromReels, jariGrams, trimNum } from "./jariUtils";
 import type { SareeTypeRecord } from "./sareeTypeData";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // SAREE TYPE CARD — reusable exported popover (also used from Batch Creation)
@@ -75,7 +76,7 @@ export function SareeTypeCard({ sareeType, onClose }: { sareeType: SareeTypeReco
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
             <div style={{ background: T.cream, borderRadius: 12, padding: "16px 18px" }}>
               <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "0.10em", color: T.taupe, textTransform: "uppercase", marginBottom: 6 }}>Making Charge</div>
-              <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 24, fontWeight: 700, color: T.antiqueGold }}>₹{parseInt(sareeType.charge).toLocaleString("en-IN")}</div>
+              <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 24, fontWeight: 700, color: T.antiqueGold }}>{formatMoney(rupees(parseInt(sareeType.charge)))}</div>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>per saree</div>
             </div>
             <div style={{ background: T.cream, borderRadius: 12, padding: "16px 18px" }}>
@@ -89,11 +90,11 @@ export function SareeTypeCard({ sareeType, onClose }: { sareeType: SareeTypeReco
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
             <div>
               <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "0.10em", color: T.taupe, textTransform: "uppercase", marginBottom: 4 }}>Retail Price</div>
-              <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>₹{parseInt(sareeType.retail).toLocaleString("en-IN")}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{formatMoney(rupees(parseInt(sareeType.retail)))}</div>
             </div>
             <div>
               <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "0.10em", color: T.taupe, textTransform: "uppercase", marginBottom: 4 }}>Wholesale Price</div>
-              <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>₹{parseInt(sareeType.wholesale).toLocaleString("en-IN")}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{formatMoney(rupees(parseInt(sareeType.wholesale)))}</div>
             </div>
           </div>
 

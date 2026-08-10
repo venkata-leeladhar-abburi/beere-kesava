@@ -15,6 +15,8 @@ import { RetailChartsRow1, RetailChartsRow2 } from "./RetailCharts";
 import { useCustomers } from "../../contexts/CustomersContext";
 import { salesApi } from "../../../../shared/api/sales";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { rupees, formatMoney } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 
 interface RetailFormState {
   name: string;
@@ -135,7 +137,7 @@ export function RetailCustomersSection({
     },
     {
       id: "totalSpend", header: "Total Spend", accessor: r => r.totalSpend ?? 0, type: "number", sortable: true,
-      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}>₹{(r.totalSpend ?? 0).toLocaleString("en-IN")}</span>,
+      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}><Money value={rupees(r.totalSpend ?? 0)} /></span>,
     },
     {
       id: "purchases", header: "Purchases", accessor: r => r.totalPurchases, type: "number", sortable: true,
@@ -218,7 +220,7 @@ export function RetailCustomersSection({
         {[
           { ico: <Users size={24} color={T.royalBurgundy} />, bg: "rgba(110,15,45,0.07)", l: "Total Retail Customers", v: retailCustomers.length.toLocaleString("en-IN"), c: T.luxuryBrown, sub: "Profiles at point of sale" },
           { ico: <UserPlus size={24} color={T.antiqueGold} />, bg: "rgba(200,155,71,0.09)", l: "New Customers This Month", v: String(newThisMonthCount), c: T.antiqueGold, sub: "Added via new sale entries" },
-          { ico: <IndianRupee size={24} color={T.greenMid} />, bg: T.greenBg, l: "Retail Revenue This Month", v: `₹${totalRetailRevenueMonth.toLocaleString("en-IN")}`, c: T.greenMid, sub: "Total from all retail sales" },
+          { ico: <IndianRupee size={24} color={T.greenMid} />, bg: T.greenBg, l: "Retail Revenue This Month", v: formatMoney(rupees(totalRetailRevenueMonth)), c: T.greenMid, sub: "Total from all retail sales" },
           { ico: <AlertTriangle size={24} color={T.taupe} />, bg: "rgba(139,112,96,0.08)", l: "Inactive — No Visit in 6M", v: String(inactiveCount), c: T.taupe, sub: "Consider reaching out" },
         ].map((st, i) => (
           <div key={i} style={{ background: "#FFF", padding: "22px 22px 20px", borderRadius: 14, border: `1px solid ${T.borderDef}`, display: "flex", flexDirection: "column", gap: 14, boxShadow: "0 2px 10px rgba(74,6,27,0.04)" }}>
@@ -316,7 +318,7 @@ export function RetailCustomersSection({
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, background: T.silkCream, padding: 12, borderRadius: 10, border: `1px solid ${T.borderDef}` }}>
                 <div>
                   <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const }}>Total Spend</div>
-                  <div style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: T.royalBurgundy, marginTop: 2 }}>₹{(r.totalSpend ?? 0).toLocaleString("en-IN")}</div>
+                  <div style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: T.royalBurgundy, marginTop: 2 }}><Money value={rupees(r.totalSpend ?? 0)} /></div>
                 </div>
                 <div>
                   <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const }}>Purchases</div>

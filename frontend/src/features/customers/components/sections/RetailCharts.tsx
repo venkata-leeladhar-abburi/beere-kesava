@@ -13,6 +13,7 @@ import {
 } from "recharts";
 import { customersApi } from "../../../../shared/api/customers";
 import { salesApi } from "../../../../shared/api/sales";
+import { rupees, formatMoney } from "@/lib/domain/money";
 import { batchesApi } from "../../../../shared/api/batches";
 
 // ── Row 1: Top 10 Customers · Category Split · New vs Returning ─────────────
@@ -151,7 +152,7 @@ export function RetailChartsRow1() {
                     <div style={{ width: `${pct}%`, height: "100%", backgroundImage: barBg, borderRadius: 4 }} />
                   </div>
                   <div style={{ width: 54, textAlign: "right", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: i < 3 ? T.luxuryBrown : T.taupe }}>
-                    ₹{(c.spend || 0).toLocaleString("en-IN")}
+                    {formatMoney(rupees(c.spend || 0))}
                   </div>
                 </div>
               );
@@ -181,7 +182,7 @@ export function RetailChartsRow1() {
           <>
             <ChartFigure
               title="Category Split"
-              summary={`Total retail revenue ₹${totalRetailRevenue.toLocaleString("en-IN")} across ${retailCategorySplit.map(i => i.name).join(", ")}.`}
+              summary={`Total retail revenue ${formatMoney(rupees(totalRetailRevenue))} across ${retailCategorySplit.map(i => i.name).join(", ")}.`}
             >
             <div style={{ position: "relative", height: 200, flexShrink: 0 }}>
               <ResponsiveContainer key="rc-rt-2" width="100%" height="100%">
@@ -194,7 +195,7 @@ export function RetailChartsRow1() {
                 </PieChart>
               </ResponsiveContainer>
               <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
-                <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.luxuryBrown }}>₹{totalRetailRevenue.toLocaleString("en-IN")}</span>
+                <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.luxuryBrown }}>{formatMoney(rupees(totalRetailRevenue))}</span>
                 <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>Total Retail</span>
               </div>
             </div>

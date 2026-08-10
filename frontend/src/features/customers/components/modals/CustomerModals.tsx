@@ -5,6 +5,7 @@ import { WholesaleCustomer, RetailCustomer } from "../types";
 import { downloadCustomerCSV } from "../utils";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 export interface CustomerModalsProps {
   modalWholesale: WholesaleCustomer | null;
@@ -57,8 +58,8 @@ export function CustomerModals({
               <div style={{ flex: "55%" }}>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 32 }}>
                   <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Total Orders Ever</div><div style={{ fontFamily: F.display, fontSize: 30, color: T.luxuryBrown, fontWeight: 700 }}>{modalWholesale.orders}</div></div>
-                  <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Total Spend</div><div style={{ fontFamily: F.display, fontSize: 30, color: T.antiqueGold, fontWeight: 700 }}>₹{modalWholesale.spend}</div></div>
-                  <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Outstanding Balance</div><div style={{ fontFamily: F.display, fontSize: 30, color: modalWholesale.out==="0"?T.greenMid:T.crimson, fontWeight: 700 }}>₹{modalWholesale.out}</div></div>
+                  <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Total Spend</div><div style={{ fontFamily: F.display, fontSize: 30, color: T.antiqueGold, fontWeight: 700 }}>{formatMoney(rupees(Number(modalWholesale.spend) || 0))}</div></div>
+                  <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Outstanding Balance</div><div style={{ fontFamily: F.display, fontSize: 30, color: modalWholesale.out==="0"?T.greenMid:T.crimson, fontWeight: 700 }}>{formatMoney(rupees(Number(modalWholesale.out) || 0))}</div></div>
                   <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Payment Terms</div><div style={{ fontFamily: F.mono, fontSize: 20, color: T.luxuryBrown, fontWeight: 600 }}>{modalWholesale.terms}</div></div>
                 </div>
                 {modalWholesale.activeOrder && (
