@@ -5,9 +5,21 @@ import { T, F } from "./theme";
 import { Vendor } from "./types";
 import { MATERIAL_TYPES } from "./data";
 import { FadeUp } from "./FadeUp";
-import { VendorCard } from "./VendorCard";
 import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
+import { VendorCard, type VendorCardProps } from "@/shared/ui/domain";
+import { rupees } from "@/lib/domain/money";
+
+// Vendor.status (types.ts) is the overloaded-field pattern the design
+// system audit calls out (design-system/06-DOMAIN.md Part A.3/D.1): it
+// mixes a person lifecycle state ("active"/"inactive") with a payment
+// concept ("overdue"). Split it into the shared card's two typed slots
+// instead of growing PersonStatus with a payment value.
+const VENDOR_STATUS: Record<Vendor["status"], Pick<VendorCardProps, "status" | "paymentStatus">> = {
+  active: { status: "active" },
+  inactive: { status: "inactive" },
+  overdue: { status: "active", paymentStatus: "overdue" },
+};
 
 export function VendorDirectorySection({ vendors, onSelectVendor, onAddClick }: {
   vendors: Vendor[];
@@ -93,7 +105,15 @@ export function VendorDirectorySection({ vendors, onSelectVendor, onAddClick }: 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 22 }}>
           {pag.pageItems.map((v, i) => (
             <FadeUp key={v.id} delay={i * 0.06}>
-              <VendorCard vendor={v} onView={onSelectVendor} />
+              <VendorCard
+                code={v.id}
+                name={v.name}
+                service={v.type}
+                jobs={v.totalOrders}
+                outstanding={rupees(Number(v.outstanding) || 0)}
+                {...VENDOR_STATUS[v.status]}
+                onClick={() => onSelectVendor(v)}
+              />
             </FadeUp>
           ))}
           {filtered.length === 0 && (

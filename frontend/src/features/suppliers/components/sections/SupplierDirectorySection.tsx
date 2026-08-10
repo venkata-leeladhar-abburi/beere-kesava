@@ -4,9 +4,21 @@ import React from "react";
 import { Plus, Building2 } from "lucide-react";
 import { T, F } from "../theme";
 import { FadeUp } from "../common/primitives";
-import { SupplierCard } from "./SupplierCard";
-import { Supplier } from "../../contexts/SupplierContext";
+import { Supplier, useSuppliers } from "../../contexts/SupplierContext";
 import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
+import { SupplierCard, type SupplierCardProps } from "@/shared/ui/domain";
+import { rupees } from "@/lib/domain/money";
+
+// SupplierCard's shared taxonomy is person-only (design-system/06-DOMAIN.md
+// Part G.2 — no payment slot for suppliers), so the "overdue" value from
+// Supplier.status (a payment concept, same overloaded-field pattern as
+// vendors) maps to the closest PersonStatus rather than growing the
+// taxonomy for this one call site.
+const SUPPLIER_STATUS: Record<Supplier["status"], SupplierCardProps["status"]> = {
+  active: "active",
+  inactive: "inactive",
+  overdue: "at-risk",
+};
 
 export function SupplierDirectorySection({
   filtered, search, setSearch, statusFilter, setStatusFilter,
@@ -22,6 +34,7 @@ export function SupplierDirectorySection({
   onAddSupplier: () => void;
   onViewSupplier: (s: Supplier) => void;
 }) {
+  const { statsFor } = useSuppliers();
   return (
     <div style={{ padding: "48px 56px 0" }}>
       <FadeUp>
@@ -60,11 +73,23 @@ export function SupplierDirectorySection({
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 22 }}>
-          {filtered.map((s, i) => (
-            <FadeUp key={s.id} delay={i * 0.06}>
-              <SupplierCard supplier={s} onView={onViewSupplier} />
-            </FadeUp>
-          ))}
+          {filtered.map((s, i) => {
+            const stats = statsFor(s.id);
+            return (
+              <FadeUp key={s.id} delay={i * 0.06}>
+                <SupplierCard
+                  code={s.id}
+                  name={s.name}
+                  city={s.city}
+                  purchaseOrders={stats.purchases.length}
+                  spend={rupees(stats.totalPurchased)}
+                  rating={s.rating || undefined}
+                  status={SUPPLIER_STATUS[s.status]}
+                  onClick={() => onViewSupplier(s)}
+                />
+              </FadeUp>
+            );
+          })}
           {filtered.length === 0 && (
             <div style={{ gridColumn: "1 / -1", background: "#FFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, padding: "60px 24px", textAlign: "center" }}>
               <Building2 size={44} color={T.taupe} style={{ marginBottom: 12 }} />
