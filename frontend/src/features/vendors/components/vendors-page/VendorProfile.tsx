@@ -20,6 +20,7 @@ import { vendorPaymentsApi } from "../../../../shared/api/payments";
 import { useMoneyVisible } from "../../../../shared/ui/MoneyValue";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { Breadcrumbs } from "../../../../shared/ui/nav/Breadcrumbs";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; onBack: () => void; onUpdate?: (v: Vendor) => void }) {
   const [tab, setTab] = useState<"overview" | "orders" | "payments" | "contact" | "edit">("overview");
@@ -103,7 +104,7 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
     id: p.poNumber || p.id,
     date: p.createdAt ? p.createdAt.split("T")[0] : "",
     materials: [] as any[],
-    totalAmount: `₹${Number(p.totalValue || 0).toLocaleString("en-IN")}`,
+    totalAmount: formatMoney(rupees(Number(p.totalValue || 0))),
     amount: Number(p.totalValue || 0),
     grnId: p.grnId || undefined,
     firmName: p.grnId ? "Beere Kesava Silks (Head Firm)" : undefined,
@@ -133,7 +134,7 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
     return [...m.entries()].map(([mode, amount]) => ({ mode, amount })).sort((a, b) => b.amount - a.amount);
   }, [filteredTxns]);
   const moneyVisible = useMoneyVisible();
-  const inr = (n: number) => (moneyVisible ? `₹${Math.round(n).toLocaleString("en-IN")}` : "—");
+  const inr = (n: number) => (moneyVisible ? formatMoney(rupees(n)) : "—");
 
   const billColumns: ColumnDef<VendorBill>[] = [
     {
@@ -223,11 +224,11 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
           <div style={{ display: "flex", gap: 48, alignItems: "center" }}>
             <div style={{ textAlign: "right" }}>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.55)", marginBottom: 4 }}>TOTAL SPEND</div>
-              <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.goldLight }}>{moneyVisible ? `₹${realTotalSpend.toLocaleString("en-IN")}` : "—"}</div>
+              <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.goldLight }}>{moneyVisible ? formatMoney(rupees(realTotalSpend)) : "—"}</div>
             </div>
             <div style={{ textAlign: "right" }}>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.55)", marginBottom: 4 }}>OUTSTANDING</div>
-              <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: vendor.outstanding !== "0" ? "#F87171" : T.goldLight }}>{!moneyVisible ? "—" : vendor.outstanding === "0" ? "₹0" : `₹${vendor.outstanding}`}</div>
+              <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: vendor.outstanding !== "0" ? "#F87171" : T.goldLight }}>{!moneyVisible ? "—" : formatMoney(rupees(Number(vendor.outstanding) || 0))}</div>
             </div>
           </div>
         </div>

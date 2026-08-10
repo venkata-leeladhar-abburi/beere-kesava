@@ -18,6 +18,7 @@ import { BulkOrderOverviewTab, BulkOrderPaymentsTab } from "./BulkOrderOverviewP
 import { Button } from "../../../shared/ui/primitives";
 import { Modal } from "../../../shared/ui/overlay";
 import { Breadcrumbs } from "../../../shared/ui/nav/Breadcrumbs";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 const T = {
   silkCream: "#F7F2EA", royalBurgundy: "#6E0F2D",
@@ -141,7 +142,7 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
   const { amountDue, amountPaid, balance, payments } = money;
   const matchedInvoice = money.invoiceId ? { id: money.invoiceId } : null;
 
-  const inr = (n: number) => `₹${n.toLocaleString("en-IN")}`;
+  const inr = (n: number) => formatMoney(rupees(n));
 
   const card: React.CSSProperties = { background: "#FFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, padding: "20px 22px" };
   const tabs = [

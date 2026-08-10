@@ -16,6 +16,7 @@ import { Vendor } from "./types";
 import { FadeUp } from "./FadeUp";
 import { purchaseOrdersApi } from "../../../../shared/api/purchase-orders";
 import { ChartFigure } from "../../../../shared/ui/data";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 // Material type is not carried on the backend PurchaseOrder (see
 // shared/api/purchase-orders.ts — line items live client-side only, no
@@ -164,7 +165,7 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
     ? activeVendors.reduce((a, v) => a + v.rating, 0) / activeVendors.length
     : 0;
 
-  const L = (n: number) => `₹${(n / 100000).toFixed(1)}L`;
+  const L = (n: number) => formatMoney(rupees(n), { compact: true });
   const cardStyle: React.CSSProperties = {
     background: "#FFF", borderRadius: 20, border: `1.5px solid ${T.borderDef}`,
     padding: "24px 28px", boxShadow: "0 2px 12px rgba(74,6,27,0.05)",
@@ -350,7 +351,7 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
                   <div key={v.id}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 5 }}>
                       <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{v.name}</span>
-                      <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.crimson }}>₹{v.outstanding}</span>
+                      <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.crimson }}>{formatMoney(rupees(v.out))}</span>
                     </div>
                     <div style={{ height: 7, borderRadius: 4, background: T.silkCream, overflow: "hidden" }}>
                       <div style={{ width: `${(v.out / (outstandingList[0].out || 1)) * 100}%`, height: "100%", borderRadius: 4, background: `linear-gradient(90deg,#C0392B,#E74C3C)` }} />

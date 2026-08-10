@@ -8,6 +8,7 @@ import {
 import { T, F } from "../theme";
 import { Purchase } from "../../contexts/SupplierContext";
 import { Button } from "../../../../shared/ui/primitives";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 export function SuppliersHero({
   suppliersCount, purchases, totals, onAddExternalPurchase, onAddSupplier,
@@ -66,9 +67,9 @@ export function SuppliersHero({
           {[
             { icon: Building2,     label: "Total Suppliers",   value: String(suppliersCount),                                   sub: "Registered saree suppliers", hi: false },
             { icon: Package,       label: "Sarees Purchased",  value: String(totals.sarees),                                    sub: "Across all external buys",   hi: false },
-            { icon: IndianRupee,   label: "Total Purchased",   value: `₹${(totals.purchased / 100000).toFixed(1)}L`,            sub: "Billed by all suppliers",    hi: true  },
-            { icon: CheckCircle2,  label: "Total Paid",        value: `₹${(totals.paid / 100000).toFixed(1)}L`,                 sub: "Settled to suppliers",       hi: false },
-            { icon: AlertTriangle, label: "Outstanding",       value: `₹${(totals.outstanding / 100000).toFixed(1)}L`,          sub: "Yet to be paid",             hi: false },
+            { icon: IndianRupee,   label: "Total Purchased",   value: formatMoney(rupees(totals.purchased), { compact: true }), sub: "Billed by all suppliers",    hi: true  },
+            { icon: CheckCircle2,  label: "Total Paid",        value: formatMoney(rupees(totals.paid), { compact: true }),      sub: "Settled to suppliers",       hi: false },
+            { icon: AlertTriangle, label: "Outstanding",       value: formatMoney(rupees(totals.outstanding), { compact: true }), sub: "Yet to be paid",           hi: false },
             { icon: TrendingUp,    label: "Pending Purchases",  value: String(purchases.filter(p => p.status === "Pending").length), sub: "Awaiting payment",        hi: false },
           ].map((m, i, arr) => (
             <div key={m.label} style={{ flex: 1, padding: "26px 18px", background: m.hi ? "linear-gradient(135deg,rgba(200,155,71,0.22) 0%,rgba(200,155,71,0.07) 100%)" : "none", borderRight: i < arr.length - 1 ? "1px solid rgba(245,232,208,0.07)" : "none", display: "flex", alignItems: "center", gap: 12, position: "relative" }}>

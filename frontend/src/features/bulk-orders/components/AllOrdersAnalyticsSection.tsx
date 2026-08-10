@@ -13,6 +13,7 @@ import { DateFilterState } from "../../../shared/ui/DateFilterBar";
 import { resolveOrderMoney } from "../utils/BulkOrderLinking";
 import { INVOICES } from "../../payments/data/invoices";
 import { ChartFigure } from "../../../shared/ui/data";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 const T = {
   silkCream: "#F7F2EA",
@@ -129,8 +130,8 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
     .map(k => ({ key: k, ...PAY_META[k], count: filteredOrders.filter(o => (o.paymentStatus ?? "pending") === k).length }))
     .filter(d => d.count > 0), [filteredOrders]);
 
-  const inr = (n: number) => `₹${n.toLocaleString("en-IN")}`;
-  const L = (n: number) => `₹${(n / 100000).toFixed(1)}L`;
+  const inr = (n: number) => formatMoney(rupees(n));
+  const L = (n: number) => formatMoney(rupees(n), { compact: true });
   const card: React.CSSProperties = {
     background: "#FFFFFF", borderRadius: 18, border: `1.5px solid ${T.borderDef}`,
     padding: "22px 24px", boxShadow: "0 4px 18px rgba(74,6,27,0.04)",

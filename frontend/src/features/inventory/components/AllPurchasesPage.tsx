@@ -8,6 +8,7 @@ import { PurchaseCard } from "./PurchaseCard";
 import { Pagination, usePagination } from "../../../shared/ui/DataPagination";
 import { Button, SearchInput } from "../../../shared/ui/primitives";
 import { Breadcrumbs } from "../../../shared/ui/nav/Breadcrumbs";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 const T = {
   silkCream:     "#F7F2EA",
@@ -146,7 +147,7 @@ export function AllPurchasesPage({ onBack }: { onBack: () => void }) {
               { label: "Total Warp Purchased",   val: "2,840 kg",                   sub: "From 2 vendors",         Icon: Layers,      hi: false },
               { label: "Total Resham Purchased", val: "1,240 kg",                   sub: "All colors combined",    Icon: Tag,         hi: false },
               { label: "Total Jari Purchased",   val: "680 kg",                     sub: "All types and grades",   Icon: Sparkles,    hi: false },
-              { label: "Total Amount Spent",     val: `₹${(totalSpend/100000).toFixed(1)}L`, sub: "All materials combined", Icon: IndianRupee, hi: true  },
+              { label: "Total Amount Spent",     val: formatMoney(rupees(totalSpend), { compact: true }), sub: "All materials combined", Icon: IndianRupee, hi: true  },
               { label: "Active Vendors",         val: "6",                          sub: "Across 3 states",        Icon: Building2,   hi: false },
             ].map((m, i) => (
               <div key={m.label} style={{ flex: 1, padding: "18px 18px", borderRight: i < 4 ? "1px solid rgba(245,232,208,0.07)" : "none", display: "flex", alignItems: "center", gap: 12 }}>

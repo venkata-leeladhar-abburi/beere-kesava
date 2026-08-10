@@ -7,6 +7,7 @@ import { T, F } from "../../theme";
 import { semantic } from "../../../../../design-system/tokens";
 import { formatINR } from "../../../contexts/SupplierContext";
 import { ChartFigure } from "../../../../../shared/ui/data";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 export interface PerSupplierEntry {
   id: string; name: string; short: string; initials: string; specialty: string;
@@ -47,7 +48,7 @@ export function TopSuppliersCard({
             <XAxis type="number" hide />
             <YAxis type="category" dataKey="short" width={132} tick={{ fontFamily: F.ui, fontSize: 12, fill: T.luxuryBrown }} axisLine={false} tickLine={false} />
             <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
-              formatter={(v: any, _n: any, p: any) => [`${formatINR(v)} · ${p.payload.pieces} sarees · ₹${p.payload.avgPiece.toLocaleString("en-IN")}/pc`, p.payload.name]} />
+              formatter={(v: any, _n: any, p: any) => [`${formatINR(v)} · ${p.payload.pieces} sarees · ${formatMoney(rupees(p.payload.avgPiece))}/pc`, p.payload.name]} />
             <Bar dataKey="billed" radius={[0, 6, 6, 0]}
               label={{ position: "right", formatter: (v: any) => formatINR(v), fontFamily: F.mono, fontSize: 12, fontWeight: 700, fill: T.luxuryBrown }}>
               {topSuppliers.map((s, i) => (

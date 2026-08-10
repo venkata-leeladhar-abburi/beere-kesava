@@ -11,6 +11,7 @@ import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
 import { purchaseOrdersApi } from "../../../../shared/api/purchase-orders";
 import { vendorsApi } from "../../../../shared/api/vendors";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 interface VendorRow {
   name: string;
@@ -23,7 +24,7 @@ interface VendorRow {
 
 function formatCurrency(n: number | string) {
   const val = Number(n) || 0;
-  return `₹${Math.round(val).toLocaleString("en-IN")}`;
+  return formatMoney(rupees(val));
 }
 
 export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport: () => void }) {

@@ -14,6 +14,7 @@ import { TypeMixCard } from "./analytics/TypeMixCard";
 import { TopSuppliersCard } from "./analytics/TopSuppliersCard";
 import { OutstandingCard, BillStatusEntry } from "./analytics/OutstandingCard";
 import { RatingCard, PaymentModeCard, SettlementHealthCard } from "./analytics/RatingAndModeCards";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 export function SupplierAnalytics() {
   const { suppliers, purchases, payments, isError } = useSuppliers();
@@ -140,7 +141,7 @@ export function SupplierAnalytics() {
       .sort((a, b) => b.amount - a.amount);
   }, [pays]);
 
-  const L = (n: number) => `₹${(n / 100000).toFixed(1)}L`;
+  const L = (n: number) => formatMoney(rupees(n), { compact: true });
   const card: React.CSSProperties = {
     background: "#FFF", borderRadius: 20, border: `1.5px solid ${T.borderDef}`,
     padding: "24px 28px", boxShadow: "0 2px 12px rgba(74,6,27,0.05)",

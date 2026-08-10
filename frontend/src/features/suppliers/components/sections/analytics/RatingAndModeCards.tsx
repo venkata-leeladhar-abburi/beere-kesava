@@ -12,6 +12,7 @@ import { T, F } from "../../theme";
 import { Supplier, formatINR } from "../../../contexts/SupplierContext";
 import { PerSupplierEntry } from "./TopSuppliersCard";
 import { ChartFigure } from "../../../../../shared/ui/data";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 export function RatingCard({
   card, cardTitle, cardSub, tip, suppliers,
@@ -137,7 +138,7 @@ export function SettlementHealthCard({
       </ChartFigure>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 6 }}>
         {[
-          { label: "Avg Cost / Saree", value: pieces ? `₹${Math.round(billed / pieces).toLocaleString("en-IN")}` : "—" },
+          { label: "Avg Cost / Saree", value: pieces ? formatMoney(rupees(billed / pieces)) : "—" },
           { label: "Invoices", value: String(buysCount) },
           { label: "Active Suppliers", value: String(perSuppliers.length) },
           { label: "Avg Rating", value: perSuppliers.length ? `${(perSuppliers.reduce((a, s) => a + s.rating, 0) / perSuppliers.length).toFixed(1)} / 5` : "—" },

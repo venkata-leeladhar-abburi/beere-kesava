@@ -5,6 +5,8 @@ import { useBatches } from "../../../../production/contexts/BatchContext";
 import { T, F } from "../../theme";
 import { StatusBadge } from "../../common/primitives";
 import { toPaise, fromPaise } from "../../../../../lib/gst";
+import { rupees } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 
 // ── Saree review list (shared by the quotation / invoice review steps) ────────
 export function SareeReviewList({ sarees, prices, applyGst, gstPct, docLabel }: {
@@ -53,7 +55,7 @@ export function SareeReviewList({ sarees, prices, applyGst, gstPct, docLabel }: 
                 </div>
               </div>
               <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: p ? T.luxuryBrown : T.crimson, textAlign: "right" as const }}>
-                {p ? `₹${p.toLocaleString("en-IN")}` : "not priced"}
+                {p ? <Money value={rupees(p)} /> : "not priced"}
               </div>
             </div>
           );
@@ -62,17 +64,17 @@ export function SareeReviewList({ sarees, prices, applyGst, gstPct, docLabel }: 
       <div style={{ marginTop: 14, background: T.bgGold, border: `1px solid ${T.borderGold}`, borderRadius: 12, padding: "14px 18px", display: "flex", flexDirection: "column", gap: 6 }}>
         <div style={{ display: "flex", justifyContent: "space-between" }}>
           <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Subtotal ({sarees.length} sarees)</span>
-          <span style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown }}>₹{subtotal.toLocaleString("en-IN")}</span>
+          <span style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown }}><Money value={rupees(subtotal)} /></span>
         </div>
         {applyGst && (
           <div style={{ display: "flex", justifyContent: "space-between" }}>
             <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>GST ({gstPct}%)</span>
-            <span style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown }}>₹{gstAmount.toLocaleString("en-IN")}</span>
+            <span style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown }}><Money value={rupees(gstAmount)} /></span>
           </div>
         )}
         <div style={{ display: "flex", justifyContent: "space-between", borderTop: `1px solid ${T.borderGold}`, paddingTop: 8, marginTop: 2 }}>
           <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>Grand Total</span>
-          <span style={{ fontFamily: F.mono, fontSize: 18, fontWeight: 700, color: T.royalBurgundy }}>₹{(subtotal + gstAmount).toLocaleString("en-IN")}</span>
+          <span style={{ fontFamily: F.mono, fontSize: 18, fontWeight: 700, color: T.royalBurgundy }}><Money value={rupees(subtotal + gstAmount)} /></span>
         </div>
       </div>
     </div>
