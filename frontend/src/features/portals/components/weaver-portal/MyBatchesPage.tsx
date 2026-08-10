@@ -9,6 +9,8 @@ import { DesignCodeCard } from "../../../design-library/components/DesignLibrary
 import { useMaterialIssue, MaterialIssueRecord, JARI_REEL_GRAMS } from "../../../materials/contexts/MaterialIssueContext";
 import { useWeaverPayments } from "../../../weavers/contexts/WeaverPaymentsContext";
 import { useAuth } from "../../../../contexts/AuthContext";
+import { rupees, formatMoney } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 import { useCurrentWeaver } from "./useCurrentWeaver";
 import { GeneralDispatchInstructionsBlock } from "./desktop/batchCardHelpers";
 import { motion, AnimatePresence, useInView } from "motion/react";
@@ -128,7 +130,7 @@ export function MyBatchesPage() {
             <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.crim }}>QC Failed — Defective Saree Alert</span>
           </div>
           <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, lineHeight: 1.5 }}>
-            Saree <strong>{ds.sareeId}</strong> in batch <strong>{ds.batchId}</strong> ({ds.sareeTypeName || "Self Brocade"}) failed quality check due to a <strong>{ds.defect}</strong> defect. A deduction of <strong>₹{ds.deduction}</strong> has been registered.
+            Saree <strong>{ds.sareeId}</strong> in batch <strong>{ds.batchId}</strong> ({ds.sareeTypeName || "Self Brocade"}) failed quality check due to a <strong>{ds.defect}</strong> defect. A deduction of <strong><Money value={rupees(ds.deduction)} /></strong> has been registered.
           </div>
           <div style={{ display: "flex", gap: 12, marginTop: 10, fontFamily: F.u, fontSize: 12, color: C.muted }}>
             <span>QC Date: {ds.date}</span>
@@ -160,7 +162,7 @@ export function MyBatchesPage() {
         const statsData = [
           { label: "Produced", val: `${producedCount}` },
           { label: "QC Pass", val: producedCount > 0 ? `${qcPassPct}%` : "—", highlight: true },
-          { label: "Earned", val: `₹${earnedTotal.toLocaleString("en-IN")}` },
+          { label: "Earned", val: formatMoney(rupees(earnedTotal)) },
         ];
         return (
       <div style={{ background: C.dark, borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex" }}>

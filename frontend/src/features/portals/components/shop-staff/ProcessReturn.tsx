@@ -10,6 +10,7 @@ import { RetailReturnSuccessView, WholesaleReturnSuccessView } from './ProcessRe
 import { ProcessReturnRetailFlow } from './ProcessReturnRetailFlow';
 import { ProcessReturnWholesaleFlow } from './ProcessReturnWholesaleFlow';
 import { Button } from "../../../../shared/ui/primitives";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 type MyReturnType = "retail" | "wholesale" | "damage" | null;
 type ReturnStep = "type" | 1 | 2 | 3 | "success";
@@ -31,7 +32,7 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
     customer: "Retail Customer",
     originalSaleId: r.saleRef ?? r.sareeId,
     reason: r.reason,
-    amount: r.refundAmount ? `₹${Number(r.refundAmount).toLocaleString("en-IN")}` : "₹0",
+    amount: r.refundAmount ? formatMoney(rupees(Number(r.refundAmount))) : formatMoney(rupees(0)),
   }));
 
   // Retail state

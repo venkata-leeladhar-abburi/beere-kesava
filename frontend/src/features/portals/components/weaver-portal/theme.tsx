@@ -13,6 +13,8 @@ import { DesignCodeCard } from "../../../design-library/components/DesignLibrary
 import { useMaterialIssue, MaterialIssueRecord, JARI_REEL_GRAMS } from "../../../materials/contexts/MaterialIssueContext";
 import { useWeaverPayments } from "../../../weavers/contexts/WeaverPaymentsContext";
 import { useAuth } from "../../../../contexts/AuthContext";
+import { rupees } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 import { motion, AnimatePresence, useInView } from "motion/react";
 import {
   Bell, ClipboardList, CheckSquare, Palette, ArrowUpRight,
@@ -190,7 +192,7 @@ function SareeTypeDetailCard({ typeCode, typeName, onClose }: { typeCode: string
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
           <div style={{ background: "rgba(196,146,58,0.08)", border: `1px solid rgba(196,146,58,0.22)`, borderRadius: 12, padding: "14px 16px" }}>
             <div style={{ fontFamily: F.m, fontSize: 12, color: C.gold, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 4 }}>MAKING CHARGE</div>
-            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.gold }}>₹{r?.charge ?? "—"}</div>
+            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.gold }}>{r ? <Money value={rupees(Number(r.charge))} /> : "—"}</div>
             <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>per saree</div>
           </div>
           <div style={{ background: C.cream, borderRadius: 12, padding: "14px 16px" }}>
@@ -204,11 +206,11 @@ function SareeTypeDetailCard({ typeCode, typeName, onClose }: { typeCode: string
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
           <div style={{ background: "#FAFAF8", border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "10px 12px" }}>
             <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 3 }}>RETAIL PRICE</div>
-            <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>₹{r ? Number(r.retail).toLocaleString("en-IN") : "—"}</div>
+            <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>{r ? <Money value={rupees(Number(r.retail))} /> : "—"}</div>
           </div>
           <div style={{ background: "#FAFAF8", border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "10px 12px" }}>
             <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 3 }}>WHOLESALE PRICE</div>
-            <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>₹{r ? Number(r.wholesale).toLocaleString("en-IN") : "—"}</div>
+            <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>{r ? <Money value={rupees(Number(r.wholesale))} /> : "—"}</div>
           </div>
         </div>
 

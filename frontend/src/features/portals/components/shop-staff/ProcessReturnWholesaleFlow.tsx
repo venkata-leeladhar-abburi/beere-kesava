@@ -2,6 +2,7 @@ import React from "react";
 import { Camera, Package, QrCode, Check } from "lucide-react";
 import { C, F, Card, Btn } from "./theme";
 import { Button, Input, Select, SelectItem } from "../../../../shared/ui/primitives";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 interface ProcessReturnWholesaleFlowProps {
   step: 1 | 2;
@@ -150,7 +151,7 @@ export function ProcessReturnWholesaleFlow({
                 ["Vendor", wsVendor || "—"], ["Design Code", wsDesign || "—"],
                 ["Color", wsColor || "—"], ["Type", wsType],
                 ["Weight", wsWeight ? `${wsWeight} grams` : "—"],
-                ...(canSeePrices ? [["Price", wsPrice ? `₹${wsPrice}` : "—"]] : []),
+                ...(canSeePrices ? [["Price", wsPrice && !isNaN(Number(wsPrice)) ? formatMoney(rupees(Number(wsPrice))) : "—"]] : []),
                 ["Return Reason", wsReason || "—"],
               ].map(([k, v], i, arr) => (
                 <div key={i} style={{ display: "flex", justifyContent: "space-between", marginBottom: 10, paddingBottom: 10, borderBottom: i < arr.length - 1 ? `1px solid ${C.bdr}` : "none" }}>

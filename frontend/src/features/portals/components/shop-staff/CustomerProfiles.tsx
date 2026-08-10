@@ -16,6 +16,7 @@ import { Button, IconButton, Input } from "../../../../shared/ui/primitives";
 import { useQuery } from '@tanstack/react-query';
 import { customersApi } from '../../../../shared/api/customers';
 import { salesApi } from '../../../../shared/api/sales';
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 function CustomerProfiles() {
   const canSeePrices = useCanSeePrices();
@@ -61,7 +62,7 @@ function CustomerProfiles() {
         city: c.city ?? "Dharmavaram",
         type: c.type,
         purchases: customerSales.length,
-        total: `₹${totalAmount.toLocaleString('en-IN')}`,
+        total: formatMoney(rupees(totalAmount)),
         last: c.createdAt ? new Date(c.createdAt).toLocaleDateString("en-IN", { month: "short", day: "numeric" }) : "—",
         regular: c.type === "WHOLESALE",
         initials,
@@ -82,8 +83,8 @@ function CustomerProfiles() {
       date: new Date(s.saleDate).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" }),
       id: s.sareeId,
       design: s.channel === "WHOLESALE" ? "Wholesale" : "Retail",
-      price: `₹${Number(s.amount).toLocaleString('en-IN')}`,
-      amt: `₹${Number(s.amount).toLocaleString('en-IN')}`,
+      price: formatMoney(rupees(Number(s.amount))),
+      amt: formatMoney(rupees(Number(s.amount))),
       pay: "Counter"
     }));
   }, [activeCustomer, salesList]);

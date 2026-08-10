@@ -19,6 +19,7 @@ import { WorkerQCDefectiveSection } from "./WorkerQCDefectiveSection";
 import { WorkerQCQueueHeader } from "./WorkerQCQueueHeader";
 import { WorkerQCWeaverGrid, WorkerQCBatchGrid } from "./WorkerQCGridCards";
 import { IconButton, Input } from "../../../../shared/ui/primitives";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTablet?: boolean }) {
   const { batches } = useBatches();
@@ -83,7 +84,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
       weaver: r.weaverName ?? "—",
       defects: r.defects,
       date: new Date(r.qcDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short" }),
-      deduction: `₹${r.deduction}`,
+      deduction: formatMoney(rupees(r.deduction)),
     })),
   [qcRecords]);
   const [defFilter, setDefFilter] = useState("Today");

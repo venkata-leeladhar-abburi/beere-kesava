@@ -9,6 +9,8 @@ import { DesignCodeCard } from "../../../design-library/components/DesignLibrary
 import { useMaterialIssue, MaterialIssueRecord, JARI_REEL_GRAMS } from "../../../materials/contexts/MaterialIssueContext";
 import { useWeaverPayments } from "../../../weavers/contexts/WeaverPaymentsContext";
 import { useAuth } from "../../../../contexts/AuthContext";
+import { rupees, formatMoney } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 import { useCurrentWeaver } from "./useCurrentWeaver";
 import { motion, AnimatePresence, useInView } from "motion/react";
 import {
@@ -98,7 +100,7 @@ export function PaymentLedgerPage() {
     });
   }, [myPayments]);
 
-  const fmtAmt = (n: number) => `₹${n.toLocaleString("en-IN")}`;
+  const fmtAmt = (n: number) => formatMoney(rupees(n));
 
   if (weaverLoading) {
     return (
@@ -204,7 +206,7 @@ export function PaymentLedgerPage() {
         <div key={idx} style={{ margin: "0 20px 12px", background: C.white, border: `1px solid ${C.bdr}`, borderLeft: `3px solid ${C.crim}`, borderRadius: 14, padding: "16px 18px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 10 }}>
             <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.crim }}>Defective Saree Deduction</span>
-            <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 18, color: C.crim, flexShrink: 0 }}>₹{ds.deduction}</span>
+            <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 18, color: C.crim, flexShrink: 0 }}><Money value={rupees(ds.deduction)} /></span>
           </div>
           <div style={{ fontFamily: F.m, fontSize: 13, color: C.burg, marginBottom: 8 }}>{ds.sareeId} ({ds.batchId})</div>
           <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 8, flexWrap: "wrap" as const }}>
@@ -231,7 +233,7 @@ export function PaymentLedgerPage() {
             <div style={{ flex: 1, height: 12, background: "rgba(110,15,45,0.08)", borderRadius: 999, overflow: "hidden" }}>
               <div style={{ width: `${e.pct}%`, height: "100%", background: C.gold, borderRadius: 999 }} />
             </div>
-            <span style={{ fontFamily: F.m, fontSize: 14, fontWeight: 700, color: C.text, width: 52, textAlign: "right" as const, flexShrink: 0 }}>₹{(e.amt / 1000).toFixed(1)}k</span>
+            <span style={{ fontFamily: F.m, fontSize: 14, fontWeight: 700, color: C.text, width: 52, textAlign: "right" as const, flexShrink: 0 }}><Money value={rupees(e.amt)} compact /></span>
           </div>
         ))}
       </Card>

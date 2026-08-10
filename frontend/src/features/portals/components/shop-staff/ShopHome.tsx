@@ -9,6 +9,7 @@ import { inventoryApi } from "../../../../shared/api/inventory";
 import { customersApi } from "../../../../shared/api/customers";
 import { C, F, Card, Btn, Chip, SectionTitle } from './theme';
 import { Button, IconButton, Textarea } from "../../../../shared/ui/primitives";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 function dateLabel(iso: string) {
   const d = new Date(iso);
@@ -61,7 +62,7 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
     id: s.sareeId,
     customer: s.customerId ? (customerMap.get(s.customerId) ?? `Customer ${s.customerId.slice(0, 6)}`) : "Retail Counter",
     design: s.channel === "WHOLESALE" ? "Wholesale Sale" : "Retail Sale",
-    amt: `₹${Number(s.amount).toLocaleString("en-IN")}`,
+    amt: formatMoney(rupees(Number(s.amount))),
     time: dateLabel(s.saleDate),
     color: "#6B1A2A",
     ext: false,
@@ -75,7 +76,7 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
         desc="Today's sales, current inventory, and quick actions for the shop counter." />
       <StatsStrip items={[
         { label: "TODAY'S SALES", val: salesError ? "Error" : `${todaySales.length} saree${todaySales.length !== 1 ? "s" : ""}`, sub: salesError ? "Failed to load" : "Recorded today" },
-        ...(canSeePrices ? [{ label: "TODAY'S REVENUE", val: salesError ? "Error" : `₹${todayRevenue.toLocaleString("en-IN")}`, sub: salesError ? "Failed to load" : `From ${todaySales.length} sales` }] : []),
+        ...(canSeePrices ? [{ label: "TODAY'S REVENUE", val: salesError ? "Error" : formatMoney(rupees(todayRevenue)), sub: salesError ? "Failed to load" : `From ${todaySales.length} sales` }] : []),
         { label: "SHOP INVENTORY", val: inventoryError ? "Error" : `${inventoryList.length} sarees`, sub: inventoryError ? "Failed to load" : "Currently in stock", highlight: true },
         { label: "RETURNS TODAY", val: returnsError ? "Error" : `${todayReturns.length} return${todayReturns.length !== 1 ? "s" : ""}`, sub: returnsError ? "Failed to load" : "Processed and recorded" },
       ]} />
@@ -149,7 +150,7 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
               <div style={{ fontFamily: F.m, fontSize: 13, color: C.burg }}>{latestReturn.sareeId}</div>
               <div style={{ fontFamily: F.u, fontSize: 14, color: C.text, marginTop: 2, lineHeight: 1.4 }}>
                 {latestReturn.reason}
-                {canSeePrices && latestReturn.refundAmount ? ` · ₹${Number(latestReturn.refundAmount).toLocaleString("en-IN")}` : ""}
+                {canSeePrices && latestReturn.refundAmount ? ` · ${formatMoney(rupees(Number(latestReturn.refundAmount)))}` : ""}
               </div>
             </div>
             <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{dateLabel(latestReturn.returnDate)}</div>

@@ -14,6 +14,8 @@ import { useBatches } from "../../../../production/contexts/BatchContext";
 import { useQc } from "../../../../qc/contexts/QcContext";
 import { useWeaverPayments } from "../../../../weavers/contexts/WeaverPaymentsContext";
 import { useCurrentWeaver } from "../useCurrentWeaver";
+import { rupees, formatMoney } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 
 /** House rule: a weaver may hold at most this many batches at once. */
 const MAX_ACTIVE_BATCHES = 2;
@@ -88,13 +90,13 @@ export function BatchesSection({
             { text: `${myActiveBatches.length} Active ${myActiveBatches.length === 1 ? "Batch" : "Batches"}`, color: C.gold },
             { text: `${sareesThisMonth} Sarees This Month` },
             { text: `${qcPassPct}% QC Pass Rate` },
-            { text: `₹${earnedThisMonth.toLocaleString("en-IN")} Earned` },
+            { text: `${formatMoney(rupees(earnedThisMonth))} Earned` },
           ]}
           alertBadge={identityBadge}
           stats={[
             { label: "Sarees Produced This Month", val: `${sareesThisMonth}`, sub: "Recorded from QC entries" },
             { label: "Quality Check Pass Rate", val: `${qcPassPct}%`, sub: qcPassSub, highlight: true },
-            { label: "Total Earned This Month", val: `₹${earnedThisMonth.toLocaleString("en-IN")}`, sub: "After all deductions" },
+            { label: "Total Earned This Month", val: formatMoney(rupees(earnedThisMonth)), sub: "After all deductions" },
             { label: "Active Batches", val: `${myActiveBatches.length}`, sub: `Maximum allowed — ${myActiveBatches.length} of ${MAX_ACTIVE_BATCHES}` },
           ]}
           bgUrl={BG_IMAGE}
@@ -117,7 +119,7 @@ export function BatchesSection({
             <div>
               <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 16.5, color: C.crim, marginBottom: 6 }}>QC Failed — Defective Saree Alert</div>
               <div style={{ fontFamily: F.u, fontSize: 14, color: C.text, lineHeight: 1.6 }}>
-                Saree <strong>{ds.sareeId}</strong> in batch <strong>{ds.batchId}</strong> ({ds.sareeTypeName || "Self Brocade"}) failed quality check due to a <strong>{ds.defect}</strong> defect. A payment deduction of <strong>₹{ds.deduction}</strong> has been registered.
+                Saree <strong>{ds.sareeId}</strong> in batch <strong>{ds.batchId}</strong> ({ds.sareeTypeName || "Self Brocade"}) failed quality check due to a <strong>{ds.defect}</strong> defect. A payment deduction of <strong><Money value={rupees(ds.deduction)} /></strong> has been registered.
               </div>
               <div style={{ display: "flex", gap: 16, marginTop: 12, fontFamily: F.u, fontSize: 13, color: C.muted }}>
                 <span>QC Date: {ds.date}</span>

@@ -7,6 +7,7 @@ import type { ShopCustomer } from "./CustomersSection";
 import { Button, IconButton } from "../../../../../shared/ui/primitives";
 import { salesApi } from "../../../../../shared/api/sales";
 import { Modal } from "../../../../../shared/ui/overlay";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 export function CustomerProfileDialog({
   customer, onClose, canSeePrices, isTablet,
@@ -26,7 +27,7 @@ export function CustomerProfileDialog({
       design: s.channel === "WHOLESALE" ? "Wholesale Purchase" : "Retail Purchase",
       date: new Date(s.saleDate).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" }),
       pay: "Counter",
-      amt: `₹${Number(s.amount).toLocaleString("en-IN")}`,
+      amt: formatMoney(rupees(Number(s.amount))),
     }));
 
   return (
