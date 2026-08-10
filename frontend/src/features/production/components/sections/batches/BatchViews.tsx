@@ -11,6 +11,8 @@ import type { Batch } from "../../types";
 import { FadeUp, Pip, ProductionDialog } from "../../common/primitives";
 import { Button, NumberInput } from "../../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
+import { rupees } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 
 export function SwipeToTally({ tallied, onOpen }: { tallied?: boolean; onOpen?: () => void }) {
   if (tallied) {
@@ -304,7 +306,7 @@ export function BatchListView({ batches, onView, onEdit }: { batches: Batch[]; o
     },
     {
       id: "charges", header: "Making Charges", accessor: b => b.total * b.rate,
-      cell: (_v, b) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.antiqueGold, fontWeight: 700 }}>₹{(b.total * b.rate).toLocaleString("en-IN")}</span>,
+      cell: (_v, b) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.antiqueGold, fontWeight: 700 }}><Money value={rupees(b.total * b.rate)} /></span>,
     },
     {
       id: "action", header: "Action", accessor: () => null, type: "actions",
@@ -381,11 +383,11 @@ export function BatchTableView({ batches, onView, onEdit }: { batches: Batch[]; 
     },
     {
       id: "rate", header: "Rate/Saree", accessor: b => b.rate,
-      cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown }}>₹{b.rate}</span>,
+      cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown }}><Money value={rupees(b.rate)} /></span>,
     },
     {
       id: "est", header: "Est. Charges", accessor: b => b.total * b.rate,
-      cell: (_v, b) => <span style={{ fontFamily: F.ui, fontSize: 14, color: T.antiqueGold, fontWeight: 700 }}>₹{(b.total * b.rate).toLocaleString("en-IN")}</span>,
+      cell: (_v, b) => <span style={{ fontFamily: F.ui, fontSize: 14, color: T.antiqueGold, fontWeight: 700 }}><Money value={rupees(b.total * b.rate)} /></span>,
     },
     {
       id: "action", header: "Action", accessor: () => null, type: "actions",

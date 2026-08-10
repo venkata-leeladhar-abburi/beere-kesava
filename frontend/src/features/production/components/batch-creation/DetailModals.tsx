@@ -4,6 +4,7 @@ import { useBatches, SareeRow } from "../../contexts/BatchContext";
 import { T, F, Pip } from "./constants";
 import { PickerShell, pipColor } from "./PickerModals";
 import type { WeaverOption, LoomOption } from "../useBatchFormHandlers";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 // ── Detail Modals ────────────────────────────────────────────────────────────
 export function WeaverDetailsModal({ weaver, onClose }: { weaver: WeaverOption; onClose: () => void }) {
@@ -182,7 +183,7 @@ export function BulkOrderDetailsModal({ order, onClose }: { order: any; onClose:
           </div>
           <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px" }}>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.5px" }}>Estimated Value (₹)</div>
-            <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.antiqueGold, marginTop: 3 }}>{estimatedValue !== undefined ? `₹${estimatedValue.toLocaleString("en-IN")}` : "—"}</div>
+            <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.antiqueGold, marginTop: 3 }}>{estimatedValue !== undefined ? formatMoney(rupees(estimatedValue)) : "—"}</div>
           </div>
           <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px" }}>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.5px" }}>Priority</div>

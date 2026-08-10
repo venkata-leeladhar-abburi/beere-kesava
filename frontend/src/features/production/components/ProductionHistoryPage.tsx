@@ -10,6 +10,7 @@ import { DataTable, type ColumnDef } from "../../../shared/ui/data";
 import { useBatches } from "../contexts/BatchContext";
 import { qcApi } from "../../../shared/api/qc";
 import type { HistoryBatch } from "./types";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 // ── Design Tokens ─────────────────────────────────────────────────────────────
 const T = {
@@ -83,7 +84,7 @@ function useHistoryBatches(): { batches: HistoryBatch[]; isLoading: boolean } {
         okPieces: batchQc.length > 0 ? okPieces : null,
         found: batchQc.length > 0 ? found : null,
         status: "Printing Completed",
-        makingCharges: `₹${makingCharges.toLocaleString("en-IN")}`,
+        makingCharges: formatMoney(rupees(makingCharges)),
         completedOn: new Date(b.updatedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
         bulkOrder: b.rows.find(r => r.bulkOrderRef)?.bulkOrderRef ?? undefined,
       };
@@ -223,7 +224,7 @@ function StatsBar({ batches }: { batches: HistoryBatch[] }) {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 500 }}>Total Making Charges:</span>
-          <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.green }}>₹{totalMakingCharges.toLocaleString("en-IN")}</span>
+          <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.green }}>{formatMoney(rupees(totalMakingCharges))}</span>
         </div>
       </div>
     </div>

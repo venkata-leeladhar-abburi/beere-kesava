@@ -13,6 +13,7 @@ import { HistorySection } from "./approvals/HistorySection";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { warpRequestsApi } from "../../../shared/api/warpRequests";
+import { rupees, formatMoney } from "@/lib/domain/money";
 import { rateRequestsApi } from "../../../shared/api/rateRequests";
 
 // ─── Main component ───────────────────────────────────────────────────────────
@@ -60,7 +61,7 @@ export function ApprovalsPage() {
       vendor: p.vendor,
       vendorCity: p.vendorCity,
       materials: p.materials.map(m => ({ label: `${m.materialType}${m.subtype ? ` ${m.subtype}` : ""}`, qty: `${m.quantity} ${m.unit}`, icon: "pkg" })),
-      estimated: `₹${p.totalValue?.toLocaleString("en-IN")}`,
+      estimated: formatMoney(rupees(p.totalValue ?? 0)),
       stock: "",
       raisedBy: p.raisedBy,
       notesAdmin: p.notesAdmin,

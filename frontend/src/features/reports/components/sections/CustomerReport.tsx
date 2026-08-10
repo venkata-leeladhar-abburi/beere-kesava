@@ -11,6 +11,8 @@ import { customersApi, BackendCustomer } from "../../../../shared/api/customers"
 import { invoicesApi } from "../../../../shared/api/invoices";
 import { salesApi } from "../../../../shared/api/sales";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { rupees, formatMoney } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 
 interface CustomerRow {
   id: string;
@@ -160,11 +162,11 @@ export function CustomerReport() {
     },
     {
       id: "spend", header: "Total Spend", accessor: r => r.spend, align: "end",
-      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700 }}>₹{r.spend.toLocaleString("en-IN")}</span>,
+      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700 }}><Money value={rupees(r.spend)} /></span>,
     },
     {
       id: "due", header: "Outstanding Due", accessor: r => r.due, align: "end",
-      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700, color: r.due > 0 ? T.crimson : T.green }}>{r.due > 0 ? `₹${r.due.toLocaleString("en-IN")}` : "— Nil"}</span>,
+      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700, color: r.due > 0 ? T.crimson : T.green }}>{r.due > 0 ? <Money value={rupees(r.due)} /> : "— Nil"}</span>,
     },
     {
       id: "lastPurchase", header: "Last Purchase", accessor: r => r.lastPurchase,
@@ -195,7 +197,7 @@ export function CustomerReport() {
               <div key={c.name}>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
                   <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{c.name}</span>
-                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.antiqueGold }}>₹{c.total.toLocaleString("en-IN")}</span>
+                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.antiqueGold }}>{formatMoney(rupees(c.total))}</span>
                 </div>
                 <AnimBar pct={Math.round((c.total / maxTop) * 100)} color={T.antiqueGold} height={7} delay={i * 0.07} />
               </div>
@@ -232,7 +234,7 @@ export function CustomerReport() {
               <Pie key="cust-split-pie" data={custSplitDonut} cx="50%" cy="50%" innerRadius={45} outerRadius={65} dataKey="value" stroke="none" paddingAngle={3}>
                 {custSplitDonut.map(e => <Cell key={`cust-cell-${e.name}`} fill={e.color} />)}
               </Pie>
-              <Tooltip key="cust-split-tip" formatter={(v: any, n: any) => [`₹${Number(v).toLocaleString("en-IN")}`, n]} contentStyle={{ fontFamily: F.ui, fontSize: 12, borderRadius: 8 }} />
+              <Tooltip key="cust-split-tip" formatter={(v: any, n: any) => [formatMoney(rupees(Number(v))), n]} contentStyle={{ fontFamily: F.ui, fontSize: 12, borderRadius: 8 }} />
             </PieChart>
           </ResponsiveContainer>
           <div style={{ display: "flex", flexDirection: "column", gap: 7, padding: "0 8px" }}>
@@ -245,7 +247,7 @@ export function CustomerReport() {
                   <div style={{ width: 9, height: 9, borderRadius: "50%", background: d.color }} />
                   <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{d.name}</span>
                 </div>
-                <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: d.color }}>₹{d.value.toLocaleString("en-IN")}</span>
+                <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: d.color }}>{formatMoney(rupees(d.value))}</span>
               </div>
             ))}
           </div>

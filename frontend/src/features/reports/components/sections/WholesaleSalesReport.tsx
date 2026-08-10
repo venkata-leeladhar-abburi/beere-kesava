@@ -7,6 +7,8 @@ import { FadeUp, ChartCard, SumCard, TabTitle, ReportDLBar, ChartTip, AnimBar, T
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { semantic } from "../../../../design-system/tokens";
 import type { BulkOrder } from "../../../bulk-orders/contexts/BulkOrderContext";
+import { rupees, formatMoney } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 
 function WholesaleWeeklyTooltip({ active, payload, label }: any) {
   if (!active || !payload || !payload.length) return null;
@@ -14,7 +16,7 @@ function WholesaleWeeklyTooltip({ active, payload, label }: any) {
   return (
     <div style={{ background: "#FFFFFF", border: `1px solid ${T.borderDef}`, borderRadius: 8, padding: "8px 12px", boxShadow: "0 4px 16px rgba(74,6,27,0.12)" }}>
       <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, fontWeight: 600 }}>
-        {label} — {d.sarees} sarees dispatched — ₹{d.revenue.toLocaleString("en-IN")} revenue
+        {label} — {d.sarees} sarees dispatched — {formatMoney(rupees(d.revenue))} revenue
       </span>
     </div>
   );
@@ -113,21 +115,21 @@ export function WholesaleSalesReport() {
       id: "invoiceAmt", header: "Invoice Amount", accessor: o => o.amountDue ?? 0, type: "number",
       cell: (_v, o) => {
         const invoiceAmt = o.amountDue ?? 0;
-        return <span style={{ fontFamily: F.mono, fontWeight: 700 }}>{invoiceAmt > 0 ? `₹${invoiceAmt.toLocaleString("en-IN")}` : "—"}</span>;
+        return <span style={{ fontFamily: F.mono, fontWeight: 700 }}>{invoiceAmt > 0 ? formatMoney(rupees(invoiceAmt)) : "—"}</span>;
       },
     },
     {
       id: "collected", header: "Collected", accessor: o => o.amountPaid ?? 0, type: "number",
       cell: (_v, o) => {
         const collected = o.amountPaid ?? 0;
-        return <span style={{ fontFamily: F.mono, color: T.green, fontWeight: 600 }}>{collected > 0 ? `₹${collected.toLocaleString("en-IN")}` : "—"}</span>;
+        return <span style={{ fontFamily: F.mono, color: T.green, fontWeight: 600 }}>{collected > 0 ? formatMoney(rupees(collected)) : "—"}</span>;
       },
     },
     {
       id: "balance", header: "Balance Due", accessor: o => (o.amountDue ?? 0) - (o.amountPaid ?? 0), type: "number",
       cell: (_v, o) => {
         const balance = (o.amountDue ?? 0) - (o.amountPaid ?? 0);
-        return <span style={{ fontFamily: F.mono, fontWeight: 700, color: balance <= 0 ? T.green : T.crimson }}>{balance > 0 ? `₹${balance.toLocaleString("en-IN")}` : "— Paid"}</span>;
+        return <span style={{ fontFamily: F.mono, fontWeight: 700, color: balance <= 0 ? T.green : T.crimson }}>{balance > 0 ? formatMoney(rupees(balance)) : "— Paid"}</span>;
       },
     },
     {
@@ -163,7 +165,7 @@ export function WholesaleSalesReport() {
               </div>
               <div>
                 <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Invoiced (All Orders)</div>
-                <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.green }}>₹{totalInvoiced.toLocaleString("en-IN")}</div>
+                <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.green }}><Money value={rupees(totalInvoiced)} /></div>
               </div>
             </div>
           </div>
@@ -190,7 +192,7 @@ export function WholesaleSalesReport() {
               <BarChart data={wsMonthlyRev}>
                 <CartesianGrid key="ws-grid" strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
                 <XAxis key="ws-x" dataKey="month" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
-                <YAxis key="ws-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `₹${v.toLocaleString("en-IN")}`} width={55} />
+                <YAxis key="ws-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => formatMoney(rupees(v))} width={55} />
                 <Tooltip key="ws-tip" content={<ChartTip prefix="₹" />} />
                 <Bar key="ws-rev" dataKey="rev" name="Revenue">
                   {wsMonthlyRev.map((e, i) => <Cell key={`ws-cell-${e.month}`} fill={i === wsMonthlyRev.length - 1 ? semantic.chart.series[0] : "rgba(154,45,74,0.35)"} />)}
@@ -209,7 +211,7 @@ export function WholesaleSalesReport() {
               <div key={d.customer}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
                   <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{d.customer}</span>
-                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: d.color }}>{d.amt === 0 ? "Paid ✓" : `₹${d.amt.toLocaleString("en-IN")}`}</span>
+                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: d.color }}>{d.amt === 0 ? "Paid ✓" : formatMoney(rupees(d.amt))}</span>
                 </div>
                 <AnimBar pct={d.amt === 0 ? 100 : Math.round((d.amt / maxOutstanding) * 100)} color={d.color} height={6} delay={i * 0.06} />
               </div>
@@ -248,9 +250,9 @@ export function WholesaleSalesReport() {
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 24, alignItems: "stretch" }}>
         <SumCard icon={<ReceiptText size={22} color={T.royalBurgundy} />} label="Total Bulk Orders" value={`${bulkOrders.length} orders`} sub="All-time" />
-        <SumCard icon={<Banknote size={22} color={T.royalBurgundy} />} label="Total Invoiced Amount" value={`₹${totalInvoiced.toLocaleString("en-IN")}`} sub="Across all customers" />
-        <SumCard icon={<CheckCircle2 size={22} color={T.green} />} label="Total Collected" value={`₹${totalCollected.toLocaleString("en-IN")}`} sub="Payments received" greenHi />
-        <SumCard icon={<BellRing size={22} color={T.crimson} />} label="Total Outstanding" value={`₹${Math.max(totalOutstanding, 0).toLocaleString("en-IN")}`} sub="Yet to be collected" crimsonHi />
+        <SumCard icon={<Banknote size={22} color={T.royalBurgundy} />} label="Total Invoiced Amount" value={formatMoney(rupees(totalInvoiced))} sub="Across all customers" />
+        <SumCard icon={<CheckCircle2 size={22} color={T.green} />} label="Total Collected" value={formatMoney(rupees(totalCollected))} sub="Payments received" greenHi />
+        <SumCard icon={<BellRing size={22} color={T.crimson} />} label="Total Outstanding" value={formatMoney(rupees(Math.max(totalOutstanding, 0)))} sub="Yet to be collected" crimsonHi />
       </div>
 
       <FadeUp>

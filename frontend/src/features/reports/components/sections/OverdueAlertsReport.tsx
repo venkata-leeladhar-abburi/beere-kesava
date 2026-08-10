@@ -11,6 +11,8 @@ import { customersApi } from "../../../../shared/api/customers";
 import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
 import { batchesApi } from "../../../../shared/api/batches";
 import { weaversApi } from "../../../../shared/api/weavers";
+import { rupees } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 
 function daysBetween(a: Date, b: Date): number {
   return Math.max(0, Math.round((a.getTime() - b.getTime()) / 86400000));
@@ -155,9 +157,9 @@ export function OverdueAlertsReport() {
               columns={[
                 { id: "customer", header: "Customer Name", accessor: r => r.customer, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.customer}</span> },
                 { id: "inv", header: "Invoice No.", accessor: r => r.inv, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.inv}</span> },
-                { id: "total", header: "Invoice Amount", accessor: r => r.total, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700 }}>₹{r.total.toLocaleString("en-IN")}</span> },
-                { id: "paid", header: "Amount Paid", accessor: r => r.paid, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, color: T.green }}>₹{r.paid.toLocaleString("en-IN")}</span> },
-                { id: "overdue", header: "Amount Overdue", accessor: r => r.overdue, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.crimson }}>₹{r.overdue.toLocaleString("en-IN")}</span> },
+                { id: "total", header: "Invoice Amount", accessor: r => r.total, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700 }}><Money value={rupees(r.total)} /></span> },
+                { id: "paid", header: "Amount Paid", accessor: r => r.paid, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, color: T.green }}><Money value={rupees(r.paid)} /></span> },
+                { id: "overdue", header: "Amount Overdue", accessor: r => r.overdue, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.crimson }}><Money value={rupees(r.overdue)} /></span> },
                 { id: "dueDate", header: "Due Date", accessor: r => r.dueDate, cell: (_v, r) => <span style={{ color: T.crimson, fontWeight: 600 }}>{r.dueDate}</span> },
                 { id: "days", header: "Days Overdue", accessor: r => r.days, align: "center", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.crimson }}>{r.days}d overdue</span> },
                 { id: "reminder", header: "Last Reminder Sent", accessor: () => "—", cell: () => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>—</span> },

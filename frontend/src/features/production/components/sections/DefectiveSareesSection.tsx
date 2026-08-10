@@ -12,6 +12,7 @@ import { Button, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { qcApi } from "../../../../shared/api/qc";
 import { weaversApi } from "../../../../shared/api/weavers";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 interface DefectiveRow {
   id: string;
@@ -59,7 +60,7 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
           sareeType: "—",
           defects: r.defects,
           qcDate: new Date(r.qcDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
-          deduction: `₹${Math.round(Number(r.deduction)).toLocaleString("en-IN")}`,
+          deduction: formatMoney(rupees(Math.round(Number(r.deduction)))),
         })),
     [qcRecords, weaverLookup],
   );
@@ -158,7 +159,7 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
               <div>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 6 }}>Total Deductions Applied This Month</div>
                 <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.crimson, lineHeight: 1.1, marginBottom: 4 }}>
-                  ₹{totalDeduction.toLocaleString("en-IN")}
+                  {formatMoney(rupees(totalDeduction))}
                 </div>
                 <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>🔒 Full deduction details visible to Superadmin only</div>
               </div>
@@ -206,7 +207,7 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
           </div>
           <div style={{ background: T.warmCream, borderTop: `1px solid ${T.borderDef}`, padding: "12px 16px" }}>
             <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>
-              Total defective displayed: <strong>{filteredData.length} sarees</strong> · Total deductions applied: <strong style={{ fontFamily: F.mono, color: T.crimson }}>₹{totalDeduction.toLocaleString("en-IN")}</strong>
+              Total defective displayed: <strong>{filteredData.length} sarees</strong> · Total deductions applied: <strong style={{ fontFamily: F.mono, color: T.crimson }}>{formatMoney(rupees(totalDeduction))}</strong>
             </span>
           </div>
         </div>
@@ -250,7 +251,7 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
                   </div>
                   <div style={{ background: "rgba(200,155,71,0.07)", border: "1px solid rgba(200,155,71,0.22)", borderRadius: 11, padding: "14px 16px" }}>
                     <div style={{ fontFamily: F.ui, fontSize: 12, color: "#8B6018", textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 4 }}>Total Deductions</div>
-                    <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: "#8B6018" }}>₹{DEFECTIVE_DATA.reduce((s, r) => s + parseInt(r.deduction.replace(/[₹,]/g, "")), 0).toLocaleString("en-IN")}</div>
+                    <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: "#8B6018" }}>{formatMoney(rupees(DEFECTIVE_DATA.reduce((s, r) => s + parseInt(r.deduction.replace(/[₹,]/g, "")), 0)))}</div>
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: 10 }}>

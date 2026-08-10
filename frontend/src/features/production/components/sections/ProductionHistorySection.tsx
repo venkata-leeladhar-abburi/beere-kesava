@@ -11,6 +11,7 @@ import { qcApi } from "../../../../shared/api/qc";
 import { FadeUp, Pip, ClickableCode, ProductionDialog } from "../common/primitives";
 import { Button, SearchInput, Select, SelectItem, Checkbox, IconButton } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 const PIP_COLORS = ["#7C3AED", T.royalBurgundy, T.taupe, "#B45309"];
 
@@ -76,7 +77,7 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
         okPieces: batchQc.length > 0 ? okPieces : null,
         found: batchQc.length > 0 ? found : null,
         status: "Printing Completed",
-        makingCharges: `₹${makingCharges.toLocaleString("en-IN")}`,
+        makingCharges: formatMoney(rupees(makingCharges)),
         completedOn: new Date(b.updatedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
         bulkOrder: b.rows.find(r => r.bulkOrderRef)?.bulkOrderRef ?? undefined,
       };
@@ -215,7 +216,7 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
             <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Total Making Charges:</span>
               <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.green }}>
-                ₹{HISTORY_BATCHES.reduce((sum, b) => sum + parseInt(b.makingCharges.replace(/[₹,]/g, "") || "0", 10), 0).toLocaleString("en-IN")}
+                {formatMoney(rupees(HISTORY_BATCHES.reduce((sum, b) => sum + parseInt(b.makingCharges.replace(/[₹,]/g, "") || "0", 10), 0)))}
               </span>
             </div>
           </div>

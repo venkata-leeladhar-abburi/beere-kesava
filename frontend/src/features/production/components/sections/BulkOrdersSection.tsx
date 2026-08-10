@@ -13,6 +13,8 @@ import { ORDER_CFG, STATUS_LABELS } from "../data";
 import type { BulkOrder } from "../types";
 import { FadeUp } from "../common/primitives";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
+import { rupees } from "@/lib/domain/money";
+import { Money } from "@/shared/ui/domain";
 
 export function BulkOrderCard({ o, onView, onSlip, superadmin = false }: { o: BulkOrder; onView?: (o: BulkOrder) => void; onSlip?: (o: BulkOrder) => void; superadmin?: boolean }) {
   const cfg = ORDER_CFG[o.status];
@@ -105,7 +107,7 @@ export function BulkOrderCard({ o, onView, onSlip, superadmin = false }: { o: Bu
           <div style={{ display: "flex", alignItems: "center", gap: 9, background: "rgba(200,155,71,0.07)", borderRadius: 10, padding: "10px 13px", marginTop: "auto" }}>
             <CurrencyInr size={16} color={T.antiqueGold} />
             <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px" }}>Est. Order Value</span>
-            <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.antiqueGold, marginLeft: "auto" }}>₹{(o.amountDue ?? 0).toLocaleString("en-IN")}</span>
+            <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.antiqueGold, marginLeft: "auto" }}><Money value={rupees(o.amountDue ?? 0)} /></span>
           </div>
         )}
 

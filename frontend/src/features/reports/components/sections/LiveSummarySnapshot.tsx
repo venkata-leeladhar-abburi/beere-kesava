@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Scissors, ShoppingBag, Store, Boxes } from "lucide-react";
 import { T, F } from "../theme";
 import { reportsApi } from "../../../../shared/api/reports";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 // A small real-data strip pulling directly from GET /reports/production-summary
 // and GET /reports/sales-summary — both backend endpoints exist but were
@@ -39,17 +40,17 @@ export function LiveSummarySnapshot() {
     {
       icon: <Store size={18} color={T.antiqueGold} />,
       label: "Retail Sales (Live)",
-      value: sales ? `₹${sales.retail.totalSales.toLocaleString("en-IN")} · ${sales.retail.count} sarees` : "—",
+      value: sales ? `${formatMoney(rupees(sales.retail.totalSales))} · ${sales.retail.count} sarees` : "—",
     },
     {
       icon: <ShoppingBag size={18} color={T.antiqueGold} />,
       label: "Wholesale Dispatched (Live)",
-      value: sales ? `₹${sales.wholesale.totalSales.toLocaleString("en-IN")} · ${sales.wholesale.count} dispatches` : "—",
+      value: sales ? `${formatMoney(rupees(sales.wholesale.totalSales))} · ${sales.wholesale.count} dispatches` : "—",
     },
     {
       icon: <ShoppingBag size={18} color={T.crimson} />,
       label: "Total Outstanding Dues (Live)",
-      value: outstanding ? `₹${outstanding.totalOutstanding.toLocaleString("en-IN")} · ${outstanding.count} pending` : "—",
+      value: outstanding ? `${formatMoney(rupees(outstanding.totalOutstanding))} · ${outstanding.count} pending` : "—",
     },
   ];
 
