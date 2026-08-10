@@ -26,7 +26,7 @@ export function WorkerLayout() {
 
   // Auth guard
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (role && role !== "worker") return <Navigate to="/select-role" replace />;
+  if (role !== "worker") return <Navigate to="/select-role" replace />;
 
   return (
     <WorkerContexts>

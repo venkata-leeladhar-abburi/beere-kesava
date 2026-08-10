@@ -11,6 +11,7 @@ import { InventoryPage as AdminInventoryPage } from "../../inventory/components/
 // ─── Price Visibility Context ────────────────────────────────────────────────
 // Shop staff (role="shop") cannot see monetary values.
 // Admins and superadmins who access the shop portal CAN see prices.
+import { DataAccessProvider } from "@/shared/ui/domain";
 import { ShopPriceContext, F, TEAL } from "./shop-staff/theme";
 import { ShopHome } from "./shop-staff/ShopHome";
 import { NewSaleFlow } from "./shop-staff/NewSaleFlow";
@@ -131,6 +132,7 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
   // ── Desktop / Tablet Layout ──────────────────────────────────────────────
   if (!isMobile) {
     return (
+      <DataAccessProvider scopes={{ cost: canSeePrices, sell: canSeePrices, margin: canSeePrices, payroll: canSeePrices, "customer-pii": true }}>
       <ShopPriceContext.Provider value={canSeePrices}>
       <div style={{ minHeight: "100dvh", background: "#F8F4F0", fontFamily: F.u }}>
         <style>{SECTION_NAV_GLOBAL_STYLE}</style>
@@ -207,11 +209,13 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
 
       </div>
       </ShopPriceContext.Provider>
+      </DataAccessProvider>
     );
   }
 
   // ── Mobile / Tablet Layout ──────────────────────────────────────────────
   return (
+    <DataAccessProvider scopes={{ cost: canSeePrices, sell: canSeePrices, margin: canSeePrices, payroll: canSeePrices, "customer-pii": true }}>
     <ShopPriceContext.Provider value={canSeePrices}>
     <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto", minHeight: "100dvh", background: "#FAFAFA", display: "flex", flexDirection: "column" as const, position: "relative" as const }}>
       <style>{SECTION_NAV_GLOBAL_STYLE}</style>
@@ -273,5 +277,6 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
       </AnimatePresence>
     </div>
     </ShopPriceContext.Provider>
+    </DataAccessProvider>
   );
 }

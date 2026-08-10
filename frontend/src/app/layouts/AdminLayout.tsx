@@ -28,7 +28,7 @@ export function AdminLayout() {
 
   // Auth guard
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (role && role !== "admin") return <Navigate to="/select-role" replace />;
+  if (role !== "admin") return <Navigate to="/select-role" replace />;
 
   return (
     <AdminContexts>

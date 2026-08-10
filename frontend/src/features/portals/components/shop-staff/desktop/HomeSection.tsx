@@ -112,32 +112,36 @@ export function HomeSection({
             {/* Recent Sales */}
             <DSH label="Recent Sales — Today" link="View All →" onLink={() => setActive("reports")} />
             <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 18, overflow: isTablet ? "auto" : "hidden", boxShadow: "0 4px 20px rgba(44,24,16,0.08)", marginBottom: 32 }}>
-              <div style={{ minWidth: isTablet ? 640 : undefined }}>
-                <div style={{ display: "grid", gridTemplateColumns: `1fr 1fr 120px 80px${canSeePrices ? " 100px" : ""}`, padding: "14px 24px", borderBottom: `1px solid ${C.bdr}`, background: "#FAFAF8" }}>
-                  {["Saree ID", "Customer", "Design", "Payment", ...(canSeePrices ? ["Amount"] : [])].map(h => (
-                    <div key={h} style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted, letterSpacing: 0.4 }}>{h}</div>
-                  ))}
+              <div role="table" aria-label="Recent Sales — Today" style={{ minWidth: isTablet ? 640 : undefined }}>
+                <div role="rowgroup">
+                  <div role="row" style={{ display: "grid", gridTemplateColumns: `1fr 1fr 120px 80px${canSeePrices ? " 100px" : ""}`, padding: "14px 24px", borderBottom: `1px solid ${C.bdr}`, background: "#FAFAF8" }}>
+                    {["Saree ID", "Customer", "Design", "Payment", ...(canSeePrices ? ["Amount"] : [])].map(h => (
+                      <div key={h} role="columnheader" style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted, letterSpacing: 0.4 }}>{h}</div>
+                    ))}
+                  </div>
                 </div>
                 {recentSales.length === 0 ? (
                   <div style={{ padding: "24px 16px", textAlign: "center", fontFamily: F.u, fontSize: 14, color: C.muted }}>
                     No sales recorded today yet.
                   </div>
                 ) : (
-                  recentSales.map((s, i) => (
-                    <div key={i} style={{ display: "grid", gridTemplateColumns: `1fr 1fr 120px 80px${canSeePrices ? " 100px" : ""}`, padding: "18px 24px", borderBottom: i < recentSales.length - 1 ? `1px solid rgba(107,26,42,0.06)` : "none", alignItems: "center" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                        <div style={{ width: 8, height: 36, borderRadius: 4, background: s.color, flexShrink: 0 }} />
-                        <div>
-                          <div style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{s.id}</div>
-                          {s.ext && <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.gold, background: "rgba(196,146,58,0.12)", padding: "1px 7px", borderRadius: 999 }}>External</span>}
+                  <div role="rowgroup">
+                    {recentSales.map((s, i) => (
+                      <div key={i} role="row" style={{ display: "grid", gridTemplateColumns: `1fr 1fr 120px 80px${canSeePrices ? " 100px" : ""}`, padding: "18px 24px", borderBottom: i < recentSales.length - 1 ? `1px solid rgba(107,26,42,0.06)` : "none", alignItems: "center" }}>
+                        <div role="cell" style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                          <div style={{ width: 8, height: 36, borderRadius: 4, background: s.color, flexShrink: 0 }} />
+                          <div>
+                            <div style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{s.id}</div>
+                            {s.ext && <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.gold, background: "rgba(196,146,58,0.12)", padding: "1px 7px", borderRadius: 999 }}>External</span>}
+                          </div>
                         </div>
+                        <div role="cell" style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: C.text }}>{s.customer}</div>
+                        <div role="cell" style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{s.design}</div>
+                        <div role="cell" style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{s.pay}</div>
+                        {canSeePrices && <div role="cell" style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: C.gold }}>{s.amt}</div>}
                       </div>
-                      <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: C.text }}>{s.customer}</div>
-                      <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{s.design}</div>
-                      <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{s.pay}</div>
-                      {canSeePrices && <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: C.gold }}>{s.amt}</div>}
-                    </div>
-                  ))
+                    ))}
+                  </div>
                 )}
               </div>
             </div>

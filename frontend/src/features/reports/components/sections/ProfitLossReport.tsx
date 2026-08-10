@@ -14,7 +14,7 @@ import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 // value through the Money system (formatMoney/rupees) instead of a raw "₹"
 // prefix + toLocaleString — ChartTip itself is shared across non-money chart
 // tooltips (kg, customers, sarees) and is out of scope for this pass.
-function MoneyChartTip({ active, payload, label }: any) {
+function MoneyChartTip({ active, payload, label, moneyVisible }: any) {
   if (!active || !payload?.length) return null;
   return (
     <div style={{ background: "#FFFDF9", border: `1px solid ${T.borderDef}`, borderRadius: 9, padding: "10px 14px", boxShadow: "0 4px 16px rgba(74,6,27,0.12)" }}>
@@ -23,7 +23,7 @@ function MoneyChartTip({ active, payload, label }: any) {
         <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
           <div style={{ width: 8, height: 8, borderRadius: "50%", background: p.color || p.fill || p.stroke }} />
           <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.name}:</span>
-          <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{typeof p.value === "number" ? formatMoney(rupees(p.value)) : p.value}</span>
+          <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{!moneyVisible ? "••••" : typeof p.value === "number" ? formatMoney(rupees(p.value)) : p.value}</span>
         </div>
       ))}
     </div>
@@ -198,8 +198,8 @@ export function ProfitLossReport() {
               <BarChart data={pnlMonthlyData} barGap={6}>
                 <CartesianGrid key="pnl-grid" strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
                 <XAxis key="pnl-x" dataKey="month" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
-                <YAxis key="pnl-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => formatMoney(rupees(v))} width={55} />
-                <Tooltip key="pnl-tip" content={<MoneyChartTip />} />
+                <YAxis key="pnl-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => (moneyVisible ? formatMoney(rupees(v)) : "••••")} width={55} />
+                <Tooltip key="pnl-tip" content={<MoneyChartTip moneyVisible={moneyVisible} />} />
                 <Bar key="pnl-income"   dataKey="income"   name="Income"   fill={T.green}  radius={[4,4,0,0] as any} />
                 <Bar key="pnl-expenses" dataKey="expenses" name="Expenses" fill={T.crimson} radius={[4,4,0,0] as any} opacity={0.8} />
               </BarChart>
@@ -219,7 +219,7 @@ export function ProfitLossReport() {
                   <Pie key="exp-pie" data={expenseDonut} cx="50%" cy="50%" innerRadius={50} outerRadius={70} dataKey="value" stroke="none" paddingAngle={3}>
                     {expenseDonut.map(e => <Cell key={`exp-cell-${e.name}`} fill={e.color} />)}
                   </Pie>
-                  <Tooltip key="exp-tip" formatter={(v: any, n: any) => [formatMoney(rupees(Number(v))), n]} contentStyle={{ fontFamily: F.ui, fontSize: 12, borderRadius: 8 }} />
+                  <Tooltip key="exp-tip" formatter={(v: any, n: any) => [moneyVisible ? formatMoney(rupees(Number(v))) : "••••", n]} contentStyle={{ fontFamily: F.ui, fontSize: 12, borderRadius: 8 }} />
                 </PieChart>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: "0 8px" }}>

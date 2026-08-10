@@ -28,7 +28,7 @@ export function AccountantLayout() {
 
   // Auth guard
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (role && role !== "accountant") return <Navigate to="/select-role" replace />;
+  if (role !== "accountant") return <Navigate to="/select-role" replace />;
 
   return (
     <AccountantContexts>

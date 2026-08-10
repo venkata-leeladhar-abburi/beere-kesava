@@ -8,6 +8,7 @@ import { SectionTitle, GoldLink } from "./sharedUI";
 import { rateRequestsApi, type BackendRateChangeRequest } from "../../../../shared/api/rateRequests";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
+import { useDataAccess } from "@/shared/ui/domain";
 
 interface HistoryRow {
   date: string;
@@ -18,7 +19,7 @@ interface HistoryRow {
   reason: string;
 }
 
-function toHistoryRow(req: BackendRateChangeRequest): HistoryRow {
+function toHistoryRow(req: BackendRateChangeRequest, canSeeCost: boolean): HistoryRow {
   const dateSrc = req.decidedAt ?? req.createdAt;
   const date = new Date(dateSrc).toLocaleString("en-IN", {
     day: "2-digit", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true,
@@ -29,13 +30,14 @@ function toHistoryRow(req: BackendRateChangeRequest): HistoryRow {
     date,
     by,
     what: `${req.sareeType?.type ?? req.sareeTypeCode} Making Charge${status}`,
-    old: `${formatMoney(rupees(Number(req.oldMakingCharge)))}/saree`,
-    next: `${formatMoney(rupees(Number(req.newMakingCharge)))}/saree`,
+    old: canSeeCost ? `${formatMoney(rupees(Number(req.oldMakingCharge)))}/saree` : "••••",
+    next: canSeeCost ? `${formatMoney(rupees(Number(req.newMakingCharge)))}/saree` : "••••",
     reason: req.reason ?? "—",
   };
 }
 
 export function RateHistorySection() {
+  const canSeeCost = useDataAccess("cost");
   const [histDateFilter, setHistDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [history, setHistory] = useState<HistoryRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -50,7 +52,7 @@ export function RateHistorySection() {
         const all = [...approved.items, ...rejected.items].sort(
           (a, b) => new Date(b.decidedAt ?? b.createdAt).getTime() - new Date(a.decidedAt ?? a.createdAt).getTime(),
         );
-        setHistory(all.map(toHistoryRow));
+        setHistory(all.map(req => toHistoryRow(req, canSeeCost)));
       })
       .catch((err: unknown) => {
         console.error("Failed to load rate change history", err);

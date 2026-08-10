@@ -25,7 +25,7 @@ export function ShopLayout() {
 
   // Auth guard
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (role && role !== "shop") return <Navigate to="/select-role" replace />;
+  if (role !== "shop") return <Navigate to="/select-role" replace />;
 
   return (
     <ShopContexts>

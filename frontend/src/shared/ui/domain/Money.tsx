@@ -35,9 +35,11 @@ export interface MoneyProps {
 }
 
 export function Money({ value, compact, decimals, sign, colorBySign, gate, className }: MoneyProps) {
+  // Always resolved and enforced, even when `gate` is omitted — every <Money>
+  // defaults to the "sell" scope rather than silently skipping the check.
   const allowed = useDataAccess(gate ?? "sell");
 
-  if (gate && !allowed) {
+  if (!allowed) {
     return (
       <span className={cn("text-[var(--text-tertiary)]", className)} style={tabular} aria-label="Hidden">
         &bull;&bull;&bull;&bull;

@@ -4,6 +4,7 @@ import { UnifiedSaree } from "../../../customers/contexts/SalesContext";
 import { AgePill, Empty, Pill, inr } from "./primitives";
 import { Button } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { useDataAccess } from "@/shared/ui/domain";
 
 export type TableMode = "outstanding" | "sold" | "produced";
 
@@ -33,6 +34,8 @@ function StatusChip({ s }: { s: UnifiedSaree }) {
 export function SareeDetailTable({ sarees, mode = "outstanding", showReturn = false, showBatch = false, showSource = false }: {
   sarees: UnifiedSaree[]; mode?: TableMode; showReturn?: boolean; showBatch?: boolean; showSource?: boolean;
 }) {
+  const canSeeCost = useDataAccess("cost");
+
   if (sarees.length === 0) {
     return <Empty msg={mode === "sold" ? "No sarees sold here yet." : mode === "produced" ? "No sarees here." : "No sarees outstanding here."} />;
   }
@@ -60,7 +63,7 @@ export function SareeDetailTable({ sarees, mode = "outstanding", showReturn = fa
       { id: "customer", header: "Customer", accessor: (s: UnifiedSaree) => s.sale?.customer, cell: (_v: unknown, s: UnifiedSaree) => s.sale?.customer || "—" },
       { id: "saleRef", header: "Sale Ref", accessor: (s: UnifiedSaree) => s.sale?.saleRef, type: "code" as const, cell: (_v: unknown, s: UnifiedSaree) => s.sale?.saleRef || "—" },
     ] : []),
-    { id: "cost", header: "Cost", accessor: s => s.costPrice, align: "end", cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{inr(s.costPrice)}</span> },
+    { id: "cost", header: "Cost", accessor: s => s.costPrice, align: "end", cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{canSeeCost ? inr(s.costPrice) : "••••"}</span> },
     {
       id: "amount", header: mode === "sold" ? "Sold For" : "Sell Price", accessor: s => (mode === "sold" ? s.sale?.amount || 0 : s.finalAmount), align: "end",
       cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: mode === "sold" ? T.green : T.royalBurgundy }}>{mode === "sold" ? inr(s.sale?.amount || 0) : inr(s.finalAmount)}</span>,

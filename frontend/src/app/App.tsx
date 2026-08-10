@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "../lib/queryClient";
 import { composeProviders } from "../lib/composeProviders";
-import { AuthProvider } from "../contexts/AuthContext";
+import { AuthProvider, useAuth } from "../contexts/AuthContext";
 import { RatesProvider } from "../features/pricing/contexts/RatesContext";
 import { FinishingProvider, FinishingStaffProvider, QcProvider, SupplierProvider } from "../contexts";
 
@@ -25,10 +25,21 @@ import { RouteLoadingFallback } from "./RouteLoadingFallback";
 // Global ⌘K / Ctrl+K command palette (design-system/05-OVERLAYS.md Part H).
 // Lives inside <BrowserRouter> so it can call useNavigate(); mounted once at
 // the app root so it's reachable from every portal/page.
+//
+// Its Navigate/Actions groups are hardcoded /admin/* routes (see
+// CommandPalette.tsx's NAVIGATE_ITEMS/ACTION_ITEMS) — mounting it
+// unconditionally at the root, above every role guard, meant any role could
+// open it and jump straight into admin-only routes: AdminLayout would bounce
+// them back out via its own guard, but not before losing whatever in-progress
+// state they had on the page they were on. Gated to the admin role here
+// instead, since that's the only role the palette's routes actually serve.
 function GlobalCommandPalette() {
+  const { role } = useAuth();
+  const isAdmin = role === "admin";
   const [open, setOpen] = React.useState(false);
 
   React.useEffect(() => {
+    if (!isAdmin) return;
     function onKeyDown(e: KeyboardEvent) {
       // Only ⌘K (Mac) / Ctrl+K (Windows/Linux) — a modifier combo, so it
       // never collides with normal typing in an input/textarea (plain "k"
@@ -41,8 +52,9 @@ function GlobalCommandPalette() {
     }
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
-  }, []);
+  }, [isAdmin]);
 
+  if (!isAdmin) return null;
   return <CommandPalette open={open} onOpenChange={setOpen} />;
 }
 

@@ -22,7 +22,7 @@ export function WeaverLayout() {
 
   // Auth guard
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (role && role !== "weaver") return <Navigate to="/select-role" replace />;
+  if (role !== "weaver") return <Navigate to="/select-role" replace />;
 
   return (
     <WeaverContexts>

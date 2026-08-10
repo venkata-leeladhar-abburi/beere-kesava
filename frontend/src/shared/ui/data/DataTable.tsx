@@ -12,7 +12,7 @@
  * incrementally (Part S, Step 3 — "migrate one feature end-to-end"). No
  * existing page has been changed to use it yet.
  */
-import { Fragment, useMemo, useState, type AriaAttributes, type ReactNode } from "react";
+import { Fragment, useEffect, useMemo, useState, type AriaAttributes, type ReactNode } from "react";
 import { cn } from "../utils";
 import { Icon } from "../primitives/Icon";
 import { Checkbox } from "../primitives/Checkbox";
@@ -99,17 +99,51 @@ export function DataTable<T>({
     const col = columns.find(c => c.id === activeSort.columnId);
     if (!col) return data;
     const cmp = col.sortFn ?? defaultSort(col);
-    const sorted = [...data].sort(cmp);
-    return activeSort.direction === "desc" ? sorted.reverse() : sorted;
+    // Direction-aware comparator instead of sort-then-.reverse() — reversing
+    // an ascending sort also reverses tie groups (Array.prototype.sort is
+    // stable since ES2019), so equal-key rows would swap order between asc
+    // and desc instead of holding their original relative order.
+    return [...data].sort((a, b) => (activeSort.direction === "desc" ? -cmp(a, b) : cmp(a, b)));
   }, [data, columns, activeSort]);
 
   function handleSortClick(col: ColumnDef<T>) {
     if (!col.sortable) return;
     const direction = nextDirection(activeSort?.columnId === col.id ? activeSort.direction : undefined);
     const next = { columnId: col.id, direction };
-    if (onSortChange) onSortChange(next);
-    else setInternalSort(next);
+    if (onSortChange) {
+      onSortChange(next);
+    } else if (sort !== undefined) {
+      // Controlled `sort` without `onSortChange` — internalSort would be
+      // written but `activeSort` always prefers the `sort` prop, so it would
+      // silently never be read and header clicks would appear dead. Surface
+      // the misconfiguration instead of failing silently (same convention
+      // React uses for a controlled <input> with no onChange).
+      if (process.env.NODE_ENV !== "production") {
+        console.warn(`DataTable: column "${col.id}" is sortable and \`sort\` is controlled, but no \`onSortChange\` was passed — sort clicks will have no effect. Pass \`onSortChange\` or omit \`sort\` to use uncontrolled sorting.`);
+      }
+    } else {
+      setInternalSort(next);
+    }
   }
+
+  useEffect(() => {
+    if (process.env.NODE_ENV === "production" || !columns.some(c => c.mergeKey)) return;
+    // mergeKey spans a cell across consecutive rows that share a key, which
+    // only makes sense when those rows are already adjacent — a header click
+    // that sorts by a *different* column scatters them and the merged span
+    // breaks silently. Likewise a `renderExpandedRow` inserted between two
+    // rows of the same merge run splits the spanned cell across it. Neither
+    // has a real fix without redesigning around a concrete use case (no
+    // caller uses mergeKey today), so this is a loud heads-up for whoever
+    // adopts it rather than a silent trap.
+    if (columns.some(c => c.sortable)) {
+      console.warn("DataTable: a column uses `mergeKey` alongside sortable columns — sorting by a non-merge column will scatter merged rows and break their rowSpan.");
+    }
+    if (renderExpandedRow) {
+      console.warn("DataTable: a column uses `mergeKey` alongside `renderExpandedRow` — an expanded row inserted between two rows of the same merge run will split the merged cell.");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [columns, !!renderExpandedRow]);
 
   const mergeRuns = useMemo(() => {
     const runs = new Map<string, { span: number; skip: boolean }[]>();

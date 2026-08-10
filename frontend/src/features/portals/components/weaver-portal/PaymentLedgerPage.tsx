@@ -304,23 +304,26 @@ export function PaymentLedgerPage() {
         })
       ) : (
         <div style={{ margin: "0 20px 8px", background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, overflowX: "auto" }}>
-          <div style={{ minWidth: 640 }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1.4fr 1.2fr 1fr 0.8fr", padding: "10px 16px", borderBottom: `1px solid ${C.bdr}`, background: C.cream }}>
-              {["Month", "Amount Paid", "UTR", "Firm", "Date", "Status"].map(h => (
-                <div key={h} style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted }}>{h}</div>
-              ))}
+          <div role="table" aria-label="Payment Ledger" style={{ minWidth: 640 }}>
+            <div role="rowgroup">
+              <div role="row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1.4fr 1.2fr 1fr 0.8fr", padding: "10px 16px", borderBottom: `1px solid ${C.bdr}`, background: C.cream }}>
+                {["Month", "Amount Paid", "UTR", "Firm", "Date", "Status"].map(h => (
+                  <div key={h} role="columnheader" style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted }}>{h}</div>
+                ))}
+              </div>
             </div>
+            <div role="rowgroup">
             {myPayments.map((rec, i) => {
               const monthLabel = new Date(rec.paymentDate || rec.uploadedAt).toLocaleDateString("en-IN", { month: "short", year: "numeric" });
               return (
                 <React.Fragment key={i}>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1.4fr 1.2fr 1fr 0.8fr", padding: "12px 16px", borderBottom: !rec.batchNo && i < myPayments.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", alignItems: "center" }}>
-                    <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, color: C.text }}>{monthLabel}</div>
-                    <div style={{ fontFamily: F.m, fontWeight: 600, fontSize: 13, color: C.gold }}>{fmtAmt(rec.amountPaid)}</div>
-                    <div style={{ fontFamily: F.m, fontSize: 12, color: C.text }}>{rec.utrNumber || "—"}</div>
-                    <div style={{ fontFamily: F.u, fontSize: 12, color: C.text }}>{rec.firmName || "Beere Kesava & Brothers Silks"}</div>
-                    <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{rec.paymentDate || "—"}</div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 4, background: "rgba(30,102,64,0.10)", color: C.green, borderRadius: 999, padding: "2px 10px", width: "fit-content" }}>
+                  <div role="row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1.4fr 1.2fr 1fr 0.8fr", padding: "12px 16px", borderBottom: !rec.batchNo && i < myPayments.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", alignItems: "center" }}>
+                    <div role="cell" style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, color: C.text }}>{monthLabel}</div>
+                    <div role="cell" style={{ fontFamily: F.m, fontWeight: 600, fontSize: 13, color: C.gold }}>{fmtAmt(rec.amountPaid)}</div>
+                    <div role="cell" style={{ fontFamily: F.m, fontSize: 12, color: C.text }}>{rec.utrNumber || "—"}</div>
+                    <div role="cell" style={{ fontFamily: F.u, fontSize: 12, color: C.text }}>{rec.firmName || "Beere Kesava & Brothers Silks"}</div>
+                    <div role="cell" style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{rec.paymentDate || "—"}</div>
+                    <div role="cell" style={{ display: "flex", alignItems: "center", gap: 4, background: "rgba(30,102,64,0.10)", color: C.green, borderRadius: 999, padding: "2px 10px", width: "fit-content" }}>
                       <Check size={10} color={C.green} />
                       <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600 }}>Paid</span>
                     </div>
@@ -352,6 +355,7 @@ export function PaymentLedgerPage() {
                 </React.Fragment>
               );
             })}
+            </div>
           </div>
         </div>
       )}

@@ -41,6 +41,13 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
 
   const confirm = React.useCallback((opts: ConfirmOptions) => {
     return new Promise<boolean>(resolve => {
+      // A call arriving while a previous one is still pending (e.g. a
+      // double-clicked trigger) would otherwise overwrite `state` and leave
+      // the first promise unresolved forever — settle it as cancelled first.
+      setState(prev => {
+        prev?.resolve(false);
+        return null;
+      });
       setTypedValue("");
       setState({ ...opts, resolve });
     });

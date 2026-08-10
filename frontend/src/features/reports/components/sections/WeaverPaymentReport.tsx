@@ -10,13 +10,13 @@ import { FadeUp, ChartCard, SumCard, TabTitle, ReportDLBar, AnimBar, TablePager 
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { semantic } from "../../../../design-system/tokens";
 import { rupees, formatMoney } from "@/lib/domain/money";
-import { Money } from "@/shared/ui/domain";
+import { Money, useDataAccess } from "@/shared/ui/domain";
 
 // Same shape as reports/common/primitives.tsx's ChartTip, but routes the
 // value through the Money system (formatMoney/rupees) instead of a raw "₹"
 // prefix + toLocaleString — ChartTip itself is shared across non-money chart
 // tooltips (kg, customers, sarees) and is out of scope for this pass.
-function MoneyChartTip({ active, payload, label }: any) {
+function MoneyChartTip({ active, payload, label, canSeePayroll }: any) {
   if (!active || !payload?.length) return null;
   return (
     <div style={{ background: "#FFFDF9", border: `1px solid ${T.borderDef}`, borderRadius: 9, padding: "10px 14px", boxShadow: "0 4px 16px rgba(74,6,27,0.12)" }}>
@@ -25,7 +25,7 @@ function MoneyChartTip({ active, payload, label }: any) {
         <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
           <div style={{ width: 8, height: 8, borderRadius: "50%", background: p.color || p.fill || p.stroke }} />
           <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.name}:</span>
-          <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{typeof p.value === "number" ? formatMoney(rupees(p.value)) : p.value}</span>
+          <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{!canSeePayroll ? "••••" : typeof p.value === "number" ? formatMoney(rupees(p.value)) : p.value}</span>
         </div>
       ))}
     </div>
@@ -33,6 +33,7 @@ function MoneyChartTip({ active, payload, label }: any) {
 }
 
 export function WeaverPaymentReport() {
+  const canSeePayroll = useDataAccess("payroll");
   const { payments } = useWeaverPayments();
   const { data: weaversRes, isLoading: weaversLoading, isError: weaversError } = useQuery({
     queryKey: ["reports", "weavers-roster"],
@@ -132,8 +133,8 @@ export function WeaverPaymentReport() {
               <BarChart data={weaverPayMonthly}>
                 <CartesianGrid key="wp-grid" strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
                 <XAxis key="wp-x" dataKey="month" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
-                <YAxis key="wp-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => formatMoney(rupees(v))} width={55} />
-                <Tooltip key="wp-tip" content={<MoneyChartTip />} />
+                <YAxis key="wp-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => (canSeePayroll ? formatMoney(rupees(v)) : "••••")} width={55} />
+                <Tooltip key="wp-tip" content={<MoneyChartTip canSeePayroll={canSeePayroll} />} />
                 <Bar key="wp-amt" dataKey="amt" name="Making Charges">
                   {weaverPayMonthly.map((e, i) => (
                     <Cell key={`wp-cell-${e.month}`} fill={i === weaverPayMonthly.length - 1 ? semantic.chart.series[0] : "rgba(154,45,74,0.35)"} />
@@ -160,7 +161,7 @@ export function WeaverPaymentReport() {
                     contentStyle={{ fontFamily: F.ui, fontSize: 12, borderRadius: 8 }} />
                 </PieChart>
                 <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", textAlign: "center" }}>
-                  <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.crimson }}><Money value={rupees(totalDeductions)} /></div>
+                  <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.crimson }}><Money value={rupees(totalDeductions)} gate="payroll" /></div>
                   <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>TOTAL DEDUCTIONS</div>
                 </div>
               </div>
@@ -185,9 +186,9 @@ export function WeaverPaymentReport() {
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 24, alignItems: "stretch" }}>
         <SumCard icon={<Users size={22} color={T.royalBurgundy} />} label="Total Weavers Paid" value={`${paidWeaverIds.size} of ${weavers.length}`} sub={`${Math.max(weavers.length - paidWeaverIds.size, 0)} with no payments on record`} />
-        <SumCard icon={<IndianRupee size={22} color={T.antiqueGold} />} label="Total Making Charges" value={formatMoney(rupees(totalMakingCharges))} sub="All recorded payments" hi />
-        <SumCard icon={<TrendingDown size={22} color={T.crimson} />} label="Total Deductions" value={formatMoney(rupees(totalDeductions))} sub="Deducted from making charges" crimsonHi />
-        <SumCard icon={<CheckCircle2 size={22} color={T.green} />} label="Total Net Paid" value={formatMoney(rupees(totalNetPaid))} sub="After all deductions" greenHi />
+        <SumCard icon={<IndianRupee size={22} color={T.antiqueGold} />} label="Total Making Charges" value={canSeePayroll ? formatMoney(rupees(totalMakingCharges)) : "••••"} sub="All recorded payments" hi />
+        <SumCard icon={<TrendingDown size={22} color={T.crimson} />} label="Total Deductions" value={canSeePayroll ? formatMoney(rupees(totalDeductions)) : "••••"} sub="Deducted from making charges" crimsonHi />
+        <SumCard icon={<CheckCircle2 size={22} color={T.green} />} label="Total Net Paid" value={canSeePayroll ? formatMoney(rupees(totalNetPaid)) : "••••"} sub="After all deductions" greenHi />
       </div>
 
       <div style={{ background: "rgba(200,155,71,0.08)", border: `1px solid ${T.borderGold}`, borderRadius: 10, padding: "12px 18px", marginBottom: 18, display: "flex", alignItems: "center", gap: 10 }}>
@@ -207,7 +208,7 @@ export function WeaverPaymentReport() {
                   id: "amountPaid", header: "Amount Paid", accessor: r => r.latest?.amountPaid, align: "end",
                   cell: (_v, r) => {
                     const amountPaid = r.latest?.amountPaid;
-                    return <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: r.latest ? T.green : T.taupe }}>{amountPaid !== undefined ? formatMoney(rupees(amountPaid)) : "—"}</span>;
+                    return <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: r.latest ? T.green : T.taupe }}>{amountPaid === undefined ? "—" : canSeePayroll ? formatMoney(rupees(amountPaid)) : "••••"}</span>;
                   },
                 },
                 { id: "utr", header: "UTR Number", accessor: r => r.latest?.utrNumber, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: r.latest ? T.green : T.taupe }}>{r.latest?.utrNumber || "—"}</span> },

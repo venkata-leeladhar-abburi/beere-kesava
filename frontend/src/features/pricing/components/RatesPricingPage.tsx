@@ -11,6 +11,7 @@ import type { SareeTypeRecord } from "./rates-pricing/sareeTypeData";
 import { ratesApi, backendRateToDisplayRecord, type BackendRate } from "../../../shared/api/rates";
 import { Button } from "../../../shared/ui/primitives";
 import { rupees, formatMoney } from "@/lib/domain/money";
+import { useDataAccess } from "@/shared/ui/domain";
 
 const toRecord = backendRateToDisplayRecord;
 
@@ -36,6 +37,7 @@ export function RatesPricingPage() {
   const [viewCard, setViewCard] = useState<SareeTypeRecord | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
+  const canSeeCost = useDataAccess("cost");
 
   function loadRates() {
     setIsLoading(true);
@@ -136,9 +138,9 @@ export function RatesPricingPage() {
               : null;
             return [
               { label: "TOTAL SAREE TYPES", val: String(rates.length), sub: hasRates ? "All with short codes and rates set" : "No saree types configured yet", hi: false, crimson: false, goldVal: false },
-              { label: "LAST RATE CHANGE", val: mostRecent ? mostRecent.changed : "—", sub: mostRecent ? `${mostRecent.type} · ${formatMoney(rupees(parseInt(mostRecent.charge)))}` : "No rate changes yet", hi: false, crimson: false, goldVal: false },
-              { label: "HIGHEST MAKING CHARGE", val: highest ? formatMoney(rupees(parseInt(highest.charge))) : "—", sub: highest ? `${highest.type} · ${highest.code}` : "No rates configured yet", hi: true, crimson: false, goldVal: true },
-              { label: "LOWEST MAKING CHARGE", val: lowest ? formatMoney(rupees(parseInt(lowest.charge))) : "—", sub: lowest ? `${lowest.type} · ${lowest.code} per saree` : "No rates configured yet", hi: false, crimson: false, goldVal: false },
+              { label: "LAST RATE CHANGE", val: mostRecent ? mostRecent.changed : "—", sub: mostRecent ? `${mostRecent.type} · ${canSeeCost ? formatMoney(rupees(parseInt(mostRecent.charge))) : "••••"}` : "No rate changes yet", hi: false, crimson: false, goldVal: false },
+              { label: "HIGHEST MAKING CHARGE", val: highest ? (canSeeCost ? formatMoney(rupees(parseInt(highest.charge))) : "••••") : "—", sub: highest ? `${highest.type} · ${highest.code}` : "No rates configured yet", hi: true, crimson: false, goldVal: true },
+              { label: "LOWEST MAKING CHARGE", val: lowest ? (canSeeCost ? formatMoney(rupees(parseInt(lowest.charge))) : "••••") : "—", sub: lowest ? `${lowest.type} · ${lowest.code} per saree` : "No rates configured yet", hi: false, crimson: false, goldVal: false },
             ];
           })().map((m, i) => (
             <motion.div

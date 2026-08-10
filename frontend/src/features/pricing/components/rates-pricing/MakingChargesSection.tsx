@@ -7,6 +7,7 @@ import { Button, IconButton, NumberInput, Input, Textarea } from "../../../../sh
 import type { SareeTypeRecord } from "./sareeTypeData";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
+import { useDataAccess } from "@/shared/ui/domain";
 
 export function MakingChargesSection({
   rates, setRates, onView, onPersistEdit, onPersistNew,
@@ -17,6 +18,7 @@ export function MakingChargesSection({
   onPersistEdit?: (code: string, updates: Partial<SareeTypeRecord>) => void;
   onPersistNew?: (entry: SareeTypeRecord) => void;
 }) {
+  const canSeeCost = useDataAccess("cost");
   const [editCode, setEditCode] = useState<string | null>(null);
   const [showNewForm, setShowNewForm] = useState(false);
 
@@ -72,7 +74,7 @@ export function MakingChargesSection({
     { id: "type", header: "Saree Type", accessor: r => r.type, cell: v => <span style={{ fontWeight: 500 }}>{v as string}</span> },
     {
       id: "charge", header: "Making Charge", accessor: r => r.charge,
-      cell: v => <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 600, color: T.antiqueGold }}>{formatMoney(rupees(parseInt(v as string)))}</span>,
+      cell: v => <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 600, color: T.antiqueGold }}>{canSeeCost ? formatMoney(rupees(parseInt(v as string))) : "••••"}</span>,
     },
     { id: "retail", header: "Retail", accessor: r => r.retail, cell: v => <>{formatMoney(rupees(parseInt(v as string)))}</> },
     { id: "wholesale", header: "Wholesale", accessor: r => r.wholesale, cell: v => <>{formatMoney(rupees(parseInt(v as string)))}</> },
