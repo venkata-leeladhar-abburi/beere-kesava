@@ -2,6 +2,7 @@ import { useBatches } from "../../../../production/contexts/BatchContext";
 import { useQc } from "../../../../qc/contexts/QcContext";
 import { useRatesPricing } from "../../../../pricing/contexts/RatesContext";
 import { useCurrentWeaver } from "../useCurrentWeaver";
+import { formatMoney, rupees } from "../../../../../lib/domain/money";
 
 /**
  * Same shape/pattern as the admin dashboard's useDashboardMetrics, but
@@ -28,11 +29,7 @@ export function useWeaverDashboardMetrics() {
   const passedCount = qcRecords.filter(q => q.result === "passed").length;
   const qcPassRate = qcRecords.length > 0 ? Math.round((passedCount / qcRecords.length) * 100) : 100;
 
-  const formatCurrency = (n: number) => {
-    if (n >= 100_000) return `₹${(n / 100_000).toFixed(1)}L`;
-    if (n >= 1_000) return `₹${(n / 1_000).toFixed(0)}K`;
-    return `₹${n}`;
-  };
+  const formatCurrency = (n: number) => formatMoney(rupees(n), { compact: true });
 
   // "Produced" = QC-passed OR finished via the Raise Quotation receive flow —
   // a saree returned through that flow can be produced without ever showing

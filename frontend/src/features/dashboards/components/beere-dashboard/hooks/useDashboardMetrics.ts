@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { reportsApi } from "../../../../../shared/api/reports";
 import { weaversApi } from "../../../../../shared/api/weavers";
 import { dispatchApi } from "../../../../../shared/api/dispatch";
+import { formatMoney, rupees } from "../../../../../lib/domain/money";
 
 /**
  * Fetches live dashboard metrics from:
@@ -72,11 +73,7 @@ export function useDashboardMetrics() {
   const readyForSale = Math.max(0, qcPassed - dispatchedSareeIds.size);
   const dispatchedCount = wholesaleDispatchedCount;
 
-  const formatCurrency = (n: number) => {
-    if (n >= 100_000) return `₹${(n / 100_000).toFixed(1)}L`;
-    if (n >= 1_000) return `₹${(n / 1_000).toFixed(0)}K`;
-    return `₹${n}`;
-  };
+  const formatCurrency = (n: number) => formatMoney(rupees(n), { compact: true });
 
   return {
     isLoading,

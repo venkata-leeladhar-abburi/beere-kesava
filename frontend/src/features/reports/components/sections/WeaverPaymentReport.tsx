@@ -9,6 +9,7 @@ import { T, F } from "../theme";
 import { FadeUp, ChartCard, SumCard, TabTitle, ReportDLBar, ChartTip, AnimBar, TablePager } from "../common/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { semantic } from "../../../../design-system/tokens";
+import { formatMoney, rupees } from "../../../../lib/domain/money";
 
 export function WeaverPaymentReport() {
   const { payments } = useWeaverPayments();
@@ -110,7 +111,7 @@ export function WeaverPaymentReport() {
               <BarChart data={weaverPayMonthly}>
                 <CartesianGrid key="wp-grid" strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
                 <XAxis key="wp-x" dataKey="month" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
-                <YAxis key="wp-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `₹${v.toLocaleString("en-IN")}`} width={55} />
+                <YAxis key="wp-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => formatMoney(rupees(v))} width={55} />
                 <Tooltip key="wp-tip" content={<ChartTip prefix="₹" />} />
                 <Bar key="wp-amt" dataKey="amt" name="Making Charges">
                   {weaverPayMonthly.map((e, i) => (
@@ -138,7 +139,7 @@ export function WeaverPaymentReport() {
                     contentStyle={{ fontFamily: F.ui, fontSize: 12, borderRadius: 8 }} />
                 </PieChart>
                 <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", textAlign: "center" }}>
-                  <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.crimson }}>₹{totalDeductions.toLocaleString("en-IN")}</div>
+                  <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.crimson }}>{formatMoney(rupees(totalDeductions))}</div>
                   <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>TOTAL DEDUCTIONS</div>
                 </div>
               </div>
@@ -163,9 +164,9 @@ export function WeaverPaymentReport() {
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 24, alignItems: "stretch" }}>
         <SumCard icon={<Users size={22} color={T.royalBurgundy} />} label="Total Weavers Paid" value={`${paidWeaverIds.size} of ${weavers.length}`} sub={`${Math.max(weavers.length - paidWeaverIds.size, 0)} with no payments on record`} />
-        <SumCard icon={<IndianRupee size={22} color={T.antiqueGold} />} label="Total Making Charges" value={`₹${totalMakingCharges.toLocaleString("en-IN")}`} sub="All recorded payments" hi />
-        <SumCard icon={<TrendingDown size={22} color={T.crimson} />} label="Total Deductions" value={`₹${totalDeductions.toLocaleString("en-IN")}`} sub="Deducted from making charges" crimsonHi />
-        <SumCard icon={<CheckCircle2 size={22} color={T.green} />} label="Total Net Paid" value={`₹${totalNetPaid.toLocaleString("en-IN")}`} sub="After all deductions" greenHi />
+        <SumCard icon={<IndianRupee size={22} color={T.antiqueGold} />} label="Total Making Charges" value={formatMoney(rupees(totalMakingCharges))} sub="All recorded payments" hi />
+        <SumCard icon={<TrendingDown size={22} color={T.crimson} />} label="Total Deductions" value={formatMoney(rupees(totalDeductions))} sub="Deducted from making charges" crimsonHi />
+        <SumCard icon={<CheckCircle2 size={22} color={T.green} />} label="Total Net Paid" value={formatMoney(rupees(totalNetPaid))} sub="After all deductions" greenHi />
       </div>
 
       <div style={{ background: "rgba(200,155,71,0.08)", border: `1px solid ${T.borderGold}`, borderRadius: 10, padding: "12px 18px", marginBottom: 18, display: "flex", alignItems: "center", gap: 10 }}>
@@ -185,7 +186,7 @@ export function WeaverPaymentReport() {
                   id: "amountPaid", header: "Amount Paid", accessor: r => r.latest?.amountPaid, align: "end",
                   cell: (_v, r) => {
                     const amountPaid = r.latest?.amountPaid;
-                    return <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: r.latest ? T.green : T.taupe }}>{amountPaid !== undefined ? `₹${amountPaid.toLocaleString("en-IN")}` : "—"}</span>;
+                    return <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: r.latest ? T.green : T.taupe }}>{amountPaid !== undefined ? formatMoney(rupees(amountPaid)) : "—"}</span>;
                   },
                 },
                 { id: "utr", header: "UTR Number", accessor: r => r.latest?.utrNumber, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: r.latest ? T.green : T.taupe }}>{r.latest?.utrNumber || "—"}</span> },

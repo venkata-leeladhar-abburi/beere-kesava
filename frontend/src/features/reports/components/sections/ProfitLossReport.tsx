@@ -8,11 +8,12 @@ import { T, F } from "../theme";
 import { FadeUp, ChartCard, TabTitle, ReportDLBar, ChartTip, AnimBar } from "../common/primitives";
 import { Button } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { formatMoney, rupees } from "../../../../lib/domain/money";
 
 export function ProfitLossReport() {
   const { firms, financials } = useFirms();
   const moneyVisible = useMoneyVisible();
-  const inr = (n: number) => (moneyVisible ? `₹${n.toLocaleString("en-IN")}` : "—");
+  const inr = (n: number) => (moneyVisible ? formatMoney(rupees(n)) : "—");
 
   const hasData = financials.some(f => f.income.length > 0 || f.expenses.length > 0 || f.misc.length > 0);
 
@@ -95,15 +96,15 @@ export function ProfitLossReport() {
     },
     {
       id: "income", header: "Total Income", accessor: f => f.income, type: "number",
-      cell: (_v, f) => <span style={{ fontFamily: F.mono, color: T.green, fontWeight: 600 }}>₹{f.income.toLocaleString("en-IN")}</span>,
+      cell: (_v, f) => <span style={{ fontFamily: F.mono, color: T.green, fontWeight: 600 }}>{formatMoney(rupees(f.income))}</span>,
     },
     {
       id: "expenses", header: "Total Expenses", accessor: f => f.expenses, type: "number",
-      cell: (_v, f) => <span style={{ fontFamily: F.mono, color: T.crimson, fontWeight: 600 }}>₹{f.expenses.toLocaleString("en-IN")}</span>,
+      cell: (_v, f) => <span style={{ fontFamily: F.mono, color: T.crimson, fontWeight: 600 }}>{formatMoney(rupees(f.expenses))}</span>,
     },
     {
       id: "net", header: "Net", accessor: f => f.net, type: "number",
-      cell: (_v, f) => <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: f.net >= 0 ? T.green : T.crimson }}>{f.net >= 0 ? "₹" : "−₹"}{Math.abs(f.net).toLocaleString("en-IN")}</span>,
+      cell: (_v, f) => <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: f.net >= 0 ? T.green : T.crimson }}>{formatMoney(rupees(f.net))}</span>,
     },
   ];
 
@@ -177,7 +178,7 @@ export function ProfitLossReport() {
               <BarChart data={pnlMonthlyData} barGap={6}>
                 <CartesianGrid key="pnl-grid" strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
                 <XAxis key="pnl-x" dataKey="month" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
-                <YAxis key="pnl-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `₹${v.toLocaleString("en-IN")}`} width={55} />
+                <YAxis key="pnl-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => formatMoney(rupees(v))} width={55} />
                 <Tooltip key="pnl-tip" content={<ChartTip prefix="₹" />} />
                 <Bar key="pnl-income"   dataKey="income"   name="Income"   fill={T.green}  radius={[4,4,0,0] as any} />
                 <Bar key="pnl-expenses" dataKey="expenses" name="Expenses" fill={T.crimson} radius={[4,4,0,0] as any} opacity={0.8} />
@@ -198,7 +199,7 @@ export function ProfitLossReport() {
                   <Pie key="exp-pie" data={expenseDonut} cx="50%" cy="50%" innerRadius={50} outerRadius={70} dataKey="value" stroke="none" paddingAngle={3}>
                     {expenseDonut.map(e => <Cell key={`exp-cell-${e.name}`} fill={e.color} />)}
                   </Pie>
-                  <Tooltip key="exp-tip" formatter={(v: any, n: any) => [`₹${Number(v).toLocaleString("en-IN")}`, n]} contentStyle={{ fontFamily: F.ui, fontSize: 12, borderRadius: 8 }} />
+                  <Tooltip key="exp-tip" formatter={(v: any, n: any) => [formatMoney(rupees(Number(v))), n]} contentStyle={{ fontFamily: F.ui, fontSize: 12, borderRadius: 8 }} />
                 </PieChart>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: "0 8px" }}>
@@ -209,12 +210,12 @@ export function ProfitLossReport() {
                         <div style={{ width: 9, height: 9, borderRadius: "50%", background: d.color }} />
                         <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{d.name}</span>
                       </div>
-                      <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: d.color }}>₹{d.value.toLocaleString("en-IN")}</span>
+                      <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: d.color }}>{formatMoney(rupees(d.value))}</span>
                     </div>
                     <AnimBar pct={totalExpenses > 0 ? Math.round((d.value / totalExpenses) * 100) : 0} color={d.color} height={5} />
                   </div>
                 ))}
-                <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.crimson, textAlign: "right", marginTop: 4 }}>Total: ₹{totalExpenses.toLocaleString("en-IN")}</div>
+                <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.crimson, textAlign: "right", marginTop: 4 }}>Total: {formatMoney(rupees(totalExpenses))}</div>
               </div>
             </>
           )}

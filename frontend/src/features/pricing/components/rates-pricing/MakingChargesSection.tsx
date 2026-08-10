@@ -6,6 +6,8 @@ import { SectionTitle, GoldLink, JariWeightField, SareeTypeCombobox } from "./sh
 import { Button, IconButton, NumberInput, Input, Textarea } from "../../../../shared/ui/primitives";
 import type { SareeTypeRecord } from "./sareeTypeData";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { Money } from "../../../../shared/ui/domain/Money";
+import { rupees } from "../../../../lib/domain/money";
 
 export function MakingChargesSection({
   rates, setRates, onView, onPersistEdit, onPersistNew,
@@ -71,10 +73,10 @@ export function MakingChargesSection({
     { id: "type", header: "Saree Type", accessor: r => r.type, cell: v => <span style={{ fontWeight: 500 }}>{v as string}</span> },
     {
       id: "charge", header: "Making Charge", accessor: r => r.charge,
-      cell: v => <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 600, color: T.antiqueGold }}>₹{parseInt(v as string).toLocaleString("en-IN")}</span>,
+      cell: v => <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 600, color: T.antiqueGold }}><Money value={rupees(parseInt(v as string))} /></span>,
     },
-    { id: "retail", header: "Retail", accessor: r => r.retail, cell: v => <>₹{parseInt(v as string).toLocaleString("en-IN")}</> },
-    { id: "wholesale", header: "Wholesale", accessor: r => r.wholesale, cell: v => <>₹{parseInt(v as string).toLocaleString("en-IN")}</> },
+    { id: "retail", header: "Retail", accessor: r => r.retail, cell: v => <Money value={rupees(parseInt(v as string))} /> },
+    { id: "wholesale", header: "Wholesale", accessor: r => r.wholesale, cell: v => <Money value={rupees(parseInt(v as string))} /> },
     { id: "stdWeight", header: "Std Weight", accessor: r => r.stdWeight, cell: v => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{v as string}g</span> },
     { id: "changed", header: "Last Changed", accessor: r => r.changed, cell: v => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{v as string}</span> },
     {

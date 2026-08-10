@@ -4,6 +4,8 @@ import { Edit2, Check, X, AlertTriangle, ChevronRight, Package, Layers, Tag } fr
 import { T, F, cardStyle, labelStyle } from "./theme";
 import { SectionTitle, GoldLink } from "./sharedUI";
 import { Button, NumberInput, Textarea } from "../../../../shared/ui/primitives";
+import { Money } from "../../../../shared/ui/domain/Money";
+import { rupees } from "../../../../lib/domain/money";
 
 export function DeductionRatesSection() {
   const [editDeduction, setEditDeduction] = useState<string | null>("warp");
@@ -26,7 +28,7 @@ export function DeductionRatesSection() {
               <Package size={16} color="#fff" />
             </div>
             <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown, marginBottom: 6 }}>Warp Deduction Rate</div>
-            <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 38, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1, marginBottom: 4 }}>₹5.20</div>
+            <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 38, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1, marginBottom: 4 }}><Money value={rupees(5.2)} decimals={2} /></div>
             <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 16 }}>per gram below standard</div>
             <div style={{ borderTop: `1px solid ${T.borderDef}`, margin: "0 0 12px 0" }} />
             <p style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, margin: "0 0 12px 0", lineHeight: 1.6 }}>
@@ -101,7 +103,7 @@ export function DeductionRatesSection() {
             <Tag size={16} color={T.antiqueGold} />
           </div>
           <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown, marginBottom: 6 }}>Resham Deduction Rate</div>
-          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 38, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1, marginBottom: 4 }}>₹15.00</div>
+          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 38, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1, marginBottom: 4 }}><Money value={rupees(15)} decimals={2} /></div>
           <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 16 }}>per gram below standard</div>
           <div style={{ borderTop: `1px solid ${T.borderDef}`, margin: "0 0 12px 0" }} />
           <p style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, margin: "0 0 12px 0", lineHeight: 1.6 }}>
@@ -167,7 +169,7 @@ export function DeductionRatesSection() {
             <Layers size={16} color="#fff" />
           </div>
           <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown, marginBottom: 6 }}>Jari Deduction Rate</div>
-          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 38, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1, marginBottom: 4 }}>₹42.00</div>
+          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 38, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1, marginBottom: 4 }}><Money value={rupees(42)} decimals={2} /></div>
           <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 12 }}>per reel below standard</div>
           <div style={{
             display: "inline-block", background: "rgba(200,155,71,0.12)", border: `1px solid rgba(200,155,71,0.25)`,
