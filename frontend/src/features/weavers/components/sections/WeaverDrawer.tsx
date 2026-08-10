@@ -13,6 +13,7 @@ import { Avatar, SectionPill } from "../common/primitives";
 import { WeaverSareesSection } from "../WeaverSareesSection";
 import { useWeaverPayments } from "../../contexts/WeaverPaymentsContext";
 import { useMaterialIssue } from "../../../materials/contexts/MaterialIssueContext";
+import { rupees, formatMoney } from "@/lib/domain/money";
 import { useBatches } from "../../../production/contexts/BatchContext";
 import { useBulkOrders } from "../../../bulk-orders/contexts/BulkOrderContext";
 import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
@@ -341,7 +342,7 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
                           <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 3 }}>UTR: {p.utrNumber}</div>
                         </div>
                         <div style={{ textAlign: "right" }}>
-                          <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: T.green }}>₹{p.amountPaid.toLocaleString("en-IN")}</div>
+                          <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: T.green }}>{formatMoney(rupees(p.amountPaid))}</div>
                           <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>{p.paymentDate}</div>
                         </div>
                       </div>

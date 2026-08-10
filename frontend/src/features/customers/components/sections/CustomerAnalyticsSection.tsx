@@ -14,6 +14,7 @@ import { SectionTitle } from "../common/primitives";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { ChartFigure } from "../../../../shared/ui/data";
 import { downloadDataAsCSV } from "../utils";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 import { useQuery } from "@tanstack/react-query";
 import { analyticsApi } from "../../../../shared/api/analytics";
@@ -85,7 +86,6 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
     { name: "Retail Store", value: revSplitRes?.retail ?? 0, fill: T.greenMid },
     { name: "Wholesale Sales", value: revSplitRes?.wholesale ?? 0, fill: T.royalBurgundy },
   ];
-  const totalRevLakhs = ((revSplitRes?.total ?? 0) / 100000).toFixed(1);
 
   // Same aggregation approach as CustomerReport.tsx (reports feature): join
   // customers with invoices (wholesale) or sales (retail) to get per-customer
@@ -227,9 +227,9 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
           {/* Summary strip */}
           <div style={{ display: "flex", gap: 8, marginBottom: 18 }}>
             {[
-              { label: "Top Spender", val: `₹${topSpend.toLocaleString("en-IN")}`, color: T.royalBurgundy },
-              { label: "Combined Value", val: `₹${combinedTop10.toLocaleString("en-IN")}`, color: T.antiqueGold },
-              { label: "Avg Spend", val: `₹${avgTop10.toLocaleString("en-IN")}`, color: T.greenMid },
+              { label: "Top Spender", val: formatMoney(rupees(topSpend)), color: T.royalBurgundy },
+              { label: "Combined Value", val: formatMoney(rupees(combinedTop10)), color: T.antiqueGold },
+              { label: "Avg Spend", val: formatMoney(rupees(avgTop10)), color: T.greenMid },
             ].map((s, i) => (
               <div key={i} style={{ flex: 1, background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "10px 12px" }}>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 500, letterSpacing: "0.4px", marginBottom: 4 }}>{s.label}</div>
@@ -311,7 +311,7 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
           <>
           <ChartFigure
             title="Wholesale vs Retail Revenue Split"
-            summary={`Total revenue ₹${totalRevLakhs} lakh across ${liveRevSplit.map(i => `${i.name} ₹${(i.value / 100000).toFixed(1)} lakh`).join(", ")}.`}
+            summary={`Total revenue ${formatMoney(rupees(revSplitRes?.total ?? 0), { compact: true })} across ${liveRevSplit.map(i => `${i.name} ${formatMoney(rupees(i.value), { compact: true })}`).join(", ")}.`}
           >
           <div style={{ flex: 1, position: "relative", minHeight: 240 }}>
             <ResponsiveContainer key="rc-2" width="100%" height="100%">
@@ -324,7 +324,7 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
               </PieChart>
             </ResponsiveContainer>
             <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
-              <span style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.luxuryBrown }}>₹{totalRevLakhs}L</span>
+              <span style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.luxuryBrown }}>{formatMoney(rupees(revSplitRes?.total ?? 0), { compact: true })}</span>
               <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 2 }}>Total Revenue</span>
             </div>
           </div>
@@ -333,7 +333,7 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
             {liveRevSplit.map((item, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <div style={{ width: 12, height: 12, borderRadius: "50%", background: item.fill }} />
-                <span style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, fontWeight: 500 }}>{item.name}: ₹{(item.value/100000).toFixed(1)}L</span>
+                <span style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, fontWeight: 500 }}>{item.name}: {formatMoney(rupees(item.value), { compact: true })}</span>
               </div>
             ))}
           </div>

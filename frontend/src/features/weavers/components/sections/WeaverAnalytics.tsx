@@ -13,6 +13,7 @@ import { FadeUp, qcColor } from "../common/primitives";
 import { WeaverLeaderboardClusterRow } from "./WeaverLeaderboardClusterRow";
 import { weaversApi, BackendWeaverStats } from "../../../../shared/api/weavers";
 import { weaverPaymentsApi } from "../../../../shared/api/payments";
+import { rupees, formatMoney } from "@/lib/domain/money";
 import { resolveAssetUrl } from "../../../../shared/api/uploads";
 import { semantic } from "../../../../design-system/tokens";
 import { ChartFigure } from "../../../../shared/ui/data";
@@ -141,7 +142,7 @@ export function WeaverAnalytics() {
             {[
               { label: "SAREES WOVEN", value: totalProduced.toLocaleString("en-IN"), color: T.royalBurgundy },
               { label: "QC PASS RATE", value: `${overallPassRate}%`, color: qcColor(overallPassRate) },
-              { label: "MAKING CHARGES", value: `₹${totalPayout.toLocaleString("en-IN")}`, color: T.luxuryBrown },
+              { label: "MAKING CHARGES", value: formatMoney(rupees(totalPayout)), color: T.luxuryBrown },
             ].map(k => (
               <div key={k.label}>
                 <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, letterSpacing: "1px", color: T.taupe }}>{k.label}</div>
@@ -324,7 +325,7 @@ export function WeaverAnalytics() {
                     { label: "Rejected", value: `${(totalProduced - totalPassed).toLocaleString("en-IN")} pcs` },
                     { label: "Making Charges", value: "—" },
                     { label: "Avg / Weaver", value: `${perWeaver.length ? Math.round(totalProduced / perWeaver.length) : 0} pcs` },
-                    { label: "Cost / Saree", value: totalPassed ? `₹${Math.round(totalPayout / totalPassed).toLocaleString("en-IN")}` : "—" },
+                    { label: "Cost / Saree", value: totalPassed ? formatMoney(rupees(Math.round(totalPayout / totalPassed))) : "—" },
                   ].map(k => (
                     <div key={k.label} style={{ background: T.silkCream, borderRadius: 10, padding: "10px 12px", border: `1px solid ${T.borderDef}` }}>
                       <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, letterSpacing: "0.5px", color: T.taupe, marginBottom: 4, textTransform: "uppercase" as const }}>{k.label}</div>

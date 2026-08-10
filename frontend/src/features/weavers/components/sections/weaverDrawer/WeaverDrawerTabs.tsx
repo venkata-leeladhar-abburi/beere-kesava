@@ -7,6 +7,7 @@ import { SectionPill } from "../../common/primitives";
 import { DateFilterBar } from "../../../../../shared/ui/DateFilterBar";
 import { Button } from "../../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 export function BatchesTab({ sortedAllWeaverBatches, dispatches, weaver, batchDateFilter, setBatchDateFilter, setViewDispatches, onNavigate }: any) {
   return (
@@ -208,7 +209,7 @@ export function PaymentsTab({ weaver, weaverPayments, filteredWeaverPayments, pa
                     <div key={p.id} style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, padding: "16px 18px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 10 }}>
                       <div>
                         <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, letterSpacing: "1px", textTransform: "uppercase", marginBottom: 3 }}>Amount Paid</div>
-                        <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: T.green }}>₹{p.amountPaid.toLocaleString("en-IN")}</div>
+                        <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: T.green }}>{formatMoney(rupees(p.amountPaid))}</div>
                       </div>
                       <div>
                         <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, letterSpacing: "1px", textTransform: "uppercase", marginBottom: 3 }}>UTR Number</div>

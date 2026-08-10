@@ -7,6 +7,7 @@ import { T, F, cardStyle, thStyle, tdStyle } from "./theme";
 import { SectionTitle, GoldLink } from "./sharedUI";
 import { rateRequestsApi, type BackendRateChangeRequest } from "../../../../shared/api/rateRequests";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 interface HistoryRow {
   date: string;
@@ -28,8 +29,8 @@ function toHistoryRow(req: BackendRateChangeRequest): HistoryRow {
     date,
     by,
     what: `${req.sareeType?.type ?? req.sareeTypeCode} Making Charge${status}`,
-    old: `₹${Number(req.oldMakingCharge).toLocaleString("en-IN")}/saree`,
-    next: `₹${Number(req.newMakingCharge).toLocaleString("en-IN")}/saree`,
+    old: `${formatMoney(rupees(Number(req.oldMakingCharge)))}/saree`,
+    next: `${formatMoney(rupees(Number(req.newMakingCharge)))}/saree`,
     reason: req.reason ?? "—",
   };
 }

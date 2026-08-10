@@ -13,6 +13,7 @@ import { ContactDetailsTab } from "./ContactDetailsTab";
 import { EditProfileTab } from "./EditProfileTab";
 import { Button } from "../../../../../shared/ui/primitives";
 import { Breadcrumbs } from "../../../../../shared/ui/nav/Breadcrumbs";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 export interface WholesaleDetailSectionProps {
   customer: WholesaleCustomer;
@@ -99,11 +100,11 @@ export function WholesaleDetailSection({
         <div style={{ display: "flex", gap: 32, alignItems: "center" }}>
           <div style={{ textAlign: "right" }}>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.4)", textTransform: "uppercase" }}>Total Spend</div>
-            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.goldLight, marginTop: 4 }}>₹{customer.spend}</div>
+            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.goldLight, marginTop: 4 }}>{formatMoney(rupees(Number(customer.spend) || 0))}</div>
           </div>
           <div style={{ textAlign: "right" }}>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.4)", textTransform: "uppercase" }}>Outstanding</div>
-            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: customer.out === "0" ? T.greenMid : T.crimson, marginTop: 4 }}>₹{customer.out}</div>
+            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: customer.out === "0" ? T.greenMid : T.crimson, marginTop: 4 }}>{formatMoney(rupees(Number(customer.out) || 0))}</div>
           </div>
         </div>
       </div>

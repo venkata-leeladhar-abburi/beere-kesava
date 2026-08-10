@@ -4,6 +4,7 @@ import { RetailCustomer } from "../types";
 import { Button } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { Breadcrumbs } from "../../../../shared/ui/nav/Breadcrumbs";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 interface RetailPurchaseRow {
   date: string;
@@ -104,12 +105,12 @@ export function RetailDetailSection({
             </div>
             <div>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Total Spent</div>
-              <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.antiqueGold, lineHeight: 1 }}>₹{(customer as any).totalSpend ? (customer as any).totalSpend.toLocaleString('en-IN') : (customer.spend || "0")}</div>
+              <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.antiqueGold, lineHeight: 1 }}>{formatMoney(rupees((customer as any).totalSpend ?? parseInt(String(customer.spend || "0").replace(/,/g, ''), 10) ?? 0))}</div>
             </div>
             <div>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Avg per Visit</div>
               <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 600, color: T.taupe, marginTop: 4 }}>
-                ₹{Math.round(parseInt(String(customer.spend || "0").replace(/,/g, ''), 10) / Math.max((customer as any).totalPurchases ?? customer.purchases ?? 0, 1)).toLocaleString('en-IN')}
+                {formatMoney(rupees(Math.round(((customer as any).totalSpend ?? parseInt(String(customer.spend || "0").replace(/,/g, ''), 10) ?? 0) / Math.max((customer as any).totalPurchases ?? customer.purchases ?? 0, 1))))}
               </div>
             </div>
             <div>

@@ -11,6 +11,7 @@ import { WholesaleCustomer, ViewMode } from "../types";
 import { Button, IconButton, Field, Input, SearchInput, Select, SelectItem, Textarea } from "../../../../shared/ui/primitives";
 import { useCustomers } from "../../contexts/CustomersContext";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 interface WholesaleFormState {
   name: string;
@@ -66,7 +67,7 @@ export function WholesaleCustomersSection({
     { id: "name", header: "Business Name", accessor: w => w.name, cell: (_v, w) => <span style={{ fontWeight: 600, color: T.luxuryBrown }}>{w.name}</span> },
     { id: "city", header: "City", accessor: w => w.city, cell: (_v, w) => <span style={{ color: T.taupe }}>{w.city}</span> },
     { id: "orders", header: "Orders", accessor: w => w.orders, cell: (_v, w) => <span style={{ color: T.luxuryBrown }}>{w.orders}</span> },
-    { id: "outstanding", header: "Outstanding", accessor: w => w.out, cell: (_v, w) => <span style={{ color: w.out === "0" ? T.greenMid : T.crimson, fontWeight: 600 }}>₹{w.out}</span> },
+    { id: "outstanding", header: "Outstanding", accessor: w => w.out, cell: (_v, w) => <span style={{ color: w.out === "0" ? T.greenMid : T.crimson, fontWeight: 600 }}>{formatMoney(rupees(Number(w.out) || 0))}</span> },
     {
       id: "status", header: "Status", accessor: w => w.status, type: "status",
       cell: (_v, w) => <span style={{ padding: "4px 10px", background: w.status === "clear" ? T.greenBg : w.status === "overdue" ? T.crimsonBg : "rgba(200,155,71,0.10)", color: w.status === "clear" ? T.greenMid : w.status === "overdue" ? T.crimson : T.antiqueGold, fontSize: 12, borderRadius: 5, fontWeight: 600 }}>{w.status.toUpperCase()}</span>,
@@ -79,8 +80,8 @@ export function WholesaleCustomersSection({
     { id: "name", header: "Business Name", accessor: w => w.name, cell: (_v, w) => <span style={{ fontWeight: 600, color: T.luxuryBrown }}>{w.name}</span> },
     { id: "city", header: "City", accessor: w => w.city, cell: (_v, w) => <span style={{ color: T.taupe }}>{w.city}</span> },
     { id: "totalOrders", header: "Total Orders", accessor: w => w.orders, cell: (_v, w) => <span style={{ color: T.luxuryBrown }}>{w.orders}</span> },
-    { id: "totalSpend", header: "Total Spend", accessor: w => w.spend, cell: (_v, w) => <span style={{ color: T.antiqueGold, fontWeight: 600 }}>₹{w.spend}</span> },
-    { id: "outstanding", header: "Outstanding", accessor: w => w.out, cell: (_v, w) => <span style={{ color: w.out === "0" ? T.greenMid : T.crimson, fontWeight: 600 }}>₹{w.out}</span> },
+    { id: "totalSpend", header: "Total Spend", accessor: w => w.spend, cell: (_v, w) => <span style={{ color: T.antiqueGold, fontWeight: 600 }}>{formatMoney(rupees(Number(w.spend) || 0))}</span> },
+    { id: "outstanding", header: "Outstanding", accessor: w => w.out, cell: (_v, w) => <span style={{ color: w.out === "0" ? T.greenMid : T.crimson, fontWeight: 600 }}>{formatMoney(rupees(Number(w.out) || 0))}</span> },
     { id: "terms", header: "Terms", accessor: w => w.terms, cell: (_v, w) => <span style={{ color: T.luxuryBrown }}>{w.terms}</span> },
     { id: "lastOrder", header: "Last Order", accessor: w => w.lastOrder, cell: (_v, w) => <span style={{ color: T.taupe }}>{w.lastOrder}</span> },
     {
@@ -305,7 +306,7 @@ export function WholesaleCustomersSection({
                   <div style={{ textAlign: "right" }}>
                     <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>Outstanding</div>
                     <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: w.out === "0" ? T.greenMid : T.crimson }}>
-                      {w.out === "0" ? "Clear" : `₹${w.out}`}
+                      {w.out === "0" ? "Clear" : formatMoney(rupees(Number(w.out) || 0))}
                     </div>
                     <div style={{ fontFamily: F.ui, fontSize: 12, color: w.status === "overdue" ? T.crimson : T.taupe, marginTop: 4, fontWeight: 600 }}>
                       {w.status === "clear" ? "✓ No Dues" : w.status === "overdue" ? "⚠ Overdue" : "◐ Pending"}
