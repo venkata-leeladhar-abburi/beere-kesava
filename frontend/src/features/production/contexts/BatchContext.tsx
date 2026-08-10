@@ -57,6 +57,11 @@ export interface SareeRow {
   receivedWarpG: string | null;
   receivedReshamG: string | null;
   receivedJariReels: string | null;
+  // Admin's per-saree weight/material verification against the received
+  // entry above — distinct from BulkOrder.tallied (order-level count check).
+  tallied: boolean;
+  talliedBy: string | null;
+  talliedAt: string | null;
 }
 
 export interface BatchRecord {
@@ -94,6 +99,7 @@ interface BatchContextValue {
   saveDraft: (batch: BatchRecord) => Promise<string>;
   updateBatch: (batchId: string, patch: Partial<BatchRecord>) => void;
   receiveRow: (batchId: string, serial: number, payload: ReceiveBatchRowPayload) => Promise<void>;
+  tallyRow: (batchId: string, serial: number, tallied: boolean, talliedBy?: string) => Promise<void>;
   finalizeBatch: (batchId: string) => Promise<void>;
   // Rejects with the backend's message when the batch has existing records
   // (materials issued, QC, finishing) attached — deletion is blocked, not
@@ -164,6 +170,9 @@ function backendBatchToRecord(
         receivedWarpG: r.receivedWarpG,
         receivedReshamG: r.receivedReshamG,
         receivedJariReels: r.receivedJariReels,
+        tallied: r.tallied,
+        talliedBy: r.talliedBy,
+        talliedAt: r.talliedAt,
       };
     }),
   };
@@ -273,6 +282,20 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
       ),
   });
 
+  const tallyRowMutation = useMutation({
+    mutationFn: (args: { batchId: string; serial: number; tallied: boolean; talliedBy?: string }) =>
+      batchesApi.tallyRow(args.batchId, args.serial, { tallied: args.tallied, talliedBy: args.talliedBy }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      void queryClient.invalidateQueries({ queryKey: ["bulkOrders"] });
+    },
+    onError: (err) => {
+      // eslint-disable-next-line no-console -- surface tally failures instead of failing silently
+      console.error("Failed to tally saree:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to tally saree");
+    },
+  });
+
   const receiveRowMutation = useMutation({
     mutationFn: (args: { batchId: string; serial: number; payload: ReceiveBatchRowPayload }) =>
       batchesApi.receiveRow(args.batchId, args.serial, args.payload),
@@ -325,6 +348,8 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
   const updateBatch = (batchId: string, patch: Partial<BatchRecord>) => updateBatchMutation.mutate({ batchId, patch });
   const receiveRow = (batchId: string, serial: number, payload: ReceiveBatchRowPayload) =>
     receiveRowMutation.mutateAsync({ batchId, serial, payload }).then(() => undefined);
+  const tallyRow = (batchId: string, serial: number, tallied: boolean, talliedBy?: string) =>
+    tallyRowMutation.mutateAsync({ batchId, serial, tallied, talliedBy }).then(() => undefined);
   const finalizeBatch = (batchId: string) => finalizeBatchMutation.mutateAsync(batchId).then(() => undefined);
   // A 404 here means the batch is already gone (another tab deleted it, or
   // it's a stale entry) — that's the caller's desired end state either way,
@@ -353,7 +378,7 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
   const safeBatches = Array.isArray(batches) ? batches : [];
 
   return (
-    <BatchContext.Provider value={{ batches: safeBatches, saveDraft, updateBatch, receiveRow, finalizeBatch, deleteBatch, isError, error, nextBatchId, pendingOpenBatchId, setPendingOpenBatchId }}>
+    <BatchContext.Provider value={{ batches: safeBatches, saveDraft, updateBatch, receiveRow, tallyRow, finalizeBatch, deleteBatch, isError, error, nextBatchId, pendingOpenBatchId, setPendingOpenBatchId }}>
       {children}
     </BatchContext.Provider>
   );

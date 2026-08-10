@@ -21,6 +21,7 @@ import { AssignBatchRowDto } from "./dto/assign-batch-row.dto";
 import { CreateBatchDto } from "./dto/create-batch.dto";
 import { ListBatchesQueryDto } from "./dto/list-batches-query.dto";
 import { ReceiveBatchRowDto } from "./dto/receive-batch-row.dto";
+import { TallyBatchRowDto } from "./dto/tally-batch-row.dto";
 import { BatchesService } from "./batches.service";
 
 // Production module — WORKER has full read/write; WEAVER can only read
@@ -66,6 +67,16 @@ export class BatchesController {
     @Body() dto: ReceiveBatchRowDto,
   ) {
     return this.batchesService.receiveRow(id, serial, dto);
+  }
+
+  @Patch(":id/rows/:serial/tally")
+  @RequireRoles(UserRole.WORKER, UserRole.ADMIN, UserRole.SUPERADMIN)
+  tallyRow(
+    @Param("id") id: string,
+    @Param("serial", ParseIntPipe) serial: number,
+    @Body() dto: TallyBatchRowDto,
+  ) {
+    return this.batchesService.tallyRow(id, serial, dto);
   }
 
   @Post(":id/finalize")

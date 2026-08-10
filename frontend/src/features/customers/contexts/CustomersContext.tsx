@@ -19,6 +19,7 @@ interface CustomersContextValue {
   retailCustomers: Customer[];
   addCustomer: (payload: CreateCustomerPayload) => Promise<Customer>;
   updateCustomer: (id: string, payload: UpdateCustomerPayload) => void;
+  deleteCustomer: (id: string) => Promise<void>;
 }
 
 export const CustomersContext = createContext<CustomersContextValue | null>(null);
@@ -56,15 +57,27 @@ export function CustomersProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
+  const deleteCustomerMutation = useMutation({
+    mutationFn: (id: string) => customersApi.remove(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      toast.success("Customer deleted");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to delete customer");
+    },
+  });
+
   const addCustomer = (payload: CreateCustomerPayload) => addCustomerMutation.mutateAsync(payload);
   const updateCustomer = (id: string, payload: UpdateCustomerPayload) =>
     updateCustomerMutation.mutate({ id, payload });
+  const deleteCustomer = (id: string) => deleteCustomerMutation.mutateAsync(id).then(() => undefined);
 
   const wholesaleCustomers = customers.filter(c => c.type === "WHOLESALE");
   const retailCustomers = customers.filter(c => c.type === "RETAIL");
 
   return (
-    <CustomersContext.Provider value={{ customers, wholesaleCustomers, retailCustomers, addCustomer, updateCustomer }}>
+    <CustomersContext.Provider value={{ customers, wholesaleCustomers, retailCustomers, addCustomer, updateCustomer, deleteCustomer }}>
       {children}
     </CustomersContext.Provider>
   );

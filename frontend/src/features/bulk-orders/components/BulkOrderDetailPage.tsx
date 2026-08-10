@@ -10,7 +10,9 @@ import type { BulkOrder } from "../contexts/BulkOrderContext";
 import { useBulkOrders } from "../contexts/BulkOrderContext";
 import { useFinishing, DispatchRecord, Quotation } from "../../finishing/contexts/FinishingContext";
 import { useBatches } from "../../production/contexts/BatchContext";
+import { SareeWeightTallyList, type TallyRowItem } from "../../production/components/sections/batches/SareeWeightTallyList";
 import { useRatesPricing } from "../../pricing/contexts/RatesContext";
+import { useAuth } from "../../../contexts/AuthContext";
 import { autoMaterialSplit } from "../../portals/components/worker/weavers/MaterialSplitPanel";
 import { trimNum } from "../../pricing/components/rates-pricing/jariUtils";
 import { INVOICES } from "../../payments/data/invoices";
@@ -58,7 +60,9 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
   const { bulkOrders, tallyOrder, deleteBulkOrder } = useBulkOrders();
   const live = bulkOrders.find(o => o.ref === order.ref) ?? order;
   const { readySarees, returns, dispatches, quotations } = useFinishing();
-  const { batches } = useBatches();
+  const { batches, tallyRow } = useBatches();
+  const { user } = useAuth();
+  const [tallyBusyKey, setTallyBusyKey] = useState<string | null>(null);
 
   const [tab, setTab] = useState<"overview" | "sarees" | "payments" | "quotations">(initialTab);
   const [search, setSearch] = useState("");
@@ -91,10 +95,10 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
     readySarees.forEach(s => {
       const boRef = resolveBulkOrderRef((s as any).bulkOrderRef, s.designCode, s.sareeType, bulkOrders);
       if (boRef !== live.ref && !quotationRefBySaree.has(s.id)) return;
-      const bId = batches.find(b => b.rows.some(row => row.sareeId === s.id))?.batchId;
+      const bRow = batches.flatMap(b => b.rows.map(row => ({ b, row }))).find(({ row }) => row.sareeId === s.id);
       byId.set(s.id, {
         id: s.id, designCode: s.designCode, sareeType: s.sareeType, sareeTypeCode: s.sareeTypeCode,
-        weaverName: s.weaverName, batchId: bId, status: "QC Passed", date: s.qcPassDate,
+        weaverName: s.weaverName, batchId: bRow?.b.batchId, serial: bRow?.row.serial, status: "QC Passed", date: s.qcPassDate,
         quotationRef: quotationRefBySaree.get(s.id),
       });
     });
@@ -103,10 +107,10 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
       const boRef = resolveBulkOrderRef(undefined, r.designCode, r.sareeType, bulkOrders);
       const isQuotationLinked = r.quotationRef && linkedQuotations.some(q => q.quotationNumber === r.quotationRef);
       if (boRef !== live.ref && !isQuotationLinked && !quotationRefBySaree.has(r.sareeId)) return;
-      const bId = batches.find(b => b.rows.some(row => row.sareeId === r.sareeId))?.batchId;
+      const bRow = batches.flatMap(b => b.rows.map(row => ({ b, row }))).find(({ row }) => row.sareeId === r.sareeId);
       byId.set(r.sareeId, {
         id: r.sareeId, designCode: r.designCode, sareeType: r.sareeType, sareeTypeCode: r.sareeTypeCode,
-        weaverName: r.weaverName, batchId: bId,
+        weaverName: r.weaverName, batchId: bRow?.b.batchId, serial: bRow?.row.serial,
         status: r.inventoryStatus === "Ready for Dispatch" ? "Finishing complete" : (r.inventoryStatus.includes("Damaged") ? "Damaged — Review Needed" : r.inventoryStatus) as LinkedSaree["status"],
         date: r.receivedDate,
         quotationRef: r.quotationRef ?? quotationRefBySaree.get(r.sareeId),
@@ -172,6 +176,47 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
     }));
     return m;
   }, [batches]);
+
+  // Per-saree tally rows — real backend rows (weight/warp/resham/jari as
+  // Worker Staff entered them, plus this saree's own tally state), scoped to
+  // only the sarees actually linked to this order (not the whole batch).
+  const rowBySareeId = useMemo(
+    () => new Map(batches.flatMap(b => b.rows.filter(r => r.sareeId).map(r => [r.sareeId as string, r] as const))),
+    [batches],
+  );
+
+  const tallyItems: TallyRowItem[] = useMemo(
+    () => linkedSarees
+      .filter(s => s.batchId && s.serial !== undefined)
+      .map(s => {
+        const row = rowBySareeId.get(s.id);
+        return {
+          sareeId: s.id,
+          serial: s.serial as number,
+          batchId: s.batchId as string,
+          weaverName: s.weaverName,
+          sareeTypeCode: s.sareeTypeCode ?? null,
+          actualWeight: row?.receivedWeight ? parseFloat(row.receivedWeight) : null,
+          actualWarpG: row?.receivedWarpG ? parseFloat(row.receivedWarpG) : null,
+          actualReshamG: row?.receivedReshamG ? parseFloat(row.receivedReshamG) : null,
+          actualJariReels: row?.receivedJariReels ? parseFloat(row.receivedJariReels) : null,
+          tallied: row?.tallied ?? false,
+          talliedBy: row?.talliedBy ?? null,
+          talliedAt: row?.talliedAt ?? null,
+        };
+      }),
+    [linkedSarees, rowBySareeId],
+  );
+
+  const handleToggleSareeTally = async (item: TallyRowItem, tallied: boolean) => {
+    const key = `${item.batchId}-${item.serial}`;
+    setTallyBusyKey(key);
+    try {
+      await tallyRow(item.batchId, item.serial, tallied, user?.name);
+    } finally {
+      setTallyBusyKey(null);
+    }
+  };
 
   const weightTally = useMemo(() => {
     let actualWeight = 0, warpG = 0, reshamG = 0, jariReels = 0, weighedCount = 0;
@@ -343,6 +388,18 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
               );
             })}
           </div>
+
+          <div style={{ height: 1, background: "rgba(110,15,45,0.06)", margin: "18px 0 14px" }} />
+
+          <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: 10 }}>
+            Per-Saree Tally ({tallyItems.filter(i => i.tallied).length} / {tallyItems.length} tallied)
+          </div>
+          <SareeWeightTallyList
+            items={tallyItems}
+            getSareeTypeByCode={getSareeTypeByCode}
+            onToggleTally={handleToggleSareeTally}
+            busyKey={tallyBusyKey}
+          />
         </div>
 
         {/* Tabs */}

@@ -16,6 +16,7 @@ export interface BackendDispatchRecord {
   vehicleNumber: string | null;
   driverName: string | null;
   customerId: string | null;
+  customer: { id: string; name: string; phone: string | null; address: string | null; city: string | null } | null;
   invoiceNumber: string | null;
   invoiceDate: string | null;
   pricePerSaree: string | null;
@@ -29,6 +30,8 @@ export interface BackendDispatchRecord {
   pendingTransport: boolean;
   pendingReceipt: boolean;
   notes: string | null;
+  expectedDelivery: string | null;
+  specialInstructions: string | null;
   sarees: BackendDispatchSaree[];
 }
 
@@ -49,6 +52,8 @@ export interface CreateDispatchPayload {
   pendingTransport?: boolean;
   pendingReceipt?: boolean;
   notes?: string;
+  expectedDelivery?: string;
+  specialInstructions?: string;
   bulkOrderRef?: string;
   quotationRef?: string;
   // Wholesale only
@@ -60,6 +65,19 @@ export interface CreateDispatchPayload {
   paymentDueDate?: string;
 }
 
+export interface UpdateDispatchPayload {
+  lrNumber?: string;
+  transportCompany?: string;
+  vehicleNumber?: string;
+  driverName?: string;
+  dispatchDate?: string;
+  notes?: string;
+  expectedDelivery?: string;
+  specialInstructions?: string;
+  pendingTransport?: boolean;
+  pendingReceipt?: boolean;
+}
+
 export const dispatchApi = {
   list: (pageSize = 100) =>
     apiClient.get<PaginatedResponse<BackendDispatchRecord>>(`/dispatch?pageSize=${pageSize}`),
@@ -67,6 +85,9 @@ export const dispatchApi = {
   findOne: (id: string) => apiClient.get<BackendDispatchRecord>(`/dispatch/${id}`),
 
   create: (payload: CreateDispatchPayload) => apiClient.post<BackendDispatchRecord>("/dispatch", payload),
+
+  update: (id: string, payload: UpdateDispatchPayload) =>
+    apiClient.patch<BackendDispatchRecord>(`/dispatch/${id}`, payload),
 
   delete: (id: string, actorId: string) => apiClient.delete(`/dispatch/${id}?actorId=${actorId}`),
 };

@@ -34,6 +34,7 @@ export function useInventoryPageState() {
   const [scanMsg,  setScanMsg]                = useState("");
   const [quotationDispatch, setQuotationDispatch] = useState<Quotation | null>(null);
   const [resumeDispatch, setResumeDispatch]   = useState<DispatchRecord | null>(null);
+  const [viewingInvoice, setViewingInvoice]   = useState<DispatchRecord | null>(null);
 
   const dispatchedSareeIds = useMemo(
     () => new Set(dispatches.flatMap(d => d.sareeIds)),
@@ -125,8 +126,16 @@ export function useInventoryPageState() {
   // previously raised quotation) is gone from the shelf — it must not be
   // offered again as a pick for a *new* quotation/dispatch, even though the
   // underlying table still lists it (under its Dispatched tab) for audit.
+  // `mirroredRows` mirrors whatever the "All Sarees" table currently has
+  // visible — which, with no status filter selected, includes sarees still
+  // in production or awaiting QC. Those aren't eligible to be quoted or
+  // dispatched (finishing/dispatch both require a QC pass first), so this
+  // must gate on qcStatus itself rather than trust the table's own filter
+  // state. qcStatus stays "passed" permanently once set (PASSED is terminal
+  // — see BatchesService), so this doesn't exclude anything that's since
+  // moved on to finishing/dispatch.
   const availableSarees = useMemo<FinishingReturn[]>(
-    () => mirroredRows.filter(r => !r.dispatched).map(rowToDispatchSaree),
+    () => mirroredRows.filter(r => !r.dispatched && r.qcStatus === "passed").map(rowToDispatchSaree),
     [mirroredRows],
   );
 
@@ -299,6 +308,8 @@ export function useInventoryPageState() {
     setQuotationDispatch,
     resumeDispatch,
     setResumeDispatch,
+    viewingInvoice,
+    setViewingInvoice,
     deleteDispatch,
     markQuotationDispatched,
     allRecords,

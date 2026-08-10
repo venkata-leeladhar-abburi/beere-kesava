@@ -25,6 +25,11 @@ export interface BackendBatchSareeRow {
   receivedWarpG: string | null;
   receivedReshamG: string | null;
   receivedJariReels: string | null;
+  // Admin's per-saree weight/material verification against the received
+  // entry above — distinct from BulkOrder.tallied (order-level count check).
+  tallied: boolean;
+  talliedBy: string | null;
+  talliedAt: string | null;
   finishingAssignment: { status: string; updatedAt: string } | null;
   // Latest QC verdict only (newest-first, capped at one server-side). A saree
   // gets a fresh record each round, because a SEMI verdict sends it back to
@@ -86,6 +91,9 @@ export const batchesApi = {
 
   receiveRow: (batchId: string, serial: number, payload: ReceiveBatchRowPayload) =>
     apiClient.patch<BackendBatchSareeRow>(`/batches/${batchId}/rows/${serial}/receive`, payload),
+
+  tallyRow: (batchId: string, serial: number, payload: { tallied: boolean; talliedBy?: string }) =>
+    apiClient.patch<BackendBatchSareeRow>(`/batches/${batchId}/rows/${serial}/tally`, payload),
 
   finalize: (batchId: string) => apiClient.post<BackendBatch>(`/batches/${batchId}/finalize`, {}),
 

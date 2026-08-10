@@ -4,7 +4,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ArrowLeft, MapPin, Package, Send } from "lucide-react";
+import { ArrowLeft, MapPin, Package, Send, Trash2 } from "lucide-react";
 import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../../shared/ui/DateFilterBar";
 import { T, F } from "../../theme";
 import {
@@ -15,7 +15,7 @@ import { SupplierFormValues } from "../../types";
 import { FadeUp, StatusPill, StarRating } from "../../common/primitives";
 import { Button } from "../../../../../shared/ui/primitives";
 import { Breadcrumbs } from "../../../../../shared/ui/nav/Breadcrumbs";
-import { recordView } from "../../../../../shared/ui/overlay";
+import { recordView, useConfirm } from "../../../../../shared/ui/overlay";
 import { EntityCode } from "../../../../../shared/ui/domain";
 import { OverviewTab } from "./OverviewTab";
 import { OrdersTab } from "./OrdersTab";
@@ -28,8 +28,9 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
   onBack: () => void;
   onRaiseRequest: (supplierId: string) => void;
 }) {
-  const { statsFor, payments, requests, updateSupplier } = useSuppliers();
+  const { statsFor, payments, requests, updateSupplier, deleteSupplier } = useSuppliers();
   const [tab, setTab] = useState<"overview" | "orders" | "payments" | "contact" | "edit">("overview");
+  const confirm = useConfirm();
 
   // Command palette RECENT group (design-system/05-OVERLAYS.md Part H) —
   // record this profile as viewed once per mount.
@@ -173,6 +174,20 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
           </Button>
           <StatusPill status={supplier.status} />
           <EntityCode type="supplier" value={supplier.id} />
+          <Button
+            variant="tertiary" size="md" iconLeft={Trash2}
+            onClick={async () => {
+              const ok = await confirm({
+                title: `Delete supplier "${supplier.name}"?`,
+                description: "This can't be undone. Suppliers with existing purchases or payments can't be deleted — deactivate them instead.",
+                confirmLabel: "Delete Supplier",
+                tone: "danger",
+              });
+              if (ok) deleteSupplier(supplier.id).then(onBack);
+            }}
+          >
+            Delete
+          </Button>
         </div>
       </div>
 

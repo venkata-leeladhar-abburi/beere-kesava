@@ -27,12 +27,13 @@ import { weaversApi } from "../../../../shared/api/weavers";
 import { toast } from "sonner";
 import { Button, Field, Input, NumberInput } from "../../../../shared/ui/primitives";
 import { Breadcrumbs } from "../../../../shared/ui/nav/Breadcrumbs";
-import { recordView } from "../../../../shared/ui/overlay";
+import { recordView, useConfirm } from "../../../../shared/ui/overlay";
 
 export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { weaver: typeof WEAVERS[0] | null; onClose: () => void; initialMode?: "view" | "edit"; onNavigate?: (tab: string) => void }) {
   const [tab, setTab] = useState("overview");
   const [mode, setMode] = useState<"view" | "edit">(initialMode);
   const queryClient = useQueryClient();
+  const confirm = useConfirm();
 
   const nameParts = (weaver?.name || "").split(" ");
   const [editForm, setEditForm] = useState({
@@ -60,6 +61,22 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
     },
     onError: (err: unknown) => {
       toast.error(err instanceof Error ? err.message : "Failed to update weaver profile");
+    },
+  });
+
+  const deleteWeaver = useMutation({
+    mutationFn: () => weaversApi.remove(weaver!.id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["weavers-directory"] });
+      void queryClient.invalidateQueries({ queryKey: ["weavers-table-roster"] });
+      void queryClient.invalidateQueries({ queryKey: ["weavers-card-roster"] });
+      void queryClient.invalidateQueries({ queryKey: ["weavers-page-roster"] });
+      void queryClient.invalidateQueries({ queryKey: ["weaver-nav"] });
+      toast.success("Weaver deleted");
+      onClose();
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to delete weaver");
     },
   });
 
@@ -171,7 +188,24 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
           <Button onClick={onClose} variant="ghost" size="sm" className="text-[#6E0F2D] font-bold">
             <ChevronLeftIcon size={20} /> Back to Weavers
           </Button>
-          <span style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "1px", textTransform: "uppercase", color: T.taupe }}>Weaver Profile</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <span style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "1px", textTransform: "uppercase", color: T.taupe }}>Weaver Profile</span>
+            <Button
+              onClick={async () => {
+                const ok = await confirm({
+                  title: `Delete weaver "${weaver.name}"?`,
+                  description: "This can't be undone. Weavers with existing batches, QC entries, or payments can't be deleted — deactivate them instead.",
+                  confirmLabel: "Delete Weaver",
+                  tone: "danger",
+                });
+                if (ok) deleteWeaver.mutate();
+              }}
+              variant="tertiary" size="sm"
+              disabled={deleteWeaver.isPending}
+            >
+              Delete
+            </Button>
+          </div>
         </div>
 
         <div style={{ padding: "16px 48px 0", background: "#FFFFFF" }}>

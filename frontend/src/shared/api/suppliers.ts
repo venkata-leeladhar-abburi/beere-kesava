@@ -50,4 +50,5 @@ export const suppliersApi = {
   create: (payload: CreateSupplierPayload) => apiClient.post<BackendSupplier>("/suppliers", payload),
   update: (id: string, payload: Partial<CreateSupplierPayload> & { status?: string }) =>
     apiClient.patch<BackendSupplier>(`/suppliers/${id}`, payload),
+  remove: (id: string) => apiClient.delete<void>(`/suppliers/${id}`),
 };

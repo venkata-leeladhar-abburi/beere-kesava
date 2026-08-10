@@ -1,8 +1,9 @@
-import { Body, Controller, Delete, Get, Param, Post, Query } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from "@nestjs/common";
 import { RequireRoles } from "../auth/decorators/require-roles.decorator";
 import { UserRole } from "../generated/prisma/client";
 import { CreateDispatchDto } from "./dto/create-dispatch.dto";
 import { ListDispatchQueryDto } from "./dto/list-dispatch-query.dto";
+import { UpdateDispatchDto } from "./dto/update-dispatch.dto";
 import { DispatchService } from "./dispatch.service";
 
 // Dispatch is created by production (WORKER) but looked up by retail (SHOP)
@@ -26,6 +27,12 @@ export class DispatchController {
   @Get(":id")
   findOne(@Param("id") id: string) {
     return this.dispatchService.findOne(id);
+  }
+
+  @Patch(":id")
+  @RequireRoles(UserRole.WORKER, UserRole.ADMIN, UserRole.SUPERADMIN)
+  update(@Param("id") id: string, @Body() dto: UpdateDispatchDto) {
+    return this.dispatchService.update(id, dto);
   }
 
   @Delete(":id")

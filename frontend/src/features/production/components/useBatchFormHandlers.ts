@@ -31,6 +31,7 @@ export function useBatchFormHandlers(bulkOrders: any[]) {
       bulkOrderRef: null, bulkOrderLabel: null,
       receivedAt: null, receivedWeight: null, receivedColor: null, receivedPhotoUrl: null,
       receivedWarpG: null, receivedReshamG: null, receivedJariReels: null,
+      tallied: false, talliedBy: null, talliedAt: null,
     })));
     setSelected(new Set());
     setGenerated(true);

@@ -514,6 +514,14 @@ model BatchSareeRow {
   receivedReshamG    Decimal? @db.Decimal(8, 2)
   receivedJariReels  Decimal? @db.Decimal(8, 2)
 
+  // Admin's physical-count verification of this one saree, separate from
+  // BulkOrder.tallied (which only confirms the order's overall saree count).
+  // This is the per-saree weight/material check — admin compares what
+  // Worker Staff entered at receipt against the SareeTypeRate standard.
+  tallied   Boolean   @default(false)
+  talliedBy String?
+  talliedAt DateTime?
+
   // History: a saree can be re-inspected after a SEMI verdict sends it back
   // to the weaver for rework, so this is one-to-many, newest last by qcDate.
   qcRecords            QcRecord[]
@@ -751,6 +759,11 @@ model DispatchRecord {
   pendingTransport Boolean      @default(false)
   pendingReceipt   Boolean      @default(false)
   notes            String?
+  // Wholesale-only fields from TransportForm — expectedDelivery mirrors
+  // dispatchDate's shape (a plain date), specialInstructions replaces
+  // `notes` in that form's UI (retail dispatch uses `notes` instead).
+  expectedDelivery   DateTime?
+  specialInstructions String?
 
   sarees  DispatchSaree[]
   invoice Invoice?

@@ -52,6 +52,7 @@ interface SupplierContextValue {
 
   addSupplier: (s: Omit<Supplier, "id" | "initials">) => string;
   updateSupplier: (id: string, patch: Partial<Supplier>) => void;
+  deleteSupplier: (id: string) => Promise<void>;
   getSupplier: (id: string) => Supplier | undefined;
   nextSupplierId: () => string;
 
@@ -204,6 +205,17 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
+  const deleteSupplierMutation = useMutation({
+    mutationFn: (id: string) => suppliersApi.remove(id),
+    onSuccess: (_void, id) => {
+      setSuppliers(prev => prev.filter(s => s.id !== id));
+      toast.success("Supplier deleted");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to delete supplier");
+    },
+  });
+
   const getSupplier = useCallback(
     (id: string) => suppliers.find(s => s.id === id),
     [suppliers]
@@ -316,6 +328,7 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
     return id;
   };
   const updateSupplier = (id: string, patch: Partial<Supplier>) => updateSupplierMutation.mutate({ id, patch });
+  const deleteSupplier = (id: string) => deleteSupplierMutation.mutateAsync(id).then(() => undefined);
 
   const addPurchase = (p: Omit<Purchase, "id">): string => {
     const id = `EXT-2026-${String(Date.now()).slice(-4)}`;
@@ -350,7 +363,7 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
 
   const value: SupplierContextValue = {
     suppliers, purchases, payments, requests,
-    addSupplier, updateSupplier, getSupplier, nextSupplierId,
+    addSupplier, updateSupplier, deleteSupplier, getSupplier, nextSupplierId,
     addPurchase, updatePurchase, deletePurchase,
     addPayment, raiseRequest, decideRequest, statsFor,
     isError, error,

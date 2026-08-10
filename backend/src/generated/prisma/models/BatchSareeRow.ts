@@ -62,6 +62,9 @@ export type BatchSareeRowMinAggregateOutputType = {
   receivedWarpG: runtime.Decimal | null
   receivedReshamG: runtime.Decimal | null
   receivedJariReels: runtime.Decimal | null
+  tallied: boolean | null
+  talliedBy: string | null
+  talliedAt: Date | null
 }
 
 export type BatchSareeRowMaxAggregateOutputType = {
@@ -84,6 +87,9 @@ export type BatchSareeRowMaxAggregateOutputType = {
   receivedWarpG: runtime.Decimal | null
   receivedReshamG: runtime.Decimal | null
   receivedJariReels: runtime.Decimal | null
+  tallied: boolean | null
+  talliedBy: string | null
+  talliedAt: Date | null
 }
 
 export type BatchSareeRowCountAggregateOutputType = {
@@ -106,6 +112,9 @@ export type BatchSareeRowCountAggregateOutputType = {
   receivedWarpG: number
   receivedReshamG: number
   receivedJariReels: number
+  tallied: number
+  talliedBy: number
+  talliedAt: number
   _all: number
 }
 
@@ -146,6 +155,9 @@ export type BatchSareeRowMinAggregateInputType = {
   receivedWarpG?: true
   receivedReshamG?: true
   receivedJariReels?: true
+  tallied?: true
+  talliedBy?: true
+  talliedAt?: true
 }
 
 export type BatchSareeRowMaxAggregateInputType = {
@@ -168,6 +180,9 @@ export type BatchSareeRowMaxAggregateInputType = {
   receivedWarpG?: true
   receivedReshamG?: true
   receivedJariReels?: true
+  tallied?: true
+  talliedBy?: true
+  talliedAt?: true
 }
 
 export type BatchSareeRowCountAggregateInputType = {
@@ -190,6 +205,9 @@ export type BatchSareeRowCountAggregateInputType = {
   receivedWarpG?: true
   receivedReshamG?: true
   receivedJariReels?: true
+  tallied?: true
+  talliedBy?: true
+  talliedAt?: true
   _all?: true
 }
 
@@ -299,6 +317,9 @@ export type BatchSareeRowGroupByOutputType = {
   receivedWarpG: runtime.Decimal | null
   receivedReshamG: runtime.Decimal | null
   receivedJariReels: runtime.Decimal | null
+  tallied: boolean
+  talliedBy: string | null
+  talliedAt: Date | null
   _count: BatchSareeRowCountAggregateOutputType | null
   _avg: BatchSareeRowAvgAggregateOutputType | null
   _sum: BatchSareeRowSumAggregateOutputType | null
@@ -344,6 +365,9 @@ export type BatchSareeRowWhereInput = {
   receivedWarpG?: Prisma.DecimalNullableFilter<"BatchSareeRow"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: Prisma.DecimalNullableFilter<"BatchSareeRow"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: Prisma.DecimalNullableFilter<"BatchSareeRow"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: Prisma.BoolFilter<"BatchSareeRow"> | boolean
+  talliedBy?: Prisma.StringNullableFilter<"BatchSareeRow"> | string | null
+  talliedAt?: Prisma.DateTimeNullableFilter<"BatchSareeRow"> | Date | string | null
   batch?: Prisma.XOR<Prisma.BatchScalarRelationFilter, Prisma.BatchWhereInput>
   weaver?: Prisma.XOR<Prisma.WeaverNullableScalarRelationFilter, Prisma.WeaverWhereInput> | null
   factoryLoom?: Prisma.XOR<Prisma.FactoryLoomNullableScalarRelationFilter, Prisma.FactoryLoomWhereInput> | null
@@ -374,6 +398,9 @@ export type BatchSareeRowOrderByWithRelationInput = {
   receivedWarpG?: Prisma.SortOrderInput | Prisma.SortOrder
   receivedReshamG?: Prisma.SortOrderInput | Prisma.SortOrder
   receivedJariReels?: Prisma.SortOrderInput | Prisma.SortOrder
+  tallied?: Prisma.SortOrder
+  talliedBy?: Prisma.SortOrderInput | Prisma.SortOrder
+  talliedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   batch?: Prisma.BatchOrderByWithRelationInput
   weaver?: Prisma.WeaverOrderByWithRelationInput
   factoryLoom?: Prisma.FactoryLoomOrderByWithRelationInput
@@ -408,6 +435,9 @@ export type BatchSareeRowWhereUniqueInput = Prisma.AtLeast<{
   receivedWarpG?: Prisma.DecimalNullableFilter<"BatchSareeRow"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: Prisma.DecimalNullableFilter<"BatchSareeRow"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: Prisma.DecimalNullableFilter<"BatchSareeRow"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: Prisma.BoolFilter<"BatchSareeRow"> | boolean
+  talliedBy?: Prisma.StringNullableFilter<"BatchSareeRow"> | string | null
+  talliedAt?: Prisma.DateTimeNullableFilter<"BatchSareeRow"> | Date | string | null
   batch?: Prisma.XOR<Prisma.BatchScalarRelationFilter, Prisma.BatchWhereInput>
   weaver?: Prisma.XOR<Prisma.WeaverNullableScalarRelationFilter, Prisma.WeaverWhereInput> | null
   factoryLoom?: Prisma.XOR<Prisma.FactoryLoomNullableScalarRelationFilter, Prisma.FactoryLoomWhereInput> | null
@@ -438,6 +468,9 @@ export type BatchSareeRowOrderByWithAggregationInput = {
   receivedWarpG?: Prisma.SortOrderInput | Prisma.SortOrder
   receivedReshamG?: Prisma.SortOrderInput | Prisma.SortOrder
   receivedJariReels?: Prisma.SortOrderInput | Prisma.SortOrder
+  tallied?: Prisma.SortOrder
+  talliedBy?: Prisma.SortOrderInput | Prisma.SortOrder
+  talliedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.BatchSareeRowCountOrderByAggregateInput
   _avg?: Prisma.BatchSareeRowAvgOrderByAggregateInput
   _max?: Prisma.BatchSareeRowMaxOrderByAggregateInput
@@ -468,6 +501,9 @@ export type BatchSareeRowScalarWhereWithAggregatesInput = {
   receivedWarpG?: Prisma.DecimalNullableWithAggregatesFilter<"BatchSareeRow"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: Prisma.DecimalNullableWithAggregatesFilter<"BatchSareeRow"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: Prisma.DecimalNullableWithAggregatesFilter<"BatchSareeRow"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: Prisma.BoolWithAggregatesFilter<"BatchSareeRow"> | boolean
+  talliedBy?: Prisma.StringNullableWithAggregatesFilter<"BatchSareeRow"> | string | null
+  talliedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"BatchSareeRow"> | Date | string | null
 }
 
 export type BatchSareeRowCreateInput = {
@@ -484,6 +520,9 @@ export type BatchSareeRowCreateInput = {
   receivedWarpG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: boolean
+  talliedBy?: string | null
+  talliedAt?: Date | string | null
   batch: Prisma.BatchCreateNestedOneWithoutRowsInput
   weaver?: Prisma.WeaverCreateNestedOneWithoutBatchSareeRowsInput
   factoryLoom?: Prisma.FactoryLoomCreateNestedOneWithoutBatchSareeRowsInput
@@ -514,6 +553,9 @@ export type BatchSareeRowUncheckedCreateInput = {
   receivedWarpG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: boolean
+  talliedBy?: string | null
+  talliedAt?: Date | string | null
   qcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutBatchSareeRowInput
   finishingAssignment?: Prisma.FinishingAssignmentUncheckedCreateNestedOneWithoutBatchSareeRowInput
 }
@@ -532,6 +574,9 @@ export type BatchSareeRowUpdateInput = {
   receivedWarpG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  talliedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  talliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   batch?: Prisma.BatchUpdateOneRequiredWithoutRowsNestedInput
   weaver?: Prisma.WeaverUpdateOneWithoutBatchSareeRowsNestedInput
   factoryLoom?: Prisma.FactoryLoomUpdateOneWithoutBatchSareeRowsNestedInput
@@ -562,6 +607,9 @@ export type BatchSareeRowUncheckedUpdateInput = {
   receivedWarpG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  talliedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  talliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   qcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutBatchSareeRowNestedInput
   finishingAssignment?: Prisma.FinishingAssignmentUncheckedUpdateOneWithoutBatchSareeRowNestedInput
 }
@@ -586,6 +634,9 @@ export type BatchSareeRowCreateManyInput = {
   receivedWarpG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: boolean
+  talliedBy?: string | null
+  talliedAt?: Date | string | null
 }
 
 export type BatchSareeRowUpdateManyMutationInput = {
@@ -602,6 +653,9 @@ export type BatchSareeRowUpdateManyMutationInput = {
   receivedWarpG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  talliedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  talliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type BatchSareeRowUncheckedUpdateManyInput = {
@@ -624,6 +678,9 @@ export type BatchSareeRowUncheckedUpdateManyInput = {
   receivedWarpG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  talliedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  talliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type BatchSareeRowListRelationFilter = {
@@ -661,6 +718,9 @@ export type BatchSareeRowCountOrderByAggregateInput = {
   receivedWarpG?: Prisma.SortOrder
   receivedReshamG?: Prisma.SortOrder
   receivedJariReels?: Prisma.SortOrder
+  tallied?: Prisma.SortOrder
+  talliedBy?: Prisma.SortOrder
+  talliedAt?: Prisma.SortOrder
 }
 
 export type BatchSareeRowAvgOrderByAggregateInput = {
@@ -691,6 +751,9 @@ export type BatchSareeRowMaxOrderByAggregateInput = {
   receivedWarpG?: Prisma.SortOrder
   receivedReshamG?: Prisma.SortOrder
   receivedJariReels?: Prisma.SortOrder
+  tallied?: Prisma.SortOrder
+  talliedBy?: Prisma.SortOrder
+  talliedAt?: Prisma.SortOrder
 }
 
 export type BatchSareeRowMinOrderByAggregateInput = {
@@ -713,6 +776,9 @@ export type BatchSareeRowMinOrderByAggregateInput = {
   receivedWarpG?: Prisma.SortOrder
   receivedReshamG?: Prisma.SortOrder
   receivedJariReels?: Prisma.SortOrder
+  tallied?: Prisma.SortOrder
+  talliedBy?: Prisma.SortOrder
+  talliedAt?: Prisma.SortOrder
 }
 
 export type BatchSareeRowSumOrderByAggregateInput = {
@@ -1038,6 +1104,9 @@ export type BatchSareeRowCreateWithoutWeaverInput = {
   receivedWarpG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: boolean
+  talliedBy?: string | null
+  talliedAt?: Date | string | null
   batch: Prisma.BatchCreateNestedOneWithoutRowsInput
   factoryLoom?: Prisma.FactoryLoomCreateNestedOneWithoutBatchSareeRowsInput
   design?: Prisma.DesignLibraryCreateNestedOneWithoutBatchSareeRowsInput
@@ -1066,6 +1135,9 @@ export type BatchSareeRowUncheckedCreateWithoutWeaverInput = {
   receivedWarpG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: boolean
+  talliedBy?: string | null
+  talliedAt?: Date | string | null
   qcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutBatchSareeRowInput
   finishingAssignment?: Prisma.FinishingAssignmentUncheckedCreateNestedOneWithoutBatchSareeRowInput
 }
@@ -1119,6 +1191,9 @@ export type BatchSareeRowScalarWhereInput = {
   receivedWarpG?: Prisma.DecimalNullableFilter<"BatchSareeRow"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: Prisma.DecimalNullableFilter<"BatchSareeRow"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: Prisma.DecimalNullableFilter<"BatchSareeRow"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: Prisma.BoolFilter<"BatchSareeRow"> | boolean
+  talliedBy?: Prisma.StringNullableFilter<"BatchSareeRow"> | string | null
+  talliedAt?: Prisma.DateTimeNullableFilter<"BatchSareeRow"> | Date | string | null
 }
 
 export type BatchSareeRowCreateWithoutFactoryLoomInput = {
@@ -1135,6 +1210,9 @@ export type BatchSareeRowCreateWithoutFactoryLoomInput = {
   receivedWarpG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: boolean
+  talliedBy?: string | null
+  talliedAt?: Date | string | null
   batch: Prisma.BatchCreateNestedOneWithoutRowsInput
   weaver?: Prisma.WeaverCreateNestedOneWithoutBatchSareeRowsInput
   design?: Prisma.DesignLibraryCreateNestedOneWithoutBatchSareeRowsInput
@@ -1163,6 +1241,9 @@ export type BatchSareeRowUncheckedCreateWithoutFactoryLoomInput = {
   receivedWarpG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: boolean
+  talliedBy?: string | null
+  talliedAt?: Date | string | null
   qcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutBatchSareeRowInput
   finishingAssignment?: Prisma.FinishingAssignmentUncheckedCreateNestedOneWithoutBatchSareeRowInput
 }
@@ -1207,6 +1288,9 @@ export type BatchSareeRowCreateWithoutDesignInput = {
   receivedWarpG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: boolean
+  talliedBy?: string | null
+  talliedAt?: Date | string | null
   batch: Prisma.BatchCreateNestedOneWithoutRowsInput
   weaver?: Prisma.WeaverCreateNestedOneWithoutBatchSareeRowsInput
   factoryLoom?: Prisma.FactoryLoomCreateNestedOneWithoutBatchSareeRowsInput
@@ -1235,6 +1319,9 @@ export type BatchSareeRowUncheckedCreateWithoutDesignInput = {
   receivedWarpG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: boolean
+  talliedBy?: string | null
+  talliedAt?: Date | string | null
   qcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutBatchSareeRowInput
   finishingAssignment?: Prisma.FinishingAssignmentUncheckedCreateNestedOneWithoutBatchSareeRowInput
 }
@@ -1279,6 +1366,9 @@ export type BatchSareeRowCreateWithoutSareeTypeInput = {
   receivedWarpG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: boolean
+  talliedBy?: string | null
+  talliedAt?: Date | string | null
   batch: Prisma.BatchCreateNestedOneWithoutRowsInput
   weaver?: Prisma.WeaverCreateNestedOneWithoutBatchSareeRowsInput
   factoryLoom?: Prisma.FactoryLoomCreateNestedOneWithoutBatchSareeRowsInput
@@ -1307,6 +1397,9 @@ export type BatchSareeRowUncheckedCreateWithoutSareeTypeInput = {
   receivedWarpG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: boolean
+  talliedBy?: string | null
+  talliedAt?: Date | string | null
   qcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutBatchSareeRowInput
   finishingAssignment?: Prisma.FinishingAssignmentUncheckedCreateNestedOneWithoutBatchSareeRowInput
 }
@@ -1351,6 +1444,9 @@ export type BatchSareeRowCreateWithoutBatchInput = {
   receivedWarpG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: boolean
+  talliedBy?: string | null
+  talliedAt?: Date | string | null
   weaver?: Prisma.WeaverCreateNestedOneWithoutBatchSareeRowsInput
   factoryLoom?: Prisma.FactoryLoomCreateNestedOneWithoutBatchSareeRowsInput
   design?: Prisma.DesignLibraryCreateNestedOneWithoutBatchSareeRowsInput
@@ -1379,6 +1475,9 @@ export type BatchSareeRowUncheckedCreateWithoutBatchInput = {
   receivedWarpG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: boolean
+  talliedBy?: string | null
+  talliedAt?: Date | string | null
   qcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutBatchSareeRowInput
   finishingAssignment?: Prisma.FinishingAssignmentUncheckedCreateNestedOneWithoutBatchSareeRowInput
 }
@@ -1423,6 +1522,9 @@ export type BatchSareeRowCreateWithoutQcRecordsInput = {
   receivedWarpG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: boolean
+  talliedBy?: string | null
+  talliedAt?: Date | string | null
   batch: Prisma.BatchCreateNestedOneWithoutRowsInput
   weaver?: Prisma.WeaverCreateNestedOneWithoutBatchSareeRowsInput
   factoryLoom?: Prisma.FactoryLoomCreateNestedOneWithoutBatchSareeRowsInput
@@ -1452,6 +1554,9 @@ export type BatchSareeRowUncheckedCreateWithoutQcRecordsInput = {
   receivedWarpG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: boolean
+  talliedBy?: string | null
+  talliedAt?: Date | string | null
   finishingAssignment?: Prisma.FinishingAssignmentUncheckedCreateNestedOneWithoutBatchSareeRowInput
 }
 
@@ -1485,6 +1590,9 @@ export type BatchSareeRowUpdateWithoutQcRecordsInput = {
   receivedWarpG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  talliedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  talliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   batch?: Prisma.BatchUpdateOneRequiredWithoutRowsNestedInput
   weaver?: Prisma.WeaverUpdateOneWithoutBatchSareeRowsNestedInput
   factoryLoom?: Prisma.FactoryLoomUpdateOneWithoutBatchSareeRowsNestedInput
@@ -1514,6 +1622,9 @@ export type BatchSareeRowUncheckedUpdateWithoutQcRecordsInput = {
   receivedWarpG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  talliedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  talliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishingAssignment?: Prisma.FinishingAssignmentUncheckedUpdateOneWithoutBatchSareeRowNestedInput
 }
 
@@ -1531,6 +1642,9 @@ export type BatchSareeRowCreateWithoutFinishingAssignmentInput = {
   receivedWarpG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: boolean
+  talliedBy?: string | null
+  talliedAt?: Date | string | null
   batch: Prisma.BatchCreateNestedOneWithoutRowsInput
   weaver?: Prisma.WeaverCreateNestedOneWithoutBatchSareeRowsInput
   factoryLoom?: Prisma.FactoryLoomCreateNestedOneWithoutBatchSareeRowsInput
@@ -1560,6 +1674,9 @@ export type BatchSareeRowUncheckedCreateWithoutFinishingAssignmentInput = {
   receivedWarpG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: boolean
+  talliedBy?: string | null
+  talliedAt?: Date | string | null
   qcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutBatchSareeRowInput
 }
 
@@ -1593,6 +1710,9 @@ export type BatchSareeRowUpdateWithoutFinishingAssignmentInput = {
   receivedWarpG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  talliedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  talliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   batch?: Prisma.BatchUpdateOneRequiredWithoutRowsNestedInput
   weaver?: Prisma.WeaverUpdateOneWithoutBatchSareeRowsNestedInput
   factoryLoom?: Prisma.FactoryLoomUpdateOneWithoutBatchSareeRowsNestedInput
@@ -1622,6 +1742,9 @@ export type BatchSareeRowUncheckedUpdateWithoutFinishingAssignmentInput = {
   receivedWarpG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  talliedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  talliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   qcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutBatchSareeRowNestedInput
 }
 
@@ -1639,6 +1762,9 @@ export type BatchSareeRowCreateWithoutBulkOrderInput = {
   receivedWarpG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: boolean
+  talliedBy?: string | null
+  talliedAt?: Date | string | null
   batch: Prisma.BatchCreateNestedOneWithoutRowsInput
   weaver?: Prisma.WeaverCreateNestedOneWithoutBatchSareeRowsInput
   factoryLoom?: Prisma.FactoryLoomCreateNestedOneWithoutBatchSareeRowsInput
@@ -1667,6 +1793,9 @@ export type BatchSareeRowUncheckedCreateWithoutBulkOrderInput = {
   receivedWarpG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: boolean
+  talliedBy?: string | null
+  talliedAt?: Date | string | null
   qcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutBatchSareeRowInput
   finishingAssignment?: Prisma.FinishingAssignmentUncheckedCreateNestedOneWithoutBatchSareeRowInput
 }
@@ -1716,6 +1845,9 @@ export type BatchSareeRowCreateManyWeaverInput = {
   receivedWarpG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: boolean
+  talliedBy?: string | null
+  talliedAt?: Date | string | null
 }
 
 export type BatchSareeRowUpdateWithoutWeaverInput = {
@@ -1732,6 +1864,9 @@ export type BatchSareeRowUpdateWithoutWeaverInput = {
   receivedWarpG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  talliedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  talliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   batch?: Prisma.BatchUpdateOneRequiredWithoutRowsNestedInput
   factoryLoom?: Prisma.FactoryLoomUpdateOneWithoutBatchSareeRowsNestedInput
   design?: Prisma.DesignLibraryUpdateOneWithoutBatchSareeRowsNestedInput
@@ -1760,6 +1895,9 @@ export type BatchSareeRowUncheckedUpdateWithoutWeaverInput = {
   receivedWarpG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  talliedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  talliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   qcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutBatchSareeRowNestedInput
   finishingAssignment?: Prisma.FinishingAssignmentUncheckedUpdateOneWithoutBatchSareeRowNestedInput
 }
@@ -1783,6 +1921,9 @@ export type BatchSareeRowUncheckedUpdateManyWithoutWeaverInput = {
   receivedWarpG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  talliedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  talliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type BatchSareeRowCreateManyFactoryLoomInput = {
@@ -1804,6 +1945,9 @@ export type BatchSareeRowCreateManyFactoryLoomInput = {
   receivedWarpG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: boolean
+  talliedBy?: string | null
+  talliedAt?: Date | string | null
 }
 
 export type BatchSareeRowUpdateWithoutFactoryLoomInput = {
@@ -1820,6 +1964,9 @@ export type BatchSareeRowUpdateWithoutFactoryLoomInput = {
   receivedWarpG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  talliedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  talliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   batch?: Prisma.BatchUpdateOneRequiredWithoutRowsNestedInput
   weaver?: Prisma.WeaverUpdateOneWithoutBatchSareeRowsNestedInput
   design?: Prisma.DesignLibraryUpdateOneWithoutBatchSareeRowsNestedInput
@@ -1848,6 +1995,9 @@ export type BatchSareeRowUncheckedUpdateWithoutFactoryLoomInput = {
   receivedWarpG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  talliedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  talliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   qcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutBatchSareeRowNestedInput
   finishingAssignment?: Prisma.FinishingAssignmentUncheckedUpdateOneWithoutBatchSareeRowNestedInput
 }
@@ -1871,6 +2021,9 @@ export type BatchSareeRowUncheckedUpdateManyWithoutFactoryLoomInput = {
   receivedWarpG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  talliedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  talliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type BatchSareeRowCreateManyDesignInput = {
@@ -1892,6 +2045,9 @@ export type BatchSareeRowCreateManyDesignInput = {
   receivedWarpG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: boolean
+  talliedBy?: string | null
+  talliedAt?: Date | string | null
 }
 
 export type BatchSareeRowUpdateWithoutDesignInput = {
@@ -1908,6 +2064,9 @@ export type BatchSareeRowUpdateWithoutDesignInput = {
   receivedWarpG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  talliedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  talliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   batch?: Prisma.BatchUpdateOneRequiredWithoutRowsNestedInput
   weaver?: Prisma.WeaverUpdateOneWithoutBatchSareeRowsNestedInput
   factoryLoom?: Prisma.FactoryLoomUpdateOneWithoutBatchSareeRowsNestedInput
@@ -1936,6 +2095,9 @@ export type BatchSareeRowUncheckedUpdateWithoutDesignInput = {
   receivedWarpG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  talliedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  talliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   qcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutBatchSareeRowNestedInput
   finishingAssignment?: Prisma.FinishingAssignmentUncheckedUpdateOneWithoutBatchSareeRowNestedInput
 }
@@ -1959,6 +2121,9 @@ export type BatchSareeRowUncheckedUpdateManyWithoutDesignInput = {
   receivedWarpG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  talliedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  talliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type BatchSareeRowCreateManySareeTypeInput = {
@@ -1980,6 +2145,9 @@ export type BatchSareeRowCreateManySareeTypeInput = {
   receivedWarpG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: boolean
+  talliedBy?: string | null
+  talliedAt?: Date | string | null
 }
 
 export type BatchSareeRowUpdateWithoutSareeTypeInput = {
@@ -1996,6 +2164,9 @@ export type BatchSareeRowUpdateWithoutSareeTypeInput = {
   receivedWarpG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  talliedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  talliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   batch?: Prisma.BatchUpdateOneRequiredWithoutRowsNestedInput
   weaver?: Prisma.WeaverUpdateOneWithoutBatchSareeRowsNestedInput
   factoryLoom?: Prisma.FactoryLoomUpdateOneWithoutBatchSareeRowsNestedInput
@@ -2024,6 +2195,9 @@ export type BatchSareeRowUncheckedUpdateWithoutSareeTypeInput = {
   receivedWarpG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  talliedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  talliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   qcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutBatchSareeRowNestedInput
   finishingAssignment?: Prisma.FinishingAssignmentUncheckedUpdateOneWithoutBatchSareeRowNestedInput
 }
@@ -2047,6 +2221,9 @@ export type BatchSareeRowUncheckedUpdateManyWithoutSareeTypeInput = {
   receivedWarpG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  talliedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  talliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type BatchSareeRowCreateManyBatchInput = {
@@ -2068,6 +2245,9 @@ export type BatchSareeRowCreateManyBatchInput = {
   receivedWarpG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: boolean
+  talliedBy?: string | null
+  talliedAt?: Date | string | null
 }
 
 export type BatchSareeRowUpdateWithoutBatchInput = {
@@ -2084,6 +2264,9 @@ export type BatchSareeRowUpdateWithoutBatchInput = {
   receivedWarpG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  talliedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  talliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   weaver?: Prisma.WeaverUpdateOneWithoutBatchSareeRowsNestedInput
   factoryLoom?: Prisma.FactoryLoomUpdateOneWithoutBatchSareeRowsNestedInput
   design?: Prisma.DesignLibraryUpdateOneWithoutBatchSareeRowsNestedInput
@@ -2112,6 +2295,9 @@ export type BatchSareeRowUncheckedUpdateWithoutBatchInput = {
   receivedWarpG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  talliedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  talliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   qcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutBatchSareeRowNestedInput
   finishingAssignment?: Prisma.FinishingAssignmentUncheckedUpdateOneWithoutBatchSareeRowNestedInput
 }
@@ -2135,6 +2321,9 @@ export type BatchSareeRowUncheckedUpdateManyWithoutBatchInput = {
   receivedWarpG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  talliedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  talliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type BatchSareeRowCreateManyBulkOrderInput = {
@@ -2156,6 +2345,9 @@ export type BatchSareeRowCreateManyBulkOrderInput = {
   receivedWarpG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: boolean
+  talliedBy?: string | null
+  talliedAt?: Date | string | null
 }
 
 export type BatchSareeRowUpdateWithoutBulkOrderInput = {
@@ -2172,6 +2364,9 @@ export type BatchSareeRowUpdateWithoutBulkOrderInput = {
   receivedWarpG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  talliedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  talliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   batch?: Prisma.BatchUpdateOneRequiredWithoutRowsNestedInput
   weaver?: Prisma.WeaverUpdateOneWithoutBatchSareeRowsNestedInput
   factoryLoom?: Prisma.FactoryLoomUpdateOneWithoutBatchSareeRowsNestedInput
@@ -2200,6 +2395,9 @@ export type BatchSareeRowUncheckedUpdateWithoutBulkOrderInput = {
   receivedWarpG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  talliedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  talliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   qcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutBatchSareeRowNestedInput
   finishingAssignment?: Prisma.FinishingAssignmentUncheckedUpdateOneWithoutBatchSareeRowNestedInput
 }
@@ -2223,6 +2421,9 @@ export type BatchSareeRowUncheckedUpdateManyWithoutBulkOrderInput = {
   receivedWarpG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedReshamG?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   receivedJariReels?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tallied?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  talliedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  talliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 
@@ -2276,6 +2477,9 @@ export type BatchSareeRowSelect<ExtArgs extends runtime.Types.Extensions.Interna
   receivedWarpG?: boolean
   receivedReshamG?: boolean
   receivedJariReels?: boolean
+  tallied?: boolean
+  talliedBy?: boolean
+  talliedAt?: boolean
   batch?: boolean | Prisma.BatchDefaultArgs<ExtArgs>
   weaver?: boolean | Prisma.BatchSareeRow$weaverArgs<ExtArgs>
   factoryLoom?: boolean | Prisma.BatchSareeRow$factoryLoomArgs<ExtArgs>
@@ -2307,6 +2511,9 @@ export type BatchSareeRowSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   receivedWarpG?: boolean
   receivedReshamG?: boolean
   receivedJariReels?: boolean
+  tallied?: boolean
+  talliedBy?: boolean
+  talliedAt?: boolean
   batch?: boolean | Prisma.BatchDefaultArgs<ExtArgs>
   weaver?: boolean | Prisma.BatchSareeRow$weaverArgs<ExtArgs>
   factoryLoom?: boolean | Prisma.BatchSareeRow$factoryLoomArgs<ExtArgs>
@@ -2335,6 +2542,9 @@ export type BatchSareeRowSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   receivedWarpG?: boolean
   receivedReshamG?: boolean
   receivedJariReels?: boolean
+  tallied?: boolean
+  talliedBy?: boolean
+  talliedAt?: boolean
   batch?: boolean | Prisma.BatchDefaultArgs<ExtArgs>
   weaver?: boolean | Prisma.BatchSareeRow$weaverArgs<ExtArgs>
   factoryLoom?: boolean | Prisma.BatchSareeRow$factoryLoomArgs<ExtArgs>
@@ -2363,9 +2573,12 @@ export type BatchSareeRowSelectScalar = {
   receivedWarpG?: boolean
   receivedReshamG?: boolean
   receivedJariReels?: boolean
+  tallied?: boolean
+  talliedBy?: boolean
+  talliedAt?: boolean
 }
 
-export type BatchSareeRowOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "batchId" | "serial" | "sareeId" | "recipientType" | "weaverId" | "factoryLoomId" | "designCode" | "sareeTypeCode" | "bulkOrderRef" | "qcPassed" | "createdAt" | "receivedAt" | "receivedWeight" | "receivedColor" | "receivedPhotoUrl" | "receivedWarpG" | "receivedReshamG" | "receivedJariReels", ExtArgs["result"]["batchSareeRow"]>
+export type BatchSareeRowOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "batchId" | "serial" | "sareeId" | "recipientType" | "weaverId" | "factoryLoomId" | "designCode" | "sareeTypeCode" | "bulkOrderRef" | "qcPassed" | "createdAt" | "receivedAt" | "receivedWeight" | "receivedColor" | "receivedPhotoUrl" | "receivedWarpG" | "receivedReshamG" | "receivedJariReels" | "tallied" | "talliedBy" | "talliedAt", ExtArgs["result"]["batchSareeRow"]>
 export type BatchSareeRowInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   batch?: boolean | Prisma.BatchDefaultArgs<ExtArgs>
   weaver?: boolean | Prisma.BatchSareeRow$weaverArgs<ExtArgs>
@@ -2426,6 +2639,9 @@ export type $BatchSareeRowPayload<ExtArgs extends runtime.Types.Extensions.Inter
     receivedWarpG: runtime.Decimal | null
     receivedReshamG: runtime.Decimal | null
     receivedJariReels: runtime.Decimal | null
+    tallied: boolean
+    talliedBy: string | null
+    talliedAt: Date | null
   }, ExtArgs["result"]["batchSareeRow"]>
   composites: {}
 }
@@ -2876,6 +3092,9 @@ export interface BatchSareeRowFieldRefs {
   readonly receivedWarpG: Prisma.FieldRef<"BatchSareeRow", 'Decimal'>
   readonly receivedReshamG: Prisma.FieldRef<"BatchSareeRow", 'Decimal'>
   readonly receivedJariReels: Prisma.FieldRef<"BatchSareeRow", 'Decimal'>
+  readonly tallied: Prisma.FieldRef<"BatchSareeRow", 'Boolean'>
+  readonly talliedBy: Prisma.FieldRef<"BatchSareeRow", 'String'>
+  readonly talliedAt: Prisma.FieldRef<"BatchSareeRow", 'DateTime'>
 }
     
 

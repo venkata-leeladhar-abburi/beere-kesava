@@ -36,6 +36,21 @@ export class QuotationsService {
       }
     }
 
+    // A quotation can only be raised for sarees that have actually passed
+    // QC — PASSED is terminal (see BatchesService), so a single existence
+    // check per sareeId is sufficient; no later record can revoke it.
+    const passedRecords = await this.prisma.qcRecord.findMany({
+      where: { sareeId: { in: dto.sarees.map((s) => s.sareeId) }, result: "PASSED" },
+      select: { sareeId: true },
+    });
+    const passedIds = new Set(passedRecords.map((r) => r.sareeId));
+    const notPassed = dto.sarees.map((s) => s.sareeId).filter((id) => !passedIds.has(id));
+    if (notPassed.length > 0) {
+      throw new BadRequestException(
+        `Saree(s) have not passed QC and cannot be quoted: ${notPassed.join(", ")}`,
+      );
+    }
+
     const subtotal = dto.sarees.reduce((sum, s) => sum + s.price, 0);
     const gstPct = dto.applyGst ? (dto.gstPct ?? 0) : 0;
     const grandTotal = subtotal + (subtotal * gstPct) / 100;

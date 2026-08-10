@@ -49,4 +49,5 @@ export const vendorsApi = {
   create: (payload: CreateVendorPayload) => apiClient.post<BackendVendor>("/vendors", payload),
   update: (id: string, payload: Partial<CreateVendorPayload> & { status?: string }) =>
     apiClient.patch<BackendVendor>(`/vendors/${id}`, payload),
+  remove: (id: string) => apiClient.delete<void>(`/vendors/${id}`),
 };

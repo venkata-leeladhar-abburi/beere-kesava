@@ -50,4 +50,6 @@ export const customersApi = {
 
   update: (id: string, payload: UpdateCustomerPayload) =>
     apiClient.patch<BackendCustomer>(`/customers/${id}`, payload),
+
+  remove: (id: string) => apiClient.delete<void>(`/customers/${id}`),
 };

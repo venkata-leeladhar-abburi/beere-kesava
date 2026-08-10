@@ -14,6 +14,7 @@ import { DispatchShopModal } from "./modals/DispatchShopModal";
 import { DispatchWholesaleModal } from "./modals/dispatchWholesale/DispatchWholesaleModal";
 import { RaiseQuotationModal } from "./modals/RaiseQuotationModal";
 import { ResumeDispatchModal } from "./modals/ResumeDispatchModal";
+import { DispatchInvoiceModal } from "./modals/DispatchInvoiceModal";
 import { InventoryDetailModal } from "./modals/InventoryDetailModal";
 import { DispatchHistorySection } from "./sections/DispatchHistorySection";
 import { QuotationsSection } from "./sections/QuotationsSection";
@@ -98,6 +99,8 @@ export function InventoryPage({
     handleScan,
     handleShopConfirm,
     quotationDispatchSarees,
+    viewingInvoice,
+    setViewingInvoice,
     handleWholesaleConfirm,
     handleRaiseQuotation,
     quotations,
@@ -189,7 +192,7 @@ export function InventoryPage({
             firms={firms} 
             onResume={setResumeDispatch} 
             onDelete={(d) => deleteDispatch(d.id, "admin-staff")}
-            onViewInvoice={(d) => alert("Invoice viewing coming soon")}
+            onViewInvoice={setViewingInvoice}
           />
         </div>
       )}
@@ -263,6 +266,14 @@ export function InventoryPage({
               setToast("Dispatch details completed");
             }}
             onClose={() => setResumeDispatch(null)}
+          />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {viewingInvoice && (
+          <DispatchInvoiceModal
+            dispatch={viewingInvoice}
+            onClose={() => setViewingInvoice(null)}
           />
         )}
       </AnimatePresence>

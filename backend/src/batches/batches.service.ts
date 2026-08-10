@@ -9,6 +9,7 @@ import { AssignBatchRowDto } from "./dto/assign-batch-row.dto";
 import { CreateBatchDto } from "./dto/create-batch.dto";
 import { ListBatchesQueryDto } from "./dto/list-batches-query.dto";
 import { ReceiveBatchRowDto } from "./dto/receive-batch-row.dto";
+import { TallyBatchRowDto } from "./dto/tally-batch-row.dto";
 
 const BATCH_ID_PREFIX = "BATCH";
 
@@ -244,6 +245,46 @@ export class BatchesService {
       entityType: "BatchSareeRow",
       entityId: `${batchId}-${serial}`,
       recordLabel: row.sareeId,
+    });
+
+    return updatedRow;
+  }
+
+  // Admin's per-saree weight/material verification, distinct from the
+  // BulkOrder-level `tallied` flag (which only confirms the order's overall
+  // saree count) — this confirms the individual saree's Worker-Staff-entered
+  // weight/warp/resham/jari against the SareeTypeRate standard.
+  async tallyRow(batchId: string, serial: number, dto: TallyBatchRowDto) {
+    await this.findOne(batchId);
+
+    const row = await this.prisma.batchSareeRow.findUnique({
+      where: { batchId_serial: { batchId, serial } },
+    });
+    if (!row) {
+      throw new NotFoundException(`Row ${serial} not found in batch ${batchId}`);
+    }
+    if (!row.receivedAt) {
+      throw new BadRequestException(
+        `Row ${serial} of batch ${batchId} has not been received yet and cannot be tallied`,
+      );
+    }
+
+    const updatedRow = await this.prisma.batchSareeRow.update({
+      where: { batchId_serial: { batchId, serial } },
+      data: {
+        tallied: dto.tallied,
+        talliedBy: dto.tallied ? (dto.talliedBy ?? null) : null,
+        talliedAt: dto.tallied ? new Date() : null,
+      },
+    });
+
+    await this.auditLog.recordAction({
+      actorId: dto.actorId,
+      module: "BATCHES",
+      action: `${dto.tallied ? "Tallied" : "Un-tallied"} saree ${row.sareeId ?? `row ${serial}`} of batch ${batchId}`,
+      entityType: "BatchSareeRow",
+      entityId: `${batchId}-${serial}`,
+      recordLabel: row.sareeId ?? undefined,
     });
 
     return updatedRow;

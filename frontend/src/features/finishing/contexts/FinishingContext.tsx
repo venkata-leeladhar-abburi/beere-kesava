@@ -93,6 +93,8 @@ function backendDispatchToFrontend(d: BackendDispatchRecord): DispatchRecord {
     driverName: d.driverName ?? undefined,
     notes: d.notes ?? undefined,
     customerId: d.customerId ?? undefined,
+    customerName: d.customer?.name ?? undefined,
+    customerPhone: d.customer?.phone ?? undefined,
     invoiceNumber: d.invoiceNumber ?? undefined,
     invoiceDate: d.invoiceDate ?? undefined,
     pricePerSaree: d.pricePerSaree ? Number(d.pricePerSaree) : undefined,
@@ -105,6 +107,8 @@ function backendDispatchToFrontend(d: BackendDispatchRecord): DispatchRecord {
     pendingTransport: d.pendingTransport,
     pendingReceipt: d.pendingReceipt,
     quotationRef: d.quotationRef ?? undefined,
+    expectedDelivery: d.expectedDelivery ?? undefined,
+    specialInstructions: d.specialInstructions ?? undefined,
   };
 }
 
@@ -308,6 +312,8 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
         vehicleNumber: args.record.vehicleNumber || undefined,
         driverName: args.record.driverName,
         notes: args.record.notes,
+        expectedDelivery: args.record.expectedDelivery,
+        specialInstructions: args.record.specialInstructions,
         bulkOrderRef: args.record.bulkOrderRef,
         quotationRef: args.record.quotationRef,
         pendingTransport: args.record.pendingTransport,
@@ -344,11 +350,35 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
-  // NOTE(backend gap): there is no PATCH /dispatch/:id endpoint yet, so this
-  // stays an optimistic client-only patch until one exists.
   const updateDispatchMutation = useMutation({
-    mutationFn: (args: { id: string; patch: Partial<DispatchRecord> }) => Promise.resolve(args),
-    onSuccess: ({ id, patch }) => setDispatches(prev => prev.map(d => d.id === id ? { ...d, ...patch } : d)),
+    mutationFn: (args: { id: string; patch: Partial<DispatchRecord> }) =>
+      dispatchApi.update(args.id, {
+        lrNumber: args.patch.lrNumber,
+        transportCompany: args.patch.transportCompany,
+        vehicleNumber: args.patch.vehicleNumber,
+        driverName: args.patch.driverName,
+        dispatchDate: args.patch.dispatchDate,
+        notes: args.patch.notes,
+        expectedDelivery: args.patch.expectedDelivery,
+        specialInstructions: args.patch.specialInstructions,
+        pendingTransport: args.patch.pendingTransport,
+        pendingReceipt: args.patch.pendingReceipt,
+      }).then(() => args),
+    onMutate: async ({ id, patch }) => {
+      await qc.cancelQueries({ queryKey: DISPATCHES_KEY });
+      const previous = qc.getQueryData<DispatchRecord[]>(DISPATCHES_KEY);
+      setDispatches(prev => prev.map(d => d.id === id ? { ...d, ...patch } : d));
+      return { previous };
+    },
+    onError: (err, _args, context) => {
+      console.error("Failed to update dispatch:", err);
+      if (context?.previous) {
+        qc.setQueryData(DISPATCHES_KEY, context.previous);
+      }
+    },
+    onSettled: () => {
+      void qc.invalidateQueries({ queryKey: DISPATCHES_KEY });
+    },
   });
 
   const raiseQuotationMutation = useMutation({
@@ -423,6 +453,11 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
     onSettled: () => {
       void qc.invalidateQueries({ queryKey: DISPATCHES_KEY });
       void qc.invalidateQueries({ queryKey: ["finishing", "ready"] });
+      // The backend reverts any quotation this dispatch was raised from back
+      // to RECEIVED (see DispatchService.remove) — that's stale here until
+      // refetched, or the quotation (and its bulk order's Quotations tab)
+      // keeps showing DISPATCHED with no dispatch record to back it.
+      void qc.invalidateQueries({ queryKey: QUOTATIONS_KEY });
     },
   });
 

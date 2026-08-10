@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router";
 import { AnimatePresence } from "motion/react";
+import { toast } from "sonner";
 import { T } from "./vendors-page/theme";
 import { Vendor } from "./vendors-page/types";
 import { VendorsHeroStats } from "./vendors-page/VendorsHeroStats";
@@ -9,6 +10,7 @@ import { VendorAnalyticsSection } from "./vendors-page/VendorAnalyticsSection";
 import { VendorDirectorySection } from "./vendors-page/VendorDirectorySection";
 import { VendorProfile } from "./vendors-page/VendorProfile";
 import { BackendVendor, vendorsApi } from "../../../shared/api/vendors";
+import { ApiError } from "../../../shared/api/client";
 
 // totalOrders/totalSpend/outstanding/lastOrder have no backend column yet
 // (would need a PurchaseOrder aggregation query) — left at placeholder
@@ -75,7 +77,18 @@ export function VendorsPage() {
     setSelectedVendor(merged);
   };
 
-  if (selectedVendor) return <VendorProfile vendor={selectedVendor} onBack={() => setSelectedVendor(null)} onUpdate={v => { void handleUpdate(v); }} />;
+  const handleDelete = async (v: Vendor) => {
+    try {
+      await vendorsApi.remove(v.id);
+      setVendors(prev => prev.filter(x => x.id !== v.id));
+      setSelectedVendor(null);
+      toast.success("Vendor deleted");
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Failed to delete vendor");
+    }
+  };
+
+  if (selectedVendor) return <VendorProfile vendor={selectedVendor} onBack={() => setSelectedVendor(null)} onUpdate={v => { void handleUpdate(v); }} onDelete={v => { void handleDelete(v); }} />;
 
   return (
     <div style={{ background: T.silkCream, minHeight: "100dvh", paddingBottom: 100 }}>

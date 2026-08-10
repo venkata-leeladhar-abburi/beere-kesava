@@ -58,6 +58,14 @@ export class CreateDispatchDto {
 
   @IsOptional()
   @IsString()
+  expectedDelivery?: string;
+
+  @IsOptional()
+  @IsString()
+  specialInstructions?: string;
+
+  @IsOptional()
+  @IsString()
   bulkOrderRef?: string;
 
   @IsOptional()

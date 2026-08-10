@@ -311,7 +311,10 @@ export const BatchSareeRowScalarFieldEnum = {
   receivedPhotoUrl: 'receivedPhotoUrl',
   receivedWarpG: 'receivedWarpG',
   receivedReshamG: 'receivedReshamG',
-  receivedJariReels: 'receivedJariReels'
+  receivedJariReels: 'receivedJariReels',
+  tallied: 'tallied',
+  talliedBy: 'talliedBy',
+  talliedAt: 'talliedAt'
 } as const
 
 export type BatchSareeRowScalarFieldEnum = (typeof BatchSareeRowScalarFieldEnum)[keyof typeof BatchSareeRowScalarFieldEnum]
@@ -490,7 +493,9 @@ export const DispatchRecordScalarFieldEnum = {
   quotationRef: 'quotationRef',
   pendingTransport: 'pendingTransport',
   pendingReceipt: 'pendingReceipt',
-  notes: 'notes'
+  notes: 'notes',
+  expectedDelivery: 'expectedDelivery',
+  specialInstructions: 'specialInstructions'
 } as const
 
 export type DispatchRecordScalarFieldEnum = (typeof DispatchRecordScalarFieldEnum)[keyof typeof DispatchRecordScalarFieldEnum]

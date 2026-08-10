@@ -27,6 +27,8 @@ export interface LinkedSaree {
   sareeTypeCode?: string;
   weaverName: string;
   batchId?: string;
+  /** BatchSareeRow.serial within batchId — needed to target the tally endpoint. */
+  serial?: number;
   // A bulk-order-specific fulfillment status, not a single lib/domain/status.ts
   // taxonomy: "QC Passed" reads as PRODUCTION_STATUS's qc-passed, but
   // "Dispatched"/"Damaged — Review Needed" read as INVENTORY_STATUS's

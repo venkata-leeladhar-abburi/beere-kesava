@@ -1,4 +1,5 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
+import { AuditLogService } from "../audit-log/audit-log.service";
 import { CreatePartyDto } from "../common/dto/create-party.dto";
 import { ListPartyQueryDto } from "../common/dto/list-party-query.dto";
 import { UpdatePartyDto } from "../common/dto/update-party.dto";
@@ -8,7 +9,10 @@ import { PrismaService } from "../prisma/prisma.service";
 
 @Injectable()
 export class VendorsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditLog: AuditLogService,
+  ) {}
 
   create(dto: CreatePartyDto) {
     return this.prisma.vendor.create({ data: dto });
@@ -55,5 +59,28 @@ export class VendorsService {
   async update(id: string, dto: UpdatePartyDto) {
     await this.findOne(id);
     return this.prisma.vendor.update({ where: { id }, data: dto });
+  }
+
+  async remove(id: string) {
+    const vendor = await this.findOne(id);
+
+    try {
+      await this.prisma.vendor.delete({ where: { id } });
+
+      await this.auditLog.recordAction({
+        module: "VENDORS",
+        action: `Deleted vendor ${vendor.name}`,
+        entityType: "Vendor",
+        entityId: id,
+        recordLabel: vendor.name,
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {
+        throw new ConflictException(
+          "This vendor has existing records (purchase orders, bills, payments, etc.) and can't be deleted. Deactivate it instead.",
+        );
+      }
+      throw error;
+    }
   }
 }

@@ -1,12 +1,15 @@
 import React, { useMemo, useState } from "react";
 import { motion } from "motion/react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Palette, ArrowRight } from "lucide-react";
+import { Palette, ArrowRight, Scale } from "lucide-react";
 import { useDesignLibrary } from "../../../../design-library/contexts/DesignLibraryContext";
-import type { BatchRecord, SareeRow } from "../../../contexts/BatchContext";
+import { useBatches, type BatchRecord, type SareeRow } from "../../../contexts/BatchContext";
+import { useRatesPricing } from "../../../../pricing/contexts/RatesContext";
+import { useAuth } from "../../../../../contexts/AuthContext";
 import { T, F } from "../../theme";
 import { Button, IconButton, SearchInput, Select, SelectItem } from "../../../../../shared/ui/primitives";
 import { Modal } from "../../../../../shared/ui/overlay";
+import { SareeWeightTallyList, type TallyRowItem } from "./SareeWeightTallyList";
 
 const imgSaree = "https://images.unsplash.com/photo-1588140686379-1b76a52103dc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
 
@@ -162,6 +165,11 @@ export function ContextBatchDetailsDialog({ b, onClose, onOpenCreation }: { b: B
   const weavers = weaverBreakdown(b.rows);
   const orders = bulkOrderBreakdown(b.rows);
 
+  const { tallyRow } = useBatches();
+  const { getSareeTypeByCode } = useRatesPricing();
+  const { user } = useAuth();
+  const [busyKey, setBusyKey] = useState<string | null>(null);
+
   const [search, setSearch] = useState("");
   const [weaverFilter, setWeaverFilter] = useState("All");
   const [orderFilter, setOrderFilter] = useState("All");
@@ -184,6 +192,35 @@ export function ContextBatchDetailsDialog({ b, onClose, onOpenCreation }: { b: B
   const firstRow = b.rows[0];
   const designObj = firstRow ? getDesign(firstRow.designCode) : undefined;
   const designImage = designObj?.colorSlipPhoto || designObj?.designGraph || imgSaree;
+
+  // Same filtered set as the row list above, narrowed to rows that actually
+  // have a saree ID — an unassigned row has nothing to weigh or tally yet.
+  const tallyItems: TallyRowItem[] = filteredRows
+    .filter((r): r is SareeRow & { sareeId: string } => !!r.sareeId)
+    .map(r => ({
+      sareeId: r.sareeId,
+      serial: r.serial,
+      batchId: b.batchId,
+      weaverName: r.weaverName,
+      sareeTypeCode: r.sareeTypeCode,
+      actualWeight: r.receivedWeight ? parseFloat(r.receivedWeight) : null,
+      actualWarpG: r.receivedWarpG ? parseFloat(r.receivedWarpG) : null,
+      actualReshamG: r.receivedReshamG ? parseFloat(r.receivedReshamG) : null,
+      actualJariReels: r.receivedJariReels ? parseFloat(r.receivedJariReels) : null,
+      tallied: r.tallied,
+      talliedBy: r.talliedBy,
+      talliedAt: r.talliedAt,
+    }));
+
+  const handleToggleTally = async (item: TallyRowItem, tallied: boolean) => {
+    const key = `${item.batchId}-${item.serial}`;
+    setBusyKey(key);
+    try {
+      await tallyRow(item.batchId, item.serial, tallied, user?.name);
+    } finally {
+      setBusyKey(null);
+    }
+  };
 
   return (
     <Modal open onOpenChange={o => !o && onClose()} size="md">
@@ -320,6 +357,26 @@ export function ContextBatchDetailsDialog({ b, onClose, onOpenCreation }: { b: B
                 <div style={{ textAlign: "center", padding: "20px", color: T.taupe, fontFamily: F.ui, fontSize: 13 }}>No sarees match these filters.</div>
               )}
             </div>
+          </div>
+
+          <div style={{ height: 1, background: "rgba(110,15,45,0.06)" }} />
+
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+              <Scale size={16} color={T.royalBurgundy} />
+              <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>
+                Weight &amp; Material Tally ({tallyItems.filter(i => i.tallied).length} / {tallyItems.length} tallied)
+              </div>
+            </div>
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 12 }}>
+              Actual is what Worker Staff entered at receipt; Standard is the SareeTypeRate rate card for that saree's assigned type. Tally each saree once you've physically verified it.
+            </div>
+            <SareeWeightTallyList
+              items={tallyItems}
+              getSareeTypeByCode={getSareeTypeByCode}
+              onToggleTally={handleToggleTally}
+              busyKey={busyKey}
+            />
           </div>
         </div>
 

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 import {
   MapPin, Phone, Building2, FileText,
-  IndianRupee, AlertTriangle, Package,
+  IndianRupee, AlertTriangle, Package, Trash2,
 } from "lucide-react";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { T, F } from "./theme";
@@ -23,10 +23,11 @@ import { useMoneyVisible } from "../../../../shared/ui/MoneyValue";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { Breadcrumbs } from "../../../../shared/ui/nav/Breadcrumbs";
 import { rupees, formatMoney } from "@/lib/domain/money";
-import { recordView } from "../../../../shared/ui/overlay";
+import { recordView, useConfirm } from "../../../../shared/ui/overlay";
 
-export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; onBack: () => void; onUpdate?: (v: Vendor) => void }) {
+export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: Vendor; onBack: () => void; onUpdate?: (v: Vendor) => void; onDelete?: (v: Vendor) => void }) {
   const [tab, setTab] = useState<"overview" | "orders" | "payments" | "contact" | "edit">("overview");
+  const confirm = useConfirm();
 
   // Command palette RECENT group (design-system/05-OVERLAYS.md Part H) —
   // record this profile as viewed once per mount.
@@ -213,9 +214,25 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
             Back to Vendors
           </Button>
         </motion.div>
-        <div style={{ display: "flex", gap: 10 }}>
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
           <StatusPill status={vendor.status} />
           <EntityCode type="vendor" value={vendor.id} />
+          {onDelete && (
+            <Button
+              onClick={async () => {
+                const ok = await confirm({
+                  title: `Delete vendor "${vendor.name}"?`,
+                  description: "This can't be undone. Vendors with existing purchase orders, bills, or payments can't be deleted — deactivate them instead.",
+                  confirmLabel: "Delete Vendor",
+                  tone: "danger",
+                });
+                if (ok) onDelete(vendor);
+              }}
+              variant="tertiary" size="sm" iconLeft={Trash2}
+            >
+              Delete
+            </Button>
+          )}
         </div>
       </div>
 

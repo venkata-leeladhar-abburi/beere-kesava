@@ -5,6 +5,7 @@ import { DispatchType, Prisma } from "../generated/prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateDispatchDto } from "./dto/create-dispatch.dto";
 import { ListDispatchQueryDto } from "./dto/list-dispatch-query.dto";
+import { UpdateDispatchDto } from "./dto/update-dispatch.dto";
 
 const include = {
   sarees: true,
@@ -70,6 +71,8 @@ export class DispatchService {
         pendingTransport: dto.pendingTransport ?? false,
         pendingReceipt: dto.pendingReceipt ?? false,
         notes: dto.notes,
+        expectedDelivery: dto.expectedDelivery ? new Date(dto.expectedDelivery) : undefined,
+        specialInstructions: dto.specialInstructions,
       },
     });
 
@@ -120,6 +123,41 @@ export class DispatchService {
     return record;
   }
 
+  // Fills in transport/receipt details that were skipped at dispatch time
+  // (ResumeDispatchModal's "Complete Details" flow) — previously a
+  // client-only optimistic patch with no backend endpoint at all, so it
+  // never survived a reload.
+  async update(id: string, dto: UpdateDispatchDto) {
+    await this.findOne(id);
+
+    const updated = await this.prisma.dispatchRecord.update({
+      where: { id },
+      data: {
+        lrNumber: dto.lrNumber,
+        transportCompany: dto.transportCompany,
+        vehicleNumber: dto.vehicleNumber,
+        driverName: dto.driverName,
+        dispatchDate: dto.dispatchDate ? new Date(dto.dispatchDate) : undefined,
+        notes: dto.notes,
+        expectedDelivery: dto.expectedDelivery ? new Date(dto.expectedDelivery) : undefined,
+        specialInstructions: dto.specialInstructions,
+        pendingTransport: dto.pendingTransport,
+        pendingReceipt: dto.pendingReceipt,
+      },
+    });
+
+    await this.auditLog.recordAction({
+      actorId: dto.actorId,
+      module: "DISPATCH",
+      action: `Updated dispatch record ${id}`,
+      entityType: "DispatchRecord",
+      entityId: id,
+      recordLabel: updated.lrNumber ?? updated.invoiceNumber ?? id,
+    });
+
+    return this.findOne(id);
+  }
+
   async remove(id: string, actorId: string) {
     const record = await this.findOne(id);
     const sareeIds = record.sarees.map((s) => s.sareeId);
@@ -129,6 +167,18 @@ export class DispatchService {
       await this.prisma.inventoryRecord.updateMany({
         where: { sareeId: { in: sareeIds } },
         data: { status: "FINISHING_COMPLETE" },
+      });
+    }
+
+    // A dispatch raised from a quotation moves that quotation to DISPATCHED
+    // (QuotationsService.dispatch) — deleting the dispatch without undoing
+    // that leaves the quotation permanently stuck showing "dispatched" (and
+    // its bulk order's Quotations tab with it) even though there's no longer
+    // a real dispatch record backing that state.
+    if (record.quotationRef) {
+      await this.prisma.quotation.update({
+        where: { id: record.quotationRef },
+        data: { status: "RECEIVED" },
       });
     }
 

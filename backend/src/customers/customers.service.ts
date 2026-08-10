@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
 import { Prisma } from "../generated/prisma/client";
@@ -82,5 +82,28 @@ export class CustomersService {
     });
 
     return updated;
+  }
+
+  async remove(id: string) {
+    const customer = await this.findOne(id);
+
+    try {
+      await this.prisma.customer.delete({ where: { id } });
+
+      await this.auditLog.recordAction({
+        module: "CUSTOMERS",
+        action: `Deleted customer ${customer.name}`,
+        entityType: "Customer",
+        entityId: id,
+        recordLabel: customer.name,
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {
+        throw new ConflictException(
+          "This customer has existing records (bulk orders, invoices, sales, etc.) and can't be deleted.",
+        );
+      }
+      throw error;
+    }
   }
 }
