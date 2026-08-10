@@ -41,17 +41,23 @@ function CardMark({ children }: { children?: React.ReactNode }) {
   return (
     <div
       style={{
-        width: "clamp(52px, 7vh, 76px)", height: "clamp(52px, 7vh, 76px)", borderRadius: 18,
-        background: "#FFFFFF",
+        width: "clamp(58px, 7.8vh, 84px)", height: "clamp(58px, 7.8vh, 84px)", borderRadius: 18,
+        background: `radial-gradient(120% 120% at 50% 20%, ${C.burgundy} 0%, ${C.burgundyDeep} 70%, #2A0208 100%)`,
         border: `1px solid ${C.gold}`,
-        boxShadow: "0 4px 18px rgba(107,26,42,0.10), inset 0 0 0 4px rgba(255,255,255,0.9)",
+        boxShadow: "0 6px 20px rgba(74,10,22,0.22), inset 0 0 0 1px rgba(227,184,92,0.28)",
         display: "inline-flex", alignItems: "center", justifyContent: "center",
         marginBottom: "clamp(12px, 2.2vh, 20px)",
       }}
     >
-      {children ?? <img src={logo} alt="Beere Kesava Logo" style={{ width: 46, height: 46, objectFit: "contain" }} />}
+      {children ?? <img src={crest} alt="Sree Beere Kesava & Brothers Silks" style={{ width: "78%", height: "78%", objectFit: "contain" }} />}
     </div>
   );
+}
+
+/** Keep the field readable as it fills: 10 digits, grouped 5 + 5 like the placeholder. */
+function formatPhone(raw: string) {
+  const d = raw.replace(/\D/g, "").slice(0, 10);
+  return d.length > 5 ? `${d.slice(0, 5)} ${d.slice(5)}` : d;
 }
 
 function StepPhone({ onSend }: { onSend: (phone: string) => void }) {
@@ -102,13 +108,16 @@ function StepPhone({ onSend }: { onSend: (phone: string) => void }) {
 
       <Input
         type="tel"
+        inputMode="numeric"
+        autoFocus
+        autoComplete="tel-national"
         size="lg"
         value={phone}
-        onChange={e => setPhone(e.target.value)}
+        onChange={e => setPhone(formatPhone(e.target.value))}
         onKeyDown={e => e.key === "Enter" && handleSubmit()}
-        maxLength={12}
+        maxLength={11}
         placeholder="98765 43210"
-        className="font-mono text-[18px] tracking-[1px]"
+        className="font-mono text-[18px] tracking-[1px] caret-[#6B1A2A]"
         containerClassName="!h-[58px] !rounded-[14px] !bg-[#FFFCF6] !border-[rgba(196,146,58,0.45)]"
         addonLeft={
           <span style={{ display: "flex", alignItems: "center", gap: 10, paddingRight: 12, borderRight: "1px solid rgba(196,146,58,0.30)" }}>
@@ -126,7 +135,7 @@ function StepPhone({ onSend }: { onSend: (phone: string) => void }) {
         size="lg"
         fullWidth
         onClick={handleSubmit}
-        disabled={loading}
+        disabled={loading || phone.replace(/\D/g, "").length !== 10}
         iconLeft={Phone}
         className="mt-[clamp(14px,2.6vh,24px)] !h-[58px] !rounded-[14px] !text-[16px] !font-semibold shadow-[0_8px_22px_rgba(74,10,22,0.28)] ring-1 ring-[rgba(196,146,58,0.65)]"
       >

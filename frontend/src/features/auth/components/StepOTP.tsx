@@ -1,7 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Phone, Clock, Check, X, MessageSquare } from "lucide-react";
+import { Clock, Check, X, MessageSquare } from "lucide-react";
 import { Button, CodeInput } from "../../../shared/ui/primitives";
+import { cn } from "../../../shared/ui/utils";
+// @ts-ignore
+import crest from "../../../assets/bk-crest.png";
+import { Flourish } from "./LoginBrandPanel";
 
 const C = {
   burgundy:      "#6B1A2A",
@@ -126,10 +130,17 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
       transition={{ duration: 0.4 }}
     >
       <div style={{ textAlign: "center" as const, marginBottom: 28 }}>
-        <div style={{ width: 76, height: 76, borderRadius: 18, background: "#FFFFFF", border: `1px solid ${C.gold}`, boxShadow: "0 4px 18px rgba(107,26,42,0.10), inset 0 0 0 4px rgba(255,255,255,0.9)", display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 18 }}>
-          <Phone size={32} color={C.burgundy} />
+        <div style={{
+          width: "clamp(58px, 7.8vh, 84px)", height: "clamp(58px, 7.8vh, 84px)", borderRadius: 18,
+          background: `radial-gradient(120% 120% at 50% 20%, ${C.burgundy} 0%, ${C.burgundyDeep} 70%, #2A0208 100%)`,
+          border: `1px solid ${C.gold}`,
+          boxShadow: "0 6px 20px rgba(74,10,22,0.22), inset 0 0 0 1px rgba(227,184,92,0.28)",
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+          marginBottom: "clamp(12px, 2.2vh, 20px)",
+        }}>
+          <img src={crest} alt="Sree Beere Kesava & Brothers Silks" style={{ width: "78%", height: "78%", objectFit: "contain" }} />
         </div>
-        <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 38, color: C.burgundyDeep, lineHeight: 1.1, marginBottom: 8 }}>Check Your Phone</div>
+        <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: "clamp(30px, 4.4vh, 38px)", color: C.burgundyDeep, lineHeight: 1.1, marginBottom: 8 }}>Check Your Phone</div>
         <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 14, color: C.textMuted, marginBottom: 6 }}>We sent a 6-digit code to</div>
         <div style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 16, color: C.burgundy, marginBottom: 6 }}>{formatted}</div>
         <Button variant="link" size="sm" onClick={onBack} className="underline">
@@ -137,29 +148,50 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
         </Button>
       </div>
 
-      <div style={{ height: 1, background: "rgba(139,26,46,0.10)", margin: "0 0 28px" }} />
+      <div style={{ display: "flex", justifyContent: "center", margin: "clamp(10px,2vh,18px) 0 clamp(16px,2.8vh,26px)" }}>
+        <Flourish width={220} />
+      </div>
 
       <motion.div
         animate={shake ? { x: [-8, 8, -6, 6, -4, 4, 0] } : { x: 0 }}
         transition={{ duration: 0.5 }}
-        style={{ display: "flex", gap: 10, justifyContent: "center", marginBottom: 16 }}
+        style={{ display: "flex", gap: "clamp(6px, 2%, 12px)", justifyContent: "center", marginBottom: 16 }}
       >
         {digits.map((d, i) => (
           <CodeInput
             key={i}
             ref={el => { inputRefs.current[i] = el; }}
             inputMode="numeric"
+            autoFocus={i === 0}
+            autoComplete={i === 0 ? "one-time-code" : "off"}
             maxLength={1}
             value={d}
-            onFocus={() => setFocused(i)}
+            // Clicking a later box jumps back to the first gap, so the caret is
+            // always where the next digit actually belongs.
+            onFocus={() => {
+              const firstEmpty = digits.findIndex(x => x === "");
+              if (firstEmpty !== -1 && firstEmpty < i) {
+                inputRefs.current[firstEmpty]?.focus();
+                setFocused(firstEmpty);
+              } else {
+                setFocused(i);
+              }
+            }}
             onBlur={() => setFocused(null)}
             onChange={e => handleInput(i, e.target.value)}
             onKeyDown={e => handleKey(i, e)}
             onPaste={handlePaste}
             invalid={error}
             size="lg"
-            className="w-[54px] h-16 text-center text-2xl"
-            placeholder={focused === i ? "" : "·"}
+            // Size the BOX, not the inner input — className lands on <input>, so
+            // sizing there leaves the container's own padding and blows the row
+            // past the card width.
+            containerClassName={cn(
+              "flex-1 !min-w-0 max-w-[58px] !px-0 !h-[60px] !rounded-[12px] !bg-[#FFFCF6] transition-colors",
+              focused === i ? "!border-[#6B1A2A]" : "!border-[rgba(196,146,58,0.45)]",
+              error && "!border-[#C0392B]"
+            )}
+            className="!w-full text-center text-[24px] font-semibold caret-[#6B1A2A]"
           />
         ))}
       </motion.div>
