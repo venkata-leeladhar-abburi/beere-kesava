@@ -15,6 +15,7 @@ import { FadeUp, StatusPill, StarRating } from "../../common/primitives";
 import { Button } from "../../../../../shared/ui/primitives";
 import { Breadcrumbs } from "../../../../../shared/ui/nav/Breadcrumbs";
 import { recordView } from "../../../../../shared/ui/overlay";
+import { EntityCode } from "../../../../../shared/ui/domain";
 import { OverviewTab } from "./OverviewTab";
 import { OrdersTab } from "./OrdersTab";
 import { PaymentsTab } from "./PaymentsTab";
@@ -170,7 +171,7 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
             Raise Purchase Request
           </Button>
           <StatusPill status={supplier.status} />
-          <span style={{ fontFamily: F.mono, fontSize: 13, background: "#FFF", border: `1px solid ${T.borderDef}`, padding: "5px 12px", borderRadius: 6, color: T.luxuryBrown, fontWeight: 600 }}>{supplier.id}</span>
+          <EntityCode type="supplier" value={supplier.id} />
         </div>
       </div>
 

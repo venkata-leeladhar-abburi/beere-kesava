@@ -20,6 +20,7 @@ import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../.
 import { useDesignLibrary, DispatchRecord } from "../../../design-library/contexts/DesignLibraryContext";
 import { DispatchDetailsModal } from "../../../production/components/DispatchDetailsModal";
 import { BatchesTab, DispatchesTab, PaymentsTab, MaterialsTab } from "./weaverDrawer/WeaverDrawerTabs";
+import { EntityCode } from "../../../../shared/ui/domain";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { weaversApi } from "../../../../shared/api/weavers";
@@ -189,7 +190,7 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
             <div style={{ flex: "1 1 320px" }}>
               <span style={{ display: "inline-block", fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: cfg.color, background: cfg.badge, borderRadius: 99, padding: "5px 14px", marginBottom: 12 }}>{cfg.label}</span>
               <div style={{ fontFamily: F.display, fontSize: 30, color: "#1A0A0F", lineHeight: 1.2, fontWeight: 600 }}>{weaver.name}</div>
-              <div style={{ fontFamily: F.mono, fontSize: 14, color: T.royalBurgundy, marginTop: 6 }}>{weaver.id}</div>
+              <div style={{ marginTop: 6 }}><EntityCode type="weaver" value={weaver.id} size="md" /></div>
             </div>
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap" as const }}>
               {[

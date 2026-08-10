@@ -10,7 +10,7 @@ import { T, F } from "./theme";
 import { Vendor, VendorBill, VendorPaymentTxn } from "./types";
 import { PAY_MODE_FILL } from "./data";
 import { StatusPill, StarRating } from "./SharedBits";
-import { StatusPill as DomainStatusPill } from "../../../../shared/ui/domain";
+import { StatusPill as DomainStatusPill, EntityCode } from "../../../../shared/ui/domain";
 import type { StatusValueOf } from "../../../../lib/domain/status";
 import { PurchaseOrderHistoryTable } from "./PurchaseOrderHistoryTable";
 import { FadeUp } from "./FadeUp";
@@ -215,7 +215,7 @@ export function VendorProfile({ vendor, onBack, onUpdate }: { vendor: Vendor; on
         </motion.div>
         <div style={{ display: "flex", gap: 10 }}>
           <StatusPill status={vendor.status} />
-          <span style={{ fontFamily: F.mono, fontSize: 13, background: T.silkCream, border: `1px solid ${T.borderDef}`, padding: "5px 12px", borderRadius: 6, color: T.luxuryBrown, fontWeight: 600 }}>{vendor.id}</span>
+          <EntityCode type="vendor" value={vendor.id} />
         </div>
       </div>
 
