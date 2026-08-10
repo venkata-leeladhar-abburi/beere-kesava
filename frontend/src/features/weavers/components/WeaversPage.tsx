@@ -85,7 +85,9 @@ export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: a
   const [filter, setFilter] = useState("All Weavers");
   const [search, setSearch] = useState("");
   const [selectedWeaver, setSelectedWeaver] = useState<typeof WEAVERS[0] | null>(null);
-  const [newWeaverExpanded, setNewWeaverExpanded] = useState(false);
+  // Command palette "New Weaver" action deep-links here with ?new=1 to open
+  // the registration form straight away.
+  const [newWeaverExpanded, setNewWeaverExpanded] = useState(() => new URLSearchParams(location.search).get("new") === "1");
   const [drawerMode, setDrawerMode] = useState<"view" | "edit">(navState?.mode === "edit" ? "edit" : "view");
   const [batchDialog, setBatchDialog] = useState<typeof WEAVERS[0] | null>(null);
   const [extraWeavers, setExtraWeavers] = useState<typeof WEAVERS>([]);

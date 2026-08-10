@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useRef } from "react";
+import { useLocation } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 const imgFirmsHero = "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
 import {
@@ -254,13 +255,16 @@ const BLANK = { firmName: "", gstNumber: "", address: "", accountNumber: "", ifs
 // ─── Main page ────────────────────────────────────────────────────────────────
 export function FirmsPage() {
   const { firms, addFirm, updateFirm, getFirmFinancials } = useFirms();
+  const location = useLocation();
   const [search, setSearch] = useState("");
+  // Command palette "New Firm" action deep-links here with ?new=1 to open
+  // the create-firm form straight away.
   const [modal, setModal] = useState<
     | { type: "create" }
     | { type: "edit"; firm: Firm }
     | { type: "view"; firm: Firm }
     | null
-  >(null);
+  >(() => (new URLSearchParams(location.search).get("new") === "1" ? { type: "create" } : null));
 
   const filtered = firms.filter(f =>
     f.firmName.toLowerCase().includes(search.toLowerCase()) ||
