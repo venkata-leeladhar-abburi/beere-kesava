@@ -4,11 +4,11 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { useFirms } from "../../../firms/contexts/FirmsContext";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { useMoneyVisible } from "../../../../shared/ui/MoneyValue";
+import { rupees, formatMoney } from "@/lib/domain/money";
 import { T, F } from "../theme";
 import { FadeUp, ChartCard, TabTitle, ReportDLBar, ChartTip, AnimBar } from "../common/primitives";
 import { Button } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
-import { rupees, formatMoney } from "@/lib/domain/money";
 
 export function ProfitLossReport() {
   const { firms, financials } = useFirms();
@@ -96,15 +96,15 @@ export function ProfitLossReport() {
     },
     {
       id: "income", header: "Total Income", accessor: f => f.income, type: "number",
-      cell: (_v, f) => <span style={{ fontFamily: F.mono, color: T.green, fontWeight: 600 }}>{formatMoney(rupees(f.income))}</span>,
+      cell: (_v, f) => <span style={{ fontFamily: F.mono, color: T.green, fontWeight: 600 }}>{inr(f.income)}</span>,
     },
     {
       id: "expenses", header: "Total Expenses", accessor: f => f.expenses, type: "number",
-      cell: (_v, f) => <span style={{ fontFamily: F.mono, color: T.crimson, fontWeight: 600 }}>{formatMoney(rupees(f.expenses))}</span>,
+      cell: (_v, f) => <span style={{ fontFamily: F.mono, color: T.crimson, fontWeight: 600 }}>{inr(f.expenses)}</span>,
     },
     {
       id: "net", header: "Net", accessor: f => f.net, type: "number",
-      cell: (_v, f) => <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: f.net >= 0 ? T.green : T.crimson }}>{formatMoney(rupees(f.net))}</span>,
+      cell: (_v, f) => <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: f.net >= 0 ? T.green : T.crimson }}>{inr(f.net)}</span>,
     },
   ];
 
@@ -210,12 +210,12 @@ export function ProfitLossReport() {
                         <div style={{ width: 9, height: 9, borderRadius: "50%", background: d.color }} />
                         <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{d.name}</span>
                       </div>
-                      <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: d.color }}>{formatMoney(rupees(d.value))}</span>
+                      <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: d.color }}>{inr(d.value)}</span>
                     </div>
                     <AnimBar pct={totalExpenses > 0 ? Math.round((d.value / totalExpenses) * 100) : 0} color={d.color} height={5} />
                   </div>
                 ))}
-                <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.crimson, textAlign: "right", marginTop: 4 }}>Total: {formatMoney(rupees(totalExpenses))}</div>
+                <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.crimson, textAlign: "right", marginTop: 4 }}>Total: {inr(totalExpenses)}</div>
               </div>
             </>
           )}
