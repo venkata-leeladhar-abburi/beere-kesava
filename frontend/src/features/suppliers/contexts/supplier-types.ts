@@ -1,3 +1,5 @@
+import { formatMoney, rupees } from "../../../lib/domain/money";
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
@@ -111,7 +113,7 @@ export interface Supplier {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function formatINR(n: number): string {
-  return "₹" + Math.max(0, Math.round(n)).toLocaleString("en-IN");
+  return formatMoney(rupees(Math.max(0, Math.round(n))));
 }
 
 /** Parses "₹1,20,000" / "1,20,000" into a number. */

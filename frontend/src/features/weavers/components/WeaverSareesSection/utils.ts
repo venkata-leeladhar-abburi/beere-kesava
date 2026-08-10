@@ -1,8 +1,9 @@
 import { T } from "./theme";
 import type { QcResult } from "../../../qc/contexts/QcContext";
 import { FinishingStatus } from "./types";
+import { formatMoney, rupees } from "../../../../lib/domain/money";
 
-export const inr = (n: number): string => "₹" + Math.round(n).toLocaleString("en-IN");
+export const inr = (n: number): string => formatMoney(rupees(n));
 
 /** External saree IDs follow SupplierContext.buildSareeCode: PREFIX-###-INVOICE.
  *  Pulls out the 3-digit serial so it reads as its own field rather than being

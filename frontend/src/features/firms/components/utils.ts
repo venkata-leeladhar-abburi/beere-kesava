@@ -1,13 +1,13 @@
 // ─── Firms feature — pure helpers ─────────────────────────────────────────────
 
+import { formatMoney, rupees } from "../../../lib/domain/money";
+
 export function fmtAmt(n: number): string {
-  if (n >= 10_00_000) return `₹${(n / 10_00_000).toFixed(2)}L`;
-  if (n >= 1_000)     return `₹${(n / 1_000).toFixed(1)}K`;
-  return `₹${n.toLocaleString("en-IN")}`;
+  return formatMoney(rupees(n), { compact: true });
 }
 
 export function fmtFull(n: number): string {
-  return "₹" + n.toLocaleString("en-IN");
+  return formatMoney(rupees(n));
 }
 
 export function initials(name: string): string {
