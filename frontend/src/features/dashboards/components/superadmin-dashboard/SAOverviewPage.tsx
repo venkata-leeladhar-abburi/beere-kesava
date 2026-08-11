@@ -53,16 +53,16 @@ function SAHero() {
             { text: "Dashboard", italic: true, color: T.antiqueGold, delay: 0.68 },
             { text: "& Command Center", italic: false, color: T.warmCream, delay: 0.86 },
           ].map(({ text, italic, color, delay }) => (
-            <div key={text} style={{ overflow: "hidden", lineHeight: "1.12" }}>
+            <div key={text} style={{ overflow: "hidden", lineHeight: "1.15" }}>
               <motion.div initial={{ y: "110%", opacity: 0 }} animate={{ y: "0%", opacity: 1 }}
                 transition={{ duration: 0.9, delay, ease: [0.22, 1, 0.36, 1] }}
-                style={{ fontFamily: F.display, fontWeight: 400, fontStyle: italic ? "italic" : "normal", fontSize: "clamp(32px, 3.4vw, 54px)", letterSpacing: "-0.5px", color }}
+                style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontStyle: italic ? "italic" : "normal", fontSize: "clamp(42px, 4.5vw, 68px)", letterSpacing: "-0.01em", color }}
               >{text}</motion.div>
             </div>
           ))}
         </div>
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 1.0 }}
-          style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 14, color: "rgba(245,232,208,0.90)", lineHeight: 1.85, margin: 0, maxWidth: 360, letterSpacing: "0.05px" }}
+          style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 18, color: "rgba(245,232,208,0.90)", lineHeight: 1.85, margin: 0, maxWidth: 440, letterSpacing: "0.05px" }}
         >
           Full visibility and control over all operations — rates, approvals, audit logs, and more.
         </motion.p>

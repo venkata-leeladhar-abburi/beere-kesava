@@ -8,6 +8,7 @@ import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { analyticsApi } from "../../../../shared/api/analytics";
 import { EASE, F, T } from "../../theme";
 import { AnimCount, FadeUp } from "../common/motion";
+import { SectionCard } from "../common/primitives";
 import { CashFlowTooltip } from "./CashFlowTooltip";
 import { weaversApi } from "../../../../shared/api/weavers";
 import { weaverPaymentsApi, vendorPaymentsApi, supplierPaymentsApi } from "../../../../shared/api/payments";
@@ -166,26 +167,19 @@ export function PaymentAnalyticsSection() {
   return (
     <div id="pay-analytics" style={{ padding: "36px 40px 40px" }}>
       <FadeUp>
-        {/* ── Section header ─────────────────────────────────── */}
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 28 }}>
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
-              <div style={{ width: 4, height: 28, background: T.antiqueGold, borderRadius: 99, flexShrink: 0 }} />
-              <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0 }}>
-                Payment Analytics &amp; Insights
-              </h2>
-            </div>
-            <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: "0 0 0 16px" }}>
-              Visual breakdown of cash flow, customer compliance, and top weaver earnings.
-            </p>
-          </div>
+      <SectionCard
+        icon={TrendingUp}
+        title="Payment Analytics & Insights"
+        subtitle="Visual breakdown of cash flow, customer compliance, and top weaver earnings."
+        actions={
           <DownloadGate>
             <Button variant="secondary" size="md" iconLeft={Download}
               className="rounded-[10px] border-[1.5px] border-[rgba(200,155,71,0.22)] bg-gradient-to-br from-[rgba(200,155,71,0.15)] to-[rgba(200,155,71,0.05)] text-[#C89B47] hover:from-[rgba(200,155,71,0.22)] hover:to-[rgba(200,155,71,0.08)]">
               Export Report
             </Button>
           </DownloadGate>
-        </div>
+        }
+      >
 
         {/* ── 4 summary stat cards ───────────────────────────── */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 18, marginBottom: 24, alignItems: "stretch" }}>
@@ -381,6 +375,7 @@ export function PaymentAnalyticsSection() {
           </div>
 
         </div>
+      </SectionCard>
       </FadeUp>
     </div>
   );

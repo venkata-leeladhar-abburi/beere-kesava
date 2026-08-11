@@ -127,22 +127,26 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
   return (
     <FadeUp>
       <section id="prod-defective" style={{ padding: "36px 48px 48px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
-          <div style={{ display: "flex", gap: 12 }}>
-            <div style={{ width: 4, background: T.crimson, borderRadius: 2, alignSelf: "stretch" }} />
-            <div>
-              <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: "0 0 4px 0", fontWeight: 600 }}>Defective Sarees — Failed Quality Check</h2>
-              <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, margin: 0 }}>These sarees failed quality check by worker staff. They are stored separately. View only — no action can be taken from this page.</p>
+        <div style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`, boxShadow: "0 6px 32px rgba(74,6,27,0.08)", overflow: "hidden" }}>
+          <div style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`, padding: "22px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <SealWarning size={26} color="#FFFDF9" />
+              </div>
+              <div>
+                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9", letterSpacing: "-0.2px" }}>Defective Sarees — Failed Quality Check</div>
+                <div style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.65)", marginTop: 3 }}>These sarees failed quality check by worker staff. They are stored separately. View only — no action can be taken from this page.</div>
+              </div>
             </div>
+            <Button
+              onClick={() => setShowDownloadDialog(true)}
+              variant="secondary"
+            >
+              <DownloadSimple size={16} color={T.antiqueGold} /> Download Defective Report
+            </Button>
           </div>
-          <Button
-            onClick={() => setShowDownloadDialog(true)}
-            variant="secondary"
-          >
-            <DownloadSimple size={16} color={T.antiqueGold} /> Download Defective Report
-          </Button>
-        </div>
 
+        <div style={{ padding: "24px 28px 28px" }}>
         <div style={{ background: "rgba(192,57,43,0.05)", border: `1px solid rgba(192,57,43,0.18)`, borderRadius: 10, padding: "10px 18px", marginBottom: 18, display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontSize: 14 }}>🔒</span>
           <span style={{ fontFamily: F.ui, fontSize: 12, color: T.crimson }}>This is a view-only section. Defective sarees are managed by the system automatically. Deductions have already been applied to the relevant weavers.</span>
@@ -210,6 +214,8 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
               Total defective displayed: <strong>{filteredData.length} sarees</strong> · Total deductions applied: <strong style={{ fontFamily: F.mono, color: T.crimson }}>{formatMoney(totalDeduction)}</strong>
             </span>
           </div>
+        </div>
+        </div>
         </div>
 
         <AnimatePresence>

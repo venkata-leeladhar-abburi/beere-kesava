@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { AnimatePresence } from "motion/react";
-import { ChevronDown as PhCaretDown, Plus as PhPlus } from "lucide-react";
+import { ChevronDown as PhCaretDown, Plus as PhPlus, Layers } from "lucide-react";
 import { useBatches } from "../../contexts/BatchContext";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { T, F } from "../theme";
@@ -132,18 +132,24 @@ export function ActiveBatchesSection({ onNavigate }: { onNavigate?: (tab: string
   return (
     <div id="prod-active-batches" style={{ padding: "40px 48px 0" }}>
       <FadeUp>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ width: 4, height: 28, background: T.antiqueGold, borderRadius: 99 }} />
-            <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0 }}>All Active Production Batches</h2>
+        <div style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`, boxShadow: "0 6px 32px rgba(74,6,27,0.08)", overflow: "hidden" }}>
+          <div style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`, padding: "22px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <Layers size={26} color="#FFFDF9" />
+              </div>
+              <div>
+                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9", letterSpacing: "-0.2px" }}>All Active Production Batches</div>
+                <div style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.65)", marginTop: 3 }}>Every active batch currently being worked on by weavers. Each batch is one set of materials given to one or more weavers for a specific design.</div>
+              </div>
+            </div>
+            <Button onClick={() => onNavigate?.("Batches")} variant="primary" size="md" iconLeft={PhPlus}
+              className="bg-[#1E6640] hover:bg-[#145230] shadow-[0_4px_12px_rgba(30,102,64,0.2)]">
+              Create New Batch
+            </Button>
           </div>
-          <Button onClick={() => onNavigate?.("Batches")} variant="primary" size="md" iconLeft={PhPlus}
-            className="bg-[#1E6640] hover:bg-[#145230] shadow-[0_4px_12px_rgba(30,102,64,0.2)]">
-            Create New Batch
-          </Button>
-        </div>
-        <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: "0 0 20px" }}>Every active batch currently being worked on by weavers. Each batch is one set of materials given to one or more weavers for a specific design.</p>
 
+        <div style={{ padding: "24px 28px 28px" }}>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 16 }}>
           {FILTER_PILLS.map(f => (
             <Button key={f.label} onClick={() => setFilter(f.stage)} variant={filter === f.stage ? "primary" : "tertiary"} size="sm"
@@ -201,6 +207,8 @@ export function ActiveBatchesSection({ onNavigate }: { onNavigate?: (tab: string
             view === "list" ? <BatchListView batches={visible} onView={handleEditBatch} onEdit={handleEditBatch} /> :
             <BatchTableView batches={visible} onView={handleEditBatch} onEdit={handleEditBatch} />
           )}
+        </div>
+        </div>
         </div>
       </FadeUp>
       <AnimatePresence>

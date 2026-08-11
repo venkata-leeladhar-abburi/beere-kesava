@@ -42,25 +42,29 @@ export function Hero() {
           transition={{ duration: 0.7, delay: 0.3, ease: EASE }}
           style={{ display: "flex", alignItems: "center", gap: 12 }}
         >
-          <div style={{ width: 24, height: 1, background: T.antiqueGold, opacity: 0.6 }} />
-          <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: "rgba(200,155,71,0.80)", letterSpacing: "3px", textTransform: "uppercase" }}>
+          <div style={{ width: 28, height: 1, background: T.antiqueGold, opacity: 0.65 }} />
+          <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 11.5, color: "rgba(200,155,71,0.82)", letterSpacing: "3.5px", textTransform: "uppercase" }}>
             Since 1999 · Heritage Craftsmanship
           </span>
         </motion.div>
 
-        {/* Headline lines */}
+        {/* Headline lines — Updated to DM Serif Display for a beautiful, premium heritage look */}
         <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
           {[
             { text: "Weaving", italic: false, color: T.warmCream, delay: 0.5 },
             { text: "Heritage", italic: true, color: T.antiqueGold, delay: 0.68 },
             { text: "Into Every Thread", italic: false, color: T.warmCream, delay: 0.86 },
           ].map(({ text, italic, color, delay }) => (
-            <div key={text} style={{ overflow: "hidden", lineHeight: "1.12" }}>
+            <div key={text} style={{ overflow: "hidden", lineHeight: "1.15" }}>
               <motion.div
                 initial={{ y: "110%", opacity: 0 }}
                 animate={{ y: "0%", opacity: 1 }}
                 transition={{ duration: 0.9, delay, ease: [0.22, 1, 0.36, 1] }}
-                style={{ fontFamily: F.display, fontWeight: 400, fontStyle: italic ? "italic" : "normal", fontSize: "clamp(36px, 3.8vw, 60px)", letterSpacing: "-0.5px", color }}
+                style={{
+                  fontFamily: "'DM Serif Display', serif",
+                  fontWeight: 400, fontStyle: italic ? "italic" : "normal",
+                  fontSize: "clamp(48px, 5vw, 76px)", letterSpacing: "-0.01em", color,
+                }}
               >
                 {text}
               </motion.div>
@@ -73,7 +77,7 @@ export function Hero() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 1.0 }}
-          style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 14, color: "rgba(245,232,208,0.90)", lineHeight: 1.85, margin: 0, maxWidth: 360, letterSpacing: "0.05px" }}
+          style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 18, color: "rgba(245,232,208,0.88)", lineHeight: 1.8, margin: 0, maxWidth: 460, letterSpacing: "0.1px" }}
         >
           From the finest raw silk to masterful craftsmanship,<br />we deliver excellence at every step — for four generations.
         </motion.p>

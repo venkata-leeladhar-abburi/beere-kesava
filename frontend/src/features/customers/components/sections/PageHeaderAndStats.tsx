@@ -1,5 +1,5 @@
 import { Building2, Users, IndianRupee, AlertTriangle, UserPlus } from "lucide-react";
-import { imgShowroom } from "../../../../shared/constants/weaverImages";
+import customersHero from "../../../../assets/inline/customers2.jpg";
 import { Money } from "../../../../shared/ui/domain/Money";
 import { paise } from "../../../../lib/domain/money";
 import { T, F } from "../theme";
@@ -8,44 +8,26 @@ import { useCustomers } from "../../contexts/CustomersContext";
 
 // ── SECTION 1: PAGE HEADER ──────────────────────────────────────────────────
 export function PageHeader() {
-  const headerBgImage = imgShowroom;
   return (
-    <div style={{
-      minHeight: 230, background: T.darkBurgundy, display: "flex", position: "relative", overflow: "hidden"
-    }}>
-      {/* Decorative gold rings */}
-      <div style={{ position: "absolute", right: -80, top: -100, width: 500, height: 500, borderRadius: "50%", border: "1px solid rgba(200,155,71,0.10)", pointerEvents: "none", zIndex: 1 }} />
-      <div style={{ position: "absolute", right: 40, top: -30, width: 360, height: 360, borderRadius: "50%", border: "1px solid rgba(200,155,71,0.07)", pointerEvents: "none", zIndex: 1 }} />
-
-      {/* Background photo */}
-      <div style={{
-        position: "absolute", right: 0, top: 0, bottom: 0, width: "45%",
-        background: `url(${headerBgImage}) center/cover no-repeat`,
-        opacity: 0.18, maskImage: "linear-gradient(to right, transparent, black)",
-        zIndex: 1
-      }} />
-
-      {/* Grid line overlay */}
-      <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 2, backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 48px, rgba(200,155,71,0.022) 48px, rgba(200,155,71,0.022) 49px)` }} />
-
-      <div style={{ padding: "44px 56px 90px", display: "flex", width: "100%", alignItems: "flex-start", zIndex: 10 }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 28, height: 2, background: `linear-gradient(90deg, ${T.antiqueGold}, rgba(200,155,71,0))` }} />
-            <span style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "2.5px", color: "rgba(200,155,71,0.82)", textTransform: "uppercase" as const, fontWeight: 600 }}>
-              Since 1999 · Customer Management
-            </span>
-          </div>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 14, marginTop: 4 }}>
-            <h1 style={{ fontFamily: F.display, fontSize: 48, color: "#FFFDF9", margin: 0, fontWeight: 700, letterSpacing: "-0.5px", lineHeight: 1.0 }}>Customers</h1>
-            <span style={{ fontFamily: F.display, fontSize: 30, color: T.antiqueGold, fontStyle: "italic", fontWeight: 400, letterSpacing: "-0.3px" }}>& Relationship Overview</span>
-          </div>
-          <p style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.60)", margin: "6px 0 0 0", maxWidth: 580, lineHeight: 1.65 }}>
-            Manage all wholesale business customers and view retail customer profiles. Track purchase history, outstanding payments, and order records for every customer.
-          </p>
+    <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", minHeight: 380, display: "flex", alignItems: "center" }}>
+      <div style={{ position: "relative", zIndex: 2, padding: "48px 0 90px 48px", flex: "0 0 65%", maxWidth: "65%" }}>
+        <div style={{ fontFamily: F.mono, fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase", marginBottom: 12 }}>
+          Since 1999 · Customer Management
         </div>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
+          <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 56, fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Customers</h1>
+          <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: 36, fontStyle: "italic", color: T.antiqueGold, fontWeight: 400 }}>&amp; Relationship Overview</span>
+        </div>
+        <p style={{ fontFamily: F.ui, fontSize: 18, color: "rgba(255,253,249,0.70)", margin: "0 0 20px", maxWidth: 600, lineHeight: 1.6 }}>
+          Manage all wholesale business customers and view retail customer profiles. Track purchase history, outstanding payments, and order records for every customer.
+        </p>
       </div>
-    </div>
+
+      <div style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "50%", zIndex: 1 }}>
+        <div style={{ position: "absolute", inset: 0, zIndex: 2, background: `linear-gradient(to right, #0D0207 0%, rgba(13,2,7,0.7) 38%, rgba(13,2,7,0.1) 100%)` }} />
+        <img src={customersHero} alt="Showroom" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", filter: "brightness(0.75) saturate(0.90)" }} />
+      </div>
+    </header>
   );
 }
 
@@ -90,7 +72,7 @@ export function StatsStrip() {
               <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, letterSpacing: "1.8px", textTransform: "uppercase" as const, marginBottom: 7, color: m.hi ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.70)" }}>
                 {m.label}
               </div>
-              <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 30, letterSpacing: "-0.02em", color: m.hi ? T.goldLight : "#FFFDF9", lineHeight: 1.1, marginBottom: 6, fontVariantNumeric: "tabular-nums" }}>
+              <div style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontSize: 48, letterSpacing: "-0.01em", color: m.hi ? T.goldLight : "#FFFDF9", lineHeight: 1.1, marginBottom: 8, fontVariantNumeric: "tabular-nums" }}>
                 {m.val}
               </div>
               <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: m.hi ? "rgba(231,201,131,0.90)" : "rgba(245,232,208,0.55)", letterSpacing: "0.1px" }}>

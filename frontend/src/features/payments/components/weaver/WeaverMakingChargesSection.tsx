@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { AlertTriangle, BadgeCheck, Download, Eye, LayoutGrid, LayoutList, MinusCircle, UserCheck, Wallet } from "lucide-react";
+import { AlertTriangle, BadgeCheck, Download, Eye, HandCoins, LayoutGrid, LayoutList, MinusCircle, UserCheck, Wallet } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
@@ -13,7 +13,7 @@ import { EASE, F, T } from "../../theme";
 import { WeaverRecord } from "../../types";
 import { RATES, calcCharges, calcCompletedSarees, calcNet } from "../../utils/charges";
 import { FadeUp } from "../common/motion";
-import { ActionModal, DropBtn, Pip, StatusBadge } from "../common/primitives";
+import { ActionModal, DropBtn, Pip, SectionCard, StatusBadge } from "../common/primitives";
 import { Button, Checkbox, SearchInput } from "../../../../shared/ui/primitives";
 import { exportTable, type ColumnDef } from "../../../../shared/ui/data";
 import { BankUploadPanel } from "./BankUploadPanel";
@@ -233,20 +233,12 @@ export function WeaverMakingChargesSection() {
   return (
     <div id="pay-making-charges" style={{ padding: "36px 40px 0" }}>
       <FadeUp>
-        {/* ── Section header ──────────────────────────────────── */}
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 4 }}>
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
-              <div style={{ width: 4, height: 28, background: T.antiqueGold, borderRadius: 99 }} />
-              <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0 }}>
-                Weaver Making Charges — May 2026
-              </h2>
-            </div>
-            <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: "0 0 0 16px", maxWidth: 640, lineHeight: 1.6 }}>
-              Making charges are paid once a month at the end of the month. This system calculates each weaver's earnings based on completed and approved sarees.
-            </p>
-          </div>
-          <div style={{ display: "flex", gap: 10, flexShrink: 0 }}>
+      <SectionCard
+        icon={HandCoins}
+        title="Weaver Making Charges — May 2026"
+        subtitle="Making charges are paid once a month at the end of the month. This system calculates each weaver's earnings based on completed and approved sarees."
+        actions={
+          <>
             {selectedIds.size > 0 && (
               <Button variant="secondary" size="md" onClick={() => setSelectedIds(new Set())}>
                 Clear Selection ({selectedIds.size})
@@ -260,9 +252,9 @@ export function WeaverMakingChargesSection() {
                 Download Weaver Payment Report
               </Button>
             </DownloadGate>
-          </div>
-        </div>
-
+          </>
+        }
+      >
         {/* ── 4 stat cards ────────────────────────────────────── */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginTop: 24, marginBottom: 22, alignItems: "stretch" }}>
           {[
@@ -466,6 +458,7 @@ export function WeaverMakingChargesSection() {
         </>
         )}
 
+      </SectionCard>
         <ActionModal open={downloadModal} onClose={() => setDownloadModal(false)} title="Download Weaver Report" desc="Generate and download the weaver making charges payment report." actionLabel="Download" icon={Download} />
         <AnimatePresence>
           {selWeaver && <WeaverPaymentDetailModal weaver={selWeaver} onClose={() => setSelWeaver(null)} />}

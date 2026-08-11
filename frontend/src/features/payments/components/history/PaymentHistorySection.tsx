@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { AlignJustify, ArrowDownCircle, ArrowUpCircle, ChevronLeft, ChevronRight, Download, Eye, LayoutGrid, LayoutList, Receipt, TrendingUp, X } from "lucide-react";
+import { AlignJustify, ArrowDownCircle, ArrowUpCircle, ChevronLeft, ChevronRight, Download, Eye, History, LayoutGrid, LayoutList, Receipt, TrendingUp, X } from "lucide-react";
 import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 
@@ -7,6 +7,7 @@ import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { EASE, F, T, DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../theme";
 import { Invoice, PayHistRecord } from "../../types";
 import { FadeUp } from "../common/motion";
+import { SectionCard } from "../common/primitives";
 import { HIST_TYPE_CFG, HistoryCard, getHistTypeIcon } from "./HistoryCard";
 import { vendorsApi } from "../../../../shared/api/vendors";
 import { suppliersApi } from "../../../../shared/api/suppliers";
@@ -212,26 +213,19 @@ export function PaymentHistorySection() {
   return (
     <div id="pay-history" style={{ padding: "36px 40px 0" }}>
       <FadeUp>
-        {/* ── Section header ─────────────────────────────────── */}
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 28 }}>
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
-              <div style={{ width: 4, height: 28, background: T.antiqueGold, borderRadius: 99, flexShrink: 0 }} />
-              <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0 }}>
-                Payment History
-              </h2>
-            </div>
-            <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: "0 0 0 16px" }}>
-              Complete history of all payments made and received. Use filters to find specific transactions.
-            </p>
-          </div>
+      <SectionCard
+        icon={History}
+        title="Payment History"
+        subtitle="Complete history of all payments made and received. Use filters to find specific transactions."
+        actions={
           <DownloadGate>
             <Button variant="secondary" size="md" iconLeft={Download}
               className="flex-shrink-0 rounded-[9px] border border-[rgba(200,155,71,0.22)] bg-[#F5E8D0] text-[#3B2314]">
               Download All Transactions
             </Button>
           </DownloadGate>
-        </div>
+        }
+      >
 
         {/* ── 4 Summary stat cards ───────────────────────────── */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 18, marginBottom: 22, alignItems: "stretch" }}>
@@ -451,6 +445,7 @@ export function PaymentHistorySection() {
         )}
         </>
         )}
+      </SectionCard>
       </FadeUp>
     </div>
   );

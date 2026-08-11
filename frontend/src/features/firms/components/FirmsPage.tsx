@@ -5,7 +5,7 @@ const imgFirmsHero = "https://images.unsplash.com/photo-1454165804606-c3d57bc86b
 import {
   Plus, Edit, Eye, X, Building2, CreditCard, User, Phone,
   MapPin, Hash, IndianRupee, Check,
-  TrendingUp, TrendingDown, Minus, Upload, ChevronDown, ChevronUp,
+  TrendingUp, TrendingDown, Minus, Upload, ChevronDown, ChevronUp, ChevronRight,
   PlusCircle, FileSpreadsheet, ArrowRight, AlertTriangle,
 } from "lucide-react";
 import {
@@ -310,22 +310,16 @@ export function FirmsPage() {
     <div style={{ minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui }}>
 
       {/* ── PAGE HEADER ───────────────────────────────────────────────────── */}
-      <header style={{ background: T.darkBurgundy, position: "relative", overflow: "hidden", minHeight: 380, display: "flex", alignItems: "center" }}>
-        {/* Left text content */}
-        <div style={{ position: "relative", zIndex: 2, padding: "48px 0 110px 48px", flex: "0 0 64%", maxWidth: "64%" }}>
+      <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", display: "flex", alignItems: "center" }}>
+        <div style={{ position: "relative", zIndex: 2, padding: "48px 0 110px 48px", flex: "0 0 100%", maxWidth: "100%" }}>
           <div style={{ fontFamily: F.mono, fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase" as const, marginBottom: 12 }}>SINCE 1999 · FIRMS &amp; VENDORS</div>
           <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" as const, marginBottom: 10 }}>
-            <h1 style={{ fontFamily: F.display, fontSize: 48, fontWeight: 700, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Firms</h1>
-            <span style={{ fontFamily: F.display, fontSize: 30, fontStyle: "italic", color: T.antiqueGold, fontWeight: 400 }}>&amp; Vendor Management</span>
+            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 56, fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Firms</h1>
+            <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: 36, fontStyle: "italic", color: T.antiqueGold, fontWeight: 400 }}>&amp; Vendor Management</span>
           </div>
-          <p style={{ fontFamily: F.ui, fontSize: 16, color: "rgba(255,253,249,0.70)", margin: 0, maxWidth: 560, lineHeight: 1.6 }}>
+          <p style={{ fontFamily: F.ui, fontSize: 18, fontWeight: 400, color: "rgba(255,253,249,0.70)", margin: "0 0 20px", maxWidth: 600, lineHeight: 1.6 }}>
             Manage all firms used for material purchases, weaver payments, and customer invoicing. Track income, expenses, and net balance per firm.
           </p>
-        </div>
-        {/* Right image with gradient */}
-        <div style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "50%", zIndex: 1 }}>
-          <div style={{ position: "absolute", inset: 0, zIndex: 2, background: `linear-gradient(to right, ${T.darkBurgundy} 0%, rgba(61,14,26,0.65) 38%, rgba(61,14,26,0.10) 100%)` }} />
-          <img src={imgFirmsHero} alt="Business firms" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", filter: "brightness(0.70) saturate(0.85)" }} />
         </div>
       </header>
 
@@ -338,36 +332,55 @@ export function FirmsPage() {
       >
         <div style={{ background: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)", borderRadius: 28, display: "flex", alignItems: "stretch", boxShadow: "0 30px 80px rgba(0,0,0,0.32), 0 0 0 1px rgba(200,155,71,0.16)", overflow: "hidden", minHeight: 140 }}>
           {[
-            { label: "REGISTERED FIRMS",   val: String(firms.length),    sub: "Active vendor accounts",         hi: false, crimson: false, goldVal: false },
-            { label: "TOTAL PURCHASES",    val: fmtAmt(totalPurchase),   sub: "Across all registered firms",    hi: true,  crimson: false, goldVal: true  },
-            { label: "FIRMS WITH BALANCE", val: String(firms.filter(f => (f.purchaseAmount ?? 0) > 0).length), sub: "Active purchase records", hi: false, crimson: false, goldVal: false },
-            { label: "AVG PURCHASE",       val: firms.length ? fmtAmt(totalPurchase / firms.length) : <Money value={rupees(0)} />, sub: "Per registered firm", hi: false, crimson: false, goldVal: false },
+            { label: "REGISTERED FIRMS",   val: String(firms.length),    sub: "Active vendor accounts",         hi: false, Icon: Building2 },
+            { label: "TOTAL PURCHASES",    val: fmtAmt(totalPurchase),   sub: "Across all registered firms",    hi: true,  Icon: IndianRupee },
+            { label: "FIRMS WITH BALANCE", val: String(firms.filter(f => (f.purchaseAmount ?? 0) > 0).length), sub: "Active purchase records", hi: false, Icon: CreditCard },
+            { label: "AVG PURCHASE",       val: firms.length ? fmtAmt(totalPurchase / firms.length) : <Money value={rupees(0)} />, sub: "Per registered firm", hi: false, Icon: TrendingUp },
           ].map((m, i) => (
             <motion.div
               key={m.label}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 + i * 0.09 }}
+              transition={{ duration: 0.6, delay: 0.6 + i * 0.09, ease: EASE }}
               whileHover={{ backgroundColor: m.hi ? "rgba(200,155,71,0.26)" : "rgba(245,232,208,0.04)" }}
               style={{
                 flex: 1, padding: "28px 22px",
                 backgroundImage: m.hi ? "linear-gradient(135deg, rgba(200,155,71,0.20) 0%, rgba(200,155,71,0.07) 100%)" : "none",
+                backgroundColor: "rgba(0,0,0,0)",
                 borderRight: i < 3 ? "1px solid rgba(245,232,208,0.07)" : "none",
-                display: "flex", alignItems: "center", gap: 14, position: "relative", cursor: "default",
+                display: "flex", alignItems: "center", gap: 14, position: "relative",
+                cursor: "pointer",
               }}
             >
+              <motion.div
+                whileHover={{ scale: 1.08, rotate: 3 }}
+                transition={{ duration: 0.25 }}
+                style={{ width: 50, height: 50, borderRadius: 15, flexShrink: 0, background: m.hi ? "rgba(200,155,71,0.16)" : "rgba(245,232,208,0.07)", border: `1px solid ${m.hi ? "rgba(200,155,71,0.38)" : "rgba(245,232,208,0.09)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}
+              >
+                <m.Icon size={22} color={m.hi ? "rgba(231,201,131,0.95)" : "rgba(245,232,208,0.90)"} />
+              </motion.div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, letterSpacing: "2px", textTransform: "uppercase" as const, marginBottom: 8, color: m.hi ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.90)" }}>
+                <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 8, color: m.hi ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.90)" }}>
                   {m.label}
                 </div>
-                <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 30, letterSpacing: "-0.02em", color: m.crimson ? "#F47B72" : m.goldVal ? T.goldLight : "#FFFDF9", lineHeight: 1.1, marginBottom: 8, fontVariantNumeric: "tabular-nums" as const }}>
+                <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 48, color: m.hi ? T.goldLight : "#FFFDF9", lineHeight: 1.0, marginBottom: 8, fontVariantNumeric: "tabular-nums" as const }}>
                   {m.val}
                 </div>
-                <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: m.hi ? "rgba(231,201,131,0.95)" : "rgba(245,232,208,0.85)" }}>
-                  {m.sub}
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: m.hi ? "rgba(231,201,131,0.95)" : "rgba(245,232,208,0.85)", letterSpacing: "0.1px" }}>
+                    {m.sub}
+                  </span>
+                  {m.hi && (
+                    <motion.div
+                      whileHover={{ scale: 1.15 }}
+                      style={{ width: 20, height: 20, borderRadius: "50%", border: "1px solid rgba(200,155,71,0.38)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", background: "rgba(200,155,71,0.10)" }}
+                    >
+                      <ChevronRight size={10} color={T.goldLight} />
+                    </motion.div>
+                  )}
                 </div>
               </div>
-              {m.hi && <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(135deg,#C89B47,#E7C983)" }} />}
+              {m.hi && <div className="gold-bar-shimmer" style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2 }} />}
             </motion.div>
           ))}
         </div>

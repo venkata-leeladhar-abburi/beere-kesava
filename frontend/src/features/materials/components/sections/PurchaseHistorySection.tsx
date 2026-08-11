@@ -2,16 +2,17 @@ import React, { useContext, useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "motion/react";
 import { PieChart, Pie, Cell } from "recharts";
-import { Layers, Tag, Sparkles, Calculator, Users, IndianRupee, Download } from "lucide-react";
+import { Layers, Tag, Sparkles, Calculator, Users, IndianRupee, Download, History } from "lucide-react";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER } from "../../../../shared/ui/DateFilterBar";
 import { T, F, EASE, MobileCtx } from "../theme";
 import { MAT_TAG } from "../materialConfig";
-import { SectionHeader, FadeUp, AnimatedBar } from "../common/primitives";
+import { SectionCard, FadeUp, AnimatedBar } from "../common/primitives";
 import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
 import { purchaseOrdersApi } from "../../../../shared/api/purchase-orders";
 import { vendorsApi } from "../../../../shared/api/vendors";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
+import { Button } from "../../../../shared/ui/primitives";
 
 interface VendorRow {
   name: string;
@@ -245,17 +246,16 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
 
   return (
     <section id="mat-purchase-history" style={{ padding: `44px ${px}px 0` }}>
-      <SectionHeader
-        title="Purchase History From All Vendors"
-        action="Download Report"
-        actionIcon={<Download size={15} />}
-        onAction={onDownloadReport}
-        actionVariant="gold"
-      />
-      <p style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 14, color: T.taupe, margin: "0 0 16px", lineHeight: 1.6 }}>
-        This shows everything that was ever purchased and received — from the day this system was started until today. You can also filter by a specific date range.
-      </p>
-
+    <SectionCard
+      icon={History}
+      title="Purchase History From All Vendors"
+      subtitle="Everything ever purchased and received — from the day this system was started until today. Filter by a specific date range below."
+      actions={
+        <Button onClick={onDownloadReport} variant="secondary" size="sm" iconLeft={Download}>
+          Download Report
+        </Button>
+      }
+    >
       <FadeUp>
         <div style={{ marginBottom: 24 }}>
           <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
@@ -342,6 +342,7 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
           </div>
         </FadeUp>
       </div>
+    </SectionCard>
     </section>
   );
 }

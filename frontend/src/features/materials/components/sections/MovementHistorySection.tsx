@@ -1,15 +1,15 @@
 import React, { useContext, useState, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "motion/react";
-import { Download, Trash2 } from "lucide-react";
+import { Download, Trash2, ArrowLeftRight } from "lucide-react";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER } from "../../../../shared/ui/DateFilterBar";
 import { ConfirmDialog } from "../../../../shared/ui/ConfirmDialog";
 import { ApiError } from "../../../../shared/api/client";
 import { T, F, EASE, MobileCtx } from "../theme";
-import { SectionHeader, FadeUp } from "../common/primitives";
+import { SectionCard, FadeUp } from "../common/primitives";
 import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
 import { materialIssuesApi } from "../../../../shared/api/material-issues";
-import { IconButton } from "../../../../shared/ui/primitives";
+import { IconButton, Button } from "../../../../shared/ui/primitives";
 
 function parseKg(quantity: number | string | null | undefined, unit?: string | null): number {
   const q = Number(quantity || 0);
@@ -148,17 +148,16 @@ export function MovementHistorySection({ onDownloadMovementReport }: { onDownloa
 
   return (
     <section id="mat-movement" style={{ padding: `44px ${px}px 0` }}>
-      <SectionHeader
-        title="Full Movement History — Stock Coming In and Going Out"
-        action="Download Report"
-        actionIcon={<Download size={15} />}
-        onAction={onDownloadMovementReport}
-        actionVariant="gold"
-      />
-      <p style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 14, color: T.taupe, margin: "0 0 22px", lineHeight: 1.65 }}>
-        Every time material came into the factory from a vendor, or was given out to a weaver — it is recorded here.
-      </p>
-
+    <SectionCard
+      icon={ArrowLeftRight}
+      title="Full Movement History — Stock Coming In and Going Out"
+      subtitle="Every time material came into the factory from a vendor, or was given out to a weaver — it is recorded here."
+      actions={
+        <Button onClick={onDownloadMovementReport} variant="secondary" size="sm" iconLeft={Download}>
+          Download Report
+        </Button>
+      }
+    >
       <div style={{ marginBottom: 26 }}>
         <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
       </div>
@@ -273,6 +272,7 @@ export function MovementHistorySection({ onDownloadMovementReport }: { onDownloa
           </div>
         </div>
       </FadeUp>
+    </SectionCard>
 
       <AnimatePresence>
         {deletingRef && (

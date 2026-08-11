@@ -13,10 +13,8 @@ import { Button } from "../../../shared/ui/primitives";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { useDataAccess } from "@/shared/ui/domain";
 
+import { Tags, History, TrendingUp, TrendingDown } from "lucide-react";
 const toRecord = backendRateToDisplayRecord;
-
-const imgRatesHero = "https://images.unsplash.com/photo-1527751171053-6ac5ec50000b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
-
 // ═══════════════════════════════════════════════════════════════════════════
 // RE-EXPORTS — preserved for external consumers of this module's public API
 // ═══════════════════════════════════════════════════════════════════════════
@@ -96,22 +94,17 @@ export function RatesPricingPage() {
       {/* ══════════════════════════════════════════════════════════════════ */}
       {/* 1. PAGE HEADER                                                     */}
       {/* ══════════════════════════════════════════════════════════════════ */}
-      <header style={{ background: T.darkBurgundy, position: "relative", overflow: "hidden", minHeight: 380, display: "flex", alignItems: "center" }}>
+      <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", minHeight: 380, display: "flex", alignItems: "center" }}>
         {/* Left text content */}
-        <div style={{ position: "relative", zIndex: 2, padding: "48px 0 110px 48px", flex: "0 0 64%", maxWidth: "64%" }}>
+        <div style={{ position: "relative", zIndex: 2, padding: "48px 0 110px 48px", flex: "0 0 100%", maxWidth: "100%" }}>
           <div style={{ fontFamily: F.mono, fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase" as const, marginBottom: 12 }}>SINCE 1999 · RATES &amp; PRICING</div>
           <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" as const, marginBottom: 10 }}>
-            <h1 style={{ fontFamily: F.display, fontSize: 48, fontWeight: 700, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Rates &amp; Pricing</h1>
-            <span style={{ fontFamily: F.display, fontSize: 30, fontStyle: "italic", color: T.antiqueGold, fontWeight: 400 }}>&amp; Making Charges</span>
+            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 56, fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Rates &amp; Pricing</h1>
+            <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: 36, fontStyle: "italic", color: T.antiqueGold, fontWeight: 400 }}>&amp; Making Charges</span>
           </div>
-          <p style={{ fontFamily: F.ui, fontSize: 16, color: "rgba(255,253,249,0.70)", margin: 0, maxWidth: 560, lineHeight: 1.6 }}>
+          <p style={{ fontFamily: F.ui, fontSize: 18, color: "rgba(255,253,249,0.70)", margin: 0, maxWidth: 600, lineHeight: 1.6 }}>
             Configure making charges, raw material deduction rates, and wholesale payment terms across all saree types. All changes are logged and immutable.
           </p>
-        </div>
-        {/* Right image with gradient */}
-        <div style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "50%", zIndex: 1 }}>
-          <div style={{ position: "absolute", inset: 0, zIndex: 2, background: `linear-gradient(to right, ${T.darkBurgundy} 0%, rgba(61,14,26,0.65) 38%, rgba(61,14,26,0.10) 100%)` }} />
-          <img src={imgRatesHero} alt="Saree pricing" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", filter: "brightness(0.75) saturate(0.85)" }} />
         </div>
       </header>
 
@@ -137,10 +130,10 @@ export function RatesPricingPage() {
               ? rates.find((r) => r.changed === "Just now") ?? rates[0]
               : null;
             return [
-              { label: "TOTAL SAREE TYPES", val: String(rates.length), sub: hasRates ? "All with short codes and rates set" : "No saree types configured yet", hi: false, crimson: false, goldVal: false },
-              { label: "LAST RATE CHANGE", val: mostRecent ? mostRecent.changed : "—", sub: mostRecent ? `${mostRecent.type} · ${canSeeCost ? formatMoney(rupees(parseInt(mostRecent.charge))) : "••••"}` : "No rate changes yet", hi: false, crimson: false, goldVal: false },
-              { label: "HIGHEST MAKING CHARGE", val: highest ? (canSeeCost ? formatMoney(rupees(parseInt(highest.charge))) : "••••") : "—", sub: highest ? `${highest.type} · ${highest.code}` : "No rates configured yet", hi: true, crimson: false, goldVal: true },
-              { label: "LOWEST MAKING CHARGE", val: lowest ? (canSeeCost ? formatMoney(rupees(parseInt(lowest.charge))) : "••••") : "—", sub: lowest ? `${lowest.type} · ${lowest.code} per saree` : "No rates configured yet", hi: false, crimson: false, goldVal: false },
+              { label: "TOTAL SAREE TYPES", val: String(rates.length), sub: hasRates ? "All with short codes and rates set" : "No saree types configured yet", hi: false, crimson: false, goldVal: false, Icon: Tags },
+              { label: "LAST RATE CHANGE", val: mostRecent ? mostRecent.changed : "—", sub: mostRecent ? `${mostRecent.type} · ${canSeeCost ? formatMoney(rupees(parseInt(mostRecent.charge))) : "••••"}` : "No rate changes yet", hi: false, crimson: false, goldVal: false, Icon: History },
+              { label: "HIGHEST MAKING CHARGE", val: highest ? (canSeeCost ? formatMoney(rupees(parseInt(highest.charge))) : "••••") : "—", sub: highest ? `${highest.type} · ${highest.code}` : "No rates configured yet", hi: true, crimson: false, goldVal: true, Icon: TrendingUp },
+              { label: "LOWEST MAKING CHARGE", val: lowest ? (canSeeCost ? formatMoney(rupees(parseInt(lowest.charge))) : "••••") : "—", sub: lowest ? `${lowest.type} · ${lowest.code} per saree` : "No rates configured yet", hi: false, crimson: false, goldVal: false, Icon: TrendingDown },
             ];
           })().map((m, i) => (
             <motion.div
@@ -156,18 +149,21 @@ export function RatesPricingPage() {
                 display: "flex", alignItems: "center", gap: 14, position: "relative", cursor: "default",
               }}
             >
+              {m.hi && <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(135deg,#C89B47,#E7C983)" }} />}
+              <div style={{ width: 44, height: 44, borderRadius: 13, flexShrink: 0, background: m.hi ? "rgba(200,155,71,0.16)" : "rgba(245,232,208,0.07)", border: `1px solid ${m.hi ? "rgba(200,155,71,0.38)" : "rgba(245,232,208,0.09)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <m.Icon size={20} color={m.crimson ? "#F47B72" : m.hi ? "rgba(231,201,131,0.95)" : "rgba(245,232,208,0.90)"} />
+              </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, letterSpacing: "2px", textTransform: "uppercase" as const, marginBottom: 8, color: m.hi ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.90)" }}>
                   {m.label}
                 </div>
-                <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 30, letterSpacing: "-0.02em", color: m.crimson ? "#F47B72" : m.goldVal ? T.goldLight : "#FFFDF9", lineHeight: 1.1, marginBottom: 8, fontVariantNumeric: "tabular-nums" as const }}>
+                <div style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontSize: 48, color: m.crimson ? "#F47B72" : m.goldVal ? T.goldLight : "#FFFDF9", lineHeight: 1.1, marginBottom: 8, fontVariantNumeric: "tabular-nums" as const }}>
                   {m.val}
                 </div>
                 <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: m.hi ? "rgba(231,201,131,0.95)" : "rgba(245,232,208,0.85)" }}>
                   {m.sub}
                 </div>
               </div>
-              {m.hi && <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(135deg,#C89B47,#E7C983)" }} />}
             </motion.div>
           ))}
         </div>

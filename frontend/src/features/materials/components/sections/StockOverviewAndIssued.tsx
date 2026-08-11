@@ -1,10 +1,10 @@
 import React, { useContext } from "react";
 import { motion, useInView } from "motion/react";
-import { BarChart2, ClipboardList, Layers, Tag, Sparkles, ArrowRight } from "lucide-react";
+import { BarChart2, ClipboardList, Layers, Tag, Sparkles, ArrowRight, Package } from "lucide-react";
 import { useMaterialIssue } from "../../contexts/MaterialIssueContext";
 import { T, F, EASE, G_GOLD, MobileCtx } from "../theme";
 import { MAT_CARDS_TEMPLATE } from "../materialConfig";
-import { SectionHeader, FadeUp } from "../common/primitives";
+import { SectionCard, FadeUp } from "../common/primitives";
 import { Button } from "../../../../shared/ui/primitives";
 
 import { useQuery } from "@tanstack/react-query";
@@ -75,14 +75,16 @@ export function StockOverview({ onSeeFullReports }: { onSeeFullReports: () => vo
   return (
     <section id="mat-stock-overview" style={{ padding: `40px ${px}px 0` }}>
       <motion.div ref={ref} initial={{ opacity: 0, y: 22 }} animate={inView ? { opacity: 1, y: 0 } : undefined} transition={{ duration: 0.6, ease: EASE }}>
-        <SectionHeader
-          title="Current Stock Overview"
-          action="See Full Reports"
-          actionIcon={<BarChart2 size={15} />}
-          onAction={onSeeFullReports}
-          actionVariant="solid"
-        />
-      </motion.div>
+      <SectionCard
+        icon={Package}
+        title="Current Stock Overview"
+        subtitle="Live totals for Warp, Resham, and Jari currently held in the factory store."
+        actions={
+          <Button onClick={onSeeFullReports} variant="secondary" size="sm" iconLeft={BarChart2}>
+            See Full Reports
+          </Button>
+        }
+      >
       {stockError && (
         <div style={{ padding: "12px 16px", marginBottom: 20, borderRadius: 10, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)", fontFamily: F.ui, fontSize: 13, color: "#C0392B", fontWeight: 700 }}>
           Failed to load stock data.
@@ -113,6 +115,8 @@ export function StockOverview({ onSeeFullReports }: { onSeeFullReports: () => vo
           </FadeUp>
         ))}
       </div>
+      </SectionCard>
+      </motion.div>
     </section>
   );
 }

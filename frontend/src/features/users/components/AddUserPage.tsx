@@ -334,22 +334,24 @@ export function AddUserPage() {
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: EASE }}
-        style={{ background: T.darkBurgundy, position: "relative", overflow: "hidden", minHeight: 200, display: "flex", alignItems: "stretch" }}
+        style={{ background: "#0D0207", position: "relative", overflow: "hidden", display: "flex", alignItems: "center" }}
       >
-        <div style={{ flex: 1, padding: "44px 56px 48px", zIndex: 10, position: "relative" }}>
+        <div style={{ flex: 1, padding: "48px 0 48px 48px", zIndex: 10, position: "relative", maxWidth: "100%" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
             <div style={{ width: 28, height: 1, background: T.antiqueGold }} />
-            <span style={{ fontFamily: F.mono, fontSize: 12, color: `${T.antiqueGold}80`, letterSpacing: "1.5px", textTransform: "uppercase" as const }}>
+            <span style={{ fontFamily: F.mono, fontSize: 13, color: `${T.antiqueGold}80`, letterSpacing: "1.5px", textTransform: "uppercase" as const }}>
               SINCE 1999 · USER MANAGEMENT
             </span>
           </div>
-          <h1 style={{ fontFamily: F.display, fontWeight: 700, fontSize: 48, color: "#fff", margin: "0 0 4px", lineHeight: 1.1 }}>
-            Add New User
-          </h1>
-          <div style={{ fontFamily: F.display, fontWeight: 500, fontStyle: "italic", fontSize: 30, color: T.antiqueGold, marginBottom: 16, lineHeight: 1.2 }}>
-            &amp; User Management
+          <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" as const, marginBottom: 10 }}>
+            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontSize: 56, color: "#fff", margin: 0, lineHeight: 1.1 }}>
+              Add New User
+            </h1>
+            <div style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontStyle: "italic", fontSize: 36, color: T.antiqueGold, lineHeight: 1.1 }}>
+              &amp; User Management
+            </div>
           </div>
-          <p style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,255,255,0.60)", maxWidth: 520, margin: 0, lineHeight: 1.65 }}>
+          <p style={{ fontFamily: F.ui, fontSize: 18, fontWeight: 400, color: "rgba(255,255,255,0.70)", maxWidth: 600, margin: 0, lineHeight: 1.65 }}>
             Create login accounts for staff across all portals. Each user logs in using their mobile number and a one-time OTP sent via WhatsApp.
           </p>
         </div>
@@ -365,9 +367,6 @@ export function AddUserPage() {
             </div>
           ))}
         </div>
-        {[300, 440, 580].map((sz, i) => (
-          <div key={i} style={{ position: "absolute", right: -sz * 0.3, bottom: -sz * 0.4, width: sz, height: sz, borderRadius: "50%", border: `1px solid rgba(200,155,71,${0.10 - i * 0.025})`, pointerEvents: "none" }} />
-        ))}
       </motion.div>
 
       {/* ── BODY ─────────────────────────────────────────────────────────────── */}

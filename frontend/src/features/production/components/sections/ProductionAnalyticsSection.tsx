@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   BarChart3 as ChartBar, Filter as FunnelSimple, Trophy, ShoppingBag, Download as DownloadSimple,
 } from "lucide-react";
+import { LineChart } from "lucide-react";
 import { T, F } from "../theme";
 // STAGE_FUNNEL and ORDER_PROGRESS are derived from real batch/bulk-order
 // data; the monthly production chart is wired to
@@ -125,19 +126,21 @@ export function ProductionAnalyticsSection() {
     <div id="prod-analytics" style={{ padding: "32px 40px 0" }}>
       <FadeUp>
 
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 24 }}>
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
-              <div style={{ width: 4, height: 28, background: T.antiqueGold, borderRadius: 99 }} />
-              <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0, letterSpacing: "-0.2px" }}>Production Analytics</h2>
+        <div style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`, borderRadius: 20, padding: "22px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12, marginBottom: 24, boxShadow: "0 6px 32px rgba(74,6,27,0.08)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <LineChart size={26} color="#FFFDF9" />
             </div>
-            <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: "0 0 0 16px", lineHeight: 1.6 }}>
-              Charts and numbers showing how production is going this month — weekly output, stage pipeline, top weavers, designs, and bulk orders.
-            </p>
+            <div>
+              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9", letterSpacing: "-0.2px" }}>Production Analytics</div>
+              <div style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.65)", marginTop: 3 }}>
+                Charts and numbers showing how production is going this month — weekly output, stage pipeline, top weavers, designs, and bulk orders.
+              </div>
+            </div>
           </div>
-          <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0, marginTop: 4 }}>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
             {ANALYTICS_PERIODS.map(p => (
-              <Button key={p} onClick={() => setPeriod(p)} variant={period === p ? "primary" : "tertiary"} size="sm">
+              <Button key={p} onClick={() => setPeriod(p)} variant={period === p ? "primary" : "secondary"} size="sm">
                 {p}
               </Button>
             ))}

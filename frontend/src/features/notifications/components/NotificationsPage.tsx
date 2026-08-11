@@ -66,7 +66,7 @@ function toUnifiedNotif(n: BackendNotification): UnifiedNotif {
   };
 }
 
-const imgNotifHero = "https://images.unsplash.com/photo-1633613286991-611fe299c4be?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
+
 
 function relativeTimeToDate(time: string): string {
   const now = new Date();
@@ -203,11 +203,11 @@ export function NotificationsPage() {
     <div style={{ minHeight: "calc(100dvh - 90px)", background: T.silkCream, fontFamily: F.ui }}>
 
       {/* HEADER */}
-      <header style={{ background: "#2C0913", position: "relative", overflow: "hidden", minHeight: 380, display: "flex", alignItems: "center" }}>
-        <div style={{ position: "relative", zIndex: 2, padding: "48px 0 110px 48px", flex: "0 0 64%", maxWidth: "64%" }}>
+      <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", minHeight: 380, display: "flex", alignItems: "center" }}>
+        <div style={{ position: "relative", zIndex: 2, padding: "48px 0 110px 48px", flex: "0 0 100%", maxWidth: "100%" }}>
           <div style={{ fontFamily: F.mono, fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase" as const, marginBottom: 12 }}>SINCE 1999 · NOTIFICATIONS</div>
           <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" as const, marginBottom: 10 }}>
-            <h1 style={{ fontFamily: F.display, fontSize: 48, fontWeight: 700, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>
+            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 56, fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>
               Notifications
             </h1>
             {unread > 0 && (
@@ -216,7 +216,7 @@ export function NotificationsPage() {
               </span>
             )}
           </div>
-          <p style={{ fontFamily: F.ui, fontSize: 16, color: "rgba(255,253,249,0.70)", margin: "0 0 20px", maxWidth: 560, lineHeight: 1.6 }}>
+          <p style={{ fontFamily: F.ui, fontSize: 18, color: "rgba(255,253,249,0.70)", margin: "0 0 20px", maxWidth: 600, lineHeight: 1.6 }}>
             Live operational alerts, stock updates, payment reminders, and production activity.
           </p>
           {unread > 0 && (
@@ -224,10 +224,6 @@ export function NotificationsPage() {
               Mark all read
             </Button>
           )}
-        </div>
-        <div style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "50%", zIndex: 1 }}>
-          <div style={{ position: "absolute", inset: 0, zIndex: 2, background: "linear-gradient(to right, #2C0913 0%, rgba(44,9,19,0.65) 38%, rgba(44,9,19,0.10) 100%)" }} />
-          <img src={imgNotifHero} alt="Notifications" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", filter: "brightness(0.70) saturate(0.80)" }} />
         </div>
       </header>
 

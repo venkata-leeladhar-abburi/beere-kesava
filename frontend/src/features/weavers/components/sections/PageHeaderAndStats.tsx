@@ -1,5 +1,6 @@
 // ── Page header + stats strip ──────────────────────────────────────────────
 import { motion } from "motion/react";
+import { Users, Layers, CheckCircle2, AlertCircle, IndianRupee } from "lucide-react";
 import { T, F } from "../theme";
 import { imgPadmaVeni } from "../../../../shared/constants/weaverImages";
 
@@ -13,19 +14,19 @@ export interface WeaverStatTile {
 
 export function PageHeader() {
   return (
-    <header style={{ background: T.darkBurgundy, position: "relative", overflow: "hidden", minHeight: 380, display: "flex", alignItems: "center" }}>
+    <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", minHeight: 380, display: "flex", alignItems: "center" }}>
       <div style={{ position: "relative", zIndex: 2, padding: "48px 0 90px 48px", flex: "0 0 65%", maxWidth: "65%" }}>
         <div style={{ fontFamily: F.mono, fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase", marginBottom: 12 }}>SINCE 1999 · WEAVER MANAGEMENT</div>
         <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
-          <h1 style={{ fontFamily: F.display, fontSize: 48, fontWeight: 700, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Weavers</h1>
-          <span style={{ fontFamily: F.display, fontSize: 30, fontStyle: "italic", color: T.antiqueGold, fontWeight: 400 }}>&amp; Production Overview</span>
+          <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 56, fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Weavers</h1>
+          <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: 36, fontStyle: "italic", color: T.antiqueGold, fontWeight: 400 }}>&amp; Production Overview</span>
         </div>
-        <p style={{ fontFamily: F.ui, fontSize: 16, color: "rgba(255,253,249,0.70)", margin: "0 0 20px", maxWidth: 600, lineHeight: 1.6 }}>
+        <p style={{ fontFamily: F.ui, fontSize: 18, color: "rgba(255,253,249,0.70)", margin: "0 0 20px", maxWidth: 600, lineHeight: 1.6 }}>
           See all weavers, their current work, how they are performing, and manage their details. You can also approve material requests from here.
         </p>
       </div>
       <div style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "50%", zIndex: 1 }}>
-        <div style={{ position: "absolute", inset: 0, zIndex: 2, background: `linear-gradient(to right, ${T.darkBurgundy} 0%, rgba(61,14,26,0.65) 38%, rgba(61,14,26,0.10) 100%)` }} />
+        <div style={{ position: "absolute", inset: 0, zIndex: 2, background: `linear-gradient(to right, #0D0207 0%, rgba(13,2,7,0.7) 38%, rgba(13,2,7,0.1) 100%)` }} />
         <img src={imgPadmaVeni} alt="Padma Veni — Master Weaver" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center", filter: "brightness(0.75) saturate(0.90)" }} />
       </div>
     </header>
@@ -33,6 +34,14 @@ export function PageHeader() {
 }
 
 export function StatsStrip({ stats }: { stats: WeaverStatTile[] }) {
+  const ICONS = [
+    <Users size={22} color={T.warmCream} />,
+    <Layers size={22} color={T.warmCream} />,
+    <CheckCircle2 size={22} color={T.warmCream} />,
+    <AlertCircle size={22} color={T.warmCream} />,
+    <IndianRupee size={22} color={T.warmCream} />,
+  ];
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 50 }}
@@ -56,11 +65,18 @@ export function StatsStrip({ stats }: { stats: WeaverStatTile[] }) {
               cursor: "pointer",
             }}
           >
+            <motion.div
+              whileHover={{ scale: 1.08, rotate: 3 }}
+              transition={{ duration: 0.25 }}
+              style={{ width: 50, height: 50, borderRadius: 15, flexShrink: 0, background: m.gold ? "rgba(200,155,71,0.16)" : "rgba(245,232,208,0.07)", border: `1px solid ${m.gold ? "rgba(200,155,71,0.38)" : "rgba(245,232,208,0.09)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}
+            >
+              {ICONS[i]}
+            </motion.div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 8, color: m.gold ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.90)" }}>
                 {m.label}
               </div>
-              <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 30, letterSpacing: "-0.02em", color: m.crimson ? "#F47B72" : m.gold ? T.goldLight : T.warmIvory, lineHeight: 1.1, marginBottom: 8, fontVariantNumeric: "tabular-nums" }}>
+              <div style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontSize: 48, letterSpacing: "-0.01em", color: m.crimson ? "#F47B72" : m.gold ? T.goldLight : T.warmIvory, lineHeight: 1.1, marginBottom: 8, fontVariantNumeric: "tabular-nums" }}>
                 {m.value}
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>

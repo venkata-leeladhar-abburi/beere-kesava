@@ -8,7 +8,7 @@ import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER } from "../../../..
 import { T, F, MobileCtx } from "../theme";
 import { STATUS_CFG, MAT_TAG, MAT_FILTERS, STATUS_FILTERS, STATUS_FILTER_MAP } from "../materialConfig";
 import type { BatchRow, StatusType } from "../types";
-import { SectionHeader, FadeUp } from "../common/primitives";
+import { SectionCard, FadeUp } from "../common/primitives";
 import { BatchViewDetailsModal, PrintBarcodeModal } from "../modals/StockModals";
 import { Button, SearchInput } from "../../../../shared/ui/primitives";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "../../../../shared/ui/overlay";
@@ -239,17 +239,16 @@ export function BatchesSection({ onAddNewStock }: { onAddNewStock: () => void })
 
   return (
     <section style={{ padding: `44px ${px}px 0` }}>
-      <SectionHeader
-        title="All Material Batches in Stock"
-        action="Receive Materials"
-        actionIcon={<Package size={15} />}
-        onAction={onAddNewStock}
-        actionVariant="solid"
-      />
-      <p style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13, color: T.taupe, margin: "0 0 20px", lineHeight: 1.6 }}>
-        Each batch is one delivery of material received from a vendor. Every batch has its own unique barcode for tracking.
-      </p>
-
+    <SectionCard
+      icon={Boxes}
+      title="All Material Batches in Stock"
+      subtitle="Each batch is one delivery of material received from a vendor. Every batch has its own unique barcode for tracking."
+      actions={
+        <Button onClick={onAddNewStock} variant="secondary" size="sm" iconLeft={Package}>
+          Receive Materials
+        </Button>
+      }
+    >
       <div style={{ marginBottom: 16 }}>
         <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
       </div>
@@ -339,6 +338,7 @@ export function BatchesSection({ onAddNewStock }: { onAddNewStock: () => void })
           : <BatchCardView rows={filtered} onViewDetails={setSelectedBatch} onPrintBarcode={setBarcodeBatch} />
         }
       </FadeUp>
+    </SectionCard>
 
       <BatchViewDetailsModal batch={selectedBatch} onClose={() => setSelectedBatch(null)} />
       <PrintBarcodeModal batch={barcodeBatch} onClose={() => setBarcodeBatch(null)} />

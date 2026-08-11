@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "motion/react";
+import vendorsHero from "../../../../assets/inline/vendorsHero.jpg";
 import { Building2, CheckCircle2, IndianRupee, AlertTriangle, TrendingUp } from "lucide-react";
 import { T, F } from "./theme";
 import { Vendor } from "./types";
@@ -15,22 +16,21 @@ export function VendorsHeroStats({ vendors, onAddClick }: { vendors: Vendor[]; o
   return (
     <>
       {/* Hero Header */}
-      <div style={{ minHeight: 230, background: T.darkBurgundy, display: "flex", position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", right: -80, top: -100, width: 500, height: 500, borderRadius: "50%", border: "1px solid rgba(200,155,71,0.10)", pointerEvents: "none", zIndex: 1 }} />
-        <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 2, backgroundImage: `repeating-linear-gradient(0deg,transparent,transparent 48px,rgba(200,155,71,0.022) 48px,rgba(200,155,71,0.022) 49px)` }} />
-        <div style={{ padding: "44px 56px 90px", display: "flex", width: "100%", alignItems: "flex-start", justifyContent: "space-between", zIndex: 10 }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div style={{ width: 28, height: 2, background: `linear-gradient(90deg,${T.antiqueGold},rgba(200,155,71,0))` }} />
-              <span style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "2.5px", color: "rgba(200,155,71,0.82)", textTransform: "uppercase" as const, fontWeight: 600 }}>Since 1999 · Supplier Management</span>
-            </div>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 14, marginTop: 4 }}>
-              <h1 style={{ fontFamily: F.display, fontSize: 48, color: "#FFFDF9", margin: 0, fontWeight: 700, letterSpacing: "-0.5px", lineHeight: 1.0 }}>Vendors</h1>
-              <span style={{ fontFamily: F.display, fontSize: 30, color: T.antiqueGold, fontStyle: "italic", fontWeight: 400 }}>&amp; Supplier Registry</span>
-            </div>
-            <p style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.60)", margin: "6px 0 0", maxWidth: 540, lineHeight: 1.65 }}>Manage all raw material vendors. Track purchase history, payment terms, and outstanding amounts for every supplier.</p>
+      <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", minHeight: 380, display: "flex", alignItems: "center" }}>
+        <div style={{ position: "relative", zIndex: 2, padding: "48px 0 90px 48px", flex: "0 0 65%", maxWidth: "65%" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+            <span style={{ fontFamily: F.mono, fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase", fontWeight: 400 }}>
+              Since 1999 · Supplier Management
+            </span>
           </div>
-          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} style={{ alignSelf: "flex-start", flexShrink: 0 }}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
+            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 56, fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Vendors</h1>
+            <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: 36, fontStyle: "italic", color: T.antiqueGold, fontWeight: 400 }}>&amp; Supplier Registry</span>
+          </div>
+          <p style={{ fontFamily: F.ui, fontSize: 18, color: "rgba(255,253,249,0.70)", margin: "0 0 20px", maxWidth: 600, lineHeight: 1.6 }}>
+            Manage all raw material vendors. Track purchase history, payment terms, and outstanding amounts for every supplier.
+          </p>
+          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} style={{ alignSelf: "flex-start", flexShrink: 0, display: "inline-block" }}>
             <Button
               onClick={onAddClick}
               variant="primary"
@@ -41,7 +41,12 @@ export function VendorsHeroStats({ vendors, onAddClick }: { vendors: Vendor[]; o
             </Button>
           </motion.div>
         </div>
-      </div>
+
+        <div style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "50%", zIndex: 1 }}>
+          <div style={{ position: "absolute", inset: 0, zIndex: 2, background: `linear-gradient(to right, #0D0207 0%, rgba(13,2,7,0.7) 38%, rgba(13,2,7,0.1) 100%)` }} />
+          <img src={vendorsHero} alt="Vendors" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", filter: "brightness(0.75) saturate(0.90)" }} />
+        </div>
+      </header>
 
       {/* Stats Strip */}
       <div style={{ padding: "0 48px", marginTop: -80, position: "relative", zIndex: 20 }}>
@@ -60,8 +65,8 @@ export function VendorsHeroStats({ vendors, onAddClick }: { vendors: Vendor[]; o
               </div>
               <div>
                 <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, letterSpacing: "1.8px", textTransform: "uppercase" as const, marginBottom: 7, color: m.hi ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.70)" }}>{m.label}</div>
-                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 38, color: m.hi ? T.goldLight : "#FFFDF9", lineHeight: 1.0, marginBottom: 6 }}>{m.value}</div>
-                <div style={{ fontFamily: F.ui, fontSize: 12, color: m.hi ? "rgba(231,201,131,0.90)" : "rgba(245,232,208,0.55)" }}>{m.sub}</div>
+                <div style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontSize: 48, color: m.hi ? T.goldLight : "#FFFDF9", lineHeight: 1.1, marginBottom: 8, fontVariantNumeric: "tabular-nums", letterSpacing: "-0.01em" }}>{m.value}</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: m.hi ? "rgba(231,201,131,0.90)" : "rgba(245,232,208,0.55)", letterSpacing: "0.1px" }}>{m.sub}</div>
               </div>
             </div>
           ))}

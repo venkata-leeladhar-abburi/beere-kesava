@@ -2,6 +2,7 @@ import React from "react";
 import { T, F, G } from "./batch-creation/constants";
 import { BatchRecord } from "../contexts/BatchContext";
 import { Button } from "../../../shared/ui/primitives";
+import { Layers, FileEdit, Hash, Users } from "lucide-react";
 
 interface BatchCreationStatsHeaderProps {
   active: BatchRecord[];
@@ -41,38 +42,58 @@ export function BatchCreationStatsHeader({
   return (
     <>
       {/* ── Header ── */}
-      <div style={{ background: G.header, padding: "32px 56px 64px", position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", right: -40, bottom: -60, width: 320, height: 320, borderRadius: "50%", border: "1px solid rgba(200,155,71,0.14)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", right: 60, bottom: -10, width: 180, height: 180, borderRadius: "50%", border: "1px solid rgba(200,155,71,0.08)", pointerEvents: "none" }} />
-        <div style={{ position: "relative", zIndex: 1 }}>
-          <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "0.14em", color: T.antiqueGold, textTransform: "uppercase", marginBottom: 10 }}>
+      <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", minHeight: 380, display: "flex", alignItems: "center" }}>
+        <div style={{ position: "relative", zIndex: 2, padding: "48px 0 110px 48px", flex: "0 0 100%", maxWidth: "100%" }}>
+          <div style={{ fontFamily: F.mono, fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase", marginBottom: 12 }}>
             Since 1999 · Production
           </div>
-          <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 38, fontWeight: 700, color: "#fff", margin: "0 0 4px", lineHeight: 1.1 }}>Batch Creation</h1>
-          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontStyle: "italic", color: T.antiqueGold, marginBottom: 12 }}>& Management</div>
-          <p style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,255,255,0.55)", maxWidth: 500, margin: 0, lineHeight: 1.6 }}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
+            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 56, fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Batch Creation</h1>
+            <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: 36, fontStyle: "italic", color: T.antiqueGold, fontWeight: 400 }}>&amp; Management</span>
+          </div>
+          <p style={{ fontFamily: F.ui, fontSize: 18, color: "rgba(255,253,249,0.70)", margin: 0, maxWidth: 600, lineHeight: 1.6 }}>
             Create a new production batch, assign weavers, design codes, and bulk orders to individual sarees, then finalize or save as draft.
           </p>
         </div>
-      </div>
+      </header>
 
       {/* ── Stats strip ── */}
-      <div style={{ padding: "0 48px", marginTop: -36, position: "relative", zIndex: 20 }}>
-        <div style={{ background: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)", borderRadius: 14, display: "grid", gridTemplateColumns: "1fr 1px 1fr 1px 1fr 1px 1fr", boxShadow: "0 8px 28px rgba(44,6,27,0.22)", overflow: "hidden" }}>
+      <div style={{ padding: "0 48px", marginTop: -72, position: "relative", zIndex: 20 }}>
+        <div style={{ background: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)", borderRadius: 28, display: "flex", alignItems: "stretch", boxShadow: "0 30px 80px rgba(0,0,0,0.32), 0 0 0 1px rgba(200,155,71,0.16)", overflow: "hidden", minHeight: 140 }}>
           {[
-            { label: "Active Batches",   val: active.length    },
-            { label: "Draft Batches",    val: drafts.length    },
-            { label: "Total Sarees",     val: [...active, ...drafts].reduce((s, b) => s + b.totalCount, 0) },
-            { label: "Weavers Active",   val: weaversActiveCount, gold: true },
-          ].flatMap((s, i, arr) => {
-            const cell = (
-              <div key={s.label} style={{ padding: "20px 28px", background: s.gold ? "linear-gradient(135deg, rgba(200,155,71,0.18) 0%, rgba(200,155,71,0.08) 100%)" : undefined, borderTop: s.gold ? `3px solid ${T.antiqueGold}` : undefined }}>
-                <div style={{ fontFamily: F.mono, fontSize: 12, color: s.gold ? T.goldLight : "rgba(255,255,255,0.40)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 8 }}>{s.label}</div>
-                <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 30, fontWeight: 700, color: s.gold ? T.goldLight : "#fff", lineHeight: 1 }}>{s.val}</div>
+            { label: "ACTIVE BATCHES",   val: active.length,                                                                   Icon: Layers,   hi: false, sub: "Currently weaving" },
+            { label: "DRAFT BATCHES",    val: drafts.length,                                                                   Icon: FileEdit, hi: false, sub: "In preparation" },
+            { label: "TOTAL SAREES",     val: [...active, ...drafts].reduce((s, b) => s + b.totalCount, 0),                    Icon: Hash,     hi: false, sub: "Across all batches" },
+            { label: "WEAVERS ACTIVE",   val: weaversActiveCount,                                                              Icon: Users,    hi: true,  sub: "Assigned to batches" },
+          ].map((m, i) => (
+            <div
+              key={m.label}
+              style={{
+                flex: 1, padding: "28px 22px",
+                backgroundImage: m.hi ? "linear-gradient(135deg, rgba(200,155,71,0.20) 0%, rgba(200,155,71,0.07) 100%)" : "none",
+                borderRight: i < 3 ? "1px solid rgba(245,232,208,0.07)" : "none",
+                display: "flex", alignItems: "center", gap: 14, position: "relative", cursor: "default",
+              }}
+            >
+              {m.hi && <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(135deg,#C89B47,#E7C983)" }} />}
+              <div style={{ width: 44, height: 44, borderRadius: 13, flexShrink: 0, background: m.hi ? "rgba(200,155,71,0.16)" : "rgba(245,232,208,0.07)", border: `1px solid ${m.hi ? "rgba(200,155,71,0.38)" : "rgba(245,232,208,0.09)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <m.Icon size={20} color={m.hi ? "rgba(231,201,131,0.95)" : "rgba(245,232,208,0.90)"} />
               </div>
-            );
-            return i < arr.length - 1 ? [cell, <div key={`d${i}`} style={{ background: "rgba(255,255,255,0.08)" }} />] : [cell];
-          })}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, letterSpacing: "2px", textTransform: "uppercase" as const, marginBottom: 8, color: m.hi ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.90)" }}>
+                  {m.label}
+                </div>
+                <div style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontSize: 48, color: m.hi ? T.goldLight : "#FFFDF9", lineHeight: 1.1, marginBottom: 8, fontVariantNumeric: "tabular-nums" as const }}>
+                  {m.val}
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: m.hi ? "rgba(231,201,131,0.95)" : "rgba(245,232,208,0.85)", letterSpacing: "0.1px" }}>
+                    {m.sub}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 

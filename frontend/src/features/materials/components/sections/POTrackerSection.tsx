@@ -1,6 +1,6 @@
 import React, { useContext, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Trash2 } from "lucide-react";
+import { Trash2, ShoppingCart } from "lucide-react";
 import { usePO, PurchaseOrder } from "../../../purchasing/contexts/POContext";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER } from "../../../../shared/ui/DateFilterBar";
 import { ConfirmDialog } from "../../../../shared/ui/ConfirmDialog";
@@ -8,7 +8,7 @@ import { ApiError } from "../../../../shared/api/client";
 import { T, F, MobileCtx } from "../theme";
 import { PO_STATUS_CFG, MAT_TAG } from "../materialConfig";
 import type { POFilter } from "../types";
-import { FadeUp } from "../common/primitives";
+import { FadeUp, SectionCard } from "../common/primitives";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { POVendorDetailModal } from "../modals/ReportModals";
 import { rupees } from "@/lib/domain/money";
@@ -73,18 +73,16 @@ export function POTrackerSection({
   return (
     <>
     <FadeUp id="mat-po-tracker" style={{ padding: `32px ${px}px 0` }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <div style={{ width: 4, height: 26, borderRadius: 2, background: "linear-gradient(135deg,#C89B47,#E7C983)", flexShrink: 0 }} />
-          <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: 30, color: T.luxuryBrown, letterSpacing: "-0.3px", lineHeight: 1.15 }}>
-            Purchase Orders
-          </span>
-        </div>
-        <Button onClick={onCreatePO} variant="link" size="sm">
-          ➕ Create New PO →
+    <SectionCard
+      icon={ShoppingCart}
+      title="Purchase Orders"
+      subtitle="Orders placed with vendors for material — track approvals, receipts, and delivery deadlines."
+      actions={
+        <Button onClick={onCreatePO} variant="secondary" size="sm">
+          ➕ Create New PO
         </Button>
-      </div>
-
+      }
+    >
       <div style={{ marginBottom: 16 }}>
         <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
       </div>
@@ -299,6 +297,7 @@ export function POTrackerSection({
           })}
         </div>
       )}
+    </SectionCard>
     </FadeUp>
     <POVendorDetailModal po={selectedPO} onClose={() => setSelectedPO(null)} />
     <AnimatePresence>

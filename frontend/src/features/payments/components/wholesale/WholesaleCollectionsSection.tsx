@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { AlignJustify, BadgeCheck, CircleAlert, Download, LayoutGrid, LayoutList, Receipt, TrendingUp } from "lucide-react";
+import { AlignJustify, BadgeCheck, CircleAlert, Download, LayoutGrid, LayoutList, Receipt, TrendingUp, Building2 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -10,7 +10,7 @@ import { invoicesApi, BackendInvoice } from "../../../../shared/api/invoices";
 import { EASE, F, T, useBulkOrders, BulkOrder, useFirms, DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../theme";
 import { Invoice } from "../../types";
 import { AnimCount, FadeUp } from "../common/motion";
-import { ActionModal, DropBtn } from "../common/primitives";
+import { ActionModal, DropBtn, SectionCard } from "../common/primitives";
 import { CustomerCard } from "./CustomerCard";
 import { PaymentRemindersModal } from "./PaymentRemindersModal";
 import { RecordPaymentModal } from "./RecordPaymentModal";
@@ -163,26 +163,19 @@ export function WholesaleCollectionsSection() {
   return (
     <div id="pay-wholesale" style={{ padding: "36px 40px 0" }}>
       <FadeUp>
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 4 }}>
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
-              <div style={{ width: 4, height: 28, background: T.antiqueGold, borderRadius: 99 }} />
-              <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0 }}>
-                Wholesale Customer Collections
-              </h2>
-            </div>
-            <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: "0 0 0 16px" }}>
-              Track all outstanding and collected payments from wholesale customers.
-            </p>
-          </div>
+      <SectionCard
+        icon={Building2}
+        title="Wholesale Customer Collections"
+        subtitle="Track all outstanding and collected payments from wholesale customers."
+        actions={
           <DownloadGate>
             <Button variant="secondary" size="md" iconLeft={Download} onClick={() => setDownloadModal(true)}
               className="flex-shrink-0 rounded-[9px] border border-[rgba(200,155,71,0.22)] bg-[#F5E8D0] text-[#3B2314]">
               Download Collections Report
             </Button>
           </DownloadGate>
-        </div>
-
+        }
+      >
         {invoicesLoading ? (
           <div style={{ marginTop: 24, marginBottom: 22, padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
             Loading wholesale collections…
@@ -310,6 +303,7 @@ export function WholesaleCollectionsSection() {
         </>
         )}
 
+      </SectionCard>
         <ActionModal open={downloadModal} onClose={() => setDownloadModal(false)} title="Download Collections Report" desc="Generate and download the wholesale customer collections report." actionLabel="Download" icon={Download} />
         <PaymentRemindersModal open={remindersModal} onClose={() => setRemindersModal(false)} overdueInvoices={overdueInvs} />
         <AnimatePresence>

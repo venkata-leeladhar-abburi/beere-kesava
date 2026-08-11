@@ -48,6 +48,10 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
   const [shake, setShake] = useState(false);
   const [loading, setLoading] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  // Mirrors `digits` synchronously — the focus-jump-to-first-empty check on
+  // each box needs the value at the instant of focus, and `digits` state
+  // lags a render behind when auto-advance fires focus() right after setDigits.
+  const digitsRef = useRef(digits);
   const timer = useTimer(108, true);
 
   const formatted = `+91 ${phone.slice(0, 5)} ${phone.slice(5)}`;
@@ -58,6 +62,7 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
         if (i > 0) { inputRefs.current[i - 1]?.focus(); setFocused(i - 1); }
       } else {
         const next = [...digits]; next[i] = "";
+        digitsRef.current = next;
         setDigits(next); setError(false);
       }
     } else if (e.key === "ArrowLeft" && i > 0) {
@@ -74,6 +79,7 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
     const ch = val.replace(/\D/g, "").slice(-1);
     if (!ch) return;
     const next = [...digits]; next[i] = ch;
+    digitsRef.current = next;
     setDigits(next); setError(false);
     if (i < 5) { inputRefs.current[i + 1]?.focus(); setFocused(i + 1); }
   };
@@ -82,6 +88,7 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
     const text = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
     if (text.length) {
       const next = Array(6).fill("").map((_, i) => text[i] || "");
+      digitsRef.current = next;
       setDigits(next);
       const last = Math.min(text.length, 5);
       inputRefs.current[last]?.focus(); setFocused(last);
@@ -91,6 +98,7 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
 
   const handleVerify = async (otp: string) => {
     if (otp !== "123456") {
+      digitsRef.current = Array(6).fill("");
       setShake(true); setError(true); setDigits(Array(6).fill(""));
       setTimeout(() => { setShake(false); inputRefs.current[0]?.focus(); setFocused(0); }, 600);
       return;
@@ -169,7 +177,7 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
             // Clicking a later box jumps back to the first gap, so the caret is
             // always where the next digit actually belongs.
             onFocus={() => {
-              const firstEmpty = digits.findIndex(x => x === "");
+              const firstEmpty = digitsRef.current.findIndex(x => x === "");
               if (firstEmpty !== -1 && firstEmpty < i) {
                 inputRefs.current[firstEmpty]?.focus();
                 setFocused(firstEmpty);

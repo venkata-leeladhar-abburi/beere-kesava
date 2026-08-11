@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { motion } from "motion/react";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Package, Layers, Palette, Bell } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { ImageWithFallback } from "../../../../shared/ui/ImageWithFallback";
 import { imgWarp } from "../../../../shared/constants/imageData";
@@ -11,23 +11,18 @@ import { AnimatedNumber } from "../common/primitives";
 export function PageHeader() {
   const { px } = useContext(MobileCtx);
   return (
-    <header style={{ background: T.darkBurgundy, position: "relative", overflow: "hidden", minHeight: 380, display: "flex", alignItems: "center" }}>
-      <div style={{ position: "relative", zIndex: 2, padding: `48px ${px}px 90px`, flex: "0 0 65%", maxWidth: "65%" }}>
+    <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", display: "flex", alignItems: "center" }}>
+      <div style={{ position: "relative", zIndex: 2, padding: `48px 0 110px ${px}px`, flex: "0 0 100%", maxWidth: "100%" }}>
         <div style={{ fontFamily: F.mono, fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase", marginBottom: 12 }}>
-          Since 1999 · Raw Material Management
+          Since 1999 · Admin · Materials
         </div>
         <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
-          <h1 style={{ fontFamily: F.display, fontSize: 48, fontWeight: 700, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Materials</h1>
-          <span style={{ fontFamily: F.display, fontSize: 30, fontStyle: "italic", color: T.antiqueGold, fontWeight: 400 }}>&amp; Inventory Overview</span>
+          <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 56, fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Receive Stock</h1>
+          <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: 36, fontStyle: "italic", color: T.antiqueGold, fontWeight: 400 }}>&amp; Goods Receipt Note</span>
         </div>
-        <p style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 16, color: "rgba(255,253,249,0.70)", lineHeight: 1.6, maxWidth: 600, margin: "0 0 20px" }}>
-          See all raw materials in stock — Warp, Resham, and Jari. Track what was received, what was given to weavers, and what is remaining.
+        <p style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 18, color: "rgba(255,253,249,0.70)", lineHeight: 1.6, maxWidth: 600, margin: "0 0 20px" }}>
+          Record incoming raw materials from vendors against purchase orders and generate GRN numbers.
         </p>
-      </div>
-
-      <div style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "50%", zIndex: 1 }}>
-        <div style={{ position: "absolute", inset: 0, zIndex: 2, background: `linear-gradient(to right, ${T.darkBurgundy} 0%, rgba(61,14,26,0.65) 38%, rgba(61,14,26,0.10) 100%)` }} />
-        <ImageWithFallback src={imgWarp} alt="Silk warp thread material" style={{ width: "100%", height: "100%", objectFit: "cover", filter: "brightness(0.65) saturate(0.85)" }} />
       </div>
     </header>
   );
@@ -90,6 +85,13 @@ export function MetricsBar() {
     },
   ];
 
+  const ICONS = [
+    <Package size={22} color={T.warmCream} />,
+    <Layers size={22} color={T.warmCream} />,
+    <Palette size={22} color={T.warmCream} />,
+    <Bell size={22} color={T.warmCream} />,
+  ];
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 50 }}
@@ -114,11 +116,18 @@ export function MetricsBar() {
               cursor: "pointer",
             }}
           >
+            <motion.div
+              whileHover={{ scale: 1.08, rotate: 3 }}
+              transition={{ duration: 0.25 }}
+              style={{ width: 50, height: 50, borderRadius: 15, flexShrink: 0, background: m.hi ? "rgba(200,155,71,0.16)" : "rgba(245,232,208,0.07)", border: `1px solid ${m.hi ? "rgba(200,155,71,0.38)" : "rgba(245,232,208,0.09)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}
+            >
+              {ICONS[i]}
+            </motion.div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 8, color: m.hi ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.90)" }}>
                 {m.label}
               </div>
-              <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 48, color: m.hi ? T.goldLight : T.warmCream, lineHeight: 1.0, marginBottom: 8, ...NUM }}>
+              <div style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontSize: 48, color: m.hi ? T.goldLight : T.warmCream, lineHeight: 1.0, marginBottom: 8, ...NUM }}>
                 <AnimatedNumber raw={m.val} />
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>

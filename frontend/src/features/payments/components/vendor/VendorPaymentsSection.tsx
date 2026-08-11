@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { AlignJustify, BadgeCheck, CheckCircle2, CircleAlert, Clock, Download, FileText, LayoutGrid, LayoutList, Wallet } from "lucide-react";
+import { AlignJustify, BadgeCheck, CheckCircle2, CircleAlert, Clock, Download, FileText, LayoutGrid, LayoutList, Wallet, Truck } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
@@ -12,7 +12,7 @@ import { vendorPaymentsApi } from "../../../../shared/api/payments";
 import { EASE, F, T, useFirms, DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../theme";
 import { VendorMatchedRow, VendorPayment } from "../../types";
 import { AnimCount, FadeUp } from "../common/motion";
-import { ActionModal, DropBtn } from "../common/primitives";
+import { ActionModal, DropBtn, SectionCard } from "../common/primitives";
 import { AddVendorInvoiceModal } from "./AddVendorInvoiceModal";
 import { ContactVendorModal } from "./ContactVendorModal";
 import { VENDOR_STATUS_CFG, VendorBadge } from "./VendorBadge";
@@ -178,26 +178,19 @@ export function VendorPaymentsSection() {
   return (
     <div id="pay-vendor" style={{ padding: "36px 40px 0" }}>
       <FadeUp>
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 4 }}>
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
-              <div style={{ width: 4, height: 28, background: T.antiqueGold, borderRadius: 99 }} />
-              <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0 }}>
-                Vendor Payments
-              </h2>
-            </div>
-            <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: "0 0 0 16px" }}>
-              Track payments made to raw material and thread suppliers. Record and verify all vendor bills.
-            </p>
-          </div>
+      <SectionCard
+        icon={Truck}
+        title="Vendor Payments"
+        subtitle="Track payments made to raw material and thread suppliers. Record and verify all vendor bills."
+        actions={
           <DownloadGate>
             <Button variant="secondary" size="md" iconLeft={Download} onClick={() => setDownloadModal(true)}
               className="flex-shrink-0 rounded-[9px] border border-[rgba(200,155,71,0.22)] bg-[#F5E8D0] text-[#3B2314]">
               Download Vendor Payment Report
             </Button>
           </DownloadGate>
-        </div>
-
+        }
+      >
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginTop: 24, marginBottom: 22, alignItems: "stretch" }}>
           {[
             {
@@ -364,6 +357,7 @@ export function VendorPaymentsSection() {
           </div>
         )}
 
+      </SectionCard>
         <ActionModal open={downloadModal} onClose={() => setDownloadModal(false)} title="Download Vendor Report" desc="Generate and download the vendor payments report." actionLabel="Download" icon={Download} />
         <AnimatePresence>
           {contactModal && <ContactVendorModal vendors={overdueVendors} onClose={() => setContactModal(false)} />}

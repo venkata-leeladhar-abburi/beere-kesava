@@ -4,7 +4,9 @@ import { useQuery } from "@tanstack/react-query";
 import {
   Plus, Edit2,
   LayoutGrid, LayoutList, FileText,
+  Factory, CheckCircle2, AlertTriangle, Settings2
 } from "lucide-react";
+import factoryLoomsHero from "../../../assets/inline/factoryLoomsHero.jpg";
 import { FactoryLoom } from "../data/factoryLooms";
 import { T, F } from "./factory-loom/theme";
 import { LoomBatch, LoomMaterial, LoomSaree, LOOM_STATUS_TO_CONDITION } from "./factory-loom/types";
@@ -204,34 +206,58 @@ export function FactoryLoomPage() {
 
   return (
     <div style={{ background: "#FFFDF9", minHeight: "var(--shell-content-min-h)", paddingBottom: 60 }}>
-      {/* Top Banner */}
-      <div style={{ background: `linear-gradient(135deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`, padding: "28px 56px", borderBottom: `1px solid ${T.borderDef}` }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
-          <div>
-            <h1 style={{ fontFamily: F.display, fontSize: 26, color: "#FFFDF9", margin: 0, fontWeight: 700, letterSpacing: "-0.3px" }}>
-              Factory Looms & Power Loom Management
-            </h1>
-            <p style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.70)", margin: "4px 0 0 0" }}>
-              Real-time monitoring of in-house power looms, weaver assignments, production output & maintenance schedules.
-            </p>
+      {/* Hero Header */}
+      <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", minHeight: 380, display: "flex", alignItems: "center" }}>
+        <div style={{ position: "relative", zIndex: 2, padding: "48px 0 90px 48px", flex: "0 0 65%", maxWidth: "65%" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+            <span style={{ fontFamily: F.mono, fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase", fontWeight: 400 }}>
+              Since 1999 · Power Loom Management
+            </span>
           </div>
-          <Button variant="secondary" iconLeft={Plus} onClick={() => { setEditLoom(null); setShowModal(true); }}>
-            Register New Power Loom
-          </Button>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
+            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 56, fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Factory Looms</h1>
+            <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: 36, fontStyle: "italic", color: T.antiqueGold, fontWeight: 400 }}>&amp; Production</span>
+          </div>
+          <p style={{ fontFamily: F.ui, fontSize: 18, color: "rgba(255,253,249,0.70)", margin: "0 0 20px", maxWidth: 600, lineHeight: 1.6 }}>
+            Real-time monitoring of in-house power looms, weaver assignments, production output & maintenance schedules.
+          </p>
+          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} style={{ alignSelf: "flex-start", flexShrink: 0, display: "inline-block" }}>
+            <Button
+              onClick={() => { setEditLoom(null); setShowModal(true); }}
+              variant="primary"
+              iconLeft={Plus}
+              className="rounded-xl bg-[linear-gradient(135deg,#C89B47,#E7C983)] text-[#2C0913] shadow-[0_4px_20px_rgba(200,155,71,0.35)] hover:bg-[linear-gradient(135deg,#C89B47,#E7C983)]"
+            >
+              Register New Power Loom
+            </Button>
+          </motion.div>
         </div>
 
-        {/* Stats Row */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginTop: 24 }}>
+        <div style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "50%", zIndex: 1 }}>
+          <div style={{ position: "absolute", inset: 0, zIndex: 2, background: `linear-gradient(to right, #0D0207 0%, rgba(13,2,7,0.7) 38%, rgba(13,2,7,0.1) 100%)` }} />
+          <img src={factoryLoomsHero} alt="Factory Looms" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", filter: "brightness(0.75) saturate(0.90)" }} />
+        </div>
+      </header>
+
+      {/* Stats strip */}
+      <div style={{ padding: "0 48px", marginTop: -80, position: "relative", zIndex: 20 }}>
+        <div style={{ background: "linear-gradient(135deg,#5D1027 0%,#2C0913 100%)", borderRadius: 24, display: "flex", alignItems: "stretch", boxShadow: "0 24px 72px rgba(0,0,0,0.32),0 0 0 1px rgba(200,155,71,0.16)", overflow: "hidden", minHeight: 140 }}>
           {[
-            { label: "Total In-House Looms", val: looms.length, sub: "Registered units" },
-            { label: "Active Looms", val: looms.filter(l => l.status === "active").length, sub: "Currently weaving", color: T.green },
-            { label: "Idle Looms", val: looms.filter(l => l.status === "idle").length, sub: "Awaiting warp / weaver", color: T.antiqueGold },
-            { label: "In Maintenance", val: looms.filter(l => l.status === "maintenance").length, sub: "Under repair", color: T.crimson },
-          ].map((st, i) => (
-            <div key={i} style={{ background: "rgba(255,255,255,0.07)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 12, padding: "14px 18px" }}>
-              <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,253,249,0.60)", textTransform: "uppercase", letterSpacing: "0.5px" }}>{st.label}</div>
-              <div style={{ fontFamily: F.display, fontSize: 26, fontWeight: 700, color: st.color || "#FFFDF9", marginTop: 2 }}>{st.val}</div>
-              <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.50)", marginTop: 2 }}>{st.sub}</div>
+            { icon: Factory, label: "Total In-House Looms", val: looms.length, sub: "Registered units", hi: false },
+            { icon: CheckCircle2, label: "Active Looms", val: looms.filter(l => l.status === "active").length, sub: "Currently weaving", hi: false },
+            { icon: AlertTriangle, label: "Idle Looms", val: looms.filter(l => l.status === "idle").length, sub: "Awaiting warp / weaver", hi: true },
+            { icon: Settings2, label: "In Maintenance", val: looms.filter(l => l.status === "maintenance").length, sub: "Under repair", hi: false },
+          ].map((m, i, arr) => (
+            <div key={m.label} style={{ flex: 1, padding: "26px 18px", background: m.hi ? "linear-gradient(135deg,rgba(200,155,71,0.22) 0%,rgba(200,155,71,0.07) 100%)" : "none", borderRight: i < arr.length - 1 ? "1px solid rgba(245,232,208,0.07)" : "none", display: "flex", alignItems: "center", gap: 12, position: "relative" }}>
+              {m.hi && <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,${T.antiqueGold},${T.goldLight})` }} />}
+              <div style={{ width: 44, height: 44, borderRadius: 13, flexShrink: 0, background: m.hi ? "rgba(200,155,71,0.16)" : "rgba(245,232,208,0.07)", border: `1px solid ${m.hi ? "rgba(200,155,71,0.38)" : "rgba(245,232,208,0.09)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <m.icon size={20} color={m.hi ? "rgba(231,201,131,0.95)" : "rgba(245,232,208,0.90)"} />
+              </div>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 6, color: m.hi ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.70)" }}>{m.label}</div>
+                <div style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontSize: 48, color: m.hi ? T.goldLight : "#FFFDF9", lineHeight: 1.1, marginBottom: 8, fontVariantNumeric: "tabular-nums", letterSpacing: "-0.01em" }}>{m.val}</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: m.hi ? "rgba(231,201,131,0.90)" : "rgba(245,232,208,0.55)", letterSpacing: "0.1px" }}>{m.sub}</div>
+              </div>
             </div>
           ))}
         </div>

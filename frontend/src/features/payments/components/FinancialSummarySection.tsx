@@ -6,7 +6,7 @@ import { DownloadGate } from "../../../shared/ui/DownloadAccess";
 import { F, T } from "../theme";
 import { formatMoney, rupees } from "@/lib/domain/money";
 import { AnimBar, FadeUp } from "./common/motion";
-import { ActionModal } from "./common/primitives";
+import { ActionModal, SectionCard } from "./common/primitives";
 import { Button } from "../../../shared/ui/primitives";
 
 export function SummaryLineItem({ label, value, color }: { label: string; value: string; color: string }) {
@@ -54,24 +54,18 @@ export function FinancialSummarySection() {
   return (
     <div id="pay-summary" style={{ padding: "32px 40px" }}>
       <FadeUp>
-        {/* Section header */}
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 4 }}>
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
-              <div style={{ width: 4, height: 28, background: T.antiqueGold, borderRadius: 99 }} />
-              <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0 }}>This Month's Financial Summary</h2>
-            </div>
-            <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: "0 0 0 16px" }}>
-              A clear view of all money coming in and going out this month.
-            </p>
-          </div>
+      <SectionCard
+        icon={Wallet}
+        title="This Month's Financial Summary"
+        subtitle="A clear view of all money coming in and going out this month."
+        actions={
           <DownloadGate>
             <Button variant="secondary" size="md" iconLeft={Download} onClick={() => setDownloadModal(true)} className="shrink-0">
               Download Report
             </Button>
           </DownloadGate>
-        </div>
-
+        }
+      >
         {summaryLoading ? (
           <div style={{ marginTop: 24, padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
             Loading financial summary…
@@ -187,6 +181,7 @@ export function FinancialSummarySection() {
         </>
         )}
         <ActionModal open={downloadModal} onClose={() => setDownloadModal(false)} title="Download Financial Report" desc="Generate and download the financial summary report for this month." actionLabel="Download" icon={Download} />
+      </SectionCard>
       </FadeUp>
     </div>
   );

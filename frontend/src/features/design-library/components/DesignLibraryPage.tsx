@@ -108,24 +108,21 @@ export function DesignLibraryPage() {
     <div style={{ background: T.silkCream, minHeight: "100dvh", fontFamily: F.ui }}>
 
       {/* ── Page header ── */}
-      <div style={{ background: T.darkBurgundy, padding: "36px 56px 80px", position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", right: -40, bottom: -60, width: 320, height: 320, borderRadius: "50%", border: "1px solid rgba(200,155,71,0.14)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", right: 20, bottom: -20, width: 200, height: 200, borderRadius: "50%", border: "1px solid rgba(200,155,71,0.10)", pointerEvents: "none" }} />
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", position: "relative", zIndex: 1 }}>
-          <div>
-            <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "0.14em", color: T.antiqueGold, textTransform: "uppercase", marginBottom: 14 }}>
-              Since 1999 · Production
-            </div>
-            <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 42, fontWeight: 700, color: "#fff", margin: "0 0 6px 0", lineHeight: 1.1 }}>
+      <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", minHeight: 380, display: "flex", alignItems: "center" }}>
+        <div style={{ position: "relative", zIndex: 2, padding: "48px 0 110px 48px", flex: "0 0 100%", maxWidth: "100%" }}>
+          <div style={{ fontFamily: F.mono, fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase", marginBottom: 14 }}>
+            Since 1999 · Production
+          </div>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
+            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 56, fontWeight: 400, color: "#FFFDF9", margin: "0 0 6px 0", lineHeight: 1.1 }}>
               Weaver Dispatcher
             </h1>
-            <p style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,255,255,0.60)", maxWidth: 520, margin: 0, lineHeight: 1.6 }}>
-              Dispatch design sheets, color slip photos, design graphs, and specific weaver instructions directly to active looms.
-            </p>
           </div>
-          <div style={{ display: "none" }} />
+          <p style={{ fontFamily: F.ui, fontSize: 18, color: "rgba(255,253,249,0.70)", maxWidth: 600, margin: 0, lineHeight: 1.6 }}>
+            Dispatch design sheets, color slip photos, design graphs, and specific weaver instructions directly to active looms.
+          </p>
         </div>
-      </div>
+      </header>
 
 
 
