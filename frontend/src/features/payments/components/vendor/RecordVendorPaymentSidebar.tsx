@@ -1,6 +1,7 @@
 import React from "react";
 import { F, T } from "../../theme";
 import { VendorPayment } from "../../types";
+import type { Firm } from "../../../firms/contexts/FirmsContext";
 import { Button, CurrencyInput, Field, Input, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { DatePicker, formatDate } from "../../../../shared/ui/date";
 import { rupees, formatMoney } from "@/lib/domain/money";
@@ -18,9 +19,15 @@ interface RecordVendorPaymentSidebarProps {
   setPayMethod: (v: string) => void;
   utrNumber: string;
   setUtrNumber: (v: string) => void;
+  firms: Firm[];
+  firmId: string;
+  setFirmId: (v: string) => void;
   selVP: VendorPayment;
   selBalance: number;
   afterPay: number;
+  onSave: () => void;
+  onCancel: () => void;
+  saving?: boolean;
 }
 
 export function RecordVendorPaymentSidebar({
@@ -35,10 +42,17 @@ export function RecordVendorPaymentSidebar({
   setPayMethod,
   utrNumber,
   setUtrNumber,
+  firms,
+  firmId,
+  setFirmId,
   selVP,
   selBalance,
   afterPay,
+  onSave,
+  onCancel,
+  saving,
 }: RecordVendorPaymentSidebarProps) {
+  const canSave = !!selVP.billId && !!payAmount && Number(payAmount) > 0 && !!utrNumber.trim() && !!firmId && !saving;
   return (
     <div style={{ flex: "0 0 272px", background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.07)" }}>
       <div style={{ background: T.darkBurgundy, padding: "16px 20px" }}>
@@ -90,6 +104,16 @@ export function RecordVendorPaymentSidebar({
         <Field label="UTR Number" id="utr-number">
           <Input value={utrNumber} onChange={e => setUtrNumber(e.target.value)} placeholder="Bank transaction reference..." />
         </Field>
+        <Field label="Paying from Firm" id="paying-from-firm">
+          <Select value={firmId} onValueChange={setFirmId}>
+            {firms.map(f => <SelectItem key={f.id} value={f.id}>{f.firmName}</SelectItem>)}
+          </Select>
+        </Field>
+        {!selVP.billId && (
+          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.crimson, background: "rgba(192,57,43,0.06)", border: "1px solid rgba(192,57,43,0.18)", borderRadius: 8, padding: "8px 10px" }}>
+            No bill has been raised against this PO yet — add an invoice before recording a payment.
+          </div>
+        )}
         {payAmount && (
           <div style={{ background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 9, padding: "12px 14px" }}>
             <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 6 }}>Balance After This Payment</div>
@@ -99,8 +123,8 @@ export function RecordVendorPaymentSidebar({
           </div>
         )}
         <div style={{ display: "flex", gap: 8 }}>
-          <Button variant="tertiary" className="flex-1 rounded-[9px] text-[var(--text-tertiary)]">Cancel</Button>
-          <Button variant="primary" className="flex-[2] rounded-[9px] bg-[#6E0F2D]">
+          <Button variant="tertiary" onClick={onCancel} className="flex-1 rounded-[9px] text-[var(--text-tertiary)]">Cancel</Button>
+          <Button variant="primary" onClick={onSave} disabled={!canSave} loading={saving} className="flex-[2] rounded-[9px] bg-[#6E0F2D]">
             Save Payment
           </Button>
         </div>

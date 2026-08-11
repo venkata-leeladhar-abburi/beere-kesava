@@ -20,8 +20,11 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       // (free-tier projects cold-start), so the 5s Prisma default is too
       // tight for the $transaction([...]) batches used across services
       // (e.g. findMany + count) — bump both so a slow-but-live connection
-      // doesn't 500 the request.
-      transactionOptions: { timeout: 20_000, maxWait: 10_000 },
+      // doesn't 500 the request. maxWait in particular governs how long the
+      // client waits to acquire a pooled connection just to *begin* the
+      // transaction — 10s wasn't enough under pooler contention ("Unable to
+      // start a transaction in the given time"), so it's bumped further.
+      transactionOptions: { timeout: 20_000, maxWait: 20_000 },
     });
     this.pool = pool;
   }

@@ -1,8 +1,8 @@
 import { useRef, useState } from "react";
 import { FileText, X } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
+import { useQuery } from "@tanstack/react-query";
 
-import { VENDOR_STATIC_PAYMENT_HISTORY } from "../../data/vendors";
 import { F, T, useFirms } from "../../theme";
 import { VendorPayment } from "../../types";
 import { Button, CurrencyInput, Field, IconButton, Input, Select, SelectItem, Textarea } from "../../../../shared/ui/primitives";
@@ -12,10 +12,23 @@ import { DatePicker, formatDate } from "../../../../shared/ui/date";
 import { rupees } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
 
-export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; onClose: () => void; onSave: (amount: number, firmId: string, utr: string) => void }) {
+export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; onClose: () => void; onSave: (amount: number, firmId: string) => void }) {
   const { firms } = useFirms();
   const balance = vp.invoiceAmt - vp.paidAmt;
-  const history = VENDOR_STATIC_PAYMENT_HISTORY[vp.id] ?? [];
+  const vendorId = vp.vendorId ?? vp.id;
+  const { data: paymentsRes } = useQuery({
+    queryKey: ["vendor-payments", vendorId],
+    queryFn: () => vendorPaymentsApi.list(vendorId),
+  });
+  const history = (paymentsRes?.items ?? [])
+    .filter(p => !vp.billId || p.billId === vp.billId)
+    .map(p => ({
+      amount: Number(p.amount),
+      date: p.date ? p.date.split("T")[0] : "—",
+      firm: firms.find(f => f.id === p.firmId)?.firmName ?? p.firmId ?? "—",
+      utr: p.utr ?? "—",
+      method: p.method ?? "—",
+    }));
   const [amount, setAmount] = useState(String(balance));
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [utr, setUtr] = useState("");
@@ -29,21 +42,23 @@ export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; 
   const handleSave = async () => {
     const numericAmount = parseFloat(amount);
     if (!amount || isNaN(numericAmount) || numericAmount <= 0 || !utr || !firmId) return;
+    if (!vp.billId) {
+      setSaveError("No bill has been raised against this PO yet — add an invoice first.");
+      return;
+    }
     setSaving(true);
     setSaveError(null);
-    const targetVendorId = vp.vendorId || vp.id;
     try {
-      if (targetVendorId) {
-        await vendorPaymentsApi.create({
-          vendorId: targetVendorId,
-          amount: numericAmount,
-          utr: utr.trim() || undefined,
-          method: method.trim() || undefined,
-          firmId: firmId.trim() || undefined,
-          date: date || undefined,
-        });
-      }
-      onSave(numericAmount, firmId, utr);
+      await vendorPaymentsApi.create({
+        vendorId: vp.vendorId ?? vp.id,
+        amount: numericAmount,
+        utr: utr.trim() || undefined,
+        method: method.trim() || undefined,
+        firmId: firmId.trim() || undefined,
+        date: date || undefined,
+        billId: vp.billId,
+      });
+      onSave(numericAmount, firmId);
     } catch (err) {
       console.error("Failed to record vendor payment:", err);
       setSaveError(err instanceof Error ? err.message : "Failed to record payment. Please try again.");
@@ -140,6 +155,11 @@ export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; 
           </div>
         </div>
 
+        {!vp.billId && (
+          <div style={{ margin: "0 28px", padding: "10px 14px", borderRadius: 10, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)", fontFamily: F.ui, fontSize: 13, color: "#C0392B", fontWeight: 600 }}>
+            No bill has been raised against this PO yet — add an invoice before recording a payment.
+          </div>
+        )}
         {saveError && (
           <div style={{ margin: "0 28px", padding: "10px 14px", borderRadius: 10, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)", fontFamily: F.ui, fontSize: 13, color: "#C0392B", fontWeight: 600 }}>
             {saveError}
@@ -147,7 +167,7 @@ export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; 
         )}
         <div style={{ padding: "18px 28px 24px", display: "flex", gap: 10, justifyContent: "flex-end", borderTop: `1px solid ${T.borderDef}`, flexShrink: 0 }}>
           <Button variant="tertiary" onClick={onClose} className="rounded-full text-[var(--text-tertiary)]">Cancel</Button>
-          <Button variant="primary" onClick={handleSave} disabled={saving} loading={saving} className="rounded-full bg-[#6E0F2D]">
+          <Button variant="primary" onClick={handleSave} disabled={saving || !vp.billId} loading={saving} className="rounded-full bg-[#6E0F2D]">
             Confirm Payment
           </Button>
         </div>

@@ -1,20 +1,35 @@
 import React from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 import { PurchaseOrder } from "../../../purchasing/contexts/POContext";
-import { VENDOR_STATIC_PAYMENT_HISTORY } from "../../data/vendors";
-import { F, T } from "../../theme";
+import { F, T, useFirms } from "../../theme";
 import { Invoice, VendorPayment } from "../../types";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
+import { vendorPaymentsApi } from "../../../../shared/api/payments";
 import { rupees } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
 
 // ── Vendor Detail Modal ───────────────────────────────────────────────────────
 export function VendorDetailModal({ vp, matchedPO, onClose }: { vp: VendorPayment; matchedPO?: PurchaseOrder; onClose: () => void }) {
+  const { firms } = useFirms();
   const balance = vp.invoiceAmt - vp.paidAmt;
-  const history = VENDOR_STATIC_PAYMENT_HISTORY[vp.id] ?? [];
+  const vendorId = vp.vendorId ?? vp.id;
+  const { data: paymentsRes } = useQuery({
+    queryKey: ["vendor-payments", vendorId],
+    queryFn: () => vendorPaymentsApi.list(vendorId),
+  });
+  const history = (paymentsRes?.items ?? [])
+    .filter(p => !vp.billId || p.billId === vp.billId)
+    .map(p => ({
+      amount: Number(p.amount),
+      date: p.date ? p.date.split("T")[0] : "—",
+      firm: firms.find(f => f.id === p.firmId)?.firmName ?? p.firmId ?? "—",
+      utr: p.utr ?? "—",
+      method: p.method ?? "—",
+    }));
   const vendorName = matchedPO?.vendor ?? vp.vendor;
 
   return (

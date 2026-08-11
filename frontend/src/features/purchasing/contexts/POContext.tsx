@@ -7,6 +7,8 @@ import type { DocumentStatus } from "@/lib/domain/status";
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 export interface POItem {
+  /** Real PurchaseOrderItem.id — needed to save a per-material invoice amount against it. */
+  id?: string;
   materialType: "Warp" | "Resham" | "Jari";
   subtype: string;
   description?: string;
@@ -42,6 +44,7 @@ export interface PurchaseOrder {
 // materials[] line items are populated from backend `items` relation if present.
 function toPurchaseOrder(po: BackendPurchaseOrder, materials: POItem[] = []): PurchaseOrder {
   const mappedMaterials: POItem[] = (po.items && po.items.length > 0) ? po.items.map(item => ({
+    id: item.id,
     materialType: (item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari") as "Warp" | "Resham" | "Jari",
     subtype: item.name,
     description: item.name,
@@ -49,6 +52,7 @@ function toPurchaseOrder(po: BackendPurchaseOrder, materials: POItem[] = []): Pu
     unit: item.unit,
     pricePerUnit: Number(item.unitPrice || 0),
     subtotal: Number(item.totalPrice || 0),
+    invoiceAmount: item.invoicedAmount ? Number(item.invoicedAmount) : undefined,
   })) : materials;
 
   return {
@@ -76,7 +80,6 @@ interface POContextValue {
   approvePO: (id: string) => void;
   rejectPO: (id: string, reason?: string) => void;
   deletePO: (id: string) => Promise<void>;
-  setMaterialInvoiceAmount: (poId: string, materialIndex: number, amount: number) => void;
   nextPONumber: string;
   isError: boolean;
   error: unknown;
@@ -119,6 +122,7 @@ export function POProvider({ children }: { children: React.ReactNode }) {
           name: m.subtype,
           quantity: m.quantity,
           unit: m.unit,
+          unitPrice: m.pricePerUnit || 0,
         })),
       });
       return toPurchaseOrder(created, po.materials);
@@ -168,26 +172,10 @@ export function POProvider({ children }: { children: React.ReactNode }) {
     onSuccess: (_void, id) => setPos(prev => prev.filter(p => p.id !== id)),
   });
 
-  const setMaterialInvoiceAmountMutation = useMutation({
-    mutationFn: (args: { poId: string; materialIndex: number; amount: number }) => Promise.resolve(args),
-    onSuccess: ({ poId, materialIndex, amount }) => {
-      setPos(prev =>
-        prev.map(p =>
-          p.id === poId
-            ? { ...p, materials: p.materials.map((m, i) => i === materialIndex ? { ...m, invoiceAmount: amount } : m) }
-            : p
-        )
-      );
-      toast.success("Invoice amount saved");
-    },
-  });
-
   const addPO = (po: PurchaseOrder): Promise<void> => addPOMutation.mutateAsync(po).then(() => undefined);
   const approvePO = (id: string) => approvePOMutation.mutate(id);
   const rejectPO = (id: string, reason?: string) => rejectPOMutation.mutate({ id, reason });
   const deletePO = (id: string): Promise<void> => deletePOMutation.mutateAsync(id).then(() => undefined);
-  const setMaterialInvoiceAmount = (poId: string, materialIndex: number, amount: number) =>
-    setMaterialInvoiceAmountMutation.mutate({ poId, materialIndex, amount });
 
   // Compute next PO number based on existing POs
   const nextPONumber = useMemo(() => {
@@ -202,7 +190,7 @@ export function POProvider({ children }: { children: React.ReactNode }) {
   }, [pos]);
 
   return (
-    <POContext.Provider value={{ pos, addPO, approvePO, rejectPO, deletePO, setMaterialInvoiceAmount, nextPONumber, isError, error }}>
+    <POContext.Provider value={{ pos, addPO, approvePO, rejectPO, deletePO, nextPONumber, isError, error }}>
       {children}
     </POContext.Provider>
   );

@@ -5,6 +5,7 @@ import { Prisma, VendorBillStatus } from "../generated/prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateVendorBillDto } from "./dto/create-vendor-bill.dto";
 import { ListVendorBillsQueryDto } from "./dto/list-vendor-bills-query.dto";
+import { UpdateVendorBillDto } from "./dto/update-vendor-bill.dto";
 
 @Injectable()
 export class VendorBillsService {
@@ -37,6 +38,10 @@ export class VendorBillsService {
       include: { vendor: true, purchaseOrder: true },
     });
 
+    if (dto.poId && dto.materialAmounts?.length) {
+      await this.applyMaterialAmounts(dto.poId, dto.materialAmounts);
+    }
+
     await this.auditLog.recordAction({
       actorId: dto.actorId,
       module: "PAYMENTS",
@@ -48,6 +53,31 @@ export class VendorBillsService {
     });
 
     return bill;
+  }
+
+  // Entry aid only (see CreateVendorBillDto.materialAmounts) — validates
+  // each item actually belongs to this PO before writing, so a bad itemId
+  // can't silently touch some other PO's line.
+  private async applyMaterialAmounts(
+    poId: string,
+    materialAmounts: { itemId: string; amount: number }[],
+  ): Promise<void> {
+    const items = await this.prisma.purchaseOrderItem.findMany({
+      where: { id: { in: materialAmounts.map((m) => m.itemId) }, purchaseOrderId: poId },
+      select: { id: true },
+    });
+    const validIds = new Set(items.map((i) => i.id));
+
+    await this.prisma.$transaction(
+      materialAmounts
+        .filter((m) => validIds.has(m.itemId))
+        .map((m) =>
+          this.prisma.purchaseOrderItem.update({
+            where: { id: m.itemId },
+            data: { invoicedAmount: m.amount },
+          }),
+        ),
+    );
   }
 
   async findAll(
@@ -85,6 +115,44 @@ export class VendorBillsService {
       throw new NotFoundException(`Vendor bill ${id} not found`);
     }
     return bill;
+  }
+
+  // Edits the one bill already raised against a PO, rather than the caller
+  // creating a second bill for the same PO — the admin's "invoice amount"
+  // for a PO is meant to be a single, correctable figure. Re-derives status
+  // afterward since changing the amount can flip PAID/PARTIAL either way.
+  async update(id: string, dto: UpdateVendorBillDto) {
+    const existing = await this.findOne(id);
+    const { actorId, ...data } = dto;
+
+    const updated = await this.prisma.vendorBill.update({
+      where: { id },
+      data: {
+        amount: data.amount,
+        dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
+        description: data.description,
+      },
+      include: { vendor: true, purchaseOrder: true },
+    });
+
+    if (existing.poId && data.materialAmounts?.length) {
+      await this.applyMaterialAmounts(existing.poId, data.materialAmounts);
+    }
+
+    await this.recomputeStatus(id);
+
+    await this.auditLog.recordAction({
+      actorId,
+      module: "PAYMENTS",
+      action: `Updated bill for vendor ${existing.vendor.name}`,
+      entityType: "VendorBill",
+      entityId: id,
+      recordLabel: existing.vendor.name,
+      oldValue: String(existing.amount),
+      newValue: data.amount !== undefined ? String(data.amount) : undefined,
+    });
+
+    return this.findOne(updated.id);
   }
 
   /**

@@ -379,6 +379,9 @@ export function POVendorDetailModal({ po, onClose }: { po: PurchaseOrder | null;
                       <div style={{ textAlign: "right" as const, flexShrink: 0 }}>
                         <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>{m.quantity} {m.unit}</div>
                         {m.pricePerUnit > 0 && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 1 }}><Money value={rupees(m.pricePerUnit)} />/{m.unit}</div>}
+                        {m.invoiceAmount ? (
+                          <div style={{ fontFamily: F.mono, fontSize: 12, color: "#8B6018", marginTop: 1, fontWeight: 700 }}>Inv: <Money value={rupees(m.invoiceAmount)} /></div>
+                        ) : null}
                       </div>
                     </div>
                   );

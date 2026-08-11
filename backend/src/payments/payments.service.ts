@@ -274,6 +274,39 @@ export class PaymentsService {
     });
   }
 
+  // Every QC-passed saree with a weaver attached — the raw material the
+  // Weaver Payments page's production-summary table/template is built from.
+  // Grouping by (weaverId, batchId, loomNumber) and date-range filtering
+  // both happen client-side, matching how every other date-filtered list in
+  // this app works, so this stays a flat per-saree list.
+  async getWeaverProductionRows() {
+    const records = await this.prisma.qcRecord.findMany({
+      where: { result: "PASSED", weaverId: { not: null } },
+      select: {
+        sareeId: true,
+        weaverId: true,
+        weaver: { select: { firstName: true, lastName: true } },
+        batchId: true,
+        loomNumber: true,
+        qcDate: true,
+        makingCharge: true,
+        deduction: true,
+      },
+      orderBy: { qcDate: "asc" },
+    });
+
+    return records.map((r) => ({
+      sareeId: r.sareeId,
+      weaverId: r.weaverId as string,
+      weaverName: r.weaver ? `${r.weaver.firstName} ${r.weaver.lastName}`.trim() : (r.weaverId as string),
+      batchId: r.batchId,
+      loomNumber: r.loomNumber,
+      qcDate: r.qcDate,
+      makingCharge: Number(r.makingCharge),
+      deduction: Number(r.deduction),
+    }));
+  }
+
   async getPaymentSummary() {
     const [
       weaverAggregate,

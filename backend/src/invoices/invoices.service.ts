@@ -24,6 +24,14 @@ export class InvoicesService {
     if (!customer) {
       throw new NotFoundException(`Customer ${dto.customerId} not found`);
     }
+    if (dto.dispatchId) {
+      const existing = await this.prisma.invoice.findUnique({
+        where: { dispatchId: dto.dispatchId },
+      });
+      if (existing) {
+        return this.findOne(existing.id);
+      }
+    }
 
     const created = await this.prisma.invoice.create({
       data: {

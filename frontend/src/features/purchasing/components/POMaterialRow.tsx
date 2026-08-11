@@ -24,6 +24,9 @@ export function POMaterialRow({
     if (k === "materialType") {
       updated.unit = v === "Jari" ? "Buns" : "kg";
     }
+    if (k === "quantity") {
+      updated.subtotal = (updated.pricePerUnit || 0) * (Number(v) || 0);
+    }
     onChange(updated);
   };
 
@@ -46,7 +49,7 @@ export function POMaterialRow({
         />
       )}
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr 1fr", gap: 10, alignItems: "start" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr 1fr 1fr", gap: 10, alignItems: "start" }}>
         {/* Material Type */}
         <div>
           <label style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, marginBottom: 5, display: "block", letterSpacing: "0.3px" }}>Type *</label>
@@ -121,6 +124,27 @@ export function POMaterialRow({
             </div>
           )}
           {errors[`mat-${item._key}-qty`] && <div style={{ color: T.crimson, fontSize: 12, marginTop: 3 }}>{errors[`mat-${item._key}-qty`]}</div>}
+        </div>
+
+        {/* Price per unit */}
+        <div>
+          <label style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, marginBottom: 5, display: "block", letterSpacing: "0.3px" }}>
+            Price / {item.unit} (₹)
+          </label>
+          <NumberInput
+            min={0}
+            value={item.pricePerUnit || ""}
+            onValueChange={v => {
+              const price = v === "" ? 0 : Number(v);
+              onChange({ ...item, pricePerUnit: price, subtotal: price * (item.quantity || 0) });
+            }}
+            placeholder="0"
+          />
+          {item.quantity > 0 && item.pricePerUnit > 0 && (
+            <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, fontWeight: 600, marginTop: 4 }}>
+              = ₹{(item.pricePerUnit * item.quantity).toLocaleString("en-IN")}
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -48,6 +48,26 @@ export function WorkerQCInspectionScreen({
   confirmDefective,
 }: WorkerQCInspectionScreenProps) {
   const v = variance(inspecting.weight, inspecting.std);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const cameraInputRef = React.useRef<HTMLInputElement>(null);
+  const [photoPreview, setPhotoPreview] = React.useState<string | null>(null);
+
+  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        setPhotoPreview(ev.target?.result as string);
+        setHasPhoto(true);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRetake = () => {
+    setHasPhoto(false);
+    setPhotoPreview(null);
+  };
 
   return (
     <AnimatePresence mode="wait">
@@ -154,26 +174,32 @@ export function WorkerQCInspectionScreen({
               <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: T.brown, marginBottom: 8 }}>Photo of defect</div>
               {!hasPhoto ? (
                 <div style={{ border: "1px dashed rgba(110,15,45,0.25)", borderRadius: 10, padding: "14px 12px", marginBottom: 14 }}>
+                  <input type="file" accept="image/*" capture="environment" ref={cameraInputRef} style={{ display: 'none' }} onChange={handlePhotoSelect} />
+                  <input type="file" accept="image/*" ref={fileInputRef} style={{ display: 'none' }} onChange={handlePhotoSelect} />
                   <div style={{ display: "flex", gap: 8 }}>
-                    <Button variant="primary" fullWidth size="sm" iconLeft={Camera} onClick={() => setHasPhoto(true)} className="h-11 rounded-full bg-[#6E0F2D] hover:bg-[#6E0F2D]">
+                    <Button variant="primary" fullWidth size="sm" iconLeft={Camera} onClick={() => cameraInputRef.current?.click()} className="h-11 rounded-full bg-[#6E0F2D] hover:bg-[#6E0F2D]">
                       Take Photo
                     </Button>
-                    <Button variant="secondary" fullWidth size="sm" iconLeft={UploadCloud} onClick={() => setHasPhoto(true)} className="h-11 rounded-full border-[#6E0F2D] text-[#6E0F2D]">
+                    <Button variant="secondary" fullWidth size="sm" iconLeft={UploadCloud} onClick={() => fileInputRef.current?.click()} className="h-11 rounded-full border-[#6E0F2D] text-[#6E0F2D]">
                       Gallery
                     </Button>
                   </div>
                 </div>
               ) : (
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-                  <div style={{ width: 60, height: 60, background: "#F5E8D0", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", border: `1px solid ${T.bdr}`, position: "relative" }}>
-                    <Camera size={22} color={T.muted} />
+                  <div style={{ width: 60, height: 60, background: "#F5E8D0", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", border: `1px solid ${T.bdr}`, position: "relative", overflow: "hidden" }}>
+                    {photoPreview ? (
+                      <img src={photoPreview} alt="Defect" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    ) : (
+                      <Camera size={22} color={T.muted} />
+                    )}
                     <div style={{ position: "absolute", top: -4, right: -4, width: 18, height: 18, background: T.green, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
                       <CheckCircle2 size={10} color="#FFF" />
                     </div>
                   </div>
                   <div>
                     <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 500, color: T.green }}>Defect photo captured</div>
-                    <Button variant="link" onClick={() => setHasPhoto(false)} className="p-0 text-xs text-[#6E0F2D] underline">Retake</Button>
+                    <Button variant="link" onClick={handleRetake} className="p-0 text-xs text-[#6E0F2D] underline">Retake</Button>
                   </div>
                 </div>
               )}

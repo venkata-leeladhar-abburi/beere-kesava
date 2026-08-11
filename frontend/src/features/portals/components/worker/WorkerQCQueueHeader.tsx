@@ -1,6 +1,7 @@
 import React from "react";
 import { T, F } from "./WorkerQCTypes";
 import { Button } from "../../../../shared/ui/primitives";
+import { DateFilterBar, type DateFilterState } from "../../../../shared/ui/DateFilterBar";
 
 interface WorkerQCQueueHeaderProps {
   pendingLength: number;
@@ -9,6 +10,8 @@ interface WorkerQCQueueHeaderProps {
   qcTab: "weavers" | "batches";
   setQcTab: (tab: "weavers" | "batches") => void;
   setWeaverSearch: (search: string) => void;
+  qcDateFilter: DateFilterState;
+  setQcDateFilter: (filter: DateFilterState) => void;
   isDesktop?: boolean;
 }
 
@@ -19,6 +22,8 @@ export function WorkerQCQueueHeader({
   qcTab,
   setQcTab,
   setWeaverSearch,
+  qcDateFilter,
+  setQcDateFilter,
   isDesktop,
 }: WorkerQCQueueHeaderProps) {
   return (
@@ -29,7 +34,7 @@ export function WorkerQCQueueHeader({
           { label: `${passedThisMonthCount} Passed This Month`, bg: T.bgGreen, color: T.green, bdr: "rgba(30,102,64,0.20)" },
           { label: `${rejectedCount} Rejected`, bg: T.bgGold, color: T.gold, bdr: "rgba(200,155,71,0.25)" },
         ].map((s, i) => (
-          <div key={i} id={i === 0 ? "wqc-pending" : i === 1 ? "wqc-completed" : undefined} style={{ background: s.bg, border: `1px solid ${s.bdr}`, borderRadius: 999, padding: isDesktop ? "6px 16px" : "5px 12px" }}>
+          <div key={i} id={i === 0 ? "wqc-pending" : undefined} style={{ background: s.bg, border: `1px solid ${s.bdr}`, borderRadius: 999, padding: isDesktop ? "6px 16px" : "5px 12px" }}>
             <span style={{ fontFamily: F.u, fontSize: isDesktop ? 13 : 11, fontWeight: 600, color: s.color }}>{s.label}</span>
           </div>
         ))}
@@ -43,6 +48,10 @@ export function WorkerQCQueueHeader({
             {label}
           </Button>
         ))}
+      </div>
+
+      <div style={{ margin: isDesktop ? "0 0 12px" : "0 16px 12px" }}>
+        <DateFilterBar filter={qcDateFilter} onChange={setQcDateFilter} />
       </div>
     </>
   );

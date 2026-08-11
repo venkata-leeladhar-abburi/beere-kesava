@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Param, Post, Query } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, Query } from "@nestjs/common";
 import { RequirePermissions } from "../auth/decorators/require-permissions.decorator";
 import { RequireRoles } from "../auth/decorators/require-roles.decorator";
 import { UserRole } from "../generated/prisma/client";
 import { CreateVendorBillDto } from "./dto/create-vendor-bill.dto";
 import { ListVendorBillsQueryDto } from "./dto/list-vendor-bills-query.dto";
+import { UpdateVendorBillDto } from "./dto/update-vendor-bill.dto";
 import { VendorBillsService } from "./vendor-bills.service";
 
 // Financial module — vendor billing/settlement ledger, ACCOUNTANT access
@@ -27,5 +28,11 @@ export class VendorBillsController {
   @Get(":id")
   findOne(@Param("id") id: string) {
     return this.vendorBillsService.findOne(id);
+  }
+
+  @Patch(":id")
+  @RequirePermissions("vendor_bills.create")
+  update(@Param("id") id: string, @Body() dto: UpdateVendorBillDto) {
+    return this.vendorBillsService.update(id, dto);
   }
 }

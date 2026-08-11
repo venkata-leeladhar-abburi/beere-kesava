@@ -2,14 +2,21 @@ import React, { useCallback, useRef, useState } from "react";
 import { AlertTriangle, CheckCircle2, FileText, UploadCloud, X } from "lucide-react";
 import { motion } from "motion/react";
 
-import { EASE, F, T } from "../../theme";
+import { EASE, F, T, useFirms } from "../../theme";
 import { VendorExcelRow, VendorMatchedRow, VendorPayment, VendorUnmatchedRow, VendorUploadResult } from "../../types";
+import { vendorPaymentsApi } from "../../../../shared/api/payments";
 import { Button, Input } from "../../../../shared/ui/primitives";
 import { rupees } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
 
 // ── Vendor Payment Excel Upload Panel ─────────────────────────────────────────
+// `vendorPayments` is the same real per-PO ledger rendered on the page —
+// each row already carries the real billId (if a bill's been raised) needed
+// to save a VendorPayment against it. Matching by PO Number here just looks
+// that row up; the actual POST /payments/vendors calls happen here too, so
+// by the time onMatched fires the payments are already real, saved rows.
 export function VendorUploadPanel({ vendorPayments, onMatched }: { vendorPayments: VendorPayment[]; onMatched: (matched: VendorMatchedRow[]) => void }) {
+  const { firms } = useFirms();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [result, setResult] = useState<VendorUploadResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -61,11 +68,36 @@ export function VendorUploadPanel({ vendorPayments, onMatched }: { vendorPayment
 
         const matched: VendorMatchedRow[] = [];
         const unmatched: VendorUnmatchedRow[] = [];
-        rows.forEach(row => {
+
+        for (const row of rows) {
           const found = vendorPayments.find(v => v.poNumber.trim().toLowerCase() === row.poNumber.trim().toLowerCase());
-          if (found) matched.push({ ...row, vendorPayment: found });
-          else unmatched.push(row);
-        });
+          if (!found) {
+            unmatched.push({ ...row, reason: `No PO found with number "${row.poNumber || "—"}"` });
+            continue;
+          }
+          if (!found.billId) {
+            unmatched.push({ ...row, reason: `No bill has been raised against ${found.poNumber} yet` });
+            continue;
+          }
+          if (!row.amountPaid || row.amountPaid <= 0) {
+            unmatched.push({ ...row, reason: "Missing or invalid Amount Paid" });
+            continue;
+          }
+          const firm = firms.find(f => f.firmName.trim().toLowerCase() === row.firmName.trim().toLowerCase());
+          try {
+            await vendorPaymentsApi.create({
+              vendorId: found.vendorId ?? found.id,
+              amount: row.amountPaid,
+              utr: row.utrNumber || undefined,
+              firmId: firm?.id,
+              date: row.paymentDate || undefined,
+              billId: found.billId,
+            });
+            matched.push({ ...row, vendorPayment: found });
+          } catch (err) {
+            unmatched.push({ ...row, reason: err instanceof Error ? err.message : "Failed to save this payment" });
+          }
+        }
 
         setResult({ fileName: file.name, totalRows: rows.length, matched, unmatched });
         if (matched.length > 0) onMatched(matched);
@@ -182,7 +214,7 @@ export function VendorUploadPanel({ vendorPayments, onMatched }: { vendorPayment
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {result.unmatched.map((u, i) => (
                   <div key={i} style={{ background: "rgba(192,57,43,0.04)", borderRadius: 12, border: `1px solid rgba(192,57,43,0.22)`, borderLeft: `4px solid ${T.crimson}`, padding: "12px 16px", fontFamily: F.ui, fontSize: 12, color: T.crimson }}>
-                    No vendor bill found with PO Number <strong>{u.poNumber || "—"}</strong> — please verify manually
+                    <strong>{u.poNumber || "—"}</strong> — {u.reason ?? "Could not be matched — please verify manually"}
                   </div>
                 ))}
               </div>

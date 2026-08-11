@@ -17,6 +17,7 @@ import { ActionModal, DropBtn, Pip, SectionCard, StatusBadge } from "../common/p
 import { Button, Checkbox, SearchInput } from "../../../../shared/ui/primitives";
 import { exportTable, type ColumnDef } from "../../../../shared/ui/data";
 import { BankUploadPanel } from "./BankUploadPanel";
+import { WeaverProductionSummaryPanel } from "./WeaverProductionSummaryPanel";
 import { WeaverCard } from "./WeaverCard";
 import { WeaverPaymentDetailModal } from "./WeaverPaymentDetailModal";
 import { rupees, formatMoney } from "@/lib/domain/money";
@@ -97,6 +98,7 @@ export function WeaverMakingChargesSection() {
   const [downloadModal, setDownloadModal] = useState(false);
   const [selWeaver, setSelWeaver] = useState<WeaverRecord | null>(null);
 
+  const [uploadRefreshKey, setUploadRefreshKey] = useState(0);
   const [filterVillage, setFilterVillage] = useState("All Villages");
   const [filterStatus, setFilterStatus] = useState("All Payment Status");
   const { batches } = useBatches();
@@ -147,41 +149,18 @@ export function WeaverMakingChargesSection() {
       const noOfSarees = calcCompletedSarees(w) || 1;
       const grossAmount = w.uploadedAmount !== undefined ? w.uploadedAmount : calcCharges(w);
       const deduction = w.uploadedDeduction !== undefined ? w.uploadedDeduction : w.advance;
-      const netAmount = grossAmount - deduction;
 
       // Dynamic Batches Info
       const activeBatchesString = activeBatches.map(b => b.batchId).join(", ") || "None";
-      const allBatchesString = weaverBatches.map(b => b.batchId).join(", ") || "None";
-
-      // Dynamic Material Issue Info
-      const weaverMaterials = getRecordsForWeaver(w.id);
-      const materialSummary = weaverMaterials.flatMap(r => r.materials).reduce((acc, m) => {
-        const qty = m.quantity;
-        const unit = m.unit;
-        const key = `${m.materialType} (${unit})`;
-        acc[key] = (acc[key] || 0) + qty;
-        return acc;
-      }, {} as Record<string, number>);
-      const materialSummaryString = Object.entries(materialSummary).map(([k, v]) => `${k}: ${v}`).join(", ") || "No materials issued";
 
       return {
         weaverId: w.id,
         name: w.name,
-        village: w.village,
+        batchNo: activeBatchesString,
         loomNumber,
-        activeBatches: activeBatchesString,
-        allBatches: allBatchesString,
-        sbQty: w.sb, sbRate: RATES.sb, sbTotal: w.sb * RATES.sb,
-        hzQty: w.hz, hzRate: RATES.hz, hzTotal: w.hz * RATES.hz,
-        psQty: w.ps, psRate: RATES.ps, psTotal: w.ps * RATES.ps,
-        bsQty: w.bs, bsRate: RATES.bs, bsTotal: w.bs * RATES.bs,
-        stQty: w.st, stRate: RATES.st, stTotal: w.st * RATES.st,
-        totalSarees: noOfSarees,
+        noOfSarees,
         grossAmount,
-        materialsSummary: materialSummaryString,
         deduction,
-        netAmount,
-        status: w.status,
       };
     });
 
@@ -191,38 +170,26 @@ export function WeaverMakingChargesSection() {
     // columns (`type: "currency"`) export as raw numbers so the sheet's own
     // SUM()/AVERAGE() work — never a "₹1.2L"-style formatted string —  and
     // "Weaver ID" is `type: "code"` so Excel can't reinterpret it as a number.
+    // weaverId/batchNo/loomNumber/noOfSarees/deduction/amountPaid/utrNumber/
+    // firmId/paymentDate header names must match
+    // PaymentsService.importWeaverPaymentsFromExcel's expected columns exactly
+    // so this template can be filled in and re-uploaded via BankUploadPanel.
     const ledgerColumns: ColumnDef<(typeof dataRows)[number]>[] = [
-      { id: "weaverId", header: "Weaver ID", accessor: r => r.weaverId, type: "code" },
-      { id: "name", header: "Name", accessor: r => r.name },
-      { id: "village", header: "Village", accessor: r => r.village },
-      { id: "loomNumber", header: "Loom Number", accessor: r => r.loomNumber },
-      { id: "activeBatches", header: "Active Batch ID", accessor: r => r.activeBatches },
-      { id: "allBatches", header: "All Batches History", accessor: r => r.allBatches },
-      { id: "sbQty", header: "Self Brocade (Qty)", accessor: r => r.sbQty, type: "number" },
-      { id: "sbRate", header: "Self Brocade Rate", accessor: r => r.sbRate, type: "currency" },
-      { id: "sbTotal", header: "Self Brocade Total", accessor: r => r.sbTotal, type: "currency" },
-      { id: "hzQty", header: "Heavy Zari (Qty)", accessor: r => r.hzQty, type: "number" },
-      { id: "hzRate", header: "Heavy Zari Rate", accessor: r => r.hzRate, type: "currency" },
-      { id: "hzTotal", header: "Heavy Zari Total", accessor: r => r.hzTotal, type: "currency" },
-      { id: "psQty", header: "Plain Silk (Qty)", accessor: r => r.psQty, type: "number" },
-      { id: "psRate", header: "Plain Silk Rate", accessor: r => r.psRate, type: "currency" },
-      { id: "psTotal", header: "Plain Silk Total", accessor: r => r.psTotal, type: "currency" },
-      { id: "bsQty", header: "Bridal Special (Qty)", accessor: r => r.bsQty, type: "number" },
-      { id: "bsRate", header: "Bridal Special Rate", accessor: r => r.bsRate, type: "currency" },
-      { id: "bsTotal", header: "Bridal Special Total", accessor: r => r.bsTotal, type: "currency" },
-      { id: "stQty", header: "Stripe Brocade (Qty)", accessor: r => r.stQty, type: "number" },
-      { id: "stRate", header: "Stripe Brocade Rate", accessor: r => r.stRate, type: "currency" },
-      { id: "stTotal", header: "Stripe Brocade Total", accessor: r => r.stTotal, type: "currency" },
-      { id: "totalSarees", header: "Total Sarees", accessor: r => r.totalSarees, type: "number" },
-      { id: "grossAmount", header: "Gross Making Charges", accessor: r => r.grossAmount, type: "currency" },
-      { id: "materialsSummary", header: "Materials Issued History", accessor: r => r.materialsSummary },
-      { id: "deduction", header: "Deduction (Advance)", accessor: r => r.deduction, type: "currency" },
-      { id: "netAmount", header: "Net Payable", accessor: r => r.netAmount, type: "currency" },
-      { id: "status", header: "Payment Status", accessor: r => r.status },
+      { id: "weaverId", header: "weaverId", accessor: r => r.weaverId, type: "code" },
+      { id: "name", header: "Weaver Name", accessor: r => r.name },
+      { id: "batchNo", header: "batchNo", accessor: r => r.batchNo },
+      { id: "loomNumber", header: "loomNumber", accessor: r => r.loomNumber },
+      { id: "noOfSarees", header: "noOfSarees", accessor: r => r.noOfSarees, type: "number" },
+      { id: "grossAmount", header: "Making Charges", accessor: r => r.grossAmount, type: "currency" },
+      { id: "deduction", header: "deduction", accessor: r => r.deduction, type: "currency" },
+      { id: "amountPaid", header: "amountPaid", accessor: () => null },
+      { id: "utrNumber", header: "utrNumber", accessor: () => null },
+      { id: "paymentDate", header: "paymentDate", accessor: () => null },
+      { id: "firmId", header: "firmId", accessor: () => null },
     ];
 
     await exportTable({ columns: ledgerColumns, rows: dataRows, filename: "Weaver_Payment_Ledger" });
-    toast.success(`Successfully exported ledger for ${weaversToExport.length} weavers!`);
+    toast.success(`Successfully exported ledger for ${weaversToExport.length} weavers — fill in Amount Paid, UTR Number, Payment Date, and Firm, then upload it above.`);
   };
 
   const totalWeavers = weaversList.length;
@@ -316,8 +283,11 @@ export function WeaverMakingChargesSection() {
         <BankUploadPanel
           onReset={() => {
             void refetchPayments();
+            setUploadRefreshKey(k => k + 1);
           }}
         />
+
+        <WeaverProductionSummaryPanel refreshKey={uploadRefreshKey} />
 
         {/* ── Filter + View toggle bar ─────────────────────────── */}
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18, flexWrap: "wrap" as const }}>

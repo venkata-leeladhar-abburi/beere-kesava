@@ -108,7 +108,7 @@ export function RecipientSelector({
               ) : (
                 <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                   {weaverBatches.map(b => {
-                    const sareeCount = b.rows.filter(r => r.weaverId === selectedWeaver.id).length;
+                    const sareeCount = b.rows.filter(r => r.weaverId === selectedWeaver.id && (selectedLoom === "" || r.weaverLoom === selectedLoom)).length;
                     const active = selectedBatchId === b.batchId;
                     return (
                       <Button key={b.batchId} onClick={() => setSelectedBatchId(b.batchId)} variant={active ? "primary" : "secondary"} size="md"

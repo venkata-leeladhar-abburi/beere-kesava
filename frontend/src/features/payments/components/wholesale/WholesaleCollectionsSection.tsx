@@ -55,9 +55,15 @@ export function WholesaleCollectionsSection() {
   const { addIncomeEntry } = useFirms();
   const queryClient = useQueryClient();
 
+  // Scoped to wholesale customers only — invoicesApi.list() returns every
+  // invoice regardless of the customer's type, and retail invoices (raised
+  // manually from RetailCollectionsSection) shouldn't mix into this section.
   const { data: invoices = [], isLoading: invoicesLoading, isError: invoicesError } = useQuery({
     queryKey: INVOICES_QUERY_KEY,
-    queryFn: async () => (await invoicesApi.list()).items.map(backendInvoiceToFrontend),
+    queryFn: async () =>
+      (await invoicesApi.list()).items
+        .filter(inv => inv.customer?.type === "WHOLESALE")
+        .map(backendInvoiceToFrontend),
   });
   const [view, setView] = useState<"card" | "list" | "table">("card");
   const [search, setSearch] = useState("");

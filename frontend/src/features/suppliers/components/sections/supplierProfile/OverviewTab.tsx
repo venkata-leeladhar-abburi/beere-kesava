@@ -16,7 +16,7 @@ import { SareeInventoryTable } from "../SareeInventoryTable";
 import { SearchInput, Select, SelectItem } from "../../../../../shared/ui/primitives";
 import { ChartFigure } from "../../../../../shared/ui/data";
 
-type SareeRow = SareeTag & { purchaseId: string; invoiceNumber: string };
+type SareeRow = SareeTag & { purchaseId: string; invoiceNumber: string; supplier: string };
 
 export function OverviewTab({
   card, supplierName, invFilter, setInvFilter,

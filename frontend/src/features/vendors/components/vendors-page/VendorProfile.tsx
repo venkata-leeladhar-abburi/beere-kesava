@@ -118,7 +118,12 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
   const orders = React.useMemo(() => vendorPos.map(p => ({
     id: p.poNumber || p.id,
     date: p.createdAt ? p.createdAt.split("T")[0] : "",
-    materials: [] as any[],
+    materials: (p.items ?? []).map(item => ({
+      type: item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari",
+      description: item.name,
+      qty: `${item.quantity} ${item.unit}`,
+      invoiceAmount: item.invoicedAmount ? formatMoney(rupees(Number(item.invoicedAmount))) : undefined,
+    })),
     totalAmount: formatMoney(rupees(Number(p.totalValue || 0))),
     amount: Number(p.totalValue || 0),
     grnId: p.grnId || undefined,

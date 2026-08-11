@@ -10,6 +10,7 @@ import { SectionCard, FadeUp, AnimatedBar } from "../common/primitives";
 import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
 import { purchaseOrdersApi } from "../../../../shared/api/purchase-orders";
 import { vendorsApi } from "../../../../shared/api/vendors";
+import { vendorPaymentsApi } from "../../../../shared/api/payments";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Button } from "../../../../shared/ui/primitives";
@@ -47,6 +48,16 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
     queryFn: () => vendorsApi.list(100),
   });
 
+  // Real money actually paid to vendors — the PO/GRN records only carry an
+  // estimated order value, which is 0 whenever price wasn't entered at order
+  // time. Actual payment amounts live here, against a VendorBill raised
+  // separately (Payments → vendor invoices), so "Total Paid" has to come
+  // from this, not from PO totals.
+  const { data: rawVendorPayments } = useQuery({
+    queryKey: ["vendor-payments"],
+    queryFn: () => vendorPaymentsApi.list(),
+  });
+
   const stats = useMemo(() => {
     const grns = rawGrns?.items ?? [];
     const pos = rawPos?.items ?? [];
@@ -68,24 +79,50 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
       const vName = g.supplierName ?? "Vendor";
       g.items.forEach(i => {
         const qty = Number(i.quantity || 0);
-        const unitPrice = Number(i.unitPrice || 0);
-        const total = Number(i.totalPrice || 0) || (qty * unitPrice);
-
-        if (i.materialType === "WARP") {
-          warpKg += qty;
-          warpSpend += total;
-          warpVendors.add(vName);
-        } else if (i.materialType === "RESHAM") {
-          reshamKg += qty;
-          reshamSpend += total;
-          reshamVendors.add(vName);
-        } else if (i.materialType === "JARI") {
-          jariReels += qty;
-          jariSpend += total;
-          jariVendors.add(vName);
-        }
+        if (i.materialType === "WARP") { warpKg += qty; warpVendors.add(vName); }
+        else if (i.materialType === "RESHAM") { reshamKg += qty; reshamVendors.add(vName); }
+        else if (i.materialType === "JARI") { jariReels += qty; jariVendors.add(vName); }
       });
     });
+
+    // A material ordered but not yet received (PO has no GRN linked) still
+    // counts toward "purchased" — use the PO's own quantities so it isn't
+    // silently dropped from the totals until someone gets around to
+    // recording the physical receipt.
+    pos.forEach(p => {
+      if (p.grnId) return; // already counted via its linked GRN above
+      const vName = p.vendor?.name ?? "Vendor";
+      (p.items ?? []).forEach(i => {
+        const qty = Number(i.quantity || 0);
+        if (i.materialType === "WARP") { warpKg += qty; warpVendors.add(vName); }
+        else if (i.materialType === "RESHAM") { reshamKg += qty; reshamVendors.add(vName); }
+        else if (i.materialType === "JARI") { jariReels += qty; jariVendors.add(vName); }
+      });
+    });
+
+    // Spend per material — prefer the vendor's real invoiced amount
+    // (PurchaseOrderItem.invoicedAmount, set once a bill is raised against
+    // that line item via Payments → vendor invoices), since PO/GRN prices
+    // are frequently never filled in at order/receipt time. Fall back to
+    // the GRN's received-time totalPrice for a material type that has no
+    // invoiced amount recorded yet.
+    pos.forEach(p => {
+      (p.items ?? []).forEach(i => {
+        const invoiced = Number(i.invoicedAmount || 0);
+        if (i.materialType === "WARP") warpSpend += invoiced;
+        else if (i.materialType === "RESHAM") reshamSpend += invoiced;
+        else if (i.materialType === "JARI") jariSpend += invoiced;
+      });
+    });
+    if (warpSpend === 0 || reshamSpend === 0 || jariSpend === 0) {
+      grns.forEach(g => g.items.forEach(i => {
+        const qty = Number(i.quantity || 0);
+        const total = Number(i.totalPrice || 0) || (qty * Number(i.unitPrice || 0));
+        if (i.materialType === "WARP" && warpSpend === 0) warpSpend += total;
+        else if (i.materialType === "RESHAM" && reshamSpend === 0) reshamSpend += total;
+        else if (i.materialType === "JARI" && jariSpend === 0) jariSpend += total;
+      }));
+    }
 
     const poTotalSpend = pos.reduce((sum, p) => sum + Number(p.totalValue || 0), 0);
     const grnTotalSpend = warpSpend + reshamSpend + jariSpend;
@@ -94,7 +131,9 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
     const avgPoValue = pos.length > 0 ? Math.round(totalSpent / pos.length) : 0;
     const activeVendors = vendors.filter(v => v.status === "ACTIVE").length;
 
-    // Per-vendor breakdown table
+    // Per-vendor breakdown table — keyed by vendorId (not name) so a vendor
+    // is never accidentally split across two rows by a spelling difference
+    // between the PO's vendor record and a GRN's free-text supplierName.
     const vendorMap = new Map<string, {
       name: string;
       materials: Set<string>;
@@ -104,11 +143,14 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
       paid: number;
       orders: number;
       lastDate: string;
+      hasReceivedMaterials: boolean;
     }>();
+    const keyFor = (vendorId: string | null | undefined, name: string) => vendorId || `name:${name}`;
 
     pos.forEach(p => {
       const name = p.vendor?.name ?? "Unknown Vendor";
-      const entry = vendorMap.get(name) ?? {
+      const key = keyFor(p.vendorId, name);
+      const entry = vendorMap.get(key) ?? {
         name,
         materials: new Set<string>(),
         warpQty: 0,
@@ -117,18 +159,19 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
         paid: 0,
         orders: 0,
         lastDate: p.createdAt,
+        hasReceivedMaterials: false,
       };
-      entry.paid += Number(p.totalValue || 0);
       entry.orders += 1;
       if (new Date(p.createdAt) > new Date(entry.lastDate)) {
         entry.lastDate = p.createdAt;
       }
-      vendorMap.set(name, entry);
+      vendorMap.set(key, entry);
     });
 
     grns.forEach(g => {
       const name = g.supplierName ?? "Unknown Vendor";
-      const entry = vendorMap.get(name) ?? {
+      const key = keyFor(g.vendorId, name);
+      const entry = vendorMap.get(key) ?? {
         name,
         materials: new Set<string>(),
         warpQty: 0,
@@ -137,24 +180,48 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
         paid: 0,
         orders: 0,
         lastDate: g.receivedDate,
+        hasReceivedMaterials: false,
       };
+      entry.hasReceivedMaterials = true;
       g.items.forEach(i => {
         const matType = i.materialType === "WARP" ? "Warp" : i.materialType === "RESHAM" ? "Resham" : "Jari";
         entry.materials.add(matType);
         const qty = Number(i.quantity || 0);
-        const unitPrice = Number(i.unitPrice || 0);
-        const total = Number(i.totalPrice || 0) || (qty * unitPrice);
 
         if (i.materialType === "WARP") entry.warpQty += qty;
         else if (i.materialType === "RESHAM") entry.reshamQty += qty;
         else if (i.materialType === "JARI") entry.jariQty += qty;
-        entry.paid += total;
       });
       if (!entry.orders) entry.orders = 1;
       if (new Date(g.receivedDate) > new Date(entry.lastDate)) {
         entry.lastDate = g.receivedDate;
       }
-      vendorMap.set(name, entry);
+      vendorMap.set(key, entry);
+    });
+
+    // A vendor with an order placed but nothing physically received yet
+    // (no GRN raised) would otherwise show a blank "Material Supplied" cell
+    // — fall back to what was ordered on the PO so it's not empty.
+    pos.forEach(p => {
+      const key = keyFor(p.vendorId, p.vendor?.name ?? "Unknown Vendor");
+      const entry = vendorMap.get(key);
+      if (!entry || entry.hasReceivedMaterials) return;
+      (p.items ?? []).forEach(i => {
+        const matType = i.materialType === "WARP" ? "Warp" : i.materialType === "RESHAM" ? "Resham" : "Jari";
+        entry.materials.add(matType);
+        const qty = Number(i.quantity || 0);
+        if (i.materialType === "WARP") entry.warpQty += qty;
+        else if (i.materialType === "RESHAM") entry.reshamQty += qty;
+        else if (i.materialType === "JARI") entry.jariQty += qty;
+      });
+    });
+
+    // "Total Paid" is real money handed over — VendorPayment records raised
+    // against a vendor bill — not the PO/GRN order value, which reads 0
+    // whenever no price was captured at order time.
+    (rawVendorPayments?.items ?? []).forEach(pay => {
+      const entry = vendorMap.get(pay.vendorId);
+      if (entry) entry.paid += Number(pay.amount || 0);
     });
 
     const vendorRows = Array.from(vendorMap.values()).map(v => {

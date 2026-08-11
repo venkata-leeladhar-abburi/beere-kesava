@@ -29,7 +29,11 @@ export function ViewInvoiceModal({ inv, bulkOrderData, onClose }: { inv: Invoice
         batchLabel: bulkOrderData?.batches?.[0],
         ratePaise: toPaise(pricePerSaree),
       }))
-    : [{ id: "Bulk Order Production", description: `${bulkOrderData?.design || "Design"} · ${bulkOrderData?.sareeType || "Sarees"}`, ratePaise: toPaise(inv.total) }];
+    : [{
+        id: bulkOrderData ? "Bulk Order Production" : inv.id,
+        description: bulkOrderData ? `${bulkOrderData.design || "Design"} · ${bulkOrderData.sareeType || "Sarees"}` : "Invoice",
+        ratePaise: toPaise(inv.total),
+      }];
 
   return (
     <Modal open onOpenChange={o => !o && onClose()} size="xl">

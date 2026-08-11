@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { useBatches } from "../../../production/contexts/BatchContext";
 import { useFinishing } from "../../../finishing/contexts/FinishingContext";
 import { useDesignLibrary } from "../../../design-library/contexts/DesignLibraryContext";
@@ -11,15 +12,18 @@ import {
   ChevronLeft, CheckCircle2, Search, ChevronRight, Package, AlertTriangle,
 } from "lucide-react";
 import {
-  T, F, baseCard, SareeItem, InspectionResult, DefectiveLogItem, initials, splitDesignField,
+  T, F, baseCard, SareeItem, InspectionResult, DefectiveLogItem, PassedLogItem, initials, splitDesignField,
 } from "./WorkerQCTypes";
 import { WorkerQCInspectionScreen } from "./WorkerQCInspectionScreen";
 import { WorkerQCSareeCard } from "./WorkerQCSareeCard";
 import { WorkerQCDefectiveSection } from "./WorkerQCDefectiveSection";
+import { WorkerQCCompletedTodaySection } from "./WorkerQCCompletedTodaySection";
+import { WorkerQCHistorySection } from "./WorkerQCHistorySection";
 import { WorkerQCQueueHeader } from "./WorkerQCQueueHeader";
 import { WorkerQCWeaverGrid, WorkerQCBatchGrid } from "./WorkerQCGridCards";
 import { IconButton, Input } from "../../../../shared/ui/primitives";
 import { rupees, formatMoney } from "@/lib/domain/money";
+import { DateFilterBar, type DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 
 export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTablet?: boolean }) {
   const { batches } = useBatches();
@@ -82,26 +86,62 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
     setErrorToast(msg);
     setTimeout(() => setErrorToast(""), 4000);
   };
+  const [resultToast, setResultToast] = useState<{ msg: string; kind: "passed" | "semi" | "defective" } | null>(null);
+  const showResultToast = (msg: string, kind: "passed" | "semi" | "defective") => {
+    setResultToast({ msg, kind });
+    setTimeout(() => setResultToast(null), 4000);
+  };
   // Derived straight from real QC records — recordQc's refetch keeps this
   // current, so there's no local mutation to make when a defect is logged.
   const defLog = useMemo<DefectiveLogItem[]>(() => qcRecords
     .filter(r => r.result === "defective" || r.result === "semi")
     .map(r => ({
       id: r.sareeId,
-      weaver: r.weaverName ?? "—",
+      weaver: r.weaverName ?? r.factoryLoomNumber ?? "—",
       defects: r.defects,
       date: new Date(r.qcDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short" }),
       deduction: formatMoney(rupees(r.deduction)),
+      isoDate: r.qcDate,
+      result: r.result as "defective" | "semi",
+      sareeType: r.sareeTypeName ?? "",
+      batchId: r.batchId,
+      makingCharge: formatMoney(rupees(r.makingCharge)),
+      payable: formatMoney(rupees(r.payable)),
+      notes: r.notes,
+      photoUrl: r.photoUrl,
+      inspectedBy: r.inspectedBy,
+      receivedDate: new Date(r.receivedDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
     })),
   [qcRecords]);
-  const [defFilter, setDefFilter] = useState("Today");
+
+  const passedLog = useMemo<PassedLogItem[]>(() => qcRecords
+    .filter(r => r.result === "passed")
+    .map(r => ({
+      id: r.sareeId,
+      weaver: r.weaverName ?? r.factoryLoomNumber ?? "—",
+      sareeType: r.sareeTypeName ?? "",
+      date: new Date(r.qcDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short" }),
+      payable: formatMoney(rupees(r.payable)),
+      isoDate: r.qcDate,
+    }))
+    .sort((a, b) => b.isoDate.localeCompare(a.isoDate)),
+  [qcRecords]);
+
+  const completedTodayLog = useMemo(() => {
+    const todayStr = new Date().toDateString();
+    return passedLog.filter(p => new Date(p.isoDate).toDateString() === todayStr);
+  }, [passedLog]);
+
+  const [qcDateFilter, setQcDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const [defDateFilter, setDefDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const [historyDateFilter, setHistoryDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
 
   const [qcTab, setQcTab] = useState<"weavers" | "batches">("weavers");
   const [selectedWeaverQC, setSelectedWeaverQC] = useState<string | null>(null);
   const [selectedBatchQC, setSelectedBatchQC] = useState<string | null>(null);
   const [weaverSearch, setWeaverSearch] = useState("");
 
-  const pending = ALL_QUEUE.filter(s => !inspected.has(s.id));
+  const pending = ALL_QUEUE.filter(s => !inspected.has(s.id) && matchesDateFilter(s.isoDate, qcDateFilter));
 
   const passedThisMonthCount = useMemo(() => {
     const now = new Date();
@@ -192,6 +232,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
         bulkOrderRef: s.bulkOrderRef,
         status: "qc-passed-pending-finishing",
       });
+      showResultToast(`${s.id} marked Passed`, "passed");
     }).catch((err) => {
       showError(`Failed to save QC result for ${s.id}: ${err instanceof Error ? err.message : "Unknown error"}`);
     });
@@ -211,6 +252,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
     saveQc(s, "defective").then(() => {
       setInspected(p => new Set(p).add(s.id));
       setDefectSubmitted(true);
+      showResultToast(`${s.id} marked Defective`, "defective");
     }).catch((err) => {
       showError(`Failed to save QC result for ${s.id}: ${err instanceof Error ? err.message : "Unknown error"}`);
     });
@@ -233,31 +275,60 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
     saveQc(s, "semi", Number(deductionAmount) || 0).then(() => {
       setInspected(p => new Set(p).add(s.id));
       setDefectSubmitted(true);
+      showResultToast(`${s.id} marked Semi Approved`, "semi");
     }).catch((err) => {
       showError(`Failed to save QC result for ${s.id}: ${err instanceof Error ? err.message : "Unknown error"}`);
     });
   };
 
+  const toasts = createPortal(
+    <>
+      {errorToast && (
+        <div style={{ position: "fixed", bottom: 84, left: "50%", transform: "translateX(-50%)", zIndex: 9999, background: T.crim, color: "#FFF", borderRadius: 999, padding: "11px 22px", fontFamily: F.u, fontSize: 13, fontWeight: 600, boxShadow: "0 8px 28px rgba(192,57,43,0.32)", display: "flex", alignItems: "center", gap: 8, maxWidth: "90vw" }}>
+          <AlertTriangle size={15} style={{ flexShrink: 0 }} /> <span>{errorToast}</span>
+        </div>
+      )}
+
+      {resultToast && (() => {
+        const kindStyle = {
+          passed: { bg: T.green, icon: CheckCircle2 },
+          semi: { bg: "#C4923A", icon: AlertTriangle },
+          defective: { bg: T.crim, icon: AlertTriangle },
+        }[resultToast.kind];
+        const Icon = kindStyle.icon;
+        return (
+          <div style={{ position: "fixed", bottom: 24, right: 24, zIndex: 9999, background: kindStyle.bg, color: "#FFF", borderRadius: 10, padding: "12px 18px", fontFamily: F.u, fontSize: 13, fontWeight: 600, boxShadow: "0 8px 28px rgba(0,0,0,0.28)", display: "flex", alignItems: "center", gap: 8, maxWidth: "90vw" }}>
+            <Icon size={16} style={{ flexShrink: 0 }} /> <span>{resultToast.msg}</span>
+          </div>
+        );
+      })()}
+    </>,
+    document.body
+  );
+
   if (inspecting) {
     return (
-      <WorkerQCInspectionScreen
-        inspecting={inspecting}
-        result={result}
-        isDesktop={isDesktop}
-        defectSubmitted={defectSubmitted}
-        defectTypes={defectTypes}
-        setDefectTypes={setDefectTypes}
-        hasPhoto={hasPhoto}
-        setHasPhoto={setHasPhoto}
-        notes={notes}
-        setNotes={setNotes}
-        deductionAmount={deductionAmount}
-        setDeductionAmount={setDeductionAmount}
-        makingChargeOf={makingChargeOf}
-        closeInspect={closeInspect}
-        confirmSemiApproved={confirmSemiApproved}
-        confirmDefective={confirmDefective}
-      />
+      <>
+        <WorkerQCInspectionScreen
+          inspecting={inspecting}
+          result={result}
+          isDesktop={isDesktop}
+          defectSubmitted={defectSubmitted}
+          defectTypes={defectTypes}
+          setDefectTypes={setDefectTypes}
+          hasPhoto={hasPhoto}
+          setHasPhoto={setHasPhoto}
+          notes={notes}
+          setNotes={setNotes}
+          deductionAmount={deductionAmount}
+          setDeductionAmount={setDeductionAmount}
+          makingChargeOf={makingChargeOf}
+          closeInspect={closeInspect}
+          confirmSemiApproved={confirmSemiApproved}
+          confirmDefective={confirmDefective}
+        />
+        {toasts}
+      </>
     );
   }
 
@@ -352,6 +423,8 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
         qcTab={qcTab}
         setQcTab={setQcTab}
         setWeaverSearch={setWeaverSearch}
+        qcDateFilter={qcDateFilter}
+        setQcDateFilter={setQcDateFilter}
         isDesktop={isDesktop}
       />
 
@@ -388,10 +461,24 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
         />
       )}
 
+      <WorkerQCCompletedTodaySection
+        items={completedTodayLog}
+        isDesktop={isDesktop}
+        isTablet={isTablet}
+      />
+
       <WorkerQCDefectiveSection
         defLog={defLog}
-        defFilter={defFilter}
-        setDefFilter={setDefFilter}
+        defFilter={defDateFilter}
+        setDefFilter={setDefDateFilter}
+        isDesktop={isDesktop}
+        isTablet={isTablet}
+      />
+
+      <WorkerQCHistorySection
+        items={passedLog}
+        historyFilter={historyDateFilter}
+        setHistoryFilter={setHistoryDateFilter}
         isDesktop={isDesktop}
         isTablet={isTablet}
       />
@@ -401,11 +488,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
         {openSareeType && <SareeTypeCard sareeType={openSareeType} onClose={() => setOpenSareeTypeCode(null)} />}
       </AnimatePresence>
 
-      {errorToast && (
-        <div style={{ position: "fixed", bottom: 84, left: "50%", transform: "translateX(-50%)", zIndex: 600, background: T.crim, color: "#FFF", borderRadius: 999, padding: "11px 22px", fontFamily: F.u, fontSize: 13, fontWeight: 600, boxShadow: "0 8px 28px rgba(192,57,43,0.32)", display: "flex", alignItems: "center", gap: 8, maxWidth: "90vw" }}>
-          <AlertTriangle size={15} style={{ flexShrink: 0 }} /> <span>{errorToast}</span>
-        </div>
-      )}
+      {toasts}
     </div>
   );
 }

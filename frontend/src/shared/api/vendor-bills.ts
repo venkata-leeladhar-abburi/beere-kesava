@@ -2,12 +2,18 @@ import { apiClient } from "./client";
 
 export type VendorBillStatus = "PENDING" | "PARTIAL" | "PAID" | "OVERDUE";
 
+export interface VendorBillMaterialAmount {
+  itemId: string;
+  amount: number;
+}
+
 export interface CreateVendorBillPayload {
   vendorId: string;
   poId?: string;
   amount: number;
   dueDate?: string;
   description?: string;
+  materialAmounts?: VendorBillMaterialAmount[];
 }
 
 export interface BackendVendorBill {
@@ -28,9 +34,18 @@ interface PaginatedResponse<T> {
   pageSize: number;
 }
 
+export interface UpdateVendorBillPayload {
+  amount?: number;
+  dueDate?: string;
+  description?: string;
+  materialAmounts?: VendorBillMaterialAmount[];
+}
+
 export const vendorBillsApi = {
   create: (payload: CreateVendorBillPayload) =>
     apiClient.post<BackendVendorBill>("/vendor-bills", payload),
+  update: (id: string, payload: UpdateVendorBillPayload) =>
+    apiClient.patch<BackendVendorBill>(`/vendor-bills/${id}`, payload),
   list: (vendorId?: string, status?: VendorBillStatus) => {
     const params = new URLSearchParams({ pageSize: "100" });
     if (vendorId) params.set("vendorId", vendorId);

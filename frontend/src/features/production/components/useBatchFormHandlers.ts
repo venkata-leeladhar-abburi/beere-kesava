@@ -180,9 +180,31 @@ export function useBatchFormHandlers(bulkOrders: any[]) {
     setSelected(new Set());
   }
 
+  // Appends n new blank rows after the existing ones, continuing the serial
+  // sequence — unlike generateRows(), this never touches already-entered
+  // rows, so it's safe to call while editing a draft/active batch.
+  function addRows(n: number) {
+    if (!n || n < 1) return;
+    setRows(prev => {
+      const startSerial = prev.length;
+      const extra: SareeRow[] = Array.from({ length: n }, (_, i) => ({
+        serial: startSerial + i + 1,
+        sareeId: null, recipientType: undefined,
+        weaverId: null, weaverName: null, weaverInitials: null, weaverLoom: null,
+        factoryLoomId: null, factoryLoomNumber: null,
+        designCode: null, sareeTypeCode: null, sareeTypeName: null,
+        bulkOrderRef: null, bulkOrderLabel: null,
+        receivedAt: null, receivedWeight: null, receivedColor: null, receivedPhotoUrl: null,
+        receivedWarpG: null, receivedReshamG: null, receivedJariReels: null,
+        tallied: false, talliedBy: null, talliedAt: null,
+      }));
+      return [...prev, ...extra];
+    });
+  }
+
   return {
     rows, setRows, selected, setSelected, picker, setPicker, generated, setGenerated,
-    loomPickerRow, setLoomPickerRow, generateRows, allSelected, toggleAll, toggleRow,
+    loomPickerRow, setLoomPickerRow, generateRows, addRows, allSelected, toggleAll, toggleRow,
     applyWeaver, applyWeaverLoomToRow, applyFactoryLoom, applyBulkOrder, applyDesign,
     applySareeType, removeSelected,
   };

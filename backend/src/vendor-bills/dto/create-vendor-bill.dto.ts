@@ -1,5 +1,17 @@
 import { Type } from "class-transformer";
-import { IsDateString, IsNumber, IsOptional, IsString, IsUUID, Min } from "class-validator";
+import {
+  IsArray, IsDateString, IsNumber, IsOptional, IsString, IsUUID, Min, ValidateNested,
+} from "class-validator";
+
+export class VendorBillMaterialAmountDto {
+  @IsUUID()
+  itemId!: string;
+
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  amount!: number;
+}
 
 export class CreateVendorBillDto {
   // No auth yet — the acting user's id is supplied explicitly for the action
@@ -29,4 +41,14 @@ export class CreateVendorBillDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  // Entry aid only — PurchaseOrderItem.invoicedAmount has no bearing on the
+  // bill's own total (`amount` above is what's actually owed); this just
+  // records how the admin split that total across the PO's material lines,
+  // so PO-tracking screens can show a real per-material invoiced figure.
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => VendorBillMaterialAmountDto)
+  materialAmounts?: VendorBillMaterialAmountDto[];
 }

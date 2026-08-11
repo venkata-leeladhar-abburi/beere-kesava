@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Camera, UploadCloud, CheckCircle2, AlertTriangle,
@@ -99,7 +99,17 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
 
   const [sareeColor, setSareeColor] = useState("");
   const [sareeWeight, setSareeWeight] = useState("");
-  const [hasPhoto, setHasPhoto] = useState(false);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const hasPhoto = photoUrl !== null;
+  const setHasPhoto = (v: boolean) => { if (!v) setPhotoUrl(null); };
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+  const handlePhotoFile = (file: File | undefined) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setPhotoUrl(typeof reader.result === "string" ? reader.result : null);
+    reader.readAsDataURL(file);
+  };
   const [matEdits, setMatEdits] = useState<Partial<MatSplit>>({});
   const [showTagPrint, setShowTagPrint] = useState(false);
   const [rejectedSarees, setRejectedSarees] = useState<RejectedSaree[]>([]);
@@ -338,22 +348,36 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
                   </div>
                   <div>
                     <FieldLabel>Photo</FieldLabel>
+                    <input
+                      ref={cameraInputRef}
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      style={{ display: "none" }}
+                      onChange={e => { handlePhotoFile(e.target.files?.[0]); e.target.value = ""; }}
+                    />
+                    <input
+                      ref={galleryInputRef}
+                      type="file"
+                      accept="image/*"
+                      style={{ display: "none" }}
+                      onChange={e => { handlePhotoFile(e.target.files?.[0]); e.target.value = ""; }}
+                    />
                     {!hasPhoto ? (
                       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                        <Button variant="primary" size="sm" iconLeft={Camera} onClick={() => setHasPhoto(true)} className="h-[38px] rounded-lg bg-[#6B1A2A] hover:bg-[#6B1A2A]">
+                        <Button variant="primary" size="sm" iconLeft={Camera} onClick={() => cameraInputRef.current?.click()} className="h-[38px] rounded-lg bg-[#6B1A2A] hover:bg-[#6B1A2A]">
                           Camera
                         </Button>
-                        <Button variant="secondary" size="sm" iconLeft={UploadCloud} onClick={() => setHasPhoto(true)} className="h-[38px] rounded-lg border-[#6B1A2A] text-[#6B1A2A]">
+                        <Button variant="secondary" size="sm" iconLeft={UploadCloud} onClick={() => galleryInputRef.current?.click()} className="h-[38px] rounded-lg border-[#6B1A2A] text-[#6B1A2A]">
                           Gallery
                         </Button>
                       </div>
                     ) : (
-                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 82, background: "linear-gradient(135deg,#F0E8D0,#C4923A)", borderRadius: 8, border: `1px solid ${C.bdr}`, position: "relative" }}>
-                        <Camera size={20} color="rgba(255,255,255,0.85)" />
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 82, backgroundImage: `url(${photoUrl})`, backgroundSize: "cover", backgroundPosition: "center", borderRadius: 8, border: `1px solid ${C.bdr}`, position: "relative" }}>
                         <div style={{ position: "absolute", top: -4, right: -4, width: 18, height: 18, background: C.green, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
                           <CheckCircle2 size={10} color="#FFF" />
                         </div>
-                        <Button variant="link" onClick={() => setHasPhoto(false)} className="absolute bottom-[3px] right-[5px] p-0 text-xs text-black/50">Retake</Button>
+                        <Button variant="link" onClick={() => setHasPhoto(false)} className="absolute bottom-[3px] right-[5px] p-0 text-xs text-white bg-black/40 rounded px-1">Retake</Button>
                       </div>
                     )}
                   </div>

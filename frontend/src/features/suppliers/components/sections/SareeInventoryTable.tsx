@@ -1,20 +1,29 @@
 // Flat saree inventory table, used inside the Overview tab and inside each
-// expanded purchase row of the Order History tab.
+// expanded purchase row of the Order History tab. Each row is one purchase
+// line (one serial number, possibly covering several physical pieces) and
+// can be expanded to list every physical saree under that serial with a
+// barcode "Print" action per piece, plus a "Print All" for the whole line.
 
 import React, { useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { motion } from "motion/react";
-import { Image as ImageIcon } from "lucide-react";
+import { ChevronRight, ChevronDown, Image as ImageIcon, Printer } from "lucide-react";
 import { T, F } from "../theme";
-import { SareeTag } from "../../contexts/SupplierContext";
+import { SareeTag, expandSareePieces } from "../../contexts/SupplierContext";
 import { formatMoney, rupees } from "@/lib/domain/money";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { Modal } from "../../../../shared/ui/overlay";
+import { Button, IconButton } from "../../../../shared/ui/primitives";
+import { SariTagPrintModal } from "../../../production/components/SariTagPrintModal";
+import { useDocument } from "../../../../shared/ui/document";
 
-type SareeRow = SareeTag & { purchaseId: string; invoiceNumber: string };
+type SareeRow = SareeTag & { purchaseId: string; invoiceNumber: string; supplier: string };
 
 export function SareeInventoryTable({ rows }: { rows: SareeRow[] }) {
   const [preview, setPreview] = useState<string | null>(null);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [printSaree, setPrintSaree] = useState<{ row: SareeRow; pieceId: string } | null>(null);
+  const { print } = useDocument();
 
   if (rows.length === 0) {
     return <div style={{ padding: "40px 24px", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No sarees match this filter.</div>;
@@ -24,7 +33,58 @@ export function SareeInventoryTable({ rows }: { rows: SareeRow[] }) {
     fontFamily: F.mono, fontSize: 12, color, ...extra,
   });
 
+  const rowId = (s: SareeRow) => `${s.purchaseId}-${s.id}`;
+
+  const toggle = (id: string) => setExpandedIds(prev => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
+
+  const printAllForRow = (s: SareeRow) => {
+    const pieces = expandSareePieces([s]);
+    const printTable = (
+      <div style={{ padding: "16mm" }}>
+        <div style={{ marginBottom: "4mm" }}>
+          <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "14pt", color: "var(--doc-burgundy)" }}>
+            {s.id} — Saree Barcodes
+          </div>
+          <div style={{ fontFamily: "var(--font-code)", fontSize: "var(--doc-code)", color: "var(--doc-muted)" }}>{s.supplier}</div>
+        </div>
+        <table className="bk-doc__table">
+          <thead>
+            <tr>
+              {["Saree Code", "Type", "Colour", "Weight"].map(h => <th key={h}>{h}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {pieces.map(p => (
+              <tr key={p.id}>
+                <td style={{ fontFamily: "var(--font-code)" }}>{p.id}</td>
+                <td>{p.sareeType || "—"}</td>
+                <td>{p.color || "—"}</td>
+                <td>{p.weight || "—"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+    print(printTable);
+  };
+
   const columns: ColumnDef<SareeRow>[] = [
+    {
+      id: "expand", header: "", accessor: () => null,
+      cell: (_v, s) => (
+        <IconButton
+          icon={expandedIds.has(rowId(s)) ? ChevronDown : ChevronRight}
+          label={expandedIds.has(rowId(s)) ? "Collapse sarees" : "Expand sarees"}
+          variant="ghost" size="sm"
+          onClick={() => toggle(rowId(s))}
+        />
+      ),
+    },
     {
       id: "photo", header: "Photo", accessor: s => s.imageUrl,
       cell: (_v, s) => s.imageUrl ? (
@@ -42,7 +102,7 @@ export function SareeInventoryTable({ rows }: { rows: SareeRow[] }) {
     },
     {
       id: "serial", header: "Serial No.", accessor: s => s.id,
-      cell: (_v, s) => <span style={mono(T.luxuryBrown, { fontWeight: 700 })}>{s.id.includes("-INV-") ? s.id.split("-")[1] : "—"}</span>,
+      cell: (_v, s) => <span style={mono(T.luxuryBrown, { fontWeight: 700 })}>{s.id.split("-").pop() || "—"}</span>,
     },
     {
       id: "po", header: "Purchase Order", accessor: s => s.purchaseId,
@@ -50,7 +110,7 @@ export function SareeInventoryTable({ rows }: { rows: SareeRow[] }) {
     },
     {
       id: "qty", header: "Quantity", accessor: s => s.quantity,
-      cell: (_v, s) => <span style={mono(T.luxuryBrown)}>{s.quantity} pcs</span>,
+      cell: (_v, s) => <span style={mono(T.luxuryBrown)}>{s.quantity ?? 1} pcs</span>,
     },
     {
       id: "type", header: "Type", accessor: s => s.sareeType,
@@ -81,8 +141,16 @@ export function SareeInventoryTable({ rows }: { rows: SareeRow[] }) {
       cell: (_v, s) => <span style={mono("#8B6018", { fontWeight: 700 })}>{formatMoney(rupees(s.finalAmount))}</span>,
     },
     {
-      id: "profit", header: "Profit", accessor: s => (s.finalAmount - s.price) * s.quantity,
-      cell: (_v, s) => <span style={mono(T.green, { fontWeight: 700 })}>{formatMoney(rupees((s.finalAmount - s.price) * s.quantity))}</span>,
+      id: "profit", header: "Profit", accessor: s => (s.finalAmount - s.price) * (s.quantity ?? 1),
+      cell: (_v, s) => <span style={mono(T.green, { fontWeight: 700 })}>{formatMoney(rupees((s.finalAmount - s.price) * (s.quantity ?? 1)))}</span>,
+    },
+    {
+      id: "barcodes", header: "Barcodes", accessor: () => null, type: "actions",
+      cell: (_v, s) => (
+        <Button variant="secondary" size="sm" iconLeft={Printer} onClick={() => printAllForRow(s)} className="whitespace-nowrap">
+          Print All
+        </Button>
+      ),
     },
   ];
 
@@ -91,8 +159,37 @@ export function SareeInventoryTable({ rows }: { rows: SareeRow[] }) {
       <DataTable
         columns={columns}
         data={rows}
-        getRowId={s => `${s.purchaseId}-${s.id}-${rows.indexOf(s)}`}
+        getRowId={rowId}
         emptyTitle="No sarees match this filter"
+        expandedIds={expandedIds}
+        renderExpandedRow={s => {
+          const pieces = expandSareePieces([s]);
+          return (
+            <div style={{ padding: "10px 16px 16px 56px", background: "rgba(247,242,234,0.6)" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>
+                  {pieces.length} saree{pieces.length !== 1 ? "s" : ""} under serial {s.id.split("-").pop()}
+                </div>
+                <Button variant="primary" size="sm" iconLeft={Printer} onClick={() => printAllForRow(s)}>
+                  Print All Barcodes
+                </Button>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {pieces.map(p => (
+                  <div key={p.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 8, padding: "8px 12px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <span style={mono(T.royalBurgundy, { fontWeight: 700 })}>{p.id}</span>
+                      <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>pc {p.pieceNo}/{p.lineQuantity}</span>
+                    </div>
+                    <Button variant="secondary" size="sm" iconLeft={Printer} onClick={() => setPrintSaree({ row: s, pieceId: p.id })}>
+                      Print
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        }}
       />
 
       <Modal open={!!preview} onOpenChange={o => { if (!o) setPreview(null); }} size="xl">
@@ -104,6 +201,23 @@ export function SareeInventoryTable({ rows }: { rows: SareeRow[] }) {
           )}
         </div>
       </Modal>
+
+      {printSaree && (
+        <SariTagPrintModal
+          saree={{
+            id: printSaree.pieceId,
+            weaver: null,
+            design: printSaree.pieceId,
+            sareeType: printSaree.row.sareeType,
+            weight: printSaree.row.weight,
+            qcDate: printSaree.row.date,
+            source: "external",
+            loom: 0,
+            supplier: printSaree.row.supplier,
+          }}
+          onClose={() => setPrintSaree(null)}
+        />
+      )}
     </>
   );
 }

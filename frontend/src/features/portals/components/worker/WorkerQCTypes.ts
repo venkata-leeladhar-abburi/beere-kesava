@@ -51,6 +51,7 @@ export interface SareeItem {
   bulkOrderRef?: string;
   sareeTypeCode?: string;
   loomNumber?: number | null;
+  isoDate?: string;
 }
 
 export type InspectionResult = "defective" | "semi_approved" | null;
@@ -61,6 +62,25 @@ export interface DefectiveLogItem {
   defects: string[];
   date: string;
   deduction: string;
+  isoDate?: string;
+  result?: "defective" | "semi";
+  sareeType?: string;
+  batchId?: string | null;
+  makingCharge?: string;
+  payable?: string;
+  notes?: string;
+  photoUrl?: string | null;
+  inspectedBy?: string;
+  receivedDate?: string;
+}
+
+export interface PassedLogItem {
+  id: string;
+  weaver: string;
+  sareeType: string;
+  date: string;
+  payable: string;
+  isoDate: string;
 }
 
 export const QUEUE: SareeItem[] = [

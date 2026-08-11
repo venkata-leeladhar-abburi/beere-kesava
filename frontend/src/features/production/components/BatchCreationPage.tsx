@@ -10,9 +10,10 @@ import { DateFilterState, DEFAULT_DATE_FILTER } from "../../../shared/ui/DateFil
 import { weaversApi } from "../../../shared/api/weavers";
 import { factoryLoomsApi } from "../../../shared/api/factory-looms";
 import { ratesApi, backendRateToDisplayRecord, type BackendRate } from "../../../shared/api/rates";
-import { Button } from "../../../shared/ui/primitives";
+import { Button, NumberInput } from "../../../shared/ui/primitives";
+import { Modal } from "../../../shared/ui/overlay";
 
-import { T, F, G, rowComplete } from "./batch-creation/constants";
+import { T, F, G, rowComplete, lbl } from "./batch-creation/constants";
 import {
   WeaverPickerModal, BulkOrderPickerModal,
   SareeTypePickerModal, WeaverLoomPickerModal, FactoryLoomPickerModal,
@@ -77,10 +78,24 @@ export function BatchCreationPage() {
   // Custom hook for row management and picker handlers
   const {
     rows, setRows, selected, setSelected, picker, setPicker, generated, setGenerated,
-    loomPickerRow, setLoomPickerRow, generateRows, allSelected, toggleAll, toggleRow,
+    loomPickerRow, setLoomPickerRow, generateRows, addRows, allSelected, toggleAll, toggleRow,
     applyWeaver, applyWeaverLoomToRow, applyFactoryLoom, applyBulkOrder,
     applySareeType, removeSelected,
   } = useBatchFormHandlers(bulkOrders);
+
+  // ── Add more sarees to an already-generated table (editing a draft/active
+  // batch shouldn't require regenerating and losing existing row data).
+  const [addSareesCount, setAddSareesCount] = useState<string>("");
+  function handleAddSarees() {
+    const n = parseInt(addSareesCount, 10);
+    if (!n || n < 1) return;
+    addRows(n);
+    setAddSareesCount("");
+  }
+
+  // ── Finalize result popup (Part D — replaces the easy-to-miss inline
+  // text with a real modal, matching the app's other confirmation flows).
+  const [finalizeResult, setFinalizeResult] = useState<{ kind: "success" | "error"; message: string } | null>(null);
 
   // ── Card view modals
   const [viewSareeType, setViewSareeType] = useState<SareeTypeRecord | null>(null);
@@ -158,24 +173,20 @@ export function BatchCreationPage() {
       const currentStatus = batches.find(b => b.batchId === realId)?.status;
       if (currentStatus === "draft" || currentStatus === undefined) {
         await finalizeBatch(realId);
-        setSavedMsg(`Batch ${realId} finalized and active!`);
+        setFinalizeResult({ kind: "success", message: `Batch ${realId} finalized and active!` });
       } else {
-        setSavedMsg(`Batch ${realId} updated.`);
+        setFinalizeResult({ kind: "success", message: `Batch ${realId} updated.` });
       }
       setBatchId(realId);
       setEditingBatchId(realId);
-
-      setTimeout(() => {
-        setSavedMsg(null);
-        setRows([]);
-        setTotalCount("");
-        setDueDate("");
-        setGenerated(false);
-        setSelected(new Set());
-        setEditingBatchId(null);
-      }, 2000);
+      setRows([]);
+      setTotalCount("");
+      setDueDate("");
+      setGenerated(false);
+      setSelected(new Set());
+      setEditingBatchId(null);
     } catch (err) {
-      setSaveError(err instanceof Error ? err.message : "Could not finalize the batch. Please try again.");
+      setFinalizeResult({ kind: "error", message: err instanceof Error ? err.message : "Could not finalize the batch. Please try again." });
     }
   }
 
@@ -276,6 +287,21 @@ export function BatchCreationPage() {
             generated={generated}
             incompleteRows={incompleteRows}
           />
+
+          {/* Add more sarees to the table without losing existing rows */}
+          {generated && rows.length > 0 && (
+            <div style={{ display: "flex", alignItems: "flex-end", gap: 10, marginBottom: 16 }}>
+              <div style={{ width: 140 }}>
+                <label style={lbl}>Add No. of Sarees</label>
+                <NumberInput min={1} max={500} value={addSareesCount === "" ? "" : Number(addSareesCount)}
+                  onValueChange={v => setAddSareesCount(v === "" ? "" : String(v))}
+                  placeholder="e.g. 5" />
+              </div>
+              <Button onClick={handleAddSarees} disabled={!addSareesCount || parseInt(addSareesCount, 10) < 1} variant="secondary" size="md">
+                + Add Sarees
+              </Button>
+            </div>
+          )}
 
           {/* Step 2+3: Table */}
           {generated && rows.length > 0 && (
@@ -381,6 +407,29 @@ export function BatchCreationPage() {
         {viewBulkOrder && <BulkOrderDetailsModal key="bo" order={viewBulkOrder} onClose={() => setViewBulkOrder(null)} />}
         {viewSareeRow  && <SareeDetailsModal key="sr" row={viewSareeRow} onClose={() => setViewSareeRow(null)} />}
       </AnimatePresence>
+
+      {/* Finalize result popup */}
+      <Modal open={!!finalizeResult} onOpenChange={o => { if (!o) setFinalizeResult(null); }} size="xs">
+        <div style={{ padding: "28px 28px 24px", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 12 }}>
+          <div style={{
+            width: 48, height: 48, borderRadius: 24, display: "flex", alignItems: "center", justifyContent: "center",
+            background: finalizeResult?.kind === "error" ? "rgba(192,57,43,0.10)" : "rgba(30,102,64,0.10)",
+          }}>
+            {finalizeResult?.kind === "error"
+              ? <span style={{ fontSize: 22, color: T.red }}>⚠</span>
+              : <CheckCircle size={24} color={T.green} />}
+          </div>
+          <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>
+            {finalizeResult?.kind === "error" ? "Could Not Finalize" : "Success"}
+          </div>
+          <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, lineHeight: 1.5 }}>
+            {finalizeResult?.message}
+          </div>
+          <Button onClick={() => setFinalizeResult(null)} variant="primary" size="md" className="mt-2 w-full">
+            OK
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 }

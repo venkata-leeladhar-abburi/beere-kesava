@@ -990,6 +990,10 @@ model PurchaseOrderItem {
   unit            String        @default("KG")
   unitPrice       Decimal?      @db.Decimal(12, 2)
   totalPrice      Decimal?      @db.Decimal(12, 2)
+  // Set from the vendor's real bill once one is raised — separate from
+  // unitPrice/totalPrice above, which stay the original PO-time estimate.
+  // Entered per-material in the Payments "Add/Edit Invoice" flow.
+  invoicedAmount  Decimal?      @db.Decimal(12, 2)
 
   @@index([purchaseOrderId])
 }

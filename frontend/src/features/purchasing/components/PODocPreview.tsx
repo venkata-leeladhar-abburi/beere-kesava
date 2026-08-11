@@ -93,20 +93,31 @@ export function PODocPreview({
 
         {/* Materials table */}
         <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 8, overflow: "hidden", marginBottom: 10 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr 0.8fr", background: T.silkCream, padding: "7px 10px", gap: 6 }}>
-            {["Material", "Description", "Qty / Unit"].map(h => (
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1.6fr 0.7fr 0.7fr", background: T.silkCream, padding: "7px 10px", gap: 6 }}>
+            {["Material", "Description", "Qty / Unit", "Amount"].map(h => (
               <span key={h} style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, fontWeight: 600, letterSpacing: "0.8px", textTransform: "uppercase" }}>{h}</span>
             ))}
           </div>
           {materials.length === 0 ? (
             <div style={{ padding: "10px 12px", fontFamily: F.ui, fontSize: 12, color: T.taupe, fontStyle: "italic" }}>No materials added yet</div>
           ) : materials.map((m, i) => (
-            <div key={m._key} style={{ display: "grid", gridTemplateColumns: "1fr 2fr 0.8fr", padding: "8px 10px", gap: 6, background: i % 2 === 0 ? "#FFFFFF" : T.warmIvory, borderTop: `1px solid ${T.borderDef}` }}>
+            <div key={m._key} style={{ display: "grid", gridTemplateColumns: "1fr 1.6fr 0.7fr 0.7fr", padding: "8px 10px", gap: 6, background: i % 2 === 0 ? "#FFFFFF" : T.warmIvory, borderTop: `1px solid ${T.borderDef}` }}>
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, fontWeight: 600 }}>{m.materialType}</span>
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, wordBreak: "break-word" }}>{m.description || "—"}</span>
               <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{m.quantity || 0} {m.unit}</span>
+              <span style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, fontWeight: 600 }}>
+                {m.pricePerUnit > 0 ? `₹${((m.pricePerUnit || 0) * (m.quantity || 0)).toLocaleString("en-IN")}` : "—"}
+              </span>
             </div>
           ))}
+          {materials.length > 0 && (
+            <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 10px", borderTop: `1px solid ${T.borderDef}`, background: T.silkCream }}>
+              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600 }}>Total</span>
+              <span style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, fontWeight: 700 }}>
+                ₹{materials.reduce((sum, m) => sum + (m.pricePerUnit || 0) * (m.quantity || 0), 0).toLocaleString("en-IN")}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Notes */}

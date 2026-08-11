@@ -92,6 +92,21 @@ export interface WeaverEarnings {
   breakdown: WeaverEarningsBreakdown[];
 }
 
+// One row per QC-passed saree with a weaver attached — the raw material
+// behind the Weaver Payments page's production-summary table/template.
+// Grouping by (weaverId, batchId, loomNumber) and date filtering both
+// happen client-side.
+export interface WeaverProductionRow {
+  sareeId: string;
+  weaverId: string;
+  weaverName: string;
+  batchId: string | null;
+  loomNumber: string | null;
+  qcDate: string;
+  makingCharge: number;
+  deduction: number;
+}
+
 export const weaverPaymentsApi = {
   importExcel: (file: File) => {
     const formData = new FormData();
@@ -107,6 +122,7 @@ export const weaverPaymentsApi = {
     ),
   earnings: (weaverId?: string) =>
     apiClient.get<WeaverEarnings[]>(`/payments/weavers/earnings${weaverId ? `?weaverId=${weaverId}` : ""}`),
+  productionRows: () => apiClient.get<WeaverProductionRow[]>("/payments/weavers/production-rows"),
 };
 
 export interface CreateVendorPaymentPayload {

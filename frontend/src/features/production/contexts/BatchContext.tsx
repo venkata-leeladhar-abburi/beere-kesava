@@ -140,6 +140,10 @@ function backendBatchToRecord(
     rows: b.rows.map((r): SareeRow => {
       const weaver = r.weaverId ? weaverLookup.get(r.weaverId) : undefined;
       const qcResult = r.qcRecords?.[0] ? QC_RESULT_FROM_BACKEND[r.qcRecords[0].result] : undefined;
+      // The weaver's own loom isn't a stored column — it's baked into the
+      // generated sareeId as -L{n}- (see generateSareeId), so recover it
+      // from there rather than losing it on every reload.
+      const loomMatch = r.sareeId?.match(/-L(\d+)-B/);
       return {
         serial: r.serial,
         sareeId: r.sareeId,
@@ -147,7 +151,7 @@ function backendBatchToRecord(
         weaverId: r.weaverId,
         weaverName: weaver?.name ?? null,
         weaverInitials: weaver?.initials ?? null,
-        weaverLoom: null,
+        weaverLoom: loomMatch ? parseInt(loomMatch[1], 10) : null,
         factoryLoomId: r.factoryLoomId,
         factoryLoomNumber: r.factoryLoomId ? (loomLookup.get(r.factoryLoomId) ?? null) : null,
         designCode: r.designCode,

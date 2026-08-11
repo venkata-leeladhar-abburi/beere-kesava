@@ -125,31 +125,32 @@ export function supplierPrefix(supplier: string): string {
   return (letters.slice(0, 4) || "SUPP").padEnd(4, "X");
 }
 
+/**
+ * Line code for one purchase serial: supplier prefix, then invoice number,
+ * then the 3-digit serial for that line within the purchase — e.g. a
+ * purchase from Ravi Silks against invoice 34, third line, is RAVI-34-003.
+ */
 export function buildSareeCode(supplier: string, serial: number, invoiceNumber: string): string {
   const inv = (invoiceNumber || "").trim() || "NOINV";
-  return `${supplierPrefix(supplier)}-${String(serial).padStart(3, "0")}-${inv}`;
+  return `${supplierPrefix(supplier)}-${inv}-${String(serial).padStart(3, "0")}`;
 }
 
 /**
  * Code for one physical saree inside a purchase line.
  *
- * A line is bought as N pieces of the same type under one serial number, but
- * every piece is tagged individually, so the piece number is spliced into the
- * line code just before the invoice segment:
- *   line  RAVI-001-INV-RS-2026-118
- *   piece RAVI-001-0001-INV-RS-2026-118
+ * A line is bought as N pieces of the same type under one serial number;
+ * every piece is tagged individually by appending its piece number onto the
+ * end of the line code:
+ *   line   RAVI-34-003
+ *   piece  RAVI-34-003-01, RAVI-34-003-02, …
  */
 export function buildSareePieceCode(supplier: string, serial: number, pieceNo: number, invoiceNumber: string): string {
-  const inv = (invoiceNumber || "").trim() || "NOINV";
-  return `${supplierPrefix(supplier)}-${String(serial).padStart(3, "0")}-${String(pieceNo).padStart(4, "0")}-${inv}`;
+  return pieceCodeFromLineCode(buildSareeCode(supplier, serial, invoiceNumber), pieceNo);
 }
 
-/** Same splice, but starting from an already-built line code. */
+/** Same append, but starting from an already-built line code. */
 export function pieceCodeFromLineCode(lineCode: string, pieceNo: number): string {
-  const parts = lineCode.split("-");
-  if (parts.length < 3) return `${lineCode}-${String(pieceNo).padStart(4, "0")}`;
-  const [prefix, serial, ...invParts] = parts;
-  return `${prefix}-${serial}-${String(pieceNo).padStart(4, "0")}-${invParts.join("-")}`;
+  return `${lineCode}-${String(pieceNo).padStart(2, "0")}`;
 }
 
 export function computeFinalAmount(price: number, sellPercent: number, quantity = 1): number {

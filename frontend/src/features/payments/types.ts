@@ -79,6 +79,8 @@ export interface VendorPayment {
   invoiceAmt: number; paidAmt: number;
   dueDate: string; status: VendorStatus; daysOverdue?: number;
   utr?: string; vendorId?: string;
+  /** Real VendorBill.id — undefined until a bill has been raised against this PO. */
+  billId?: string;
 }
 
 // ── Vendor payment Excel upload types ─────────────────────────────────────────
@@ -88,7 +90,7 @@ export interface VendorExcelRow {
 
 export interface VendorMatchedRow extends VendorExcelRow { vendorPayment: VendorPayment; }
 
-export type VendorUnmatchedRow = VendorExcelRow;
+export interface VendorUnmatchedRow extends VendorExcelRow { reason?: string; }
 
 export interface VendorUploadResult {
   fileName: string; totalRows: number; matched: VendorMatchedRow[]; unmatched: VendorUnmatchedRow[];

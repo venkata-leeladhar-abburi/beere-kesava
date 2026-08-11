@@ -187,8 +187,9 @@ export function POTrackerSection({
                                   <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>—</div>
                                 )}
                               </div>
-                              <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700, flexShrink: 0, background: "rgba(110,15,45,0.06)", padding: "2px 7px", borderRadius: 5, marginTop: 1 }}>
+                              <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700, flexShrink: 0, background: "rgba(110,15,45,0.06)", padding: "2px 7px", borderRadius: 5, marginTop: 1, whiteSpace: "nowrap" as const }}>
                                 {m.quantity} {m.unit}
+                                {m.pricePerUnit > 0 && <> · <Money value={rupees(m.pricePerUnit)} />/{m.unit}</>}
                               </span>
                             </div>
 

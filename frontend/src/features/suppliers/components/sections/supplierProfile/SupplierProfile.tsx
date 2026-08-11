@@ -59,7 +59,7 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
 
   // Every saree ever bought from this supplier, flattened for the inventory view.
   const allSarees = useMemo(
-    () => stats.purchases.flatMap(p => p.sarees.map(s => ({ ...s, purchaseId: p.id, invoiceNumber: p.invoiceNumber }))),
+    () => stats.purchases.flatMap(p => p.sarees.map(s => ({ ...s, purchaseId: p.id, invoiceNumber: p.invoiceNumber, supplier: p.supplier }))),
     [stats.purchases]
   );
 

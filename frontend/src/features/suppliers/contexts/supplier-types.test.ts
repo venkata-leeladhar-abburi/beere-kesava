@@ -36,22 +36,22 @@ describe("supplierPrefix / buildSareeCode", () => {
     expect(supplierPrefix("")).toBe("SUPP");
   });
 
-  it("builds a 3-digit-serial line code with the invoice appended", () => {
-    expect(buildSareeCode("Ravi Silks", 1, "INV-RS-2026-118")).toBe("RAVI-001-INV-RS-2026-118");
+  it("builds a supplier-invoice-serial line code, serial padded to 3 digits", () => {
+    expect(buildSareeCode("Ravi Silks", 1, "34")).toBe("RAVI-34-001");
   });
 
   it("falls back to NOINV when no invoice number is given", () => {
-    expect(buildSareeCode("Ravi Silks", 1, "")).toBe("RAVI-001-NOINV");
+    expect(buildSareeCode("Ravi Silks", 1, "")).toBe("RAVI-NOINV-001");
   });
 });
 
 describe("piece codes", () => {
-  it("splices a 4-digit piece number before the invoice segment", () => {
-    expect(buildSareePieceCode("Ravi Silks", 1, 3, "INV-RS-2026-118")).toBe("RAVI-001-0003-INV-RS-2026-118");
+  it("appends a 2-digit piece number onto the end of the line code", () => {
+    expect(buildSareePieceCode("Ravi Silks", 1, 3, "34")).toBe("RAVI-34-001-03");
   });
 
   it("derives the same piece code from an existing line code", () => {
-    expect(pieceCodeFromLineCode("RAVI-001-INV-RS-2026-118", 3)).toBe("RAVI-001-0003-INV-RS-2026-118");
+    expect(pieceCodeFromLineCode("RAVI-34-001", 3)).toBe("RAVI-34-001-03");
   });
 });
 
@@ -100,7 +100,7 @@ describe("pricing math", () => {
 describe("expandSareePieces", () => {
   it("expands a multi-quantity line into one row per physical piece", () => {
     const line: SareeTag = {
-      id: "RAVI-001-INV-RS-2026-118",
+      id: "RAVI-34-001",
       weight: "800g",
       date: "01 Jun 2026",
       sareeType: "Plain Silk",
@@ -113,9 +113,9 @@ describe("expandSareePieces", () => {
     };
     const pieces = expandSareePieces([line]);
     expect(pieces).toHaveLength(3);
-    expect(pieces[0].id).toBe("RAVI-001-0001-INV-RS-2026-118");
-    expect(pieces[1].id).toBe("RAVI-001-0002-INV-RS-2026-118");
-    expect(pieces[2].id).toBe("RAVI-001-0003-INV-RS-2026-118");
+    expect(pieces[0].id).toBe("RAVI-34-001-01");
+    expect(pieces[1].id).toBe("RAVI-34-001-02");
+    expect(pieces[2].id).toBe("RAVI-34-001-03");
     // Each expanded piece is priced individually, not multiplied by quantity again.
     pieces.forEach(p => {
       expect(p.quantity).toBe(1);

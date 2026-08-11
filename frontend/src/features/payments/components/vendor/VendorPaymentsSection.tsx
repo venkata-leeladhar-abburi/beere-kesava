@@ -1,16 +1,16 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { AlignJustify, BadgeCheck, CheckCircle2, CircleAlert, Clock, Download, FileText, LayoutGrid, LayoutList, Wallet, Truck } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { PurchaseOrder, usePO } from "../../../purchasing/contexts/POContext";
 import { PODocumentModal } from "../../../purchasing/components/PODocumentModal";
-import { VENDOR_PAYMENTS } from "../../data/vendors";
 import { vendorPaymentsApi } from "../../../../shared/api/payments";
+import { vendorBillsApi } from "../../../../shared/api/vendor-bills";
 import { EASE, F, T, useFirms, DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../theme";
-import { VendorMatchedRow, VendorPayment } from "../../types";
+import { VendorMatchedRow, VendorPayment, VendorStatus } from "../../types";
 import { AnimCount, FadeUp } from "../common/motion";
 import { ActionModal, DropBtn, SectionCard } from "../common/primitives";
 import { AddVendorInvoiceModal } from "./AddVendorInvoiceModal";
@@ -31,22 +31,82 @@ const SHOW_OVERDUE_ALERT = false;
 export function VendorPaymentsSection() {
   const { pos } = usePO();
   const { firms, addExpenseEntry } = useFirms();
-  // Real total across GET /payments/vendors — VENDOR_PAYMENTS (the PO/
-  // invoice ledger below) has no backend source (see data/vendors.ts), so
-  // only this aggregate stat card is wired to live data for now.
-  const { data: vendorPaymentsRes } = useQuery({
+  const queryClient = useQueryClient();
+
+  const { data: vendorPaymentsRes, refetch: refetchVendorPayments } = useQuery({
     queryKey: ["vendor-payments-section-totals"],
     queryFn: () => vendorPaymentsApi.list(),
   });
+  const { data: vendorBillsRes, refetch: refetchVendorBills } = useQuery({
+    queryKey: ["vendor-payments-bills"],
+    queryFn: () => vendorBillsApi.list(),
+  });
   const totalVendorPaymentsRecorded = (vendorPaymentsRes?.items ?? []).reduce((s, p) => s + Number(p.amount), 0);
 
-  const [vendorPayments, setVendorPayments] = useState<VendorPayment[]>(VENDOR_PAYMENTS);
+  // Every real Purchase Order shows here, one row each — enriched with its
+  // VendorBill (if one's been raised yet) and the sum of real payments
+  // against that bill. A PO with no bill yet shows ₹0 invoiced/due rather
+  // than being hidden, since it's still a real PO the admin should see.
+  const vendorPayments: VendorPayment[] = useMemo(() => {
+    const bills = vendorBillsRes?.items ?? [];
+    const payments = vendorPaymentsRes?.items ?? [];
+    const billByPoId = new Map(bills.filter(b => b.poId).map(b => [b.poId as string, b]));
+    const paidByBillId = new Map<string, number>();
+    const utrByBillId = new Map<string, string>();
+    payments.forEach(p => {
+      if (!p.billId) return;
+      paidByBillId.set(p.billId, (paidByBillId.get(p.billId) ?? 0) + Number(p.amount));
+      if (p.utr) utrByBillId.set(p.billId, p.utr);
+    });
+    const now = Date.now();
+
+    return pos.map((po): VendorPayment => {
+      const bill = billByPoId.get(po.id);
+      const invoiceAmt = bill ? Number(bill.amount) : 0;
+      const paidAmt = bill ? (paidByBillId.get(bill.id) ?? 0) : 0;
+      const dueDate = bill?.dueDate ?? "";
+      let status: VendorStatus;
+      if (!bill || invoiceAmt === 0) status = "Pending";
+      else if (paidAmt >= invoiceAmt) status = "Paid";
+      else if (paidAmt > 0) status = "Partial";
+      else if (dueDate && new Date(dueDate).getTime() < now) status = "Overdue";
+      else status = "Pending";
+      const daysOverdue = status === "Overdue" && dueDate
+        ? Math.floor((now - new Date(dueDate).getTime()) / 86_400_000)
+        : undefined;
+
+      return {
+        id: po.id,
+        vendor: po.vendor,
+        poNumber: po.poNumber,
+        invoiceAmt,
+        paidAmt,
+        dueDate,
+        status,
+        daysOverdue,
+        utr: bill ? utrByBillId.get(bill.id) : undefined,
+        vendorId: po.vendorId,
+        billId: bill?.id,
+      };
+    });
+  }, [pos, vendorBillsRes, vendorPaymentsRes]);
+
+  const refreshVendorLedger = () => {
+    void refetchVendorPayments();
+    void refetchVendorBills();
+    // POContext's real query key — a bill/payment doesn't change a PO's own
+    // fields, so this is a belt-and-suspenders refresh, not load-bearing.
+    void queryClient.invalidateQueries({ queryKey: ["purchaseOrders"] });
+  };
+
   const [view, setView] = useState<"card" | "list" | "table">("card");
-  const [selVendor, setSelVendor] = useState("VP-004");
+  const [selVendor, setSelVendor] = useState("");
   const [payAmount, setPayAmount] = useState("");
-  const [payDate, setPayDate] = useState("2026-05-30");
+  const [payDate, setPayDate] = useState(new Date().toISOString().slice(0, 10));
   const [payMethod, setPayMethod] = useState("Bank Transfer");
   const [utrNumber, setUtrNumber] = useState("");
+  const [sidebarFirmId, setSidebarFirmId] = useState(firms[0]?.id ?? "");
+  const [savingSidebarPayment, setSavingSidebarPayment] = useState(false);
   const [statusFilter, setStatusFilter] = useState("All Bill Status");
   const [vendorFilter, setVendorFilter] = useState("All Vendors");
   const [search, setSearch] = useState("");
@@ -54,31 +114,72 @@ export function VendorPaymentsSection() {
 
   const [downloadModal, setDownloadModal] = useState(false);
   const [contactModal, setContactModal] = useState(false);
-  const [viewDetails, setViewDetails] = useState<VendorPayment | null>(null);
   const [viewPO, setViewPO] = useState<PurchaseOrder | null>(null);
-  const [payNow, setPayNow] = useState<VendorPayment | null>(null);
-  const [addInvoiceFor, setAddInvoiceFor] = useState<VendorPayment | null>(null);
+  // These three hold just the PO id, not a snapshotted VendorPayment object —
+  // derived live below so a modal always reflects the current invoice
+  // amount/balance even if it changed (e.g. an invoice was just added, or a
+  // payment just landed) after the row was first clicked.
+  const [viewDetailsId, setViewDetailsId] = useState<string | null>(null);
+  const [payNowId, setPayNowId] = useState<string | null>(null);
+  const [addInvoiceForId, setAddInvoiceForId] = useState<string | null>(null);
+
+  // Firms load asynchronously — backfill the sidebar's default once they're
+  // in, rather than leaving the Select stuck on the empty initial value.
+  React.useEffect(() => {
+    if (!sidebarFirmId && firms.length > 0) setSidebarFirmId(firms[0].id);
+  }, [firms, sidebarFirmId]);
 
   const matchPO = (poNumber: string) => pos.find(p => p.poNumber === poNumber);
 
-  const handleSavePayment = (amount: number, firmId: string, utr: string) => {
+  const viewDetails = viewDetailsId ? vendorPayments.find(v => v.id === viewDetailsId) ?? null : null;
+  const payNow = payNowId ? vendorPayments.find(v => v.id === payNowId) ?? null : null;
+  const addInvoiceFor = addInvoiceForId ? vendorPayments.find(v => v.id === addInvoiceForId) ?? null : null;
+
+  // The actual POST /payments/vendors call (with billId) happens inside
+  // VendorPayNowModal itself — this just records the firm expense entry and
+  // refreshes the real ledger once that save has already succeeded.
+  const handleSavePayment = (amount: number, firmId: string) => {
     if (!payNow) return;
-    setVendorPayments(prev => prev.map(v => v.id === payNow.id
-      ? { ...v, paidAmt: Math.min(v.invoiceAmt, v.paidAmt + amount), status: (v.paidAmt + amount) >= v.invoiceAmt ? "Paid" : "Partial", utr }
-      : v));
     addExpenseEntry(firmId, { description: `Vendor payment — ${payNow.vendor} (${payNow.poNumber})`, amount, date: new Date().toISOString().slice(0, 10), category: "Material Purchase" });
+    refreshVendorLedger();
     toast.success(`Payment of ${formatMoney(rupees(amount))} recorded for ${payNow.vendor}`);
-    setPayNow(null);
+    setPayNowId(null);
   };
 
+  // VendorUploadPanel has already created the real VendorPayment rows by the
+  // time this fires — just refresh the ledger so the new totals show up.
   const handleExcelMatched = (matched: VendorMatchedRow[]) => {
-    setVendorPayments(prev => prev.map(v => {
-      const m = matched.find(x => x.vendorPayment.id === v.id);
-      if (!m) return v;
-      const newPaid = Math.min(v.invoiceAmt, v.paidAmt + m.amountPaid);
-      return { ...v, paidAmt: newPaid, utr: m.utrNumber, status: newPaid >= v.invoiceAmt ? "Paid" : "Partial" };
-    }));
-    toast.success(`${matched.length} vendor payment${matched.length !== 1 ? "s" : ""} matched and updated`);
+    refreshVendorLedger();
+    toast.success(`${matched.length} vendor payment${matched.length !== 1 ? "s" : ""} matched and saved`);
+  };
+
+  const handleSidebarSavePayment = async () => {
+    if (!selVP?.billId) return;
+    const amount = Number(payAmount);
+    if (!amount || amount <= 0 || !utrNumber.trim() || !sidebarFirmId) return;
+    setSavingSidebarPayment(true);
+    try {
+      await vendorPaymentsApi.create({
+        vendorId: selVP.vendorId ?? selVP.id,
+        amount,
+        utr: utrNumber.trim(),
+        method: payMethod,
+        firmId: sidebarFirmId,
+        date: payDate || undefined,
+        billId: selVP.billId,
+      });
+      addExpenseEntry(sidebarFirmId, {
+        description: `Vendor payment — ${selVP.vendor} (${selVP.poNumber})`,
+        amount, date: payDate || new Date().toISOString().slice(0, 10), category: "Material Purchase",
+      });
+      refreshVendorLedger();
+      toast.success(`Payment of ${formatMoney(rupees(amount))} recorded for ${selVP.vendor}`);
+      setPayAmount(""); setUtrNumber("");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to record payment");
+    } finally {
+      setSavingSidebarPayment(false);
+    }
   };
 
   const selVP = vendorPayments.find(v => v.id === selVendor) ?? vendorPayments[0];
@@ -284,7 +385,7 @@ export function VendorPaymentsSection() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20, marginBottom: 32, alignItems: "stretch" }}>
             {filtered.map((vp, i) => (
               <motion.div key={vp.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.07, ease: EASE }} style={{ display: "flex", flexDirection: "column" }}>
-                <VendorCard vp={vp} matchedPO={matchPO(vp.poNumber)} onPay={() => setPayNow(vp)} onView={() => setViewDetails(vp)} onViewPO={() => setViewPO(matchPO(vp.poNumber) ?? null)} onAddInvoice={() => setAddInvoiceFor(vp)} selected={selVendor === vp.id} />
+                <VendorCard vp={vp} matchedPO={matchPO(vp.poNumber)} onPay={() => setPayNowId(vp.id)} onView={() => setViewDetailsId(vp.id)} onViewPO={() => setViewPO(matchPO(vp.poNumber) ?? null)} onAddInvoice={() => setAddInvoiceForId(vp.id)} selected={selVendor === vp.id} />
               </motion.div>
             ))}
           </div>
@@ -313,7 +414,7 @@ export function VendorPaymentsSection() {
                     {vp.daysOverdue && <span style={{ fontFamily: F.mono, fontSize: 12, marginLeft: 5, background: "rgba(192,57,43,0.10)", color: T.crimson, padding: "1px 5px", borderRadius: 4 }}>{vp.daysOverdue}d</span>}
                   </div>
                   <VendorBadge status={vp.status} />
-                  <Button variant="secondary" size="sm" onClick={() => setViewDetails(vp)} className="rounded-[7px] text-[#6E0F2D]">View</Button>
+                  <Button variant="secondary" size="sm" onClick={() => setViewDetailsId(vp.id)} className="rounded-[7px] text-[#6E0F2D]">View</Button>
                 </div>
               );
             })}
@@ -338,22 +439,30 @@ export function VendorPaymentsSection() {
               </div>
             </div>
 
-            <RecordVendorPaymentSidebar
-              vendorPayments={vendorPayments}
-              selVendor={selVendor}
-              setSelVendor={setSelVendor}
-              payAmount={payAmount}
-              setPayAmount={setPayAmount}
-              payDate={payDate}
-              setPayDate={setPayDate}
-              payMethod={payMethod}
-              setPayMethod={setPayMethod}
-              utrNumber={utrNumber}
-              setUtrNumber={setUtrNumber}
-              selVP={selVP}
-              selBalance={selBalance}
-              afterPay={afterPay}
-            />
+            {selVP && (
+              <RecordVendorPaymentSidebar
+                vendorPayments={vendorPayments}
+                selVendor={selVendor}
+                setSelVendor={setSelVendor}
+                payAmount={payAmount}
+                setPayAmount={setPayAmount}
+                payDate={payDate}
+                setPayDate={setPayDate}
+                payMethod={payMethod}
+                setPayMethod={setPayMethod}
+                utrNumber={utrNumber}
+                setUtrNumber={setUtrNumber}
+                firms={firms}
+                firmId={sidebarFirmId}
+                setFirmId={setSidebarFirmId}
+                selVP={selVP}
+                selBalance={selBalance}
+                afterPay={afterPay}
+                onSave={() => void handleSidebarSavePayment()}
+                onCancel={() => { setPayAmount(""); setUtrNumber(""); }}
+                saving={savingSidebarPayment}
+              />
+            )}
           </div>
         )}
 
@@ -361,9 +470,9 @@ export function VendorPaymentsSection() {
         <ActionModal open={downloadModal} onClose={() => setDownloadModal(false)} title="Download Vendor Report" desc="Generate and download the vendor payments report." actionLabel="Download" icon={Download} />
         <AnimatePresence>
           {contactModal && <ContactVendorModal vendors={overdueVendors} onClose={() => setContactModal(false)} />}
-          {viewDetails && <VendorDetailModal vp={viewDetails} matchedPO={matchPO(viewDetails.poNumber)} onClose={() => setViewDetails(null)} />}
-          {payNow && <VendorPayNowModal vp={payNow} onClose={() => setPayNow(null)} onSave={handleSavePayment} />}
-          {addInvoiceFor && <AddVendorInvoiceModal vp={addInvoiceFor} onClose={() => setAddInvoiceFor(null)} />}
+          {viewDetails && <VendorDetailModal vp={viewDetails} matchedPO={matchPO(viewDetails.poNumber)} onClose={() => setViewDetailsId(null)} />}
+          {payNow && <VendorPayNowModal vp={payNow} onClose={() => setPayNowId(null)} onSave={handleSavePayment} />}
+          {addInvoiceFor && <AddVendorInvoiceModal vp={addInvoiceFor} matchedPO={matchPO(addInvoiceFor.poNumber)} onClose={() => setAddInvoiceForId(null)} onSaved={refreshVendorLedger} />}
         </AnimatePresence>
         <PODocumentModal open={!!viewPO} onClose={() => setViewPO(null)} po={viewPO} />
       </FadeUp>

@@ -1,12 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import { Eye } from "lucide-react";
 import { T, F, baseCard, DefectiveLogItem } from "./WorkerQCTypes";
 import { Button } from "../../../../shared/ui/primitives";
+import { DateFilterBar, type DateFilterState, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
+import { WorkerQCDefectiveDetailModal } from "./WorkerQCDefectiveDetailModal";
 
 interface WorkerQCDefectiveSectionProps {
   defLog: DefectiveLogItem[];
-  defFilter: string;
-  setDefFilter: (filter: string) => void;
+  defFilter: DateFilterState;
+  setDefFilter: (filter: DateFilterState) => void;
   isDesktop?: boolean;
   isTablet?: boolean;
 }
@@ -19,6 +21,8 @@ export function WorkerQCDefectiveSection({
   isTablet,
 }: WorkerQCDefectiveSectionProps) {
   const defCols = isDesktop ? "repeat(4, 1fr)" : isTablet ? "repeat(3, 1fr)" : "1fr 1fr";
+  const filteredDefLog = defLog.filter(d => matchesDateFilter(d.isoDate || d.date, defFilter));
+  const [viewing, setViewing] = useState<DefectiveLogItem | null>(null);
 
   return (
     <>
@@ -30,17 +34,12 @@ export function WorkerQCDefectiveSection({
         Failed quality check — stored separately.
       </div>
 
-      <div style={{ display: "flex", gap: 6, padding: isDesktop ? "0 0 10px" : "0 16px 8px" }}>
-        {["Today", "This Week", "This Month", "All Time"].map(f => (
-          <Button key={f} variant={defFilter === f ? "primary" : "secondary"} size={isDesktop ? "md" : "sm"} onClick={() => setDefFilter(f)}
-            className={defFilter === f ? "flex-shrink-0 rounded-full bg-[#6E0F2D] hover:bg-[#6E0F2D]" : "flex-shrink-0 rounded-full border-[rgba(110,15,45,0.10)]"}>
-            {f}
-          </Button>
-        ))}
+      <div style={{ margin: isDesktop ? "0 0 12px" : "0 16px 12px" }}>
+        <DateFilterBar filter={defFilter} onChange={setDefFilter} />
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: defCols, gap: isDesktop ? 12 : 8, padding: isDesktop ? "0" : "0 16px" }}>
-        {defLog.map((d, i) => (
+        {filteredDefLog.map((d, i) => (
           <div key={i} style={{ ...baseCard, padding: isDesktop ? "14px 16px" : "12px 12px", borderLeft: `3px solid ${T.crim}` }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 5 }}>
               <span style={{ fontFamily: F.m, fontSize: isDesktop ? 13 : 10, fontWeight: 700, color: T.burg, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>{d.id}</span>
@@ -52,12 +51,14 @@ export function WorkerQCDefectiveSection({
                 <span key={df} style={{ fontFamily: F.u, fontSize: isDesktop ? 11 : 9, fontWeight: 600, color: T.crim, background: T.bgCrim, border: `1px solid rgba(192,57,43,0.15)`, padding: "2px 7px", borderRadius: 999 }}>{df}</span>
               ))}
             </div>
-            <Button variant="secondary" fullWidth size="sm" iconLeft={Eye} className="rounded-[7px] border-[rgba(110,15,45,0.10)] text-[#69635E]">
+            <Button variant="secondary" fullWidth size="sm" iconLeft={Eye} onClick={() => setViewing(d)} className="rounded-[7px] border-[rgba(110,15,45,0.10)] text-[#69635E]">
               View Details
             </Button>
           </div>
         ))}
       </div>
+
+      {viewing && <WorkerQCDefectiveDetailModal item={viewing} onClose={() => setViewing(null)} />}
     </>
   );
 }

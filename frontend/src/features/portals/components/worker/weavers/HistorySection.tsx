@@ -6,6 +6,7 @@ import { Button, Input } from "../../../../../shared/ui/primitives";
 import { useQc } from "../../../../qc/contexts/QcContext";
 import { StatusPill } from "../../../../../shared/ui/domain";
 import type { StatusValueOf } from "@/lib/domain/status";
+import { DateFilterBar, type DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../../shared/ui/DateFilterBar";
 
 const QC_RESULT_TO_STATUS: Record<string, ReceivedSareeLog["status"]> = {
   passed: "Passed QC",
@@ -22,12 +23,13 @@ const HISTORY_STATUS_TO_PRODUCTION: Record<ReceivedSareeLog["status"], StatusVal
 export function HistorySection({ liveRecords = [] }: { liveRecords?: ReceivedSareeLog[] }) {
   const [view, setView] = useState<"day" | "weaver">("day");
   const [search, setSearch] = useState("");
+  const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const { qcRecords } = useQc();
 
   // Real QC-inspection history — the closest genuine equivalent to a
   // "received from weaver" log this schema actually has (weight/color/photo
   // aren't recorded anywhere yet, so they're omitted rather than faked).
-  const qcHistory: (ReceivedSareeLog & { sareeType?: string })[] = useMemo(() => qcRecords
+  const qcHistory: (ReceivedSareeLog & { sareeType?: string; isoDate?: string })[] = useMemo(() => qcRecords
     .filter(r => r.weaverId && r.weaverName)
     .map(r => ({
       id: r.sareeId,
@@ -37,22 +39,24 @@ export function HistorySection({ liveRecords = [] }: { liveRecords?: ReceivedSar
       weight: "—",
       color: "—",
       date: new Date(r.qcDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
+      isoDate: r.qcDate,
       status: QC_RESULT_TO_STATUS[r.result] ?? "Pending QC",
       sareeType: r.sareeTypeName ?? undefined,
     })),
   [qcRecords]);
 
-  const allData: (ReceivedSareeLog & { sareeType?: string })[] = [
+  const allData: (ReceivedSareeLog & { sareeType?: string; isoDate?: string })[] = [
     ...liveRecords.map(r => ({ ...r, sareeType: "—" })),
     ...qcHistory,
   ];
 
   const filtered = allData.filter(h =>
-    !search ||
+    matchesDateFilter(h.isoDate || h.date, dateFilter) &&
+    (!search ||
     h.id.toLowerCase().includes(search.toLowerCase()) ||
     h.weaver.toLowerCase().includes(search.toLowerCase()) ||
     h.batch.toLowerCase().includes(search.toLowerCase()) ||
-    h.color.toLowerCase().includes(search.toLowerCase())
+    h.color.toLowerCase().includes(search.toLowerCase()))
   );
 
   // Group by date
@@ -97,6 +101,11 @@ export function HistorySection({ liveRecords = [] }: { liveRecords?: ReceivedSar
             </Button>
           ))}
         </div>
+      </div>
+
+      {/* Filters */}
+      <div style={{ margin: "0 16px 10px" }}>
+        <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
       </div>
 
       {/* Search */}

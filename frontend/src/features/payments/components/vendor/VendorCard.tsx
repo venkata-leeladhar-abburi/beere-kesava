@@ -1,12 +1,12 @@
-import React, { useState } from "react";
-import { FileText } from "lucide-react";
+import React from "react";
+import { FileText, Pencil } from "lucide-react";
 import { motion } from "motion/react";
 
-import { PurchaseOrder, usePO } from "../../../purchasing/contexts/POContext";
+import { PurchaseOrder } from "../../../purchasing/contexts/POContext";
 import { F, T } from "../../theme";
 import { Invoice, VendorPayment } from "../../types";
 import { VENDOR_STATUS_CFG, VendorBadge } from "./VendorBadge";
-import { Button, CurrencyInput } from "../../../../shared/ui/primitives";
+import { Button } from "../../../../shared/ui/primitives";
 import { rupees } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
 
@@ -15,8 +15,6 @@ export function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoic
   const isPaid = vp.status === "Paid";
   const cfg = VENDOR_STATUS_CFG[vp.status];
   const vendorName = matchedPO?.vendor ?? vp.vendor;
-  const { setMaterialInvoiceAmount } = usePO();
-  const [invoiceDrafts, setInvoiceDrafts] = useState<Record<number, string>>({});
 
   const MAT_TAG_PO: Record<string, { col: string; bg: string }> = {
     "Warp": { col: "#B85C38", bg: "rgba(184,92,56,0.12)" },
@@ -86,44 +84,16 @@ export function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoic
                       <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.subtype}</span>
                     )}
                     <div style={{ flex: 1, minWidth: 0 }} />
-                    <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700, flexShrink: 0, background: "rgba(110,15,45,0.06)", padding: "2px 7px", borderRadius: 5 }}>
+                    <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700, flexShrink: 0, background: "rgba(110,15,45,0.06)", padding: "2px 7px", borderRadius: 5, whiteSpace: "nowrap" as const }}>
                       {m.quantity} {m.unit}
+                      {m.pricePerUnit > 0 && <> · <Money value={rupees(m.pricePerUnit)} />/{m.unit}</>}
                     </span>
                   </div>
-                  
-                  <div style={{ paddingLeft: 60 }}>
-                    {m.invoiceAmount ? (
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#FDFBF7", padding: "6px 10px", borderRadius: 6, border: `1px solid ${T.borderGold}40` }}>
-                        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Invoice Amount</span>
-                        <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: "#8B6018" }}>
-                          <Money value={rupees(m.invoiceAmount)} />
-                        </span>
-                      </div>
-                    ) : (
-                      <div style={{ display: "flex", gap: 6 }} onClick={e => e.stopPropagation()}>
-                        <CurrencyInput
-                          value={invoiceDrafts[mi] ? Number(invoiceDrafts[mi]) : ""}
-                          onValueChange={v => setInvoiceDrafts(prev => ({ ...prev, [mi]: v === "" ? "" : String(v) }))}
-                          placeholder="Invoice amount in ₹"
-                          size="sm"
-                          className="flex-1"
-                        />
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            const val = parseFloat(invoiceDrafts[mi]);
-                            if (invoiceDrafts[mi] && !isNaN(val) && matchedPO) {
-                              setMaterialInvoiceAmount(matchedPO.id, mi, val);
-                            }
-                          }}
-                          className="rounded-[6px]"
-                        >
-                          Save
-                        </Button>
-                      </div>
-                    )}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#FDFBF7", padding: "6px 10px", borderRadius: 6, border: `1px solid ${T.borderGold}40` }}>
+                    <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Invoice Amount</span>
+                    <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: m.invoiceAmount ? "#8B6018" : T.taupe }}>
+                      {m.invoiceAmount ? <Money value={rupees(m.invoiceAmount)} /> : "Not yet invoiced"}
+                    </span>
                   </div>
                 </div>
               );
@@ -166,9 +136,9 @@ export function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoic
             Statement
           </Button>
           {onAddInvoice && (
-            <Button variant="secondary" size="sm" iconLeft={FileText} onClick={onAddInvoice}
+            <Button variant="secondary" size="sm" iconLeft={vp.billId ? Pencil : FileText} onClick={onAddInvoice}
               className="rounded-[8px] border-[1.5px] border-[rgba(110,15,45,0.12)] text-[#6E0F2D]">
-              Add Invoice
+              {vp.billId ? "Edit Invoice" : "Add Invoice"}
             </Button>
           )}
           {!isPaid && (

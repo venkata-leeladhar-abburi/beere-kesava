@@ -89,7 +89,7 @@ export function PurchaseHistoryTable({ purchases }: { purchases: Purchase[] }) {
       expandedIds={expandedIds}
       renderExpandedRow={p => (
         <div style={{ padding: "6px 16px 16px", background: "rgba(247,242,234,0.7)" }}>
-          <SareeInventoryTable rows={p.sarees.map(s => ({ ...s, purchaseId: p.id, invoiceNumber: p.invoiceNumber }))} />
+          <SareeInventoryTable rows={p.sarees.map(s => ({ ...s, purchaseId: p.id, invoiceNumber: p.invoiceNumber, supplier: p.supplier }))} />
         </div>
       )}
       emptyTitle="No purchases in this period."

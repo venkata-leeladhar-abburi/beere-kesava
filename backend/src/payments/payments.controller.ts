@@ -68,6 +68,16 @@ export class PaymentsController {
     return this.paymentsService.getWeaverEarnings(weaverId);
   }
 
+  // Per-saree QC-passed rows (weaverId, batch, loom, making charge,
+  // deduction) that back the production-summary table/template on the
+  // Weaver Payments page — grouping by weaver+batch+loom and date filtering
+  // both happen client-side (same convention as every other date-filtered
+  // list in this app), so this returns every row unfiltered.
+  @Get("weavers/production-rows")
+  getWeaverProductionRows() {
+    return this.paymentsService.getWeaverProductionRows();
+  }
+
   @Post("weavers/import")
   @UseInterceptors(FileInterceptor("file"))
   async importWeaverPayments(@UploadedFile() file?: Express.Multer.File) {

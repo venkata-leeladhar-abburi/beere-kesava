@@ -20,6 +20,8 @@ export interface BackendPurchaseOrder {
     unit: string;
     unitPrice: string | null;
     totalPrice: string | null;
+    /** Set once the vendor's real bill splits an amount to this material line. */
+    invoicedAmount: string | null;
   }[];
 }
 
