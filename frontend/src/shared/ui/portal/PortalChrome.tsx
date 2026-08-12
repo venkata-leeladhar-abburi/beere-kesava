@@ -161,7 +161,7 @@ export function StatsStrip({
                 <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 8, color: m.highlight ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.90)" }}>
                   {m.label}
                 </div>
-                <div style={{ fontFamily: HERO_SERIF, fontWeight: 400, fontSize: 48, letterSpacing: "-0.01em", color: m.alert ? "#F47B72" : m.highlight ? C.goldL : "#FFFFFF", lineHeight: 1.1, marginBottom: 8, fontVariantNumeric: "tabular-nums" }}>
+                <div style={{ fontFamily: HERO_SERIF, fontWeight: 400, fontSize: "clamp(28px, 8vw, 48px)", letterSpacing: "-0.01em", color: m.alert ? "#F47B72" : m.highlight ? C.goldL : "#FFFFFF", lineHeight: 1.1, marginBottom: 8, fontVariantNumeric: "tabular-nums" }}>
                   {m.value}
                 </div>
                 {m.sub && (

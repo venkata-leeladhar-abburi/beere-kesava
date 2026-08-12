@@ -52,7 +52,10 @@ export const MAT_CARDS_TEMPLATE = [
 ];
 
 export const FOOTER_LINKS = {
-  "Quick Links": ["Overview", "Materials", "Weavers", "Production", "Payments", "Reports", "Customers"],
-  "Company":     ["About Us", "Our Story", "Awards", "Blog"],
-  "Support":     ["Help Center", "Contact Us", "Privacy Policy", "Terms of Use"],
+  "Overview": ["Dashboard", "Analytics", "Performance"],
+  "Production": ["Production", "Batches", "Designs", "Finishing"],
+  "Materials": ["Materials", "Receive Stock", "Issue Material", "External Purchases"],
+  "Finance": ["Payments", "Firms", "Reports"],
+  "People": ["Weavers", "Customers", "Vendors"],
+  "Company": ["About Us", "Our Story", "Website"],
 };

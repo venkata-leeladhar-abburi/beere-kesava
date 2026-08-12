@@ -152,7 +152,7 @@ export function CustomerReport() {
 
   const customerColumns: ColumnDef<CustomerRow>[] = [
     {
-      id: "name", header: "Customer Name", accessor: r => r.name,
+      id: "name", header: "Customer Name", accessor: r => r.name, priority: 1,
       cell: (_v, r) => <span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.name}</span>,
     },
     {
@@ -160,7 +160,7 @@ export function CustomerReport() {
       cell: (_v, r) => <StatusPill label={r.type} type={r.type === "Wholesale" ? "neutral" : "gold"} />,
     },
     {
-      id: "phone", header: "Phone", accessor: r => r.phone,
+      id: "phone", header: "Phone", accessor: r => r.phone, priority: 3,
       cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.phone}</span>,
     },
     {
@@ -176,7 +176,7 @@ export function CustomerReport() {
       cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700, color: r.due > 0 ? T.crimson : T.green }}>{r.due > 0 ? <Money value={rupees(r.due)} /> : "— Nil"}</span>,
     },
     {
-      id: "lastPurchase", header: "Last Purchase", accessor: r => r.lastPurchase,
+      id: "lastPurchase", header: "Last Purchase", accessor: r => r.lastPurchase, priority: 3,
       cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.lastPurchase}</span>,
     },
     {
@@ -288,6 +288,7 @@ export function CustomerReport() {
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
           <div style={{ overflowX: "auto", minWidth: 900 }}>
             <DataTable
+              responsive
               columns={customerColumns}
               data={custRows}
               getRowId={r => r.id}
