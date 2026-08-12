@@ -1,39 +1,41 @@
 import React from "react";
 import { Scissors, Palette, Sparkles, Scale, Ruler, HelpCircle } from "lucide-react";
+import { brand, fonts, semantic } from "@/design-system/tokens";
 
+/** Same design-system re-export as worker/tokens.ts — see the note there. */
 export const T = {
-  bg:       "#FAFAF8",
-  card:     "#FFFFFF",
-  burg:     "#6E0F2D",
-  wine:     "#4A061B",
-  gold:     "#C89B47",
+  bg:       semantic.surface.canvas,
+  card:     semantic.surface.raised,
+  burg:     brand.burgundy[900],
+  wine:     brand.burgundy[950],
+  gold:     brand.gold[500],
   goldL:    "#E7C983",
-  brown:    "#3B2314",
-  green:    "#1E6640",
-  crim:     "#C0392B",
-  muted:    "#69635E",
+  brown:    semantic.text.primary,
+  green:    semantic.text.success,
+  crim:     semantic.text.danger,
+  muted:    semantic.text.tertiary,
   bdr:      "rgba(110,15,45,0.10)",
-  bdrMed:   "rgba(110,15,45,0.18)",
+  bdrMed:   "rgba(110,15,45,0.20)",
   cream:    "#F5E8D0",
-  inp:      "#FFF8E7",
-  bgGold:   "rgba(200,155,71,0.10)",
-  bgGreen:  "rgba(30,102,64,0.09)",
-  bgCrim:   "rgba(192,57,43,0.08)",
-  gradHero: "linear-gradient(135deg, #4A061B 0%, #6E0F2D 55%, #8B1A30 100%)",
+  inp:      semantic.surface.raised,
+  bgGold:   "rgba(200,155,71,0.15)",
+  bgGreen:  "rgba(30,102,64,0.10)",
+  bgCrim:   "rgba(110,15,45,0.10)",
+  gradHero: `linear-gradient(100deg, ${brand.burgundy[950]} 0%, ${brand.burgundy[900]} 100%)`,
   shadow:   "0 2px 12px rgba(74,6,27,0.07)",
-  shadowLg: "0 8px 32px rgba(74,6,27,0.12)",
+  shadowLg: "0 6px 32px rgba(74,6,27,0.12)",
 };
 
 export const F = {
-  d: "'Plus Jakarta Sans', sans-serif",
-  u: "'Inter', sans-serif",
-  m: "'JetBrains Mono', monospace",
+  d: fonts.display,
+  u: fonts.ui,
+  m: fonts.code,
 };
 
 export const baseCard: React.CSSProperties = {
   background: T.card,
   border: `1px solid ${T.bdr}`,
-  borderRadius: 12,
+  borderRadius: 16,
   boxShadow: T.shadow,
 };
 

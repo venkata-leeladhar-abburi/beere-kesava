@@ -159,7 +159,7 @@ export function MyBatchesPage() {
           above: the saree isn't rejected, it goes back to the weaver and has
           to be handed in (and received) again before it counts as produced. */}
       {myReworkSarees.map(rs => (
-        <div key={rs.sareeId} style={{ margin: "16px 20px 0 20px", background: "rgba(196,146,58,0.08)", border: `1.5px solid ${C.gold}`, borderRadius: 16, padding: "16px 20px" }}>
+        <div key={rs.sareeId} style={{ margin: "16px 20px 0 20px", background: "rgba(200,155,71,0.08)", border: `1.5px solid ${C.gold}`, borderRadius: 16, padding: "16px 20px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
             <RotateCcw size={18} color={C.gold} />
             <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.gold }}>Semi-Approved — Rework Needed</span>

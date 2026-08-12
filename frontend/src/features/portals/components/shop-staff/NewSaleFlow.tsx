@@ -169,7 +169,7 @@ export function NewSaleFlow() {
         <div style={{ display: "flex", gap: 4 }}>
           {(["Customer", "Scan Saree", "Payment", "Confirm"] as const).map((label, i) => (
             <div key={i} style={{ flex: 1 }}>
-              <div style={{ height: 4, borderRadius: 999, background: (i + 1) <= (step as number) ? C.burg : "rgba(139,26,46,0.15)", marginBottom: 5 }} />
+              <div style={{ height: 4, borderRadius: 999, background: (i + 1) <= (step as number) ? C.burg : "rgba(110,15,45,0.15)", marginBottom: 5 }} />
               <div style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 0.8, textTransform: "uppercase" as const, color: (i + 1) <= (step as number) ? C.burg : C.muted, textAlign: "center" as const }}>{label}</div>
             </div>
           ))}
@@ -240,8 +240,8 @@ export function NewSaleFlow() {
               { id: "other" as const, label: "Other", sub: "Cheque / Transfer", icon: <Plus size={22} /> },
             ].map(p => (
               <Button key={p.id} variant="tertiary" onClick={() => setPayment(p.id)}
-                className={`h-auto flex-col items-start gap-2 whitespace-normal rounded-[14px] px-3.5 py-4 relative ${payment === p.id ? "border-2 border-[#6B1A2A] bg-[rgba(107,26,42,0.06)]" : "border border-[rgba(139,26,46,0.12)] bg-white"}`}>
-                <div style={{ width: 40, height: 40, borderRadius: 10, background: payment === p.id ? "rgba(107,26,42,0.10)" : "rgba(107,26,42,0.05)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                className={`h-auto flex-col items-start gap-2 whitespace-normal rounded-[14px] px-3.5 py-4 relative ${payment === p.id ? "border-2 border-[#6E0F2D] bg-[rgba(110,15,45,0.06)]" : "border border-[rgba(110,15,45,0.12)] bg-white"}`}>
+                <div style={{ width: 40, height: 40, borderRadius: 10, background: payment === p.id ? "rgba(110,15,45,0.10)" : "rgba(110,15,45,0.05)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   {React.cloneElement(p.icon, { color: payment === p.id ? C.burg : C.muted })}
                 </div>
                 <div>
@@ -307,7 +307,7 @@ export function NewSaleFlow() {
                   </div>
                   {priceDiscount > 0 && (
                     <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
-                      <Chip label={`Discount: ${fmtPrice(priceDiscount)}`} color="#8B6018" bg="rgba(196,146,58,0.15)" />
+                      <Chip label={`Discount: ${fmtPrice(priceDiscount)}`} color="#8B6018" bg="rgba(200,155,71,0.15)" />
                     </div>
                   )}
                 </>

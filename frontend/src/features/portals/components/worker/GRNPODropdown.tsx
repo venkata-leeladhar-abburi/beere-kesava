@@ -39,7 +39,7 @@ export function GRNPODropdown({
                         fontSize: 12,
                         fontWeight: 700,
                         color: m.materialType === "Warp" ? "#7A5010" : m.materialType === "Resham" ? "#7A5E1C" : C.burg,
-                        background: m.materialType === "Warp" ? "rgba(196,146,58,0.1)" : m.materialType === "Resham" ? "rgba(200,155,71,0.1)" : "rgba(107,26,42,0.05)",
+                        background: m.materialType === "Warp" ? "rgba(196,146,58,0.1)" : m.materialType === "Resham" ? "rgba(200,155,71,0.1)" : "rgba(110,15,45,0.05)",
                         padding: "2px 6px",
                         borderRadius: 4
                       }}>
@@ -61,7 +61,7 @@ export function GRNPODropdown({
           )}
           {approvedPOs.map(po => (
             <DropdownMenuItem key={po.id} onClick={() => handleSelectPO(po)}
-              className="!h-auto !flex-col !items-start !rounded-none !border-b !border-[rgba(139,26,46,0.12)] !px-4 !py-3.5 !text-left"
+              className="!h-auto !flex-col !items-start !rounded-none !border-b !border-[rgba(110,15,45,0.12)] !px-4 !py-3.5 !text-left"
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3, width: "100%" }}>
                 <span style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{po.id}</span>

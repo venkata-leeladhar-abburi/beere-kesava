@@ -9,11 +9,12 @@ import { SareeTypeCard } from "../../../pricing/components/RatesPricingPage";
 import { useRatesPricing } from "../../../pricing/contexts/RatesContext";
 import { AnimatePresence } from "motion/react";
 import {
-  ChevronLeft, CheckCircle2, Search, ChevronRight, Package, AlertTriangle,
+  ChevronLeft, CheckCircle2, Search, ChevronRight, Package, AlertTriangle, ClipboardCheck,
 } from "lucide-react";
 import {
   T, F, baseCard, SareeItem, InspectionResult, DefectiveLogItem, PassedLogItem, initials, splitDesignField,
 } from "./WorkerQCTypes";
+import { SectionCard } from "./primitives";
 import { WorkerQCInspectionScreen } from "./WorkerQCInspectionScreen";
 import { WorkerQCSareeCard } from "./WorkerQCSareeCard";
 import { WorkerQCDefectiveSection } from "./WorkerQCDefectiveSection";
@@ -428,38 +429,52 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
         isDesktop={isDesktop}
       />
 
-      {pending.length === 0 ? (
-        <div style={{ padding: "40px 20px", textAlign: "center" }}>
-          <CheckCircle2 size={36} color={T.green} style={{ margin: "0 auto 10px" }} />
-          <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: T.brown }}>All sarees inspected!</div>
-        </div>
-      ) : qcTab === "weavers" ? (
-        <>
-          <div style={{ padding: isDesktop ? "0 0 12px" : "0 16px 12px" }}>
-            <Input
-              value={weaverSearch} onChange={e => setWeaverSearch(e.target.value)}
-              placeholder="Search weavers..."
-              iconLeft={Search}
-              className="w-full"
+      <div style={{ margin: isDesktop ? "0" : "0 16px" }}>
+        <SectionCard
+          icon={ClipboardCheck}
+          title="Pending Quality Check"
+          subtitle={qcTab === "weavers" ? "Grouped by weaver — pick a weaver to start inspecting." : "Grouped by batch — pick a batch to start inspecting."}
+          actions={
+            <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: "#FFFDF9", background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.20)", padding: "5px 12px", borderRadius: 999 }}>
+              {pending.length} pending
+            </span>
+          }
+        >
+          {pending.length === 0 ? (
+            <div style={{ padding: "36px 20px", textAlign: "center" }}>
+              <CheckCircle2 size={36} color={T.green} style={{ margin: "0 auto 10px" }} />
+              <div style={{ fontFamily: F.u, fontSize: 15, fontWeight: 600, color: T.brown }}>All sarees inspected!</div>
+              <div style={{ fontFamily: F.u, fontSize: 13, color: T.muted, marginTop: 4 }}>Nothing is waiting in the QC queue right now.</div>
+            </div>
+          ) : qcTab === "weavers" ? (
+            <>
+              <div style={{ paddingBottom: 16 }}>
+                <Input
+                  value={weaverSearch} onChange={e => setWeaverSearch(e.target.value)}
+                  placeholder="Search weavers..."
+                  iconLeft={Search}
+                  className="w-full"
+                />
+              </div>
+              <WorkerQCWeaverGrid
+                filteredWeavers={filteredWeavers}
+                setSelectedWeaverQC={setSelectedWeaverQC}
+                isDesktop={isDesktop}
+                isTablet={isTablet}
+                pad="0"
+              />
+            </>
+          ) : (
+            <WorkerQCBatchGrid
+              batchGroups={batchGroups}
+              setSelectedBatchQC={setSelectedBatchQC}
+              isDesktop={isDesktop}
+              isTablet={isTablet}
+              pad="0"
             />
-          </div>
-          <WorkerQCWeaverGrid
-            filteredWeavers={filteredWeavers}
-            setSelectedWeaverQC={setSelectedWeaverQC}
-            isDesktop={isDesktop}
-            isTablet={isTablet}
-            pad={pad}
-          />
-        </>
-      ) : (
-        <WorkerQCBatchGrid
-          batchGroups={batchGroups}
-          setSelectedBatchQC={setSelectedBatchQC}
-          isDesktop={isDesktop}
-          isTablet={isTablet}
-          pad={pad}
-        />
-      )}
+          )}
+        </SectionCard>
+      </div>
 
       <WorkerQCCompletedTodaySection
         items={completedTodayLog}

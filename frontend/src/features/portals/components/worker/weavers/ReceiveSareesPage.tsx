@@ -208,7 +208,7 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
       <>
         <PageHeader title="Tag Preview" onBack={() => setShowTagPrint(false)} />
         <div style={{ paddingBottom: 28 }}>
-          <div style={{ margin: "14px 16px", border: `1px solid rgba(139,26,46,0.20)`, borderRadius: 12, padding: 16, background: "#FFF" }}>
+          <div style={{ margin: "14px 16px", border: `1px solid rgba(110,15,45,0.20)`, borderRadius: 12, padding: 16, background: "#FFF" }}>
             <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, textAlign: "center", marginBottom: 8 }}>Beere Kesava & Brothers Silks · Est. 1999</div>
             <div style={{ background: "#000", height: 36, borderRadius: 4, marginBottom: 6, display: "flex", alignItems: "center", justifyContent: "center" }}>
               <span style={{ fontFamily: F.m, fontSize: 7, color: "#FFF", letterSpacing: 3 }}>||| | || ||| || |</span>
@@ -225,7 +225,7 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
               <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>Copies:</span>
               <Input type="number" defaultValue={1} className="w-[65px] h-[38px] text-center font-mono" />
             </div>
-            <Button variant="primary" fullWidth iconLeft={Printer} className="h-[50px] rounded-full bg-[#6B1A2A] hover:bg-[#6B1A2A] mb-2.5">Print Now</Button>
+            <Button variant="primary" fullWidth iconLeft={Printer} className="h-12 rounded-full bg-[#6E0F2D] hover:bg-[#4A061B] mb-3 text-[14px]">Print Now</Button>
             <Button variant="link" fullWidth onClick={() => setShowTagPrint(false)} className="text-[13px] text-[#69635E] p-2.5">Skip Printing</Button>
           </div>
         </div>
@@ -240,7 +240,7 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
           {[["outsourced", "Outsourced"], ["own", "Own Factory"]].map(([key, label]) => (
             <Button key={key} variant={activeSection === key ? "primary" : "tertiary"} fullWidth
               onClick={() => setActiveSection(key as "outsourced" | "own")}
-              className={activeSection === key ? "rounded-lg bg-[#6B1A2A] hover:bg-[#6B1A2A]" : "rounded-lg"}>
+              className={activeSection === key ? "rounded-[9px] bg-[#6E0F2D] hover:bg-[#6E0F2D]" : "rounded-[9px]"}>
               {label}
             </Button>
           ))}
@@ -285,7 +285,7 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
             )}
 
             {reworkSarees.length > 0 && (
-              <div style={{ margin: "10px 16px 0", padding: "10px 14px", background: "rgba(107,26,42,0.05)", border: `1px solid rgba(107,26,42,0.20)`, borderRadius: 10, display: "flex", alignItems: "flex-start", gap: 8 }}>
+              <div style={{ margin: "10px 16px 0", padding: "10px 14px", background: "rgba(110,15,45,0.05)", border: `1px solid rgba(110,15,45,0.20)`, borderRadius: 10, display: "flex", alignItems: "flex-start", gap: 8 }}>
                 <RotateCcw size={15} color={C.burg} style={{ flexShrink: 0, marginTop: 1 }} />
                 <div>
                   <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.burg }}>
@@ -327,7 +327,7 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
                 <div style={{ marginBottom: 10 }}>
                   <FieldLabel>Saree Color</FieldLabel>
                   <Input value={sareeColor} onChange={e => setSareeColor(e.target.value)} placeholder="e.g. Maroon, Cream Gold"
-                    className="h-11 text-sm" />
+                    className="h-12 text-sm" />
                 </div>
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
@@ -365,10 +365,10 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
                     />
                     {!hasPhoto ? (
                       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                        <Button variant="primary" size="sm" iconLeft={Camera} onClick={() => cameraInputRef.current?.click()} className="h-[38px] rounded-lg bg-[#6B1A2A] hover:bg-[#6B1A2A]">
+                        <Button variant="primary" size="sm" iconLeft={Camera} onClick={() => cameraInputRef.current?.click()} className="h-11 rounded-[12px] bg-[#6E0F2D] hover:bg-[#4A061B]">
                           Camera
                         </Button>
-                        <Button variant="secondary" size="sm" iconLeft={UploadCloud} onClick={() => galleryInputRef.current?.click()} className="h-[38px] rounded-lg border-[#6B1A2A] text-[#6B1A2A]">
+                        <Button variant="secondary" size="sm" iconLeft={UploadCloud} onClick={() => galleryInputRef.current?.click()} className="h-11 rounded-[12px] border-[#6E0F2D] text-[#6E0F2D]">
                           Gallery
                         </Button>
                       </div>
@@ -402,23 +402,23 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
                 )}
 
                 <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-                  <Button variant="secondary" fullWidth size="sm" iconLeft={Printer} onClick={() => setShowTagPrint(true)} className="h-[42px] rounded-full border-[#C4923A] text-[#C4923A]">
+                  <Button variant="secondary" fullWidth size="sm" iconLeft={Printer} onClick={() => setShowTagPrint(true)} className="h-11 rounded-full border-[rgba(200,155,71,0.55)] text-[#845E04]">
                     Print Tag{selectedSareeNos.size > 1 ? "s" : ""}
                   </Button>
                   <Button variant="secondary" fullWidth size="sm" iconLeft={Plus} onClick={saveSaree} disabled={!canSaveSaree}
-                    className="h-[42px] rounded-full border-[#6B1A2A] text-[#6B1A2A]">
+                    className="h-11 rounded-full border-[#6E0F2D] text-[#6E0F2D]">
                     {selectedSareeNos.size > 1 ? `Save ${selectedSareeNos.size} Sarees` : "Next Saree"}
                   </Button>
                 </div>
                 <Button variant="secondary" fullWidth size="sm" iconLeft={AlertTriangle} onClick={() => setShowDefectPrompt(true)}
-                  className="h-[38px] rounded-full border-[rgba(220,53,69,0.25)] bg-[rgba(220,53,69,0.06)] text-[#C0392B] hover:bg-[rgba(220,53,69,0.06)]">
+                  className="h-11 rounded-full border-[rgba(171,56,50,0.28)] bg-[rgba(171,56,50,0.06)] text-[#AB3832] hover:bg-[rgba(171,56,50,0.10)]">
                   Mark {selectedSareeNos.size > 1 ? `${selectedSareeNos.size} Sarees` : "as"} Defective
                 </Button>
               </div>
             )}
 
             {currentBatch && selectedSareeNos.size === 0 && !allDone && (
-              <div style={{ margin: "10px 16px 0", padding: "10px 14px", background: "rgba(107,26,42,0.04)", border: `1px dashed ${C.bdr}`, borderRadius: 10, textAlign: "center" }}>
+              <div style={{ margin: "10px 16px 0", padding: "10px 14px", background: "rgba(110,15,45,0.04)", border: `1px dashed ${C.bdr}`, borderRadius: 10, textAlign: "center" }}>
                 <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Tap one or more pending sarees above (or Select All) to record color, weight and photo.</span>
               </div>
             )}
@@ -507,7 +507,7 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
                         fullWidth
                         iconLeft={CheckCircle2}
                         disabled={!sigOk}
-                        className={`h-[50px] rounded-full ${sigOk ? "bg-[#1E6640] hover:bg-[#1E6640]" : ""}`}>
+                        className={`h-12 rounded-full text-[14px] ${sigOk ? "bg-[#1F774E] hover:bg-[#15603D]" : ""}`}>
                         Mark Batch Complete
                       </Button>
                     </div>

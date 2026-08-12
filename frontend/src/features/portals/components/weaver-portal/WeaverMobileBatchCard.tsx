@@ -48,7 +48,7 @@ export function MobileBatchCard({ b, idx }: { b: MyBatchEntry; idx: number }) {
           <StatusBadge
             label={isActive ? "🟢 Open — Weaving" : "🟡 Draft"}
             color={isActive ? C.green : C.gold}
-            bg={isActive ? "rgba(30,102,64,0.10)" : "rgba(196,146,58,0.15)"}
+            bg={isActive ? "rgba(30,102,64,0.10)" : "rgba(200,155,71,0.15)"}
           />
         </div>
 
@@ -85,7 +85,7 @@ export function MobileBatchCard({ b, idx }: { b: MyBatchEntry; idx: number }) {
         {/* Semi-approved sarees are back with the weaver — called out here so
             the gap between Produced and the batch total is explained. */}
         {reworkCount > 0 && (
-          <div style={{ display: "flex", alignItems: "center", gap: 7, background: "rgba(196,146,58,0.10)", border: "1px solid rgba(196,146,58,0.30)", borderRadius: 9, padding: "8px 12px", marginBottom: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 7, background: "rgba(200,155,71,0.10)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 9, padding: "8px 12px", marginBottom: 12 }}>
             <RotateCcw size={13} color={C.gold} style={{ flexShrink: 0 }} />
             <span style={{ fontFamily: F.u, fontSize: 12, color: C.text }}>
               <strong>{reworkCount}</strong> semi-approved — rework and hand in again

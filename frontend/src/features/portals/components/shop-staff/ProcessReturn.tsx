@@ -55,7 +55,7 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
   const returnReasons = [
     { id: "defective", label: "Defective", sub: "Damaged or faulty item", Icon: AlertTriangle, color: "#C0392B", bg: "rgba(192,57,43,0.08)" },
     { id: "wrong", label: "Wrong Design", sub: "Doesn't match selection", Icon: Palette, color: "#7A4F2F", bg: "rgba(122,79,47,0.08)" },
-    { id: "mind", label: "Changed Mind", sub: "Customer preference", Icon: ThumbsDown, color: C.burg, bg: "rgba(107,26,42,0.08)" },
+    { id: "mind", label: "Changed Mind", sub: "Customer preference", Icon: ThumbsDown, color: C.burg, bg: "rgba(110,15,45,0.08)" },
     { id: "weight", label: "Size / Weight", sub: "Doesn't meet expectations", Icon: Scale, color: C.green, bg: "rgba(30,102,64,0.08)" },
     { id: "other", label: "Other Reason", sub: "Describe in notes", Icon: FileText, color: C.muted, bg: "rgba(139,112,96,0.08)" },
   ];
@@ -84,7 +84,7 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
           <Button
             onClick={() => { setReturnType("retail"); setStep(1); }}
             variant="ghost"
-            className="h-auto p-5 rounded-2xl border-[1.5px] border-[rgba(139,26,46,0.12)] bg-white flex-col items-start gap-3 shadow-[0_2px_12px_rgba(44,24,16,0.06)] text-left justify-start"
+            className="h-auto p-5 rounded-2xl border-[1.5px] border-[rgba(110,15,45,0.12)] bg-white flex-col items-start gap-3 shadow-[0_2px_12px_rgba(44,24,16,0.06)] text-left justify-start"
           >
             <div style={{ width: 48, height: 48, borderRadius: 12, background: "rgba(192,57,43,0.10)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <ShoppingBag size={24} color={C.crim} />
@@ -97,9 +97,9 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
           <Button
             onClick={() => { setReturnType("wholesale"); setStep(1); }}
             variant="ghost"
-            className="h-auto p-5 rounded-2xl border-[1.5px] border-[rgba(139,26,46,0.12)] bg-white flex-col items-start gap-3 shadow-[0_2px_12px_rgba(44,24,16,0.06)] text-left justify-start"
+            className="h-auto p-5 rounded-2xl border-[1.5px] border-[rgba(110,15,45,0.12)] bg-white flex-col items-start gap-3 shadow-[0_2px_12px_rgba(44,24,16,0.06)] text-left justify-start"
           >
-            <div style={{ width: 48, height: 48, borderRadius: 12, background: "rgba(196,146,58,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ width: 48, height: 48, borderRadius: 12, background: "rgba(200,155,71,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <Building2 size={24} color={C.gold} />
             </div>
             <div>

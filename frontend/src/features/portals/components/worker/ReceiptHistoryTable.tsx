@@ -45,7 +45,7 @@ function renderMaterialsSummary(summary: string) {
               <span style={{ 
                 fontFamily: F.u, fontSize: 12, fontWeight: 700,
                 color: type === "Warp" ? "#7A5010" : type === "Resham" ? "#7A5E1C" : C.burg, 
-                background: type === "Warp" ? "rgba(196,146,58,0.14)" : type === "Resham" ? "rgba(200,155,71,0.13)" : "rgba(107,26,42,0.08)",
+                background: type === "Warp" ? "rgba(196,146,58,0.14)" : type === "Resham" ? "rgba(200,155,71,0.13)" : "rgba(110,15,45,0.08)",
                 padding: "2px 6px", borderRadius: 4 
               }}>{type}</span>
               <span style={{ fontFamily: F.u, fontSize: 12, color: C.text }}>{desc}</span>
@@ -163,13 +163,13 @@ export function ReceiptHistoryTable({ receiptHistory: propReceiptHistory, compac
                 onClick={() => setHistoryPage(p => Math.max(1, p - 1))}
                 disabled={historyPage === 1}
                 size="sm"
-                className={"h-auto rounded-md border border-[rgba(139,26,46,0.12)] bg-white text-[#1A0A0F] " + (compact ? "px-2.5 py-1 text-[11px]" : "px-3 py-1.5 text-xs")}
+                className={"h-auto rounded-md border border-[rgba(110,15,45,0.12)] bg-white text-[#1A0A0F] " + (compact ? "px-2.5 py-1 text-[11px]" : "px-3 py-1.5 text-xs")}
               >Prev</Button>
               <Button
                 onClick={() => setHistoryPage(p => Math.min(totalPages, p + 1))}
                 disabled={historyPage === totalPages}
                 size="sm"
-                className={"h-auto rounded-md border border-[rgba(139,26,46,0.12)] bg-white text-[#1A0A0F] " + (compact ? "px-2.5 py-1 text-[11px]" : "px-3 py-1.5 text-xs")}
+                className={"h-auto rounded-md border border-[rgba(110,15,45,0.12)] bg-white text-[#1A0A0F] " + (compact ? "px-2.5 py-1 text-[11px]" : "px-3 py-1.5 text-xs")}
               >Next</Button>
             </div>
           </div>

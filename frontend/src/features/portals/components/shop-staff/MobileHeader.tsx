@@ -19,7 +19,7 @@ export function MobileHeader({
   routerNavigate: (path: string) => void;
 }) {
   return (
-    <div style={{ height: 56, background: C.burg, display: "flex", alignItems: "center", padding: "0 16px", flexShrink: 0, position: "sticky" as const, top: 0, zIndex: 100, boxShadow: "0 2px 12px rgba(107,26,42,0.30)" }}>
+    <div style={{ height: 56, background: C.burg, display: "flex", alignItems: "center", padding: "0 16px", flexShrink: 0, position: "sticky" as const, top: 0, zIndex: 100, boxShadow: "0 2px 12px rgba(110,15,45,0.30)" }}>
       <IconButton
         icon={Flower2}
         label="Back"

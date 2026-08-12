@@ -62,10 +62,10 @@ export function ScanSareeStep({
               borderRadius: 20, padding: "32px 24px", cursor: "pointer",
               display: "flex", flexDirection: "column" as const, alignItems: "center", gap: 14,
               position: "relative" as const, overflow: "hidden",
-              boxShadow: "0 12px 36px rgba(107,26,42,0.30)",
+              boxShadow: "0 12px 36px rgba(110,15,45,0.30)",
             }}
           >
-            <div style={{ position: "absolute" as const, top: -28, right: -28, width: 130, height: 130, borderRadius: "50%", background: "rgba(196,146,58,0.14)" }} />
+            <div style={{ position: "absolute" as const, top: -28, right: -28, width: 130, height: 130, borderRadius: "50%", background: "rgba(200,155,71,0.14)" }} />
             <div style={{ position: "absolute" as const, bottom: -36, left: -20, width: 110, height: 110, borderRadius: "50%", background: "rgba(255,255,255,0.05)" }} />
             <div style={{
               width: 72, height: 72, borderRadius: 18, position: "relative" as const, zIndex: 1,
@@ -85,7 +85,7 @@ export function ScanSareeStep({
               display: "flex", alignItems: "center", justifyContent: "center",
               position: "relative" as const, zIndex: 1,
               fontFamily: F.u, fontWeight: 600, fontSize: 13, color: C.text,
-              boxShadow: "0 2px 8px rgba(196,146,58,0.40)",
+              boxShadow: "0 2px 8px rgba(200,155,71,0.40)",
             }}>
               Tap to Open Camera
             </div>
@@ -106,7 +106,7 @@ export function ScanSareeStep({
                 size="lg" className="flex-1 font-mono"
               />
               {manualId.length > 3 && (
-                <Button variant="primary" size="lg" onClick={handleScan} className="rounded-xl bg-[#6B1A2A] hover:bg-[#6B1A2A] px-5">Find</Button>
+                <Button variant="primary" size="lg" onClick={handleScan} className="rounded-xl bg-[#6E0F2D] hover:bg-[#6E0F2D] px-5">Find</Button>
               )}
             </div>
             {scanError && (
@@ -172,7 +172,7 @@ export function ScanSareeStep({
           </Card>
 
           <div style={{ padding: "0 20px", display: "flex", gap: 10 }}>
-            <Button variant="secondary" size="lg" onClick={() => setSareeFound(false)} className="rounded-xl border-[rgba(139,26,46,0.12)] px-[18px] text-[13px] text-[#69635E]">Rescan</Button>
+            <Button variant="secondary" size="lg" onClick={() => setSareeFound(false)} className="rounded-xl border-[rgba(110,15,45,0.12)] px-[18px] text-[13px] text-[#69635E]">Rescan</Button>
             <Btn label="Next — Payment →" onClick={onNext} style={{ flex: 1, background: C.burg }} />
           </div>
         </motion.div>

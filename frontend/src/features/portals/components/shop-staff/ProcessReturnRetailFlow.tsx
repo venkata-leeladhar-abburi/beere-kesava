@@ -128,7 +128,7 @@ export function ProcessReturnRetailFlow({
                 </div>
               </Card>
               <div style={{ padding: "0 20px", display: "flex", gap: 10 }}>
-                <Button variant="secondary" size="lg" onClick={() => setSaleFound(false)} className="rounded-xl border-[rgba(139,26,46,0.12)] px-[18px] text-[13px] text-[#69635E]">Rescan</Button>
+                <Button variant="secondary" size="lg" onClick={() => setSaleFound(false)} className="rounded-xl border-[rgba(110,15,45,0.12)] px-[18px] text-[13px] text-[#69635E]">Rescan</Button>
                 <Btn label="Next — Return Reason →" onClick={() => setStep(2)} style={{ flex: 1, background: C.crim }} />
               </div>
             </motion.div>
@@ -149,8 +149,8 @@ export function ProcessReturnRetailFlow({
                 <Button variant="tertiary" fullWidth onClick={() => setReason(r.id)}
                   className={reason === r.id
                     ? "h-auto flex-col items-start gap-2 whitespace-normal rounded-[14px] px-3.5 py-4 relative border-2 border-[var(--reason-col)] bg-[var(--reason-bg)]"
-                    : "h-auto flex-col items-start gap-2 whitespace-normal rounded-[14px] px-3.5 py-4 relative border border-[rgba(139,26,46,0.12)] bg-white"}>
-                  <div style={{ width: 40, height: 40, borderRadius: 10, background: reason === r.id ? r.bg : "rgba(107,26,42,0.05)", display: "flex", alignItems: "center", justifyContent: "center", border: reason === r.id ? `1px solid ${r.color}40` : "none" }}>
+                    : "h-auto flex-col items-start gap-2 whitespace-normal rounded-[14px] px-3.5 py-4 relative border border-[rgba(110,15,45,0.12)] bg-white"}>
+                  <div style={{ width: 40, height: 40, borderRadius: 10, background: reason === r.id ? r.bg : "rgba(110,15,45,0.05)", display: "flex", alignItems: "center", justifyContent: "center", border: reason === r.id ? `1px solid ${r.color}40` : "none" }}>
                     <r.Icon size={20} color={reason === r.id ? r.color : C.muted} />
                   </div>
                   <div style={{ textAlign: "left" as const }}>
@@ -173,8 +173,8 @@ export function ProcessReturnRetailFlow({
                 <Button variant="tertiary" fullWidth onClick={() => setReason(r.id)}
                   className={reason === r.id
                     ? "rounded-[14px] px-[18px] py-3.5 relative justify-start gap-3 border-2 border-[var(--reason-col)] bg-[var(--reason-bg)]"
-                    : "rounded-[14px] px-[18px] py-3.5 relative justify-start gap-3 border border-[rgba(139,26,46,0.12)] bg-white"}>
-                  <div style={{ width: 40, height: 40, borderRadius: 10, background: reason === r.id ? r.bg : "rgba(107,26,42,0.05)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    : "rounded-[14px] px-[18px] py-3.5 relative justify-start gap-3 border border-[rgba(110,15,45,0.12)] bg-white"}>
+                  <div style={{ width: 40, height: 40, borderRadius: 10, background: reason === r.id ? r.bg : "rgba(110,15,45,0.05)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                     <r.Icon size={20} color={reason === r.id ? r.color : C.muted} />
                   </div>
                   <div style={{ textAlign: "left" as const }}>
@@ -227,7 +227,7 @@ export function ProcessReturnRetailFlow({
                 </div>
               ))}
               {otherReason && reason === "other" && (
-                <div style={{ background: "rgba(107,26,42,0.05)", borderRadius: 8, padding: "10px 12px", marginBottom: 12 }}>
+                <div style={{ background: "rgba(110,15,45,0.05)", borderRadius: 8, padding: "10px 12px", marginBottom: 12 }}>
                   <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 4 }}>Notes</div>
                   <div style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{otherReason}</div>
                 </div>

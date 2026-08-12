@@ -37,7 +37,7 @@ export function CustomerProfileDialog({
             {/* Header */}
             <div style={{ background: `linear-gradient(135deg, ${C.dark} 0%, #4A061B 100%)`, padding: "32px 32px 28px", flexShrink: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-                <div style={{ width: 72, height: 72, borderRadius: "50%", background: C.burg, border: "3px solid rgba(196,146,58,0.50)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 20px rgba(107,26,42,0.40)" }}>
+                <div style={{ width: 72, height: 72, borderRadius: "50%", background: C.burg, border: "3px solid rgba(200,155,71,0.50)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 20px rgba(110,15,45,0.40)" }}>
                   <span style={{ fontFamily: F.d, fontSize: 30, fontWeight: 700, color: "#FFF" }}>{customer.initials}</span>
                 </div>
                 <div style={{ flex: 1 }}>
@@ -46,7 +46,7 @@ export function CustomerProfileDialog({
                     {customer.regular && <Star size={18} fill={C.gold} color={C.gold} />}
                   </div>
                   <div style={{ fontFamily: F.m, fontSize: 14, color: "rgba(255,255,255,0.55)" }}>{customer.phone}</div>
-                  {customer.regular && <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(196,146,58,0.20)", border: "1px solid rgba(196,146,58,0.40)", borderRadius: 999, padding: "3px 12px", marginTop: 8 }}><Star size={11} fill={C.gold} color={C.gold} /><span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.gold }}>Regular Customer</span></div>}
+                  {customer.regular && <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(200,155,71,0.20)", border: "1px solid rgba(200,155,71,0.40)", borderRadius: 999, padding: "3px 12px", marginTop: 8 }}><Star size={11} fill={C.gold} color={C.gold} /><span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.gold }}>Regular Customer</span></div>}
                 </div>
                 <Dialog.Close asChild>
                   <IconButton
@@ -84,8 +84,8 @@ export function CustomerProfileDialog({
                   <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>No purchase history recorded for this customer.</div>
                 ) : (
                   customerPurchases.map((p, i, arr) => (
-                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 0", borderBottom: i < arr.length - 1 ? `1px solid rgba(107,26,42,0.06)` : "none" }}>
-                      <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(107,26,42,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 0", borderBottom: i < arr.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none" }}>
+                      <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(110,15,45,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                         <ShoppingBag size={18} color={C.burg} />
                       </div>
                       <div style={{ flex: 1 }}>
@@ -99,8 +99,8 @@ export function CustomerProfileDialog({
               </div>
               {/* Actions */}
               <div style={{ display: "flex", gap: 12 }}>
-                <Button onClick={onClose} className="flex-1 h-[50px] rounded-full border-[1.5px] border-[rgba(139,26,46,0.12)] bg-white font-semibold text-sm text-[#69635E]">Close</Button>
-                <Button className="flex-[2] h-[50px] rounded-full border-none bg-[#6B1A2A] font-bold text-sm text-white gap-2 shadow-[0_4px_16px_rgba(107,26,42,0.30)]">
+                <Button onClick={onClose} className="flex-1 h-[50px] rounded-full border-[1.5px] border-[rgba(110,15,45,0.12)] bg-white font-semibold text-sm text-[#69635E]">Close</Button>
+                <Button className="flex-[2] h-[50px] rounded-full border-none bg-[#6E0F2D] font-bold text-sm text-white gap-2 shadow-[0_4px_16px_rgba(110,15,45,0.30)]">
                   <ShoppingBag size={16} /> Record New Sale for {customer!.name.split(" ")[1] || customer!.name.split(" ")[0]}
                 </Button>
               </div>

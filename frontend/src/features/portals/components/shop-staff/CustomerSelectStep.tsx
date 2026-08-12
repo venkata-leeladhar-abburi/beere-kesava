@@ -81,7 +81,7 @@ export function CustomerSelectStep({
               size="lg"
               iconLeft={Search}
               iconRight={PhoneCall}
-              className={showCustomerList && !selectedCustomer ? "rounded-b-none border-[#6B1A2A]" : ""}
+              className={showCustomerList && !selectedCustomer ? "rounded-b-none border-[#6E0F2D]" : ""}
             />
           </div>
 
@@ -92,14 +92,14 @@ export function CustomerSelectStep({
               borderRadius: "0 0 14px 14px",
               boxShadow: "0 8px 24px rgba(44,24,16,0.12)", overflow: "hidden",
             }}>
-              <div style={{ padding: "8px 14px", background: "rgba(107,26,42,0.03)", borderBottom: `1px solid ${C.bdr}` }}>
+              <div style={{ padding: "8px 14px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${C.bdr}` }}>
                 <span style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 1.5, color: C.muted, textTransform: "uppercase" as const }}>
                   {custSearch.length >= 2 ? `${filteredCustomers.length} result${filteredCustomers.length !== 1 ? "s" : ""} for "${custSearch}"` : "Recent Customers"}
                 </span>
               </div>
               {filteredCustomers.length > 0 ? filteredCustomers.slice(0, 4).map((c, i) => (
                 <Button key={i} variant="tertiary" fullWidth onClick={() => handleSelectCustomer(c)}
-                  className={`justify-start gap-3 rounded-none border-0 px-3.5 py-3 ${i < Math.min(filteredCustomers.length, 4) - 1 ? "border-b border-[rgba(139,26,46,0.12)]" : ""}`}>
+                  className={`justify-start gap-3 rounded-none border-0 px-3.5 py-3 ${i < Math.min(filteredCustomers.length, 4) - 1 ? "border-b border-[rgba(110,15,45,0.12)]" : ""}`}>
                   <div style={{ width: 38, height: 38, borderRadius: "50%", background: `linear-gradient(135deg, ${C.burg}, ${C.dark})`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 12, color: "#FFF" }}>{c.initials}</span>
                   </div>
@@ -119,8 +119,8 @@ export function CustomerSelectStep({
               )}
               {/* Add new customer option */}
               <Button variant="tertiary" fullWidth onClick={handleAddNew}
-                className="justify-start gap-2.5 rounded-none border-0 border-t border-[rgba(139,26,46,0.12)] bg-[rgba(107,26,42,0.04)] px-3.5 py-3 hover:bg-[rgba(107,26,42,0.04)]">
-                <div style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(107,26,42,0.10)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                className="justify-start gap-2.5 rounded-none border-0 border-t border-[rgba(110,15,45,0.12)] bg-[rgba(110,15,45,0.04)] px-3.5 py-3 hover:bg-[rgba(110,15,45,0.04)]">
+                <div style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(110,15,45,0.10)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <UserPlus size={14} color={C.burg} />
                 </div>
                 <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, color: C.burg }}>Add New Customer</span>
@@ -147,7 +147,7 @@ export function CustomerSelectStep({
                   </div>
                 </div>
                 <Button variant="tertiary" size="sm" iconLeft={Pencil} onClick={() => setIsEditingCustomer(true)}
-                  className="rounded-lg border border-[rgba(139,26,46,0.12)] bg-[rgba(107,26,42,0.07)] px-2.5 py-1.5 hover:bg-[rgba(107,26,42,0.07)]">
+                  className="rounded-lg border border-[rgba(110,15,45,0.12)] bg-[rgba(110,15,45,0.07)] px-2.5 py-1.5 hover:bg-[rgba(110,15,45,0.07)]">
                   <span style={{ fontFamily: F.u, fontSize: 12, color: C.burg }}>Edit</span>
                 </Button>
               </div>
@@ -157,7 +157,7 @@ export function CustomerSelectStep({
                   { val: selectedCustomer.total, label: "Lifetime", color: C.gold },
                   { val: selectedCustomer.lastPurchase, label: "Last Visit", color: C.green },
                 ].map((s, i) => (
-                  <div key={i} style={{ background: "rgba(107,26,42,0.04)", borderRadius: 10, padding: "8px 10px", textAlign: "center" as const }}>
+                  <div key={i} style={{ background: "rgba(110,15,45,0.04)", borderRadius: 10, padding: "8px 10px", textAlign: "center" as const }}>
                     <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 14, color: s.color, lineHeight: 1.3 }}>{s.val}</div>
                     <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>{s.label}</div>
                   </div>
@@ -177,13 +177,13 @@ export function CustomerSelectStep({
         <motion.div key="cust-form" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
           <div style={{ margin: "0 20px" }}>
             {isNewCustomer && (
-              <div style={{ background: "rgba(196,146,58,0.10)", border: `1px solid ${C.gold}`, borderRadius: 10, padding: "10px 14px", marginBottom: 14, display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ background: "rgba(200,155,71,0.10)", border: `1px solid ${C.gold}`, borderRadius: 10, padding: "10px 14px", marginBottom: 14, display: "flex", alignItems: "center", gap: 8 }}>
                 <UserPlus size={14} color={C.gold} />
                 <span style={{ fontFamily: F.u, fontSize: 12, color: "#8B6520" }}>New Customer — A profile will be created after this sale</span>
               </div>
             )}
             {isEditingCustomer && (
-              <div style={{ background: "rgba(107,26,42,0.06)", border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "10px 14px", marginBottom: 14, display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ background: "rgba(110,15,45,0.06)", border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "10px 14px", marginBottom: 14, display: "flex", alignItems: "center", gap: 8 }}>
                 <Pencil size={14} color={C.burg} />
                 <span style={{ fontFamily: F.u, fontSize: 12, color: C.burg }}>Editing {selectedCustomer?.name}'s details</span>
               </div>
@@ -232,7 +232,7 @@ export function CustomerSelectStep({
             <div style={{ flex: 1, height: 1, background: C.bdr }} />
           </div>
           <Button variant="secondary" fullWidth iconLeft={UserPlus} onClick={handleAddNew}
-            className="h-[50px] rounded-xl border-[1.5px] border-dashed border-[rgba(107,26,42,0.30)] bg-transparent text-[#6B1A2A]">
+            className="h-[50px] rounded-xl border-[1.5px] border-dashed border-[rgba(110,15,45,0.30)] bg-transparent text-[#6E0F2D]">
             Add New Customer
           </Button>
         </div>

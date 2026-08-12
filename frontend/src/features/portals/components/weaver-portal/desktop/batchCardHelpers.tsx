@@ -33,7 +33,7 @@ export function GeneralDispatchInstructionsBlock() {
       </div>
       <div style={{ display: "flex", flexDirection: "column" as const, gap: 12 }}>
         {generalDispatches.map(d => (
-          <div key={d.id} style={{ background: "rgba(196,146,58,0.06)", border: `1px solid ${C.bdr}`, borderRadius: 14, padding: "16px 20px" }}>
+          <div key={d.id} style={{ background: "rgba(200,155,71,0.06)", border: `1px solid ${C.bdr}`, borderRadius: 14, padding: "16px 20px" }}>
             <div style={{ fontFamily: F.u, fontSize: 14, color: C.text, lineHeight: 1.5, fontWeight: 500 }}>{d.instructions}</div>
             {(d.colorSlipImage) && (
               <div style={{ display: "flex", gap: 12, marginTop: 14 }}>
@@ -91,7 +91,7 @@ export function MaterialsGivenBlock({ batchId }: { batchId: string }) {
   return (
     <div>
       <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 7 }}>MATERIALS GIVEN</div>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(196,146,58,0.08)", border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "10px 12px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(200,155,71,0.08)", border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "10px 12px" }}>
         <Package size={14} color={C.gold} />
         <span style={{ fontFamily: F.u, fontSize: 12, color: C.text }}>{summary}</span>
       </div>

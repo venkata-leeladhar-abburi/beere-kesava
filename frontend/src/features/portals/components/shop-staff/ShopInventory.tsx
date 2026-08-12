@@ -50,7 +50,7 @@ function ShopInventory() {
       src: item.source ?? "factory",
       design: item.designCode ?? "—",
       name: item.sareeTypeLabel ?? "Pure Silk Saree",
-      color: "#6B1A2A",
+      color: "#6E0F2D",
       sareeColor: "Silk",
       type: item.sareeTypeCode ?? "Standard",
       price: 8500,
@@ -151,7 +151,7 @@ function ShopInventory() {
               size="sm"
               className={
                 "shrink-0 rounded-full px-4 py-2 h-auto whitespace-nowrap border " +
-                (filter === f ? "border-[#6B1A2A] bg-[#6B1A2A] text-white font-semibold" : "border-[rgba(139,26,46,0.12)] bg-transparent text-[#69635E] font-semibold")
+                (filter === f ? "border-[#6E0F2D] bg-[#6E0F2D] text-white font-semibold" : "border-[rgba(110,15,45,0.12)] bg-transparent text-[#69635E] font-semibold")
               }
             >{f}</Button>
           ))}
@@ -169,7 +169,7 @@ function ShopInventory() {
                   size="sm"
                   className={
                     "shrink-0 rounded-full px-4 py-2 h-auto whitespace-nowrap border " +
-                    (isSel ? "border-[#6B1A2A] bg-[#6B1A2A] text-white font-semibold" : "border-[rgba(139,26,46,0.12)] bg-transparent text-[#69635E] font-semibold")
+                    (isSel ? "border-[#6E0F2D] bg-[#6E0F2D] text-white font-semibold" : "border-[rgba(110,15,45,0.12)] bg-transparent text-[#69635E] font-semibold")
                   }
                 >
                   {l === "All Looms" ? "All Looms" : `Loom ${l}`}
@@ -191,7 +191,7 @@ function ShopInventory() {
                   size="sm"
                   className={
                     "shrink-0 rounded-full px-4 py-2 h-auto whitespace-nowrap border " +
-                    (isSel ? "border-[#6B1A2A] bg-[#6B1A2A] text-white font-semibold" : "border-[rgba(139,26,46,0.12)] bg-transparent text-[#69635E] font-semibold")
+                    (isSel ? "border-[#6E0F2D] bg-[#6E0F2D] text-white font-semibold" : "border-[rgba(110,15,45,0.12)] bg-transparent text-[#69635E] font-semibold")
                   }
                 >
                   {w}
@@ -227,24 +227,24 @@ function ShopInventory() {
               <span style={{ fontFamily: F.m, fontSize: 14, color: C.burg, fontWeight: 600 }}>{s.id}</span>
               {s.src === "factory"
                 ? <Chip label="🏭 Factory" color={C.green} bg="rgba(30,102,64,0.10)" />
-                : <Chip label="📦 External" color={C.gold} bg="rgba(196,146,58,0.12)" />}
+                : <Chip label="📦 External" color={C.gold} bg="rgba(200,155,71,0.12)" />}
             </div>
             <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 16, color: C.text, marginBottom: 3 }}>{s.name}</div>
             <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginBottom: 8, lineHeight: 1.4 }}>{s.design !== "External" && `${s.design} · `}{s.sareeColor} · {s.type}</div>
             {s.weaver && (
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" as const }}>
-                <Chip label={`🧵 ${s.weaver}`} color={C.burg} bg="rgba(107,26,42,0.08)" />
+                <Chip label={`🧵 ${s.weaver}`} color={C.burg} bg="rgba(110,15,45,0.08)" />
                 {s.loom && <Chip label={`Loom ${s.loom}`} color={TEAL} bg="rgba(15,118,110,0.10)" />}
               </div>
             )}
             {canSeePrices && <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.gold, marginBottom: 6 }}>Retail: <Money value={rupees(s.price)} /></div>}
             <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginBottom: 6, lineHeight: 1.4 }}>{s.received} {s.src === "factory" ? "· From factory dispatch" : "· External purchase"}</div>
-            {s.supplier && <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginBottom: 6, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" as const }}>Supplier: {s.supplier} · <span style={{ fontFamily: F.m, fontSize: 12, background: "rgba(196,146,58,0.12)", color: C.gold, borderRadius: 999, padding: "2px 9px" }}>{s.id}</span></div>}
+            {s.supplier && <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginBottom: 6, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" as const }}>Supplier: {s.supplier} · <span style={{ fontFamily: F.m, fontSize: 12, background: "rgba(200,155,71,0.12)", color: C.gold, borderRadius: 999, padding: "2px 9px" }}>{s.id}</span></div>}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginTop: 8, flexWrap: "wrap" as const }}>
-              <Chip label={s.status === "available" ? "✓ Available" : "Reserved for Customer"} color={s.status === "available" ? C.green : C.gold} bg={s.status === "available" ? "rgba(30,102,64,0.10)" : "rgba(196,146,58,0.12)"} />
+              <Chip label={s.status === "available" ? "✓ Available" : "Reserved for Customer"} color={s.status === "available" ? C.green : C.gold} bg={s.status === "available" ? "rgba(30,102,64,0.10)" : "rgba(200,155,71,0.12)"} />
               <div style={{ display: "flex", gap: 8 }}>
-                <Button size="sm" className="h-[38px] px-4 rounded-full border border-[rgba(139,26,46,0.12)] bg-transparent font-semibold text-[13px] text-[#69635E]">View</Button>
-                <Button size="sm" className="h-[38px] px-4 rounded-full border-none bg-[#6B1A2A] font-semibold text-[13px] text-white">Sell</Button>
+                <Button size="sm" className="h-[38px] px-4 rounded-full border border-[rgba(110,15,45,0.12)] bg-transparent font-semibold text-[13px] text-[#69635E]">View</Button>
+                <Button size="sm" className="h-[38px] px-4 rounded-full border-none bg-[#6E0F2D] font-semibold text-[13px] text-white">Sell</Button>
               </div>
             </div>
           </div>

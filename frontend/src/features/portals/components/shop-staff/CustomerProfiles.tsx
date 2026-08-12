@@ -107,19 +107,19 @@ function CustomerProfiles() {
           </div>
           <div style={{ fontFamily: F.u, fontSize: 12, color: "rgba(255,255,255,0.55)", textAlign: "right" as const }}>Active this year</div>
         </div>
-        <div style={{ flex: "1 1 calc(50% - 5px)", background: "rgba(107,26,42,0.08)", border: `1px solid ${C.bdr}`, borderRadius: 16, padding: "16px 18px" }}>
+        <div style={{ flex: "1 1 calc(50% - 5px)", background: "rgba(110,15,45,0.08)", border: `1px solid ${C.bdr}`, borderRadius: 16, padding: "16px 18px" }}>
           <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12, color: C.text, marginBottom: 6 }}>Regular Customers</div>
           <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.text, lineHeight: 1.2 }}>{customers.filter(c => c.regular).length}</div>
           <div style={{ fontFamily: F.u, fontSize: 12, color: "rgba(26,10,15,0.55)", marginTop: 4 }}>Wholesale & repeat</div>
         </div>
         {canSeePrices ? (
-          <div style={{ flex: "1 1 calc(50% - 5px)", background: "rgba(196,146,58,0.12)", border: `1px solid rgba(196,146,58,0.30)`, borderRadius: 16, padding: "16px 18px" }}>
+          <div style={{ flex: "1 1 calc(50% - 5px)", background: "rgba(200,155,71,0.12)", border: `1px solid rgba(200,155,71,0.30)`, borderRadius: 16, padding: "16px 18px" }}>
             <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12, color: C.burg, marginBottom: 6 }}>Active Today</div>
             <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.burg, lineHeight: 1.2 }}>{salesList.filter(s => new Date(s.saleDate).toDateString() === new Date().toDateString()).length}</div>
             <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 4 }}>Transactions</div>
           </div>
         ) : (
-          <div style={{ flex: "1 1 calc(50% - 5px)", background: "rgba(196,146,58,0.12)", border: `1px solid rgba(196,146,58,0.30)`, borderRadius: 16, padding: "16px 18px" }}>
+          <div style={{ flex: "1 1 calc(50% - 5px)", background: "rgba(200,155,71,0.12)", border: `1px solid rgba(200,155,71,0.30)`, borderRadius: 16, padding: "16px 18px" }}>
             <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12, color: C.burg, marginBottom: 6 }}>Active Today</div>
             <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.burg, lineHeight: 1.2 }}>{salesList.filter(s => new Date(s.saleDate).toDateString() === new Date().toDateString()).length}</div>
             <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 4 }}>Transactions</div>
@@ -140,7 +140,7 @@ function CustomerProfiles() {
               size="sm"
               className={
                 "shrink-0 rounded-full px-[15px] py-2 h-auto whitespace-nowrap border " +
-                (sort === s ? "border-[#6B1A2A] bg-[#6B1A2A] text-white font-semibold" : "border-[rgba(139,26,46,0.12)] bg-transparent text-[#69635E] font-semibold")
+                (sort === s ? "border-[#6E0F2D] bg-[#6E0F2D] text-white font-semibold" : "border-[rgba(110,15,45,0.12)] bg-transparent text-[#69635E] font-semibold")
               }
             >{s}</Button>
           ))}
@@ -164,11 +164,11 @@ function CustomerProfiles() {
               {c.regular && <Star size={20} fill={C.gold} color={C.gold} />}
             </div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" as const, marginBottom: 16 }}>
-              <Chip label={`${c.purchases} purchases`} color={C.burg} bg="rgba(107,26,42,0.08)" />
-              {canSeePrices && <Chip label={c.total} color={C.gold} bg="rgba(196,146,58,0.12)" />}
+              <Chip label={`${c.purchases} purchases`} color={C.burg} bg="rgba(110,15,45,0.08)" />
+              {canSeePrices && <Chip label={c.total} color={C.gold} bg="rgba(200,155,71,0.12)" />}
               <Chip label={`Last: ${c.last}`} color={C.muted} bg="rgba(139,112,96,0.08)" />
             </div>
-            <Button onClick={() => setSelected(i)} fullWidth className="h-[46px] gap-2 rounded-full bg-[#6B1A2A] border-none font-semibold text-sm text-white shadow-[0_2px_10px_rgba(107,26,42,0.28)]">
+            <Button onClick={() => setSelected(i)} fullWidth className="h-[46px] gap-2 rounded-full bg-[#6E0F2D] border-none font-semibold text-sm text-white shadow-[0_2px_10px_rgba(110,15,45,0.28)]">
               <UserRound size={16} /> View Profile <ArrowRight size={14} />
             </Button>
           </Card>
@@ -182,7 +182,7 @@ function CustomerProfiles() {
               {/* Header */}
               <div style={{ background: `linear-gradient(135deg, ${C.dark} 0%, #4A061B 100%)`, padding: "16px 20px 24px", flexShrink: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                  <div style={{ width: 60, height: 60, borderRadius: "50%", background: C.burg, border: "3px solid rgba(196,146,58,0.50)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 20px rgba(107,26,42,0.40)" }}>
+                  <div style={{ width: 60, height: 60, borderRadius: "50%", background: C.burg, border: "3px solid rgba(200,155,71,0.50)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 20px rgba(110,15,45,0.40)" }}>
                     <span style={{ fontFamily: F.d, fontSize: 20, fontWeight: 700, color: "#FFF" }}>{activeCustomer.initials}</span>
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -225,8 +225,8 @@ function CustomerProfiles() {
                   <div style={{ width: 4, height: 18, background: C.burg, borderRadius: 2 }} /> Purchase History ({activePurchases.length})
                 </div>
                 {activePurchases.map((p, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 0", borderBottom: i < activePurchases.length - 1 ? `1px solid rgba(107,26,42,0.08)` : "none" }}>
-                    <div style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(107,26,42,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 0", borderBottom: i < activePurchases.length - 1 ? `1px solid rgba(110,15,45,0.08)` : "none" }}>
+                    <div style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(110,15,45,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                       <ShoppingBag size={17} color={C.burg} />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -240,10 +240,10 @@ function CustomerProfiles() {
 
                 {/* Actions */}
                 <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
-                  <Button fullWidth className="h-[52px] rounded-full border-none bg-[#6B1A2A] font-bold text-sm text-white gap-2 shadow-[0_4px_16px_rgba(107,26,42,0.30)]">
+                  <Button fullWidth className="h-[52px] rounded-full border-none bg-[#6E0F2D] font-bold text-sm text-white gap-2 shadow-[0_4px_16px_rgba(110,15,45,0.30)]">
                     <ShoppingBag size={17} /> Record New Sale
                   </Button>
-                  <Button onClick={() => setSelected(null)} fullWidth className="h-[50px] rounded-full border-[1.5px] border-[rgba(139,26,46,0.12)] bg-white font-semibold text-sm text-[#69635E]">Close</Button>
+                  <Button onClick={() => setSelected(null)} fullWidth className="h-[50px] rounded-full border-[1.5px] border-[rgba(110,15,45,0.12)] bg-white font-semibold text-sm text-[#69635E]">Close</Button>
                 </div>
               </div>
           </>

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { C, F } from "./tokens";
+import { PackageCheck } from "lucide-react";
+import { C, F, G } from "./tokens";
 import { useMaterialIssue } from "../../../materials/contexts/MaterialIssueContext";
 import { DesignPlanningPage } from "./weavers/DesignPlanningPage";
 import { ReceiveSareesPage } from "./weavers/ReceiveSareesPage";
@@ -45,13 +46,15 @@ export function WorkerWeavers({ subPage, onSubPageChange }: WorkerWeaversProps) 
   return (
     <>
       <div style={{ paddingBottom: 20 }}>
-        {/* Page header strip */}
-        <div style={{ background: `linear-gradient(135deg, ${C.dark} 0%, ${C.burg} 100%)`, padding: "16px 16px 14px" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <div>
-              <div style={{ fontFamily: F.d, fontSize: 18, fontWeight: 700, color: "#FFF", marginBottom: 2 }}>Receive Sarees</div>
-              <div style={{ fontFamily: F.u, fontSize: 12, color: "rgba(255,255,255,0.60)" }}>Record completed sarees from weavers</div>
-            </div>
+        {/* Banner header — same anatomy as the admin SectionCard header
+            (icon tile + display title + subtitle over the wine gradient). */}
+        <div style={{ background: G.header, padding: "22px 32px", display: "flex", alignItems: "center", gap: 16 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <PackageCheck size={26} color="#FFFDF9" />
+          </div>
+          <div>
+            <div style={{ fontFamily: F.d, fontSize: 20, fontWeight: 700, color: "#FFFDF9", letterSpacing: "-0.2px" }}>Receive Sarees</div>
+            <div style={{ fontFamily: F.u, fontSize: 14, color: "rgba(255,253,249,0.65)", marginTop: 3 }}>Record completed sarees from weavers</div>
           </div>
         </div>
 

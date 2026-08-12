@@ -20,7 +20,7 @@ export function RetailReturnSuccessView({ resetReturn, onBack }: RetailSuccessPr
       <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, lineHeight: 1.65, marginBottom: 20 }}>
         PADMA-L1-004 has been returned successfully.<br />Shop inventory updated. Customer profile updated.
       </div>
-      <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(107,26,42,0.08)", color: C.burg, borderRadius: 999, padding: "8px 18px", fontFamily: F.m, fontSize: 12, marginBottom: 14 }}>
+      <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(110,15,45,0.08)", color: C.burg, borderRadius: 999, padding: "8px 18px", fontFamily: F.m, fontSize: 12, marginBottom: 14 }}>
         <FileText size={13} color={C.burg} /> RTN-2026-0041
       </div>
       <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginBottom: 8 }}>Customer: Smt. Meenakshi · PADMA-L1-004</div>
@@ -58,12 +58,12 @@ export function WholesaleReturnSuccessView({
           </div>
         </motion.div>
         <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.text, marginBottom: 8 }}>Return Processed — Added to Inventory</div>
-        <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(196,146,58,0.12)", color: "#8B6520", borderRadius: 999, padding: "8px 18px", fontFamily: F.m, fontSize: 12, marginBottom: 20 }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(200,155,71,0.12)", color: "#8B6520", borderRadius: 999, padding: "8px 18px", fontFamily: F.m, fontSize: 12, marginBottom: 20 }}>
           <QrCode size={13} color={C.gold} /> {wsNewId}
         </div>
       </div>
       <Card style={{ margin: "0 20px 16px", overflow: "hidden" }}>
-        <div style={{ height: 4, background: `linear-gradient(90deg, ${C.gold}, rgba(196,146,58,0.3))` }} />
+        <div style={{ height: 4, background: `linear-gradient(90deg, ${C.gold}, rgba(200,155,71,0.3))` }} />
         <div style={{ padding: 18 }}>
           <div style={{ background: "#111", borderRadius: 8, padding: "14px 10px", marginBottom: 16, display: "flex", flexDirection: "column" as const, alignItems: "center", gap: 6 }}>
             <div style={{ display: "flex", gap: 2, alignItems: "flex-end", height: 40 }}>

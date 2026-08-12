@@ -66,7 +66,7 @@ export function ProcessReturnWholesaleFlow({
         <div style={{ display: "flex", gap: 4 }}>
           {(["Saree Details", "Generate Barcode"] as const).map((label, i) => (
             <div key={i} style={{ flex: 1 }}>
-              <div style={{ height: 4, borderRadius: 999, background: (i + 1) <= (step as number) ? C.gold : "rgba(196,146,58,0.20)", marginBottom: 5 }} />
+              <div style={{ height: 4, borderRadius: 999, background: (i + 1) <= (step as number) ? C.gold : "rgba(200,155,71,0.20)", marginBottom: 5 }} />
               <div style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 0.8, textTransform: "uppercase" as const, color: (i + 1) <= (step as number) ? "#8B6520" : C.muted, textAlign: "center" as const }}>{label}</div>
             </div>
           ))}
@@ -77,7 +77,7 @@ export function ProcessReturnWholesaleFlow({
       {step === 1 && (
         <div style={{ marginTop: 12 }}>
           <Card style={{ margin: "0 20px 16px", overflow: "hidden" }}>
-            <div style={{ height: 4, background: `linear-gradient(90deg, ${C.gold}, rgba(196,146,58,0.3))` }} />
+            <div style={{ height: 4, background: `linear-gradient(90deg, ${C.gold}, rgba(200,155,71,0.3))` }} />
             <div style={{ padding: 18 }}>
               <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text, marginBottom: 16 }}>Enter Saree Details</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
@@ -116,8 +116,8 @@ export function ProcessReturnWholesaleFlow({
               {wsReasonOptions.map(r => (
                 <Button key={r} variant="tertiary" size="sm" onClick={() => setWsReason(r)}
                   className={wsReason === r
-                    ? "rounded-full border-2 border-[#C4923A] bg-[rgba(196,146,58,0.12)] text-[#8B6520] font-semibold"
-                    : "rounded-full border border-[rgba(139,26,46,0.12)] bg-transparent text-[#69635E]"}>
+                    ? "rounded-full border-2 border-[#C89B47] bg-[rgba(200,155,71,0.12)] text-[#8B6520] font-semibold"
+                    : "rounded-full border border-[rgba(110,15,45,0.12)] bg-transparent text-[#69635E]"}>
                   {r}
                 </Button>
               ))}
@@ -125,11 +125,11 @@ export function ProcessReturnWholesaleFlow({
           </div>
           <div style={{ margin: "0 20px 16px", display: "flex", gap: 10 }}>
             <Button variant="secondary" fullWidth iconLeft={Camera} onClick={() => { }}
-              className="h-[46px] rounded-xl border-[1.5px] border-dashed border-[rgba(139,26,46,0.12)] bg-transparent text-[13px] text-[#69635E]">
+              className="h-[46px] rounded-xl border-[1.5px] border-dashed border-[rgba(110,15,45,0.12)] bg-transparent text-[13px] text-[#69635E]">
               Add Photo
             </Button>
             <Button variant="secondary" fullWidth iconLeft={Package} onClick={() => { }}
-              className="h-[46px] rounded-xl border-[1.5px] border-dashed border-[rgba(139,26,46,0.12)] bg-transparent text-[13px] text-[#69635E]">
+              className="h-[46px] rounded-xl border-[1.5px] border-dashed border-[rgba(110,15,45,0.12)] bg-transparent text-[13px] text-[#69635E]">
               From Gallery
             </Button>
           </div>
@@ -144,7 +144,7 @@ export function ProcessReturnWholesaleFlow({
       {step === 2 && (
         <div style={{ marginTop: 12 }}>
           <Card style={{ margin: "0 20px 16px", overflow: "hidden" }}>
-            <div style={{ height: 4, background: `linear-gradient(90deg, ${C.gold}, rgba(196,146,58,0.3))` }} />
+            <div style={{ height: 4, background: `linear-gradient(90deg, ${C.gold}, rgba(200,155,71,0.3))` }} />
             <div style={{ padding: 18 }}>
               <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.muted, textTransform: "uppercase" as const, letterSpacing: 1, marginBottom: 14 }}>Review — Saree Details</div>
               {[
@@ -172,7 +172,7 @@ export function ProcessReturnWholesaleFlow({
                   setWsNewId(`RTN-WS-2026-${String(Date.now()).slice(-3)}`);
                   setWsBarcodeGenerated(true);
                 }}
-                className="h-[58px] rounded-2xl border-2 border-[#C4923A] bg-[rgba(196,146,58,0.10)] text-sm font-bold text-[#8B6520] hover:bg-[rgba(196,146,58,0.10)]"
+                className="h-[58px] rounded-2xl border-2 border-[#C89B47] bg-[rgba(200,155,71,0.10)] text-sm font-bold text-[#8B6520] hover:bg-[rgba(200,155,71,0.10)]"
               >
                 Generate New Barcode
               </Button>

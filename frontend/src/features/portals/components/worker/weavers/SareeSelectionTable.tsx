@@ -43,7 +43,7 @@ export function SareeSelectionTable({
             variant="ghost"
             size="sm"
             onClick={e => { e.stopPropagation(); selectSareeSlot(s.no); }}
-            className={isSel ? "text-[#6B1A2A]" : "text-[rgba(139,26,46,0.20)]"}
+            className={isSel ? "text-[#6E0F2D]" : "text-[rgba(110,15,45,0.20)]"}
           />
         ) : (
           <IconButton
@@ -59,7 +59,7 @@ export function SareeSelectionTable({
     },
     {
       id: "no", header: "#", accessor: s => s.no,
-      cell: (_v, s) => <span style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{s.no}</span>,
+      cell: (_v, s) => <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted, fontVariantNumeric: "tabular-nums" }}>{s.no}</span>,
     },
     {
       id: "sareeId", header: "Saree ID", accessor: s => s.no,
@@ -67,11 +67,11 @@ export function SareeSelectionTable({
         const isSel = selectedSareeNos.has(s.no);
         const rowSareeId = s.sareeId;
         return s.status === "pending" ? (
-          <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 700, color: isSel ? "#FFF" : C.burg, background: isSel ? C.burg : "rgba(107,26,42,0.08)", borderRadius: 6, padding: "3px 8px" }}>
+          <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 500, color: isSel ? "#FFF" : C.burg, background: isSel ? C.burg : "rgba(110,15,45,0.08)", borderRadius: 8, padding: "4px 9px" }}>
             {rowSareeId}
           </span>
         ) : (
-          <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 700, color: C.text, background: "rgba(0,0,0,0.03)", borderRadius: 6, padding: "3px 8px" }}>{rowSareeId}</span>
+          <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 500, color: C.text, background: C.bg, border: `1px solid ${C.bdr}`, borderRadius: 8, padding: "4px 9px" }}>{rowSareeId}</span>
         );
       },
     },
@@ -79,20 +79,20 @@ export function SareeSelectionTable({
       id: "weaverLoom", header: "Weaver / Loom", accessor: () => selectedWeaver.name,
       cell: () => (
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <div style={{ width: 18, height: 18, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <span style={{ fontFamily: F.d, fontSize: 7, fontWeight: 700, color: "#FFF" }}>{selectedWeaver.avatar}</span>
+          <div style={{ width: 26, height: 26, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#FFF", lineHeight: 1 }}>{selectedWeaver.avatar}</span>
           </div>
-          <span style={{ fontFamily: F.u, fontSize: 12, color: C.text }}>{selectedWeaver.name}</span>
+          <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{selectedWeaver.name}</span>
         </div>
       ),
     },
     {
       id: "loomNo", header: "Loom No.", accessor: () => selectedWeaver.looms,
-      cell: () => <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 700, color: C.gold, background: "rgba(196,146,58,0.10)", border: `1px solid rgba(196,146,58,0.30)`, borderRadius: 6, padding: "3px 8px" }}>Loom {selectedWeaver.looms}</span>,
+      cell: () => <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#845E04", background: "rgba(200,155,71,0.12)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 8, padding: "4px 9px" }}>Loom {selectedWeaver.looms}</span>,
     },
     {
       id: "sareeType", header: "Saree Type", accessor: () => currentBatch.sareeTypeCode,
-      cell: () => <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 700, color: "#8B6018", background: "rgba(200,155,71,0.12)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 6, padding: "3px 8px" }}>{currentBatch.sareeTypeCode}</span>,
+      cell: () => <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 500, color: "#845E04", background: "rgba(200,155,71,0.12)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 8, padding: "4px 9px" }}>{currentBatch.sareeTypeCode}</span>,
     },
     {
       id: "bulkOrder", header: "Bulk Order", accessor: () => currentBatch.bulkOrderLabel,
@@ -110,23 +110,23 @@ export function SareeSelectionTable({
         // to check the reworked flaw rather than treating it as a first receipt.
         const statusCfg = s.status === "received" ? { label: "Received", bg: "rgba(30,102,64,0.10)", col: C.green }
           : s.status === "defective" ? { label: "Defective", bg: "rgba(220,53,69,0.10)", col: C.crim }
-          : s.isRework ? { label: "Rework — Receive Again", bg: "rgba(107,26,42,0.10)", col: C.burg }
-          : { label: "Pending", bg: "rgba(196,146,58,0.12)", col: C.gold };
-        return <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: statusCfg.col, background: statusCfg.bg, borderRadius: 999, padding: "3px 9px" }}>{statusCfg.label}</span>;
+          : s.isRework ? { label: "Rework — Receive Again", bg: "rgba(110,15,45,0.10)", col: C.burg }
+          : { label: "Pending", bg: "rgba(200,155,71,0.14)", col: "#8D5802" };
+        return <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: statusCfg.col, background: statusCfg.bg, borderRadius: 999, padding: "4px 10px", whiteSpace: "nowrap" }}>{statusCfg.label}</span>;
       },
     },
   ];
 
   return (
-    <div style={{ margin: "10px 16px 0" }}>
-      <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>
+    <div style={{ margin: "20px 16px 0" }}>
+      <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 10 }}>
         Sarees in {currentBatch.id}
       </div>
-      <div style={{ background: "#FFF", borderRadius: 14, border: `1.5px solid ${C.bdr}`, overflow: "hidden" }}>
-        <div style={{ padding: "12px 14px", borderBottom: `1px solid ${C.bdr}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-            <span style={{ fontFamily: F.d, fontSize: 14, fontWeight: 700, color: C.text }}>{currentBatch.total} Sarees</span>
-            <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.green, background: "rgba(30,102,64,0.10)", border: "1px solid rgba(30,102,64,0.22)", borderRadius: 999, padding: "3px 9px" }}>
+      <div style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${C.bdr}`, boxShadow: "0 2px 12px rgba(74,6,27,0.07)", overflow: "hidden" }}>
+        <div style={{ padding: "16px 20px", borderBottom: `1px solid ${C.bdr}`, background: C.bg, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            <span style={{ fontFamily: F.u, fontSize: 18, fontWeight: 600, color: C.wine, letterSpacing: "-0.01em" }}>{currentBatch.total} Sarees</span>
+            <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.green, background: "rgba(30,102,64,0.10)", border: "1px solid rgba(30,102,64,0.22)", borderRadius: 999, padding: "4px 10px" }}>
               {doneCount} complete
             </span>
           </div>
@@ -153,7 +153,7 @@ export function SareeSelectionTable({
             onRowClick={s => { if (s.status === "pending") selectSareeSlot(s.no); }}
             rowClassName={s => (selectedSareeNos.has(s.no) ? "bk-saree-row-selected" : undefined)}
           />
-          <style>{`.bk-saree-row-selected { background: rgba(107,26,42,0.05) !important; }`}</style>
+          <style>{`.bk-saree-row-selected { background: rgba(110,15,45,0.05) !important; }`}</style>
         </div>
       </div>
     </div>

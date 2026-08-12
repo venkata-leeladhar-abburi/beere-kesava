@@ -1,6 +1,7 @@
 import React from "react";
 import { AlertCircle, AlertTriangle, CheckCircle2, ClipboardCheck, CreditCard, History, ListChecks, Package, ArrowRight, RotateCcw } from "lucide-react";
 import { C, F, BG_IMAGE, MyBatchEntry, Tab5 } from "../theme";
+import { SectionHeading } from "@/shared/ui/portal/PortalChrome";
 import { BatchHistoryPage } from "../BatchHistoryPage";
 import { DesktopHero } from "./DesktopHero";
 import { WeaverHero } from "./WeaverHero";
@@ -159,7 +160,7 @@ export function BatchesSection({
             and have to be handed in again, so they get their own callout
             rather than being folded into the produced/QC counts. */}
         {reworkSarees.map(rs => (
-          <div key={rs.sareeId} style={{ background: "rgba(196,146,58,0.07)", border: `1.5px solid ${C.gold}`, borderRadius: 16, padding: "20px 24px", marginBottom: 28, display: "flex", gap: 16, alignItems: "flex-start" }}>
+          <div key={rs.sareeId} style={{ background: "rgba(200,155,71,0.07)", border: `1.5px solid ${C.gold}`, borderRadius: 16, padding: "20px 24px", marginBottom: 28, display: "flex", gap: 16, alignItems: "flex-start" }}>
             <RotateCcw size={24} color={C.gold} style={{ flexShrink: 0, marginTop: 2 }} />
             <div>
               <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 16.5, color: C.gold, marginBottom: 6 }}>Semi-Approved — Rework Needed</div>
@@ -174,18 +175,16 @@ export function BatchesSection({
 
         {/* Active Batches */}
         <div style={{ marginBottom: 40 }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{ width: 5, height: 28, background: C.burg, borderRadius: 3 }} />
-              <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 20, color: C.text }}>Active Batches</span>
-            </div>
-            <Button onClick={() => setBatchesSubPage("history")} variant="ghost" className="flex items-center gap-1.5 h-auto bg-[rgba(110,15,45,0.06)] border border-[rgba(110,15,45,0.10)] rounded-full px-[18px] py-2 text-sm text-[#6E0F2D] font-semibold">
-              <History size={15} color={C.burg} /> View All History
-            </Button>
-          </div>
-          <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginBottom: 24 }}>
-            You can have a maximum of {MAX_ACTIVE_BATCHES} active batches at a time. Complete one before a new batch is assigned.
-          </div>
+          <SectionHeading
+            title="Active Batches"
+            subtitle={`You can have a maximum of ${MAX_ACTIVE_BATCHES} active batches at a time. Complete one before a new batch is assigned.`}
+            right={
+              <Button onClick={() => setBatchesSubPage("history")} variant="ghost" className="flex items-center gap-1.5 h-auto bg-[rgba(110,15,45,0.06)] border border-[rgba(110,15,45,0.10)] rounded-full px-[18px] py-2 text-sm text-[#6E0F2D] font-semibold">
+                <History size={15} color={C.burg} /> View All History
+              </Button>
+            }
+          />
+          <div style={{ height: 8 }} />
           <div style={{ display: "grid", gridTemplateColumns: isTablet ? "1fr" : "1fr 1fr", gap: isTablet ? 18 : 24, marginBottom: 20 }}>
             {!batchesError && myActiveBatches.map((b, idx) => <DesktopActiveBatchCard key={b.batchId} b={b} idx={idx} bp={bp} />)}
             {batchesError ? (
@@ -207,7 +206,7 @@ export function BatchesSection({
             )}
           </div>
           {myActiveBatches.length >= MAX_ACTIVE_BATCHES && (
-            <div style={{ background: "#FFF8E8", border: `1px solid rgba(196,146,58,0.30)`, borderRadius: 14, padding: "16px 22px", display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ background: "#FFF8E8", border: `1px solid rgba(200,155,71,0.30)`, borderRadius: 14, padding: "16px 22px", display: "flex", alignItems: "center", gap: 12 }}>
               <AlertCircle size={20} color={C.gold} />
               <span style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>Maximum {MAX_ACTIVE_BATCHES} active batches reached. Complete one before a new batch can be assigned.</span>
             </div>
@@ -216,16 +215,17 @@ export function BatchesSection({
 
         {/* Completed Batches */}
         <div style={{ marginBottom: 40 }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{ width: 5, height: 28, background: "#1D4ED8", borderRadius: 3 }} />
-              <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 20, color: C.text }}>Completed Batches</span>
-            </div>
-            <Button onClick={() => setBatchesSubPage("completed")} variant="ghost" className="flex items-center gap-1.5 h-auto bg-[rgba(29,78,216,0.06)] border border-[rgba(29,78,216,0.20)] rounded-full px-[18px] py-2 text-sm text-[#1D4ED8] font-semibold">
-              <ListChecks size={15} color="#1D4ED8" /> See All Completed
-            </Button>
-          </div>
-          <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginBottom: 24 }}>Recent completed batches — your track record of finished work.</div>
+          <SectionHeading
+            title="Completed Batches"
+            subtitle="Recent completed batches — your track record of finished work."
+            accent="#1F774E"
+            right={
+              <Button onClick={() => setBatchesSubPage("completed")} variant="ghost" className="flex items-center gap-1.5 h-auto bg-[rgba(31,119,78,0.06)] border border-[rgba(31,119,78,0.22)] rounded-full px-[18px] py-2 text-sm text-[#1F774E] font-semibold">
+                <ListChecks size={15} color="#1F774E" /> See All Completed
+              </Button>
+            }
+          />
+          <div style={{ height: 8 }} />
           {completedBatches.length === 0 ? (
             <div style={{ padding: "40px 20px", textAlign: "center" as const, background: C.cream, borderRadius: 20, border: `1px solid ${C.bdr}` }}>
               <CheckCircle2 size={32} color={C.muted} style={{ margin: "0 auto 12px" }} />
@@ -260,7 +260,7 @@ export function BatchesSection({
                   (!isTablet && i < 2 ? "border-r border-r-white/[0.07]" : "")
                 }
               >
-                <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(196,146,58,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{a.icon}</div>
+                <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(200,155,71,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{a.icon}</div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: "#FFF", marginBottom: 3 }}>{a.label}</div>
                   <div style={{ fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.45)" }}>{a.sub}</div>

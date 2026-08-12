@@ -154,7 +154,7 @@ export function PaymentLedgerPage() {
                 <Check size={15} color={C.green} />✓ Paid
               </div>
             ) : (
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(196,146,58,0.15)", color: C.gold, borderRadius: 999, padding: "8px 18px", fontFamily: F.m, fontSize: 13 }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(200,155,71,0.15)", color: C.gold, borderRadius: 999, padding: "8px 18px", fontFamily: F.m, fontSize: 13 }}>
                 <Clock size={14} color={C.gold} />⏳ Payment Pending — Expected by month end
               </div>
             )}
@@ -193,7 +193,7 @@ export function PaymentLedgerPage() {
         <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.45)", letterSpacing: 1.2, textTransform: "uppercase" as const, marginBottom: 10 }}>This Month's Payout</div>
         <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 38, color: C.gold, lineHeight: 1, marginBottom: 8 }}>{fmtAmt(netAmountVal)}</div>
         <div style={{ fontFamily: F.u, fontSize: 14, color: "rgba(255,255,255,0.60)", marginBottom: 16 }}>Net amount after deductions</div>
-        <div style={{ display: "inline-block", background: "rgba(196,146,58,0.22)", border: `1px solid ${C.gold}`, borderRadius: 999, padding: "7px 16px", fontFamily: F.m, fontSize: 12, color: C.gold }}>
+        <div style={{ display: "inline-block", background: "rgba(200,155,71,0.22)", border: `1px solid ${C.gold}`, borderRadius: 999, padding: "7px 16px", fontFamily: F.m, fontSize: 12, color: C.gold }}>
           Payment by end of {currentMonthLabel}
         </div>
       </div>

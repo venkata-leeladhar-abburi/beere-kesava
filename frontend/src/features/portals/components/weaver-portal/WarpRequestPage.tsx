@@ -303,7 +303,7 @@ export function WarpRequestPage() {
           date: new Date(r.requestedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
           status: r.status === "APPROVED" ? "✓ Approved" : r.status === "REJECTED" ? "✗ Rejected" : "⏳ Pending",
           color: r.status === "APPROVED" ? C.green : r.status === "REJECTED" ? C.crim : C.gold,
-          bg: r.status === "APPROVED" ? "rgba(30,102,64,0.10)" : r.status === "REJECTED" ? "rgba(192,57,43,0.10)" : "rgba(196,146,58,0.15)",
+          bg: r.status === "APPROVED" ? "rgba(30,102,64,0.10)" : r.status === "REJECTED" ? "rgba(192,57,43,0.10)" : "rgba(200,155,71,0.15)",
         }));
 
         if (rows.length === 0) {

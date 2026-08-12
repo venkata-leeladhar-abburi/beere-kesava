@@ -7,7 +7,7 @@ import { Button, Input, Checkbox, Textarea } from "../../../../shared/ui/primiti
 const MAT_TAG: Record<string, { col: string; bg: string }> = {
   Warp:   { col: "#7A5010", bg: "rgba(196,146,58,0.14)" },
   Resham: { col: "#7A5E1C", bg: "rgba(200,155,71,0.13)" },
-  Jari:   { col: C.burg,    bg: "rgba(107,26,42,0.08)" },
+  Jari:   { col: C.burg,    bg: "rgba(110,15,45,0.08)" },
 };
 
 function MatChip({ type }: { type: string }) {
@@ -84,7 +84,7 @@ export function GRNItemVerificationCard({
                     size="sm"
                     fullWidth
                     onClick={() => setReceivedUnit(prev => ({ ...prev, [i]: u }))}
-                    className={receivedUnit === u ? "rounded-md bg-[#6B1A2A] hover:bg-[#6B1A2A]" : "rounded-md"}
+                    className={receivedUnit === u ? "rounded-md bg-[#6E0F2D] hover:bg-[#6E0F2D]" : "rounded-md"}
                   >
                     {u}
                   </Button>
@@ -98,7 +98,7 @@ export function GRNItemVerificationCard({
                     size="sm"
                     fullWidth
                     onClick={() => setReceivedUnit(prev => ({ ...prev, [i]: u }))}
-                    className={receivedUnit === u ? "rounded-md bg-[#6B1A2A] hover:bg-[#6B1A2A]" : "rounded-md"}
+                    className={receivedUnit === u ? "rounded-md bg-[#6E0F2D] hover:bg-[#6E0F2D]" : "rounded-md"}
                   >
                     {u}
                   </Button>
@@ -174,7 +174,7 @@ export function GRNItemVerificationCard({
             onClick={() => { setItemApproval(prev => ({ ...prev, [i]: "approved" })); setItemRejectReason(prev => ({ ...prev, [i]: "" })); }}
             className={itemApproval === "approved"
               ? "rounded-lg border-[1.5px] border-[#1E6640] bg-[rgba(30,102,64,0.09)] text-[#1E6640]"
-              : "rounded-lg border-[1.5px] border-[rgba(139,26,46,0.12)] bg-white"}
+              : "rounded-lg border-[1.5px] border-[rgba(110,15,45,0.12)] bg-white"}
           >
             Approved
           </Button>
@@ -186,7 +186,7 @@ export function GRNItemVerificationCard({
             onClick={() => setItemApproval(prev => ({ ...prev, [i]: "rejected" }))}
             className={itemApproval === "rejected"
               ? "rounded-lg border-[1.5px] border-[#C0392B] bg-[rgba(192,57,43,0.08)] text-[#C0392B]"
-              : "rounded-lg border-[1.5px] border-[rgba(139,26,46,0.12)] bg-white"}
+              : "rounded-lg border-[1.5px] border-[rgba(110,15,45,0.12)] bg-white"}
           >
             Not Approved
           </Button>

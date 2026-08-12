@@ -49,7 +49,10 @@ const C = {
   crim: semantic.text.danger,
   text: semantic.text.primary,
   muted: semantic.text.tertiary,
-  bdr: "rgba(139,26,46,0.12)",
+  bdr: "rgba(110,15,45,0.10)",   // matches admin/worker borderDef
+  bdrMed: "rgba(110,15,45,0.20)",
+  wine: brand.burgundy[950],
+  goldText: brand.gold[700],      // gold is never a text colour below 700
   cream: semantic.surface.canvas,
   inp: "#FFF8E7",
   white: "#FFFFFF",
@@ -117,7 +120,7 @@ function DesignDetailCard({ designCode, onClose }: { designCode: string; onClose
         )}
 
         {d?.notesForWeaver && (
-          <div style={{ background: "rgba(196,146,58,0.08)", border: `1px solid rgba(196,146,58,0.25)`, borderRadius: 10, padding: "10px 12px", marginBottom: 10 }}>
+          <div style={{ background: "rgba(200,155,71,0.08)", border: `1px solid rgba(200,155,71,0.25)`, borderRadius: 10, padding: "10px 12px", marginBottom: 10 }}>
             <div style={{ fontFamily: F.m, fontSize: 12, color: C.gold, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 4 }}>NOTES FOR YOU</div>
             <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, lineHeight: 1.5 }}>{d.notesForWeaver}</div>
           </div>
@@ -190,7 +193,7 @@ function SareeTypeDetailCard({ typeCode, typeName, onClose }: { typeCode: string
 
         {/* Making charge + weight */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
-          <div style={{ background: "rgba(196,146,58,0.08)", border: `1px solid rgba(196,146,58,0.22)`, borderRadius: 12, padding: "14px 16px" }}>
+          <div style={{ background: "rgba(200,155,71,0.08)", border: `1px solid rgba(200,155,71,0.22)`, borderRadius: 12, padding: "14px 16px" }}>
             <div style={{ fontFamily: F.m, fontSize: 12, color: C.gold, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 4 }}>MAKING CHARGE</div>
             <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.gold }}>{r ? <Money value={rupees(Number(r.charge))} /> : "—"}</div>
             <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>per saree</div>
@@ -240,11 +243,11 @@ function SareeTypeDetailCard({ typeCode, typeName, onClose }: { typeCode: string
 // ─── Shared Components ──────────────────────────────────────────────────────
 function SectionTitle({ title, link, onLink }: { title: string; link?: string; onLink?: () => void }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", margin: "20px 20px 12px", gap: 10 }}>
-      <div style={{ width: 4, height: 20, background: C.burg, borderRadius: 2, flexShrink: 0 }} />
-      <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 16, color: C.text, flex: 1 }}>{title}</span>
+    <div style={{ display: "flex", alignItems: "center", margin: "32px 20px 16px", gap: 12 }}>
+      <div style={{ width: 4, height: 22, background: C.gold, borderRadius: 2, flexShrink: 0 }} />
+      <h2 style={{ fontFamily: F.d, fontWeight: 600, fontSize: 20, color: C.wine, margin: 0, flex: 1, letterSpacing: "-0.015em" }}>{title}</h2>
       {link && (
-        <Button variant="link" onClick={onLink} className="p-0 text-[13px] text-[#C89B47]">
+        <Button variant="link" onClick={onLink} className="p-0 text-[13px] font-semibold text-[#845E04]">
           {link}
         </Button>
       )}
@@ -255,8 +258,8 @@ function SectionTitle({ title, link, onLink }: { title: string; link?: string; o
 function Card({ children, style, leftBorder }: { children: React.ReactNode; style?: React.CSSProperties; leftBorder?: string }) {
   return (
     <div style={{
-      background: C.white, borderRadius: 16, border: `1px solid ${C.bdr}`,
-      boxShadow: "0 2px 16px rgba(44,24,16,0.08)", padding: 20,
+      background: C.white, borderRadius: 20, border: `1px solid ${C.bdr}`,
+      boxShadow: "0 6px 32px rgba(74,6,27,0.08)", padding: 24,
       ...(leftBorder ? { borderLeft: `4px solid ${leftBorder}` } : {}),
       ...style,
     }}>
@@ -287,10 +290,10 @@ function StatusBadge({ label, color, bg }: { label: string; color: string; bg: s
 
 function HeroHeader({ eyebrow, title, sub }: { eyebrow: string; title: string; sub: string }) {
   return (
-    <div style={{ background: C.dark, padding: "24px 20px 22px" }}>
-      <div style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 3, color: "rgba(255,255,255,0.45)", textTransform: "uppercase", marginBottom: 6 }}>{eyebrow}</div>
-      <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 30, color: "#FFF", lineHeight: 1.15, marginBottom: 4 }}>{title}</div>
-      <div style={{ fontFamily: F.d, fontStyle: "italic", fontWeight: 500, fontSize: 18, color: C.gold }}>{sub}</div>
+    <div style={{ background: "#0D0207", padding: "28px 20px 24px" }}>
+      <div style={{ fontFamily: F.m, fontSize: 12, letterSpacing: "1.8px", color: "rgba(255,253,249,0.50)", textTransform: "uppercase", marginBottom: 10 }}>{eyebrow}</div>
+      <div style={{ fontFamily: F.d, fontWeight: 400, fontSize: 34, color: "#FFFDF9", lineHeight: 1.1, marginBottom: 4 }}>{title}</div>
+      <div style={{ fontFamily: F.d, fontStyle: "italic", fontWeight: 400, fontSize: 22, color: C.gold }}>{sub}</div>
     </div>
   );
 }
@@ -360,6 +363,9 @@ export interface DesktopHeroProps {
   bp?: "tablet" | "desktop";
 }
 
+
+export { PageHero, StatsStrip, SectionCard, SectionHeading, GUTTER_X, GUTTER_X_TABLET } from "@/shared/ui/portal/PortalChrome";
+export type { WorkerStat as PortalStat } from "@/shared/ui/portal/PortalChrome";
 
 export {
   C,

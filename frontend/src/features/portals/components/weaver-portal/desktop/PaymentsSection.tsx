@@ -1,6 +1,7 @@
 import React from "react";
 import { Check, TrendingUp } from "lucide-react";
 import { C, F, FABRIC_BG } from "../theme";
+import { SectionHeading } from "@/shared/ui/portal/PortalChrome";
 import { DesktopHero } from "./DesktopHero";
 import { Button } from "../../../../../shared/ui/primitives";
 import { useCurrentWeaver } from "../useCurrentWeaver";
@@ -13,17 +14,14 @@ import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
 import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
 
+/** Thin wrapper on the shared portal heading so this section matches admin,
+ *  Worker Staff and the rest of the weaver portal. */
 function DSectionHeader({ label, link, onLink }: { label: string; link?: string; onLink?: () => void }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <div style={{ width: 5, height: 28, background: C.burg, borderRadius: 3 }} />
-        <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 20, color: C.text }}>{label}</span>
-      </div>
-      {link && (
-        <Button variant="link" onClick={onLink} className="p-0 text-sm text-[#C89B47]">{link}</Button>
-      )}
-    </div>
+    <SectionHeading
+      title={label}
+      right={link ? <Button variant="link" onClick={onLink} className="p-0 text-sm font-semibold text-[#845E04]">{link}</Button> : undefined}
+    />
   );
 }
 
@@ -248,7 +246,7 @@ export function PaymentsSection({ bp, isTablet }: { bp: "tablet" | "desktop"; is
               <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.40)", letterSpacing: 1.4, textTransform: "uppercase" as const, marginBottom: 12 }}>THIS MONTH'S PAYOUT</div>
               <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 54, color: C.gold, lineHeight: 1, marginBottom: 10 }}><Money value={rupees(netAmount)} /></div>
               <div style={{ fontFamily: F.u, fontSize: 14, color: "rgba(255,255,255,0.55)", marginBottom: 20 }}>Net amount after deductions</div>
-              <div style={{ display: "inline-block", background: "rgba(196,146,58,0.22)", border: `1px solid ${C.gold}`, borderRadius: 999, padding: "8px 18px", fontFamily: F.m, fontSize: 13, color: C.gold }}>
+              <div style={{ display: "inline-block", background: "rgba(200,155,71,0.22)", border: `1px solid ${C.gold}`, borderRadius: 999, padding: "8px 18px", fontFamily: F.m, fontSize: 13, color: C.gold }}>
                 Payment for {monthName}
               </div>
             </div>

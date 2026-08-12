@@ -59,7 +59,7 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
           <div style={{ fontFamily: F.d, fontSize: 20, fontWeight: 700, color: C.text, textAlign: "center" }}>Batch Opened</div>
           <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, textAlign: "center" }}>Weaver notified on WhatsApp</div>
           <div style={{ fontFamily: F.m, fontSize: 20, fontWeight: 600, color: C.burg }}>{batchId}</div>
-          <Button variant="secondary" onClick={onBack} className="w-auto rounded-full px-7 border-[rgba(139,26,46,0.30)] text-[#6B1A2A]">Back to Weavers</Button>
+          <Button variant="secondary" onClick={onBack} className="w-auto rounded-full px-7 border-[rgba(110,15,45,0.30)] text-[#6E0F2D]">Back to Weavers</Button>
         </div>
       </>
     );
@@ -77,9 +77,9 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
             { key: "outsourced" as IssueSource, Icon: Users, title: "Outsourced", sub: "External weaver", color: C.green },
           ].map(opt => (
             <Button key={String(opt.key)} variant="tertiary" onClick={() => setSource(opt.key)}
-              className={`h-auto flex-col items-center whitespace-normal rounded-xl px-3 py-3.5 text-center relative ${source === opt.key ? "border-2 border-[#6B1A2A] bg-[rgba(107,26,42,0.05)]" : "border border-[rgba(139,26,46,0.12)] bg-white"}`}>
+              className={`h-auto flex-col items-center whitespace-normal rounded-xl px-3 py-3.5 text-center relative ${source === opt.key ? "border-2 border-[#6E0F2D] bg-[rgba(110,15,45,0.05)]" : "border border-[rgba(110,15,45,0.12)] bg-white"}`}>
               {source === opt.key && <div style={{ position: "absolute", top: 7, right: 7, width: 16, height: 16, background: C.gold, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><CheckCircle2 size={10} color="#FFF" /></div>}
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 44, height: 44, borderRadius: 12, background: source === opt.key ? "rgba(107,26,42,0.10)" : "rgba(107,26,42,0.05)", margin: "0 auto 8px" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 44, height: 44, borderRadius: 12, background: source === opt.key ? "rgba(110,15,45,0.10)" : "rgba(110,15,45,0.05)", margin: "0 auto 8px" }}>
                 <opt.Icon size={22} color={source === opt.key ? C.burg : C.muted} />
               </div>
               <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.text, marginBottom: 2 }}>{opt.title}</div>
@@ -95,7 +95,7 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
             <Input type="number" value={loomNum} onChange={e => setLoomNum(e.target.value)} placeholder="e.g. 3"
               size="lg" className="font-mono" />
             {loomNum && (
-              <div style={{ marginTop: 8, display: "inline-flex", background: "rgba(107,26,42,0.10)", padding: "5px 10px", borderRadius: 7 }}>
+              <div style={{ marginTop: 8, display: "inline-flex", background: "rgba(110,15,45,0.10)", padding: "5px 10px", borderRadius: 7 }}>
                 <span style={{ fontFamily: F.m, fontSize: 13, fontWeight: 600, color: C.burg }}>BKB-L{loomNum}-001</span>
               </div>
             )}
@@ -110,11 +110,11 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
                 onFocus={() => setShowWeaverList(true)} placeholder="Search weaver..."
                 iconLeft={Search} size="lg" />
               {showWeaverList && (
-                <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 10, boxShadow: "0 8px 24px rgba(107,26,42,0.12)", zIndex: 50, marginTop: 4 }}>
+                <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 10, boxShadow: "0 8px 24px rgba(110,15,45,0.12)", zIndex: 50, marginTop: 4 }}>
                   {WEAVERS.filter(w => w.name.toLowerCase().includes(weaverSearch.toLowerCase())).map(w => (
                     <Button key={w.code} variant="tertiary" fullWidth
                       onClick={() => { setSelectedWeaver(w); setWeaverSearch(w.name); setShowWeaverList(false); }}
-                      className="justify-start gap-2.5 rounded-none border-0 border-b px-3.5 py-2.5 border-[rgba(139,26,46,0.12)]">
+                      className="justify-start gap-2.5 rounded-none border-0 border-b px-3.5 py-2.5 border-[rgba(110,15,45,0.12)]">
                       <div style={{ width: 34, height: 34, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                         <span style={{ fontFamily: F.d, fontSize: 12, fontWeight: 700, color: "#FFF" }}>{w.avatar}</span>
                       </div>
@@ -136,7 +136,7 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
                   <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.text }}>{selectedWeaver.name}</div>
                   <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{selectedWeaver.code} · {selectedWeaver.looms} looms</div>
                 </div>
-                <div style={{ display: "inline-flex", background: "rgba(107,26,42,0.10)", padding: "4px 9px", borderRadius: 6 }}>
+                <div style={{ display: "inline-flex", background: "rgba(110,15,45,0.10)", padding: "4px 9px", borderRadius: 6 }}>
                   <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, color: C.burg }}>{selectedWeaver.name.split(" ")[0].toUpperCase()}-L{selectedWeaver.looms}-001</span>
                 </div>
               </div>
@@ -169,7 +169,7 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
               <div style={{ display: "flex", gap: 6, marginBottom: 2 }}>
                 {(["kg", "g"] as const).map(u => (
                   <Button key={u} variant={warpUnit === u ? "primary" : "secondary"} size="sm" fullWidth onClick={() => setWarpUnit(u)}
-                    className={warpUnit === u ? "rounded-md bg-[#6B1A2A] hover:bg-[#6B1A2A]" : "rounded-md"}>
+                    className={warpUnit === u ? "rounded-md bg-[#6E0F2D] hover:bg-[#6E0F2D]" : "rounded-md"}>
                     {u}
                   </Button>
                 ))}
@@ -197,7 +197,7 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
               <div style={{ display: "flex", gap: 6, marginBottom: 2 }}>
                 {(["kg", "g"] as const).map(u => (
                   <Button key={u} variant={reshamUnit === u ? "primary" : "secondary"} size="sm" fullWidth onClick={() => setReshamUnit(u)}
-                    className={reshamUnit === u ? "rounded-md bg-[#6B1A2A] hover:bg-[#6B1A2A]" : "rounded-md"}>
+                    className={reshamUnit === u ? "rounded-md bg-[#6E0F2D] hover:bg-[#6E0F2D]" : "rounded-md"}>
                     {u}
                   </Button>
                 ))}
@@ -230,7 +230,7 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
                 {["Poly", "Silk"].map((t, i) => (
                   <Button key={t} variant={jariType === (i === 0 ? "Polyester" : "Silk Fast") ? "primary" : "secondary"} size="sm" fullWidth
                     onClick={() => setJariType(i === 0 ? "Polyester" : "Silk Fast")}
-                    className={jariType === (i === 0 ? "Polyester" : "Silk Fast") ? "rounded-lg bg-[#6B1A2A] hover:bg-[#6B1A2A]" : "rounded-lg"}>
+                    className={jariType === (i === 0 ? "Polyester" : "Silk Fast") ? "rounded-lg bg-[#6E0F2D] hover:bg-[#6E0F2D]" : "rounded-lg"}>
                     {t}
                   </Button>
                 ))}
@@ -241,7 +241,7 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
               <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
                 {["1G", "2G", "3G", "4G"].map(g => (
                   <Button key={g} variant={jariGrade === g ? "primary" : "secondary"} size="sm" onClick={() => setJariGrade(g)}
-                    className={jariGrade === g ? "rounded-md bg-[#6B1A2A] hover:bg-[#6B1A2A]" : "rounded-md"}>
+                    className={jariGrade === g ? "rounded-md bg-[#6E0F2D] hover:bg-[#6E0F2D]" : "rounded-md"}>
                     {g}
                   </Button>
                 ))}
@@ -256,7 +256,7 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
               <div style={{ display: "flex", gap: 6 }}>
                 {(["Reels", "Buns"] as const).map(u => (
                   <Button key={u} variant={jariUnit === u ? "primary" : "secondary"} size="sm" fullWidth onClick={() => setJariUnit(u)}
-                    className={jariUnit === u ? "rounded-lg bg-[#6B1A2A] hover:bg-[#6B1A2A]" : "rounded-lg"}>
+                    className={jariUnit === u ? "rounded-lg bg-[#6E0F2D] hover:bg-[#6E0F2D]" : "rounded-lg"}>
                     {u}
                   </Button>
                 ))}
@@ -281,7 +281,7 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
 
         {/* Step 4 — Signature */}
         <SectionLabel step={4} title="Collect Weaver Signature" />
-        <div style={{ margin: "0 16px 10px", background: "rgba(107,26,42,0.04)", borderRadius: 8, padding: "8px 12px" }}>
+        <div style={{ margin: "0 16px 10px", background: "rgba(110,15,45,0.04)", borderRadius: 8, padding: "8px 12px" }}>
           <p style={{ fontFamily: F.u, fontSize: 12, color: C.muted, lineHeight: 1.5, margin: 0 }}>
             Weaver must sign to confirm receipt. Choose method:
           </p>
@@ -289,9 +289,9 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, margin: "0 16px" }}>
           <Button variant="tertiary" onClick={() => { setSigMethod(sigMethod === "here" ? "none" : "here"); setSigned(false); setRemoteSent(false); setRemoteConfirmed(false); }}
-            className={`h-auto flex-col items-center whitespace-normal rounded-xl px-3 py-3.5 text-center relative ${sigMethod === "here" ? "border-2 border-[#6B1A2A] bg-[rgba(107,26,42,0.05)]" : "border border-[rgba(139,26,46,0.12)] bg-white"}`}>
+            className={`h-auto flex-col items-center whitespace-normal rounded-xl px-3 py-3.5 text-center relative ${sigMethod === "here" ? "border-2 border-[#6E0F2D] bg-[rgba(110,15,45,0.05)]" : "border border-[rgba(110,15,45,0.12)] bg-white"}`}>
             {sigMethod === "here" && <div style={{ position: "absolute", top: 6, right: 6, width: 14, height: 14, background: C.gold, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><CheckCircle2 size={9} color="#FFF" /></div>}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 40, height: 40, borderRadius: 10, background: sigMethod === "here" ? "rgba(107,26,42,0.10)" : "rgba(107,26,42,0.05)", margin: "0 auto 8px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 40, height: 40, borderRadius: 10, background: sigMethod === "here" ? "rgba(110,15,45,0.10)" : "rgba(110,15,45,0.05)", margin: "0 auto 8px" }}>
               <PenLine size={20} color={sigMethod === "here" ? C.burg : C.muted} />
             </div>
             <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.text, marginBottom: 2 }}>Sign Here</div>
@@ -299,9 +299,9 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
           </Button>
 
           <Button variant="tertiary" onClick={() => { setSigMethod(sigMethod === "remote" ? "none" : "remote"); setSigned(false); setRemoteSent(false); setRemoteConfirmed(false); }}
-            className={`h-auto flex-col items-center whitespace-normal rounded-xl px-3 py-3.5 text-center relative ${sigMethod === "remote" ? "border-2 border-[#6B1A2A] bg-[rgba(107,26,42,0.05)]" : "border border-[rgba(139,26,46,0.12)] bg-white"}`}>
+            className={`h-auto flex-col items-center whitespace-normal rounded-xl px-3 py-3.5 text-center relative ${sigMethod === "remote" ? "border-2 border-[#6E0F2D] bg-[rgba(110,15,45,0.05)]" : "border border-[rgba(110,15,45,0.12)] bg-white"}`}>
             {sigMethod === "remote" && <div style={{ position: "absolute", top: 6, right: 6, width: 14, height: 14, background: C.gold, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><CheckCircle2 size={9} color="#FFF" /></div>}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 40, height: 40, borderRadius: 10, background: sigMethod === "remote" ? "rgba(107,26,42,0.10)" : "rgba(107,26,42,0.05)", margin: "0 auto 8px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 40, height: 40, borderRadius: 10, background: sigMethod === "remote" ? "rgba(110,15,45,0.10)" : "rgba(110,15,45,0.05)", margin: "0 auto 8px" }}>
               <Send size={20} color={sigMethod === "remote" ? C.burg : C.muted} />
             </div>
             <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.text, marginBottom: 2 }}>Send Request</div>
@@ -312,7 +312,7 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
         {/* Sign on this phone */}
         {sigMethod === "here" && (
           <div style={{ margin: "10px 16px 0" }}>
-            <div style={{ background: "#FFF", border: `1px solid ${signed ? "rgba(30,102,64,0.30)" : "rgba(139,26,46,0.25)"}`, borderRadius: 12, height: 140, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", cursor: "crosshair" }}
+            <div style={{ background: "#FFF", border: `1px solid ${signed ? "rgba(30,102,64,0.30)" : "rgba(110,15,45,0.25)"}`, borderRadius: 12, height: 140, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", cursor: "crosshair" }}
               onClick={() => setSigned(true)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => setSigned(true))?.(); } }}>
               {!signed ? (
                 <>
@@ -341,7 +341,7 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
 
         {/* Send to weaver's phone */}
         {sigMethod === "remote" && (
-          <div style={{ margin: "10px 16px 0", background: "#FFF", border: `1px solid rgba(139,26,46,0.15)`, borderRadius: 12, padding: 14 }}>
+          <div style={{ margin: "10px 16px 0", background: "#FFF", border: `1px solid rgba(110,15,45,0.15)`, borderRadius: 12, padding: 14 }}>
             {remoteConfirmed ? (
               <div style={{ background: "rgba(30,102,64,0.10)", border: `1px solid ${C.green}`, borderRadius: 10, padding: 14, textAlign: "center" }}>
                 <CheckCircle2 size={22} color={C.green} style={{ margin: "0 auto 8px" }} />
@@ -363,7 +363,7 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
                   <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 3 }}>Sending to: {selectedWeaver ? selectedWeaver.name : "Weaver"}</div>
                   <div style={{ fontFamily: F.m, fontWeight: 600, fontSize: 13, color: C.text }}>+91 98765 43210</div>
                 </div>
-                <Button variant="primary" fullWidth iconLeft={Send} onClick={() => setRemoteSent(true)} className="h-11 rounded-full bg-[#6B1A2A] hover:bg-[#6B1A2A] text-[13px]">
+                <Button variant="primary" fullWidth iconLeft={Send} onClick={() => setRemoteSent(true)} className="h-11 rounded-full bg-[#6E0F2D] hover:bg-[#6E0F2D] text-[13px]">
                   Send Signature Request
                 </Button>
               </>

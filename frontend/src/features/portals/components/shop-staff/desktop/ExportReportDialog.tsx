@@ -19,7 +19,7 @@ export function ExportReportDialog({
             {/* Header */}
             <div style={{ background: `linear-gradient(135deg, ${C.dark} 0%, #4A061B 100%)`, padding: "28px 32px 24px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                <div style={{ width: 48, height: 48, borderRadius: 14, background: "rgba(196,146,58,0.22)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <div style={{ width: 48, height: 48, borderRadius: 14, background: "rgba(200,155,71,0.22)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   <FileText size={24} color={C.gold} />
                 </div>
                 <div style={{ flex: 1 }}>
@@ -48,7 +48,7 @@ export function ExportReportDialog({
                   <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, lineHeight: 1.6, marginBottom: 24 }}>
                     Your <strong style={{ color: C.text }}>{dialog!.label}</strong> report has been exported as <strong style={{ color: C.text }}>{format.toUpperCase()}</strong>. Check your downloads folder.
                   </div>
-                  <Button onClick={onClose} fullWidth className="h-[52px] rounded-full border-none bg-[#6B1A2A] font-bold text-sm text-white">Done</Button>
+                  <Button onClick={onClose} fullWidth className="h-[52px] rounded-full border-none bg-[#6E0F2D] font-bold text-sm text-white">Done</Button>
                 </div>
               ) : (
                 <>
@@ -67,7 +67,7 @@ export function ExportReportDialog({
                           variant="ghost"
                           className={
                             "flex-1 h-auto py-4 px-2.5 rounded-2xl border-2 text-center flex-col " +
-                            (format === f.key ? "border-[#6B1A2A] bg-[rgba(107,26,42,0.06)]" : "border-[rgba(139,26,46,0.12)] bg-white")
+                            (format === f.key ? "border-[#6E0F2D] bg-[rgba(110,15,45,0.06)]" : "border-[rgba(110,15,45,0.12)] bg-white")
                           }
                         >
                           <div style={{ fontSize: 20, marginBottom: 6 }}>{f.icon}</div>
@@ -89,8 +89,8 @@ export function ExportReportDialog({
                   </div>
                   {/* Actions */}
                   <div style={{ display: "flex", gap: 12 }}>
-                    <Button onClick={onClose} className="flex-1 h-[52px] rounded-full border-[1.5px] border-[rgba(139,26,46,0.12)] bg-white font-semibold text-sm text-[#69635E]">Cancel</Button>
-                    <Button onClick={() => setDone(true)} className="flex-[2] h-[52px] rounded-full border-none bg-[#6B1A2A] font-bold text-sm text-white gap-2 shadow-[0_4px_16px_rgba(107,26,42,0.30)]">
+                    <Button onClick={onClose} className="flex-1 h-[52px] rounded-full border-[1.5px] border-[rgba(110,15,45,0.12)] bg-white font-semibold text-sm text-[#69635E]">Cancel</Button>
+                    <Button onClick={() => setDone(true)} className="flex-[2] h-[52px] rounded-full border-none bg-[#6E0F2D] font-bold text-sm text-white gap-2 shadow-[0_4px_16px_rgba(110,15,45,0.30)]">
                       <FileText size={17} /> Export as {format.toUpperCase()}
                     </Button>
                   </div>

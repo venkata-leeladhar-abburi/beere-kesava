@@ -61,13 +61,13 @@ export function LowStockDialog({
                 <div style={{ display: "flex", gap: 12 }}>
                   {(["urgent", "normal"] as const).map(p => {
                     const isActive = priority === p;
-                    const activeColor = p === "urgent" ? "border-[#C0392B] bg-[rgba(192,57,43,0.08)] text-[#C0392B]" : "border-[#6B1A2A] bg-[rgba(107,26,42,0.06)] text-[#6B1A2A]";
+                    const activeColor = p === "urgent" ? "border-[#C0392B] bg-[rgba(192,57,43,0.08)] text-[#C0392B]" : "border-[#6E0F2D] bg-[rgba(110,15,45,0.06)] text-[#6E0F2D]";
                     return (
                       <Button
                         key={p}
                         onClick={() => setPriority(p)}
                         variant="ghost"
-                        className={"flex-1 h-12 rounded-xl border-2 font-semibold text-sm " + (isActive ? activeColor : "border-[rgba(139,26,46,0.12)] bg-white text-[#69635E]")}
+                        className={"flex-1 h-12 rounded-xl border-2 font-semibold text-sm " + (isActive ? activeColor : "border-[rgba(110,15,45,0.12)] bg-white text-[#69635E]")}
                       >
                         {p === "urgent" ? "🔴 Urgent" : "🟡 Normal"}
                       </Button>
@@ -82,13 +82,13 @@ export function LowStockDialog({
                   className="rounded-[14px] min-h-[100px] resize-none" />
               </div>
               {/* Recipients note */}
-              <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(107,26,42,0.05)", border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "12px 16px", marginBottom: 24 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(110,15,45,0.05)", border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "12px 16px", marginBottom: 24 }}>
                 <Send size={14} color={C.muted} />
                 <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>This report will be sent to <strong style={{ color: C.text }}>Admin</strong> and <strong style={{ color: C.text }}>Superadmin</strong></span>
               </div>
               {/* Actions */}
               <div style={{ display: "flex", gap: 12 }}>
-                <Button onClick={onClose} className="flex-1 h-[52px] rounded-full border-[1.5px] border-[rgba(139,26,46,0.12)] bg-white font-semibold text-sm text-[#69635E]">
+                <Button onClick={onClose} className="flex-1 h-[52px] rounded-full border-[1.5px] border-[rgba(110,15,45,0.12)] bg-white font-semibold text-sm text-[#69635E]">
                   Cancel
                 </Button>
                 <Button onClick={onSend} className="flex-[2] h-[52px] rounded-full border-none bg-[#C0392B] font-bold text-sm text-white gap-2 shadow-[0_4px_18px_rgba(192,57,43,0.35)]">

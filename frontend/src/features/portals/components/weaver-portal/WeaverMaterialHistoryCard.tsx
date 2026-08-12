@@ -93,7 +93,7 @@ export function MaterialHistoryCard({ r, isTablet }: { r: MaterialIssueRecord; i
         <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" as const }}>
           <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 14, color: C.burg, background: "rgba(110,15,45,0.08)", borderRadius: 8, padding: "4px 10px" }}>{r.id}</span>
           {r.batchId && (
-            <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 13, color: C.gold, background: "rgba(196,146,58,0.12)", borderRadius: 8, padding: "4px 10px" }}>{r.batchId}</span>
+            <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 13, color: C.gold, background: "rgba(200,155,71,0.12)", borderRadius: 8, padding: "4px 10px" }}>{r.batchId}</span>
           )}
           <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{new Date(r.issuedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>
         </div>

@@ -86,8 +86,8 @@ export function CustomersSection({
             <Button
               key={f}
               className={
-                "px-5 py-2.5 h-auto rounded-full border border-[rgba(139,26,46,0.12)] whitespace-nowrap " +
-                (f === "All" ? "bg-[#6B1A2A] text-white font-semibold" : "bg-white text-[#69635E] font-normal")
+                "px-5 py-2.5 h-auto rounded-full border border-[rgba(110,15,45,0.12)] whitespace-nowrap " +
+                (f === "All" ? "bg-[#6E0F2D] text-white font-semibold" : "bg-white text-[#69635E] font-normal")
               }
             >{f}</Button>
           ))}
@@ -100,7 +100,7 @@ export function CustomersSection({
               transition={{ type: "spring", stiffness: 300, damping: 24 }}
               style={{ background: "#FFF", borderRadius: 18, border: `1px solid ${C.bdr}`, padding: "26px 24px", boxShadow: "0 4px 20px rgba(44,24,16,0.08)", cursor: "pointer", display: "flex", flexDirection: "column" as const }}>
               <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 18 }}>
-                <div style={{ width: 58, height: 58, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 14px rgba(107,26,42,0.25)" }}>
+                <div style={{ width: 58, height: 58, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 14px rgba(110,15,45,0.25)" }}>
                   <span style={{ fontFamily: F.d, fontSize: 20, fontWeight: 700, color: "#FFF" }}>{c.initials}</span>
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -123,7 +123,7 @@ export function CustomersSection({
               </div>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "auto" }}>
                 <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>Last visit: <strong style={{ color: C.text }}>{c.last}</strong></div>
-                <Button onClick={() => setSelectedCustomer(c)} size="sm" className="rounded-full bg-[#6B1A2A] border-none font-semibold text-[13px] text-white shadow-[0_2px_10px_rgba(107,26,42,0.28)]">
+                <Button onClick={() => setSelectedCustomer(c)} size="sm" className="rounded-full bg-[#6E0F2D] border-none font-semibold text-[13px] text-white shadow-[0_2px_10px_rgba(110,15,45,0.28)]">
                   View Profile <ArrowRight size={13} color="#FFF" />
                 </Button>
               </div>

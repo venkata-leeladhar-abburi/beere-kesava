@@ -39,7 +39,7 @@ export function SaleSection({ bp, isTablet }: { bp: "tablet" | "desktop"; isTabl
                 </div>
               ))}
             </div>
-            <div style={{ background: "#FFF8E8", border: `1px solid rgba(196,146,58,0.28)`, borderRadius: 16, padding: "20px 22px" }}>
+            <div style={{ background: "#FFF8E8", border: `1px solid rgba(200,155,71,0.28)`, borderRadius: 16, padding: "20px 22px" }}>
               <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 700, color: C.gold, marginBottom: 10 }}>After Sale</div>
               <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, lineHeight: 1.7 }}>A bill is generated automatically. Print it or send via WhatsApp to the customer. The sale is recorded and inventory updated.</div>
             </div>
