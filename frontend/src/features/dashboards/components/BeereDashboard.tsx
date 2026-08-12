@@ -5,6 +5,8 @@ import { imgHero, imgWarp as _imgWarpLocal, imgResham as _imgReshamLocal, imgJar
 import { useAuth } from "../../../contexts/AuthContext";
 import { useResponsive } from "../../../hooks/useResponsive";
 import { WorkerGRN, INITIAL_HISTORY as GRN_INITIAL_HISTORY } from "../../portals/components/worker/WorkerGRN";
+import { useQuery } from "@tanstack/react-query";
+import { rawMaterialsApi } from "../../../shared/api/rawMaterials";
 
 // Lazily loaded so the initial dashboard bundle doesn't pay for every tab's
 // page — only the active tab's chunk is fetched, on first navigation to it.
@@ -59,6 +61,10 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
   const [splashVisible, setSplashVisible] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [grnHistory, setGrnHistory] = useState<any[]>(() => GRN_INITIAL_HISTORY);
+  const { data: rawMaterialStock } = useQuery({
+    queryKey: ["raw-material-stock"],
+    queryFn: () => rawMaterialsApi.listStock(),
+  });
   const { pathname, state } = useLocation();
   const { tab } = useParams();
   const routerNavigate = useNavigate();
@@ -299,23 +305,36 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
             ))}
           </div>
           {/* Content */}
-          <div style={{ padding: "40px 56px 80px", maxWidth: 1400, margin: "0 auto", display: "flex", flexDirection: "column", gap: 24 }}>
+          <div style={{ padding: "40px 56px 80px", display: "flex", flexDirection: "column", gap: 24 }}>
             <div style={{ display: "grid", gridTemplateColumns: "minmax(0,2fr) minmax(0,1fr)", gap: 24, alignItems: "start" }}>
               <div style={{ background: "#fff", borderRadius: 20, border: `1px solid ${T.borderDef}`, overflow: "visible", boxShadow: "0 2px 12px rgba(44,24,16,0.07)" }}>
                 <WorkerGRN mode="form" history={grnHistory} setHistory={setGrnHistory} initialPOId={(state as any)?.poId} />
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                <div style={{ background: "#fff", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: "20px 22px", boxShadow: "0 2px 12px rgba(44,24,16,0.07)" }}>
-                  <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown, marginBottom: 16, textTransform: "uppercase" as const, letterSpacing: "0.5px" }}>Recent GRNs</div>
-                  <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, textAlign: "center", padding: "10px 0" }}>
-                    No recent GRNs.
-                  </div>
-                </div>
                 <div style={{ background: "rgba(200,155,71,0.10)", border: `1px solid rgba(200,155,71,0.25)`, borderRadius: 16, padding: "18px 22px" }}>
                   <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.antiqueGold, marginBottom: 12, textTransform: "uppercase" as const, letterSpacing: "0.5px" }}>Current Stock</div>
-                  <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, textAlign: "center", padding: "10px 0" }}>
-                    Stock levels unavailable.
-                  </div>
+                  {!rawMaterialStock ? (
+                    <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, textAlign: "center", padding: "10px 0" }}>
+                      Loading stock levels...
+                    </div>
+                  ) : rawMaterialStock.items.length === 0 ? (
+                    <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, textAlign: "center", padding: "10px 0" }}>
+                      No stock recorded yet.
+                    </div>
+                  ) : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                      {rawMaterialStock.items.map(item => (
+                        <div key={item.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                          <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, fontWeight: 600 }}>
+                            {item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari"} · {item.name}
+                          </span>
+                          <span style={{ fontFamily: F.ui, fontSize: 13, color: item.currentStock <= item.reorderLevel ? "#B03A2E" : T.taupe, fontWeight: 700, whiteSpace: "nowrap" as const }}>
+                            {item.currentStock} {item.unit}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

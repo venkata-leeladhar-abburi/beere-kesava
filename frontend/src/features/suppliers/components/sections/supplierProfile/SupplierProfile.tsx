@@ -4,7 +4,9 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ArrowLeft, MapPin, Package, Send, Trash2 } from "lucide-react";
+import { ArrowLeft, MapPin, Package, Send, Trash2, Wallet } from "lucide-react";
+import { toast } from "sonner";
+import { SupplierPayNowModal } from "../../../../payments/components/supplier/SupplierPayNowModal";
 import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../../shared/ui/DateFilterBar";
 import { T, F } from "../../theme";
 import {
@@ -28,9 +30,11 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
   onBack: () => void;
   onRaiseRequest: (supplierId: string) => void;
 }) {
-  const { statsFor, payments, requests, updateSupplier, deleteSupplier } = useSuppliers();
+  const { statsFor, payments, requests, updateSupplier, deleteSupplier, addPayment } = useSuppliers();
   const [tab, setTab] = useState<"overview" | "orders" | "payments" | "contact" | "edit">("overview");
   const confirm = useConfirm();
+  const [payModalOpen, setPayModalOpen] = useState(false);
+  const [savingPayment, setSavingPayment] = useState(false);
 
   // Command palette RECENT group (design-system/05-OVERLAYS.md Part H) —
   // record this profile as viewed once per mount.
@@ -163,6 +167,16 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
           Back to Suppliers
         </Button>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <Button
+            variant="primary"
+            size="md"
+            iconLeft={Wallet}
+            disabled={stats.outstanding <= 0}
+            onClick={() => setPayModalOpen(true)}
+            className="border-none shadow-[0_4px_16px_rgba(110,15,45,0.3)] bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D] disabled:opacity-50"
+          >
+            Pay Supplier
+          </Button>
           <Button
             variant="primary"
             size="md"
@@ -301,6 +315,28 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
           )}
         </motion.div>
       </AnimatePresence>
+
+      {payModalOpen && (
+        <SupplierPayNowModal
+          supplier={supplier}
+          outstanding={stats.outstanding}
+          saving={savingPayment}
+          onClose={() => setPayModalOpen(false)}
+          onSave={payload => {
+            setSavingPayment(true);
+            addPayment({
+              supplierId: supplier.id,
+              date: payload.date,
+              amount: payload.amount,
+              mode: payload.mode,
+              reference: payload.reference,
+            });
+            toast.success(`Payment of ${formatMoney(rupees(payload.amount))} recorded for ${supplier.name}`);
+            setSavingPayment(false);
+            setPayModalOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 }

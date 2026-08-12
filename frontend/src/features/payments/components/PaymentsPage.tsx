@@ -7,6 +7,7 @@ import { StatsStrip } from "./StatsStrip";
 import { PaymentAnalyticsSection } from "./analytics/PaymentAnalyticsSection";
 import { PaymentHistorySection } from "./history/PaymentHistorySection";
 import { VendorPaymentsSection } from "./vendor/VendorPaymentsSection";
+import { SupplierPaymentsSection } from "./supplier/SupplierPaymentsSection";
 import { WeaverMakingChargesSection } from "./weaver/WeaverMakingChargesSection";
 import { WholesaleCollectionsSection } from "./wholesale/WholesaleCollectionsSection";
 
@@ -20,6 +21,7 @@ export function PaymentsPage() {
         <WeaverMakingChargesSection />
         <WholesaleCollectionsSection />
         <VendorPaymentsSection />
+        <SupplierPaymentsSection />
         <PaymentAnalyticsSection />
         <PaymentHistorySection />
       </div>

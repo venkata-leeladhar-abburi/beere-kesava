@@ -45,6 +45,7 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
   const [digits, setDigits] = useState<string[]>(Array(6).fill(""));
   const [focused, setFocused] = useState<number | null>(0);
   const [error, setError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("Incorrect code. Please check and try again. You have 2 more attempts.");
   const [shake, setShake] = useState(false);
   const [loading, setLoading] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -99,6 +100,7 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
   const handleVerify = async (otp: string) => {
     if (otp !== "123456") {
       digitsRef.current = Array(6).fill("");
+      setErrorMessage("Incorrect code. Please check and try again. You have 2 more attempts.");
       setShake(true); setError(true); setDigits(Array(6).fill(""));
       setTimeout(() => { setShake(false); inputRefs.current[0]?.focus(); setFocused(0); }, 600);
       return;
@@ -108,20 +110,14 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
       const res = await authApi.verifyOtp(phone, otp);
       onVerify(res);
     } catch (err) {
-      onVerify({
-        token: "demo-token-" + Date.now(),
-        user: {
-          id: "demo-weaver-user",
-          weaverId: "WEA-001",
-          empId: "WEA-001",
-          name: "Weaver User",
-          email: "weaver@beerekesava.com",
-          mobile: phone,
-          role: "WEAVER",
-          accessLevel: "FULL_ACCESS",
-          dateAdded: new Date().toISOString(),
-        },
-      });
+      // Do NOT fall back to a fake session here — a synthetic token that the
+      // backend never issued gets rejected with 401 on every subsequent
+      // request, which looks like "logged in but everything is broken"
+      // instead of a clear failed-login state.
+      digitsRef.current = Array(6).fill("");
+      setErrorMessage(err instanceof Error ? err.message : "Could not verify the code. Please try again.");
+      setShake(true); setError(true); setDigits(Array(6).fill(""));
+      setTimeout(() => { setShake(false); inputRefs.current[0]?.focus(); setFocused(0); }, 600);
     } finally {
       setLoading(false);
     }
@@ -212,7 +208,7 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
           >
             <X size={16} color={C.crimson} style={{ flexShrink: 0 }} />
             <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 14, color: C.crimson }}>
-              Incorrect code. Please check and try again. You have 2 more attempts.
+              {errorMessage}
             </div>
           </motion.div>
         )}
