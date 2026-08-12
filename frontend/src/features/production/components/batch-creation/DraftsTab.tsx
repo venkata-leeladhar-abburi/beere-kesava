@@ -7,6 +7,7 @@ import { ConfirmDialog } from "../../../../shared/ui/ConfirmDialog";
 import { ApiError } from "../../../../shared/api/client";
 import { T, F } from "./constants";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
+import { SectionCard } from "../common/primitives";
 
 export function DraftsTab({
   batches, batchDateFilter, setBatchDateFilter, setTab, openDraft,
@@ -47,6 +48,7 @@ export function DraftsTab({
 
   return (
     <div style={{ padding: "28px 56px 64px" }}>
+    <SectionCard icon={Stack} title="All Batches" subtitle="Every batch created so far — drafts, active, and completed.">
       {batches.length === 0 ? (
         <div style={{ background: "#fff", borderRadius: 18, border: `1.5px solid ${T.borderDef}`, padding: "56px 24px", textAlign: "center" }}>
           <Stack size={40} color={T.taupe} style={{ marginBottom: 12 }} />
@@ -118,6 +120,7 @@ export function DraftsTab({
           })}
         </div>
       )}
+    </SectionCard>
 
       <AnimatePresence>
         {deletingBatch && (

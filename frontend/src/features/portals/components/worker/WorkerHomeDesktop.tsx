@@ -1,9 +1,10 @@
 import React, { useRef } from "react";
 import { motion, useInView } from "motion/react";
 import {
-  ChevronRight, Package, Shield,
+  ChevronRight, Package, Shield, CheckCircle2, ClipboardList,
 } from "lucide-react";
 import { C, F } from "./tokens";
+import { PageHero, StatsStrip, SectionHeading, GUTTER_X, type WorkerStat } from "./primitives";
 import { Button } from "../../../../shared/ui/primitives";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { useBatches } from "../../../production/contexts/BatchContext";
@@ -71,7 +72,9 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
   const totalTasks = (pendingReceiptCount > 0 ? 1 : 0) + (pendingQcCount > 0 ? 1 : 0);
 
   const activities = qcRecords.slice(0, 5).map(r => ({
-    dot: r.result === "passed" ? C.gold : C.crim,
+    // Gold never encodes state (design-system/01-FOUNDATIONS.md) — pass/fail
+    // reads as the semantic success/danger pair, same as admin.
+    dot: r.result === "passed" ? C.green : C.crim,
     desc: `Saree ${r.sareeId} ${r.result === "passed" ? "passed" : "failed"} quality check`,
     time: new Date(r.qcDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }),
     id: r.batchId || "QC",
@@ -81,91 +84,60 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
+  const stats: WorkerStat[] = [
+    { label: "Active tasks today", value: totalTasks, sub: totalTasks > 0 ? "Waiting on you right now" : "All caught up", icon: ClipboardList, highlight: totalTasks > 0 },
+    { label: "Sarees to record", value: pendingReceiptCount, sub: "Submitted by weavers", icon: Package },
+    { label: "Awaiting quality check", value: pendingQcCount, sub: pendingQcCount > 0 ? "⚠ Need inspection" : "All inspected", icon: Shield, alert: pendingQcCount > 0 },
+    { label: "Recent QC activity", value: qcRecords.length, sub: "Inspections on record", icon: CheckCircle2 },
+  ];
+
   return (
-    <div style={{ background: "#F7F2EA" }}>
+    <div style={{ background: C.bg }}>
 
-      {/* ── HERO SECTION ──────────────────────────────────────────────────── */}
-      <section style={{ position: "relative", background: C.dark, overflow: "hidden", minHeight: 260, display: "flex", alignItems: "center" }}>
-        {/* Grid texture */}
-        <div style={{ position: "absolute", inset: 0, pointerEvents: "none", backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(196,146,58,0.022) 60px, rgba(196,146,58,0.022) 61px), repeating-linear-gradient(90deg, transparent, transparent 80px, rgba(196,146,58,0.015) 80px, rgba(196,146,58,0.015) 81px)` }} />
-        {/* Right glow */}
-        <div style={{ position: "absolute", right: -120, top: "50%", transform: "translateY(-50%)", width: 500, height: 500, borderRadius: "50%", background: `radial-gradient(circle, rgba(196,146,58,0.12) 0%, transparent 70%)`, pointerEvents: "none" }} />
-
-        <div style={{ position: "relative", zIndex: 2, padding: "64px 56px", width: "100%" }}>
-          <motion.div
-            initial={{ opacity: 0, x: -24 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.65, ease: EASE }}
-            style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}
+      {/* ── HERO ──────────────────────────────────────────────────────────── */}
+      <PageHero
+        eyebrow="Worker Staff Portal · Beere Kesava & Brothers Silks"
+        title={greeting + ","}
+        titleAccent={firstName}
+        description={`Here's what needs your attention today. You have ${totalTasks} active task${totalTasks === 1 ? "" : "s"} waiting.`}
+        actions={
+          <Button
+            variant="primary"
+            iconRight={ChevronRight}
+            onClick={() => onNavigate("qc")}
+            className="rounded-[14px] bg-gradient-to-br from-[#6E0F2D] to-[#4A061B] px-6 py-[13px] text-[#FFFDF9] shadow-[0_8px_28px_rgba(110,15,45,0.45)] hover:from-[#6E0F2D] hover:to-[#4A061B]"
           >
-            <div style={{ width: 24, height: 1.5, background: C.gold, opacity: 0.7 }} />
-            <span style={{ fontFamily: F.m, fontSize: 12, color: "rgba(196,146,58,0.80)", letterSpacing: "3px", textTransform: "uppercase" }}>
-              Worker Staff Portal · Beere Kesava &amp; Brothers Silks
-            </span>
-          </motion.div>
+            Start Today's Work
+          </Button>
+        }
+      />
 
-          <div style={{ overflow: "hidden", marginBottom: 8 }}>
-            <motion.div
-              initial={{ y: "110%", opacity: 0 }}
-              animate={{ y: "0%", opacity: 1 }}
-              transition={{ duration: 0.85, delay: 0.2, ease: EASE }}
-              style={{ fontFamily: F.d, fontSize: "clamp(30px, 3vw, 48px)", fontWeight: 700, color: "#FFFDF9", lineHeight: 1.1, letterSpacing: "-0.5px" }}
-            >
-              {greeting}, {firstName} 👋
-            </motion.div>
-          </div>
+      {/* Date chip, pinned to the hero like admin's */}
+      <div style={{ position: "relative" }}>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.8 }}
+          style={{ position: "absolute", top: -308, right: GUTTER_X, fontFamily: F.m, fontSize: 12, color: "rgba(255,253,249,0.45)", background: "rgba(255,253,249,0.08)", border: "1px solid rgba(255,253,249,0.12)", padding: "6px 14px", borderRadius: 8, zIndex: 21 }}
+        >
+          {today}
+        </motion.div>
+      </div>
 
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.7, delay: 0.45 }}
-            style={{ fontFamily: F.u, fontSize: 16, color: "rgba(245,232,208,0.75)", margin: "0 0 28px", maxWidth: 520, lineHeight: 1.7 }}
-          >
-            Here's what needs your attention today. You have <strong style={{ color: C.gold }}>{totalTasks} active tasks</strong> waiting.
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.6, ease: EASE }}
-            style={{ display: "flex", gap: 12, alignItems: "center" }}
-          >
-            <Button
-              variant="primary"
-              iconRight={ChevronRight}
-              onClick={() => onNavigate("qc")}
-              className="rounded-[14px] bg-gradient-to-br from-[#6B1A2A] to-[#3D0E1A] px-6 py-[13px] text-[#FFFDF9] shadow-[0_8px_28px_rgba(107,26,42,0.40)] hover:from-[#6B1A2A] hover:to-[#3D0E1A]"
-            >
-              Start Today's Work
-            </Button>
-          </motion.div>
-
-          {/* Date chip */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.8 }}
-            style={{ position: "absolute", top: 32, right: 56, fontFamily: F.m, fontSize: 12, color: "rgba(255,253,249,0.45)", background: "rgba(255,253,249,0.08)", border: "1px solid rgba(255,253,249,0.12)", padding: "6px 14px", borderRadius: 8 }}
-          >
-            {today}
-          </motion.div>
-        </div>
-      </section>
+      <StatsStrip stats={stats} />
 
       {/* ── MAIN CONTENT ─────────────────────────────────────────────────── */}
-      <div style={{ padding: "48px 56px 64px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 400px", gap: 28, alignItems: "start" }}>
+      <div style={{ padding: `40px ${GUTTER_X}px 64px` }}>
+        <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) 400px", gap: 40, alignItems: "start" }}>
 
           {/* ── Today's Tasks ─────────────────────────────────────────── */}
           <div>
             <FadeUp>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <div style={{ width: 4, height: 26, background: C.gold, borderRadius: 2 }} />
-                  <span style={{ fontFamily: F.d, fontSize: 24, fontWeight: 700, color: C.dark }}>Today's Tasks</span>
-                </div>
-                <span style={{ fontFamily: F.u, fontSize: 14, color: C.gold, cursor: "pointer", fontWeight: 600 }}>{totalTasks} pending →</span>
-              </div>
+              <SectionHeading
+                title="Today's Tasks"
+                size="lg"
+                right={<span style={{ fontFamily: F.u, fontSize: 14, color: C.gold, fontWeight: 600 }}>{totalTasks} pending →</span>}
+              />
             </FadeUp>
 
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -174,28 +146,28 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
                 return (
                   <FadeUp key={i} delay={i * 0.07}>
                     <motion.div
-                      whileHover={{ y: -3, boxShadow: "0 16px 48px rgba(107,26,42,0.14)" }}
+                      whileHover={{ y: -3, boxShadow: "0 16px 48px rgba(110,15,45,0.14)" }}
                       whileTap={{ scale: 0.99 }}
                       transition={{ type: "spring", stiffness: 300, damping: 24 }}
-                      style={{ borderRadius: 18, ["--accent-color" as string]: task.accentColor } as React.CSSProperties}
+                      style={{ borderRadius: 20, ["--accent-color" as string]: task.accentColor } as React.CSSProperties}
                     >
                       <Button
                         variant="tertiary"
                         fullWidth
                         onClick={() => onNavigate(task.tab, task.sub2)}
-                        className="h-auto justify-start gap-5 rounded-[18px] border border-[rgba(110,15,45,0.10)] border-l-4 border-l-[var(--accent-color)] bg-white px-6 py-[22px] text-left shadow-[0_4px_16px_rgba(107,26,42,0.06)]"
+                        className="h-auto justify-start gap-5 rounded-[20px] border border-[rgba(110,15,45,0.10)] border-l-4 border-l-[var(--accent-color)] bg-white px-6 py-[22px] text-left shadow-[0_6px_32px_rgba(74,6,27,0.08)]"
                       >
                         <div style={{ width: 56, height: 56, borderRadius: 16, background: task.iconBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: `0 6px 18px ${task.iconBg}55` }}>
                           <Icon size={26} color="#FFF" />
                         </div>
                         <div style={{ flex: 1 }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
-                            <span style={{ fontFamily: F.d, fontSize: 16, fontWeight: 600, color: C.dark }}>{task.title}</span>
+                            <span style={{ fontFamily: F.u, fontSize: 18, fontWeight: 600, color: C.wine, letterSpacing: "-0.01em" }}>{task.title}</span>
                             <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "#FFF", background: task.badgeColor, padding: "3px 10px", borderRadius: 999 }}>{task.badge}</span>
                           </div>
                           <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, lineHeight: 1.5 }}>{task.sub}</div>
                         </div>
-                        <div style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(107,26,42,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <div style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                           <ChevronRight size={18} color={C.muted} />
                         </div>
                       </Button>
@@ -211,14 +183,11 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
 
             {/* Recent Activity */}
             <FadeUp delay={0.2}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <div style={{ width: 4, height: 22, background: C.gold, borderRadius: 2 }} />
-                  <span style={{ fontFamily: F.d, fontSize: 20, fontWeight: 700, color: C.dark }}>Recent Activity</span>
-                </div>
-                <span style={{ fontFamily: F.u, fontSize: 13, color: C.gold, cursor: "pointer", fontWeight: 600 }}>View All →</span>
-              </div>
-              <div style={{ background: "#FFF", border: `1px solid rgba(110,15,45,0.10)`, borderRadius: 18, overflow: "hidden", boxShadow: "0 4px 18px rgba(107,26,42,0.06)" }}>
+              <SectionHeading
+                title="Recent Activity"
+                right={<span style={{ fontFamily: F.u, fontSize: 13, color: C.gold, fontWeight: 600 }}>View All →</span>}
+              />
+              <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 20, overflow: "hidden", boxShadow: "0 6px 32px rgba(74,6,27,0.08)" }}>
                 {activities.map((a, i) => (
                   <div
                     key={i}
@@ -229,7 +198,7 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
                       <div style={{ fontFamily: F.u, fontSize: 14, color: C.dark, lineHeight: 1.5, marginBottom: 3 }}>{a.desc}</div>
                       <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{a.time}</div>
                     </div>
-                    <div style={{ fontFamily: F.m, fontSize: 12, color: C.burg, flexShrink: 0, background: "rgba(107,26,42,0.06)", padding: "2px 8px", borderRadius: 6 }}>{a.id}</div>
+                    <div style={{ fontFamily: F.m, fontSize: 12, color: C.burg, flexShrink: 0, background: "rgba(110,15,45,0.06)", padding: "2px 8px", borderRadius: 6 }}>{a.id}</div>
                   </div>
                 ))}
               </div>

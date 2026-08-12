@@ -66,11 +66,11 @@ export function OwnFactoryReceiveTab() {
             <FieldLabel>Photo</FieldLabel>
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               <Button variant={ownPhoto ? "secondary" : "primary"} size="sm" iconLeft={Camera} onClick={() => setOwnPhoto(true)}
-                className={ownPhoto ? "h-[38px] rounded-lg border-[rgba(139,26,46,0.12)] text-[#1E6640]" : "h-[38px] rounded-lg bg-[#6B1A2A] hover:bg-[#6B1A2A]"}>
+                className={ownPhoto ? "h-[38px] rounded-lg border-[rgba(110,15,45,0.12)] text-[#1E6640]" : "h-[38px] rounded-lg bg-[#6E0F2D] hover:bg-[#6E0F2D]"}>
                 {ownPhoto ? "Taken ✓" : "Camera"}
               </Button>
               <Button variant="secondary" size="sm" iconLeft={UploadCloud} onClick={() => setOwnPhoto(true)}
-                className="h-[38px] rounded-lg border-[#6B1A2A] text-[#6B1A2A]">
+                className="h-[38px] rounded-lg border-[#6E0F2D] text-[#6E0F2D]">
                 Gallery
               </Button>
             </div>
@@ -102,7 +102,7 @@ export function OwnFactoryReceiveTab() {
           <Button variant="secondary" fullWidth size="sm" iconLeft={Printer} className="h-[42px] rounded-full border-[#C4923A] text-[#C4923A]">
             Print Tag
           </Button>
-          <Button variant="secondary" fullWidth size="sm" iconLeft={Plus} className="h-[42px] rounded-full border-[#6B1A2A] text-[#6B1A2A]">
+          <Button variant="secondary" fullWidth size="sm" iconLeft={Plus} className="h-[42px] rounded-full border-[#6E0F2D] text-[#6E0F2D]">
             Next Saree
           </Button>
         </div>

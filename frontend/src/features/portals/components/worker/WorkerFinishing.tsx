@@ -1,9 +1,10 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Package, ArrowDownToLine, Clock, Sparkles, CheckCircle2 } from "lucide-react";
-import { C, F, card } from "./tokens";
+import { C, F } from "./tokens";
+import { PageHero, StatsStrip, SectionCard, SectionHeading, GUTTER_X, GUTTER_X_TABLET, type WorkerStat } from "./primitives";
 import { useFinishing } from "../../../finishing/contexts/FinishingContext";
-import { EASE, SectionHeader } from "./finishing/shared";
+import { EASE } from "./finishing/shared";
 import { SectionA } from "./finishing/SectionA";
 import { SectionBFiltered } from "./finishing/SectionBFiltered";
 import { SectionC } from "./finishing/SectionC";
@@ -18,56 +19,58 @@ export function WorkerFinishing({ isDesktop, isTablet }: { isDesktop?: boolean; 
   const isMobile = !isDesktop && !isTablet;
   const [activeAction, setActiveAction] = useState<"assign" | "receive" | null>(null);
 
-  return (
-    <div style={{ padding: isDesktop ? "28px 40px" : isTablet ? "20px 24px" : "16px 14px 24px", background: "#FAFAF8", minHeight: "100%" }}>
+  const stats: WorkerStat[] = [
+    { label: "Ready to assign", value: readySarees.length, sub: "QC-passed, awaiting finishing", icon: Sparkles, highlight: readySarees.length > 0 },
+    { label: "With staff", value: awaiting.length, sub: "Out for finishing work", icon: Clock },
+    { label: "Returned", value: returns.length, sub: "Finished and back in stock", icon: CheckCircle2 },
+  ];
 
-      {/* Page heading for desktop */}
+  return (
+    <div style={{ background: C.bg, minHeight: "100%" }}>
+
+      {/* Hero + metric strip — same anatomy as the admin page headers */}
       {isDesktop && (
-        <div style={{ marginBottom: 24 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-            <div style={{ width: 4, height: 24, background: C.gold, borderRadius: 2 }} />
-            <h2 style={{ fontFamily: F.d, fontSize: 20, fontWeight: 700, color: C.dark, margin: 0 }}>Finishing</h2>
-          </div>
-          <p style={{ fontFamily: F.u, fontSize: 14, color: C.muted, margin: "0 0 0 14px" }}>Assign sarees to finishing staff and receive them back after finishing.</p>
-        </div>
+        <PageHero
+          eyebrow="Worker Staff · Finishing Floor"
+          title="Finishing"
+          titleAccent="& Handover"
+          description="Assign sarees to finishing staff, track what is out on the floor, and receive them back once the work is done."
+          minHeight={300}
+        />
       )}
 
-      {/* Stats strip */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 16 }}>
-        {[
-          { val: readySarees.length, label: "Ready to Assign", icon: <Sparkles size={15} color={C.gold} />,        bg: "rgba(200,146,58,0.10)", col: C.gold   },
-          { val: awaiting.length,    label: "With Staff",       icon: <Clock size={15} color="#B85C00" />,           bg: "rgba(248,140,0,0.09)", col: "#B85C00" },
-          { val: returns.length,     label: "Returned",         icon: <CheckCircle2 size={15} color={C.green} />,    bg: "rgba(30,102,64,0.09)", col: C.green   },
-        ].map((s, i) => (
-          <div key={i} style={{ background: "#FFF", border: `1px solid rgba(107,26,42,0.10)`, borderRadius: 14, padding: "12px 10px", display: "flex", alignItems: "center", gap: 10, boxShadow: "0 1px 8px rgba(107,26,42,0.05)" }}>
-            <div style={{ width: 34, height: 34, borderRadius: 10, background: s.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              {s.icon}
-            </div>
-            <div>
-              <div style={{ fontFamily: F.d, fontWeight: 800, fontSize: 20, color: s.col, lineHeight: 1 }}>{s.val}</div>
-              <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>{s.label}</div>
-            </div>
+      <div style={{ padding: isDesktop ? `0 0 40px` : isTablet ? `24px ${GUTTER_X_TABLET}px 32px` : "16px 14px 24px" }}>
+        {isDesktop ? (
+          <StatsStrip stats={stats} />
+        ) : (
+          <div style={{ marginBottom: 24 }}>
+            <SectionHeading title="Finishing" subtitle="Assign sarees to finishing staff and receive them back after finishing." />
+            <StatsStrip stats={stats} overlap={false} gutter={0} />
           </div>
-        ))}
+        )}
       </div>
 
+      <div style={{ padding: isDesktop ? `0 ${GUTTER_X}px 40px` : isTablet ? `0 ${GUTTER_X_TABLET}px 32px` : "0 14px 24px" }}>
+
       {/* Quotations flowing in from Inventory */}
-      <QuotationsSection isMobile={isMobile} />
+      <div style={{ marginBottom: 24 }}>
+        <QuotationsSection isMobile={isMobile} />
+      </div>
 
       {/* Two primary action buttons */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24 }}>
         <Button
           variant="tertiary"
           onClick={() => setActiveAction(activeAction === "assign" ? null : "assign")}
-          className={`h-auto flex-col whitespace-normal rounded-2xl px-3 py-4 transition-all ${activeAction === "assign"
-            ? "border-none bg-gradient-to-br from-[#3D0E1A] to-[#6B1A2A] shadow-[0_4px_20px_rgba(107,26,42,0.30)]"
-            : "border-[1.5px] border-[rgba(107,26,42,0.14)] bg-white shadow-[0_2px_12px_rgba(107,26,42,0.08)]"}`}
+          className={`h-auto flex-col whitespace-normal rounded-[20px] px-4 py-6 transition-all ${activeAction === "assign"
+            ? "border-none bg-gradient-to-br from-[#4A061B] to-[#6E0F2D] shadow-[0_8px_28px_rgba(110,15,45,0.32)]"
+            : "border border-[rgba(110,15,45,0.10)] bg-white shadow-[0_6px_32px_rgba(74,6,27,0.08)]"}`}
         >
-          <div style={{ width: 42, height: 42, borderRadius: 12, background: activeAction === "assign" ? "rgba(255,255,255,0.15)" : "rgba(107,26,42,0.09)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 10px" }}>
+          <div style={{ width: 42, height: 42, borderRadius: 12, background: activeAction === "assign" ? "rgba(255,255,255,0.15)" : "rgba(110,15,45,0.09)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 10px" }}>
             <Package size={20} color={activeAction === "assign" ? "#FFF" : C.burg} />
           </div>
-          <div style={{ fontFamily: F.d, fontSize: 14, fontWeight: 700, color: activeAction === "assign" ? "#FFF" : C.text, marginBottom: 3 }}>Assign Sarees</div>
-          <div style={{ fontFamily: F.u, fontSize: 12, color: activeAction === "assign" ? "rgba(255,255,255,0.65)" : C.muted, lineHeight: 1.4 }}>
+          <div style={{ fontFamily: F.u, fontSize: 18, fontWeight: 600, letterSpacing: "-0.01em", color: activeAction === "assign" ? "#FFF" : C.wine, marginBottom: 4 }}>Assign Sarees</div>
+          <div style={{ fontFamily: F.u, fontSize: 13, color: activeAction === "assign" ? "rgba(255,255,255,0.65)" : C.muted, lineHeight: 1.4 }}>
             {readySarees.length} ready · assign to finishing staff
           </div>
         </Button>
@@ -75,15 +78,15 @@ export function WorkerFinishing({ isDesktop, isTablet }: { isDesktop?: boolean; 
         <Button
           variant="tertiary"
           onClick={() => setActiveAction(activeAction === "receive" ? null : "receive")}
-          className={`h-auto flex-col whitespace-normal rounded-2xl px-3 py-4 transition-all ${activeAction === "receive"
-            ? "border-none bg-gradient-to-br from-[#1E5A3A] to-[#1E6640] shadow-[0_4px_20px_rgba(30,102,64,0.28)]"
-            : "border-[1.5px] border-[rgba(107,26,42,0.14)] bg-white shadow-[0_2px_12px_rgba(107,26,42,0.08)]"}`}
+          className={`h-auto flex-col whitespace-normal rounded-[20px] px-4 py-6 transition-all ${activeAction === "receive"
+            ? "border-none bg-gradient-to-br from-[#15603D] to-[#1F774E] shadow-[0_8px_28px_rgba(31,119,78,0.28)]"
+            : "border border-[rgba(110,15,45,0.10)] bg-white shadow-[0_6px_32px_rgba(74,6,27,0.08)]"}`}
         >
           <div style={{ width: 42, height: 42, borderRadius: 12, background: activeAction === "receive" ? "rgba(255,255,255,0.15)" : "rgba(30,102,64,0.09)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 10px" }}>
             <ArrowDownToLine size={20} color={activeAction === "receive" ? "#FFF" : C.green} />
           </div>
-          <div style={{ fontFamily: F.d, fontSize: 14, fontWeight: 700, color: activeAction === "receive" ? "#FFF" : C.text, marginBottom: 3 }}>Receive Back</div>
-          <div style={{ fontFamily: F.u, fontSize: 12, color: activeAction === "receive" ? "rgba(255,255,255,0.65)" : C.muted, lineHeight: 1.4 }}>
+          <div style={{ fontFamily: F.u, fontSize: 18, fontWeight: 600, letterSpacing: "-0.01em", color: activeAction === "receive" ? "#FFF" : C.wine, marginBottom: 4 }}>Receive Back</div>
+          <div style={{ fontFamily: F.u, fontSize: 13, color: activeAction === "receive" ? "rgba(255,255,255,0.65)" : C.muted, lineHeight: 1.4 }}>
             {awaiting.length} awaiting · mark as received
           </div>
         </Button>
@@ -93,34 +96,45 @@ export function WorkerFinishing({ isDesktop, isTablet }: { isDesktop?: boolean; 
       <AnimatePresence>
         {activeAction === "assign" && (
           <motion.div key="assign-panel" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.22, ease: EASE }}>
-            <div style={{ ...card, padding: 16, marginBottom: 16, overflow: "hidden" }}>
-              <SectionHeader
-                icon={<Package size={18} color={C.burg} />}
+            <div style={{ marginBottom: 24 }}>
+              <SectionCard
+                icon={Package}
                 title="Assign Sarees for Finishing"
-                count={readySarees.length}
-                accent="rgba(107,26,42,0.09)"
-              />
-              <SectionA isMobile={isMobile} />
+                subtitle="Pick QC-passed sarees and hand them to a finishing staff member."
+                actions={
+                  <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: "#FFFDF9", background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.20)", padding: "5px 12px", borderRadius: 999 }}>
+                    {readySarees.length} ready
+                  </span>
+                }
+              >
+                <SectionA isMobile={isMobile} />
+              </SectionCard>
             </div>
           </motion.div>
         )}
         {activeAction === "receive" && (
           <motion.div key="receive-panel" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.22, ease: EASE }}>
-            <div style={{ ...card, padding: 16, marginBottom: 16, overflow: "hidden" }}>
-              <SectionHeader
-                icon={<ArrowDownToLine size={18} color="#1E6640" />}
+            <div style={{ marginBottom: 24 }}>
+              <SectionCard
+                icon={ArrowDownToLine}
                 title="Receive Sarees Back"
-                count={awaiting.length}
-                accent="rgba(30,102,64,0.10)"
-              />
-              <SectionBFiltered isMobile={isMobile} />
+                subtitle="Mark finished sarees as returned and record their condition."
+                actions={
+                  <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: "#FFFDF9", background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.20)", padding: "5px 12px", borderRadius: 999 }}>
+                    {awaiting.length} awaiting
+                  </span>
+                }
+              >
+                <SectionBFiltered isMobile={isMobile} />
+              </SectionCard>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* History always visible */}
-      <SectionC isMobile={isMobile} />
+        {/* History always visible */}
+        <SectionC isMobile={isMobile} />
+      </div>
     </div>
   );
 }

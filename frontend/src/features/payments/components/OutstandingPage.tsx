@@ -1,12 +1,12 @@
 import React, { useMemo, useState } from "react";
+import { motion } from "motion/react";
 import {
-  AlertTriangle, Factory, Layers, Truck, TrendingUp, Users,
+  AlertTriangle, Factory, Layers, Truck, TrendingUp, Users, Package, ShoppingBag,
 } from "lucide-react";
 import { useSales, isOutstanding } from "../../customers/contexts/SalesContext";
 import type { IconComponent } from "../../../lib/icon";
 import { T, F } from "../theme";
 import { Button } from "../../../shared/ui/primitives";
-import { StatChip } from "./outstanding/primitives";
 import type { AgeKey } from "./outstanding/primitives";
 import { FilterBar } from "./outstanding/FilterBar";
 import { InHouseOutstanding } from "./outstanding/InHouseOutstanding";
@@ -14,8 +14,8 @@ import { BatchOutstanding } from "./outstanding/BatchOutstanding";
 import { ExternalOutstanding } from "./outstanding/ExternalOutstanding";
 import { TopSellers } from "./outstanding/TopSellers";
 import { rupees, formatMoney } from "@/lib/domain/money";
+import inventoryHero from "../../../assets/inline/inventoryHero.jpg";
 
-const G = { card: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)" };
 const inr = (n: number) => formatMoney(rupees(n));
 
 // ── Main page ────────────────────────────────────────────────────────────────
@@ -59,66 +59,114 @@ export function OutstandingPage({ embedded = false }: { embedded?: boolean }) {
   };
   const tabCount = tabCounts[tab] ?? totals.all;
 
+  const stats = [
+    { val: String(totals.all),        label: "TOTAL OUTSTANDING",    sub: "All unsold sarees",          hi: false, crimson: false, goldVal: false, Icon: Package },
+    { val: String(totals.weaver),     label: "FROM WEAVERS",         sub: "Unsold from weavers",        hi: true,  crimson: false, goldVal: true,  Icon: Users },
+    { val: String(totals.loom),       label: "FROM FACTORY LOOMS",    sub: "Unsold from looms",          hi: false, crimson: false, goldVal: false, Icon: Factory },
+    { val: String(totals.external),   label: "FROM EXTERNAL",        sub: "Purchase-wise + returns",    hi: false, crimson: false, goldVal: false, Icon: ShoppingBag },
+    { val: inr(totals.value),         label: "STOCK VALUE",          sub: `${totals.returned} customer returns`, hi: true,  crimson: false, goldVal: true,  Icon: TrendingUp },
+  ];
+
   return (
     <div style={{ background: T.silkCream, fontFamily: F.ui, minHeight: embedded ? undefined : "100dvh" }}>
 
-      {/* HERO */}
-      <section style={{ background: G.card, padding: "44px 40px 0", position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", inset: 0, backgroundImage: "repeating-linear-gradient(135deg, rgba(200,155,71,0.04) 0px, rgba(200,155,71,0.04) 1px, transparent 1px, transparent 60px)", pointerEvents: "none" }} />
-        <div style={{ position: "relative", zIndex: 2 }}>
-          <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(200,155,71,0.80)", letterSpacing: "2.5px", textTransform: "uppercase", marginBottom: 10 }}>
-            REPORTS · OUTSTANDING STOCK
+      {/* ── HERO HEADER ───────────────────────────────────────────────────── */}
+      <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", minHeight: 380, display: "flex", alignItems: "center" }}>
+        {/* Left text content */}
+        <div style={{ position: "relative", zIndex: 2, padding: "48px 0 110px 56px", flex: "0 0 64%", maxWidth: "64%" }}>
+          <div style={{ fontFamily: F.mono, fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase" as const, marginBottom: 12 }}>
+            SINCE 1999 · REPORTS &amp; OUTSTANDING STOCK
           </div>
-          <h1 style={{ fontFamily: F.display, fontWeight: 700, fontSize: 38, color: "#FFFDF9", margin: 0, lineHeight: 1.12 }}>
-            Outstanding Sarees Report
-          </h1>
-          <p style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.65)", margin: "10px 0 0", lineHeight: 1.6, maxWidth: 720 }}>
-            Every saree still not sold — retail or wholesale — split by where it came from: our own weavers,
-            our factory looms, and external purchases. External purchases are shown purchase-wise with bill dues
-            and customer returns.
+          <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" as const, marginBottom: 10 }}>
+            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 56, fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Outstanding Sarees</h1>
+            <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: 36, fontStyle: "italic", color: T.antiqueGold, fontWeight: 400 }}>Report</span>
+          </div>
+          <p style={{ fontFamily: F.ui, fontSize: 18, color: "rgba(255,253,249,0.70)", margin: 0, maxWidth: 600, lineHeight: 1.6 }}>
+            Every saree still not sold — retail or wholesale — split by where it came from: weavers, factory looms, and external purchases.
           </p>
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", padding: "26px 0 32px" }}>
-            <StatChip label="Total Outstanding" value={String(totals.all)} />
-            <StatChip label="From Weavers" value={String(totals.weaver)} tone="gold" />
-            <StatChip label="From Factory Looms" value={String(totals.loom)} tone="gold" />
-            <StatChip label="From External" value={String(totals.external)} tone="gold" />
-            <StatChip label="Customer Returns" value={String(totals.returned)} tone="red" />
-            <StatChip label="Stock Value" value={inr(totals.value)} tone="green" />
-          </div>
         </div>
-      </section>
+        {/* Right image with gradient */}
+        <div style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "50%", zIndex: 1 }}>
+          <div style={{ position: "absolute", inset: 0, zIndex: 2, background: `linear-gradient(to right, #0D0207 0%, rgba(13,2,7,0.7) 38%, rgba(13,2,7,0.1) 100%)` }} />
+          <img src={inventoryHero} alt="Outstanding sarees" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", filter: "brightness(0.75) saturate(0.90)" }} />
+        </div>
+      </header>
 
-      {/* TAB STRIP */}
-      {/* Not sticky when embedded in ReportsPage — that page already has a sticky tab bar. */}
-      <div style={{ position: embedded ? "relative" : "sticky", top: 0, zIndex: 30, background: "linear-gradient(180deg, #3D0E1A, #2C0913)", boxShadow: "0 6px 24px rgba(0,0,0,0.20)" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 12, padding: "18px 40px 20px" }}>
+      {/* ── FLOATING STAT STRIP ───────────────────────────────────────────── */}
+      <motion.div
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 0.2 }}
+        style={{ padding: "0 56px", marginTop: -72, position: "relative", zIndex: 20 }}
+      >
+        <div style={{ background: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)", borderRadius: 28, display: "flex", alignItems: "stretch", boxShadow: "0 30px 80px rgba(0,0,0,0.32), 0 0 0 1px rgba(200,155,71,0.16)", overflow: "hidden", minHeight: 140 }}>
+          {stats.map((m, i) => (
+            <motion.div
+              key={m.label}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 + i * 0.09 }}
+              whileHover={{ backgroundColor: m.hi ? "rgba(200,155,71,0.26)" : "rgba(245,232,208,0.04)" }}
+              style={{
+                flex: 1, padding: "28px 22px",
+                backgroundImage: m.hi ? "linear-gradient(135deg, rgba(200,155,71,0.20) 0%, rgba(200,155,71,0.07) 100%)" : "none",
+                borderRight: i < 4 ? "1px solid rgba(245,232,208,0.07)" : "none",
+                display: "flex", alignItems: "center", gap: 14, position: "relative", cursor: "default",
+              }}
+            >
+              {m.hi && <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(135deg,#C89B47,#E7C983)" }} />}
+              <div style={{ width: 44, height: 44, borderRadius: 13, flexShrink: 0, background: m.hi ? "rgba(200,155,71,0.16)" : "rgba(245,232,208,0.07)", border: `1px solid ${m.hi ? "rgba(200,155,71,0.38)" : "rgba(245,232,208,0.09)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <m.Icon size={20} color={m.crimson ? "#F47B72" : m.hi ? "rgba(231,201,131,0.95)" : "rgba(245,232,208,0.90)"} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, letterSpacing: "2px", textTransform: "uppercase" as const, marginBottom: 8, color: m.hi ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.90)" }}>
+                  {m.label}
+                </div>
+                <div style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontSize: m.val.length > 7 ? 32 : 48, color: m.crimson ? "#F47B72" : m.goldVal ? T.goldLight : "#FFFDF9", lineHeight: 1.1, marginBottom: 8, fontVariantNumeric: "tabular-nums" as const }}>
+                  {m.val}
+                </div>
+                <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: m.hi ? "rgba(231,201,131,0.95)" : "rgba(245,232,208,0.85)" }}>
+                  {m.sub}
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* ── TAB STRIP ──────────────────────────────────────────────────────── */}
+      <div style={{ padding: "40px 56px 0" }}>
+        <div style={{ background: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)", borderRadius: 20, padding: 12, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12, boxShadow: "0 12px 40px rgba(0,0,0,0.18), 0 0 0 1px rgba(200,155,71,0.14)" }}>
           {OUT_TABS.map(t => {
             const active = tab === t.key;
             const count = tabCounts[t.key];
             return (
-              <div key={t.key} style={{
-                  borderRadius: 16, minWidth: 0,
-                  background: active ? "linear-gradient(135deg, rgba(200,155,71,0.26), rgba(200,155,71,0.12))" : "rgba(255,253,249,0.06)",
-                  border: `2px solid ${active ? T.antiqueGold : "rgba(255,253,249,0.12)"}`,
-                  boxShadow: active ? "0 8px 26px rgba(200,155,71,0.22)" : "none",
-                }}>
-              <Button variant="tertiary" size="lg" fullWidth onClick={() => setTab(t.key)}
-                className="!justify-start !text-left !h-auto !px-5 !py-[18px] !gap-[14px] !bg-transparent !border-none">
-                <div style={{ width: 48, height: 48, borderRadius: 13, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: active ? T.antiqueGold : "rgba(255,253,249,0.10)" }}>
-                  <t.Icon size={24} color={active ? "#2C0913" : "rgba(255,253,249,0.70)"} />
+              <motion.div
+                key={t.key}
+                whileHover={{ scale: 1.01 }}
+                onClick={() => setTab(t.key)}
+                style={{
+                  borderRadius: 14, cursor: "pointer", padding: "16px 18px",
+                  background: active ? "linear-gradient(135deg, rgba(200,155,71,0.28), rgba(200,155,71,0.12))" : "rgba(255,253,249,0.05)",
+                  border: `1.5px solid ${active ? T.antiqueGold : "rgba(255,253,249,0.08)"}`,
+                  boxShadow: active ? "0 8px 24px rgba(200,155,71,0.22)" : "none",
+                  display: "flex", alignItems: "center", gap: 14, transition: "all 0.2s ease"
+                }}
+              >
+                <div style={{ width: 44, height: 44, borderRadius: 12, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: active ? T.antiqueGold : "rgba(255,253,249,0.08)" }}>
+                  <t.Icon size={22} color={active ? "#2C0913" : "rgba(255,253,249,0.70)"} />
                 </div>
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: "#FFFDF9", lineHeight: 1.25 }}>{t.label}</div>
-                  <div style={{ fontFamily: F.ui, fontSize: 12, color: active ? "rgba(231,201,131,0.95)" : "rgba(255,253,249,0.45)", marginTop: 3 }}>{t.desc}</div>
+                  <div style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: "#FFFDF9", lineHeight: 1.25 }}>{t.label}</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 12, color: active ? "rgba(231,201,131,0.95)" : "rgba(255,253,249,0.50)", marginTop: 3 }}>{t.desc}</div>
                 </div>
                 {count !== null && (
                   <div style={{ flexShrink: 0, textAlign: "right" }}>
-                    <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: active ? T.antiqueGold : "rgba(255,253,249,0.80)", lineHeight: 1 }}>{count}</div>
-                    <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.40)", textTransform: "uppercase", letterSpacing: "0.8px", marginTop: 4 }}>Unsold</div>
+                    <div style={{ fontFamily: F.display, fontSize: 22, fontWeight: 700, color: active ? T.antiqueGold : "rgba(255,253,249,0.85)", lineHeight: 1 }}>{count}</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 11, color: "rgba(255,253,249,0.45)", textTransform: "uppercase", letterSpacing: "0.8px", marginTop: 3 }}>Unsold</div>
                   </div>
                 )}
-              </Button>
-              </div>
+              </motion.div>
             );
           })}
         </div>
@@ -126,7 +174,7 @@ export function OutstandingPage({ embedded = false }: { embedded?: boolean }) {
 
       {/* AGED ALERT */}
       {totals.aged90 > 0 && (
-        <div style={{ padding: "22px 40px 0" }}>
+        <div style={{ padding: "24px 56px 0" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 11, background: "rgba(192,57,43,0.07)", border: `1px solid rgba(192,57,43,0.22)`, borderRadius: 12, padding: "13px 18px" }}>
             <AlertTriangle size={17} color={T.crimson} />
             <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>
@@ -137,7 +185,7 @@ export function OutstandingPage({ embedded = false }: { embedded?: boolean }) {
       )}
 
       {/* BODY */}
-      <div style={{ padding: "22px 40px 48px", display: "flex", flexDirection: "column", gap: 20 }}>
+      <div style={{ padding: "24px 56px 80px", display: "flex", flexDirection: "column", gap: 20, width: "100%" }}>
         {tab !== "ranking" && (
           <FilterBar
             search={search} setSearch={setSearch}

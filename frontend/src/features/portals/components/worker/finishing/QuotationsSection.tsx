@@ -3,7 +3,8 @@ import { AnimatePresence } from "motion/react";
 import { Users, Package, ArrowDownToLine, FileText, Building2 } from "lucide-react";
 import { C, F, card } from "../tokens";
 import { useFinishing, Quotation } from "../../../../finishing/contexts/FinishingContext";
-import { WORKER_NAME, SectionHeader, Toast } from "./shared";
+import { WORKER_NAME, Toast } from "./shared";
+import { SectionCard } from "../primitives";
 import { StaffPickerModal } from "./StaffPickerModal";
 import { Button } from "../../../../../shared/ui/primitives";
 import { useAuth } from "../../../../../contexts/AuthContext";
@@ -17,7 +18,7 @@ function QuotationStatusBadge({ status }: { status: Quotation["status"] }) {
     "in-finishing":        { bg: "rgba(248,140,0,0.12)",  color: "#B85C00", label: "With Finishing Staff" },
     "partially-received":  { bg: "rgba(30,102,64,0.10)",  color: C.green,   label: "Partially Received" },
     "received":            { bg: "rgba(30,102,64,0.12)",  color: C.green,   label: "Received — Ready to Dispatch" },
-    "dispatched":          { bg: "rgba(107,26,42,0.10)",  color: C.burg,    label: "Dispatched" },
+    "dispatched":          { bg: "rgba(110,15,45,0.10)",  color: C.burg,    label: "Dispatched" },
   };
   const s = cfg[status];
   return (
@@ -59,13 +60,16 @@ export function QuotationsSection({ isMobile }: { isMobile?: boolean }) {
   };
 
   return (
-    <div style={{ ...card, padding: 16, marginBottom: 16 }}>
-      <SectionHeader
-        icon={<FileText size={18} color={C.burg} />}
-        title="Quotations for Finishing"
-        count={active.length}
-        accent="rgba(107,26,42,0.09)"
-      />
+    <SectionCard
+      icon={FileText}
+      title="Quotations for Finishing"
+      subtitle="Orders raised from Inventory that need finishing work."
+      actions={
+        <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: "#FFFDF9", background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.20)", padding: "5px 12px", borderRadius: 999 }}>
+          {active.length} active
+        </span>
+      }
+    >
       {active.length === 0 ? (
         <div style={{ padding: "24px 0", textAlign: "center", fontFamily: F.u, fontSize: 13, color: C.muted }}>
           No quotations awaiting finishing.
@@ -80,9 +84,9 @@ export function QuotationsSection({ isMobile }: { isMobile?: boolean }) {
             const canReceive = inFinishingSarees.length > 0;
 
             return (
-              <div key={q.id} style={{ border: `1px solid rgba(107,26,42,0.12)`, borderRadius: 14, overflow: "hidden", background: "#FFF" }}>
+              <div key={q.id} style={{ border: `1px solid rgba(110,15,45,0.12)`, borderRadius: 14, overflow: "hidden", background: "#FFF" }}>
                 {/* Header */}
-                <div style={{ padding: "12px 14px", background: "rgba(107,26,42,0.03)", borderBottom: `1px solid rgba(107,26,42,0.08)`, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" as const }}>
+                <div style={{ padding: "12px 14px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid rgba(110,15,45,0.08)`, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" as const }}>
                   <div>
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                       <span style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{q.quotationNumber}</span>
@@ -106,7 +110,7 @@ export function QuotationsSection({ isMobile }: { isMobile?: boolean }) {
                   {q.sarees.map((s, i) => {
                     return (
                       <div key={s.sareeId}
-                        style={{ display: "flex", alignItems: "center", gap: 12, padding: "9px 14px", borderBottom: i < q.sarees.length - 1 ? `1px solid rgba(107,26,42,0.06)` : "none" }}
+                        style={{ display: "flex", alignItems: "center", gap: 12, padding: "9px 14px", borderBottom: i < q.sarees.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none" }}
                       >
                         <Package size={14} color={C.muted} style={{ flexShrink: 0 }} />
                         <div style={{ flex: 1 }}>
@@ -128,9 +132,9 @@ export function QuotationsSection({ isMobile }: { isMobile?: boolean }) {
 
                 {/* Actions */}
                 {(canAssign || canReceive) && (
-                  <div style={{ padding: "12px 14px", borderTop: `1px solid rgba(107,26,42,0.08)`, display: "flex", gap: 8 }}>
+                  <div style={{ padding: "12px 14px", borderTop: `1px solid rgba(110,15,45,0.08)`, display: "flex", gap: 8 }}>
                     {canAssign && (
-                      <Button variant="primary" fullWidth iconLeft={Users} onClick={() => setPickerFor(q.id)} className="h-[42px] rounded-xl bg-[#6B1A2A] hover:bg-[#6B1A2A]">
+                      <Button variant="primary" fullWidth iconLeft={Users} onClick={() => setPickerFor(q.id)} className="h-[42px] rounded-xl bg-[#6E0F2D] hover:bg-[#6E0F2D]">
                         Assign {pendingSarees.length} Saree{pendingSarees.length > 1 ? "s" : ""} for Finishing
                       </Button>
                     )}
@@ -154,6 +158,6 @@ export function QuotationsSection({ isMobile }: { isMobile?: boolean }) {
       <AnimatePresence>
         {toast && <Toast msg={toast} onDone={() => setToast("")} />}
       </AnimatePresence>
-    </div>
+    </SectionCard>
   );
 }

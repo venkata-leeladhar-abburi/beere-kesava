@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  Monitor, Smartphone, AlignLeft, Table2, ChevronLeft, ChevronRight,
+  Monitor, Smartphone, AlignLeft, Table2, ChevronLeft, ChevronRight, LogIn,
 } from "lucide-react";
 import { F, T } from "./tokens";
 import { LoginEvent } from "./data";
-import { PaginationBtn } from "./shared";
+import { PaginationBtn, SectionCard } from "./shared";
 import { Button } from "../../../../shared/ui/primitives";
 import { auditLogApi, BackendAuditLog } from "../../../../shared/api/audit-log";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
@@ -118,21 +118,17 @@ export function LoginHistorySection() {
   }, []);
 
   return (
-    <div style={{ padding: "48px 56px 0" }}>
-      {/* Section title */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
-        <div style={{ width: 4, alignSelf: "stretch", background: T.royalBurgundy, borderRadius: 2, minHeight: 24 }} />
-        <span style={{ fontFamily: F.display, fontWeight: 600, fontSize: 18, color: T.luxuryBrown, flex: 1 }}>
-          Login History — User Sessions
-        </span>
-        <Button variant="link" size="sm" className="text-[12px] text-[#C89B47] hover:text-[#C89B47]">
-          Download Login Log →
+    <div style={{ padding: "40px 56px 0" }}>
+    <SectionCard
+      icon={LogIn}
+      title="Login History — User Sessions"
+      subtitle="Every login, logout, and failed login attempt — with device, session duration, and status."
+      actions={
+        <Button variant="secondary" size="sm" className="bg-white/10 text-[#FFFDF9] border-white/20">
+          Download Login Log
         </Button>
-      </div>
-      <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 24, marginTop: 0 }}>
-        Every login, logout, and failed login attempt — with device, session duration, and status.
-      </p>
-
+      }
+    >
       {/* View toggle */}
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
         <Button
@@ -305,6 +301,7 @@ export function LoginHistorySection() {
           </motion.div>
         )}
       </AnimatePresence>
+    </SectionCard>
     </div>
   );
 }

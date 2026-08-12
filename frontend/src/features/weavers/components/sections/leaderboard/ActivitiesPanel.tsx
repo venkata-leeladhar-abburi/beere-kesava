@@ -1,49 +1,52 @@
 // ── Weaver activity feed panel (row 2 of the leaderboard section) ──────────
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "motion/react";
-import { Bell } from "lucide-react";
+import { Bell, Activity as ActivityIcon } from "lucide-react";
 import { BarChart3 as ChartBar } from "lucide-react";
 import { T, F } from "../../theme";
 import { ACTIVITIES, ACTIVITY_ICONS } from "../../data";
-import { FadeUp } from "../../common/primitives";
+import { FadeUp, SectionCard } from "../../common/primitives";
 import { Button } from "../../../../../shared/ui/primitives";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../../shared/ui/DateFilterBar";
 
 export function ActivitiesPanel({ onActivities }: { onActivities: () => void }) {
-  const activitiesNeedingAction = ACTIVITIES.filter(a => a.needsAction).length;
+  const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const filteredActivities = ACTIVITIES.filter(a => matchesDateFilter(a.date ?? a.timestamp, dateFilter));
+  const activitiesNeedingAction = filteredActivities.filter(a => a.needsAction).length;
   return (
       <FadeUp delay={0.12}>
-        <div id="weav-activities" style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`, boxShadow: "0 6px 32px rgba(74,6,27,0.07)", overflow: "hidden" }}>
-
-          {/* Header bar */}
-          <div style={{ background: `linear-gradient(100deg, ${T.luxuryBrown} 0%, #5A3220 100%)`, padding: "20px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" as const, gap: 14 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-              <div style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <ChartBar size={24} color="#FFFDF9" />
-              </div>
-              <div>
-                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9" }}>Weaver Activities</div>
-                <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.60)", marginTop: 2 }}>
-                  What's happened, and what's waiting on you
-                </div>
-              </div>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              {activitiesNeedingAction > 0 && (
-                <span style={{ display: "flex", alignItems: "center", gap: 7, background: "rgba(200,155,71,0.18)", color: T.goldLight, border: "1px solid rgba(200,155,71,0.40)", borderRadius: 999, padding: "7px 14px", fontFamily: F.ui, fontSize: 13, fontWeight: 700 }}>
-                  <Bell size={14} /> {activitiesNeedingAction} need{activitiesNeedingAction === 1 ? "s" : ""} your action
-                </span>
-              )}
-              <Button onClick={onActivities} variant="secondary" iconLeft={Bell} className="bg-white/10 text-[#FFFDF9] border-white/20">
-                View All Activities
-              </Button>
-            </div>
+      <SectionCard
+        id="weav-activities"
+        icon={ActivityIcon}
+        title="Weaver Activities"
+        subtitle="What's happened, and what's waiting on you"
+        actions={
+          <>
+            {activitiesNeedingAction > 0 && (
+              <span style={{ display: "flex", alignItems: "center", gap: 7, background: "rgba(200,155,71,0.18)", color: T.goldLight, border: "1px solid rgba(200,155,71,0.40)", borderRadius: 999, padding: "7px 14px", fontFamily: F.ui, fontSize: 13, fontWeight: 700 }}>
+                <Bell size={14} /> {activitiesNeedingAction} need{activitiesNeedingAction === 1 ? "s" : ""} your action
+              </span>
+            )}
+            <Button onClick={onActivities} variant="secondary" iconLeft={Bell} className="bg-white/10 text-[#FFFDF9] border-white/20">
+              View All Activities
+            </Button>
+          </>
+        }
+      >
+        <div style={{ margin: "-24px -28px 0" }}>
+          <div style={{ padding: "18px 32px", borderBottom: `1px solid ${T.borderDef}` }}>
+            <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
           </div>
 
           {/* Activity feed — one row per event, full detail always visible,
               actionable items called out with an amber rail + a way to act on
               them right there rather than needing to guess what to do next. */}
           <div style={{ display: "flex", flexDirection: "column" }}>
-            {ACTIVITIES.map((a, i) => {
+            {filteredActivities.length === 0 ? (
+              <div style={{ padding: "40px 32px", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
+                No activities recorded for this period.
+              </div>
+            ) : filteredActivities.map((a, i) => {
               const cfg = ACTIVITY_ICONS[a.icon] ?? { PhIcon: ChartBar, bg: "rgba(110,15,45,0.07)", color: T.taupe };
               const PhIcon = cfg.PhIcon as React.ElementType;
               return (
@@ -56,7 +59,7 @@ export function ActivitiesPanel({ onActivities }: { onActivities: () => void }) 
                   whileHover={{ background: "rgba(247,242,234,0.55)" }}
                   style={{
                     padding: "20px 32px",
-                    borderBottom: i < ACTIVITIES.length - 1 ? `1px solid ${T.borderDef}` : "none",
+                    borderBottom: i < filteredActivities.length - 1 ? `1px solid ${T.borderDef}` : "none",
                     borderLeft: a.needsAction ? `3px solid ${T.antiqueGold}` : "3px solid transparent",
                     display: "flex", alignItems: "flex-start", gap: 16,
                     background: a.needsAction ? "rgba(200,155,71,0.05)" : "#FFFFFF",
@@ -91,6 +94,7 @@ export function ActivitiesPanel({ onActivities }: { onActivities: () => void }) 
           </div>
 
         </div>
+      </SectionCard>
       </FadeUp>
   );
 }

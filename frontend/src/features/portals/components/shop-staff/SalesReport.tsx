@@ -170,7 +170,7 @@ function SalesReport() {
               <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.text, lineHeight: 1.2 }}>{fmtINR(totalToday)}</div>
               <div style={{ fontFamily: F.u, fontSize: 12, color: "rgba(26,10,15,0.55)", marginTop: 4 }}>{dailySales.length} transactions</div>
             </div>
-            <div style={{ flex: "1 1 calc(50% - 5px)", background: "rgba(196,146,58,0.12)", border: `1px solid rgba(196,146,58,0.30)`, borderRadius: 16, padding: "16px 18px" }}>
+            <div style={{ flex: "1 1 calc(50% - 5px)", background: "rgba(200,155,71,0.12)", border: `1px solid rgba(200,155,71,0.30)`, borderRadius: 16, padding: "16px 18px" }}>
               <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12, color: C.burg, marginBottom: 6 }}>This Month Revenue</div>
               <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.burg, lineHeight: 1.2 }}>{fmtINR(monthRevenue)}</div>
               <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 4 }}>{new Date().toLocaleDateString("en-IN", { month: "long", year: "numeric" })}</div>
@@ -194,7 +194,7 @@ function SalesReport() {
             onClick={() => setPeriod(p.id)}
             className={
               "flex-1 py-2.5 h-auto rounded-full border whitespace-nowrap " +
-              (period === p.id ? "border-[#6B1A2A] bg-[#6B1A2A] text-white font-semibold" : "border-[rgba(139,26,46,0.12)] bg-white text-[#69635E] font-semibold")
+              (period === p.id ? "border-[#6E0F2D] bg-[#6E0F2D] text-white font-semibold" : "border-[rgba(110,15,45,0.12)] bg-white text-[#69635E] font-semibold")
             }
           >{p.label}</Button>
         ))}
@@ -204,7 +204,7 @@ function SalesReport() {
       <div id="shoprep-today-sales" style={{ display: "flex", alignItems: "center", margin: "20px 20px 12px", gap: 10 }}>
         <div style={{ width: 4, height: 20, background: C.burg, borderRadius: 2, flexShrink: 0 }} />
         <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 16, color: C.text, flex: 1 }}>Today's Sales — {new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
-        <Button onClick={() => { setExportDone(false); setShowExport(true); }} size="sm" className="gap-1.5 rounded-full bg-[#6B1A2A] border-none font-semibold text-[13px] text-white shadow-[0_2px_10px_rgba(107,26,42,0.28)] shrink-0">
+        <Button onClick={() => { setExportDone(false); setShowExport(true); }} size="sm" className="gap-1.5 rounded-full bg-[#6E0F2D] border-none font-semibold text-[13px] text-white shadow-[0_2px_10px_rgba(110,15,45,0.28)] shrink-0">
           <FileText size={14} color="#FFF" /> Export
         </Button>
       </div>
@@ -214,7 +214,7 @@ function SalesReport() {
             <div style={{ minWidth: 0, flex: 1 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" as const, marginBottom: 4 }}>
                 <span style={{ fontFamily: F.m, fontSize: 13, color: C.burg }}>{s.id}</span>
-                <Chip label={s.src === "factory" ? "Factory" : "External"} color={s.src === "factory" ? C.green : C.gold} bg={s.src === "factory" ? "rgba(30,102,64,0.10)" : "rgba(196,146,58,0.12)"} />
+                <Chip label={s.src === "factory" ? "Factory" : "External"} color={s.src === "factory" ? C.green : C.gold} bg={s.src === "factory" ? "rgba(30,102,64,0.10)" : "rgba(200,155,71,0.12)"} />
               </div>
               <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>{s.customer}</div>
               <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 3 }}>{s.time} · {s.pay}</div>
@@ -304,7 +304,7 @@ function SalesReport() {
       {/* ══════ MODAL: EXPORT REPORT ══════ */}
       <Modal open={showExport} onOpenChange={o => { if (!o) { setShowExport(false); setExportDone(false); } }} size="sm">
               <div style={{ background: `linear-gradient(135deg, ${C.dark} 0%, #4A061B 100%)`, padding: "16px 20px 24px", flexShrink: 0, display: "flex", alignItems: "center", gap: 14 }}>
-                <div style={{ width: 48, height: 48, borderRadius: 14, background: "rgba(196,146,58,0.22)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <div style={{ width: 48, height: 48, borderRadius: 14, background: "rgba(200,155,71,0.22)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   <FileText size={24} color={C.gold} />
                 </div>
                 <div style={{ flex: 1 }}>
@@ -333,7 +333,7 @@ function SalesReport() {
                     <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, lineHeight: 1.6, marginBottom: 22 }}>
                       Your <strong style={{ color: C.text }}>Today's Sales</strong> report has been exported as <strong style={{ color: C.text }}>{exportFormat.toUpperCase()}</strong>. Check your downloads folder.
                     </div>
-                    <Button onClick={() => { setShowExport(false); setExportDone(false); }} fullWidth className="h-[52px] rounded-full border-none bg-[#6B1A2A] font-bold text-sm text-white">Done</Button>
+                    <Button onClick={() => { setShowExport(false); setExportDone(false); }} fullWidth className="h-[52px] rounded-full border-none bg-[#6E0F2D] font-bold text-sm text-white">Done</Button>
                   </div>
                 ) : (
                   <>
@@ -351,7 +351,7 @@ function SalesReport() {
                             variant="ghost"
                             className={
                               "flex-1 h-auto py-3.5 px-2 rounded-2xl border-2 text-center flex-col " +
-                              (exportFormat === f.key ? "border-[#6B1A2A] bg-[rgba(107,26,42,0.06)]" : "border-[rgba(139,26,46,0.12)] bg-white")
+                              (exportFormat === f.key ? "border-[#6E0F2D] bg-[rgba(110,15,45,0.06)]" : "border-[rgba(110,15,45,0.12)] bg-white")
                             }
                           >
                             <div style={{ fontSize: 20, marginBottom: 5 }}>{f.icon}</div>
@@ -371,10 +371,10 @@ function SalesReport() {
                       ))}
                     </div>
                     <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
-                      <Button onClick={() => setExportDone(true)} fullWidth className="h-[52px] rounded-full border-none bg-[#6B1A2A] font-bold text-sm text-white gap-2 shadow-[0_4px_16px_rgba(107,26,42,0.30)]">
+                      <Button onClick={() => setExportDone(true)} fullWidth className="h-[52px] rounded-full border-none bg-[#6E0F2D] font-bold text-sm text-white gap-2 shadow-[0_4px_16px_rgba(110,15,45,0.30)]">
                         <FileText size={17} /> Export as {exportFormat.toUpperCase()}
                       </Button>
-                      <Button onClick={() => { setShowExport(false); setExportDone(false); }} fullWidth className="h-[50px] rounded-full border-[1.5px] border-[rgba(139,26,46,0.12)] bg-white font-semibold text-sm text-[#69635E]">Cancel</Button>
+                      <Button onClick={() => { setShowExport(false); setExportDone(false); }} fullWidth className="h-[50px] rounded-full border-[1.5px] border-[rgba(110,15,45,0.12)] bg-white font-semibold text-sm text-[#69635E]">Cancel</Button>
                     </div>
                   </>
                 )}

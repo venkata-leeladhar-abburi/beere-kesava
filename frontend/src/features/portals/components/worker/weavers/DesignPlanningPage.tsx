@@ -23,7 +23,7 @@ export function DesignPlanningPage({ onBack }: { onBack: () => void }) {
           <div style={{ fontFamily: F.d, fontSize: 20, fontWeight: 700, color: C.text, textAlign: "center" }}>Design Saved</div>
           <div style={{ fontFamily: F.m, fontSize: 14, color: C.burg }}>{designCode}</div>
           <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, textAlign: "center" }}>Color slip has been linked to the design.</div>
-          <Button variant="secondary" onClick={() => setSaved(false)} className="w-auto rounded-full px-7 border-[rgba(139,26,46,0.30)] text-[#6B1A2A]">Back to Design Planning</Button>
+          <Button variant="secondary" onClick={() => setSaved(false)} className="w-auto rounded-full px-7 border-[rgba(110,15,45,0.30)] text-[#6E0F2D]">Back to Design Planning</Button>
         </div>
       </>
     );
@@ -34,7 +34,7 @@ export function DesignPlanningPage({ onBack }: { onBack: () => void }) {
       <PageHeader title="Design Planning" onBack={onBack} />
       <div style={{ paddingBottom: 28 }}>
         {/* Context */}
-        <div style={{ margin: "12px 16px 4px", background: "rgba(107,26,42,0.04)", border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "10px 14px" }}>
+        <div style={{ margin: "12px 16px 4px", background: "rgba(110,15,45,0.04)", border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "10px 14px" }}>
           <p style={{ fontFamily: F.u, fontSize: 13, color: C.muted, lineHeight: 1.5, margin: 0 }}>
             Upload the color slip for a design. Link it to a batch so weavers can see it.
           </p>
@@ -61,17 +61,17 @@ export function DesignPlanningPage({ onBack }: { onBack: () => void }) {
         <SectionLabel step={2} title="Take Photo of Color Slip" />
         <div style={{ margin: "0 16px" }}>
           {!hasPhoto ? (
-            <div style={{ background: "#FFF", border: "1px dashed rgba(139,26,46,0.25)", borderRadius: 12, padding: "20px 16px" }}>
+            <div style={{ background: "#FFF", border: "1px dashed rgba(110,15,45,0.25)", borderRadius: 12, padding: "20px 16px" }}>
               <div style={{ textAlign: "center", marginBottom: 14 }}>
                 <Camera size={36} color={C.gold} style={{ margin: "0 auto 8px" }} />
                 <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 500, color: C.text, marginBottom: 4 }}>Take a clear photo of the color slip paper</div>
                 <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Must show: border color, body design, pallu details</div>
               </div>
               <div style={{ display: "flex", gap: 8 }}>
-                <Button variant="primary" fullWidth iconLeft={Camera} onClick={() => setHasPhoto(true)} className="h-11 rounded-full bg-[#6B1A2A] hover:bg-[#6B1A2A]">
+                <Button variant="primary" fullWidth iconLeft={Camera} onClick={() => setHasPhoto(true)} className="h-11 rounded-full bg-[#6E0F2D] hover:bg-[#6E0F2D]">
                   Camera
                 </Button>
-                <Button variant="secondary" fullWidth iconLeft={UploadCloud} onClick={() => setHasPhoto(true)} className="h-11 rounded-full border-[#6B1A2A] text-[#6B1A2A]">
+                <Button variant="secondary" fullWidth iconLeft={UploadCloud} onClick={() => setHasPhoto(true)} className="h-11 rounded-full border-[#6E0F2D] text-[#6E0F2D]">
                   Gallery
                 </Button>
               </div>
@@ -86,7 +86,7 @@ export function DesignPlanningPage({ onBack }: { onBack: () => void }) {
                   <CheckCircle2 size={13} color={C.green} />
                   <span style={{ fontFamily: F.u, fontSize: 13, color: C.green, fontWeight: 500 }}>Photo looks good</span>
                 </div>
-                <Button variant="link" onClick={() => setHasPhoto(false)} className="p-0 text-xs text-[#6B1A2A] underline">Retake Photo</Button>
+                <Button variant="link" onClick={() => setHasPhoto(false)} className="p-0 text-xs text-[#6E0F2D] underline">Retake Photo</Button>
               </div>
             </div>
           )}
@@ -105,7 +105,7 @@ export function DesignPlanningPage({ onBack }: { onBack: () => void }) {
         </div>
 
         <div style={{ padding: "18px 16px 0" }}>
-          <Button variant="primary" fullWidth onClick={() => setSaved(true)} className="h-[50px] rounded-full bg-[#6B1A2A] hover:bg-[#6B1A2A]">
+          <Button variant="primary" fullWidth onClick={() => setSaved(true)} className="h-[50px] rounded-full bg-[#6E0F2D] hover:bg-[#6E0F2D]">
             💾 Save Design and Color Slip
           </Button>
         </div>

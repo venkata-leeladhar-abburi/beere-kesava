@@ -5,7 +5,7 @@ import { UsersRound, CheckCircle2, TrendingUp, ShieldAlert } from "lucide-react"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { T, F } from "../theme";
-import { FadeUp, ChartCard, SumCard, TabTitle, ReportDLBar, ChartTip, AnimBar, TablePager, StatusPill, TH, TD } from "../common/primitives";
+import { FadeUp, ChartCard, SumCard, SectionCard, ReportDLBar, ChartTip, AnimBar, TablePager, StatusPill, TH, TD } from "../common/primitives";
 import { Button, SearchInput } from "../../../../shared/ui/primitives";
 import { customersApi, BackendCustomer } from "../../../../shared/api/customers";
 import { invoicesApi } from "../../../../shared/api/invoices";
@@ -152,7 +152,7 @@ export function CustomerReport() {
 
   const customerColumns: ColumnDef<CustomerRow>[] = [
     {
-      id: "name", header: "Customer Name", accessor: r => r.name,
+      id: "name", header: "Customer Name", accessor: r => r.name, priority: 1,
       cell: (_v, r) => <span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.name}</span>,
     },
     {
@@ -160,7 +160,7 @@ export function CustomerReport() {
       cell: (_v, r) => <StatusPill label={r.type} type={r.type === "Wholesale" ? "neutral" : "gold"} />,
     },
     {
-      id: "phone", header: "Phone", accessor: r => r.phone,
+      id: "phone", header: "Phone", accessor: r => r.phone, priority: 3,
       cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.phone}</span>,
     },
     {
@@ -176,7 +176,7 @@ export function CustomerReport() {
       cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700, color: r.due > 0 ? T.crimson : T.green }}>{r.due > 0 ? <Money value={rupees(r.due)} /> : "— Nil"}</span>,
     },
     {
-      id: "lastPurchase", header: "Last Purchase", accessor: r => r.lastPurchase,
+      id: "lastPurchase", header: "Last Purchase", accessor: r => r.lastPurchase, priority: 3,
       cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.lastPurchase}</span>,
     },
     {
@@ -187,8 +187,11 @@ export function CustomerReport() {
 
   return (
     <div id="rep-customers" style={{ padding: "32px 40px" }}>
-      <TabTitle title="Customer Report"
-        sub="See all retail and wholesale customers — their purchase history, total spend, frequency of buying, and any outstanding dues. Find your best customers and track who owes money." />
+    <SectionCard
+      icon={UsersRound}
+      title="Customer Report"
+      subtitle="See all retail and wholesale customers — their purchase history, total spend, frequency of buying, and any outstanding dues. Find your best customers and track who owes money."
+    >
       <ReportDLBar />
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20, marginBottom: 24 }}>
@@ -285,6 +288,7 @@ export function CustomerReport() {
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
           <div style={{ overflowX: "auto", minWidth: 900 }}>
             <DataTable
+              responsive
               columns={customerColumns}
               data={custRows}
               getRowId={r => r.id}
@@ -334,6 +338,7 @@ export function CustomerReport() {
           </div>
         </div>
       </FadeUp>
+    </SectionCard>
     </div>
   );
 }

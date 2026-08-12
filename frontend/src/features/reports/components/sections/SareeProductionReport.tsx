@@ -10,7 +10,7 @@ import {
 } from "recharts";
 import { T, F } from "../theme";
 import {
-  FadeUp, ChartCard, SumCard, TabTitle, ReportDLBar, ChartTip, AnimBar,
+  FadeUp, ChartCard, SumCard, SectionCard, ReportDLBar, ChartTip, AnimBar,
   TablePager, StatusPill,
 } from "../common/primitives";
 import { batchesApi } from "../../../../shared/api/batches";
@@ -275,8 +275,11 @@ export function SareeProductionReport() {
 
   return (
     <div id="rep-production" style={{ padding: "32px 40px" }}>
-      <TabTitle title="Saree Production Report"
-        sub="Track how many sarees were produced, which weavers produced them, which designs were made, and how many passed or failed quality check." />
+    <SectionCard
+      icon={Factory}
+      title="Saree Production Report"
+      subtitle="Track how many sarees were produced, which weavers produced them, which designs were made, and how many passed or failed quality check."
+    >
       <ReportDLBar />
 
       <div style={{ display: "flex", gap: 6, marginBottom: 24 }}>
@@ -455,6 +458,7 @@ export function SareeProductionReport() {
       </FadeUp>
 
       <ExternalPurchasesSection />
+    </SectionCard>
     </div>
   );
 }

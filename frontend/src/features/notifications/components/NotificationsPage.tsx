@@ -6,6 +6,7 @@ import { Button, IconButton } from "../../../shared/ui/primitives";
 import { UnifiedNotif, Priority, T, F, PRIORITY, CATEGORIES } from "./notifTypes";
 import { NotificationStatStrip } from "./NotificationStatStrip";
 import { NotificationDetailPanel } from "./NotificationDetailPanel";
+import { SectionCard } from "./common/primitives";
 import { BackendNotification, connectNotificationsSocket, notificationsApi } from "../../../shared/api/notifications";
 import { useAuth, Role } from "../../../contexts/AuthContext";
 import { rupees, formatMoney } from "@/lib/domain/money";
@@ -294,14 +295,18 @@ export function NotificationsPage() {
         </div>
       </div>
 
-      <div style={{ padding: "16px 56px 0" }}>
-        <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
-      </div>
-
       {/* MAIN CONTENT GRID */}
-      <div style={{ padding: "80px 56px 80px", display: "flex", gap: 28, alignItems: "flex-start" }}>
+      <div style={{ padding: "40px 56px 80px", display: "flex", gap: 28, alignItems: "flex-start" }}>
         {/* Left list */}
         <div style={{ flex: selected ? "0 0 520px" : 1, minWidth: 0 }}>
+        <SectionCard
+          icon={Inbox}
+          title="Notification Feed"
+          subtitle="Live operational alerts, stock updates, payment reminders, and production activity."
+        >
+          <div style={{ marginBottom: 16 }}>
+            <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+          </div>
           {["Today", "Yesterday", "Older Alerts"].map(dateGroup => {
             const items = grouped[dateGroup] || [];
             if (items.length === 0) return null;
@@ -430,6 +435,7 @@ export function NotificationsPage() {
               <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No notifications match the current filter.</div>
             </div>
           )}
+        </SectionCard>
         </div>
 
         {/* Right detail panel */}

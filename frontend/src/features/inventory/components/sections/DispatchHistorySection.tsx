@@ -1,9 +1,11 @@
 import React, { useState, useMemo } from "react";
 import { Truck, Users, ShoppingBag, Clock, CheckCircle2, Trash2, FileText } from "lucide-react";
 import { DispatchRecord } from "../../../finishing/contexts/FinishingContext";
-import { T, F, card } from "../theme";
+import { T, F } from "../theme";
 import { Button } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { SectionCard } from "../common/primitives";
+import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 
 // ── Dispatch History section ──────────────────────────────────────────────────
 // Exported for the Worker Staff portal — same component, same markup, so the two
@@ -23,12 +25,11 @@ export function DispatchHistorySection({ dispatches, firms, onResume, onDelete, 
   ];
 
   return (
-    <div style={{ ...card, borderRadius: 16, overflow: "hidden" }}>
-      <div style={{ padding: "18px 24px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" as const, gap: 12 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <Truck size={18} color={T.royalBurgundy} />
-          <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: T.luxuryBrown }}>Dispatch History</span>
-        </div>
+    <SectionCard
+      icon={Truck}
+      title="Dispatch History"
+      subtitle="Every dispatch sent out to shops and wholesale customers."
+      actions={
         <div style={{ display: "flex", gap: 6 }}>
           {TABS.map(t => (
             <Button
@@ -36,20 +37,21 @@ export function DispatchHistorySection({ dispatches, firms, onResume, onDelete, 
               onClick={() => setTab(t.key)}
               variant={tab === t.key ? "secondary" : "tertiary"}
               size="sm"
-              className="rounded-full"
+              className={tab === t.key ? "rounded-full" : "rounded-full bg-white/10 text-[#FFFDF9] border-white/20"}
             >
               {t.label} <span style={{ fontFamily: F.mono, fontSize: 12 }}>({t.count})</span>
             </Button>
           ))}
         </div>
-      </div>
-
+      }
+    >
       <DataTableBody rows={rows} firms={firms} onResume={onResume} onDelete={onDelete} onViewInvoice={onViewInvoice} />
-    </div>
+    </SectionCard>
   );
 }
 
 function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { rows: DispatchRecord[]; firms: { id: string; firmName: string }[]; onResume: (d: DispatchRecord) => void; onDelete?: (d: DispatchRecord) => void; onViewInvoice?: (d: DispatchRecord) => void; }) {
+  const pag = usePagination(rows, 25);
   const columns: ColumnDef<DispatchRecord>[] = [
     {
       id: "date", header: "Date", accessor: d => d.dispatchDate, width: 110,
@@ -144,11 +146,27 @@ function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { row
   ];
 
   return (
-    <DataTable
-      columns={columns}
-      data={rows}
-      getRowId={d => d.id}
-      emptyTitle="No dispatches yet."
-    />
+    <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, background: "#FFFFFF", boxShadow: "0 2px 8px rgba(74,6,27,0.04)", overflow: "hidden" }}>
+      <DataTable
+        columns={columns}
+        data={pag.pageItems}
+        getRowId={d => d.id}
+        emptyTitle="No dispatches yet."
+      />
+      {rows.length > 0 && (
+        <div style={{ padding: "0 14px" }}>
+          <Pagination
+            page={pag.page}
+            pageCount={pag.pageCount}
+            total={pag.total}
+            pageSize={pag.pageSize}
+            start={pag.start}
+            onPageChange={pag.setPage}
+            onPageSizeChange={pag.setPageSize}
+            itemLabel="dispatches"
+          />
+        </div>
+      )}
+    </div>
   );
 }

@@ -5,7 +5,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 import { T, F } from "../theme";
-import { FadeUp, ChartCard, TabTitle, ReportDLBar, ChartTip, MiniDonut } from "../common/primitives";
+import { FadeUp, ChartCard, SectionCard, ReportDLBar, ChartTip, MiniDonut } from "../common/primitives";
 import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
 import { materialIssuesApi } from "../../../../shared/api/material-issues";
 import { jariToReels, formatBunsReels } from "../../../../shared/lib/weightUnits";
@@ -238,8 +238,11 @@ export function RawMaterialReport() {
 
   return (
     <div id="rep-raw-materials" style={{ padding: "32px 40px" }}>
-      <TabTitle title="Raw Material Report"
-        sub="Track everything about raw material — how much was received from vendors, how much was given to weavers, and how much is still in the factory. Warp, Resham, and Jari tracked separately." />
+    <SectionCard
+      icon={Package}
+      title="Raw Material Report"
+      subtitle="Track everything about raw material — how much was received from vendors, how much was given to weavers, and how much is still in the factory. Warp, Resham, and Jari tracked separately."
+    >
       <ReportDLBar />
 
       {/* Charts row */}
@@ -352,6 +355,7 @@ export function RawMaterialReport() {
           </div>
         </div>
       </FadeUp>
+    </SectionCard>
     </div>
   );
 }

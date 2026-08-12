@@ -64,7 +64,7 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
     design: s.channel === "WHOLESALE" ? "Wholesale Sale" : "Retail Sale",
     amt: formatMoney(rupees(Number(s.amount))),
     time: dateLabel(s.saleDate),
-    color: "#6B1A2A",
+    color: "#6E0F2D",
     ext: false,
   }));
 
@@ -84,11 +84,11 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
       {/* Quick New Sale */}
       <div style={{ margin: "20px 20px 14px" }}>
         <div style={{
-          background: "linear-gradient(160deg, rgba(196,146,58,0.10) 0%, rgba(107,26,42,0.05) 100%)",
-          border: `2px solid ${C.burg}`, borderRadius: 20, padding: "22px 20px", boxShadow: "0 4px 18px rgba(107,26,42,0.08)",
+          background: "linear-gradient(160deg, rgba(200,155,71,0.10) 0%, rgba(110,15,45,0.05) 100%)",
+          border: `2px solid ${C.burg}`, borderRadius: 20, padding: "22px 20px", boxShadow: "0 4px 18px rgba(110,15,45,0.08)",
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 18 }}>
-            <div style={{ width: 60, height: 60, borderRadius: 18, background: C.gold, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 14px rgba(196,146,58,0.35)" }}>
+            <div style={{ width: 60, height: 60, borderRadius: 18, background: C.gold, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 14px rgba(200,155,71,0.35)" }}>
               <ShoppingBag size={30} color={C.text} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -96,7 +96,7 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
               <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginTop: 3, lineHeight: 1.4 }}>Record a sale at the counter</div>
             </div>
           </div>
-          <Button onClick={() => onNavigate("sale")} fullWidth className="h-14 rounded-full bg-[#6B1A2A] border-none font-bold text-base text-white gap-2 shadow-[0_6px_18px_rgba(107,26,42,0.30)]">
+          <Button onClick={() => onNavigate("sale")} fullWidth className="h-14 rounded-full bg-[#6E0F2D] border-none font-bold text-base text-white gap-2 shadow-[0_6px_18px_rgba(110,15,45,0.30)]">
             <ArrowUpRight size={20} /> Start New Sale
           </Button>
         </div>
@@ -104,10 +104,10 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
 
       {/* Process Return quick link */}
       <div style={{ margin: "0 20px 8px", display: "flex", gap: 12 }}>
-        <Button onClick={() => onNavigate("return")} className="flex-1 h-[52px] border border-[rgba(139,26,46,0.12)] bg-white rounded-2xl font-semibold text-sm text-[#1A0A0F] gap-2 shadow-[0_1px_6px_rgba(44,24,16,0.05)]">
+        <Button onClick={() => onNavigate("return")} className="flex-1 h-[52px] border border-[rgba(110,15,45,0.12)] bg-white rounded-2xl font-semibold text-sm text-[#1A0A0F] gap-2 shadow-[0_1px_6px_rgba(44,24,16,0.05)]">
           <RotateCcw size={17} color={C.crim} /> Process Return
         </Button>
-        <Button onClick={() => onNavigate("inventory")} className="flex-1 h-[52px] border border-[rgba(139,26,46,0.12)] bg-white rounded-2xl font-semibold text-sm text-[#1A0A0F] gap-2 shadow-[0_1px_6px_rgba(44,24,16,0.05)]">
+        <Button onClick={() => onNavigate("inventory")} className="flex-1 h-[52px] border border-[rgba(110,15,45,0.12)] bg-white rounded-2xl font-semibold text-sm text-[#1A0A0F] gap-2 shadow-[0_1px_6px_rgba(44,24,16,0.05)]">
           <Package size={17} color={C.burg} /> View Inventory
         </Button>
       </div>
@@ -121,12 +121,12 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
           </div>
         ) : (
           recentSales.map((s, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "center", padding: "16px", borderBottom: i < recentSales.length - 1 ? `1px solid rgba(139,26,46,0.08)` : "none" }}>
+            <div key={i} style={{ display: "flex", alignItems: "center", padding: "16px", borderBottom: i < recentSales.length - 1 ? `1px solid rgba(110,15,45,0.08)` : "none" }}>
               <div style={{ width: 6, height: 40, borderRadius: 3, background: s.color, marginRight: 14, flexShrink: 0 }} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" as const }}>
                   <span style={{ fontFamily: F.m, fontSize: 13, color: C.burg }}>{s.id}</span>
-                  {s.ext && <Chip label="📦 External" color={C.gold} bg="rgba(196,146,58,0.12)" />}
+                  {s.ext && <Chip label="📦 External" color={C.gold} bg="rgba(200,155,71,0.12)" />}
                 </div>
                 <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text, marginTop: 3 }}>{s.customer}</div>
                 <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginTop: 1 }}>{s.design}</div>
@@ -220,13 +220,13 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
                 <div style={{ display: "flex", gap: 10 }}>
                   {(["urgent", "normal"] as const).map(p => {
                     const isActive = lowStockPriority === p;
-                    const activeColor = p === "urgent" ? "border-[#C0392B] bg-[rgba(192,57,43,0.08)] text-[#C0392B]" : "border-[#6B1A2A] bg-[rgba(107,26,42,0.06)] text-[#6B1A2A]";
+                    const activeColor = p === "urgent" ? "border-[#C0392B] bg-[rgba(192,57,43,0.08)] text-[#C0392B]" : "border-[#6E0F2D] bg-[rgba(110,15,45,0.06)] text-[#6E0F2D]";
                     return (
                       <Button
                         key={p}
                         onClick={() => setLowStockPriority(p)}
                         variant="ghost"
-                        className={"flex-1 h-11 rounded-[10px] border-2 font-semibold text-sm " + (isActive ? activeColor : "border-[rgba(139,26,46,0.12)] bg-transparent text-[#69635E]")}
+                        className={"flex-1 h-11 rounded-[10px] border-2 font-semibold text-sm " + (isActive ? activeColor : "border-[rgba(110,15,45,0.12)] bg-transparent text-[#69635E]")}
                       >
                         {p === "urgent" ? "🔴 Urgent" : "🟡 Normal"}
                       </Button>

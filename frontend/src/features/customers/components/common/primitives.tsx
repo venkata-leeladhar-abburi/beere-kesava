@@ -1,6 +1,7 @@
 import React from "react";
 import { useRef } from "react";
 import { motion, useInView } from "motion/react";
+import type { LucideIcon } from "lucide-react";
 import { useDownloadsAllowed } from "../../../../shared/ui/DownloadAccess";
 import { T, F, EASE } from "../theme";
 import { Button } from "../../../../shared/ui/primitives";
@@ -39,30 +40,55 @@ export function Pill({ active, children, onClick }: { active: boolean, children:
   );
 }
 
-export function SectionTitle({ title, sub, action, onAction }: { title: string, sub: string, action?: string, onAction?: () => void }) {
-  // Section actions on this page are all downloads/exports, so they follow the
-  // portal's download permission.
-  const dlAllowed = useDownloadsAllowed();
-  const isDownloadAction = /download|export/i.test(action);
+// Section banner card — dark maroon gradient header (icon + title + subtitle
+// + actions) atop a white padded body, matching the pattern used across the
+// Production, Materials, Payments, and Weavers pages.
+export function SectionCard({
+  icon: Icon,
+  title,
+  subtitle,
+  actions,
+  children,
+  id,
+}: {
+  icon: LucideIcon;
+  title: string;
+  subtitle?: string;
+  actions?: React.ReactNode;
+  children: React.ReactNode;
+  id?: string;
+}) {
   return (
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24 }}>
-      <div style={{ display: "flex", gap: 12 }}>
-        <div style={{ width: 3, background: T.antiqueGold, borderRadius: 2 }} />
-        <div>
-          <h2 style={{ fontFamily: F.display, fontSize: 30, color: T.luxuryBrown, margin: "0 0 6px 0", fontWeight: 600 }}>{title}</h2>
-          <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, margin: 0, maxWidth: 600, lineHeight: 1.5 }}>{sub}</p>
+    <div id={id} style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`, boxShadow: "0 6px 32px rgba(74,6,27,0.08)", overflow: "hidden" }}>
+      <div style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`, padding: "22px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <Icon size={26} color="#FFFDF9" />
+          </div>
+          <div>
+            <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9", letterSpacing: "-0.2px" }}>{title}</div>
+            {subtitle && <div style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.65)", marginTop: 3 }}>{subtitle}</div>}
+          </div>
         </div>
+        {actions && <div style={{ display: "flex", gap: 10, alignItems: "center", flexShrink: 0 }}>{actions}</div>}
       </div>
-      {(!isDownloadAction || dlAllowed) && (
-        <Button
-          variant="link"
-          onClick={onAction}
-          className="text-[color:var(--bk-gold-500)]"
-        >
-          {action}
-        </Button>
-      )}
+      <div style={{ padding: "24px 28px 28px" }}>
+        {children}
+      </div>
     </div>
+  );
+}
+
+// Download-gated text-link action button, matching the old `SectionTitle`'s
+// action slot — section actions on this page are all downloads/exports, so
+// they follow the portal's download permission.
+export function SectionDownloadAction({ label, onClick }: { label: string; onClick?: () => void }) {
+  const dlAllowed = useDownloadsAllowed();
+  if (!dlAllowed) return null;
+  return (
+    <Button variant="secondary" size="md" onClick={onClick} className="bg-white/10 text-[#FFFDF9] border-white/20">
+      {label}
+    </Button>
   );
 }
 

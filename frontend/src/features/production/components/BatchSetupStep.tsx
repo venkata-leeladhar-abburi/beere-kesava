@@ -1,9 +1,10 @@
 import React from "react";
-import { AlertCircle as WarningCircle } from "lucide-react";
+import { AlertCircle as WarningCircle, ClipboardList } from "lucide-react";
 import { T, F, fld, lbl } from "./batch-creation/constants";
 import { SareeRow } from "../contexts/BatchContext";
 import { Button, NumberInput } from "../../../shared/ui/primitives";
 import { DatePicker, formatDate } from "../../../shared/ui/date";
+import { SectionCard } from "./common/primitives";
 
 interface BatchSetupStepProps {
   batchId: string;
@@ -30,13 +31,8 @@ export function BatchSetupStep({
 }: BatchSetupStepProps) {
   return (
     <>
-      <div style={{ background: "#fff", borderRadius: 18, border: `1.5px solid ${T.borderDef}`, padding: "28px 32px", marginBottom: 24, boxShadow: "0 2px 12px rgba(74,6,27,0.05)" }}>
-        <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, marginBottom: 20, display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ width: 28, height: 28, borderRadius: 8, background: T.royalBurgundy, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: "#fff" }}>1</span>
-          </div>
-          Batch Setup
-        </div>
+      <div style={{ marginBottom: 24 }}>
+      <SectionCard icon={ClipboardList} title="Batch Setup" subtitle="Set the batch ID, saree count, and due date to generate the saree table.">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", gap: 16, alignItems: "end" }}>
           <div>
             <label style={lbl}>Batch ID</label>
@@ -62,6 +58,7 @@ export function BatchSetupStep({
             Generate Table →
           </Button>
         </div>
+      </SectionCard>
       </div>
 
       {generated && incompleteRows.length > 0 && (

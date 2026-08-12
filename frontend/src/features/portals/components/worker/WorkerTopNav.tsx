@@ -80,26 +80,28 @@ export function WorkerTopNav({ active, onSelect, onBack, bp, pendingQcCount = 0 
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: EASE }}
       style={{
-        position: "sticky", top: 0, zIndex: 100, height: 72,
+        position: "sticky", top: 0, zIndex: "var(--z-nav)", height: 72,
         display: "flex", alignItems: "center", justifyContent: "space-between",
         gap: 20,
-        padding: isTablet ? "0 24px" : "0 40px",
-        background: "rgba(255,253,249,0.97)",
-        backdropFilter: "blur(24px)",
-        borderBottom: "1px solid rgba(110,15,45,0.08)",
-        boxShadow: "0 2px 24px rgba(74,6,27,0.06)",
+        padding: isTablet ? "0 24px" : "0 56px",
+        // Same dark-burgundy chrome as the admin topnav (beere-dashboard/
+        // components/TopNav.tsx) — the worker portal used to invert this to a
+        // pale bar, which was the single most visible split between the two.
+        background: C.dark,
+        borderBottom: "1px solid rgba(200,155,71,0.14)",
+        boxShadow: "0 4px 40px rgba(0,0,0,0.28)",
       }}
     >
-      {/* Logo + brand */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
-        <div style={{ width: 38, height: 38, borderRadius: 11, overflow: "hidden", flexShrink: 0, boxShadow: "0 3px 12px rgba(110,15,45,0.16)", border: "1.5px solid rgba(200,155,71,0.28)" }}>
-          <img src={imgBKLogo} alt="BK" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+      {/* Logo + brand — admin's three-line lockup */}
+      <div style={{ display: "flex", alignItems: "center", gap: isTablet ? 10 : 14, flexShrink: 0 }}>
+        <div style={{ width: isTablet ? 40 : 52, height: isTablet ? 40 : 52, borderRadius: 14, overflow: "hidden", flexShrink: 0, boxShadow: "0 4px 16px rgba(0,0,0,0.30)", border: "1.5px solid rgba(200,155,71,0.30)" }}>
+          <img src={imgBKLogo} alt="BK" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
         </div>
         {!isTablet && (
-          <div>
-            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 14, color: C.dark, lineHeight: 1.1 }}>Beere Kesava</div>
-            <div style={{ fontFamily: F.d, fontWeight: 400, fontSize: 12, color: C.dark, marginTop: 1 }}>&amp; Brothers Silks</div>
-            <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12, color: C.gold, letterSpacing: "2px", textTransform: "uppercase", marginTop: 2 }}>Worker Staff</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <div style={{ fontFamily: F.d, fontWeight: 600, fontSize: 16, color: C.cream, letterSpacing: "0.5px", lineHeight: 1, textTransform: "uppercase" }}>Beere Kesava</div>
+            <div style={{ fontFamily: F.u, fontWeight: 400, fontSize: 12, color: "rgba(245,232,208,0.75)", letterSpacing: "1.6px", textTransform: "uppercase" }}>And Brothers Silks</div>
+            <div style={{ fontFamily: F.u, fontWeight: 500, fontSize: 12, color: C.gold, letterSpacing: "3px", textTransform: "uppercase" }}>Worker Staff</div>
           </div>
         )}
       </div>
@@ -113,10 +115,13 @@ export function WorkerTopNav({ active, onSelect, onBack, bp, pendingQcCount = 0 
               key={item.id}
               variant="tertiary"
               onClick={() => onSelect(item.id)}
-              className={`flex-shrink-0 gap-2 rounded-[10px] border-0 border-b-[2.5px] relative ${isTablet ? "px-3 py-2" : "px-4 py-2.5"} ${isActive ? "border-b-[#6B1A2A] bg-[rgba(107,26,42,0.06)]" : "border-b-transparent bg-transparent"}`}
+              aria-current={isActive ? "page" : undefined}
+              // `!` overrides Button's tertiary hover, which is a near-white
+              // neutral-50 — it flashed white against this dark nav bar.
+              className={`flex-shrink-0 gap-2 rounded-[10px] border-0 relative hover:!text-[#E7C983] ${isTablet ? "px-3 py-2" : "px-4 py-2.5"} ${isActive ? "bg-[rgba(200,155,71,0.16)] hover:!bg-[rgba(200,155,71,0.22)]" : "bg-transparent hover:!bg-[rgba(245,232,208,0.10)]"}`}
             >
-              <item.Icon size={isTablet ? 15 : 16} color={isActive ? C.burg : C.muted} />
-              <span style={{ fontFamily: F.u, fontSize: isTablet ? 13 : 14, fontWeight: isActive ? 600 : 500, color: isActive ? C.burg : C.text, whiteSpace: "nowrap" as const }}>
+              <item.Icon size={isTablet ? 15 : 16} color={isActive ? C.goldL : "rgba(245,232,208,0.80)"} />
+              <span style={{ fontFamily: F.u, fontSize: isTablet ? 13 : 14, fontWeight: isActive ? 600 : 500, color: isActive ? C.goldL : "rgba(245,232,208,0.80)", whiteSpace: "nowrap" as const }}>
                 {item.label}
               </span>
               {item.badge && (
@@ -135,13 +140,13 @@ export function WorkerTopNav({ active, onSelect, onBack, bp, pendingQcCount = 0 
         <Popover open={showNotif} onOpenChange={o => { setShowNotif(o); if (o) setShowUser(false); }}>
           <Popover.Trigger asChild>
             <motion.div
-              whileHover={{ scale: 1.05, backgroundColor: "rgba(110,15,45,0.05)" }}
+              whileHover={{ scale: 1.05, backgroundColor: "rgba(245,232,208,0.08)" }}
               whileTap={{ scale: 0.95 }}
               style={{ borderRadius: 10, display: "inline-block", position: "relative" }}
             >
               <IconButton icon={Bell} label="Notifications" variant="secondary"
-                className="w-9 h-9 rounded-[10px] border-[rgba(110,15,45,0.10)] bg-transparent" />
-              <div style={{ position: "absolute", top: 5, right: 5, width: 8, height: 8, borderRadius: "50%", background: C.crim, border: "1.5px solid #FFFDF9", pointerEvents: "none" }} />
+                className="w-9 h-9 rounded-[10px] border-[rgba(200,155,71,0.22)] bg-transparent text-[#F5E8D0]" />
+              <div style={{ position: "absolute", top: 5, right: 5, width: 8, height: 8, borderRadius: "50%", background: "#F47B72", border: `1.5px solid ${C.dark}`, pointerEvents: "none" }} />
             </motion.div>
           </Popover.Trigger>
           <Popover.Content align="end" sideOffset={10} className="!w-[300px] !max-w-[300px] !p-0 !overflow-hidden">
@@ -172,18 +177,18 @@ export function WorkerTopNav({ active, onSelect, onBack, bp, pendingQcCount = 0 
         <DropdownMenu open={showUser} onOpenChange={o => { setShowUser(o); if (o) setShowNotif(false); }}>
           <DropdownMenuTrigger asChild>
             <motion.div
-              whileHover={{ scale: 1.02, backgroundColor: "rgba(110,15,45,0.04)" }}
+              whileHover={{ scale: 1.02, backgroundColor: "rgba(245,232,208,0.10)" }}
               whileTap={{ scale: 0.98 }}
-              style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", padding: "5px 10px 5px 5px", borderRadius: 10, border: `1px solid rgba(110,15,45,0.10)`, backgroundColor: "rgba(110,15,45,0.02)" }}
+              style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", padding: "5px 10px 5px 5px", borderRadius: 10, border: "1px solid rgba(200,155,71,0.22)", backgroundColor: "rgba(245,232,208,0.06)" }}
             >
-              <div style={{ width: 28, height: 28, borderRadius: 8, background: C.burg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <div style={{ width: 28, height: 28, borderRadius: 8, background: C.burg, border: "1px solid rgba(200,155,71,0.30)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 12, color: "#FFF" }}>{initials}</span>
               </div>
-              <span style={{ fontFamily: F.u, fontWeight: 500, fontSize: 13, color: C.dark }}>{name}</span>
-              <ChevronDown size={12} color={C.muted} />
+              <span style={{ fontFamily: F.u, fontWeight: 500, fontSize: 13, color: C.cream }}>{name}</span>
+              <ChevronDown size={12} color="rgba(245,232,208,0.70)" />
             </motion.div>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="!min-w-[210px] !p-0 !rounded-[14px] !overflow-hidden" style={{ background: "#FFFDF9", border: `1px solid rgba(110,15,45,0.12)` }}>
+          <DropdownMenuContent align="end" className="!min-w-[210px] !p-0 !rounded-[14px] !overflow-hidden" style={{ background: "#FFFDF9", border: `1px solid rgba(110,15,45,0.12)`, zIndex: "var(--z-tooltip)" }}>
             <div style={{ padding: "14px 16px", borderBottom: `1px solid rgba(110,15,45,0.08)` }}>
               <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: C.dark }}>{name}</div>
               <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>{subtitle}</div>

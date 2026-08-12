@@ -25,7 +25,7 @@ const NAV_CARDS: {
 }[] = [
   {
     icon: Package,
-    iconBg: "rgba(107,26,42,0.09)",
+    iconBg: "rgba(110,15,45,0.09)",
     iconColor: C.burg,
     label: "Receive Sarees",
     sub: "Record sarees received from weavers — enter weight, batch details and history",
@@ -120,7 +120,7 @@ export function WorkerHome({ onNavigate }: WorkerHomeProps) {
       </div>
 
       {/* Quick Stats */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: "#FFF", borderBottom: `1px solid ${C.bdr}`, boxShadow: "0 2px 10px rgba(107,26,42,0.05)" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: "#FFF", borderBottom: `1px solid ${C.bdr}`, boxShadow: "0 2px 10px rgba(110,15,45,0.05)" }}>
         {[
           { val: String(pendingQcCount), label: "Pending QC", col: "#C0392B" },
           { val: String(withFinishingCount), label: "With Finishing", col: "#B85C00" },
@@ -147,14 +147,14 @@ export function WorkerHome({ onNavigate }: WorkerHomeProps) {
                 variant="tertiary"
                 fullWidth
                 onClick={() => onNavigate(card.tab)}
-                className="justify-start gap-3.5 rounded-2xl border-[1.5px] border-[rgba(139,26,46,0.12)] bg-white px-3.5 py-4 text-left shadow-[0_2px_12px_rgba(107,26,42,0.06)] transition-all"
+                className="justify-start gap-3.5 rounded-2xl border-[1.5px] border-[rgba(110,15,45,0.12)] bg-white px-3.5 py-4 text-left shadow-[0_2px_12px_rgba(110,15,45,0.06)] transition-all"
                 onMouseEnter={e => {
                   (e.currentTarget as HTMLButtonElement).style.borderColor = card.accent;
-                  (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 4px 20px rgba(107,26,42,0.12)`;
+                  (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 4px 20px rgba(110,15,45,0.12)`;
                 }}
                 onMouseLeave={e => {
                   (e.currentTarget as HTMLButtonElement).style.borderColor = C.bdr;
-                  (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 2px 12px rgba(107,26,42,0.06)";
+                  (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 2px 12px rgba(110,15,45,0.06)";
                 }}
               >
                 <div style={{
@@ -183,14 +183,14 @@ export function WorkerHome({ onNavigate }: WorkerHomeProps) {
         {activities.map((a, i) => (
           <div key={i} style={{
             display: "flex", alignItems: "flex-start", gap: 12, padding: "13px 16px",
-            borderBottom: i < activities.length - 1 ? `1px solid rgba(139,26,46,0.07)` : "none",
+            borderBottom: i < activities.length - 1 ? `1px solid rgba(110,15,45,0.07)` : "none",
           }}>
             <div style={{ width: 7, height: 7, borderRadius: "50%", background: a.dot, marginTop: 5, flexShrink: 0 }} />
             <div style={{ flex: 1 }}>
               <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, lineHeight: 1.4, marginBottom: 2 }}>{a.desc}</div>
               <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{a.time}</div>
             </div>
-            <div style={{ fontFamily: F.m, fontSize: 12, color: C.burg, flexShrink: 0, background: "rgba(107,26,42,0.06)", padding: "2px 7px", borderRadius: 6 }}>{a.id}</div>
+            <div style={{ fontFamily: F.m, fontSize: 12, color: C.burg, flexShrink: 0, background: "rgba(110,15,45,0.06)", padding: "2px 7px", borderRadius: 6 }}>{a.id}</div>
           </div>
         ))}
       </div>

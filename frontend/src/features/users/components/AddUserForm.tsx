@@ -5,10 +5,10 @@ import {
   Lock, Hash, ShieldCheck, ShieldHalf, Sparkles, X, Layers
 } from "lucide-react";
 import {
-  T, F, EASE, cardStyle,
+  T, F, EASE,
   ROLE_TO_PORTAL, ROLES, ACCESS_LEVELS, AccessLevel, ACCESS_LEVEL_META,
 } from "./theme";
-import { SectionTitle, RoleBadge, AccessBadge } from "./UserBadges";
+import { SectionCard, RoleBadge, AccessBadge } from "./UserBadges";
 import { Button, Field, Input, Textarea, Select, SelectItem } from "../../../shared/ui/primitives";
 import { PhotoUploadField } from "../../../shared/ui/PhotoUploadField";
 
@@ -64,12 +64,7 @@ export function AddUserForm({
   const setWeaverField = (key: keyof WeaverFieldsState) => (v: string) =>
     setWeaverFields(prev => ({ ...prev, [key]: v }));
   return (
-    <div style={{ ...cardStyle, borderRadius: 20 }}>
-      <div style={{ padding: "22px 28px 0" }}>
-        <SectionTitle>Add New User</SectionTitle>
-      </div>
-
-      <div style={{ padding: "0 28px 28px" }}>
+    <SectionCard icon={UserPlus} title="Add New User" subtitle="Register a new staff member and set up their portal access.">
         <AnimatePresence mode="wait">
           {showSuccess ? (
             <motion.div key="success" initial={{ opacity: 0, scale: 0.97, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.3, ease: EASE }} style={{ paddingTop: 12 }}>
@@ -303,7 +298,6 @@ export function AddUserForm({
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
-    </div>
+    </SectionCard>
   );
 }

@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { Search, History } from "lucide-react";
 import { C, F } from "../tokens";
+import { SectionCard } from "../primitives";
 import { type ReceivedSareeLog } from "./shared";
 import { Button, Input } from "../../../../../shared/ui/primitives";
 import { useQc } from "../../../../qc/contexts/QcContext";
@@ -68,7 +69,7 @@ export function HistorySection({ liveRecords = [] }: { liveRecords?: ReceivedSar
   filtered.forEach(h => { if (!byWeaver[h.weaver]) byWeaver[h.weaver] = []; byWeaver[h.weaver].push(h); });
 
   const SareeRow = ({ h, last }: { h: typeof filtered[0]; last: boolean }) => (
-    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderBottom: last ? "none" : `1px solid rgba(107,26,42,0.06)` }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderBottom: last ? "none" : `1px solid rgba(110,15,45,0.06)` }}>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
           <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, color: C.burg }}>{h.id}</span>
@@ -89,33 +90,37 @@ export function HistorySection({ liveRecords = [] }: { liveRecords?: ReceivedSar
   );
 
   return (
-    <div style={{ margin: "0 0 24px" }}>
-      {/* Section header */}
-      <div style={{ padding: "18px 16px 10px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <span style={{ fontFamily: F.u, fontSize: 14, fontWeight: 700, color: C.text }}>Received History</span>
-        <div style={{ display: "flex", background: "#F0ECE8", borderRadius: 8, padding: 2 }}>
-          {([["day", "Day Wise"], ["weaver", "Weaver Wise"]] as const).map(([key, label]) => (
-            <Button key={key} variant={view === key ? "primary" : "tertiary"} size="sm" onClick={() => setView(key)}
-              className={view === key ? "rounded-md bg-[#6B1A2A] hover:bg-[#6B1A2A]" : "rounded-md"}>
-              {label}
-            </Button>
-          ))}
-        </div>
-      </div>
-
+    <div style={{ margin: "24px 0 0" }}>
+      <SectionCard
+        icon={History}
+        title="Received History"
+        subtitle="Every saree recorded from weavers, grouped by day or by weaver."
+        actions={
+          <div style={{ display: "flex", background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 10, padding: 3 }}>
+            {([["day", "Day Wise"], ["weaver", "Weaver Wise"]] as const).map(([key, label]) => (
+              <Button key={key} variant="tertiary" size="sm" onClick={() => setView(key)}
+                className={view === key
+                  ? "rounded-[7px] bg-white/90 !text-[#4A061B] hover:!bg-white"
+                  : "rounded-[7px] bg-transparent !text-[rgba(255,253,249,0.80)] hover:!bg-white/10 hover:!text-white"}>
+                {label}
+              </Button>
+            ))}
+          </div>
+        }
+      >
       {/* Filters */}
-      <div style={{ margin: "0 16px 10px" }}>
+      <div style={{ marginBottom: 12 }}>
         <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
       </div>
 
       {/* Search */}
-      <div style={{ margin: "0 16px 10px", position: "relative" }}>
+      <div style={{ marginBottom: 16, position: "relative" }}>
         <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search saree ID, weaver, batch…"
-          iconLeft={Search} size="sm" className="text-xs" />
+          iconLeft={Search} className="w-full" />
       </div>
 
       {/* Grouped list */}
-      <div style={{ margin: "0 16px" }}>
+      <div>
         {view === "day" ? (
           Object.entries(byDay).length === 0
             ? <div style={{ padding: "24px 0", textAlign: "center", fontFamily: F.u, fontSize: 13, color: C.muted }}>No records found.</div>
@@ -146,6 +151,7 @@ export function HistorySection({ liveRecords = [] }: { liveRecords?: ReceivedSar
             ))
         )}
       </div>
+      </SectionCard>
     </div>
   );
 }

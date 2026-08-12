@@ -14,14 +14,14 @@ export function SectionHeader({ icon, title, count, accent }: {
 }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-      <div style={{ width: 36, height: 36, borderRadius: 10, background: accent ?? "rgba(107,26,42,0.09)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <div style={{ width: 36, height: 36, borderRadius: 10, background: accent ?? "rgba(110,15,45,0.09)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
         {icon}
       </div>
       <div style={{ flex: 1 }}>
         <div style={{ fontFamily: F.d, fontSize: 16, fontWeight: 700, color: C.text, lineHeight: 1.2 }}>{title}</div>
       </div>
       {count !== undefined && (
-        <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 700, background: "rgba(107,26,42,0.09)", color: C.burg, padding: "3px 9px", borderRadius: 999 }}>
+        <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 700, background: "rgba(110,15,45,0.09)", color: C.burg, padding: "3px 9px", borderRadius: 999 }}>
           {count}
         </span>
       )}
@@ -36,7 +36,7 @@ export function ScanBarBtn({ label, onClick }: { label: string; onClick: () => v
       size="sm"
       iconLeft={Scan}
       onClick={onClick}
-      className="h-[38px] flex-shrink-0 rounded-[10px] bg-[#3D0E1A] hover:bg-[#6B1A2A]"
+      className="h-[38px] flex-shrink-0 rounded-[10px] bg-[#3D0E1A] hover:bg-[#6E0F2D]"
     >
       {label}
     </Button>

@@ -2,7 +2,7 @@ import React from "react";
 import { Users, Scissors, BarChart3, UsersRound, BellRing, Boxes, Store, Tag, FileText, Download } from "lucide-react";
 import { useDownloadsAllowed } from "../../../../shared/ui/DownloadAccess";
 import { T, F } from "../theme";
-import { FadeUp, SectionHeader } from "../common/primitives";
+import { FadeUp, SectionCard } from "../common/primitives";
 import { Button } from "../../../../shared/ui/primitives";
 
 // Wired to real backend: GET /reports/history (ReportDownloadHistory model),
@@ -35,18 +35,16 @@ export function DownloadHistorySection() {
   return (
     <div style={{ padding: "36px 40px 40px" }}>
       <FadeUp>
-        <SectionHeader
-          title="Previously Downloaded Reports"
-          action={
-            <Button variant="link">
-              Clear History →
-            </Button>
-          }
-        />
-        <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: "4px 0 22px 13px" }}>
-          All reports that were generated and downloaded. Click Download Again to get any previous report without regenerating it.
-        </p>
-
+      <SectionCard
+        icon={Download}
+        title="Previously Downloaded Reports"
+        subtitle="All reports that were generated and downloaded. Click Download Again to get any previous report without regenerating it."
+        actions={
+          <Button variant="secondary" size="sm" className="bg-white/10 text-[#FFFDF9] border-white/20">
+            Clear History
+          </Button>
+        }
+      >
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16, alignItems: "stretch" }}>
           {isLoading ? (
             <div style={{ gridColumn: "1 / -1", padding: 32, textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe, background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}` }}>
@@ -100,6 +98,7 @@ export function DownloadHistorySection() {
             ))
           )}
         </div>
+      </SectionCard>
       </FadeUp>
     </div>
   );

@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { Download, Lock, ChevronLeft, ChevronRight } from "lucide-react";
+import { Download, Lock, ChevronLeft, ChevronRight, History } from "lucide-react";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { Button } from "../../../../shared/ui/primitives";
 import { T, F, cardStyle, thStyle, tdStyle } from "./theme";
-import { SectionTitle, GoldLink } from "./sharedUI";
+import { SectionCard, GoldLink } from "./sharedUI";
 import { rateRequestsApi, type BackendRateChangeRequest } from "../../../../shared/api/rateRequests";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
@@ -95,17 +95,16 @@ export function RateHistorySection() {
   ];
 
   return (
-    <div style={{ padding: "48px 56px" }}>
-      <SectionTitle link={
-        <DownloadGate><GoldLink><Download size={13} /> Download History →</GoldLink></DownloadGate>
-      }>
-        Rate Change History
-      </SectionTitle>
-      <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, maxWidth: 720, margin: "0 0 20px 0", lineHeight: 1.7 }}>
-        A permanent, immutable log of all rate changes made in the system. This record cannot be edited or deleted and serves as the official audit trail.
-      </p>
-
-      <DateFilterBar filter={histDateFilter} onChange={setHistDateFilter} />
+    <div style={{ padding: "40px 56px 0" }}>
+    <SectionCard
+      icon={History}
+      title="Rate Change History"
+      subtitle="A permanent, immutable log of all rate changes made in the system. This record cannot be edited or deleted and serves as the official audit trail."
+      actions={<DownloadGate><GoldLink><Download size={13} /> Download History →</GoldLink></DownloadGate>}
+    >
+      <div style={{ marginBottom: 16 }}>
+        <DateFilterBar filter={histDateFilter} onChange={setHistDateFilter} />
+      </div>
 
       {isLoading ? (
         <div style={{ ...cardStyle, padding: "32px 20px", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
@@ -173,6 +172,7 @@ export function RateHistorySection() {
         </div>
       </div>
       )}
+    </SectionCard>
     </div>
   );
 }

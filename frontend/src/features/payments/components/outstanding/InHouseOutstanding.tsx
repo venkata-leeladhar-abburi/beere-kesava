@@ -1,9 +1,9 @@
 import React, { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, Users, Factory } from "lucide-react";
 import { T, F } from "../../theme";
 import { UnifiedSaree, SareeOrigin, isOutstanding, isSold, ageBucket } from "../../../customers/contexts/SalesContext";
-import { Card, Empty, ExportBtn, SectionTitle, exportCsv, inr } from "./primitives";
+import { Empty, ExportBtn, SectionCard, exportCsv, inr } from "./primitives";
 import type { AgeKey } from "./primitives";
 import { DrilldownTabs } from "./SareeDetailTable";
 import { Button } from "../../../../shared/ui/primitives";
@@ -46,19 +46,18 @@ export function InHouseOutstanding({
   const label = origin === "weaver" ? "Weaver" : "Factory Loom";
 
   return (
-    <Card>
-      <SectionTitle
-        title={`Outstanding Sarees — ${origin === "weaver" ? "Weavers" : "Factory Looms"}`}
-        sub={`Sarees produced ${origin === "weaver" ? "by our weavers" : "on our factory looms"} that are still not sold — neither retail nor wholesale. Returned sarees that went back into stock are counted here too.`}
-        right={
-          <ExportBtn onClick={() => exportCsv(
-            `outstanding-${origin}.csv`,
-            [[label, "Ref", "Saree Code", "Batch", "Saree Type", "Weight", "QC Date", "Days In Stock", "Cost", "Sell Price"],
-             ...groups.flatMap(g => g.rows.map(s => [g.name, g.sub, s.sareeId, s.batchId || "—", s.sareeTypeName, s.weight, s.qcDate, s.ageDays, s.costPrice, s.finalAmount]))],
-          )} />
-        }
-      />
-
+    <SectionCard
+      icon={origin === "weaver" ? Users : Factory}
+      title={`Outstanding Sarees — ${origin === "weaver" ? "Weavers" : "Factory Looms"}`}
+      subtitle={`Sarees produced ${origin === "weaver" ? "by our weavers" : "on our factory looms"} that are still not sold — neither retail nor wholesale. Returned sarees that went back into stock are counted here too.`}
+      actions={
+        <ExportBtn onClick={() => exportCsv(
+          `outstanding-${origin}.csv`,
+          [[label, "Ref", "Saree Code", "Batch", "Saree Type", "Weight", "QC Date", "Days In Stock", "Cost", "Sell Price"],
+           ...groups.flatMap(g => g.rows.map(s => [g.name, g.sub, s.sareeId, s.batchId || "—", s.sareeTypeName, s.weight, s.qcDate, s.ageDays, s.costPrice, s.finalAmount]))],
+        )} />
+      }
+    >
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 18 }}>
         {[
           { l: "Produced", v: String(totalProduced), c: T.luxuryBrown },
@@ -124,6 +123,6 @@ export function InHouseOutstanding({
           })}
         </div>
       )}
-    </Card>
+    </SectionCard>
   );
 }

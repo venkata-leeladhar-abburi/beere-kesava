@@ -6,7 +6,7 @@ import { useWeaverPayments } from "../../../weavers/contexts/WeaverPaymentsConte
 import { weaversApi } from "../../../../shared/api/weavers";
 import { qcApi } from "../../../../shared/api/qc";
 import { T, F } from "../theme";
-import { FadeUp, ChartCard, SumCard, TabTitle, ReportDLBar, AnimBar, TablePager } from "../common/primitives";
+import { FadeUp, ChartCard, SumCard, SectionCard, ReportDLBar, AnimBar, TablePager } from "../common/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { semantic } from "../../../../design-system/tokens";
 import { rupees, formatMoney } from "@/lib/domain/money";
@@ -118,8 +118,11 @@ export function WeaverPaymentReport() {
 
   return (
     <div id="rep-weaver-payments" style={{ padding: "32px 40px" }}>
-      <TabTitle title="Weaver Payment Report"
-        sub="Complete breakdown of making charges earned, deductions applied, and net amounts paid to every weaver. Download the monthly payment sheet for your records." />
+    <SectionCard
+      icon={Users}
+      title="Weaver Payment Report"
+      subtitle="Complete breakdown of making charges earned, deductions applied, and net amounts paid to every weaver. Download the monthly payment sheet for your records."
+    >
       <ReportDLBar />
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 24, alignItems: "stretch" }}>
@@ -225,6 +228,7 @@ export function WeaverPaymentReport() {
           <TablePager total={weaverPayRows.length} showing={weaverPayRows.length} />
         </div>
       </FadeUp>
+    </SectionCard>
     </div>
   );
 }

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Edit2, Plus, Check, X, AlertTriangle, BarChart2, Eye } from "lucide-react";
+import { Edit2, Plus, Check, X, AlertTriangle, BarChart2, Eye, Tags } from "lucide-react";
 import { T, F, cardStyle, labelStyle } from "./theme";
-import { SectionTitle, GoldLink, JariWeightField, SareeTypeCombobox } from "./sharedUI";
+import { SectionCard, GoldLink, JariWeightField, SareeTypeCombobox } from "./sharedUI";
 import { Button, IconButton, NumberInput, Input, Textarea } from "../../../../shared/ui/primitives";
 import type { SareeTypeRecord } from "./sareeTypeData";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
@@ -102,16 +102,13 @@ export function MakingChargesSection({
   ];
 
   return (
-    <div style={{ padding: "96px 56px 48px" }}>
-      <SectionTitle link={
-        <GoldLink><BarChart2 size={13} /> View Rate Change History →</GoldLink>
-      }>
-        Making Charge Rates — Per Saree Type
-      </SectionTitle>
-      <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, maxWidth: 720, margin: "0 0 24px 0", lineHeight: 1.7 }}>
-        These charges are applied to each saree during production billing. Making charge is the amount paid to the weaver per saree woven. All prices in Indian Rupees (₹).
-      </p>
-
+    <div style={{ padding: "96px 56px 0" }}>
+    <SectionCard
+      icon={Tags}
+      title="Making Charge Rates — Per Saree Type"
+      subtitle="Applied to each saree during production billing. Making charge is the amount paid to the weaver per saree woven. All prices in Indian Rupees (₹)."
+      actions={<GoldLink><BarChart2 size={13} /> View Rate Change History →</GoldLink>}
+    >
       {/* Rates Table */}
       <div style={cardStyle}>
         <DataTable
@@ -332,6 +329,7 @@ export function MakingChargesSection({
           </motion.div>
         )}
       </AnimatePresence>
+    </SectionCard>
     </div>
   );
 }

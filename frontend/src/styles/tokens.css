@@ -347,12 +347,12 @@
   --z-raised:   10;
   --z-sticky:   100;
   --z-nav:      200;
-  --z-dropdown: 300;
-  --z-overlay:  400;
-  --z-modal:    500;
-  --z-popover:  600;
-  --z-toast:    700;
-  --z-tooltip:  800;
+  --z-dropdown: 9999;
+  --z-overlay:  10000;
+  --z-modal:    10050;
+  --z-popover:  10100;
+  --z-toast:    10200;
+  --z-tooltip:  10300;
 
   /* ─────────────────────────────────────────────────────────────────────────
      12. LAYOUT

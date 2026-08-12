@@ -106,7 +106,7 @@ export function SectionBFiltered({ isMobile }: { isMobile?: boolean }) {
 
       {/* Scan feedback */}
       {scanMsg && (
-        <div style={{ background: "rgba(30,102,64,0.06)", border: `1px solid rgba(30,102,64,0.18)`, borderRadius: 8, padding: "7px 11px", marginBottom: 10, fontFamily: F.m, fontSize: 12, color: "#1E6640" }}>
+        <div style={{ background: "rgba(30,102,64,0.06)", border: `1px solid rgba(30,102,64,0.18)`, borderRadius: 10, padding: "9px 13px", marginBottom: 12, fontFamily: F.m, fontSize: 12, color: "#1F774E" }}>
           {scanMsg}
         </div>
       )}
@@ -116,26 +116,29 @@ export function SectionBFiltered({ isMobile }: { isMobile?: boolean }) {
           {awaiting.length === 0 ? "No sarees currently awaiting return." : "No results for selected filters."}
         </div>
       ) : (
-        <div style={{ border: `1px solid rgba(107,26,42,0.10)`, borderRadius: 10, overflow: "hidden" }}>
+        <div style={{ border: `1px solid rgba(110,15,45,0.10)`, borderRadius: 14, overflow: "hidden" }}>
           {filteredAwaiting.map((a, i) => {
             const checked = selected.has(a.id);
             return (
               <div key={a.id} onClick={() => toggleRow(a.id)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => toggleRow(a.id))?.(); } }}
-                style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 12px", borderTop: i > 0 ? `1px solid rgba(107,26,42,0.07)` : "none", background: checked ? "rgba(30,102,64,0.04)" : "#FFF", cursor: "pointer", transition: "background 0.12s" }}>
-                <div style={{ flexShrink: 0 }}>
-                  {checked ? <CheckSquare size={16} color="#1E6640" /> : <Square size={16} color={C.muted} />}
+                style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 16px", minHeight: 64, borderTop: i > 0 ? `1px solid rgba(110,15,45,0.07)` : "none", borderLeft: `3px solid ${checked ? "#1F774E" : "transparent"}`, background: checked ? "rgba(31,119,78,0.06)" : "#FFF", cursor: "pointer", transition: "background 0.12s" }}>
+                <div style={{ flexShrink: 0, display: "flex", alignItems: "center" }}>
+                  {checked ? <CheckSquare size={20} color="#1F774E" /> : <Square size={20} color={C.muted} />}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, color: C.burg }}>{a.sareeId}</div>
+                  <div style={{ fontFamily: F.m, fontSize: 13, fontWeight: 500, color: C.burg }}>{a.sareeId}</div>
                   {/* Show saree type code instead of design code */}
-                  <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 1 }}>{a.sareeTypeCode || a.sareeType} · {a.finishingStaffName}</div>
-                  {a.batchId && <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 1 }}>{a.batchId}</div>}
+                  <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, marginTop: 3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {a.sareeTypeCode || a.sareeType} · {a.finishingStaffName}
+                  </div>
+                  {a.batchId && <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>{a.batchId}</div>}
                 </div>
                 <div style={{ flexShrink: 0, textAlign: "right" as const }}>
-                  <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginBottom: 4 }}>{a.assignedDate}</div>
-                  <div style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "rgba(248,140,0,0.10)", border: "1px solid rgba(248,140,0,0.22)", borderRadius: 999, padding: "2px 7px" }}>
-                    <Clock size={9} color="#B85C00" />
-                    <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#B85C00" }}>Awaiting</span>
+                  <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.muted, letterSpacing: "0.06em", textTransform: "uppercase" }}>Assigned</div>
+                  <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, margin: "3px 0 6px", fontVariantNumeric: "tabular-nums" }}>{a.assignedDate}</div>
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(200,155,71,0.14)", border: "1px solid rgba(200,155,71,0.32)", borderRadius: 999, padding: "3px 9px" }}>
+                    <Clock size={11} color="#8D5802" />
+                    <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#8D5802" }}>Awaiting</span>
                   </div>
                 </div>
               </div>
@@ -156,7 +159,7 @@ export function SectionBFiltered({ isMobile }: { isMobile?: boolean }) {
               <Button variant="primary" fullWidth iconLeft={CheckCircle2} onClick={() => setShowVerif(true)} className="h-[50px] rounded-full bg-[#1E6640] hover:bg-[#1E6640] text-sm">
                 Mark as Received
               </Button>
-              <Button variant="secondary" fullWidth onClick={() => setSelected(new Set())} className="h-[46px] rounded-full border-[rgba(139,26,46,0.30)] text-[#6B1A2A] text-[13px]">Cancel</Button>
+              <Button variant="secondary" fullWidth onClick={() => setSelected(new Set())} className="h-[46px] rounded-full border-[rgba(110,15,45,0.30)] text-[#6E0F2D] text-[13px]">Cancel</Button>
             </div>
           </motion.div>
         ) : (
@@ -166,7 +169,7 @@ export function SectionBFiltered({ isMobile }: { isMobile?: boolean }) {
               Mark {selected.size} as Received
             </Button>
             <IconButton icon={X} label="Cancel selection" variant="secondary" onClick={() => setSelected(new Set())}
-              className="w-[46px] h-[46px] flex-shrink-0 rounded-xl border-[rgba(139,26,46,0.30)] text-[#6B1A2A]" />
+              className="w-[46px] h-[46px] flex-shrink-0 rounded-xl border-[rgba(110,15,45,0.30)] text-[#6E0F2D]" />
           </motion.div>
         ))}
       </AnimatePresence>

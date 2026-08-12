@@ -1,9 +1,10 @@
 import React from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronDown, ChevronRight, Building2, UserRound, Package } from "lucide-react";
+import { ChevronDown, ChevronRight, Building2, UserRound, Package, FileSpreadsheet } from "lucide-react";
 import { Quotation } from "../contexts/FinishingContext";
 import { Button } from "../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../shared/ui/data";
+import { SectionCard } from "./common/primitives";
 
 const T = {
   royalBurgundy: "#6E0F2D",
@@ -83,14 +84,11 @@ export function FinishingQuotationsSection({
   setOpenQuotation,
 }: FinishingQuotationsSectionProps) {
   return (
-    <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 20px rgba(74,6,27,0.06)", padding: 22 }}>
-      <div style={{ marginBottom: 16 }}>
-        <h3 style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.luxuryBrown, margin: 0 }}>Quotations for Finishing</h3>
-        <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, margin: "5px 0 0" }}>
-          Bulk-order quotations routed through finishing before dispatch — who raised them, who they're assigned to, and how many sarees have come back so far.
-        </p>
-      </div>
-
+    <SectionCard
+      icon={FileSpreadsheet}
+      title="Quotations for Finishing"
+      subtitle="Bulk-order quotations routed through finishing before dispatch — who raised them, who they're assigned to, and how many sarees have come back so far."
+    >
       {filteredQuotations.length === 0 ? (
         <div style={{ padding: "48px 24px", textAlign: "center" }}>
           <Package size={40} color={T.taupe} style={{ opacity: 0.45, marginBottom: 12 }} />
@@ -145,6 +143,6 @@ export function FinishingQuotationsSection({
           })}
         </div>
       )}
-    </div>
+    </SectionCard>
   );
 }

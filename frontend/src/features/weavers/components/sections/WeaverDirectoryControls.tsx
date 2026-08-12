@@ -1,34 +1,30 @@
 // ── Search / filter / view-toggle controls for the weaver directory ────────
+import type { ReactNode } from "react";
 import { UserPlus } from "lucide-react";
 import { Upload as UploadSimple, Search as MagnifyingGlass, ChevronDown as CaretDown, MapPin as PhMapPin, Users } from "lucide-react";
 import { T, F } from "../theme";
 import { FILTER_PILLS, VIEW_OPTIONS } from "../data";
-import { FadeUp } from "../common/primitives";
+import { FadeUp, SectionCard } from "../common/primitives";
 import { Button, Input } from "../../../../shared/ui/primitives";
 
-export function AllWeaversControls({ view, setView, filter, setFilter, search, setSearch, onAddWeaver, onViewAll, onImport }: {
-  view: string; setView: (v: string) => void; filter: string; setFilter: (f: string) => void; search: string; setSearch: (s: string) => void; onAddWeaver: () => void; onViewAll: () => void; onImport: () => void;
+export function AllWeaversControls({ view, setView, filter, setFilter, search, setSearch, onAddWeaver, onViewAll, onImport, children }: {
+  view: string; setView: (v: string) => void; filter: string; setFilter: (f: string) => void; search: string; setSearch: (s: string) => void; onAddWeaver: () => void; onViewAll: () => void; onImport: () => void; children?: ReactNode;
 }) {
   return (
-    <div id="weav-all-weavers" style={{ padding: "40px 48px 0" }}>
+    <div style={{ padding: "40px 48px 0" }}>
       <FadeUp>
-        {/* Section title row */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, flexWrap: "wrap", gap: 12 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <div style={{ width: 48, height: 48, borderRadius: 14, background: `linear-gradient(135deg, ${T.royalBurgundy}, ${T.deepWine})`, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px rgba(110,15,45,0.28)" }}>
-              <Users size={26} color="#FFFDF9" />
-            </div>
-            <div>
-              <h2 style={{ fontFamily: F.display, fontSize: 30, color: T.luxuryBrown, margin: 0, lineHeight: 1.1 }}>All Weavers</h2>
-              <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginTop: 3 }}>350 weavers registered · 84 currently active</div>
-            </div>
-          </div>
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+      <SectionCard
+        id="weav-all-weavers"
+        icon={Users}
+        title="All Weavers"
+        subtitle="350 weavers registered · 84 currently active"
+        actions={
+          <>
             <Button
               onClick={onViewAll}
               variant="secondary"
               size="lg"
-              className="rounded-[14px] border-[1.5px] border-[rgba(110,15,45,0.18)] text-[#6E0F2D]"
+              className="rounded-[14px] bg-white/10 text-[#FFFDF9] border-white/20"
             >
               <Users size={20} /> View All Weavers
             </Button>
@@ -36,7 +32,7 @@ export function AllWeaversControls({ view, setView, filter, setFilter, search, s
               onClick={onImport}
               variant="secondary"
               size="lg"
-              className="rounded-[14px] border-[1.5px] border-[rgba(110,15,45,0.18)] text-[#6E0F2D]"
+              className="rounded-[14px] bg-white/10 text-[#FFFDF9] border-white/20"
             >
               <UploadSimple size={20} /> Import from Excel
             </Button>
@@ -44,13 +40,13 @@ export function AllWeaversControls({ view, setView, filter, setFilter, search, s
               onClick={onAddWeaver}
               variant="primary"
               size="lg"
-              className="rounded-[14px] bg-[#6E0F2D] shadow-[0_4px_16px_rgba(110,15,45,0.28)] hover:bg-[#4A061B]"
+              className="rounded-[14px] bg-[#C89B47] text-[#3B2314] hover:bg-[#E7C983]"
             >
               <UserPlus size={20} /> Add New Weaver
             </Button>
-          </div>
-        </div>
-
+          </>
+        }
+      >
         <p style={{ fontFamily: F.ui, fontSize: 16, color: T.taupe, margin: "0 0 22px", lineHeight: 1.6 }}>
           Search and find any weaver. Use the filters to narrow down by status or area.
         </p>
@@ -107,6 +103,9 @@ export function AllWeaversControls({ view, setView, filter, setFilter, search, s
             Sort: Most Sarees This Month <CaretDown size={14} />
           </Button>
         </div>
+
+        {children}
+      </SectionCard>
       </FadeUp>
     </div>
   );

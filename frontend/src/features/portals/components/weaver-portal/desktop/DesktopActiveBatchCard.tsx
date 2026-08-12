@@ -27,7 +27,7 @@ export function DesktopActiveBatchCard({ b, idx, bp = "desktop" }: { b: MyBatchE
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 18, color: C.burg }}>{b.batchId}</span>
-          <span style={{ fontFamily: F.u, fontSize: 12, color: b.status === "active" ? C.green : C.gold, background: b.status === "active" ? "rgba(30,102,64,0.10)" : "rgba(196,146,58,0.15)", borderRadius: 999, padding: "4px 12px", fontWeight: 600 }}>
+          <span style={{ fontFamily: F.u, fontSize: 12, color: b.status === "active" ? C.green : C.gold, background: b.status === "active" ? "rgba(30,102,64,0.10)" : "rgba(200,155,71,0.15)", borderRadius: 999, padding: "4px 12px", fontWeight: 600 }}>
             {b.status === "active" ? "🟢 Weaving in Progress" : "🟡 Draft"}
           </span>
         </div>
@@ -63,7 +63,7 @@ export function DesktopActiveBatchCard({ b, idx, bp = "desktop" }: { b: MyBatchE
             {/* Semi-approved sarees are back with the weaver — called out here
                 so the gap between Produced and the batch total is explained. */}
             {reworkCount > 0 && (
-              <div style={{ display: "flex", alignItems: "center", gap: 7, background: "rgba(196,146,58,0.10)", border: "1px solid rgba(196,146,58,0.30)", borderRadius: 9, padding: "7px 11px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 7, background: "rgba(200,155,71,0.10)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 9, padding: "7px 11px" }}>
                 <RotateCcw size={13} color={C.gold} style={{ flexShrink: 0 }} />
                 <span style={{ fontFamily: F.u, fontSize: 12.5, color: C.text }}>
                   <strong>{reworkCount}</strong> semi-approved — rework and hand in again

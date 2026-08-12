@@ -108,7 +108,7 @@ export function ReportsSection({
         {/* Period selector */}
         <div style={{ display: "flex", gap: 10, marginBottom: 32 }}>
           {["Today", "This Week", "This Month", "Last 3 Months"].map((p, i) => (
-            <Button key={p} variant={i === 0 ? "primary" : "secondary"} size="md" className={i === 0 ? "rounded-full border border-[rgba(139,26,46,0.12)] bg-[#6B1A2A] hover:bg-[#6B1A2A]" : "rounded-full border border-[rgba(139,26,46,0.12)] bg-white"}>{p}</Button>
+            <Button key={p} variant={i === 0 ? "primary" : "secondary"} size="md" className={i === 0 ? "rounded-full border border-[rgba(110,15,45,0.12)] bg-[#6E0F2D] hover:bg-[#6E0F2D]" : "rounded-full border border-[rgba(110,15,45,0.12)] bg-white"}>{p}</Button>
           ))}
         </div>
 
@@ -128,7 +128,7 @@ export function ReportsSection({
                 </div>
               ) : (
                 salesRows.map((s, i) => (
-                  <div key={i} style={{ display: "grid", gridTemplateColumns: `80px 160px 1fr 1fr 80px${canSeePrices ? " 120px" : ""}`, padding: "18px 24px", borderBottom: i < salesRows.length - 1 ? `1px solid rgba(107,26,42,0.06)` : "none", alignItems: "center" }}>
+                  <div key={i} style={{ display: "grid", gridTemplateColumns: `80px 160px 1fr 1fr 80px${canSeePrices ? " 120px" : ""}`, padding: "18px 24px", borderBottom: i < salesRows.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", alignItems: "center" }}>
                     <div style={{ fontFamily: F.m, fontSize: 13, color: C.muted }}>{s.time}</div>
                     <div style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{s.id}</div>
                     <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: C.text }}>{s.customer}</div>
@@ -154,7 +154,7 @@ export function ReportsSection({
                 </div>
               ) : (
                 returnsList.map((r, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 16, padding: "20px 24px", borderBottom: i < returnsList.length - 1 ? `1px solid rgba(107,26,42,0.06)` : "none", borderLeft: `6px solid ${C.crim}` }}>
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 16, padding: "20px 24px", borderBottom: i < returnsList.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", borderLeft: `6px solid ${C.crim}` }}>
                     <div style={{ width: 44, height: 44, borderRadius: "50%", background: "rgba(192,57,43,0.10)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                       <RotateCcw size={20} color={C.crim} />
                     </div>
@@ -204,7 +204,7 @@ export function ReportsSection({
                 </div>
               ) : (
                 topCustomers.map((c, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 14, padding: "16px 24px", borderBottom: i < topCustomers.length - 1 ? `1px solid rgba(107,26,42,0.06)` : "none" }}>
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 14, padding: "16px 24px", borderBottom: i < topCustomers.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none" }}>
                     <div style={{ fontFamily: F.d, fontWeight: i === 0 ? 700 : 600, fontSize: i === 0 ? 26 : 22, color: i === 0 ? C.gold : C.text, width: 30, textAlign: "center" as const }}>{i + 1}</div>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text }}>{c.name}</div>

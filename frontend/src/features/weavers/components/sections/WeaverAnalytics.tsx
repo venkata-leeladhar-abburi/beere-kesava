@@ -9,7 +9,7 @@ import { BarChart3 as ChartBar, Gauge, CircleDot as Yarn, CheckCircle2 as CheckC
 import { T, F } from "../theme";
 import { Status } from "../types";
 import { STATUS_MIX_META, CLUSTER_FILLS } from "../data";
-import { FadeUp, qcColor } from "../common/primitives";
+import { FadeUp, SectionCard, qcColor } from "../common/primitives";
 import { WeaverLeaderboardClusterRow } from "./WeaverLeaderboardClusterRow";
 import { weaversApi, BackendWeaverStats } from "../../../../shared/api/weavers";
 import { weaverPaymentsApi } from "../../../../shared/api/payments";
@@ -17,6 +17,9 @@ import { rupees, formatMoney } from "@/lib/domain/money";
 import { resolveAssetUrl } from "../../../../shared/api/uploads";
 import { semantic } from "../../../../design-system/tokens";
 import { ChartFigure } from "../../../../shared/ui/data";
+import { Button } from "../../../../shared/ui/primitives";
+
+const ANALYTICS_PERIODS = ["Today", "This Week", "This Month", "All Time"] as const;
 
 const AVATAR_PALETTE = ["#5A3E6B", "#6E0F2D", "#2D6B6B", "#4A6B4A", "#9B6B8A", "#2D7D6B", "#4A5E7A", "#7A2040"];
 
@@ -26,7 +29,7 @@ const AVATAR_PALETTE = ["#5A3E6B", "#6E0F2D", "#2D6B6B", "#4A6B4A", "#9B6B8A", "
 // the monthly trend chart that used to exist here was fabricated mock data
 // and has been replaced with a documented gap notice below.
 export function WeaverAnalytics() {
-  const periodLabel = "All time";
+  const periodLabel = "All Time";
 
   const { data: weaversRes, isLoading: rosterLoading, isError: rosterError } = useQuery({
     queryKey: ["weaver-analytics-roster"],
@@ -131,12 +134,31 @@ export function WeaverAnalytics() {
   return (
     <div style={{ padding: "36px 48px 0" }}>
       <FadeUp>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
-          <div style={{ width: 3, height: 28, background: T.antiqueGold, borderRadius: 2 }} />
-          <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0, fontWeight: 600 }}>Weaver Analytics</h2>
-          <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, letterSpacing: "1px", color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "4px 10px", borderRadius: 20, textTransform: "uppercase" as const }}>{periodLabel}</span>
-        </div>
-
+      <SectionCard
+        icon={ChartBar}
+        title="Weaver Analytics"
+        subtitle="Sarees produced, QC pass rate, and workforce breakdown across all weavers."
+        actions={
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" as const }}>
+            {ANALYTICS_PERIODS.map(p => {
+              const active = p === periodLabel;
+              const disabled = p !== "All Time";
+              return (
+                <Button
+                  key={p}
+                  variant={active ? "primary" : "secondary"}
+                  size="sm"
+                  disabled={disabled}
+                  title={disabled ? "Not available yet — the backend only provides all-time totals, not a dated production ledger" : undefined}
+                  className={disabled ? "opacity-50 cursor-not-allowed bg-white/10 text-[#FFFDF9] border-white/20" : ""}
+                >
+                  {p}
+                </Button>
+              );
+            })}
+          </div>
+        }
+      >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 16, flexWrap: "wrap" as const }}>
           <div style={{ display: "flex", gap: 24, marginBottom: 16 }}>
             {[
@@ -151,7 +173,6 @@ export function WeaverAnalytics() {
             ))}
           </div>
         </div>
-      </FadeUp>
 
       {isLoading ? (
         <div style={{ ...card, textAlign: "center", padding: "48px 24px" }}>
@@ -338,6 +359,8 @@ export function WeaverAnalytics() {
           </FadeUp>
         </>
       )}
+      </SectionCard>
+      </FadeUp>
     </div>
   );
 }

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Edit2, Check, X, AlertTriangle, ChevronRight, Package, Layers, Tag } from "lucide-react";
 import { T, F, cardStyle, labelStyle } from "./theme";
-import { SectionTitle, GoldLink } from "./sharedUI";
+import { SectionCard, GoldLink } from "./sharedUI";
 import { Button, NumberInput, Textarea } from "../../../../shared/ui/primitives";
 import { Money } from "../../../../shared/ui/domain/Money";
 import { rupees } from "../../../../lib/domain/money";
@@ -11,12 +11,12 @@ export function DeductionRatesSection() {
   const [editDeduction, setEditDeduction] = useState<string | null>("warp");
 
   return (
-    <div style={{ padding: "48px 56px" }}>
-      <SectionTitle>Raw Material Deduction Rates</SectionTitle>
-      <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, maxWidth: 720, margin: "0 0 24px 0", lineHeight: 1.7 }}>
-        When a weaver returns less raw material than the standard issue, a deduction is applied to their payment. These rates define the per-unit deduction value.
-      </p>
-
+    <div style={{ padding: "40px 56px 0" }}>
+    <SectionCard
+      icon={Package}
+      title="Raw Material Deduction Rates"
+      subtitle="When a weaver returns less raw material than the standard issue, a deduction is applied to their payment. These rates define the per-unit deduction value."
+    >
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20, marginBottom: 16 }}>
         {/* Warp Card */}
         <div>
@@ -250,6 +250,7 @@ export function DeductionRatesSection() {
           <Edit2 size={12} /> Edit Variance Rule <ChevronRight size={14} />
         </GoldLink>
       </div>
+    </SectionCard>
     </div>
   );
 }

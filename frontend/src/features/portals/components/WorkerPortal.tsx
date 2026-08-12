@@ -65,7 +65,7 @@ function MobileProfile() {
       </div>
 
       {/* Stats strip */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: "#FFF", borderBottom: `1px solid ${C.bdr}`, boxShadow: "0 2px 10px rgba(107,26,42,0.06)" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: "#FFF", borderBottom: `1px solid ${C.bdr}`, boxShadow: "0 2px 10px rgba(110,15,45,0.06)" }}>
         {[
           { val: "8 yrs", label: "Tenure" },
           { val: "Morning", label: "Shift" },
@@ -197,7 +197,7 @@ function MobilePortal({ onBack, activeTab, setActiveTab }: MobilePortalProps) {
       <AnimatePresence>
         {showProfile && (
           <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ duration: 0.22 }}
-            style={{ position: "fixed", inset: 0, background: "#FFF", zIndex: 180, overflowY: "auto" }}>
+            style={{ position: "fixed", inset: 0, background: "#FFF", zIndex: "var(--z-tooltip)", overflowY: "auto" }}>
             <div style={{ height: 56, background: C.burg, display: "flex", alignItems: "center", padding: "0 16px" }}>
               <IconButton icon={ChevronLeft} label="Back" variant="ghost" onClick={() => setShowProfile(false)} className="text-white" />
               <span style={{ flex: 1, textAlign: "center", fontFamily: F.d, fontSize: 18, fontWeight: 600, color: "#FFF" }}>My Profile</span>
@@ -209,7 +209,7 @@ function MobilePortal({ onBack, activeTab, setActiveTab }: MobilePortalProps) {
       </AnimatePresence>
 
       {/* Global Header */}
-      <div style={{ height: 56, background: C.burg, display: "flex", alignItems: "center", padding: "0 16px", flexShrink: 0, position: "sticky", top: 0, zIndex: 100, boxShadow: "0 2px 12px rgba(107,26,42,0.25)" }}>
+      <div style={{ height: 56, background: C.burg, display: "flex", alignItems: "center", padding: "0 16px", flexShrink: 0, position: "sticky", top: 0, zIndex: 100, boxShadow: "0 2px 12px rgba(110,15,45,0.25)" }}>
         <IconButton icon={Menu} label="Menu" variant="ghost" onClick={() => setShowMenu(true)} className="min-w-9 text-white/85" />
         <span style={{ flex: 1, textAlign: "center", fontFamily: F.d, fontWeight: 600, fontSize: 18, color: "#FFF" }}>
           {PAGE_TITLES[activeTab]}
@@ -270,7 +270,7 @@ function MobilePortal({ onBack, activeTab, setActiveTab }: MobilePortalProps) {
                 variant="primary"
                 size="lg"
                 onClick={() => setActiveTab(activeTab)}
-                className="w-14 h-14 rounded-full bg-[#6B1A2A] hover:bg-[#6B1A2A] shadow-[0_4px_16px_rgba(107,26,42,0.30)]"
+                className="w-14 h-14 rounded-full bg-[#6E0F2D] hover:bg-[#6E0F2D] shadow-[0_4px_16px_rgba(110,15,45,0.30)]"
               />
             </motion.div>
           )}
@@ -278,7 +278,7 @@ function MobilePortal({ onBack, activeTab, setActiveTab }: MobilePortalProps) {
       </div>
 
       {/* Bottom Tab Bar — 5 tabs */}
-      <div style={{ height: 66, background: "#FFF", borderTop: `1px solid ${C.bdr}`, display: "flex", position: "fixed", bottom: 0, left: 0, width: "100%", zIndex: 100, boxShadow: "0 -4px 20px rgba(107,26,42,0.08)" }}>
+      <div style={{ height: 66, background: "#FFF", borderTop: `1px solid ${C.bdr}`, display: "flex", position: "fixed", bottom: 0, left: 0, width: "100%", zIndex: 100, boxShadow: "0 -4px 20px rgba(110,15,45,0.08)" }}>
         {TABS.map(tab => {
           const active = activeTab === tab.id;
           return (

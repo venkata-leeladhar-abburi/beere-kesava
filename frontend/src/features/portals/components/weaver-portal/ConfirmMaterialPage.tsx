@@ -144,7 +144,7 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
       {pending ? (
         <>
           {/* Alert card */}
-          <div style={{ margin: "16px 20px", background: "rgba(196,146,58,0.15)", border: `2px solid ${C.gold}`, borderRadius: 16, padding: "18px 20px" }}>
+          <div style={{ margin: "16px 20px", background: "rgba(200,155,71,0.15)", border: `2px solid ${C.gold}`, borderRadius: 16, padding: "18px 20px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
               <Bell size={24} color={C.gold} />
               <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 16, color: C.text }}>Material Handover Pending Confirmation</span>

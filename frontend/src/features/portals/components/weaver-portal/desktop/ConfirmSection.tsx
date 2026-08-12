@@ -2,20 +2,15 @@ import React from "react";
 import { Check, CheckCircle2, Clock } from "lucide-react";
 import { JARI_REEL_GRAMS, MaterialIssueRecord, BatchMaterialSummary, WeaverMaterialSummary } from "../../../../materials/contexts/MaterialIssueContext";
 import { C, F, FABRIC_BG, MaterialHistoryCard, Tab5 } from "../theme";
+import { SectionHeading } from "@/shared/ui/portal/PortalChrome";
 import { DesktopHero } from "./DesktopHero";
 import { Button } from "../../../../../shared/ui/primitives";
 import { useAuth } from "../../../../../contexts/AuthContext";
 import { useCurrentWeaver } from "../useCurrentWeaver";
 
+/** Thin wrapper on the shared portal heading — see PaymentsSection. */
 function DSectionHeader({ label }: { label: string }) {
-  return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <div style={{ width: 5, height: 28, background: C.burg, borderRadius: 3 }} />
-        <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 20, color: C.text }}>{label}</span>
-      </div>
-    </div>
-  );
+  return <SectionHeading title={label} />;
 }
 
 export function ConfirmSection({
@@ -84,7 +79,7 @@ export function ConfirmSection({
             </Button>
           </div>
         ) : (
-          <div style={{ background: "rgba(196,146,58,0.12)", border: `2px solid ${C.gold}`, borderRadius: 20, padding: "26px 30px" }}>
+          <div style={{ background: "rgba(200,155,71,0.12)", border: `2px solid ${C.gold}`, borderRadius: 20, padding: "26px 30px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
               <div style={{ width: 56, height: 56, borderRadius: "50%", background: C.burg, border: `2px solid ${C.gold}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <span style={{ fontFamily: F.d, fontSize: 18, fontWeight: 700, color: "#FFF" }}>{initials}</span>

@@ -1,16 +1,16 @@
 import React, { useMemo, useState } from "react";
 import { motion } from "motion/react";
-import { ChevronDown, ChevronUp, Factory, Truck, Users } from "lucide-react";
+import { ChevronDown, ChevronUp, Factory, Truck, Users, type LucideIcon } from "lucide-react";
 import { T, F } from "../../theme";
 import { UnifiedSaree, SellerRank, rankSellers } from "../../../customers/contexts/SalesContext";
-import { Card, ExportBtn, SectionTitle, exportCsv, inr } from "./primitives";
+import { Card, ExportBtn, SectionCard, exportCsv, inr } from "./primitives";
 import { Button } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
 // ── Who is selling more ──────────────────────────────────────────────────────
 const RANK_PAGE = 5;
 
-function RankTable({ title, sub, ranks, unitLabel }: { title: string; sub: string; ranks: SellerRank[]; unitLabel: string }) {
+function RankTable({ title, sub, ranks, unitLabel, icon }: { title: string; sub: string; ranks: SellerRank[]; unitLabel: string; icon: LucideIcon }) {
   const max = Math.max(1, ...ranks.map(r => r.sold));
   const [shown, setShown] = useState(RANK_PAGE);
   const visible = ranks.slice(0, shown);
@@ -56,12 +56,14 @@ function RankTable({ title, sub, ranks, unitLabel }: { title: string; sub: strin
   ];
 
   return (
-    <Card>
-      <SectionTitle title={title} sub={sub}
-        right={<ExportBtn onClick={() => exportCsv(`${title.toLowerCase().replace(/[^a-z]+/g, "-")}.csv`,
-          [[unitLabel, "Reference", "Produced", "Sold", "Retail", "Wholesale", "Returned", "Outstanding", "Sell-through %", "Net Revenue"],
-           ...ranks.map(r => [r.name, r.sub, r.produced, r.sold, r.retail, r.wholesale, r.returned, r.outstanding, r.sellThroughPct, r.revenue])])} />}
-      />
+    <SectionCard
+      icon={icon}
+      title={title}
+      subtitle={sub}
+      actions={<ExportBtn onClick={() => exportCsv(`${title.toLowerCase().replace(/[^a-z]+/g, "-")}.csv`,
+        [[unitLabel, "Reference", "Produced", "Sold", "Retail", "Wholesale", "Returned", "Outstanding", "Sell-through %", "Net Revenue"],
+         ...ranks.map(r => [r.name, r.sub, r.produced, r.sold, r.retail, r.wholesale, r.returned, r.outstanding, r.sellThroughPct, r.revenue])])} />}
+    >
       <DataTable
         columns={columns}
         data={visible}
@@ -89,7 +91,7 @@ function RankTable({ title, sub, ranks, unitLabel }: { title: string; sub: strin
           )}
         </div>
       )}
-    </Card>
+    </SectionCard>
   );
 }
 
@@ -129,9 +131,9 @@ export function TopSellers({ sarees }: { sarees: UnifiedSaree[] }) {
         ))}
       </div>
 
-      <RankTable title="Weavers — Selling Performance"       sub="Which weaver's sarees are actually moving out of stock." ranks={weavers}   unitLabel="Weaver" />
-      <RankTable title="Factory Looms — Selling Performance"  sub="Which in-house loom's output sells fastest."             ranks={looms}     unitLabel="Factory Loom" />
-      <RankTable title="Suppliers — Selling Performance"      sub="Which external supplier's sarees sell best. Net revenue is after deducting customer refunds." ranks={suppliers} unitLabel="Supplier" />
+      <RankTable title="Weavers — Selling Performance"       sub="Which weaver's sarees are actually moving out of stock." ranks={weavers}   unitLabel="Weaver" icon={Users} />
+      <RankTable title="Factory Looms — Selling Performance"  sub="Which in-house loom's output sells fastest."             ranks={looms}     unitLabel="Factory Loom" icon={Factory} />
+      <RankTable title="Suppliers — Selling Performance"      sub="Which external supplier's sarees sell best. Net revenue is after deducting customer refunds." ranks={suppliers} unitLabel="Supplier" icon={Truck} />
     </div>
   );
 }

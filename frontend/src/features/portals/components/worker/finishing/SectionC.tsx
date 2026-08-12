@@ -2,7 +2,7 @@ import { useState, useMemo, type CSSProperties } from "react";
 import { Users, ChevronDown, Camera } from "lucide-react";
 import { C, F, card } from "../tokens";
 import { useFinishing, FinishingAssignment } from "../../../../finishing/contexts/FinishingContext";
-import { SectionHeader } from "./shared";
+import { SectionCard } from "../primitives";
 import { Button } from "../../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
 
@@ -71,7 +71,7 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
       id: "expand", header: "", align: "end", accessor: () => null,
       cell: (_v, r) => (
         <Button variant="link" onClick={() => setExpanded(expanded === r.name ? null : r.name)}
-          className="p-0 text-xs font-semibold text-[#6B1A2A] whitespace-nowrap">
+          className="p-0 text-xs font-semibold text-[#6E0F2D] whitespace-nowrap">
           View Details <ChevronDown size={12} style={{ transform: expanded === r.name ? "rotate(180deg)" : "none", transition: "transform 0.15s" }} />
         </Button>
       ),
@@ -117,13 +117,16 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
   ];
 
   return (
-    <div style={{ ...card, padding: 16, marginBottom: 16 }}>
-      <SectionHeader
-        icon={<Users size={18} color={C.burg} />}
-        title="Assignment History & Tracking"
-        count={rows.length}
-        accent="rgba(107,26,42,0.09)"
-      />
+    <SectionCard
+      icon={Users}
+      title="Assignment History & Tracking"
+      subtitle="Every finishing staff member, what they hold and what they have returned."
+      actions={
+        <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: "#FFFDF9", background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.20)", padding: "5px 12px", borderRadius: 999 }}>
+          {rows.length} staff
+        </span>
+      }
+    >
 
       {rows.length === 0 ? (
         <div style={{ padding: "24px 0", textAlign: "center", fontFamily: F.u, fontSize: 13, color: C.muted }}>
@@ -135,7 +138,7 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
             const pending = r.assignedSareeIds.length - r.returnedSareeIds.length;
             const isOpen = expanded === r.name;
             return (
-              <div key={r.name} style={{ border: `1px solid rgba(107,26,42,0.10)`, borderRadius: 12, overflow: "hidden", background: "#FFF" }}>
+              <div key={r.name} style={{ border: `1px solid rgba(110,15,45,0.10)`, borderRadius: 12, overflow: "hidden", background: "#FFF" }}>
                 <div onClick={() => setExpanded(isOpen ? null : r.name)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => setExpanded(isOpen ? null : r.name))?.(); } }} style={{ padding: "12px 14px", cursor: "pointer" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
                     <span style={{ fontFamily: F.u, fontSize: 14, fontWeight: 700, color: C.text }}>{r.name}</span>
@@ -157,11 +160,11 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
                   </div>
                 </div>
                 {isOpen && (
-                  <div style={{ borderTop: `1px solid rgba(107,26,42,0.08)`, background: "rgba(107,26,42,0.02)", padding: "10px 14px 14px", display: "flex", flexDirection: "column" as const, gap: 8 }}>
+                  <div style={{ borderTop: `1px solid rgba(110,15,45,0.08)`, background: "rgba(110,15,45,0.02)", padding: "10px 14px 14px", display: "flex", flexDirection: "column" as const, gap: 8 }}>
                     {assignments.filter(a => a.finishingStaffName === r.name).map(a => {
                       const ret = returns.find(rt => rt.sareeId === a.sareeId);
                       return (
-                        <div key={a.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, borderBottom: `1px solid rgba(107,26,42,0.06)`, paddingBottom: 8 }}>
+                        <div key={a.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, borderBottom: `1px solid rgba(110,15,45,0.06)`, paddingBottom: 8 }}>
                           <div>
                             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                               <span style={{ fontFamily: F.m, fontSize: 12, color: C.burg, fontWeight: 600 }}>{a.sareeId}</span>
@@ -188,14 +191,14 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
           })}
         </div>
       ) : (
-        <div style={{ border: `1px solid rgba(107,26,42,0.10)`, borderRadius: 10, overflow: "hidden" }}>
+        <div style={{ border: `1px solid rgba(110,15,45,0.10)`, borderRadius: 10, overflow: "hidden" }}>
           <DataTable
             columns={staffColumns}
             data={rows}
             getRowId={r => r.name}
             expandedIds={expanded ? new Set([expanded]) : undefined}
             renderExpandedRow={r => (
-              <div style={{ padding: "10px 14px 14px", background: "rgba(107,26,42,0.02)" }}>
+              <div style={{ padding: "10px 14px 14px", background: "rgba(110,15,45,0.02)" }}>
                 <DataTable
                   columns={assignmentColumns}
                   data={assignments.filter(a => a.finishingStaffName === r.name)}
@@ -206,6 +209,6 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
           />
         </div>
       )}
-    </div>
+    </SectionCard>
   );
 }

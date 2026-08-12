@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { Truck, Clock, CheckCircle2, Package } from "lucide-react";
 import { C, F } from "./tokens";
+import { PageHero, StatsStrip, SectionHeading, GUTTER_X, type WorkerStat } from "./primitives";
 import { useFinishing, DispatchRecord } from "../../../finishing/contexts/FinishingContext";
 import { useFirms } from "../../../firms/contexts/FirmsContext";
 // The admin Inventory page's own section and form — reused as-is so the worker
@@ -22,42 +23,36 @@ export function WorkerDispatch({ isDesktop = false }: { isDesktop?: boolean }) {
     return returns.filter(r => r.inventoryStatus === "Ready for Dispatch" && !dispatchedSarees.has(r.sareeId));
   }, [returns, dispatchedSarees]);
 
-  const pad = isDesktop ? "24px 32px 48px" : "16px 14px 40px";
+  const stats: WorkerStat[] = [
+    { label: "Awaiting dispatch", value: awaitingDispatch.length, sub: "Finished, ready to send", icon: Package },
+    { label: "Awaiting details", value: pending.length, sub: pending.length > 0 ? "⚠ Need LR / transport" : "All details filled", icon: Clock, alert: pending.length > 0 },
+    { label: "Completed", value: complete, sub: "Fully documented", icon: CheckCircle2, highlight: complete > 0 },
+    { label: "Total dispatches", value: dispatches.length, sub: "Across shops and wholesale", icon: Truck },
+  ];
 
   return (
-    <div style={{ background: C.bg ?? "#FAF7F2", minHeight: "100%", padding: pad }}>
-      {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
-        <div style={{ width: 38, height: 38, borderRadius: 11, background: "rgba(107,26,42,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          <Truck size={20} color={C.burg} />
+    <div style={{ background: C.bg, minHeight: "100%" }}>
+      {isDesktop ? (
+        <>
+          <PageHero
+            eyebrow="Worker Staff · Outbound"
+            title="Dispatch"
+            titleAccent="Details"
+            description="Fill in LR, transport and receipt details for dispatches raised by admin, and track every consignment on its way out."
+            minHeight={300}
+          />
+          <StatsStrip stats={stats} />
+          <div style={{ height: 40 }} />
+        </>
+      ) : (
+        <div style={{ padding: "16px 14px 0" }}>
+          <SectionHeading title="Dispatch Details" subtitle="Fill in LR, transport and receipt details for dispatches raised by admin." />
+          <StatsStrip stats={stats} overlap={false} gutter={0} />
+          <div style={{ height: 24 }} />
         </div>
-        <div>
-          <div style={{ fontFamily: F.d, fontSize: isDesktop ? 24 : 19, fontWeight: 700, color: C.text, lineHeight: 1.2 }}>Dispatch Details</div>
-          <div style={{ fontFamily: F.u, fontSize: isDesktop ? 13 : 12, color: C.muted, marginTop: 2 }}>
-            Fill in LR, transport and receipt details for dispatches raised by admin
-          </div>
-        </div>
-      </div>
+      )}
 
-      {/* Counters */}
-      <div style={{ display: "grid", gridTemplateColumns: isDesktop ? "repeat(4, 1fr)" : "repeat(2, 1fr)", gap: 10, margin: "16px 0 18px" }}>
-        {[
-          { label: "Awaiting Dispatch", value: awaitingDispatch.length, color: "#9F5A14", bg: "rgba(159,90,20,0.12)", Icon: Package },
-          { label: "Awaiting Details", value: pending.length, color: "#8B6018", bg: "rgba(200,155,71,0.14)", Icon: Clock },
-          { label: "Completed", value: complete, color: C.green, bg: "rgba(30,102,64,0.10)", Icon: CheckCircle2 },
-          { label: "Total Dispatches", value: dispatches.length, color: C.burg, bg: "rgba(107,26,42,0.07)", Icon: Truck },
-        ].map(s => (
-          <div key={s.label} style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 14, padding: isDesktop ? "16px 18px" : "12px 12px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 8 }}>
-              <div style={{ width: 26, height: 26, borderRadius: 8, background: s.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <s.Icon size={14} color={s.color} />
-              </div>
-            </div>
-            <div style={{ fontFamily: F.d, fontSize: isDesktop ? 26 : 22, fontWeight: 700, color: s.color, lineHeight: 1 }}>{s.value}</div>
-            <div style={{ fontFamily: F.u, fontSize: isDesktop ? 11.5 : 10.5, color: C.muted, marginTop: 5 }}>{s.label}</div>
-          </div>
-        ))}
-      </div>
+      <div style={{ padding: isDesktop ? `0 ${GUTTER_X}px 48px` : "0 14px 40px" }}>
 
       {pending.length > 0 && (
         <div style={{ background: "rgba(200,155,71,0.10)", border: "1px solid rgba(200,155,71,0.32)", borderRadius: 12, padding: "12px 14px", marginBottom: 16, display: "flex", gap: 10, alignItems: "flex-start" }}>
@@ -71,15 +66,13 @@ export function WorkerDispatch({ isDesktop = false }: { isDesktop?: boolean }) {
       {/* Sarees Awaiting Dispatch */}
       {awaitingDispatch.length > 0 && (
         <div style={{ marginBottom: 24 }}>
-          <div style={{ fontFamily: F.d, fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 12 }}>
-            Sarees Awaiting Dispatch ({awaitingDispatch.length})
-          </div>
+          <SectionHeading title={`Sarees Awaiting Dispatch (${awaitingDispatch.length})`} size="sm" />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 12 }}>
             {awaitingDispatch.map(s => (
-              <div key={s.id} style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 12, padding: 12, display: "flex", flexDirection: "column", gap: 4 }}>
+              <div key={s.id} style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 16, padding: 16, display: "flex", flexDirection: "column", gap: 4, boxShadow: "0 2px 12px rgba(74,6,27,0.07)" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.text }}>{s.designCode}</div>
-                  <div style={{ fontFamily: F.u, fontSize: 11, fontWeight: 600, color: C.green, background: "rgba(30,102,64,0.10)", padding: "2px 6px", borderRadius: 4 }}>Finished</div>
+                  <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.green, background: "rgba(30,102,64,0.10)", padding: "2px 6px", borderRadius: 4 }}>Finished</div>
                 </div>
                 <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Type: {s.sareeType}</div>
                 <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Saree ID: {s.sareeId}</div>
@@ -101,6 +94,8 @@ export function WorkerDispatch({ isDesktop = false }: { isDesktop?: boolean }) {
             onViewInvoice={(d) => alert("Invoice viewing coming soon")}
           />
         </div>
+      </div>
+
       </div>
 
       <AnimatePresence>

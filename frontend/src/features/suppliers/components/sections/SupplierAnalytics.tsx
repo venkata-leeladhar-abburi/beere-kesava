@@ -3,12 +3,12 @@
 // chart cards live under analytics/, composed here.
 
 import React, { useMemo, useState } from "react";
-import { Building2 } from "lucide-react";
+import { Building2, BarChart3 as ChartBar } from "lucide-react";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { T, F } from "../theme";
 import { MONTH_ABBR, TYPE_FILLS, MODE_FILLS } from "../data";
 import { useSuppliers, parseINR } from "../../contexts/SupplierContext";
-import { FadeUp } from "../common/primitives";
+import { FadeUp, SectionCard } from "../common/primitives";
 import { PurchaseTrendCard } from "./analytics/PurchaseTrendCard";
 import { TypeMixCard } from "./analytics/TypeMixCard";
 import { TopSuppliersCard } from "./analytics/TopSuppliersCard";
@@ -153,12 +153,14 @@ export function SupplierAnalytics() {
   return (
     <div style={{ padding: "48px 56px 0" }}>
       <FadeUp>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
-          <div style={{ width: 3, height: 28, background: T.antiqueGold, borderRadius: 2 }} />
-          <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0, fontWeight: 600 }}>Supplier Analytics</h2>
-          <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, letterSpacing: "1px", color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "4px 10px", borderRadius: 20, textTransform: "uppercase" }}>{periodLabel}</span>
-        </div>
-
+      <SectionCard
+        icon={ChartBar}
+        title="Supplier Analytics"
+        subtitle="Spend, top suppliers, outstanding dues, and settlement health across your raw-material suppliers."
+        actions={
+          <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, letterSpacing: "1px", color: "#FFFDF9", background: "rgba(255,255,255,0.14)", padding: "6px 14px", borderRadius: 20, textTransform: "uppercase" }}>{periodLabel}</span>
+        }
+      >
         {/* Timeline scope — drives every chart in this section */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
           <DateFilterBar filter={filter} onChange={setFilter} />
@@ -175,7 +177,6 @@ export function SupplierAnalytics() {
             ))}
           </div>
         </div>
-      </FadeUp>
 
       {isError ? (
         <div style={{ ...card, textAlign: "center", padding: "48px 24px" }}>
@@ -221,6 +222,8 @@ export function SupplierAnalytics() {
           </FadeUp>
         </>
       )}
+      </SectionCard>
+      </FadeUp>
     </div>
   );
 }

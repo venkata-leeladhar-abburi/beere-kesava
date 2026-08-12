@@ -219,18 +219,18 @@ export function ExternalPurchasesPage() {
         opts={opts}
         filtersActive={filtersActive}
         clearFilters={clearFilters}
-      />
-
-      <PurchasesTable
-        filtered={filtered}
-        totalCount={purchases.length}
-        hoveredRow={hoveredRow}
-        setHoveredRow={setHoveredRow}
-        onView={setDetailRow}
-        onViewSarees={setSareeListPurchase}
-        onEdit={(id) => setFormModal({ mode: "edit", editId: id })}
-        onDelete={handleDelete}
-      />
+      >
+        <PurchasesTable
+          filtered={filtered}
+          totalCount={purchases.length}
+          hoveredRow={hoveredRow}
+          setHoveredRow={setHoveredRow}
+          onView={setDetailRow}
+          onViewSarees={setSareeListPurchase}
+          onEdit={(id) => setFormModal({ mode: "edit", editId: id })}
+          onDelete={handleDelete}
+        />
+      </FilterBar>
 
       <DetailDrawer
         detailRow={detailRow}

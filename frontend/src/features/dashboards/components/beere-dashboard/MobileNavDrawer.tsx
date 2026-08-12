@@ -80,9 +80,9 @@ export function MobileMenuDrawer({ open, onClose, activeTab, setTab }: {
                             variant="tertiary"
                             fullWidth
                             onClick={() => { setTab(page.key); onClose(); }}
-                            className="!justify-start !gap-3 !py-[11px] !pl-[30px] !pr-3.5 !bg-transparent !border-none"
+                            className="!justify-start !gap-3 !py-[11px] !pl-[36px] !pr-3.5 !bg-transparent !border-none"
                           >
-                            <div style={{ flex: 1 }}>
+                            <div style={{ flex: 1, textAlign: "left" }}>
                               <div style={{ fontFamily: F.ui, fontWeight: isActive ? 600 : 400, fontSize: 14, color: isActive ? T.royalBurgundy : T.luxuryBrown, letterSpacing: "0.05px" }}>
                                 {page.label}
                               </div>
@@ -152,7 +152,7 @@ export function MobileTopNav({ onMenuOpen, onBack, onLogout, onProfile }: { onMe
           </Button>
         </div>
         {showProfile && (
-          <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: 300, background: "#FFFDF9", borderRadius: 14, border: `1px solid ${T.borderDef}`, boxShadow: "0 8px 32px rgba(44,24,16,0.14)", minWidth: 210, overflow: "hidden" }}>
+          <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: "var(--z-tooltip)", background: "#FFFDF9", borderRadius: 14, border: `1px solid ${T.borderDef}`, boxShadow: "0 8px 32px rgba(44,24,16,0.14)", minWidth: 210, overflow: "hidden" }}>
             <div style={{ padding: "14px 16px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${T.borderDef}` }}>
               <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>Admin User</div>
               <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2 }}>Admin · Beere Kesava Silks</div>

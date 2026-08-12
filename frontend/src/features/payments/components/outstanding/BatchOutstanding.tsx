@@ -1,9 +1,9 @@
 import React, { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, Layers } from "lucide-react";
 import { T, F } from "../../theme";
 import { UnifiedSaree, isOutstanding, isSold, ageBucket } from "../../../customers/contexts/SalesContext";
-import { Card, Empty, ExportBtn, SectionTitle, exportCsv, inr } from "./primitives";
+import { Empty, ExportBtn, SectionCard, exportCsv, inr } from "./primitives";
 import type { AgeKey } from "./primitives";
 import { DrilldownTabs, sareeOriginName, sareeOriginSub } from "./SareeDetailTable";
 import { Button } from "../../../../shared/ui/primitives";
@@ -41,17 +41,16 @@ export function BatchOutstanding({ sarees, search, ageFilter }: { sarees: Unifie
   const totalVal = groups.reduce((a, g) => a + g.rows.reduce((x, s) => x + s.finalAmount, 0), 0);
 
   return (
-    <Card>
-      <SectionTitle
-        title="Outstanding Sarees — By Batch"
-        sub="Every production batch and how much of it is still unsold. Covers in-house batches only — weavers and factory looms. External purchases are billed per invoice, not per batch."
-        right={
-          <ExportBtn onClick={() => exportCsv("outstanding-by-batch.csv",
-            [["Batch", "Saree Code", "Made By", "Reference", "Saree Type", "Weight", "QC Date", "Days In Stock", "Cost", "Sell Price"],
-             ...groups.flatMap(g => g.rows.map(s => [g.key, s.sareeId, sareeOriginName(s), sareeOriginSub(s), s.sareeTypeName, s.weight, s.qcDate, s.ageDays, s.costPrice, s.finalAmount]))])} />
-        }
-      />
-
+    <SectionCard
+      icon={Layers}
+      title="Outstanding Sarees — By Batch"
+      subtitle="Every production batch and how much of it is still unsold. Covers in-house batches only — weavers and factory looms. External purchases are billed per invoice, not per batch."
+      actions={
+        <ExportBtn onClick={() => exportCsv("outstanding-by-batch.csv",
+          [["Batch", "Saree Code", "Made By", "Reference", "Saree Type", "Weight", "QC Date", "Days In Stock", "Cost", "Sell Price"],
+           ...groups.flatMap(g => g.rows.map(s => [g.key, s.sareeId, sareeOriginName(s), sareeOriginSub(s), s.sareeTypeName, s.weight, s.qcDate, s.ageDays, s.costPrice, s.finalAmount]))])} />
+      }
+    >
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 18 }}>
         {[
           { l: "Produced", v: String(totalProduced), c: T.luxuryBrown },
@@ -113,6 +112,6 @@ export function BatchOutstanding({ sarees, search, ageFilter }: { sarees: Unifie
           })}
         </div>
       )}
-    </Card>
+    </SectionCard>
   );
 }

@@ -101,13 +101,13 @@ export function SectionB({ isMobile }: { isMobile?: boolean }) {
           No sarees currently awaiting return.
         </div>
       ) : (
-        <div style={{ border: `1px solid rgba(107,26,42,0.10)`, borderRadius: 10, overflow: "hidden" }}>
+        <div style={{ border: `1px solid rgba(110,15,45,0.10)`, borderRadius: 10, overflow: "hidden" }}>
           {awaiting.map((a, i) => {
             const checked = selected.has(a.id);
             return (
               <div key={a.id}
                 onClick={() => toggleRow(a.id)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => toggleRow(a.id))?.(); } }}
-                style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 12px", borderTop: i > 0 ? `1px solid rgba(107,26,42,0.07)` : "none", background: checked ? "rgba(30,102,64,0.04)" : "#FFF", cursor: "pointer", transition: "background 0.12s" }}
+                style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 12px", borderTop: i > 0 ? `1px solid rgba(110,15,45,0.07)` : "none", background: checked ? "rgba(30,102,64,0.04)" : "#FFF", cursor: "pointer", transition: "background 0.12s" }}
               >
                 <div style={{ flexShrink: 0 }}>
                   {checked ? <CheckSquare size={16} color="#1E6640" /> : <Square size={16} color={C.muted} />}
@@ -144,7 +144,7 @@ export function SectionB({ isMobile }: { isMobile?: boolean }) {
                 Mark as Received
               </Button>
               <Button variant="secondary" fullWidth onClick={() => setSelected(new Set())}
-                className="h-[46px] rounded-full border-[rgba(139,26,46,0.30)] text-[#6B1A2A] text-[13px]">
+                className="h-[46px] rounded-full border-[rgba(110,15,45,0.30)] text-[#6E0F2D] text-[13px]">
                 Cancel
               </Button>
             </div>
@@ -157,7 +157,7 @@ export function SectionB({ isMobile }: { isMobile?: boolean }) {
               Mark {selected.size} as Received
             </Button>
             <IconButton icon={X} label="Cancel selection" variant="secondary" onClick={() => setSelected(new Set())}
-              className="w-[46px] h-[46px] flex-shrink-0 rounded-xl border-[rgba(139,26,46,0.30)] text-[#6B1A2A]" />
+              className="w-[46px] h-[46px] flex-shrink-0 rounded-xl border-[rgba(110,15,45,0.30)] text-[#6E0F2D]" />
           </motion.div>
         ))}
       </AnimatePresence>

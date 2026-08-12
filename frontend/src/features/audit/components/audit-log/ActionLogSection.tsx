@@ -2,10 +2,10 @@ import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  AlignLeft, Table2, ChevronDown, ChevronLeft, ChevronRight,
+  AlignLeft, Table2, ChevronDown, ChevronLeft, ChevronRight, ClipboardList,
 } from "lucide-react";
 import { F, T, ROLE_COLORS } from "./tokens";
-import { PaginationBtn } from "./shared";
+import { PaginationBtn, SectionCard } from "./shared";
 import { Button } from "../../../../shared/ui/primitives";
 import { auditLogApi, ActionLogEntry } from "../../../../shared/api/audit-log";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
@@ -170,21 +170,17 @@ export function ActionLogSection({
   ];
 
   return (
-    <div style={{ padding: "48px 56px 0" }}>
-      {/* Section title bar */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
-        <div style={{ width: 4, alignSelf: "stretch", background: T.royalBurgundy, borderRadius: 2, minHeight: 24 }} />
-        <span style={{ fontFamily: F.display, fontWeight: 600, fontSize: 18, color: T.luxuryBrown, flex: 1 }}>
-          Action Log — All System Activity
-        </span>
-        <Button variant="link" size="sm" className="text-[12px] text-[#C89B47] hover:text-[#C89B47]">
-          Download Action Log →
+    <div style={{ padding: "40px 56px 0" }}>
+    <SectionCard
+      icon={ClipboardList}
+      title="Action Log — All System Activity"
+      subtitle="Every create, update, approve, issue, and dispatch action — recorded with user, timestamp, and changed values."
+      actions={
+        <Button variant="secondary" size="sm" className="bg-white/10 text-[#FFFDF9] border-white/20">
+          Download Action Log
         </Button>
-      </div>
-      <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 24, marginTop: 0 }}>
-        Every create, update, approve, issue, and dispatch action — recorded with user, timestamp, and changed values.
-      </p>
-
+      }
+    >
       {/* View toggle */}
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
         <Button
@@ -390,6 +386,7 @@ export function ActionLogSection({
           </motion.div>
         )}
       </AnimatePresence>
+    </SectionCard>
     </div>
   );
 }

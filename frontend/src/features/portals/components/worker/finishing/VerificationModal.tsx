@@ -27,10 +27,10 @@ function DamagePhotoPrompt({ onCapture, onCancel }: { onCapture: () => void; onC
           Take a photo of the defect as proof. This is required to complete the rejection.
         </div>
         <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-          <Button variant="primary" fullWidth size="sm" iconLeft={Camera} onClick={onCapture} className="h-11 rounded-full bg-[#6B1A2A] hover:bg-[#6B1A2A]">
+          <Button variant="primary" fullWidth size="sm" iconLeft={Camera} onClick={onCapture} className="h-11 rounded-full bg-[#6E0F2D] hover:bg-[#6E0F2D]">
             Take Photo
           </Button>
-          <Button variant="secondary" fullWidth size="sm" iconLeft={UploadCloud} onClick={onCapture} className="h-11 rounded-full border-[#6B1A2A] text-[#6B1A2A]">
+          <Button variant="secondary" fullWidth size="sm" iconLeft={UploadCloud} onClick={onCapture} className="h-11 rounded-full border-[#6E0F2D] text-[#6E0F2D]">
             Upload from Gallery
           </Button>
         </div>
@@ -93,7 +93,7 @@ export function VerificationModal({ assignments, onSave, onClose, isMobile }: {
             <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
               {[{ v: true, l: "Same condition for all" }, { v: false, l: "Per saree" }].map(opt => (
                 <Button key={String(opt.v)} variant="tertiary" fullWidth size="sm" onClick={() => setUseBulk(opt.v)}
-                  className={useBulk === opt.v ? "h-9 rounded-lg border-[1.5px] border-[#6B1A2A] bg-[rgba(107,26,42,0.05)] text-[#6B1A2A]" : "h-9 rounded-lg border-[1.5px] border-[rgba(107,26,42,0.15)] bg-transparent"}>
+                  className={useBulk === opt.v ? "h-9 rounded-lg border-[1.5px] border-[#6E0F2D] bg-[rgba(110,15,45,0.05)] text-[#6E0F2D]" : "h-9 rounded-lg border-[1.5px] border-[rgba(110,15,45,0.15)] bg-transparent"}>
                   {opt.l}
                 </Button>
               ))}
@@ -103,9 +103,9 @@ export function VerificationModal({ assignments, onSave, onClose, isMobile }: {
           {useBulk ? (
             <div>
               {/* Saree list */}
-              <div style={{ background: "rgba(107,26,42,0.03)", border: `1px solid rgba(107,26,42,0.10)`, borderRadius: 10, marginBottom: 14, overflow: "hidden" }}>
+              <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid rgba(110,15,45,0.10)`, borderRadius: 10, marginBottom: 14, overflow: "hidden" }}>
                 {assignments.map((a, i) => (
-                  <div key={a.id} style={{ padding: "9px 12px", borderBottom: i < assignments.length - 1 ? `1px solid rgba(107,26,42,0.07)` : "none", fontFamily: F.m, fontSize: 12, color: C.text }}>
+                  <div key={a.id} style={{ padding: "9px 12px", borderBottom: i < assignments.length - 1 ? `1px solid rgba(110,15,45,0.07)` : "none", fontFamily: F.m, fontSize: 12, color: C.text }}>
                     {a.sareeId} <span style={{ color: C.muted, fontFamily: F.u }}>· {a.designCode} · {a.sareeType}</span>
                   </div>
                 ))}
@@ -120,7 +120,7 @@ export function VerificationModal({ assignments, onSave, onClose, isMobile }: {
                       onClick={() => { setBulkCondition(val); if (val === "damaged" && !bulkDamagePhotoUrl) setPhotoPromptFor("bulk"); }}
                       className={bulkCondition === val
                         ? "h-12 w-full rounded-xl border-2 font-bold text-sm transition-all border-[var(--cond-col)] bg-[var(--cond-bg)] text-[var(--cond-col)]"
-                        : "h-12 w-full rounded-xl border-2 border-[rgba(107,26,42,0.12)] bg-transparent font-bold text-sm text-[#69635E] transition-all"}>
+                        : "h-12 w-full rounded-xl border-2 border-[rgba(110,15,45,0.12)] bg-transparent font-bold text-sm text-[#69635E] transition-all"}>
                       {lbl}
                     </Button>
                   </div>
@@ -156,7 +156,7 @@ export function VerificationModal({ assignments, onSave, onClose, isMobile }: {
                               <Camera size={14} color="rgba(255,255,255,0.85)" />
                             </div>
                             <span style={{ fontFamily: F.u, fontSize: 12, color: C.green, fontWeight: 600, flex: 1 }}>Photo attached</span>
-                            <Button variant="link" onClick={() => setPhotoPromptFor("bulk")} className="p-0 text-xs text-[#6B1A2A] underline">Retake</Button>
+                            <Button variant="link" onClick={() => setPhotoPromptFor("bulk")} className="p-0 text-xs text-[#6E0F2D] underline">Retake</Button>
                           </div>
                         ) : (
                           <Button variant="secondary" iconLeft={Camera} onClick={() => setPhotoPromptFor("bulk")}
@@ -177,7 +177,7 @@ export function VerificationModal({ assignments, onSave, onClose, isMobile }: {
                 const d = perSaree[a.id];
                 const update = (patch: Partial<VerifData>) => setPerSaree(prev => ({ ...prev, [a.id]: { ...prev[a.id], ...patch } }));
                 return (
-                  <div key={a.id} style={{ border: `1px solid rgba(107,26,42,0.12)`, borderRadius: 12, padding: "12px 14px" }}>
+                  <div key={a.id} style={{ border: `1px solid rgba(110,15,45,0.12)`, borderRadius: 12, padding: "12px 14px" }}>
                     <div style={{ fontFamily: F.m, fontSize: 12, color: C.burg, marginBottom: 4 }}>{a.sareeId}</div>
                     <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 10 }}>{a.designCode} · {a.sareeType}</div>
                     <div style={{ display: "flex", gap: 6, marginBottom: d.condition === "damaged" ? 10 : 0 }}>
@@ -187,7 +187,7 @@ export function VerificationModal({ assignments, onSave, onClose, isMobile }: {
                             onClick={() => { update({ condition: val }); if (val === "damaged" && !d.damagePhotoUrl) setPhotoPromptFor(a.id); }}
                             className={d.condition === val
                               ? "h-[38px] w-full rounded-[9px] border-[1.5px] font-semibold text-xs transition-all border-[var(--cond-col)] bg-[var(--cond-bg)] text-[var(--cond-col)]"
-                              : "h-[38px] w-full rounded-[9px] border-[1.5px] border-[rgba(107,26,42,0.12)] bg-transparent font-semibold text-xs text-[#69635E] transition-all"}>
+                              : "h-[38px] w-full rounded-[9px] border-[1.5px] border-[rgba(110,15,45,0.12)] bg-transparent font-semibold text-xs text-[#69635E] transition-all"}>
                             {lbl}
                           </Button>
                         </div>
@@ -206,7 +206,7 @@ export function VerificationModal({ assignments, onSave, onClose, isMobile }: {
                               <Camera size={12} color="rgba(255,255,255,0.85)" />
                             </div>
                             <span style={{ fontFamily: F.u, fontSize: 12, color: C.green, fontWeight: 600, flex: 1 }}>Photo attached</span>
-                            <Button variant="link" onClick={() => setPhotoPromptFor(a.id)} className="p-0 text-xs text-[#6B1A2A] underline">Retake</Button>
+                            <Button variant="link" onClick={() => setPhotoPromptFor(a.id)} className="p-0 text-xs text-[#6E0F2D] underline">Retake</Button>
                           </div>
                         ) : (
                           <Button variant="secondary" size="sm" iconLeft={Camera} onClick={() => setPhotoPromptFor(a.id)}
@@ -230,7 +230,7 @@ export function VerificationModal({ assignments, onSave, onClose, isMobile }: {
           iconLeft={CheckCircle2}
           disabled={useBulk ? !isBulkReady : Object.values(perSaree).some(d => !d.condition || (d.condition === "damaged" && (!d.damageType.trim() || !d.damagePhotoUrl)))}
           onClick={handleSave}
-          className="rounded-full bg-[#6B1A2A] hover:bg-[#6B1A2A]"
+          className="rounded-full bg-[#6E0F2D] hover:bg-[#6E0F2D]"
         >
           Save &amp; Mark Received
         </Button>

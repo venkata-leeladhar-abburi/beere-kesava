@@ -3,7 +3,7 @@
 import React from "react";
 import { Plus, Building2 } from "lucide-react";
 import { T, F } from "../theme";
-import { FadeUp } from "../common/primitives";
+import { FadeUp, SectionCard } from "../common/primitives";
 import { Supplier, useSuppliers } from "../../contexts/SupplierContext";
 import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { SupplierCard, type SupplierCardProps } from "@/shared/ui/domain";
@@ -38,16 +38,16 @@ export function SupplierDirectorySection({
   return (
     <div style={{ padding: "48px 56px 0" }}>
       <FadeUp>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ width: 3, height: 28, background: T.antiqueGold, borderRadius: 2 }} />
-            <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0, fontWeight: 600 }}>Supplier Directory</h2>
-          </div>
-          <Button variant="primary" size="md" iconLeft={Plus} onClick={onAddSupplier}>
+      <SectionCard
+        icon={Building2}
+        title="Supplier Directory"
+        subtitle="Browse all raw-material suppliers, track their orders, ratings, and outstanding balances."
+        actions={
+          <Button variant="secondary" size="md" iconLeft={Plus} onClick={onAddSupplier} className="bg-white/10 text-[#FFFDF9] border-white/20">
             Add New Supplier
           </Button>
-        </div>
-
+        }
+      >
         <div style={{ background: "#FFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, padding: "16px 20px", marginBottom: 24, display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap", boxShadow: "0 2px 10px rgba(74,6,27,0.05)" }}>
           <div style={{ flex: "1 1 280px" }}>
             <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by supplier name, city, or contact…" />
@@ -97,6 +97,7 @@ export function SupplierDirectorySection({
             </div>
           )}
         </div>
+      </SectionCard>
       </FadeUp>
     </div>
   );

@@ -1,9 +1,9 @@
 import React, { useMemo } from "react";
-import { ReceiptText, Banknote, CheckCircle2, BellRing } from "lucide-react";
+import { ReceiptText, Banknote, CheckCircle2, BellRing, Boxes } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { useBulkOrders } from "../../../bulk-orders/contexts/BulkOrderContext";
 import { T, F } from "../theme";
-import { FadeUp, ChartCard, SumCard, TabTitle, ReportDLBar, AnimBar, TablePager } from "../common/primitives";
+import { FadeUp, ChartCard, SumCard, SectionCard, ReportDLBar, AnimBar, TablePager } from "../common/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { semantic } from "../../../../design-system/tokens";
 import type { BulkOrder } from "../../../bulk-orders/contexts/BulkOrderContext";
@@ -104,10 +104,11 @@ export function WholesaleSalesReport() {
   if (isError) {
     return (
       <div id="rep-wholesale" style={{ padding: "32px 40px" }}>
-        <TabTitle title="Wholesale Sales Report" sub="Track all wholesale dispatches, invoices raised, payments received, and outstanding dues from every wholesale customer." />
-        <div style={{ padding: "24px", borderRadius: 12, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.22)", color: T.crimson, fontFamily: F.ui, fontSize: 14, fontWeight: 600 }}>
-          Failed to load wholesale sales data. Please try again.
-        </div>
+        <SectionCard icon={Boxes} title="Wholesale Sales Report" subtitle="Track all wholesale dispatches, invoices raised, payments received, and outstanding dues from every wholesale customer.">
+          <div style={{ padding: "24px", borderRadius: 12, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.22)", color: T.crimson, fontFamily: F.ui, fontSize: 14, fontWeight: 600 }}>
+            Failed to load wholesale sales data. Please try again.
+          </div>
+        </SectionCard>
       </div>
     );
   }
@@ -174,8 +175,11 @@ export function WholesaleSalesReport() {
 
   return (
     <div id="rep-wholesale" style={{ padding: "32px 40px" }}>
-      <TabTitle title="Wholesale Sales Report"
-        sub="Track all wholesale dispatches, invoices raised, payments received, and outstanding dues from every wholesale customer." />
+    <SectionCard
+      icon={Boxes}
+      title="Wholesale Sales Report"
+      subtitle="Track all wholesale dispatches, invoices raised, payments received, and outstanding dues from every wholesale customer."
+    >
       <ReportDLBar />
 
       {/* Weekly sarees dispatched — summary strip + bar chart */}
@@ -296,6 +300,7 @@ export function WholesaleSalesReport() {
           <TablePager total={bulkOrders.length} showing={bulkOrders.length} />
         </div>
       </FadeUp>
+    </SectionCard>
     </div>
   );
 }

@@ -229,7 +229,7 @@ export function SATopNav({ active, set, onBack, sections, onProfile }: { active:
                 <ChevronDown size={13} color="rgba(245,232,208,0.75)" style={{ transform: showProfile ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
               </motion.div>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="!min-w-[250px] !p-0 !rounded-[14px] !overflow-hidden" style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}` }}>
+            <DropdownMenuContent align="end" className="!min-w-[250px] !p-0 !rounded-[14px] !overflow-hidden" style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, zIndex: "var(--z-tooltip)" }}>
               <div style={{ padding: "16px 18px", background: "rgba(196,146,58,0.06)", borderBottom: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", gap: 12 }}>
                 <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#C4923A", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 3px 12px rgba(196,146,58,0.35)" }}>
                   <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: "#FFF" }}>SA</span>
@@ -261,13 +261,13 @@ export function SATopNav({ active, set, onBack, sections, onProfile }: { active:
         <div
           style={{
             height: SUB_NAV_H,
-            display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24,
-            padding: compact ? "0 20px" : "0 56px",
+            display: "flex", alignItems: "center", justifyContent: "flex-start", gap: 20,
+            padding: compact ? "0 16px" : "0 28px",
             background: T.warmIvory,
             borderBottom: `1px solid ${T.borderDef}`,
           }}
         >
-          <div className="sa-topnav-groups" style={{ display: "flex", alignItems: "center", gap: 4, background: "#F3EEE8", border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: 6, overflowX: "auto", flexShrink: 0 } as React.CSSProperties}>
+          <div className="sa-topnav-groups" style={{ display: "flex", alignItems: "center", gap: 4, background: "#F3EEE8", border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: 5, overflowX: "auto", flexShrink: 0 } as React.CSSProperties}>
             {activeGroup.pages.map(p => {
               const isActive = active === p.key;
               return (
@@ -275,7 +275,7 @@ export function SATopNav({ active, set, onBack, sections, onProfile }: { active:
                   key={p.key}
                   onClick={() => set(p.key)}
                   variant="tertiary"
-                  className={`!relative !gap-1.5 !rounded-[10px] !py-3 !px-[26px] !whitespace-nowrap !border-none !bg-transparent !text-sm ${
+                  className={`!relative !gap-1.5 !rounded-[10px] !py-[9px] !px-[22px] !whitespace-nowrap !border-none !bg-transparent !text-[13px] ${
                     isActive
                       ? "!text-white !font-semibold hover:!bg-transparent hover:!text-white"
                       : "!text-[#3B2314] !font-medium hover:!bg-[rgba(110,15,45,0.06)] hover:!text-[#3B2314]"
@@ -304,7 +304,7 @@ export function SATopNav({ active, set, onBack, sections, onProfile }: { active:
 
           {sections && (
             <>
-              <div style={{ width: 1, height: 28, background: T.borderDef, flexShrink: 0 }} />
+              <div style={{ width: 1, height: 24, background: T.borderDef, flexShrink: 0 }} />
               <SectionNavigator inline sections={sections} />
             </>
           )}

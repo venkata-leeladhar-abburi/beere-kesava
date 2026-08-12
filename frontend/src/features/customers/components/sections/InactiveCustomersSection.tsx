@@ -1,5 +1,6 @@
+import { UserX } from "lucide-react";
 import { T, F } from "../theme";
-import { SectionTitle, Pill } from "../common/primitives";
+import { SectionCard, SectionDownloadAction, Pill } from "../common/primitives";
 import { monthsSinceLabel } from "../utils";
 import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
@@ -96,13 +97,13 @@ export function InactiveCustomersSection({
   ];
 
   return (
-    <div style={{ padding: "0 56px 64px 56px" }}>
-      <SectionTitle
-        title="Inactive Customers — No Purchase in 6 Months"
-        sub="These customers have not placed any order or visited the shop in the last 6 months. Consider reaching out to bring them back."
-        action="Download Inactive List →"
-      />
-
+    <div style={{ padding: "40px 56px 0" }}>
+    <SectionCard
+      icon={UserX}
+      title="Inactive Customers — No Purchase in 6 Months"
+      subtitle="These customers have not placed any order or visited the shop in the last 6 months. Consider reaching out to bring them back."
+      actions={<SectionDownloadAction label="Download Inactive List" />}
+    >
       {/* Filters + timeline */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap" as const, gap: 12 }}>
         <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" as const }}>
@@ -161,6 +162,7 @@ export function InactiveCustomersSection({
           emptyTitle="No customers match these filters"
         />
       </div>
+    </SectionCard>
     </div>
   );
 }

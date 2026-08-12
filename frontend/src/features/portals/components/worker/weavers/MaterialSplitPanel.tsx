@@ -46,7 +46,7 @@ export function MaterialSplitPanel({ typeCode, weight, edits, onEdit }: Material
 
   if (!auto) {
     return (
-      <div style={{ background: "rgba(107,26,42,0.04)", border: `1px dashed ${C.bdr}`, borderRadius: 10, padding: "10px 12px", marginBottom: 10 }}>
+      <div style={{ background: "rgba(110,15,45,0.04)", border: `1px dashed ${C.bdr}`, borderRadius: 10, padding: "10px 12px", marginBottom: 10 }}>
         <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>
           {typeCode && getSareeTypeByCode(typeCode)
             ? "Enter the saree weight to split it into warp, resham and jari."
@@ -77,7 +77,7 @@ export function MaterialSplitPanel({ typeCode, weight, edits, onEdit }: Material
           </span>
         </div>
         {dirty && (
-          <Button variant="link" onClick={() => onEdit({})} className="p-0 text-xs text-[#6B1A2A] underline">
+          <Button variant="link" onClick={() => onEdit({})} className="p-0 text-xs text-[#6E0F2D] underline">
             Reset to auto
           </Button>
         )}
@@ -101,10 +101,10 @@ export function MaterialSplitPanel({ typeCode, weight, edits, onEdit }: Material
             <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.05em" }}>
               Jari ({jariUnit})
             </span>
-            <div style={{ display: "flex", background: "rgba(107,26,42,0.06)", borderRadius: 999, padding: 2 }}>
+            <div style={{ display: "flex", background: "rgba(110,15,45,0.06)", borderRadius: 999, padding: 2 }}>
               {(["reels", "buns"] as JariUnit[]).map(u => (
                 <Button key={u} type="button" variant={jariUnit === u ? "primary" : "tertiary"} size="sm" onClick={() => setJariUnit(u)}
-                  className={jariUnit === u ? "rounded-full capitalize bg-[#6B1A2A] hover:bg-[#6B1A2A]" : "rounded-full capitalize"}>
+                  className={jariUnit === u ? "rounded-full capitalize bg-[#6E0F2D] hover:bg-[#6E0F2D]" : "rounded-full capitalize"}>
                   {u}
                 </Button>
               ))}

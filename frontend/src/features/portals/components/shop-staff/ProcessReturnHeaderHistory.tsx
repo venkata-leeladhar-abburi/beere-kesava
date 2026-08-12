@@ -68,8 +68,8 @@ export function ReturnHistorySection({ returnLog, canSeePrices }: ReturnHistoryS
       {returnLog.map((r, i) => (
         <div key={i} style={{ background: C.white, border: `1px solid ${C.bdr}`, borderLeft: `3px solid ${r.type === "retail" ? C.crim : C.gold}`, borderRadius: 12, padding: "12px 14px", marginBottom: 8 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-            <span style={{ background: r.type === "retail" ? "rgba(192,57,43,0.10)" : "rgba(196,146,58,0.15)", color: r.type === "retail" ? C.crim : "#8B6520", borderRadius: 999, padding: "2px 8px", fontFamily: F.m, fontSize: 12, fontWeight: 600 }}>{r.id}</span>
-            <span style={{ background: r.type === "retail" ? "rgba(192,57,43,0.07)" : "rgba(196,146,58,0.10)", color: r.type === "retail" ? C.crim : C.gold, borderRadius: 999, padding: "2px 8px", fontFamily: F.u, fontSize: 12, fontWeight: 600 }}>{r.type === "retail" ? "Retail" : "Wholesale"}</span>
+            <span style={{ background: r.type === "retail" ? "rgba(192,57,43,0.10)" : "rgba(200,155,71,0.15)", color: r.type === "retail" ? C.crim : "#8B6520", borderRadius: 999, padding: "2px 8px", fontFamily: F.m, fontSize: 12, fontWeight: 600 }}>{r.id}</span>
+            <span style={{ background: r.type === "retail" ? "rgba(192,57,43,0.07)" : "rgba(200,155,71,0.10)", color: r.type === "retail" ? C.crim : C.gold, borderRadius: 999, padding: "2px 8px", fontFamily: F.u, fontSize: 12, fontWeight: 600 }}>{r.type === "retail" ? "Retail" : "Wholesale"}</span>
             <span style={{ marginLeft: "auto", fontFamily: F.m, fontSize: 12, color: C.muted }}>{r.date}</span>
           </div>
           {r.type === "retail" ? (

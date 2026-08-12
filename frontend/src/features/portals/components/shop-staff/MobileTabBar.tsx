@@ -37,7 +37,7 @@ export function MobileTabBar({
       style={{
         background: C.white,
         borderTop: `1px solid ${C.bdr}`,
-        boxShadow: "0 -4px 20px rgba(107,26,42,0.08)",
+        boxShadow: "0 -4px 20px rgba(110,15,45,0.08)",
         zIndex: 100,
       }}
     />

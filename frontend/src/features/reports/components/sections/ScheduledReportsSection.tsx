@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
-import { Users, Scissors, BarChart3, BellRing, UsersRound, Plus, Pause, Play, Trash2, X } from "lucide-react";
+import { Users, Scissors, BarChart3, BellRing, UsersRound, Plus, Pause, Play, Trash2, X, CalendarClock } from "lucide-react";
 import { T, F } from "../theme";
-import { FadeUp, SectionHeader } from "../common/primitives";
+import { FadeUp, SectionCard } from "../common/primitives";
 import { Button, IconButton, Select, SelectItem, Input, CheckboxField } from "../../../../shared/ui/primitives";
 
 // Wired to real backend: GET/POST /reports/schedules, PATCH/DELETE /reports/schedules/:id.
@@ -82,18 +82,16 @@ export function ScheduledReportsSection() {
   return (
     <div style={{ padding: "36px 40px 0" }}>
       <FadeUp>
-        <SectionHeader
-          title="Scheduled Reports — Automatic Delivery"
-          action={
-            <Button variant="secondary" size="sm" iconLeft={Plus} onClick={() => setShowForm(!showForm)}>
-              Add New Schedule →
-            </Button>
-          }
-        />
-        <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: "4px 0 22px 13px" }}>
-          These reports are automatically generated and sent to admin on WhatsApp at the scheduled time. No manual action needed.
-        </p>
-
+      <SectionCard
+        icon={CalendarClock}
+        title="Scheduled Reports — Automatic Delivery"
+        subtitle="These reports are automatically generated and sent to admin on WhatsApp at the scheduled time. No manual action needed."
+        actions={
+          <Button variant="secondary" size="sm" iconLeft={Plus} onClick={() => setShowForm(!showForm)} className="bg-white/10 text-[#FFFDF9] border-white/20">
+            Add New Schedule
+          </Button>
+        }
+      >
         {/* Schedule cards grid */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 18, marginBottom: 20, alignItems: "stretch" }}>
           {isLoading ? (
@@ -227,6 +225,7 @@ export function ScheduledReportsSection() {
             </div>
           </motion.div>
         )}
+      </SectionCard>
       </FadeUp>
     </div>
   );

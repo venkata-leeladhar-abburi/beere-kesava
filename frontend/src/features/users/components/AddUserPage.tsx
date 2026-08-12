@@ -14,7 +14,7 @@ import {
   FieldFocus, FieldBlur,
 } from "./theme";
 import { formatBackendDate, TableRow } from "./utils";
-import { SectionTitle, RoleBadge, AccessBadge, StatusBadge } from "./UserBadges";
+import { RoleBadge, AccessBadge, StatusBadge } from "./UserBadges";
 import { ViewProfileModal } from "./ViewProfileModal";
 import { EditModal } from "./EditModal";
 import { ConfirmDialog } from "../../../shared/ui/ConfirmDialog";
@@ -336,7 +336,7 @@ export function AddUserPage() {
         transition={{ duration: 0.5, ease: EASE }}
         style={{ background: "#0D0207", position: "relative", overflow: "hidden", display: "flex", alignItems: "center" }}
       >
-        <div style={{ flex: 1, padding: "48px 0 48px 48px", zIndex: 10, position: "relative", maxWidth: "100%" }}>
+        <div style={{ flex: 1, padding: "48px 0 48px 56px", zIndex: 10, position: "relative", maxWidth: "100%" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
             <div style={{ width: 28, height: 1, background: T.antiqueGold }} />
             <span style={{ fontFamily: F.mono, fontSize: 13, color: `${T.antiqueGold}80`, letterSpacing: "1.5px", textTransform: "uppercase" as const }}>
@@ -370,7 +370,7 @@ export function AddUserPage() {
       </motion.div>
 
       {/* ── BODY ─────────────────────────────────────────────────────────────── */}
-      <div style={{ padding: "40px 56px 80px", maxWidth: 1400, margin: "0 auto" }}>
+      <div style={{ padding: "40px 56px 80px", width: "100%" }}>
 
         {/* STAT STRIP — overview */}
         <motion.div

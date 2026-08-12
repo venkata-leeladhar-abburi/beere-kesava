@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { Check, Info, Send, Shield, Package } from "lucide-react";
 import { C, F, BG_IMAGE } from "../theme";
+import { SectionHeading } from "@/shared/ui/portal/PortalChrome";
 import { DesktopHero } from "./DesktopHero";
 import { Button, Input, Textarea } from "../../../../../shared/ui/primitives";
 import { useBatches } from "../../../../production/contexts/BatchContext";
@@ -10,15 +11,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { warpRequestsApi, BackendWarpRequest } from "../../../../../shared/api/warpRequests";
 
+/** Thin wrapper on the shared portal heading — see PaymentsSection. */
 function DSectionHeader({ label }: { label: string }) {
-  return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <div style={{ width: 5, height: 28, background: C.burg, borderRadius: 3 }} />
-        <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 20, color: C.text }}>{label}</span>
-      </div>
-    </div>
-  );
+  return <SectionHeading title={label} />;
 }
 
 type MaterialKey = "warp" | "resham" | "jari";
@@ -255,7 +250,7 @@ export function WarpSection({
 
             {/* Right: Rules + History */}
             <div style={{ display: "flex", flexDirection: "column" as const, gap: 22 }}>
-              <div style={{ background: "#FFF8E8", border: `1px solid rgba(196,146,58,0.28)`, borderRadius: 18, padding: "24px 26px" }}>
+              <div style={{ background: "#FFF8E8", border: `1px solid rgba(200,155,71,0.28)`, borderRadius: 18, padding: "24px 26px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
                   <Info size={22} color={C.gold} />
                   <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 18, color: C.text }}>System Rule</div>

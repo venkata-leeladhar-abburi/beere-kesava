@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import {
-  TrendingUp, Trophy, Timer,
+  TrendingUp, Trophy, Timer, BarChart3 as ChartBar,
 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
@@ -9,6 +9,7 @@ import {
 import { FactoryLoom } from "../../data/factoryLooms";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { T, F, FadeUp } from "./theme";
+import { SectionCard } from "../common/primitives";
 import { LoomBatch, LoomMaterial, LoomSaree, MAT_TAG, LOOM_STATUS_TO_CONDITION } from "./types";
 import { LoomThroughputAndAvailability, LoomMaterialDesignRow } from "./LoomAnalyticsCharts";
 import { ChartFigure } from "../../../../shared/ui/data";
@@ -157,12 +158,14 @@ export function LoomAnalytics({ looms, batches, materials, sarees }: {
   return (
     <div style={{ padding: "34px 56px 0" }}>
       <FadeUp>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
-          <div style={{ width: 3, height: 28, background: T.antiqueGold, borderRadius: 2 }} />
-          <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0, fontWeight: 600 }}>Loom Analytics</h2>
-          <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, letterSpacing: "1px", color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "4px 10px", borderRadius: 20, textTransform: "uppercase" as const }}>{periodLabel}</span>
-        </div>
-
+      <SectionCard
+        icon={ChartBar}
+        title="Loom Analytics"
+        subtitle="Throughput, QC pass rate, and loom utilisation across the factory floor."
+        actions={
+          <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, letterSpacing: "1px", color: "#FFFDF9", background: "rgba(255,255,255,0.14)", padding: "6px 14px", borderRadius: 20, textTransform: "uppercase" as const }}>{periodLabel}</span>
+        }
+      >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" as const }}>
           <DateFilterBar filter={filter} onChange={setFilter} />
           <div style={{ display: "flex", gap: 24, marginBottom: 16 }}>
@@ -178,7 +181,6 @@ export function LoomAnalytics({ looms, batches, materials, sarees }: {
             ))}
           </div>
         </div>
-      </FadeUp>
 
       {/* Row 1: Throughput + Loom Availability */}
       <FadeUp delay={0.04}>
@@ -292,6 +294,8 @@ export function LoomAnalytics({ looms, batches, materials, sarees }: {
           pipeline={pipeline}
           looms={looms}
         />
+      </FadeUp>
+      </SectionCard>
       </FadeUp>
     </div>
   );
