@@ -5,12 +5,14 @@ import { DesignCodeCard } from "../../design-library/components/DesignLibraryPag
 import { SareeTypeCard } from "../../pricing/components/RatesPricingPage";
 import { useRatesPricing } from "../../pricing/contexts/RatesContext";
 import { BulkOrderDetailPage } from "../../bulk-orders/components/BulkOrderDetailPage";
+import { useBatches } from "../contexts/BatchContext";
 
 import { F } from "./theme";
 import type { BulkOrder } from "./types";
 import { PageHeader, StatsStrip } from "./sections/PageHeaderAndStats";
 import { BulkOrdersSection } from "./sections/BulkOrdersSection";
 import { ActiveBatchesSection } from "./sections/ActiveBatchesSection";
+import { BatchTallyPage } from "./BatchTallyPage";
 import { DefectiveSareesSection } from "./sections/DefectiveSareesSection";
 import { ProductionAnalyticsSection } from "./sections/ProductionAnalyticsSection";
 import { ProductionHistorySection } from "./sections/ProductionHistorySection";
@@ -39,6 +41,9 @@ export function ProductionPage({ superadmin = false, onNavigate }: { superadmin?
   // full page — the same pattern the Weavers page uses for a weaver's profile —
   // rather than a cramped modal.
   const [viewingOrder, setViewingOrder] = useState<{ order: BulkOrder; tab: "overview" | "payments" } | null>(null);
+  // Batch tally is likewise its own full page rather than a dialog.
+  const [tallyBatchId, setTallyBatchId] = useState<string | null>(null);
+  const { setPendingOpenBatchId } = useBatches();
 
   if (viewingOrder) {
     return (
@@ -50,6 +55,20 @@ export function ProductionPage({ superadmin = false, onNavigate }: { superadmin?
     );
   }
 
+  if (tallyBatchId) {
+    return (
+      <BatchTallyPage
+        batchId={tallyBatchId}
+        onBack={() => setTallyBatchId(null)}
+        onOpenCreation={() => {
+          setPendingOpenBatchId(tallyBatchId);
+          onNavigate?.("Batches");
+          setTallyBatchId(null);
+        }}
+      />
+    );
+  }
+
   return (
     <div style={{ fontFamily: F.ui }}>
       <PageHeader />
@@ -57,7 +76,7 @@ export function ProductionPage({ superadmin = false, onNavigate }: { superadmin?
       <AllSareesSection />
       <div style={{ background: "#F7F2EA", paddingBottom: 0 }}>
         <BulkOrdersSection superadmin={superadmin} onNavigate={onNavigate} onOpenOrder={(order, tab) => setViewingOrder({ order, tab })} />
-        <ActiveBatchesSection onNavigate={onNavigate} onDesignClick={setOpenDesignCode} onSareeTypeClick={setOpenSareeTypeCode} />
+        <ActiveBatchesSection onNavigate={onNavigate} onOpenTally={setTallyBatchId} onDesignClick={setOpenDesignCode} onSareeTypeClick={setOpenSareeTypeCode} />
         <DefectiveSareesSection superadmin={superadmin} onNavigate={onNavigate} onDesignClick={setOpenDesignCode} onSareeTypeClick={setOpenSareeTypeCode} />
         <ProductionAnalyticsSection />
         <DesignLibraryLinkCard onNavigate={onNavigate} />
@@ -76,4 +95,3 @@ export type { BulkOrder } from "./types";
 export { BulkOrderCard } from "./sections/BulkOrdersSection";
 export { ProductionDialog } from "./common/primitives";
 export { OrderDialogContent } from "./dialogs/OrderDialogContent";
-export { ContextBatchDetailsDialog } from "./sections/batches/ContextBatchCard";

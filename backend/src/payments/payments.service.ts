@@ -274,14 +274,19 @@ export class PaymentsService {
     });
   }
 
-  // Every QC-passed saree with a weaver attached — the raw material the
+  // Every inspected saree with a weaver attached — the raw material the
   // Weaver Payments page's production-summary table/template is built from.
-  // Grouping by (weaverId, batchId, loomNumber) and date-range filtering
-  // both happen client-side, matching how every other date-filtered list in
-  // this app works, so this stays a flat per-saree list.
+  // All three verdicts carry a real deduction figure (QcService.
+  // computeQcPayment): PASSED is 0, SEMI is the partial withhold, and
+  // DEFECTIVE withholds the making charge in full (deduction === makingCharge,
+  // payable 0) — dropping SEMI or DEFECTIVE here would silently hide real
+  // money withheld from a weaver's payment summary. Grouping by (weaverId,
+  // batchId, loomNumber) and date-range filtering both happen client-side,
+  // matching how every other date-filtered list in this app works, so this
+  // stays a flat per-saree list.
   async getWeaverProductionRows() {
     const records = await this.prisma.qcRecord.findMany({
-      where: { result: "PASSED", weaverId: { not: null } },
+      where: { weaverId: { not: null } },
       select: {
         sareeId: true,
         weaverId: true,

@@ -35,7 +35,7 @@ export class DesignLibraryService {
         : {}),
     };
 
-    const [items, total] = await this.prisma.$transaction([
+    const [items, total] = await Promise.all([
       this.prisma.designLibrary.findMany({
         where,
         skip: (query.page - 1) * query.pageSize,

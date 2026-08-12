@@ -64,7 +64,7 @@ export class FinishingStaffService {
         : {}),
     };
 
-    const [items, total] = await this.prisma.$transaction([
+    const [items, total] = await Promise.all([
       this.prisma.finishingStaff.findMany({
         where,
         skip: (query.page - 1) * query.pageSize,

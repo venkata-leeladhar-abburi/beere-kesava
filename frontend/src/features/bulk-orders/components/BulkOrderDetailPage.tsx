@@ -10,7 +10,7 @@ import type { BulkOrder } from "../contexts/BulkOrderContext";
 import { useBulkOrders } from "../contexts/BulkOrderContext";
 import { useFinishing, DispatchRecord, Quotation } from "../../finishing/contexts/FinishingContext";
 import { useBatches } from "../../production/contexts/BatchContext";
-import { SareeWeightTallyList, type TallyRowItem } from "../../production/components/sections/batches/SareeWeightTallyList";
+import { SareeWeightTallyList, type TallyRowItem, type TallyCorrection } from "../../production/components/sections/batches/SareeWeightTallyList";
 import { useRatesPricing } from "../../pricing/contexts/RatesContext";
 import { useAuth } from "../../../contexts/AuthContext";
 import { autoMaterialSplit } from "../../portals/components/worker/weavers/MaterialSplitPanel";
@@ -218,6 +218,18 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
     }
   };
 
+  // Admin corrects the weight/material figures Worker Staff entered at
+  // receipt, then the row is marked tallied in the same action.
+  const handleSaveSareeCorrection = async (item: TallyRowItem, correction: TallyCorrection) => {
+    const key = `${item.batchId}-${item.serial}`;
+    setTallyBusyKey(key);
+    try {
+      await tallyRow(item.batchId, item.serial, true, user?.name, correction);
+    } finally {
+      setTallyBusyKey(null);
+    }
+  };
+
   const weightTally = useMemo(() => {
     let actualWeight = 0, warpG = 0, reshamG = 0, jariReels = 0, weighedCount = 0;
     linkedSarees.forEach(s => {
@@ -398,6 +410,7 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
             items={tallyItems}
             getSareeTypeByCode={getSareeTypeByCode}
             onToggleTally={handleToggleSareeTally}
+            onSaveCorrection={handleSaveSareeCorrection}
             busyKey={tallyBusyKey}
           />
         </div>

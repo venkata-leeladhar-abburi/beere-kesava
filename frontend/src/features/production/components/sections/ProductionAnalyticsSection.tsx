@@ -15,6 +15,8 @@ import { analyticsApi } from "../../../../shared/api/analytics";
 import { weaversApi } from "../../../../shared/api/weavers";
 import { useBatches } from "../../contexts/BatchContext";
 import { useBulkOrders } from "../../../bulk-orders/contexts/BulkOrderContext";
+import { useFinishing } from "../../../finishing/contexts/FinishingContext";
+import { computeBulkOrderProducedSareeIds } from "../../../bulk-orders/utils/BulkOrderLinking";
 import { rowComplete } from "./batches/ContextBatchCard";
 import { FadeUp, Pip, ProductionDialog } from "../common/primitives";
 import { Button, CheckboxField } from "../../../../shared/ui/primitives";
@@ -86,6 +88,7 @@ export function ProductionAnalyticsSection() {
 
   const { batches } = useBatches();
   const { bulkOrders } = useBulkOrders();
+  const { readySarees, returns, quotations } = useFinishing();
 
   const STAGE_FUNNEL = useMemo(() => {
     const active = batches.filter(b => b.status === "active" || b.status === "draft");
@@ -108,9 +111,17 @@ export function ProductionAnalyticsSection() {
   }, [batches]);
   const totalActiveBatches = batches.filter(b => b.status === "active" || b.status === "draft").length;
 
+  // o.done is a manually-set DB column nothing keeps in sync with actual
+  // production — it drifts to 0/stale even once sarees have genuinely
+  // passed QC for this order. Derive the real count the same way the
+  // BulkOrderCard and order detail page do, so this chart can't disagree.
   const ORDER_PROGRESS = useMemo(
-    () => bulkOrders.map(o => ({ name: o.customer, done: o.done, total: o.total })),
-    [bulkOrders],
+    () => bulkOrders.map(o => ({
+      name: o.customer,
+      done: computeBulkOrderProducedSareeIds(o.ref, bulkOrders, readySarees, returns, quotations).size,
+      total: o.total,
+    })),
+    [bulkOrders, readySarees, returns, quotations],
   );
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [exportFormat, setExportFormat] = useState("PDF");

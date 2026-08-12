@@ -99,7 +99,10 @@ interface BatchContextValue {
   saveDraft: (batch: BatchRecord) => Promise<string>;
   updateBatch: (batchId: string, patch: Partial<BatchRecord>) => void;
   receiveRow: (batchId: string, serial: number, payload: ReceiveBatchRowPayload) => Promise<void>;
-  tallyRow: (batchId: string, serial: number, tallied: boolean, talliedBy?: string) => Promise<void>;
+  tallyRow: (
+    batchId: string, serial: number, tallied: boolean, talliedBy?: string,
+    corrections?: { weight?: number; warpG?: number; reshamG?: number; jariReels?: number },
+  ) => Promise<void>;
   finalizeBatch: (batchId: string) => Promise<void>;
   // Rejects with the backend's message when the batch has existing records
   // (materials issued, QC, finishing) attached — deletion is blocked, not
@@ -287,8 +290,11 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
   });
 
   const tallyRowMutation = useMutation({
-    mutationFn: (args: { batchId: string; serial: number; tallied: boolean; talliedBy?: string }) =>
-      batchesApi.tallyRow(args.batchId, args.serial, { tallied: args.tallied, talliedBy: args.talliedBy }),
+    mutationFn: (args: { batchId: string; serial: number; tallied: boolean; talliedBy?: string; weight?: number; warpG?: number; reshamG?: number; jariReels?: number }) =>
+      batchesApi.tallyRow(args.batchId, args.serial, {
+        tallied: args.tallied, talliedBy: args.talliedBy,
+        weight: args.weight, warpG: args.warpG, reshamG: args.reshamG, jariReels: args.jariReels,
+      }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       void queryClient.invalidateQueries({ queryKey: ["bulkOrders"] });
@@ -352,8 +358,11 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
   const updateBatch = (batchId: string, patch: Partial<BatchRecord>) => updateBatchMutation.mutate({ batchId, patch });
   const receiveRow = (batchId: string, serial: number, payload: ReceiveBatchRowPayload) =>
     receiveRowMutation.mutateAsync({ batchId, serial, payload }).then(() => undefined);
-  const tallyRow = (batchId: string, serial: number, tallied: boolean, talliedBy?: string) =>
-    tallyRowMutation.mutateAsync({ batchId, serial, tallied, talliedBy }).then(() => undefined);
+  const tallyRow = (
+    batchId: string, serial: number, tallied: boolean, talliedBy?: string,
+    corrections?: { weight?: number; warpG?: number; reshamG?: number; jariReels?: number },
+  ) =>
+    tallyRowMutation.mutateAsync({ batchId, serial, tallied, talliedBy, ...corrections }).then(() => undefined);
   const finalizeBatch = (batchId: string) => finalizeBatchMutation.mutateAsync(batchId).then(() => undefined);
   // A 404 here means the batch is already gone (another tab deleted it, or
   // it's a stale entry) — that's the caller's desired end state either way,

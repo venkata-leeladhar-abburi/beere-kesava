@@ -77,7 +77,7 @@ export class SalesService {
   ): Promise<PaginatedResult<Prisma.SaleRecordGetPayload<{ include: typeof saleInclude }>>> {
     const where: Prisma.SaleRecordWhereInput = { channel: query.channel };
 
-    const [items, total] = await this.prisma.$transaction([
+    const [items, total] = await Promise.all([
       this.prisma.saleRecord.findMany({
         where,
         skip: (query.page - 1) * query.pageSize,
@@ -145,7 +145,7 @@ export class SalesService {
   async findAllReturns(
     query: ListReturnQueryDto,
   ): Promise<PaginatedResult<Prisma.ReturnRecordGetPayload<{ include: typeof returnInclude }>>> {
-    const [items, total] = await this.prisma.$transaction([
+    const [items, total] = await Promise.all([
       this.prisma.returnRecord.findMany({
         skip: (query.page - 1) * query.pageSize,
         take: query.pageSize,

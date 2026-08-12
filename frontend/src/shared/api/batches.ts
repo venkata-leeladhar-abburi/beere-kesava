@@ -92,7 +92,11 @@ export const batchesApi = {
   receiveRow: (batchId: string, serial: number, payload: ReceiveBatchRowPayload) =>
     apiClient.patch<BackendBatchSareeRow>(`/batches/${batchId}/rows/${serial}/receive`, payload),
 
-  tallyRow: (batchId: string, serial: number, payload: { tallied: boolean; talliedBy?: string }) =>
+  tallyRow: (
+    batchId: string,
+    serial: number,
+    payload: { tallied: boolean; talliedBy?: string; weight?: number; warpG?: number; reshamG?: number; jariReels?: number },
+  ) =>
     apiClient.patch<BackendBatchSareeRow>(`/batches/${batchId}/rows/${serial}/tally`, payload),
 
   finalize: (batchId: string) => apiClient.post<BackendBatch>(`/batches/${batchId}/finalize`, {}),

@@ -25,7 +25,7 @@ export class FactoryLoomsService {
   ): Promise<PaginatedResult<Prisma.FactoryLoomGetPayload<object>>> {
     const where: Prisma.FactoryLoomWhereInput = { status: query.status };
 
-    const [items, total] = await this.prisma.$transaction([
+    const [items, total] = await Promise.all([
       this.prisma.factoryLoom.findMany({
         where,
         skip: (query.page - 1) * query.pageSize,

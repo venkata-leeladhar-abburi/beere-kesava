@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 
 import { F, T } from "../../theme";
 import { WeaverRecord } from "../../types";
-import { calcCharges, calcCompletedSarees, calcNet } from "../../utils/charges";
+import { calcCharges, calcCompletedSarees, calcDeduction, calcNet } from "../../utils/charges";
 import { Pip, StatusBadge } from "../common/primitives";
 import { Button, Checkbox } from "../../../../shared/ui/primitives";
 import { rupees } from "@/lib/domain/money";
@@ -13,6 +13,7 @@ import { Money } from "@/shared/ui/domain";
 // Weaver card (card view)
 export function WeaverCard({ w, onViewDetails, selected, onToggleSelect }: { w: WeaverRecord, onViewDetails?: () => void, selected: boolean, onToggleSelect: () => void }) {
   const charges = calcCharges(w);
+  const deduction = calcDeduction(w);
   const net = calcNet(w);
   const breakdown = [
     w.sb > 0 && `SB×${w.sb}`,
@@ -82,10 +83,10 @@ export function WeaverCard({ w, onViewDetails, selected, onToggleSelect }: { w: 
             <span>Gross Charges</span>
             <span style={{ fontFamily: F.mono, fontWeight: 600, color: T.luxuryBrown }}><Money value={rupees(charges)} /></span>
           </div>
-          {((w.uploadedDeduction !== undefined ? w.uploadedDeduction : w.advance) > 0) && (
+          {deduction > 0 && (
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontFamily: F.ui, color: T.crimson }}>
               <span>Deductions</span>
-              <span style={{ fontFamily: F.mono, fontWeight: 600 }}>−<Money value={rupees(w.uploadedDeduction !== undefined ? w.uploadedDeduction : w.advance)} /></span>
+              <span style={{ fontFamily: F.mono, fontWeight: 600 }}>−<Money value={rupees(deduction)} /></span>
             </div>
           )}
           <div style={{ borderTop: `1.5px dashed ${T.borderDef}`, paddingTop: 6, display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>

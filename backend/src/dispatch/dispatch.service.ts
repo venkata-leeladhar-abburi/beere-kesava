@@ -101,7 +101,7 @@ export class DispatchService {
   ): Promise<PaginatedResult<Prisma.DispatchRecordGetPayload<{ include: typeof include }>>> {
     const where: Prisma.DispatchRecordWhereInput = { type: query.type };
 
-    const [items, total] = await this.prisma.$transaction([
+    const [items, total] = await Promise.all([
       this.prisma.dispatchRecord.findMany({
         where,
         skip: (query.page - 1) * query.pageSize,

@@ -84,7 +84,7 @@ export class BatchesService {
       ...(weaverId ? { rows: { some: { weaverId } } } : {}),
     };
 
-    const [items, total] = await this.prisma.$transaction([
+    const [items, total] = await Promise.all([
       this.prisma.batch.findMany({
         where,
         skip: (query.page - 1) * query.pageSize,
@@ -275,13 +275,22 @@ export class BatchesService {
         tallied: dto.tallied,
         talliedBy: dto.tallied ? (dto.talliedBy ?? null) : null,
         talliedAt: dto.tallied ? new Date() : null,
+        // Admin's correction to Worker Staff's received weight/material
+        // entry, applied in the same action as tallying — each field is
+        // independently optional so a partial correction doesn't clobber
+        // the others.
+        ...(dto.weight !== undefined ? { receivedWeight: dto.weight } : {}),
+        ...(dto.warpG !== undefined ? { receivedWarpG: dto.warpG } : {}),
+        ...(dto.reshamG !== undefined ? { receivedReshamG: dto.reshamG } : {}),
+        ...(dto.jariReels !== undefined ? { receivedJariReels: dto.jariReels } : {}),
       },
     });
 
+    const corrected = dto.weight !== undefined || dto.warpG !== undefined || dto.reshamG !== undefined || dto.jariReels !== undefined;
     await this.auditLog.recordAction({
       actorId: dto.actorId,
       module: "BATCHES",
-      action: `${dto.tallied ? "Tallied" : "Un-tallied"} saree ${row.sareeId ?? `row ${serial}`} of batch ${batchId}`,
+      action: `${dto.tallied ? "Tallied" : "Un-tallied"} saree ${row.sareeId ?? `row ${serial}`} of batch ${batchId}${corrected ? " (weight/material corrected)" : ""}`,
       entityType: "BatchSareeRow",
       entityId: `${batchId}-${serial}`,
       recordLabel: row.sareeId ?? undefined,

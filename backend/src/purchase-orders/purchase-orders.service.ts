@@ -73,7 +73,7 @@ export class PurchaseOrdersService {
       vendorId: query.vendorId,
     };
 
-    const [items, total] = await this.prisma.$transaction([
+    const [items, total] = await Promise.all([
       this.prisma.purchaseOrder.findMany({
         where,
         include: { vendor: true, items: true },

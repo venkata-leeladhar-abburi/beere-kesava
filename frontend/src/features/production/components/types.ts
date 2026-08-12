@@ -47,7 +47,10 @@ export interface Batch {
 export type HistoryStatus = "Printing Completed" | "Printing In Process" | "Challenge in Progress";
 
 export interface HistoryBatch {
+  /** Row key — unique per (batch, weaver/loom) group, since one batch can list several rows. */
   id: string;
+  /** The actual batch number, for display — several rows can share this when a batch has several recipients. */
+  batchId: string;
   designCode: string;
   sareeType: string;
   batchSize: number;

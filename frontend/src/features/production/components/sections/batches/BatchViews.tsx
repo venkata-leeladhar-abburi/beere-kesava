@@ -1,15 +1,15 @@
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import { motion } from "motion/react";
 import {
   Calendar as CalendarBlank, AlertCircle as WarningCircle, CheckCircle2 as CheckCircle,
-  Eye as PhEye, ChevronRight as PhCaretRight, Pencil as PencilSimple,
+  Eye as PhEye, Pencil as PencilSimple,
 } from "lucide-react";
 import { useMaterialIssue } from "../../../../materials/contexts/MaterialIssueContext";
 import { T, F, EASE } from "../../theme";
 import { STAGE_CFG } from "../../data";
 import type { Batch, BatchStage } from "../../types";
-import { FadeUp, Pip, ProductionDialog } from "../../common/primitives";
-import { Button, NumberInput } from "../../../../../shared/ui/primitives";
+import { FadeUp, Pip } from "../../common/primitives";
+import { Button } from "../../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
 import { rupees } from "@/lib/domain/money";
 import { Money, StatusPill } from "@/shared/ui/domain";
@@ -42,98 +42,11 @@ export function SwipeToTally({ tallied, onOpen }: { tallied?: boolean; onOpen?: 
   );
 }
 
-/** Shows received series (color, worker weight) for a batch and lets the admin
- *  enter the final weight, which reduces the weaver's outstanding. */
-export function TallyDialog({ batchId, onClose, onConfirmed }: { batchId: string; onClose: () => void; onConfirmed: () => void }) {
-  const { getReceivedForBatch, finalizeReceivedWeight } = useMaterialIssue();
-  const series = getReceivedForBatch(batchId);
-  const [weights, setWeights] = useState<Record<string, string>>(() =>
-    Object.fromEntries(series.map(s => [s.id, String(((s.finalWeightGrams ?? s.weightGrams) / 1000).toFixed(3))]))
-  );
-  const [confirming, setConfirming] = useState(false);
-  const trackRef = useRef<HTMLDivElement>(null);
-
-  const handleConfirm = () => {
-    series.forEach(s => {
-      const kg = parseFloat(weights[s.id] ?? "");
-      if (!isNaN(kg) && kg >= 0) finalizeReceivedWeight(s.id, Math.round(kg * 1000));
-    });
-    onConfirmed();
-  };
-
-  return (
-    <ProductionDialog open title={`Tally — ${batchId}`} onClose={onClose}>
-      <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 16 }}>
-        Series received for this batch, weighed at receipt by worker staff. Enter the final weight for each series — this becomes the weight used against the weaver's outstanding material.
-      </div>
-      {series.length === 0 ? (
-        <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, padding: "20px 0", textAlign: "center" }}>
-          No series have been received for this batch yet.
-        </div>
-      ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20, maxHeight: 340, overflowY: "auto" }}>
-          {series.map(s => (
-            <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 12, background: "rgba(110,15,45,0.02)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 14px" }}>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>{s.id}</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-                    <span style={{ width: 10, height: 10, borderRadius: "50%", background: (s.color || "#ccc").toLowerCase(), border: "1px solid rgba(0,0,0,0.15)" }} />
-                    {s.color || "—"}
-                  </span>
-                  <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>· Worker entry: {(s.weightGrams / 1000).toFixed(3)} kg</span>
-                  {s.tallied && <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.green }}>· Tallied</span>}
-                </div>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <label style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600 }}>Final wt (kg)</label>
-                <NumberInput
-                  min={0} step={0.001}
-                  value={weights[s.id] === undefined || weights[s.id] === "" ? "" : Number(weights[s.id])}
-                  onValueChange={v => setWeights(prev => ({ ...prev, [s.id]: v === "" ? "" : String(v) }))}
-                  className="w-[84px]"
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-      {series.length > 0 && (
-        confirming ? (
-          <div ref={trackRef} style={{ position: "relative", background: "rgba(110,15,45,0.06)", borderRadius: 10, height: 44, overflow: "hidden", border: `1px solid rgba(110,15,45,0.15)` }}>
-            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, pointerEvents: "none", paddingLeft: 20 }}>
-              Swipe to confirm tally
-            </div>
-            <motion.div
-              drag="x"
-              dragConstraints={trackRef}
-              dragElastic={0.05}
-              dragSnapToOrigin={true}
-              onDragEnd={(e, info) => {
-                if (trackRef.current && info.offset.x > trackRef.current.offsetWidth - 55) {
-                  handleConfirm();
-                }
-              }}
-              style={{ width: 52, height: 42, position: "absolute", left: 0, top: 0, background: T.royalBurgundy, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", cursor: "grab", color: "#fff", zIndex: 2 }}
-            >
-              <PhCaretRight size={18} />
-            </motion.div>
-          </div>
-        ) : (
-          <Button onClick={() => setConfirming(true)} variant="primary" fullWidth>
-            <CheckCircle size={16} /> Confirm Final Weights
-          </Button>
-        )
-      )}
-    </ProductionDialog>
-  );
-}
 
 export function BatchCard({ b, onView, onSlip, onEdit }: { b: Batch; expandedId: string | null; setExpandedId: (id: string | null) => void; onView?: (b: Batch) => void; onSlip?: (b: Batch) => void; onEdit?: (b: Batch) => void }) {
   const cfg = STAGE_CFG[b.stage];
   const pct = Math.round((b.done / b.total) * 100);
   const { getReceivedForBatch } = useMaterialIssue();
-  const [tallyOpen, setTallyOpen] = useState(false);
   const batchSeries = getReceivedForBatch(b.id);
   const isTallied = batchSeries.length > 0 && batchSeries.every(s => s.tallied);
 
@@ -237,12 +150,9 @@ export function BatchCard({ b, onView, onSlip, onEdit }: { b: Batch; expandedId:
           <Button onClick={(e) => { e.stopPropagation(); onView?.(b); }} variant="secondary" fullWidth>
             <PhEye size={16} /> Open Batch
           </Button>
-          <SwipeToTally tallied={isTallied} onOpen={() => setTallyOpen(true)} />
+          <SwipeToTally tallied={isTallied} onOpen={() => onView?.(b)} />
         </div>
       </div>
-      {tallyOpen && (
-        <TallyDialog batchId={b.id} onClose={() => setTallyOpen(false)} onConfirmed={() => setTallyOpen(false)} />
-      )}
     </motion.div>
   );
 }

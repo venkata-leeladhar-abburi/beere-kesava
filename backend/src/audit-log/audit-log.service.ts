@@ -70,7 +70,7 @@ export class AuditLogService {
   ): Promise<PaginatedResult<Prisma.ActionLogGetPayload<{ include: { user: true } }>>> {
     const where: Prisma.ActionLogWhereInput = { userId: query.userId, module: query.module };
 
-    const [items, total] = await this.prisma.$transaction([
+    const [items, total] = await Promise.all([
       this.prisma.actionLog.findMany({
         where,
         skip: (query.page - 1) * query.pageSize,
@@ -89,7 +89,7 @@ export class AuditLogService {
   ): Promise<PaginatedResult<Prisma.AuditLogGetPayload<{ include: { user: true } }>>> {
     const where: Prisma.AuditLogWhereInput = { userId: query.userId, status: query.status };
 
-    const [items, total] = await this.prisma.$transaction([
+    const [items, total] = await Promise.all([
       this.prisma.auditLog.findMany({
         where,
         skip: (query.page - 1) * query.pageSize,

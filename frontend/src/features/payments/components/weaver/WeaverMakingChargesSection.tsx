@@ -9,17 +9,20 @@ import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { useMaterialIssue } from "../../../materials/contexts/MaterialIssueContext";
 import { weaversApi, BackendWeaver } from "../../../../shared/api/weavers";
 import { weaverPaymentsApi, BackendWeaverPayment, WeaverEarnings } from "../../../../shared/api/payments";
+import { firmsApi } from "../../../../shared/api/firms";
 import { EASE, F, T } from "../../theme";
 import { WeaverRecord } from "../../types";
-import { RATES, calcCharges, calcCompletedSarees, calcNet } from "../../utils/charges";
+import { RATES, calcCharges, calcCompletedSarees, calcDeduction, calcNet } from "../../utils/charges";
 import { FadeUp } from "../common/motion";
-import { ActionModal, DropBtn, Pip, SectionCard, StatusBadge } from "../common/primitives";
+import { DropBtn, Pip, SectionCard, StatusBadge } from "../common/primitives";
 import { Button, Checkbox, SearchInput } from "../../../../shared/ui/primitives";
 import { exportTable, type ColumnDef } from "../../../../shared/ui/data";
+import { useDocument } from "../../../../shared/ui/document";
 import { BankUploadPanel } from "./BankUploadPanel";
 import { WeaverProductionSummaryPanel } from "./WeaverProductionSummaryPanel";
 import { WeaverCard } from "./WeaverCard";
 import { WeaverPaymentDetailModal } from "./WeaverPaymentDetailModal";
+import { WeaverPaymentReportDocument, type WeaverPaymentReportRow } from "./WeaverPaymentReportDocument";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
 
@@ -39,6 +42,7 @@ function toWeaverRecord(
   index: number,
   latestPayment: BackendWeaverPayment | undefined,
   earnings: WeaverEarnings | undefined,
+  accruedDeduction: number | undefined,
 ): WeaverRecord {
   return {
     id: w.id,
@@ -56,6 +60,7 @@ function toWeaverRecord(
     uploadedLoomNumber: latestPayment?.loomNumber ?? undefined,
     earnedAmount: earnings?.totalEarned,
     completedSarees: earnings?.totalCompletedSarees,
+    accruedDeduction,
   };
 }
 
@@ -72,30 +77,58 @@ export function WeaverMakingChargesSection() {
     queryKey: ["payments-weaver-earnings"],
     queryFn: () => weaverPaymentsApi.earnings(),
   });
+  // Real SEMI-verdict QC deductions, per weaver — so a defect deduction
+  // shows up here immediately rather than only after someone manually
+  // round-trips it through the payment template/upload flow.
+  const { data: productionRows = [], isLoading: productionRowsLoading, isError: productionRowsError } = useQuery({
+    queryKey: ["payments-weaver-production-rows"],
+    queryFn: () => weaverPaymentsApi.productionRows(),
+  });
+
+  // Firm each payment was routed through — needed for the payment report's
+  // "Firm" column (WeaverPayment only stores firmId).
+  const { data: firmsRes } = useQuery({
+    queryKey: ["payments-firms-roster"],
+    queryFn: () => firmsApi.list(),
+  });
 
   const roster = weaversRes?.items ?? [];
   const payments = paymentsRes?.items ?? [];
   const earningsList = earningsRes ?? [];
 
-  const weaversList: WeaverRecord[] = useMemo(() => {
-    const latestByWeaver = new Map<string, BackendWeaverPayment>();
+  // Reused by both the card/list roster (below) and the printable payment
+  // report (handleDownloadReport) — a weaver's most recent payment record.
+  const latestByWeaver = useMemo(() => {
+    const map = new Map<string, BackendWeaverPayment>();
     for (const p of payments) {
-      const existing = latestByWeaver.get(p.weaverId);
+      const existing = map.get(p.weaverId);
       if (!existing || new Date(p.paymentDate) > new Date(existing.paymentDate)) {
-        latestByWeaver.set(p.weaverId, p);
+        map.set(p.weaverId, p);
       }
     }
-    const earningsByWeaver = new Map(earningsList.map(e => [e.weaverId, e]));
-    return roster.map((w, i) => toWeaverRecord(w, i, latestByWeaver.get(w.id), earningsByWeaver.get(w.id)));
-  }, [roster, payments, earningsList]);
+    return map;
+  }, [payments]);
 
-  const isLoading = weaversLoading || paymentsLoading || earningsLoading;
-  const isError = weaversError || paymentsError || earningsError;
+  const firmNameById = useMemo(
+    () => new Map((firmsRes?.items ?? []).map(f => [f.id, f.firmName])),
+    [firmsRes],
+  );
+
+  const weaversList: WeaverRecord[] = useMemo(() => {
+    const earningsByWeaver = new Map(earningsList.map(e => [e.weaverId, e]));
+    const accruedDeductionByWeaver = new Map<string, number>();
+    for (const r of productionRows) {
+      accruedDeductionByWeaver.set(r.weaverId, (accruedDeductionByWeaver.get(r.weaverId) ?? 0) + r.deduction);
+    }
+    return roster.map((w, i) => toWeaverRecord(w, i, latestByWeaver.get(w.id), earningsByWeaver.get(w.id), accruedDeductionByWeaver.get(w.id)));
+  }, [roster, latestByWeaver, earningsList, productionRows]);
+
+  const isLoading = weaversLoading || paymentsLoading || earningsLoading || productionRowsLoading;
+  const isError = weaversError || paymentsError || earningsError || productionRowsError;
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [view, setView] = useState<"card" | "list">("card");
   const [search, setSearch] = useState("");
-  const [downloadModal, setDownloadModal] = useState(false);
   const [selWeaver, setSelWeaver] = useState<WeaverRecord | null>(null);
 
   const [uploadRefreshKey, setUploadRefreshKey] = useState(0);
@@ -103,6 +136,7 @@ export function WeaverMakingChargesSection() {
   const [filterStatus, setFilterStatus] = useState("All Payment Status");
   const { batches } = useBatches();
   const { getRecordsForWeaver } = useMaterialIssue();
+  const { download } = useDocument();
 
   const viewOptions = [
     { key: "card", Icon: LayoutGrid, label: "Card View" },
@@ -148,7 +182,7 @@ export function WeaverMakingChargesSection() {
       const loomNumber = activeRow?.weaverLoom?.toString() || "1";
       const noOfSarees = calcCompletedSarees(w) || 1;
       const grossAmount = w.uploadedAmount !== undefined ? w.uploadedAmount : calcCharges(w);
-      const deduction = w.uploadedDeduction !== undefined ? w.uploadedDeduction : w.advance;
+      const deduction = calcDeduction(w);
 
       // Dynamic Batches Info
       const activeBatchesString = activeBatches.map(b => b.batchId).join(", ") || "None";
@@ -192,9 +226,57 @@ export function WeaverMakingChargesSection() {
     toast.success(`Successfully exported ledger for ${weaversToExport.length} weavers — fill in Amount Paid, UTR Number, Payment Date, and Firm, then upload it above.`);
   };
 
+  // Real printable/"Save as PDF" report — one row per weaver, batches/loom/
+  // saree count/UTR/firm/payment date pulled from that weaver's actual
+  // latest WeaverPayment record when one exists, falling back to their
+  // currently active batch (same fallback the Excel ledger export above
+  // uses) so a weaver who hasn't been paid yet still shows real batch/loom
+  // data instead of a blank row.
+  const handleDownloadReport = () => {
+    const weaversToExport = selectedIds.size > 0
+      ? weaversList.filter(w => selectedIds.has(w.id))
+      : filtered;
+
+    if (weaversToExport.length === 0) {
+      toast.error("No weavers match the current selection/filters.");
+      return;
+    }
+
+    const rows: WeaverPaymentReportRow[] = weaversToExport.map(w => {
+      const payment = latestByWeaver.get(w.id);
+      const weaverBatches = batches.filter(b => b.rows.some(r => r.weaverId === w.id));
+      const activeBatches = weaverBatches.filter(b => b.status === "active");
+      const activeRow = activeBatches[0]?.rows.find(r => r.weaverId === w.id);
+
+      return {
+        weaverId: w.id,
+        weaverName: w.name,
+        batches: w.uploadedBatchNo || activeBatches.map(b => b.batchId).join(", ") || "—",
+        loomNumber: w.uploadedLoomNumber || activeRow?.weaverLoom?.toString() || "—",
+        noOfSarees: calcCompletedSarees(w),
+        makingCharges: calcCharges(w),
+        deduction: calcDeduction(w),
+        amountPaid: w.uploadedAmount ?? 0,
+        utrNumber: payment?.utrNumber ?? "",
+        firmName: payment?.firmId ? (firmNameById.get(payment.firmId) ?? "") : "",
+        paymentDate: payment ? new Date(payment.paymentDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "",
+      };
+    });
+
+    const now = new Date();
+    download(
+      <WeaverPaymentReportDocument
+        rows={rows}
+        reportNumber={`WPR-${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}`}
+        generatedDate={now.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
+        periodLabel={now.toLocaleDateString("en-IN", { month: "long", year: "numeric" })}
+      />,
+    );
+  };
+
   const totalWeavers = weaversList.length;
   const totalGross = weaversList.reduce((acc, w) => acc + calcCharges(w), 0);
-  const totalDeductions = weaversList.reduce((acc, w) => acc + (w.uploadedDeduction !== undefined ? w.uploadedDeduction : w.advance), 0);
+  const totalDeductions = weaversList.reduce((acc, w) => acc + calcDeduction(w), 0);
   const totalNet = weaversList.reduce((acc, w) => acc + calcNet(w), 0);
 
   return (
@@ -215,7 +297,7 @@ export function WeaverMakingChargesSection() {
               <Button variant="secondary" size="md" iconLeft={Download} onClick={downloadExcelTemplate}>
                 Export Ledger Template
               </Button>
-              <Button variant="primary" size="md" iconLeft={Download} onClick={() => setDownloadModal(true)}>
+              <Button variant="primary" size="md" iconLeft={Download} onClick={handleDownloadReport}>
                 Download Weaver Payment Report
               </Button>
             </DownloadGate>
@@ -368,7 +450,7 @@ export function WeaverMakingChargesSection() {
             {filtered.map((w, i) => {
               const charges = calcCharges(w); const net = calcNet(w);
               const completedSarees = calcCompletedSarees(w);
-              const deduction = w.uploadedDeduction !== undefined ? w.uploadedDeduction : w.advance;
+              const deduction = calcDeduction(w);
               return (
                 <div
                   key={w.id}
@@ -429,7 +511,6 @@ export function WeaverMakingChargesSection() {
         )}
 
       </SectionCard>
-        <ActionModal open={downloadModal} onClose={() => setDownloadModal(false)} title="Download Weaver Report" desc="Generate and download the weaver making charges payment report." actionLabel="Download" icon={Download} />
         <AnimatePresence>
           {selWeaver && <WeaverPaymentDetailModal weaver={selWeaver} onClose={() => setSelWeaver(null)} />}
         </AnimatePresence>

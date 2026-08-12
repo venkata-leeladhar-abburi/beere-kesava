@@ -28,7 +28,7 @@ export class FirmsService {
         }
       : {};
 
-    const [items, total] = await this.prisma.$transaction([
+    const [items, total] = await Promise.all([
       this.prisma.firm.findMany({
         where,
         skip: (query.page - 1) * query.pageSize,
@@ -76,7 +76,7 @@ export class FirmsService {
     await this.findOne(firmId);
     const where: Prisma.FirmFinancialEntryWhereInput = { firmId, kind: query.kind };
 
-    const [items, total] = await this.prisma.$transaction([
+    const [items, total] = await Promise.all([
       this.prisma.firmFinancialEntry.findMany({
         where,
         skip: (query.page - 1) * query.pageSize,

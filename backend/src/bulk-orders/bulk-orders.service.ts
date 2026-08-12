@@ -65,7 +65,7 @@ export class BulkOrdersService {
       customerId: query.customerId,
     };
 
-    const [items, total] = await this.prisma.$transaction([
+    const [items, total] = await Promise.all([
       this.prisma.bulkOrder.findMany({
         where,
         skip: (query.page - 1) * query.pageSize,

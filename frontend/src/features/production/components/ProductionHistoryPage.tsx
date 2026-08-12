@@ -44,12 +44,20 @@ type BatchStatus = "Printing Completed" | "Printing In Process" | "Challenge in 
 const PIP_COLORS = ["#7C3AED", "#C0392B", "#0F766E", "#B45309"];
 
 // Derives the history table from real batch + QC data (same join pattern as
-// ProductionHistorySection.tsx). Only finalized ("completed") batches are
-// shown; per-saree QC outcomes (okPieces/found, making charges) come from QC
-// records joined by batchId — there is no separate "printing"/"embossing"
-// workflow tracked by the backend, so status is always "Printing Completed"
-// for every batch here (kept for label continuity with the styling, not a
-// tracked backend state).
+// ProductionHistorySection.tsx).
+//
+// A batch's own `status` only flips to "completed" once every row across
+// every assigned weaver/loom has been finalized — but a batch is very often
+// shared across several weavers, and one of them can finish their whole
+// share of it while the others are still weaving. That weaver's portion is
+// genuinely done and belongs in this history, even though the batch record
+// itself is still "active". So instead of gating on batch.status, each
+// batch is split into its weaver/factory-loom groups and a group is listed
+// here the moment every row in *that* group is produced (QC-passed or
+// finished via Raise Quotation) — same definition ActiveBatchesSection uses
+// for "produced". A batch with a single recipient still shows as one row,
+// same as before; a multi-weaver batch can show one completed row per
+// weaver well before the batch as a whole is finalized.
 function useHistoryBatches(): { batches: HistoryBatch[]; isLoading: boolean; totalMakingCharges: Paise } {
   const { batches } = useBatches();
   const { data: qcRecords = [], isLoading } = useQuery({
@@ -58,40 +66,64 @@ function useHistoryBatches(): { batches: HistoryBatch[]; isLoading: boolean; tot
   });
 
   const { historyBatches, totalMakingCharges } = useMemo(() => {
-    const completed = batches.filter(b => b.status === "completed");
     const makingChargesPaise: Paise[] = [];
-    const list = completed.map((b): HistoryBatch => {
-      const batchQc = qcRecords.filter(r => r.batchId === b.batchId);
-      const okPieces = batchQc.filter(r => r.result === "PASSED" || r.result === "SEMI").length;
-      const found = batchQc.filter(r => r.result === "DEFECTIVE").length;
-      const makingCharges = batchQc.reduce((sum, r) => sum + Number(r.makingCharge), 0);
-      const makingChargesAmount = rupees(makingCharges);
-      makingChargesPaise.push(makingChargesAmount);
+    const list: HistoryBatch[] = [];
 
-      const seenWeavers = new Map<string, { initials: string; bg: string }>();
+    batches.forEach(b => {
+      // Group this batch's rows by recipient — weaverId when assigned to a
+      // weaver, factoryLoomId when assigned to an in-house loom. Unassigned
+      // rows (no recipient yet) have nothing to complete.
+      const groups = new Map<string, typeof b.rows>();
       b.rows.forEach(r => {
-        if (r.weaverId && r.weaverInitials && !seenWeavers.has(r.weaverId)) {
-          seenWeavers.set(r.weaverId, { initials: r.weaverInitials, bg: PIP_COLORS[seenWeavers.size % PIP_COLORS.length]! });
-        }
+        const key = r.weaverId ?? r.factoryLoomId ?? null;
+        if (!key) return;
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key)!.push(r);
       });
-      const firstRow = b.rows.find(r => r.sareeTypeName || r.designCode);
 
-      return {
-        id: b.batchId,
-        designCode: firstRow?.designCode ?? "—",
-        sareeType: firstRow?.sareeTypeName ?? "—",
-        batchSize: b.totalCount,
-        weavers: Array.from(seenWeavers.values()),
-        completion: b.rows.filter(r => r.sareeId).length,
-        allPieces: b.totalCount,
-        okPieces: batchQc.length > 0 ? okPieces : null,
-        found: batchQc.length > 0 ? found : null,
-        status: "Printing Completed",
-        makingCharges: formatMoney(makingChargesAmount),
-        completedOn: new Date(b.updatedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
-        bulkOrder: b.rows.find(r => r.bulkOrderRef)?.bulkOrderRef ?? undefined,
-      };
+      groups.forEach((rows, recipientKey) => {
+        const produced = rows.every(r => r.qcPassed === true || r.finished === true);
+        if (!produced || rows.length === 0) return;
+
+        const isWeaver = !!rows[0].weaverId;
+        const groupQc = qcRecords.filter(r =>
+          r.batchId === b.batchId && (isWeaver ? r.weaverId === recipientKey : r.factoryLoomId === recipientKey),
+        );
+        const okPieces = groupQc.filter(r => r.result === "PASSED" || r.result === "SEMI").length;
+        const found = groupQc.filter(r => r.result === "DEFECTIVE").length;
+        const makingCharges = groupQc.reduce((sum, r) => sum + Number(r.makingCharge), 0);
+        const makingChargesAmount = rupees(makingCharges);
+        makingChargesPaise.push(makingChargesAmount);
+
+        const firstRow = rows.find(r => r.sareeTypeName || r.designCode) ?? rows[0];
+        const weaverLabel = isWeaver && rows[0].weaverInitials
+          ? [{ initials: rows[0].weaverInitials, bg: PIP_COLORS[0]! }]
+          : isWeaver
+            ? [{ initials: (rows[0].weaverName ?? "?").slice(0, 2).toUpperCase(), bg: PIP_COLORS[0]! }]
+            : [{ initials: (rows[0].factoryLoomNumber ?? "FL").slice(0, 2).toUpperCase(), bg: PIP_COLORS[1]! }];
+
+        const latestQcDate = groupQc.reduce<string | null>((latest, r) =>
+          !latest || new Date(r.qcDate) > new Date(latest) ? r.qcDate : latest, null);
+
+        list.push({
+          id: `${b.batchId}-${recipientKey}`,
+          batchId: b.batchId,
+          designCode: firstRow.designCode ?? "—",
+          sareeType: firstRow.sareeTypeName ?? "—",
+          batchSize: rows.length,
+          weavers: weaverLabel,
+          completion: rows.filter(r => r.sareeId).length,
+          allPieces: rows.length,
+          okPieces: groupQc.length > 0 ? okPieces : null,
+          found: groupQc.length > 0 ? found : null,
+          status: "Printing Completed",
+          makingCharges: formatMoney(makingChargesAmount),
+          completedOn: new Date(latestQcDate ?? b.updatedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+          bulkOrder: rows.find(r => r.bulkOrderRef)?.bulkOrderRef ?? undefined,
+        });
+      });
     });
+
     return { historyBatches: list, totalMakingCharges: addMoney(...makingChargesPaise) };
   }, [batches, qcRecords]);
 
@@ -235,10 +267,10 @@ function StatsBar({ batches, totalMakingCharges }: { batches: HistoryBatch[]; to
 function TableSection({ batches, isLoading }: { batches: HistoryBatch[]; isLoading: boolean }) {
   const columns: ColumnDef<HistoryBatch>[] = [
     {
-      id: "id", header: "Batch Number", accessor: b => b.id,
+      id: "id", header: "Batch Number", accessor: b => b.batchId,
       cell: (_v, b) => (
         <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 7px", borderRadius: 5 }}>
-          {b.id}
+          {b.batchId}
         </span>
       ),
     },

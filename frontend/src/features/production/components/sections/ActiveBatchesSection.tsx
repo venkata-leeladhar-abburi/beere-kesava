@@ -10,9 +10,9 @@ import { FadeUp, ProductionDialog } from "../common/primitives";
 import { Button, Checkbox, SearchInput } from "../../../../shared/ui/primitives";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "../../../../shared/ui/overlay";
 import { BatchCardGrid, BatchListView, BatchTableView } from "./batches/BatchViews";
-import { ContextBatchDetailsDialog, rowComplete } from "./batches/ContextBatchCard";
+import { rowComplete } from "./batches/ContextBatchCard";
 
-export function ActiveBatchesSection({ onNavigate }: { onNavigate?: (tab: string) => void } & CodeCallbacks) {
+export function ActiveBatchesSection({ onNavigate, onOpenTally }: { onNavigate?: (tab: string) => void; onOpenTally?: (batchId: string) => void } & CodeCallbacks) {
   const { batches, setPendingOpenBatchId } = useBatches();
   const contextBatches = batches.filter(b => b.status === "active" || b.status === "draft");
 
@@ -23,7 +23,7 @@ export function ActiveBatchesSection({ onNavigate }: { onNavigate?: (tab: string
   const [activeOnly, setActiveOnly] = useState(true);
   const [sortOpen, setSortOpen] = useState(false);
   const [sortBy, setSortBy] = useState("Most Recent First");
-  const [batchDialog, setBatchDialog] = useState<{ mode: "view" | "slip"; batch?: Batch } | null>(null);
+  const [batchDialog, setBatchDialog] = useState<{ mode: "slip"; batch?: Batch } | null>(null);
 
   // Map BatchRecord from context to Batch type
   const mappedContextBatches: Batch[] = contextBatches.map(br => {
@@ -129,6 +129,18 @@ export function ActiveBatchesSection({ onNavigate }: { onNavigate?: (tab: string
     onNavigate?.("Batches");
   };
 
+  // Clicking a batch (card, list row, or its "Tally" action) opens the real
+  // per-saree weight/material tally as its own full page instead of jumping
+  // straight to the batch-creation table — "Open in Batch Creation" on that
+  // page is still there for anyone who actually wants the row-editing table.
+  const handleViewBatch = (b: Batch) => {
+    if (b.isLive && onOpenTally) {
+      onOpenTally(b.id);
+    } else {
+      handleEditBatch(b);
+    }
+  };
+
   return (
     <div id="prod-active-batches" style={{ padding: "40px 48px 0" }}>
       <FadeUp>
@@ -203,9 +215,9 @@ export function ActiveBatchesSection({ onNavigate }: { onNavigate?: (tab: string
               No batches found matching the current filters.
             </div>
           ) : (
-            view === "card" ? <BatchCardGrid batches={visible} onView={handleEditBatch} onSlip={(batch) => setBatchDialog({ mode: "slip", batch })} onEdit={handleEditBatch} /> :
-            view === "list" ? <BatchListView batches={visible} onView={handleEditBatch} onEdit={handleEditBatch} /> :
-            <BatchTableView batches={visible} onView={handleEditBatch} onEdit={handleEditBatch} />
+            view === "card" ? <BatchCardGrid batches={visible} onView={handleViewBatch} onSlip={(batch) => setBatchDialog({ mode: "slip", batch })} onEdit={handleEditBatch} /> :
+            view === "list" ? <BatchListView batches={visible} onView={handleViewBatch} onEdit={handleEditBatch} /> :
+            <BatchTableView batches={visible} onView={handleViewBatch} onEdit={handleEditBatch} />
           )}
         </div>
         </div>
@@ -213,33 +225,12 @@ export function ActiveBatchesSection({ onNavigate }: { onNavigate?: (tab: string
       </FadeUp>
       <AnimatePresence>
         {batchDialog && (
-          batchDialog.mode === "view" && batchDialog.batch?.isLive ? (
-            (() => {
-              const liveRecord = batches.find(br => br.batchId === batchDialog.batch?.id);
-              if (!liveRecord) return null;
-              return (
-                <ContextBatchDetailsDialog
-                  b={liveRecord}
-                  onClose={() => setBatchDialog(null)}
-                  onOpenCreation={() => {
-                    setPendingOpenBatchId(liveRecord.batchId);
-                    onNavigate?.("Batches");
-                    setBatchDialog(null);
-                  }}
-                />
-              );
-            })()
-          ) : (
-            <ProductionDialog open={!!batchDialog} title={batchDialog.mode === "view" ? "Batch details" : "Color slip"} onClose={() => setBatchDialog(null)}>
-              <div style={{ fontFamily: F.ui, color: T.luxuryBrown, lineHeight: 1.65 }}>
-                <b>{batchDialog.batch?.id}</b><br />
-                {batchDialog.mode === "view"
-                  ? `Design ${batchDialog.batch?.design} · ${batchDialog.batch?.done} of ${batchDialog.batch?.total} sarees complete.`
-                  : `Color slip for ${batchDialog.batch?.design}: maroon body, antique-gold border, pallu accent recorded for loom handoff.`
-                }
-              </div>
-            </ProductionDialog>
-          )
+          <ProductionDialog open={!!batchDialog} title="Color slip" onClose={() => setBatchDialog(null)}>
+            <div style={{ fontFamily: F.ui, color: T.luxuryBrown, lineHeight: 1.65 }}>
+              <b>{batchDialog.batch?.id}</b><br />
+              {`Color slip for ${batchDialog.batch?.design}: maroon body, antique-gold border, pallu accent recorded for loom handoff.`}
+            </div>
+          </ProductionDialog>
         )}
       </AnimatePresence>
     </div>

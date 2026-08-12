@@ -18,8 +18,12 @@ export function calcCompletedSarees(w: WeaverRecord) {
   return w.sb + w.hz + w.ps + w.bs + w.st;
 }
 
+export function calcDeduction(w: WeaverRecord) {
+  if (w.uploadedDeduction !== undefined) return w.uploadedDeduction;
+  if (w.accruedDeduction !== undefined) return w.accruedDeduction;
+  return w.advance;
+}
+
 export function calcNet(w: WeaverRecord) {
-  const charges = calcCharges(w);
-  const deduction = w.uploadedDeduction !== undefined ? w.uploadedDeduction : w.advance;
-  return charges - deduction;
+  return calcCharges(w) - calcDeduction(w);
 }

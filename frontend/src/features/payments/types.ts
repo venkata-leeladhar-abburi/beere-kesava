@@ -14,6 +14,12 @@ export interface WeaverRecord {
   // Uploaded overrides
   uploadedAmount?: number;
   uploadedDeduction?: number;
+  // Real deduction accrued from SEMI-verdict QC records (GET
+  // /payments/weavers/production-rows) — used whenever no manual payment
+  // deduction has been uploaded yet, so a defect deduction shows up here
+  // immediately instead of only after a round-trip through the payment
+  // template/upload flow.
+  accruedDeduction?: number;
   uploadedNoOfSarees?: number;
   uploadedBatchNo?: string;
   uploadedLoomNumber?: string;
