@@ -1,9 +1,10 @@
-import React, { useContext } from "react";
+import React from "react";
 import { motion } from "motion/react";
-import { T, F, G_GOLD, MobileCtx } from "../theme";
+import { T, F, G_GOLD } from "../theme";
 import { FOOTER_LINKS } from "../materialConfig";
+import { useResponsive } from "../../../../hooks/useResponsive";
 export function MaterialsFooter() {
-  const { isMobile, px } = useContext(MobileCtx);
+  const { isMobile, px } = useResponsive();
   
   return (
     <footer style={{ background: T.darkBurgundy, borderTop: `1px solid rgba(245,232,208,0.1)`, marginTop: 64, position: "relative", overflow: "hidden" }}>

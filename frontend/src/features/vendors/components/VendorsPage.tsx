@@ -4,6 +4,7 @@ import { AnimatePresence } from "motion/react";
 import { toast } from "sonner";
 import { T } from "./vendors-page/theme";
 import { Vendor } from "./vendors-page/types";
+import { MaterialsFooter } from "../../materials/components/sections/MaterialsFooter";
 import { VendorsHeroStats } from "./vendors-page/VendorsHeroStats";
 import { AddVendorModal } from "./vendors-page/AddVendorModal";
 import { VendorAnalyticsSection } from "./vendors-page/VendorAnalyticsSection";
@@ -87,30 +88,34 @@ export function VendorsPage() {
       toast.error(err instanceof ApiError ? err.message : "Failed to delete vendor");
     }
   };
-
-  if (selectedVendor) return <VendorProfile vendor={selectedVendor} onBack={() => setSelectedVendor(null)} onUpdate={v => { void handleUpdate(v); }} onDelete={v => { void handleDelete(v); }} />;
-
   return (
-    <div style={{ background: T.silkCream, minHeight: "100dvh", paddingBottom: 100 }}>
-      <VendorsHeroStats vendors={vendors} onAddClick={() => setShowAddForm(true)} />
+    <div style={{ background: T.silkCream, minHeight: "100dvh", paddingBottom: 0 }}>
+      {selectedVendor ? (
+        <VendorProfile vendor={selectedVendor} onBack={() => setSelectedVendor(null)} onUpdate={v => { void handleUpdate(v); }} onDelete={v => { void handleDelete(v); }} />
+      ) : (
+        <>
+          <VendorsHeroStats vendors={vendors} onAddClick={() => setShowAddForm(true)} />
 
-      <AnimatePresence>
-        {showAddForm && (
-          <AddVendorModal
-            nextId={nextId}
-            onCancel={() => setShowAddForm(false)}
-            onSave={v => { void handleSave(v); }}
+          <AnimatePresence>
+            {showAddForm && (
+              <AddVendorModal
+                nextId={nextId}
+                onCancel={() => setShowAddForm(false)}
+                onSave={v => { void handleSave(v); }}
+              />
+            )}
+          </AnimatePresence>
+
+          <VendorAnalyticsSection vendors={vendors} />
+
+          <VendorDirectorySection
+            vendors={vendors}
+            onSelectVendor={setSelectedVendor}
+            onAddClick={() => setShowAddForm(v => !v)}
           />
-        )}
-      </AnimatePresence>
-
-      <VendorAnalyticsSection vendors={vendors} />
-
-      <VendorDirectorySection
-        vendors={vendors}
-        onSelectVendor={setSelectedVendor}
-        onAddClick={() => setShowAddForm(v => !v)}
-      />
+        </>
+      )}
+      <MaterialsFooter />
     </div>
   );
 }

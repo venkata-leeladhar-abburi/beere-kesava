@@ -19,7 +19,7 @@ import { WeaverDirectory } from "./sections/WeaverTableAndDirectory";
 import { WeaverDrawer } from "./sections/WeaverDrawer";
 import { WeaverAnalytics } from "./sections/WeaverAnalytics";
 import { LeaderboardAndQC } from "./sections/LeaderboardAndQC";
-import { Footer } from "./sections/Footer";
+import { MaterialsFooter } from "../../materials/components/sections/MaterialsFooter";
 import { NewWeaverModal } from "./modals/NewWeaverModal";
 import { ImportWeaversModal } from "./modals/ImportWeaversModal";
 
@@ -163,7 +163,7 @@ export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: a
         nextIdStart={WEAVERS.length + extraWeavers.length + 1}
         onImport={(rows) => setExtraWeavers(prev => [...prev, ...rows])}
       />
-      <Footer />
+      <MaterialsFooter />
 
       <AnimatePresence>
         {batchDialog && (() => {

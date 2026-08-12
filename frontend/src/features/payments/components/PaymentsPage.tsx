@@ -1,7 +1,7 @@
 import React from "react";
 import { F, T } from "../theme";
 import { FinancialSummarySection } from "./FinancialSummarySection";
-import { PaymentsFooter } from "./PaymentsFooter";
+import { MaterialsFooter } from "../../materials/components/sections/MaterialsFooter";
 import { PaymentsHeader } from "./PaymentsHeader";
 import { StatsStrip } from "./StatsStrip";
 import { PaymentAnalyticsSection } from "./analytics/PaymentAnalyticsSection";
@@ -25,7 +25,7 @@ export function PaymentsPage() {
         <PaymentAnalyticsSection />
         <PaymentHistorySection />
       </div>
-      <PaymentsFooter />
+      <MaterialsFooter />
     </div>
   );
 }
