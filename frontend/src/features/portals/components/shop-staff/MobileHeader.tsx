@@ -41,7 +41,7 @@ export function MobileHeader({
               <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 12, color: "#FFF" }}>PS</span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="!min-w-[200px] !p-0 !rounded-[14px] !overflow-hidden" style={{ background: C.white, border: `1px solid ${C.bdr}` }}>
+          <DropdownMenuContent align="end" className="!min-w-[200px] !p-0 !rounded-[14px] !overflow-hidden" style={{ background: C.white, border: `1px solid ${C.bdr}`, zIndex: "var(--z-tooltip)" }}>
             <div style={{ padding: "14px 16px", background: "rgba(0,128,128,0.05)", borderBottom: `1px solid ${C.bdr}` }}>
               <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>Priya Sharma</div>
               <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>SS-001 · Shop Staff</div>

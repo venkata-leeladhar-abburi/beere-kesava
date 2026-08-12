@@ -3,7 +3,7 @@ import { semantic } from "../../../../design-system/tokens";
 import { useQuery } from "@tanstack/react-query";
 import {
   Building2, AlertTriangle, CheckCircle2,
-  TrendingUp, Trophy, Timer, Percent, MapPin,
+  TrendingUp, Trophy, Timer, Percent, MapPin, BarChart3 as ChartBar,
 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
@@ -14,6 +14,7 @@ import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter 
 import { T, F, MONTH_ABBR } from "./theme";
 import { Vendor } from "./types";
 import { FadeUp } from "./FadeUp";
+import { SectionCard } from "./SharedBits";
 import { purchaseOrdersApi } from "../../../../shared/api/purchase-orders";
 import { ChartFigure } from "../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
@@ -179,14 +180,16 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
   };
 
   return (
-    <div style={{ padding: "48px 56px 32px" }}>
+    <div style={{ padding: "48px 56px 0" }}>
       <FadeUp>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
-          <div style={{ width: 3, height: 28, background: T.antiqueGold, borderRadius: 2 }} />
-          <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0, fontWeight: 600 }}>Vendor Analytics</h2>
-          <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, letterSpacing: "1px", color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "4px 10px", borderRadius: 20, textTransform: "uppercase" as const }}>{periodLabel}</span>
-        </div>
-
+      <SectionCard
+        icon={ChartBar}
+        title="Vendor Analytics"
+        subtitle="Spend, top vendors, delivery reliability, and procurement health across your vendor base."
+        actions={
+          <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, letterSpacing: "1px", color: "#FFFDF9", background: "rgba(255,255,255,0.14)", padding: "6px 14px", borderRadius: 20, textTransform: "uppercase" as const }}>{periodLabel}</span>
+        }
+      >
         {/* Timeline scope — drives every chart in this section */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" as const, marginBottom: 10 }}>
           <DateFilterBar filter={analyticsFilter} onChange={setAnalyticsFilter} />
@@ -438,6 +441,7 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
           </div>
         </div>
         </>}
+      </SectionCard>
       </FadeUp>
     </div>
   );

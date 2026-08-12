@@ -1,13 +1,18 @@
 // Flat "External Purchase History" table shown at the bottom of the main
 // Suppliers page (all purchases, across all suppliers).
 
-import React from "react";
+import React, { useMemo, useState } from "react";
+import { History } from "lucide-react";
 import { T, F } from "../theme";
-import { FadeUp } from "../common/primitives";
+import { FadeUp, SectionCard } from "../common/primitives";
 import { Purchase } from "../../contexts/SupplierContext";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 
 export function ExternalPurchaseHistorySection({ purchases }: { purchases: Purchase[] }) {
+  const [filter, setFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const filtered = useMemo(() => purchases.filter(p => matchesDateFilter(p.date, filter)), [purchases, filter]);
+
   const columns: ColumnDef<Purchase>[] = [
     {
       id: "id", header: "Purchase Ref", accessor: p => p.id,
@@ -48,18 +53,23 @@ export function ExternalPurchaseHistorySection({ purchases }: { purchases: Purch
   return (
     <div style={{ padding: "48px 56px 0" }}>
       <FadeUp>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-          <div style={{ width: 3, height: 28, background: T.antiqueGold, borderRadius: 2 }} />
-          <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0, fontWeight: 600 }}>External Purchase History</h2>
+      <SectionCard
+        icon={History}
+        title="External Purchase History"
+        subtitle="Every raw-material purchase recorded from every supplier, with bill status and invoice reference."
+      >
+        <div style={{ marginBottom: 20 }}>
+          <DateFilterBar filter={filter} onChange={setFilter} />
         </div>
         <div style={{ background: "#FFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, overflow: "hidden" }}>
           <DataTable
             columns={columns}
-            data={purchases}
+            data={filtered}
             getRowId={p => p.id}
-            emptyTitle="No external purchases recorded yet"
+            emptyTitle="No external purchases recorded in this period"
           />
         </div>
+      </SectionCard>
       </FadeUp>
     </div>
   );

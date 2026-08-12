@@ -110,9 +110,9 @@ export function PurchasesTable({
   ];
 
   return (
-    <div style={{ padding: "0 56px" }}>
       <div
         style={{
+          marginTop: 20,
           background: "white",
           borderRadius: 16,
           border: `1px solid ${T.borderDef}`,
@@ -158,6 +158,5 @@ export function PurchasesTable({
           </div>
         </div>
       </div>
-    </div>
   );
 }

@@ -156,7 +156,7 @@ export function FinishingTrackingPage() {
                 <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, letterSpacing: "2px", textTransform: "uppercase" as const, marginBottom: 8, color: m.hi ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.90)" }}>
                   {m.label}
                 </div>
-                <div style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontSize: 48, color: m.hi ? T.goldLight : (m.col || "#FFFDF9"), lineHeight: 1.1, marginBottom: 8, fontVariantNumeric: "tabular-nums" as const }}>
+                <div style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontSize: 48, color: m.hi ? T.antiqueGold : (m.col || "#FFFDF9"), lineHeight: 1.1, marginBottom: 8, fontVariantNumeric: "tabular-nums" as const }}>
                   {m.val}
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>

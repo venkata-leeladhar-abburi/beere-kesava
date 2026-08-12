@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Tag } from "lucide-react";
 import { toast } from "sonner";
-import { F, T } from "./labelSettings/primitives";
+import { F, T, SectionCard } from "./labelSettings/primitives";
 import { LabelPreviewCard } from "./labelSettings/LabelPreviewCard";
 import { LabelDimensionsCard } from "./labelSettings/LabelDimensionsCard";
 import { VisibleFieldsCard } from "./labelSettings/VisibleFieldsCard";
@@ -281,25 +281,32 @@ export function LabelSettingsPage() {
               marginTop: -40,
               position: "relative",
               zIndex: 10,
-              display: "flex",
-              gap: 32,
-              alignItems: "flex-start",
             }}
           >
-            <LabelPreviewCard fields={fields} />
+          <SectionCard icon={Tag} title="Label & Barcode Settings" subtitle="Configure what prints on every saree label, and how it connects to your printer.">
+            <div
+              style={{
+                display: "flex",
+                gap: 32,
+                alignItems: "flex-start",
+              }}
+            >
+              <LabelPreviewCard fields={fields} />
 
-            {/* RIGHT COLUMN */}
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 20 }}>
-              <LabelDimensionsCard labelSize={labelSize} setLabelSize={setLabelSize} />
-              <VisibleFieldsCard fields={fields} toggleField={toggleField} />
-              <BarcodeSettingsCard />
-              <PrinterConfigCard
-                printer={printer} setPrinter={setPrinter}
-                connectionType={connectionType} setConnectionType={setConnectionType}
-                printerConnected={printerConnected}
-              />
-              <ScanPageSettingsCard scanFields={scanFields} toggleScanField={toggleScanField} />
+              {/* RIGHT COLUMN */}
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 20 }}>
+                <LabelDimensionsCard labelSize={labelSize} setLabelSize={setLabelSize} />
+                <VisibleFieldsCard fields={fields} toggleField={toggleField} />
+                <BarcodeSettingsCard />
+                <PrinterConfigCard
+                  printer={printer} setPrinter={setPrinter}
+                  connectionType={connectionType} setConnectionType={setConnectionType}
+                  printerConnected={printerConnected}
+                />
+                <ScanPageSettingsCard scanFields={scanFields} toggleScanField={toggleScanField} />
+              </div>
             </div>
+          </SectionCard>
           </div>
 
           <StickyFooter

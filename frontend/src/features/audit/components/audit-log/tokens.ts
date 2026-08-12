@@ -8,6 +8,7 @@ export const T = {
   silkCream:     "#F7F2EA",
   warmIvory:     "#FFFDF9",
   royalBurgundy: "#6E0F2D",
+  deepWine:      "#4A061B",
   darkBurgundy:  "#3D0E1A",
   antiqueGold:   "#C89B47",
   goldLight:     "#E7C983",

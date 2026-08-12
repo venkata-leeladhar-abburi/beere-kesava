@@ -1,8 +1,8 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Check, X, Download } from "lucide-react";
+import { Check, X, Download, ClipboardCheck } from "lucide-react";
 import { T, F } from "./tokens";
-import { TypePill } from "./SharedUI";
+import { TypePill, SectionCard } from "./SharedUI";
 import { Button } from "../../../../shared/ui/primitives";
 import { auditLogApi } from "../../../../shared/api/audit-log";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
@@ -117,23 +117,17 @@ export function HistorySection({
   }, [rows, histFilter, histPeriod]);
 
   return (
-    <div style={{ padding: "48px 56px" }}>
-      {/* Section title row */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{ width: 4, height: 24, background: T.royalBurgundy, borderRadius: 2 }} />
-          <span style={{ fontFamily: F.ui, fontSize: 18, fontWeight: 600, color: T.luxuryBrown }}>
-            Approval History — All Past Decisions
-          </span>
-        </div>
-        <Button variant="link" size="sm" iconLeft={Download}>
-          Download History →
+    <div style={{ padding: "40px 56px 0" }}>
+    <SectionCard
+      icon={ClipboardCheck}
+      title="Approval History — All Past Decisions"
+      subtitle="A permanent record of all approvals and rejections made in this portal."
+      actions={
+        <Button variant="secondary" size="sm" iconLeft={Download} className="bg-white/10 text-[#FFFDF9] border-white/20">
+          Download History
         </Button>
-      </div>
-      <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 20, marginLeft: 16 }}>
-        A permanent record of all approvals and rejections made in this portal.
-      </p>
-
+      }
+    >
       {/* Filter pills */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 10 }}>
         {HIST_FILTERS.map(f => (
@@ -193,6 +187,7 @@ export function HistorySection({
           </Button>
         ))}
       </div>
+    </SectionCard>
     </div>
   );
 }

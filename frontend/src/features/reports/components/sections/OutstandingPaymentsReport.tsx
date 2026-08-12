@@ -2,7 +2,7 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Wallet, Receipt, ShoppingBag, Clock } from "lucide-react";
 import { T, F } from "../theme";
-import { FadeUp, SumCard, TabTitle } from "../common/primitives";
+import { FadeUp, SumCard, SectionCard } from "../common/primitives";
 import { reportsApi, OutstandingPaymentItem } from "../../../../shared/api/reports";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
@@ -57,11 +57,11 @@ export function OutstandingPaymentsReport() {
 
   return (
     <div id="rep-outstanding-payments" style={{ padding: "32px 40px" }}>
-      <TabTitle
-        title="Outstanding Payments Report"
-        sub="Every unpaid or partially-paid invoice and bulk order across all wholesale customers, pulled live from the backend."
-      />
-
+    <SectionCard
+      icon={Wallet}
+      title="Outstanding Payments Report"
+      subtitle="Every unpaid or partially-paid invoice and bulk order across all wholesale customers, pulled live from the backend."
+    >
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, marginBottom: 32, alignItems: "stretch" }}>
         <SumCard icon={<Wallet size={22} color={T.crimson} />} label="Total Outstanding" value={formatMoney(rupees(data?.totalOutstanding ?? 0))} sub={`${data?.count ?? 0} records`} crimsonHi />
         <SumCard icon={<Receipt size={22} color={T.royalBurgundy} />} label="Unpaid Invoices" value={`${invoiceCount}`} sub="From /invoices" />
@@ -82,6 +82,7 @@ export function OutstandingPaymentsReport() {
           </div>
         </div>
       </FadeUp>
+    </SectionCard>
     </div>
   );
 }

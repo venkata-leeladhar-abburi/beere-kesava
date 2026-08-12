@@ -1,9 +1,9 @@
 import React from "react";
-import { Edit2, ShieldOff, Eye, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Edit2, ShieldOff, Eye, Trash2, ChevronLeft, ChevronRight, Users } from "lucide-react";
 import { DateFilterBar, DateFilterState } from "../../../shared/ui/DateFilterBar";
 import { T, F, ROLE_COLORS, ROLES } from "./theme";
 import { TableRow } from "./utils";
-import { SectionTitle, RoleBadge, AccessBadge, StatusBadge } from "./UserBadges";
+import { SectionCard, RoleBadge, AccessBadge, StatusBadge } from "./UserBadges";
 import { FinishingStaffMember } from "../../finishing/contexts/FinishingStaffContext";
 import { Button, IconButton, SearchInput, Select, SelectItem } from "../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../shared/ui/data";
@@ -136,20 +136,19 @@ export function UserTable({
   setEditingMember, setViewingMember, cardStyle, inputStyle
 }: UserTableProps) {
   return (
-    <div style={{ ...cardStyle, borderRadius: 20 }}>
-      {/* Toolbar */}
-      <div style={{ padding: "22px 28px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" as const }}>
-        <SectionTitle>
-          All Users
-          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, background: "rgba(139,112,96,0.10)", padding: "2px 9px", borderRadius: 999, marginLeft: 10 }}>{allRows.length} total</span>
-        </SectionTitle>
-        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" as const }}>
+    <SectionCard
+      icon={Users}
+      title="All Users"
+      subtitle={`${allRows.length} user${allRows.length === 1 ? "" : "s"} registered across all roles and portals.`}
+      actions={
+        <>
           {/* Quick-filter pills */}
           <div style={{ display: "flex", gap: 6 }}>
             {["All Roles", "Finishing Staff"].map(pill => (
               <Button key={pill} size="sm"
                 variant={roleFilter === pill ? "secondary" : "tertiary"}
                 onClick={() => { setRoleFilter(pill); setPage(1); }}
+                className={roleFilter === pill ? "" : "bg-white/10 text-[#FFFDF9] border-white/20"}
               >{pill}</Button>
             ))}
           </div>
@@ -160,15 +159,15 @@ export function UserTable({
             <SelectItem value="All Roles">All Roles</SelectItem>
             {ROLES.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
           </Select>
-        </div>
-      </div>
-
-      <div style={{ padding: "0 28px 16px" }}>
+        </>
+      }
+    >
+      <div style={{ marginBottom: 16 }}>
         <DateFilterBar filter={dateFilter} onChange={f => { setDateFilter(f); setPage(1); }} />
       </div>
 
       {/* Table */}
-      <div style={{ overflowX: "auto" as const, minWidth: 1040 }}>
+      <div style={{ overflowX: "auto" as const, minWidth: 1040, margin: "0 -28px" }}>
         <DataTable
           columns={userTableColumns({ setEditingMember, onToggleStatus, onDelete, setViewingMember })}
           data={pagedRows}
@@ -178,7 +177,7 @@ export function UserTable({
       </div>
 
       {/* Pagination */}
-      <div style={{ padding: "16px 28px", borderTop: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <div style={{ margin: "0 -28px -28px", padding: "16px 28px", borderTop: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
           Showing {Math.min((page - 1) * ROWS_PER_PAGE + 1, filtered.length)}–{Math.min(page * ROWS_PER_PAGE, filtered.length)} of {filtered.length} users
         </span>
@@ -193,6 +192,6 @@ export function UserTable({
             icon={ChevronRight} onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} />
         </div>
       </div>
-    </div>
+    </SectionCard>
   );
 }

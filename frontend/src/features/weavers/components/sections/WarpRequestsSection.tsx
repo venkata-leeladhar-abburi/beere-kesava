@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Check, XOctagon } from "lucide-react";
 import { Package, CheckCircle2 as CheckCircle, XCircle, Clock, AlertCircle as WarningCircle } from "lucide-react";
 import { T, F } from "../theme";
-import { FadeUp, ActionDialog } from "../common/primitives";
+import { FadeUp, ActionDialog, SectionCard } from "../common/primitives";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -48,33 +48,23 @@ export function WarpRequestsSection() {
     <div style={{ padding: "36px 48px 0" }}>
       <FadeUp>
 
-        {/* ── Section wrapper ── */}
-        <div style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid rgba(192,57,43,0.16)`, boxShadow: "0 6px 32px rgba(74,6,27,0.09)", overflow: "hidden" }}>
-
-          {/* Header bar */}
-          <div style={{ background: `linear-gradient(100deg, #3D0E1A 0%, #6E0F2D 100%)`, padding: "22px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-              <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <WarningCircle size={26} color="#FFFDF9" />
-              </div>
-              <div>
-                <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 20, color: "#FFFDF9", letterSpacing: "-0.2px" }}>Warp Requests Waiting for Approval</div>
-                <div style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.65)", marginTop: 3 }}>Review each weaver's progress and material need before approving</div>
-              </div>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(192,57,43,0.30)", border: "1px solid rgba(192,57,43,0.45)", borderRadius: 10, padding: "8px 16px" }}>
-              <Clock size={18} color="#F4A6A6" />
-              <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 600, color: "#F4A6A6", letterSpacing: "0.3px" }}>{requests.length} request{requests.length === 1 ? "" : "s"} pending</span>
-            </div>
+      <SectionCard
+        icon={WarningCircle}
+        title="Warp Requests Waiting for Approval"
+        subtitle="Review each weaver's progress and material need before approving"
+        actions={
+          <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(192,57,43,0.30)", border: "1px solid rgba(192,57,43,0.45)", borderRadius: 10, padding: "8px 16px" }}>
+            <Clock size={18} color="#F4A6A6" />
+            <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 600, color: "#F4A6A6", letterSpacing: "0.3px" }}>{requests.length} request{requests.length === 1 ? "" : "s"} pending</span>
           </div>
-
-          {/* Cards grid */}
+        }
+      >
           {isLoading ? (
-            <div style={{ padding: "40px 28px", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Loading warp requests…</div>
+            <div style={{ padding: "16px 0", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Loading warp requests…</div>
           ) : requests.length === 0 ? (
-            <div style={{ padding: "40px 28px", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No warp requests waiting for approval.</div>
+            <div style={{ padding: "16px 0", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No warp requests waiting for approval.</div>
           ) : (
-          <div style={{ padding: "28px 28px 28px", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 22, alignItems: "stretch" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 22, alignItems: "stretch" }}>
             {requests.map((r, idx) => (
               <motion.div
                 key={r.id}
@@ -158,7 +148,7 @@ export function WarpRequestsSection() {
           </div>
           )}
 
-        </div>
+      </SectionCard>
       </FadeUp>
       <AnimatePresence>
         {decision && (

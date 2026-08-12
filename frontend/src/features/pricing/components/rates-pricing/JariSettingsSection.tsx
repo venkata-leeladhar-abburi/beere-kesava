@@ -1,16 +1,16 @@
-import { Check, X, AlertTriangle } from "lucide-react";
+import { Check, X, AlertTriangle, Scale } from "lucide-react";
 import { T, F, cardStyle, labelStyle } from "./theme";
-import { SectionTitle } from "./sharedUI";
+import { SectionCard } from "./sharedUI";
 import { Button, Input, NumberInput } from "../../../../shared/ui/primitives";
 
 export function JariSettingsSection() {
   return (
-    <div style={{ padding: "48px 56px" }}>
-      <SectionTitle>Jari Measurement Settings</SectionTitle>
-      <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, maxWidth: 720, margin: "0 0 24px 0", lineHeight: 1.7 }}>
-        Define the conversion ratio between Buns and Reels for Jari material. This setting affects all Jari-related calculations system-wide.
-      </p>
-
+    <div style={{ padding: "40px 56px 0" }}>
+    <SectionCard
+      icon={Scale}
+      title="Jari Measurement Settings"
+      subtitle="Define the conversion ratio between Buns and Reels for Jari material. This setting affects all Jari-related calculations system-wide."
+    >
       <div style={{ ...cardStyle, padding: 40 }}>
         <div style={{ textAlign: "center", marginBottom: 24 }}>
           <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 38, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1, marginBottom: 8 }}>
@@ -61,6 +61,7 @@ export function JariSettingsSection() {
           </Button>
         </div>
       </div>
+    </SectionCard>
     </div>
   );
 }

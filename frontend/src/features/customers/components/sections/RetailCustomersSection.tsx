@@ -3,12 +3,12 @@ import { useQuery } from "@tanstack/react-query";
 import {
   Download, Eye, UserPlus, Plus,
   LayoutGrid, AlignJustify, MapPin,
-  Phone, Calendar, Star, IndianRupee, AlertTriangle, Users,
+  Phone, Calendar, Star, IndianRupee, AlertTriangle, Users, ShoppingBag,
 } from "lucide-react";
 import { DateFilterBar, DateFilterState } from "../../../../shared/ui/DateFilterBar";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { T, F } from "../theme";
-import { SectionTitle, Pill, FadeUp } from "../common/primitives";
+import { SectionCard, Pill, FadeUp } from "../common/primitives";
 import { Button, IconButton, Field, Input, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { RetailCustomer } from "../types";
 import { RetailChartsRow1, RetailChartsRow2 } from "./RetailCharts";
@@ -165,19 +165,17 @@ export function RetailCustomersSection({
   ];
 
   return (
-    <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 28, flexWrap: "wrap" as const, gap: 16 }}>
-        <div>
-          <SectionTitle
-            title="Retail Customers"
-            sub="Browse all retail buyers from the point of sale, view their purchase history, and register new customers."
-          />
-        </div>
-        <div style={{ display: "flex", gap: 12 }}>
-          <Button onClick={openAddRetail} variant="primary" iconLeft={Plus}>Add Retail Customer</Button>
-        </div>
-      </div>
-
+    <div style={{ padding: "40px 56px 0" }}>
+    <SectionCard
+      icon={ShoppingBag}
+      title="Retail Customers"
+      subtitle="Browse all retail buyers from the point of sale, view their purchase history, and register new customers."
+      actions={
+        <Button onClick={openAddRetail} variant="secondary" iconLeft={Plus} className="bg-white/10 text-[#FFFDF9] border-white/20">
+          Add Retail Customer
+        </Button>
+      }
+    >
       {showAddRetail && (
         <FadeUp>
           <div style={{ background: T.warmIvory, border: `1px solid ${T.borderGold}`, borderRadius: 16, padding: "28px", marginBottom: 28, boxShadow: "0 4px 20px rgba(74,6,27,0.06)" }}>
@@ -345,6 +343,7 @@ export function RetailCustomersSection({
           />
         </div>
       )}
+    </SectionCard>
     </div>
   );
 }

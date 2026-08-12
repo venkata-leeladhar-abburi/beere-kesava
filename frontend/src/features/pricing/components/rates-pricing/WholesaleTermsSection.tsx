@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "motion/react";
 import { Edit2, Check, X, Clock } from "lucide-react";
 import { T, F, cardStyle, labelStyle } from "./theme";
-import { SectionTitle, GoldLink } from "./sharedUI";
+import { SectionCard, GoldLink } from "./sharedUI";
 import { Button, NumberInput, Textarea } from "../../../../shared/ui/primitives";
 import { customersApi, BackendCustomer } from "../../../../shared/api/customers";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
@@ -90,12 +90,12 @@ export function WholesaleTermsSection() {
   ];
 
   return (
-    <div style={{ padding: "48px 56px" }}>
-      <SectionTitle>Wholesale Payment Terms</SectionTitle>
-      <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, maxWidth: 720, margin: "0 0 20px 0", lineHeight: 1.7 }}>
-        Configure payment terms and overdue alert thresholds for each wholesale customer. Alert start day is a global setting applied to all customers.
-      </p>
-
+    <div style={{ padding: "40px 56px 0" }}>
+    <SectionCard
+      icon={Clock}
+      title="Wholesale Payment Terms"
+      subtitle="Configure payment terms and overdue alert thresholds for each wholesale customer. Alert start day is a global setting applied to all customers."
+    >
       {/* Global Alert Setting Strip */}
       <div style={{
         background: "rgba(200,155,71,0.08)", border: `1px solid rgba(200,155,71,0.28)`,
@@ -213,6 +213,7 @@ export function WholesaleTermsSection() {
           />
         )}
       </div>
+    </SectionCard>
     </div>
   );
 }

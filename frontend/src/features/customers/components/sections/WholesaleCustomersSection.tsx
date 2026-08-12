@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { T, F } from "../theme";
-import { SectionTitle, Pill, FadeUp } from "../common/primitives";
+import { SectionCard, Pill, FadeUp } from "../common/primitives";
 import { WholesaleCustomer, ViewMode } from "../types";
 import { Button, IconButton, Field, Input, SearchInput, Select, SelectItem, Textarea } from "../../../../shared/ui/primitives";
 import { useCustomers } from "../../contexts/CustomersContext";
@@ -126,18 +126,17 @@ export function WholesaleCustomersSection({
   };
 
   return (
-    <div id="customers-wholesale-section" style={{ padding: "0 56px 64px 56px" }}>
-      <SectionTitle
-        title="Wholesale Customers"
-        sub="These are the businesses that buy sarees in bulk. Manage their profiles, track their orders, and monitor outstanding payments."
-        action=""
-      />
-      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: -60, marginBottom: 24 }}>
-        <Button onClick={() => (showAddWholesale ? closeAddWholesale() : setShowAddWholesale(true))} variant="primary" iconLeft={Plus}>
-          Add New Wholesale Customer →
+    <div id="customers-wholesale-section" style={{ padding: "40px 56px 0" }}>
+    <SectionCard
+      icon={Building2}
+      title="Wholesale Customers"
+      subtitle="These are the businesses that buy sarees in bulk. Manage their profiles, track their orders, and monitor outstanding payments."
+      actions={
+        <Button onClick={() => (showAddWholesale ? closeAddWholesale() : setShowAddWholesale(true))} variant="secondary" iconLeft={Plus} className="bg-white/10 text-[#FFFDF9] border-white/20">
+          Add New Wholesale Customer
         </Button>
-      </div>
-
+      }
+    >
       {showAddWholesale && (
         <FadeUp>
           <div style={{ background: "#FFF", borderRadius: 16, padding: 32, border: `1px solid ${T.borderDef}`, marginBottom: 32, boxShadow: "0 10px 30px rgba(0,0,0,0.05)" }}>
@@ -350,6 +349,7 @@ export function WholesaleCustomersSection({
           <DataTable columns={tableColumns} data={wholesaleList} getRowId={w => w.id} emptyTitle="No wholesale customers yet" />
         </div>
       )}
+    </SectionCard>
     </div>
   );
 }

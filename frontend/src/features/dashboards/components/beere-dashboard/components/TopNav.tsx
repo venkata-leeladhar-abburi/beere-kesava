@@ -257,7 +257,7 @@ export function TopNav({
                 )}
               </motion.div>
             </Popover.Trigger>
-            <Popover.Content align="end" sideOffset={10} className="!w-[360px] !max-w-[360px] !p-0 !overflow-hidden">
+            <Popover.Content align="end" sideOffset={10} className="!w-[360px] !max-w-[360px] !p-0 !overflow-hidden" style={{ zIndex: "var(--z-tooltip)" }}>
               <div style={{ padding: "16px 20px", borderBottom: `1px solid rgba(110,15,45,0.08)`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>Notifications</span>
@@ -285,7 +285,7 @@ export function TopNav({
                 <ChevronDown size={13} color="rgba(245,232,208,0.75)" style={{ transform: showProfile ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
               </motion.div>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="!min-w-[240px] !p-0 !rounded-[14px] !overflow-hidden" style={{ background: "#FFFDF9", border: `1px solid ${T.borderDef}` }}>
+            <DropdownMenuContent align="end" className="!min-w-[240px] !p-0 !rounded-[14px] !overflow-hidden" style={{ background: "#FFFDF9", border: `1px solid ${T.borderDef}`, zIndex: "var(--z-tooltip)" }}>
               <div style={{ padding: "16px 18px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", gap: 12 }}>
                 <div style={{ width: 42, height: 42, borderRadius: "50%", background: G.button, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: `0 3px 10px rgba(110,15,45,0.25)` }}>
                   <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: 14, color: T.warmCream }}>BK</span>

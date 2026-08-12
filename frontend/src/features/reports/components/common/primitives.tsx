@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
 import { motion, useInView } from "motion/react";
-import { Download, FileText, Calendar } from "lucide-react";
+import { Download, FileText, Calendar, type LucideIcon } from "lucide-react";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { T, F, EASE } from "../theme";
 import { Button } from "../../../../shared/ui/primitives";
@@ -172,15 +172,41 @@ export function ReportDLBar({ period = "May 2026", compared = "April 2026" }: { 
   );
 }
 
-// ── Tab Section Title ─────────────────────────────────────────────────────────
-export function TabTitle({ title, sub }: { title: string; sub: string }) {
+// Section banner card — dark maroon gradient header (icon + title + subtitle
+// + actions) atop a white padded body, matching the pattern used across the
+// rest of the app.
+export function SectionCard({
+  icon: Icon,
+  title,
+  subtitle,
+  actions,
+  children,
+  id,
+}: {
+  icon: LucideIcon;
+  title: string;
+  subtitle?: string;
+  actions?: React.ReactNode;
+  children: React.ReactNode;
+  id?: string;
+}) {
   return (
-    <div style={{ marginBottom: 26 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
-        <div style={{ width: 4, height: 28, background: T.antiqueGold, borderRadius: 99, flexShrink: 0 }} />
-        <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0 }}>{title}</h2>
+    <div id={id} style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`, boxShadow: "0 6px 32px rgba(74,6,27,0.08)", overflow: "hidden" }}>
+      <div style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`, padding: "22px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <Icon size={26} color="#FFFDF9" />
+          </div>
+          <div>
+            <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9", letterSpacing: "-0.2px" }}>{title}</div>
+            {subtitle && <div style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.65)", marginTop: 3 }}>{subtitle}</div>}
+          </div>
+        </div>
+        {actions && <div style={{ display: "flex", gap: 10, alignItems: "center", flexShrink: 0 }}>{actions}</div>}
       </div>
-      <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: "0 0 0 16px", maxWidth: 760, lineHeight: 1.65 }}>{sub}</p>
+      <div style={{ padding: "24px 28px 28px" }}>
+        {children}
+      </div>
     </div>
   );
 }
@@ -266,17 +292,3 @@ export function StatusPill({ label, type = "neutral" }: { label: string; type?: 
   );
 }
 
-// ── Section divider ───────────────────────────────────────────────────────────
-export function SectionHeader({ title, action }: { title: string; action?: React.ReactNode }) {
-  return (
-    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 4 }}>
-      <div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-          <div style={{ width: 3, height: 22, background: T.antiqueGold, borderRadius: 99 }} />
-          <h2 style={{ fontFamily: F.display, fontSize: 20, color: T.luxuryBrown, margin: 0 }}>{title}</h2>
-        </div>
-      </div>
-      {action}
-    </div>
-  );
-}

@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from "react";
 import { FileText, Truck } from "lucide-react";
 import { Quotation } from "../../../finishing/contexts/FinishingContext";
-import { T, F, card } from "../theme";
+import { T, F } from "../theme";
 import { Button } from "../../../../shared/ui/primitives";
+import { SectionCard } from "../common/primitives";
 
 // ── Quotations section (raised from this page, dispatch once finishing is done) ─
 function quotationStatusStyle(status: Quotation["status"]) {
@@ -26,12 +27,11 @@ export function QuotationsSection({ quotations, onDispatch }: { quotations: Quot
   if (quotations.length === 0) return null;
 
   return (
-    <div style={{ ...card, borderRadius: 16, overflow: "hidden" }}>
-      <div style={{ padding: "18px 24px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" as const, gap: 12 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <FileText size={18} color={T.royalBurgundy} />
-          <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: T.luxuryBrown }}>Quotations</span>
-        </div>
+    <SectionCard
+      icon={FileText}
+      title="Quotations"
+      subtitle="Quotations raised from this page — dispatch once finishing is done."
+      actions={
         <div style={{ display: "flex", gap: 6 }}>
           {([["active", "Active"], ["all", "All"]] as const).map(([key, label]) => (
             <Button
@@ -39,48 +39,50 @@ export function QuotationsSection({ quotations, onDispatch }: { quotations: Quot
               onClick={() => setTab(key)}
               variant={tab === key ? "secondary" : "tertiary"}
               size="sm"
-              className="rounded-full"
+              className={tab === key ? "rounded-full" : "rounded-full bg-white/10 text-[#FFFDF9] border-white/20"}
             >
               {label}
             </Button>
           ))}
         </div>
+      }
+    >
+      <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, background: "#FFFFFF", boxShadow: "0 2px 8px rgba(74,6,27,0.04)", overflow: "hidden" }}>
+        {rows.length === 0 ? (
+          <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No quotations raised yet.</div>
+        ) : rows.map((q, i) => {
+          const st = quotationStatusStyle(q.status);
+          const receivedCount = q.sarees.filter(s => s.finishingStatus === "received").length;
+          const canDispatch = q.status === "received" || q.status === "partially-received";
+          return (
+            <div key={q.id} style={{ display: "flex", alignItems: "center", gap: 16, padding: "15px 24px", borderBottom: i < rows.length - 1 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 0 ? "#FFF" : T.warmIvory, flexWrap: "wrap" as const }}>
+              <div style={{ minWidth: 140 }}>
+                <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{q.quotationNumber}</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>{q.quotationDate}</div>
+              </div>
+              <div style={{ flex: 1, minWidth: 160 }}>
+                <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{q.customerName}</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>{q.customerCity || "—"}</div>
+              </div>
+              <div style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, minWidth: 70 }}>{receivedCount}/{q.sarees.length}<span style={{ color: T.taupe, fontWeight: 400 }}> received</span></div>
+              <div style={{ background: st.bg, border: `1px solid ${st.border}`, borderRadius: 999, padding: "3px 11px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: st.color, textTransform: "capitalize" as const, whiteSpace: "nowrap" as const }}>
+                {q.status.replace("-", " ")}
+              </div>
+              <Button
+                onClick={() => canDispatch && onDispatch(q)}
+                disabled={!canDispatch}
+                title={canDispatch ? "Dispatch the received sarees from this quotation" : "Waiting on finishing to complete"}
+                variant="primary"
+                size="sm"
+                iconLeft={Truck}
+                className={canDispatch ? "rounded-[10px] bg-[linear-gradient(135deg,var(--bk-burgundy-900)_0%,var(--bk-burgundy-950)_100%)] whitespace-nowrap" : "rounded-[10px] whitespace-nowrap"}
+              >
+                Dispatch
+              </Button>
+            </div>
+          );
+        })}
       </div>
-
-      {rows.length === 0 ? (
-        <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No quotations raised yet.</div>
-      ) : rows.map((q, i) => {
-        const st = quotationStatusStyle(q.status);
-        const receivedCount = q.sarees.filter(s => s.finishingStatus === "received").length;
-        const canDispatch = q.status === "received" || q.status === "partially-received";
-        return (
-          <div key={q.id} style={{ display: "flex", alignItems: "center", gap: 16, padding: "15px 24px", borderBottom: i < rows.length - 1 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 0 ? "#FFF" : T.warmIvory, flexWrap: "wrap" as const }}>
-            <div style={{ minWidth: 140 }}>
-              <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{q.quotationNumber}</div>
-              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>{q.quotationDate}</div>
-            </div>
-            <div style={{ flex: 1, minWidth: 160 }}>
-              <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{q.customerName}</div>
-              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>{q.customerCity || "—"}</div>
-            </div>
-            <div style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, minWidth: 70 }}>{receivedCount}/{q.sarees.length}<span style={{ color: T.taupe, fontWeight: 400 }}> received</span></div>
-            <div style={{ background: st.bg, border: `1px solid ${st.border}`, borderRadius: 999, padding: "3px 11px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: st.color, textTransform: "capitalize" as const, whiteSpace: "nowrap" as const }}>
-              {q.status.replace("-", " ")}
-            </div>
-            <Button
-              onClick={() => canDispatch && onDispatch(q)}
-              disabled={!canDispatch}
-              title={canDispatch ? "Dispatch the received sarees from this quotation" : "Waiting on finishing to complete"}
-              variant="primary"
-              size="sm"
-              iconLeft={Truck}
-              className={canDispatch ? "rounded-[10px] bg-[linear-gradient(135deg,var(--bk-burgundy-900)_0%,var(--bk-burgundy-950)_100%)] whitespace-nowrap" : "rounded-[10px] whitespace-nowrap"}
-            >
-              Dispatch
-            </Button>
-          </div>
-        );
-      })}
-    </div>
+    </SectionCard>
   );
 }

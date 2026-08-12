@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, Clock, BellRing, Boxes, ShieldAlert, MessageSquare, Package, Eye } from "lucide-react";
 import { T, F } from "../theme";
-import { FadeUp, SumCard, TabTitle, StatusPill } from "../common/primitives";
+import { FadeUp, SumCard, SectionCard, StatusPill } from "../common/primitives";
 import { Button } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { invoicesApi } from "../../../../shared/api/invoices";
@@ -131,9 +131,11 @@ export function OverdueAlertsReport() {
 
   return (
     <div id="rep-overdue" style={{ padding: "32px 40px" }}>
-      <TabTitle title="Overdue & Alerts Report"
-        sub="Everything that needs urgent attention — overdue customer payments, low raw material stock, weavers running late, and bulk orders at risk. This report is generated fresh every day." />
-
+    <SectionCard
+      icon={BellRing}
+      title="Overdue & Alerts Report"
+      subtitle="Everything that needs urgent attention — overdue customer payments, low raw material stock, weavers running late, and bulk orders at risk. This report is generated fresh every day."
+    >
       <div style={{ background: "rgba(200,155,71,0.08)", border: `1px solid ${T.borderGold}`, borderRadius: 10, padding: "10px 16px", marginBottom: 22, display: "flex", alignItems: "center", gap: 8 }}>
         <Clock size={14} color={T.antiqueGold} />
         <span style={{ fontFamily: F.ui, fontSize: 12, color: "#7B5C18" }}>This report always shows today's live status. Period filter does not apply.</span>
@@ -245,6 +247,7 @@ export function OverdueAlertsReport() {
           />
         </div>
       </FadeUp>
+    </SectionCard>
     </div>
   );
 }

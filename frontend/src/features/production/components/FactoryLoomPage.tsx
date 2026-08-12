@@ -16,6 +16,7 @@ import { LoomDetailPage } from "./factory-loom/LoomDetailPage";
 import { LoomCard } from "./factory-loom/LoomCard";
 import { LoomAnalytics } from "./factory-loom/LoomAnalytics";
 import { FadeUp } from "./factory-loom/theme";
+import { SectionCard } from "./common/primitives";
 import { ApiError } from "../../../shared/api/client";
 import { BackendFactoryLoom, BackendLoomStatus, factoryLoomsApi } from "../../../shared/api/factory-looms";
 import { batchesApi } from "../../../shared/api/batches";
@@ -265,6 +266,21 @@ export function FactoryLoomPage() {
 
       {/* Main Body */}
       <div style={{ padding: "32px 56px 0" }}>
+      <SectionCard
+        icon={Factory}
+        title="Looms Directory"
+        subtitle="Browse every registered power loom, its operator, and current status."
+        actions={
+          <Button
+            onClick={() => { setEditLoom(null); setShowModal(true); }}
+            variant="secondary"
+            iconLeft={Plus}
+            className="bg-white/10 text-[#FFFDF9] border-white/20"
+          >
+            Register New Loom
+          </Button>
+        }
+      >
         {loadError && (
           <div style={{ background: "rgba(192,57,43,0.08)", border: `1px solid ${T.crimson}`, color: T.crimson, borderRadius: 12, padding: "14px 20px", marginBottom: 20, fontFamily: F.ui, fontSize: 14 }}>
             {loadError}
@@ -356,6 +372,7 @@ export function FactoryLoomPage() {
             />
           </div>
         )}
+      </SectionCard>
       </div>
 
       <LoomAnalytics looms={looms} batches={batches} materials={materials} sarees={sarees} />

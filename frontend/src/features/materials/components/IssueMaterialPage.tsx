@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Check, Plus, X, CheckCircle2 } from "lucide-react";
+import { Check, Plus, X, CheckCircle2, Send } from "lucide-react";
 import { Button, IconButton } from "../../../shared/ui/primitives";
 import { useMaterialIssue, MaterialIssueRecord } from "../contexts/MaterialIssueContext";
 import { FactoryLoom } from "../../production/data/factoryLooms";
@@ -11,7 +11,7 @@ import { factoryLoomsApi } from "../../../shared/api/factory-looms";
 import { rawMaterialsApi } from "../../../shared/api/rawMaterials";
 
 import { F, GrnBatch, MaterialRowState, T, WeaverLite, emptyRow } from "./issueMaterial/theme";
-import { SectionPill } from "./issueMaterial/primitives";
+import { SectionPill, SectionCard } from "./issueMaterial/primitives";
 import { RecipientSelector } from "./issueMaterial/RecipientSelector";
 import { MaterialRowEditor } from "./issueMaterial/MaterialRowEditor";
 import { SignatureBlock } from "./issueMaterial/SignatureBlock";
@@ -258,7 +258,8 @@ export function IssueMaterialPage() {
         </AnimatePresence>
 
         {/* ═══ SECTION A — ISSUE MATERIAL FORM ═══ */}
-        <div style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 20px rgba(44,24,16,0.06)", padding: 28, marginBottom: 48 }}>
+        <div style={{ marginBottom: 48 }}>
+        <SectionCard icon={Send} title="Issue Material" subtitle="Give raw materials to a weaver or factory loom and record who signed for it.">
 
           {/* STEP 1 — Select Recipient */}
           <SectionPill label="Step 1 · Select Recipient" />
@@ -309,6 +310,7 @@ export function IssueMaterialPage() {
           <Button onClick={() => void handleConfirm()} disabled={!canConfirm || submitting} variant="primary" size="lg" fullWidth iconLeft={Check} className="mt-8">
             {submitting ? "Issuing…" : "Confirm Issuance"}
           </Button>
+        </SectionCard>
         </div>
 
         {/* ═══ SECTION B — ISSUANCE HISTORY ═══ */}

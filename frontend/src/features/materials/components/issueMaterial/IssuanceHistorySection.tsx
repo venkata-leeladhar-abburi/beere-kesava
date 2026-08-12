@@ -1,9 +1,9 @@
 import React from "react";
-import { CheckCircle2, Clock } from "lucide-react";
+import { CheckCircle2, Clock, History } from "lucide-react";
 import { MaterialIssueRecord } from "../../contexts/MaterialIssueContext";
 import { DateFilterBar, DateFilterState } from "../../../../shared/ui/DateFilterBar";
 import { F, T } from "./theme";
-import { SectionPill } from "./primitives";
+import { SectionCard } from "./primitives";
 import { renderIssuedMaterials } from "./materialFormatters";
 import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
@@ -101,10 +101,7 @@ export function IssuanceHistorySection({
   ];
 
   return (
-    <div>
-      <SectionPill label="Material Issuance History" />
-      <h2 style={{ fontFamily: F.display, fontWeight: 700, fontSize: 24, color: T.luxuryBrown, margin: "0 0 20px" }}>Material Issuance History</h2>
-
+    <SectionCard icon={History} title="Material Issuance History" subtitle="Every material issued to a weaver or factory loom, with signature status.">
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap" as const, marginBottom: 20 }}>
         <div style={{ flex: "1 1 260px" }}>
           <SearchInput value={histSearch} onChange={e => setHistSearch(e.target.value)} placeholder="Search weaver, MIR ID, or GRN batch…" className="w-full" />
@@ -132,6 +129,6 @@ export function IssuanceHistorySection({
           <Button variant="secondary" size="sm" disabled={histPage === totalPages} onClick={() => setHistPage(p => p + 1)}>Next →</Button>
         </div>
       )}
-    </div>
+    </SectionCard>
   );
 }

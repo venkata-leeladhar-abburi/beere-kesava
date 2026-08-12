@@ -1,7 +1,8 @@
 import React from "react";
+import { ShoppingBag } from "lucide-react";
 import { DateFilterBar, DateFilterState } from "../../../../../shared/ui/DateFilterBar";
 import { T } from "../theme";
-import { Select } from "../common/primitives";
+import { Select, SectionCard } from "../common/primitives";
 import { Button, SearchInput } from "../../../../../shared/ui/primitives";
 
 export interface FilterOptions {
@@ -25,6 +26,7 @@ export function FilterBar({
   opts,
   filtersActive,
   clearFilters,
+  children,
 }: {
   search: string; setSearch: (v: string) => void;
   statusFilter: string; setStatusFilter: (v: string) => void;
@@ -38,9 +40,11 @@ export function FilterBar({
   opts: FilterOptions;
   filtersActive: boolean;
   clearFilters: () => void;
+  children?: React.ReactNode;
 }) {
   return (
-    <div style={{ padding: "48px 56px 0" }}>
+    <div style={{ padding: "40px 56px 0" }}>
+    <SectionCard icon={ShoppingBag} title="External Purchases" subtitle="Every raw-material purchase recorded, with supplier, invoice, and payment status.">
       <div style={{
         background: "white",
         borderRadius: 18,
@@ -108,6 +112,9 @@ export function FilterBar({
       </div>
 
       <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+
+      {children}
+    </SectionCard>
     </div>
   );
 }

@@ -6,7 +6,7 @@ import { Download, FileText } from "lucide-react";
 import { Medal, CheckCircle2 as CheckCircle, AlertCircle as WarningCircle, Clock } from "lucide-react";
 import { PieChart, Pie, Cell } from "recharts";
 import { T, F } from "../../theme";
-import { FadeUp, Avatar, ActionDialog, qcColor } from "../../common/primitives";
+import { FadeUp, Avatar, ActionDialog, SectionCard, qcColor } from "../../common/primitives";
 import { DownloadGate } from "../../../../../shared/ui/DownloadAccess";
 import { Button } from "../../../../../shared/ui/primitives";
 import { weaversApi } from "../../../../../shared/api/weavers";
@@ -65,28 +65,21 @@ export function PerformancePanel({ onNavigate }: { onNavigate?: (tab: string) =>
   return (
     <>
       <FadeUp>
-        <div id="weav-performance" style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`, boxShadow: "0 6px 32px rgba(74,6,27,0.08)", overflow: "hidden", marginBottom: 24 }}>
-
-          {/* Dark section header */}
-          <div style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`, padding: "22px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-              <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <Medal size={26} color="#FFFDF9" />
-              </div>
-              <div>
-                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9", letterSpacing: "-0.2px" }}>Weaver Performance This Month</div>
-                <div style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.65)", marginTop: 3 }}>Rankings by sarees produced · Quality check results</div>
-              </div>
-            </div>
+        <div id="weav-performance" style={{ marginBottom: 24 }}>
+        <SectionCard
+          icon={Medal}
+          title="Weaver Performance This Month"
+          subtitle="Rankings by sarees produced · Quality check results"
+          actions={
             <DownloadGate>
               <Button onClick={() => setReportOpen(true)} variant="secondary" iconLeft={Download} className="bg-white/10 text-[#FFFDF9] border-white/20">
                 Download Full Report
               </Button>
             </DownloadGate>
-          </div>
-
+          }
+        >
           {/* Two-column body */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0, margin: "-24px -28px -28px" }}>
 
             {/* ── Left: Leaderboard ── */}
             <div style={{ padding: "28px 32px", borderRight: `1px solid ${T.borderDef}` }}>
@@ -233,6 +226,7 @@ export function PerformancePanel({ onNavigate }: { onNavigate?: (tab: string) =>
             </div>
 
           </div>
+        </SectionCard>
         </div>
       </FadeUp>
 

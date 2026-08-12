@@ -188,19 +188,17 @@ export function WeaverDirectory({ view, onSelect, onEdit, onBatches, extraWeaver
   const realById = new Map(realWeavers.map(w => [w.id, w]));
 
   return (
-    <div style={{ padding: "24px 48px 0" }}>
-      <FadeUp>
-        {view === "card" && <WeaverCardGrid onSelect={onSelect} onEdit={onEdit} onBatches={onBatches} extraWeavers={extraWeavers} />}
-        {view === "list" && <WeaverListView onSelect={onSelect} extraWeavers={extraWeavers} />}
-        {view === "table" && (
-          <WeaverTableView
-            onSelect={id => {
-              const w = realById.get(id);
-              if (w) onSelect(w);
-            }}
-          />
-        )}
-      </FadeUp>
-    </div>
+    <FadeUp>
+      {view === "card" && <WeaverCardGrid onSelect={onSelect} onEdit={onEdit} onBatches={onBatches} extraWeavers={extraWeavers} />}
+      {view === "list" && <WeaverListView onSelect={onSelect} extraWeavers={extraWeavers} />}
+      {view === "table" && (
+        <WeaverTableView
+          onSelect={id => {
+            const w = realById.get(id);
+            if (w) onSelect(w);
+          }}
+        />
+      )}
+    </FadeUp>
   );
 }

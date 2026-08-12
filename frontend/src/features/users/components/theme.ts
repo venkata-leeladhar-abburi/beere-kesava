@@ -6,6 +6,7 @@ export const T = {
   silkCream:     semantic.surface.canvas,
   warmIvory:     semantic.surface.raised,
   royalBurgundy: brand.burgundy[900],
+  deepWine:      brand.burgundy[950],
   darkBurgundy:  "#3D0E1A",
   antiqueGold:   brand.gold[500],
   goldLight:     "#E7C983",

@@ -1,9 +1,10 @@
 import React from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronDown, ChevronRight, Package, Camera } from "lucide-react";
+import { ChevronDown, ChevronRight, Package, Camera, Users } from "lucide-react";
 import { FinishingAssignment, FinishingReturn } from "../contexts/FinishingContext";
 import { Button } from "../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../shared/ui/data";
+import { SectionCard } from "./common/primitives";
 
 const T = {
   royalBurgundy: "#6E0F2D",
@@ -110,14 +111,11 @@ export function FinishingStaffSection({
   returns,
 }: FinishingStaffSectionProps) {
   return (
-    <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 20px rgba(74,6,27,0.06)", padding: 22 }}>
-      <div style={{ marginBottom: 16 }}>
-        <h3 style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.luxuryBrown, margin: 0 }}>Assignment History by Finishing Staff</h3>
-        <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, margin: "5px 0 0" }}>
-          Every finishing staff member, what has been assigned to them, and what they've returned so far.
-        </p>
-      </div>
-
+    <SectionCard
+      icon={Users}
+      title="Assignment History by Finishing Staff"
+      subtitle="Every finishing staff member, what has been assigned to them, and what they've returned so far."
+    >
       {filteredRows.length === 0 ? (
         <div style={{ padding: "48px 24px", textAlign: "center" }}>
           <Package size={40} color={T.taupe} style={{ opacity: 0.45, marginBottom: 12 }} />
@@ -171,6 +169,6 @@ export function FinishingStaffSection({
           })}
         </div>
       )}
-    </div>
+    </SectionCard>
   );
 }

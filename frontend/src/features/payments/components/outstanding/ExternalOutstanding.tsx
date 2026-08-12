@@ -1,9 +1,9 @@
 import React, { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronDown, ChevronRight, RotateCcw } from "lucide-react";
+import { ChevronDown, ChevronRight, RotateCcw, Truck, Building2 } from "lucide-react";
 import { T, F } from "../../theme";
 import { UnifiedSaree, isSold, ageBucket, purchaseOutstanding } from "../../../customers/contexts/SalesContext";
-import { Card, Empty, ExportBtn, Pill, SectionTitle, exportCsv, inr, tdMono } from "./primitives";
+import { Empty, ExportBtn, Pill, SectionCard, exportCsv, inr, tdMono } from "./primitives";
 import type { AgeKey } from "./primitives";
 import { DrilldownTabs, SareeDetailTable } from "./SareeDetailTable";
 import { Button } from "../../../../shared/ui/primitives";
@@ -47,17 +47,16 @@ export function ExternalOutstanding({ sarees, search, ageFilter }: { sarees: Uni
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-      <Card>
-        <SectionTitle
-          title="External Purchases — Outstanding by Purchase"
-          sub="Every purchase from every supplier, showing the sarees still unsold from that bill, the bill amount still due, and any sarees returned by customers after a retail sale."
-          right={
-            <ExportBtn onClick={() => exportCsv("outstanding-external-purchases.csv",
-              [["Purchase ID", "Supplier", "Location", "Invoice No", "GST No", "Purchase Date", "Bill Amount", "Paid", "Bill Due", "Bill Status", "Sarees Bought", "Sold", "Unsold", "Returned", "Unsold Cost", "Unsold Sale Value", "Refund Value"],
-               ...all.map(p => [p.id, p.supplier, p.location, p.invoiceNumber, p.gstNumber, p.date, p.billAmount, p.paidAmount, p.dueAmount, p.status, p.sareeCount, p.soldCount, p.unsoldCount, p.returnedCount, p.unsoldCost, p.unsoldValue, p.refundValue])])} />
-          }
-        />
-
+      <SectionCard
+        icon={Truck}
+        title="External Purchases — Outstanding by Purchase"
+        subtitle="Every purchase from every supplier, showing the sarees still unsold from that bill, the bill amount still due, and any sarees returned by customers after a retail sale."
+        actions={
+          <ExportBtn onClick={() => exportCsv("outstanding-external-purchases.csv",
+            [["Purchase ID", "Supplier", "Location", "Invoice No", "GST No", "Purchase Date", "Bill Amount", "Paid", "Bill Due", "Bill Status", "Sarees Bought", "Sold", "Unsold", "Returned", "Unsold Cost", "Unsold Sale Value", "Refund Value"],
+             ...all.map(p => [p.id, p.supplier, p.location, p.invoiceNumber, p.gstNumber, p.date, p.billAmount, p.paidAmount, p.dueAmount, p.status, p.sareeCount, p.soldCount, p.unsoldCount, p.returnedCount, p.unsoldCost, p.unsoldValue, p.refundValue])])} />
+        }
+      >
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 18 }}>
           {[
             { l: "Purchased", v: String(totBought), c: T.luxuryBrown },
@@ -162,11 +161,10 @@ export function ExternalOutstanding({ sarees, search, ageFilter }: { sarees: Uni
             })}
           </div>
         )}
-      </Card>
+      </SectionCard>
 
       {/* Supplier roll-up */}
-      <Card>
-        <SectionTitle title="Supplier Roll-up" sub="Same numbers grouped by supplier across all their purchases." />
+      <SectionCard icon={Building2} title="Supplier Roll-up" subtitle="Same numbers grouped by supplier across all their purchases.">
         <DataTable<SupplierRollup>
           columns={supplierRollupColumns}
           data={bySupplier}
@@ -174,7 +172,7 @@ export function ExternalOutstanding({ sarees, search, ageFilter }: { sarees: Uni
           caption="Supplier roll-up table"
           emptyTitle="No supplier data yet"
         />
-      </Card>
+      </SectionCard>
     </div>
   );
 }

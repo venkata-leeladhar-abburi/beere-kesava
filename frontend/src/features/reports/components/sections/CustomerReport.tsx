@@ -5,7 +5,7 @@ import { UsersRound, CheckCircle2, TrendingUp, ShieldAlert } from "lucide-react"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { T, F } from "../theme";
-import { FadeUp, ChartCard, SumCard, TabTitle, ReportDLBar, ChartTip, AnimBar, TablePager, StatusPill, TH, TD } from "../common/primitives";
+import { FadeUp, ChartCard, SumCard, SectionCard, ReportDLBar, ChartTip, AnimBar, TablePager, StatusPill, TH, TD } from "../common/primitives";
 import { Button, SearchInput } from "../../../../shared/ui/primitives";
 import { customersApi, BackendCustomer } from "../../../../shared/api/customers";
 import { invoicesApi } from "../../../../shared/api/invoices";
@@ -187,8 +187,11 @@ export function CustomerReport() {
 
   return (
     <div id="rep-customers" style={{ padding: "32px 40px" }}>
-      <TabTitle title="Customer Report"
-        sub="See all retail and wholesale customers — their purchase history, total spend, frequency of buying, and any outstanding dues. Find your best customers and track who owes money." />
+    <SectionCard
+      icon={UsersRound}
+      title="Customer Report"
+      subtitle="See all retail and wholesale customers — their purchase history, total spend, frequency of buying, and any outstanding dues. Find your best customers and track who owes money."
+    >
       <ReportDLBar />
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20, marginBottom: 24 }}>
@@ -334,6 +337,7 @@ export function CustomerReport() {
           </div>
         </div>
       </FadeUp>
+    </SectionCard>
     </div>
   );
 }

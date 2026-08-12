@@ -47,6 +47,8 @@ import { UserProfileModal } from "../../../shared/ui/UserProfileModal";
 // ═══════════════════════════════════════════════════════════════════════════════
 import { T, F, G, GLOBAL_STYLE, EASE } from './beere-dashboard/theme';
 import { FadeUp, FadeIn, Lotus } from './beere-dashboard/ui';
+import { SectionCard } from './beere-dashboard/primitives';
+import { PackageCheck, History } from 'lucide-react';
 import { TopNav, Hero, MetricsBar, ProductionProgress, SareesProduced, FeaturedProduct, ThreeCol, ActivityStrip, WeaverSection, RawMaterial, Footer } from './beere-dashboard/desktop';
 import { MobileMenuDrawer, MobileTopNav, MobileHero, MobileMetrics, MobilePerformance, MobileFeaturedProduct, MobileActivity, MobileWeavers, MobileRawMaterial, MobileFooter } from './beere-dashboard/mobile';
 
@@ -301,9 +303,11 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
           {/* Content */}
           <div style={{ padding: "40px 56px 80px", maxWidth: 1400, margin: "0 auto", display: "flex", flexDirection: "column", gap: 24 }}>
             <div style={{ display: "grid", gridTemplateColumns: "minmax(0,2fr) minmax(0,1fr)", gap: 24, alignItems: "start" }}>
-              <div style={{ background: "#fff", borderRadius: 20, border: `1px solid ${T.borderDef}`, overflow: "visible", boxShadow: "0 2px 12px rgba(44,24,16,0.07)" }}>
-                <WorkerGRN mode="form" history={grnHistory} setHistory={setGrnHistory} initialPOId={(state as any)?.poId} />
-              </div>
+              <SectionCard icon={PackageCheck} title="Receive Stock" subtitle="Record incoming raw materials from vendors and generate a GRN number.">
+                <div style={{ margin: "-24px -28px" }}>
+                  <WorkerGRN mode="form" history={grnHistory} setHistory={setGrnHistory} initialPOId={(state as any)?.poId} />
+                </div>
+              </SectionCard>
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                 <div style={{ background: "#fff", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: "20px 22px", boxShadow: "0 2px 12px rgba(44,24,16,0.07)" }}>
                   <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown, marginBottom: 16, textTransform: "uppercase" as const, letterSpacing: "0.5px" }}>Recent GRNs</div>
@@ -321,13 +325,11 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
             </div>
 
             {/* Separate Full-Width GRN History Section */}
-            <div style={{ background: "#fff", borderRadius: 20, border: `1px solid ${T.borderDef}`, padding: "28px 32px", boxShadow: "0 4px 20px rgba(74,6,27,0.05)" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
-                <div style={{ width: 4, height: 18, background: T.royalBurgundy, borderRadius: 2 }} />
-                <h2 style={{ fontFamily: F.display, fontSize: 18, color: T.luxuryBrown, margin: 0, fontWeight: 700 }}>Goods Receipt History</h2>
+            <SectionCard icon={History} title="Goods Receipt History" subtitle="Every GRN recorded so far, with vendor, materials, and quantities.">
+              <div style={{ margin: "-24px -28px" }}>
+                <WorkerGRN mode="history" history={grnHistory} setHistory={setGrnHistory} />
               </div>
-              <WorkerGRN mode="history" history={grnHistory} setHistory={setGrnHistory} />
-            </div>
+            </SectionCard>
           </div>
         </div>
       ) : nav === "AddUser" ? (

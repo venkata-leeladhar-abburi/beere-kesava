@@ -1,12 +1,12 @@
 import { useMemo } from "react";
-import { FileText } from "lucide-react";
+import { FileText, BarChart2 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { useFirms } from "../../../firms/contexts/FirmsContext";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { useMoneyVisible } from "../../../../shared/ui/MoneyValue";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { T, F } from "../theme";
-import { FadeUp, ChartCard, TabTitle, ReportDLBar, AnimBar } from "../common/primitives";
+import { FadeUp, ChartCard, SectionCard, ReportDLBar, AnimBar } from "../common/primitives";
 import { Button } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
@@ -183,8 +183,11 @@ export function ProfitLossReport() {
 
   return (
     <div id="rep-pnl" style={{ padding: "32px 40px" }}>
-      <TabTitle title="Profit & Loss Report"
-        sub="A complete picture of the firm's income and expenses. See how much money came in from sales, how much went out to weavers and vendors, and what was left as profit." />
+    <SectionCard
+      icon={BarChart2}
+      title="Profit & Loss Report"
+      subtitle="A complete picture of the firm's income and expenses. See how much money came in from sales, how much went out to weavers and vendors, and what was left as profit."
+    >
       <ReportDLBar />
 
       <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: 20, marginBottom: 28 }}>
@@ -282,6 +285,7 @@ export function ProfitLossReport() {
           </div>
         </div>
       </FadeUp>
+    </SectionCard>
     </div>
   );
 }

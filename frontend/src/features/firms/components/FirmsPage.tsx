@@ -15,6 +15,7 @@ import {
 } from "../contexts/FirmsContext";
 
 import { T, F, EASE } from "./theme";
+import { SectionCard } from "./primitives";
 import { fmtAmt, fmtFull, initials, cardColor } from "./utils";
 import { Button, IconButton, SearchInput } from "../../../shared/ui/primitives";
 import { Money } from "../../../shared/ui/domain";
@@ -389,22 +390,24 @@ export function FirmsPage() {
       {/* Business Overview */}
       <BusinessOverview onGoToFirm={openFirmView} />
 
-      {/* Toolbar */}
-      <div style={{ padding: "88px 56px 0", display: "flex", alignItems: "center", gap: 12 }}>
-        <div style={{ flex: 1, position: "relative", maxWidth: 380 }}>
-          <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by firm name, GST, or contact..." />
-        </div>
-        <div style={{ marginLeft: "auto" }}>
+      {/* Firms directory */}
+      <div style={{ padding: "40px 56px 80px" }}>
+      <SectionCard
+        icon={Building2}
+        title="Firms Directory"
+        subtitle="Every registered firm, its financials, and its contacts."
+        actions={
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
-            <Button variant="primary" iconLeft={Plus} onClick={() => setModal({ type: "create" })}>
+            <Button variant="secondary" iconLeft={Plus} onClick={() => setModal({ type: "create" })} className="bg-white/10 text-[#FFFDF9] border-white/20">
               Add New Firm
             </Button>
           </motion.div>
+        }
+      >
+        <div style={{ marginBottom: 20, maxWidth: 380 }}>
+          <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by firm name, GST, or contact..." />
         </div>
-      </div>
 
-      {/* Firms grid */}
-      <div style={{ padding: "24px 56px 80px" }}>
         {filtered.length === 0 ? (
           <div style={{ textAlign: "center", padding: "80px 0", color: T.taupe }}>
             <Building2 size={40} color={T.borderDef} style={{ margin: "0 auto 16px" }} />
@@ -422,6 +425,7 @@ export function FirmsPage() {
             </AnimatePresence>
           </motion.div>
         )}
+      </SectionCard>
       </div>
 
       {/* Modals */}

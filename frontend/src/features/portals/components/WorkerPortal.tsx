@@ -197,7 +197,7 @@ function MobilePortal({ onBack, activeTab, setActiveTab }: MobilePortalProps) {
       <AnimatePresence>
         {showProfile && (
           <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ duration: 0.22 }}
-            style={{ position: "fixed", inset: 0, background: "#FFF", zIndex: 180, overflowY: "auto" }}>
+            style={{ position: "fixed", inset: 0, background: "#FFF", zIndex: "var(--z-tooltip)", overflowY: "auto" }}>
             <div style={{ height: 56, background: C.burg, display: "flex", alignItems: "center", padding: "0 16px" }}>
               <IconButton icon={ChevronLeft} label="Back" variant="ghost" onClick={() => setShowProfile(false)} className="text-white" />
               <span style={{ flex: 1, textAlign: "center", fontFamily: F.d, fontSize: 18, fontWeight: 600, color: "#FFF" }}>My Profile</span>

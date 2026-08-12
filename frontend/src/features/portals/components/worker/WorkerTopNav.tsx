@@ -183,7 +183,7 @@ export function WorkerTopNav({ active, onSelect, onBack, bp, pendingQcCount = 0 
               <ChevronDown size={12} color={C.muted} />
             </motion.div>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="!min-w-[210px] !p-0 !rounded-[14px] !overflow-hidden" style={{ background: "#FFFDF9", border: `1px solid rgba(110,15,45,0.12)` }}>
+          <DropdownMenuContent align="end" className="!min-w-[210px] !p-0 !rounded-[14px] !overflow-hidden" style={{ background: "#FFFDF9", border: `1px solid rgba(110,15,45,0.12)`, zIndex: "var(--z-tooltip)" }}>
             <div style={{ padding: "14px 16px", borderBottom: `1px solid rgba(110,15,45,0.08)` }}>
               <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: C.dark }}>{name}</div>
               <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>{subtitle}</div>

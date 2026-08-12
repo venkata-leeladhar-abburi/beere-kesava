@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { semantic } from "../../../../design-system/tokens";
 import {
-  Download, Star, IndianRupee, Users, Calendar, AlertTriangle, MapPin,
+  Download, Star, IndianRupee, Users, Calendar, AlertTriangle, MapPin, BarChart3 as ChartBar,
 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
@@ -10,7 +10,7 @@ import {
 import { DateFilterBar, DateFilterState } from "../../../../shared/ui/DateFilterBar";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { T, F } from "../theme";
-import { SectionTitle } from "../common/primitives";
+import { SectionCard, SectionDownloadAction } from "../common/primitives";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { ChartFigure } from "../../../../shared/ui/data";
 import { downloadDataAsCSV } from "../utils";
@@ -187,13 +187,13 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
   const totalCities = new Set(custRows.map(c => c.city)).size;
 
   return (
-    <div style={{ padding: "96px 56px 48px" }}>
-      <SectionTitle
-        title="Customer Analytics"
-        sub="Overview of customer behaviour — who spends the most, who buys most frequently, who has not bought recently, and where your customers are from."
-        action="Download Analytics Report →"
-      />
-
+    <div style={{ padding: "96px 56px 0" }}>
+    <SectionCard
+      icon={ChartBar}
+      title="Customer Analytics"
+      subtitle="Overview of customer behaviour — who spends the most, who buys most frequently, who has not bought recently, and where your customers are from."
+      actions={<SectionDownloadAction label="Download Analytics Report" />}
+    >
       <div style={{ marginBottom: 32 }}>
         <DateFilterBar filter={analyticsDateFilter} onChange={setAnalyticsDateFilter} />
       </div>
@@ -602,6 +602,7 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
           </div>
         </div>
       </div>
+    </SectionCard>
     </div>
   );
 }

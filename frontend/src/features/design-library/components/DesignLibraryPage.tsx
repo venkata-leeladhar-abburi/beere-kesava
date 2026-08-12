@@ -14,7 +14,7 @@ import { weaversApi } from "../../../shared/api/weavers";
 
 import { T, F, G } from "./theme";
 import {
-  FadeUp, WeaverCombobox, UploadZone, fieldStyle, labelStyle,
+  FadeUp, SectionCard, WeaverCombobox, UploadZone, fieldStyle, labelStyle,
   DesignCodeCard, DesignCard, AddDesignModal, SlipModal,
 } from "./DesignLibraryComponents";
 import { Button, SearchInput, Textarea, Select, SelectItem } from "../../../shared/ui/primitives";
@@ -129,17 +129,7 @@ export function DesignLibraryPage() {
       {/* ── Main content ── */}
       <div style={{ padding: "32px 56px 48px" }}>
         <FadeUp>
-          {/* Section Header */}
-            <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 22 }}>
-              <div style={{ width: 48, height: 48, borderRadius: 14, background: `linear-gradient(135deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 14px rgba(110,15,45,0.22)" }}>
-                <PaperPlaneTilt size={24} color="#FFFDF9" />
-              </div>
-              <div>
-                <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0, letterSpacing: "-0.2px", lineHeight: 1.2 }}>Weaver Dispatch Control</h2>
-                <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2, letterSpacing: "0.4px" }}>DISPATCH PRODUCTION DESIGN SLIPS</div>
-              </div>
-            </div>
-
+        <SectionCard icon={PaperPlaneTilt} title="Weaver Dispatch Control" subtitle="Dispatch production design slips to weavers or factory looms.">
             <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1.8fr", gap: 32, alignItems: "start" }}>
               {/* Form Side */}
               <div>
@@ -313,6 +303,7 @@ export function DesignLibraryPage() {
                 </div>
               </div>
             </div>
+        </SectionCard>
           </FadeUp>
       </div>
 

@@ -75,7 +75,7 @@ export function MobileWeaverPortal({ onBack, active, setActive, onProfile }: { o
                 <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 12, color: '#FFF' }}>{initials}</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="!min-w-[200px] !p-0 !rounded-[14px] !overflow-hidden" style={{ background: '#FFFDF9', border: `1px solid ${C.bdr}` }}>
+            <DropdownMenuContent align="end" className="!min-w-[200px] !p-0 !rounded-[14px] !overflow-hidden" style={{ background: '#FFFDF9', border: `1px solid ${C.bdr}`, zIndex: "var(--z-tooltip)" }}>
               <div style={{ padding: '14px 16px', background: 'rgba(110,15,45,0.04)', borderBottom: `1px solid ${C.bdr}` }}>
                 <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>{name}</div>
                 <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>{user?.empId ? `${user.empId} · Handloom Weaver` : "Handloom Weaver"}</div>

@@ -1,10 +1,10 @@
 import React, { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Tag, Banknote, Percent, RefreshCcw } from "lucide-react";
+import { Tag, Banknote, Percent, RefreshCcw, Store } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { T, F } from "../theme";
 import { semantic } from "../../../../design-system/tokens";
-import { FadeUp, ChartCard, SumCard, TabTitle, ReportDLBar, AnimBar, TablePager, TH, TD } from "../common/primitives";
+import { FadeUp, ChartCard, SumCard, SectionCard, ReportDLBar, AnimBar, TablePager, TH, TD } from "../common/primitives";
 import { salesApi } from "../../../../shared/api/sales";
 import { customersApi } from "../../../../shared/api/customers";
 import { batchesApi } from "../../../../shared/api/batches";
@@ -187,8 +187,11 @@ export function RetailSalesReport() {
 
   return (
     <div id="rep-retail" style={{ padding: "32px 40px" }}>
-      <TabTitle title="Retail Sales Report"
-        sub="Track all sales at the retail shop — how many sarees were sold, to which customers, at what prices, and what the total revenue was." />
+    <SectionCard
+      icon={Store}
+      title="Retail Sales Report"
+      subtitle="Track all sales at the retail shop — how many sarees were sold, to which customers, at what prices, and what the total revenue was."
+    >
       <ReportDLBar />
 
       {/* Weekly saree sales — summary strip + bar chart */}
@@ -296,6 +299,7 @@ export function RetailSalesReport() {
           <TablePager total={retailRows.length} showing={retailRows.length} />
         </div>
       </FadeUp>
+    </SectionCard>
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { T, F } from "./theme";
 import { Vendor } from "./types";
 import { MATERIAL_TYPES } from "./data";
 import { FadeUp } from "./FadeUp";
+import { SectionCard } from "./SharedBits";
 import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { VendorCard, type VendorCardProps } from "@/shared/ui/domain";
@@ -44,25 +45,25 @@ export function VendorDirectorySection({ vendors, onSelectVendor, onAddClick }: 
   const pag = usePagination(filtered, 25);
 
   return (
-    <div style={{ padding: "0 56px" }}>
+    <div style={{ padding: "40px 56px 0" }}>
       <FadeUp>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ width: 3, height: 28, background: T.antiqueGold, borderRadius: 2 }} />
-            <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0, fontWeight: 600 }}>Vendor Directory</h2>
-          </div>
+      <SectionCard
+        icon={Building2}
+        title="Vendor Directory"
+        subtitle="Browse all raw material vendors, track their orders, ratings, and outstanding balances."
+        actions={
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} style={{ display: "inline-block" }}>
             <Button
               onClick={onAddClick}
-              variant="primary"
+              variant="secondary"
               iconLeft="add"
-              className="rounded-[10px] bg-[linear-gradient(135deg,#4A061B,#6E0F2D)] shadow-[0_4px_16px_rgba(110,15,45,0.22)]"
+              className="rounded-[10px] bg-white/10 text-[#FFFDF9] border-white/20"
             >
               Add New Vendor
             </Button>
           </motion.div>
-        </div>
-
+        }
+      >
         <div style={{ background: "#FFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, padding: "16px 20px", marginBottom: 24, display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap", boxShadow: "0 2px 10px rgba(74,6,27,0.05)" }}>
           <div style={{ flex: "1 1 280px" }}>
             <SearchInput
@@ -125,6 +126,7 @@ export function VendorDirectorySection({ vendors, onSelectVendor, onAddClick }: 
         </div>
         <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start}
           onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="vendors" />
+      </SectionCard>
       </FadeUp>
     </div>
   );
