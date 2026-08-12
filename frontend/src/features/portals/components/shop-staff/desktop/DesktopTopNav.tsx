@@ -34,7 +34,13 @@ export function DesktopTopNav({
     // Dark-burgundy chrome, matching admin/Worker Staff/Weaver — this bar used
     // to be white, the same split those two portals had before their own pass.
     <div style={{ background: "#3D0E1A", borderBottom: "1px solid rgba(200,155,71,0.14)", position: "sticky" as const, top: 0, zIndex: "var(--z-nav)", boxShadow: "0 4px 40px rgba(0,0,0,0.28)" }}>
-      <div style={{ maxWidth: 1600, margin: "0 auto", padding: isTablet ? "0 24px" : "0 56px", display: "flex", alignItems: "center", height: 72, gap: isTablet ? 16 : 20 }}>
+      {/* Three-column grid, not a flex row: the brand lockup and the actions
+          each take exactly the width they need, and the nav owns the middle
+          column so its pages are centred against the *bar*, not against
+          whatever space the siblings happen to leave. The old flex row let a
+          wide brand block push the nav until its first and last tabs were
+          clipped ("ome", "Process R"). */}
+      <div style={{ maxWidth: 1600, margin: "0 auto", padding: isTablet ? "0 24px" : "0 56px", display: "grid", gridTemplateColumns: "auto minmax(0, 1fr) auto", alignItems: "center", height: 72, gap: isTablet ? 16 : 24 }}>
         <div style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: isTablet ? 10 : 14 }}>
           <div style={{ width: isTablet ? 40 : 52, height: isTablet ? 40 : 52, borderRadius: 14, overflow: "hidden", border: "1.5px solid rgba(200,155,71,0.30)", boxShadow: "0 4px 16px rgba(0,0,0,0.30)", flexShrink: 0 }}>
             <img src={imgBKLogo} alt="BK Logo" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -47,7 +53,7 @@ export function DesktopTopNav({
             </div>
           )}
         </div>
-        <nav className="shop-topnav-groups" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: isTablet ? "flex-start" : "center", gap: 2, overflowX: "auto", minWidth: 0, scrollbarWidth: "none" } as React.CSSProperties}>
+        <nav className="shop-topnav-groups" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4, overflowX: "auto", minWidth: 0, scrollbarWidth: "none" } as React.CSSProperties}>
           <style>{`.shop-topnav-groups::-webkit-scrollbar { display: none; }`}</style>
           {TABS.map(tab => {
             const isActive = active === tab.id && !showReturn;
@@ -84,7 +90,7 @@ export function DesktopTopNav({
             <RotateCcw size={16} color={showReturn ? "#FFB3AA" : "rgba(245,232,208,0.80)"} /> Process Return
           </Button>
         </nav>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0, justifySelf: "end" }}>
           <SearchInput
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -96,9 +102,6 @@ export function DesktopTopNav({
             <IconButton icon={Bell} label="Notifications" variant="ghost" className="rounded-[10px] !text-[#F5E8D0] hover:!bg-[rgba(245,232,208,0.10)] hover:!text-[#5EEAD4]" />
             <span style={{ position: "absolute" as const, top: 4, right: 4, width: 9, height: 9, background: "#F47B72", borderRadius: "50%", border: "1.5px solid #3D0E1A", pointerEvents: "none" as const }} />
           </div>
-          <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12, letterSpacing: "1px", textTransform: "uppercase" as const, color: "#5EEAD4", background: "rgba(15,118,110,0.22)", border: "1px solid rgba(94,234,212,0.30)", borderRadius: 999, padding: "5px 12px" }}>
-            Shop Staff
-          </span>
           <DropdownMenu open={showProfile} onOpenChange={setShowProfile}>
             <DropdownMenuTrigger asChild>
               <Button

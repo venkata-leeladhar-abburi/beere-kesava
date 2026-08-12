@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "motion/react";
 import { Search, PhoneCall, UserPlus, Pencil, Check, MapPin } from "lucide-react";
 import { C, F, Card, Btn } from "./theme";
+import { StepHeader, StepBody, FlowActions, ACCENT_SALE } from "./flow-kit";
 import { Button, Input, Textarea } from "../../../../shared/ui/primitives";
 
 export interface Customer {
@@ -63,15 +64,16 @@ export function CustomerSelectStep({
   onNext,
 }: CustomerSelectStepProps) {
   return (
-    <div style={{ marginTop: 12 }}>
-      <div style={{ margin: "0 20px 16px" }}>
-        <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text, marginBottom: 4 }}>Customer Details</div>
-        <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>Search a previous customer or add a new one</div>
-      </div>
+    <>
+      <StepBody>
+        <StepHeader
+          title="Who is buying?"
+          subtitle="Search an existing customer by name or phone — their details fill in automatically. Otherwise add a new one."
+        />
 
       {/* Customer Search Input */}
       {!isNewCustomer && (
-        <div style={{ margin: "0 20px 12px", position: "relative" as const }}>
+        <div style={{ marginBottom: 14, position: "relative" as const }}>
           <div style={{ position: "relative" as const }}>
             <Input
               value={custSearch}
@@ -133,7 +135,7 @@ export function CustomerSelectStep({
       {/* Selected customer card */}
       {selectedCustomer && !isEditingCustomer && (
         <motion.div key="selected-cust" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-          <Card style={{ margin: "0 20px 14px", overflow: "hidden" }}>
+          <Card style={{ marginBottom: 16, overflow: "hidden" }}>
             <div style={{ height: 3, background: `linear-gradient(90deg, ${C.green}, rgba(30,102,64,0.3))` }} />
             <div style={{ padding: 16 }}>
               <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 14 }}>
@@ -175,7 +177,7 @@ export function CustomerSelectStep({
       {/* Edit existing or new customer form */}
       {(isEditingCustomer || isNewCustomer) && (
         <motion.div key="cust-form" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-          <div style={{ margin: "0 20px" }}>
+          <div>
             {isNewCustomer && (
               <div style={{ background: "rgba(200,155,71,0.10)", border: `1px solid ${C.gold}`, borderRadius: 10, padding: "10px 14px", marginBottom: 14, display: "flex", alignItems: "center", gap: 8 }}>
                 <UserPlus size={14} color={C.gold} />
@@ -225,7 +227,7 @@ export function CustomerSelectStep({
 
       {/* Shortcut if no customer selected */}
       {!selectedCustomer && !isNewCustomer && !showCustomerList && (
-        <div style={{ margin: "4px 20px 14px" }}>
+        <div style={{ marginTop: 4 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
             <div style={{ flex: 1, height: 1, background: C.bdr }} />
             <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>or</span>
@@ -238,13 +240,15 @@ export function CustomerSelectStep({
         </div>
       )}
 
-      <div style={{ padding: "8px 20px 0", display: "flex", gap: 10 }}>
-        <Btn
-          label="Next — Scan Saree →"
-          onClick={() => canProceedStep1 ? onNext() : undefined}
-          style={{ flex: 1, background: canProceedStep1 ? C.burg : "#C0C0C0", cursor: canProceedStep1 ? "pointer" : "not-allowed" }}
-        />
-      </div>
-    </div>
+      </StepBody>
+
+      <FlowActions
+        accent={ACCENT_SALE}
+        primaryLabel="Next — Scan Saree"
+        onPrimary={onNext}
+        primaryDisabled={!canProceedStep1}
+        hint="Pick a customer, or add a new one with a name"
+      />
+    </>
   );
 }

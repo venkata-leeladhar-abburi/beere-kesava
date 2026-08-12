@@ -7,6 +7,10 @@ import {
 import { useRatesPricing } from "../../../pricing/contexts/RatesContext";
 import { useResponsive } from "../../../../hooks/useResponsive";
 import { C, F, Card, Btn, Chip, useCanSeePrices, HeroHeader } from './theme';
+import {
+  Stepper, StepHeader, StepBody, FlowActions, SummaryPanel, OptionCard,
+  ConsequenceNote, ACCENT_SALE, type FlowStep, type SummaryRow,
+} from './flow-kit';
 import { NewSaleBillModal } from './NewSaleBillModal';
 import { NewSaleSuccessView } from './NewSaleSuccessView';
 import { CustomerSelectStep, Customer } from './CustomerSelectStep';
@@ -160,21 +164,31 @@ export function NewSaleFlow() {
     );
   }
 
-  return (
-    <div style={{ paddingBottom: 32 }}>
-      <HeroHeader eyebrow="SINCE 1999 · NEW SALE" title="New Retail" sub="Sale" desc="Record a sale at the shop counter" />
+  // Each completed step reads back what was chosen, so the operator never has
+  // to step backwards just to remember who the customer was.
+  const steps: FlowStep[] = [
+    { label: "Customer",   summary: selectedCustomer?.name ?? (custName.trim() || undefined) },
+    { label: "Scan Saree", summary: saree.id || undefined },
+    { label: "Payment",    summary: payment ? payment.toUpperCase() : undefined },
+    { label: "Confirm" },
+  ];
 
-      {/* Step progress with labels */}
-      <div style={{ padding: "16px 20px 8px" }}>
-        <div style={{ display: "flex", gap: 4 }}>
-          {(["Customer", "Scan Saree", "Payment", "Confirm"] as const).map((label, i) => (
-            <div key={i} style={{ flex: 1 }}>
-              <div style={{ height: 4, borderRadius: 999, background: (i + 1) <= (step as number) ? C.burg : "rgba(110,15,45,0.15)", marginBottom: 5 }} />
-              <div style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 0.8, textTransform: "uppercase" as const, color: (i + 1) <= (step as number) ? C.burg : C.muted, textAlign: "center" as const }}>{label}</div>
-            </div>
-          ))}
-        </div>
-      </div>
+  return (
+    <div>
+      {/* On mobile this flow is the whole screen and needs its own hero. On
+          desktop it sits inside a card that already sits under the page hero,
+          so a second one was pure duplication — that was the stray dark block
+          inside the white card. */}
+      {isMobile && (
+        <HeroHeader eyebrow="SINCE 1999 · NEW SALE" title="New Retail" sub="Sale" desc="Record a sale at the shop counter" />
+      )}
+
+      <Stepper
+        steps={steps}
+        current={step as number}
+        accent={ACCENT_SALE}
+        onJump={n => setStep(n as 1 | 2 | 3 | 4)}
+      />
 
       {/* ── Step 1 — Customer Details ── */}
       {step === 1 && (
@@ -227,124 +241,135 @@ export function NewSaleFlow() {
 
       {/* ── Step 3 — Payment Method ── */}
       {step === 3 && (
-        <div style={{ marginTop: 12 }}>
-          <div style={{ margin: "0 20px 16px" }}>
-            <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text, marginBottom: 4 }}>Payment Method</div>
-            <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>How is the customer paying?</div>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, margin: "0 20px 16px" }}>
-            {[
-              { id: "cash" as const, label: "Cash", sub: "Physical currency", icon: <IndianRupee size={22} /> },
-              { id: "upi" as const, label: "UPI", sub: "GPay, PhonePe, etc.", icon: <Wallet size={22} /> },
-              { id: "card" as const, label: "Card", sub: "Debit or Credit", icon: <CreditCard size={22} /> },
-              { id: "other" as const, label: "Other", sub: "Cheque / Transfer", icon: <Plus size={22} /> },
-            ].map(p => (
-              <Button key={p.id} variant="tertiary" onClick={() => setPayment(p.id)}
-                className={`h-auto flex-col items-start gap-2 whitespace-normal rounded-[14px] px-3.5 py-4 relative ${payment === p.id ? "border-2 border-[#6E0F2D] bg-[rgba(110,15,45,0.06)]" : "border border-[rgba(110,15,45,0.12)] bg-white"}`}>
-                <div style={{ width: 40, height: 40, borderRadius: 10, background: payment === p.id ? "rgba(110,15,45,0.10)" : "rgba(110,15,45,0.05)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  {React.cloneElement(p.icon, { color: payment === p.id ? C.burg : C.muted })}
-                </div>
-                <div>
-                  <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: payment === p.id ? C.burg : C.text }}>{p.label}</div>
-                  <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>{p.sub}</div>
-                </div>
-                {payment === p.id && <div style={{ position: "absolute" as const, top: 8, right: 8, width: 18, height: 18, borderRadius: "50%", background: C.gold, display: "flex", alignItems: "center", justifyContent: "center" }}><Check size={10} color={C.text} /></div>}
-              </Button>
-            ))}
-          </div>
-          {payment === "upi" && (
-            <div style={{ margin: "0 20px 16px" }}>
-              <label style={{ fontFamily: F.u, fontWeight: 500, fontSize: 13, color: C.muted, display: "block", marginBottom: 8 }}>UPI Reference (Optional)</label>
-              <Input value={payRef} onChange={e => setPayRef(e.target.value)} placeholder="Transaction ID" size="lg" className="w-full font-mono" />
+        <>
+          <StepBody>
+            <StepHeader title="Payment Method" subtitle="How is the customer paying for this saree?" />
+            <div role="radiogroup" aria-label="Payment method" style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4, 1fr)", gap: 14, marginBottom: 20 }}>
+              {[
+                { id: "cash" as const, label: "Cash", sub: "Physical currency", icon: IndianRupee },
+                { id: "upi" as const, label: "UPI", sub: "GPay, PhonePe, etc.", icon: Wallet },
+                { id: "card" as const, label: "Card", sub: "Debit or credit", icon: CreditCard },
+                { id: "other" as const, label: "Other", sub: "Cheque / transfer", icon: Plus },
+              ].map(p => (
+                <OptionCard
+                  key={p.id}
+                  name="payment-method"
+                  icon={p.icon}
+                  label={p.label}
+                  sub={p.sub}
+                  selected={payment === p.id}
+                  onSelect={() => setPayment(p.id)}
+                  accent={ACCENT_SALE}
+                />
+              ))}
             </div>
-          )}
-          {payment === "card" && (
-            <div style={{ margin: "0 20px 16px" }}>
-              <label style={{ fontFamily: F.u, fontWeight: 500, fontSize: 13, color: C.muted, display: "block", marginBottom: 8 }}>Last 4 Digits (Optional)</label>
-              <Input value={payRef} onChange={e => setPayRef(e.target.value)} maxLength={4} placeholder="e.g. 4872" size="lg" className="w-full font-mono text-lg" />
-            </div>
-          )}
-          <div style={{ padding: "0 20px", display: "flex", gap: 10 }}>
-            <Btn label="← Back" variant="ghost" onClick={() => setStep(2)} style={{ flex: 1 }} />
-            <Btn label="Next — Confirm →" onClick={() => payment && setStep(4)} style={{ flex: 2, background: payment ? C.burg : "#C0C0C0", cursor: payment ? "pointer" : "not-allowed" }} />
-          </div>
-        </div>
+
+            {/* The reference field only exists for the methods that have one —
+                showing it always would be four fields of dead space. */}
+            {(payment === "upi" || payment === "card") && (
+              <div style={{ maxWidth: 340 }}>
+                <label htmlFor="pay-ref" style={{ fontFamily: F.u, fontWeight: 500, fontSize: 14, color: C.text, display: "block", marginBottom: 8 }}>
+                  {payment === "upi" ? "UPI reference" : "Card last 4 digits"}
+                  <span style={{ color: C.muted, fontWeight: 400 }}> (optional)</span>
+                </label>
+                <Input
+                  id="pay-ref"
+                  value={payRef}
+                  onChange={e => setPayRef(e.target.value)}
+                  maxLength={payment === "card" ? 4 : undefined}
+                  placeholder={payment === "upi" ? "Transaction ID" : "e.g. 4872"}
+                  size="lg"
+                  className="w-full font-mono"
+                />
+              </div>
+            )}
+          </StepBody>
+
+          <FlowActions
+            accent={ACCENT_SALE}
+            onBack={() => setStep(2)}
+            primaryLabel="Next — Confirm"
+            onPrimary={() => setStep(4)}
+            primaryDisabled={!payment}
+            hint="Choose a payment method to continue"
+          />
+        </>
       )}
 
       {/* ── Step 4 — Confirm Sale ── */}
       {step === 4 && (
-        <div style={{ marginTop: 12 }}>
-          <div style={{ margin: "0 20px 16px" }}>
-            <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text, marginBottom: 4 }}>Review & Confirm Sale</div>
-            <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>Please verify all details before confirming</div>
-          </div>
-          <Card style={{ margin: "0 20px 16px", overflow: "hidden" }}>
-            <div style={{ height: 4, background: `linear-gradient(90deg, ${C.burg}, ${C.gold})` }} />
-            <div style={{ padding: 18 }}>
-              {[
-                { label: "Saree ID", value: saree.id, mono: true },
-                { label: "Design", value: saree.name, mono: false },
-                { label: "Customer", value: custName || "Smt. Annapurna Devi", mono: false },
-                { label: "Phone", value: `+91 ${phone || "98765 43210"}`, mono: true },
-                { label: "Payment", value: payment?.toUpperCase() ?? "UPI", mono: true },
-              ].map(({ label, value, mono }, i) => (
-                <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12, paddingBottom: 12, borderBottom: `1px solid ${C.bdr}` }}>
-                  <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted, flexShrink: 0 }}>{label}</span>
-                  <span style={{ fontFamily: mono ? F.m : F.u, fontWeight: 600, fontSize: 13, color: C.text, textAlign: "right" as const, maxWidth: "60%" }}>{value}</span>
-                </div>
-              ))}
-              {canSeePrices && (
-                <>
+        <>
+          <StepBody>
+            <StepHeader
+              title="Review & confirm"
+              subtitle="Check every line before generating the bill — a recorded sale can only be undone with a return."
+            />
+            <SummaryPanel
+              title="Sale summary"
+              accent={ACCENT_SALE}
+              rows={([
+                { label: "Saree ID", value: saree.id || "—", mono: true },
+                { label: "Design", value: saree.name || "—" },
+                { label: "Customer", value: custName || selectedCustomer?.name || "—" },
+                { label: "Phone", value: phone ? `+91 ${phone}` : "—", mono: true },
+                { label: "Payment", value: payment ? payment.toUpperCase() : "—", mono: true },
+                ...(payRef ? [{ label: payment === "upi" ? "UPI reference" : "Card ending", value: payRef, mono: true }] : []),
+              ] as SummaryRow[])}
+              footer={canSeePrices ? (
+                <div>
                   {soldPrice !== originalPrice && (
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
-                      <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Original Price</span>
-                      <span style={{ fontFamily: F.m, fontSize: 13, color: C.muted, textDecoration: "line-through" }}>{fmtPrice(originalPrice)}</span>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
+                      <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>Original price</span>
+                      <span style={{ fontFamily: F.u, fontSize: 14, color: C.muted, textDecoration: "line-through" }}>{fmtPrice(originalPrice)}</span>
                     </div>
                   )}
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", paddingTop: 4 }}>
-                    <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text }}>Sold For</span>
-                    <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 30, color: C.burg }}>{fmtPrice(soldPrice)}</span>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                    <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text }}>Total payable</span>
+                    <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 30, color: C.burg, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>{fmtPrice(soldPrice)}</span>
                   </div>
                   {priceDiscount > 0 && (
-                    <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
-                      <Chip label={`Discount: ${fmtPrice(priceDiscount)}`} color="#8B6018" bg="rgba(200,155,71,0.15)" />
+                    <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 10 }}>
+                      <Chip label={`Discount applied · ${fmtPrice(priceDiscount)}`} color="#845E04" bg="rgba(200,155,71,0.15)" />
                     </div>
                   )}
-                </>
-              )}
-            </div>
-          </Card>
-          <div style={{ padding: "0 20px", display: "flex", flexDirection: "column" as const, gap: 10 }}>
-            {submitError && (
-              <div style={{ fontFamily: F.u, fontSize: 12, color: "#C0392B", textAlign: "center" as const, marginBottom: 8 }}>
-                {submitError}
-              </div>
-            )}
-            <Btn
-              label={isSubmitting ? "Recording Sale…" : "Confirm Sale — Generate Bill"}
-              onClick={async () => {
-                if (isSubmitting) return;
-                setIsSubmitting(true);
-                setSubmitError(null);
-                try {
-                  await salesApi.create({
-                    sareeId: saree.id,
-                    channel: "RETAIL",
-                    amount: soldPrice,
-                  });
-                  setStep("success");
-                } catch (err) {
-                  setSubmitError(err instanceof ApiError ? err.message : "Failed to record sale — please try again.");
-                } finally {
-                  setIsSubmitting(false);
-                }
-              }}
-              style={{ width: "100%", background: isSubmitting ? "#999" : C.green, height: 56, cursor: isSubmitting ? "not-allowed" : "pointer" }}
+                </div>
+              ) : undefined}
             />
-            <Btn label="← Edit Details" variant="ghost" onClick={() => setStep(3)} style={{ width: "100%" }} />
-          </div>
-        </div>
+
+            <ConsequenceNote tone="info">
+              Confirming records the sale, removes this saree from shop inventory, and generates a bill you can print or send on WhatsApp.
+            </ConsequenceNote>
+
+            {submitError && (
+              <div role="alert" style={{ marginTop: 16, fontFamily: F.u, fontSize: 14, color: "#AB3832" }}>{submitError}</div>
+            )}
+          </StepBody>
+
+          <FlowActions
+            accent={ACCENT_SALE}
+            tone="confirm"
+            backLabel="Edit details"
+            onBack={() => setStep(3)}
+            primaryIcon={Check}
+            primaryLabel="Confirm sale — generate bill"
+            primaryBusy={isSubmitting}
+            onPrimary={async () => {
+              if (isSubmitting) return;
+              setIsSubmitting(true);
+              setSubmitError(null);
+              try {
+                await salesApi.create({ sareeId: saree.id, channel: "RETAIL", amount: soldPrice });
+                setStep("success");
+              } catch (err) {
+                setSubmitError(err instanceof ApiError ? err.message : "Failed to record sale — please try again.");
+              } finally {
+                setIsSubmitting(false);
+              }
+            }}
+          />
+        </>
       )}
+
     </div>
   );
 }

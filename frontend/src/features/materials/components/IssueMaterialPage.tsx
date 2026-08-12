@@ -222,7 +222,7 @@ export function IssueMaterialPage() {
     <div style={{ fontFamily: F.ui, background: T.silkCream, minHeight: "100dvh" }}>
       {/* Header */}
       <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", display: "flex", alignItems: "center" }}>
-        <div style={{ position: "relative", zIndex: 2, padding: "48px 0 110px 48px", flex: "0 0 100%", maxWidth: "100%" }}>
+        <div style={{ position: "relative", zIndex: 2, padding: "48px 0 110px 56px", flex: "0 0 100%", maxWidth: "100%" }}>
           <div style={{ fontFamily: F.mono, fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase", marginBottom: 12 }}>
             Since 1999 · Material Issuance
           </div>
@@ -235,7 +235,7 @@ export function IssueMaterialPage() {
         </div>
       </header>
 
-      <div style={{ padding: "40px 56px 80px", maxWidth: 1200, margin: "0 auto" }}>
+      <div style={{ padding: "40px 56px 80px", width: "100%" }}>
 
         {/* Success banner */}
         <AnimatePresence>
