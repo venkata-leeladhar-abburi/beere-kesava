@@ -10,6 +10,8 @@ import { RetailReturnSuccessView, WholesaleReturnSuccessView } from './ProcessRe
 import { ProcessReturnRetailFlow } from './ProcessReturnRetailFlow';
 import { ProcessReturnWholesaleFlow } from './ProcessReturnWholesaleFlow';
 import { Button } from "../../../../shared/ui/primitives";
+import { useResponsive } from "../../../../hooks/useResponsive";
+import { StepHeader, StepBody } from "./flow-kit";
 import { rupees, formatMoney } from "@/lib/domain/money";
 
 type MyReturnType = "retail" | "wholesale" | "damage" | null;
@@ -17,6 +19,7 @@ type ReturnStep = "type" | 1 | 2 | 3 | "success";
 
 function ProcessReturn({ onBack }: { onBack: () => void }) {
   const canSeePrices = useCanSeePrices();
+  const { isMobile } = useResponsive();
   const [returnType, setReturnType] = useState<MyReturnType>(null);
   const [step, setStep] = useState<ReturnStep>("type");
 
@@ -75,39 +78,49 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
   if (step === "type") {
     return (
       <div style={{ paddingBottom: 32 }}>
-        <ProcessReturnHeader step={step} onBack={onBack} setStep={setStep} setReturnType={setReturnType} />
-        <div style={{ margin: "20px 20px 8px" }}>
-          <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text, marginBottom: 4 }}>Select Return Type</div>
-          <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>Choose the type of return to process</div>
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, margin: "0 20px 8px" }}>
-          <Button
-            onClick={() => { setReturnType("retail"); setStep(1); }}
-            variant="ghost"
-            className="h-auto p-5 rounded-2xl border-[1.5px] border-[rgba(110,15,45,0.12)] bg-white flex-col items-start gap-3 shadow-[0_2px_12px_rgba(44,24,16,0.06)] text-left justify-start"
-          >
-            <div style={{ width: 48, height: 48, borderRadius: 12, background: "rgba(192,57,43,0.10)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <ShoppingBag size={24} color={C.crim} />
-            </div>
-            <div>
-              <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text, marginBottom: 6 }}>Retail Return</div>
-              <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, lineHeight: 1.5 }}>Customer returning a saree they purchased from our shop. Has original receipt or saree barcode.</div>
-            </div>
-          </Button>
-          <Button
-            onClick={() => { setReturnType("wholesale"); setStep(1); }}
-            variant="ghost"
-            className="h-auto p-5 rounded-2xl border-[1.5px] border-[rgba(110,15,45,0.12)] bg-white flex-col items-start gap-3 shadow-[0_2px_12px_rgba(44,24,16,0.06)] text-left justify-start"
-          >
-            <div style={{ width: 48, height: 48, borderRadius: 12, background: "rgba(200,155,71,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Building2 size={24} color={C.gold} />
-            </div>
-            <div>
-              <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text, marginBottom: 6 }}>Wholesale Return</div>
-              <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, lineHeight: 1.5 }}>Saree returned from wholesale buyer. No barcode — a new one will be generated and saree added to inventory.</div>
-            </div>
-          </Button>
-        </div>
+        {isMobile && <ProcessReturnHeader step={step} onBack={onBack} setStep={setStep} setReturnType={setReturnType} />}
+        <StepBody>
+          <StepHeader
+            title="What kind of return is this?"
+            subtitle="The two paths differ: a retail return matches an existing sale, a wholesale return creates a brand-new inventory record."
+          />
+          <div role="radiogroup" aria-label="Return type" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 18 }}>
+            {[
+              {
+                id: "retail" as const, Icon: ShoppingBag, accent: "#AB3832", soft: "rgba(171,56,50,0.08)",
+                title: "Retail Return",
+                desc: "A customer is bringing back a saree they bought here.",
+                need: "Needs the saree barcode or the original bill",
+              },
+              {
+                id: "wholesale" as const, Icon: Building2, accent: "#845E04", soft: "rgba(200,155,71,0.14)",
+                title: "Wholesale Return",
+                desc: "A wholesale buyer is sending stock back to us.",
+                need: "No barcode — a new tag is generated and the saree joins inventory",
+              },
+            ].map(o => (
+              <div key={o.id} style={{ ["--rt" as string]: o.accent, ["--rt-soft" as string]: o.soft } as React.CSSProperties}>
+                <Button
+                  onClick={() => { setReturnType(o.id); setStep(1); }}
+                  variant="tertiary"
+                  fullWidth
+                  role="radio"
+                  aria-checked={false}
+                  className="h-full flex-col items-start justify-start gap-4 whitespace-normal rounded-[18px] border border-[rgba(110,15,45,0.12)] bg-white p-6 text-left shadow-[0_2px_12px_rgba(74,6,27,0.06)] transition-all hover:border-[var(--rt)] hover:shadow-[0_8px_28px_rgba(74,6,27,0.12)]"
+                >
+                  <span style={{ width: 52, height: 52, borderRadius: 14, background: o.soft, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <o.Icon size={26} color={o.accent} />
+                  </span>
+                  <span style={{ display: "block" }}>
+                    <span style={{ display: "block", fontFamily: F.u, fontWeight: 600, fontSize: 18, color: C.wine, marginBottom: 6, letterSpacing: "-0.01em" }}>{o.title}</span>
+                    <span style={{ display: "block", fontFamily: F.u, fontSize: 14, color: C.text, lineHeight: 1.55, marginBottom: 10 }}>{o.desc}</span>
+                    <span style={{ display: "inline-block", fontFamily: F.u, fontSize: 13, color: C.muted, lineHeight: 1.5, borderTop: `1px solid ${C.bdr}`, paddingTop: 10 }}>{o.need}</span>
+                  </span>
+                </Button>
+              </div>
+            ))}
+          </div>
+        </StepBody>
         <ReturnHistorySection returnLog={returnLog} canSeePrices={canSeePrices} />
       </div>
     );
@@ -117,7 +130,7 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
   if (step === "success" && returnType === "retail") {
     return (
       <div style={{ paddingBottom: 32 }}>
-        <ProcessReturnHeader step={step} onBack={onBack} setStep={setStep} setReturnType={setReturnType} />
+        {isMobile && <ProcessReturnHeader step={step} onBack={onBack} setStep={setStep} setReturnType={setReturnType} />}
         <RetailReturnSuccessView resetReturn={resetReturn} onBack={onBack} />
       </div>
     );
@@ -127,7 +140,7 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
   if (step === "success" && returnType === "wholesale") {
     return (
       <div style={{ paddingBottom: 32 }}>
-        <ProcessReturnHeader step={step} onBack={onBack} setStep={setStep} setReturnType={setReturnType} />
+        {isMobile && <ProcessReturnHeader step={step} onBack={onBack} setStep={setStep} setReturnType={setReturnType} />}
         <WholesaleReturnSuccessView
           wsNewId={wsNewId}
           wsVendor={wsVendor}
@@ -144,7 +157,7 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
   if (returnType === "retail") {
     return (
       <div style={{ paddingBottom: 32 }}>
-        <ProcessReturnHeader step={step} onBack={onBack} setStep={setStep} setReturnType={setReturnType} />
+        {isMobile && <ProcessReturnHeader step={step} onBack={onBack} setStep={setStep} setReturnType={setReturnType} />}
         <ProcessReturnRetailFlow
           step={step as 1 | 2 | 3}
           setStep={setStep}
@@ -179,7 +192,7 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
   // ── WHOLESALE STEPS ──
   return (
     <div style={{ paddingBottom: 32 }}>
-      <ProcessReturnHeader step={step} onBack={onBack} setStep={setStep} setReturnType={setReturnType} />
+      {isMobile && <ProcessReturnHeader step={step} onBack={onBack} setStep={setStep} setReturnType={setReturnType} />}
       <ProcessReturnWholesaleFlow
         step={step as 1 | 2}
         setStep={setStep}

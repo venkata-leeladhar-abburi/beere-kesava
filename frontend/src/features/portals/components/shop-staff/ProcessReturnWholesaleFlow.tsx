@@ -1,7 +1,12 @@
 import React from "react";
-import { Camera, Package, QrCode, Check } from "lucide-react";
+import { motion } from "motion/react";
+import { Camera, Package, QrCode, Check, ImagePlus } from "lucide-react";
 import { C, F, Card, Btn } from "./theme";
 import { Button, Input, Select, SelectItem } from "../../../../shared/ui/primitives";
+import {
+  Stepper, StepHeader, StepBody, FlowActions, SummaryPanel,
+  ConsequenceNote, ACCENT_WHOLESALE, type FlowStep, type SummaryRow,
+} from "./flow-kit";
 import { rupees, formatMoney } from "@/lib/domain/money";
 
 interface ProcessReturnWholesaleFlowProps {
@@ -59,148 +64,194 @@ export function ProcessReturnWholesaleFlow({
   setReturnType,
   onConfirm,
 }: ProcessReturnWholesaleFlowProps) {
+  const steps: FlowStep[] = [
+    { label: "Saree Details",    summary: wsVendor.trim() || undefined },
+    { label: "Generate Barcode", summary: wsNewId || undefined },
+  ];
+
+  // Spell out what is still missing rather than just greying the button out.
+  const missing: string[] = [];
+  if (!wsVendor.trim()) missing.push("vendor");
+  if (!wsWeight.trim()) missing.push("weight");
+  if (!wsReason) missing.push("return reason");
+  const missingHint = missing.length ? `Still needed: ${missing.join(", ")}` : undefined;
+
+  const labelStyle: React.CSSProperties = {
+    fontFamily: F.u, fontWeight: 500, fontSize: 14, color: C.text, display: "block", marginBottom: 8,
+  };
+
   return (
     <div>
-      {/* Progress */}
-      <div style={{ padding: "16px 20px 8px" }}>
-        <div style={{ display: "flex", gap: 4 }}>
-          {(["Saree Details", "Generate Barcode"] as const).map((label, i) => (
-            <div key={i} style={{ flex: 1 }}>
-              <div style={{ height: 4, borderRadius: 999, background: (i + 1) <= (step as number) ? C.gold : "rgba(200,155,71,0.20)", marginBottom: 5 }} />
-              <div style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 0.8, textTransform: "uppercase" as const, color: (i + 1) <= (step as number) ? "#8B6520" : C.muted, textAlign: "center" as const }}>{label}</div>
-            </div>
-          ))}
-        </div>
-      </div>
+      <Stepper
+        steps={steps}
+        current={step as number}
+        accent={ACCENT_WHOLESALE}
+        onJump={n => setStep(n)}
+      />
 
-      {/* Step 1 — Saree Details */}
+      {/* ── Step 1 — Saree details ── */}
       {step === 1 && (
-        <div style={{ marginTop: 12 }}>
-          <Card style={{ margin: "0 20px 16px", overflow: "hidden" }}>
-            <div style={{ height: 4, background: `linear-gradient(90deg, ${C.gold}, rgba(200,155,71,0.3))` }} />
-            <div style={{ padding: 18 }}>
-              <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text, marginBottom: 16 }}>Enter Saree Details</div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                {[
-                  { label: "Vendor / Source Name", val: wsVendor, setter: setWsVendor, placeholder: "e.g. Ravi Silks", type: "text" },
-                  { label: "Design Code", val: wsDesign, setter: setWsDesign, placeholder: "e.g. BKB-045", type: "text" },
-                  { label: "Saree Color", val: wsColor, setter: setWsColor, placeholder: "e.g. Maroon", type: "text" },
-                ].map((f, i) => (
-                  <div key={i} style={{ gridColumn: i === 0 ? "1 / -1" : undefined }}>
-                    <label style={{ fontFamily: F.u, fontWeight: 500, fontSize: 12, color: C.muted, display: "block", marginBottom: 6 }}>{f.label}</label>
-                    <Input value={f.val} onChange={e => f.setter(e.target.value)} placeholder={f.placeholder} type={f.type} className="w-full" />
-                  </div>
+        <>
+          <StepBody>
+            <StepHeader
+              title="Describe the returned saree"
+              subtitle="A wholesale return arrives with no barcode, so these details are the only record we will have of the piece."
+            />
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 18, marginBottom: 24 }}>
+              <div style={{ gridColumn: "1 / -1" }}>
+                <label htmlFor="ws-vendor" style={labelStyle}>
+                  Vendor / source name <span style={{ color: "#AB3832" }}>*</span>
+                </label>
+                <Input id="ws-vendor" value={wsVendor} onChange={e => setWsVendor(e.target.value)} placeholder="e.g. Ravi Silks" size="lg" className="w-full" />
+              </div>
+              <div>
+                <label htmlFor="ws-design" style={labelStyle}>Design code</label>
+                <Input id="ws-design" value={wsDesign} onChange={e => setWsDesign(e.target.value)} placeholder="e.g. BKB-045" size="lg" className="w-full font-mono" />
+              </div>
+              <div>
+                <label htmlFor="ws-color" style={labelStyle}>Saree colour</label>
+                <Input id="ws-color" value={wsColor} onChange={e => setWsColor(e.target.value)} placeholder="e.g. Maroon" size="lg" className="w-full" />
+              </div>
+              <div>
+                <label htmlFor="ws-type" style={labelStyle}>Saree type</label>
+                <Select value={wsType} onValueChange={setWsType} size="lg">
+                  {["Self Brocade", "Heavy Zari", "Plain Silk", "Kanjivaram", "Cotton"].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                </Select>
+              </div>
+              <div>
+                <label htmlFor="ws-weight" style={labelStyle}>
+                  Weight in grams <span style={{ color: "#AB3832" }}>*</span>
+                </label>
+                <Input id="ws-weight" value={wsWeight} onChange={e => setWsWeight(e.target.value)} placeholder="e.g. 840" type="number" size="lg" className="w-full font-mono" />
+              </div>
+              {canSeePrices && (
+                <div>
+                  <label htmlFor="ws-price" style={labelStyle}>Original purchase price (₹)</label>
+                  <Input id="ws-price" value={wsPrice} onChange={e => setWsPrice(e.target.value)} placeholder="e.g. 6500" type="number" size="lg" className="w-full font-mono" />
+                </div>
+              )}
+            </div>
+
+            <fieldset style={{ border: "none", margin: "0 0 24px", padding: 0 }}>
+              <legend style={{ ...labelStyle, marginBottom: 12 }}>
+                Return reason <span style={{ color: "#AB3832" }}>*</span>
+              </legend>
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                {wsReasonOptions.map(r => (
+                  <Button
+                    key={r}
+                    variant="tertiary"
+                    role="radio"
+                    aria-checked={wsReason === r}
+                    onClick={() => setWsReason(r)}
+                    className={wsReason === r
+                      ? "h-10 rounded-full border-2 border-[#845E04] bg-[rgba(200,155,71,0.14)] px-4 text-[14px] font-semibold text-[#845E04] hover:bg-[rgba(200,155,71,0.14)]"
+                      : "h-10 rounded-full border border-[rgba(110,15,45,0.16)] bg-white px-4 text-[14px] text-[#4F4A45] hover:border-[rgba(110,15,45,0.32)]"}
+                  >
+                    {r}
+                  </Button>
                 ))}
-                <div>
-                  <label style={{ fontFamily: F.u, fontWeight: 500, fontSize: 12, color: C.muted, display: "block", marginBottom: 6 }}>Saree Type</label>
-                  <Select value={wsType} onValueChange={setWsType}>
-                    {["Self Brocade", "Heavy Zari", "Plain Silk", "Kanjivaram", "Cotton"].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                  </Select>
-                </div>
-                <div>
-                  <label style={{ fontFamily: F.u, fontWeight: 500, fontSize: 12, color: C.muted, display: "block", marginBottom: 6 }}>Weight (grams)</label>
-                  <Input value={wsWeight} onChange={e => setWsWeight(e.target.value)} placeholder="e.g. 840" type="number" className="w-full font-mono" />
-                </div>
-                {canSeePrices && (
-                  <div style={{ gridColumn: "1 / -1" }}>
-                    <label style={{ fontFamily: F.u, fontWeight: 500, fontSize: 12, color: C.muted, display: "block", marginBottom: 6 }}>Original Purchase Price ₹</label>
-                    <Input value={wsPrice} onChange={e => setWsPrice(e.target.value)} placeholder="e.g. 6500" type="number" className="w-full font-mono" />
-                  </div>
-                )}
+              </div>
+            </fieldset>
+
+            <div>
+              <span style={{ ...labelStyle, marginBottom: 10 }}>Photo of the saree <span style={{ color: C.muted, fontWeight: 400 }}>(optional)</span></span>
+              <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                <Button variant="secondary" iconLeft={Camera} onClick={() => {}} className="h-11 rounded-xl border border-dashed border-[rgba(110,15,45,0.28)] bg-transparent px-5 text-[14px] text-[#4F4A45]">
+                  Take photo
+                </Button>
+                <Button variant="secondary" iconLeft={ImagePlus} onClick={() => {}} className="h-11 rounded-xl border border-dashed border-[rgba(110,15,45,0.28)] bg-transparent px-5 text-[14px] text-[#4F4A45]">
+                  Choose from gallery
+                </Button>
               </div>
             </div>
-          </Card>
-          <div style={{ margin: "0 20px 16px" }}>
-            <div style={{ fontFamily: F.u, fontWeight: 500, fontSize: 13, color: C.muted, marginBottom: 10 }}>Return Reason</div>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" as const }}>
-              {wsReasonOptions.map(r => (
-                <Button key={r} variant="tertiary" size="sm" onClick={() => setWsReason(r)}
-                  className={wsReason === r
-                    ? "rounded-full border-2 border-[#C89B47] bg-[rgba(200,155,71,0.12)] text-[#8B6520] font-semibold"
-                    : "rounded-full border border-[rgba(110,15,45,0.12)] bg-transparent text-[#69635E]"}>
-                  {r}
-                </Button>
-              ))}
-            </div>
-          </div>
-          <div style={{ margin: "0 20px 16px", display: "flex", gap: 10 }}>
-            <Button variant="secondary" fullWidth iconLeft={Camera} onClick={() => { }}
-              className="h-[46px] rounded-xl border-[1.5px] border-dashed border-[rgba(110,15,45,0.12)] bg-transparent text-[13px] text-[#69635E]">
-              Add Photo
-            </Button>
-            <Button variant="secondary" fullWidth iconLeft={Package} onClick={() => { }}
-              className="h-[46px] rounded-xl border-[1.5px] border-dashed border-[rgba(110,15,45,0.12)] bg-transparent text-[13px] text-[#69635E]">
-              From Gallery
-            </Button>
-          </div>
-          <div style={{ padding: "0 20px", display: "flex", gap: 10 }}>
-            <Btn label="← Back" variant="ghost" onClick={() => { setStep("type"); setReturnType(null); }} style={{ flex: 1 }} />
-            <Btn label="Next — Barcode →" onClick={() => canProceedWsStep1 && setStep(2)} style={{ flex: 2, background: canProceedWsStep1 ? C.gold : "#C0C0C0", color: canProceedWsStep1 ? C.text : "#888", cursor: canProceedWsStep1 ? "pointer" : "not-allowed" }} />
-          </div>
-        </div>
+          </StepBody>
+
+          <FlowActions
+            accent={ACCENT_WHOLESALE}
+            backLabel="Change return type"
+            onBack={() => { setStep("type"); setReturnType(null); }}
+            primaryLabel="Next — Generate Barcode"
+            onPrimary={() => setStep(2)}
+            primaryDisabled={!canProceedWsStep1}
+            hint={missingHint}
+          />
+        </>
       )}
 
-      {/* Step 2 — Generate Barcode */}
+      {/* ── Step 2 — Barcode ── */}
       {step === 2 && (
-        <div style={{ marginTop: 12 }}>
-          <Card style={{ margin: "0 20px 16px", overflow: "hidden" }}>
-            <div style={{ height: 4, background: `linear-gradient(90deg, ${C.gold}, rgba(200,155,71,0.3))` }} />
-            <div style={{ padding: 18 }}>
-              <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.muted, textTransform: "uppercase" as const, letterSpacing: 1, marginBottom: 14 }}>Review — Saree Details</div>
-              {[
-                ["Vendor", wsVendor || "—"], ["Design Code", wsDesign || "—"],
-                ["Color", wsColor || "—"], ["Type", wsType],
-                ["Weight", wsWeight ? `${wsWeight} grams` : "—"],
-                ...(canSeePrices ? [["Price", wsPrice && !isNaN(Number(wsPrice)) ? formatMoney(rupees(Number(wsPrice))) : "—"]] : []),
-                ["Return Reason", wsReason || "—"],
-              ].map(([k, v], i, arr) => (
-                <div key={i} style={{ display: "flex", justifyContent: "space-between", marginBottom: 10, paddingBottom: 10, borderBottom: i < arr.length - 1 ? `1px solid ${C.bdr}` : "none" }}>
-                  <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{k}</span>
-                  <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, color: C.text }}>{v}</span>
-                </div>
-              ))}
-            </div>
-          </Card>
+        <>
+          <StepBody>
+            <StepHeader
+              title="Tag it and add to stock"
+              subtitle="Generate a fresh barcode for this piece, print the tag, and it joins shop inventory."
+            />
 
-          {!wsBarcodeGenerated ? (
-            <div style={{ margin: "0 20px 16px", textAlign: "center" as const }}>
-              <Button
-                variant="secondary"
-                fullWidth
-                iconLeft={QrCode}
-                onClick={() => {
-                  setWsNewId(`RTN-WS-2026-${String(Date.now()).slice(-3)}`);
-                  setWsBarcodeGenerated(true);
-                }}
-                className="h-[58px] rounded-2xl border-2 border-[#C89B47] bg-[rgba(200,155,71,0.10)] text-sm font-bold text-[#8B6520] hover:bg-[rgba(200,155,71,0.10)]"
-              >
-                Generate New Barcode
-              </Button>
-            </div>
-          ) : (
-            <div style={{ margin: "0 20px 16px" }}>
-              <div style={{ background: "#111", borderRadius: 14, padding: "20px 16px", textAlign: "center" as const, marginBottom: 12 }}>
-                <div style={{ display: "flex", gap: 2, alignItems: "flex-end", height: 48, justifyContent: "center", marginBottom: 8 }}>
-                  {[3, 1, 4, 1, 2, 3, 1, 2, 4, 1, 3, 2, 1, 4, 2, 1, 3, 1, 2, 3, 2, 1, 4].map((w, i) => (
-                    <div key={i} style={{ width: w * 2, background: "#FFF", height: i % 3 === 0 ? 48 : i % 2 === 0 ? 38 : 44, borderRadius: 1 }} />
-                  ))}
-                </div>
-                <div style={{ fontFamily: F.m, fontSize: 12, color: "#AAA", letterSpacing: 2 }}>{wsNewId}</div>
-              </div>
-              <div style={{ background: "rgba(30,102,64,0.08)", border: `1px solid rgba(30,102,64,0.22)`, borderRadius: 10, padding: "12px 14px", marginBottom: 14, display: "flex", alignItems: "center", gap: 10 }}>
-                <Check size={15} color={C.green} />
-                <span style={{ fontFamily: F.u, fontSize: 13, color: C.green }}>This saree will be added to shop inventory with ID {wsNewId}</span>
-              </div>
-            </div>
-          )}
+            <SummaryPanel
+              title="Saree details"
+              accent={ACCENT_WHOLESALE}
+              rows={([
+                { label: "Vendor", value: wsVendor || "—" },
+                { label: "Design code", value: wsDesign || "—", mono: true },
+                { label: "Colour", value: wsColor || "—" },
+                { label: "Type", value: wsType },
+                { label: "Weight", value: wsWeight ? `${wsWeight} g` : "—", mono: true },
+                ...(canSeePrices ? [{ label: "Purchase price", value: wsPrice && !isNaN(Number(wsPrice)) ? formatMoney(rupees(Number(wsPrice))) : "—" }] : []),
+                { label: "Return reason", value: wsReason || "—", emphasis: true },
+              ] as SummaryRow[])}
+            />
 
-          <div style={{ padding: "0 20px", display: "flex", flexDirection: "column" as const, gap: 10 }}>
-            {wsBarcodeGenerated && (
-              <Btn label="Confirm — Add to Inventory" icon={<Check size={16} />} onClick={onConfirm} style={{ width: "100%", background: C.green, height: 56 }} />
-            )}
-            <Btn label="← Back" variant="ghost" onClick={() => setStep(1)} style={{ width: "100%" }} />
-          </div>
-        </div>
+            <div style={{ marginTop: 22 }}>
+              {!wsBarcodeGenerated ? (
+                <div style={{ border: `1.5px dashed ${ACCENT_WHOLESALE.softBorder}`, background: ACCENT_WHOLESALE.soft, borderRadius: 16, padding: "28px 24px", textAlign: "center" }}>
+                  <QrCode size={30} color={ACCENT_WHOLESALE.base} style={{ margin: "0 auto 12px" }} />
+                  <div style={{ fontFamily: F.u, fontSize: 15, fontWeight: 600, color: C.wine, marginBottom: 5 }}>No barcode yet</div>
+                  <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginBottom: 18, maxWidth: 420, marginLeft: "auto", marginRight: "auto", lineHeight: 1.55 }}>
+                    This saree needs a new tag before it can be tracked. Generating one reserves the ID — it is only committed when you confirm.
+                  </div>
+                  <Button
+                    variant="primary"
+                    iconLeft={QrCode}
+                    onClick={() => {
+                      setWsNewId(`RTN-WS-2026-${String(Date.now()).slice(-3)}`);
+                      setWsBarcodeGenerated(true);
+                    }}
+                    className="h-12 rounded-full bg-[#845E04] px-7 text-[15px] font-semibold text-white hover:bg-[#6B4B01]"
+                  >
+                    Generate new barcode
+                  </Button>
+                </div>
+              ) : (
+                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+                  <div style={{ background: "#14100C", borderRadius: 16, padding: "26px 20px", textAlign: "center" }}>
+                    <div aria-hidden style={{ display: "flex", gap: 2, alignItems: "flex-end", height: 56, justifyContent: "center", marginBottom: 12 }}>
+                      {[3, 1, 4, 1, 2, 3, 1, 2, 4, 1, 3, 2, 1, 4, 2, 1, 3, 1, 2, 3, 2, 1, 4].map((w, i) => (
+                        <div key={i} style={{ width: w * 2, background: "#FFFDF9", height: i % 3 === 0 ? 56 : i % 2 === 0 ? 44 : 50, borderRadius: 1 }} />
+                      ))}
+                    </div>
+                    <div style={{ fontFamily: F.m, fontSize: 14, color: "#F5E8D0", letterSpacing: "2px" }}>{wsNewId}</div>
+                  </div>
+                  <ConsequenceNote tone="info">
+                    On confirm, this saree enters shop inventory as <strong>{wsNewId}</strong> and becomes available to sell. Print the tag and attach it before shelving.
+                  </ConsequenceNote>
+                </motion.div>
+              )}
+            </div>
+          </StepBody>
+
+          <FlowActions
+            accent={ACCENT_WHOLESALE}
+            tone="confirm"
+            onBack={() => setStep(1)}
+            primaryIcon={Check}
+            primaryLabel="Confirm — add to inventory"
+            onPrimary={onConfirm}
+            primaryDisabled={!wsBarcodeGenerated}
+            hint="Generate the barcode first"
+          />
+        </>
       )}
     </div>
   );
