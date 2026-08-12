@@ -80,9 +80,9 @@ export function MobileMenuDrawer({ open, onClose, activeTab, setTab }: {
                             variant="tertiary"
                             fullWidth
                             onClick={() => { setTab(page.key); onClose(); }}
-                            className="!justify-start !gap-3 !py-[11px] !pl-[30px] !pr-3.5 !bg-transparent !border-none"
+                            className="!justify-start !gap-3 !py-[11px] !pl-[36px] !pr-3.5 !bg-transparent !border-none"
                           >
-                            <div style={{ flex: 1 }}>
+                            <div style={{ flex: 1, textAlign: "left" }}>
                               <div style={{ fontFamily: F.ui, fontWeight: isActive ? 600 : 400, fontSize: 14, color: isActive ? T.royalBurgundy : T.luxuryBrown, letterSpacing: "0.05px" }}>
                                 {page.label}
                               </div>

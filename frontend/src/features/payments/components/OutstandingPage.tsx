@@ -14,7 +14,7 @@ import { BatchOutstanding } from "./outstanding/BatchOutstanding";
 import { ExternalOutstanding } from "./outstanding/ExternalOutstanding";
 import { TopSellers } from "./outstanding/TopSellers";
 import { rupees, formatMoney } from "@/lib/domain/money";
-import inventoryHero from "../../../../assets/inline/inventoryHero.jpg";
+import inventoryHero from "../../../assets/inline/inventoryHero.jpg";
 
 const inr = (n: number) => formatMoney(rupees(n));
 
