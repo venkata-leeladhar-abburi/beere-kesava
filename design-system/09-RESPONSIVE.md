@@ -681,8 +681,52 @@ future session wonders why Superadmin "needed more work" than its siblings.
 
 Verified via `tsc`/`build` — clean, no lint regressions.
 
-### R4–R8
-- [ ] R4 Reports pages — **scope with user before starting**
+### R4 — Reports pages — ✅ COMPLETE (2026-08-13)
+
+Scoped with the user via `AskUserQuestion` first, per this section's own instruction — two
+genuine design decisions, not mechanical fixes:
+
+1. **`ReportTabNav.tsx`'s 10-tab strip** (icon+label+desc, fixed equal-width flex row —
+   unusable at any phone width). Chose a **dropdown/picker** over horizontal scroll: below
+   `md`, the tab strip is replaced by a single "current report" trigger + `DropdownMenu`
+   (reused the existing shared `DropdownMenu` component, no new overlay UI built) listing
+   all 10 tabs with icon/label/desc. Desktop tab strip unchanged, gated behind
+   `hidden md:flex`. Reasoning: at 10 destinations, a scannable list beats blind horizontal
+   scrolling for findability.
+2. **`PageHeaderAndMetrics.tsx`'s 5-tile stats strip** (flex row, no wrap). Chose a
+   **2-column wrapping grid** (`grid-cols-2 md:flex`) over horizontal scroll or a 1-column
+   stack — keeps every metric glanceable with no gesture required, consistent with the
+   grid-collapse pattern already used everywhere else in this rollout (R2/R3).
+
+Both implemented and committed directly (not via parallel agents, since they needed
+judgment). Not visually verified in-browser — same stuck browser-preview policy check as
+a prior session; `tsc`/`build`/`lint` clean.
+
+**Then the mechanical remainder** — 13 report-section files with hardcoded gutters
+(`padding: "32px 40px"` or `"0 48px"`) and/or fixed multi-column chart/KPI grids — done via
+3 parallel worktree-isolated agents (same successful pattern as R2), applying the two
+already-established recipes (§3.3 gutters, grid-collapse) with no new decisions needed:
+
+- [x] `ReportTabNav.tsx` — mobile picker + gutter (design decision, see above)
+- [x] `PageHeaderAndMetrics.tsx` — 2-col grid + gutter (design decision, see above)
+- [x] `OutstandingPaymentsReport.tsx` — gutter + 1 grid
+- [x] `RawMaterialReport.tsx` — gutter + 1 grid
+- [x] `RetailSalesReport.tsx` — gutter + 2 grids
+- [x] `CustomerReport.tsx` — gutter + 3 grids
+- [x] `ScheduledReportsSection.tsx` — gutter + 2 grids
+- [x] `OverdueAlertsReport.tsx` — gutter + 1 grid
+- [x] `DownloadHistorySection.tsx` — gutter + 1 grid
+- [x] `ReportsFooter.tsx` — gutter + 1 grid (unequal `1.6fr 1fr 1fr 1fr 1fr` preserved via `md:grid-cols-[1.6fr_1fr_1fr_1fr_1fr]`, desktop exact)
+- [x] `LiveSummarySnapshot.tsx` — gutter (48px variant, `xl:px-12`) + 1 grid
+- [x] `SareeProductionReport.tsx` — gutter + 3 grids
+- [x] `WholesaleSalesReport.tsx` — gutter (2 wrappers) + 2 grids
+- [x] `WeaverPaymentReport.tsx` — gutter + 2 grids
+- [x] `ProfitLossReport.tsx` — gutter + 1 grid (uneven `1.6fr 1fr` preserved via `md:grid-cols-[1.6fr_1fr]`); `ledgerColumns` DataTable correctly untouched — plain 2-col table, not a grid, already excluded from R1 as a semantic mismatch
+
+Verified via `tsc`/`build`/`lint` on every batch before merge — clean, same ~33-error
+pre-existing baseline throughout, zero new errors in any touched file.
+
+### R5–R8
 - [ ] R5 Forms & filter bars
 - [ ] R6 Navigation audit
 - [ ] R7 Grid-as-table triage
