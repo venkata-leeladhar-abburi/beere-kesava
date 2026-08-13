@@ -145,11 +145,11 @@ export function BulkOrderPaymentsTab({
       cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{p.method}</span>,
     },
     {
-      id: "utr", header: "UTR / Reference", accessor: p => p.utr,
+      id: "utr", header: "UTR / Reference", accessor: p => p.utr, priority: 1,
       cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{p.utr}</span>,
     },
     {
-      id: "firm", header: "Firm", accessor: p => p.firmName,
+      id: "firm", header: "Firm", accessor: p => p.firmName, priority: 3,
       cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.firmName || "—"}</span>,
     },
   ];
@@ -175,7 +175,7 @@ export function BulkOrderPaymentsTab({
         {payments.length === 0 ? (
           <div style={{ padding: "36px 20px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No payments recorded against this order yet.</div>
         ) : (
-          <DataTable columns={columns} data={rows} getRowId={p => String(p.__idx)} />
+          <DataTable responsive columns={columns} data={rows} getRowId={p => String(p.__idx)} />
         )}
       </div>
     </div>
