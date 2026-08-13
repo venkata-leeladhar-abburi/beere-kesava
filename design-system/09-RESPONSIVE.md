@@ -653,8 +653,35 @@ worktree-teardown/collision issues; all 4 completed cleanly this time).
 Verified via `tsc`/`build`/`lint` on every batch before merge — clean, same ~33-error
 pre-existing baseline throughout, zero new errors in any touched file.
 
-### R3–R8
-- [ ] R3 Dashboards & stats — Admin / Weaver / Worker / Shop staff / Superadmin
+### R3 — Dashboards & stats — ✅ COMPLETE (2026-08-13)
+
+**Investigated all 5 portals before touching anything** — the actual R3 deliverable is the
+per-portal decision below, not code. Root-cause finding: **all 5 portal shells branch on
+`isMobile` at the very top** (`WeaverPortal.tsx`, `WorkerPortal.tsx`, `ShopStaffPortal.tsx`,
+`BeereDashboard.tsx`, `SuperadminDashboard.tsx`), but **4 of the 5 swap in an entirely
+separate mobile component tree** (dedicated `Mobile*.tsx`/`*Desktop.tsx` pairs) while
+**Superadmin swaps only the nav chrome** and reuses the same content pages for both.
+That architectural difference is what determined whether each portal needed a code change:
+
+| Portal | Split architecture | KPI grids found | Action |
+|---|---|---|---|
+| **Admin** | Full tree swap (`desktop.tsx` vs `mobile.tsx`, separate `Mobile*` components) | `ThreeCol.tsx`/`RawMaterial.tsx` — confirmed imported **only** by `desktop.tsx`; mobile has its own `MobileRawMaterial` etc. | **No change.** Never renders on mobile. |
+| **Weaver** | Full tree swap (`DesktopWeaverPortal`/`MobileWeaverPortal`) | `PaymentLedgerPage.tsx` (4 grids) — imported by `MobileWeaverPortal.tsx`, genuinely mobile content | **Investigated, no change needed.** The 6-column ledger table (lines ~309-329) is already wrapped in `overflowX: auto` + `minWidth: 640` — a deliberate, correctly-guarded §3.6 scroll fallback, not a bug. The two 2-column stat grids are simple stat pairs, mobile-safe as-is. |
+| **Worker** | Full tree swap (`WorkerPortalDesktop`/mobile branch in `WorkerPortal.tsx`, `WorkerHome` vs `WorkerHomeDesktop`) | `WorkerHome.tsx` — a fixed 3-column "Quick Stats" trio (short number + short label per tile) | **No change.** Read the actual content — 3 short stat tiles is a standard, mobile-safe pattern at any phone width; not the "12-column form crammed onto a phone" failure mode this phase targets. |
+| **Shop staff** | Full tree swap (`MobileHeader`/`MobileTabBar` vs desktop chrome in `ShopStaffPortal.tsx`) | None found | **No change.** |
+| **Superadmin** | **Chrome-only swap** — `SAMobileTopNav`/`SAMobileMenuDrawer` vs `SATopNav`, but `renderPage()` (the actual content, including `SAOverviewPage`) is called from **both** branches | `SAOverviewPage.tsx` (2 grids: 4-col actions, 3-col raw-material cards), `SAWeaverSection.tsx` (1 grid: 2-col per-card stat pair) | **Fixed** — all 3 grids collapsed to `grid-cols-1 md:grid-cols-N`, desktop unchanged. This portal was the one genuine case: its content is not swapped out on mobile the way the other 4 are. |
+
+**The island-pattern decision (§2's open question, now resolved for R3):** keep the
+per-portal mobile-tree-swap pattern for Admin, Weaver, Worker, and Shop staff — each already
+has a comprehensive, working, purpose-built mobile experience; folding them into single
+responsive components is a large refactor, explicitly out of scope for Phase R (§0), and
+there is no correctness problem driving a change. Superadmin's chrome-only-swap architecture
+is the outlier and is why it was the only portal needing real R3 fixes — worth knowing if a
+future session wonders why Superadmin "needed more work" than its siblings.
+
+Verified via `tsc`/`build` — clean, no lint regressions.
+
+### R4–R8
 - [ ] R4 Reports pages — **scope with user before starting**
 - [ ] R5 Forms & filter bars
 - [ ] R6 Navigation audit
