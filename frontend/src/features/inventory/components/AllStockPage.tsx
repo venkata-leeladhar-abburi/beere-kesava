@@ -105,7 +105,7 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
     <div style={{ minHeight: "calc(100dvh - 90px)", background: T.silkCream, fontFamily: F.ui }}>
 
       {/* ── HERO ── */}
-      <section style={{ background: G.card, padding: "52px 56px 0", position: "relative", overflow: "hidden" }}>
+      <section className="px-4 md:px-7 xl:px-14" style={{ background: G.card, paddingTop: 52, position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, backgroundImage: "repeating-linear-gradient(135deg, rgba(200,155,71,0.04) 0px, rgba(200,155,71,0.04) 1px, transparent 1px, transparent 60px)", pointerEvents: "none" }} />
         <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 80, background: "linear-gradient(to top, rgba(247,242,234,0.08), transparent)", pointerEvents: "none" }} />
 
@@ -155,7 +155,7 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
       </section>
 
       {/* ── SEARCH + FILTER BAR ── */}
-      <section style={{ padding: "28px 56px 0" }}>
+      <section className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 28 }}>
         <FadeUp>
           <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, padding: "18px 22px", boxShadow: "0 4px 20px rgba(74,6,27,0.07)", display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
             <div style={{ flex: "1 1 280px" }}>
@@ -219,7 +219,7 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
       </section>
 
       {/* ── CARDS GRID ── */}
-      <section style={{ padding: "24px 56px 56px" }}>
+      <section className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 24, paddingBottom: 56 }}>
         {isLoading ? (
           <FadeUp>
             <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, padding: "64px 32px", textAlign: "center" }}>
