@@ -42,15 +42,23 @@ import { Button } from "../../../../shared/ui/primitives";
 // ═══════════════════════════════════════════════════════════════════════════════
 function MobileHero() {
   return (
-    <section style={{ position: "relative", height: 320, overflow: "hidden", background: "#0D0207" }}>
+    <section style={{ position: "relative", minHeight: 464, overflow: "hidden", background: "#0D0207", display: "flex" }}>
+      {/* Full-bleed showroom plate — a 55%-wide right panel left the image
+          cropped through its focal point on a phone; full-bleed + a directional
+          scrim keeps the showroom readable behind the copy at every width. */}
       <motion.img
         src={imgShowroom}
         alt="Showroom"
-        initial={{ scale: 1.18, opacity: 0 }}
+        initial={{ scale: 1.14, opacity: 0 }}
         animate={{ scale: 1.0, opacity: 1 }}
-        transition={{ duration: 10, ease: "linear", opacity: { duration: 1.2, ease: [0.22, 1, 0.36, 1] } }}
-        style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "55%", height: "100%", objectFit: "cover", objectPosition: "center" }}
+        transition={{ duration: 14, ease: "linear", opacity: { duration: 1.2, ease: [0.22, 1, 0.36, 1] } }}
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "68% center" }}
       />
+      {/* Vertical scrim — anchors the copy block at the bottom */}
+      <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none", background: "linear-gradient(to top, #0D0207 0%, rgba(13,2,7,0.95) 30%, rgba(13,2,7,0.74) 55%, rgba(13,2,7,0.38) 78%, rgba(13,2,7,0.22) 100%)" }} />
+      {/* Horizontal scrim — protects the left text edge, lets the showroom breathe top-right */}
+      <div style={{ position: "absolute", inset: 0, zIndex: 2, pointerEvents: "none", background: "linear-gradient(to right, rgba(13,2,7,0.82) 0%, rgba(13,2,7,0.48) 46%, rgba(13,2,7,0.08) 82%, transparent 100%)" }} />
+      <div style={{ position: "absolute", inset: 0, zIndex: 3, backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 50px, rgba(200,155,71,0.022) 50px, rgba(200,155,71,0.022) 51px)`, pointerEvents: "none" }} />
       {/* ── Gold sweep reveal ── */}
       <motion.div
         initial={{ x: "-100%" }}
@@ -62,17 +70,17 @@ function MobileHero() {
           pointerEvents: "none", zIndex: 8,
         }}
       />
-      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, #0D0207 0%, #0D0207 38%, rgba(13,2,7,0.92) 50%, rgba(13,2,7,0.5) 65%, rgba(13,2,7,0.1) 80%)", pointerEvents: "none", zIndex: 1 }} />
-      <div style={{ position: "absolute", inset: 0, backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 50px, rgba(200,155,71,0.022) 50px, rgba(200,155,71,0.022) 51px)`, pointerEvents: "none", zIndex: 2 }} />
-      <div style={{ position: "relative", zIndex: 5, height: "100%", padding: "28px 20px", display: "flex", flexDirection: "column", justifyContent: "center", gap: 14 }}>
+      {/* Copy block — bottom-anchored on one shared left edge; the 56px bottom
+          pad is what the stats card's negative overlap eats into. */}
+      <div style={{ position: "relative", zIndex: 5, width: "100%", display: "flex", flexDirection: "column", justifyContent: "flex-end", gap: 18, padding: "76px 20px 56px" }}>
         <motion.div
           initial={{ opacity: 0, x: -18 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.65, delay: 0.3, ease: EASE }}
-          style={{ display: "flex", alignItems: "center", gap: 8 }}
+          style={{ display: "flex", alignItems: "center", gap: 10 }}
         >
-          <div style={{ width: 18, height: 1, background: T.antiqueGold, opacity: 0.6 }} />
-          <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: "rgba(200,155,71,0.78)", letterSpacing: "2.5px", textTransform: "uppercase" }}>Tradition. Trust. Timeless Quality.</span>
+          <div style={{ width: 22, height: 1, background: T.antiqueGold, opacity: 0.65, flexShrink: 0 }} />
+          <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 11, color: "rgba(200,155,71,0.82)", letterSpacing: "2.2px", textTransform: "uppercase", lineHeight: 1.4 }}>Tradition. Trust. Timeless Quality.</span>
         </motion.div>
         <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
           {[
@@ -80,7 +88,7 @@ function MobileHero() {
             { text: "Heritage",          italic: true,  color: T.antiqueGold },
             { text: "Into Every Thread", italic: false, color: T.warmCream   },
           ].map(({ text, italic, color }, i) => (
-            <div key={text} style={{ overflow: "hidden", lineHeight: "1.12" }}>
+            <div key={text} style={{ overflow: "hidden", lineHeight: "1.1" }}>
               <motion.div
                 initial={{ y: "110%", opacity: 0 }}
                 animate={{ y: "0%", opacity: 1 }}
@@ -88,7 +96,8 @@ function MobileHero() {
                 style={{
                   fontFamily: F.display, fontWeight: 400,
                   fontStyle: italic ? "italic" : "normal",
-                  fontSize: "clamp(28px, 7vw, 38px)", letterSpacing: "-0.2px", color,
+                  fontSize: "clamp(32px, 8.6vw, 44px)", letterSpacing: "-0.4px", color,
+                  textShadow: "0 2px 18px rgba(13,2,7,0.55)",
                 }}
               >
                 {text}
@@ -100,28 +109,31 @@ function MobileHero() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.7, delay: 0.95 }}
-          style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: "rgba(245,232,208,0.90)", lineHeight: 1.8, margin: 0, maxWidth: 240, letterSpacing: "0.05px" }}
+          style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13, color: "rgba(245,232,208,0.88)", lineHeight: 1.75, margin: 0, maxWidth: 320, letterSpacing: "0.05px" }}
         >
           From the finest raw silk to masterful craftsmanship — four generations of excellence.
         </motion.p>
+        {/* Both CTAs share one geometry (min-h 46 / px-5 / radius 14) so their
+            caps and baselines line up exactly — they previously carried
+            different py/px and rendered at different heights. */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 1.1, ease: EASE }}
-          style={{ display: "flex", gap: 10, flexWrap: "wrap" }}
+          style={{ display: "flex", alignItems: "stretch", gap: 10, flexWrap: "wrap", marginTop: 2 }}
         >
-          <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} style={{ borderRadius: 14, boxShadow: `0 6px 20px rgba(110,15,45,0.38)` }}>
+          <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} style={{ display: "flex", borderRadius: 14, boxShadow: `0 8px 24px rgba(110,15,45,0.42)` }}>
             <Button
               variant="primary"
-              className="!gap-2 !py-[11px] !px-5 !rounded-[14px] !border-none !bg-[linear-gradient(135deg,#6E0F2D_0%,#4A061B_100%)] hover:!bg-[linear-gradient(135deg,#6E0F2D_0%,#4A061B_100%)] !text-[#F5E8D0] !text-xs !font-semibold !tracking-[0.1px]"
+              className="!gap-2 !min-h-[46px] !py-0 !px-5 !rounded-[14px] !border-none !bg-[linear-gradient(135deg,#6E0F2D_0%,#4A061B_100%)] hover:!bg-[linear-gradient(135deg,#6E0F2D_0%,#4A061B_100%)] !text-[#F5E8D0] !text-xs !font-semibold !tracking-[0.1px]"
             >
-              Explore Production <ChevronRight size={12} color={T.warmCream} />
+              Explore Production <ChevronRight size={13} color={T.warmCream} />
             </Button>
           </motion.div>
-          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} style={{ borderRadius: 14 }}>
+          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} style={{ display: "flex", borderRadius: 14 }}>
             <Button
               variant="tertiary"
-              className="!py-[10px] !px-4 !rounded-[14px] !bg-white/12 !border !border-white/30 !text-[rgba(245,232,208,0.92)] !text-xs !font-medium !tracking-[0.1px] hover:!bg-white/16 hover:!text-[rgba(245,232,208,0.92)]"
+              className="!min-h-[46px] !py-0 !px-5 !rounded-[14px] !bg-white/[0.10] !border !border-white/25 !backdrop-blur-sm !text-[rgba(245,232,208,0.92)] !text-xs !font-semibold !tracking-[0.1px] hover:!bg-white/[0.16] hover:!text-[rgba(245,232,208,0.92)]"
             >
               View Reports
             </Button>
@@ -138,8 +150,16 @@ function MobileHero() {
 function MobileMetrics() {
   const { metrics, isLoading, isError } = useDashboardMetrics();
   const displayMetrics = metrics.map((m, i) => ({ ...m, val: isError ? "Error" : isLoading ? "—" : m.val, sub: isError ? "Failed to load" : m.sub, ico: METRIC_ICONS[i] }));
-  const normal = displayMetrics.filter(m => !m.hi);
-  const highlighted = displayMetrics.find(m => m.hi) ?? displayMetrics[0];
+  // Feature the flagged metric, else the last one. Selecting by INDEX and
+  // excluding that same index is what keeps the featured band distinct — the
+  // previous `find(hi) ?? [0]` fell back to tile #1 whenever nothing was
+  // flagged, rendering "Active Weavers" twice and dropping "Dispatched"
+  // entirely.
+  const hiIdx = displayMetrics.findIndex(m => m.hi) >= 0
+    ? displayMetrics.findIndex(m => m.hi)
+    : displayMetrics.length - 1;
+  const highlighted = displayMetrics[hiIdx];
+  const normal = displayMetrics.filter((_, i) => i !== hiIdx);
   const top2 = normal.slice(0, 2);
   const bot2 = normal.slice(2, 4);
 
@@ -152,16 +172,18 @@ function MobileMetrics() {
         initial={{ opacity: 0, y: 18 }}
         animate={inView ? { opacity: 1, y: 0 } : undefined}
         transition={{ duration: 0.55, delay, ease: EASE }}
-        style={{ flex: 1, padding: "20px 16px", display: "flex", flexDirection: "column", gap: 8 }}
+        style={{ flex: 1, minWidth: 0, padding: "20px 16px", display: "flex", flexDirection: "column", gap: 8 }}
       >
-        <div style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(245,232,208,0.10)", border: "1px solid rgba(245,232,208,0.14)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(245,232,208,0.10)", border: "1px solid rgba(245,232,208,0.14)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
           {m.ico}
         </div>
-        <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 38, color: T.warmCream, lineHeight: 1.0, ...NUM }}>
+        {/* Numeral goes fluid so a 4-figure value can't push the tile wider
+            than its half of the card at 320px. */}
+        <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: "clamp(30px, 9vw, 38px)", color: T.warmCream, lineHeight: 1.0, ...NUM }}>
           <AnimatedNumber raw={m.val} />
         </div>
-        <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: "rgba(245,232,208,0.92)", letterSpacing: "1.6px", textTransform: "uppercase" }}>{m.label}</div>
-        <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: "rgba(245,232,208,0.85)", letterSpacing: "0.05px" }}>{m.sub}</div>
+        <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 11, color: "rgba(245,232,208,0.92)", letterSpacing: "1.2px", textTransform: "uppercase", lineHeight: 1.35 }}>{m.label}</div>
+        <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: "rgba(245,232,208,0.72)", letterSpacing: "0.05px", lineHeight: 1.4 }}>{m.sub}</div>
       </motion.div>
     );
   };
@@ -171,7 +193,7 @@ function MobileMetrics() {
       initial={{ opacity: 0, y: 36 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.7, delay: 0.35, ease: EASE }}
-      style={{ padding: "0 16px 16px", marginTop: -20, position: "relative", zIndex: 20 }}
+      style={{ padding: "0 16px 16px", marginTop: -28, position: "relative", zIndex: 20 }}
     >
       <div style={{ background: G.card, borderRadius: 22, overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.32), 0 0 0 1px rgba(200,155,71,0.13)" }}>
         <div style={{ display: "flex", borderBottom: "1px solid rgba(245,232,208,0.12)" }}>
@@ -187,24 +209,30 @@ function MobileMetrics() {
           style={{ padding: "20px 18px 18px", background: "linear-gradient(135deg, rgba(200,155,71,0.20) 0%, rgba(200,155,71,0.08) 100%)", borderBottom: "1px solid rgba(245,232,208,0.10)", position: "relative" }}
         >
           <div className="gold-bar-shimmer" style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2 }} />
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ width: 44, height: 44, borderRadius: 13, background: "rgba(200,155,71,0.18)", border: "1px solid rgba(200,155,71,0.42)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              {highlighted.ico}
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 12, color: "rgba(200,155,71,1)", letterSpacing: "1.6px", textTransform: "uppercase", marginBottom: 4 }}>{highlighted.label}</div>
-              <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 38, color: T.goldLight, lineHeight: 1.0, ...NUM }}>
-                <AnimatedNumber raw={highlighted.val} />
+          {/* Two rows (icon+label / value+sub) rather than three cramped
+              columns — the value and its sub-label now share a baseline and
+              the chevron has a fixed home on the right. */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ width: 44, height: 44, borderRadius: 13, background: "rgba(200,155,71,0.18)", border: "1px solid rgba(200,155,71,0.42)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                {highlighted.ico}
               </div>
-            </div>
-            <div>
-              <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: "rgba(231,201,131,0.95)", marginBottom: 8, letterSpacing: "0.05px" }}>{highlighted.sub}</div>
+              <div style={{ flex: 1, minWidth: 0, fontFamily: F.ui, fontWeight: 700, fontSize: 11, color: "rgba(200,155,71,1)", letterSpacing: "1.4px", textTransform: "uppercase", lineHeight: 1.35 }}>
+                {highlighted.label}
+              </div>
               <motion.div
                 whileHover={{ scale: 1.1 }}
-                style={{ width: 30, height: 30, borderRadius: "50%", border: "1px solid rgba(200,155,71,0.38)", background: "rgba(200,155,71,0.10)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", marginLeft: "auto" }}
+                whileTap={{ scale: 0.94 }}
+                style={{ width: 32, height: 32, borderRadius: "50%", border: "1px solid rgba(200,155,71,0.38)", background: "rgba(200,155,71,0.10)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}
               >
-                <ChevronRight size={13} color={T.goldLight} />
+                <ChevronRight size={14} color={T.goldLight} />
               </motion.div>
+            </div>
+            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+              <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: "clamp(34px, 11vw, 44px)", color: T.goldLight, lineHeight: 1.0, ...NUM }}>
+                <AnimatedNumber raw={highlighted.val} />
+              </div>
+              <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: "rgba(231,201,131,0.95)", letterSpacing: "0.05px" }}>{highlighted.sub}</div>
             </div>
           </div>
         </motion.div>
