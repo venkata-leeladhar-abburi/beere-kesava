@@ -7,13 +7,14 @@ import { useIsMobile } from "../../../../hooks/useResponsive";
 import { Button } from "../../../../shared/ui/primitives";
 
 function FadeUp({
-  children, delay = 0, style,
-}: { children: React.ReactNode; delay?: number; style?: React.CSSProperties }) {
+  children, delay = 0, style, className,
+}: { children: React.ReactNode; delay?: number; style?: React.CSSProperties; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px 0px" });
   return (
     <motion.div
       ref={ref}
+      className={className}
       initial={{ opacity: 0, y: 40, scale: 0.97 }}
       animate={inView ? { opacity: 1, y: 0, scale: 1 } : undefined}
       transition={{ type: "spring", stiffness: 260, damping: 26, delay, opacity: { duration: 0.45 } }}

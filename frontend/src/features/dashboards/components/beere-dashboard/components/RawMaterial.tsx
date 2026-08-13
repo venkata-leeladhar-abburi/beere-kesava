@@ -25,7 +25,7 @@ export function RawMaterial({ onNavigate }: { onNavigate: (tab: string) => void 
   });
 
   return (
-    <section style={{ padding: "0 48px 72px", background: T.silkCream }}>
+    <section className="px-4 md:px-7 xl:px-12" style={{ paddingBottom: 72, background: T.silkCream }}>
       <SectionHeader title="Raw Material Overview" actionText="View All Materials →" onAction={() => onNavigate("Materials")} />
       {stockError && (
         <div style={{ padding: "12px 16px", marginBottom: 20, borderRadius: 10, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)", fontFamily: F.ui, fontSize: 13, color: "#C0392B" }}>

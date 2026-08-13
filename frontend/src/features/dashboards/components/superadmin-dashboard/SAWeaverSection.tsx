@@ -16,7 +16,7 @@ export function SAWeaverSection({ onNavigate }: SAWeaverSectionProps) {
 
   if (isLoading) {
     return (
-      <section style={{ padding: "48px 48px 40px", background: T.silkCream }}>
+      <section className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 48, paddingBottom: 40, background: T.silkCream }}>
         <SectionHeader title="Active Weavers" actionText="View All Weavers →" onAction={() => onNavigate("AllWeavers")} />
         <div style={{ display: "flex", gap: 18 }}>
           {Array.from({ length: 4 }).map((_, i) => (
@@ -29,7 +29,7 @@ export function SAWeaverSection({ onNavigate }: SAWeaverSectionProps) {
 
   if (weavers.length === 0) {
     return (
-      <section style={{ padding: "48px 48px 40px", background: T.silkCream }}>
+      <section className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 48, paddingBottom: 40, background: T.silkCream }}>
         <SectionHeader title="Active Weavers" actionText="View All Weavers →" onAction={() => onNavigate("AllWeavers")} />
         <div style={{ background: "#FFFFFF", borderRadius: 24, border: `1px solid ${T.borderDef}`, padding: "40px", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
           No weavers in database yet. Click "View All Weavers" to register a weaver.
@@ -39,7 +39,7 @@ export function SAWeaverSection({ onNavigate }: SAWeaverSectionProps) {
   }
 
   return (
-    <section style={{ padding: "48px 48px 40px", background: T.silkCream }}>
+    <section className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 48, paddingBottom: 40, background: T.silkCream }}>
       <SectionHeader title="Active Weavers" actionText="View All Weavers →" onAction={() => onNavigate("AllWeavers")} />
       <div style={{ display: "flex", gap: 18, alignItems: "stretch" }}>
         {weavers.map((w, i) => (

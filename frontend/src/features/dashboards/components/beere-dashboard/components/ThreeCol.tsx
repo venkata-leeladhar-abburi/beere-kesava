@@ -162,7 +162,7 @@ export function FeaturedProduct({ compact }: { compact?: boolean }) {
 
 export function ThreeCol({ onNavigate }: { onNavigate: (tab: string) => void }) {
   return (
-    <section style={{ padding: "56px 48px 36px", background: T.silkCream }}>
+    <section className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 56, paddingBottom: 36, background: T.silkCream }}>
       <SectionHeader title="Performance Overview" actionText="Full Analytics →" onAction={() => onNavigate("Reports")} />
       <div style={{ display: "flex", gap: 20, alignItems: "stretch" }}>
         <ProductionProgress />

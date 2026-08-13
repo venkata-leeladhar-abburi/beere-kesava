@@ -38,7 +38,7 @@ function SAHero() {
         <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: "#845E04", letterSpacing: "1.5px", textTransform: "uppercase" }}>Superadmin Access</span>
       </motion.div>
 
-      <div style={{ position: "relative", zIndex: 5, width: "50%", height: "100%", padding: "0 56px", display: "flex", flexDirection: "column", justifyContent: "center", gap: 20 }}>
+      <div className="px-4 md:px-7 xl:px-14" style={{ position: "relative", zIndex: 5, width: "50%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "center", gap: 20 }}>
         <motion.div initial={{ opacity: 0, x: -24 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.7, delay: 0.3, ease: EASE }}
           style={{ display: "flex", alignItems: "center", gap: 12 }}
         >
@@ -173,7 +173,7 @@ function SAQuickActions({ setNav }: { setNav: (v: string) => void }) {
     { icon: <Building2 size={22} color={T.green} />, label: "Manage Firms", sub: "Payments & vendor records", nav: "Payments", color: T.green, bg: "rgba(30,102,64,0.06)", border: "rgba(30,102,64,0.14)" },
   ];
   return (
-    <section style={{ padding: "36px 48px 0" }}>
+    <section className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 36 }}>
       <SectionHeader title="Quick Actions" actionText="" small />
       <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 16 }}>
         {actions.map((a, i) => (
@@ -237,7 +237,7 @@ function SARawMaterial() {
   });
 
   return (
-    <section style={{ padding: "0 48px 72px", background: T.silkCream }}>
+    <section className="px-4 md:px-7 xl:px-12" style={{ paddingBottom: 72, background: T.silkCream }}>
       <SectionHeader title="Raw Material Overview" actionText="View All Materials →" />
       <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 20 }}>
         {mats.map((m, i) => (
