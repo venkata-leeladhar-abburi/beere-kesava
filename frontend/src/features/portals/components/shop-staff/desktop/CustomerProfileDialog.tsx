@@ -63,7 +63,7 @@ export function CustomerProfileDialog({
             {/* Body */}
             <div style={{ padding: "28px 32px 32px", overflowY: "auto" as const }}>
               {/* Stats */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14, marginBottom: 28 }}>
+              <div className="grid grid-cols-1 md:grid-cols-3" style={{ display: "grid", gap: 14, marginBottom: 28 }}>
                 {[
                   { label: "Total Purchases", val: `${customer!.purchases}`, sub: "sarees bought", color: C.burg },
                   ...(canSeePrices ? [{ label: "Total Spent", val: customer!.total, sub: "lifetime value", color: C.gold }] : []),

@@ -208,7 +208,7 @@ function CustomerProfiles() {
               {/* Body */}
               <div style={{ padding: "22px 20px 24px", overflowY: "auto" as const }}>
                 {/* Stats */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 24 }}>
+                <div className="grid grid-cols-1 md:grid-cols-3" style={{ display: "grid", gap: 10, marginBottom: 24 }}>
                   {[
                     { label: "Purchases", val: `${activeCustomer.purchases}`, color: C.burg },
                     ...(canSeePrices ? [{ label: "Total Spent", val: activeCustomer.total, color: C.gold }] : []),
