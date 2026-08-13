@@ -170,7 +170,7 @@ export function FinishingTrackingPage() {
         </div>
       </div>
 
-      <div style={{ padding: "22px 40px 48px", display: "flex", flexDirection: "column", gap: 20 }}>
+      <div className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 22, paddingBottom: 48, display: "flex", flexDirection: "column", gap: 20 }}>
         {/* Filters */}
         <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 20px rgba(74,6,27,0.06)", padding: 16 }}>
           <div style={{ marginBottom: 14 }}>
