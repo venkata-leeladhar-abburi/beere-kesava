@@ -267,9 +267,10 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
 
                   <div style={{ overflowX: "auto" as const, border: `1px solid ${T.borderDef}`, borderRadius: 10, background: "#FFFFFF", minWidth: 560 }}>
                     <DataTable
+                      responsive
                       columns={[
                         {
-                          id: "sareeId", header: "Saree ID", accessor: (row: typeof rowsInBatch[number]) => row.sareeId,
+                          id: "sareeId", header: "Saree ID", accessor: (row: typeof rowsInBatch[number]) => row.sareeId, priority: 1,
                           cell: (_v, row) => row.sareeId
                             ? <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", borderRadius: 5, padding: "2px 6px" }}>{row.sareeId}</span>
                             : <span style={{ color: "rgba(139,112,96,0.4)", fontSize: 12 }}>—</span>,
@@ -279,7 +280,7 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
                           cell: (_v, row) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{row.sareeTypeCode || "—"}</span>,
                         },
                         {
-                          id: "bulkOrder", header: "Bulk Order", accessor: row => row.bulkOrderLabel,
+                          id: "bulkOrder", header: "Bulk Order", accessor: row => row.bulkOrderLabel, priority: 3,
                           cell: (_v, row) => <span style={{ fontFamily: F.ui, fontSize: 12, color: row.bulkOrderRef ? T.royalBurgundy : T.green, fontWeight: 600 }}>{row.bulkOrderLabel || "General Stock"}</span>,
                         },
                         {

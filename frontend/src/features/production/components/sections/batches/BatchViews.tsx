@@ -173,7 +173,7 @@ export function BatchCardGrid({ batches, onView, onSlip, onEdit }: { batches: Ba
 export function BatchListView({ batches, onView, onEdit }: { batches: Batch[]; onView?: (b: Batch) => void; onEdit?: (b: Batch) => void }) {
   const columns: ColumnDef<Batch>[] = [
     {
-      id: "id", header: "Batch Number", accessor: b => b.id,
+      id: "id", header: "Batch Number", accessor: b => b.id, priority: 1,
       cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>{b.id}</span>,
     },
     {
@@ -185,7 +185,7 @@ export function BatchListView({ batches, onView, onEdit }: { batches: Batch[]; o
       cell: (_v, b) => <div style={{ display: "flex", gap: 6 }}>{b.weavers.map(w => <Pip key={w.id} initials={w.initials} bg={w.bg} size={28} />)}</div>,
     },
     {
-      id: "design", header: "Design", accessor: b => b.design,
+      id: "design", header: "Design", accessor: b => b.design, priority: 3,
       cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 600 }}>{b.design}<div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 400, marginTop: 2 }}>{b.designName}</div></span>,
     },
     {
@@ -208,11 +208,11 @@ export function BatchListView({ batches, onView, onEdit }: { batches: Batch[]; o
       },
     },
     {
-      id: "started", header: "Started", accessor: b => b.started,
+      id: "started", header: "Started", accessor: b => b.started, priority: 3,
       cell: (_v, b) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{b.started}</span>,
     },
     {
-      id: "expected", header: "Expected End", accessor: b => b.submitted ?? b.expected,
+      id: "expected", header: "Expected End", accessor: b => b.submitted ?? b.expected, priority: 3,
       cell: (_v, b) => (
         <span style={{ fontFamily: F.ui, fontSize: 12, color: b.late ? T.crimson : T.taupe }}>
           {b.submitted ?? b.expected}
@@ -243,7 +243,7 @@ export function BatchListView({ batches, onView, onEdit }: { batches: Batch[]; o
 
   return (
     <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 6px 24px rgba(74,6,27,0.05)" }}>
-      <DataTable columns={columns} data={batches} getRowId={b => b.id} />
+      <DataTable responsive columns={columns} data={batches} getRowId={b => b.id} />
     </div>
   );
 }
@@ -251,7 +251,7 @@ export function BatchListView({ batches, onView, onEdit }: { batches: Batch[]; o
 export function BatchTableView({ batches, onView, onEdit }: { batches: Batch[]; onView?: (b: Batch) => void; onEdit?: (b: Batch) => void }) {
   const columns: ColumnDef<Batch>[] = [
     {
-      id: "id", header: "Batch No.", accessor: b => b.id,
+      id: "id", header: "Batch No.", accessor: b => b.id, priority: 1,
       cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, fontWeight: 700, whiteSpace: "nowrap" }}>{b.id}</span>,
     },
     {
@@ -271,15 +271,15 @@ export function BatchTableView({ batches, onView, onEdit }: { batches: Batch[]; 
       cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown, fontWeight: 600 }}>{b.sareeCode}</span>,
     },
     {
-      id: "materials", header: "Materials Given", accessor: b => b.materials,
+      id: "materials", header: "Materials Given", accessor: b => b.materials, priority: 3,
       cell: (_v, b) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, maxWidth: 200, lineHeight: 1.5, display: "inline-block" }}>{b.materials}</span>,
     },
     {
-      id: "started", header: "Started", accessor: b => b.started,
+      id: "started", header: "Started", accessor: b => b.started, priority: 3,
       cell: (_v, b) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, whiteSpace: "nowrap" }}>{b.started}</span>,
     },
     {
-      id: "expected", header: "Expected End", accessor: b => b.submitted ?? b.expected,
+      id: "expected", header: "Expected End", accessor: b => b.submitted ?? b.expected, priority: 3,
       cell: (_v, b) => <span style={{ fontFamily: F.ui, fontSize: 13, color: b.late ? T.crimson : T.taupe, whiteSpace: "nowrap", fontWeight: b.late ? 600 : 400 }}>{b.submitted ?? b.expected}</span>,
     },
     {
@@ -295,7 +295,7 @@ export function BatchTableView({ batches, onView, onEdit }: { batches: Batch[]; 
       cell: (_v, b) => <span style={{ fontFamily: F.display, fontSize: 16, color: T.green }}>{b.qcPassed ?? "—"}</span>,
     },
     {
-      id: "rate", header: "Rate/Saree", accessor: b => b.rate,
+      id: "rate", header: "Rate/Saree", accessor: b => b.rate, priority: 3,
       cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown }}><Money value={rupees(b.rate)} /></span>,
     },
     {
@@ -322,7 +322,7 @@ export function BatchTableView({ batches, onView, onEdit }: { batches: Batch[]; 
   return (
     <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 6px 24px rgba(74,6,27,0.05)" }}>
       <div style={{ overflowX: "auto" }}>
-        <DataTable columns={columns} data={batches} getRowId={b => b.id} />
+        <DataTable responsive columns={columns} data={batches} getRowId={b => b.id} />
       </div>
       <div style={{ padding: "14px 20px", borderTop: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Showing {batches.length} of {batches.length} batches</div>
     </div>

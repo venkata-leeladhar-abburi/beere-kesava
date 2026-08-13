@@ -338,9 +338,10 @@ export function FactoryLoomPage() {
               ) : (
                 <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
                   <DataTable
+                    responsive
                     columns={[
                       {
-                        id: "loomNumber", header: "Loom #", accessor: l => l.loomNumber,
+                        id: "loomNumber", header: "Loom #", accessor: l => l.loomNumber, priority: 1,
                         cell: (_v, l) => <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{l.loomNumber}</span>,
                       },
                       {
@@ -348,7 +349,7 @@ export function FactoryLoomPage() {
                         cell: (_v, l) => <span style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown }}>{l.operatorName || "—"}</span>,
                       },
                       {
-                        id: "location", header: "Location", accessor: l => l.location,
+                        id: "location", header: "Location", accessor: l => l.location, priority: 3,
                         cell: (_v, l) => <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>{l.location || "—"}</span>,
                       },
                       {

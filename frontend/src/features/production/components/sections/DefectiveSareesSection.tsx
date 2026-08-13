@@ -88,9 +88,9 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
   const totalDeduction = addMoney(...filteredData.map(r => r.deduction));
 
   const columns: ColumnDef<DefectiveRow>[] = [
-    { id: "sareeId", header: "Saree ID", accessor: r => r.id, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 600 }}>{r.id}</span> },
+    { id: "sareeId", header: "Saree ID", accessor: r => r.id, priority: 1, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 600 }}>{r.id}</span> },
     { id: "weaver", header: "Weaver", accessor: r => r.weaver, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{r.weaver}</span> },
-    { id: "batch", header: "Batch", accessor: r => r.batch, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.batch}</span> },
+    { id: "batch", header: "Batch", accessor: r => r.batch, priority: 3, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.batch}</span> },
     { id: "sareeType", header: "Saree Type", accessor: r => r.sareeType },
     {
       id: "defects", header: "Defect Type(s)", accessor: r => r.defects,
@@ -102,7 +102,7 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
         </div>
       ),
     },
-    { id: "qcDate", header: "QC Date", accessor: r => r.qcDate, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.qcDate}</span> },
+    { id: "qcDate", header: "QC Date", accessor: r => r.qcDate, priority: 3, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.qcDate}</span> },
     {
       id: "deduction", header: "Deduction Applied", accessor: r => r.deduction,
       cell: (_v, r) => (
@@ -201,6 +201,7 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
         <div style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 24px rgba(74,6,27,0.07)", overflow: "hidden" }}>
           <div style={{ overflowX: "auto", minWidth: 1100 }}>
             <DataTable
+              responsive
               columns={columns}
               data={filteredData}
               getRowId={r => r.id}
