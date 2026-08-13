@@ -129,7 +129,7 @@ export function PODocPreview({
         )}
 
         {/* Signature block */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginTop: 12 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16, marginTop: 12 }}>
           {["Prepared by", "Approved by"].map(s => (
             <div key={s}>
               <div style={{ height: 24, borderBottom: `1.5px solid ${T.borderDef}`, marginBottom: 5 }} />

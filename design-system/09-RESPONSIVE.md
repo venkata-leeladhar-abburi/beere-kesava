@@ -559,7 +559,7 @@ blindly edited** — flagged in §10 for R8's device-matrix pass, which can meas
 
 Verified via `tsc`/`build`/`lint` — clean, same baseline.
 
-### R7 — Grid-as-table triage
+### R7 — Grid-as-table triage ✅ COMPLETE (2026-08-13)
 188 files use `gridTemplateColumns`/`grid-cols-`. **Triage before touching:**
 - **Real data grids** (repeated rows of uniform records) → migrate to `DataTable` **+**
   card mode. Note: migration is Phase 4 work; if a grid needs migrating, log it in §10 for
@@ -1144,6 +1144,82 @@ pre-existing baseline throughout, zero new errors in any touched file.
   a future session should triage these 10 files plus re-confirm the rest of
   the previously-"complete" directories with a fresh full-repo grep before
   marking R7 done.
+
+  **Batch 6 (2026-08-13)** — closed the batch5 gap. Triaged the 10 files
+  found by batch5's fresh grep. Re-verified `materials/components/modals/WeaverModals.tsx`
+  against batch3's print-document reasoning: still accurate — its 4 grids
+  sit inside the `IssueSlipModal`'s `slip` JSX, explicitly commented "Same
+  JSX rendered on screen and portaled to `#document-print-root` via
+  `useDocument()`" (line 94-96), same as the rest of the print-document
+  exclusion class. Confirmed, not touched, not logged as a gap.
+
+  Of the remaining 9, only 1 needed a conversion:
+  - `purchasing/components/PODocPreview.tsx` (2026-08-13) — the signature
+    block (`"1fr 1fr"`, fixed 2-col, not a repeated row) converted to
+    `grid-cols-1 md:grid-cols-2`. The materials table's header row and its
+    `materials.map((m, i) => ...)` row template (both `"1fr 1.6fr 0.7fr 0.7fr"`)
+    are a real data grid — logged below for Phase 4, left untouched.
+
+  The other 8 were already responsive and needed no change (confirmed, not
+  logged as gaps — same "skip, already responsive" treatment as the
+  unlisted files below):
+  - `materials/components/issueMaterial/RecipientSelector.tsx` — fluid
+    `repeat(auto-fill, minmax(240px, 1fr))`
+  - `materials/components/sections/MaterialsFooter.tsx` — `isMobile`-gated
+    (`repeat(2, 1fr)` mobile, fluid `auto-fit`/`minmax` desktop)
+  - `materials/components/sections/POTrackerSection.tsx` — fluid
+    `repeat(auto-fill, minmax(300px, 1fr))`
+  - `materials/components/sections/RecentProcurementSection.tsx` —
+    `isMobile`-gated (`"1fr"` vs `repeat(4, 1fr)`)
+  - `materials/components/sections/StockOverviewAndIssued.tsx` — 2 grids,
+    both `isMobile`-gated (`"1fr"` vs `repeat(3, 1fr)`)
+  - `payments/components/OutstandingPage.tsx` — fluid
+    `repeat(auto-fit, minmax(220px, 1fr))`
+  - `payments/components/wholesale/PaymentRemindersModal.tsx` — already
+    single-column (`"1fr"`)
+  - `weavers/components/sections/WeaverDrawer.tsx` — fluid
+    `repeat(auto-fit, minmax(420px, 1fr))`
+
+  **Final full-repo sweep** — re-ran
+  `grep -rl "gridTemplateColumns" src/features --include="*.tsx"` (excluding
+  `reports/`, `dashboards/`, `shared/ui/document/**`) and cross-referenced
+  all 81 hits against every filename mentioned anywhere in this document
+  (§7 R7 section + all of §9/§10 across batches 1-6). 16 files had no prior
+  mention: `portals/components/shop-staff/NewSaleFlow.tsx`,
+  `ProcessReturn.tsx`, `ProcessReturnRetailFlow.tsx`,
+  `ProcessReturnWholesaleFlow.tsx`, `desktop/CustomersSection.tsx`,
+  `desktop/DesktopTopNav.tsx`, `desktop/HomeSection.tsx`,
+  `desktop/ReportsSection.tsx`, `desktop/SaleSection.tsx`,
+  `weaver-portal/WeaverMaterialHistoryCard.tsx`,
+  `weaver-portal/desktop/DesktopHero.tsx`,
+  `weaver-portal/desktop/WarpSection.tsx`, `worker/WorkerDispatch.tsx`,
+  `worker/WorkerQC.tsx`, `worker/WorkerQCDefectiveSection.tsx`,
+  `worker/WorkerQCGridCards.tsx`. Checked each: every one is already
+  responsive — `isMobile`/`isTablet`/`isDesktop`-gated column counts (the
+  majority) or fluid `repeat(auto-fit/auto-fill, minmax(...))` grids that
+  reflow on their own. None needed conversion; none logged as gaps, same
+  treatment as batch5's unlisted "skipped as already-responsive" files.
+
+  **Zero untriaged files remain in `src/features`** (excluding
+  `reports/`, `dashboards/`, and `shared/ui/document/**`) as of this batch.
+
+  Verified via `tsc --noEmit` (clean) / `npm run build` (succeeds) / `npm run
+  lint` (33 pre-existing errors, same baseline as batch3/4/5 — zero new
+  errors in any file touched this batch).
+
+- [x] R7 Grid-as-table triage — ✅ **COMPLETE (2026-08-13)**. Across 6
+  batches: **~63 files converted** (form/stat/summary-panel grids collapsed
+  to `grid-cols-1 md:grid-cols-N`, uneven fr-templates preserved via
+  arbitrary `md:grid-cols-[...]` values), **~13 files logged for Phase 4**
+  `DataTable`/`CardList` migration (real data grids and inner-grid-of-
+  repeated-row card templates — see §10 for the full list), and **dozens of
+  confirmed exclusions** (print documents portaled to
+  `#document-print-root`, and grids already responsive via
+  `isMobile`/`isTablet`/`isDesktop` gating or fluid `auto-fit`/`auto-fill`
+  `minmax()` templates). Final full-repo grep against every batch's file
+  list confirms no `gridTemplateColumns` instance remains untriaged in
+  `src/features` outside `reports/`/`dashboards/` (R3/R4 territory) and
+  `shared/ui/document/**` (print docs, out of scope by design).
 - [ ] R8 QA, device matrix, ratchet metrics
 
 ### Out-of-band: hero+stats pattern + universal gutter sweep (2026-08-13)
@@ -1237,6 +1313,8 @@ problem and recording it is the correct response, not fixing it.
 | 2026-08-13 | R7 batch5 | `weaver-portal/WeaverBatchNotifData.tsx` (`BatchCard` export) | **Found, not fixed — likely dead code.** Contains a 3-tile stat grid but `grep` found zero `<BatchCard` usages anywhere in `src/features/portals`. Other exports in the same file are still used elsewhere. Not touched (out of scope to remove dead code here) — flag for a cleanup session, same treatment as the batch3 `SupplierCard.tsx` find. |
 | 2026-08-13 | R7 batch5 | `worker/GRNSuccessPrint.tsx` (`GRNPrintView`) | **Found, not fixed.** Despite the filename, this is not an R7 print-document exclusion — it's on-screen "tap to print barcode labels" UI (no `mm`-based CSS), and its 2-col grid of label cards (`batches.map`) is a real data grid. Logged for Phase 4 migration rather than converted. |
 | 2026-08-13 | R7 batch5 | 10 files across `materials`, `payments`, `purchasing`, `weavers` | **Found via a fresh full-repo grep, not yet triaged.** `materials/components/issueMaterial/RecipientSelector.tsx`, `materials/components/modals/WeaverModals.tsx`, `materials/components/sections/MaterialsFooter.tsx`, `materials/components/sections/POTrackerSection.tsx`, `materials/components/sections/RecentProcurementSection.tsx`, `materials/components/sections/StockOverviewAndIssued.tsx`, `payments/components/OutstandingPage.tsx`, `payments/components/wholesale/PaymentRemindersModal.tsx`, `purchasing/components/PODocPreview.tsx`, `weavers/components/sections/WeaverDrawer.tsx` all still contain `gridTemplateColumns` and have no prior mention in this document, despite `materials`/`payments` being claimed fully triaged in R7-batch3. A future session should triage these 10 plus re-run the full-repo grep against every directory batch3/4 marked complete before declaring R7 done. |
+| 2026-08-13 | R7 batch6 | `materials/components/modals/WeaverModals.tsx` | **Re-verified, confirmed correct exclusion.** Re-checked batch3's print-document reasoning against the current file: `IssueSlipModal`'s 4 grids still sit inside the `slip` JSX, explicitly commented "Same JSX rendered on screen and portaled to `#document-print-root` via `useDocument()`" (lines 94-96). Still accurate — left untouched. |
+| 2026-08-13 | R7 batch6 | `purchasing/components/PODocPreview.tsx` | **Found, not fixed.** The materials table's header row (`["Material","Description","Qty / Unit","Amount"]`) and its `materials.map((m, i) => ...)` row template both use a fixed `"1fr 1.6fr 0.7fr 0.7fr"` grid — a real data grid (repeated rows of uniform records), not a form layout. Logged for Phase 4 `DataTable`/`CardList` migration; the signature block in the same file (a genuine fixed 2-col form pair, not repeated) was converted separately. |
 
 ---
 
