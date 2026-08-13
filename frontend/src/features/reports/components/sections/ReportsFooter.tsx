@@ -23,7 +23,7 @@ const FOOTER_COMM = ["Timely Settlements","100% Transparency","Heritage Since 19
 export function ReportsFooter() {
   return (
     <footer style={{ background: T.darkBurgundy, borderTop: "1px solid rgba(200,155,71,0.18)" }}>
-      <div style={{ padding: "44px 40px 36px", display: "grid", gridTemplateColumns: "1.6fr 1fr 1fr 1fr 1fr", gap: 40 }}>
+      <div className="grid grid-cols-1 md:grid-cols-[1.6fr_1fr_1fr_1fr_1fr] px-4 md:px-7 xl:px-10" style={{ paddingTop: 44, paddingBottom: 36, gap: 40 }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
             <div style={{ width: 44, height: 44, borderRadius: 10, overflow: "hidden", border: "2px solid rgba(200,155,71,0.35)", flexShrink: 0 }}>
@@ -98,7 +98,7 @@ export function ReportsFooter() {
         </div>
       </div>
 
-      <div style={{ borderTop: "1px solid rgba(200,155,71,0.12)", padding: "14px 40px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+      <div className="px-4 md:px-7 xl:px-10" style={{ borderTop: "1px solid rgba(200,155,71,0.12)", paddingTop: 14, paddingBottom: 14, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
         <span style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.35)" }}>© 2026 Beers Keshara &amp; Brothers Silks. All rights reserved.</span>
         <span style={{ fontFamily: F.display, fontSize: 13, fontStyle: "italic", color: "rgba(200,155,71,0.55)" }}>Tradition · Promise · Trust · Quality Creates Legacy</span>
         <span style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.35)" }}>Made with <span style={{ color: T.antiqueGold }}>♥</span> in India</span>
