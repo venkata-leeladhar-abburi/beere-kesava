@@ -27,7 +27,7 @@ const ISSUE_STATUS_TO_DOCUMENT: Record<MaterialIssueRecord["status"], StatusValu
 export function RecordDetailsModal({ record, onClose }: { record: MaterialIssueRecord; onClose: () => void }) {
   const materialColumns: ColumnDef<MaterialLine>[] = [
     {
-      id: "type", header: "Type", accessor: m => m.materialType,
+      id: "type", header: "Type", accessor: m => m.materialType, priority: 1,
       cell: (_v, m) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 7 }}>{materialIcon(m.materialType)} {m.materialType}</span>,
     },
     {
@@ -43,7 +43,7 @@ export function RecordDetailsModal({ record, onClose }: { record: MaterialIssueR
       cell: (_v, m) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown }}>{m.quantity} {m.unit}</span>,
     },
     {
-      id: "grn", header: "GRN Batch", accessor: m => m.grnBatchId,
+      id: "grn", header: "GRN Batch", accessor: m => m.grnBatchId, priority: 3,
       cell: (_v, m) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{m.grnBatchId}</span>,
     },
   ];
@@ -89,6 +89,7 @@ export function RecordDetailsModal({ record, onClose }: { record: MaterialIssueR
             <SectionPill label="Material Breakdown" />
             <div style={{ background: "#FFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
               <DataTable
+                responsive
                 columns={materialColumns}
                 data={record.materials}
                 getRowId={m => `${m.grnBatchId}-${m.materialType}-${record.materials.indexOf(m)}`}

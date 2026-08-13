@@ -30,7 +30,7 @@ export function IssuanceHistorySection({
 }) {
   const columns: ColumnDef<MaterialIssueRecord>[] = [
     {
-      id: "id", header: "MIR ID", accessor: r => r.id,
+      id: "id", header: "MIR ID", accessor: r => r.id, priority: 1,
       cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", borderRadius: 6, padding: "3px 8px" }}>{r.id}</span>,
     },
     {
@@ -47,7 +47,7 @@ export function IssuanceHistorySection({
       ),
     },
     {
-      id: "weaverId", header: "Weaver ID", accessor: r => r.weaverId,
+      id: "weaverId", header: "Weaver ID", accessor: r => r.weaverId, priority: 3,
       cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.weaverId}</span>,
     },
     {
@@ -55,7 +55,7 @@ export function IssuanceHistorySection({
       cell: (_v, r) => renderIssuedMaterials(r.materials),
     },
     {
-      id: "grnIds", header: "GRN Batch IDs", accessor: r => r.materials,
+      id: "grnIds", header: "GRN Batch IDs", accessor: r => r.materials, priority: 3,
       cell: (_v, r) => {
         const grnIds = Array.from(new Set(r.materials.map(m => m.grnBatchId)));
         return (
@@ -66,11 +66,11 @@ export function IssuanceHistorySection({
       },
     },
     {
-      id: "issuedBy", header: "Issued By", accessor: r => r.issuedBy,
+      id: "issuedBy", header: "Issued By", accessor: r => r.issuedBy, priority: 3,
       cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>{r.issuedBy}</span>,
     },
     {
-      id: "signature", header: "Signature", accessor: r => r.signatureCaptured,
+      id: "signature", header: "Signature", accessor: r => r.signatureCaptured, priority: 3,
       cell: (_v, r) => r.signatureCaptured ? (
         <span style={{ fontFamily: F.ui, fontSize: 12, color: T.green, display: "flex", alignItems: "center", gap: 5, whiteSpace: "nowrap" }}><CheckCircle2 size={13} /> Signed — {r.signatureMethod === "here" ? "On screen" : "Remote"}</span>
       ) : (
@@ -115,6 +115,7 @@ export function IssuanceHistorySection({
 
       <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
         <DataTable
+          responsive
           columns={columns}
           data={pagedHistory}
           getRowId={r => r.id}
