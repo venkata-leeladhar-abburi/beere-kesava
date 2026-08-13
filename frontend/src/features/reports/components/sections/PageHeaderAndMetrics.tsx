@@ -20,15 +20,15 @@ export function ReportsHeader() {
         </div>
         {/* Headline */}
         <div style={{ marginBottom: 10, display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" as const }}>
-          <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 56, fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>
+          <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(32px, 8vw, 56px)", fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>
             Reports
           </h1>
-          <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: 36, fontStyle: "italic", color: T.antiqueGold, fontWeight: 400, lineHeight: 1.1 }}>
+          <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(22px, 6vw, 36px)", fontStyle: "italic", color: T.antiqueGold, fontWeight: 400, lineHeight: 1.1 }}>
             &amp; Business Analytics
           </div>
         </div>
         {/* Body */}
-        <p style={{ fontFamily: F.ui, fontSize: 18, fontWeight: 400, color: "rgba(255,253,249,0.70)", margin: "0 0 20px", maxWidth: 600, lineHeight: 1.6 }}>
+        <p style={{ fontFamily: F.ui, fontSize: "clamp(15px, 3.5vw, 18px)", fontWeight: 400, color: "rgba(255,253,249,0.70)", margin: "0 0 20px", maxWidth: 600, lineHeight: 1.6 }}>
           View detailed reports for every part of the business — production, payments, weavers, sales, and customers. Compare periods, download as PDF or Excel, and schedule automatic delivery.
         </p>
       </div>
@@ -108,8 +108,8 @@ export function ReportsStatsStrip() {
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, delay: 0.2, ease: EASE }}
-      className="px-4 md:px-7 xl:px-12"
-      style={{ marginTop: -80, position: "relative", zIndex: 20 }}
+      className="px-4 md:px-7 xl:px-12 -mt-8 md:-mt-14 xl:-mt-[80px]"
+      style={{ position: "relative", zIndex: 20 }}
     >
       <div className="grid grid-cols-2 xl:flex" style={{
         background: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)",
@@ -155,7 +155,7 @@ export function ReportsStatsStrip() {
               <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, letterSpacing: "1.8px", textTransform: "uppercase" as const, marginBottom: 8, color: m.hi ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.70)" }}>
                 {m.label}
               </div>
-              <div style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontSize: 48, color: m.hi ? T.goldLight : "#FFFDF9", lineHeight: 1.1, marginBottom: 8, fontVariantNumeric: "tabular-nums" as const }}>
+              <div style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontSize: "clamp(28px, 8vw, 48px)", color: m.hi ? T.goldLight : "#FFFDF9", lineHeight: 1.1, marginBottom: 8, fontVariantNumeric: "tabular-nums" as const }}>
                 {m.val}
               </div>
               <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: m.hi ? "rgba(231,201,131,0.90)" : "rgba(245,232,208,0.55)", letterSpacing: "0.1px" }}>
