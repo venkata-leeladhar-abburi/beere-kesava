@@ -446,7 +446,7 @@ work.** Tick with a date: `- [x] FileName.tsx (2026-08-13)`.
 - [x] R0.2 Fluid numerals in `StatsStrip` (2026-08-12) — `fontSize: 48` → `clamp(28px, 8vw, 48px)` in `PortalChrome.tsx`. Desktop (≥1280px, ~8vw≈102px clamped to max 48px) unchanged; shrinks only below ~600px viewport width. `tsc` clean. Not yet visually verified in-browser (no session dev server up at edit time) — flag for next browser-access session.
 - [x] R0.3 Gutter-scale audit (2026-08-12) — user-reported bug (screenshot: bulk-orders "All Orders" page wasting ~25% of a 375px viewport on each side). Root cause identified and the reusable recipe documented at §3.3. Fixed the reported page (6 spots across `AllOrdersPage.tsx`/`AllOrdersFilterBar.tsx`/`AllOrdersAnalyticsSection.tsx`). **Not exhaustive** — same bug pattern likely exists on other pages; §3.3 flags this for R7/a future grep pass rather than fixing all instances now (out of scope for one report).
 
-### R1 — Tables → card mode (27 / 70)
+### R1 — Tables → card mode (33 / 70, incl. 2 documented exclusions)
 
 **audit** (2/2) ✅
 - [x] `audit/components/audit-log/ActionLogSection.tsx` (2026-08-12)
@@ -456,14 +456,14 @@ work.** Tick with a date: `- [x] FileName.tsx (2026-08-13)`.
 - [x] `bulk-orders/components/BulkOrderOverviewPaymentsTabs.tsx` (2026-08-12)
 - [x] `bulk-orders/components/BulkOrderSareesTab.tsx` (2026-08-12)
 
-**customers** (4/7)
+**customers** (7/7) ✅
 - [x] `customers/components/sections/InactiveCustomersSection.tsx` (2026-08-12)
 - [x] `customers/components/sections/RetailCustomersSection.tsx` (2026-08-12)
 - [x] `customers/components/sections/RetailDetailSection.tsx` (2026-08-12)
 - [x] `customers/components/sections/WholesaleCustomersSection.tsx` (2026-08-12)
-- [ ] `customers/components/sections/wholesaleDetail/OrderHistoryTab.tsx`
-- [ ] `customers/components/sections/wholesaleDetail/OverviewTab.tsx`
-- [ ] `customers/components/sections/wholesaleDetail/PaymentHistoryTab.tsx`
+- [x] `customers/components/sections/wholesaleDetail/OrderHistoryTab.tsx` (2026-08-13)
+- [x] `customers/components/sections/wholesaleDetail/OverviewTab.tsx` (2026-08-13)
+- [x] `customers/components/sections/wholesaleDetail/PaymentHistoryTab.tsx` (2026-08-13)
 
 **finishing** (2/2) ✅
 - [x] `finishing/components/FinishingQuotationsSection.tsx` (2026-08-12)
@@ -480,13 +480,13 @@ work.** Tick with a date: `- [x] FileName.tsx (2026-08-13)`.
 - [ ] `inventory/components/modals/shared/SareeReviewList.tsx`
 - [ ] `inventory/components/sections/DispatchHistorySection.tsx`
 
-**materials** (2/4)
+**materials** (4/4) ✅
 - [x] `materials/components/issueMaterial/IssuanceHistorySection.tsx` (2026-08-12)
 - [x] `materials/components/issueMaterial/RecordDetailsModal.tsx` (2026-08-12)
-- [ ] `materials/components/sections/BatchesSection.tsx`
-- [ ] `materials/components/sections/PurchaseHistorySection.tsx`
+- [x] `materials/components/sections/BatchesSection.tsx` (2026-08-13)
+- [x] `materials/components/sections/PurchaseHistorySection.tsx` (2026-08-13)
 
-**payments** (7/8)
+**payments** (8/8) ✅
 - [x] `payments/components/history/PaymentHistorySection.tsx` (2026-08-12)
 - [x] `payments/components/outstanding/ExternalOutstanding.tsx` (2026-08-12)
 - [x] `payments/components/outstanding/SareeDetailTable.tsx` (2026-08-12) *(fixed a real `priority` type-widening bug from a conditional-spread column — see commit)*
@@ -494,7 +494,7 @@ work.** Tick with a date: `- [x] FileName.tsx (2026-08-13)`.
 - [x] `payments/components/vendor/VendorPaymentsSection.tsx` (2026-08-12)
 - [x] `payments/components/weaver/WeaverPaymentDetailModal.tsx` (2026-08-12)
 - [x] `payments/components/weaver/WeaverProductionSummaryPanel.tsx` (2026-08-12)
-- [ ] `payments/components/wholesale/WholesaleTableView.tsx`
+- [x] `payments/components/wholesale/WholesaleTableView.tsx` (2026-08-13)
 
 **portals** (6)
 - [ ] `portals/components/weaver-portal/ReferenceHistorySection.tsx`
@@ -504,10 +504,10 @@ work.** Tick with a date: `- [x] FileName.tsx (2026-08-13)`.
 - [ ] `portals/components/worker/finishing/SectionC.tsx`
 - [ ] `portals/components/worker/weavers/SareeSelectionTable.tsx`
 
-**pricing** (3)
-- [ ] `pricing/components/rates-pricing/MakingChargesSection.tsx`
-- [ ] `pricing/components/rates-pricing/RateHistorySection.tsx`
-- [ ] `pricing/components/rates-pricing/WholesaleTermsSection.tsx`
+**pricing** (1/3, 2 excluded)
+- [x] `pricing/components/rates-pricing/RateHistorySection.tsx` (2026-08-13)
+- [x] `pricing/components/rates-pricing/MakingChargesSection.tsx` — **excluded, not applicable.** Uses `DataTable`'s `renderExpandedRow` for inline-edit-row editing; `CardList` (the `responsive` mobile fallback) does not support `renderExpandedRow` at all, so enabling it would silently drop the ability to edit rates on mobile. §0 forbids removing functionality. Left as a table-only (non-responsive) `DataTable`, same as before.
+- [x] `pricing/components/rates-pricing/WholesaleTermsSection.tsx` — **excluded, same reason** (also uses `renderExpandedRow` for inline term editing).
 
 **production** (6)
 - [ ] `production/components/FactoryLoomPage.tsx`
