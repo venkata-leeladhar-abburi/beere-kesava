@@ -8,6 +8,13 @@ import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 import { PermissionsGuard } from "./guards/permissions.guard";
 import { JwtStrategy } from "./strategies/jwt.strategy";
 
+// The fallback secret below is committed source, so it's only ever safe for
+// local dev — a production deploy relying on it would let anyone forge a
+// valid JWT for any role. Fail fast at boot instead of shipping that silently.
+if (process.env.NODE_ENV === "production" && !process.env.JWT_SECRET) {
+  throw new Error("JWT_SECRET must be set in production — refusing to start with the dev fallback secret.");
+}
+
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: "jwt" }),

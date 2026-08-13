@@ -10,8 +10,10 @@
     "db:seed": "bash scripts/db-seed.sh",
     "start": "nest start",
     "start:dev": "nest start --watch",
+    "start:prod": "node dist/main.js",
     "dev": "nest start --watch",
     "build": "nest build",
+    "postinstall": "prisma generate",
     "lint": "eslint \"{src,test,prisma}/**/*.ts\" \"prisma.config.ts\"",
     "lint:fix": "eslint \"{src,test,prisma}/**/*.ts\" \"prisma.config.ts\" --fix",
     "format": "prettier --write \"{src,prisma}/**/*.ts\" \"prisma.config.ts\""
