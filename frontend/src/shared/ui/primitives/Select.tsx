@@ -83,7 +83,7 @@ export const SelectItem = React.forwardRef<React.ElementRef<typeof SelectPrimiti
       <SelectPrimitive.Item
         ref={ref}
         className={cn(
-          "relative flex h-10 items-center gap-2 rounded-[var(--radius-sm)] px-3 pr-8 text-[14px] cursor-pointer select-none outline-none",
+          "relative flex h-10 items-center gap-2 rounded-[var(--radius-sm)] px-3 pr-8 text-[14px] cursor-pointer select-none outline-none focus-visible:!outline-none",
           "text-[var(--text-primary)]",
           "data-[highlighted]:bg-[var(--bk-neutral-50)]",
           "data-[state=checked]:bg-[var(--surface-brand-subtle)]",
