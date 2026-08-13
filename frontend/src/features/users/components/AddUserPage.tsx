@@ -396,11 +396,13 @@ export function AddUserPage() {
           ))}
         </motion.div>
 
-        {/* STAT STRIP — staff by role, computed live from allRows */}
+        {/* STAT STRIP — staff by role, computed live from allRows.
+            xl:grid-cols-6 matches ROLES.length (theme.ts) — update together if roles change. */}
         <motion.div
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.14, ease: EASE }}
-          style={{ display: "grid", gridTemplateColumns: `repeat(${ROLES.length}, 1fr)`, gap: 16, marginBottom: 40 }}
+          className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-6"
+          style={{ gap: 16, marginBottom: 40 }}
         >
           {roleStats.map((s, i) => {
             const c = ROLE_COLORS[s.role] ?? { bg: "rgba(139,112,96,0.10)", text: T.taupe, border: "rgba(139,112,96,0.15)" };
