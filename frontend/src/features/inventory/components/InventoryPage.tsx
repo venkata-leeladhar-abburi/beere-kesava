@@ -125,8 +125,8 @@ export function InventoryPage({
       />
 
       {/* ── BODY ──────────────────────────────────────────────────────────── */}
-      <div style={{ padding: "96px 56px 40px", width: "100%" }}>
-        <div style={{ display: "grid", gridTemplateColumns: hasSidebar ? "minmax(0,1fr) 300px" : "1fr", gap: 28, alignItems: "start" }}>
+      <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 96, paddingBottom: 40, width: "100%" }}>
+        <div className={hasSidebar ? "grid grid-cols-1 xl:[grid-template-columns:minmax(0,1fr)_300px]" : "grid grid-cols-1"} style={{ gap: 28, alignItems: "start" }}>
 
           {/* ── MAIN TABLE SECTION ──────────────────────────────────────── */}
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
@@ -177,7 +177,7 @@ export function InventoryPage({
 
       {/* ── QUOTATIONS ───────────────────────────────────────────────────── */}
       {showQuotationsSection && (
-        <div style={{ padding: "0 56px", marginTop: 40 }}>
+        <div className="px-4 md:px-7 xl:px-14" style={{ marginTop: 40 }}>
           <QuotationsSection
             quotations={quotations}
             onDispatch={q => { setQuotationDispatch(q); setModal("wholesale"); }}
@@ -187,7 +187,7 @@ export function InventoryPage({
 
       {/* ── DISPATCH HISTORY ─────────────────────────────────────────────── */}
       {showDispatchHistory && (
-        <div style={{ padding: "0 56px 80px", marginTop: 24 }}>
+        <div className="px-4 md:px-7 xl:px-14" style={{ paddingBottom: 80, marginTop: 24 }}>
           <DispatchHistorySection 
             dispatches={dispatches} 
             firms={firms} 

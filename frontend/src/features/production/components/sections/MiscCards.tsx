@@ -8,7 +8,7 @@ import { Button } from "../../../../shared/ui/primitives";
 
 export function DesignLibraryLinkCard({ onNavigate }: { onNavigate?: (tab: string) => void }) {
   return (
-    <div style={{ padding: "32px 48px 0" }}>
+    <div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 32 }}>
       <FadeUp>
         <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1.5px solid ${T.borderDef}`, padding: "28px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", boxShadow: "0 4px 18px rgba(74,6,27,0.06)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
@@ -33,7 +33,7 @@ export function DesignLibraryLinkCard({ onNavigate }: { onNavigate?: (tab: strin
 
 export function AllSareesSection() {
   return (
-    <div id="prod-all-sarees" style={{ padding: "36px 48px 0" }}>
+    <div id="prod-all-sarees" className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 36 }}>
       <FadeUp>
         <div style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`, boxShadow: "0 6px 32px rgba(74,6,27,0.08)", overflow: "hidden" }}>
           <div style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`, padding: "22px 32px", display: "flex", alignItems: "center", gap: 16 }}>
