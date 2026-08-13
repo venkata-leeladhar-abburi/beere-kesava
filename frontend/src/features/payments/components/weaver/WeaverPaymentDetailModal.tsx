@@ -45,7 +45,7 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
 
   const chargeColumns: ColumnDef<WeaverEarningsBreakdown>[] = [
     {
-      id: "sareeTypeCode", header: "Saree Type Code", priority: 1, accessor: r => r.sareeTypeCode,
+      id: "sareeTypeCode", header: "Saree Type Code", accessor: r => r.sareeTypeCode,
       cell: (_v, r) => (
         <span
           onClick={() => setOpenSareeTypeCode(r.sareeTypeCode)}
@@ -60,7 +60,7 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
     { id: "sareeTypeName", header: "Saree Type Name", accessor: r => r.sareeTypeName },
     { id: "completedCount", header: "Count", accessor: r => r.completedCount, type: "number" },
     {
-      id: "ratePerSaree", header: "Rate", priority: 3, accessor: r => r.ratePerSaree,
+      id: "ratePerSaree", header: "Rate", accessor: r => r.ratePerSaree,
       cell: (_v, r) => <span style={{ fontFamily: F.mono }}><Money value={rupees(r.ratePerSaree)} /></span>,
     },
     {
@@ -108,7 +108,7 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
               </div>
             )}
             <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
-              <DataTable responsive columns={chargeColumns} data={chargeRows} getRowId={r => r.sareeTypeCode} />
+              <DataTable columns={chargeColumns} data={chargeRows} getRowId={r => r.sareeTypeCode} />
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", background: T.warmCream, borderTop: `1px solid ${T.borderDef}` }}>
                 <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, fontWeight: 700 }}>Total Making Charges</span>
                 <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: T.royalBurgundy }}><Money value={rupees(totalCharges)} /></span>
@@ -126,7 +126,7 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {payments.map((p, i) => (
-                  <div key={i} style={{ background: "#FFFFFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, padding: "12px 16px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 10, alignItems: "center" }}>
+                  <div key={i} className="grid grid-cols-1 md:grid-cols-4" style={{ background: "#FFFFFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, padding: "12px 16px", display: "grid", gap: 10, alignItems: "center" }}>
                     <div>
                       <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>Amount Paid</div>
                       <div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.green }}><Money value={rupees(p.amountPaid)} /></div>

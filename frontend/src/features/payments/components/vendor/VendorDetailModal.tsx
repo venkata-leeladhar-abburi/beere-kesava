@@ -48,7 +48,7 @@ export function VendorDetailModal({ vp, matchedPO, onClose }: { vp: VendorPaymen
           {/* PO details */}
           <div>
             <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 8 }}>PO Details</div>
-            <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "14px 16px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
+            <div className="grid grid-cols-1 md:grid-cols-2" style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "14px 16px", gap: 10, marginBottom: 10 }}>
               <div><span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>PO Number</span><div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>{vp.poNumber}</div></div>
               <div><span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Firm Name</span><div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{matchedPO?.firmName ?? "—"}</div></div>
               <div><span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Vendor</span><div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{vendorName}</div></div>
@@ -104,7 +104,7 @@ export function VendorDetailModal({ vp, matchedPO, onClose }: { vp: VendorPaymen
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {history.map((h, i) => (
-                  <div key={i} style={{ background: "#FFFFFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, padding: "12px 16px", display: "grid", gridTemplateColumns: "1fr 1.1fr 1.1fr 1fr 1fr", gap: 10 }}>
+                  <div key={i} className="grid grid-cols-1 md:grid-cols-5" style={{ background: "#FFFFFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, padding: "12px 16px", gap: 10 }}>
                     <div><div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>Amount</div><div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.green }}><Money value={rupees(h.amount)} /></div></div>
                     <div><div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>Date</div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{h.date}</div></div>
                     <div><div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>Paying Firm</div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{h.firm}</div></div>
