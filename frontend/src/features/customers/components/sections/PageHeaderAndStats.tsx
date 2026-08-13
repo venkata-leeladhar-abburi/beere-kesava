@@ -10,7 +10,7 @@ import { useCustomers } from "../../contexts/CustomersContext";
 export function PageHeader() {
   return (
     <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", minHeight: 380, display: "flex", alignItems: "center" }}>
-      <div style={{ position: "relative", zIndex: 2, padding: "48px 0 90px 48px", flex: "0 0 65%", maxWidth: "65%" }}>
+      <div className="pl-4 md:pl-7 xl:pl-12 w-full xl:w-auto xl:basis-[65%] xl:max-w-[65%]" style={{ position: "relative", zIndex: 2, padding: "48px 0 90px 0" }}>
         <div style={{ fontFamily: F.mono, fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase", marginBottom: 12 }}>
           Since 1999 · Customer Management
         </div>
@@ -23,7 +23,7 @@ export function PageHeader() {
         </p>
       </div>
 
-      <div style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "50%", zIndex: 1 }}>
+      <div className="hidden xl:block" style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "50%", zIndex: 1 }}>
         <div style={{ position: "absolute", inset: 0, zIndex: 2, background: `linear-gradient(to right, #0D0207 0%, rgba(13,2,7,0.7) 38%, rgba(13,2,7,0.1) 100%)` }} />
         <img src={customersHero} alt="Showroom" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", filter: "brightness(0.75) saturate(0.90)" }} />
       </div>
@@ -36,11 +36,10 @@ export function StatsStrip() {
   const { wholesaleCustomers = [], retailCustomers = [], customers = [] } = useCustomers() ?? {};
 
   return (
-    <div style={{ padding: "0 48px", marginTop: -80, position: "relative", zIndex: 20 }}>
-      <div style={{
+    <div className="px-4 md:px-7 xl:px-12" style={{ marginTop: -80, position: "relative", zIndex: 20 }}>
+      <div className="grid grid-cols-2 xl:flex" style={{
         background: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)",
         borderRadius: 24,
-        display: "flex",
         alignItems: "stretch",
         boxShadow: "0 24px 72px rgba(0,0,0,0.32), 0 0 0 1px rgba(200,155,71,0.16)",
         overflow: "hidden",

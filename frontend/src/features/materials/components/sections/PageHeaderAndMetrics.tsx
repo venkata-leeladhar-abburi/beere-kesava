@@ -99,7 +99,7 @@ export function MetricsBar() {
       transition={{ duration: 0.8, delay: 0.2, ease: EASE }}
       style={{ padding: `0 ${px}px`, marginTop: -72, position: "relative", zIndex: 20 }}
     >
-      <div style={{ background: G_CARD, borderRadius: 28, display: "flex", alignItems: "stretch", boxShadow: "0 30px 80px rgba(0,0,0,0.32), 0 0 0 1px rgba(200,155,71,0.16)", overflow: "hidden", minHeight: 140 }}>
+      <div className="grid grid-cols-2 xl:flex" style={{ background: G_CARD, borderRadius: 28, alignItems: "stretch", boxShadow: "0 30px 80px rgba(0,0,0,0.32), 0 0 0 1px rgba(200,155,71,0.16)", overflow: "hidden", minHeight: 140 }}>
         {materialMetrics.map((m, i) => (
           <motion.div
             key={i}
