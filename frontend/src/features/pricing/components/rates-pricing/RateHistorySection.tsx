@@ -132,7 +132,7 @@ export function RateHistorySection() {
 
         {/* Table footer */}
         <div style={{
-          display: "flex", alignItems: "center", justifyContent: "space-between",
+          display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12,
           padding: "14px 20px", borderTop: `1px solid ${T.borderDef}`,
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>

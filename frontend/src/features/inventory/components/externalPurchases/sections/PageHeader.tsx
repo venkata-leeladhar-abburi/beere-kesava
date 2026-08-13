@@ -7,7 +7,7 @@ import { Button } from "../../../../../shared/ui/primitives";
 export function PageHeader({ onAdd }: { onAdd: () => void }) {
   return (
     <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", display: "flex", alignItems: "center" }}>
-      <div className="pl-4 md:pl-7 xl:pl-12 pr-4 md:pr-7 xl:pr-14" style={{ position: "relative", zIndex: 2, paddingTop: 48, paddingBottom: 110, width: "100%", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+      <div className="pl-4 md:pl-7 xl:pl-12 pr-4 md:pr-7 xl:pr-14 flex-col xl:flex-row" style={{ position: "relative", zIndex: 2, paddingTop: 48, paddingBottom: 110, width: "100%", display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 20 }}>
         <div>
           <div style={{ fontFamily: F.mono, fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase", marginBottom: 12 }}>
             Since 1999 · External Purchases
@@ -20,7 +20,7 @@ export function PageHeader({ onAdd }: { onAdd: () => void }) {
             Track every saree purchased from external suppliers — with GST, invoice details, and an auto-generated printable barcode for each saree. Visible across all branches.
           </p>
         </div>
-        <div style={{ display: "flex", gap: 10, zIndex: 10, alignSelf: "flex-start", marginTop: 8 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 10, zIndex: 10, alignSelf: "flex-start", marginTop: 8 }}>
           <Button variant="secondary" size="sm" iconLeft={Download} className="bg-transparent text-white border border-white/25 hover:bg-white/10 shadow-none">
             Export
           </Button>

@@ -505,7 +505,7 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
 
       {/* Charts Row 3 — Geographic (grouped by city — the Customer model has
           no separate state field, see backend/prisma/schema.prisma) */}
-      <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 18, padding: "28px 36px", display: "flex", gap: 48, boxShadow: "0 2px 14px rgba(74,6,27,0.05)" }}>
+      <div className="flex-col xl:flex-row" style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 18, padding: "28px 36px", display: "flex", gap: 48, boxShadow: "0 2px 14px rgba(74,6,27,0.05)" }}>
         <div style={{ flex: 1 }}>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 26 }}>
             <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
@@ -547,7 +547,7 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
                   <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 2 }}>{loc.count} customers</div>
                 </div>
                 <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.luxuryBrown, minWidth: 52, textAlign: "right" }}>{loc.pct}%</div>
-                <div style={{ width: 130, height: 8, background: T.silkCream, borderRadius: 4 }}>
+                <div style={{ width: "clamp(60px, 22vw, 130px)", flexShrink: 0, height: 8, background: T.silkCream, borderRadius: 4 }}>
                   <div style={{ width: `${loc.pct}%`, height: "100%", background: loc.color, borderRadius: 4 }} />
                 </div>
               </div>

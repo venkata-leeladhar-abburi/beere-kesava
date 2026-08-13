@@ -215,7 +215,7 @@ export function WeaverProductionSummaryPanel({ refreshKey }: { refreshKey: numbe
             </div>
           </div>
         </div>
-        <div style={{ display: "flex", gap: 10, flexShrink: 0 }}>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" as const }}>
           <Button variant="secondary" size="md" iconLeft={Download} onClick={handleDownloadTemplate} disabled={grouped.length === 0}>
             Download Payment Template
           </Button>
