@@ -186,7 +186,7 @@ export function RawMaterialReport() {
       id: "type", header: "Material Type", accessor: r => r.type,
       cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 7px", borderRadius: 5 }}>{r.type}</span>,
     },
-    { id: "sub", header: "Sub-type / Color / Grade", accessor: r => r.sub },
+    { id: "sub", header: "Sub-type / Color / Grade", accessor: r => r.sub, priority: 1 },
     {
       id: "close", header: "Stock Level", accessor: r => r.close, type: "number", align: "end", sortable: true,
       cell: (_v, r) => (
@@ -204,15 +204,15 @@ export function RawMaterialReport() {
 
   const receiptColumns: ColumnDef<RawMaterialReceiptRow>[] = [
     {
-      id: "batchId", header: "Batch ID", accessor: r => r.batchId,
+      id: "batchId", header: "Batch ID", accessor: r => r.batchId, priority: 1,
       cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{r.batchId}</span>,
     },
     {
-      id: "dateReceived", header: "Date Received", accessor: r => r.dateReceived,
+      id: "dateReceived", header: "Date Received", accessor: r => r.dateReceived, priority: 3,
       cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{r.dateReceived}</span>,
     },
     { id: "vendor", header: "Vendor", accessor: r => r.vendor },
-    { id: "firmName", header: "Firm Name", accessor: r => r.firmName },
+    { id: "firmName", header: "Firm Name", accessor: r => r.firmName, priority: 3 },
     {
       id: "materialType", header: "Material Type", accessor: r => r.materialType,
       cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 8px", borderRadius: 5 }}>{r.materialType}</span>,
@@ -223,7 +223,7 @@ export function RawMaterialReport() {
       cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 600 }}>{r.quantity}</span>,
     },
     {
-      id: "unit", header: "Unit", accessor: r => r.unit,
+      id: "unit", header: "Unit", accessor: r => r.unit, priority: 3,
       cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.unit}</span>,
     },
     {
@@ -231,7 +231,7 @@ export function RawMaterialReport() {
       cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.poReference}</span>,
     },
     {
-      id: "notes", header: "Notes", accessor: r => r.notes,
+      id: "notes", header: "Notes", accessor: r => r.notes, priority: 3,
       cell: (_v, r) => <span style={{ fontSize: 12, color: T.taupe }}>{r.notes || "—"}</span>,
     },
   ];
@@ -320,6 +320,7 @@ export function RawMaterialReport() {
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
           <div style={{ overflowX: "auto" }}>
             <DataTable
+              responsive
               columns={stockColumns}
               data={rawMaterialRows}
               getRowId={(r) => `${r.type}-${r.sub}`}
@@ -344,6 +345,7 @@ export function RawMaterialReport() {
           <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
             <div style={{ overflowX: "auto" }}>
               <DataTable
+                responsive
                 columns={receiptColumns}
                 data={receiptRows}
                 getRowId={(r) => `${r.batchId}-${r.description}-${r.poReference}`}

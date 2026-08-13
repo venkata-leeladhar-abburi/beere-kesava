@@ -111,7 +111,7 @@ export function ProfitLossReport() {
 
   const perFirmColumns: ColumnDef<{ name: string; income: number; expenses: number; net: number }>[] = [
     {
-      id: "name", header: "Firm Name", accessor: f => f.name,
+      id: "name", header: "Firm Name", accessor: f => f.name, priority: 1,
       cell: (_v, f) => <span style={{ fontFamily: F.ui, fontWeight: 600 }}>{f.name}</span>,
     },
     {
@@ -281,7 +281,7 @@ export function ProfitLossReport() {
         <div style={{ marginTop: 24 }}>
           <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: T.luxuryBrown, marginBottom: 12 }}>Per-Firm Breakdown</div>
           <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
-            <DataTable columns={perFirmColumns} data={perFirm} getRowId={f => f.name} />
+            <DataTable responsive columns={perFirmColumns} data={perFirm} getRowId={f => f.name} />
           </div>
         </div>
       </FadeUp>
