@@ -138,7 +138,7 @@ export function AddUserForm({
                 )}
               </AnimatePresence>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px 32px" }}>
+              <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: "20px 32px" }}>
                 {/* Col 1 */}
                 <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
                   <Field label="First Name" required>
@@ -263,7 +263,7 @@ export function AddUserForm({
                       />
                     </div>
 
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px 32px", marginBottom: 8 }}>
+                    <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: "20px 32px", marginBottom: 8 }}>
                       <Field label="Village / Area" hint="Optional">
                         <Input value={weaverFields.village} onChange={e => setWeaverField("village")(e.target.value)} placeholder="e.g. Dharmavaram, AP" />
                       </Field>
