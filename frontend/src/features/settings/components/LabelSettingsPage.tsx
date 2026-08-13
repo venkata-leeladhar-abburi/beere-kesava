@@ -137,9 +137,11 @@ export function LabelSettingsPage() {
     <div style={{ background: T.silkCream, minHeight: "100dvh", paddingBottom: 80 }}>
       {/* PAGE HEADER */}
       <div
+        className="px-4 md:px-7 xl:px-14"
         style={{
           background: T.darkBurgundy,
-          padding: "44px 56px 90px",
+          paddingTop: 44,
+          paddingBottom: 90,
           position: "relative",
           overflow: "hidden",
           minHeight: 180,
@@ -230,9 +232,11 @@ export function LabelSettingsPage() {
 
       {isLoading ? (
         <div
+          className="px-4 md:px-7 xl:px-10"
           style={{
             textAlign: "center",
-            padding: "80px 40px",
+            paddingTop: 80,
+            paddingBottom: 80,
             fontFamily: F.ui,
             fontSize: 14,
             color: T.taupe,
@@ -241,7 +245,7 @@ export function LabelSettingsPage() {
           Loading label settings…
         </div>
       ) : isError ? (
-        <div style={{ textAlign: "center", padding: "80px 40px" }}>
+        <div className="px-4 md:px-7 xl:px-10" style={{ textAlign: "center", paddingTop: 80, paddingBottom: 80 }}>
           <div
             style={{
               width: 72,
@@ -276,8 +280,8 @@ export function LabelSettingsPage() {
         <>
           {/* TWO-COLUMN MAIN LAYOUT */}
           <div
+            className="px-4 md:px-7 xl:px-14"
             style={{
-              padding: "0 56px",
               marginTop: -40,
               position: "relative",
               zIndex: 10,

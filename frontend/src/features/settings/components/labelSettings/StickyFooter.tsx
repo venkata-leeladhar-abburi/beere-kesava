@@ -16,6 +16,7 @@ export function StickyFooter({
 }) {
   return (
     <div
+      className="px-4 md:px-7 xl:px-14"
       style={{
         position: "fixed",
         bottom: 0,
@@ -25,7 +26,8 @@ export function StickyFooter({
         background: "white",
         borderTop: "1px solid rgba(110,15,45,0.10)",
         boxShadow: "0 -4px 20px rgba(44,24,16,0.07)",
-        padding: "14px 56px",
+        paddingTop: 14,
+        paddingBottom: 14,
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
