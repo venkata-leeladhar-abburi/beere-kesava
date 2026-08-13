@@ -618,36 +618,40 @@ work.** Tick with a date: `- [x] FileName.tsx (2026-08-13)`.
 
 **R1 COMPLETE** (2026-08-13) — all 70 originally-assigned files resolved: either `responsive`-enabled or documented as a deliberate exclusion (9 total: 4 portal "island" files already responsive via a different mechanism, 4 `renderExpandedRow`-based drill-down tables incompatible with `CardList`, 1 genuine ledger-layout semantic mismatch). Verified via `grep -rl "<DataTable" src/features` (71 consumers — one more than the original count, pre-existing drift not part of this effort) vs `grep -rl "responsive"` (61) vs `grep -rl "priority:"` (66) — the arithmetic checks out against the exclusion list. `tsc`/`build`/`lint` clean at every commit, same pre-existing baseline throughout.
 
-### R2 — Modal content (0 / 25)
+### R2 — Modal content — ✅ COMPLETE (23 / 25 converted, 2 documented exclusions)
 
-Recipe finalized in §7. 25 files with a multi-column grid inside a `<Modal>` to collapse
-(`grid-cols-1 md:grid-cols-N`); the other 31 `Modal`-using files need no change.
+Recipe finalized in §7. Done 2026-08-13 via 4 parallel worktree-isolated agents (disjoint
+file sets, each verified independently before merge — no repeat of the R1 session's
+worktree-teardown/collision issues; all 4 completed cleanly this time).
 
-- [ ] `bulk-orders/components/BulkOrderCreateModal.tsx`
-- [ ] `bulk-orders/components/BulkOrderDetailPage.tsx`
-- [ ] `customers/components/modals/CustomerModals.tsx`
-- [ ] `design-library/components/DesignLibraryComponents.tsx`
-- [ ] `design-library/components/DesignModals.tsx`
-- [ ] `firms/components/FirmModals.tsx`
-- [ ] `inventory/components/PurchaseModals.tsx`
-- [ ] `inventory/components/ViewStockDialog.tsx`
-- [ ] `inventory/components/modals/DispatchShopModal.tsx`
-- [ ] `inventory/components/modals/InventoryDetailModal.tsx`
-- [ ] `materials/components/issueMaterial/RecordDetailsModal.tsx`
-- [ ] `payments/components/vendor/ContactVendorModal.tsx`
-- [ ] `payments/components/vendor/VendorDetailModal.tsx`
-- [ ] `payments/components/vendor/VendorPayNowModal.tsx`
-- [ ] `payments/components/weaver/WeaverPaymentDetailModal.tsx`
-- [ ] `portals/components/shop-staff/CustomerProfiles.tsx`
-- [ ] `portals/components/shop-staff/desktop/CustomerProfileDialog.tsx`
-- [ ] `portals/components/weaver-portal/theme.tsx`
-- [ ] `production/components/batch-creation/PickerModals.tsx`
-- [ ] `production/components/dialogs/OrderDialogContent.tsx`
-- [ ] `production/components/factory-loom/AddLoomModal.tsx`
-- [ ] `users/components/EditModal.tsx`
-- [ ] `users/components/ViewProfileModal.tsx`
-- [ ] `vendors/components/vendors-page/AddVendorModal.tsx`
-- [ ] `weavers/components/modals/NewWeaverModal.tsx`
+- [x] `bulk-orders/components/BulkOrderCreateModal.tsx` (2026-08-13)
+- [x] `bulk-orders/components/BulkOrderDetailPage.tsx` — **no change needed.** Its only grid (weight-tally cards) sits in the page body, not inside its 2 `<Modal>`s (tally/delete confirmation, no grids).
+- [x] `customers/components/modals/CustomerModals.tsx` (2026-08-13)
+- [x] `design-library/components/DesignLibraryComponents.tsx` (2026-08-13) — 2 grids
+- [x] `design-library/components/DesignModals.tsx` (2026-08-13) — 2 grids
+- [x] `firms/components/FirmModals.tsx` (2026-08-13) — 3 grids
+- [x] `inventory/components/PurchaseModals.tsx` (2026-08-13) — 1 of 5 grids converted (`ViewPurchaseModal`). **The other 4, in `PrintPurchaseModal`'s `receipt` JSX, are excluded** — that JSX is portaled verbatim to `#document-print-root` and printed as a physical GRN; it's a print document sharing a file with a modal, out of scope per §0/§7.
+- [x] `inventory/components/ViewStockDialog.tsx` (2026-08-13)
+- [x] `inventory/components/modals/DispatchShopModal.tsx` (2026-08-13)
+- [x] `inventory/components/modals/InventoryDetailModal.tsx` (2026-08-13) — 3 grids
+- [x] `materials/components/issueMaterial/RecordDetailsModal.tsx` (2026-08-13)
+- [x] `payments/components/vendor/ContactVendorModal.tsx` (2026-08-13)
+- [x] `payments/components/vendor/VendorDetailModal.tsx` (2026-08-13) — 2 grids
+- [x] `payments/components/vendor/VendorPayNowModal.tsx` (2026-08-13) — 2 grids, one an uneven `1fr 1fr 1.2fr` template preserved via `md:grid-cols-[1fr_1fr_1.2fr]` rather than plain `grid-cols-3` (keeps desktop column widths exact)
+- [x] `payments/components/weaver/WeaverPaymentDetailModal.tsx` (2026-08-13)
+- [x] `portals/components/shop-staff/CustomerProfiles.tsx` (2026-08-13) — a second grid outside the Modal, left untouched (out of scope)
+- [x] `portals/components/shop-staff/desktop/CustomerProfileDialog.tsx` (2026-08-13)
+- [x] `portals/components/weaver-portal/theme.tsx` — **excluded, false positive.** All 4 grids live in `DesignDetailCard`/`SareeTypeDetailCard` (dashboard cards, not modal content); the file's one `<Modal>` is a design-graph image lightbox with no grid.
+- [x] `production/components/batch-creation/PickerModals.tsx` (2026-08-13) — 2 grids
+- [x] `production/components/dialogs/OrderDialogContent.tsx` (2026-08-13) — 3 grids inside the nested invoice-preview Modal; asymmetric `1fr 100px` line-item grids preserved via `md:grid-cols-[1fr_100px]` rather than `grid-cols-2`. 3 top-level grids outside any Modal in this file left untouched (out of scope).
+- [x] `production/components/factory-loom/AddLoomModal.tsx` (2026-08-13) — 2 of 3 grids (third was already single-column)
+- [x] `users/components/EditModal.tsx` (2026-08-13)
+- [x] `users/components/ViewProfileModal.tsx` (2026-08-13)
+- [x] `vendors/components/vendors-page/AddVendorModal.tsx` (2026-08-13) — 6 grids
+- [x] `weavers/components/modals/NewWeaverModal.tsx` (2026-08-13) — 2 grids
+
+Verified via `tsc`/`build`/`lint` on every batch before merge — clean, same ~33-error
+pre-existing baseline throughout, zero new errors in any touched file.
 
 ### R3–R8
 - [ ] R3 Dashboards & stats — Admin / Weaver / Worker / Shop staff / Superadmin
