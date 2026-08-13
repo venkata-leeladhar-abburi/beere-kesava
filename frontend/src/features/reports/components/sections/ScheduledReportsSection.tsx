@@ -80,7 +80,7 @@ export function ScheduledReportsSection() {
   ];
 
   return (
-    <div style={{ padding: "36px 40px 0" }}>
+    <div className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 36 }}>
       <FadeUp>
       <SectionCard
         icon={CalendarClock}
@@ -93,7 +93,7 @@ export function ScheduledReportsSection() {
         }
       >
         {/* Schedule cards grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 18, marginBottom: 20, alignItems: "stretch" }}>
+        <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 18, marginBottom: 20, alignItems: "stretch" }}>
           {isLoading ? (
             <div style={{ gridColumn: "1 / -1", padding: 32, textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe, background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}` }}>
               Loading scheduled reports…
@@ -179,7 +179,7 @@ export function ScheduledReportsSection() {
               <div style={{ fontFamily: F.display, fontSize: 18, color: T.luxuryBrown }}>Add New Schedule</div>
               <IconButton variant="ghost" size="sm" icon={X} label="Close" onClick={() => setShowForm(false)} />
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 18 }}>
+            <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 18 }}>
               <div>
                 <label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>Select Report Type</label>
                 <Select size="sm" value={reportType} onValueChange={setReportType}>
