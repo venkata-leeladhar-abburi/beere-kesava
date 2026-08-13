@@ -228,7 +228,7 @@ export function PaymentHistorySection() {
       >
 
         {/* ── 4 Summary stat cards ───────────────────────────── */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 18, marginBottom: 22, alignItems: "stretch" }}>
+        <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 18, marginBottom: 22, alignItems: "stretch" }}>
           {HIST_STATS.map(s => (
             <div key={s.label} style={{
               display: "flex", flexDirection: "column", gap: 10,

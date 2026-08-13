@@ -194,7 +194,7 @@ export function SupplierAnalytics() {
         <>
           {/* ── Row 1: purchase trend + saree type mix ── */}
           <FadeUp delay={0.04}>
-            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 24, marginBottom: 24 }}>
+            <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr]" style={{ gap: 24, marginBottom: 24 }}>
               <PurchaseTrendCard card={card} cardTitle={cardTitle} cardSub={cardSub} tip={tip}
                 billed={billed} buysCount={buys.length} pieces={pieces} monthly={monthly} trendDelta={trendDelta} />
               <TypeMixCard card={card} cardTitle={cardTitle} cardSub={cardSub} tip={tip} byType={byType} />
@@ -203,7 +203,7 @@ export function SupplierAnalytics() {
 
           {/* ── Row 2: top suppliers + outstanding ── */}
           <FadeUp delay={0.08}>
-            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 24, marginBottom: 24 }}>
+            <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr]" style={{ gap: 24, marginBottom: 24 }}>
               <TopSuppliersCard card={card} cardTitle={cardTitle} cardSub={cardSub} tip={tip}
                 topSuppliers={topSuppliers} top5Share={top5Share} billed={billed} />
               <OutstandingCard card={card} cardTitle={cardTitle} cardSub={cardSub}
@@ -213,7 +213,7 @@ export function SupplierAnalytics() {
 
           {/* ── Row 3: margin, payment modes, settlement health ── */}
           <FadeUp delay={0.12}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 24 }}>
+            <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 24 }}>
               <RatingCard card={card} cardTitle={cardTitle} cardSub={cardSub} tip={tip} suppliers={suppliers} />
               <PaymentModeCard card={card} cardTitle={cardTitle} cardSub={cardSub} tip={tip} byMode={byMode} settled={settled} />
               <SettlementHealthCard card={card} cardTitle={cardTitle} cardSub={cardSub}

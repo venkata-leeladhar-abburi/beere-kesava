@@ -56,7 +56,7 @@ export function OverviewTab({
         <DateFilterBar filter={invFilter} onChange={setInvFilter} />
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16 }}>
+      <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 16 }}>
         {[
           { label: "Purchases in Range", value: String(rangePurchases.length),        sub: `${filteredSarees.length} sarees`,                     color: T.luxuryBrown, Icon: Package },
           { label: "Billed in Range",    value: formatMoney(rupees(rangeBilled)),               sub: "Total invoiced by supplier",                          color: "#8B6018",     Icon: FileText },
@@ -75,7 +75,7 @@ export function OverviewTab({
       </div>
 
       {/* Analytics */}
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 24 }}>
+      <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr]" style={{ gap: 24 }}>
         <div style={{ ...card, padding: "24px 28px" }}>
           <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 600, color: T.luxuryBrown, marginBottom: 20 }}>Purchase Spend by Month</div>
           {spendByMonth.length === 0 ? (

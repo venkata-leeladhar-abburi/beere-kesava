@@ -182,7 +182,7 @@ export function PaymentAnalyticsSection() {
       >
 
         {/* ── 4 summary stat cards ───────────────────────────── */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 18, marginBottom: 24, alignItems: "stretch" }}>
+        <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 18, marginBottom: 24, alignItems: "stretch" }}>
           {METRICS.map((m, i) => (
             <motion.div
               key={m.label}
@@ -215,7 +215,7 @@ export function PaymentAnalyticsSection() {
         </div>
 
         {/* ── 3-column chart grid ─────────────────────────────── */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 22, alignItems: "stretch" }}>
+        <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 22, alignItems: "stretch" }}>
 
           {/* Chart 1 — Cash Flow Overview */}
           <div style={{ display: "flex", flexDirection: "column", background: T.warmIvory, borderRadius: 18, border: `1px solid ${T.borderDef}`, boxShadow: "0 2px 14px rgba(74,6,27,0.07)", overflow: "hidden" }}>

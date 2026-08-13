@@ -77,7 +77,7 @@ export function FinancialSummarySection() {
         ) : (
         <>
         {/* Compact info-card grid — 4 stat cards side by side */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20, marginTop: 24, alignItems: "stretch" }}>
+        <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 20, marginTop: 24, alignItems: "stretch" }}>
 
           {/* Card 1 — Total Received This Month */}
           <motion.div

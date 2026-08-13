@@ -843,6 +843,96 @@ pre-existing baseline throughout, zero new errors in any touched file.
   `grep -rl "gridTemplateColumns" src/features --include="*.tsx"` from
   `frontend/`, diff against what's already responsive, and resume the R7
   recipe from there.
+
+  **Batch 3 (2026-08-13)** — triaged `src/features/materials`, `payments`, and
+  `suppliers` (the 3 dirs with the most `gridTemplateColumns` hits). 20 files
+  converted (form/stat/summary-panel grids → `grid-cols-1 md:grid-cols-N`), 6
+  files logged below as real data grids needing Phase 4 `DataTable` migration,
+  the rest skipped as already-responsive (`isMobile` ternary or
+  `repeat(auto-fit/auto-fill, minmax(...))` fluid grids — no fixed column count
+  to collapse) or print documents.
+
+  Converted:
+  - `materials/components/modals/StockModals.tsx` (2026-08-13) — 3 grids (2 in
+    `AddStockModal`, 1 in `BatchViewDetailsModal`'s 4-field panel)
+  - `materials/components/modals/StockModals.tsx` — 3-col financial-stat panel
+    also converted (`grid-cols-1 md:grid-cols-3`)
+  - `materials/components/modals/ReportModals.tsx` (2026-08-13) — 2 grids
+    (vendor-details panel, receipt-detail panel)
+  - `materials/components/issueMaterial/MaterialRowEditor.tsx` (2026-08-13) —
+    1 grid (`2fr 1fr` description/quantity pair), preserved via
+    `md:grid-cols-[2fr_1fr]`
+  - `materials/components/issueMaterial/SignatureBlock.tsx` (2026-08-13) — 1
+    grid (2-option signature-method picker)
+  - `payments/components/PaymentsFooter.tsx` (2026-08-13) — 1 grid, uneven
+    `1.6fr 1fr 1fr 1fr 1fr` preserved via `md:grid-cols-[1.6fr_1fr_1fr_1fr_1fr]`
+    (same pattern as R4's `ReportsFooter.tsx`)
+  - `payments/components/FinancialSummarySection.tsx` (2026-08-13) — 1 grid
+    (4-tile stat strip)
+  - `payments/components/weaver/BankUploadPanel.tsx` (2026-08-13) — 1 grid
+    (3-tile match-result summary)
+  - `payments/components/weaver/WeaverMakingChargesSection.tsx` (2026-08-13) —
+    1 of 2 grids converted (4-tile stat strip); the other (3-col "Card view
+    grid" of `WeaverCard`, `filtered.map`) is a real data grid, left untouched
+    — see log below
+  - `payments/components/supplier/SupplierPaymentsSection.tsx` (2026-08-13) —
+    1 of 2 grids converted (4-tile stat strip); the other (3-col supplier-card
+    grid, `filtered.map`) is a real data grid, left untouched — see log below
+  - `payments/components/wholesale/WholesaleCollectionsSection.tsx`
+    (2026-08-13) — 1 of 2 grids converted (4-tile stat strip); the other
+    (3-col `CustomerCard` grid, `filtered.map`) is a real data grid, left
+    untouched — see log below
+  - `payments/components/vendor/VendorPaymentsSection.tsx` (2026-08-13) — 1 of
+    2 grids converted (4-tile stat strip); the other (3-col `VendorCard` grid,
+    `filtered.map`) is a real data grid, left untouched — see log below
+  - `payments/components/history/PaymentHistorySection.tsx` (2026-08-13) — 1
+    of 2 grids converted (3-tile stat strip); the other (3-col `HistoryCard`
+    grid, `filtered.map`) is a real data grid, left untouched — see log below
+  - `payments/components/analytics/PaymentAnalyticsSection.tsx` (2026-08-13) —
+    2 grids (4-tile stat strip, 3-col chart-panel row — 3 distinct charts, not
+    repeated records)
+  - `payments/components/vendor/VendorUploadPanel.tsx` (2026-08-13) — 1 of 3
+    grids converted (3-tile match-result summary); the `repeat(auto-fill,
+    minmax(320px,1fr))` card list and the per-card 2-col field grid inside it
+    left untouched (fluid / per-row field grid inside a mapped card — see §10)
+  - `suppliers/components/sections/SupplierFormFields.tsx` (2026-08-13) — 6
+    grids (outer 2-col left/right split + 5 inner field-pair grids); shared by
+    "Add Supplier" and the profile "Edit Profile" tab
+  - `suppliers/components/sections/supplierProfile/OverviewTab.tsx`
+    (2026-08-13) — 2 of 3 grids converted (4-tile stat strip, `2fr 1fr`
+    chart/side-panel split via `md:grid-cols-[2fr_1fr]`); the 3rd
+    (`repeat(auto-fit, minmax(150px,1fr))`) is already fluid, untouched
+  - `suppliers/components/sections/SupplierAnalytics.tsx` (2026-08-13) — 3
+    grids (2× `2fr 1fr` dashboard rows via `md:grid-cols-[2fr_1fr]`, 1×
+    3-column row of distinct cards)
+  - `suppliers/components/sections/supplierProfile/ContactTab.tsx`
+    (2026-08-13) — 1 grid (8-field contact/bank/GST summary panel)
+  - `suppliers/components/sections/supplierProfile/PaymentsTab.tsx`
+    (2026-08-13) — 1 grid (3-tile stat strip)
+  - `suppliers/components/sections/analytics/RatingAndModeCards.tsx`
+    (2026-08-13) — 1 grid (4-tile mini-stat strip inside the Settlement
+    Health card)
+
+  **Found, needs Phase 4 `DataTable` migration (real data grids, not
+  touched):**
+  - `payments/components/supplier/SupplierPaymentsSection.tsx` — 3-col grid
+    of supplier-summary cards, `filtered.map(r => ...)`
+  - `payments/components/weaver/WeaverMakingChargesSection.tsx` — 3-col
+    "Card view grid" of `WeaverCard`, `filtered.map(w => ...)`
+  - `payments/components/wholesale/WholesaleCollectionsSection.tsx` — 3-col
+    grid of `CustomerCard`, `filtered.map(inv => ...)`
+  - `payments/components/vendor/VendorPaymentsSection.tsx` — 3-col grid of
+    `VendorCard`, `filtered.map(vp => ...)`
+  - `payments/components/history/PaymentHistorySection.tsx` — 3-col grid of
+    `HistoryCard`, `filtered.map(r => ...)`
+  - `suppliers/components/sections/SupplierDirectorySection.tsx` — 3-col
+    grid of `SupplierCard` (from `shared/ui/domain`), `filtered.map(s => ...)`
+
+  Verified via `tsc --noEmit` (clean) / `npm run build` (succeeds) / `npm run
+  lint` (33 pre-existing errors, all in the already-documented dashboard
+  baseline — `MetricsBar.tsx`, `SAOverviewPage.tsx`, `WeaverMetricsBar.tsx`,
+  both `PageHeaderAndStats.tsx` files; zero new errors in any file touched
+  this batch).
 - [ ] R8 QA, device matrix, ratchet metrics
 
 ### Out-of-band: hero+stats pattern + universal gutter sweep (2026-08-13)
@@ -929,6 +1019,8 @@ problem and recording it is the correct response, not fixing it.
 | 2026-08-13 | R6 | `WorkerPortal.tsx` (`TABS` array) | **Real bug, not fixed (out of scope for this rollout — data correctness, not responsive/layout).** QC and Finishing bottom-tab badges are hardcoded literals `"6"` and `"2"`, always showing those numbers regardless of actual pending counts. `WorkerTopNav.tsx` (desktop) computes the real `pendingQcCount` dynamically for the same tab — the mobile version was apparently never wired up to live data. Worth a dedicated fix outside Phase R. |
 | 2026-08-13 | out-of-band | `weavers/components/sections/WeaverLeaderboardClusterRow.tsx` | **User-reported via screenshot**: the Recharts `Tooltip` on the "Top 10 Weavers by Output" horizontal bar chart overlaps the next bar's label on mobile. This is a chart-library interaction/positioning issue (tooltip follows touch position, bars are close together vertically on a narrow `ResponsiveContainer`), not a static layout bug like the ones fixed alongside it (§ below) — fixing it safely needs either a `position`/`offset` tuning pass verified live in-browser, or a different mobile-specific interaction (tap-to-pin instead of hover-follow). Not attempted blind with browser verification unavailable this session; flag for a session with working browser access. |
 | 2026-08-13 | out-of-band | 4 files: `materials/AlertsCard.tsx`, `payments/weaver/BankUploadPanel.tsx`, `payments/vendor/VendorUploadPanel.tsx`, `inventory/sections/ActionBar.tsx` | **Fixed, not a numbered phase.** User-reported via 8 screenshots: several "icon+label+description left, action button(s) right" rows used `display:flex` with no `flexWrap`, so on mobile the description/status text wrapped to multiple lines while the button block stayed vertically centered on the same row, visually overlapping the wrapped text. Fixed by adding `flexWrap: "wrap"` (commit `8d522a8`) — the button block now drops to its own line instead of overlapping. This is a distinct bug class from the page-level horizontal-scroll bugs fixed earlier (§3.6/§3.7) — worth grepping for the same `display: "flex", alignItems: "center", justifyContent: "space-between"` (or similar) pattern with no `flexWrap` across the rest of the app in a future session, since these 4 were found from user screenshots, not an exhaustive sweep. |
+| 2026-08-13 | R7 | `payments/components/wholesale/CustomerCard.tsx`, `payments/components/history/HistoryCard.tsx`, `payments/components/vendor/VendorUploadPanel.tsx` (the matched-bill card at line ~195) | **Deliberately not converted.** Each has a small fixed 2-column field grid *inside* a single card template that is itself the repeated unit of a real data grid (rendered via `.map()` in a parent file — see the Phase-4-migration list above). Converting the internal field grid would be inert/pointless while the outer grid stays a fixed 3-column layout (mobile still crams 3 un-collapsed cards per row), and the whole card's internal layout is going to be redefined anyway when Phase 4 migrates the parent to `DataTable`/`CardList`. Left both the outer and inner grids untouched for these three files, consistent with the "don't touch real data grids" rule extending to their per-row card templates. |
+| 2026-08-13 | R7 | `suppliers/components/sections/SupplierCard.tsx` | **Found, not fixed — likely dead code, not a responsive bug.** This file defines its own `SupplierCard` component with a 3-col `gridTemplateColumns` stat strip, but `grep` found zero importers anywhere in `src/features/suppliers`. The only `SupplierCard` actually rendered (`SupplierDirectorySection.tsx`) imports a *different* component of the same name from `@/shared/ui/domain`. Not touched (out of scope to fix/delete dead code in a responsive pass) — flag for a cleanup session. |
 
 ---
 

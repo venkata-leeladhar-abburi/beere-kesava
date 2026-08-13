@@ -47,7 +47,7 @@ export function PaymentsTab({
 }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16 }}>
+      <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 16 }}>
         {[
           { label: "Paid in Range",  value: formatMoney(rupees(filteredPaidSum)),      color: T.green },
           { label: "Paid All Time",  value: formatMoney(rupees(totalPaid)),      color: T.luxuryBrown },

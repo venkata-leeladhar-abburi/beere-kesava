@@ -8,7 +8,7 @@ export function PaymentsFooter() {
   return (
     <footer style={{ background: T.darkBurgundy, borderTop: `1px solid rgba(200,155,71,0.18)` }}>
       {/* Main footer grid */}
-      <div className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 44, paddingBottom: 36, display: "grid", gridTemplateColumns: "1.6fr 1fr 1fr 1fr 1fr", gap: 40 }}>
+      <div className="px-4 md:px-7 xl:px-10 grid grid-cols-1 md:grid-cols-[1.6fr_1fr_1fr_1fr_1fr]" style={{ paddingTop: 44, paddingBottom: 36, gap: 40 }}>
 
         {/* ── Brand column ──────────────────────────────────── */}
         <div>

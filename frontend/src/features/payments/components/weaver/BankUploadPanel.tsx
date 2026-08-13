@@ -109,7 +109,7 @@ export function BankUploadPanel({ onReset }: { onMatchUpdate?: (matched: unknown
       {result && (
         <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: EASE }}>
           {/* Summary strip */}
-          <div style={{ marginTop: 18, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 22 }}>
+          <div className="grid grid-cols-1 md:grid-cols-3" style={{ marginTop: 18, gap: 12, marginBottom: 22 }}>
             {[
               { label: "Total Rows", value: String(totalRows), color: T.luxuryBrown, bg: "#FFFFFF", icon: <FileText size={18} color={T.royalBurgundy} /> },
               { label: "Payments Saved", value: String(result.created), color: T.green, bg: "rgba(30,102,64,0.07)", icon: <CheckCircle2 size={18} color={T.green} /> },

@@ -7,7 +7,7 @@ import { Supplier } from "../../../contexts/SupplierContext";
 
 export function ContactTab({ card, supplier }: { card: React.CSSProperties; supplier: Supplier }) {
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+    <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
       {[
         { label: "Contact Person", value: supplier.contactName, Icon: Building2 },
         { label: "Phone",          value: supplier.phone, Icon: Phone },
