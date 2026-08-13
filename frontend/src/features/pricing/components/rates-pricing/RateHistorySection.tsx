@@ -73,11 +73,11 @@ export function RateHistorySection() {
       cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>{r.date}</span>,
     },
     {
-      id: "by", header: "Changed By", accessor: r => r.by,
+      id: "by", header: "Changed By", accessor: r => r.by, priority: 3,
       cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 500 }}>{r.by}</span>,
     },
     {
-      id: "what", header: "What Was Changed", accessor: r => r.what,
+      id: "what", header: "What Was Changed", accessor: r => r.what, priority: 1,
       cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 500 }}>{r.what}</span>,
     },
     {
@@ -89,7 +89,7 @@ export function RateHistorySection() {
       cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.green }}>{r.next}</span>,
     },
     {
-      id: "reason", header: "Reason", accessor: r => r.reason,
+      id: "reason", header: "Reason", accessor: r => r.reason, priority: 3,
       cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, fontStyle: "italic", color: T.taupe }}>{r.reason}</span>,
     },
   ];
@@ -123,6 +123,7 @@ export function RateHistorySection() {
       ) : (
       <div style={cardStyle}>
         <DataTable
+          responsive
           columns={historyColumns}
           data={filteredHistory}
           getRowId={r => String(filteredHistory.indexOf(r))}
