@@ -55,9 +55,9 @@ export function LiveSummarySnapshot() {
   ];
 
   return (
-    <div style={{ padding: "0 48px", marginTop: 20 }}>
-      <div style={{
-        display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 14,
+    <div className="px-4 md:px-7 xl:px-12" style={{ marginTop: 20 }}>
+      <div className="grid grid-cols-1 md:grid-cols-5" style={{
+        gap: 14,
         background: "#FFFFFF", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "16px 20px",
         boxShadow: "0 2px 14px rgba(74,6,27,0.06)",
       }}>
