@@ -182,7 +182,7 @@ export function ProfitLossReport() {
   }, [weaverPayments, materialPurchases, shopMaintenance, factoryMaintenance, salaries, otherExpenses]);
 
   return (
-    <div id="rep-pnl" style={{ padding: "32px 40px" }}>
+    <div id="rep-pnl" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 32 }}>
     <SectionCard
       icon={BarChart2}
       title="Profit & Loss Report"
@@ -190,7 +190,7 @@ export function ProfitLossReport() {
     >
       <ReportDLBar />
 
-      <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: 20, marginBottom: 28 }}>
+      <div className="grid grid-cols-1 md:grid-cols-[1.6fr_1fr]" style={{ gap: 20, marginBottom: 28 }}>
         <ChartCard title="Income vs Expenses — Monthly" sub="Green = income · Crimson = expenses">
           {pnlMonthlyData.length === 0 ? (
             <div style={{ padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
