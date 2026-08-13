@@ -196,7 +196,7 @@ export function FactoryLoomPage() {
     }
   };
   return (
-    <div style={{ background: "#FFFDF9", minHeight: "var(--shell-content-min-h)", paddingBottom: 0 }}>
+    <div style={{ background: "#FFFDF9", minHeight: "var(--shell-content-min-h)", display: "flex", flexDirection: "column", paddingBottom: 0 }}>
       {selected ? (
         <LoomDetailPage
           loom={selected}

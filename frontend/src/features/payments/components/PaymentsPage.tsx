@@ -13,7 +13,7 @@ import { WholesaleCollectionsSection } from "./wholesale/WholesaleCollectionsSec
 
 export function PaymentsPage() {
   return (
-    <div style={{ fontFamily: F.ui }}>
+    <div style={{ fontFamily: F.ui, minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
       <PaymentsHeader />
       <StatsStrip />
       <div style={{ background: T.silkCream, paddingBottom: 0 }}>

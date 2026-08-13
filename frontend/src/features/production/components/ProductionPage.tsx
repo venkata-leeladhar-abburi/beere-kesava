@@ -70,7 +70,7 @@ export function ProductionPage({ superadmin = false, onNavigate }: { superadmin?
   }
 
   return (
-    <div style={{ fontFamily: F.ui }}>
+    <div style={{ fontFamily: F.ui, minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
       <PageHeader />
       <StatsStrip />
       <AllSareesSection />

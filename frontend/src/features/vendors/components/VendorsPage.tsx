@@ -89,7 +89,7 @@ export function VendorsPage() {
     }
   };
   return (
-    <div style={{ background: T.silkCream, minHeight: "100dvh", paddingBottom: 0 }}>
+    <div style={{ background: T.silkCream, minHeight: "100dvh", display: "flex", flexDirection: "column", paddingBottom: 0 }}>
       {selectedVendor ? (
         <VendorProfile vendor={selectedVendor} onBack={() => setSelectedVendor(null)} onUpdate={v => { void handleUpdate(v); }} onDelete={v => { void handleDelete(v); }} />
       ) : (
