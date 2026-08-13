@@ -56,16 +56,16 @@ export function ExternalPurchasesSection() {
   const totalBill = rows.reduce((s, r) => s + Number(r.billAmount), 0);
 
   const purchaseColumns: ColumnDef<BackendPurchase>[] = [
-    { id: "vendor", header: "Vendor / Supplier", accessor: r => r.supplier.name, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.supplier.name}</span> },
+    { id: "vendor", header: "Vendor / Supplier", accessor: r => r.supplier.name, priority: 1, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.supplier.name}</span> },
     {
-      id: "location", header: "Location", accessor: r => [r.supplier.city, r.supplier.state].filter(Boolean).join(", "),
+      id: "location", header: "Location", accessor: r => [r.supplier.city, r.supplier.state].filter(Boolean).join(", "), priority: 3,
       cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{[r.supplier.city, r.supplier.state].filter(Boolean).join(", ") || "—"}</span>,
     },
-    { id: "gst", header: "GST Number", accessor: r => r.gstNumber || r.supplier.gstCode, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{r.gstNumber || r.supplier.gstCode || "—"}</span> },
+    { id: "gst", header: "GST Number", accessor: r => r.gstNumber || r.supplier.gstCode, priority: 3, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{r.gstNumber || r.supplier.gstCode || "—"}</span> },
     { id: "invoice", header: "Invoice Number", accessor: r => r.invoiceNumber, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.invoiceNumber || "—"}</span> },
     { id: "billAmount", header: "Bill Amount", accessor: r => r.billAmount, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700 }}><Money value={rupees(Number(r.billAmount))} /></span> },
     { id: "sarees", header: "Sarees", accessor: r => r.sareeCount, align: "center", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700 }}>{r.sareeCount}</span> },
-    { id: "date", header: "Date", accessor: r => r.date, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{fmtDate(r.date)}</span> },
+    { id: "date", header: "Date", accessor: r => r.date, priority: 3, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{fmtDate(r.date)}</span> },
     {
       id: "status", header: "Status", accessor: r => r.status, type: "status",
       cell: (_v, r) => <DomainStatusPill taxonomy="payment" status={PURCHASE_STATUS_KEY[r.status] ?? "unpaid"} />,
@@ -86,6 +86,7 @@ export function ExternalPurchasesSection() {
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
           <div style={{ overflowX: "auto", minWidth: 900 }}>
             <DataTable
+              responsive
               columns={purchaseColumns}
               data={rows}
               getRowId={r => r.id}
@@ -217,9 +218,9 @@ export function SareeProductionReport() {
   }
 
   const prodColumns: ColumnDef<ProdTableRow>[] = [
-    { id: "code", header: "Weaver Code", accessor: r => r.code, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy }}>{r.code}</span> },
-    { id: "name", header: "Weaver Name", accessor: r => r.name, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{r.name}</span> },
-    { id: "batches", header: "Batches", accessor: r => r.batches, align: "center" },
+    { id: "code", header: "Weaver Code", accessor: r => r.code, priority: 3, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy }}>{r.code}</span> },
+    { id: "name", header: "Weaver Name", accessor: r => r.name, priority: 1, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{r.name}</span> },
+    { id: "batches", header: "Batches", accessor: r => r.batches, align: "center", priority: 3 },
     { id: "produced", header: "Sarees Produced", accessor: r => r.produced, align: "center", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700 }}>{r.produced}</span> },
     { id: "passed", header: "QC Passed", accessor: r => r.passed, align: "center", cell: (_v, r) => <span style={{ color: T.green, fontFamily: F.mono, fontWeight: 700 }}>{r.passed}</span> },
     { id: "rejected", header: "QC Rejected", accessor: r => r.rejected, align: "center", cell: (_v, r) => <span style={{ color: r.rejected > 0 ? T.crimson : T.taupe, fontFamily: F.mono, fontWeight: 700 }}>{r.rejected > 0 ? r.rejected : "—"}</span> },
@@ -227,7 +228,7 @@ export function SareeProductionReport() {
       id: "passRate", header: "Pass Rate", accessor: r => r.passRate, align: "center",
       cell: (_v, r) => <StatusPill label={`${r.passRate}%`} type={r.passRate >= 95 ? "ok" : r.passRate >= 85 ? "warn" : "bad"} />,
     },
-    { id: "designs", header: "Designs Worked On", accessor: r => r.designs, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.designs}</span> },
+    { id: "designs", header: "Designs Worked On", accessor: r => r.designs, priority: 3, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.designs}</span> },
     { id: "charges", header: "Making Charges", accessor: r => r.charges, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.royalBurgundy }}><Money value={rupees(r.charges)} /></span> },
   ];
 
@@ -436,6 +437,7 @@ export function SareeProductionReport() {
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
           <div style={{ overflowX: "auto", minWidth: 960 }}>
             <DataTable
+              responsive
               columns={prodColumns}
               data={prodTableRows}
               getRowId={r => r.code}

@@ -160,15 +160,15 @@ export function RetailSalesReport() {
       cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.id}</span>,
     },
     {
-      id: "date", header: "Sale Date", accessor: r => r.date,
+      id: "date", header: "Sale Date", accessor: r => r.date, priority: 3,
       cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{r.date}</span>,
     },
     {
-      id: "customer", header: "Customer Name", accessor: r => r.customer,
+      id: "customer", header: "Customer Name", accessor: r => r.customer, priority: 1,
       cell: (_v, r) => <span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.customer}</span>,
     },
     {
-      id: "phone", header: "Phone", accessor: r => r.phone,
+      id: "phone", header: "Phone", accessor: r => r.phone, priority: 3,
       cell: (_v, r) => <span style={{ color: T.taupe }}>{r.phone}</span>,
     },
     {
@@ -288,6 +288,7 @@ export function RetailSalesReport() {
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
           <div style={{ overflowX: "auto", minWidth: 700 }}>
             <DataTable
+              responsive
               columns={retailColumns}
               data={retailRows}
               getRowId={r => r.id + r.sarId}
