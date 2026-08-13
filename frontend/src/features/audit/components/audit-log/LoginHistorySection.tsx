@@ -55,11 +55,11 @@ export function LoginHistorySection() {
       cell: (_v, e) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>{e.time}</span>,
     },
     {
-      id: "user", header: "User", accessor: e => e.user,
+      id: "user", header: "User", accessor: e => e.user, priority: 1,
       cell: (_v, e) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, whiteSpace: "nowrap" }}>{e.user}</span>,
     },
     {
-      id: "role", header: "Role", accessor: e => e.role,
+      id: "role", header: "Role", accessor: e => e.role, priority: 3,
       cell: (_v, e) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{e.role}</span>,
     },
     {
@@ -274,6 +274,7 @@ export function LoginHistorySection() {
               overflowX: "auto",
             }}>
               <DataTable
+                responsive
                 columns={columns}
                 data={entries}
                 getRowId={entry => String(entry.id)}
