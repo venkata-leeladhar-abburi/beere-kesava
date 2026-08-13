@@ -154,7 +154,7 @@ function BusinessOverview({ onGoToFirm }: { onGoToFirm?: (firmId: string) => voi
               getRowId={r => r.firm.id}
             />
             {/* Totals row */}
-            <div style={{ display: "grid", gridTemplateColumns: "2fr 130px 130px 150px 80px 36px", gap: 0, padding: "16px 28px", background: T.bgGold, borderTop: `1.5px solid ${T.borderGold}`, borderLeft: `4px solid ${T.antiqueGold}` }}>
+            <div className="grid grid-cols-1 md:grid-cols-[2fr_130px_130px_150px_80px_36px]" style={{ gap: 0, padding: "16px 28px", background: T.bgGold, borderTop: `1.5px solid ${T.borderGold}`, borderLeft: `4px solid ${T.antiqueGold}` }}>
               <div>
                 <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>All Firms Total</div>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{rows.length} firms · manual entries</div>
@@ -209,7 +209,7 @@ const FirmCard = React.forwardRef<HTMLDivElement, { firm: Firm; onEdit: () => vo
       </div>
 
       {/* Financial mini-strip */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", borderBottom: `1px solid ${T.borderDef}` }}>
+      <div className="grid grid-cols-1 md:grid-cols-3" style={{ borderBottom: `1px solid ${T.borderDef}` }}>
         {[
           { label: "Income",   val: inc, color: T.green   },
           { label: "Expenses", val: exp, color: T.crimson  },
