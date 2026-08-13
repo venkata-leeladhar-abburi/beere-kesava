@@ -75,11 +75,12 @@ export function ActionBar({
             padding: "14px 20px",
             display: "flex",
             alignItems: "center",
+            flexWrap: "wrap",
             gap: 12,
             boxShadow: "0 4px 20px rgba(61,14,26,0.20)",
           }}
         >
-          <span style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.80)", flex: 1 }}>
+          <span style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.80)", flex: "1 1 200px" }}>
             {selectedCount > 0 ? (
               <>
                 <strong style={{ color: "#FFF" }}>{selectedCount}</strong> selected

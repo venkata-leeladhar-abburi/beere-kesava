@@ -47,12 +47,12 @@ export function AlertsCard({ onCreatePO }: { onCreatePO?: () => void }) {
   return (
     <FadeUp id="mat-alerts" style={{ padding: `28px ${px}px 0` }}>
       <div style={{ background: "#FFFFFF", borderRadius: 14, border: "1px solid rgba(110,15,45,0.08)", borderTop: `3px solid ${dynamicAlerts.length > 0 ? T.crimson : T.green}`, boxShadow: "0 4px 24px rgba(192,57,43,0.08)", padding: "26px 32px 28px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 14, marginBottom: 8 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             {dynamicAlerts.length > 0 ? <AlertTriangle size={22} color={T.crimson} /> : <CheckCircle2 size={22} color={T.green} />}
             <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 18, color: T.luxuryBrown }}>Stock Alerts — Items That Need Attention</span>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
             <Button onClick={onCreatePO} variant="primary" size="sm" iconLeft={Plus}>
               Create Purchase Order
             </Button>

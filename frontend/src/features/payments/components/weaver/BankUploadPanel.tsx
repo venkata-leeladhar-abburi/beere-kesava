@@ -52,7 +52,7 @@ export function BankUploadPanel({ onReset }: { onMatchUpdate?: (matched: unknown
   return (
     <div style={{ marginBottom: 22 }}>
       {/* ── Upload trigger panel ── */}
-      <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "18px 22px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24, boxShadow: "0 2px 10px rgba(74,6,27,0.04)" }}>
+      <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "18px 22px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24, flexWrap: "wrap", boxShadow: "0 2px 10px rgba(74,6,27,0.04)" }}>
         <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
           <div style={{ width: 44, height: 44, borderRadius: 10, background: "rgba(110,15,45,0.06)", border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <UploadCloud size={22} color={T.royalBurgundy} />
