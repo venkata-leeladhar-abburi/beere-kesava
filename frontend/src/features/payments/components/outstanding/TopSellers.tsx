@@ -26,7 +26,7 @@ function RankTable({ title, sub, ranks, unitLabel, icon }: { title: string; sub:
       },
     },
     {
-      id: "name", header: unitLabel, accessor: r => r.name,
+      id: "name", header: unitLabel, priority: 1, accessor: r => r.name,
       cell: (_v, r) => (
         <>
           <div style={{ fontWeight: 700, color: T.luxuryBrown }}>{r.name}</div>
@@ -46,12 +46,12 @@ function RankTable({ title, sub, ranks, unitLabel, icon }: { title: string; sub:
         </div>
       ),
     },
-    { id: "produced", header: "Produced", accessor: r => r.produced, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{r.produced}</span> },
-    { id: "retail", header: "Retail", accessor: r => r.retail, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: "#4A7FB5" }}>{r.retail}</span> },
-    { id: "wholesale", header: "Wholesale", accessor: r => r.wholesale, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: "#9B4DCA" }}>{r.wholesale}</span> },
-    { id: "returned", header: "Returned", accessor: r => r.returned, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: r.returned ? T.crimson : T.taupe }}>{r.returned}</span> },
+    { id: "produced", header: "Produced", priority: 3, accessor: r => r.produced, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{r.produced}</span> },
+    { id: "retail", header: "Retail", priority: 3, accessor: r => r.retail, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: "#4A7FB5" }}>{r.retail}</span> },
+    { id: "wholesale", header: "Wholesale", priority: 3, accessor: r => r.wholesale, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: "#9B4DCA" }}>{r.wholesale}</span> },
+    { id: "returned", header: "Returned", priority: 3, accessor: r => r.returned, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: r.returned ? T.crimson : T.taupe }}>{r.returned}</span> },
     { id: "outstanding", header: "Outstanding", accessor: r => r.outstanding, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.orange }}>{r.outstanding}</span> },
-    { id: "sellThrough", header: "Sell-through", accessor: r => r.sellThroughPct, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: r.sellThroughPct >= 60 ? T.green : r.sellThroughPct >= 35 ? T.antiqueGold : T.crimson }}>{r.sellThroughPct}%</span> },
+    { id: "sellThrough", header: "Sell-through", priority: 3, accessor: r => r.sellThroughPct, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: r.sellThroughPct >= 60 ? T.green : r.sellThroughPct >= 35 ? T.antiqueGold : T.crimson }}>{r.sellThroughPct}%</span> },
     { id: "revenue", header: "Net Revenue", accessor: r => r.revenue, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{inr(r.revenue)}</span> },
   ];
 
@@ -65,6 +65,7 @@ function RankTable({ title, sub, ranks, unitLabel, icon }: { title: string; sub:
          ...ranks.map(r => [r.name, r.sub, r.produced, r.sold, r.retail, r.wholesale, r.returned, r.outstanding, r.sellThroughPct, r.revenue])])} />}
     >
       <DataTable
+        responsive
         columns={columns}
         data={visible}
         getRowId={r => r.key}

@@ -45,7 +45,7 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
 
   const chargeColumns: ColumnDef<WeaverEarningsBreakdown>[] = [
     {
-      id: "sareeTypeCode", header: "Saree Type Code", accessor: r => r.sareeTypeCode,
+      id: "sareeTypeCode", header: "Saree Type Code", priority: 1, accessor: r => r.sareeTypeCode,
       cell: (_v, r) => (
         <span
           onClick={() => setOpenSareeTypeCode(r.sareeTypeCode)}
@@ -60,7 +60,7 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
     { id: "sareeTypeName", header: "Saree Type Name", accessor: r => r.sareeTypeName },
     { id: "completedCount", header: "Count", accessor: r => r.completedCount, type: "number" },
     {
-      id: "ratePerSaree", header: "Rate", accessor: r => r.ratePerSaree,
+      id: "ratePerSaree", header: "Rate", priority: 3, accessor: r => r.ratePerSaree,
       cell: (_v, r) => <span style={{ fontFamily: F.mono }}><Money value={rupees(r.ratePerSaree)} /></span>,
     },
     {
@@ -108,7 +108,7 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
               </div>
             )}
             <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
-              <DataTable columns={chargeColumns} data={chargeRows} getRowId={r => r.sareeTypeCode} />
+              <DataTable responsive columns={chargeColumns} data={chargeRows} getRowId={r => r.sareeTypeCode} />
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", background: T.warmCream, borderTop: `1px solid ${T.borderDef}` }}>
                 <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, fontWeight: 700 }}>Total Making Charges</span>
                 <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: T.royalBurgundy }}><Money value={rupees(totalCharges)} /></span>
