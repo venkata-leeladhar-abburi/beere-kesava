@@ -40,19 +40,19 @@ export function PurchasesTable({
 
   const columns: ColumnDef<Purchase>[] = [
     {
-      id: "serial", header: "Serial Number", accessor: row => row.id,
+      id: "serial", header: "Serial Number", accessor: row => row.id, priority: 3,
       cell: (_v, row) => <span style={mono(T.royalBurgundy, { fontWeight: 700 })}>{row.id}</span>,
     },
     {
-      id: "supplier", header: "Supplier Name", accessor: row => row.supplier,
+      id: "supplier", header: "Supplier Name", accessor: row => row.supplier, priority: 1,
       cell: (_v, row) => <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: T.luxuryBrown }}>{row.supplier}</span>,
     },
     {
-      id: "location", header: "Location", accessor: row => row.location,
+      id: "location", header: "Location", accessor: row => row.location, priority: 3,
       cell: (_v, row) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>{row.location}</span>,
     },
     {
-      id: "date", header: "Purchase Date", accessor: row => row.date,
+      id: "date", header: "Purchase Date", accessor: row => row.date, priority: 3,
       cell: (_v, row) => <span style={mono(T.taupe)}>{row.date}</span>,
     },
     {
@@ -66,11 +66,11 @@ export function PurchasesTable({
       ),
     },
     {
-      id: "gst", header: "GST Number", accessor: row => row.gstNumber,
+      id: "gst", header: "GST Number", accessor: row => row.gstNumber, priority: 3,
       cell: (_v, row) => <span style={mono(T.taupe)}>{row.gstNumber || "—"}</span>,
     },
     {
-      id: "invoice", header: "Invoice Number", accessor: row => row.invoiceNumber,
+      id: "invoice", header: "Invoice Number", accessor: row => row.invoiceNumber, priority: 3,
       cell: (_v, row) => <span style={mono(T.taupe)}>{row.invoiceNumber || "—"}</span>,
     },
     {
@@ -86,7 +86,7 @@ export function PurchasesTable({
       cell: (_v, row) => <span style={mono(T.green, { fontWeight: 700 })}>{formatMoney(rupees(purchaseTotals(row.sarees).profit))}</span>,
     },
     {
-      id: "billAmount", header: "Bill Amount", accessor: row => row.billAmount,
+      id: "billAmount", header: "Bill Amount", accessor: row => row.billAmount, priority: 3,
       cell: (_v, row) => <span style={mono(T.antiqueGold, { fontWeight: 600, fontSize: 13 })}>{row.billAmount}</span>,
     },
     {
@@ -94,7 +94,7 @@ export function PurchasesTable({
       cell: (_v, row) => <StatusPill status={row.status} />,
     },
     {
-      id: "addedBy", header: "Added By", accessor: row => row.addedBy,
+      id: "addedBy", header: "Added By", accessor: row => row.addedBy, priority: 3,
       cell: (_v, row) => <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: T.luxuryBrown }}>{row.addedBy || "—"}</span>,
     },
     {
@@ -121,6 +121,7 @@ export function PurchasesTable({
         }}
       >
         <DataTable
+          responsive
           columns={columns}
           data={filtered}
           getRowId={row => row.id}

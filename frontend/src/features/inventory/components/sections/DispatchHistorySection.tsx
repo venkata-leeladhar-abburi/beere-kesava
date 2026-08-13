@@ -66,11 +66,11 @@ function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { row
       ),
     },
     {
-      id: "destination", header: "Destination", accessor: d => d.customerName ?? "",
+      id: "destination", header: "Destination", accessor: d => d.customerName ?? "", priority: 1,
       cell: (_v, d) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{d.type === "wholesale" ? (d.customerName ?? "—") : "Shop / Showroom"}</span>,
     },
     {
-      id: "lr", header: "LR / Transport", accessor: d => d.lrNumber, width: 130,
+      id: "lr", header: "LR / Transport", accessor: d => d.lrNumber, width: 130, priority: 3,
       cell: (_v, d) => (
         <div>
           <div style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{d.lrNumber || "—"}</div>
@@ -79,7 +79,7 @@ function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { row
       ),
     },
     {
-      id: "invoice", header: "Invoice", accessor: d => d.invoiceNumber, width: 100,
+      id: "invoice", header: "Invoice", accessor: d => d.invoiceNumber, width: 100, priority: 3,
       cell: (_v, d) => <span style={{ fontFamily: F.mono, fontSize: 12, color: d.invoiceNumber ? T.luxuryBrown : T.taupe }}>{d.invoiceNumber || "—"}</span>,
     },
     {
@@ -87,7 +87,7 @@ function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { row
       cell: (_v, d) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{d.sareeIds.length}</span>,
     },
     {
-      id: "firm", header: "Firm", accessor: d => d.firmName, width: 110,
+      id: "firm", header: "Firm", accessor: d => d.firmName, width: 110, priority: 3,
       cell: (_v, d) => {
         const firm = firms.find(f => f.id === d.firmId);
         return <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{d.firmName || firm?.firmName || "—"}</span>;
@@ -148,6 +148,7 @@ function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { row
   return (
     <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, background: "#FFFFFF", boxShadow: "0 2px 8px rgba(74,6,27,0.04)", overflow: "hidden" }}>
       <DataTable
+        responsive
         columns={columns}
         data={pag.pageItems}
         getRowId={d => d.id}

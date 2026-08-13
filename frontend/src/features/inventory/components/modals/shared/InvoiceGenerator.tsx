@@ -242,7 +242,7 @@ export function InvoiceGenerator({
             <DataTable
               columns={([
                 {
-                  id: "item", header: "Item", accessor: s => s.sareeId || s.id,
+                  id: "item", header: "Item", accessor: s => s.sareeId || s.id, priority: 1,
                   cell: (_v, s) => {
                     const sId = s.sareeId || s.id;
                     const sareeBatch = batches.find(b => b.rows.some(row => row.sareeId === sId))?.batchId;
@@ -270,6 +270,7 @@ export function InvoiceGenerator({
               ] as ColumnDef<FinishingReturn>[])}
               data={sarees.slice(0, 4)}
               getRowId={s => s.id}
+              responsive
             />
             {sarees.length > 4 && (
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, padding: "5px 0" }}>+ {sarees.length - 4} more sarees…</div>
