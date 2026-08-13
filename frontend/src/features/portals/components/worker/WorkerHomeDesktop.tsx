@@ -127,7 +127,7 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
       <StatsStrip stats={stats} />
 
       {/* ── MAIN CONTENT ─────────────────────────────────────────────────── */}
-      <div style={{ padding: `40px ${GUTTER_X}px 64px` }}>
+      <div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 40, paddingBottom: 64 }}>
         <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) 400px", gap: 40, alignItems: "start" }}>
 
           {/* ── Today's Tasks ─────────────────────────────────────────── */}
