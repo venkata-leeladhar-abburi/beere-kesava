@@ -280,7 +280,7 @@ export function WeaverMakingChargesSection() {
   const totalNet = weaversList.reduce((acc, w) => acc + calcNet(w), 0);
 
   return (
-    <div id="pay-making-charges" style={{ padding: "36px 40px 0" }}>
+    <div id="pay-making-charges" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 36 }}>
       <FadeUp>
       <SectionCard
         icon={HandCoins}

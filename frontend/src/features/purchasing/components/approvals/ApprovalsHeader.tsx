@@ -15,7 +15,7 @@ export function ApprovalsHeader({
   rateCount: number;
 }) {
   return (
-    <div className="pl-4 md:pl-7 xl:pl-14 pr-4 md:pr-7 xl:pr-14" style={{
+    <div className="px-4 md:px-7 xl:px-14" style={{
       background: T.darkBurgundy,
       paddingTop: 40,
       paddingBottom: 80,

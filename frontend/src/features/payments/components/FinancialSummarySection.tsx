@@ -52,7 +52,7 @@ export function FinancialSummarySection() {
   const pctOut = Math.min(100, Math.round((totalOut / (totalIn || 1)) * 100));
 
   return (
-    <div id="pay-summary" style={{ padding: "32px 40px" }}>
+    <div id="pay-summary" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 32, paddingBottom: 32 }}>
       <FadeUp>
       <SectionCard
         icon={Wallet}

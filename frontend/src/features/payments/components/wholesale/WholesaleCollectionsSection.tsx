@@ -167,7 +167,7 @@ export function WholesaleCollectionsSection() {
   ] as const;
 
   return (
-    <div id="pay-wholesale" style={{ padding: "36px 40px 0" }}>
+    <div id="pay-wholesale" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 36 }}>
       <FadeUp>
       <SectionCard
         icon={Building2}

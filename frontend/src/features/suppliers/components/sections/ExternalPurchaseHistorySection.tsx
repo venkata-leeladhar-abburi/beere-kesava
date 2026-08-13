@@ -51,7 +51,7 @@ export function ExternalPurchaseHistorySection({ purchases }: { purchases: Purch
   ];
 
   return (
-    <div style={{ padding: "48px 56px 0" }}>
+    <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 48 }}>
       <FadeUp>
       <SectionCard
         icon={History}

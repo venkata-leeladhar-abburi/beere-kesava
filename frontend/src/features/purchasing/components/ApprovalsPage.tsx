@@ -139,9 +139,9 @@ export function ApprovalsPage() {
       />
 
       {/* ── 6. FOOTER ───────────────────────────────────────────────────────── */}
-      <div style={{
+      <div className="px-4 md:px-7 xl:px-14" style={{
         background: T.luxuryBrown,
-        padding: "24px 56px",
+        paddingTop: 24, paddingBottom: 24,
         display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
       }}>
         <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 400, color: T.warmCream }}>

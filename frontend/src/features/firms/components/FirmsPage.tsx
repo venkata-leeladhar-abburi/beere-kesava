@@ -393,7 +393,7 @@ export function FirmsPage() {
       <BusinessOverview onGoToFirm={openFirmView} />
 
       {/* Firms directory */}
-      <div style={{ padding: "40px 56px 80px" }}>
+      <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40, paddingBottom: 80 }}>
       <SectionCard
         icon={Building2}
         title="Firms Directory"
