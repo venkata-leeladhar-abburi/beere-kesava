@@ -102,7 +102,7 @@ export function MakingChargesSection({
   ];
 
   return (
-    <div style={{ padding: "96px 56px 0" }}>
+    <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 96 }}>
     <SectionCard
       icon={Tags}
       title="Making Charge Rates — Per Saree Type"

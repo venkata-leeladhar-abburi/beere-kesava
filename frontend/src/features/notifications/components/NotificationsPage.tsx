@@ -232,7 +232,7 @@ export function NotificationsPage() {
       <NotificationStatStrip notifications={notifications} unread={unread} countByPriority={countByPriority} />
 
       {/* CATEGORIES TAB BUTTONS */}
-      <div style={{ padding: "0 56px", marginTop: 36 }}>
+      <div className="px-4 md:px-7 xl:px-14" style={{ marginTop: 36 }}>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
           {CATEGORIES.map(c => {
             const active = activeCategory === c.key;
@@ -269,7 +269,7 @@ export function NotificationsPage() {
       </div>
 
       {/* PRIORITY FILTER BAR */}
-      <div style={{ background: T.warmIvory, borderBottom: `1px solid ${T.borderDef}`, padding: "0 56px", position: "sticky", top: 90, zIndex: 50, boxShadow: "0 4px 24px rgba(74,6,27,0.05)", marginTop: 24 }}>
+      <div className="px-4 md:px-7 xl:px-14" style={{ background: T.warmIvory, borderBottom: `1px solid ${T.borderDef}`, position: "sticky", top: 90, zIndex: 50, boxShadow: "0 4px 24px rgba(74,6,27,0.05)", marginTop: 24 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 0, height: 58 }}>
           {FILTERS.map(f => {
             const active = filter === f.key;
@@ -296,7 +296,7 @@ export function NotificationsPage() {
       </div>
 
       {/* MAIN CONTENT GRID */}
-      <div style={{ padding: "40px 56px 80px", display: "flex", gap: 28, alignItems: "flex-start" }}>
+      <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40, paddingBottom: 80, display: "flex", gap: 28, alignItems: "flex-start" }}>
         {/* Left list */}
         <div style={{ flex: selected ? "0 0 520px" : 1, minWidth: 0 }}>
         <SectionCard
