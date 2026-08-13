@@ -262,7 +262,7 @@ export function MaterialsTab({ materialRecords, materialByBatch }: any) {
                           </div>
 
                           {/* Stats strip — issued / returned / outstanding */}
-                          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", borderBottom: `1px solid ${T.borderDef}` }}>
+                          <div className="grid grid-cols-1 md:grid-cols-3" style={{ borderBottom: `1px solid ${T.borderDef}` }}>
                             {[
                               { label: "Issued", value: fmtKg(b.issuedGrams), sub: b.jariReels > 0 ? `incl. ${b.jariReels} jari reels` : undefined, color: T.luxuryBrown },
                               { label: "Returned", value: fmtKg(b.receivedGrams), sub: undefined, color: T.green },

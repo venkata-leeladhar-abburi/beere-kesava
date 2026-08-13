@@ -254,7 +254,7 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
               </div>
               <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>JPG or PNG · Max 5MB</div>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+            <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 14 }}>
               <Field label="First Name">
                 <Input value={editForm.firstName} onChange={e => setEditForm(p => ({ ...p, firstName: e.target.value }))} placeholder="First Name" />
               </Field>

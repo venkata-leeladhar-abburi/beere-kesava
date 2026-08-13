@@ -17,7 +17,7 @@ export function DeductionRatesSection() {
       title="Raw Material Deduction Rates"
       subtitle="When a weaver returns less raw material than the standard issue, a deduction is applied to their payment. These rates define the per-unit deduction value."
     >
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20, marginBottom: 16 }}>
+      <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 20, marginBottom: 16 }}>
         {/* Warp Card */}
         <div>
           <div style={{ ...cardStyle, borderTop: `4px solid ${T.royalBurgundy}`, padding: 24, borderRadius: 16 }}>

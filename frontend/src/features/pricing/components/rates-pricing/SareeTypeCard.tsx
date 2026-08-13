@@ -73,7 +73,7 @@ export function SareeTypeCard({ sareeType, onClose }: { sareeType: SareeTypeReco
           )}
 
           {/* Price + weight row */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+          <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 14 }}>
             <div style={{ background: T.cream, borderRadius: 12, padding: "16px 18px" }}>
               <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "0.10em", color: T.taupe, textTransform: "uppercase", marginBottom: 6 }}>Making Charge</div>
               <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 24, fontWeight: 700, color: T.antiqueGold }}>{formatMoney(rupees(parseInt(sareeType.charge)))}</div>
@@ -87,7 +87,7 @@ export function SareeTypeCard({ sareeType, onClose }: { sareeType: SareeTypeReco
           </div>
 
           {/* Retail / Wholesale */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+          <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 14 }}>
             <div>
               <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "0.10em", color: T.taupe, textTransform: "uppercase", marginBottom: 4 }}>Retail Price</div>
               <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{formatMoney(rupees(parseInt(sareeType.retail)))}</div>
@@ -101,7 +101,7 @@ export function SareeTypeCard({ sareeType, onClose }: { sareeType: SareeTypeReco
           {/* Material breakdown */}
           <div>
             <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "0.10em", color: T.taupe, textTransform: "uppercase", marginBottom: 10 }}>Material Weight Breakdown</div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+            <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 10 }}>
               {[
                 { label: "Warp", value: sareeType.warpWeight, unit: "g" },
                 { label: "Resham", value: sareeType.reshamWeight, unit: "g" },

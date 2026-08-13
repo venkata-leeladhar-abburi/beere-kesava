@@ -191,7 +191,7 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
       ) : (
         <>
           {/* Row 1 — fulfilment trend + status mix */}
-          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 22, marginBottom: 22 }}>
+          <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr]" style={{ gap: 22, marginBottom: 22 }}>
             <div style={card}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                 <div>
@@ -268,7 +268,7 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
           </div>
 
           {/* Row 2 — top customers + payment collection */}
-          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 22, marginBottom: 22 }}>
+          <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr]" style={{ gap: 22, marginBottom: 22 }}>
             <div style={card}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
                 <Trophy size={17} color={T.antiqueGold} />
@@ -329,7 +329,7 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
           </div>
 
           {/* Row 3 — deadline pipeline, demand mix, order health */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 22, marginBottom: 8 }}>
+          <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 22, marginBottom: 8 }}>
             <div style={card}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <Timer size={16} color={atRisk ? T.crimson : T.royalBurgundy} />
@@ -403,7 +403,7 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
                   </RadialBarChart>
                 </ResponsiveContainer>
               </ChartFigure>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 4 }}>
+              <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 10, marginTop: 4 }}>
                 {[
                   { label: "At Risk", value: String(atRisk) },
                   { label: "Shortage", value: `${totalShortage} pcs` },

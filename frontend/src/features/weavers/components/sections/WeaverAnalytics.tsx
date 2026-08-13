@@ -191,7 +191,7 @@ export function WeaverAnalytics() {
       ) : (
         <>
           <FadeUp delay={0.04}>
-            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 24, marginBottom: 24 }}>
+            <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr]" style={{ gap: 24, marginBottom: 24 }}>
               <div style={card}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
                   <div>
@@ -256,7 +256,7 @@ export function WeaverAnalytics() {
           </FadeUp>
 
           <FadeUp delay={0.12}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 24 }}>
+            <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 24 }}>
               <div style={card}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <Gauge size={18} color={T.royalBurgundy} />
@@ -341,7 +341,7 @@ export function WeaverAnalytics() {
                     </RadialBarChart>
                   </ResponsiveContainer>
                 </ChartFigure>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 4 }}>
+                <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 10, marginTop: 4 }}>
                   {[
                     { label: "Rejected", value: `${(totalProduced - totalPassed).toLocaleString("en-IN")} pcs` },
                     { label: "Making Charges", value: "—" },

@@ -289,7 +289,7 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
         <motion.div key={tab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
           {tab === "overview" && (
             <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16 }}>
+              <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 16 }}>
                 {[
                   { label: "Active Orders", value: orders.filter(o => o.status === "Approved" || o.status === "Pending").length, sub: "In progress", color: T.royalBurgundy },
                   { label: "Total Orders", value: orders.length, sub: lastOrderDate ? `Last order ${lastOrderDate.split("T")[0]}` : "All time", color: T.luxuryBrown },
@@ -338,7 +338,7 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
           )}
           {tab === "payments" && (
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16 }}>
+              <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 16 }}>
                 {[
                   { label: "Paid in Range", value: inr(paidInRange), color: T.greenMid, sub: `${filteredTxns.length} transaction${filteredTxns.length === 1 ? "" : "s"}` },
                   { label: "Paid All Time", value: inr(ledger.totalPaid), color: T.luxuryBrown, sub: `of ${inr(ledger.totalBilled)} billed` },
@@ -432,7 +432,7 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
             </div>
           )}
           {tab === "contact" && (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
               {[
                 { label: "Contact Person", value: vendor.contactName, Icon: Building2 },
                 { label: "Phone", value: vendor.phone, Icon: Phone },

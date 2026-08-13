@@ -26,10 +26,8 @@ export function StatsStrip({
       padding: "0 48px",
       zIndex: 20,
       position: "relative",
-      display: "grid",
-      gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr",
       boxShadow: "0 8px 32px rgba(44,9,19,0.32)",
-    }}>
+    }} className="grid grid-cols-1 md:grid-cols-5">
       {/* Col 1 */}
       <div style={{ padding: "28px 0", borderRight: "1px solid rgba(255,255,255,0.08)" }}>
         <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,255,255,0.45)", letterSpacing: 2, marginBottom: 8 }}>
