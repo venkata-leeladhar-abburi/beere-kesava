@@ -166,6 +166,7 @@ export function ExternalOutstanding({ sarees, search, ageFilter }: { sarees: Uni
       {/* Supplier roll-up */}
       <SectionCard icon={Building2} title="Supplier Roll-up" subtitle="Same numbers grouped by supplier across all their purchases.">
         <DataTable<SupplierRollup>
+          responsive
           columns={supplierRollupColumns}
           data={bySupplier}
           getRowId={r => r.supplier}
@@ -178,11 +179,11 @@ export function ExternalOutstanding({ sarees, search, ageFilter }: { sarees: Uni
 }
 
 const supplierRollupColumns: ColumnDef<SupplierRollup>[] = [
-  { id: "supplier", header: "Supplier", accessor: r => r.supplier, sortable: true, cell: (_v, r) => <span style={{ fontWeight: 600 }}>{r.supplier}</span> },
-  { id: "purchases", header: "Purchases", accessor: r => r.purchases, align: "end", sortable: true, cell: (_v, r) => <span style={tdMono}>{r.purchases}</span> },
+  { id: "supplier", header: "Supplier", priority: 1, accessor: r => r.supplier, sortable: true, cell: (_v, r) => <span style={{ fontWeight: 600 }}>{r.supplier}</span> },
+  { id: "purchases", header: "Purchases", priority: 3, accessor: r => r.purchases, align: "end", sortable: true, cell: (_v, r) => <span style={tdMono}>{r.purchases}</span> },
   { id: "bought", header: "Purchased", accessor: r => r.bought, align: "end", sortable: true, cell: (_v, r) => <span style={tdMono}>{r.bought}</span> },
   { id: "unsold", header: "Outstanding", accessor: r => r.unsold, align: "end", sortable: true, cell: (_v, r) => <span style={{ ...tdMono, color: T.crimson }}>{r.unsold}</span> },
-  { id: "returned", header: "Returned", accessor: r => r.returned, align: "end", sortable: true, cell: (_v, r) => <span style={{ ...tdMono, color: T.orange }}>{r.returned}</span> },
+  { id: "returned", header: "Returned", priority: 3, accessor: r => r.returned, align: "end", sortable: true, cell: (_v, r) => <span style={{ ...tdMono, color: T.orange }}>{r.returned}</span> },
   { id: "unsoldValue", header: "Unsold Value", accessor: r => r.unsoldValue, align: "end", sortable: true, cell: (_v, r) => <span style={tdMono}>{inr(r.unsoldValue)}</span> },
   { id: "due", header: "Bill Due", accessor: r => r.due, align: "end", sortable: true, cell: (_v, r) => <span style={{ ...tdMono, color: r.due > 0 ? T.orange : T.green }}>{inr(r.due)}</span> },
 ];
