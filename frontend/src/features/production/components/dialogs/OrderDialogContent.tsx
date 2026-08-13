@@ -62,7 +62,7 @@ export function OrderDialogContent({ order, mode }: { order: BulkOrder; mode: "v
           <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.antiqueGold }}>{formatMoney(rupees(balance))}</div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 14 }}>
           {[
             { label: "Est. Value", val: amountDue > 0 ? formatMoney(rupees(amountDue)) : "—" },
             { label: "Amount Paid", val: amountPaid > 0 ? formatMoney(rupees(amountPaid)) : <Money value={rupees(0)} /> },
@@ -282,7 +282,7 @@ export function OrderDialogContent({ order, mode }: { order: BulkOrder; mode: "v
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+      <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 14 }}>
         <div style={{ background: "rgba(110,15,45,0.04)", borderRadius: 10, padding: "12px 14px", border: "1px solid rgba(110,15,45,0.10)" }}>
           <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 6 }}>Quantity (Sarees)</div>
           <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{order.total}</div>
@@ -293,7 +293,7 @@ export function OrderDialogContent({ order, mode }: { order: BulkOrder; mode: "v
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+      <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 14 }}>
         <div style={{ padding: "12px 14px", background: "rgba(200,155,71,0.07)", borderRadius: 10, border: "1px solid rgba(200,155,71,0.20)", display: "flex", flexDirection: "column" }}>
           <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 6 }}>Estimated Value (₹)</span>
           <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: "#8B6018" }}>{formatMoney(rupees(amountDue))}</span>

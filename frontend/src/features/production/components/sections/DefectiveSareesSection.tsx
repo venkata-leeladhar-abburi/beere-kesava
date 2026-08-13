@@ -159,7 +159,7 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
               <Shield size={14} color={T.antiqueGold} />
               <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.antiqueGold, letterSpacing: "0.8px", textTransform: "uppercase" as const }}>Superadmin Only — Not visible to Admin</span>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+            <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 24 }}>
               <div>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 6 }}>Total Deductions Applied This Month</div>
                 <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.crimson, lineHeight: 1.1, marginBottom: 4 }}>
@@ -251,7 +251,7 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
                     ))}
                   </Select>
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 12 }}>
                   <div style={{ background: "rgba(192,57,43,0.07)", border: "1px solid rgba(192,57,43,0.18)", borderRadius: 11, padding: "14px 16px" }}>
                     <div style={{ fontFamily: F.ui, fontSize: 12, color: T.crimson, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 4 }}>Defective Sarees</div>
                     <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.crimson }}>{DEFECTIVE_DATA.length}</div>
@@ -290,7 +290,7 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
                     </span>
                   ))}
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 10 }}>
                   {[
                     { label: "Saree ID",    val: viewDefect.id,       mono: true  },
                     { label: "Weaver",      val: viewDefect.weaver,   mono: false },

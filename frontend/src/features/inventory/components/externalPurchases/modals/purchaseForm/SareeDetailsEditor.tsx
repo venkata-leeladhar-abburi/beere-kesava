@@ -55,7 +55,7 @@ export function SareeDetailsEditor({
 
       {/* Overall stats for every saree in this purchase */}
       {sareeDetails.length > 0 && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 12 }}>
+        <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 8, marginBottom: 12 }}>
           {[
             { label: "Total Buying", value: totals.buying, color: T.luxuryBrown, bg: T.silkCream, border: T.borderDef },
             { label: "Total Selling", value: totals.selling, color: T.royalBurgundy, bg: "rgba(110,15,45,0.05)", border: T.borderDef },

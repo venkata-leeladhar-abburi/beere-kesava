@@ -198,7 +198,7 @@ export function LoomAnalytics({ looms, batches, materials, sarees }: {
 
       {/* Row 2: Output by Loom + Batch Delivery Risk */}
       <FadeUp delay={0.08}>
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 22, marginBottom: 22 }}>
+        <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr]" style={{ gap: 22, marginBottom: 22 }}>
           <div style={card}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>

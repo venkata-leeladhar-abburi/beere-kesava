@@ -13,7 +13,7 @@ export function EditProfileTab({ customer, setWholesaleTab, onSave }: {
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       <h3 style={{ fontFamily: F.display, fontSize: 18, color: T.luxuryBrown, margin: 0 }}>Edit Customer Profile</h3>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+      <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 20 }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <Field label="Business Name">
             <Input type="text" defaultValue={customer.name} id="edit-biz-name" />

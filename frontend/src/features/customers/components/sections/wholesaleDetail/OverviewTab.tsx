@@ -71,7 +71,7 @@ export function OverviewTab({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
+      <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 16 }}>
         {[
           { label: "Bulk Orders Placed", value: String(custOrders.length), color: T.luxuryBrown },
           { label: "Sarees Ordered", value: `${custSareesDone}/${custSareesOrdered}`, color: T.antiqueGold },

@@ -38,7 +38,7 @@ export function WeaverDetailsModal({ weaver, onClose }: { weaver: WeaverOption; 
           </span>
         </div>
         <div style={{ height: 1, background: T.borderDef }} />
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 12 }}>
           <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px" }}>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.5px" }}>Looms Owned</div>
             <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, marginTop: 3 }}>{weaver.looms} Loom{weaver.looms !== 1 ? "s" : ""}</div>
@@ -90,7 +90,7 @@ export function FactoryLoomDetailsModal({ loom, onClose }: { loom: LoomOption; o
           </span>
         </div>
         <div style={{ height: 1, background: T.borderDef }} />
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 12 }}>
           <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px" }}>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.5px" }}>Location</div>
             <div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown, marginTop: 3 }}>{loom.location}</div>
@@ -110,7 +110,7 @@ export function FactoryLoomDetailsModal({ loom, onClose }: { loom: LoomOption; o
         </div>
 
         {/* Stat tiles */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+        <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 10 }}>
           <div style={{ background: "rgba(110,15,45,0.05)", borderRadius: 12, padding: "12px 8px", textAlign: "center" as const }}>
             <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.royalBurgundy }}>{activeBatchesCount}</div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>Active Batches</div>
@@ -172,7 +172,7 @@ export function BulkOrderDetailsModal({ order, onClose }: { order: any; onClose:
           )}
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 12 }}>
           <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px" }}>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.5px" }}>Quantity (Sarees)</div>
             <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, marginTop: 3 }}>{order.total}</div>

@@ -161,7 +161,7 @@ export function ProductionAnalyticsSection() {
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20, marginBottom: 20, alignItems: "stretch" }}>
+        <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 20, marginBottom: 20, alignItems: "stretch" }}>
 
           <div style={{ ...CARD_STYLE }}>
             <ChartCardHeader

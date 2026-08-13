@@ -933,6 +933,109 @@ pre-existing baseline throughout, zero new errors in any touched file.
   baseline — `MetricsBar.tsx`, `SAOverviewPage.tsx`, `WeaverMetricsBar.tsx`,
   both `PageHeaderAndStats.tsx` files; zero new errors in any file touched
   this batch).
+  **Batch 4 (2026-08-13)** — triaged `weavers`, `production`, `customers`,
+  `inventory`, `vendors` (per §7's stated priority order; `portals` deferred to
+  a future batch — still ~50 untriaged files there). Re-ran
+  `grep -rl "gridTemplateColumns" src/features --include="*.tsx"` (108 files
+  remaining at batch start) and worked through the 5 priority dirs. 14 files
+  converted (form/stat/summary-panel grids → `grid-cols-1 md:grid-cols-N`), 14
+  files logged below as real data grids / inner-grid-of-repeated-row templates
+  needing Phase 4 `DataTable`/`CardList` migration, `PurchaseModals.tsx`
+  re-confirmed as the pre-existing R2 print-document exclusion (no new grids
+  there).
+
+  Converted:
+  - `production/components/BatchSetupStep.tsx` (2026-08-13) — 1 grid
+    (`1fr 1fr 1fr auto` batch-setup field row), preserved via
+    `md:grid-cols-[1fr_1fr_1fr_auto]`
+  - `production/components/batch-creation/DetailModals.tsx` (2026-08-13) — 4
+    grids (2-col stat pairs ×3, 3-col stat-tile row ×1) across
+    `WeaverDetailsModal`/`FactoryLoomDetailsModal`/`BulkOrderDetailsModal`
+  - `production/components/dialogs/OrderDialogContent.tsx` (2026-08-13) — the
+    3 top-level grids left untouched by R2 (outside any `<Modal>`, see R2's
+    log entry) — all 3 are 2-col stat-pair layouts, now converted
+  - `production/components/factory-loom/LoomAnalytics.tsx` (2026-08-13) — 1
+    grid (`2fr 1fr` chart/side-panel row), preserved via
+    `md:grid-cols-[2fr_1fr]`
+  - `production/components/factory-loom/LoomAnalyticsCharts.tsx`
+    (2026-08-13) — 3 grids (`2fr 1fr` chart row, 3-col distinct-chart row,
+    2-col QC stat pair)
+  - `production/components/sections/DefectiveSareesSection.tsx`
+    (2026-08-13) — 3 grids (2-col deduction summary, 2-col stat pair, 2-col
+    field-detail panel)
+  - `production/components/sections/ProductionAnalyticsSection.tsx`
+    (2026-08-13) — 1 grid (3-col row of distinct chart cards, not a data map)
+  - `production/components/sections/ProductionFooter.tsx` (2026-08-13) — 1
+    grid, uneven `2fr 1fr 1fr 1fr 1.5fr` preserved via
+    `md:grid-cols-[2fr_1fr_1fr_1fr_1.5fr]` (same pattern as R4/batch3 footers)
+  - `customers/components/sections/wholesaleDetail/ContactDetailsTab.tsx`
+    (2026-08-13) — 2 grids (business-contact / phone-contact field pairs)
+  - `customers/components/sections/wholesaleDetail/EditProfileTab.tsx`
+    (2026-08-13) — 1 grid (2-col left/right form-field split)
+  - `customers/components/sections/wholesaleDetail/OverviewTab.tsx`
+    (2026-08-13) — 1 grid (4-tile stat strip)
+  - `inventory/components/externalPurchases/modals/purchaseForm/SupplierSection.tsx`
+    (2026-08-13) — 2 grids (3-col selected-supplier summary panel, 2-col
+    supplier-name form-field row)
+  - `inventory/components/externalPurchases/modals/purchaseForm/SareeDetailsEditor.tsx`
+    (2026-08-13) — 1 grid (3-tile totals stat strip, static — the per-row
+    editor below it, `SareeRowCard`, is a separate real-data-row template,
+    see log below)
+  - `inventory/components/modals/shared/InvoiceGenerator.tsx` (2026-08-13) —
+    3 grids (2-col form/preview split, 2-col invoice-number/date field row,
+    2-col transport-detail preview panel)
+
+  **Found, needs Phase 4 `DataTable`/`CardList` migration (real data grids or
+  inner-grid-of-repeated-row templates, not touched):**
+  - `weavers/components/sections/WarpRequestsSection.tsx` — 3-col grid of
+    request cards, `requests.map(r => ...)`
+  - `weavers/components/sections/WeaverCardAndListViews.tsx` — 4-col grid of
+    weaver cards, `visible.map((w, i) => ...)`
+  - `weavers/components/sections/weaverDrawer/WeaverDrawerTabs.tsx` — 4-col
+    field grid inside each payment-history card,
+    `filteredWeaverPayments.map(p => ...)` — inner-grid-of-repeated-row, same
+    class as the R7-batch3 `CustomerCard`/`HistoryCard` exclusions
+  - `production/components/sections/BulkOrdersSection.tsx` — 3-col grid of
+    order cards, `bulkOrders.map((o, i) => ...)`
+  - `production/components/sections/batches/BatchViews.tsx`
+    (`BatchCardGrid` export) — 3-col grid of batch cards,
+    `batches.map((b, i) => ...)` (distinct from the file's 2 `<DataTable>`
+    instances already done in R1)
+  - `production/components/factory-loom/LoomMaterialsTab.tsx` — 3-col stat
+    header repeated per batch group, inside a `.map(batchId => ...)` loop —
+    inner-grid-of-repeated-row
+  - `production/components/factory-loom/LoomCard.tsx` — 2-col field grid
+    inside the per-loom card, rendered via `.map` in
+    `FactoryLoomPage.tsx:327`'s `auto-fill` card grid — inner-grid-of-card
+  - `production/components/sections/batches/SareeWeightTallyList.tsx` — 4-col
+    field grid, both in the read view (line ~155) and the inline `EditRow`
+    (line ~73), each inside `items.map(item => ...)` — inner-grid-of-row
+  - `inventory/components/PurchaseCard.tsx` — 2-col field grid inside the
+    per-purchase card, rendered via `.map` in `AllPurchasesPage.tsx:211`
+  - `inventory/components/StockCard.tsx` — 2-col field grid inside the
+    per-saree card, rendered via `.map` in `AllStockPage.tsx:243`
+  - `inventory/components/externalPurchases/modals/purchaseForm/SareeRowCard.tsx`
+    — 4 grids, all inside the per-saree-row editor rendered via
+    `sareeDetails.map(...)` in `SareeDetailsEditor.tsx`
+  - `vendors/components/vendors-page/VendorDirectorySection.tsx` — 3-col grid
+    of `VendorCard`, `pag.pageItems.map((v, i) => ...)`
+  - `customers/components/sections/RetailCustomersSection.tsx` — 3-col grid
+    of retail-customer cards, `filteredRetail.map(r => ...)`
+  - `customers/components/sections/WholesaleCustomersSection.tsx` — 3-col
+    grid of wholesale-customer cards, `wholesaleList.map((w, i) => ...)`
+
+  **Re-confirmed exclusion (no action):**
+  `inventory/components/PurchaseModals.tsx` — the 4 grids inside
+  `PrintPurchaseModal`'s `receipt` JSX (a physical GRN portaled to
+  `#document-print-root`) were already excluded in R2; verified no new
+  grids were added to this file since.
+
+  Verified via `tsc --noEmit` (clean) / `npm run build` (succeeds) / `npm run
+  lint` (33 pre-existing errors, same baseline as R7-batch3 — zero new errors
+  in any file touched this batch).
+
+  `portals` (~50 files: shop-staff, weaver-portal, worker) remains untriaged
+  — next session should resume there per §7's stated priority order.
 - [ ] R8 QA, device matrix, ratchet metrics
 
 ### Out-of-band: hero+stats pattern + universal gutter sweep (2026-08-13)
