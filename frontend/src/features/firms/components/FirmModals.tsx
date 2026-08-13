@@ -68,7 +68,7 @@ export function FirmFormModal({ initial, onSave, onClose, title }: { initial: Fo
         </div>
         <div style={{ padding: "28px 28px 32px", overflowY: "auto" }}>
           <SLabel>Basic Information</SLabel>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }}>
+          <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 14, marginBottom: 20 }}>
             <div style={{ gridColumn: "1 / -1" }}>
               <Field label="Firm Name" value={form.firmName} onChange={v => set("firmName", v)} placeholder="e.g. Surat Zari Works" required icon={Building2} />
             </div>
@@ -81,7 +81,7 @@ export function FirmFormModal({ initial, onSave, onClose, title }: { initial: Fo
             </div>
           </div>
           <SLabel>Bank Details</SLabel>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }}>
+          <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 14, marginBottom: 20 }}>
             <div style={{ gridColumn: "1 / -1" }}>
               <Field label="Bank Name" value={form.bankName ?? ""} onChange={v => set("bankName", v)} placeholder="e.g. State Bank of India" icon={CreditCard} />
             </div>
@@ -89,7 +89,7 @@ export function FirmFormModal({ initial, onSave, onClose, title }: { initial: Fo
             <Field label="IFSC Code" value={form.ifscCode ?? ""} onChange={v => set("ifscCode", v)} placeholder="e.g. SBIN0001234" />
           </div>
           <SLabel>Contact Person</SLabel>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 28 }}>
+          <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 14, marginBottom: 28 }}>
             <Field label="Contact Person Name" value={form.contactPersonName ?? ""} onChange={v => set("contactPersonName", v)} placeholder="Full name" icon={User} />
             <Field label="Phone Number" value={form.contactPersonPhone ?? ""} onChange={v => set("contactPersonPhone", v)} placeholder="9876543210" type="tel" icon={Phone} />
           </div>
