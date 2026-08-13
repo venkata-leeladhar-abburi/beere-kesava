@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "motion/react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { T, F, G_GOLD } from "../theme";
 import { FOOTER_LINKS } from "../materialConfig";
 import { useResponsive } from "../../../../hooks/useResponsive";
