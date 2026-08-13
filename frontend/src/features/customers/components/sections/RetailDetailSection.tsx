@@ -99,7 +99,7 @@ export function RetailDetailSection({
       {retailModalTab === "history" ? (
         <>
           {/* 4-stat summary strip */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 16, marginBottom: 28, background: T.silkCream, borderRadius: 14, padding: "20px 24px" }}>
+          <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 16, marginBottom: 28, background: T.silkCream, borderRadius: 14, padding: "20px 24px" }}>
             <div>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Total Purchases</div>
               <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1 }}>{(customer as any).totalPurchases ?? customer.purchases ?? 0}</div>
@@ -133,7 +133,7 @@ export function RetailDetailSection({
         </>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
             <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Phone Number</div>
               <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>+91 99887 76655</div>

@@ -1,13 +1,41 @@
 import React from "react";
 import { motion } from "motion/react";
+import { useNavigate } from "react-router-dom";
 import { T, F, G_GOLD } from "../theme";
 import { FOOTER_LINKS } from "../materialConfig";
 import { useResponsive } from "../../../../hooks/useResponsive";
+
+const LINK_PATHS: Record<string, string> = {
+  "Dashboard": "/admin",
+  "Analytics": "/admin",
+  "Performance": "/admin",
+  "Production": "/admin/production",
+  "Batches": "/admin/batches",
+  "Designs": "/admin/designs",
+  "Finishing": "/admin/finishing",
+  "Materials": "/admin/materials",
+  "Receive Stock": "/admin/receive-stock",
+  "Issue Material": "/admin/issue-material",
+  "External Purchases": "/admin/external-purchases",
+  "Payments": "/admin/payments",
+  "Firms": "/admin/firms",
+  "Reports": "/admin/reports",
+  "Weavers": "/admin/weavers",
+  "Customers": "/admin/customers",
+  "Vendors": "/admin/vendors",
+  "Suppliers": "/admin/suppliers",
+  "Factory Looms": "/admin/factory-looms",
+  "About Us": "/admin",
+  "Our Story": "/admin",
+  "Website": "/admin"
+};
+
 export function MaterialsFooter() {
   const { isMobile, px } = useResponsive();
+  const navigate = useNavigate();
   
   return (
-    <footer style={{ background: T.darkBurgundy, borderTop: `1px solid rgba(245,232,208,0.1)`, marginTop: 64, position: "relative", overflow: "hidden" }}>
+    <footer style={{ background: T.darkBurgundy, borderTop: `1px solid rgba(245,232,208,0.1)`, marginTop: "auto", position: "relative", overflow: "hidden", flexShrink: 0 }}>
       {/* Subtle Background Elements */}
       <div style={{ position: "absolute", top: 0, right: 0, width: "40%", height: "100%", background: "radial-gradient(ellipse at top right, rgba(245,232,208,0.06), transparent 70%)", pointerEvents: "none" }} />
       <div style={{ position: "absolute", bottom: 0, left: 0, width: "40%", height: "100%", background: "radial-gradient(ellipse at bottom left, rgba(245,232,208,0.04), transparent 70%)", pointerEvents: "none" }} />
@@ -45,7 +73,16 @@ export function MaterialsFooter() {
               <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: 18, color: T.warmCream, marginBottom: 20 }}>{col}</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                 {links.map(l => (
-                  <motion.span key={l} whileHover={{ x: 4, color: T.warmCream }} transition={{ duration: 0.2 }} style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 14, color: "rgba(245,232,208,0.6)", cursor: "pointer", display: "inline-block" }}>
+                  <motion.span 
+                    key={l} 
+                    whileHover={{ x: 4, color: T.warmCream }} 
+                    transition={{ duration: 0.2 }} 
+                    onClick={() => {
+                      if (LINK_PATHS[l] && col !== "Company") {
+                        navigate(LINK_PATHS[l]);
+                      }
+                    }}
+                    style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 14, color: "rgba(245,232,208,0.6)", cursor: col !== "Company" ? "pointer" : "default", display: "inline-block" }}>
                     {l}
                   </motion.span>
                 ))}

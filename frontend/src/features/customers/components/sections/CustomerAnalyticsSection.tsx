@@ -199,7 +199,7 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
       </div>
 
       {/* Charts Row 1 — equal 3 columns */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 22, marginBottom: 22, alignItems: "stretch" }}>
+      <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 22, marginBottom: 22, alignItems: "stretch" }}>
 
         {/* Chart 1: Top Customers */}
         <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 18, padding: "28px", display: "flex", flexDirection: "column", boxShadow: "0 2px 14px rgba(74,6,27,0.05)" }}>
@@ -395,7 +395,7 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
       </div>
 
       {/* Charts Row 2 — equal 2 columns */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 22, marginBottom: 22, alignItems: "stretch" }}>
+      <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 22, marginBottom: 22, alignItems: "stretch" }}>
 
         {/* Chart 4: Frequent Buyers */}
         <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 18, padding: "28px", display: "flex", flexDirection: "column", boxShadow: "0 2px 14px rgba(74,6,27,0.05)" }}>
