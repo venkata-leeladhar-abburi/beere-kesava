@@ -186,7 +186,7 @@ export function CustomerReport() {
   ];
 
   return (
-    <div id="rep-customers" style={{ padding: "32px 40px" }}>
+    <div id="rep-customers" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 32 }}>
     <SectionCard
       icon={UsersRound}
       title="Customer Report"
@@ -194,7 +194,7 @@ export function CustomerReport() {
     >
       <ReportDLBar />
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20, marginBottom: 24 }}>
+      <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 20, marginBottom: 24 }}>
         <ChartCard title="Top Customers by Total Purchase Value" sub="All-time wholesale + retail combined">
           <div style={{ display: "flex", flexDirection: "column", gap: 11, padding: "8px 0" }}>
             {isError && (
@@ -266,7 +266,7 @@ export function CustomerReport() {
         </ChartCard>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 22, alignItems: "stretch" }}>
+      <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 16, marginBottom: 22, alignItems: "stretch" }}>
         <SumCard icon={<UsersRound size={22} color={T.royalBurgundy} />} label="Total Customers (All Time)" value={`${custRows.length} customers`} sub="Retail + wholesale" />
         <SumCard icon={<CheckCircle2 size={22} color={T.green} />} label="Active (All Time)" value={`${activeCount} customers`} sub="Made at least one purchase" greenHi />
         <SumCard icon={<TrendingUp size={22} color={T.antiqueGold} />} label="New This Month" value={`${newThisMonthCount} customers`} sub="Added to the roster" hi />
@@ -305,7 +305,7 @@ export function CustomerReport() {
       <FadeUp>
         <div style={{ marginTop: 24 }}>
           <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: T.luxuryBrown, marginBottom: 12 }}>Customer Details</div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+          <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 16 }}>
             {custRows.map(r => (
               <div key={r.id} style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, boxShadow: "0 2px 12px rgba(74,6,27,0.06)", padding: "16px 18px", display: "flex", flexDirection: "column", gap: 10 }}>
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
