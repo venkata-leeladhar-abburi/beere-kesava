@@ -11,7 +11,7 @@ export function DeductionRatesSection() {
   const [editDeduction, setEditDeduction] = useState<string | null>("warp");
 
   return (
-    <div style={{ padding: "40px 56px 0" }}>
+    <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40 }}>
     <SectionCard
       icon={Package}
       title="Raw Material Deduction Rates"

@@ -172,11 +172,11 @@ export function RatesPricingPage() {
 
       {/* 3. SECTION A — MAKING CHARGE RATES */}
       {isLoading ? (
-        <div style={{ padding: "96px 56px 48px", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
+        <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 96, paddingBottom: 48, fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
           Loading rate catalog…
         </div>
       ) : isError ? (
-        <div style={{ padding: "96px 56px 48px" }}>
+        <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 96, paddingBottom: 48 }}>
           <div style={{
             fontFamily: F.ui, fontSize: 14, color: T.crimson,
             background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.22)",
@@ -214,9 +214,10 @@ export function RatesPricingPage() {
       {/* ══════════════════════════════════════════════════════════════════ */}
       {/* 8. FOOTER                                                          */}
       {/* ══════════════════════════════════════════════════════════════════ */}
-      <div style={{
+      <div className="px-4 md:px-7 xl:px-14" style={{
         background: T.luxuryBrown,
-        padding: "32px 56px",
+        paddingTop: 32,
+        paddingBottom: 32,
         textAlign: "center",
       }}>
         <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, fontWeight: 400, color: T.warmCream, marginBottom: 6 }}>

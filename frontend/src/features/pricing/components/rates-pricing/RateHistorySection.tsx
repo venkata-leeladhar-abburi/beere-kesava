@@ -95,7 +95,7 @@ export function RateHistorySection() {
   ];
 
   return (
-    <div style={{ padding: "40px 56px 0" }}>
+    <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40 }}>
     <SectionCard
       icon={History}
       title="Rate Change History"
