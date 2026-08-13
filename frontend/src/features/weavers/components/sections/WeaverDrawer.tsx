@@ -184,7 +184,7 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 16 }} transition={{ duration: 0.25 }}
         style={{ width: "100%", background: T.silkCream, minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
 
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 48px", borderBottom: `1px solid ${T.borderDef}`, background: "#FFFFFF", position: "sticky", top: 0, zIndex: 10 }}>
+        <div className="px-4 md:px-7 xl:px-12" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 20, paddingBottom: 20, borderBottom: `1px solid ${T.borderDef}`, background: "#FFFFFF", position: "sticky", top: 0, zIndex: 10 }}>
           <Button onClick={onClose} variant="ghost" size="sm" className="text-[#6E0F2D] font-bold">
             <ChevronLeftIcon size={20} /> Back to Weavers
           </Button>
@@ -208,7 +208,7 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
           </div>
         </div>
 
-        <div style={{ padding: "16px 48px 0", background: "#FFFFFF" }}>
+        <div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 16, background: "#FFFFFF" }}>
           <Breadcrumbs
             items={[
               { key: "people", label: "People", onClick: onClose },
@@ -218,7 +218,7 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
           />
         </div>
 
-        <div style={{ padding: "40px 48px", background: "#FFFFFF", borderBottom: `1px solid ${T.borderDef}` }}>
+        <div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 40, paddingBottom: 40, background: "#FFFFFF", borderBottom: `1px solid ${T.borderDef}` }}>
           <div style={{ display: "flex", gap: 28, alignItems: "center", flexWrap: "wrap" as const }}>
             <Avatar photo={weaver.photo} initials={weaver.initials} bg={weaver.bg} size={104} />
             <div style={{ flex: "1 1 320px" }}>
@@ -245,7 +245,7 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
         </div>
 
         {mode === "edit" && (
-          <div style={{ padding: "24px 48px", background: "#FFFFFF", borderBottom: `1px solid ${T.borderDef}` }}>
+          <div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 24, paddingBottom: 24, background: "#FFFFFF", borderBottom: `1px solid ${T.borderDef}` }}>
             <SectionPill label="Edit Weaver Details" />
             <div style={{ marginBottom: 18, display: "flex", alignItems: "center", gap: 20 }}>
               <div style={{ width: 88, height: 88, borderRadius: "50%", border: "2px dashed rgba(110,15,45,0.25)", background: "rgba(110,15,45,0.04)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
@@ -295,7 +295,7 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
           </div>
         )}
 
-        <div style={{ padding: "0 48px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", gap: 24, background: "#FFFFFF", overflowX: "auto" }}>
+        <div className="px-4 md:px-7 xl:px-12" style={{ borderBottom: `1px solid ${T.borderDef}`, display: "flex", gap: 24, background: "#FFFFFF", overflowX: "auto" }}>
           {[
             { key: "overview", label: "Overview", icon: <ClipboardList size={16} /> },
             { key: "batches", label: "Batch History", icon: <Layers3 size={16} /> },
@@ -316,7 +316,7 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
           ))}
         </div>
 
-        <div style={{ padding: "40px 48px", flex: 1 }}>
+        <div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 40, paddingBottom: 40, flex: 1 }}>
           {tab === "overview" && (
             <div style={{ display: "flex", flexDirection: "column", gap: 36 }}>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(420px, 1fr))", gap: 32, alignItems: "start" }}>
