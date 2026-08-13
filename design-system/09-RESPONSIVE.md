@@ -229,6 +229,35 @@ container**. For genuinely irreducible wide content (a financial ledger, a matri
 `overflow-x: auto` container is acceptable **only** when card-mode is a semantic mismatch —
 document the reason in §10 when you choose it.
 
+### 3.7 `md:` is not "desktop" — dense/unwrapped layouts must revert at `xl:`
+
+**Real incident (2026-08-13):** an R4 commit gated two components' "revert to the original
+dense layout" behind Tailwind's `md:` (768px) instead of `xl:` (1280px) — a 10-tab flex
+strip and a 5-tile icon+text flex row, both designed for real desktop width. At 768-1279px
+(this doc's **tablet** range, not desktop — §3.1) neither fit, the row overflowed its
+container, and it dragged the *entire page* into horizontal scroll. Caught by the user via
+screenshot, not by `tsc`/`build`/`lint` (none of which can see a runtime layout overflow) or
+by the unverified-in-browser caveat that had been noted but not acted on further.
+
+**The rule going forward:** before choosing `md:` vs `xl:` as the "un-collapse" breakpoint,
+classify the component:
+- **Column-stacked cards** (icon on top, label/value stacked below, no forced `nowrap`,
+  no fixed pixel `minWidth`) — e.g. `SumCard`, most KPI tiles used throughout R1-R4 —
+  narrow gracefully as columns shrink. `md:grid-cols-N` (revert at 768px, i.e. tablet
+  already gets the full column count) is fine for these.
+- **Row-per-item layouts** (icon and text side-by-side *within* one flex item, tab strips,
+  anything wider than it is tall per item) — do **not** assume 768-1279px is enough room.
+  Gate the revert at `xl:` (1280px) instead, so the mobile-designed fallback (stack, picker,
+  wrap) covers the full tablet range too. When genuinely unsure, `xl:` is the safer default —
+  a card grid revert one breakpoint later costs a slightly emptier tablet view; a row-layout
+  revert one breakpoint early costs a full page-width horizontal-scroll bug.
+
+**Verification note:** this class of bug is invisible to `tsc`/`build`/`lint` and only shows
+up as a real rendered layout. If browser verification is blocked (as it has been for this
+entire rollout so far — see the recurring "stuck policy-check" note in commits), treat any
+`md:`-gated revert to a row/flex layout as **higher risk** than a grid-based one, and prefer
+the conservative `xl:` choice rather than assuming `md:` is safe.
+
 ---
 
 ## §4 — Priority order (which to do first, and why)
@@ -745,6 +774,7 @@ problem and recording it is the correct response, not fixing it.
 |---|---|---|---|
 | 2026-08-12 | — | — | Document created. Baselines: 70 DataTable consumers with 0 `responsive`; 5 raw `<table>` files; 188 files using grid columns; 63 modal files; 3 hand-rolled breakpoint checks. |
 | 2026-08-12 | R0.1 | `Modal.tsx`, `Popover.tsx`, `Drawer.tsx` | The 3 `window.innerWidth<768` sites are inline `onOpenAutoFocus` guards, not layout state — checked at the moment the dialog opens. Converting to `useIsMobile()` would be purely cosmetic and touches 3 app-wide shared primitives for no behavioral gain. Left as-is; not a gap, a deliberate skip. |
+| 2026-08-13 | R4 (regression) | `ReportTabNav.tsx`, `PageHeaderAndMetrics.tsx` | **Real bug, user-reported via screenshot**: whole page horizontally scrolled on tablet. Root cause: I gated both components' revert-to-dense-layout at `md:` (768px) instead of `xl:` (1280px) — neither the 10-tab strip nor the 5-tile stats row fits in the 768-1279px tablet range, so the row overflowed its container and dragged the entire page into horizontal scroll. Fixed same session (commit `a004cee`) by moving both to `xl:`. New standing rule added at §3.7 to prevent recurrence: row/flex-per-item layouts must revert at `xl:`, not `md:`; grid-based column-stacked cards are safe at `md:`. Audited rest of R1-R4 for the same `md:flex` pattern via `git log` — nothing else found. Still not visually verified in-browser (recurring stuck preview policy-check this whole rollout) — this incident is exactly why that gap matters; treat any future `md:`-gated row layout as higher-risk until real browser verification is possible. |
 
 ---
 
