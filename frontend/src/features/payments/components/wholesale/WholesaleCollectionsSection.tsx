@@ -167,7 +167,7 @@ export function WholesaleCollectionsSection() {
   ] as const;
 
   return (
-    <div id="pay-wholesale" style={{ padding: "36px 40px 0" }}>
+    <div id="pay-wholesale" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 36 }}>
       <FadeUp>
       <SectionCard
         icon={Building2}
@@ -192,7 +192,7 @@ export function WholesaleCollectionsSection() {
           </div>
         ) : (
         <>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginTop: 24, marginBottom: 22, alignItems: "stretch" }}>
+        <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 16, marginTop: 24, marginBottom: 22, alignItems: "stretch" }}>
           {[
             {
               icon: <Receipt size={22} color={T.royalBurgundy} />,

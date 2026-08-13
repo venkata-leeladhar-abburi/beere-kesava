@@ -38,7 +38,7 @@ function SAHero() {
         <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: "#845E04", letterSpacing: "1.5px", textTransform: "uppercase" }}>Superadmin Access</span>
       </motion.div>
 
-      <div style={{ position: "relative", zIndex: 5, width: "50%", height: "100%", padding: "0 56px", display: "flex", flexDirection: "column", justifyContent: "center", gap: 20 }}>
+      <div className="px-4 md:px-7 xl:px-14" style={{ position: "relative", zIndex: 5, width: "50%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "center", gap: 20 }}>
         <motion.div initial={{ opacity: 0, x: -24 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.7, delay: 0.3, ease: EASE }}
           style={{ display: "flex", alignItems: "center", gap: 12 }}
         >
@@ -62,7 +62,7 @@ function SAHero() {
           ))}
         </div>
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 1.0 }}
-          style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 18, color: "rgba(245,232,208,0.90)", lineHeight: 1.85, margin: 0, maxWidth: 440, letterSpacing: "0.05px" }}
+          style={{ fontFamily: F.ui, fontWeight: 400, fontSize: "clamp(15px, 3.5vw, 18px)", color: "rgba(245,232,208,0.90)", lineHeight: 1.85, margin: 0, maxWidth: 440, letterSpacing: "0.05px" }}
         >
           Full visibility and control over all operations — rates, approvals, audit logs, and more.
         </motion.p>
@@ -115,9 +115,10 @@ function SAMetricsBar() {
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, delay: 0.4, ease: EASE }}
-      style={{ padding: "0 48px", marginTop: -72, position: "relative", zIndex: 20 }}
+      className="px-4 md:px-7 xl:px-12 -mt-8 md:-mt-12 xl:-mt-[72px]"
+      style={{ position: "relative", zIndex: 20 }}
     >
-      <div style={{ background: G.card, borderRadius: 28, display: "flex", alignItems: "stretch", boxShadow: "0 30px 80px rgba(0,0,0,0.32), 0 0 0 1px rgba(200,155,71,0.16)", overflow: "hidden", minHeight: 140 }}>
+      <div className="grid grid-cols-2 xl:flex" style={{ background: G.card, borderRadius: 28, alignItems: "stretch", boxShadow: "0 30px 80px rgba(0,0,0,0.32), 0 0 0 1px rgba(200,155,71,0.16)", overflow: "hidden", minHeight: 140 }}>
         {saMetrics.map((m: any, i) => (
           <motion.div key={i}
             initial={{ opacity: 0, y: 20 }}
@@ -139,7 +140,7 @@ function SAMetricsBar() {
               <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 8, color: m.hi ? "rgba(200,155,71,1)" : m.crimsonHi ? "rgba(232,120,110,1)" : "rgba(245,232,208,0.90)" }}>
                 {m.label}
               </div>
-              <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 48, color: m.hi ? T.goldLight : m.crimsonHi ? "#F08080" : T.warmCream, lineHeight: 1.0, marginBottom: 8, ...NUM }}>
+              <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: "clamp(28px, 8vw, 48px)", color: m.hi ? T.goldLight : m.crimsonHi ? "#F08080" : T.warmCream, lineHeight: 1.0, marginBottom: 8, ...NUM }}>
                 <AnimatedNumber raw={m.val} />
               </div>
               <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: m.hi ? "rgba(231,201,131,0.95)" : m.crimsonHi ? "rgba(240,128,128,0.90)" : "rgba(245,232,208,0.85)", letterSpacing: "0.1px" }}>
@@ -172,9 +173,9 @@ function SAQuickActions({ setNav }: { setNav: (v: string) => void }) {
     { icon: <Building2 size={22} color={T.green} />, label: "Manage Firms", sub: "Payments & vendor records", nav: "Payments", color: T.green, bg: "rgba(30,102,64,0.06)", border: "rgba(30,102,64,0.14)" },
   ];
   return (
-    <section style={{ padding: "36px 48px 0" }}>
+    <section className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 36 }}>
       <SectionHeader title="Quick Actions" actionText="" small />
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
+      <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 16 }}>
         {actions.map((a, i) => (
           <motion.div key={a.nav}
             initial={{ opacity: 0, y: 20 }}
@@ -236,9 +237,9 @@ function SARawMaterial() {
   });
 
   return (
-    <section style={{ padding: "0 48px 72px", background: T.silkCream }}>
+    <section className="px-4 md:px-7 xl:px-12" style={{ paddingBottom: 72, background: T.silkCream }}>
       <SectionHeader title="Raw Material Overview" actionText="View All Materials →" />
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}>
+      <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 20 }}>
         {mats.map((m, i) => (
           <motion.div key={m.name}
             initial={{ opacity: 0, scale: 0.88, y: 36, filter: "blur(8px)" }}

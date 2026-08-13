@@ -31,7 +31,7 @@ type OverviewRow = { firm: Firm; inc: number; exp: number; net: number; entryCou
 function overviewColumns(onGoToFirm?: (firmId: string) => void): ColumnDef<OverviewRow>[] {
   return [
     {
-      id: "firm", header: "Firm", accessor: r => r.firm.firmName,
+      id: "firm", header: "Firm", accessor: r => r.firm.firmName, priority: 1,
       cell: (_v, r) => (
         <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "16px 0", borderLeft: `4px solid ${r.color}`, marginLeft: -4, paddingLeft: 16 }}>
           <div style={{ width: 38, height: 38, borderRadius: 11, background: r.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: `0 3px 10px ${r.color}40` }}>
@@ -73,7 +73,7 @@ function overviewColumns(onGoToFirm?: (firmId: string) => void): ColumnDef<Overv
       ),
     },
     {
-      id: "entries", header: "Entries", align: "end", accessor: r => r.entryCount,
+      id: "entries", header: "Entries", align: "end", accessor: r => r.entryCount, priority: 3,
       cell: (_v, r) => (
         <div style={{ textAlign: "right" as const }}>
           <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, background: "rgba(139,112,96,0.09)", border: `1px solid ${T.borderDef}`, borderRadius: 6, padding: "3px 8px" }}>
@@ -120,7 +120,7 @@ function BusinessOverview({ onGoToFirm }: { onGoToFirm?: (firmId: string) => voi
   const totNet = totInc - totExp;
 
   return (
-    <div style={{ margin: "28px 56px 0", borderRadius: 22, overflow: "hidden", background: "#FFF", boxShadow: "0 4px 28px rgba(44,24,16,0.10)", border: `1px solid ${T.borderDef}` }}>
+    <div className="mx-4 md:mx-7 xl:mx-14" style={{ marginTop: 28, borderRadius: 22, overflow: "hidden", background: "#FFF", boxShadow: "0 4px 28px rgba(44,24,16,0.10)", border: `1px solid ${T.borderDef}` }}>
       {/* Header */}
       <div style={{ background: `linear-gradient(135deg, ${T.darkBurgundy} 0%, ${T.royalBurgundy} 100%)`, padding: "18px 28px", display: "flex", alignItems: "center", gap: 14, cursor: "pointer" }} onClick={() => setOpen(o => !o)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => setOpen(o => !o))?.(); } }}>
         <div style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(200,155,71,0.18)", border: "1px solid rgba(200,155,71,0.30)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -149,12 +149,13 @@ function BusinessOverview({ onGoToFirm }: { onGoToFirm?: (firmId: string) => voi
         {open && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.22, ease: EASE }} style={{ overflow: "hidden" }}>
             <DataTable<OverviewRow>
+              responsive
               columns={overviewColumns(onGoToFirm)}
               data={rows.map(r => ({ ...r, color: FIRM_COLORS[parseInt(r.firm.id.replace("FIRM-",""), 10) % FIRM_COLORS.length] }))}
               getRowId={r => r.firm.id}
             />
             {/* Totals row */}
-            <div style={{ display: "grid", gridTemplateColumns: "2fr 130px 130px 150px 80px 36px", gap: 0, padding: "16px 28px", background: T.bgGold, borderTop: `1.5px solid ${T.borderGold}`, borderLeft: `4px solid ${T.antiqueGold}` }}>
+            <div className="grid grid-cols-1 md:grid-cols-[2fr_130px_130px_150px_80px_36px]" style={{ gap: 0, padding: "16px 28px", background: T.bgGold, borderTop: `1.5px solid ${T.borderGold}`, borderLeft: `4px solid ${T.antiqueGold}` }}>
               <div>
                 <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>All Firms Total</div>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{rows.length} firms · manual entries</div>
@@ -213,6 +214,20 @@ const FirmCard = React.forwardRef<HTMLDivElement, { firm: Firm; onEdit: () => vo
             {net === 0 ? "No Activity Yet" : isPositive ? "Net Positive" : "Net Outstanding"}
           </span>
         </div>
+      </div>
+
+      {/* Financial mini-strip */}
+      <div className="grid grid-cols-1 md:grid-cols-3" style={{ borderBottom: `1px solid ${T.borderDef}` }}>
+        {[
+          { label: "Income",   val: inc, color: T.green   },
+          { label: "Expenses", val: exp, color: T.crimson  },
+          { label: "Net",      val: net, color: net >= 0 ? T.green : T.crimson },
+        ].map((s, i) => (
+          <div key={i} style={{ padding: "9px 14px", borderRight: i < 2 ? `1px solid ${T.borderDef}` : "none", textAlign: i === 2 ? "right" : "left" }}>
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 2 }}>{s.label}</div>
+            <div style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 13, color: s.color }}>{fmtFull(s.val)}</div>
+          </div>
+        ))}
       </div>
 
       {/* Content */}
@@ -342,13 +357,13 @@ export function FirmsPage() {
 
       {/* ── PAGE HEADER ───────────────────────────────────────────────────── */}
       <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", display: "flex", alignItems: "center" }}>
-        <div style={{ position: "relative", zIndex: 2, padding: "48px 0 110px 48px", flex: "0 0 100%", maxWidth: "100%" }}>
+        <div className="pl-4 md:pl-7 xl:pl-12 w-full xl:w-auto" style={{ position: "relative", zIndex: 2, paddingTop: 48, paddingBottom: 110, flex: "0 0 100%", maxWidth: "100%" }}>
           <div style={{ fontFamily: F.mono, fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase" as const, marginBottom: 12 }}>SINCE 1999 · FIRMS &amp; VENDORS</div>
           <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" as const, marginBottom: 10 }}>
-            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 56, fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Firms</h1>
-            <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: 36, fontStyle: "italic", color: T.antiqueGold, fontWeight: 400 }}>&amp; Vendor Management</span>
+            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(32px, 8vw, 56px)", fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Firms</h1>
+            <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(22px, 6vw, 36px)", fontStyle: "italic", color: T.antiqueGold, fontWeight: 400 }}>&amp; Vendor Management</span>
           </div>
-          <p style={{ fontFamily: F.ui, fontSize: 18, fontWeight: 400, color: "rgba(255,253,249,0.70)", margin: "0 0 20px", maxWidth: 600, lineHeight: 1.6 }}>
+          <p style={{ fontFamily: F.ui, fontSize: "clamp(15px, 3.5vw, 18px)", fontWeight: 400, color: "rgba(255,253,249,0.70)", margin: "0 0 20px", maxWidth: 600, lineHeight: 1.6 }}>
             Manage all firms used for material purchases, weaver payments, and customer invoicing. Track income, expenses, and net balance per firm.
           </p>
         </div>
@@ -359,9 +374,10 @@ export function FirmsPage() {
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.2 }}
-        style={{ padding: "0 48px", marginTop: -72, position: "relative", zIndex: 20 }}
+        className="px-4 md:px-7 xl:px-12 -mt-8 md:-mt-12 xl:-mt-[72px]"
+        style={{ position: "relative", zIndex: 20 }}
       >
-        <div style={{ background: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)", borderRadius: 28, display: "flex", alignItems: "stretch", boxShadow: "0 30px 80px rgba(0,0,0,0.32), 0 0 0 1px rgba(200,155,71,0.16)", overflow: "hidden", minHeight: 140 }}>
+        <div className="grid grid-cols-2 xl:flex" style={{ background: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)", borderRadius: 28, alignItems: "stretch", boxShadow: "0 30px 80px rgba(0,0,0,0.32), 0 0 0 1px rgba(200,155,71,0.16)", overflow: "hidden", minHeight: 140 }}>
           {[
             { label: "REGISTERED FIRMS",   val: String(firms.length),    sub: "Active vendor accounts",         hi: false, Icon: Building2 },
             { label: "TOTAL PURCHASES",    val: fmtAmt(totalPurchase),   sub: "Across all registered firms",    hi: true,  Icon: IndianRupee },
@@ -394,7 +410,7 @@ export function FirmsPage() {
                 <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 8, color: m.hi ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.90)" }}>
                   {m.label}
                 </div>
-                <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 48, color: m.hi ? T.goldLight : "#FFFDF9", lineHeight: 1.0, marginBottom: 8, fontVariantNumeric: "tabular-nums" as const }}>
+                <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: "clamp(28px, 8vw, 48px)", color: m.hi ? T.goldLight : "#FFFDF9", lineHeight: 1.0, marginBottom: 8, fontVariantNumeric: "tabular-nums" as const }}>
                   {m.val}
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -421,7 +437,7 @@ export function FirmsPage() {
       <BusinessOverview onGoToFirm={openFirmView} />
 
       {/* Firms directory */}
-      <div style={{ padding: "40px 56px 80px" }}>
+      <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40, paddingBottom: 80 }}>
       <SectionCard
         icon={Building2}
         title="Firms Directory"

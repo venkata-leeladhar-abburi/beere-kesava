@@ -3,7 +3,7 @@ import { useLocation } from "react-router";
 import { BulkOrder } from "../../bulk-orders/contexts/BulkOrderContext";
 import { DateFilterState, DEFAULT_DATE_FILTER } from "../../../shared/ui/DateFilterBar";
 import { BulkOrderDetailPage } from "../../bulk-orders/components/BulkOrderDetailPage";
-
+import { MaterialsFooter } from "../../materials/components/sections/MaterialsFooter";
 import { PageHeader, StatsStrip } from "./sections/PageHeaderAndStats";
 import { WholesaleDetailSection } from "./sections/wholesaleDetail/WholesaleDetailSection";
 import { RetailDetailSection } from "./sections/RetailDetailSection";
@@ -181,7 +181,7 @@ export function CustomersPage() {
   }
 
   return (
-    <div style={{ background: "#F7F2EA", minHeight: "100dvh", paddingBottom: 100 }}>
+    <div style={{ background: "#F7F2EA", minHeight: "100dvh", display: "flex", flexDirection: "column", paddingBottom: 0 }}>
       <PageHeader />
       <StatsStrip />
 
@@ -283,6 +283,7 @@ export function CustomersPage() {
         setViewingCard={setViewingCard}
         saveSuccess={saveSuccess}
       />
+      <MaterialsFooter />
     </div>
   );
 }

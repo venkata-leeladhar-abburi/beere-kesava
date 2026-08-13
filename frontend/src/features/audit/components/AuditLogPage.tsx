@@ -18,7 +18,7 @@ export function AuditLogPage() {
       <PageHeaderStats />
 
       {/* Section wrapper — clears stats strip */}
-      <div style={{ padding: "96px 56px 0" }}>
+      <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 96 }}>
         <LiveFilterBar
           search={search} setSearch={setSearch}
           roleFilter={roleFilter} setRoleFilter={setRoleFilter}

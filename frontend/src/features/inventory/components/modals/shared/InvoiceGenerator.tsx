@@ -64,7 +64,7 @@ export function InvoiceGenerator({
   const batchStr = detectedBatches.length > 0 ? detectedBatches.join(", ") : "—";
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, alignItems: "start" }}>
+    <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 24, alignItems: "start" }}>
       {/* Left — form */}
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         <div style={{ background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "14px 16px" }}>
@@ -87,7 +87,7 @@ export function InvoiceGenerator({
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px 16px" }}>
+        <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: "12px 16px" }}>
           <Field label={`${docLabel} Number`} req>
             <TextInput value={data.invoiceNumber} onChange={set("invoiceNumber") as (v: string) => void} placeholder={isQuotation ? "QT-2026-001" : "INV-2026-001"} mono />
           </Field>
@@ -242,7 +242,7 @@ export function InvoiceGenerator({
             <DataTable
               columns={([
                 {
-                  id: "item", header: "Item", accessor: s => s.sareeId || s.id,
+                  id: "item", header: "Item", accessor: s => s.sareeId || s.id, priority: 1,
                   cell: (_v, s) => {
                     const sId = s.sareeId || s.id;
                     const sareeBatch = batches.find(b => b.rows.some(row => row.sareeId === sId))?.batchId;
@@ -270,6 +270,7 @@ export function InvoiceGenerator({
               ] as ColumnDef<FinishingReturn>[])}
               data={sarees.slice(0, 4)}
               getRowId={s => s.id}
+              responsive
             />
             {sarees.length > 4 && (
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, padding: "5px 0" }}>+ {sarees.length - 4} more sarees…</div>
@@ -313,7 +314,7 @@ export function InvoiceGenerator({
                 <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.antiqueGold }}>{batchStr}</span>
               </div>
             )}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px 12px" }}>
+            <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: "4px 12px" }}>
               {[
                 ["LR Number", transport.lrNumber || "—"],
                 ["Transport", transport.transportCompany || "—"],

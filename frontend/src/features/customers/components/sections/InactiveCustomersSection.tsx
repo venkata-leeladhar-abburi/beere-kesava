@@ -51,7 +51,7 @@ export function InactiveCustomersSection({
 
   const inactiveColumns: ColumnDef<Row>[] = [
     {
-      id: "name", header: "Customer Name", accessor: row => row.name,
+      id: "name", header: "Customer Name", accessor: row => row.name, priority: 1,
       cell: (_v, row) => <span style={{ fontWeight: 600, color: T.luxuryBrown }}>{row.name}</span>,
     },
     {
@@ -59,7 +59,7 @@ export function InactiveCustomersSection({
       cell: (_v, row) => <span style={{ padding: "4px 8px", background: row.type === "Wholesale" ? T.crimsonBg : T.greenBg, color: row.type === "Wholesale" ? T.crimson : T.greenMid, fontSize: 12, borderRadius: 4, fontWeight: 600 }}>{row.type}</span>,
     },
     {
-      id: "city", header: "City", accessor: row => row.city,
+      id: "city", header: "City", accessor: row => row.city, priority: 3,
       cell: (_v, row) => <span style={{ color: T.taupe }}>{row.city}</span>,
     },
     {
@@ -97,7 +97,7 @@ export function InactiveCustomersSection({
   ];
 
   return (
-    <div style={{ padding: "40px 56px 0" }}>
+    <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40 }}>
     <SectionCard
       icon={UserX}
       title="Inactive Customers — No Purchase in 6 Months"
@@ -156,6 +156,7 @@ export function InactiveCustomersSection({
 
       <div style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
         <DataTable
+          responsive
           columns={inactiveColumns}
           data={filteredInactive.map((row, i) => ({ ...row, _rowIndex: i }))}
           getRowId={row => String(row._rowIndex)}

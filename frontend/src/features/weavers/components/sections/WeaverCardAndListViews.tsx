@@ -291,7 +291,7 @@ export function WeaverListView({ onSelect, extraWeavers = [] }: { onSelect: (w: 
       ),
     },
     {
-      id: "village", header: "Village / Area", accessor: w => w.village,
+      id: "village", header: "Village / Area", accessor: w => w.village, priority: 3,
       cell: (_v, w) => (
         <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
           <PhMapPin size={15} color={T.taupe} />
@@ -319,7 +319,7 @@ export function WeaverListView({ onSelect, extraWeavers = [] }: { onSelect: (w: 
       cell: (_v, w) => <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: qcColor(w.passRate) }}>{w.passRate}%</div>,
     },
     {
-      id: "looms", header: "Looms", accessor: w => w.looms, type: "number",
+      id: "looms", header: "Looms", accessor: w => w.looms, type: "number", priority: 3,
       cell: (_v, w) => (
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <Rows size={16} color={T.taupe} />
@@ -345,6 +345,7 @@ export function WeaverListView({ onSelect, extraWeavers = [] }: { onSelect: (w: 
   return (
     <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 4px 18px rgba(74,6,27,0.06)" }}>
       <DataTable
+        responsive
         columns={columns}
         data={visible}
         getRowId={w => w.id}

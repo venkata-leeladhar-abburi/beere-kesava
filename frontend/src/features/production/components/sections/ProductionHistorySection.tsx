@@ -137,7 +137,7 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
 
   const columns: ColumnDef<HistoryBatch>[] = [
     {
-      id: "batchNumber", header: "Batch Number", accessor: b => b.batchId,
+      id: "batchNumber", header: "Batch Number", accessor: b => b.batchId, priority: 1,
       cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 7px", borderRadius: 5 }}>{b.batchId}</span>,
     },
     {
@@ -183,7 +183,7 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
       cell: (_v, b) => <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14 }}>{b.completion}</span>,
     },
     {
-      id: "allPieces", header: "All Pieces", accessor: b => b.allPieces, align: "center",
+      id: "allPieces", header: "All Pieces", accessor: b => b.allPieces, align: "center", priority: 3,
       cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.taupe }}>{b.allPieces}</span>,
     },
     {
@@ -191,11 +191,11 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
       cell: (_v, b) => <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 13 }}>{b.makingCharges}</span>,
     },
     {
-      id: "completedOn", header: "Completed On", accessor: b => b.completedOn,
+      id: "completedOn", header: "Completed On", accessor: b => b.completedOn, priority: 3,
       cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{b.completedOn}</span>,
     },
     {
-      id: "bulkOrder", header: "Bulk Order", accessor: b => b.bulkOrder, align: "center",
+      id: "bulkOrder", header: "Bulk Order", accessor: b => b.bulkOrder, align: "center", priority: 3,
       cell: (_v, b) => b.bulkOrder
         ? <span style={{ fontFamily: F.mono, fontSize: 12, background: "rgba(110,15,45,0.08)", color: T.royalBurgundy, padding: "2px 7px", borderRadius: 5, fontWeight: 600 }}>{b.bulkOrder}</span>
         : <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontStyle: "italic" }}>General Stock</span>,
@@ -207,7 +207,7 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
   ];
 
   return (
-    <div id="prod-history" style={{ padding: "40px 40px 0" }}>
+    <div id="prod-history" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 40 }}>
       <FadeUp>
         <div style={{ background: T.darkBurgundy, borderRadius: "12px 12px 0 0", padding: "18px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
@@ -260,6 +260,7 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
 
         <div style={{ overflowX: "auto", border: `1px solid ${T.borderDef}`, borderTop: "none", borderRadius: "0 0 12px 12px", boxShadow: "0 4px 16px rgba(74,6,27,0.07)", background: T.warmIvory }}>
           <DataTable
+            responsive
             columns={columns}
             data={filteredBatches}
             getRowId={b => b.id}

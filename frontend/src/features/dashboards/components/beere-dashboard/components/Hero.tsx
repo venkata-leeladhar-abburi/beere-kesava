@@ -34,7 +34,7 @@ export function Hero() {
       <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 140, background: "linear-gradient(to top, rgba(13,2,7,0.7) 0%, rgba(13,2,7,0) 100%)", pointerEvents: "none", zIndex: 2 }} />
       <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 2, backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(200,155,71,0.022) 60px, rgba(200,155,71,0.022) 61px)` }} />
 
-      <div style={{ position: "relative", zIndex: 5, width: "50%", height: "100%", padding: "40px 56px 100px 56px", display: "flex", flexDirection: "column", justifyContent: "center", gap: 18 }}>
+      <div className="px-4 md:px-7 xl:px-14" style={{ position: "relative", zIndex: 5, width: "50%", height: "100%", paddingTop: 40, paddingBottom: 100, display: "flex", flexDirection: "column", justifyContent: "center", gap: 18 }}>
         {/* Eyebrow */}
         <motion.div
           initial={{ opacity: 0, x: -24 }}

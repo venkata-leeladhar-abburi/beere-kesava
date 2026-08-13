@@ -102,7 +102,7 @@ export function MakingChargesSection({
   ];
 
   return (
-    <div style={{ padding: "96px 56px 0" }}>
+    <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 96 }}>
     <SectionCard
       icon={Tags}
       title="Making Charge Rates — Per Saree Type"
@@ -139,7 +139,7 @@ export function MakingChargesSection({
                     />
                   </div>
 
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20, marginBottom: 18 }}>
+                  <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 20, marginBottom: 18 }}>
                     {/* Col 1 — Identity */}
                     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                       <div>
@@ -248,7 +248,7 @@ export function MakingChargesSection({
               <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown, marginBottom: 18 }}>
                 New Saree Type
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20, marginBottom: 18 }}>
+              <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 20, marginBottom: 18 }}>
                 {/* Col 1 — Identity */}
                 <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                   <div>

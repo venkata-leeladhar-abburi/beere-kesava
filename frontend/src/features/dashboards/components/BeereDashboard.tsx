@@ -279,7 +279,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
         <div style={{ background: T.silkCream, minHeight: "100dvh" }}>
           {/* Admin-style page header — matches AuditLogPage / AddUserPage pattern exactly */}
           <div style={{ background: "#3D0E1A", position: "relative", overflow: "hidden", minHeight: 200, display: "flex", alignItems: "stretch" }}>
-            <div style={{ flex: 1, padding: "44px 56px 48px", zIndex: 10, position: "relative" }}>
+            <div className="px-4 md:px-7 xl:px-14" style={{ flex: 1, paddingTop: 44, paddingBottom: 48, zIndex: 10, position: "relative" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
                 <div style={{ width: 28, height: 1, background: T.antiqueGold }} />
                 <span style={{ fontFamily: F.mono, fontSize: 12, color: `${T.antiqueGold}80`, letterSpacing: "1.5px", textTransform: "uppercase" as const }}>
@@ -312,8 +312,8 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
             ))}
           </div>
           {/* Content */}
-          <div style={{ padding: "40px 56px 80px", display: "flex", flexDirection: "column", gap: 24 }}>
-            <div style={{ display: "grid", gridTemplateColumns: "minmax(0,2fr) minmax(0,1fr)", gap: 24, alignItems: "start" }}>
+          <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40, paddingBottom: 80, display: "flex", flexDirection: "column", gap: 24 }}>
+            <div className="grid grid-cols-1 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]" style={{ gap: 24, alignItems: "start" }}>
               <SectionCard icon={PackageCheck} title="Receive Stock" subtitle="Record incoming raw materials from vendors and generate a GRN number.">
                 <div style={{ margin: "-24px -28px" }}>
                   <WorkerGRN mode="form" history={grnHistory} setHistory={setGrnHistory} initialPOId={(state as any)?.poId} />

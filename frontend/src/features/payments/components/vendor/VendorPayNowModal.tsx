@@ -79,7 +79,7 @@ export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; 
           </Dialog.Close>
         </div>
 
-        <div style={{ padding: "24px 28px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32, alignItems: "start", overflowY: "auto", flex: 1, minHeight: 0 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2" style={{ padding: "24px 28px", display: "grid", gap: 32, alignItems: "start", overflowY: "auto", flex: 1, minHeight: 0 }}>
           {/* Left Column: Payment History & Invoice Upload */}
           <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
             <div>
@@ -89,7 +89,7 @@ export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; 
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {history.map((h, i) => (
-                    <div key={i} style={{ background: "#FFFFFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, padding: "12px 14px", display: "grid", gridTemplateColumns: "1fr 1fr 1.2fr", gap: "8px 10px" }}>
+                    <div key={i} className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1.2fr]" style={{ background: "#FFFFFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, padding: "12px 14px", display: "grid", gap: "8px 10px" }}>
                       <div><div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>Amount</div><div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.green }}><Money value={rupees(h.amount)} /></div></div>
                       <div><div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>Date</div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{h.date}</div></div>
                       <div><div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>Paying Firm</div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{h.firm}</div></div>

@@ -4,6 +4,7 @@ import { AnimatePresence } from "motion/react";
 import {
   useSuppliers, Supplier, SareeTag,
 } from "../contexts/SupplierContext";
+import { MaterialsFooter } from "../../materials/components/sections/MaterialsFooter";
 import { PurchaseFormModal, FormState as PurchaseFormState, EMPTY_FORM as EMPTY_PURCHASE_FORM } from "../../inventory/components/ExternalPurchasesPage";
 
 import { T } from "./theme";
@@ -109,90 +110,88 @@ export function SuppliersPage() {
     setToast(`External purchase added for ${form.supplier}`);
     setTimeout(() => setToast(""), 3200);
   };
-
-  if (liveSelected) {
-    return (
-      <>
-        <SupplierProfile
-          supplier={liveSelected}
-          onBack={() => setSelected(null)}
-          onRaiseRequest={id => setRequestFor(id)}
-        />
-        <AnimatePresence>
-          {requestFor && (
-            <PurchaseFormModal
-              mode="add"
-              initial={initialPurchaseFormFor(requestFor)}
-              initialSarees={[]}
-              onClose={() => setRequestFor(null)}
-              onSubmit={handleRaiseRequest}
-            />
-          )}
-        </AnimatePresence>
-        <AnimatePresence>{toast && <Toast msg={toast} />}</AnimatePresence>
-      </>
-    );
-  }
-
   return (
-    <div style={{ background: T.silkCream, minHeight: "100dvh", paddingBottom: 100 }}>
-      <SuppliersHero
-        suppliersCount={suppliers.length}
-        purchases={purchases}
-        totals={totals}
-        onAddExternalPurchase={() => setRequestFor(suppliers[0]?.id ?? "")}
-        onAddSupplier={() => setShowAdd(true)}
-      />
-
-      <SupplierAnalytics />
-
-      <SupplierDirectorySection
-        filtered={filtered}
-        search={search}
-        setSearch={setSearch}
-        statusFilter={statusFilter}
-        setStatusFilter={setStatusFilter}
-        ratingFilter={ratingFilter}
-        setRatingFilter={setRatingFilter}
-        onAddSupplier={() => setShowAdd(true)}
-        onViewSupplier={setSelected}
-      />
-
-      <ExternalPurchaseHistorySection purchases={purchases} />
-
-      <AnimatePresence>
-        {showAdd && (
-          <AddSupplierModal
-            nextId={nextSupplierId()}
-            onCancel={() => setShowAdd(false)}
-            onSave={(v, cardUrl) => {
-              addSupplier({
-                name: v.name, contactName: v.contactName, phone: v.phone, whatsapp: v.whatsapp,
-                city: v.city, state: v.state, address: v.address, gstCode: v.gstCode,
-                specialty: v.specialty, terms: v.terms, bankName: v.bankName, accountNo: v.accountNo,
-                notes: v.notes, visitingCard: cardUrl || undefined, status: "active", rating: 3,
-              });
-              setShowAdd(false);
-              setToast(`Supplier ${v.name} added`);
-              setTimeout(() => setToast(""), 3000);
-            }}
+    <div style={{ background: T.silkCream, minHeight: "100dvh", display: "flex", flexDirection: "column", paddingBottom: 0 }}>
+      {liveSelected ? (
+        <>
+          <SupplierProfile
+            supplier={liveSelected}
+            onBack={() => setSelected(null)}
+            onRaiseRequest={id => setRequestFor(id)}
           />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {requestFor !== null && (
-          <PurchaseFormModal
-            mode={"request" as "add"}
-            initial={initialPurchaseFormFor(requestFor)}
-            initialSarees={[]}
-            onClose={() => setRequestFor(null)}
-            onSubmit={handleRaiseRequest}
+          <AnimatePresence>
+            {requestFor && (
+              <PurchaseFormModal
+                mode="add"
+                initial={initialPurchaseFormFor(requestFor)}
+                initialSarees={[]}
+                onClose={() => setRequestFor(null)}
+                onSubmit={handleRaiseRequest}
+              />
+            )}
+          </AnimatePresence>
+        </>
+      ) : (
+        <>
+          <SuppliersHero
+            suppliersCount={suppliers.length}
+            purchases={purchases}
+            totals={totals}
+            onAddExternalPurchase={() => setRequestFor(suppliers[0]?.id ?? "")}
+            onAddSupplier={() => setShowAdd(true)}
           />
-        )}
-      </AnimatePresence>
 
+          <SupplierAnalytics />
+
+          <SupplierDirectorySection
+            filtered={filtered}
+            search={search}
+            setSearch={setSearch}
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter}
+            ratingFilter={ratingFilter}
+            setRatingFilter={setRatingFilter}
+            onAddSupplier={() => setShowAdd(true)}
+            onViewSupplier={setSelected}
+          />
+
+          <ExternalPurchaseHistorySection purchases={purchases} />
+
+          <AnimatePresence>
+            {showAdd && (
+              <AddSupplierModal
+                nextId={nextSupplierId()}
+                onCancel={() => setShowAdd(false)}
+                onSave={(v, cardUrl) => {
+                  addSupplier({
+                    name: v.name, contactName: v.contactName, phone: v.phone, whatsapp: v.whatsapp,
+                    city: v.city, state: v.state, address: v.address, gstCode: v.gstCode,
+                    specialty: v.specialty, terms: v.terms, bankName: v.bankName, accountNo: v.accountNo,
+                    notes: v.notes, visitingCard: cardUrl || undefined, status: "active", rating: 3,
+                  });
+                  setShowAdd(false);
+                  setToast(`Supplier ${v.name} added`);
+                  setTimeout(() => setToast(""), 3000);
+                }}
+              />
+            )}
+          </AnimatePresence>
+
+          <AnimatePresence>
+            {requestFor !== null && (
+              <PurchaseFormModal
+                mode={"request" as "add"}
+                initial={initialPurchaseFormFor(requestFor)}
+                initialSarees={[]}
+                onClose={() => setRequestFor(null)}
+                onSubmit={handleRaiseRequest}
+              />
+            )}
+          </AnimatePresence>
+        </>
+      )}
       <AnimatePresence>{toast && <Toast msg={toast} />}</AnimatePresence>
+      <MaterialsFooter />
     </div>
   );
 }

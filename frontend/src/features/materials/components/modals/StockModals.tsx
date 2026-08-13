@@ -69,7 +69,7 @@ export function AddNewStockModal({ open, onClose }: { open: boolean; onClose: ()
               </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+            <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 14 }}>
               <Field label="Material Details" required>
                 <Input value={form.details} onChange={e => set("details", e.target.value)} placeholder="e.g. Cotton/Silk, Silk Red, Polyester 2G Gold" />
               </Field>
@@ -78,7 +78,7 @@ export function AddNewStockModal({ open, onClose }: { open: boolean; onClose: ()
               </Field>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+            <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 14 }}>
               <Field label="Date Received" required>
                 <DatePicker value={form.receivedDate ? new Date(form.receivedDate) : null} onChange={d => set("receivedDate", d ? formatDate(d, "iso") : "")} />
               </Field>
@@ -172,7 +172,7 @@ export function BatchViewDetailsModal({ batch, onClose }: { batch: BatchRow | nu
           </span>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 22 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 14, marginBottom: 22 }}>
           {[
             { label: "Material Details", value: batch.details },
             { label: "Vendor", value: batch.vendor },
@@ -186,7 +186,7 @@ export function BatchViewDetailsModal({ batch, onClose }: { batch: BatchRow | nu
           ))}
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14, marginBottom: 22 }}>
+        <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 14, marginBottom: 22 }}>
           {[
             { label: "Received", value: batch.received, color: T.luxuryBrown, icon: <Package size={18} color={T.royalBurgundy} /> },
             { label: "Given to Weavers", value: batch.given, color: T.taupe, icon: <ArrowRight size={18} color={T.antiqueGold} /> },

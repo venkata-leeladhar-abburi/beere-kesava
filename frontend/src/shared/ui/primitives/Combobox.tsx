@@ -139,7 +139,7 @@ export function Combobox({
                     setOpen(false);
                   }}
                   className={cn(
-                    "relative flex h-10 items-center gap-2 rounded-[var(--radius-sm)] px-3 pr-8 text-[14px] cursor-pointer select-none outline-none",
+                    "relative flex h-10 items-center gap-2 rounded-[var(--radius-sm)] px-3 pr-8 text-[14px] cursor-pointer select-none outline-none focus-visible:!outline-none",
                     "text-[var(--text-primary)]",
                     "data-[selected=true]:bg-[var(--bk-neutral-50)]",
                     "data-[disabled=true]:opacity-50 data-[disabled=true]:cursor-not-allowed",

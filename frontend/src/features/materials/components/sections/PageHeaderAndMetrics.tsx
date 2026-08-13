@@ -17,10 +17,10 @@ export function PageHeader() {
           Since 1999 · Admin · Materials
         </div>
         <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
-          <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 56, fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Receive Stock</h1>
-          <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: 36, fontStyle: "italic", color: T.antiqueGold, fontWeight: 400 }}>&amp; Goods Receipt Note</span>
+          <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(32px, 8vw, 56px)", fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Receive Stock</h1>
+          <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(22px, 6vw, 36px)", fontStyle: "italic", color: T.antiqueGold, fontWeight: 400 }}>&amp; Goods Receipt Note</span>
         </div>
-        <p style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 18, color: "rgba(255,253,249,0.70)", lineHeight: 1.6, maxWidth: 600, margin: "0 0 20px" }}>
+        <p style={{ fontFamily: F.ui, fontWeight: 400, fontSize: "clamp(15px, 3.5vw, 18px)", color: "rgba(255,253,249,0.70)", lineHeight: 1.6, maxWidth: 600, margin: "0 0 20px" }}>
           Record incoming raw materials from vendors against purchase orders and generate GRN numbers.
         </p>
       </div>
@@ -97,9 +97,10 @@ export function MetricsBar() {
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, delay: 0.2, ease: EASE }}
-      style={{ padding: `0 ${px}px`, marginTop: -72, position: "relative", zIndex: 20 }}
+      className="-mt-8 md:-mt-12 xl:-mt-[72px]"
+      style={{ padding: `0 ${px}px`, position: "relative", zIndex: 20 }}
     >
-      <div style={{ background: G_CARD, borderRadius: 28, display: "flex", alignItems: "stretch", boxShadow: "0 30px 80px rgba(0,0,0,0.32), 0 0 0 1px rgba(200,155,71,0.16)", overflow: "hidden", minHeight: 140 }}>
+      <div className="grid grid-cols-2 xl:flex" style={{ background: G_CARD, borderRadius: 28, alignItems: "stretch", boxShadow: "0 30px 80px rgba(0,0,0,0.32), 0 0 0 1px rgba(200,155,71,0.16)", overflow: "hidden", minHeight: 140 }}>
         {materialMetrics.map((m, i) => (
           <motion.div
             key={i}
@@ -127,7 +128,7 @@ export function MetricsBar() {
               <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 8, color: m.hi ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.90)" }}>
                 {m.label}
               </div>
-              <div style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontSize: 48, color: m.hi ? T.goldLight : T.warmCream, lineHeight: 1.0, marginBottom: 8, ...NUM }}>
+              <div style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontSize: "clamp(28px, 8vw, 48px)", color: m.hi ? T.goldLight : T.warmCream, lineHeight: 1.0, marginBottom: 8, ...NUM }}>
                 <AnimatedNumber raw={m.val} />
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>

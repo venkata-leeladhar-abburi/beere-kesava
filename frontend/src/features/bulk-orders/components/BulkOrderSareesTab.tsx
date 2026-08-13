@@ -94,7 +94,7 @@ export function BulkOrderSareesTab({
 }: BulkOrderSareesTabProps) {
   const columns: ColumnDef<LinkedSaree>[] = [
     {
-      id: "id", header: "Saree ID", accessor: s => s.id,
+      id: "id", header: "Saree ID", accessor: s => s.id, priority: 1,
       cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{s.id}</span>,
     },
     {
@@ -106,7 +106,7 @@ export function BulkOrderSareesTab({
       cell: (_v, s) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{s.weaverName}</span>,
     },
     {
-      id: "batch", header: "Batch", accessor: s => s.batchId,
+      id: "batch", header: "Batch", accessor: s => s.batchId, priority: 3,
       cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{s.batchId || "—"}</span>,
     },
     {
@@ -114,7 +114,7 @@ export function BulkOrderSareesTab({
       cell: (_v, s) => <StatusPill status={s.status} />,
     },
     {
-      id: "quotation", header: "Quotation", accessor: s => s.quotationRef,
+      id: "quotation", header: "Quotation", accessor: s => s.quotationRef, priority: 3,
       cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, color: s.quotationRef ? T.royalBurgundy : T.taupe }}>{s.quotationRef || "—"}</span>,
     },
     {
@@ -158,6 +158,7 @@ export function BulkOrderSareesTab({
 
       <div style={{ background: "#FFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, overflow: "hidden" }}>
         <DataTable
+          responsive
           columns={columns}
           data={filteredSarees}
           getRowId={s => s.id}

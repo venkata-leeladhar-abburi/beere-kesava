@@ -37,7 +37,7 @@ export function AllOrdersFilterBar({
   resetFilters,
 }: AllOrdersFilterBarProps) {
   return (
-    <div style={{ padding: "28px 48px 0" }}>
+    <div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 28 }}>
       <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1.5px solid ${T.borderDef}`, padding: "22px 24px", boxShadow: "0 4px 18px rgba(74,6,27,0.03)", display: "flex", flexDirection: "column", gap: 16 }}>
         {/* Top row: search & reset */}
         <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>

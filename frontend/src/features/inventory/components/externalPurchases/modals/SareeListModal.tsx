@@ -47,11 +47,11 @@ export function SareeListModal({
 
   const columns: ColumnDef<Piece>[] = [
     {
-      id: "sno", header: "S.No", accessor: (_s) => pieces.indexOf(_s) + 1,
+      id: "sno", header: "S.No", accessor: (_s) => pieces.indexOf(_s) + 1, priority: 3,
       cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{pieces.indexOf(s) + 1}</span>,
     },
     {
-      id: "sareeCode", header: "Saree Code", accessor: s => s.id,
+      id: "sareeCode", header: "Saree Code", accessor: s => s.id, priority: 1,
       cell: (_v, s) => <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 12, color: T.royalBurgundy, whiteSpace: "nowrap" as const }}>{s.id}</span>,
     },
     {
@@ -61,7 +61,7 @@ export function SareeListModal({
         : <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.green, background: "rgba(30,102,64,0.08)", borderRadius: 6, padding: "2px 8px", whiteSpace: "nowrap" as const }}>With Us</span>,
     },
     {
-      id: "lineSerial", header: "Line Serial", accessor: s => s.lineCode,
+      id: "lineSerial", header: "Line Serial", accessor: s => s.lineCode, priority: 3,
       cell: (_v, s) => (
         <span style={{ whiteSpace: "nowrap" as const }}>
           <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{s.lineCode}</span>
@@ -78,7 +78,7 @@ export function SareeListModal({
       cell: (_v, s) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>{s.color || "—"}</span>,
     },
     {
-      id: "weight", header: "Weight", accessor: s => s.weight,
+      id: "weight", header: "Weight", accessor: s => s.weight, priority: 3,
       cell: (_v, s) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>{s.weight}</span>,
     },
     {
@@ -86,7 +86,7 @@ export function SareeListModal({
       cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>{formatMoney(rupees(s.price))}</span>,
     },
     {
-      id: "sellPct", header: "Sell %", accessor: s => s.sellPercent,
+      id: "sellPct", header: "Sell %", accessor: s => s.sellPercent, priority: 3,
       cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" as const }}>{s.sellPercent}%</span>,
     },
     {
@@ -98,7 +98,7 @@ export function SareeListModal({
       cell: (_v, s) => <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 12, color: T.green, whiteSpace: "nowrap" as const }}>{formatMoney(rupees(lineProfit(s)))}</span>,
     },
     {
-      id: "notes", header: "Notes", accessor: s => s.notes,
+      id: "notes", header: "Notes", accessor: s => s.notes, priority: 3,
       cell: (_v, s) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, maxWidth: 200 }}>{s.notes || "—"}</span>,
     },
     {
@@ -207,6 +207,7 @@ export function SareeListModal({
 
           <div style={{ overflow: "auto", flex: 1 }}>
             <DataTable
+              responsive
               columns={columns}
               data={pieces}
               getRowId={s => s.id}

@@ -52,7 +52,7 @@ export function FinancialSummarySection() {
   const pctOut = Math.min(100, Math.round((totalOut / (totalIn || 1)) * 100));
 
   return (
-    <div id="pay-summary" style={{ padding: "32px 40px" }}>
+    <div id="pay-summary" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 32, paddingBottom: 32 }}>
       <FadeUp>
       <SectionCard
         icon={Wallet}
@@ -77,7 +77,7 @@ export function FinancialSummarySection() {
         ) : (
         <>
         {/* Compact info-card grid — 4 stat cards side by side */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20, marginTop: 24, alignItems: "stretch" }}>
+        <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 20, marginTop: 24, alignItems: "stretch" }}>
 
           {/* Card 1 — Total Received This Month */}
           <motion.div

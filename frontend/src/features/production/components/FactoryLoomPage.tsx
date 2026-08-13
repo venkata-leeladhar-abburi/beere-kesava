@@ -24,6 +24,7 @@ import { rawMaterialsApi } from "../../../shared/api/rawMaterials";
 import { qcApi } from "../../../shared/api/qc";
 import { Button, IconButton, SearchInput } from "../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../shared/ui/data";
+import { MaterialsFooter } from "../../materials/components/sections/MaterialsFooter";
 
 function backendLoomToFrontend(l: BackendFactoryLoom): FactoryLoom {
   return {
@@ -194,188 +195,188 @@ export function FactoryLoomPage() {
       alert(err instanceof ApiError ? err.message : "Could not update status.");
     }
   };
-
-  if (selected) {
-    return (
-      <LoomDetailPage
-        loom={selected}
-        onBack={() => setSelected(null)}
-        onEdit={l => { setEditLoom(l); setShowModal(true); }}
-      />
-    );
-  }
-
   return (
-    <div style={{ background: "#FFFDF9", minHeight: "var(--shell-content-min-h)", paddingBottom: 60 }}>
-      {/* Hero Header */}
-      <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", minHeight: 380, display: "flex", alignItems: "center" }}>
-        <div style={{ position: "relative", zIndex: 2, padding: "48px 0 90px 48px", flex: "0 0 65%", maxWidth: "65%" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-            <span style={{ fontFamily: F.mono, fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase", fontWeight: 400 }}>
-              Since 1999 · Power Loom Management
-            </span>
+    <div style={{ background: "#FFFDF9", minHeight: "var(--shell-content-min-h)", display: "flex", flexDirection: "column", paddingBottom: 0 }}>
+      {selected ? (
+        <LoomDetailPage
+          loom={selected}
+          onBack={() => setSelected(null)}
+          onEdit={l => { setEditLoom(l); setShowModal(true); }}
+        />
+      ) : (
+        <>
+          {/* Hero Header */}
+          <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", minHeight: 380, display: "flex", alignItems: "center" }}>
+            <div className="pl-4 md:pl-7 xl:pl-12 w-full xl:w-auto xl:basis-[65%] xl:max-w-[65%]" style={{ position: "relative", zIndex: 2, paddingTop: 48, paddingBottom: 90 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                <span style={{ fontFamily: F.mono, fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase", fontWeight: 400 }}>
+                  Since 1999 · Power Loom Management
+                </span>
+              </div>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
+                <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(32px, 8vw, 56px)", fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Factory Looms</h1>
+                <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(22px, 6vw, 36px)", fontStyle: "italic", color: T.antiqueGold, fontWeight: 400 }}>&amp; Production</span>
+              </div>
+              <p style={{ fontFamily: F.ui, fontSize: "clamp(15px, 3.5vw, 18px)", color: "rgba(255,253,249,0.70)", margin: "0 0 20px", maxWidth: 600, lineHeight: 1.6 }}>
+                Real-time monitoring of in-house power looms, weaver assignments, production output & maintenance schedules.
+              </p>
+              <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} style={{ alignSelf: "flex-start", flexShrink: 0, display: "inline-block" }}>
+                <Button
+                  onClick={() => { setEditLoom(null); setShowModal(true); }}
+                  variant="primary"
+                  iconLeft={Plus}
+                  className="rounded-xl bg-[linear-gradient(135deg,#C89B47,#E7C983)] text-[#2C0913] shadow-[0_4px_20px_rgba(200,155,71,0.35)] hover:bg-[linear-gradient(135deg,#C89B47,#E7C983)]"
+                >
+                  Register New Power Loom
+                </Button>
+              </motion.div>
+            </div>
+
+            <div className="hidden xl:block" style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "50%", zIndex: 1 }}>
+              <div style={{ position: "absolute", inset: 0, zIndex: 2, background: `linear-gradient(to right, #0D0207 0%, rgba(13,2,7,0.7) 38%, rgba(13,2,7,0.1) 100%)` }} />
+              <img src={factoryLoomsHero} alt="Factory Looms" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", filter: "brightness(0.75) saturate(0.90)" }} />
+            </div>
+          </header>
+
+          {/* Stats strip */}
+          <div className="px-4 md:px-7 xl:px-12 -mt-8 md:-mt-14 xl:-mt-[80px]" style={{ position: "relative", zIndex: 20 }}>
+            <div className="grid grid-cols-2 xl:flex" style={{ background: "linear-gradient(135deg,#5D1027 0%,#2C0913 100%)", borderRadius: 24, alignItems: "stretch", boxShadow: "0 24px 72px rgba(0,0,0,0.32),0 0 0 1px rgba(200,155,71,0.16)", overflow: "hidden", minHeight: 140 }}>
+              {[
+                { icon: Factory, label: "Total In-House Looms", val: looms.length, sub: "Registered units", hi: false },
+                { icon: CheckCircle2, label: "Active Looms", val: looms.filter(l => l.status === "active").length, sub: "Currently weaving", hi: false },
+                { icon: AlertTriangle, label: "Idle Looms", val: looms.filter(l => l.status === "idle").length, sub: "Awaiting warp / weaver", hi: true },
+                { icon: Settings2, label: "In Maintenance", val: looms.filter(l => l.status === "maintenance").length, sub: "Under repair", hi: false },
+              ].map((m, i, arr) => (
+                <div key={m.label} style={{ flex: 1, padding: "26px 18px", background: m.hi ? "linear-gradient(135deg,rgba(200,155,71,0.22) 0%,rgba(200,155,71,0.07) 100%)" : "none", borderRight: i < arr.length - 1 ? "1px solid rgba(245,232,208,0.07)" : "none", display: "flex", alignItems: "center", gap: 12, position: "relative" }}>
+                  {m.hi && <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,${T.antiqueGold},${T.goldLight})` }} />}
+                  <div style={{ width: 44, height: 44, borderRadius: 13, flexShrink: 0, background: m.hi ? "rgba(200,155,71,0.16)" : "rgba(245,232,208,0.07)", border: `1px solid ${m.hi ? "rgba(200,155,71,0.38)" : "rgba(245,232,208,0.09)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <m.icon size={20} color={m.hi ? "rgba(231,201,131,0.95)" : "rgba(245,232,208,0.90)"} />
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 6, color: m.hi ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.70)" }}>{m.label}</div>
+                    <div style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontSize: "clamp(28px, 8vw, 48px)", color: m.hi ? T.goldLight : "#FFFDF9", lineHeight: 1.1, marginBottom: 8, fontVariantNumeric: "tabular-nums", letterSpacing: "-0.01em" }}>{m.val}</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: m.hi ? "rgba(231,201,131,0.90)" : "rgba(245,232,208,0.55)", letterSpacing: "0.1px" }}>{m.sub}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
-            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 56, fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Factory Looms</h1>
-            <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: 36, fontStyle: "italic", color: T.antiqueGold, fontWeight: 400 }}>&amp; Production</span>
-          </div>
-          <p style={{ fontFamily: F.ui, fontSize: 18, color: "rgba(255,253,249,0.70)", margin: "0 0 20px", maxWidth: 600, lineHeight: 1.6 }}>
-            Real-time monitoring of in-house power looms, weaver assignments, production output & maintenance schedules.
-          </p>
-          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} style={{ alignSelf: "flex-start", flexShrink: 0, display: "inline-block" }}>
-            <Button
-              onClick={() => { setEditLoom(null); setShowModal(true); }}
-              variant="primary"
-              iconLeft={Plus}
-              className="rounded-xl bg-[linear-gradient(135deg,#C89B47,#E7C983)] text-[#2C0913] shadow-[0_4px_20px_rgba(200,155,71,0.35)] hover:bg-[linear-gradient(135deg,#C89B47,#E7C983)]"
+
+          {/* Main Body */}
+          <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 32 }}>
+            <SectionCard
+              icon={Factory}
+              title="Looms Directory"
+              subtitle="Browse every registered power loom, its operator, and current status."
+              actions={
+                <Button
+                  onClick={() => { setEditLoom(null); setShowModal(true); }}
+                  variant="secondary"
+                  iconLeft={Plus}
+                  className="bg-white/10 text-[#FFFDF9] border-white/20"
+                >
+                  Register New Loom
+                </Button>
+              }
             >
-              Register New Power Loom
-            </Button>
-          </motion.div>
-        </div>
+              {loadError && (
+                <div style={{ background: "rgba(192,57,43,0.08)", border: `1px solid ${T.crimson}`, color: T.crimson, borderRadius: 12, padding: "14px 20px", marginBottom: 20, fontFamily: F.ui, fontSize: 14 }}>
+                  {loadError}
+                </div>
+              )}
 
-        <div style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "50%", zIndex: 1 }}>
-          <div style={{ position: "absolute", inset: 0, zIndex: 2, background: `linear-gradient(to right, #0D0207 0%, rgba(13,2,7,0.7) 38%, rgba(13,2,7,0.1) 100%)` }} />
-          <img src={factoryLoomsHero} alt="Factory Looms" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", filter: "brightness(0.75) saturate(0.90)" }} />
-        </div>
-      </header>
+              {/* Controls */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, gap: 16, flexWrap: "wrap" }}>
+                <div style={{ display: "flex", gap: 12, alignItems: "center", flex: 1, minWidth: 280 }}>
+                  <div style={{ width: 280 }}>
+                    <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search loom #, operator..." />
+                  </div>
+                  {(["all", "active", "idle", "maintenance"] as const).map(st => (
+                    <Button
+                      key={st}
+                      onClick={() => setSf(st)}
+                      variant={sf === st ? "primary" : "secondary"}
+                      size="sm"
+                      className="capitalize"
+                    >
+                      {st} ({st === "all" ? looms.length : looms.filter(l => l.status === st).length})
+                    </Button>
+                  ))}
+                </div>
 
-      {/* Stats strip */}
-      <div style={{ padding: "0 48px", marginTop: -80, position: "relative", zIndex: 20 }}>
-        <div style={{ background: "linear-gradient(135deg,#5D1027 0%,#2C0913 100%)", borderRadius: 24, display: "flex", alignItems: "stretch", boxShadow: "0 24px 72px rgba(0,0,0,0.32),0 0 0 1px rgba(200,155,71,0.16)", overflow: "hidden", minHeight: 140 }}>
-          {[
-            { icon: Factory, label: "Total In-House Looms", val: looms.length, sub: "Registered units", hi: false },
-            { icon: CheckCircle2, label: "Active Looms", val: looms.filter(l => l.status === "active").length, sub: "Currently weaving", hi: false },
-            { icon: AlertTriangle, label: "Idle Looms", val: looms.filter(l => l.status === "idle").length, sub: "Awaiting warp / weaver", hi: true },
-            { icon: Settings2, label: "In Maintenance", val: looms.filter(l => l.status === "maintenance").length, sub: "Under repair", hi: false },
-          ].map((m, i, arr) => (
-            <div key={m.label} style={{ flex: 1, padding: "26px 18px", background: m.hi ? "linear-gradient(135deg,rgba(200,155,71,0.22) 0%,rgba(200,155,71,0.07) 100%)" : "none", borderRight: i < arr.length - 1 ? "1px solid rgba(245,232,208,0.07)" : "none", display: "flex", alignItems: "center", gap: 12, position: "relative" }}>
-              {m.hi && <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,${T.antiqueGold},${T.goldLight})` }} />}
-              <div style={{ width: 44, height: 44, borderRadius: 13, flexShrink: 0, background: m.hi ? "rgba(200,155,71,0.16)" : "rgba(245,232,208,0.07)", border: `1px solid ${m.hi ? "rgba(200,155,71,0.38)" : "rgba(245,232,208,0.09)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <m.icon size={20} color={m.hi ? "rgba(231,201,131,0.95)" : "rgba(245,232,208,0.90)"} />
+                <div style={{ display: "flex", background: "#FFFFFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, padding: 3 }}>
+                  <Button onClick={() => setView("card")} variant={view === "card" ? "secondary" : "ghost"} size="sm" iconLeft={LayoutGrid}>
+                    Card View
+                  </Button>
+                  <Button onClick={() => setView("table")} variant={view === "table" ? "secondary" : "ghost"} size="sm" iconLeft={LayoutList}>
+                    Table View
+                  </Button>
+                </div>
               </div>
-              <div style={{ minWidth: 0 }}>
-                <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 6, color: m.hi ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.70)" }}>{m.label}</div>
-                <div style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontSize: 48, color: m.hi ? T.goldLight : "#FFFDF9", lineHeight: 1.1, marginBottom: 8, fontVariantNumeric: "tabular-nums", letterSpacing: "-0.01em" }}>{m.val}</div>
-                <div style={{ fontFamily: F.ui, fontSize: 12, color: m.hi ? "rgba(231,201,131,0.90)" : "rgba(245,232,208,0.55)", letterSpacing: "0.1px" }}>{m.sub}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
 
-      {/* Main Body */}
-      <div style={{ padding: "32px 56px 0" }}>
-      <SectionCard
-        icon={Factory}
-        title="Looms Directory"
-        subtitle="Browse every registered power loom, its operator, and current status."
-        actions={
-          <Button
-            onClick={() => { setEditLoom(null); setShowModal(true); }}
-            variant="secondary"
-            iconLeft={Plus}
-            className="bg-white/10 text-[#FFFDF9] border-white/20"
-          >
-            Register New Loom
-          </Button>
-        }
-      >
-        {loadError && (
-          <div style={{ background: "rgba(192,57,43,0.08)", border: `1px solid ${T.crimson}`, color: T.crimson, borderRadius: 12, padding: "14px 20px", marginBottom: 20, fontFamily: F.ui, fontSize: 14 }}>
-            {loadError}
+              {/* Looms Listing */}
+              {loading ? (
+                <div style={{ padding: "60px 0", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Loading factory looms…</div>
+              ) : filtered.length === 0 ? (
+                <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: 48, textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
+                  {looms.length === 0
+                    ? "No power looms registered in the database yet. Click '+ Register New Power Loom' above to add one."
+                    : "No power looms match your search criteria."}
+                </div>
+              ) : view === "card" ? (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 20 }}>
+                  {filtered.map(l => (
+                    <LoomCard
+                      key={l.id}
+                      loom={l}
+                      batches={batches}
+                      sarees={sarees}
+                      onView={() => setSelected(l)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
+                  <DataTable
+                    responsive
+                    columns={[
+                      {
+                        id: "loomNumber", header: "Loom #", accessor: l => l.loomNumber, priority: 1,
+                        cell: (_v, l) => <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{l.loomNumber}</span>,
+                      },
+                      {
+                        id: "operator", header: "Operator", accessor: l => l.operatorName,
+                        cell: (_v, l) => <span style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown }}>{l.operatorName || "—"}</span>,
+                      },
+                      {
+                        id: "location", header: "Location", accessor: l => l.location, priority: 3,
+                        cell: (_v, l) => <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>{l.location || "—"}</span>,
+                      },
+                      {
+                        id: "status", header: "Status", accessor: l => l.status, type: "status",
+                        cell: (_v, l) => <StatusPill taxonomy="condition" status={LOOM_STATUS_TO_CONDITION[l.status]} />,
+                      },
+                      {
+                        id: "actions", header: "Actions", accessor: () => null, type: "actions",
+                        cell: (_v, l) => (
+                          <>
+                            <Button onClick={() => setSelected(l)} variant="link" size="sm" className="mr-3">View Details</Button>
+                            <IconButton onClick={() => { setEditLoom(l); setShowModal(true); }} icon={Edit2} label={`Edit loom ${l.loomNumber}`} variant="ghost" size="sm" />
+                          </>
+                        ),
+                      },
+                    ] as ColumnDef<FactoryLoom>[]}
+                    data={filtered}
+                    getRowId={l => l.id}
+                  />
+                </div>
+              )}
+            </SectionCard>
           </div>
-        )}
 
-        {/* Controls */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, gap: 16, flexWrap: "wrap" }}>
-          <div style={{ display: "flex", gap: 12, alignItems: "center", flex: 1, minWidth: 280 }}>
-            <div style={{ width: 280 }}>
-              <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search loom #, operator..." />
-            </div>
-            {(["all", "active", "idle", "maintenance"] as const).map(st => (
-              <Button
-                key={st}
-                onClick={() => setSf(st)}
-                variant={sf === st ? "primary" : "secondary"}
-                size="sm"
-                className="capitalize"
-              >
-                {st} ({st === "all" ? looms.length : looms.filter(l => l.status === st).length})
-              </Button>
-            ))}
-          </div>
-
-          <div style={{ display: "flex", background: "#FFFFFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, padding: 3 }}>
-            <Button onClick={() => setView("card")} variant={view === "card" ? "secondary" : "ghost"} size="sm" iconLeft={LayoutGrid}>
-              Card View
-            </Button>
-            <Button onClick={() => setView("table")} variant={view === "table" ? "secondary" : "ghost"} size="sm" iconLeft={LayoutList}>
-              Table View
-            </Button>
-          </div>
-        </div>
-
-        {/* Looms Listing */}
-        {loading ? (
-          <div style={{ padding: "60px 0", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Loading factory looms…</div>
-        ) : filtered.length === 0 ? (
-          <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: 48, textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
-            {looms.length === 0
-              ? "No power looms registered in the database yet. Click '+ Register New Power Loom' above to add one."
-              : "No power looms match your search criteria."}
-          </div>
-        ) : view === "card" ? (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 20 }}>
-            {filtered.map(l => (
-              <LoomCard
-                key={l.id}
-                loom={l}
-                batches={batches}
-                sarees={sarees}
-                onView={() => setSelected(l)}
-              />
-            ))}
-          </div>
-        ) : (
-          <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
-            <DataTable
-              columns={[
-                {
-                  id: "loomNumber", header: "Loom #", accessor: l => l.loomNumber,
-                  cell: (_v, l) => <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{l.loomNumber}</span>,
-                },
-                {
-                  id: "operator", header: "Operator", accessor: l => l.operatorName,
-                  cell: (_v, l) => <span style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown }}>{l.operatorName || "—"}</span>,
-                },
-                {
-                  id: "location", header: "Location", accessor: l => l.location,
-                  cell: (_v, l) => <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>{l.location || "—"}</span>,
-                },
-                {
-                  id: "status", header: "Status", accessor: l => l.status, type: "status",
-                  cell: (_v, l) => <StatusPill taxonomy="condition" status={LOOM_STATUS_TO_CONDITION[l.status]} />,
-                },
-                {
-                  id: "actions", header: "Actions", accessor: () => null, type: "actions",
-                  cell: (_v, l) => (
-                    <>
-                      <Button onClick={() => setSelected(l)} variant="link" size="sm" className="mr-3">View Details</Button>
-                      <IconButton onClick={() => { setEditLoom(l); setShowModal(true); }} icon={Edit2} label={`Edit loom ${l.loomNumber}`} variant="ghost" size="sm" />
-                    </>
-                  ),
-                },
-              ] as ColumnDef<FactoryLoom>[]}
-              data={filtered}
-              getRowId={l => l.id}
-            />
-          </div>
-        )}
-      </SectionCard>
-      </div>
-
-      <LoomAnalytics looms={looms} batches={batches} materials={materials} sarees={sarees} />
+          <LoomAnalytics looms={looms} batches={batches} materials={materials} sarees={sarees} />
+        </>
+      )}
 
       <AddLoomModal
         open={showModal}
@@ -383,6 +384,7 @@ export function FactoryLoomPage() {
         onAdd={handleAddOrEdit}
         editLoom={editLoom}
       />
+      <MaterialsFooter />
     </div>
   );
 }

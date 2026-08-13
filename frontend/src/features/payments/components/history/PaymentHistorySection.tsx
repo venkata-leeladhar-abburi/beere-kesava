@@ -162,14 +162,14 @@ export function PaymentHistorySection() {
         return <span style={{ display: "inline-block", padding: "4px 10px", borderRadius: 20, fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: typeCfg.bg, color: typeCfg.color, whiteSpace: "nowrap" as const }}>{r.type}</span>;
       },
     },
-    { id: "party", header: "Party Name", accessor: r => r.party, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{r.party}</span> },
-    { id: "refNo", header: "Reference No", accessor: r => r.refNo, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.refNo}</span> },
+    { id: "party", header: "Party Name", priority: 1, accessor: r => r.party, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{r.party}</span> },
+    { id: "refNo", header: "Reference No", priority: 3, accessor: r => r.refNo, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.refNo}</span> },
     {
-      id: "description", header: "Description", accessor: r => r.description,
+      id: "description", header: "Description", priority: 3, accessor: r => r.description,
       cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, overflow: "hidden", textOverflow: "ellipsis", display: "block", maxWidth: 200 }}>{r.description}</span>,
     },
     {
-      id: "invoicePO", header: "Invoice / PO No", accessor: r => r.invoicePO,
+      id: "invoicePO", header: "Invoice / PO No", priority: 3, accessor: r => r.invoicePO,
       cell: (_v, r) => r.invoicePO ? <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.invoicePO}</span> : <span style={{ color: T.borderDef }}>—</span>,
     },
     {
@@ -184,14 +184,14 @@ export function PaymentHistorySection() {
       id: "status", header: "Status", accessor: r => r.status, type: "status", align: "center",
       cell: (_v, r) => <StatusPill taxonomy="payment" status={payHistStatusKey(r.status)} />,
     },
-    { id: "mode", header: "Payment Mode", accessor: r => r.mode, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{r.mode}</span> },
+    { id: "mode", header: "Payment Mode", priority: 3, accessor: r => r.mode, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{r.mode}</span> },
     {
-      id: "utr", header: "UTR / Ref No", accessor: r => r.utr,
+      id: "utr", header: "UTR / Ref No", priority: 3, accessor: r => r.utr,
       cell: (_v, r) => r.utr ? <span style={{ fontFamily: F.mono, fontSize: 12, color: T.green }}>{r.utr}</span> : <span style={{ fontFamily: F.ui, fontSize: 13, color: T.borderDef }}>—</span>,
     },
-    { id: "recordedBy", header: "Recorded By", accessor: r => r.recordedBy, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{r.recordedBy}</span> },
+    { id: "recordedBy", header: "Recorded By", priority: 3, accessor: r => r.recordedBy, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{r.recordedBy}</span> },
     {
-      id: "action", header: "Action", accessor: () => null, type: "actions", align: "center",
+      id: "action", header: "Action", priority: 2, accessor: () => null, type: "actions", align: "center",
       cell: (_v, r) => (
         <Button variant="secondary" size="sm" iconLeft={Eye} onClick={() => setViewRecord(r)} className="rounded-[8px] border-[1.5px] border-[rgba(110,15,45,0.12)] text-[#6E0F2D]">
           View
@@ -213,7 +213,7 @@ export function PaymentHistorySection() {
   ];
 
   return (
-    <div id="pay-history" style={{ padding: "36px 40px 0" }}>
+    <div id="pay-history" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 36 }}>
       <FadeUp>
       <SectionCard
         icon={History}
@@ -230,7 +230,7 @@ export function PaymentHistorySection() {
       >
 
         {/* ── 4 Summary stat cards ───────────────────────────── */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 18, marginBottom: 22, alignItems: "stretch" }}>
+        <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 18, marginBottom: 22, alignItems: "stretch" }}>
           {HIST_STATS.map(s => (
             <div key={s.label} style={{
               display: "flex", flexDirection: "column", gap: 10,
@@ -410,7 +410,7 @@ export function PaymentHistorySection() {
         {view === "table" && (
           <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
             <div style={{ overflowX: "auto", minWidth: 1200 }}>
-              <DataTable columns={tableColumns} data={filtered} getRowId={r => r.id} emptyTitle="No transactions match your filters" />
+              <DataTable responsive columns={tableColumns} data={filtered} getRowId={r => r.id} emptyTitle="No transactions match your filters" />
             </div>
             {filtered.length > 0 && (
               <div style={{ background: T.darkBurgundy, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 14px" }}>

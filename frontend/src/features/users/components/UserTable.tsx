@@ -44,6 +44,7 @@ export const userTableColumns = ({
   {
     id: "employee",
     header: "Employee",
+    priority: 1,
     accessor: (row) => row.firstName,
     cell: (_, row) => (
       <div>
@@ -80,6 +81,7 @@ export const userTableColumns = ({
   {
     id: "portal",
     header: "Portal",
+    priority: 3,
     accessor: (row) => row.portal,
     cell: (_, row) => (
       <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
@@ -90,6 +92,7 @@ export const userTableColumns = ({
   {
     id: "dateAdded",
     header: "Date Added",
+    priority: 3,
     accessor: (row) => row.dateAdded,
     cell: (_, row) => (
       <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
@@ -169,6 +172,7 @@ export function UserTable({
       {/* Table */}
       <div style={{ overflowX: "auto" as const, minWidth: 1040, margin: "0 -28px" }}>
         <DataTable
+          responsive
           columns={userTableColumns({ setEditingMember, onToggleStatus, onDelete, setViewingMember })}
           data={pagedRows}
           getRowId={(u) => u.empId}

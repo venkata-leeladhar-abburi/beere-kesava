@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ClipboardList, CheckSquare, ArrowUpRight, Wallet, Flower2, Bell, UserRound, ChevronLeft, LogOut } from 'lucide-react';
+import { ClipboardList, CheckSquare, Package, Wallet, Flower2, Bell, UserRound, ChevronLeft, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 import { useAuth } from '../../../../contexts/AuthContext';
@@ -34,7 +34,7 @@ export function MobileWeaverPortal({ onBack, active, setActive, onProfile }: { o
   const TABS: { id: Tab5; label: string; icon: React.ElementType; badge?: number }[] = [
     { id: 'batches',   label: 'My Batches', icon: ClipboardList, },
     { id: 'confirm',   label: 'Confirm',    icon: CheckSquare, badge: pendingConfirmCount },
-    { id: 'warp',      label: 'Warp',       icon: ArrowUpRight },
+    { id: 'warp',      label: 'Warp Request', icon: Package },
     { id: 'payments',  label: 'Payments',   icon: Wallet },
   ];
 

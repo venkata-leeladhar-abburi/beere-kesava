@@ -56,7 +56,7 @@ export function WholesaleDetailSection({
   const custActiveOrders = custOrders.filter(o => o.done < o.total);
 
   return (
-    <div style={{ padding: "48px 56px" }}>
+    <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 48, paddingBottom: 48 }}>
       <div style={{ marginBottom: 16 }}>
         <Breadcrumbs
           items={[

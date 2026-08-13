@@ -50,7 +50,7 @@ export function ViewStockDialog({ saree, onClose }: { saree: StockSaree; onClose
               {saree.assignedAt && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2 }}>Since: {saree.assignedAt}</div>}
             </div>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 18 }}>
+          <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 12, marginBottom: 18 }}>
             {[
               { label: "Saree ID",   val: saree.id,       mono: true  },
               { label: "Design",     val: saree.design,   mono: true  },

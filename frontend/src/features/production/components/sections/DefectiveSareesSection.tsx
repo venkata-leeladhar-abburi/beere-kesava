@@ -88,9 +88,9 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
   const totalDeduction = addMoney(...filteredData.map(r => r.deduction));
 
   const columns: ColumnDef<DefectiveRow>[] = [
-    { id: "sareeId", header: "Saree ID", accessor: r => r.id, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 600 }}>{r.id}</span> },
+    { id: "sareeId", header: "Saree ID", accessor: r => r.id, priority: 1, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 600 }}>{r.id}</span> },
     { id: "weaver", header: "Weaver", accessor: r => r.weaver, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{r.weaver}</span> },
-    { id: "batch", header: "Batch", accessor: r => r.batch, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.batch}</span> },
+    { id: "batch", header: "Batch", accessor: r => r.batch, priority: 3, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.batch}</span> },
     { id: "sareeType", header: "Saree Type", accessor: r => r.sareeType },
     {
       id: "defects", header: "Defect Type(s)", accessor: r => r.defects,
@@ -102,7 +102,7 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
         </div>
       ),
     },
-    { id: "qcDate", header: "QC Date", accessor: r => r.qcDate, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.qcDate}</span> },
+    { id: "qcDate", header: "QC Date", accessor: r => r.qcDate, priority: 3, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.qcDate}</span> },
     {
       id: "deduction", header: "Deduction Applied", accessor: r => r.deduction,
       cell: (_v, r) => (
@@ -126,7 +126,7 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
 
   return (
     <FadeUp>
-      <section id="prod-defective" style={{ padding: "36px 48px 48px" }}>
+      <section id="prod-defective" className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 36, paddingBottom: 48 }}>
         <div style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`, boxShadow: "0 6px 32px rgba(74,6,27,0.08)", overflow: "hidden" }}>
           <div style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`, padding: "22px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
@@ -159,7 +159,7 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
               <Shield size={14} color={T.antiqueGold} />
               <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.antiqueGold, letterSpacing: "0.8px", textTransform: "uppercase" as const }}>Superadmin Only — Not visible to Admin</span>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+            <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 24 }}>
               <div>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 6 }}>Total Deductions Applied This Month</div>
                 <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.crimson, lineHeight: 1.1, marginBottom: 4 }}>
@@ -201,6 +201,7 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
         <div style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 24px rgba(74,6,27,0.07)", overflow: "hidden" }}>
           <div style={{ overflowX: "auto", minWidth: 1100 }}>
             <DataTable
+              responsive
               columns={columns}
               data={filteredData}
               getRowId={r => r.id}
@@ -250,7 +251,7 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
                     ))}
                   </Select>
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 12 }}>
                   <div style={{ background: "rgba(192,57,43,0.07)", border: "1px solid rgba(192,57,43,0.18)", borderRadius: 11, padding: "14px 16px" }}>
                     <div style={{ fontFamily: F.ui, fontSize: 12, color: T.crimson, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 4 }}>Defective Sarees</div>
                     <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.crimson }}>{DEFECTIVE_DATA.length}</div>
@@ -289,7 +290,7 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
                     </span>
                   ))}
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 10 }}>
                   {[
                     { label: "Saree ID",    val: viewDefect.id,       mono: true  },
                     { label: "Weaver",      val: viewDefect.weaver,   mono: false },

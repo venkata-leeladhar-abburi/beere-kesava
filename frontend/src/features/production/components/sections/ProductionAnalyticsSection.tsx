@@ -134,7 +134,7 @@ export function ProductionAnalyticsSection() {
   });
 
   return (
-    <div id="prod-analytics" style={{ padding: "32px 40px 0" }}>
+    <div id="prod-analytics" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 32 }}>
       <FadeUp>
 
         <div style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`, borderRadius: 20, padding: "22px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12, marginBottom: 24, boxShadow: "0 6px 32px rgba(74,6,27,0.08)" }}>
@@ -161,7 +161,7 @@ export function ProductionAnalyticsSection() {
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20, marginBottom: 20, alignItems: "stretch" }}>
+        <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 20, marginBottom: 20, alignItems: "stretch" }}>
 
           <div style={{ ...CARD_STYLE }}>
             <ChartCardHeader

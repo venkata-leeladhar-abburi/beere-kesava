@@ -98,7 +98,7 @@ function DesignDetailCard({ designCode, onClose }: { designCode: string; onClose
 
       <div style={{ padding: "14px 16px 16px" }}>
         {/* Info grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 8, marginBottom: 12 }}>
           {[
             { label: "DESIGN CODE",    val: designCode },
             { label: "SAREE TYPE",     val: d?.typeName ?? "—" },
@@ -192,7 +192,7 @@ function SareeTypeDetailCard({ typeCode, typeName, onClose }: { typeCode: string
         {r?.description && <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginBottom: 14, lineHeight: 1.5 }}>{r.description}</div>}
 
         {/* Making charge + weight */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 10, marginBottom: 12 }}>
           <div style={{ background: "rgba(200,155,71,0.08)", border: `1px solid rgba(200,155,71,0.22)`, borderRadius: 12, padding: "14px 16px" }}>
             <div style={{ fontFamily: F.m, fontSize: 12, color: C.gold, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 4 }}>MAKING CHARGE</div>
             <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.gold }}>{r ? <Money value={rupees(Number(r.charge))} /> : "—"}</div>
@@ -206,7 +206,7 @@ function SareeTypeDetailCard({ typeCode, typeName, onClose }: { typeCode: string
         </div>
 
         {/* Prices */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 8, marginBottom: 12 }}>
           <div style={{ background: "#FAFAF8", border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "10px 12px" }}>
             <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 3 }}>RETAIL PRICE</div>
             <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>{r ? <Money value={rupees(Number(r.retail))} /> : "—"}</div>
@@ -221,7 +221,7 @@ function SareeTypeDetailCard({ typeCode, typeName, onClose }: { typeCode: string
         {r && (
           <div>
             <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 8 }}>MATERIAL WEIGHT BREAKDOWN</div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+            <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 8 }}>
               {[
                 { label: "WARP",   val: `${r.warpWeight}g` },
                 { label: "RESHAM", val: `${r.reshamWeight}g` },

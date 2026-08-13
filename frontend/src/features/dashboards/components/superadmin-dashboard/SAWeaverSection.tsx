@@ -16,7 +16,7 @@ export function SAWeaverSection({ onNavigate }: SAWeaverSectionProps) {
 
   if (isLoading) {
     return (
-      <section style={{ padding: "48px 48px 40px", background: T.silkCream }}>
+      <section className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 48, paddingBottom: 40, background: T.silkCream }}>
         <SectionHeader title="Active Weavers" actionText="View All Weavers →" onAction={() => onNavigate("AllWeavers")} />
         <div style={{ display: "flex", gap: 18 }}>
           {Array.from({ length: 4 }).map((_, i) => (
@@ -29,7 +29,7 @@ export function SAWeaverSection({ onNavigate }: SAWeaverSectionProps) {
 
   if (weavers.length === 0) {
     return (
-      <section style={{ padding: "48px 48px 40px", background: T.silkCream }}>
+      <section className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 48, paddingBottom: 40, background: T.silkCream }}>
         <SectionHeader title="Active Weavers" actionText="View All Weavers →" onAction={() => onNavigate("AllWeavers")} />
         <div style={{ background: "#FFFFFF", borderRadius: 24, border: `1px solid ${T.borderDef}`, padding: "40px", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
           No weavers in database yet. Click "View All Weavers" to register a weaver.
@@ -39,7 +39,7 @@ export function SAWeaverSection({ onNavigate }: SAWeaverSectionProps) {
   }
 
   return (
-    <section style={{ padding: "48px 48px 40px", background: T.silkCream }}>
+    <section className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 48, paddingBottom: 40, background: T.silkCream }}>
       <SectionHeader title="Active Weavers" actionText="View All Weavers →" onAction={() => onNavigate("AllWeavers")} />
       <div style={{ display: "flex", gap: 18, alignItems: "stretch" }}>
         {weavers.map((w, i) => (
@@ -122,7 +122,7 @@ export function SAWeaverSection({ onNavigate }: SAWeaverSectionProps) {
 
               <div style={{ height: 1, background: "rgba(110,15,45,0.06)", margin: "4px 0 12px 0" }} />
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+              <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 12, marginBottom: 12 }}>
                 <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px", display: "flex", alignItems: "center", gap: 8 }}>
                   <div style={{ width: 26, height: 26, borderRadius: 6, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <Rows size={14} color={T.royalBurgundy} />

@@ -280,7 +280,7 @@ export function WeaverMakingChargesSection() {
   const totalNet = weaversList.reduce((acc, w) => acc + calcNet(w), 0);
 
   return (
-    <div id="pay-making-charges" style={{ padding: "36px 40px 0" }}>
+    <div id="pay-making-charges" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 36 }}>
       <FadeUp>
       <SectionCard
         icon={HandCoins}
@@ -305,7 +305,7 @@ export function WeaverMakingChargesSection() {
         }
       >
         {/* ── 4 stat cards ────────────────────────────────────── */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginTop: 24, marginBottom: 22, alignItems: "stretch" }}>
+        <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 16, marginTop: 24, marginBottom: 22, alignItems: "stretch" }}>
           {[
             {
               icon: <UserCheck size={22} color={T.royalBurgundy} />,

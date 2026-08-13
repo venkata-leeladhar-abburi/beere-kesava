@@ -379,7 +379,15 @@ function CardList<T>({
   className?: string;
 }) {
   const titleCol = columns.find(c => c.priority === 1);
-  const bodyCols = columns.filter(c => (c.priority ?? 2) === 2 && c !== titleCol);
+  // A consumer-defined `id: "select"` column (a manual checkbox column, used
+  // instead of DataTable's own selectedIds/onSelectionChange props when the
+  // selection logic needs extra per-row rules e.g. "only dispatchable rows
+  // are pickable") has no natural `priority` and would otherwise fall into
+  // bodyCols below — rendering its *header* cell (the select-all checkbox)
+  // as if it were a row's label. Route it into the leading-checkbox slot by
+  // id instead, using its per-row cell, so it behaves like a real checkbox.
+  const selectCol = columns.find(c => c.id === "select");
+  const bodyCols = columns.filter(c => (c.priority ?? 2) === 2 && c !== titleCol && c !== selectCol);
 
   if (loading) return <div className="md:hidden" style={{ padding: "var(--pad-cell-y, 12px) 0" }}><TableSkeleton columns={1} /></div>;
   if (error) return <div className="md:hidden"><TableError onRetry={onRetry ?? (() => {})} /></div>;
@@ -404,7 +412,11 @@ function CardList<T>({
               className={cn("rounded-[var(--radius-md,8px)] border border-[var(--border-default)] bg-[var(--surface-raised)] p-4", onRowClick && "cursor-pointer")}
             >
               <div className="flex items-start justify-between gap-3">
-                {selectable && (
+                {selectCol ? (
+                  <span onClick={e => e.stopPropagation()}>
+                    {selectCol.cell ? selectCol.cell(selectCol.accessor(row), row) : defaultCell(selectCol, selectCol.accessor(row))}
+                  </span>
+                ) : selectable && (
                   <span onClick={e => e.stopPropagation()}>
                     <Checkbox checked={!!selectedIds?.has(id)} onCheckedChange={() => onToggleRow(id)} aria-label="Select row" />
                   </span>

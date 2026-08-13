@@ -47,7 +47,7 @@ export function DraftsTab({
   }
 
   return (
-    <div style={{ padding: "28px 56px 64px" }}>
+    <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 28, paddingBottom: 64 }}>
     <SectionCard icon={Stack} title="All Batches" subtitle="Every batch created so far — drafts, active, and completed.">
       {batches.length === 0 ? (
         <div style={{ background: "#fff", borderRadius: 18, border: `1.5px solid ${T.borderDef}`, padding: "56px 24px", textAlign: "center" }}>

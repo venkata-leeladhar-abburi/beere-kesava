@@ -180,7 +180,7 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
   };
 
   return (
-    <div style={{ padding: "48px 56px 0" }}>
+    <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 48 }}>
       <FadeUp>
       <SectionCard
         icon={ChartBar}
@@ -229,7 +229,7 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
 
         {!posLoading && !posError && rows.length > 0 && <>
         {/* Row 1 — spend trend + material mix */}
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 24 }}>
+        <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr]" style={{ gap: 24 }}>
           <div style={cardStyle}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
               <div>
@@ -287,7 +287,7 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
         </div>
 
         {/* Row 2 — top 5 vendors + outstanding exposure */}
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 24, marginTop: 24 }}>
+        <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr]" style={{ gap: 24, marginTop: 24 }}>
           <div style={cardStyle}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -368,7 +368,7 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
         </div>
 
         {/* Row 3 — reliability, regional concentration, efficiency KPIs */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 24, marginTop: 24 }}>
+        <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 24, marginTop: 24 }}>
           <div style={cardStyle}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
               <Timer size={16} color={T.royalBurgundy} />
@@ -425,7 +425,7 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
                 </RadialBarChart>
               </ResponsiveContainer>
             </ChartFigure>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 6 }}>
+            <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 10, marginTop: 6 }}>
               {[
                 { label: "Avg Order Value", value: L(avgOrderValue) },
                 { label: "POs in Period", value: String(totalOrdersInPeriod) },

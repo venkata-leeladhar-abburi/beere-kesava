@@ -275,7 +275,7 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
 
   const vendorColumns: ColumnDef<VendorRow>[] = [
     {
-      id: "name", header: "Vendor Name", accessor: v => v.name,
+      id: "name", header: "Vendor Name", accessor: v => v.name, priority: 1,
       cell: (_v, v) => <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>{v.name}</span>,
     },
     {
@@ -306,7 +306,7 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
       cell: (_v, v) => <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>{v.orders}</span>,
     },
     {
-      id: "last", header: "Last Purchase", accessor: v => v.last,
+      id: "last", header: "Last Purchase", accessor: v => v.last, priority: 3,
       cell: (_v, v) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.taupe }}>{v.last}</span>,
     },
   ];
@@ -366,6 +366,7 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
           </div>
           <div style={{ overflowX: "auto", minWidth: 800 }}>
             <DataTable
+              responsive
               columns={vendorColumns}
               data={stats.vendorRows}
               getRowId={v => v.name}

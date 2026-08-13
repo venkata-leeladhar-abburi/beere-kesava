@@ -164,7 +164,7 @@ export function PaymentLedgerPage() {
           {isPaid && currentPayment && (
             <div style={{ marginTop: 18, background: "rgba(30,102,64,0.06)", border: `1px solid rgba(30,102,64,0.18)`, borderRadius: 12, padding: "16px 18px" }}>
               <div style={{ fontFamily: F.m, fontSize: 12, color: C.green, letterSpacing: "1.5px", textTransform: "uppercase" as const, marginBottom: 12 }}>Payment Details</div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px 16px" }}>
+              <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: "14px 16px" }}>
                 {[
                   { label: "Amount Credited", value: fmtAmt(currentPayment.amountPaid), mono: true },
                   { label: "Payment Date",    value: currentPayment.paymentDate,          mono: false },

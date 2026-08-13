@@ -10,7 +10,7 @@ export function ContactDetailsTab({ customer, onViewCard }: {
     <div style={{ display: "flex", gap: 48, flexWrap: "wrap" }}>
       <div style={{ flex: 1, minWidth: 280, display: "flex", flexDirection: "column", gap: 20 }}>
         <h3 style={{ fontFamily: F.display, fontSize: 18, color: T.luxuryBrown, margin: 0 }}>Business Contact Info</h3>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
           <div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Owner / Main Contact</div>
             <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown, marginTop: 4 }}>Ramesh Rao</div>
@@ -20,7 +20,7 @@ export function ContactDetailsTab({ customer, onViewCard }: {
             <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 600, color: T.royalBurgundy, marginTop: 4 }}>{customer.gstNumber || "Unregistered"}</div>
           </div>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
           <div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Phone Number</div>
             <div style={{ fontFamily: F.mono, fontSize: 14, color: T.luxuryBrown, marginTop: 4 }}>+91 98480 12345</div>

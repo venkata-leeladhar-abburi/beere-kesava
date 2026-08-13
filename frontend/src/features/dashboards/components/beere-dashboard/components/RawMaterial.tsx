@@ -25,7 +25,7 @@ export function RawMaterial({ onNavigate }: { onNavigate: (tab: string) => void 
   });
 
   return (
-    <section style={{ padding: "0 48px 72px", background: T.silkCream }}>
+    <section className="px-4 md:px-7 xl:px-12" style={{ paddingBottom: 72, background: T.silkCream }}>
       <SectionHeader title="Raw Material Overview" actionText="View All Materials →" onAction={() => onNavigate("Materials")} />
       {stockError && (
         <div style={{ padding: "12px 16px", marginBottom: 20, borderRadius: 10, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)", fontFamily: F.ui, fontSize: 13, color: "#C0392B" }}>
@@ -35,7 +35,7 @@ export function RawMaterial({ onNavigate }: { onNavigate: (tab: string) => void 
       {stockLoading && (
         <div style={{ padding: "12px 0", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loading stock…</div>
       )}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 28 }}>
+      <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 28 }}>
         {mats.map((m, i) => (
           <FadeUp key={m.name} delay={i * 0.1} style={{ height: "100%" }}>
             <motion.div

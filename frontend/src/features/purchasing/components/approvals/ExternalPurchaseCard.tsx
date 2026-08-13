@@ -32,15 +32,15 @@ export function ExternalPurchaseCard({
 
   const pieceColumns: ColumnDef<(typeof pieces)[number]>[] = [
     {
-      id: "sno", header: "S.No", accessor: (_s) => pieces.indexOf(_s) + 1,
+      id: "sno", header: "S.No", accessor: (_s) => pieces.indexOf(_s) + 1, priority: 3,
       cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{pieces.indexOf(s) + 1}</span>,
     },
     {
-      id: "id", header: "Saree Code", accessor: s => s.id,
+      id: "id", header: "Saree Code", accessor: s => s.id, priority: 1,
       cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, whiteSpace: "nowrap" }}>{s.id}</span>,
     },
     {
-      id: "lineCode", header: "Line Serial", accessor: s => s.lineCode,
+      id: "lineCode", header: "Line Serial", accessor: s => s.lineCode, priority: 3,
       cell: (_v, s) => (
         <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>
           {s.lineCode} <span style={{ fontSize: 12 }}>pc {s.pieceNo}/{s.lineQuantity}</span>
@@ -56,7 +56,7 @@ export function ExternalPurchaseCard({
       cell: (_v, s) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{s.color || "—"}</span>,
     },
     {
-      id: "weight", header: "Weight", accessor: s => s.weight,
+      id: "weight", header: "Weight", accessor: s => s.weight, priority: 3,
       cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{s.weight || "—"}</span>,
     },
     {
@@ -64,7 +64,7 @@ export function ExternalPurchaseCard({
       cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{formatMoney(rupees(s.price))}</span>,
     },
     {
-      id: "sellPercent", header: "Sell %", accessor: s => s.sellPercent,
+      id: "sellPercent", header: "Sell %", accessor: s => s.sellPercent, priority: 3,
       cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{s.sellPercent}%</span>,
     },
     {
@@ -188,7 +188,7 @@ export function ExternalPurchaseCard({
           </Button>
           {open && (
             <div style={{ overflowX: "auto" }}>
-              <DataTable columns={pieceColumns} data={pieces} getRowId={s => s.id} />
+              <DataTable responsive columns={pieceColumns} data={pieces} getRowId={s => s.id} />
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, background: T.silkCream, padding: "9px 12px", minWidth: 760 }}>
                 <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>
                   Totals — {totals.pieces} piece{totals.pieces !== 1 ? "s" : ""}

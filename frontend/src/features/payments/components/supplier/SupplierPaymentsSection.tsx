@@ -154,14 +154,14 @@ export function SupplierPaymentsSection() {
   ];
 
   return (
-    <div id="pay-supplier" style={{ padding: "36px 40px 0" }}>
+    <div id="pay-supplier" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 36 }}>
       <FadeUp>
       <SectionCard
         icon={Store}
         title="Supplier Payments"
         subtitle="Track payments made to saree suppliers. Record and monitor all supplier purchase settlements."
       >
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 16, marginTop: 24, marginBottom: 22, alignItems: "stretch" }}>
+        <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 16, marginTop: 24, marginBottom: 22, alignItems: "stretch" }}>
           {[
             {
               icon: <Receipt size={22} color={T.luxuryBrown} />,

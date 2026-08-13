@@ -24,7 +24,7 @@ const PAYMENTS: PaymentRow[] = [
 
 const columns: ColumnDef<PaymentRow>[] = [
   {
-    id: "rec", header: "Receipt No", accessor: p => p.rec,
+    id: "rec", header: "Receipt No", accessor: p => p.rec, priority: 1,
     cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy }}>{p.rec}</span>,
   },
   {
@@ -32,7 +32,7 @@ const columns: ColumnDef<PaymentRow>[] = [
     cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{p.date}</span>,
   },
   {
-    id: "utr", header: "UTR Number", accessor: p => p.utr,
+    id: "utr", header: "UTR Number", accessor: p => p.utr, priority: 3,
     cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.taupe }}>{p.utr}</span>,
   },
   {
@@ -61,7 +61,7 @@ export function PaymentHistoryTab({
       <h3 style={{ fontFamily: F.display, fontSize: 18, color: T.luxuryBrown, marginBottom: 16 }}>Ledger Payments Received</h3>
       <DateFilterBar filter={wholesalePaymentDateFilter} onChange={setWholesalePaymentDateFilter} />
       <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden" }}>
-        <DataTable columns={columns} data={filtered} getRowId={p => p.rec} />
+        <DataTable responsive columns={columns} data={filtered} getRowId={p => p.rec} />
       </div>
     </div>
   );

@@ -135,7 +135,7 @@ export function ActionLogSection({
       cell: (_v, e) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, whiteSpace: "nowrap" }}>{e.user}</span>,
     },
     {
-      id: "module", header: "Module", accessor: e => e.module,
+      id: "module", header: "Module", accessor: e => e.module, priority: 3,
       cell: (_v, e) => (
         <span style={{
           background: T.cream,
@@ -156,21 +156,21 @@ export function ActionLogSection({
       cell: (_v, e) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, maxWidth: 300, display: "inline-block" }}>{e.action}</span>,
     },
     {
-      id: "record", header: "Record", accessor: e => e.record,
+      id: "record", header: "Record", accessor: e => e.record, priority: 1,
       cell: (_v, e) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, whiteSpace: "nowrap" }}>{e.record}</span>,
     },
     {
-      id: "oldVal", header: "Old Value", accessor: e => e.oldVal,
+      id: "oldVal", header: "Old Value", accessor: e => e.oldVal, priority: 3,
       cell: (_v, e) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: e.oldVal ? T.crimson : T.taupe }}>{e.oldVal ?? "—"}</span>,
     },
     {
-      id: "newVal", header: "New Value", accessor: e => e.newVal,
+      id: "newVal", header: "New Value", accessor: e => e.newVal, priority: 3,
       cell: (_v, e) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: e.newVal ? T.green : T.taupe }}>{e.newVal ?? "—"}</span>,
     },
   ];
 
   return (
-    <div style={{ padding: "40px 56px 0" }}>
+    <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40 }}>
     <SectionCard
       icon={ClipboardList}
       title="Action Log — All System Activity"
@@ -353,6 +353,7 @@ export function ActionLogSection({
               overflowX: "auto",
             }}>
               <DataTable
+                responsive
                 columns={actionColumns}
                 data={entries}
                 getRowId={e => e.id}

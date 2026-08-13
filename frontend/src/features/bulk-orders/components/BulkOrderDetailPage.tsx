@@ -287,7 +287,7 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
 
   return (
     <div style={{ background: T.silkCream, minHeight: "100dvh", paddingBottom: 100 }}>
-      <div style={{ padding: "40px 56px 0" }}>
+      <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40 }}>
         <div style={{ marginBottom: 16 }}>
           <Breadcrumbs
             items={[
@@ -371,7 +371,7 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
               ? `${weightTally.weighedCount} of ${live.total} sarees weighed so far, against the ${weightTally.rate.code} standard (${weightTally.rate.stdWeight}g/saree).`
               : `${weightTally.weighedCount} of ${live.total} sarees weighed so far — no rate card found for "${live.sareeType}", so expected figures can't be computed.`}
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14 }}>
+          <div className="grid grid-cols-2 xl:grid-cols-4" style={{ gap: 14 }}>
             {[
               { label: "Total Weight", actual: weightTally.actualWeight, expected: weightTally.expectedWeight, unit: "g" },
               { label: "Warp", actual: weightTally.warpG, expected: weightTally.expectedWarpG, unit: "g" },

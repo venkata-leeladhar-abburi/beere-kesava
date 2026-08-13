@@ -31,7 +31,7 @@ const tdMono: React.CSSProperties = { ...td, fontFamily: F.mono, fontSize: 12, f
 function buildAssignmentColumns(returns: FinishingReturn[]): ColumnDef<FinishingAssignment>[] {
   const findRet = (a: FinishingAssignment) => returns.find(rt => rt.sareeId === a.sareeId);
   return [
-    { id: "sareeCode", header: "Saree Code", accessor: a => a.sareeId, cell: (_v, a) => <span style={tdMono}>{a.sareeId}</span> },
+    { id: "sareeCode", header: "Saree Code", accessor: a => a.sareeId, priority: 1, cell: (_v, a) => <span style={tdMono}>{a.sareeId}</span> },
     {
       id: "quotation", header: "Quotation", accessor: a => a.quotationRef,
       cell: (_v, a) => a.quotationRef ? <Pill label={a.quotationRef} color="#8B6018" bg="rgba(200,146,58,0.14)" /> : <span style={{ color: T.taupe, fontSize: 12 }}>—</span>,
@@ -39,7 +39,7 @@ function buildAssignmentColumns(returns: FinishingReturn[]): ColumnDef<Finishing
     { id: "sareeType", header: "Saree Type", accessor: a => a.sareeType, cell: (_v, a) => <span style={td}>{a.sareeTypeCode ? `${a.sareeTypeCode} · ` : ""}{a.sareeType}</span> },
     { id: "weaver", header: "Weaver", accessor: a => a.weaverName, cell: (_v, a) => <span style={td}>{a.weaverName}</span> },
     { id: "assignedOn", header: "Assigned On", accessor: a => a.assignedDate, cell: (_v, a) => <span style={td}>{a.assignedDate}</span> },
-    { id: "assignedBy", header: "Assigned By", accessor: a => a.assignedBy, cell: (_v, a) => <span style={td}>{a.assignedBy}</span> },
+    { id: "assignedBy", header: "Assigned By", accessor: a => a.assignedBy, priority: 3, cell: (_v, a) => <span style={td}>{a.assignedBy}</span> },
     {
       id: "returnStatus", header: "Return Status", accessor: a => findRet(a)?.condition,
       cell: (_v, a) => {
@@ -62,7 +62,7 @@ function buildAssignmentColumns(returns: FinishingReturn[]): ColumnDef<Finishing
       },
     },
     {
-      id: "photo", header: "Photo", accessor: a => findRet(a)?.damagePhotoUrl,
+      id: "photo", header: "Photo", accessor: a => findRet(a)?.damagePhotoUrl, priority: 3,
       cell: (_v, a) => {
         const ret = findRet(a);
         return ret?.damagePhotoUrl ? (
@@ -73,7 +73,7 @@ function buildAssignmentColumns(returns: FinishingReturn[]): ColumnDef<Finishing
       },
     },
     {
-      id: "inventoryStatus", header: "Inventory Status", accessor: a => findRet(a)?.inventoryStatus,
+      id: "inventoryStatus", header: "Inventory Status", accessor: a => findRet(a)?.inventoryStatus, priority: 3,
       cell: (_v, a) => {
         const ret = findRet(a);
         return ret ? (
@@ -155,6 +155,7 @@ export function FinishingStaffSection({
                       <div style={{ padding: "6px 18px 16px" }}>
                         <div style={{ overflowX: "auto", minWidth: 680 }}>
                           <DataTable
+                            responsive
                             columns={buildAssignmentColumns(returns)}
                             data={r.visibleAssignments}
                             getRowId={a => a.id}

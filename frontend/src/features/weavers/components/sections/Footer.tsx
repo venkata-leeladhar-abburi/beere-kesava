@@ -7,7 +7,7 @@ import { Button, Input } from "../../../../shared/ui/primitives";
 
 export function Footer() {
   return (
-    <footer style={{ background: T.luxuryBrown, color: "#FFFDF9", padding: "64px 48px 48px", marginTop: "auto" }}>
+    <footer className="px-4 md:px-7 xl:px-12" style={{ background: T.luxuryBrown, color: "#FFFDF9", paddingTop: 64, paddingBottom: 48, marginTop: "auto" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 64, flexWrap: "wrap", gap: 40 }}>
         <div style={{ flex: 1, minWidth: 280 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>

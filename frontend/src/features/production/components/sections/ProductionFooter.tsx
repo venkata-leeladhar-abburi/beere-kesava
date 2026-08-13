@@ -14,7 +14,7 @@ export function ProductionFooter() {
   ];
   return (
     <footer style={{ background: T.darkBurgundy, paddingTop: 52, marginTop: 52 }}>
-      <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 40px 40px", display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1.5fr", gap: 40 }}>
+      <div className="px-4 md:px-7 xl:px-10 grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr_1.5fr]" style={{ maxWidth: 1400, margin: "0 auto", paddingBottom: 40, gap: 40 }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
             <img src={imgBKBLogo} alt="BKB Logo" style={{ width: 36, height: 36, objectFit: "contain", filter: "brightness(0) invert(1)" }} />
@@ -55,7 +55,7 @@ export function ProductionFooter() {
           </div>
         </div>
       </div>
-      <div style={{ borderTop: "1px solid rgba(255,253,249,0.08)", padding: "16px 40px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div className="px-4 md:px-7 xl:px-10" style={{ borderTop: "1px solid rgba(255,253,249,0.08)", paddingTop: 16, paddingBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.35)" }}>© 2026 Beere Kesava &amp; Brothers Silks. All rights reserved.</div>
         <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,253,249,0.25)", letterSpacing: "2px", textTransform: "uppercase" }}>TRADITION · TIMELESS QUALITY</div>
       </div>

@@ -86,11 +86,11 @@ export function MainSareesTable({
       },
     } as ColumnDef<WeaverSareeRow>] : []),
     {
-      id: "sareeId", header: "Saree ID", accessor: r => r.sareeId,
+      id: "sareeId", header: "Saree ID", accessor: r => r.sareeId, priority: 1,
       cell: (_v, r) => <span style={mono(T.royalBurgundy)}>{r.sareeId}</span>,
     },
     {
-      id: "batch", header: "Batch", accessor: r => r.batchId,
+      id: "batch", header: "Batch", accessor: r => r.batchId, priority: 3,
       cell: (_v, r) => <span style={mono(T.royalBurgundy)}>{r.batchId || "—"}</span>,
     },
     ...(isAll ? [{
@@ -161,7 +161,7 @@ export function MainSareesTable({
         : <Chip label={FIN_CFG[r.finishingStatus].label} color={FIN_CFG[r.finishingStatus].color} />,
     },
     {
-      id: "finishingCompleted", header: "Finishing Completed", accessor: r => r.finishingCompletedDate,
+      id: "finishingCompleted", header: "Finishing Completed", accessor: r => r.finishingCompletedDate, priority: 3,
       cell: (_v, r) => <span>{fmtDate(r.finishingCompletedDate)}</span>,
     },
     ...(showQcMoney ? [
@@ -191,7 +191,7 @@ export function MainSareesTable({
 
   return (
     <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, background: "#FFFFFF", boxShadow: "0 2px 8px rgba(74,6,27,0.04)", overflow: "hidden" }}>
-      <DataTable columns={columns} data={pageRows} getRowId={r => r.sareeId} />
+      <DataTable responsive columns={columns} data={pageRows} getRowId={r => r.sareeId} />
       <div style={{ padding: "0 14px" }}>
         <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start}
           onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="sarees" />

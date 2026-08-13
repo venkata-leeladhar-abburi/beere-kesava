@@ -43,7 +43,7 @@ export function FilterBar({
   children?: React.ReactNode;
 }) {
   return (
-    <div style={{ padding: "40px 56px 0" }}>
+    <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40 }}>
     <SectionCard icon={ShoppingBag} title="External Purchases" subtitle="Every raw-material purchase recorded, with supplier, invoice, and payment status.">
       <div style={{
         background: "white",

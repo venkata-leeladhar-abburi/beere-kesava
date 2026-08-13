@@ -110,14 +110,14 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
   return (
     <>
     <div style={{ fontFamily: F.ui, background: T.silkCream, minHeight: "100dvh" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 48px", borderBottom: `1px solid ${T.borderDef}`, background: "#FFFFFF", position: "sticky" as const, top: 0, zIndex: 10 }}>
+      <div className="px-4 md:px-7 xl:px-12" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 20, paddingBottom: 20, borderBottom: `1px solid ${T.borderDef}`, background: "#FFFFFF", position: "sticky" as const, top: 0, zIndex: 10 }}>
         <Button onClick={onBack} variant="link" iconLeft={ArrowLeft} className="text-[#6E0F2D] font-bold text-sm">
           Back to Factory Looms
         </Button>
         <span style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "1px", textTransform: "uppercase" as const, color: T.taupe }}>Factory Loom Profile</span>
       </div>
 
-      <div style={{ padding: "16px 48px 0", background: "#FFFFFF" }}>
+      <div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 16, background: "#FFFFFF" }}>
         <Breadcrumbs
           items={[
             { key: "people", label: "People", onClick: onBack },
@@ -127,7 +127,7 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
         />
       </div>
 
-      <div style={{ padding: "40px 48px", background: "#FFFFFF", borderBottom: `1px solid ${T.borderDef}` }}>
+      <div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 40, paddingBottom: 40, background: "#FFFFFF", borderBottom: `1px solid ${T.borderDef}` }}>
         <div style={{ display: "flex", gap: 28, alignItems: "center", flexWrap: "wrap" as const }}>
           <div style={{ width: 104, height: 104, borderRadius: 26, background: T.royalBurgundy, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <Factory size={46} color="#FFF" />
@@ -155,7 +155,7 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
         </div>
       </div>
 
-      <div style={{ padding: "0 48px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", gap: 24, background: "#FFFFFF", overflowX: "auto" as const }}>
+      <div className="px-4 md:px-7 xl:px-12" style={{ borderBottom: `1px solid ${T.borderDef}`, display: "flex", gap: 24, background: "#FFFFFF", overflowX: "auto" as const }}>
         {TABS.map(t => (
           <Button key={t.k} onClick={() => setTab(t.k as any)} variant="ghost"
             className={`h-auto py-4 rounded-none gap-2 text-sm font-semibold whitespace-nowrap border-b-[3px] ${tab === t.k ? "border-[#6E0F2D] text-[#6E0F2D]" : "border-transparent text-[var(--text-tertiary)]"} hover:bg-transparent`}>
@@ -164,7 +164,7 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
         ))}
       </div>
 
-      <div style={{ padding: "40px 48px 80px", flex: 1 }}>
+      <div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 40, paddingBottom: 80, flex: 1 }}>
         {tab === "overview" && (
           <div style={{ display: "flex", flexDirection: "column" as const, gap: 36 }}>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 18 }}>
@@ -267,9 +267,10 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
 
                   <div style={{ overflowX: "auto" as const, border: `1px solid ${T.borderDef}`, borderRadius: 10, background: "#FFFFFF", minWidth: 560 }}>
                     <DataTable
+                      responsive
                       columns={[
                         {
-                          id: "sareeId", header: "Saree ID", accessor: (row: typeof rowsInBatch[number]) => row.sareeId,
+                          id: "sareeId", header: "Saree ID", accessor: (row: typeof rowsInBatch[number]) => row.sareeId, priority: 1,
                           cell: (_v, row) => row.sareeId
                             ? <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", borderRadius: 5, padding: "2px 6px" }}>{row.sareeId}</span>
                             : <span style={{ color: "rgba(139,112,96,0.4)", fontSize: 12 }}>—</span>,
@@ -279,7 +280,7 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
                           cell: (_v, row) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{row.sareeTypeCode || "—"}</span>,
                         },
                         {
-                          id: "bulkOrder", header: "Bulk Order", accessor: row => row.bulkOrderLabel,
+                          id: "bulkOrder", header: "Bulk Order", accessor: row => row.bulkOrderLabel, priority: 3,
                           cell: (_v, row) => <span style={{ fontFamily: F.ui, fontSize: 12, color: row.bulkOrderRef ? T.royalBurgundy : T.green, fontWeight: 600 }}>{row.bulkOrderLabel || "General Stock"}</span>,
                         },
                         {

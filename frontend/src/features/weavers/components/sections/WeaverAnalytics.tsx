@@ -132,7 +132,7 @@ export function WeaverAnalytics() {
   const cardSub: React.CSSProperties = { fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 3 };
   const tip = { fontFamily: F.ui, fontSize: 12, borderRadius: 10, border: `1px solid ${T.borderDef}`, boxShadow: "0 8px 24px rgba(74,6,27,0.12)" };
   return (
-    <div style={{ padding: "36px 48px 0" }}>
+    <div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 36 }}>
       <FadeUp>
       <SectionCard
         icon={ChartBar}
@@ -191,7 +191,7 @@ export function WeaverAnalytics() {
       ) : (
         <>
           <FadeUp delay={0.04}>
-            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 24, marginBottom: 24 }}>
+            <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr]" style={{ gap: 24, marginBottom: 24 }}>
               <div style={card}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
                   <div>
@@ -256,7 +256,7 @@ export function WeaverAnalytics() {
           </FadeUp>
 
           <FadeUp delay={0.12}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 24 }}>
+            <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 24 }}>
               <div style={card}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <Gauge size={18} color={T.royalBurgundy} />
@@ -341,7 +341,7 @@ export function WeaverAnalytics() {
                     </RadialBarChart>
                   </ResponsiveContainer>
                 </ChartFigure>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 4 }}>
+                <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 10, marginTop: 4 }}>
                   {[
                     { label: "Rejected", value: `${(totalProduced - totalPassed).toLocaleString("en-IN")} pcs` },
                     { label: "Making Charges", value: "—" },

@@ -51,9 +51,10 @@ export function BatchesTab({ sortedAllWeaverBatches, dispatches, weaver, batchDa
                       {/* Saree Info Table */}
                       <div style={{ overflowX: "auto", border: `1px solid ${T.borderDef}`, borderRadius: 10, background: "#FFFFFF", minWidth: 500 }}>
                         <DataTable
+                          responsive
                           columns={[
                             {
-                              id: "sareeId", header: "Saree ID", accessor: (row: any) => row.sareeId,
+                              id: "sareeId", header: "Saree ID", accessor: (row: any) => row.sareeId, priority: 1,
                               cell: (_v, row: any) => row.sareeId
                                 ? <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", borderRadius: 5, padding: "2px 6px" }}>{row.sareeId}</span>
                                 : <span style={{ color: "rgba(139,112,96,0.4)", fontSize: 12 }}>—</span>,
@@ -71,7 +72,7 @@ export function BatchesTab({ sortedAllWeaverBatches, dispatches, weaver, batchDa
                                 : <span style={{ color: "rgba(139,112,96,0.35)", fontSize: 12 }}>—</span>,
                             },
                             {
-                              id: "bulkOrder", header: "Bulk Order", accessor: (row: any) => row.bulkOrderLabel,
+                              id: "bulkOrder", header: "Bulk Order", accessor: (row: any) => row.bulkOrderLabel, priority: 3,
                               cell: (_v, row: any) => (
                                 <span style={{ fontFamily: F.ui, fontSize: 12, color: row.bulkOrderRef ? T.royalBurgundy : T.green, fontWeight: 600 }}>
                                   {row.bulkOrderLabel || "General Stock"}
@@ -285,7 +286,7 @@ export function MaterialsTab({ materialRecords, materialByBatch }: any) {
                           </div>
 
                           {/* Stats strip — issued / returned / outstanding */}
-                          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", borderBottom: `1px solid ${T.borderDef}` }}>
+                          <div className="grid grid-cols-1 md:grid-cols-3" style={{ borderBottom: `1px solid ${T.borderDef}` }}>
                             {[
                               { label: "Issued", value: fmtKg(b.issuedGrams), sub: b.jariReels > 0 ? `incl. ${b.jariReels} jari reels` : undefined, color: T.luxuryBrown },
                               { label: "Returned", value: fmtKg(b.receivedGrams), sub: undefined, color: T.green },

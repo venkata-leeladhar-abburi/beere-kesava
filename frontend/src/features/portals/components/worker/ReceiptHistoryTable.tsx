@@ -116,13 +116,13 @@ export function ReceiptHistoryTable({ receiptHistory: propReceiptHistory, compac
   const pagedHistory = filteredHistory.slice((historyPage - 1) * PAGE_SIZE, historyPage * PAGE_SIZE);
 
   const columns: ColumnDef<ReceiptRecord>[] = [
-    { id: "grnId", header: "GRN Batch ID", accessor: r => r.grnId, cell: (_v, r) => <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 700, color: C.burg, whiteSpace: "nowrap" }}>{r.grnId}</span> },
+    { id: "grnId", header: "GRN Batch ID", accessor: r => r.grnId, priority: 1, cell: (_v, r) => <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 700, color: C.burg, whiteSpace: "nowrap" }}>{r.grnId}</span> },
     { id: "poRef", header: "PO Reference", accessor: r => r.poRef, cell: (_v, r) => <span style={{ fontFamily: F.m, fontSize: 12, color: C.text }}>{r.poRef}</span> },
     { id: "vendor", header: "Vendor", accessor: r => r.vendor, cell: (_v, r) => <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{r.vendor}</span> },
-    { id: "firmName", header: "Firm Name", accessor: r => r.firmName, cell: (_v, r) => <span style={{ fontFamily: F.u, fontSize: compact ? 12 : 12.5, color: C.muted }}>{r.firmName}</span> },
-    { id: "dateReceived", header: "Date Received", accessor: r => r.dateReceived, cell: (_v, r) => <span style={{ fontFamily: F.u, fontSize: compact ? 12 : 12.5, color: C.muted, whiteSpace: "nowrap" }}>{r.dateReceived}</span> },
+    { id: "firmName", header: "Firm Name", accessor: r => r.firmName, priority: 3, cell: (_v, r) => <span style={{ fontFamily: F.u, fontSize: compact ? 12 : 12.5, color: C.muted }}>{r.firmName}</span> },
+    { id: "dateReceived", header: "Date Received", accessor: r => r.dateReceived, priority: 3, cell: (_v, r) => <span style={{ fontFamily: F.u, fontSize: compact ? 12 : 12.5, color: C.muted, whiteSpace: "nowrap" }}>{r.dateReceived}</span> },
     { id: "materials", header: "Materials", accessor: r => r.materialsSummary, cell: (_v, r) => renderMaterialsSummary(r.materialsSummary) },
-    { id: "receivedBy", header: "Received By", accessor: r => r.receivedBy, cell: (_v, r) => <span style={{ fontFamily: F.u, fontSize: compact ? 12 : 12.5, color: C.muted, whiteSpace: "nowrap" }}>{r.receivedBy}</span> },
+    { id: "receivedBy", header: "Received By", accessor: r => r.receivedBy, priority: 3, cell: (_v, r) => <span style={{ fontFamily: F.u, fontSize: compact ? 12 : 12.5, color: C.muted, whiteSpace: "nowrap" }}>{r.receivedBy}</span> },
     {
       id: "status", header: "Status", accessor: r => r.status, type: "status",
       cell: (_v, r) => {
@@ -149,6 +149,7 @@ export function ReceiptHistoryTable({ receiptHistory: propReceiptHistory, compac
       <div style={{ ...card, overflow: "hidden", border: `1.5px solid ${C.bdr}` }}>
         <div style={{ overflowX: "auto", minWidth: 760 }}>
           <DataTable
+            responsive
             columns={columns}
             data={pagedHistory}
             getRowId={r => r.grnId}

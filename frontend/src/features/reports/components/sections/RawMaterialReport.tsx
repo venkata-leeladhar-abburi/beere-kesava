@@ -237,7 +237,7 @@ export function RawMaterialReport() {
   ];
 
   return (
-    <div id="rep-raw-materials" style={{ padding: "32px 40px" }}>
+    <div id="rep-raw-materials" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 32 }}>
     <SectionCard
       icon={Package}
       title="Raw Material Report"
@@ -246,7 +246,7 @@ export function RawMaterialReport() {
       <ReportDLBar />
 
       {/* Charts row */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 22, marginBottom: 28, alignItems: "stretch" }}>
+      <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 22, marginBottom: 28, alignItems: "stretch" }}>
         <ChartCard title="Raw Material Received from Vendors" sub="Current Period" icon={<Package size={22} color={T.royalBurgundy} />}>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={rawReceivedData} barGap={4}>

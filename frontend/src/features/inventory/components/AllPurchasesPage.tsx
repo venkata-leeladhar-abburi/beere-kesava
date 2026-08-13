@@ -79,7 +79,7 @@ export function AllPurchasesPage({ onBack }: { onBack: () => void }) {
     <div style={{ minHeight: "calc(100dvh - 90px)", background: T.silkCream, fontFamily: F.ui }}>
 
       {/* ── HERO ── */}
-      <section style={{ background: G.card, padding: "48px 56px 0", position: "relative", overflow: "hidden" }}>
+      <section className="px-4 md:px-7 xl:px-14" style={{ background: G.card, paddingTop: 48, position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(200,155,71,0.022) 60px, rgba(200,155,71,0.022) 61px)`, pointerEvents: "none" }} />
         <div style={{ position: "absolute", inset: 0, backgroundImage: `repeating-linear-gradient(90deg, transparent, transparent 80px, rgba(200,155,71,0.012) 80px, rgba(200,155,71,0.012) 81px)`, pointerEvents: "none" }} />
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(135deg,#C89B47,#E7C983)" }} />
@@ -163,7 +163,7 @@ export function AllPurchasesPage({ onBack }: { onBack: () => void }) {
       </section>
 
       {/* ── FILTER + SEARCH BAR ── */}
-      <div style={{ background: T.warmIvory, borderBottom: `1px solid ${T.borderDef}`, padding: "0 56px", position: "sticky", top: 90, zIndex: 50, boxShadow: "0 4px 24px rgba(74,6,27,0.05)" }}>
+      <div className="px-4 md:px-7 xl:px-14" style={{ background: T.warmIvory, borderBottom: `1px solid ${T.borderDef}`, position: "sticky", top: 90, zIndex: 50, boxShadow: "0 4px 24px rgba(74,6,27,0.05)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, height: 60 }}>
           {([
             { key: "all",    label: "All Purchases",  count: ALL_PURCHASES.length },
@@ -195,7 +195,7 @@ export function AllPurchasesPage({ onBack }: { onBack: () => void }) {
       </div>
 
       {/* ── CARDS GRID ── */}
-      <div style={{ padding: "40px 56px 80px" }}>
+      <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40, paddingBottom: 80 }}>
         {filtered.length === 0 ? (
           <div style={{ textAlign: "center", padding: "80px 40px" }}>
             <div style={{ width: 72, height: 72, borderRadius: 22, background: "rgba(110,15,45,0.06)", border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
@@ -206,7 +206,7 @@ export function AllPurchasesPage({ onBack }: { onBack: () => void }) {
           </div>
         ) : (
           <>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 22 }}>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4" style={{ gap: 22 }}>
               {pag.pageItems.map((p, i) => (
                 <PurchaseCard key={p.id} p={p} index={i} onView={setViewPurchase} onPrint={setPrintPurchase} />
               ))}

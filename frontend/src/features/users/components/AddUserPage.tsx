@@ -334,9 +334,10 @@ export function AddUserPage() {
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: EASE }}
+        className="flex-col xl:flex-row"
         style={{ background: "#0D0207", position: "relative", overflow: "hidden", display: "flex", alignItems: "center" }}
       >
-        <div style={{ flex: 1, padding: "48px 0 48px 56px", zIndex: 10, position: "relative", maxWidth: "100%" }}>
+        <div className="pl-4 md:pl-7 xl:pl-14 w-full xl:flex-1" style={{ paddingTop: 48, paddingBottom: 24, zIndex: 10, position: "relative", maxWidth: "100%" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
             <div style={{ width: 28, height: 1, background: T.antiqueGold }} />
             <span style={{ fontFamily: F.mono, fontSize: 13, color: `${T.antiqueGold}80`, letterSpacing: "1.5px", textTransform: "uppercase" as const }}>
@@ -344,18 +345,18 @@ export function AddUserPage() {
             </span>
           </div>
           <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" as const, marginBottom: 10 }}>
-            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontSize: 56, color: "#fff", margin: 0, lineHeight: 1.1 }}>
+            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontSize: "clamp(32px, 8vw, 56px)", color: "#fff", margin: 0, lineHeight: 1.1 }}>
               Add New User
             </h1>
-            <div style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontStyle: "italic", fontSize: 36, color: T.antiqueGold, lineHeight: 1.1 }}>
+            <div style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontStyle: "italic", fontSize: "clamp(22px, 6vw, 36px)", color: T.antiqueGold, lineHeight: 1.1 }}>
               &amp; User Management
             </div>
           </div>
-          <p style={{ fontFamily: F.ui, fontSize: 18, fontWeight: 400, color: "rgba(255,255,255,0.70)", maxWidth: 600, margin: 0, lineHeight: 1.65 }}>
+          <p style={{ fontFamily: F.ui, fontSize: "clamp(15px, 3.5vw, 18px)", fontWeight: 400, color: "rgba(255,255,255,0.70)", maxWidth: 600, margin: 0, lineHeight: 1.65 }}>
             Create login accounts for staff across all portals. Each user logs in using their mobile number and a one-time OTP sent via WhatsApp.
           </p>
         </div>
-        <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", gap: 10, marginRight: 56, alignItems: "flex-end", justifyContent: "center", zIndex: 10, position: "relative" }}>
+        <div className="pl-4 pr-4 md:pl-7 md:pr-7 xl:pl-0 xl:pr-14 w-full xl:w-auto flex-row xl:flex-col flex-wrap xl:flex-nowrap items-start xl:items-end justify-start xl:justify-center" style={{ flexShrink: 0, display: "flex", gap: 10, paddingBottom: 32, paddingTop: 4, zIndex: 10, position: "relative" }}>
           {[
             { label: `${totalAll} Total Users`, dot: T.antiqueGold },
             { label: "5 Portals Covered", dot: "#E7C983" },
@@ -376,7 +377,8 @@ export function AddUserPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1, ease: EASE }}
-          style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 20 }}
+          className="grid grid-cols-1 md:grid-cols-3"
+          style={{ gap: 16, marginBottom: 20 }}
         >
           {[
             { icon: <Users size={20} color={T.royalBurgundy} />,  val: String(totalAll),      label: "Total Users",    sub: "Across all portals",     accent: T.royalBurgundy, bg: "rgba(110,15,45,0.05)", border: T.borderDef },
@@ -396,11 +398,13 @@ export function AddUserPage() {
           ))}
         </motion.div>
 
-        {/* STAT STRIP — staff by role, computed live from allRows */}
+        {/* STAT STRIP — staff by role, computed live from allRows.
+            xl:grid-cols-6 matches ROLES.length (theme.ts) — update together if roles change. */}
         <motion.div
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.14, ease: EASE }}
-          style={{ display: "grid", gridTemplateColumns: `repeat(${ROLES.length}, 1fr)`, gap: 16, marginBottom: 40 }}
+          className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-6"
+          style={{ gap: 16, marginBottom: 40 }}
         >
           {roleStats.map((s, i) => {
             const c = ROLE_COLORS[s.role] ?? { bg: "rgba(139,112,96,0.10)", text: T.taupe, border: "rgba(139,112,96,0.15)" };

@@ -215,7 +215,7 @@ export function VendorPaymentsSection() {
 
   const vendorTableColumns: ColumnDef<VendorPayment>[] = [
     {
-      id: "vendor", header: "Vendor Name", accessor: vp => vp.vendor,
+      id: "vendor", header: "Vendor Name", priority: 1, accessor: vp => vp.vendor,
       cell: (_v, vp) => (
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{ width: 32, height: 32, borderRadius: 8, background: "rgba(110,15,45,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -234,7 +234,7 @@ export function VendorPaymentsSection() {
       cell: (_v, vp) => <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14 }}><Money value={rupees(vp.invoiceAmt)} /></span>,
     },
     {
-      id: "paidAmt", header: "Paid Amt", accessor: vp => vp.paidAmt, type: "number",
+      id: "paidAmt", header: "Paid Amt", priority: 3, accessor: vp => vp.paidAmt, type: "number",
       cell: (_v, vp) => <span style={{ fontFamily: F.mono, color: T.green, fontWeight: 600 }}><Money value={rupees(vp.paidAmt)} /></span>,
     },
     {
@@ -249,7 +249,7 @@ export function VendorPaymentsSection() {
       },
     },
     {
-      id: "dueDate", header: "Due Date", accessor: vp => vp.dueDate,
+      id: "dueDate", header: "Due Date", priority: 3, accessor: vp => vp.dueDate,
       cell: (_v, vp) => (
         <span style={{ color: vp.status === "Overdue" ? T.crimson : T.taupe, fontWeight: vp.status === "Overdue" ? 600 : 400 }}>
           {vp.dueDate}
@@ -262,13 +262,13 @@ export function VendorPaymentsSection() {
       cell: (_v, vp) => <VendorBadge status={vp.status} />,
     },
     {
-      id: "utr", header: "UTR", accessor: vp => vp.utr,
+      id: "utr", header: "UTR", priority: 3, accessor: vp => vp.utr,
       cell: (_v, vp) => vp.utr
         ? <span style={{ fontFamily: F.mono, fontSize: 12, color: T.green }}>{vp.utr}</span>
         : <span style={{ color: T.taupe }}>—</span>,
     },
     {
-      id: "action", header: "Action", accessor: () => null, type: "actions",
+      id: "action", header: "Action", priority: 2, accessor: () => null, type: "actions",
       cell: (_v, vp) => (
         vp.status === "Paid" ? (
           <Button variant="secondary" size="sm" iconLeft={CheckCircle2} disabled
@@ -286,7 +286,7 @@ export function VendorPaymentsSection() {
   ];
 
   return (
-    <div id="pay-vendor" style={{ padding: "36px 40px 0" }}>
+    <div id="pay-vendor" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 36 }}>
       <FadeUp>
       <SectionCard
         icon={Truck}
@@ -301,7 +301,7 @@ export function VendorPaymentsSection() {
           </DownloadGate>
         }
       >
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 16, marginTop: 24, marginBottom: 22, alignItems: "stretch" }}>
+        <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 16, marginTop: 24, marginBottom: 22, alignItems: "stretch" }}>
           {[
             {
               icon: <Receipt size={22} color={T.luxuryBrown} />,
@@ -444,6 +444,7 @@ export function VendorPaymentsSection() {
               <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
                 <div style={{ overflowX: "auto" }}>
                   <DataTable
+                    responsive
                     columns={vendorTableColumns}
                     data={filtered}
                     getRowId={vp => vp.id}

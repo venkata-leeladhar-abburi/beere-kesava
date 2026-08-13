@@ -119,7 +119,7 @@ export function RetailCustomersSection({
 
   const retailColumns: ColumnDef<RetailCustomer>[] = [
     {
-      id: "name", header: "Customer Name", accessor: r => r.name,
+      id: "name", header: "Customer Name", accessor: r => r.name, priority: 1,
       cell: (_v, r) => (
         <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>
           {r.name}
@@ -128,11 +128,11 @@ export function RetailCustomersSection({
       ),
     },
     {
-      id: "city", header: "City", accessor: r => r.city,
+      id: "city", header: "City", accessor: r => r.city, priority: 3,
       cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>{r.city}</span>,
     },
     {
-      id: "phone", header: "Phone", accessor: r => r.phone,
+      id: "phone", header: "Phone", accessor: r => r.phone, priority: 3,
       cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 14, color: T.taupe }}>{r.phone}</span>,
     },
     {
@@ -144,7 +144,7 @@ export function RetailCustomersSection({
       cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 14, color: T.luxuryBrown }}>{r.totalPurchases} sarees</span>,
     },
     {
-      id: "lastVisit", header: "Last Visit", accessor: r => r.lastVisit,
+      id: "lastVisit", header: "Last Visit", accessor: r => r.lastVisit, priority: 3,
       cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>{r.lastVisit}</span>,
     },
     {
@@ -165,7 +165,7 @@ export function RetailCustomersSection({
   ];
 
   return (
-    <div style={{ padding: "40px 56px 0" }}>
+    <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40 }}>
     <SectionCard
       icon={ShoppingBag}
       title="Retail Customers"
@@ -180,7 +180,7 @@ export function RetailCustomersSection({
         <FadeUp>
           <div style={{ background: T.warmIvory, border: `1px solid ${T.borderGold}`, borderRadius: 16, padding: "28px", marginBottom: 28, boxShadow: "0 4px 20px rgba(74,6,27,0.06)" }}>
             <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown, marginBottom: 20 }}>+ Register New Retail Customer</div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+            <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 20 }}>
               <Field label="Customer Name *">
                 <Input value={form.name} onChange={e => updateField("name", e.target.value)} placeholder="e.g. Smt. Sunitha Reddy" />
               </Field>
@@ -210,7 +210,7 @@ export function RetailCustomersSection({
       </div>
 
       {/* Retail stat cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 18, marginBottom: 28, alignItems: "stretch" }}>
+      <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 18, marginBottom: 28, alignItems: "stretch" }}>
         {[
           { ico: <Users size={24} color={T.royalBurgundy} />, bg: "rgba(110,15,45,0.07)", l: "Total Retail Customers", v: retailCustomers.length.toLocaleString("en-IN"), c: T.luxuryBrown, sub: "Profiles at point of sale" },
           { ico: <UserPlus size={24} color={T.antiqueGold} />, bg: "rgba(200,155,71,0.09)", l: "New Customers This Month", v: String(newThisMonthCount), c: T.antiqueGold, sub: "Added via new sale entries" },
@@ -309,7 +309,7 @@ export function RetailCustomersSection({
                 )}
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, background: T.silkCream, padding: 12, borderRadius: 10, border: `1px solid ${T.borderDef}` }}>
+              <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 10, background: T.silkCream, padding: 12, borderRadius: 10, border: `1px solid ${T.borderDef}` }}>
                 <div>
                   <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const }}>Total Spend</div>
                   <div style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: T.royalBurgundy, marginTop: 2 }}><Money value={rupees(r.totalSpend ?? 0)} /></div>
@@ -337,6 +337,7 @@ export function RetailCustomersSection({
       ) : (
         <div style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
           <DataTable
+            responsive
             columns={retailColumns}
             data={filteredRetail}
             getRowId={r => r.id}

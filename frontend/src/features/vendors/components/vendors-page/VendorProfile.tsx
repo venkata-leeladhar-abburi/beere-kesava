@@ -158,7 +158,7 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
 
   const billColumns: ColumnDef<VendorBill>[] = [
     {
-      id: "poInvoice", header: "PO / Invoice", accessor: b => b.id,
+      id: "poInvoice", header: "PO / Invoice", accessor: b => b.id, priority: 1,
       cell: (_v, b) => (
         <div>
           <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{b.id}</div>
@@ -166,7 +166,7 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
         </div>
       ),
     },
-    { id: "billDate", header: "Bill Date", accessor: b => b.date, cell: (_v, b) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{b.date}</span> },
+    { id: "billDate", header: "Bill Date", accessor: b => b.date, priority: 3, cell: (_v, b) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{b.date}</span> },
     {
       id: "dueDate", header: "Due Date", accessor: b => b.dueDate,
       cell: (_v, b) => (
@@ -177,7 +177,7 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
       ),
     },
     { id: "amount", header: "Invoice Amount", accessor: b => b.amount, cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: "#8B6018" }}>{inr(b.amount)}</span> },
-    { id: "paid", header: "Paid", accessor: b => b.paid, cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.greenMid }}>{inr(b.paid)}</span> },
+    { id: "paid", header: "Paid", accessor: b => b.paid, priority: 3, cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.greenMid }}>{inr(b.paid)}</span> },
     { id: "balance", header: "Balance", accessor: b => b.balance, cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: b.balance > 0 ? T.crimson : T.taupe }}>{b.balance > 0 ? inr(b.balance) : "—"}</span> },
     {
       id: "status", header: "Status", accessor: b => b.status, type: "status",
@@ -186,7 +186,7 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
   ];
 
   const txnColumns: ColumnDef<VendorPaymentTxn>[] = [
-    { id: "ref", header: "Payment Ref", accessor: p => p.id, cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{p.id}</span> },
+    { id: "ref", header: "Payment Ref", accessor: p => p.id, priority: 1, cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{p.id}</span> },
     { id: "date", header: "Date", accessor: p => p.date, cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.date}</span> },
     { id: "billId", header: "Against PO", accessor: p => p.billId, cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{p.billId}</span> },
     {
@@ -197,13 +197,13 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
         </span>
       ),
     },
-    { id: "reference", header: "UTR / Reference", accessor: p => p.reference, cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{p.reference}</span> },
-    { id: "firm", header: "Paying Firm", accessor: p => p.firm, cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.firm}</span> },
+    { id: "reference", header: "UTR / Reference", accessor: p => p.reference, priority: 3, cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{p.reference}</span> },
+    { id: "firm", header: "Paying Firm", accessor: p => p.firm, priority: 3, cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.firm}</span> },
     { id: "amount", header: "Amount", accessor: p => p.amount, align: "end", cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.greenMid }}>{inr(p.amount)}</span> },
   ];
 
   return (
-    <div style={{ padding: "40px 56px" }}>
+    <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40, paddingBottom: 40 }}>
       <div style={{ marginBottom: 16 }}>
         <Breadcrumbs
           items={[
@@ -289,7 +289,7 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
         <motion.div key={tab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
           {tab === "overview" && (
             <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16 }}>
+              <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 16 }}>
                 {[
                   { label: "Active Orders", value: orders.filter(o => o.status === "Approved" || o.status === "Pending").length, sub: "In progress", color: T.royalBurgundy },
                   { label: "Total Orders", value: orders.length, sub: lastOrderDate ? `Last order ${lastOrderDate.split("T")[0]}` : "All time", color: T.luxuryBrown },
@@ -338,7 +338,7 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
           )}
           {tab === "payments" && (
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16 }}>
+              <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 16 }}>
                 {[
                   { label: "Paid in Range", value: inr(paidInRange), color: T.greenMid, sub: `${filteredTxns.length} transaction${filteredTxns.length === 1 ? "" : "s"}` },
                   { label: "Paid All Time", value: inr(ledger.totalPaid), color: T.luxuryBrown, sub: `of ${inr(ledger.totalBilled)} billed` },
@@ -396,7 +396,7 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
                 ) : filteredBills.length === 0 ? (
                   <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No bills raised in this period.</div>
                 ) : (
-                  <DataTable columns={billColumns} data={filteredBills} getRowId={b => b.id} emptyTitle="No bills raised in this period." />
+                  <DataTable responsive columns={billColumns} data={filteredBills} getRowId={b => b.id} emptyTitle="No bills raised in this period." />
                 )}
               </div>
 
@@ -412,7 +412,7 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
                 ) : filteredTxns.length === 0 ? (
                   <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No payments in this period.</div>
                 ) : (
-                  <DataTable columns={txnColumns} data={filteredTxns} getRowId={p => p.id} emptyTitle="No payments in this period." />
+                  <DataTable responsive columns={txnColumns} data={filteredTxns} getRowId={p => p.id} emptyTitle="No payments in this period." />
                 )}
               </div>
 
@@ -432,7 +432,7 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
             </div>
           )}
           {tab === "contact" && (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
               {[
                 { label: "Contact Person", value: vendor.contactName, Icon: Building2 },
                 { label: "Phone", value: vendor.phone, Icon: Phone },

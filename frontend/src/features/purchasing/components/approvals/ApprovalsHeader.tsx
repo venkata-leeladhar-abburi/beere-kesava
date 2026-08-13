@@ -15,9 +15,10 @@ export function ApprovalsHeader({
   rateCount: number;
 }) {
   return (
-    <div style={{
+    <div className="px-4 md:px-7 xl:px-14" style={{
       background: T.darkBurgundy,
-      padding: "40px 56px 80px",
+      paddingTop: 40,
+      paddingBottom: 80,
       position: "relative",
       overflow: "hidden",
       minHeight: 160,
@@ -44,10 +45,10 @@ export function ApprovalsHeader({
           <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,255,255,0.45)", letterSpacing: 2, marginBottom: 10 }}>
             SINCE 1999 · SUPERADMIN · APPROVALS
           </div>
-          <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 42, color: "#FFF", lineHeight: 1.1, marginBottom: 4 }}>
+          <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: "clamp(28px, 7vw, 42px)", color: "#FFF", lineHeight: 1.1, marginBottom: 4 }}>
             Approvals
           </div>
-          <div style={{ fontFamily: F.display, fontStyle: "italic", fontSize: 30, color: T.antiqueGold, marginBottom: 12 }}>
+          <div style={{ fontFamily: F.display, fontStyle: "italic", fontSize: "clamp(20px, 5vw, 30px)", color: T.antiqueGold, marginBottom: 12 }}>
             &amp; Pending Actions
           </div>
           <div style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,255,255,0.60)", maxWidth: 520, lineHeight: 1.6 }}>

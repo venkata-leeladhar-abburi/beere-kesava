@@ -155,7 +155,7 @@ export function WorkerQCInspectionScreen({
             <div style={{ padding: "0 16px" }}>
               <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 700, color: T.brown, marginBottom: 3 }}>What is wrong with this saree?</div>
               <div style={{ fontFamily: F.u, fontSize: 12, color: T.muted, marginBottom: 12 }}>Select all that apply.</div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 16 }}>
+              <div className="grid-cols-1 md:grid-cols-3" style={{ display: "grid", gap: 8, marginBottom: 16 }}>
                 {DEFECT_TYPES.map(dt => {
                   const sel = defectTypes.includes(dt.label);
                   return (

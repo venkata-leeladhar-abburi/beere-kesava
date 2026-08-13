@@ -86,7 +86,7 @@ export function POVendorDetailsSection({
               </div>
             </div>
             {/* Detail grid */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 }}>
+            <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 0 }}>
               <div style={{ padding: "12px 16px", borderRight: `1px solid rgba(110,15,45,0.07)`, borderBottom: `1px solid rgba(110,15,45,0.07)` }}>
                 <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe, marginBottom: 4 }}>Phone</div>
                 <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{vendor.phone || "—"}</div>
@@ -122,7 +122,7 @@ export function POVendorDetailsSection({
       {showAddVendor && (
         <div style={{ background: "rgba(200,155,71,0.06)", border: `1px solid ${T.borderGold}`, borderRadius: 10, padding: "14px 16px", marginBottom: 14 }}>
           <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.antiqueGold, marginBottom: 10 }}>New Vendor Details</div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 10 }}>
             {["Vendor Name", "City & State"].map(p => (
               <Input key={p} placeholder={p} />
             ))}

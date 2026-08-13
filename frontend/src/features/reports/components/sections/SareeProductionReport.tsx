@@ -78,7 +78,7 @@ export function ExternalPurchasesSection() {
         <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: T.luxuryBrown, marginBottom: 4 }}>External Purchases</div>
         <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 14 }}>Sarees purchased ready-made from external suppliers — separate from factory production.</div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 18 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16, marginBottom: 18 }}>
           <SumCard icon={<Package size={22} color={T.royalBurgundy} />} label="Total External Sarees Purchased" value={`${totalSarees} sarees`} sub="All recorded purchases" />
           <SumCard icon={<IndianRupee size={22} color={T.antiqueGold} />} label="Total Bill Amount" value={formatMoney(rupees(totalBill))} sub="Across all suppliers" hi />
         </div>
@@ -274,7 +274,7 @@ export function SareeProductionReport() {
   const dispatchedCount = production?.finishingByStatus?.["DISPATCHED"] ?? 0;
 
   return (
-    <div id="rep-production" style={{ padding: "32px 40px" }}>
+    <div id="rep-production" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 32 }}>
     <SectionCard
       icon={Factory}
       title="Saree Production Report"
@@ -288,7 +288,7 @@ export function SareeProductionReport() {
         ))}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 20, marginBottom: 24, alignItems: "stretch" }}>
+      <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 20, marginBottom: 24, alignItems: "stretch" }}>
         {/* Weekly production trend — computed from real batch createdAt */}
         <ChartCard title="Sarees Produced Each Week" sub="Current vs prior period" icon={<TrendingUp size={22} color={T.royalBurgundy} />}>
           {prodWeeklyData.length === 0 ? (
@@ -424,7 +424,7 @@ export function SareeProductionReport() {
       </div>
 
       {/* 4 summary cards — live from GET /reports/production-summary */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 24, alignItems: "stretch" }}>
+      <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 16, marginBottom: 24, alignItems: "stretch" }}>
         <SumCard icon={<Package size={22} color={T.royalBurgundy} />} label="Total Sarees Produced" value={`${production?.totalSareesProduced ?? 0}`} sub="All batches" />
         <SumCard icon={<CheckCircle2 size={22} color={T.green} />} label="Total Passed Quality Check" value={`${qcDonutData[0].value}`} sub={totalQc > 0 ? `${passRatePct}% pass rate` : "No QC records yet"} greenHi />
         <SumCard icon={<AlertTriangle size={22} color={T.crimson} />} label="Total Rejected" value={`${qcDonutData[2].value}`} sub={totalQc > 0 ? `${Math.round((qcDonutData[2].value / totalQc) * 100)}% rejection rate` : "No QC records yet"} crimsonHi />

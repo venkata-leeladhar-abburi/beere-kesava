@@ -45,7 +45,7 @@ export function SectionCard({
             {subtitle && <div style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.65)", marginTop: 3 }}>{subtitle}</div>}
           </div>
         </div>
-        {actions && <div style={{ display: "flex", gap: 10, alignItems: "center", flexShrink: 0 }}>{actions}</div>}
+        {actions && <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>{actions}</div>}
       </div>
       <div style={{ padding: "24px 28px 28px" }}>
         {children}
@@ -195,7 +195,7 @@ export function DesignCodeCard({ design, onClose }: { design: DesignEntry; onClo
         )}
 
         <div style={{ padding: "20px 24px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 12 }}>
             {[
               { label: "Design Code", val: design.code,     mono: true  },
               { label: "Saree Type",  val: design.typeName || "—",  mono: false },
@@ -237,7 +237,7 @@ export function DesignCodeCard({ design, onClose }: { design: DesignEntry; onClo
             </div>
           )}
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 12 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, background: design.hasGraph ? "rgba(30,102,64,0.07)" : "rgba(200,155,71,0.09)", border: `1px solid ${design.hasGraph ? "rgba(30,102,64,0.20)" : "rgba(200,155,71,0.28)"}`, borderRadius: 10, padding: "11px 13px" }}>
               <Graph size={17} color={design.hasGraph ? T.green : "#8B6018"} />
               <div>

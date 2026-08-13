@@ -55,9 +55,9 @@ function groupRows(
 }
 
 const displayColumns: ColumnDef<GroupedRow>[] = [
-  { id: "weaverId", header: "Weaver ID", accessor: r => r.weaverId, type: "code" },
-  { id: "weaverName", header: "Weaver Name", accessor: r => r.weaverName },
-  { id: "batchId", header: "Batch", accessor: r => r.batchId, type: "code" },
+  { id: "weaverId", header: "Weaver ID", priority: 3, accessor: r => r.weaverId, type: "code" },
+  { id: "weaverName", header: "Weaver Name", priority: 1, accessor: r => r.weaverName },
+  { id: "batchId", header: "Batch", priority: 3, accessor: r => r.batchId, type: "code" },
   { id: "loomNumber", header: "Loom Number", accessor: r => r.loomNumber },
   { id: "noOfSarees", header: "No. of Sarees", accessor: r => r.noOfSarees, type: "number" },
   { id: "makingCharges", header: "Making Charges", accessor: r => r.makingCharges, type: "currency",
@@ -215,7 +215,7 @@ export function WeaverProductionSummaryPanel({ refreshKey }: { refreshKey: numbe
             </div>
           </div>
         </div>
-        <div style={{ display: "flex", gap: 10, flexShrink: 0 }}>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" as const }}>
           <Button variant="secondary" size="md" iconLeft={Download} onClick={handleDownloadTemplate} disabled={grouped.length === 0}>
             Download Payment Template
           </Button>
@@ -246,7 +246,7 @@ export function WeaverProductionSummaryPanel({ refreshKey }: { refreshKey: numbe
             {grouped.length} row{grouped.length === 1 ? "" : "s"} · {totalSarees} saree{totalSarees === 1 ? "" : "s"} in this period
           </div>
           <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden" }}>
-            <DataTable columns={displayColumns} data={grouped} getRowId={r => `${r.weaverId}-${r.batchId}-${r.loomNumber}`} emptyTitle="No production in this period." />
+            <DataTable responsive columns={displayColumns} data={grouped} getRowId={r => `${r.weaverId}-${r.batchId}-${r.loomNumber}`} emptyTitle="No production in this period." />
           </div>
         </>
       )}

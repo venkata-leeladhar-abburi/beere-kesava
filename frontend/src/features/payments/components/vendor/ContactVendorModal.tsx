@@ -135,7 +135,7 @@ Thank you.`;
               <div style={{ background: `linear-gradient(135deg, rgba(110,15,45,0.06), rgba(200,155,71,0.06))`, padding: "14px 18px", borderBottom: `1px solid ${T.borderDef}` }}>
                 <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown }}>Vendor Contact Details</div>
               </div>
-              <div style={{ padding: "16px 18px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px 20px" }}>
+              <div className="grid grid-cols-1 md:grid-cols-2" style={{ padding: "16px 18px", gap: "12px 20px" }}>
                 {[
                   { label: "Contact Person", val: contact.contactPerson, icon: "👤" },
                   { label: "City / Location", val: contact.city, icon: "📍" },

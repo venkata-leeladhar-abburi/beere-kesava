@@ -146,7 +146,53 @@ is structural (rendering genuinely different components/props, not just differen
 layout will flash the desktop layout for one frame on a mobile load. This is another reason
 CSS wins by default.
 
-### 3.3 Column priority (the core of table responsiveness)
+### 3.3 Page gutters — minimal on mobile/tablet, never hand-rolled
+
+**Rule (user directive, 2026-08-12): mobile and tablet horizontal page padding must be
+minimal** — just enough for a healthy reading gap, not a scaled-down copy of the desktop
+gutter. Maximize content width on small screens.
+
+**The recurring bug:** pages hardcode one horizontal padding value in a `style` prop and
+reuse it at every breakpoint — e.g. `padding: "24px 48px 0"`. That 48px is a sane desktop
+gutter and a wasteful one on a 375px phone (it eats ~25% of the viewport width on each
+side). This is not a one-off — it is the single most common page-gutter bug in the
+codebase and will recur in any new page written without this convention in mind.
+
+**The fix, every time:** split the padding into vertical (`style`, unchanged, preserves
+exact original spacing) and horizontal (a responsive `className`, replacing the old
+uniform value):
+
+```tsx
+// Before — desktop's 48px gutter applied at every width:
+<div style={{ padding: "24px 48px 0" }}>
+
+// After — 16px mobile / 28px tablet / 48px desktop (unchanged at ≥1280px):
+<div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 24 }}>
+```
+
+Tailwind's default spacing scale (`4px × n`) lines up exactly with this doc's breakpoint
+gutters — `px-4` = 16px, `px-7` = 28px, `px-12` = 48px — and Tailwind's default `md`
+(768px) / `xl` (1280px) breakpoints are exactly this doc's tablet/desktop boundaries (§3.1).
+No custom Tailwind config or new breakpoint is needed; use these three classes verbatim.
+
+**If the page's original desktop gutter isn't 48px**, keep whatever it actually was in the
+`xl:` class (`xl:px-10` for 40px, `xl:px-14` for 56px, etc. — Tailwind spacing is `n×4px`,
+so divide the original px value by 4) so desktop stays pixel-identical per §0, and use
+`px-4 md:px-7` for mobile/tablet regardless — those two are the fixed target, only the
+desktop anchor varies per page.
+
+**Applies to every page, present and future** — this is a standing convention, not a
+one-time fix. Any new page (from any account, any session) should reach for
+`px-4 md:px-7 xl:px-<original/4>` for its outer horizontal padding by default, never a
+single hardcoded value repeated across breakpoints.
+
+**Fixed 2026-08-12 as the first real instance:** `AllOrdersPage.tsx` (4 spots),
+`AllOrdersFilterBar.tsx` (1), `AllOrdersAnalyticsSection.tsx` (1) — all had `48px` fixed
+horizontal padding regardless of viewport. This is very likely not the only page with this
+exact bug; R0.3/R7 should grep for the pattern (`padding:\s*"[^"]*\d+px \d+px`) across
+`features/**` when those phases run.
+
+### 3.4 Column priority (the core of table responsiveness)
 
 `ColumnDef.priority` drives the card fallback. Columns default to `2`.
 
@@ -170,18 +216,47 @@ CSS wins by default.
 - Target **4–6 visible fields per card**. A card showing 12 label/value pairs is a table
   with extra steps and helps nobody.
 
-### 3.4 Touch targets
+### 3.5 Touch targets
 
 Any control that becomes tappable on mobile needs **≥44×44px**. Icon-only row actions
 frequently fail this on the desktop table (they are typically ~28px). Fix by padding the
 mobile card variant, not by changing the desktop button.
 
-### 3.5 Horizontal scroll is a last resort, never the default
+### 3.6 Horizontal scroll is a last resort, never the default
 
 A page must never scroll horizontally as a whole. Wide content scrolls **inside its own
 container**. For genuinely irreducible wide content (a financial ledger, a matrix), an
 `overflow-x: auto` container is acceptable **only** when card-mode is a semantic mismatch —
 document the reason in §10 when you choose it.
+
+### 3.7 `md:` is not "desktop" — dense/unwrapped layouts must revert at `xl:`
+
+**Real incident (2026-08-13):** an R4 commit gated two components' "revert to the original
+dense layout" behind Tailwind's `md:` (768px) instead of `xl:` (1280px) — a 10-tab flex
+strip and a 5-tile icon+text flex row, both designed for real desktop width. At 768-1279px
+(this doc's **tablet** range, not desktop — §3.1) neither fit, the row overflowed its
+container, and it dragged the *entire page* into horizontal scroll. Caught by the user via
+screenshot, not by `tsc`/`build`/`lint` (none of which can see a runtime layout overflow) or
+by the unverified-in-browser caveat that had been noted but not acted on further.
+
+**The rule going forward:** before choosing `md:` vs `xl:` as the "un-collapse" breakpoint,
+classify the component:
+- **Column-stacked cards** (icon on top, label/value stacked below, no forced `nowrap`,
+  no fixed pixel `minWidth`) — e.g. `SumCard`, most KPI tiles used throughout R1-R4 —
+  narrow gracefully as columns shrink. `md:grid-cols-N` (revert at 768px, i.e. tablet
+  already gets the full column count) is fine for these.
+- **Row-per-item layouts** (icon and text side-by-side *within* one flex item, tab strips,
+  anything wider than it is tall per item) — do **not** assume 768-1279px is enough room.
+  Gate the revert at `xl:` (1280px) instead, so the mobile-designed fallback (stack, picker,
+  wrap) covers the full tablet range too. When genuinely unsure, `xl:` is the safer default —
+  a card grid revert one breakpoint later costs a slightly emptier tablet view; a row-layout
+  revert one breakpoint early costs a full page-width horizontal-scroll bug.
+
+**Verification note:** this class of bug is invisible to `tsc`/`build`/`lint` and only shows
+up as a real rendered layout. If browser verification is blocked (as it has been for this
+entire rollout so far — see the recurring "stuck policy-check" note in commits), treat any
+`md:`-gated revert to a row/flex layout as **higher risk** than a grid-based one, and prefer
+the conservative `xl:` choice rather than assuming `md:` is safe.
 
 ---
 
@@ -261,7 +336,7 @@ adopted by zero consumers. Every file is the same two-part edit.
 ### The recipe (identical for every file)
 
 1. Open the file, find the `ColumnDef<T>[]` array.
-2. Add `priority` to each column per §3.3. Most columns are `2` (the default) — you only
+2. Add `priority` to each column per §3.4. Most columns are `2` (the default) — you only
    need to explicitly mark the **one** `priority: 1` title column and the `priority: 3`
    hide-on-mobile ones. Omit `priority: 2` entirely; it is the default and writing it adds
    noise to the diff.
@@ -316,11 +391,75 @@ Each of these gets its full recipe written **when it begins**, following R1's fo
 are deliberately sketched rather than over-specified — R1's outcomes will inform them.
 
 ### R2 — Modal content
-Shell is done (§2). The work is content inside 63 modal files: multi-column forms collapsing
-to one column under `md`; data-heavy modals (`SareeListModal`, `RecordDetailsModal`,
-`PurchaseModals`) inheriting R1's card mode; oversized modals verified against the
-`max-h-[92dvh]` bottom-sheet constraint. Nested sub-dialogs stay plain divs — do not convert
-them (`05-OVERLAYS.md` Part D.4 forbids nested modals).
+
+**Scoped 2026-08-13.** Shell is done (§2) — this phase is content inside modals only.
+`grep -rl "<Modal\b" src/features --include="*.tsx"` finds 56 files using the shared `Modal`
+component today (fewer than the original 63-file audit estimate, since some have since been
+consolidated or migrated). Of those, 25 contain a fixed multi-column CSS grid
+(`gridTemplateColumns` with `1fr 1fr`, `repeat(2..4, ...)`) — that's the concrete R2 scope.
+The other 31 are already single-column or use flex-wrap, which already reflows; nothing to
+do there.
+
+**The recipe (same pattern as R0.3's page-gutter fix, §3.3):**
+1. Open the file, find every `style={{ display: "grid", gridTemplateColumns: "..." }}` (or
+   the equivalent split across `style`/`className`) **that sits inside a `<Modal>`'s body**.
+   Grids outside any modal are out of scope for R2 (they may be R3/R5's job).
+2. Collapse to one column under `md`, keep the original column count from `md` up (so tablet
+   and desktop stay exactly as they are):
+   ```tsx
+   // Before — fixed 2-column grid at every width:
+   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+
+   // After — 1 column mobile, 2 columns from md up (unchanged at ≥768px):
+   <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
+   ```
+   For a 3- or 4-column grid, use `md:grid-cols-3` / `md:grid-cols-4` — keep the original
+   count in the `md:` class, `grid-cols-1` for the base (mobile) case. Leave `gap` in `style`
+   (Tailwind's gap utility would work too, but changing the mechanism for a value that isn't
+   changing is unnecessary noise — only touch `gridTemplateColumns`).
+3. That's the whole edit. Don't touch field ordering, labels, validation, or spacing values.
+
+**Verification:** same as R1 — `gridTemplateColumns` → Tailwind class swap is inert above
+`md` (768px), so `tsc`/`build`/`lint` catch type/syntax errors but not the responsive
+behavior itself; the visual change only appears below 768px. Flag unverified batches the
+same way R1 did if no browser session is available.
+
+**Explicitly excluded from this pass** (per §0 and Part D.4 of `05-OVERLAYS.md`):
+- Nested sub-dialogs (e.g. `DefectPhotoPrompt.tsx` opened from inside `VerificationModal.tsx`)
+  stay plain fixed divs — do not wrap them in `<Modal>` or apply this recipe to their internal
+  grids as if they were top-level modal content; treat them as their own small case if they
+  have a multi-column grid, using the same recipe, but don't restructure the nesting itself.
+- Data tables inside modals already got R1's `responsive` treatment where applicable (e.g.
+  `SareeListModal`, `RecordDetailsModal`) — nothing further to do for those.
+- The `max-h-[92dvh]` bottom-sheet constraint (Modal's own mobile shell) is already correct
+  per §2 — don't re-verify it per modal, it's a property of `Modal.tsx` itself, not per-usage.
+
+**25 files with a multi-column grid to collapse:**
+- `bulk-orders/components/BulkOrderCreateModal.tsx`
+- `bulk-orders/components/BulkOrderDetailPage.tsx`
+- `customers/components/modals/CustomerModals.tsx`
+- `design-library/components/DesignLibraryComponents.tsx`
+- `design-library/components/DesignModals.tsx`
+- `firms/components/FirmModals.tsx`
+- `inventory/components/PurchaseModals.tsx`
+- `inventory/components/ViewStockDialog.tsx`
+- `inventory/components/modals/DispatchShopModal.tsx`
+- `inventory/components/modals/InventoryDetailModal.tsx`
+- `materials/components/issueMaterial/RecordDetailsModal.tsx`
+- `payments/components/vendor/ContactVendorModal.tsx`
+- `payments/components/vendor/VendorDetailModal.tsx`
+- `payments/components/vendor/VendorPayNowModal.tsx`
+- `payments/components/weaver/WeaverPaymentDetailModal.tsx`
+- `portals/components/shop-staff/CustomerProfiles.tsx`
+- `portals/components/shop-staff/desktop/CustomerProfileDialog.tsx`
+- `portals/components/weaver-portal/theme.tsx`
+- `production/components/batch-creation/PickerModals.tsx`
+- `production/components/dialogs/OrderDialogContent.tsx`
+- `production/components/factory-loom/AddLoomModal.tsx`
+- `users/components/EditModal.tsx`
+- `users/components/ViewProfileModal.tsx`
+- `vendors/components/vendors-page/AddVendorModal.tsx`
+- `weavers/components/modals/NewWeaverModal.tsx`
 
 ### R3 — Dashboards, stats & KPI grids
 Per portal, in this order: **Admin → Weaver → Worker → Shop staff → Superadmin**. Admin first
@@ -335,15 +474,92 @@ per-portal reports. Charts need mobile heights and legend handling; filter toolb
 mobile filter sheet; export/print controls need a mobile home. **Scope this with the user
 before starting** — it involves genuine design decisions, unlike R1–R3.
 
-### R5 — Forms & filter bars
-Full-page multi-column forms → one column under `md`. `DateFilterBar` and filter toolbars →
-mobile layout instead of overflow. Sticky mobile action bar for long forms.
+### R5 — Forms & filter bars — ✅ COMPLETE (2026-08-13)
 
-### R6 — Navigation audit
-Verification, not construction. Each portal's mobile nav already exists. Confirm nav items
-match the desktop nav, touch targets meet §3.4, and resolve drift between portals.
+**`DateFilterBar` needed no work** — verified it already uses unconditional `flex flex-wrap`
+with no breakpoint gating at all, so it already wraps safely at any width. Nothing to fix.
 
-### R7 — Grid-as-table triage
+**Full-page multi-column forms** — grepped `src/features` for `gridTemplateColumns` outside
+modals/reports/dashboards (already covered by R1-R4) and found 9 files. Fixed all 9:
+
+- [x] `inventory/components/modals/shared/TransportForm.tsx` — 1 grid, standard Field form
+- [x] `users/components/AddUserForm.tsx` — 2 grids, standard Field form
+- [x] `firms/components/FirmsPage.tsx` — totals row (fixed pixel columns, stacks below `md`,
+  exact desktop preserved via arbitrary `grid-cols` value) + financial mini-strip (3 plain
+  label/value pairs, safe at `md:grid-cols-3`)
+- [x] `users/components/AddUserPage.tsx` — 6-column role stat strip, given a tablet step
+  (`grid-cols-1 md:grid-cols-3 xl:grid-cols-6`) rather than jumping straight to 6 at `md:`,
+  applying the §3.7 lesson from the same-day tablet regression
+- [x] `bulk-orders/components/BulkOrderDetailPage.tsx`, `inventory/components/AllPurchasesPage.tsx`,
+  `inventory/components/AllStockPage.tsx`, `weavers/components/AllWeaversPage.tsx` — full
+  record-card grids (not simple stat tiles), all given a `md:grid-cols-2 xl:grid-cols-N`
+  tablet step for the same reason.
+
+**"Sticky mobile action bar for long forms" — now done.** Before building, checked whether
+modals needed this too: they don't — `Modal.Footer` is already `flex-shrink: 0` inside a
+flex-column dialog, so modal action buttons are inherently pinned at the bottom of the dialog
+box regardless of viewport. The gap is specific to full-page (non-modal) forms whose buttons
+sit in-flow at the natural end of the page.
+
+Built `shared/ui/MobileFormActionBar.tsx` — mobile-only (`<768px`, renders `null` at `md+`) fixed
+bottom bar with primary/secondary actions, `env(safe-area-inset-bottom)`-aware. Adopted on
+`users/components/AddUserForm.tsx`, the one confirmed real case in this rollout (a long
+standalone page — not a modal, not an inline-table-edit row). Original inline buttons hidden
+below `md` (`max-md:hidden`) since the bar replaces them there; unchanged at `md`+.
+
+Scanned for other full-page long-form candidates (`SectionCard` + `Field`/`Textarea` +
+Save-style icon button, outside modals/dashboards/reports) — found none. The other hits were
+all modal-context or inline-table-edit-row forms (`WholesaleTermsSection`,
+`MakingChargesSection` — already excluded from R1's card-mode for the same `renderExpandedRow`
+reason), a structurally different shape that doesn't need this pattern. The primitive is built
+and ready to adopt on any future long form — same "build once, adopt incrementally" precedent
+as `DataTable`/`Modal` from earlier design-system phases.
+
+**R5 is now fully complete.**
+
+Verified via `tsc`/`build`/`lint` — clean, same baseline. Not visually verified in-browser
+(same recurring stuck preview policy-check throughout this rollout).
+
+### R6 — Navigation audit — ✅ COMPLETE (2026-08-13)
+
+Per-portal source-of-truth check first (the fastest way to rule out drift): does mobile and
+desktop nav read from one shared array, or two independently hand-maintained ones?
+
+| Portal | Source of truth | Result |
+|---|---|---|
+| Admin | Both read `NAV_GROUPS` from `beere-dashboard/theme.tsx` | No drift possible by construction |
+| Superadmin | Both read `NAV_GROUPS` from `superadmin-dashboard/data.tsx` | No drift possible by construction |
+| Shop staff | `ShopStaffPortal.tsx` defines `TABS` once, passes to both mobile and desktop | No drift possible by construction |
+| Weaver | **Separate** `TABS` (mobile) / `NAV` (desktop) arrays | **Drift found, fixed** |
+| Worker | **Separate** `TABS` (mobile) / nav array in `WorkerTopNav.tsx` (desktop) | **Drift found, fixed** (icon only — see below) |
+
+**Weaver — fixed.** Mobile tab said "Warp" with an `ArrowUpRight` icon; desktop said "Warp
+Request" with a `Package` icon, same destination. Aligned mobile to desktop's label and icon.
+
+**Worker — icon fixed, label difference kept deliberately.** Mobile's "Receive" tab used
+`Package`; desktop's `WorkerTopNav` used `Users` for the same destination ("Receive Sarees") —
+fixed to `Users`. The **label** difference ("QC"/"Receive" vs "Quality Check"/"Receive Sarees")
+was investigated and left as-is: `PAGE_TITLES` in the same file already has the full correct
+names (shown once a user is on that page), and Worker's bottom bar has 5 tabs (narrower per-tab
+than Weaver's 4) — a deliberate space-saving abbreviation, not drift. Forcing the full label
+into that narrower per-tab width risked wrapping/overflow, exactly the class of bug from §3.7.
+
+**Real bug found, not fixed (§0 — out of scope for this rollout):** Worker's mobile `TABS`
+hardcodes the QC and Finishing badge counts as literal `"6"` and `"2"`, while desktop's
+`WorkerTopNav` computes the real `pendingQcCount` dynamically. This is a data-correctness bug,
+not a responsive/layout issue — logged in §10 for a separate fix, not touched here.
+
+**Touch targets (§3.5, ≥44×44px):** Weaver/Worker/Shop-staff all use the shared `MobileNav`
+component (`baseHeight` 64-66px) or an inline 66px bottom bar — comfortably compliant. Admin's
+`MobileNavDrawer.tsx` and Superadmin's `SAMobileNav.tsx` (near-identical structure, same
+origin) use `!py-[11px]` on each nav-item `Button` — estimated ~42px including a 14px label's
+line-height, borderline against the 44px minimum. Not confidently a violation without a real
+render measurement (font-metrics alone could easily account for the ~2px gap), so **not
+blindly edited** — flagged in §10 for R8's device-matrix pass, which can measure it for real.
+
+Verified via `tsc`/`build`/`lint` — clean, same baseline.
+
+### R7 — Grid-as-table triage ✅ COMPLETE (2026-08-13)
 188 files use `gridTemplateColumns`/`grid-cols-`. **Triage before touching:**
 - **Real data grids** (repeated rows of uniform records) → migrate to `DataTable` **+**
   card mode. Note: migration is Phase 4 work; if a grid needs migrating, log it in §10 for
@@ -398,122 +614,716 @@ work.** Tick with a date: `- [x] FileName.tsx (2026-08-13)`.
 ### R0 — Foundations
 - [x] R0.1 Consolidate 3 hand-rolled `window.innerWidth` sites (2026-08-12) — **assessed, deliberately not converted, see §10.** They're inline open-time guards in `Modal`/`Popover`/`Drawer` (3 of the highest-blast-radius shared files in the app); a direct read is not worse than a hook value here, so this is cosmetic-only risk for zero gain.
 - [x] R0.2 Fluid numerals in `StatsStrip` (2026-08-12) — `fontSize: 48` → `clamp(28px, 8vw, 48px)` in `PortalChrome.tsx`. Desktop (≥1280px, ~8vw≈102px clamped to max 48px) unchanged; shrinks only below ~600px viewport width. `tsc` clean. Not yet visually verified in-browser (no session dev server up at edit time) — flag for next browser-access session.
-- [ ] R0.3 Gutter-scale audit (findings → §10)
+- [x] R0.3 Gutter-scale audit (2026-08-12) — user-reported bug (screenshot: bulk-orders "All Orders" page wasting ~25% of a 375px viewport on each side). Root cause identified and the reusable recipe documented at §3.3. Fixed the reported page (6 spots across `AllOrdersPage.tsx`/`AllOrdersFilterBar.tsx`/`AllOrdersAnalyticsSection.tsx`). **Not exhaustive** — same bug pattern likely exists on other pages; §3.3 flags this for R7/a future grep pass rather than fixing all instances now (out of scope for one report).
 
-### R1 — Tables → card mode (0 / 70)
+### R1 — Tables → card mode — ✅ COMPLETE (70 / 70, incl. 9 documented exclusions)
 
-**audit** (2)
-- [ ] `audit/components/audit-log/ActionLogSection.tsx`
-- [ ] `audit/components/audit-log/LoginHistorySection.tsx`
+**audit** (2/2) ✅
+- [x] `audit/components/audit-log/ActionLogSection.tsx` (2026-08-12)
+- [x] `audit/components/audit-log/LoginHistorySection.tsx` (2026-08-12)
 
-**bulk-orders** (2)
-- [ ] `bulk-orders/components/BulkOrderOverviewPaymentsTabs.tsx`
-- [ ] `bulk-orders/components/BulkOrderSareesTab.tsx`
+**bulk-orders** (2/2) ✅
+- [x] `bulk-orders/components/BulkOrderOverviewPaymentsTabs.tsx` (2026-08-12)
+- [x] `bulk-orders/components/BulkOrderSareesTab.tsx` (2026-08-12)
 
-**customers** (7)
-- [ ] `customers/components/sections/InactiveCustomersSection.tsx`
-- [ ] `customers/components/sections/RetailCustomersSection.tsx`
-- [ ] `customers/components/sections/RetailDetailSection.tsx`
-- [ ] `customers/components/sections/WholesaleCustomersSection.tsx`
-- [ ] `customers/components/sections/wholesaleDetail/OrderHistoryTab.tsx`
-- [ ] `customers/components/sections/wholesaleDetail/OverviewTab.tsx`
-- [ ] `customers/components/sections/wholesaleDetail/PaymentHistoryTab.tsx`
+**customers** (7/7) ✅
+- [x] `customers/components/sections/InactiveCustomersSection.tsx` (2026-08-12)
+- [x] `customers/components/sections/RetailCustomersSection.tsx` (2026-08-12)
+- [x] `customers/components/sections/RetailDetailSection.tsx` (2026-08-12)
+- [x] `customers/components/sections/WholesaleCustomersSection.tsx` (2026-08-12)
+- [x] `customers/components/sections/wholesaleDetail/OrderHistoryTab.tsx` (2026-08-13)
+- [x] `customers/components/sections/wholesaleDetail/OverviewTab.tsx` (2026-08-13)
+- [x] `customers/components/sections/wholesaleDetail/PaymentHistoryTab.tsx` (2026-08-13)
 
-**finishing** (2)
-- [ ] `finishing/components/FinishingQuotationsSection.tsx`
-- [ ] `finishing/components/FinishingStaffSection.tsx`
+**finishing** (2/2) ✅
+- [x] `finishing/components/FinishingQuotationsSection.tsx` (2026-08-12)
+- [x] `finishing/components/FinishingStaffSection.tsx` (2026-08-12)
 
-**firms** (2)
-- [ ] `firms/components/FirmFinanceSections.tsx` *(also has a raw table — see §6 exclusions)*
-- [ ] `firms/components/FirmsPage.tsx`
+**firms** (2/2) ✅
+- [x] `firms/components/FirmFinanceSections.tsx` (2026-08-12) *(also has a raw table — see §6 exclusions, only the DataTable part was touched)*
+- [x] `firms/components/FirmsPage.tsx` (2026-08-12)
 
-**inventory** (5)
+**inventory** (0/5)
 - [ ] `inventory/components/externalPurchases/modals/SareeListModal.tsx` *(partial — §6)*
 - [ ] `inventory/components/externalPurchases/sections/PurchasesTable.tsx`
 - [ ] `inventory/components/modals/shared/InvoiceGenerator.tsx`
 - [ ] `inventory/components/modals/shared/SareeReviewList.tsx`
 - [ ] `inventory/components/sections/DispatchHistorySection.tsx`
 
-**materials** (4)
-- [ ] `materials/components/issueMaterial/IssuanceHistorySection.tsx`
-- [ ] `materials/components/issueMaterial/RecordDetailsModal.tsx`
-- [ ] `materials/components/sections/BatchesSection.tsx`
-- [ ] `materials/components/sections/PurchaseHistorySection.tsx`
+**materials** (4/4) ✅
+- [x] `materials/components/issueMaterial/IssuanceHistorySection.tsx` (2026-08-12)
+- [x] `materials/components/issueMaterial/RecordDetailsModal.tsx` (2026-08-12)
+- [x] `materials/components/sections/BatchesSection.tsx` (2026-08-13)
+- [x] `materials/components/sections/PurchaseHistorySection.tsx` (2026-08-13)
 
-**payments** (7)
-- [ ] `payments/components/history/PaymentHistorySection.tsx`
-- [ ] `payments/components/outstanding/ExternalOutstanding.tsx`
-- [ ] `payments/components/outstanding/SareeDetailTable.tsx`
-- [ ] `payments/components/outstanding/TopSellers.tsx`
-- [ ] `payments/components/vendor/VendorPaymentsSection.tsx`
-- [ ] `payments/components/weaver/WeaverPaymentDetailModal.tsx`
-- [ ] `payments/components/weaver/WeaverProductionSummaryPanel.tsx`
-- [ ] `payments/components/wholesale/WholesaleTableView.tsx`
+**payments** (8/8) ✅
+- [x] `payments/components/history/PaymentHistorySection.tsx` (2026-08-12)
+- [x] `payments/components/outstanding/ExternalOutstanding.tsx` (2026-08-12)
+- [x] `payments/components/outstanding/SareeDetailTable.tsx` (2026-08-12) *(fixed a real `priority` type-widening bug from a conditional-spread column — see commit)*
+- [x] `payments/components/outstanding/TopSellers.tsx` (2026-08-12)
+- [x] `payments/components/vendor/VendorPaymentsSection.tsx` (2026-08-12)
+- [x] `payments/components/weaver/WeaverPaymentDetailModal.tsx` (2026-08-12)
+- [x] `payments/components/weaver/WeaverProductionSummaryPanel.tsx` (2026-08-12)
+- [x] `payments/components/wholesale/WholesaleTableView.tsx` (2026-08-13)
 
-**portals** (6)
-- [ ] `portals/components/weaver-portal/ReferenceHistorySection.tsx`
-- [ ] `portals/components/weaver-portal/WarpRequestPage.tsx`
-- [ ] `portals/components/weaver-portal/desktop/PaymentsSection.tsx`
-- [ ] `portals/components/worker/ReceiptHistoryTable.tsx`
-- [ ] `portals/components/worker/finishing/SectionC.tsx`
-- [ ] `portals/components/worker/weavers/SareeSelectionTable.tsx`
+**portals** (6/6, 2 responsive + 4 already-covered)
+- [x] `portals/components/weaver-portal/ReferenceHistorySection.tsx` — **excluded, not applicable.** Already has a hand-built `isMobile` branch per tab (3 separate card lists) that fully replaces its 3 `DataTable` instances on mobile; the tables only render in the `!isMobile` branch, so `responsive` would be dead code.
+- [x] `portals/components/weaver-portal/WarpRequestPage.tsx` — **excluded, same reason** (own `isMobile` branch with a bespoke card list; `DataTable` only renders on desktop/tablet).
+- [x] `portals/components/weaver-portal/desktop/PaymentsSection.tsx` — **excluded, not applicable.** Only imported by `DesktopWeaverPortal.tsx`; mobile users get `MobileWeaverPortal.tsx`'s own UI, this component never renders on mobile.
+- [x] `portals/components/worker/ReceiptHistoryTable.tsx` (2026-08-13)
+- [x] `portals/components/worker/finishing/SectionC.tsx` — **excluded, same reason as ReferenceHistorySection** (own `isMobile` card-list branch; the desktop `DataTable`+`renderExpandedRow` never renders on mobile).
+- [x] `portals/components/worker/weavers/SareeSelectionTable.tsx` (2026-08-13)
 
-**pricing** (3)
-- [ ] `pricing/components/rates-pricing/MakingChargesSection.tsx`
-- [ ] `pricing/components/rates-pricing/RateHistorySection.tsx`
-- [ ] `pricing/components/rates-pricing/WholesaleTermsSection.tsx`
+**pricing** (1/3, 2 excluded)
+- [x] `pricing/components/rates-pricing/RateHistorySection.tsx` (2026-08-13)
+- [x] `pricing/components/rates-pricing/MakingChargesSection.tsx` — **excluded, not applicable.** Uses `DataTable`'s `renderExpandedRow` for inline-edit-row editing; `CardList` (the `responsive` mobile fallback) does not support `renderExpandedRow` at all, so enabling it would silently drop the ability to edit rates on mobile. §0 forbids removing functionality. Left as a table-only (non-responsive) `DataTable`, same as before.
+- [x] `pricing/components/rates-pricing/WholesaleTermsSection.tsx` — **excluded, same reason** (also uses `renderExpandedRow` for inline term editing).
 
-**production** (6)
-- [ ] `production/components/FactoryLoomPage.tsx`
-- [ ] `production/components/ProductionHistoryPage.tsx`
-- [ ] `production/components/factory-loom/LoomDetailPage.tsx`
-- [ ] `production/components/sections/DefectiveSareesSection.tsx`
-- [ ] `production/components/sections/ProductionHistorySection.tsx`
-- [ ] `production/components/sections/batches/BatchViews.tsx`
+**production** (6/6) ✅
+- [x] `production/components/FactoryLoomPage.tsx` (2026-08-13)
+- [x] `production/components/ProductionHistoryPage.tsx` (2026-08-13)
+- [x] `production/components/factory-loom/LoomDetailPage.tsx` (2026-08-13)
+- [x] `production/components/sections/DefectiveSareesSection.tsx` (2026-08-13)
+- [x] `production/components/sections/ProductionHistorySection.tsx` (2026-08-13)
+- [x] `production/components/sections/batches/BatchViews.tsx` (2026-08-13) — 2 `<DataTable>` instances (BatchListView + BatchTableView), both done
 
-**purchasing** (2)
-- [ ] `purchasing/components/approvals/ExternalPurchaseCard.tsx`
-- [ ] `purchasing/components/approvals/HistorySection.tsx`
+**purchasing** (2/2) ✅
+- [x] `purchasing/components/approvals/ExternalPurchaseCard.tsx` (2026-08-13)
+- [x] `purchasing/components/approvals/HistorySection.tsx` (2026-08-13)
 
-**reports** (9) — *tables only; full report layout is R4*
-- [ ] `reports/components/sections/CustomerReport.tsx`
-- [ ] `reports/components/sections/OutstandingPaymentsReport.tsx`
-- [ ] `reports/components/sections/OverdueAlertsReport.tsx`
-- [ ] `reports/components/sections/ProfitLossReport.tsx` *(ledger layout — card mode may be a semantic mismatch; if so, use §3.5 scroll container and note it)*
-- [ ] `reports/components/sections/RawMaterialReport.tsx`
-- [ ] `reports/components/sections/RetailSalesReport.tsx`
-- [ ] `reports/components/sections/SareeProductionReport.tsx`
-- [ ] `reports/components/sections/WeaverPaymentReport.tsx`
-- [ ] `reports/components/sections/WholesaleSalesReport.tsx`
+**reports** (8/9, 1 excluded) — *tables only; full report layout is R4*
+- [x] `reports/components/sections/CustomerReport.tsx` (2026-08-12)
+- [x] `reports/components/sections/OutstandingPaymentsReport.tsx` (2026-08-12)
+- [x] `reports/components/sections/OverdueAlertsReport.tsx` (2026-08-12) — 4 separate `<DataTable>` instances in this file, all done
+- [x] `reports/components/sections/ProfitLossReport.tsx` (2026-08-13) — its 2-column `ledgerColumns` table (label/amount with section headers, subtotals, net row) is a genuine semantic mismatch for card mode, left untouched. Its `perFirmColumns` table (real row-collection) got the standard treatment.
+- [x] `reports/components/sections/RawMaterialReport.tsx` (2026-08-13) — 2 `<DataTable>` instances (stock comparison + receipt batch log)
+- [x] `reports/components/sections/RetailSalesReport.tsx` (2026-08-13)
+- [x] `reports/components/sections/SareeProductionReport.tsx` (2026-08-13) — 2 `<DataTable>` instances (external purchases + per-weaver production)
+- [x] `reports/components/sections/WeaverPaymentReport.tsx` (2026-08-13)
+- [x] `reports/components/sections/WholesaleSalesReport.tsx` (2026-08-13)
 
-**suppliers** (4)
-- [ ] `suppliers/components/sections/ExternalPurchaseHistorySection.tsx`
-- [ ] `suppliers/components/sections/PurchaseHistoryTable.tsx`
-- [ ] `suppliers/components/sections/SareeInventoryTable.tsx` *(partial — §6)*
-- [ ] `suppliers/components/sections/supplierProfile/PaymentsTab.tsx`
+**suppliers** (2/4, 2 excluded)
+- [x] `suppliers/components/sections/ExternalPurchaseHistorySection.tsx` (2026-08-13)
+- [x] `suppliers/components/sections/PurchaseHistoryTable.tsx` — **excluded, not applicable.** Uses `renderExpandedRow` to drill into a nested `SareeInventoryTable` per purchase; `CardList` doesn't support it. Same reasoning as the pricing exclusions.
+- [x] `suppliers/components/sections/SareeInventoryTable.tsx` — **excluded, same reason** (its own `renderExpandedRow` drills into individual saree pieces). Also has a partial-migration raw `<table>` — see §6 — untouched either way.
+- [x] `suppliers/components/sections/supplierProfile/PaymentsTab.tsx` (2026-08-13)
 
-**users** (1)
-- [ ] `users/components/UserTable.tsx`
+**users** (1/1) ✅
+- [x] `users/components/UserTable.tsx` (2026-08-13)
 
-**vendors** (2)
-- [ ] `vendors/components/vendors-page/PurchaseOrderHistoryTable.tsx`
-- [ ] `vendors/components/vendors-page/VendorProfile.tsx`
+**vendors** (2/2) ✅
+- [x] `vendors/components/vendors-page/PurchaseOrderHistoryTable.tsx` (2026-08-13)
+- [x] `vendors/components/vendors-page/VendorProfile.tsx` (2026-08-13) — 2 `<DataTable>` instances (bills + payment transactions)
 
-**weavers** (5)
-- [ ] `weavers/components/WeaverSareesSection/ExternalSareesTable.tsx`
-- [ ] `weavers/components/WeaverSareesSection/MainSareesTable.tsx`
-- [ ] `weavers/components/sections/WeaverCardAndListViews.tsx`
-- [ ] `weavers/components/sections/WeaverTableAndDirectory.tsx`
-- [ ] `weavers/components/sections/weaverDrawer/WeaverDrawerTabs.tsx`
+**weavers** (5/5) ✅
+- [x] `weavers/components/WeaverSareesSection/ExternalSareesTable.tsx` (2026-08-13)
+- [x] `weavers/components/WeaverSareesSection/MainSareesTable.tsx` (2026-08-13) — ~13-20 conditionally-rendered columns; assigned title + 2 always-present secondary fields, rest default to priority 2
+- [x] `weavers/components/sections/WeaverCardAndListViews.tsx` (2026-08-13)
+- [x] `weavers/components/sections/WeaverTableAndDirectory.tsx` (2026-08-13)
+- [x] `weavers/components/sections/weaverDrawer/WeaverDrawerTabs.tsx` (2026-08-13)
 
-### R2–R8
-- [ ] R2 Modal content — *expand §7 into a full recipe when starting*
-- [ ] R3 Dashboards & stats — Admin / Weaver / Worker / Shop staff / Superadmin
-- [ ] R4 Reports pages — **scope with user before starting**
-- [ ] R5 Forms & filter bars
-- [ ] R6 Navigation audit
-- [ ] R7 Grid-as-table triage
-- [ ] R8 QA, device matrix, ratchet metrics
+**R1 COMPLETE** (2026-08-13) — all 70 originally-assigned files resolved: either `responsive`-enabled or documented as a deliberate exclusion (9 total: 4 portal "island" files already responsive via a different mechanism, 4 `renderExpandedRow`-based drill-down tables incompatible with `CardList`, 1 genuine ledger-layout semantic mismatch). Verified via `grep -rl "<DataTable" src/features` (71 consumers — one more than the original count, pre-existing drift not part of this effort) vs `grep -rl "responsive"` (61) vs `grep -rl "priority:"` (66) — the arithmetic checks out against the exclusion list. `tsc`/`build`/`lint` clean at every commit, same pre-existing baseline throughout.
+
+### R2 — Modal content — ✅ COMPLETE (23 / 25 converted, 2 documented exclusions)
+
+Recipe finalized in §7. Done 2026-08-13 via 4 parallel worktree-isolated agents (disjoint
+file sets, each verified independently before merge — no repeat of the R1 session's
+worktree-teardown/collision issues; all 4 completed cleanly this time).
+
+- [x] `bulk-orders/components/BulkOrderCreateModal.tsx` (2026-08-13)
+- [x] `bulk-orders/components/BulkOrderDetailPage.tsx` — **no change needed.** Its only grid (weight-tally cards) sits in the page body, not inside its 2 `<Modal>`s (tally/delete confirmation, no grids).
+- [x] `customers/components/modals/CustomerModals.tsx` (2026-08-13)
+- [x] `design-library/components/DesignLibraryComponents.tsx` (2026-08-13) — 2 grids
+- [x] `design-library/components/DesignModals.tsx` (2026-08-13) — 2 grids
+- [x] `firms/components/FirmModals.tsx` (2026-08-13) — 3 grids
+- [x] `inventory/components/PurchaseModals.tsx` (2026-08-13) — 1 of 5 grids converted (`ViewPurchaseModal`). **The other 4, in `PrintPurchaseModal`'s `receipt` JSX, are excluded** — that JSX is portaled verbatim to `#document-print-root` and printed as a physical GRN; it's a print document sharing a file with a modal, out of scope per §0/§7.
+- [x] `inventory/components/ViewStockDialog.tsx` (2026-08-13)
+- [x] `inventory/components/modals/DispatchShopModal.tsx` (2026-08-13)
+- [x] `inventory/components/modals/InventoryDetailModal.tsx` (2026-08-13) — 3 grids
+- [x] `materials/components/issueMaterial/RecordDetailsModal.tsx` (2026-08-13)
+- [x] `payments/components/vendor/ContactVendorModal.tsx` (2026-08-13)
+- [x] `payments/components/vendor/VendorDetailModal.tsx` (2026-08-13) — 2 grids
+- [x] `payments/components/vendor/VendorPayNowModal.tsx` (2026-08-13) — 2 grids, one an uneven `1fr 1fr 1.2fr` template preserved via `md:grid-cols-[1fr_1fr_1.2fr]` rather than plain `grid-cols-3` (keeps desktop column widths exact)
+- [x] `payments/components/weaver/WeaverPaymentDetailModal.tsx` (2026-08-13)
+- [x] `portals/components/shop-staff/CustomerProfiles.tsx` (2026-08-13) — a second grid outside the Modal, left untouched (out of scope)
+- [x] `portals/components/shop-staff/desktop/CustomerProfileDialog.tsx` (2026-08-13)
+- [x] `portals/components/weaver-portal/theme.tsx` — **excluded, false positive.** All 4 grids live in `DesignDetailCard`/`SareeTypeDetailCard` (dashboard cards, not modal content); the file's one `<Modal>` is a design-graph image lightbox with no grid.
+- [x] `production/components/batch-creation/PickerModals.tsx` (2026-08-13) — 2 grids
+- [x] `production/components/dialogs/OrderDialogContent.tsx` (2026-08-13) — 3 grids inside the nested invoice-preview Modal; asymmetric `1fr 100px` line-item grids preserved via `md:grid-cols-[1fr_100px]` rather than `grid-cols-2`. 3 top-level grids outside any Modal in this file left untouched (out of scope).
+- [x] `production/components/factory-loom/AddLoomModal.tsx` (2026-08-13) — 2 of 3 grids (third was already single-column)
+- [x] `users/components/EditModal.tsx` (2026-08-13)
+- [x] `users/components/ViewProfileModal.tsx` (2026-08-13)
+- [x] `vendors/components/vendors-page/AddVendorModal.tsx` (2026-08-13) — 6 grids
+- [x] `weavers/components/modals/NewWeaverModal.tsx` (2026-08-13) — 2 grids
+
+Verified via `tsc`/`build`/`lint` on every batch before merge — clean, same ~33-error
+pre-existing baseline throughout, zero new errors in any touched file.
+
+### R3 — Dashboards & stats — ✅ COMPLETE (2026-08-13)
+
+**Investigated all 5 portals before touching anything** — the actual R3 deliverable is the
+per-portal decision below, not code. Root-cause finding: **all 5 portal shells branch on
+`isMobile` at the very top** (`WeaverPortal.tsx`, `WorkerPortal.tsx`, `ShopStaffPortal.tsx`,
+`BeereDashboard.tsx`, `SuperadminDashboard.tsx`), but **4 of the 5 swap in an entirely
+separate mobile component tree** (dedicated `Mobile*.tsx`/`*Desktop.tsx` pairs) while
+**Superadmin swaps only the nav chrome** and reuses the same content pages for both.
+That architectural difference is what determined whether each portal needed a code change:
+
+| Portal | Split architecture | KPI grids found | Action |
+|---|---|---|---|
+| **Admin** | Full tree swap (`desktop.tsx` vs `mobile.tsx`, separate `Mobile*` components) | `ThreeCol.tsx`/`RawMaterial.tsx` — confirmed imported **only** by `desktop.tsx`; mobile has its own `MobileRawMaterial` etc. | **No change.** Never renders on mobile. |
+| **Weaver** | Full tree swap (`DesktopWeaverPortal`/`MobileWeaverPortal`) | `PaymentLedgerPage.tsx` (4 grids) — imported by `MobileWeaverPortal.tsx`, genuinely mobile content | **Investigated, no change needed.** The 6-column ledger table (lines ~309-329) is already wrapped in `overflowX: auto` + `minWidth: 640` — a deliberate, correctly-guarded §3.6 scroll fallback, not a bug. The two 2-column stat grids are simple stat pairs, mobile-safe as-is. |
+| **Worker** | Full tree swap (`WorkerPortalDesktop`/mobile branch in `WorkerPortal.tsx`, `WorkerHome` vs `WorkerHomeDesktop`) | `WorkerHome.tsx` — a fixed 3-column "Quick Stats" trio (short number + short label per tile) | **No change.** Read the actual content — 3 short stat tiles is a standard, mobile-safe pattern at any phone width; not the "12-column form crammed onto a phone" failure mode this phase targets. |
+| **Shop staff** | Full tree swap (`MobileHeader`/`MobileTabBar` vs desktop chrome in `ShopStaffPortal.tsx`) | None found | **No change.** |
+| **Superadmin** | **Chrome-only swap** — `SAMobileTopNav`/`SAMobileMenuDrawer` vs `SATopNav`, but `renderPage()` (the actual content, including `SAOverviewPage`) is called from **both** branches | `SAOverviewPage.tsx` (2 grids: 4-col actions, 3-col raw-material cards), `SAWeaverSection.tsx` (1 grid: 2-col per-card stat pair) | **Fixed** — all 3 grids collapsed to `grid-cols-1 md:grid-cols-N`, desktop unchanged. This portal was the one genuine case: its content is not swapped out on mobile the way the other 4 are. |
+
+**The island-pattern decision (§2's open question, now resolved for R3):** keep the
+per-portal mobile-tree-swap pattern for Admin, Weaver, Worker, and Shop staff — each already
+has a comprehensive, working, purpose-built mobile experience; folding them into single
+responsive components is a large refactor, explicitly out of scope for Phase R (§0), and
+there is no correctness problem driving a change. Superadmin's chrome-only-swap architecture
+is the outlier and is why it was the only portal needing real R3 fixes — worth knowing if a
+future session wonders why Superadmin "needed more work" than its siblings.
+
+Verified via `tsc`/`build` — clean, no lint regressions.
+
+### R4 — Reports pages — ✅ COMPLETE (2026-08-13)
+
+Scoped with the user via `AskUserQuestion` first, per this section's own instruction — two
+genuine design decisions, not mechanical fixes:
+
+1. **`ReportTabNav.tsx`'s 10-tab strip** (icon+label+desc, fixed equal-width flex row —
+   unusable at any phone width). Chose a **dropdown/picker** over horizontal scroll: below
+   `md`, the tab strip is replaced by a single "current report" trigger + `DropdownMenu`
+   (reused the existing shared `DropdownMenu` component, no new overlay UI built) listing
+   all 10 tabs with icon/label/desc. Desktop tab strip unchanged, gated behind
+   `hidden md:flex`. Reasoning: at 10 destinations, a scannable list beats blind horizontal
+   scrolling for findability.
+2. **`PageHeaderAndMetrics.tsx`'s 5-tile stats strip** (flex row, no wrap). Chose a
+   **2-column wrapping grid** (`grid-cols-2 md:flex`) over horizontal scroll or a 1-column
+   stack — keeps every metric glanceable with no gesture required, consistent with the
+   grid-collapse pattern already used everywhere else in this rollout (R2/R3).
+
+Both implemented and committed directly (not via parallel agents, since they needed
+judgment). Not visually verified in-browser — same stuck browser-preview policy check as
+a prior session; `tsc`/`build`/`lint` clean.
+
+**Then the mechanical remainder** — 13 report-section files with hardcoded gutters
+(`padding: "32px 40px"` or `"0 48px"`) and/or fixed multi-column chart/KPI grids — done via
+3 parallel worktree-isolated agents (same successful pattern as R2), applying the two
+already-established recipes (§3.3 gutters, grid-collapse) with no new decisions needed:
+
+- [x] `ReportTabNav.tsx` — mobile picker + gutter (design decision, see above)
+- [x] `PageHeaderAndMetrics.tsx` — 2-col grid + gutter (design decision, see above)
+- [x] `OutstandingPaymentsReport.tsx` — gutter + 1 grid
+- [x] `RawMaterialReport.tsx` — gutter + 1 grid
+- [x] `RetailSalesReport.tsx` — gutter + 2 grids
+- [x] `CustomerReport.tsx` — gutter + 3 grids
+- [x] `ScheduledReportsSection.tsx` — gutter + 2 grids
+- [x] `OverdueAlertsReport.tsx` — gutter + 1 grid
+- [x] `DownloadHistorySection.tsx` — gutter + 1 grid
+- [x] `ReportsFooter.tsx` — gutter + 1 grid (unequal `1.6fr 1fr 1fr 1fr 1fr` preserved via `md:grid-cols-[1.6fr_1fr_1fr_1fr_1fr]`, desktop exact)
+- [x] `LiveSummarySnapshot.tsx` — gutter (48px variant, `xl:px-12`) + 1 grid
+- [x] `SareeProductionReport.tsx` — gutter + 3 grids
+- [x] `WholesaleSalesReport.tsx` — gutter (2 wrappers) + 2 grids
+- [x] `WeaverPaymentReport.tsx` — gutter + 2 grids
+- [x] `ProfitLossReport.tsx` — gutter + 1 grid (uneven `1.6fr 1fr` preserved via `md:grid-cols-[1.6fr_1fr]`); `ledgerColumns` DataTable correctly untouched — plain 2-col table, not a grid, already excluded from R1 as a semantic mismatch
+
+Verified via `tsc`/`build`/`lint` on every batch before merge — clean, same ~33-error
+pre-existing baseline throughout, zero new errors in any touched file.
+
+### R5–R8
+- [x] R5 Forms & filter bars — see ✅ COMPLETE section above.
+- [x] R6 Navigation audit — see ✅ COMPLETE section above.
+- [~] R7 Grid-as-table triage — **partially done**, no formal ledger entry yet.
+  Two commits (`responsive(r7-batch2)`, `responsive(r7-misc)`) collapsed a batch
+  of form/stat `gridTemplateColumns` grids to `grid-cols-1` under `md`, but the
+  full 165-file triage (real-data-grids vs form-layouts vs print-docs, §7) was
+  never completed or logged file-by-file. A future session should re-run
+  `grep -rl "gridTemplateColumns" src/features --include="*.tsx"` from
+  `frontend/`, diff against what's already responsive, and resume the R7
+  recipe from there.
+
+  **Batch 3 (2026-08-13)** — triaged `src/features/materials`, `payments`, and
+  `suppliers` (the 3 dirs with the most `gridTemplateColumns` hits). 20 files
+  converted (form/stat/summary-panel grids → `grid-cols-1 md:grid-cols-N`), 6
+  files logged below as real data grids needing Phase 4 `DataTable` migration,
+  the rest skipped as already-responsive (`isMobile` ternary or
+  `repeat(auto-fit/auto-fill, minmax(...))` fluid grids — no fixed column count
+  to collapse) or print documents.
+
+  Converted:
+  - `materials/components/modals/StockModals.tsx` (2026-08-13) — 3 grids (2 in
+    `AddStockModal`, 1 in `BatchViewDetailsModal`'s 4-field panel)
+  - `materials/components/modals/StockModals.tsx` — 3-col financial-stat panel
+    also converted (`grid-cols-1 md:grid-cols-3`)
+  - `materials/components/modals/ReportModals.tsx` (2026-08-13) — 2 grids
+    (vendor-details panel, receipt-detail panel)
+  - `materials/components/issueMaterial/MaterialRowEditor.tsx` (2026-08-13) —
+    1 grid (`2fr 1fr` description/quantity pair), preserved via
+    `md:grid-cols-[2fr_1fr]`
+  - `materials/components/issueMaterial/SignatureBlock.tsx` (2026-08-13) — 1
+    grid (2-option signature-method picker)
+  - `payments/components/PaymentsFooter.tsx` (2026-08-13) — 1 grid, uneven
+    `1.6fr 1fr 1fr 1fr 1fr` preserved via `md:grid-cols-[1.6fr_1fr_1fr_1fr_1fr]`
+    (same pattern as R4's `ReportsFooter.tsx`)
+  - `payments/components/FinancialSummarySection.tsx` (2026-08-13) — 1 grid
+    (4-tile stat strip)
+  - `payments/components/weaver/BankUploadPanel.tsx` (2026-08-13) — 1 grid
+    (3-tile match-result summary)
+  - `payments/components/weaver/WeaverMakingChargesSection.tsx` (2026-08-13) —
+    1 of 2 grids converted (4-tile stat strip); the other (3-col "Card view
+    grid" of `WeaverCard`, `filtered.map`) is a real data grid, left untouched
+    — see log below
+  - `payments/components/supplier/SupplierPaymentsSection.tsx` (2026-08-13) —
+    1 of 2 grids converted (4-tile stat strip); the other (3-col supplier-card
+    grid, `filtered.map`) is a real data grid, left untouched — see log below
+  - `payments/components/wholesale/WholesaleCollectionsSection.tsx`
+    (2026-08-13) — 1 of 2 grids converted (4-tile stat strip); the other
+    (3-col `CustomerCard` grid, `filtered.map`) is a real data grid, left
+    untouched — see log below
+  - `payments/components/vendor/VendorPaymentsSection.tsx` (2026-08-13) — 1 of
+    2 grids converted (4-tile stat strip); the other (3-col `VendorCard` grid,
+    `filtered.map`) is a real data grid, left untouched — see log below
+  - `payments/components/history/PaymentHistorySection.tsx` (2026-08-13) — 1
+    of 2 grids converted (3-tile stat strip); the other (3-col `HistoryCard`
+    grid, `filtered.map`) is a real data grid, left untouched — see log below
+  - `payments/components/analytics/PaymentAnalyticsSection.tsx` (2026-08-13) —
+    2 grids (4-tile stat strip, 3-col chart-panel row — 3 distinct charts, not
+    repeated records)
+  - `payments/components/vendor/VendorUploadPanel.tsx` (2026-08-13) — 1 of 3
+    grids converted (3-tile match-result summary); the `repeat(auto-fill,
+    minmax(320px,1fr))` card list and the per-card 2-col field grid inside it
+    left untouched (fluid / per-row field grid inside a mapped card — see §10)
+  - `suppliers/components/sections/SupplierFormFields.tsx` (2026-08-13) — 6
+    grids (outer 2-col left/right split + 5 inner field-pair grids); shared by
+    "Add Supplier" and the profile "Edit Profile" tab
+  - `suppliers/components/sections/supplierProfile/OverviewTab.tsx`
+    (2026-08-13) — 2 of 3 grids converted (4-tile stat strip, `2fr 1fr`
+    chart/side-panel split via `md:grid-cols-[2fr_1fr]`); the 3rd
+    (`repeat(auto-fit, minmax(150px,1fr))`) is already fluid, untouched
+  - `suppliers/components/sections/SupplierAnalytics.tsx` (2026-08-13) — 3
+    grids (2× `2fr 1fr` dashboard rows via `md:grid-cols-[2fr_1fr]`, 1×
+    3-column row of distinct cards)
+  - `suppliers/components/sections/supplierProfile/ContactTab.tsx`
+    (2026-08-13) — 1 grid (8-field contact/bank/GST summary panel)
+  - `suppliers/components/sections/supplierProfile/PaymentsTab.tsx`
+    (2026-08-13) — 1 grid (3-tile stat strip)
+  - `suppliers/components/sections/analytics/RatingAndModeCards.tsx`
+    (2026-08-13) — 1 grid (4-tile mini-stat strip inside the Settlement
+    Health card)
+
+  **Found, needs Phase 4 `DataTable` migration (real data grids, not
+  touched):**
+  - `payments/components/supplier/SupplierPaymentsSection.tsx` — 3-col grid
+    of supplier-summary cards, `filtered.map(r => ...)`
+  - `payments/components/weaver/WeaverMakingChargesSection.tsx` — 3-col
+    "Card view grid" of `WeaverCard`, `filtered.map(w => ...)`
+  - `payments/components/wholesale/WholesaleCollectionsSection.tsx` — 3-col
+    grid of `CustomerCard`, `filtered.map(inv => ...)`
+  - `payments/components/vendor/VendorPaymentsSection.tsx` — 3-col grid of
+    `VendorCard`, `filtered.map(vp => ...)`
+  - `payments/components/history/PaymentHistorySection.tsx` — 3-col grid of
+    `HistoryCard`, `filtered.map(r => ...)`
+  - `suppliers/components/sections/SupplierDirectorySection.tsx` — 3-col
+    grid of `SupplierCard` (from `shared/ui/domain`), `filtered.map(s => ...)`
+
+  Verified via `tsc --noEmit` (clean) / `npm run build` (succeeds) / `npm run
+  lint` (33 pre-existing errors, all in the already-documented dashboard
+  baseline — `MetricsBar.tsx`, `SAOverviewPage.tsx`, `WeaverMetricsBar.tsx`,
+  both `PageHeaderAndStats.tsx` files; zero new errors in any file touched
+  this batch).
+  **Batch 4 (2026-08-13)** — triaged `weavers`, `production`, `customers`,
+  `inventory`, `vendors` (per §7's stated priority order; `portals` deferred to
+  a future batch — still ~50 untriaged files there). Re-ran
+  `grep -rl "gridTemplateColumns" src/features --include="*.tsx"` (108 files
+  remaining at batch start) and worked through the 5 priority dirs. 14 files
+  converted (form/stat/summary-panel grids → `grid-cols-1 md:grid-cols-N`), 14
+  files logged below as real data grids / inner-grid-of-repeated-row templates
+  needing Phase 4 `DataTable`/`CardList` migration, `PurchaseModals.tsx`
+  re-confirmed as the pre-existing R2 print-document exclusion (no new grids
+  there).
+
+  Converted:
+  - `production/components/BatchSetupStep.tsx` (2026-08-13) — 1 grid
+    (`1fr 1fr 1fr auto` batch-setup field row), preserved via
+    `md:grid-cols-[1fr_1fr_1fr_auto]`
+  - `production/components/batch-creation/DetailModals.tsx` (2026-08-13) — 4
+    grids (2-col stat pairs ×3, 3-col stat-tile row ×1) across
+    `WeaverDetailsModal`/`FactoryLoomDetailsModal`/`BulkOrderDetailsModal`
+  - `production/components/dialogs/OrderDialogContent.tsx` (2026-08-13) — the
+    3 top-level grids left untouched by R2 (outside any `<Modal>`, see R2's
+    log entry) — all 3 are 2-col stat-pair layouts, now converted
+  - `production/components/factory-loom/LoomAnalytics.tsx` (2026-08-13) — 1
+    grid (`2fr 1fr` chart/side-panel row), preserved via
+    `md:grid-cols-[2fr_1fr]`
+  - `production/components/factory-loom/LoomAnalyticsCharts.tsx`
+    (2026-08-13) — 3 grids (`2fr 1fr` chart row, 3-col distinct-chart row,
+    2-col QC stat pair)
+  - `production/components/sections/DefectiveSareesSection.tsx`
+    (2026-08-13) — 3 grids (2-col deduction summary, 2-col stat pair, 2-col
+    field-detail panel)
+  - `production/components/sections/ProductionAnalyticsSection.tsx`
+    (2026-08-13) — 1 grid (3-col row of distinct chart cards, not a data map)
+  - `production/components/sections/ProductionFooter.tsx` (2026-08-13) — 1
+    grid, uneven `2fr 1fr 1fr 1fr 1.5fr` preserved via
+    `md:grid-cols-[2fr_1fr_1fr_1fr_1.5fr]` (same pattern as R4/batch3 footers)
+  - `customers/components/sections/wholesaleDetail/ContactDetailsTab.tsx`
+    (2026-08-13) — 2 grids (business-contact / phone-contact field pairs)
+  - `customers/components/sections/wholesaleDetail/EditProfileTab.tsx`
+    (2026-08-13) — 1 grid (2-col left/right form-field split)
+  - `customers/components/sections/wholesaleDetail/OverviewTab.tsx`
+    (2026-08-13) — 1 grid (4-tile stat strip)
+  - `inventory/components/externalPurchases/modals/purchaseForm/SupplierSection.tsx`
+    (2026-08-13) — 2 grids (3-col selected-supplier summary panel, 2-col
+    supplier-name form-field row)
+  - `inventory/components/externalPurchases/modals/purchaseForm/SareeDetailsEditor.tsx`
+    (2026-08-13) — 1 grid (3-tile totals stat strip, static — the per-row
+    editor below it, `SareeRowCard`, is a separate real-data-row template,
+    see log below)
+  - `inventory/components/modals/shared/InvoiceGenerator.tsx` (2026-08-13) —
+    3 grids (2-col form/preview split, 2-col invoice-number/date field row,
+    2-col transport-detail preview panel)
+
+  **Found, needs Phase 4 `DataTable`/`CardList` migration (real data grids or
+  inner-grid-of-repeated-row templates, not touched):**
+  - `weavers/components/sections/WarpRequestsSection.tsx` — 3-col grid of
+    request cards, `requests.map(r => ...)`
+  - `weavers/components/sections/WeaverCardAndListViews.tsx` — 4-col grid of
+    weaver cards, `visible.map((w, i) => ...)`
+  - `weavers/components/sections/weaverDrawer/WeaverDrawerTabs.tsx` — 4-col
+    field grid inside each payment-history card,
+    `filteredWeaverPayments.map(p => ...)` — inner-grid-of-repeated-row, same
+    class as the R7-batch3 `CustomerCard`/`HistoryCard` exclusions
+  - `production/components/sections/BulkOrdersSection.tsx` — 3-col grid of
+    order cards, `bulkOrders.map((o, i) => ...)`
+  - `production/components/sections/batches/BatchViews.tsx`
+    (`BatchCardGrid` export) — 3-col grid of batch cards,
+    `batches.map((b, i) => ...)` (distinct from the file's 2 `<DataTable>`
+    instances already done in R1)
+  - `production/components/factory-loom/LoomMaterialsTab.tsx` — 3-col stat
+    header repeated per batch group, inside a `.map(batchId => ...)` loop —
+    inner-grid-of-repeated-row
+  - `production/components/factory-loom/LoomCard.tsx` — 2-col field grid
+    inside the per-loom card, rendered via `.map` in
+    `FactoryLoomPage.tsx:327`'s `auto-fill` card grid — inner-grid-of-card
+  - `production/components/sections/batches/SareeWeightTallyList.tsx` — 4-col
+    field grid, both in the read view (line ~155) and the inline `EditRow`
+    (line ~73), each inside `items.map(item => ...)` — inner-grid-of-row
+  - `inventory/components/PurchaseCard.tsx` — 2-col field grid inside the
+    per-purchase card, rendered via `.map` in `AllPurchasesPage.tsx:211`
+  - `inventory/components/StockCard.tsx` — 2-col field grid inside the
+    per-saree card, rendered via `.map` in `AllStockPage.tsx:243`
+  - `inventory/components/externalPurchases/modals/purchaseForm/SareeRowCard.tsx`
+    — 4 grids, all inside the per-saree-row editor rendered via
+    `sareeDetails.map(...)` in `SareeDetailsEditor.tsx`
+  - `vendors/components/vendors-page/VendorDirectorySection.tsx` — 3-col grid
+    of `VendorCard`, `pag.pageItems.map((v, i) => ...)`
+  - `customers/components/sections/RetailCustomersSection.tsx` — 3-col grid
+    of retail-customer cards, `filteredRetail.map(r => ...)`
+  - `customers/components/sections/WholesaleCustomersSection.tsx` — 3-col
+    grid of wholesale-customer cards, `wholesaleList.map((w, i) => ...)`
+
+  **Re-confirmed exclusion (no action):**
+  `inventory/components/PurchaseModals.tsx` — the 4 grids inside
+  `PrintPurchaseModal`'s `receipt` JSX (a physical GRN portaled to
+  `#document-print-root`) were already excluded in R2; verified no new
+  grids were added to this file since.
+
+  Verified via `tsc --noEmit` (clean) / `npm run build` (succeeds) / `npm run
+  lint` (33 pre-existing errors, same baseline as R7-batch3 — zero new errors
+  in any file touched this batch).
+
+  **Batch 5 (2026-08-13)** — triaged the deferred `src/features/portals`
+  chunk (shop-staff, weaver-portal, worker; ~48 files with
+  `gridTemplateColumns`), via 3 parallel worktree-isolated agents split by
+  sub-portal (same pattern as batch3/batch4). 20 files converted (27 grids;
+  form/stat/summary-panel grids → `grid-cols-1 md:grid-cols-N`), 5 files
+  logged below as real data grids / inner-grid-of-repeated-row templates
+  needing Phase 4 `DataTable`/`CardList` migration, 1 apparent dead-code
+  component flagged, the rest skipped as already-responsive (`isTablet`/
+  `isDesktop`/`isMobile`-gated column counts, the shared `cols()` helper, or
+  `repeat(auto-fit/auto-fill, minmax(...))` fluid grids).
+
+  Converted:
+  - `weaver-portal/theme.tsx` (2026-08-13) — 4 grids (`DesignDetailCard`/
+    `SareeTypeDetailCard` field pairs, re-verified beyond R2's original find)
+  - `weaver-portal/ConfirmMaterialPage.tsx` (2026-08-13) — 1 grid (3-tile
+    stat row)
+  - `weaver-portal/NotificationsPage.tsx` (2026-08-13) — 1 grid (2-col
+    field pair)
+  - `weaver-portal/PaymentLedgerPage.tsx` (2026-08-13) — 1 of the 4 R3-noted
+    grids converted (a plain 2-col stat pair); the 6-col ledger table stays
+    on its existing `overflow-x:auto`+`minWidth:640` fallback per R3, still
+    correct and untouched
+  - `weaver-portal/desktop/ConfirmSection.tsx` (2026-08-13) — 1 grid (3-tile
+    stat row, was gated by `isTablet` for a 3-vs-3 no-op — now genuinely
+    responsive under `md`)
+  - `weaver-portal/desktop/PaymentsSection.tsx` (2026-08-13) — 1 grid,
+    uneven `2fr 1fr 1fr 1fr` preserved via `md:grid-cols-[2fr_1fr_1fr_1fr]`;
+    desktop-only (imported only by `DesktopWeaverPortal.tsx` per R1's prior
+    finding), converted anyway per the parent instructions' "safe no-op"
+    guidance
+  - `shop-staff/CustomerSelectStep.tsx` (2026-08-13) — 1 grid (3-tile row)
+  - `shop-staff/ScanSareeStep.tsx` (2026-08-13) — 1 grid (2-col field pair)
+  - `shop-staff/desktop/ReturnSection.tsx` (2026-08-13) — 1 grid, uneven
+    `1fr 340px` preserved via `md:grid-cols-[1fr_340px]`
+  - `shop-staff/flow-kit.tsx` (2026-08-13) — 1 grid, uneven
+    `minmax(120px, 34%) 1fr` preserved via
+    `md:grid-cols-[minmax(120px,34%)_1fr]`
+  - `WorkerPortal.tsx` (2026-08-13) — 2 grids (3-tile top row, 2-col pair)
+  - `worker/WorkerFinishing.tsx` (2026-08-13) — 1 grid (2-col pair)
+  - `worker/WorkerHome.tsx` (2026-08-13) — 1 grid (3-tile top row); this
+    supersedes R3's "3 short stat tiles, mobile-safe as-is, not converted"
+    call — applying R7's more mechanical recipe converts it anyway since it
+    is a genuine fixed grid and the conversion is a strict no-op at `md:`+
+  - `worker/WorkerHomeDesktop.tsx` (2026-08-13) — 1 grid, uneven
+    `minmax(0,1fr) 400px` preserved via `md:grid-cols-[minmax(0,1fr)_400px]`
+  - `worker/WorkerQCInspectionScreen.tsx` (2026-08-13) — 1 grid (3-tile row)
+  - `worker/weavers/MaterialSplitPanel.tsx` (2026-08-13) — 1 grid (3-tile
+    row)
+  - `worker/weavers/OwnFactoryReceiveTab.tsx` (2026-08-13) — 1 grid (2-col
+    pair)
+  - `worker/weavers/ReceiveSareesPage.tsx` (2026-08-13) — 1 grid (2-col
+    pair)
+  - `worker/weavers/WeaverSigBlock.tsx` (2026-08-13) — 1 grid (2-col pair)
+  - `worker/weavers/WorkerIssueMaterialPage.tsx` (2026-08-13) — 4 grids
+    (2-col field pairs)
+
+  **Found, needs Phase 4 `DataTable`/`CardList` migration (real data grids
+  or inner-grid-of-repeated-row templates, not touched):**
+  - `weaver-portal/BatchHistoryPage.tsx` — outer `repeat(4, 1fr)` grid of
+    `MobileBatchCard`/`CompletedBatchCard`, `filtered.map((b, i) => ...)`;
+    has zero mobile collapse today, flagged for a real migration rather than
+    a grid-collapse patch
+  - `weaver-portal/WeaverMobileBatchCard.tsx` — inner 2-col stat grid inside
+    `MobileBatchCard`/`CompletedBatchCard`, the per-row template rendered by
+    the `BatchHistoryPage.tsx`/`MyBatchesPage.tsx` grids above —
+    inner-grid-of-repeated-row, same class as the R7-batch3/4
+    `CustomerCard`/`HistoryCard`/`LoomCard` exclusions
+  - `worker/WorkerQCPassedCard.tsx` — inner `1fr auto` grid inside the
+    per-item card rendered via `.map` in
+    `WorkerQCCompletedTodaySection.tsx`/`WorkerQCHistorySection.tsx`
+  - `worker/GRNItemVerificationCard.tsx` — inner 2-col field grid inside the
+    per-item card rendered via `.map` in `WorkerGRN.tsx`
+  - `worker/GRNSuccessPrint.tsx` (`GRNPrintView`) — 2-col grid of barcode
+    label cards, `batches.map((b, i) => ...)`; not a print document (it's
+    the on-screen "tap to print" trigger UI, not `mm`-based CSS), so this is
+    a real data grid, not an R7 print exclusion
+
+  **Found, not fixed — apparent dead code (out of scope to remove in a
+  responsive pass):**
+  - `weaver-portal/WeaverBatchNotifData.tsx` (`BatchCard` export) — contains
+    a 3-tile `gridTemplateColumns` stat grid but `grep` found zero
+    `<BatchCard` usages anywhere in `src/features/portals`; the file's other
+    exports (`WNFadeUp`, `WN_*` constants) are still imported elsewhere, so
+    only this one component looks dead. Not touched — flag for a cleanup
+    session, same treatment as the batch3 `SupplierCard.tsx` dead-code find.
+
+  Verified via `tsc --noEmit` (clean) / `npm run build` (succeeds) / `npm run
+  lint` (33 pre-existing errors, same baseline as batch3/batch4 — confirmed
+  all 6 error-bearing files are pre-existing dashboard baseline files
+  untouched by this batch; zero new errors in any file touched this batch).
+
+  **`gridTemplateColumns` still remains in files outside `src/features/portals`
+  that were not part of batch3/batch4/batch5's scope** — re-ran
+  `grep -rl "gridTemplateColumns" src/features --include="*.tsx"` (excluding
+  `reports`/`dashboards`, already R3/R4 territory) and found 10 files with no
+  prior mention anywhere in this document: `materials/components/issueMaterial/RecipientSelector.tsx`,
+  `materials/components/modals/WeaverModals.tsx`,
+  `materials/components/sections/MaterialsFooter.tsx`,
+  `materials/components/sections/POTrackerSection.tsx`,
+  `materials/components/sections/RecentProcurementSection.tsx`,
+  `materials/components/sections/StockOverviewAndIssued.tsx`,
+  `payments/components/OutstandingPage.tsx`,
+  `payments/components/wholesale/PaymentRemindersModal.tsx`,
+  `purchasing/components/PODocPreview.tsx`,
+  `weavers/components/sections/WeaverDrawer.tsx`. These were apparently
+  missed by batch3/4's per-directory sweeps (both claimed `materials` and
+  `payments` as fully triaged). **R7 is therefore not yet fully complete** —
+  a future session should triage these 10 files plus re-confirm the rest of
+  the previously-"complete" directories with a fresh full-repo grep before
+  marking R7 done.
+
+  **Batch 6 (2026-08-13)** — closed the batch5 gap. Triaged the 10 files
+  found by batch5's fresh grep. Re-verified `materials/components/modals/WeaverModals.tsx`
+  against batch3's print-document reasoning: still accurate — its 4 grids
+  sit inside the `IssueSlipModal`'s `slip` JSX, explicitly commented "Same
+  JSX rendered on screen and portaled to `#document-print-root` via
+  `useDocument()`" (line 94-96), same as the rest of the print-document
+  exclusion class. Confirmed, not touched, not logged as a gap.
+
+  Of the remaining 9, only 1 needed a conversion:
+  - `purchasing/components/PODocPreview.tsx` (2026-08-13) — the signature
+    block (`"1fr 1fr"`, fixed 2-col, not a repeated row) converted to
+    `grid-cols-1 md:grid-cols-2`. The materials table's header row and its
+    `materials.map((m, i) => ...)` row template (both `"1fr 1.6fr 0.7fr 0.7fr"`)
+    are a real data grid — logged below for Phase 4, left untouched.
+
+  The other 8 were already responsive and needed no change (confirmed, not
+  logged as gaps — same "skip, already responsive" treatment as the
+  unlisted files below):
+  - `materials/components/issueMaterial/RecipientSelector.tsx` — fluid
+    `repeat(auto-fill, minmax(240px, 1fr))`
+  - `materials/components/sections/MaterialsFooter.tsx` — `isMobile`-gated
+    (`repeat(2, 1fr)` mobile, fluid `auto-fit`/`minmax` desktop)
+  - `materials/components/sections/POTrackerSection.tsx` — fluid
+    `repeat(auto-fill, minmax(300px, 1fr))`
+  - `materials/components/sections/RecentProcurementSection.tsx` —
+    `isMobile`-gated (`"1fr"` vs `repeat(4, 1fr)`)
+  - `materials/components/sections/StockOverviewAndIssued.tsx` — 2 grids,
+    both `isMobile`-gated (`"1fr"` vs `repeat(3, 1fr)`)
+  - `payments/components/OutstandingPage.tsx` — fluid
+    `repeat(auto-fit, minmax(220px, 1fr))`
+  - `payments/components/wholesale/PaymentRemindersModal.tsx` — already
+    single-column (`"1fr"`)
+  - `weavers/components/sections/WeaverDrawer.tsx` — fluid
+    `repeat(auto-fit, minmax(420px, 1fr))`
+
+  **Final full-repo sweep** — re-ran
+  `grep -rl "gridTemplateColumns" src/features --include="*.tsx"` (excluding
+  `reports/`, `dashboards/`, `shared/ui/document/**`) and cross-referenced
+  all 81 hits against every filename mentioned anywhere in this document
+  (§7 R7 section + all of §9/§10 across batches 1-6). 16 files had no prior
+  mention: `portals/components/shop-staff/NewSaleFlow.tsx`,
+  `ProcessReturn.tsx`, `ProcessReturnRetailFlow.tsx`,
+  `ProcessReturnWholesaleFlow.tsx`, `desktop/CustomersSection.tsx`,
+  `desktop/DesktopTopNav.tsx`, `desktop/HomeSection.tsx`,
+  `desktop/ReportsSection.tsx`, `desktop/SaleSection.tsx`,
+  `weaver-portal/WeaverMaterialHistoryCard.tsx`,
+  `weaver-portal/desktop/DesktopHero.tsx`,
+  `weaver-portal/desktop/WarpSection.tsx`, `worker/WorkerDispatch.tsx`,
+  `worker/WorkerQC.tsx`, `worker/WorkerQCDefectiveSection.tsx`,
+  `worker/WorkerQCGridCards.tsx`. Checked each: every one is already
+  responsive — `isMobile`/`isTablet`/`isDesktop`-gated column counts (the
+  majority) or fluid `repeat(auto-fit/auto-fill, minmax(...))` grids that
+  reflow on their own. None needed conversion; none logged as gaps, same
+  treatment as batch5's unlisted "skipped as already-responsive" files.
+
+  **Zero untriaged files remain in `src/features`** (excluding
+  `reports/`, `dashboards/`, and `shared/ui/document/**`) as of this batch.
+
+  Verified via `tsc --noEmit` (clean) / `npm run build` (succeeds) / `npm run
+  lint` (33 pre-existing errors, same baseline as batch3/4/5 — zero new
+  errors in any file touched this batch).
+
+- [x] R7 Grid-as-table triage — ✅ **COMPLETE (2026-08-13)**. Across 6
+  batches: **~63 files converted** (form/stat/summary-panel grids collapsed
+  to `grid-cols-1 md:grid-cols-N`, uneven fr-templates preserved via
+  arbitrary `md:grid-cols-[...]` values), **~13 files logged for Phase 4**
+  `DataTable`/`CardList` migration (real data grids and inner-grid-of-
+  repeated-row card templates — see §10 for the full list), and **dozens of
+  confirmed exclusions** (print documents portaled to
+  `#document-print-root`, and grids already responsive via
+  `isMobile`/`isTablet`/`isDesktop` gating or fluid `auto-fit`/`auto-fill`
+  `minmax()` templates). Final full-repo grep against every batch's file
+  list confirms no `gridTemplateColumns` instance remains untriaged in
+  `src/features` outside `reports/`/`dashboards/` (R3/R4 territory) and
+  `shared/ui/document/**` (print docs, out of scope by design).
+- [x] R8 QA, device matrix, ratchet metrics — ✅ **COMPLETE (2026-08-13)**,
+  with one sub-item left explicitly unexecuted (see below). Three
+  deliverables:
+  1. **Ratchet metrics** — added 4 metrics to `METRICS` in
+     `frontend/scripts/ratchet.mjs` under a new "Phase 9: Responsive rollout"
+     block: `datatable-responsive` (0→70, now 47), `column-priority` (0→70,
+     now 54), `hand-rolled-breakpoints` (3→0, now 7 — see §10 note on why
+     this reads higher than R0.1's "3 sites" framing), `fixed-width-px`
+     (re-measured baseline 9→0, now 9). `npm run ratchet` runs clean and
+     writes `design-system/RATCHET.md` with all 4 under "PHASE 9".
+  2. **Device-matrix checklist** — built as a separate file,
+     `design-system/RESPONSIVE-QA-CHECKLIST.md` (linked from §11), covering
+     all 5 portals × 6 widths (320/375/414/768/1024/1280px) × 6 checks (nav
+     collapse, no h-scroll, tables→cards, modals=sheets, hero+stats overlap,
+     forms usable) plus a touch-target spot-check. **This is a built
+     deliverable, not an executed QA pass** — no browser session ran through
+     it this session (§7.1's blocker: Superadmin login, and this rollout's
+     recurring stuck browser-preview access, were both still in effect). A
+     future session with working browser access should be the one to check
+     its boxes.
+  3. **ESLint rule** — added a `no-restricted-syntax` selector to the
+     existing consolidated Phase 3–7 ratchet block in `frontend/eslint.config.js`
+     (not a new config object — flat config doesn't merge same-rule-name
+     objects matching the same glob, per that block's own comment) that
+     warns on `width`/`minWidth`/`maxWidth: <literal ≥320>` under
+     `src/features/**/*.tsx`. `warn` severity, matching the block's existing
+     convention. Confirmed it fires (104 new warnings across the tree) and
+     that `npm run lint` still reports the same 33-error baseline (only new
+     warnings, zero new errors).
+
+  Verified via `npx tsc --noEmit` (clean) / `npm run build` (succeeds) /
+  `npm run lint` (33 pre-existing errors, unchanged; +104 warnings from the
+  new rule, as intended).
+
+  **This closes Phase R.** R0–R8 are all now complete or explicitly
+  documented as partially-open (R1's 5 `renderExpandedRow`/raw-`<table>`
+  exclusions, R7's Phase-4-migration backlog, this R8 checklist's unexecuted
+  browser walkthrough) — see §10 for the full found-not-fixed log.
+
+### Out-of-band: hero+stats pattern + universal gutter sweep (2026-08-13)
+
+Two user-reported mobile bugs, fixed outside the numbered phase sequence
+(reported directly against Production/Inventory/Materials, then generalized
+per explicit user request to "every section, every portal"):
+
+**1. Hero header + floating stats-strip pattern** — every major page has a dark
+`<header>` (headline/eyebrow/body + a 50%-width decorative image) with a
+`StatsStrip`/`MetricsBar` floating up over its bottom edge via negative
+`marginTop`. Fixed on all genuine instances app-wide:
+- Recipe: hero text column → full width below `xl`, decorative image →
+  `hidden xl:block`, stats grid → `grid grid-cols-2 xl:flex`, gutter → the
+  standard `px-4 md:px-7 xl:px-<original/4>` scale (§3.3).
+- Two refinements added on top, also app-wide: (a) the negative overlap margin
+  is now responsive (`-mt-6..8 md:-mt-8..14 xl:-mt-[original]`) instead of one
+  fixed value, so a hero paragraph that wraps to more lines on a narrow phone
+  is never covered by the floating stats card; (b) hero heading/subtitle/body
+  and stat-tile numerals use `clamp()` instead of a fixed desktop px size
+  (numeral clamp `clamp(28px, 8vw, 48px)` reuses the exact formula already
+  verified for `StatsStrip` in R0.2).
+- Files: `production`, `inventory`, `customers`, `weavers`, `materials`,
+  `reports`, `finishing`, `vendors`, `payments` (header+stats+Outstanding),
+  `suppliers`, `audit`, Superadmin dashboard overview, inventory
+  external-purchases, production batch-creation header + Factory Looms,
+  `pricing`, `firms`, `notifications`, `purchasing/approvals`.
+- Explicitly skipped, correctly: `settings/LabelSettingsPage.tsx` (no stats
+  strip, different shape); Admin dashboard `Hero.tsx`/`MetricsBar.tsx` and
+  Weaver portal desktop `WeaverHero.tsx`/`WeaverMetricsBar.tsx` (both
+  desktop-only per R3's mobile-tree-swap finding — mobile renders a separate,
+  already-correct component).
+- **Found, not fixed** (needs more than the mechanical recipe):
+  - `audit/components/audit-log/PageHeaderStats.tsx` — its stats use a
+    different `StatCol`-based layout that doesn't reflow into a grid the way
+    the array-mapped strips do; would need a `StatCol`/shared.tsx change.
+  - `dashboards/components/superadmin-dashboard/SAOverviewPage.tsx`'s
+    `SAHero()` — text column uses a fixed `width: "50%"` / fixed `padding: "0
+    56px"` instead of the 65%/xl-basis pattern. Unlike Admin's dashboard, this
+    one *does* render on mobile (chrome-only swap, not a full tree swap — see
+    R3 notes), so it's still squeezed there. Needs a real structural edit, not
+    just the font/overlap refinements (which were applied).
+
+**2. Universal page-gutter sweep** — after approving the hero+stats fix, the
+user asked for the §3.3 gutter convention applied to *every* section-level
+wrapper in every portal, not just hero headers. Ran via 5 parallel
+worktree-isolated agents split by feature area (payments/firms/suppliers/
+vendors/purchasing; weavers/production/materials/customers/inventory;
+pricing/reports/audit/notifications/design-library/users/finishing/settings;
+dashboards admin+superadmin/bulk-orders; the 3 portals), each grepping for
+`padding:\s*"...\d+px \d+px..."` and fixed `paddingLeft`/`paddingRight`/
+`margin` gutters, converting every genuine page/section-level outer horizontal
+gutter to `px-4 md:px-7 xl:px-<original/4>` (or `pl-/pr-`/`mx-` splits for
+asymmetric cases), and leaving inner card padding, vertical-only padding,
+modal internals, and print documents untouched. ~95 files touched across the
+whole app. Two merge conflicts (both against files the hero+stats pass had
+already fixed more completely — `purchasing/approvals/ApprovalsHeader.tsx`,
+`StatsStrip.tsx`, `production/FactoryLoomPage.tsx`) resolved in favor of the
+more complete hero+stats version. Verified via `tsc`/`build`/`lint` after
+merging all 5 branches into `main` — clean, same ~33-error pre-existing
+baseline, zero new errors.
+
+Neither of these was verified in-browser — the recurring stuck
+preview-policy-check blocker (see multiple earlier entries in this log) was
+present for the entire session. The Inventory page fix was confirmed correct
+by the user via a real device/browser screenshot; the rest follow the
+identical, now-proven recipe but are structurally unverified.
 
 ---
 
@@ -528,6 +1338,23 @@ problem and recording it is the correct response, not fixing it.
 |---|---|---|---|
 | 2026-08-12 | — | — | Document created. Baselines: 70 DataTable consumers with 0 `responsive`; 5 raw `<table>` files; 188 files using grid columns; 63 modal files; 3 hand-rolled breakpoint checks. |
 | 2026-08-12 | R0.1 | `Modal.tsx`, `Popover.tsx`, `Drawer.tsx` | The 3 `window.innerWidth<768` sites are inline `onOpenAutoFocus` guards, not layout state — checked at the moment the dialog opens. Converting to `useIsMobile()` would be purely cosmetic and touches 3 app-wide shared primitives for no behavioral gain. Left as-is; not a gap, a deliberate skip. |
+| 2026-08-13 | R4 (regression) | `ReportTabNav.tsx`, `PageHeaderAndMetrics.tsx` | **Real bug, user-reported via screenshot**: whole page horizontally scrolled on tablet. Root cause: I gated both components' revert-to-dense-layout at `md:` (768px) instead of `xl:` (1280px) — neither the 10-tab strip nor the 5-tile stats row fits in the 768-1279px tablet range, so the row overflowed its container and dragged the entire page into horizontal scroll. Fixed same session (commit `a004cee`) by moving both to `xl:`. New standing rule added at §3.7 to prevent recurrence: row/flex-per-item layouts must revert at `xl:`, not `md:`; grid-based column-stacked cards are safe at `md:`. Audited rest of R1-R4 for the same `md:flex` pattern via `git log` — nothing else found. Still not visually verified in-browser (recurring stuck preview policy-check this whole rollout) — this incident is exactly why that gap matters; treat any future `md:`-gated row layout as higher-risk until real browser verification is possible. |
+| 2026-08-13 | R6 | `beere-dashboard/MobileNavDrawer.tsx`, `superadmin-dashboard/SAMobileNav.tsx` | Nav-item `Button`s use `!py-[11px]` around a single 14px-line-height label — estimated ~42px tall, borderline against the §3.5 44px touch-target minimum. Not confidently a violation without a real render measurement (a couple px of font-metrics variance could account for the whole gap), so not edited blindly. Flag for R8's device-matrix pass, which can measure it for real and bump the padding a few px if it's genuinely short. |
+| 2026-08-13 | R6 | `WorkerPortal.tsx` (`TABS` array) | **Real bug, not fixed (out of scope for this rollout — data correctness, not responsive/layout).** QC and Finishing bottom-tab badges are hardcoded literals `"6"` and `"2"`, always showing those numbers regardless of actual pending counts. `WorkerTopNav.tsx` (desktop) computes the real `pendingQcCount` dynamically for the same tab — the mobile version was apparently never wired up to live data. Worth a dedicated fix outside Phase R. |
+| 2026-08-13 | out-of-band | `weavers/components/sections/WeaverLeaderboardClusterRow.tsx` | **User-reported via screenshot**: the Recharts `Tooltip` on the "Top 10 Weavers by Output" horizontal bar chart overlaps the next bar's label on mobile. This is a chart-library interaction/positioning issue (tooltip follows touch position, bars are close together vertically on a narrow `ResponsiveContainer`), not a static layout bug like the ones fixed alongside it (§ below) — fixing it safely needs either a `position`/`offset` tuning pass verified live in-browser, or a different mobile-specific interaction (tap-to-pin instead of hover-follow). Not attempted blind with browser verification unavailable this session; flag for a session with working browser access. |
+| 2026-08-13 | out-of-band | 4 files: `materials/AlertsCard.tsx`, `payments/weaver/BankUploadPanel.tsx`, `payments/vendor/VendorUploadPanel.tsx`, `inventory/sections/ActionBar.tsx` | **Fixed, not a numbered phase.** User-reported via 8 screenshots: several "icon+label+description left, action button(s) right" rows used `display:flex` with no `flexWrap`, so on mobile the description/status text wrapped to multiple lines while the button block stayed vertically centered on the same row, visually overlapping the wrapped text. Fixed by adding `flexWrap: "wrap"` (commit `8d522a8`) — the button block now drops to its own line instead of overlapping. This is a distinct bug class from the page-level horizontal-scroll bugs fixed earlier (§3.6/§3.7) — worth grepping for the same `display: "flex", alignItems: "center", justifyContent: "space-between"` (or similar) pattern with no `flexWrap` across the rest of the app in a future session, since these 4 were found from user screenshots, not an exhaustive sweep. |
+| 2026-08-13 | R7 | `payments/components/wholesale/CustomerCard.tsx`, `payments/components/history/HistoryCard.tsx`, `payments/components/vendor/VendorUploadPanel.tsx` (the matched-bill card at line ~195) | **Deliberately not converted.** Each has a small fixed 2-column field grid *inside* a single card template that is itself the repeated unit of a real data grid (rendered via `.map()` in a parent file — see the Phase-4-migration list above). Converting the internal field grid would be inert/pointless while the outer grid stays a fixed 3-column layout (mobile still crams 3 un-collapsed cards per row), and the whole card's internal layout is going to be redefined anyway when Phase 4 migrates the parent to `DataTable`/`CardList`. Left both the outer and inner grids untouched for these three files, consistent with the "don't touch real data grids" rule extending to their per-row card templates. |
+| 2026-08-13 | R7 | `suppliers/components/sections/SupplierCard.tsx` | **Found, not fixed — likely dead code, not a responsive bug.** This file defines its own `SupplierCard` component with a 3-col `gridTemplateColumns` stat strip, but `grep` found zero importers anywhere in `src/features/suppliers`. The only `SupplierCard` actually rendered (`SupplierDirectorySection.tsx`) imports a *different* component of the same name from `@/shared/ui/domain`. Not touched (out of scope to fix/delete dead code in a responsive pass) — flag for a cleanup session. |
+| 2026-08-13 | R7 batch5 | `weaver-portal/WeaverMobileBatchCard.tsx`, `worker/WorkerQCPassedCard.tsx`, `worker/GRNItemVerificationCard.tsx` | **Deliberately not converted.** Each has a small fixed grid *inside* a card template that is itself the repeated unit of a real data grid rendered via `.map()` in a parent file (`BatchHistoryPage.tsx`/`MyBatchesPage.tsx`, `WorkerQCCompletedTodaySection.tsx`/`WorkerQCHistorySection.tsx`, `WorkerGRN.tsx` respectively) — same inner-grid-of-repeated-row exclusion class as the R7-batch3/4 `CustomerCard`/`HistoryCard`/`LoomCard` finds. Logged in §9's batch5 entry for Phase 4 migration. |
+| 2026-08-13 | R7 batch5 | `weaver-portal/BatchHistoryPage.tsx` | **Found, not fixed.** Its outer `repeat(4, 1fr)` grid of `MobileBatchCard`/`CompletedBatchCard` (`filtered.map`) has zero mobile collapse today — a real data grid, not a form/stat layout, so this is Phase 4 `DataTable`/`CardList` migration work rather than a grid-collapse patch. |
+| 2026-08-13 | R7 batch5 | `weaver-portal/WeaverBatchNotifData.tsx` (`BatchCard` export) | **Found, not fixed — likely dead code.** Contains a 3-tile stat grid but `grep` found zero `<BatchCard` usages anywhere in `src/features/portals`. Other exports in the same file are still used elsewhere. Not touched (out of scope to remove dead code here) — flag for a cleanup session, same treatment as the batch3 `SupplierCard.tsx` find. |
+| 2026-08-13 | R7 batch5 | `worker/GRNSuccessPrint.tsx` (`GRNPrintView`) | **Found, not fixed.** Despite the filename, this is not an R7 print-document exclusion — it's on-screen "tap to print barcode labels" UI (no `mm`-based CSS), and its 2-col grid of label cards (`batches.map`) is a real data grid. Logged for Phase 4 migration rather than converted. |
+| 2026-08-13 | R7 batch5 | 10 files across `materials`, `payments`, `purchasing`, `weavers` | **Found via a fresh full-repo grep, not yet triaged.** `materials/components/issueMaterial/RecipientSelector.tsx`, `materials/components/modals/WeaverModals.tsx`, `materials/components/sections/MaterialsFooter.tsx`, `materials/components/sections/POTrackerSection.tsx`, `materials/components/sections/RecentProcurementSection.tsx`, `materials/components/sections/StockOverviewAndIssued.tsx`, `payments/components/OutstandingPage.tsx`, `payments/components/wholesale/PaymentRemindersModal.tsx`, `purchasing/components/PODocPreview.tsx`, `weavers/components/sections/WeaverDrawer.tsx` all still contain `gridTemplateColumns` and have no prior mention in this document, despite `materials`/`payments` being claimed fully triaged in R7-batch3. A future session should triage these 10 plus re-run the full-repo grep against every directory batch3/4 marked complete before declaring R7 done. |
+| 2026-08-13 | R7 batch6 | `materials/components/modals/WeaverModals.tsx` | **Re-verified, confirmed correct exclusion.** Re-checked batch3's print-document reasoning against the current file: `IssueSlipModal`'s 4 grids still sit inside the `slip` JSX, explicitly commented "Same JSX rendered on screen and portaled to `#document-print-root` via `useDocument()`" (lines 94-96). Still accurate — left untouched. |
+| 2026-08-13 | R7 batch6 | `purchasing/components/PODocPreview.tsx` | **Found, not fixed.** The materials table's header row (`["Material","Description","Qty / Unit","Amount"]`) and its `materials.map((m, i) => ...)` row template both use a fixed `"1fr 1.6fr 0.7fr 0.7fr"` grid — a real data grid (repeated rows of uniform records), not a form layout. Logged for Phase 4 `DataTable`/`CardList` migration; the signature block in the same file (a genuine fixed 2-col form pair, not repeated) was converted separately. |
+| 2026-08-13 | R8 | `hand-rolled-breakpoints` ratchet metric | **Judgment call.** §8's spec table gives baseline 3 for this metric (matching R0.1's "3 hand-rolled sites" framing at the time the doc was written). A fresh `grep -rn "window.innerWidth" src --include="*.tsx" --include="*.ts" | grep -v useResponsive.ts` now finds 7 files / 9 occurrences: `auth/components/LoginPage.tsx` (1, not previously logged anywhere in this doc), `shared/ui/SectionNavigator.tsx` (3, not previously logged), `shared/ui/_legacy/use-mobile.ts` (2, deliberately kept per §2 — backs the shadcn sidebar primitive), and the 3 R0.1-assessed sites in `Modal.tsx`/`Popover.tsx`/`Drawer.tsx` (deliberately kept, see the 2026-08-12 R0.1 log entry above). Kept the doc's stated baseline of 3 in the ratchet metric (per this section's own instruction to use the given shape/values), but the *live* count the ratchet script reports is 7 — `LoginPage.tsx` and `SectionNavigator.tsx` were never triaged in R0 and are new findings from this pass. Not fixed here (out of scope for R8 to start converting call sites — that's R0-shaped work); flagging for a future session to decide whether `SectionNavigator.tsx`'s 3 sites and `LoginPage.tsx`'s 1 site should convert to `useIsMobile()` or get the same "deliberately kept" reasoning as the original 3. |
+| 2026-08-13 | R8 | `fixed-width-px` ratchet metric | **Baseline re-measured per §8's instruction** (doc listed it as TBD). Current count across `src/features/**/*.tsx`: 9 literal `width: <n>` occurrences with `n >= 320` (decorative circles/icons in `LoginBrandPanel.tsx`/`SplashScreen.tsx`/`ApprovalsHeader.tsx`, fixed card/panel widths in `LabelPreviewCard.tsx`/`ReportModals.tsx`/`PageHeaderStats.tsx`/`SariTagPhysicalLabel.tsx`/`SareeTypeCard.tsx`). Not fixed in R8 (§0 — R8 is QA/governance, not a conversion pass); the new ESLint rule (see §9 R8 entry) now warns on any *new* instance so this becomes a ratchet-down target for a future session rather than growing further. |
+| 2026-08-13 | R8 | Device-matrix checklist | **Explicitly not executed this session.** `design-system/RESPONSIVE-QA-CHECKLIST.md` was built as the R8 deliverable per §7's instruction, but no boxes were checked — this session had no working browser-QA path (§7.1's Superadmin-login blocker plus the rollout's recurring stuck browser-preview access). Do not treat any portal/width combination in that file as visually verified until a session with real browser access walks through it. |
 
 ---
 
@@ -539,3 +1366,6 @@ problem and recording it is the correct response, not fixing it.
 - `design-system/05-OVERLAYS.md` — `Modal`, Part D.1 defines the mobile bottom sheet
 - `design-system/07-DOCUMENTS.md` — print documents, **explicitly out of scope for Phase R**
 - `design-system/RATCHET.md` — auto-generated; regenerate with `npm run ratchet`
+- `design-system/RESPONSIVE-QA-CHECKLIST.md` — R8's per-portal × per-width device
+  checklist (320/375/414/768/1024/1280px, 5 portals). **Unexecuted deliverable** —
+  built for a future browser session to walk through, not run this session (§7.1).

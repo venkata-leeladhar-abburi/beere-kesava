@@ -7,18 +7,17 @@ import { T, F } from "../theme";
 export function SummaryCards({ purchases, totalSarees }: { purchases: Purchase[]; totalSarees: number }) {
   return (
     <div
+      className="px-4 md:px-7 xl:px-14 -mt-6 md:-mt-8 xl:-mt-[40px]"
       style={{
-        padding: "0 56px",
-        marginTop: -40,
         zIndex: 20,
         position: "relative",
       }}
     >
       <div
+        className="grid grid-cols-2 xl:flex"
         style={{
           background: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)",
           borderRadius: 28,
-          display: "flex",
           alignItems: "stretch",
           boxShadow: "0 30px 80px rgba(0,0,0,0.32), 0 0 0 1px rgba(200,155,71,0.16)",
           overflow: "hidden",
@@ -72,7 +71,7 @@ export function SummaryCards({ purchases, totalSarees }: { purchases: Purchase[]
                 <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, letterSpacing: "2px", textTransform: "uppercase" as const, marginBottom: 8, color: m.hi ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.90)" }}>
                   {m.label}
                 </div>
-                <div style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontSize: 48, color: m.hi ? T.goldLight : "#FFFDF9", lineHeight: 1.1, marginBottom: 8, fontVariantNumeric: "tabular-nums" as const }}>
+                <div style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontSize: "clamp(28px, 8vw, 48px)", color: m.hi ? T.goldLight : "#FFFDF9", lineHeight: 1.1, marginBottom: 8, fontVariantNumeric: "tabular-nums" as const }}>
                   {m.val}
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>

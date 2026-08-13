@@ -79,7 +79,7 @@ export function PerformancePanel({ onNavigate }: { onNavigate?: (tab: string) =>
           }
         >
           {/* Two-column body */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0, margin: "-24px -28px -28px" }}>
+          <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 0, margin: "-24px -28px -28px" }}>
 
             {/* ── Left: Leaderboard ── */}
             <div style={{ padding: "28px 32px", borderRight: `1px solid ${T.borderDef}` }}>
@@ -209,7 +209,7 @@ export function PerformancePanel({ onNavigate }: { onNavigate?: (tab: string) =>
               </div>
 
               {/* Two mini-stat boxes */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+              <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
                 {[
                   { label: "Pending Quality Checks", value: `${pendingQC} sarees`, color: T.antiqueGold, bg: "rgba(200,155,71,0.07)", border: "rgba(200,155,71,0.22)", PhIcon: Clock },
                   { label: "Overall Defect Rate", value: `${overallDefectRate}%`, color: T.crimson, bg: "rgba(192,57,43,0.05)", border: "rgba(192,57,43,0.18)", PhIcon: WarningCircle },

@@ -190,7 +190,7 @@ function DropBtn({ label, icon }: { label: string; icon?: React.ReactNode }) {
 // ── Section 1: Page header ────────────────────────────────────────────────────
 function PageHeader() {
   return (
-    <header style={{ background: T.darkBurgundy, padding: "18px 40px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+    <header className="px-4 md:px-7 xl:px-10" style={{ background: T.darkBurgundy, paddingTop: 18, paddingBottom: 18, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
         <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
           <rect width="36" height="36" rx="8" fill="rgba(200,155,71,0.18)" />
@@ -221,8 +221,8 @@ function PageHeader() {
 // ── Section 2: Filter bar ─────────────────────────────────────────────────────
 function FilterBar() {
   return (
-    <div style={{
-      background: "#fff", padding: "14px 40px",
+    <div className="px-4 md:px-7 xl:px-10" style={{
+      background: "#fff", paddingTop: 14, paddingBottom: 14,
       borderBottom: `1px solid ${T.borderDef}`,
       display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap",
     }}>
@@ -241,8 +241,8 @@ function FilterBar() {
 // ── Section 3: Stats bar ──────────────────────────────────────────────────────
 function StatsBar({ batches, totalMakingCharges }: { batches: HistoryBatch[]; totalMakingCharges: Paise }) {
   return (
-    <div style={{
-      background: T.silkCream, padding: "11px 40px",
+    <div className="px-4 md:px-7 xl:px-10" style={{
+      background: T.silkCream, paddingTop: 11, paddingBottom: 11,
       borderBottom: `1px solid ${T.borderDef}`,
       display: "flex", alignItems: "center", justifyContent: "space-between",
     }}>
@@ -267,7 +267,7 @@ function StatsBar({ batches, totalMakingCharges }: { batches: HistoryBatch[]; to
 function TableSection({ batches, isLoading }: { batches: HistoryBatch[]; isLoading: boolean }) {
   const columns: ColumnDef<HistoryBatch>[] = [
     {
-      id: "id", header: "Batch Number", accessor: b => b.batchId,
+      id: "id", header: "Batch Number", accessor: b => b.batchId, priority: 1,
       cell: (_v, b) => (
         <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 7px", borderRadius: 5 }}>
           {b.batchId}
@@ -275,7 +275,7 @@ function TableSection({ batches, isLoading }: { batches: HistoryBatch[]; isLoadi
       ),
     },
     {
-      id: "designCode", header: "Design Code", accessor: b => b.designCode,
+      id: "designCode", header: "Design Code", accessor: b => b.designCode, priority: 3,
       cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{b.designCode}</span>,
     },
     {
@@ -312,7 +312,7 @@ function TableSection({ batches, isLoading }: { batches: HistoryBatch[]; isLoadi
       cell: (_v, b) => <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>{b.completion}</span>,
     },
     {
-      id: "allPieces", header: "All Pieces", accessor: b => b.allPieces, align: "center",
+      id: "allPieces", header: "All Pieces", accessor: b => b.allPieces, align: "center", priority: 3,
       cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.taupe }}>{b.allPieces}</span>,
     },
     {
@@ -336,11 +336,11 @@ function TableSection({ batches, isLoading }: { batches: HistoryBatch[]; isLoadi
       cell: (_v, b) => <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 13, color: T.luxuryBrown }}>{b.makingCharges}</span>,
     },
     {
-      id: "completedOn", header: "Completed On", accessor: b => b.completedOn,
+      id: "completedOn", header: "Completed On", accessor: b => b.completedOn, priority: 3,
       cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{b.completedOn}</span>,
     },
     {
-      id: "bulkOrder", header: "Bulk Order", accessor: b => b.bulkOrder, align: "center",
+      id: "bulkOrder", header: "Bulk Order", accessor: b => b.bulkOrder, align: "center", priority: 3,
       cell: (_v, b) => b.bulkOrder ? (
         <span style={{ fontFamily: F.mono, fontSize: 12, background: "rgba(110,15,45,0.08)", color: T.royalBurgundy, padding: "2px 7px", borderRadius: 5, fontWeight: 600 }}>{b.bulkOrder}</span>
       ) : (
@@ -354,9 +354,10 @@ function TableSection({ batches, isLoading }: { batches: HistoryBatch[]; isLoadi
   ];
 
   return (
-    <div style={{ padding: "0 40px", background: T.warmIvory }}>
+    <div className="px-4 md:px-7 xl:px-10" style={{ background: T.warmIvory }}>
       <div style={{ overflowX: "auto", borderRadius: 10, border: `1px solid ${T.borderDef}`, boxShadow: "0 1px 6px rgba(0,0,0,0.05)", marginTop: 20 }}>
         <DataTable
+          responsive
           columns={columns}
           data={batches}
           getRowId={b => b.id}

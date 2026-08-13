@@ -62,7 +62,7 @@ export function OrderDialogContent({ order, mode }: { order: BulkOrder; mode: "v
           <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.antiqueGold }}>{formatMoney(rupees(balance))}</div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 14 }}>
           {[
             { label: "Est. Value", val: amountDue > 0 ? formatMoney(rupees(amountDue)) : "—" },
             { label: "Amount Paid", val: amountPaid > 0 ? formatMoney(rupees(amountPaid)) : <Money value={rupees(0)} /> },
@@ -193,11 +193,11 @@ export function OrderDialogContent({ order, mode }: { order: BulkOrder; mode: "v
                   </div>
 
                   <div style={{ marginBottom: 14 }}>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 100px", padding: "6px 0", borderBottom: `1.5px solid ${T.borderDef}`, marginBottom: 4 }}>
+                    <div className="grid grid-cols-1 md:grid-cols-[1fr_100px]" style={{ padding: "6px 0", borderBottom: `1.5px solid ${T.borderDef}`, marginBottom: 4 }}>
                       <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.05em" }}>Item</div>
                       <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.05em", textAlign: "right" }}>Amount (₹)</div>
                     </div>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 100px", padding: "5px 0" }}>
+                    <div className="grid grid-cols-1 md:grid-cols-[1fr_100px]" style={{ padding: "5px 0" }}>
                       <div>
                         <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
                           <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 600 }}>Bulk Order Production</span>
@@ -225,7 +225,7 @@ export function OrderDialogContent({ order, mode }: { order: BulkOrder; mode: "v
                       <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Bulk Order: </span>
                       <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{order.ref}</span>
                     </div>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px 12px" }}>
+                    <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: "4px 12px" }}>
                       {[
                         ["LR Number", "wef"],
                         ["Transport", "dsf"],
@@ -282,7 +282,7 @@ export function OrderDialogContent({ order, mode }: { order: BulkOrder; mode: "v
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+      <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 14 }}>
         <div style={{ background: "rgba(110,15,45,0.04)", borderRadius: 10, padding: "12px 14px", border: "1px solid rgba(110,15,45,0.10)" }}>
           <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 6 }}>Quantity (Sarees)</div>
           <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{order.total}</div>
@@ -293,7 +293,7 @@ export function OrderDialogContent({ order, mode }: { order: BulkOrder; mode: "v
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+      <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 14 }}>
         <div style={{ padding: "12px 14px", background: "rgba(200,155,71,0.07)", borderRadius: 10, border: "1px solid rgba(200,155,71,0.20)", display: "flex", flexDirection: "column" }}>
           <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 6 }}>Estimated Value (₹)</span>
           <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: "#8B6018" }}>{formatMoney(rupees(amountDue))}</span>

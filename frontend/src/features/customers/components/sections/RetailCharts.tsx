@@ -114,7 +114,7 @@ export function RetailChartsRow1() {
   const maxSpend = top10RetailCustomers[0]?.spend || 1;
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 22, marginBottom: 22, alignItems: "stretch" }}>
+    <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 22, marginBottom: 22, alignItems: "stretch" }}>
       {/* Chart 1: Top Retail Customers */}
       <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 18, padding: "28px", display: "flex", flexDirection: "column", height: 380, boxShadow: "0 2px 14px rgba(74,6,27,0.05)" }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 18 }}>
@@ -312,7 +312,7 @@ export function RetailChartsRow2() {
   const maxCount = frequentRetailBuyers[0]?.count || 1;
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 22, marginBottom: 32, alignItems: "stretch" }}>
+    <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 22, marginBottom: 32, alignItems: "stretch" }}>
       {/* Chart 4: Frequent Buyers */}
       <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 18, padding: "28px", display: "flex", flexDirection: "column", boxShadow: "0 2px 14px rgba(74,6,27,0.05)" }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 22 }}>

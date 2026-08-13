@@ -1,7 +1,7 @@
 import React from "react";
 import { F, T } from "../theme";
 import { FinancialSummarySection } from "./FinancialSummarySection";
-import { PaymentsFooter } from "./PaymentsFooter";
+import { MaterialsFooter } from "../../materials/components/sections/MaterialsFooter";
 import { PaymentsHeader } from "./PaymentsHeader";
 import { StatsStrip } from "./StatsStrip";
 import { PaymentAnalyticsSection } from "./analytics/PaymentAnalyticsSection";
@@ -13,7 +13,7 @@ import { WholesaleCollectionsSection } from "./wholesale/WholesaleCollectionsSec
 
 export function PaymentsPage() {
   return (
-    <div style={{ fontFamily: F.ui }}>
+    <div style={{ fontFamily: F.ui, minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
       <PaymentsHeader />
       <StatsStrip />
       <div style={{ background: T.silkCream, paddingBottom: 0 }}>
@@ -25,7 +25,7 @@ export function PaymentsPage() {
         <PaymentAnalyticsSection />
         <PaymentHistorySection />
       </div>
-      <PaymentsFooter />
+      <MaterialsFooter />
     </div>
   );
 }

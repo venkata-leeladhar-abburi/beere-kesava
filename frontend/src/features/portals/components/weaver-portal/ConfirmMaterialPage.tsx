@@ -310,7 +310,7 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
               Material issued minus the weight of sarees you have submitted. Jari is counted at 1 reel = {JARI_REEL_GRAMS} g.
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, margin: "0 20px 14px" }}>
+            <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 10, margin: "0 20px 14px" }}>
               {[
                 { label: "Issued", value: fmtKg(matSummary.issuedGrams), color: C.text },
                 { label: "Submitted", value: fmtKg(matSummary.receivedGrams), color: C.green },

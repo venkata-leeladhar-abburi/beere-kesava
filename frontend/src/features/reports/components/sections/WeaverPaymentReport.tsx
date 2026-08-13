@@ -117,7 +117,7 @@ export function WeaverPaymentReport() {
   const totalMakingCharges = totalNetPaid + totalDeductions;
 
   return (
-    <div id="rep-weaver-payments" style={{ padding: "32px 40px" }}>
+    <div id="rep-weaver-payments" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 32 }}>
     <SectionCard
       icon={Users}
       title="Weaver Payment Report"
@@ -125,7 +125,7 @@ export function WeaverPaymentReport() {
     >
       <ReportDLBar />
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 24, alignItems: "stretch" }}>
+      <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 20, marginBottom: 24, alignItems: "stretch" }}>
         <ChartCard title="Total Making Charges Paid Each Month" sub="Monthly breakdown from live payments" icon={<IndianRupee size={22} color={T.antiqueGold} />}>
           {weaverPayMonthly.length === 0 ? (
             <div style={{ padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
@@ -187,7 +187,7 @@ export function WeaverPaymentReport() {
         </ChartCard>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 24, alignItems: "stretch" }}>
+      <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 16, marginBottom: 24, alignItems: "stretch" }}>
         <SumCard icon={<Users size={22} color={T.royalBurgundy} />} label="Total Weavers Paid" value={`${paidWeaverIds.size} of ${weavers.length}`} sub={`${Math.max(weavers.length - paidWeaverIds.size, 0)} with no payments on record`} />
         <SumCard icon={<IndianRupee size={22} color={T.antiqueGold} />} label="Total Making Charges" value={canSeePayroll ? formatMoney(rupees(totalMakingCharges)) : "••••"} sub="All recorded payments" hi />
         <SumCard icon={<TrendingDown size={22} color={T.crimson} />} label="Total Deductions" value={canSeePayroll ? formatMoney(rupees(totalDeductions)) : "••••"} sub="Deducted from making charges" crimsonHi />

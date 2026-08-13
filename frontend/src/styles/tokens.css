@@ -491,6 +491,20 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
+/* Responsive rollout safety net (design-system/09-RESPONSIVE.md §3.6): a page
+   must never scroll horizontally as a whole. Individual components that
+   genuinely need their own horizontal scroll (e.g. SectionNavigator's pill
+   strip) use their own `overflow-x: auto` on an inner element, which keeps
+   working fine nested inside this — an ancestor's `overflow: hidden` doesn't
+   stop a descendant's own scroll container from scrolling. This only ever
+   clips content that is already an unintended overflow bug; at ≥1280px
+   nothing on any page is expected to overflow, so this has no visible effect
+   on desktop rendering. */
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
 body {
   font-family: var(--font-ui);
   font-size: var(--text-body-md);

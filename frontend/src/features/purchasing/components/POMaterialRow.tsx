@@ -49,7 +49,7 @@ export function POMaterialRow({
         />
       )}
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr 1fr 1fr", gap: 10, alignItems: "start" }}>
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr_1fr_1fr]" style={{ gap: 10, alignItems: "start" }}>
         {/* Material Type */}
         <div>
           <label style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, marginBottom: 5, display: "block", letterSpacing: "0.3px" }}>Type *</label>

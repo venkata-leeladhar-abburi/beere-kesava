@@ -40,7 +40,7 @@ export function SareeReviewList({ sarees, prices, applyGst, gstPct, docLabel }: 
 
   const columns: ColumnDef<ReviewRow>[] = [
     {
-      id: "saree", header: "Saree", accessor: r => r.sId,
+      id: "saree", header: "Saree", accessor: r => r.sId, priority: 1,
       cell: (_v, r) => (
         <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
           <Package size={15} color={T.taupe} style={{ flexShrink: 0 }} />
@@ -73,7 +73,7 @@ export function SareeReviewList({ sarees, prices, applyGst, gstPct, docLabel }: 
         {sarees.length} saree{sarees.length === 1 ? "" : "s"} on this {docLabel.toLowerCase()}, with the amounts entered.
       </div>
       <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden" }}>
-        <DataTable columns={columns} data={rows} getRowId={r => r.sId} emptyTitle="No sarees on this document" />
+        <DataTable responsive columns={columns} data={rows} getRowId={r => r.sId} emptyTitle="No sarees on this document" />
       </div>
       <div style={{ marginTop: 14, background: T.bgGold, border: `1px solid ${T.borderGold}`, borderRadius: 12, padding: "14px 18px", display: "flex", flexDirection: "column", gap: 6 }}>
         <div style={{ display: "flex", justifyContent: "space-between" }}>

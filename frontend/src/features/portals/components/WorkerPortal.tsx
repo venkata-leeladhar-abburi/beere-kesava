@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router";
 import { useAuth } from "../../../contexts/AuthContext";
 import { motion, AnimatePresence } from "motion/react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Home, Package, Users, Bell, ChevronLeft, Menu, Search, X, UserRound, Sparkles, UserCheck, Truck } from "lucide-react";
+import { Home, Users, Bell, ChevronLeft, Menu, Search, X, UserRound, Sparkles, UserCheck, Truck } from "lucide-react";
 import { C, F } from "./worker/tokens";
 import { Drawer } from "../../../shared/ui/overlay";
 import { WorkerHome } from "./worker/WorkerHome";
@@ -24,7 +24,7 @@ type Tab = "home" | "qc" | "weavers" | "finishing" | "dispatch" | "profile";
 const TABS: { id: Tab; Icon: IconComponent; label: string; badge?: string }[] = [
   { id: "home",      Icon: Home,       label: "Home"          },
   { id: "qc",        Icon: Search,     label: "QC", badge: "6" },
-  { id: "weavers",   Icon: Package,    label: "Receive"       },
+  { id: "weavers",   Icon: Users,      label: "Receive"       },
   { id: "finishing", Icon: Sparkles,   label: "Finishing", badge: "2" },
   { id: "dispatch",  Icon: Truck,      label: "Dispatch"      },
 ];
@@ -65,7 +65,7 @@ function MobileProfile() {
       </div>
 
       {/* Stats strip */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: "#FFF", borderBottom: `1px solid ${C.bdr}`, boxShadow: "0 2px 10px rgba(110,15,45,0.06)" }}>
+      <div className="grid-cols-1 md:grid-cols-3" style={{ display: "grid", background: "#FFF", borderBottom: `1px solid ${C.bdr}`, boxShadow: "0 2px 10px rgba(110,15,45,0.06)" }}>
         {[
           { val: "8 yrs", label: "Tenure" },
           { val: "Morning", label: "Shift" },
@@ -100,7 +100,7 @@ function MobileProfile() {
       {/* Permissions */}
       <div style={{ margin: "16px 16px 0" }}>
         <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.muted, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>Permissions</div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+        <div className="grid-cols-1 md:grid-cols-2" style={{ display: "grid", gap: 8 }}>
           {[
             { label: "Quality Check", on: true },
             { label: "Issue Material", on: false },

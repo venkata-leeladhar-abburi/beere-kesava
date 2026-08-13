@@ -68,7 +68,7 @@ export function RecordDetailsModal({ record, onClose }: { record: MaterialIssueR
           </Dialog.Close>
         </div>
         <div style={{ padding: "22px 26px", display: "flex", flexDirection: "column" as const, gap: 18, overflowY: "auto" as const }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 12 }}>
             {[
               { label: "Issued By", val: record.issuedBy },
               { label: "Issued At", val: new Date(record.issuedAt).toLocaleString("en-IN") },

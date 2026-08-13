@@ -24,7 +24,7 @@ export function ReturnSection({
         bgUrl={SILK_BG}
       />
       <div style={{ padding: isTablet ? "24px 28px 40px" : "40px 48px 56px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 36, alignItems: "start" }}>
+        <div className="grid-cols-1 md:grid-cols-[1fr_340px]" style={{ display: "grid", gap: 36, alignItems: "start" }}>
           <div style={{ background: "#FFF", borderRadius: 20, border: `1px solid ${C.bdr}`, overflow: "hidden", boxShadow: "0 4px 28px rgba(44,24,16,0.10)" }}>
             <ProcessReturn onBack={() => setShowReturn(false)} />
           </div>

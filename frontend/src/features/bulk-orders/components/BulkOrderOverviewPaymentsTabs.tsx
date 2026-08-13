@@ -44,7 +44,7 @@ export function BulkOrderOverviewTab({
   const card: React.CSSProperties = { background: "#FFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, padding: "20px 22px" };
   return (
     <div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 24 }}>
+      <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 16, marginBottom: 24 }}>
         {[
           { label: "Total Sarees", value: String(live.total) },
           { label: "Completed", value: String(producedCount), color: T.green },
@@ -58,7 +58,7 @@ export function BulkOrderOverviewTab({
         ))}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+      <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16, marginBottom: 16 }}>
         <div style={card}>
           <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, letterSpacing: "1.2px", color: T.taupe, marginBottom: 14 }}>ORDER DETAILS</div>
           {[
@@ -145,18 +145,18 @@ export function BulkOrderPaymentsTab({
       cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{p.method}</span>,
     },
     {
-      id: "utr", header: "UTR / Reference", accessor: p => p.utr,
+      id: "utr", header: "UTR / Reference", accessor: p => p.utr, priority: 1,
       cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{p.utr}</span>,
     },
     {
-      id: "firm", header: "Firm", accessor: p => p.firmName,
+      id: "firm", header: "Firm", accessor: p => p.firmName, priority: 3,
       cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.firmName || "—"}</span>,
     },
   ];
 
   return (
     <div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, marginBottom: 20 }}>
+      <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 16, marginBottom: 20 }}>
         {[
           { label: "Order Value", value: inr(amountDue), color: T.luxuryBrown },
           { label: "Amount Paid", value: inr(amountPaid), color: T.greenMid },
@@ -175,7 +175,7 @@ export function BulkOrderPaymentsTab({
         {payments.length === 0 ? (
           <div style={{ padding: "36px 20px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No payments recorded against this order yet.</div>
         ) : (
-          <DataTable columns={columns} data={rows} getRowId={p => String(p.__idx)} />
+          <DataTable responsive columns={columns} data={rows} getRowId={p => String(p.__idx)} />
         )}
       </div>
     </div>

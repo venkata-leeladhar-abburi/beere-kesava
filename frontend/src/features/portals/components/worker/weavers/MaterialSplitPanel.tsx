@@ -83,7 +83,7 @@ export function MaterialSplitPanel({ typeCode, weight, edits, onEdit }: Material
         )}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+      <div className="grid-cols-1 md:grid-cols-3" style={{ display: "grid", gap: 8 }}>
         {([{ key: "warp", label: "Warp" }, { key: "resham", label: "Resham" }] as const).map(f => (
           <div key={f.key}>
             <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>

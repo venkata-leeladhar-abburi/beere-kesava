@@ -91,12 +91,12 @@ export function StatsStrip() {
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, delay: 0.2, ease: EASE }}
-      style={{ padding: "0 48px", marginTop: -72, position: "relative", zIndex: 20 }}
+      className="px-4 md:px-7 xl:px-12 -mt-8 md:-mt-12 xl:-mt-[72px]"
+      style={{ position: "relative", zIndex: 20 }}
     >
-      <div style={{
+      <div className="grid grid-cols-2 xl:flex" style={{
         background: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)",
         borderRadius: 28,
-        display: "flex",
         alignItems: "stretch",
         boxShadow: "0 30px 80px rgba(0,0,0,0.32), 0 0 0 1px rgba(200,155,71,0.16)",
         overflow: "hidden",
@@ -150,7 +150,7 @@ export function StatsStrip() {
               <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 8, color: s.hi ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.90)" }}>
                 {s.label}
               </div>
-              <div style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontSize: 48, color: s.gold ? T.goldLight : s.crimson ? "#F47B72" : "#FFFDF9", lineHeight: 1.0, marginBottom: 8 }}>
+              <div style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontSize: "clamp(28px, 8vw, 48px)", color: s.gold ? T.goldLight : s.crimson ? "#F47B72" : "#FFFDF9", lineHeight: 1.0, marginBottom: 8 }}>
                 <AnimCount raw={s.value} />
               </div>
               <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: s.hi ? "rgba(231,201,131,0.95)" : "rgba(245,232,208,0.85)", letterSpacing: "0.1px" }}>

@@ -38,7 +38,7 @@ function DesktopProfile() {
   const subtitle = user?.empId ? `${user.empId} · Worker Staff` : "Worker Staff";
 
   return (
-    <div style={{ padding: `32px ${GUTTER_X}px` }}>
+    <div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 32 }}>
       <PageHeader title="My Profile" subtitle="Your worker identity." />
 
       <div style={{ background: `linear-gradient(135deg, ${C.dark} 0%, ${C.burg} 60%, #8B1A30 100%)`, borderRadius: 18, padding: "28px 36px", marginBottom: 24, display: "flex", alignItems: "center", gap: 28 }}>

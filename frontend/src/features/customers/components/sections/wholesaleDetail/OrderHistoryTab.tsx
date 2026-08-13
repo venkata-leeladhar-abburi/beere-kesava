@@ -38,7 +38,7 @@ export function OrderHistoryTab({
 
   const columns: ColumnDef<BulkOrder>[] = [
     {
-      id: "ref", header: "Order Ref", accessor: o => o.ref,
+      id: "ref", header: "Order Ref", accessor: o => o.ref, priority: 1,
       cell: (_v, o) => (
         <>
           <span style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, fontWeight: 700 }}>{o.ref}</span>
@@ -47,11 +47,11 @@ export function OrderHistoryTab({
       ),
     },
     {
-      id: "deadline", header: "Deadline", accessor: o => o.due,
+      id: "deadline", header: "Deadline", accessor: o => o.due, priority: 3,
       cell: (_v, o) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{o.due}</span>,
     },
     {
-      id: "sareeType", header: "Saree Type / Design", accessor: o => o.sareeType,
+      id: "sareeType", header: "Saree Type / Design", accessor: o => o.sareeType, priority: 3,
       cell: (_v, o) => (
         <>
           <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{o.sareeType}</span>
@@ -147,7 +147,7 @@ export function OrderHistoryTab({
         </div>
       ) : (
         <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden" }}>
-          <DataTable columns={columns} data={rows} getRowId={o => o.ref} />
+          <DataTable responsive columns={columns} data={rows} getRowId={o => o.ref} />
         </div>
       )}
     </div>

@@ -11,6 +11,7 @@ import {
 import { SectionCard, RoleBadge, AccessBadge } from "./UserBadges";
 import { Button, Field, Input, Textarea, Select, SelectItem } from "../../../shared/ui/primitives";
 import { PhotoUploadField } from "../../../shared/ui/PhotoUploadField";
+import { MobileFormActionBar } from "../../../shared/ui/MobileFormActionBar";
 
 export interface WeaverFieldsState {
   photoUrl: string;
@@ -95,7 +96,7 @@ export function AddUserForm({
               </div>
             </motion.div>
           ) : (
-            <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+            <motion.div key="form" className="pb-24 md:pb-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
               <div style={{ height: 1, background: T.borderDef, margin: "0 0 24px" }} />
 
               {/* Finishing Staff extra-fields callout banner */}
@@ -138,7 +139,7 @@ export function AddUserForm({
                 )}
               </AnimatePresence>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px 32px" }}>
+              <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: "20px 32px" }}>
                 {/* Col 1 */}
                 <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
                   <Field label="First Name" required>
@@ -263,7 +264,7 @@ export function AddUserForm({
                       />
                     </div>
 
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px 32px", marginBottom: 8 }}>
+                    <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: "20px 32px", marginBottom: 8 }}>
                       <Field label="Village / Area" hint="Optional">
                         <Input value={weaverFields.village} onChange={e => setWeaverField("village")(e.target.value)} placeholder="e.g. Dharmavaram, AP" />
                       </Field>
@@ -286,7 +287,7 @@ export function AddUserForm({
 
               <div style={{ height: 1, background: T.borderDef, margin: "24px 0" }} />
 
-              <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+              <div className="max-md:hidden" style={{ display: "flex", gap: 12, alignItems: "center" }}>
                 <Button size="lg" variant="primary" iconLeft={UserPlus} onClick={handleSubmit} disabled={!canSubmit}>
                   Create User Account
                 </Button>
@@ -295,9 +296,16 @@ export function AddUserForm({
                 </Button>
                 {!canSubmit && <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginLeft: 4 }}>Fill in all required fields to continue</span>}
               </div>
+              {!canSubmit && <div className="md:hidden" style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Fill in all required fields to continue</div>}
             </motion.div>
           )}
         </AnimatePresence>
+        {!showSuccess && (
+          <MobileFormActionBar
+            primary={{ label: "Create User Account", onClick: handleSubmit, disabled: !canSubmit, icon: UserPlus }}
+            secondary={{ label: "Cancel", onClick: handleCancel, icon: X }}
+          />
+        )}
     </SectionCard>
   );
 }

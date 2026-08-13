@@ -104,7 +104,7 @@ export function BatchTable({
               { key: "design",     icon: Tag,          label: "Assign Design Code" },
               { key: "saretype",   icon: Tag,          label: "Assign Saree Type" },
             ] as const).map(a => (
-              <Button key={a.key} onClick={() => setPicker(a.key as ActivePicker)} variant="secondary" size="sm" iconLeft={a.icon} className="bg-white/10 text-[#FFFDF9] border-white/20">
+              <Button key={a.key} onClick={() => setPicker(a.key as ActivePicker)} variant="secondary" size="sm" iconLeft={a.icon} className="bg-white/10 text-[#FFFDF9] border-white/20 hover:bg-white/18 hover:border-white/30 hover:text-[#FFFDF9] active:bg-white/25 active:border-white/40 active:text-[#FFFDF9]">
                 {a.label}
               </Button>
             ))}

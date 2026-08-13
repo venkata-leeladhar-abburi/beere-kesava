@@ -119,7 +119,7 @@ export function VendorUploadPanel({ vendorPayments, onMatched }: { vendorPayment
 
   return (
     <div style={{ marginBottom: 22 }}>
-      <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "18px 22px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24, boxShadow: "0 2px 10px rgba(74,6,27,0.04)" }}>
+      <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "18px 22px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24, flexWrap: "wrap", boxShadow: "0 2px 10px rgba(74,6,27,0.04)" }}>
         <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
           <div style={{ width: 44, height: 44, borderRadius: 10, background: "rgba(110,15,45,0.06)", border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <UploadCloud size={22} color={T.royalBurgundy} />
@@ -161,7 +161,7 @@ export function VendorUploadPanel({ vendorPayments, onMatched }: { vendorPayment
 
       {result && (
         <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: EASE }}>
-          <div style={{ marginTop: 18, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 22 }}>
+          <div className="grid grid-cols-1 md:grid-cols-3" style={{ marginTop: 18, gap: 12, marginBottom: 22 }}>
             {[
               { label: "Total Rows", value: String(result.totalRows), color: T.luxuryBrown, bg: "#FFFFFF", icon: <FileText size={18} color={T.royalBurgundy} /> },
               { label: "Matched Bills", value: String(result.matched.length), color: T.green, bg: "rgba(30,102,64,0.07)", icon: <CheckCircle2 size={18} color={T.green} /> },

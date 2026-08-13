@@ -35,7 +35,7 @@ export function MaterialRowEditor({ row, grnBatches, onChange, onRemove, showRem
       </div>
 
       {/* Description + Quantity */}
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 14, marginBottom: 16 }}>
+      <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr]" style={{ gap: 14, marginBottom: 16 }}>
         <div>
           <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 6 }}>
             Description

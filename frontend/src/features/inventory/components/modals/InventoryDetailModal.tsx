@@ -70,7 +70,7 @@ export function InventoryDetailModal({
           </div>
 
           {/* Core info */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
             {infoCell('Saree Type', item.sareeType)}
             {infoCell('Saree Color', getSareeColor(item.id))}
             {infoCell('Weaver', item.weaverName)}
@@ -83,7 +83,7 @@ export function InventoryDetailModal({
               <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, textTransform: 'uppercase' as const, letterSpacing: '0.05em', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
                 <Truck size={14} /> Dispatch &amp; Logistics
               </div>
-              <div style={{ background: 'rgba(30,102,64,0.03)', border: '1px solid rgba(30,102,64,0.10)', borderRadius: 12, padding: 14, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div className="grid grid-cols-1 md:grid-cols-2" style={{ background: 'rgba(30,102,64,0.03)', border: '1px solid rgba(30,102,64,0.10)', borderRadius: 12, padding: 14, gap: 12 }}>
                 {infoCell('Dispatch Date', <span style={{ fontFamily: F.mono }}>{disp.dispatchDate}</span>)}
                 {infoCell('Type', <span style={{ textTransform: 'capitalize' as const }}>{disp.type}</span>)}
                 {infoCell('LR Number', <span style={{ fontFamily: F.mono }}>{disp.lrNumber}</span>)}
@@ -106,7 +106,7 @@ export function InventoryDetailModal({
               <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.crimson, textTransform: 'uppercase' as const, letterSpacing: '0.05em', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
                 <AlertTriangle size={14} /> Damage Report
               </div>
-              <div style={{ background: 'rgba(192,57,43,0.04)', border: '1px solid rgba(192,57,43,0.12)', borderRadius: 12, padding: 14, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div className="grid grid-cols-1 md:grid-cols-2" style={{ background: 'rgba(192,57,43,0.04)', border: '1px solid rgba(192,57,43,0.12)', borderRadius: 12, padding: 14, gap: 12 }}>
                 {infoCell('Damage Type', ret.damageType || 'Unspecified')}
                 {infoCell('Severity', <span style={{ color: ret.damageSeverity === 'Severe' ? T.crimson : ret.damageSeverity === 'Moderate' ? '#C07A18' : T.luxuryBrown }}>{ret.damageSeverity || 'Unspecified'}</span>)}
                 {infoCell('Reported By', ret.receivedBy)}

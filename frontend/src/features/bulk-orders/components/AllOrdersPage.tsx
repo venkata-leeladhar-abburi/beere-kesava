@@ -80,7 +80,7 @@ export function AllOrdersPage({ onBack, superadmin = false }: { onBack?: () => v
   return (
     <div style={{ minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui }}>
       {/* Page Header */}
-      <div style={{ background: `linear-gradient(100deg, ${T.deepWine}, ${T.royalBurgundy})`, padding: "34px 48px", color: "#FFFDF9" }}>
+      <div className="px-4 md:px-7 xl:px-12" style={{ background: `linear-gradient(100deg, ${T.deepWine}, ${T.royalBurgundy})`, paddingTop: 34, paddingBottom: 34, color: "#FFFDF9" }}>
         <div style={{ marginBottom: 22 }}>
           <Button onClick={onBack} variant="tertiary" size="md" iconLeft={ArrowLeft}>
             Back to Production
@@ -97,7 +97,7 @@ export function AllOrdersPage({ onBack, superadmin = false }: { onBack?: () => v
         </div>
       </div>
 
-      <div style={{ padding: "16px 48px 0", background: T.silkCream }}>
+      <div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 16, background: T.silkCream }}>
         <Breadcrumbs
           items={[
             { key: "production", label: "Production", onClick: onBack },
@@ -127,12 +127,12 @@ export function AllOrdersPage({ onBack, superadmin = false }: { onBack?: () => v
       />
 
       {/* Grid count summary */}
-      <div style={{ padding: "24px 48px 0", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+      <div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 24, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
         Showing <span style={{ fontWeight: 700, color: T.luxuryBrown }}>{filteredOrders.length}</span> of {bulkOrders.length} wholesale orders
       </div>
 
       {/* Orders Grid */}
-      <div style={{ padding: "12px 48px 48px" }}>
+      <div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 12, paddingBottom: 48 }}>
         {filteredOrders.length === 0 ? (
           <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1.5px solid ${T.borderDef}`, padding: "48px 24px", textAlign: "center", boxShadow: "0 4px 18px rgba(74,6,27,0.03)" }}>
             <span style={{ fontSize: 30, display: "block", marginBottom: 12 }}>🔍</span>

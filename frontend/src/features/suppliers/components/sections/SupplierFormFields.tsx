@@ -22,7 +22,7 @@ export function SupplierFormFields({
   const set = (k: keyof SupplierFormValues, v: string) => setForm({ ...form, [k]: v });
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32 }}>
+    <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 32 }}>
       {/* Left */}
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         <Field label="Business Name" required error={errors.name}>
@@ -31,7 +31,7 @@ export function SupplierFormFields({
         <Field label="Owner / Contact Name" required error={errors.contactName}>
           <Input id="owner-contact-name" value={form.contactName} onChange={e => set("contactName", e.target.value)} placeholder="Who to speak to at this business" />
         </Field>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
           <Field label="Phone Number" required error={errors.phone}>
             <Input id="phone-number" value={form.phone} onChange={e => set("phone", e.target.value)} placeholder="Main contact number" />
           </Field>
@@ -39,7 +39,7 @@ export function SupplierFormFields({
             <Input id="whatsapp-number" value={form.whatsapp} onChange={e => set("whatsapp", e.target.value)} placeholder="If different" />
           </Field>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
           <Field label="City" required error={errors.city}>
             <Input id="city" value={form.city} onChange={e => set("city", e.target.value)} placeholder="City" />
           </Field>
@@ -49,7 +49,7 @@ export function SupplierFormFields({
             </Select>
           </Field>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
           <div>
             <label style={lbl}>Supplier Rating</label>
             <div style={{ display: "flex", gap: 6, cursor: "pointer", marginTop: 8 }}>
@@ -75,7 +75,7 @@ export function SupplierFormFields({
           <textarea id="business-address" value={form.address} onChange={e => set("address", e.target.value)} placeholder="Full address for delivery and billing" rows={3}
             style={{ ...inp, resize: "none", lineHeight: 1.5 }} />
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
           <Field label="Bank Name">
             <Input id="bank-name" value={form.bankName} onChange={e => set("bankName", e.target.value)} placeholder="For any refunds" />
           </Field>
@@ -83,7 +83,7 @@ export function SupplierFormFields({
             <Input id="account-number" value={form.accountNo} onChange={e => set("accountNo", e.target.value)} placeholder="Account No." />
           </Field>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
           <Field label="GST Number">
             <Input id="gst-number" value={form.gstCode} onChange={e => set("gstCode", e.target.value.toUpperCase())} placeholder="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)"
               className="font-mono text-[13px]" />

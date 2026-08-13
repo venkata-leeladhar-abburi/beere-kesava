@@ -50,7 +50,7 @@ export function AddDesignModal({ onClose, onSave }: { onClose: () => void; onSav
       <Modal.Header title="Add New Design Code" />
       <Modal.Body>
         <div style={{ display: "flex", flexDirection: "column", gap: 16, paddingTop: 4, paddingBottom: 20 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 12 }}>
             <div>
               <label style={labelStyle}>Design Code <span style={{ color: T.royalBurgundy }}>*</span></label>
               <Input value={form.code ?? ""} onChange={e => set("code", e.target.value)} placeholder="e.g. BKB-047" />
@@ -78,7 +78,7 @@ export function AddDesignModal({ onClose, onSave }: { onClose: () => void; onSav
             <Textarea value={form.notesForWeaver ?? ""} onChange={e => set("notesForWeaver", e.target.value)} rows={2} placeholder="Special instructions for the weaver…" />
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 12 }}>
             <UploadZone label="Color Slip Photo (optional)" hint="Clear photo of the color slip" icon={ImageSquare}
               preview={form.colorSlipPhoto ?? null} onFile={url => set("colorSlipPhoto", url)} />
             <UploadZone label="Design Graph (optional)" hint="Upload graph if available" icon={Graph}

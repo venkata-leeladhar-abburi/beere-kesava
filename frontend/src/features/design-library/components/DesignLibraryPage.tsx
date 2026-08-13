@@ -127,10 +127,10 @@ export function DesignLibraryPage() {
 
 
       {/* ── Main content ── */}
-      <div style={{ padding: "32px 56px 48px" }}>
+      <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 32, paddingBottom: 48 }}>
         <FadeUp>
         <SectionCard icon={PaperPlaneTilt} title="Weaver Dispatch Control" subtitle="Dispatch production design slips to weavers or factory looms.">
-            <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1.8fr", gap: 32, alignItems: "start" }}>
+            <div className="grid grid-cols-1 md:grid-cols-[1.2fr_1.8fr]" style={{ gap: 32, alignItems: "start" }}>
               {/* Form Side */}
               <div>
                 <div style={{ background: "#FFFFFF", borderRadius: 20, border: `1.5px solid ${T.borderDef}`, padding: "28px 32px", boxShadow: "0 4px 20px rgba(74,6,27,0.05)" }}>
@@ -308,7 +308,7 @@ export function DesignLibraryPage() {
       </div>
 
       {/* Footer */}
-      <div style={{ background: T.luxuryBrown, padding: "32px 56px", textAlign: "center" }}>
+      <div className="px-4 md:px-7 xl:px-14" style={{ background: T.luxuryBrown, paddingTop: 32, paddingBottom: 32, textAlign: "center" }}>
         <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, fontWeight: 400, color: T.warmCream, marginBottom: 6 }}>
           Beere Kesava &amp; Brothers Silks · Est. 1999
         </div>

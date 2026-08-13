@@ -35,7 +35,7 @@ export function VendorCard({ vendor, onView }: { vendor: Vendor; onView: (v: Ven
           <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 12, color: T.taupe }}><Phone size={13} color={T.royalBurgundy} />{vendor.phone}</div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 12, color: T.taupe }}><Package size={13} color={T.royalBurgundy} />{vendor.type}</div>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 0, background: T.silkCream, borderRadius: 10, overflow: "hidden", border: `1px solid ${T.borderDef}` }}>
+        <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 0, background: T.silkCream, borderRadius: 10, overflow: "hidden", border: `1px solid ${T.borderDef}` }}>
           {[{ label: "Orders", value: String(vendor.totalOrders) }, { label: "Total Spend", value: formatMoney(rupees(Number(vendor.totalSpend) || 0)) }, { label: "Outstanding", value: formatMoney(rupees(Number(vendor.outstanding) || 0)) }].map((s, i) => (
             <div key={s.label} style={{ padding: "10px 12px", borderRight: i < 2 ? `1px solid ${T.borderDef}` : "none", textAlign: "center" }}>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, letterSpacing: "0.5px", marginBottom: 3 }}>{s.label}</div>

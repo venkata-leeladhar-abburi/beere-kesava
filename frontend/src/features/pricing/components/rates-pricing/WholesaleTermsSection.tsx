@@ -90,7 +90,7 @@ export function WholesaleTermsSection() {
   ];
 
   return (
-    <div style={{ padding: "40px 56px 0" }}>
+    <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40 }}>
     <SectionCard
       icon={Clock}
       title="Wholesale Payment Terms"
@@ -166,7 +166,7 @@ export function WholesaleTermsSection() {
                     <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, marginBottom: 14 }}>
                       Editing Terms: {cust.name}
                     </div>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 14 }}>
+                    <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16, marginBottom: 14 }}>
                       <div>
                         <label style={labelStyle} htmlFor="payment-terms-days">Payment Terms (Days) *</label>
                         <NumberInput

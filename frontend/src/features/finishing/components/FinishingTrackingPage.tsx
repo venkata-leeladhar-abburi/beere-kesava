@@ -112,16 +112,16 @@ export function FinishingTrackingPage() {
     <div style={{ background: T.silkCream, fontFamily: F.ui, minHeight: "100dvh" }}>
       {/* HERO */}
       <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", minHeight: 380, display: "flex", alignItems: "center" }}>
-        <div style={{ position: "relative", zIndex: 2, padding: "48px 0 110px 48px", flex: "0 0 100%", maxWidth: "100%" }}>
+        <div className="pl-4 md:pl-7 xl:pl-12 w-full xl:w-auto" style={{ position: "relative", zIndex: 2, paddingTop: 48, paddingBottom: 110, flex: "0 0 100%", maxWidth: "100%" }}>
           <div style={{ fontFamily: F.mono, fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase", marginBottom: 12 }}>
             PRODUCTION · FINISHING
           </div>
           <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
-            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontSize: 56, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>
+            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontSize: "clamp(32px, 8vw, 56px)", color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>
               Finishing Assignment &amp; Receiving
             </h1>
           </div>
-          <p style={{ fontFamily: F.ui, fontSize: 18, color: "rgba(255,253,249,0.70)", margin: 0, lineHeight: 1.6, maxWidth: 600 }}>
+          <p style={{ fontFamily: F.ui, fontSize: "clamp(15px, 3.5vw, 18px)", color: "rgba(255,253,249,0.70)", margin: 0, lineHeight: 1.6, maxWidth: 600 }}>
             Every saree sent to finishing staff, who assigned it, and what came back — plus every bulk-order
             quotation routed through finishing. The same tracking Worker Staff sees, visible here for admin and superadmin.
           </p>
@@ -130,8 +130,8 @@ export function FinishingTrackingPage() {
       </header>
 
       {/* ── Stats strip ── */}
-      <div style={{ padding: "0 48px", marginTop: -72, position: "relative", zIndex: 20 }}>
-        <div style={{ background: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)", borderRadius: 28, display: "flex", alignItems: "stretch", boxShadow: "0 30px 80px rgba(0,0,0,0.32), 0 0 0 1px rgba(200,155,71,0.16)", overflow: "hidden", minHeight: 140 }}>
+      <div className="px-4 md:px-7 xl:px-12 -mt-8 md:-mt-12 xl:-mt-[72px]" style={{ position: "relative", zIndex: 20 }}>
+        <div className="grid grid-cols-2 xl:flex" style={{ background: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)", borderRadius: 28, alignItems: "stretch", boxShadow: "0 30px 80px rgba(0,0,0,0.32), 0 0 0 1px rgba(200,155,71,0.16)", overflow: "hidden", minHeight: 140 }}>
           {[
             { label: "TOTAL ASSIGNED",        val: totalAssigned,                                                      Icon: ClipboardList, hi: false, col: undefined, sub: "Sarees in finishing" },
             { label: "AWAITING RETURN",       val: totalAwaiting,                                                      Icon: Clock,         hi: true,  col: undefined, sub: "Pending completion" },
@@ -156,7 +156,7 @@ export function FinishingTrackingPage() {
                 <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, letterSpacing: "2px", textTransform: "uppercase" as const, marginBottom: 8, color: m.hi ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.90)" }}>
                   {m.label}
                 </div>
-                <div style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontSize: 48, color: m.hi ? T.antiqueGold : (m.col || "#FFFDF9"), lineHeight: 1.1, marginBottom: 8, fontVariantNumeric: "tabular-nums" as const }}>
+                <div style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontSize: "clamp(28px, 8vw, 48px)", color: m.hi ? T.antiqueGold : (m.col || "#FFFDF9"), lineHeight: 1.1, marginBottom: 8, fontVariantNumeric: "tabular-nums" as const }}>
                   {m.val}
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -170,7 +170,7 @@ export function FinishingTrackingPage() {
         </div>
       </div>
 
-      <div style={{ padding: "22px 40px 48px", display: "flex", flexDirection: "column", gap: 20 }}>
+      <div className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 22, paddingBottom: 48, display: "flex", flexDirection: "column", gap: 20 }}>
         {/* Filters */}
         <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 20px rgba(74,6,27,0.06)", padding: 16 }}>
           <div style={{ marginBottom: 14 }}>

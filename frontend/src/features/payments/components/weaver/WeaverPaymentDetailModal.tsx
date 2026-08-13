@@ -126,7 +126,7 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {payments.map((p, i) => (
-                  <div key={i} style={{ background: "#FFFFFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, padding: "12px 16px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 10, alignItems: "center" }}>
+                  <div key={i} className="grid grid-cols-1 md:grid-cols-4" style={{ background: "#FFFFFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, padding: "12px 16px", display: "grid", gap: 10, alignItems: "center" }}>
                     <div>
                       <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>Amount Paid</div>
                       <div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.green }}><Money value={rupees(p.amountPaid)} /></div>

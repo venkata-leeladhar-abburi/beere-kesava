@@ -118,7 +118,7 @@ export function ViewPurchaseModal({ purchase, onClose }: { purchase: Purchase | 
 
         <div style={{ fontFamily: F.ui, fontSize: 12, color: T.antiqueGold, fontWeight: 600, marginBottom: 14 }}>{purchase.firmName}</div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 18 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 12, marginBottom: 18 }}>
           {[
             { label: "Date Received",     value: purchase.date,       Icon: Calendar },
             { label: "Purchase Order",    value: purchase.po,         Icon: FileText },

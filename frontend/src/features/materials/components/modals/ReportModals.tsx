@@ -346,7 +346,7 @@ export function POVendorDetailModal({ po, onClose }: { po: PurchaseOrder | null;
                     <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>📍 {po.vendorCity}</div>
                   </div>
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 8 }}>
                   {[
                     { label: "Contact",       val: po.vendorContact || "—" },
                     { label: "Purchasing Firm", val: po.firmName || "—" },
@@ -433,7 +433,7 @@ export function RecentReceivedDetailModal({ item, onClose }: { item: any | null;
     <ModalOverlay open={!!item} onClose={onClose}>
       <ModalHeader title="Material Receipt Details" subtitle={item.po} onClose={onClose} />
       <div style={{ padding: "26px 28px 28px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 18 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 14, marginBottom: 18 }}>
           {[
             { label: "Vendor", value: item.vendor },
             { label: "Vendor City", value: item.vendorCity },

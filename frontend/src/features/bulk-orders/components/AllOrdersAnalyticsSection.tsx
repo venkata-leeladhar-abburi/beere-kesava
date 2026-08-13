@@ -162,7 +162,7 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
   const tip = { fontFamily: F.ui, fontSize: 12, borderRadius: 10, border: `1px solid ${T.borderDef}`, boxShadow: "0 8px 24px rgba(74,6,27,0.12)" };
 
   return (
-    <div style={{ padding: "32px 48px 0" }}>
+    <div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 32 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18, flexWrap: "wrap" }}>
         <div style={{ width: 3, height: 26, background: T.antiqueGold, borderRadius: 2 }} />
         <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0, fontWeight: 600 }}>Order Analytics</h2>
@@ -191,7 +191,7 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
       ) : (
         <>
           {/* Row 1 — fulfilment trend + status mix */}
-          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 22, marginBottom: 22 }}>
+          <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr]" style={{ gap: 22, marginBottom: 22 }}>
             <div style={card}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                 <div>
@@ -268,7 +268,7 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
           </div>
 
           {/* Row 2 — top customers + payment collection */}
-          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 22, marginBottom: 22 }}>
+          <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr]" style={{ gap: 22, marginBottom: 22 }}>
             <div style={card}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
                 <Trophy size={17} color={T.antiqueGold} />
@@ -329,7 +329,7 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
           </div>
 
           {/* Row 3 — deadline pipeline, demand mix, order health */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 22, marginBottom: 8 }}>
+          <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 22, marginBottom: 8 }}>
             <div style={card}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <Timer size={16} color={atRisk ? T.crimson : T.royalBurgundy} />
@@ -403,7 +403,7 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
                   </RadialBarChart>
                 </ResponsiveContainer>
               </ChartFigure>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 4 }}>
+              <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 10, marginTop: 4 }}>
                 {[
                   { label: "At Risk", value: String(atRisk) },
                   { label: "Shortage", value: `${totalShortage} pcs` },

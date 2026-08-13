@@ -188,7 +188,7 @@ export function RetailSalesReport() {
   ];
 
   return (
-    <div id="rep-retail" style={{ padding: "32px 40px" }}>
+    <div id="rep-retail" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 32 }}>
     <SectionCard
       icon={Store}
       title="Retail Sales Report"
@@ -227,7 +227,7 @@ export function RetailSalesReport() {
         </div>
       </FadeUp>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 24 }}>
+      <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 20, marginBottom: 24 }}>
         <ChartCard title="Which Designs Sold Most at Retail" sub="Top 5 designs by saree count">
           {retailDesignSales.length === 0 ? (
             <div style={{ padding: "30px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
@@ -279,7 +279,7 @@ export function RetailSalesReport() {
         </ChartCard>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 24, alignItems: "stretch" }}>
+      <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 16, marginBottom: 24, alignItems: "stretch" }}>
         <SumCard icon={<Tag size={22} color={T.royalBurgundy} />} label="Total Sarees Sold at Shop" value={`${retailRows.length - returnsTotal} sarees`} sub="All recorded retail sales" />
         <SumCard icon={<Banknote size={22} color={T.green} />} label="Total Retail Revenue" value={formatMoney(rupees(totalRevenue))} sub="All-time" greenHi />
         <SumCard icon={<Percent size={22} color={T.antiqueGold} />} label="Average Sale Value" value={avgSale > 0 ? formatMoney(rupees(avgSale)) : "—"} sub="Per saree" hi />

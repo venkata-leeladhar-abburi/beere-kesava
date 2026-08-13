@@ -61,7 +61,7 @@ export function SupplierSection({
       </Field>
 
       {selectedSupplier && (
-        <div style={{ marginBottom: 16, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "12px 14px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+        <div className="grid grid-cols-1 md:grid-cols-3" style={{ marginBottom: 16, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "12px 14px", gap: 10 }}>
           {[
             ["Supplier ID", selectedSupplier.id],
             ["Contact", selectedSupplier.contactName],
@@ -78,7 +78,7 @@ export function SupplierSection({
         </div>
       )}
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+      <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 14 }}>
         <Field label="Supplier Name">
           <Input
             value={form.supplier}

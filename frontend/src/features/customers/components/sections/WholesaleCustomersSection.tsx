@@ -64,9 +64,9 @@ export function WholesaleCustomersSection({
   const [error, setError] = useState<string | null>(null);
 
   const listColumns: ColumnDef<WholesaleCustomer>[] = [
-    { id: "code", header: "Code", accessor: w => w.id, cell: (_v, w) => <span style={{ fontFamily: F.mono, color: T.royalBurgundy, fontSize: 13 }}>{w.id}</span> },
-    { id: "name", header: "Business Name", accessor: w => w.name, cell: (_v, w) => <span style={{ fontWeight: 600, color: T.luxuryBrown }}>{w.name}</span> },
-    { id: "city", header: "City", accessor: w => w.city, cell: (_v, w) => <span style={{ color: T.taupe }}>{w.city}</span> },
+    { id: "code", header: "Code", accessor: w => w.id, priority: 3, cell: (_v, w) => <span style={{ fontFamily: F.mono, color: T.royalBurgundy, fontSize: 13 }}>{w.id}</span> },
+    { id: "name", header: "Business Name", accessor: w => w.name, priority: 1, cell: (_v, w) => <span style={{ fontWeight: 600, color: T.luxuryBrown }}>{w.name}</span> },
+    { id: "city", header: "City", accessor: w => w.city, priority: 3, cell: (_v, w) => <span style={{ color: T.taupe }}>{w.city}</span> },
     { id: "orders", header: "Orders", accessor: w => w.orders, cell: (_v, w) => <span style={{ color: T.luxuryBrown }}>{w.orders}</span> },
     { id: "outstanding", header: "Outstanding", accessor: w => w.out, cell: (_v, w) => <span style={{ color: w.out === "0" ? T.greenMid : T.crimson, fontWeight: 600 }}>{formatMoney(rupees(Number(w.out) || 0))}</span> },
     {
@@ -77,14 +77,14 @@ export function WholesaleCustomersSection({
   ];
 
   const tableColumns: ColumnDef<WholesaleCustomer>[] = [
-    { id: "code", header: "Code", accessor: w => w.id, cell: (_v, w) => <span style={{ fontFamily: F.mono, color: T.royalBurgundy, fontSize: 13 }}>{w.id}</span> },
-    { id: "name", header: "Business Name", accessor: w => w.name, cell: (_v, w) => <span style={{ fontWeight: 600, color: T.luxuryBrown }}>{w.name}</span> },
-    { id: "city", header: "City", accessor: w => w.city, cell: (_v, w) => <span style={{ color: T.taupe }}>{w.city}</span> },
+    { id: "code", header: "Code", accessor: w => w.id, priority: 3, cell: (_v, w) => <span style={{ fontFamily: F.mono, color: T.royalBurgundy, fontSize: 13 }}>{w.id}</span> },
+    { id: "name", header: "Business Name", accessor: w => w.name, priority: 1, cell: (_v, w) => <span style={{ fontWeight: 600, color: T.luxuryBrown }}>{w.name}</span> },
+    { id: "city", header: "City", accessor: w => w.city, priority: 3, cell: (_v, w) => <span style={{ color: T.taupe }}>{w.city}</span> },
     { id: "totalOrders", header: "Total Orders", accessor: w => w.orders, cell: (_v, w) => <span style={{ color: T.luxuryBrown }}>{w.orders}</span> },
     { id: "totalSpend", header: "Total Spend", accessor: w => w.spend, cell: (_v, w) => <span style={{ color: T.antiqueGold, fontWeight: 600 }}>{formatMoney(rupees(Number(w.spend) || 0))}</span> },
     { id: "outstanding", header: "Outstanding", accessor: w => w.out, cell: (_v, w) => <span style={{ color: w.out === "0" ? T.greenMid : T.crimson, fontWeight: 600 }}>{formatMoney(rupees(Number(w.out) || 0))}</span> },
-    { id: "terms", header: "Terms", accessor: w => w.terms, cell: (_v, w) => <span style={{ color: T.luxuryBrown }}>{w.terms}</span> },
-    { id: "lastOrder", header: "Last Order", accessor: w => w.lastOrder, cell: (_v, w) => <span style={{ color: T.taupe }}>{w.lastOrder}</span> },
+    { id: "terms", header: "Terms", accessor: w => w.terms, priority: 3, cell: (_v, w) => <span style={{ color: T.luxuryBrown }}>{w.terms}</span> },
+    { id: "lastOrder", header: "Last Order", accessor: w => w.lastOrder, priority: 3, cell: (_v, w) => <span style={{ color: T.taupe }}>{w.lastOrder}</span> },
     {
       id: "status", header: "Status", accessor: w => w.status, type: "status",
       cell: (_v, w) => <span style={{ padding: "4px 10px", background: w.status === "clear" ? T.greenBg : w.status === "overdue" ? T.crimsonBg : "rgba(200,155,71,0.10)", color: w.status === "clear" ? T.greenMid : w.status === "overdue" ? T.crimson : T.antiqueGold, fontSize: 12, borderRadius: 5, fontWeight: 600 }}>{w.status.toUpperCase()}</span>,
@@ -126,7 +126,7 @@ export function WholesaleCustomersSection({
   };
 
   return (
-    <div id="customers-wholesale-section" style={{ padding: "40px 56px 0" }}>
+    <div id="customers-wholesale-section" className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40 }}>
     <SectionCard
       icon={Building2}
       title="Wholesale Customers"
@@ -147,15 +147,15 @@ export function WholesaleCustomersSection({
               </div>
               <div style={{ padding: "4px 12px", background: T.silkCream, borderRadius: 20, fontFamily: F.mono, fontSize: 12, color: T.taupe }}>WHL-049 will be assigned</div>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32 }}>
+            <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 32 }}>
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                 <Field label="Business Name *"><Input aria-label="Name of the business or shop" type="text" placeholder="Name of the business or shop" value={form.name} onChange={e => updateField("name", e.target.value)} /></Field>
                 <Field label="Owner / Contact Name *"><Input aria-label="Who to speak to at this business" type="text" placeholder="Who to speak to at this business" value={form.contactName} onChange={e => updateField("contactName", e.target.value)} /></Field>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
                   <Field label="Phone Number *"><Input aria-label="Main contact number" type="text" placeholder="Main contact number" value={form.phone} onChange={e => updateField("phone", e.target.value)} /></Field>
                   <Field label="WhatsApp Number"><Input aria-label="If different" type="text" placeholder="If different" value={form.whatsapp} onChange={e => updateField("whatsapp", e.target.value)} /></Field>
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
                   <Field label="City *"><Input aria-label="City" type="text" placeholder="City" value={form.city} onChange={e => updateField("city", e.target.value)} /></Field>
                   <Field label="State *">
                     <Select value={form.state} onValueChange={v => updateField("state", v)}>
@@ -178,11 +178,11 @@ export function WholesaleCustomersSection({
                     <SelectItem value="Custom">Custom</SelectItem>
                   </Select>
                 </Field>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
                   <Field label="Bank Name"><Input aria-label="For any refunds" type="text" placeholder="For any refunds" value={form.bankName} onChange={e => updateField("bankName", e.target.value)} /></Field>
                   <Field label="Account Number"><Input aria-label="Account No." type="password" placeholder="Account No." value={form.accountNumber} onChange={e => updateField("accountNumber", e.target.value)} /></Field>
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
                   <Field label="GST Number"><Input aria-label="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" type="text" placeholder="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" value={form.gstNumber} onChange={e => updateField("gstNumber", e.target.value)} /></Field>
                   <Field label="Visiting Card Photo"><Input type="file" accept="image/*" /></Field>
                 </div>
@@ -201,7 +201,7 @@ export function WholesaleCustomersSection({
       )}
 
       {/* Wholesale stat cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 18, marginBottom: 28, alignItems: "stretch" }}>
+      <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 18, marginBottom: 28, alignItems: "stretch" }}>
         {[
           { ico: <Building2 size={24} color={T.royalBurgundy} />, bg: "rgba(110,15,45,0.07)", l: "Total Wholesale Customers", v: String(wholesaleList.length), c: T.luxuryBrown, sub: "Active business relationships" },
           { ico: <AlertTriangle size={24} color={T.crimson} />, bg: T.crimsonBg, l: "Total Outstanding", v: <Money value={paise(0)} />, c: T.crimson, sub: "Across all overdue accounts" },

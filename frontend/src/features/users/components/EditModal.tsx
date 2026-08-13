@@ -22,7 +22,7 @@ export function EditModal({ member, onClose, onSave }: {
     <Modal open onOpenChange={o => { if (!o) onClose(); }} size="md">
       <Modal.Header title="Edit Finishing Staff Profile" />
       <Modal.Body>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "18px 24px", paddingBottom: 24 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: "18px 24px", paddingBottom: 24 }}>
           <Field label="First Name" required>
             <Input value={firstName} onChange={e => setFirstName(e.target.value)} />
           </Field>

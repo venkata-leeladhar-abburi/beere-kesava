@@ -121,7 +121,7 @@ export function ConfirmSection({
               </div>
 
               {/* Totals */}
-              <div style={{ display: "grid", gridTemplateColumns: isTablet ? "1fr 1fr 1fr" : "repeat(3, 1fr)", gap: 14, marginBottom: 20 }}>
+              <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 14, marginBottom: 20 }}>
                 {[
                   { label: "Issued", value: fmtKg(matSummary.issuedGrams), sub: `incl. ${matSummary.jariReels} jari reels`, color: C.text },
                   { label: "Submitted", value: fmtKg(matSummary.receivedGrams), sub: `${matSummary.sareesReceived} sarees`, color: C.green },

@@ -16,7 +16,7 @@ import { BatchTallyPage } from "./BatchTallyPage";
 import { DefectiveSareesSection } from "./sections/DefectiveSareesSection";
 import { ProductionAnalyticsSection } from "./sections/ProductionAnalyticsSection";
 import { ProductionHistorySection } from "./sections/ProductionHistorySection";
-import { ProductionFooter } from "./sections/ProductionFooter";
+import { MaterialsFooter } from "../../materials/components/sections/MaterialsFooter";
 import { DesignLibraryLinkCard, AllSareesSection } from "./sections/MiscCards";
 
 /**
@@ -70,7 +70,7 @@ export function ProductionPage({ superadmin = false, onNavigate }: { superadmin?
   }
 
   return (
-    <div style={{ fontFamily: F.ui }}>
+    <div style={{ fontFamily: F.ui, minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
       <PageHeader />
       <StatsStrip />
       <AllSareesSection />
@@ -82,7 +82,7 @@ export function ProductionPage({ superadmin = false, onNavigate }: { superadmin?
         <DesignLibraryLinkCard onNavigate={onNavigate} />
         <ProductionHistorySection onDesignClick={setOpenDesignCode} onSareeTypeClick={setOpenSareeTypeCode} />
       </div>
-      <ProductionFooter />
+      <MaterialsFooter />
       <AnimatePresence>
         {openDesign && <DesignCodeCard design={openDesign} onClose={() => setOpenDesignCode(null)} />}
         {openSareeType && <SareeTypeCard sareeType={openSareeType} onClose={() => setOpenSareeTypeCode(null)} />}

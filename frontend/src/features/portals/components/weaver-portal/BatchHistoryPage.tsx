@@ -83,7 +83,7 @@ export function BatchHistoryPage({ onBack, defaultFilter = "all" }: { onBack: ()
   return (
     <div style={{ minHeight: "calc(100dvh - 64px)", background: T2.silkCream, fontFamily: F.u }}>
       {/* Hero */}
-      <section style={{ background: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)", padding: "56px 48px 0", position: "relative" as const, overflow: "hidden" }}>
+      <section className="px-4 md:px-7 xl:px-12" style={{ background: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)", paddingTop: 56, position: "relative" as const, overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(200,155,71,0.025) 60px, rgba(200,155,71,0.025) 61px)", pointerEvents: "none" }} />
         <div style={{ position: "absolute", inset: 0, backgroundImage: "repeating-linear-gradient(90deg, transparent, transparent 80px, rgba(200,155,71,0.012) 80px, rgba(200,155,71,0.012) 81px)", pointerEvents: "none" }} />
         <div style={{ position: "relative", zIndex: 2 }}>
@@ -145,7 +145,7 @@ export function BatchHistoryPage({ onBack, defaultFilter = "all" }: { onBack: ()
       </section>
 
       {/* Filter bar */}
-      <div style={{ background: T2.warmIvory, borderBottom: `1px solid ${T2.borderDef}`, padding: "0 48px", position: "sticky" as const, top: 64, zIndex: 50, boxShadow: "0 4px 24px rgba(74,6,27,0.05)" }}>
+      <div className="px-4 md:px-7 xl:px-12" style={{ background: T2.warmIvory, borderBottom: `1px solid ${T2.borderDef}`, position: "sticky" as const, top: 64, zIndex: 50, boxShadow: "0 4px 24px rgba(74,6,27,0.05)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, height: 60 }}>
           {([
             { key: "all",       label: "All Batches", count: myWeaverBatches.length },
@@ -178,7 +178,7 @@ export function BatchHistoryPage({ onBack, defaultFilter = "all" }: { onBack: ()
       </div>
 
       {/* Grid */}
-      <div style={{ padding: "40px 48px 80px" }}>
+      <div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 40, paddingBottom: 80 }}>
         {filtered.length === 0 ? (
           <div style={{ textAlign: "center" as const, padding: "80px 40px" }}>
             <div style={{ width: 72, height: 72, borderRadius: 22, background: "rgba(110,15,45,0.06)", border: `1px solid ${T2.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>

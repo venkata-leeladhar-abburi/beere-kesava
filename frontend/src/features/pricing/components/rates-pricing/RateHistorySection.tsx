@@ -73,11 +73,11 @@ export function RateHistorySection() {
       cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>{r.date}</span>,
     },
     {
-      id: "by", header: "Changed By", accessor: r => r.by,
+      id: "by", header: "Changed By", accessor: r => r.by, priority: 3,
       cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 500 }}>{r.by}</span>,
     },
     {
-      id: "what", header: "What Was Changed", accessor: r => r.what,
+      id: "what", header: "What Was Changed", accessor: r => r.what, priority: 1,
       cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 500 }}>{r.what}</span>,
     },
     {
@@ -89,13 +89,13 @@ export function RateHistorySection() {
       cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.green }}>{r.next}</span>,
     },
     {
-      id: "reason", header: "Reason", accessor: r => r.reason,
+      id: "reason", header: "Reason", accessor: r => r.reason, priority: 3,
       cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, fontStyle: "italic", color: T.taupe }}>{r.reason}</span>,
     },
   ];
 
   return (
-    <div style={{ padding: "40px 56px 0" }}>
+    <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40 }}>
     <SectionCard
       icon={History}
       title="Rate Change History"
@@ -123,6 +123,7 @@ export function RateHistorySection() {
       ) : (
       <div style={cardStyle}>
         <DataTable
+          responsive
           columns={historyColumns}
           data={filteredHistory}
           getRowId={r => String(filteredHistory.indexOf(r))}
@@ -131,7 +132,7 @@ export function RateHistorySection() {
 
         {/* Table footer */}
         <div style={{
-          display: "flex", alignItems: "center", justifyContent: "space-between",
+          display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12,
           padding: "14px 20px", borderTop: `1px solid ${T.borderDef}`,
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>

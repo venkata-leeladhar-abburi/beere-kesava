@@ -43,7 +43,7 @@ export function FinSummaryStrip({ income, expenses, misc }: { income: FinancialE
     + misc.filter(m => m.type === "expense").reduce((s, m) => s + m.amount, 0);
   const net = totalInc - totalExp;
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 0, border: `1px solid ${T.borderDef}`, borderRadius: 14, overflow: "hidden", marginBottom: 22 }}>
+    <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 0, border: `1px solid ${T.borderDef}`, borderRadius: 14, overflow: "hidden", marginBottom: 22 }}>
       {[
         { label: "Total Income", val: totalInc, color: T.green,   bg: T.greenBg,   icon: <TrendingUp size={16} color={T.green} /> },
         { label: "Total Expenses", val: totalExp, color: T.crimson, bg: T.crimsonBg, icon: <TrendingDown size={16} color={T.crimson} /> },
@@ -88,7 +88,7 @@ export function AddEntryForm({ type, onSave, onCancel }: {
     <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
       transition={{ duration: 0.18, ease: EASE }}
       style={{ background: "#FFF", border: `1.5px solid ${T.royalBurgundy}`, borderRadius: 12, padding: "16px 18px", marginBottom: 12 }}>
-      <div style={{ display: "grid", gridTemplateColumns: isOther ? "1fr 130px 140px 160px 200px" : "1fr 130px 140px 160px", gap: 10, marginBottom: 10 }}>
+      <div className={isOther ? "grid grid-cols-1 md:grid-cols-[1fr_130px_140px_160px_200px]" : "grid grid-cols-1 md:grid-cols-[1fr_130px_140px_160px]"} style={{ gap: 10, marginBottom: 10 }}>
         <div><FLabel req>Description</FLabel><Inp value={desc} onChange={setDesc} placeholder="Enter description…" /></div>
         <div><FLabel req>Amount (₹)</FLabel><Inp value={amount} onChange={setAmount} placeholder="0" type="number" mono /></div>
         <div><FLabel req>Date</FLabel>
@@ -178,7 +178,7 @@ function EntryTable({ entries, type }: { entries: (FinancialEntry | MiscEntry)[]
 
   const columns: ColumnDef<FinancialEntry | MiscEntry>[] = [
     {
-      id: "description", header: "Description", accessor: e => e.description,
+      id: "description", header: "Description", accessor: e => e.description, priority: 1,
       cell: (_v, e) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.description}</span>,
     },
     {
@@ -193,7 +193,7 @@ function EntryTable({ entries, type }: { entries: (FinancialEntry | MiscEntry)[]
       },
     },
     {
-      id: "date", header: "Date", accessor: e => e.date,
+      id: "date", header: "Date", accessor: e => e.date, priority: 3,
       cell: (_v, e) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{e.date}</span>,
     },
     {
@@ -215,6 +215,7 @@ function EntryTable({ entries, type }: { entries: (FinancialEntry | MiscEntry)[]
 
   return (
     <DataTable
+      responsive
       columns={columns}
       data={entries}
       getRowId={e => e.id}

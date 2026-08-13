@@ -6,7 +6,7 @@ import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 export function PurchaseOrderHistoryTable({ orders }: { orders: any[] }) {
   const columns: ColumnDef<any>[] = [
     {
-      id: "po", header: "PO Reference", accessor: o => o.id,
+      id: "po", header: "PO Reference", accessor: o => o.id, priority: 1,
       cell: (_v, o) => (
         <div>
           <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy, marginBottom: 4 }}>{o.id}</div>
@@ -39,7 +39,7 @@ export function PurchaseOrderHistoryTable({ orders }: { orders: any[] }) {
       cell: (_v, o) => <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: "#8B6018" }}>{o.totalAmount}</span>,
     },
     {
-      id: "receipt", header: "Receipt Details", accessor: o => o.grnId,
+      id: "receipt", header: "Receipt Details", accessor: o => o.grnId, priority: 3,
       cell: (_v, o) => o.grnId ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy }}>{o.grnId}</div>
@@ -67,6 +67,7 @@ export function PurchaseOrderHistoryTable({ orders }: { orders: any[] }) {
 
   return (
     <DataTable
+      responsive
       columns={columns}
       data={orders}
       getRowId={o => o.id}

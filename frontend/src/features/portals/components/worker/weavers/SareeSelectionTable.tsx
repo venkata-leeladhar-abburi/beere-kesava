@@ -62,7 +62,7 @@ export function SareeSelectionTable({
       cell: (_v, s) => <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted, fontVariantNumeric: "tabular-nums" }}>{s.no}</span>,
     },
     {
-      id: "sareeId", header: "Saree ID", accessor: s => s.no,
+      id: "sareeId", header: "Saree ID", accessor: s => s.no, priority: 1,
       cell: (_v, s) => {
         const isSel = selectedSareeNos.has(s.no);
         const rowSareeId = s.sareeId;
@@ -76,7 +76,7 @@ export function SareeSelectionTable({
       },
     },
     {
-      id: "weaverLoom", header: "Weaver / Loom", accessor: () => selectedWeaver.name,
+      id: "weaverLoom", header: "Weaver / Loom", accessor: () => selectedWeaver.name, priority: 3,
       cell: () => (
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <div style={{ width: 26, height: 26, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -87,15 +87,15 @@ export function SareeSelectionTable({
       ),
     },
     {
-      id: "loomNo", header: "Loom No.", accessor: () => selectedWeaver.looms,
+      id: "loomNo", header: "Loom No.", accessor: () => selectedWeaver.looms, priority: 3,
       cell: () => <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#845E04", background: "rgba(200,155,71,0.12)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 8, padding: "4px 9px" }}>Loom {selectedWeaver.looms}</span>,
     },
     {
-      id: "sareeType", header: "Saree Type", accessor: () => currentBatch.sareeTypeCode,
+      id: "sareeType", header: "Saree Type", accessor: () => currentBatch.sareeTypeCode, priority: 3,
       cell: () => <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 500, color: "#845E04", background: "rgba(200,155,71,0.12)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 8, padding: "4px 9px" }}>{currentBatch.sareeTypeCode}</span>,
     },
     {
-      id: "bulkOrder", header: "Bulk Order", accessor: () => currentBatch.bulkOrderLabel,
+      id: "bulkOrder", header: "Bulk Order", accessor: () => currentBatch.bulkOrderLabel, priority: 3,
       cell: () => (
         <span style={{ fontFamily: F.u, fontSize: 12, color: currentBatch.bulkOrderLabel ? C.burg : C.muted }}>
           {currentBatch.bulkOrderLabel ?? "—"}
@@ -147,6 +147,7 @@ export function SareeSelectionTable({
 
         <div style={{ overflowX: "auto" }}>
           <DataTable
+            responsive
             columns={columns}
             data={sortedSarees}
             getRowId={s => String(s.no)}

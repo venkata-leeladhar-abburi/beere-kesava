@@ -22,7 +22,7 @@ export function VendorEditFormTab({ vendor, onUpdate }: { vendor: Vendor; onUpda
         <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 600, color: T.luxuryBrown }}>Edit Profile</div>
         <Button onClick={() => onUpdate?.(form)} variant="primary" size="sm" className="rounded-lg bg-[#6E0F2D]">Save Changes</Button>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32 }}>
+      <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 32 }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <Field label="Business Name" required id="business-name">
             <Input value={form.name} onChange={e => set("name", e.target.value)} placeholder="Name of the business or shop" />
@@ -30,7 +30,7 @@ export function VendorEditFormTab({ vendor, onUpdate }: { vendor: Vendor; onUpda
           <Field label="Owner / Contact Name" required id="owner-contact-name">
             <Input value={form.contactName} onChange={e => set("contactName", e.target.value)} placeholder="Who to speak to at this business" />
           </Field>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
             <Field label="Phone Number" required id="phone-number">
               <Input value={form.phone} onChange={e => set("phone", e.target.value)} placeholder="Main contact number" />
             </Field>
@@ -38,7 +38,7 @@ export function VendorEditFormTab({ vendor, onUpdate }: { vendor: Vendor; onUpda
               <Input value={form.whatsapp || ""} onChange={e => set("whatsapp", e.target.value)} placeholder="If different" />
             </Field>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
             <Field label="City" required id="city">
               <Input value={form.city} onChange={e => set("city", e.target.value)} placeholder="City" />
             </Field>
@@ -48,7 +48,7 @@ export function VendorEditFormTab({ vendor, onUpdate }: { vendor: Vendor; onUpda
               </Select>
             </Field>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
             <div>
               <label style={lbl}>Material Types</label>
               <div style={{ display: "flex", gap: 16, flexWrap: "wrap", padding: "10px 0" }}>
@@ -93,7 +93,7 @@ export function VendorEditFormTab({ vendor, onUpdate }: { vendor: Vendor; onUpda
           <Field label="Business Address" id="business-address">
             <Textarea value={form.address} onChange={e => set("address", e.target.value)} placeholder="Full address for delivery and billing" rows={3} className="resize-none" />
           </Field>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
             <Field label="Bank Name" id="bank-name">
               <Input value={form.bankName || ""} onChange={e => set("bankName", e.target.value)} placeholder="For any refunds" />
             </Field>
