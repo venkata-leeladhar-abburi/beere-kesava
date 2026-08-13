@@ -203,7 +203,7 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
   ];
 
   return (
-    <div style={{ padding: "40px 56px" }}>
+    <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40, paddingBottom: 40 }}>
       <div style={{ marginBottom: 16 }}>
         <Breadcrumbs
           items={[
