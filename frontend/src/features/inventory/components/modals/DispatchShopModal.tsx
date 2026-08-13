@@ -116,7 +116,7 @@ export function DispatchShopModal({ sarees, available, onConfirm, onClose }: {
           {step === 4 && (
             <div>
               <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginBottom: 16 }}>Review dispatch details before confirming.</div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px 20px", background: T.silkCream, borderRadius: 12, padding: "16px 18px", marginBottom: 16 }}>
+              <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: "10px 20px", background: T.silkCream, borderRadius: 12, padding: "16px 18px", marginBottom: 16 }}>
                 {[
                   ["Sarees",    picked.map(s => s.sareeId).join(", ")],
                   ["LR Number", transport.lrNumber],
