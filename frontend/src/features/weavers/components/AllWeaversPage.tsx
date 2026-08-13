@@ -185,7 +185,7 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
     <div style={{ minHeight: "calc(100dvh - 90px)", background: T.silkCream, fontFamily: F.ui }}>
 
       {/* ── HERO ── */}
-      <section style={{ background: G.card, padding: "56px 56px 0", position: "relative", overflow: "hidden" }}>
+      <section className="px-4 md:px-7 xl:px-14" style={{ background: G.card, paddingTop: 56, position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(200,155,71,0.025) 60px, rgba(200,155,71,0.025) 61px)`, pointerEvents: "none" }} />
         <div style={{ position: "absolute", inset: 0, backgroundImage: `repeating-linear-gradient(90deg, transparent, transparent 80px, rgba(200,155,71,0.012) 80px, rgba(200,155,71,0.012) 81px)`, pointerEvents: "none" }} />
         <div className="gold-bar-shimmer" style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2 }} />
@@ -250,7 +250,7 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
       </section>
 
       {/* ── FILTER + SEARCH BAR ── */}
-      <div style={{ background: T.warmIvory, borderBottom: `1px solid ${T.borderDef}`, padding: "0 56px", position: "sticky", top: 90, zIndex: 50, boxShadow: "0 4px 24px rgba(74,6,27,0.05)" }}>
+      <div className="px-4 md:px-7 xl:px-14" style={{ background: T.warmIvory, borderBottom: `1px solid ${T.borderDef}`, position: "sticky", top: 90, zIndex: 50, boxShadow: "0 4px 24px rgba(74,6,27,0.05)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, height: 60 }}>
           {/* Status filters */}
           {([
@@ -297,7 +297,7 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
       </div>
 
       {/* ── WEAVERS GRID ── */}
-      <div style={{ padding: "40px 56px 80px" }}>
+      <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40, paddingBottom: 80 }}>
         {isLoading ? (
           <div style={{ textAlign: "center", padding: "80px 40px", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
             Loading weavers…

@@ -44,7 +44,7 @@ function FooterLink({ label }: { label: string }) {
 export function ProductionHistoryFooter() {
   return (
     <footer style={{ background: T.darkBurgundy, paddingTop: 48, borderTop: `3px solid ${T.antiqueGold}` }}>
-      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 40px" }}>
+      <div className="px-4 md:px-7 xl:px-10" style={{ maxWidth: 1280, margin: "0 auto" }}>
         <div style={{ display: "flex", gap: 48, flexWrap: "wrap", paddingBottom: 40, borderBottom: "1px solid rgba(200,155,71,0.15)" }}>
           {/* Brand column */}
           <div style={{ flex: "0 0 240px", maxWidth: 240 }}>

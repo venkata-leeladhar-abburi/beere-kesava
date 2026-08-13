@@ -123,7 +123,7 @@ export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: s
         </div>
       </div>
 
-      <div style={{ maxWidth: 980, margin: "0 auto", padding: "28px 32px 40px", display: "flex", flexDirection: "column", gap: 22 }}>
+      <div className="px-4 md:px-7 xl:px-8" style={{ maxWidth: 980, margin: "0 auto", paddingTop: 28, paddingBottom: 40, display: "flex", flexDirection: "column", gap: 22 }}>
         <div style={{ background: "#FFFFFF", border: `1px solid ${T.borderDef}`, borderRadius: 16, padding: "18px 22px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
             <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>Production progress</span>

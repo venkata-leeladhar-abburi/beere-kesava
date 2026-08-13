@@ -132,7 +132,7 @@ export function WeaverAnalytics() {
   const cardSub: React.CSSProperties = { fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 3 };
   const tip = { fontFamily: F.ui, fontSize: 12, borderRadius: 10, border: `1px solid ${T.borderDef}`, boxShadow: "0 8px 24px rgba(74,6,27,0.12)" };
   return (
-    <div style={{ padding: "36px 48px 0" }}>
+    <div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 36 }}>
       <FadeUp>
       <SectionCard
         icon={ChartBar}

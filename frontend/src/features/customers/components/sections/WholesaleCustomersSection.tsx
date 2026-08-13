@@ -126,7 +126,7 @@ export function WholesaleCustomersSection({
   };
 
   return (
-    <div id="customers-wholesale-section" style={{ padding: "40px 56px 0" }}>
+    <div id="customers-wholesale-section" className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40 }}>
     <SectionCard
       icon={Building2}
       title="Wholesale Customers"

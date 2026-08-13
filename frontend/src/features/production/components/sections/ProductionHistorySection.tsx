@@ -207,7 +207,7 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
   ];
 
   return (
-    <div id="prod-history" style={{ padding: "40px 40px 0" }}>
+    <div id="prod-history" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 40 }}>
       <FadeUp>
         <div style={{ background: T.darkBurgundy, borderRadius: "12px 12px 0 0", padding: "18px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>

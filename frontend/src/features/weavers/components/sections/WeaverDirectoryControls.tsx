@@ -11,7 +11,7 @@ export function AllWeaversControls({ view, setView, filter, setFilter, search, s
   view: string; setView: (v: string) => void; filter: string; setFilter: (f: string) => void; search: string; setSearch: (s: string) => void; onAddWeaver: () => void; onViewAll: () => void; onImport: () => void; children?: ReactNode;
 }) {
   return (
-    <div style={{ padding: "40px 48px 0" }}>
+    <div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 40 }}>
       <FadeUp>
       <SectionCard
         id="weav-all-weavers"

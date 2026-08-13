@@ -4,7 +4,7 @@ import { ActivitiesPanel } from "./leaderboard/ActivitiesPanel";
 
 export function LeaderboardAndQC({ onActivities, onNavigate }: { onActivities: () => void; onNavigate?: (tab: string) => void }) {
   return (
-    <div style={{ padding: "36px 48px 0" }}>
+    <div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 36 }}>
       <PerformancePanel onNavigate={onNavigate} />
       <ActivitiesPanel onActivities={onActivities} />
     </div>

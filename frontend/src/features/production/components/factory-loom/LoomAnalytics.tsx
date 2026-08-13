@@ -156,7 +156,7 @@ export function LoomAnalytics({ looms, batches, materials, sarees }: {
   const tip = { fontFamily: F.ui, fontSize: 12, borderRadius: 10, border: `1px solid ${T.borderDef}`, boxShadow: "0 8px 24px rgba(74,6,27,0.12)" };
 
   return (
-    <div style={{ padding: "34px 56px 0" }}>
+    <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 34 }}>
       <FadeUp>
       <SectionCard
         icon={ChartBar}

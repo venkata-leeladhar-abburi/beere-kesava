@@ -157,7 +157,7 @@ export function BulkOrdersSection({ onNavigate, superadmin = false, onOpenOrder 
   const { bulkOrders, addBulkOrder, nextOrderRef } = useBulkOrders();
   const atRiskCount = bulkOrders.filter(o => o.status === "at-risk" || o.status === "overdue").length;
   return (
-    <div id="prod-bulk-orders" style={{ padding: "36px 48px 0" }}>
+    <div id="prod-bulk-orders" className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 36 }}>
       <FadeUp>
         <div style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`, boxShadow: "0 6px 32px rgba(74,6,27,0.08)", overflow: "hidden" }}>
 

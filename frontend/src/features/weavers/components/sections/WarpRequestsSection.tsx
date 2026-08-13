@@ -45,7 +45,7 @@ export function WarpRequestsSection() {
     },
   });
   return (
-    <div style={{ padding: "36px 48px 0" }}>
+    <div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 36 }}>
       <FadeUp>
 
       <SectionCard

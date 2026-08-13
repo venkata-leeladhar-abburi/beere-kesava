@@ -263,7 +263,7 @@ export function FactoryLoomPage() {
           </div>
 
           {/* Main Body */}
-          <div style={{ padding: "32px 56px 0" }}>
+          <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 32 }}>
             <SectionCard
               icon={Factory}
               title="Looms Directory"
