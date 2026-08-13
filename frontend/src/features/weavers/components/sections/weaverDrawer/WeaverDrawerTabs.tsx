@@ -50,9 +50,10 @@ export function BatchesTab({ sortedAllWeaverBatches, dispatches, weaver, batchDa
                       {/* Saree Info Table */}
                       <div style={{ overflowX: "auto", border: `1px solid ${T.borderDef}`, borderRadius: 10, background: "#FFFFFF", minWidth: 500 }}>
                         <DataTable
+                          responsive
                           columns={[
                             {
-                              id: "sareeId", header: "Saree ID", accessor: (row: any) => row.sareeId,
+                              id: "sareeId", header: "Saree ID", accessor: (row: any) => row.sareeId, priority: 1,
                               cell: (_v, row: any) => row.sareeId
                                 ? <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", borderRadius: 5, padding: "2px 6px" }}>{row.sareeId}</span>
                                 : <span style={{ color: "rgba(139,112,96,0.4)", fontSize: 12 }}>—</span>,
@@ -70,7 +71,7 @@ export function BatchesTab({ sortedAllWeaverBatches, dispatches, weaver, batchDa
                                 : <span style={{ color: "rgba(139,112,96,0.35)", fontSize: 12 }}>—</span>,
                             },
                             {
-                              id: "bulkOrder", header: "Bulk Order", accessor: (row: any) => row.bulkOrderLabel,
+                              id: "bulkOrder", header: "Bulk Order", accessor: (row: any) => row.bulkOrderLabel, priority: 3,
                               cell: (_v, row: any) => (
                                 <span style={{ fontFamily: F.ui, fontSize: 12, color: row.bulkOrderRef ? T.royalBurgundy : T.green, fontWeight: 600 }}>
                                   {row.bulkOrderLabel || "General Stock"}

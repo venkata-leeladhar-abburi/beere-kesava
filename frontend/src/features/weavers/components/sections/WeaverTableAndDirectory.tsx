@@ -72,15 +72,15 @@ export function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }
 
   const columns: ColumnDef<WeaverTableRow>[] = [
     {
-      id: "code", header: "Weaver Code", accessor: r => r.code ?? r.id,
+      id: "code", header: "Weaver Code", accessor: r => r.code ?? r.id, priority: 3,
       cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 14, color: T.royalBurgundy, fontWeight: 700, letterSpacing: "0.4px" }}>{r.code ?? r.id}</span>,
     },
     {
-      id: "name", header: "Name", accessor: r => r.name,
+      id: "name", header: "Name", accessor: r => r.name, priority: 1,
       cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 16, color: T.luxuryBrown, fontWeight: 700 }}>{r.name}</span>,
     },
     {
-      id: "village", header: "Village", accessor: r => r.village,
+      id: "village", header: "Village", accessor: r => r.village, priority: 3,
       cell: (_v, r) => (
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <PhMapPin size={14} color={T.taupe} />
@@ -89,7 +89,7 @@ export function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }
       ),
     },
     {
-      id: "mobile", header: "Mobile", accessor: r => r.mobile,
+      id: "mobile", header: "Mobile", accessor: r => r.mobile, priority: 3,
       cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 14, color: T.luxuryBrown }}>{r.mobile}</span>,
     },
     {
@@ -129,7 +129,7 @@ export function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }
       cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 16, color: T.luxuryBrown, fontWeight: 700 }}>{r.totalPaid}</span>,
     },
     {
-      id: "lastActive", header: "Last Active", accessor: r => r.lastActive,
+      id: "lastActive", header: "Last Active", accessor: r => r.lastActive, priority: 3,
       cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 14, color: T.taupe }}>{r.lastActive}</span>,
     },
     {
@@ -171,7 +171,7 @@ export function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }
   return (
     <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 4px 18px rgba(74,6,27,0.06)" }}>
       <div style={{ overflowX: "auto" }}>
-        <DataTable columns={columns} data={visible} getRowId={r => r.id} />
+        <DataTable responsive columns={columns} data={visible} getRowId={r => r.id} />
       </div>
       {!showAll && (
         <div style={{ padding: "22px 26px", textAlign: "center", borderTop: `1px solid ${T.borderDef}` }}>
