@@ -25,13 +25,12 @@ export function TabsNav({
   setActiveTab: (t: "po" | "ext" | "warp" | "rate") => void;
 }) {
   return (
-    <div style={{
+    <div className="px-4 md:px-7 xl:px-14" style={{
       position: "sticky", top: 90, zIndex: 50,
       background: "#FFF",
       borderBottom: "1px solid " + T.borderDef,
       marginTop: 32,
       display: "flex", alignItems: "center",
-      padding: "0 56px",
       boxShadow: "0 2px 8px rgba(44,24,16,0.05)",
     }}>
       {tabs.map(tab => (
@@ -100,7 +99,7 @@ export function TabContent({
     void queryClient.invalidateQueries({ queryKey: ["rate-requests-pending"] });
   };
   return (
-    <div style={{ padding: "32px 56px 0" }}>
+    <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 32 }}>
       <AnimatePresence mode="wait">
         {/* — Purchase Orders — */}
         {activeTab === "po" && (

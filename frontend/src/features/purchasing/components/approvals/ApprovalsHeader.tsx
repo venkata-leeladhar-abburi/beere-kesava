@@ -15,9 +15,9 @@ export function ApprovalsHeader({
   rateCount: number;
 }) {
   return (
-    <div style={{
+    <div className="px-4 md:px-7 xl:px-14" style={{
       background: T.darkBurgundy,
-      padding: "40px 56px 80px",
+      paddingTop: 40, paddingBottom: 80,
       position: "relative",
       overflow: "hidden",
       minHeight: 160,
