@@ -62,7 +62,7 @@ function SAHero() {
           ))}
         </div>
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 1.0 }}
-          style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 18, color: "rgba(245,232,208,0.90)", lineHeight: 1.85, margin: 0, maxWidth: 440, letterSpacing: "0.05px" }}
+          style={{ fontFamily: F.ui, fontWeight: 400, fontSize: "clamp(15px, 3.5vw, 18px)", color: "rgba(245,232,208,0.90)", lineHeight: 1.85, margin: 0, maxWidth: 440, letterSpacing: "0.05px" }}
         >
           Full visibility and control over all operations — rates, approvals, audit logs, and more.
         </motion.p>
@@ -115,9 +115,10 @@ function SAMetricsBar() {
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, delay: 0.4, ease: EASE }}
-      style={{ padding: "0 48px", marginTop: -72, position: "relative", zIndex: 20 }}
+      className="px-4 md:px-7 xl:px-12 -mt-8 md:-mt-12 xl:-mt-[72px]"
+      style={{ position: "relative", zIndex: 20 }}
     >
-      <div style={{ background: G.card, borderRadius: 28, display: "flex", alignItems: "stretch", boxShadow: "0 30px 80px rgba(0,0,0,0.32), 0 0 0 1px rgba(200,155,71,0.16)", overflow: "hidden", minHeight: 140 }}>
+      <div className="grid grid-cols-2 xl:flex" style={{ background: G.card, borderRadius: 28, alignItems: "stretch", boxShadow: "0 30px 80px rgba(0,0,0,0.32), 0 0 0 1px rgba(200,155,71,0.16)", overflow: "hidden", minHeight: 140 }}>
         {saMetrics.map((m: any, i) => (
           <motion.div key={i}
             initial={{ opacity: 0, y: 20 }}
@@ -139,7 +140,7 @@ function SAMetricsBar() {
               <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 8, color: m.hi ? "rgba(200,155,71,1)" : m.crimsonHi ? "rgba(232,120,110,1)" : "rgba(245,232,208,0.90)" }}>
                 {m.label}
               </div>
-              <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 48, color: m.hi ? T.goldLight : m.crimsonHi ? "#F08080" : T.warmCream, lineHeight: 1.0, marginBottom: 8, ...NUM }}>
+              <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: "clamp(28px, 8vw, 48px)", color: m.hi ? T.goldLight : m.crimsonHi ? "#F08080" : T.warmCream, lineHeight: 1.0, marginBottom: 8, ...NUM }}>
                 <AnimatedNumber raw={m.val} />
               </div>
               <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: m.hi ? "rgba(231,201,131,0.95)" : m.crimsonHi ? "rgba(240,128,128,0.90)" : "rgba(245,232,208,0.85)", letterSpacing: "0.1px" }}>
