@@ -56,16 +56,16 @@ export function ExternalPurchasesSection() {
   const totalBill = rows.reduce((s, r) => s + Number(r.billAmount), 0);
 
   const purchaseColumns: ColumnDef<BackendPurchase>[] = [
-    { id: "vendor", header: "Vendor / Supplier", accessor: r => r.supplier.name, priority: 1, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.supplier.name}</span> },
+    { id: "vendor", header: "Vendor / Supplier", accessor: r => r.supplier.name, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.supplier.name}</span> },
     {
-      id: "location", header: "Location", accessor: r => [r.supplier.city, r.supplier.state].filter(Boolean).join(", "), priority: 3,
+      id: "location", header: "Location", accessor: r => [r.supplier.city, r.supplier.state].filter(Boolean).join(", "),
       cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{[r.supplier.city, r.supplier.state].filter(Boolean).join(", ") || "—"}</span>,
     },
-    { id: "gst", header: "GST Number", accessor: r => r.gstNumber || r.supplier.gstCode, priority: 3, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{r.gstNumber || r.supplier.gstCode || "—"}</span> },
+    { id: "gst", header: "GST Number", accessor: r => r.gstNumber || r.supplier.gstCode, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{r.gstNumber || r.supplier.gstCode || "—"}</span> },
     { id: "invoice", header: "Invoice Number", accessor: r => r.invoiceNumber, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.invoiceNumber || "—"}</span> },
     { id: "billAmount", header: "Bill Amount", accessor: r => r.billAmount, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700 }}><Money value={rupees(Number(r.billAmount))} /></span> },
     { id: "sarees", header: "Sarees", accessor: r => r.sareeCount, align: "center", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700 }}>{r.sareeCount}</span> },
-    { id: "date", header: "Date", accessor: r => r.date, priority: 3, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{fmtDate(r.date)}</span> },
+    { id: "date", header: "Date", accessor: r => r.date, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{fmtDate(r.date)}</span> },
     {
       id: "status", header: "Status", accessor: r => r.status, type: "status",
       cell: (_v, r) => <DomainStatusPill taxonomy="payment" status={PURCHASE_STATUS_KEY[r.status] ?? "unpaid"} />,
@@ -78,7 +78,7 @@ export function ExternalPurchasesSection() {
         <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: T.luxuryBrown, marginBottom: 4 }}>External Purchases</div>
         <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 14 }}>Sarees purchased ready-made from external suppliers — separate from factory production.</div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 18 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16, marginBottom: 18 }}>
           <SumCard icon={<Package size={22} color={T.royalBurgundy} />} label="Total External Sarees Purchased" value={`${totalSarees} sarees`} sub="All recorded purchases" />
           <SumCard icon={<IndianRupee size={22} color={T.antiqueGold} />} label="Total Bill Amount" value={formatMoney(rupees(totalBill))} sub="Across all suppliers" hi />
         </div>
@@ -86,7 +86,6 @@ export function ExternalPurchasesSection() {
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
           <div style={{ overflowX: "auto", minWidth: 900 }}>
             <DataTable
-              responsive
               columns={purchaseColumns}
               data={rows}
               getRowId={r => r.id}
@@ -218,9 +217,9 @@ export function SareeProductionReport() {
   }
 
   const prodColumns: ColumnDef<ProdTableRow>[] = [
-    { id: "code", header: "Weaver Code", accessor: r => r.code, priority: 3, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy }}>{r.code}</span> },
-    { id: "name", header: "Weaver Name", accessor: r => r.name, priority: 1, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{r.name}</span> },
-    { id: "batches", header: "Batches", accessor: r => r.batches, align: "center", priority: 3 },
+    { id: "code", header: "Weaver Code", accessor: r => r.code, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy }}>{r.code}</span> },
+    { id: "name", header: "Weaver Name", accessor: r => r.name, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{r.name}</span> },
+    { id: "batches", header: "Batches", accessor: r => r.batches, align: "center" },
     { id: "produced", header: "Sarees Produced", accessor: r => r.produced, align: "center", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700 }}>{r.produced}</span> },
     { id: "passed", header: "QC Passed", accessor: r => r.passed, align: "center", cell: (_v, r) => <span style={{ color: T.green, fontFamily: F.mono, fontWeight: 700 }}>{r.passed}</span> },
     { id: "rejected", header: "QC Rejected", accessor: r => r.rejected, align: "center", cell: (_v, r) => <span style={{ color: r.rejected > 0 ? T.crimson : T.taupe, fontFamily: F.mono, fontWeight: 700 }}>{r.rejected > 0 ? r.rejected : "—"}</span> },
@@ -228,7 +227,7 @@ export function SareeProductionReport() {
       id: "passRate", header: "Pass Rate", accessor: r => r.passRate, align: "center",
       cell: (_v, r) => <StatusPill label={`${r.passRate}%`} type={r.passRate >= 95 ? "ok" : r.passRate >= 85 ? "warn" : "bad"} />,
     },
-    { id: "designs", header: "Designs Worked On", accessor: r => r.designs, priority: 3, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.designs}</span> },
+    { id: "designs", header: "Designs Worked On", accessor: r => r.designs, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.designs}</span> },
     { id: "charges", header: "Making Charges", accessor: r => r.charges, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.royalBurgundy }}><Money value={rupees(r.charges)} /></span> },
   ];
 
@@ -275,7 +274,7 @@ export function SareeProductionReport() {
   const dispatchedCount = production?.finishingByStatus?.["DISPATCHED"] ?? 0;
 
   return (
-    <div id="rep-production" style={{ padding: "32px 40px" }}>
+    <div id="rep-production" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 32 }}>
     <SectionCard
       icon={Factory}
       title="Saree Production Report"
@@ -289,7 +288,7 @@ export function SareeProductionReport() {
         ))}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 20, marginBottom: 24, alignItems: "stretch" }}>
+      <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 20, marginBottom: 24, alignItems: "stretch" }}>
         {/* Weekly production trend — computed from real batch createdAt */}
         <ChartCard title="Sarees Produced Each Week" sub="Current vs prior period" icon={<TrendingUp size={22} color={T.royalBurgundy} />}>
           {prodWeeklyData.length === 0 ? (
@@ -425,7 +424,7 @@ export function SareeProductionReport() {
       </div>
 
       {/* 4 summary cards — live from GET /reports/production-summary */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 24, alignItems: "stretch" }}>
+      <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 16, marginBottom: 24, alignItems: "stretch" }}>
         <SumCard icon={<Package size={22} color={T.royalBurgundy} />} label="Total Sarees Produced" value={`${production?.totalSareesProduced ?? 0}`} sub="All batches" />
         <SumCard icon={<CheckCircle2 size={22} color={T.green} />} label="Total Passed Quality Check" value={`${qcDonutData[0].value}`} sub={totalQc > 0 ? `${passRatePct}% pass rate` : "No QC records yet"} greenHi />
         <SumCard icon={<AlertTriangle size={22} color={T.crimson} />} label="Total Rejected" value={`${qcDonutData[2].value}`} sub={totalQc > 0 ? `${Math.round((qcDonutData[2].value / totalQc) * 100)}% rejection rate` : "No QC records yet"} crimsonHi />
@@ -437,7 +436,6 @@ export function SareeProductionReport() {
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
           <div style={{ overflowX: "auto", minWidth: 960 }}>
             <DataTable
-              responsive
               columns={prodColumns}
               data={prodTableRows}
               getRowId={r => r.code}
