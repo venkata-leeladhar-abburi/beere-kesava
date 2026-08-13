@@ -56,7 +56,7 @@ export function CustomerModals({
             </div>
             <div style={{ padding: 32, overflowY: "auto", display: "flex", gap: 32 }}>
               <div style={{ flex: "55%" }}>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 32 }}>
+                <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16, marginBottom: 32 }}>
                   <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Total Orders Ever</div><div style={{ fontFamily: F.display, fontSize: 30, color: T.luxuryBrown, fontWeight: 700 }}>{modalWholesale.orders}</div></div>
                   <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Total Spend</div><div style={{ fontFamily: F.display, fontSize: 30, color: T.antiqueGold, fontWeight: 700 }}>{formatMoney(rupees(Number(modalWholesale.spend) || 0))}</div></div>
                   <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Outstanding Balance</div><div style={{ fontFamily: F.display, fontSize: 30, color: modalWholesale.out==="0"?T.greenMid:T.crimson, fontWeight: 700 }}>{formatMoney(rupees(Number(modalWholesale.out) || 0))}</div></div>
