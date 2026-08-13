@@ -41,7 +41,7 @@ export function ViewProfileModal({ member, onClose, onEdit }: {
 
         {/* Body */}
         <div style={{ padding: "22px 28px 28px" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px 20px" }}>
+          <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: "16px 20px" }}>
             {[
               { label: "Mobile Number",   value: member.mobile || "—",          mono: true  },
               { label: "Email",           value: member.email  || "—",          mono: false },
