@@ -130,7 +130,7 @@ export function OverdueAlertsReport() {
     }));
 
   return (
-    <div id="rep-overdue" style={{ padding: "32px 40px" }}>
+    <div id="rep-overdue" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 32 }}>
     <SectionCard
       icon={BellRing}
       title="Overdue & Alerts Report"
@@ -143,7 +143,7 @@ export function OverdueAlertsReport() {
       </div>
 
       {/* 4 alert cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 32, alignItems: "stretch" }}>
+      <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 16, marginBottom: 32, alignItems: "stretch" }}>
         <SumCard icon={<BellRing size={22} color={T.crimson} />} label="Customer Invoices Overdue" value={`${overdueCustomers.length} invoices`} sub="Immediate follow-up needed" crimsonHi />
         <SumCard icon={<Boxes size={22} color={T.antiqueGold} />} label="Raw Material Running Low" value={`${lowStockMaterials.length} items`} sub="Place purchase orders now" hi />
         <SumCard icon={<Clock size={22} color={T.crimson} />} label="Weavers Running Behind Schedule" value={`${lateWeavers.length} weavers`} sub="Batches delayed" crimsonHi />
