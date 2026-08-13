@@ -362,11 +362,75 @@ Each of these gets its full recipe written **when it begins**, following R1's fo
 are deliberately sketched rather than over-specified — R1's outcomes will inform them.
 
 ### R2 — Modal content
-Shell is done (§2). The work is content inside 63 modal files: multi-column forms collapsing
-to one column under `md`; data-heavy modals (`SareeListModal`, `RecordDetailsModal`,
-`PurchaseModals`) inheriting R1's card mode; oversized modals verified against the
-`max-h-[92dvh]` bottom-sheet constraint. Nested sub-dialogs stay plain divs — do not convert
-them (`05-OVERLAYS.md` Part D.4 forbids nested modals).
+
+**Scoped 2026-08-13.** Shell is done (§2) — this phase is content inside modals only.
+`grep -rl "<Modal\b" src/features --include="*.tsx"` finds 56 files using the shared `Modal`
+component today (fewer than the original 63-file audit estimate, since some have since been
+consolidated or migrated). Of those, 25 contain a fixed multi-column CSS grid
+(`gridTemplateColumns` with `1fr 1fr`, `repeat(2..4, ...)`) — that's the concrete R2 scope.
+The other 31 are already single-column or use flex-wrap, which already reflows; nothing to
+do there.
+
+**The recipe (same pattern as R0.3's page-gutter fix, §3.3):**
+1. Open the file, find every `style={{ display: "grid", gridTemplateColumns: "..." }}` (or
+   the equivalent split across `style`/`className`) **that sits inside a `<Modal>`'s body**.
+   Grids outside any modal are out of scope for R2 (they may be R3/R5's job).
+2. Collapse to one column under `md`, keep the original column count from `md` up (so tablet
+   and desktop stay exactly as they are):
+   ```tsx
+   // Before — fixed 2-column grid at every width:
+   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+
+   // After — 1 column mobile, 2 columns from md up (unchanged at ≥768px):
+   <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
+   ```
+   For a 3- or 4-column grid, use `md:grid-cols-3` / `md:grid-cols-4` — keep the original
+   count in the `md:` class, `grid-cols-1` for the base (mobile) case. Leave `gap` in `style`
+   (Tailwind's gap utility would work too, but changing the mechanism for a value that isn't
+   changing is unnecessary noise — only touch `gridTemplateColumns`).
+3. That's the whole edit. Don't touch field ordering, labels, validation, or spacing values.
+
+**Verification:** same as R1 — `gridTemplateColumns` → Tailwind class swap is inert above
+`md` (768px), so `tsc`/`build`/`lint` catch type/syntax errors but not the responsive
+behavior itself; the visual change only appears below 768px. Flag unverified batches the
+same way R1 did if no browser session is available.
+
+**Explicitly excluded from this pass** (per §0 and Part D.4 of `05-OVERLAYS.md`):
+- Nested sub-dialogs (e.g. `DefectPhotoPrompt.tsx` opened from inside `VerificationModal.tsx`)
+  stay plain fixed divs — do not wrap them in `<Modal>` or apply this recipe to their internal
+  grids as if they were top-level modal content; treat them as their own small case if they
+  have a multi-column grid, using the same recipe, but don't restructure the nesting itself.
+- Data tables inside modals already got R1's `responsive` treatment where applicable (e.g.
+  `SareeListModal`, `RecordDetailsModal`) — nothing further to do for those.
+- The `max-h-[92dvh]` bottom-sheet constraint (Modal's own mobile shell) is already correct
+  per §2 — don't re-verify it per modal, it's a property of `Modal.tsx` itself, not per-usage.
+
+**25 files with a multi-column grid to collapse:**
+- `bulk-orders/components/BulkOrderCreateModal.tsx`
+- `bulk-orders/components/BulkOrderDetailPage.tsx`
+- `customers/components/modals/CustomerModals.tsx`
+- `design-library/components/DesignLibraryComponents.tsx`
+- `design-library/components/DesignModals.tsx`
+- `firms/components/FirmModals.tsx`
+- `inventory/components/PurchaseModals.tsx`
+- `inventory/components/ViewStockDialog.tsx`
+- `inventory/components/modals/DispatchShopModal.tsx`
+- `inventory/components/modals/InventoryDetailModal.tsx`
+- `materials/components/issueMaterial/RecordDetailsModal.tsx`
+- `payments/components/vendor/ContactVendorModal.tsx`
+- `payments/components/vendor/VendorDetailModal.tsx`
+- `payments/components/vendor/VendorPayNowModal.tsx`
+- `payments/components/weaver/WeaverPaymentDetailModal.tsx`
+- `portals/components/shop-staff/CustomerProfiles.tsx`
+- `portals/components/shop-staff/desktop/CustomerProfileDialog.tsx`
+- `portals/components/weaver-portal/theme.tsx`
+- `production/components/batch-creation/PickerModals.tsx`
+- `production/components/dialogs/OrderDialogContent.tsx`
+- `production/components/factory-loom/AddLoomModal.tsx`
+- `users/components/EditModal.tsx`
+- `users/components/ViewProfileModal.tsx`
+- `vendors/components/vendors-page/AddVendorModal.tsx`
+- `weavers/components/modals/NewWeaverModal.tsx`
 
 ### R3 — Dashboards, stats & KPI grids
 Per portal, in this order: **Admin → Weaver → Worker → Shop staff → Superadmin**. Admin first
@@ -554,8 +618,38 @@ work.** Tick with a date: `- [x] FileName.tsx (2026-08-13)`.
 
 **R1 COMPLETE** (2026-08-13) — all 70 originally-assigned files resolved: either `responsive`-enabled or documented as a deliberate exclusion (9 total: 4 portal "island" files already responsive via a different mechanism, 4 `renderExpandedRow`-based drill-down tables incompatible with `CardList`, 1 genuine ledger-layout semantic mismatch). Verified via `grep -rl "<DataTable" src/features` (71 consumers — one more than the original count, pre-existing drift not part of this effort) vs `grep -rl "responsive"` (61) vs `grep -rl "priority:"` (66) — the arithmetic checks out against the exclusion list. `tsc`/`build`/`lint` clean at every commit, same pre-existing baseline throughout.
 
-### R2–R8
-- [ ] R2 Modal content — *expand §7 into a full recipe when starting*
+### R2 — Modal content (0 / 25)
+
+Recipe finalized in §7. 25 files with a multi-column grid inside a `<Modal>` to collapse
+(`grid-cols-1 md:grid-cols-N`); the other 31 `Modal`-using files need no change.
+
+- [ ] `bulk-orders/components/BulkOrderCreateModal.tsx`
+- [ ] `bulk-orders/components/BulkOrderDetailPage.tsx`
+- [ ] `customers/components/modals/CustomerModals.tsx`
+- [ ] `design-library/components/DesignLibraryComponents.tsx`
+- [ ] `design-library/components/DesignModals.tsx`
+- [ ] `firms/components/FirmModals.tsx`
+- [ ] `inventory/components/PurchaseModals.tsx`
+- [ ] `inventory/components/ViewStockDialog.tsx`
+- [ ] `inventory/components/modals/DispatchShopModal.tsx`
+- [ ] `inventory/components/modals/InventoryDetailModal.tsx`
+- [ ] `materials/components/issueMaterial/RecordDetailsModal.tsx`
+- [ ] `payments/components/vendor/ContactVendorModal.tsx`
+- [ ] `payments/components/vendor/VendorDetailModal.tsx`
+- [ ] `payments/components/vendor/VendorPayNowModal.tsx`
+- [ ] `payments/components/weaver/WeaverPaymentDetailModal.tsx`
+- [ ] `portals/components/shop-staff/CustomerProfiles.tsx`
+- [ ] `portals/components/shop-staff/desktop/CustomerProfileDialog.tsx`
+- [ ] `portals/components/weaver-portal/theme.tsx`
+- [ ] `production/components/batch-creation/PickerModals.tsx`
+- [ ] `production/components/dialogs/OrderDialogContent.tsx`
+- [ ] `production/components/factory-loom/AddLoomModal.tsx`
+- [ ] `users/components/EditModal.tsx`
+- [ ] `users/components/ViewProfileModal.tsx`
+- [ ] `vendors/components/vendors-page/AddVendorModal.tsx`
+- [ ] `weavers/components/modals/NewWeaverModal.tsx`
+
+### R3–R8
 - [ ] R3 Dashboards & stats — Admin / Weaver / Worker / Shop staff / Superadmin
 - [ ] R4 Reports pages — **scope with user before starting**
 - [ ] R5 Forms & filter bars
