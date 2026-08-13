@@ -146,7 +146,53 @@ is structural (rendering genuinely different components/props, not just differen
 layout will flash the desktop layout for one frame on a mobile load. This is another reason
 CSS wins by default.
 
-### 3.3 Column priority (the core of table responsiveness)
+### 3.3 Page gutters — minimal on mobile/tablet, never hand-rolled
+
+**Rule (user directive, 2026-08-12): mobile and tablet horizontal page padding must be
+minimal** — just enough for a healthy reading gap, not a scaled-down copy of the desktop
+gutter. Maximize content width on small screens.
+
+**The recurring bug:** pages hardcode one horizontal padding value in a `style` prop and
+reuse it at every breakpoint — e.g. `padding: "24px 48px 0"`. That 48px is a sane desktop
+gutter and a wasteful one on a 375px phone (it eats ~25% of the viewport width on each
+side). This is not a one-off — it is the single most common page-gutter bug in the
+codebase and will recur in any new page written without this convention in mind.
+
+**The fix, every time:** split the padding into vertical (`style`, unchanged, preserves
+exact original spacing) and horizontal (a responsive `className`, replacing the old
+uniform value):
+
+```tsx
+// Before — desktop's 48px gutter applied at every width:
+<div style={{ padding: "24px 48px 0" }}>
+
+// After — 16px mobile / 28px tablet / 48px desktop (unchanged at ≥1280px):
+<div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 24 }}>
+```
+
+Tailwind's default spacing scale (`4px × n`) lines up exactly with this doc's breakpoint
+gutters — `px-4` = 16px, `px-7` = 28px, `px-12` = 48px — and Tailwind's default `md`
+(768px) / `xl` (1280px) breakpoints are exactly this doc's tablet/desktop boundaries (§3.1).
+No custom Tailwind config or new breakpoint is needed; use these three classes verbatim.
+
+**If the page's original desktop gutter isn't 48px**, keep whatever it actually was in the
+`xl:` class (`xl:px-10` for 40px, `xl:px-14` for 56px, etc. — Tailwind spacing is `n×4px`,
+so divide the original px value by 4) so desktop stays pixel-identical per §0, and use
+`px-4 md:px-7` for mobile/tablet regardless — those two are the fixed target, only the
+desktop anchor varies per page.
+
+**Applies to every page, present and future** — this is a standing convention, not a
+one-time fix. Any new page (from any account, any session) should reach for
+`px-4 md:px-7 xl:px-<original/4>` for its outer horizontal padding by default, never a
+single hardcoded value repeated across breakpoints.
+
+**Fixed 2026-08-12 as the first real instance:** `AllOrdersPage.tsx` (4 spots),
+`AllOrdersFilterBar.tsx` (1), `AllOrdersAnalyticsSection.tsx` (1) — all had `48px` fixed
+horizontal padding regardless of viewport. This is very likely not the only page with this
+exact bug; R0.3/R7 should grep for the pattern (`padding:\s*"[^"]*\d+px \d+px`) across
+`features/**` when those phases run.
+
+### 3.4 Column priority (the core of table responsiveness)
 
 `ColumnDef.priority` drives the card fallback. Columns default to `2`.
 
@@ -170,13 +216,13 @@ CSS wins by default.
 - Target **4–6 visible fields per card**. A card showing 12 label/value pairs is a table
   with extra steps and helps nobody.
 
-### 3.4 Touch targets
+### 3.5 Touch targets
 
 Any control that becomes tappable on mobile needs **≥44×44px**. Icon-only row actions
 frequently fail this on the desktop table (they are typically ~28px). Fix by padding the
 mobile card variant, not by changing the desktop button.
 
-### 3.5 Horizontal scroll is a last resort, never the default
+### 3.6 Horizontal scroll is a last resort, never the default
 
 A page must never scroll horizontally as a whole. Wide content scrolls **inside its own
 container**. For genuinely irreducible wide content (a financial ledger, a matrix), an
@@ -261,7 +307,7 @@ adopted by zero consumers. Every file is the same two-part edit.
 ### The recipe (identical for every file)
 
 1. Open the file, find the `ColumnDef<T>[]` array.
-2. Add `priority` to each column per §3.3. Most columns are `2` (the default) — you only
+2. Add `priority` to each column per §3.4. Most columns are `2` (the default) — you only
    need to explicitly mark the **one** `priority: 1` title column and the `priority: 3`
    hide-on-mobile ones. Omit `priority: 2` entirely; it is the default and writing it adds
    noise to the diff.
@@ -341,7 +387,7 @@ mobile layout instead of overflow. Sticky mobile action bar for long forms.
 
 ### R6 — Navigation audit
 Verification, not construction. Each portal's mobile nav already exists. Confirm nav items
-match the desktop nav, touch targets meet §3.4, and resolve drift between portals.
+match the desktop nav, touch targets meet §3.5, and resolve drift between portals.
 
 ### R7 — Grid-as-table triage
 188 files use `gridTemplateColumns`/`grid-cols-`. **Triage before touching:**
@@ -398,7 +444,7 @@ work.** Tick with a date: `- [x] FileName.tsx (2026-08-13)`.
 ### R0 — Foundations
 - [x] R0.1 Consolidate 3 hand-rolled `window.innerWidth` sites (2026-08-12) — **assessed, deliberately not converted, see §10.** They're inline open-time guards in `Modal`/`Popover`/`Drawer` (3 of the highest-blast-radius shared files in the app); a direct read is not worse than a hook value here, so this is cosmetic-only risk for zero gain.
 - [x] R0.2 Fluid numerals in `StatsStrip` (2026-08-12) — `fontSize: 48` → `clamp(28px, 8vw, 48px)` in `PortalChrome.tsx`. Desktop (≥1280px, ~8vw≈102px clamped to max 48px) unchanged; shrinks only below ~600px viewport width. `tsc` clean. Not yet visually verified in-browser (no session dev server up at edit time) — flag for next browser-access session.
-- [ ] R0.3 Gutter-scale audit (findings → §10)
+- [x] R0.3 Gutter-scale audit (2026-08-12) — user-reported bug (screenshot: bulk-orders "All Orders" page wasting ~25% of a 375px viewport on each side). Root cause identified and the reusable recipe documented at §3.3. Fixed the reported page (6 spots across `AllOrdersPage.tsx`/`AllOrdersFilterBar.tsx`/`AllOrdersAnalyticsSection.tsx`). **Not exhaustive** — same bug pattern likely exists on other pages; §3.3 flags this for R7/a future grep pass rather than fixing all instances now (out of scope for one report).
 
 ### R1 — Tables → card mode (27 / 70)
 
@@ -479,7 +525,7 @@ work.** Tick with a date: `- [x] FileName.tsx (2026-08-13)`.
 - [x] `reports/components/sections/CustomerReport.tsx` (2026-08-12)
 - [x] `reports/components/sections/OutstandingPaymentsReport.tsx` (2026-08-12)
 - [x] `reports/components/sections/OverdueAlertsReport.tsx` (2026-08-12) — 4 separate `<DataTable>` instances in this file, all done
-- [ ] `reports/components/sections/ProfitLossReport.tsx` *(ledger layout — card mode may be a semantic mismatch; if so, use §3.5 scroll container and note it)*
+- [ ] `reports/components/sections/ProfitLossReport.tsx` *(ledger layout — card mode may be a semantic mismatch; if so, use §3.6 scroll container and note it)*
 - [ ] `reports/components/sections/RawMaterialReport.tsx`
 - [ ] `reports/components/sections/RetailSalesReport.tsx`
 - [ ] `reports/components/sections/SareeProductionReport.tsx`
