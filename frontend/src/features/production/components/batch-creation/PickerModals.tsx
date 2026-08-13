@@ -54,7 +54,7 @@ export function WeaverPickerModal({ weavers, onClose, onSelect }: { weavers: Wea
   const [sel, setSel] = useState<string | null>(null);
   return (
     <PickerShell title="Assign Weaver" onClose={onClose}>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, padding: "0 24px" }}>
+      <div className="grid grid-cols-1 md:grid-cols-2" style={{ display: "grid", gap: 10, padding: "0 24px" }}>
         {weavers.map(w => (
           <Button key={w.id} onClick={() => setSel(w.id)} variant="ghost" fullWidth
             className={`h-auto justify-start gap-2.5 p-[12px_14px] rounded-xl border-2 ${sel === w.id ? "border-[#6E0F2D] bg-[rgba(110,15,45,0.05)]" : "border-[rgba(110,15,45,0.10)] bg-[#FFFDF9]"} hover:bg-[rgba(110,15,45,0.05)]`}>
@@ -283,7 +283,7 @@ export function WeaverLoomPickerModal({ weaver, current, onClose, onSelect }: {
       <div style={{ padding: "0 24px 8px", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
         {weaver.name} operates {weaver.looms} loom{weaver.looms !== 1 ? "s" : ""}.
       </div>
-      <div style={{ padding: "8px 24px 0", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+      <div className="grid grid-cols-1 md:grid-cols-3" style={{ padding: "8px 24px 0", display: "grid", gap: 12 }}>
         {LOOMS.map(loom => (
           <Button key={loom} onClick={() => setSel(loom)} variant="ghost"
             className={`h-auto flex-col gap-1.5 p-[16px_12px] rounded-xl border-2 ${sel === loom ? "border-[#6E0F2D] bg-[rgba(110,15,45,0.05)]" : "border-[rgba(110,15,45,0.10)] bg-[#FFFDF9]"} hover:bg-[rgba(110,15,45,0.05)]`}>
