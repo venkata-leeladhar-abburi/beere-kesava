@@ -152,7 +152,7 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
   const card: React.CSSProperties = { background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, overflow: "hidden" };
 
   return (
-    <div style={{ padding: "40px 56px", background: T.silkCream, minHeight: "100dvh" }}>
+    <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40, paddingBottom: 40, background: T.silkCream, minHeight: "100dvh" }}>
       <div style={{ marginBottom: 16 }}>
         <Breadcrumbs
           items={[
