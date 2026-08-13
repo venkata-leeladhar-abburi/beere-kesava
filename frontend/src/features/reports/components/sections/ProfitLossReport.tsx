@@ -111,7 +111,7 @@ export function ProfitLossReport() {
 
   const perFirmColumns: ColumnDef<{ name: string; income: number; expenses: number; net: number }>[] = [
     {
-      id: "name", header: "Firm Name", accessor: f => f.name, priority: 1,
+      id: "name", header: "Firm Name", accessor: f => f.name,
       cell: (_v, f) => <span style={{ fontFamily: F.ui, fontWeight: 600 }}>{f.name}</span>,
     },
     {
@@ -182,7 +182,7 @@ export function ProfitLossReport() {
   }, [weaverPayments, materialPurchases, shopMaintenance, factoryMaintenance, salaries, otherExpenses]);
 
   return (
-    <div id="rep-pnl" style={{ padding: "32px 40px" }}>
+    <div id="rep-pnl" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 32 }}>
     <SectionCard
       icon={BarChart2}
       title="Profit & Loss Report"
@@ -190,7 +190,7 @@ export function ProfitLossReport() {
     >
       <ReportDLBar />
 
-      <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: 20, marginBottom: 28 }}>
+      <div className="grid grid-cols-1 md:grid-cols-[1.6fr_1fr]" style={{ gap: 20, marginBottom: 28 }}>
         <ChartCard title="Income vs Expenses — Monthly" sub="Green = income · Crimson = expenses">
           {pnlMonthlyData.length === 0 ? (
             <div style={{ padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
@@ -281,7 +281,7 @@ export function ProfitLossReport() {
         <div style={{ marginTop: 24 }}>
           <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: T.luxuryBrown, marginBottom: 12 }}>Per-Firm Breakdown</div>
           <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
-            <DataTable responsive columns={perFirmColumns} data={perFirm} getRowId={f => f.name} />
+            <DataTable columns={perFirmColumns} data={perFirm} getRowId={f => f.name} />
           </div>
         </div>
       </FadeUp>
