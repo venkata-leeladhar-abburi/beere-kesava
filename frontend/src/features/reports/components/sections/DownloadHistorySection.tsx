@@ -33,7 +33,7 @@ export function DownloadHistorySection() {
   };
 
   return (
-    <div style={{ padding: "36px 40px 40px" }}>
+    <div className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 36, paddingBottom: 40 }}>
       <FadeUp>
       <SectionCard
         icon={Download}
@@ -45,7 +45,7 @@ export function DownloadHistorySection() {
           </Button>
         }
       >
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16, alignItems: "stretch" }}>
+        <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16, alignItems: "stretch" }}>
           {isLoading ? (
             <div style={{ gridColumn: "1 / -1", padding: 32, textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe, background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}` }}>
               Loading download history…
