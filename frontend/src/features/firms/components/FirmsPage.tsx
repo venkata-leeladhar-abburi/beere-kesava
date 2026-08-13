@@ -30,7 +30,7 @@ type OverviewRow = { firm: Firm; inc: number; exp: number; net: number; entryCou
 function overviewColumns(onGoToFirm?: (firmId: string) => void): ColumnDef<OverviewRow>[] {
   return [
     {
-      id: "firm", header: "Firm", accessor: r => r.firm.firmName,
+      id: "firm", header: "Firm", accessor: r => r.firm.firmName, priority: 1,
       cell: (_v, r) => (
         <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "16px 0", borderLeft: `4px solid ${r.color}`, marginLeft: -4, paddingLeft: 16 }}>
           <div style={{ width: 38, height: 38, borderRadius: 11, background: r.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: `0 3px 10px ${r.color}40` }}>
@@ -72,7 +72,7 @@ function overviewColumns(onGoToFirm?: (firmId: string) => void): ColumnDef<Overv
       ),
     },
     {
-      id: "entries", header: "Entries", align: "end", accessor: r => r.entryCount,
+      id: "entries", header: "Entries", align: "end", accessor: r => r.entryCount, priority: 3,
       cell: (_v, r) => (
         <div style={{ textAlign: "right" as const }}>
           <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, background: "rgba(139,112,96,0.09)", border: `1px solid ${T.borderDef}`, borderRadius: 6, padding: "3px 8px" }}>
@@ -148,6 +148,7 @@ function BusinessOverview({ onGoToFirm }: { onGoToFirm?: (firmId: string) => voi
         {open && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.22, ease: EASE }} style={{ overflow: "hidden" }}>
             <DataTable<OverviewRow>
+              responsive
               columns={overviewColumns(onGoToFirm)}
               data={rows.map(r => ({ ...r, color: FIRM_COLORS[parseInt(r.firm.id.replace("FIRM-",""), 10) % FIRM_COLORS.length] }))}
               getRowId={r => r.firm.id}

@@ -51,7 +51,7 @@ type QuotationSaree = Quotation["sarees"][number];
 
 const sareeColumns: ColumnDef<QuotationSaree>[] = [
   {
-    id: "sareeId", header: "Saree Code", accessor: s => s.sareeId,
+    id: "sareeId", header: "Saree Code", accessor: s => s.sareeId, priority: 1,
     cell: (_v, s) => <span style={tdMono}>{s.sareeId}</span>,
   },
   {
@@ -73,7 +73,7 @@ const sareeColumns: ColumnDef<QuotationSaree>[] = [
     ),
   },
   {
-    id: "finishingStaffName", header: "Finishing Staff", accessor: s => s.finishingStaffName,
+    id: "finishingStaffName", header: "Finishing Staff", accessor: s => s.finishingStaffName, priority: 3,
     cell: (_v, s) => s.finishingStaffName ? <span style={td}>{s.finishingStaffName}</span> : <span style={{ color: T.taupe, fontSize: 12 }}>—</span>,
   },
 ];
@@ -128,6 +128,7 @@ export function FinishingQuotationsSection({
                       <div style={{ padding: "6px 18px 16px" }}>
                         <div style={{ overflowX: "auto", minWidth: 680 }}>
                           <DataTable
+                            responsive
                             columns={sareeColumns}
                             data={qt.sarees}
                             getRowId={s => s.sareeId}

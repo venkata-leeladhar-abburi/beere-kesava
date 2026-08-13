@@ -178,7 +178,7 @@ function EntryTable({ entries, type }: { entries: (FinancialEntry | MiscEntry)[]
 
   const columns: ColumnDef<FinancialEntry | MiscEntry>[] = [
     {
-      id: "description", header: "Description", accessor: e => e.description,
+      id: "description", header: "Description", accessor: e => e.description, priority: 1,
       cell: (_v, e) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.description}</span>,
     },
     {
@@ -193,7 +193,7 @@ function EntryTable({ entries, type }: { entries: (FinancialEntry | MiscEntry)[]
       },
     },
     {
-      id: "date", header: "Date", accessor: e => e.date,
+      id: "date", header: "Date", accessor: e => e.date, priority: 3,
       cell: (_v, e) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{e.date}</span>,
     },
     {
@@ -215,6 +215,7 @@ function EntryTable({ entries, type }: { entries: (FinancialEntry | MiscEntry)[]
 
   return (
     <DataTable
+      responsive
       columns={columns}
       data={entries}
       getRowId={e => e.id}
