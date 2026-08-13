@@ -58,7 +58,7 @@ export function PageHeaderStats() {
         alignItems: "stretch",
       }}>
         {/* Left col */}
-        <div style={{ flex: 1, padding: "44px 56px 90px", zIndex: 10, position: "relative" }}>
+        <div className="pl-4 md:pl-7 xl:pl-14" style={{ flex: 1, paddingTop: 44, paddingBottom: 90, zIndex: 10, position: "relative" }}>
           {/* Eyebrow */}
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
             <div style={{ width: 28, height: 1, background: T.antiqueGold }} />
@@ -76,7 +76,7 @@ export function PageHeaderStats() {
           <h1 style={{
             fontFamily: F.display,
             fontWeight: 700,
-            fontSize: 48,
+            fontSize: "clamp(28px, 7vw, 48px)",
             color: "#fff",
             margin: "0 0 4px",
             lineHeight: 1.1,
@@ -88,7 +88,7 @@ export function PageHeaderStats() {
             fontFamily: F.display,
             fontWeight: 500,
             fontStyle: "italic",
-            fontSize: 30,
+            fontSize: "clamp(20px, 5vw, 30px)",
             color: T.antiqueGold,
             marginBottom: 14,
             lineHeight: 1.2,
@@ -207,7 +207,7 @@ export function PageHeaderStats() {
       </div>
 
       {/* ── 2. STATS STRIP ── */}
-      <div style={{ padding: "0 48px", marginTop: -80, position: "relative", zIndex: 20 }}>
+      <div className="px-4 md:px-7 xl:px-12 -mt-8 md:-mt-14 xl:-mt-[80px]" style={{ position: "relative", zIndex: 20 }}>
         <div style={{
           background: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)",
           borderRadius: 24,
