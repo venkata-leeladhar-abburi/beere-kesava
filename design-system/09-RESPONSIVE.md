@@ -520,9 +520,44 @@ as `DataTable`/`Modal` from earlier design-system phases.
 Verified via `tsc`/`build`/`lint` — clean, same baseline. Not visually verified in-browser
 (same recurring stuck preview policy-check throughout this rollout).
 
-### R6 — Navigation audit
-Verification, not construction. Each portal's mobile nav already exists. Confirm nav items
-match the desktop nav, touch targets meet §3.5, and resolve drift between portals.
+### R6 — Navigation audit — ✅ COMPLETE (2026-08-13)
+
+Per-portal source-of-truth check first (the fastest way to rule out drift): does mobile and
+desktop nav read from one shared array, or two independently hand-maintained ones?
+
+| Portal | Source of truth | Result |
+|---|---|---|
+| Admin | Both read `NAV_GROUPS` from `beere-dashboard/theme.tsx` | No drift possible by construction |
+| Superadmin | Both read `NAV_GROUPS` from `superadmin-dashboard/data.tsx` | No drift possible by construction |
+| Shop staff | `ShopStaffPortal.tsx` defines `TABS` once, passes to both mobile and desktop | No drift possible by construction |
+| Weaver | **Separate** `TABS` (mobile) / `NAV` (desktop) arrays | **Drift found, fixed** |
+| Worker | **Separate** `TABS` (mobile) / nav array in `WorkerTopNav.tsx` (desktop) | **Drift found, fixed** (icon only — see below) |
+
+**Weaver — fixed.** Mobile tab said "Warp" with an `ArrowUpRight` icon; desktop said "Warp
+Request" with a `Package` icon, same destination. Aligned mobile to desktop's label and icon.
+
+**Worker — icon fixed, label difference kept deliberately.** Mobile's "Receive" tab used
+`Package`; desktop's `WorkerTopNav` used `Users` for the same destination ("Receive Sarees") —
+fixed to `Users`. The **label** difference ("QC"/"Receive" vs "Quality Check"/"Receive Sarees")
+was investigated and left as-is: `PAGE_TITLES` in the same file already has the full correct
+names (shown once a user is on that page), and Worker's bottom bar has 5 tabs (narrower per-tab
+than Weaver's 4) — a deliberate space-saving abbreviation, not drift. Forcing the full label
+into that narrower per-tab width risked wrapping/overflow, exactly the class of bug from §3.7.
+
+**Real bug found, not fixed (§0 — out of scope for this rollout):** Worker's mobile `TABS`
+hardcodes the QC and Finishing badge counts as literal `"6"` and `"2"`, while desktop's
+`WorkerTopNav` computes the real `pendingQcCount` dynamically. This is a data-correctness bug,
+not a responsive/layout issue — logged in §10 for a separate fix, not touched here.
+
+**Touch targets (§3.5, ≥44×44px):** Weaver/Worker/Shop-staff all use the shared `MobileNav`
+component (`baseHeight` 64-66px) or an inline 66px bottom bar — comfortably compliant. Admin's
+`MobileNavDrawer.tsx` and Superadmin's `SAMobileNav.tsx` (near-identical structure, same
+origin) use `!py-[11px]` on each nav-item `Button` — estimated ~42px including a 14px label's
+line-height, borderline against the 44px minimum. Not confidently a violation without a real
+render measurement (font-metrics alone could easily account for the ~2px gap), so **not
+blindly edited** — flagged in §10 for R8's device-matrix pass, which can measure it for real.
+
+Verified via `tsc`/`build`/`lint` — clean, same baseline.
 
 ### R7 — Grid-as-table triage
 188 files use `gridTemplateColumns`/`grid-cols-`. **Triage before touching:**
@@ -817,6 +852,8 @@ problem and recording it is the correct response, not fixing it.
 | 2026-08-12 | — | — | Document created. Baselines: 70 DataTable consumers with 0 `responsive`; 5 raw `<table>` files; 188 files using grid columns; 63 modal files; 3 hand-rolled breakpoint checks. |
 | 2026-08-12 | R0.1 | `Modal.tsx`, `Popover.tsx`, `Drawer.tsx` | The 3 `window.innerWidth<768` sites are inline `onOpenAutoFocus` guards, not layout state — checked at the moment the dialog opens. Converting to `useIsMobile()` would be purely cosmetic and touches 3 app-wide shared primitives for no behavioral gain. Left as-is; not a gap, a deliberate skip. |
 | 2026-08-13 | R4 (regression) | `ReportTabNav.tsx`, `PageHeaderAndMetrics.tsx` | **Real bug, user-reported via screenshot**: whole page horizontally scrolled on tablet. Root cause: I gated both components' revert-to-dense-layout at `md:` (768px) instead of `xl:` (1280px) — neither the 10-tab strip nor the 5-tile stats row fits in the 768-1279px tablet range, so the row overflowed its container and dragged the entire page into horizontal scroll. Fixed same session (commit `a004cee`) by moving both to `xl:`. New standing rule added at §3.7 to prevent recurrence: row/flex-per-item layouts must revert at `xl:`, not `md:`; grid-based column-stacked cards are safe at `md:`. Audited rest of R1-R4 for the same `md:flex` pattern via `git log` — nothing else found. Still not visually verified in-browser (recurring stuck preview policy-check this whole rollout) — this incident is exactly why that gap matters; treat any future `md:`-gated row layout as higher-risk until real browser verification is possible. |
+| 2026-08-13 | R6 | `beere-dashboard/MobileNavDrawer.tsx`, `superadmin-dashboard/SAMobileNav.tsx` | Nav-item `Button`s use `!py-[11px]` around a single 14px-line-height label — estimated ~42px tall, borderline against the §3.5 44px touch-target minimum. Not confidently a violation without a real render measurement (a couple px of font-metrics variance could account for the whole gap), so not edited blindly. Flag for R8's device-matrix pass, which can measure it for real and bump the padding a few px if it's genuinely short. |
+| 2026-08-13 | R6 | `WorkerPortal.tsx` (`TABS` array) | **Real bug, not fixed (out of scope for this rollout — data correctness, not responsive/layout).** QC and Finishing bottom-tab badges are hardcoded literals `"6"` and `"2"`, always showing those numbers regardless of actual pending counts. `WorkerTopNav.tsx` (desktop) computes the real `pendingQcCount` dynamically for the same tab — the mobile version was apparently never wired up to live data. Worth a dedicated fix outside Phase R. |
 
 ---
 
