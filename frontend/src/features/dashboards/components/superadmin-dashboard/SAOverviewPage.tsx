@@ -174,7 +174,7 @@ function SAQuickActions({ setNav }: { setNav: (v: string) => void }) {
   return (
     <section style={{ padding: "36px 48px 0" }}>
       <SectionHeader title="Quick Actions" actionText="" small />
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
+      <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 16 }}>
         {actions.map((a, i) => (
           <motion.div key={a.nav}
             initial={{ opacity: 0, y: 20 }}
@@ -238,7 +238,7 @@ function SARawMaterial() {
   return (
     <section style={{ padding: "0 48px 72px", background: T.silkCream }}>
       <SectionHeader title="Raw Material Overview" actionText="View All Materials →" />
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}>
+      <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 20 }}>
         {mats.map((m, i) => (
           <motion.div key={m.name}
             initial={{ opacity: 0, scale: 0.88, y: 36, filter: "blur(8px)" }}
