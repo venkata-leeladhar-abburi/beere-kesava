@@ -12,7 +12,7 @@ export function WeaverSection({ onNavigate }: { onNavigate: (tab: string, ctx?: 
 
   if (isLoading) {
     return (
-      <section style={{ padding: "0 48px 64px", background: T.silkCream }}>
+      <section className="px-4 md:px-7 xl:px-12" style={{ paddingBottom: 64, background: T.silkCream }}>
         <SectionHeader title="Active Weavers" actionText="View All Weavers →" onAction={() => onNavigate("AllWeavers")} />
         <div style={{ display: "flex", gap: 18 }}>
           {Array.from({ length: 4 }).map((_, i) => (
@@ -31,7 +31,7 @@ export function WeaverSection({ onNavigate }: { onNavigate: (tab: string, ctx?: 
 
   if (weavers.length === 0) {
     return (
-      <section style={{ padding: "0 48px 64px", background: T.silkCream }}>
+      <section className="px-4 md:px-7 xl:px-12" style={{ paddingBottom: 64, background: T.silkCream }}>
         <SectionHeader title="Active Weavers" actionText="View All Weavers →" onAction={() => onNavigate("AllWeavers")} />
         <div style={{ background: "#FFFFFF", borderRadius: 24, border: `1px solid ${T.borderDef}`, padding: "40px", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
           No weavers in database yet. Click "View All Weavers" to register a weaver.
@@ -41,7 +41,7 @@ export function WeaverSection({ onNavigate }: { onNavigate: (tab: string, ctx?: 
   }
 
   return (
-    <section style={{ padding: "0 48px 64px", background: T.silkCream }}>
+    <section className="px-4 md:px-7 xl:px-12" style={{ paddingBottom: 64, background: T.silkCream }}>
       <SectionHeader title="Active Weavers" actionText="View All Weavers →" onAction={() => onNavigate("AllWeavers")} />
       <div style={{ display: "flex", gap: 18, alignItems: "stretch", position: "relative" }}>
         {weavers.map((w, i) => (

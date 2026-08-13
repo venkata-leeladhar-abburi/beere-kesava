@@ -9,7 +9,7 @@ import { Button } from '../../../../../shared/ui/primitives';
 export function Footer() {
   return (
     <footer style={{ background: T.silkCream }}>
-      <FadeUp style={{ padding: "0 48px" }}>
+      <FadeUp className="px-4 md:px-7 xl:px-12">
         <div style={{ background: G.card, borderRadius: 28, overflow: "hidden", display: "flex", alignItems: "stretch", position: "relative", height: 180, boxShadow: "0 20px 60px rgba(74,6,27,0.20)", border: "1px solid rgba(200,155,71,0.12)" }}>
           <div className="gold-bar-shimmer" style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2 }} />
           <div style={{ flex: "0 0 40%", display: "flex", alignItems: "center", gap: 20, padding: "0 36px", zIndex: 2 }}>
@@ -49,7 +49,7 @@ export function Footer() {
           </div>
         </div>
       </FadeUp>
-      <FadeUp delay={0.1} style={{ padding: "36px 48px 0" }}>
+      <FadeUp delay={0.1} className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 36 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             <div style={{ width: 42, height: 42, borderRadius: 12, overflow: "hidden", border: `1px solid ${T.borderGold}` }}>

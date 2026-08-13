@@ -44,7 +44,7 @@ export function ActivityStrip({ onNavigate }: { onNavigate: (tab: string) => voi
 
 
   return (
-    <section style={{ padding: "0 48px 60px", background: T.silkCream }}>
+    <section className="px-4 md:px-7 xl:px-12" style={{ paddingBottom: 60, background: T.silkCream }}>
       <motion.div
         ref={ref}
         initial={{ opacity: 0, y: 40 }}
