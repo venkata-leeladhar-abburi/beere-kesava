@@ -187,7 +187,7 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
   const totalCities = new Set(custRows.map(c => c.city)).size;
 
   return (
-    <div style={{ padding: "96px 56px 0" }}>
+    <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 96 }}>
     <SectionCard
       icon={ChartBar}
       title="Customer Analytics"
