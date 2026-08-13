@@ -255,6 +255,7 @@ export type UserWhereInput = {
   requestedRateChanges?: Prisma.RateChangeRequestListRelationFilter
   decidedRateChanges?: Prisma.RateChangeRequestListRelationFilter
   reportDownloads?: Prisma.ReportDownloadHistoryListRelationFilter
+  createdPurchaseOrders?: Prisma.PurchaseOrderListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -287,6 +288,7 @@ export type UserOrderByWithRelationInput = {
   requestedRateChanges?: Prisma.RateChangeRequestOrderByRelationAggregateInput
   decidedRateChanges?: Prisma.RateChangeRequestOrderByRelationAggregateInput
   reportDownloads?: Prisma.ReportDownloadHistoryOrderByRelationAggregateInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -322,6 +324,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   requestedRateChanges?: Prisma.RateChangeRequestListRelationFilter
   decidedRateChanges?: Prisma.RateChangeRequestListRelationFilter
   reportDownloads?: Prisma.ReportDownloadHistoryListRelationFilter
+  createdPurchaseOrders?: Prisma.PurchaseOrderListRelationFilter
 }, "id" | "empId" | "mobile" | "linkedWeaverId">
 
 export type UserOrderByWithAggregationInput = {
@@ -389,6 +392,7 @@ export type UserCreateInput = {
   requestedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutRequestedByInput
   decidedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutDecidedByInput
   reportDownloads?: Prisma.ReportDownloadHistoryCreateNestedManyWithoutDownloadedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -420,6 +424,7 @@ export type UserUncheckedCreateInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutRequestedByInput
   decidedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutDecidedByInput
   reportDownloads?: Prisma.ReportDownloadHistoryUncheckedCreateNestedManyWithoutDownloadedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUpdateInput = {
@@ -451,6 +456,7 @@ export type UserUpdateInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutRequestedByNestedInput
   decidedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutDecidedByNestedInput
   reportDownloads?: Prisma.ReportDownloadHistoryUpdateManyWithoutDownloadedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -482,6 +488,7 @@ export type UserUncheckedUpdateInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutRequestedByNestedInput
   decidedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutDecidedByNestedInput
   reportDownloads?: Prisma.ReportDownloadHistoryUncheckedUpdateManyWithoutDownloadedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -727,6 +734,22 @@ export type UserUpdateOneWithoutAddedPurchasesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutAddedPurchasesInput, Prisma.UserUpdateWithoutAddedPurchasesInput>, Prisma.UserUncheckedUpdateWithoutAddedPurchasesInput>
 }
 
+export type UserCreateNestedOneWithoutCreatedPurchaseOrdersInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCreatedPurchaseOrdersInput, Prisma.UserUncheckedCreateWithoutCreatedPurchaseOrdersInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCreatedPurchaseOrdersInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutCreatedPurchaseOrdersNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCreatedPurchaseOrdersInput, Prisma.UserUncheckedCreateWithoutCreatedPurchaseOrdersInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCreatedPurchaseOrdersInput
+  upsert?: Prisma.UserUpsertWithoutCreatedPurchaseOrdersInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutCreatedPurchaseOrdersInput, Prisma.UserUpdateWithoutCreatedPurchaseOrdersInput>, Prisma.UserUncheckedUpdateWithoutCreatedPurchaseOrdersInput>
+}
+
 export type UserCreateNestedOneWithoutRequestedPurchasesInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutRequestedPurchasesInput, Prisma.UserUncheckedCreateWithoutRequestedPurchasesInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutRequestedPurchasesInput
@@ -895,6 +918,7 @@ export type UserCreateWithoutPermissionOverridesInput = {
   requestedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutRequestedByInput
   decidedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutDecidedByInput
   reportDownloads?: Prisma.ReportDownloadHistoryCreateNestedManyWithoutDownloadedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutPermissionOverridesInput = {
@@ -925,6 +949,7 @@ export type UserUncheckedCreateWithoutPermissionOverridesInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutRequestedByInput
   decidedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutDecidedByInput
   reportDownloads?: Prisma.ReportDownloadHistoryUncheckedCreateNestedManyWithoutDownloadedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutPermissionOverridesInput = {
@@ -971,6 +996,7 @@ export type UserUpdateWithoutPermissionOverridesInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutRequestedByNestedInput
   decidedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutDecidedByNestedInput
   reportDownloads?: Prisma.ReportDownloadHistoryUpdateManyWithoutDownloadedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPermissionOverridesInput = {
@@ -1001,6 +1027,7 @@ export type UserUncheckedUpdateWithoutPermissionOverridesInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutRequestedByNestedInput
   decidedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutDecidedByNestedInput
   reportDownloads?: Prisma.ReportDownloadHistoryUncheckedUpdateManyWithoutDownloadedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutLinkedWeaverInput = {
@@ -1031,6 +1058,7 @@ export type UserCreateWithoutLinkedWeaverInput = {
   requestedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutRequestedByInput
   decidedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutDecidedByInput
   reportDownloads?: Prisma.ReportDownloadHistoryCreateNestedManyWithoutDownloadedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutLinkedWeaverInput = {
@@ -1061,6 +1089,7 @@ export type UserUncheckedCreateWithoutLinkedWeaverInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutRequestedByInput
   decidedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutDecidedByInput
   reportDownloads?: Prisma.ReportDownloadHistoryUncheckedCreateNestedManyWithoutDownloadedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutLinkedWeaverInput = {
@@ -1107,6 +1136,7 @@ export type UserUpdateWithoutLinkedWeaverInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutRequestedByNestedInput
   decidedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutDecidedByNestedInput
   reportDownloads?: Prisma.ReportDownloadHistoryUpdateManyWithoutDownloadedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutLinkedWeaverInput = {
@@ -1137,6 +1167,7 @@ export type UserUncheckedUpdateWithoutLinkedWeaverInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutRequestedByNestedInput
   decidedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutDecidedByNestedInput
   reportDownloads?: Prisma.ReportDownloadHistoryUncheckedUpdateManyWithoutDownloadedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutIssuedMaterialIssuesInput = {
@@ -1167,6 +1198,7 @@ export type UserCreateWithoutIssuedMaterialIssuesInput = {
   requestedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutRequestedByInput
   decidedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutDecidedByInput
   reportDownloads?: Prisma.ReportDownloadHistoryCreateNestedManyWithoutDownloadedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutIssuedMaterialIssuesInput = {
@@ -1197,6 +1229,7 @@ export type UserUncheckedCreateWithoutIssuedMaterialIssuesInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutRequestedByInput
   decidedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutDecidedByInput
   reportDownloads?: Prisma.ReportDownloadHistoryUncheckedCreateNestedManyWithoutDownloadedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutIssuedMaterialIssuesInput = {
@@ -1243,6 +1276,7 @@ export type UserUpdateWithoutIssuedMaterialIssuesInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutRequestedByNestedInput
   decidedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutDecidedByNestedInput
   reportDownloads?: Prisma.ReportDownloadHistoryUpdateManyWithoutDownloadedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutIssuedMaterialIssuesInput = {
@@ -1273,6 +1307,7 @@ export type UserUncheckedUpdateWithoutIssuedMaterialIssuesInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutRequestedByNestedInput
   decidedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutDecidedByNestedInput
   reportDownloads?: Prisma.ReportDownloadHistoryUncheckedUpdateManyWithoutDownloadedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutReceivedMaterialReturnsInput = {
@@ -1303,6 +1338,7 @@ export type UserCreateWithoutReceivedMaterialReturnsInput = {
   requestedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutRequestedByInput
   decidedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutDecidedByInput
   reportDownloads?: Prisma.ReportDownloadHistoryCreateNestedManyWithoutDownloadedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutReceivedMaterialReturnsInput = {
@@ -1333,6 +1369,7 @@ export type UserUncheckedCreateWithoutReceivedMaterialReturnsInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutRequestedByInput
   decidedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutDecidedByInput
   reportDownloads?: Prisma.ReportDownloadHistoryUncheckedCreateNestedManyWithoutDownloadedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutReceivedMaterialReturnsInput = {
@@ -1379,6 +1416,7 @@ export type UserUpdateWithoutReceivedMaterialReturnsInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutRequestedByNestedInput
   decidedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutDecidedByNestedInput
   reportDownloads?: Prisma.ReportDownloadHistoryUpdateManyWithoutDownloadedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReceivedMaterialReturnsInput = {
@@ -1409,6 +1447,7 @@ export type UserUncheckedUpdateWithoutReceivedMaterialReturnsInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutRequestedByNestedInput
   decidedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutDecidedByNestedInput
   reportDownloads?: Prisma.ReportDownloadHistoryUncheckedUpdateManyWithoutDownloadedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutInspectedQcRecordsInput = {
@@ -1439,6 +1478,7 @@ export type UserCreateWithoutInspectedQcRecordsInput = {
   requestedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutRequestedByInput
   decidedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutDecidedByInput
   reportDownloads?: Prisma.ReportDownloadHistoryCreateNestedManyWithoutDownloadedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutInspectedQcRecordsInput = {
@@ -1469,6 +1509,7 @@ export type UserUncheckedCreateWithoutInspectedQcRecordsInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutRequestedByInput
   decidedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutDecidedByInput
   reportDownloads?: Prisma.ReportDownloadHistoryUncheckedCreateNestedManyWithoutDownloadedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutInspectedQcRecordsInput = {
@@ -1515,6 +1556,7 @@ export type UserUpdateWithoutInspectedQcRecordsInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutRequestedByNestedInput
   decidedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutDecidedByNestedInput
   reportDownloads?: Prisma.ReportDownloadHistoryUpdateManyWithoutDownloadedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutInspectedQcRecordsInput = {
@@ -1545,6 +1587,7 @@ export type UserUncheckedUpdateWithoutInspectedQcRecordsInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutRequestedByNestedInput
   decidedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutDecidedByNestedInput
   reportDownloads?: Prisma.ReportDownloadHistoryUncheckedUpdateManyWithoutDownloadedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutAssignedFinishingsInput = {
@@ -1575,6 +1618,7 @@ export type UserCreateWithoutAssignedFinishingsInput = {
   requestedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutRequestedByInput
   decidedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutDecidedByInput
   reportDownloads?: Prisma.ReportDownloadHistoryCreateNestedManyWithoutDownloadedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutAssignedFinishingsInput = {
@@ -1605,6 +1649,7 @@ export type UserUncheckedCreateWithoutAssignedFinishingsInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutRequestedByInput
   decidedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutDecidedByInput
   reportDownloads?: Prisma.ReportDownloadHistoryUncheckedCreateNestedManyWithoutDownloadedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutAssignedFinishingsInput = {
@@ -1651,6 +1696,7 @@ export type UserUpdateWithoutAssignedFinishingsInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutRequestedByNestedInput
   decidedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutDecidedByNestedInput
   reportDownloads?: Prisma.ReportDownloadHistoryUpdateManyWithoutDownloadedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAssignedFinishingsInput = {
@@ -1681,6 +1727,7 @@ export type UserUncheckedUpdateWithoutAssignedFinishingsInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutRequestedByNestedInput
   decidedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutDecidedByNestedInput
   reportDownloads?: Prisma.ReportDownloadHistoryUncheckedUpdateManyWithoutDownloadedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutRaisedQuotationsInput = {
@@ -1711,6 +1758,7 @@ export type UserCreateWithoutRaisedQuotationsInput = {
   requestedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutRequestedByInput
   decidedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutDecidedByInput
   reportDownloads?: Prisma.ReportDownloadHistoryCreateNestedManyWithoutDownloadedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutRaisedQuotationsInput = {
@@ -1741,6 +1789,7 @@ export type UserUncheckedCreateWithoutRaisedQuotationsInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutRequestedByInput
   decidedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutDecidedByInput
   reportDownloads?: Prisma.ReportDownloadHistoryUncheckedCreateNestedManyWithoutDownloadedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutRaisedQuotationsInput = {
@@ -1787,6 +1836,7 @@ export type UserUpdateWithoutRaisedQuotationsInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutRequestedByNestedInput
   decidedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutDecidedByNestedInput
   reportDownloads?: Prisma.ReportDownloadHistoryUpdateManyWithoutDownloadedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRaisedQuotationsInput = {
@@ -1817,6 +1867,7 @@ export type UserUncheckedUpdateWithoutRaisedQuotationsInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutRequestedByNestedInput
   decidedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutDecidedByNestedInput
   reportDownloads?: Prisma.ReportDownloadHistoryUncheckedUpdateManyWithoutDownloadedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutAddedPurchasesInput = {
@@ -1847,6 +1898,7 @@ export type UserCreateWithoutAddedPurchasesInput = {
   requestedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutRequestedByInput
   decidedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutDecidedByInput
   reportDownloads?: Prisma.ReportDownloadHistoryCreateNestedManyWithoutDownloadedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutAddedPurchasesInput = {
@@ -1877,6 +1929,7 @@ export type UserUncheckedCreateWithoutAddedPurchasesInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutRequestedByInput
   decidedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutDecidedByInput
   reportDownloads?: Prisma.ReportDownloadHistoryUncheckedCreateNestedManyWithoutDownloadedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutAddedPurchasesInput = {
@@ -1923,6 +1976,7 @@ export type UserUpdateWithoutAddedPurchasesInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutRequestedByNestedInput
   decidedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutDecidedByNestedInput
   reportDownloads?: Prisma.ReportDownloadHistoryUpdateManyWithoutDownloadedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAddedPurchasesInput = {
@@ -1944,6 +1998,147 @@ export type UserUncheckedUpdateWithoutAddedPurchasesInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutIssuedByNestedInput
   receivedMaterialReturns?: Prisma.MaterialReturnRecordUncheckedUpdateManyWithoutReceivedByNestedInput
+  inspectedQcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutInspectedByNestedInput
+  assignedFinishings?: Prisma.FinishingAssignmentUncheckedUpdateManyWithoutAssignedByNestedInput
+  raisedQuotations?: Prisma.QuotationUncheckedUpdateManyWithoutRaisedByNestedInput
+  requestedPurchases?: Prisma.PurchaseRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+  decidedPurchases?: Prisma.PurchaseRequestUncheckedUpdateManyWithoutDecidedByNestedInput
+  decidedWarpRequests?: Prisma.WarpRequestUncheckedUpdateManyWithoutDecidedByNestedInput
+  requestedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+  decidedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutDecidedByNestedInput
+  reportDownloads?: Prisma.ReportDownloadHistoryUncheckedUpdateManyWithoutDownloadedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutCreatedByNestedInput
+}
+
+export type UserCreateWithoutCreatedPurchaseOrdersInput = {
+  id?: string
+  empId: string
+  firstName: string
+  lastName: string
+  mobile: string
+  email?: string | null
+  role: $Enums.UserRole
+  accessLevel?: $Enums.AccessLevel
+  status?: $Enums.ActiveStatus
+  dateAdded?: Date | string
+  updatedAt?: Date | string
+  linkedWeaver?: Prisma.WeaverCreateNestedOneWithoutLinkedUserInput
+  permissionOverrides?: Prisma.UserPermissionOverrideCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  issuedMaterialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutIssuedByInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordCreateNestedManyWithoutReceivedByInput
+  addedPurchases?: Prisma.PurchaseCreateNestedManyWithoutAddedByInput
+  inspectedQcRecords?: Prisma.QcRecordCreateNestedManyWithoutInspectedByInput
+  assignedFinishings?: Prisma.FinishingAssignmentCreateNestedManyWithoutAssignedByInput
+  raisedQuotations?: Prisma.QuotationCreateNestedManyWithoutRaisedByInput
+  requestedPurchases?: Prisma.PurchaseRequestCreateNestedManyWithoutRequestedByInput
+  decidedPurchases?: Prisma.PurchaseRequestCreateNestedManyWithoutDecidedByInput
+  decidedWarpRequests?: Prisma.WarpRequestCreateNestedManyWithoutDecidedByInput
+  requestedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutRequestedByInput
+  decidedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutDecidedByInput
+  reportDownloads?: Prisma.ReportDownloadHistoryCreateNestedManyWithoutDownloadedByInput
+}
+
+export type UserUncheckedCreateWithoutCreatedPurchaseOrdersInput = {
+  id?: string
+  empId: string
+  firstName: string
+  lastName: string
+  mobile: string
+  email?: string | null
+  role: $Enums.UserRole
+  accessLevel?: $Enums.AccessLevel
+  status?: $Enums.ActiveStatus
+  dateAdded?: Date | string
+  updatedAt?: Date | string
+  linkedWeaverId?: string | null
+  permissionOverrides?: Prisma.UserPermissionOverrideUncheckedCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutIssuedByInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUncheckedCreateNestedManyWithoutReceivedByInput
+  addedPurchases?: Prisma.PurchaseUncheckedCreateNestedManyWithoutAddedByInput
+  inspectedQcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutInspectedByInput
+  assignedFinishings?: Prisma.FinishingAssignmentUncheckedCreateNestedManyWithoutAssignedByInput
+  raisedQuotations?: Prisma.QuotationUncheckedCreateNestedManyWithoutRaisedByInput
+  requestedPurchases?: Prisma.PurchaseRequestUncheckedCreateNestedManyWithoutRequestedByInput
+  decidedPurchases?: Prisma.PurchaseRequestUncheckedCreateNestedManyWithoutDecidedByInput
+  decidedWarpRequests?: Prisma.WarpRequestUncheckedCreateNestedManyWithoutDecidedByInput
+  requestedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutRequestedByInput
+  decidedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutDecidedByInput
+  reportDownloads?: Prisma.ReportDownloadHistoryUncheckedCreateNestedManyWithoutDownloadedByInput
+}
+
+export type UserCreateOrConnectWithoutCreatedPurchaseOrdersInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutCreatedPurchaseOrdersInput, Prisma.UserUncheckedCreateWithoutCreatedPurchaseOrdersInput>
+}
+
+export type UserUpsertWithoutCreatedPurchaseOrdersInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutCreatedPurchaseOrdersInput, Prisma.UserUncheckedUpdateWithoutCreatedPurchaseOrdersInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutCreatedPurchaseOrdersInput, Prisma.UserUncheckedCreateWithoutCreatedPurchaseOrdersInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutCreatedPurchaseOrdersInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutCreatedPurchaseOrdersInput, Prisma.UserUncheckedUpdateWithoutCreatedPurchaseOrdersInput>
+}
+
+export type UserUpdateWithoutCreatedPurchaseOrdersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  empId?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  mobile?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accessLevel?: Prisma.EnumAccessLevelFieldUpdateOperationsInput | $Enums.AccessLevel
+  status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
+  dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedWeaver?: Prisma.WeaverUpdateOneWithoutLinkedUserNestedInput
+  permissionOverrides?: Prisma.UserPermissionOverrideUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  issuedMaterialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutIssuedByNestedInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUpdateManyWithoutReceivedByNestedInput
+  addedPurchases?: Prisma.PurchaseUpdateManyWithoutAddedByNestedInput
+  inspectedQcRecords?: Prisma.QcRecordUpdateManyWithoutInspectedByNestedInput
+  assignedFinishings?: Prisma.FinishingAssignmentUpdateManyWithoutAssignedByNestedInput
+  raisedQuotations?: Prisma.QuotationUpdateManyWithoutRaisedByNestedInput
+  requestedPurchases?: Prisma.PurchaseRequestUpdateManyWithoutRequestedByNestedInput
+  decidedPurchases?: Prisma.PurchaseRequestUpdateManyWithoutDecidedByNestedInput
+  decidedWarpRequests?: Prisma.WarpRequestUpdateManyWithoutDecidedByNestedInput
+  requestedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutRequestedByNestedInput
+  decidedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutDecidedByNestedInput
+  reportDownloads?: Prisma.ReportDownloadHistoryUpdateManyWithoutDownloadedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutCreatedPurchaseOrdersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  empId?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  mobile?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accessLevel?: Prisma.EnumAccessLevelFieldUpdateOperationsInput | $Enums.AccessLevel
+  status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
+  dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedWeaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  permissionOverrides?: Prisma.UserPermissionOverrideUncheckedUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutIssuedByNestedInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUncheckedUpdateManyWithoutReceivedByNestedInput
+  addedPurchases?: Prisma.PurchaseUncheckedUpdateManyWithoutAddedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutInspectedByNestedInput
   assignedFinishings?: Prisma.FinishingAssignmentUncheckedUpdateManyWithoutAssignedByNestedInput
   raisedQuotations?: Prisma.QuotationUncheckedUpdateManyWithoutRaisedByNestedInput
@@ -1983,6 +2178,7 @@ export type UserCreateWithoutRequestedPurchasesInput = {
   requestedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutRequestedByInput
   decidedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutDecidedByInput
   reportDownloads?: Prisma.ReportDownloadHistoryCreateNestedManyWithoutDownloadedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutRequestedPurchasesInput = {
@@ -2013,6 +2209,7 @@ export type UserUncheckedCreateWithoutRequestedPurchasesInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutRequestedByInput
   decidedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutDecidedByInput
   reportDownloads?: Prisma.ReportDownloadHistoryUncheckedCreateNestedManyWithoutDownloadedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutRequestedPurchasesInput = {
@@ -2048,6 +2245,7 @@ export type UserCreateWithoutDecidedPurchasesInput = {
   requestedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutRequestedByInput
   decidedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutDecidedByInput
   reportDownloads?: Prisma.ReportDownloadHistoryCreateNestedManyWithoutDownloadedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutDecidedPurchasesInput = {
@@ -2078,6 +2276,7 @@ export type UserUncheckedCreateWithoutDecidedPurchasesInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutRequestedByInput
   decidedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutDecidedByInput
   reportDownloads?: Prisma.ReportDownloadHistoryUncheckedCreateNestedManyWithoutDownloadedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutDecidedPurchasesInput = {
@@ -2124,6 +2323,7 @@ export type UserUpdateWithoutRequestedPurchasesInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutRequestedByNestedInput
   decidedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutDecidedByNestedInput
   reportDownloads?: Prisma.ReportDownloadHistoryUpdateManyWithoutDownloadedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRequestedPurchasesInput = {
@@ -2154,6 +2354,7 @@ export type UserUncheckedUpdateWithoutRequestedPurchasesInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutRequestedByNestedInput
   decidedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutDecidedByNestedInput
   reportDownloads?: Prisma.ReportDownloadHistoryUncheckedUpdateManyWithoutDownloadedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUpsertWithoutDecidedPurchasesInput = {
@@ -2195,6 +2396,7 @@ export type UserUpdateWithoutDecidedPurchasesInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutRequestedByNestedInput
   decidedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutDecidedByNestedInput
   reportDownloads?: Prisma.ReportDownloadHistoryUpdateManyWithoutDownloadedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutDecidedPurchasesInput = {
@@ -2225,6 +2427,7 @@ export type UserUncheckedUpdateWithoutDecidedPurchasesInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutRequestedByNestedInput
   decidedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutDecidedByNestedInput
   reportDownloads?: Prisma.ReportDownloadHistoryUncheckedUpdateManyWithoutDownloadedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutAuditLogsInput = {
@@ -2255,6 +2458,7 @@ export type UserCreateWithoutAuditLogsInput = {
   requestedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutRequestedByInput
   decidedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutDecidedByInput
   reportDownloads?: Prisma.ReportDownloadHistoryCreateNestedManyWithoutDownloadedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutAuditLogsInput = {
@@ -2285,6 +2489,7 @@ export type UserUncheckedCreateWithoutAuditLogsInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutRequestedByInput
   decidedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutDecidedByInput
   reportDownloads?: Prisma.ReportDownloadHistoryUncheckedCreateNestedManyWithoutDownloadedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutAuditLogsInput = {
@@ -2331,6 +2536,7 @@ export type UserUpdateWithoutAuditLogsInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutRequestedByNestedInput
   decidedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutDecidedByNestedInput
   reportDownloads?: Prisma.ReportDownloadHistoryUpdateManyWithoutDownloadedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAuditLogsInput = {
@@ -2361,6 +2567,7 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutRequestedByNestedInput
   decidedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutDecidedByNestedInput
   reportDownloads?: Prisma.ReportDownloadHistoryUncheckedUpdateManyWithoutDownloadedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutActionLogsInput = {
@@ -2391,6 +2598,7 @@ export type UserCreateWithoutActionLogsInput = {
   requestedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutRequestedByInput
   decidedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutDecidedByInput
   reportDownloads?: Prisma.ReportDownloadHistoryCreateNestedManyWithoutDownloadedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutActionLogsInput = {
@@ -2421,6 +2629,7 @@ export type UserUncheckedCreateWithoutActionLogsInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutRequestedByInput
   decidedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutDecidedByInput
   reportDownloads?: Prisma.ReportDownloadHistoryUncheckedCreateNestedManyWithoutDownloadedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutActionLogsInput = {
@@ -2467,6 +2676,7 @@ export type UserUpdateWithoutActionLogsInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutRequestedByNestedInput
   decidedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutDecidedByNestedInput
   reportDownloads?: Prisma.ReportDownloadHistoryUpdateManyWithoutDownloadedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutActionLogsInput = {
@@ -2497,6 +2707,7 @@ export type UserUncheckedUpdateWithoutActionLogsInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutRequestedByNestedInput
   decidedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutDecidedByNestedInput
   reportDownloads?: Prisma.ReportDownloadHistoryUncheckedUpdateManyWithoutDownloadedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutNotificationsInput = {
@@ -2527,6 +2738,7 @@ export type UserCreateWithoutNotificationsInput = {
   requestedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutRequestedByInput
   decidedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutDecidedByInput
   reportDownloads?: Prisma.ReportDownloadHistoryCreateNestedManyWithoutDownloadedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutNotificationsInput = {
@@ -2557,6 +2769,7 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutRequestedByInput
   decidedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutDecidedByInput
   reportDownloads?: Prisma.ReportDownloadHistoryUncheckedCreateNestedManyWithoutDownloadedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutNotificationsInput = {
@@ -2603,6 +2816,7 @@ export type UserUpdateWithoutNotificationsInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutRequestedByNestedInput
   decidedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutDecidedByNestedInput
   reportDownloads?: Prisma.ReportDownloadHistoryUpdateManyWithoutDownloadedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutNotificationsInput = {
@@ -2633,6 +2847,7 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutRequestedByNestedInput
   decidedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutDecidedByNestedInput
   reportDownloads?: Prisma.ReportDownloadHistoryUncheckedUpdateManyWithoutDownloadedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutDecidedWarpRequestsInput = {
@@ -2663,6 +2878,7 @@ export type UserCreateWithoutDecidedWarpRequestsInput = {
   requestedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutRequestedByInput
   decidedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutDecidedByInput
   reportDownloads?: Prisma.ReportDownloadHistoryCreateNestedManyWithoutDownloadedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutDecidedWarpRequestsInput = {
@@ -2693,6 +2909,7 @@ export type UserUncheckedCreateWithoutDecidedWarpRequestsInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutRequestedByInput
   decidedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutDecidedByInput
   reportDownloads?: Prisma.ReportDownloadHistoryUncheckedCreateNestedManyWithoutDownloadedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutDecidedWarpRequestsInput = {
@@ -2739,6 +2956,7 @@ export type UserUpdateWithoutDecidedWarpRequestsInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutRequestedByNestedInput
   decidedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutDecidedByNestedInput
   reportDownloads?: Prisma.ReportDownloadHistoryUpdateManyWithoutDownloadedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutDecidedWarpRequestsInput = {
@@ -2769,6 +2987,7 @@ export type UserUncheckedUpdateWithoutDecidedWarpRequestsInput = {
   requestedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutRequestedByNestedInput
   decidedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutDecidedByNestedInput
   reportDownloads?: Prisma.ReportDownloadHistoryUncheckedUpdateManyWithoutDownloadedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutRequestedRateChangesInput = {
@@ -2799,6 +3018,7 @@ export type UserCreateWithoutRequestedRateChangesInput = {
   decidedWarpRequests?: Prisma.WarpRequestCreateNestedManyWithoutDecidedByInput
   decidedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutDecidedByInput
   reportDownloads?: Prisma.ReportDownloadHistoryCreateNestedManyWithoutDownloadedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutRequestedRateChangesInput = {
@@ -2829,6 +3049,7 @@ export type UserUncheckedCreateWithoutRequestedRateChangesInput = {
   decidedWarpRequests?: Prisma.WarpRequestUncheckedCreateNestedManyWithoutDecidedByInput
   decidedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutDecidedByInput
   reportDownloads?: Prisma.ReportDownloadHistoryUncheckedCreateNestedManyWithoutDownloadedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutRequestedRateChangesInput = {
@@ -2864,6 +3085,7 @@ export type UserCreateWithoutDecidedRateChangesInput = {
   decidedWarpRequests?: Prisma.WarpRequestCreateNestedManyWithoutDecidedByInput
   requestedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutRequestedByInput
   reportDownloads?: Prisma.ReportDownloadHistoryCreateNestedManyWithoutDownloadedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutDecidedRateChangesInput = {
@@ -2894,6 +3116,7 @@ export type UserUncheckedCreateWithoutDecidedRateChangesInput = {
   decidedWarpRequests?: Prisma.WarpRequestUncheckedCreateNestedManyWithoutDecidedByInput
   requestedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutRequestedByInput
   reportDownloads?: Prisma.ReportDownloadHistoryUncheckedCreateNestedManyWithoutDownloadedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutDecidedRateChangesInput = {
@@ -2940,6 +3163,7 @@ export type UserUpdateWithoutRequestedRateChangesInput = {
   decidedWarpRequests?: Prisma.WarpRequestUpdateManyWithoutDecidedByNestedInput
   decidedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutDecidedByNestedInput
   reportDownloads?: Prisma.ReportDownloadHistoryUpdateManyWithoutDownloadedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRequestedRateChangesInput = {
@@ -2970,6 +3194,7 @@ export type UserUncheckedUpdateWithoutRequestedRateChangesInput = {
   decidedWarpRequests?: Prisma.WarpRequestUncheckedUpdateManyWithoutDecidedByNestedInput
   decidedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutDecidedByNestedInput
   reportDownloads?: Prisma.ReportDownloadHistoryUncheckedUpdateManyWithoutDownloadedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUpsertWithoutDecidedRateChangesInput = {
@@ -3011,6 +3236,7 @@ export type UserUpdateWithoutDecidedRateChangesInput = {
   decidedWarpRequests?: Prisma.WarpRequestUpdateManyWithoutDecidedByNestedInput
   requestedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutRequestedByNestedInput
   reportDownloads?: Prisma.ReportDownloadHistoryUpdateManyWithoutDownloadedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutDecidedRateChangesInput = {
@@ -3041,6 +3267,7 @@ export type UserUncheckedUpdateWithoutDecidedRateChangesInput = {
   decidedWarpRequests?: Prisma.WarpRequestUncheckedUpdateManyWithoutDecidedByNestedInput
   requestedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutRequestedByNestedInput
   reportDownloads?: Prisma.ReportDownloadHistoryUncheckedUpdateManyWithoutDownloadedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutReportDownloadsInput = {
@@ -3071,6 +3298,7 @@ export type UserCreateWithoutReportDownloadsInput = {
   decidedWarpRequests?: Prisma.WarpRequestCreateNestedManyWithoutDecidedByInput
   requestedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutRequestedByInput
   decidedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutDecidedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutReportDownloadsInput = {
@@ -3101,6 +3329,7 @@ export type UserUncheckedCreateWithoutReportDownloadsInput = {
   decidedWarpRequests?: Prisma.WarpRequestUncheckedCreateNestedManyWithoutDecidedByInput
   requestedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutRequestedByInput
   decidedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutDecidedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutReportDownloadsInput = {
@@ -3147,6 +3376,7 @@ export type UserUpdateWithoutReportDownloadsInput = {
   decidedWarpRequests?: Prisma.WarpRequestUpdateManyWithoutDecidedByNestedInput
   requestedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutRequestedByNestedInput
   decidedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutDecidedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReportDownloadsInput = {
@@ -3177,6 +3407,7 @@ export type UserUncheckedUpdateWithoutReportDownloadsInput = {
   decidedWarpRequests?: Prisma.WarpRequestUncheckedUpdateManyWithoutDecidedByNestedInput
   requestedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutRequestedByNestedInput
   decidedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutDecidedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 
@@ -3201,6 +3432,7 @@ export type UserCountOutputType = {
   requestedRateChanges: number
   decidedRateChanges: number
   reportDownloads: number
+  createdPurchaseOrders: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -3220,6 +3452,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   requestedRateChanges?: boolean | UserCountOutputTypeCountRequestedRateChangesArgs
   decidedRateChanges?: boolean | UserCountOutputTypeCountDecidedRateChangesArgs
   reportDownloads?: boolean | UserCountOutputTypeCountReportDownloadsArgs
+  createdPurchaseOrders?: boolean | UserCountOutputTypeCountCreatedPurchaseOrdersArgs
 }
 
 /**
@@ -3344,6 +3577,13 @@ export type UserCountOutputTypeCountReportDownloadsArgs<ExtArgs extends runtime.
   where?: Prisma.ReportDownloadHistoryWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountCreatedPurchaseOrdersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PurchaseOrderWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -3375,6 +3615,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   requestedRateChanges?: boolean | Prisma.User$requestedRateChangesArgs<ExtArgs>
   decidedRateChanges?: boolean | Prisma.User$decidedRateChangesArgs<ExtArgs>
   reportDownloads?: boolean | Prisma.User$reportDownloadsArgs<ExtArgs>
+  createdPurchaseOrders?: boolean | Prisma.User$createdPurchaseOrdersArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -3444,6 +3685,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   requestedRateChanges?: boolean | Prisma.User$requestedRateChangesArgs<ExtArgs>
   decidedRateChanges?: boolean | Prisma.User$decidedRateChangesArgs<ExtArgs>
   reportDownloads?: boolean | Prisma.User$reportDownloadsArgs<ExtArgs>
+  createdPurchaseOrders?: boolean | Prisma.User$createdPurchaseOrdersArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -3473,6 +3715,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     requestedRateChanges: Prisma.$RateChangeRequestPayload<ExtArgs>[]
     decidedRateChanges: Prisma.$RateChangeRequestPayload<ExtArgs>[]
     reportDownloads: Prisma.$ReportDownloadHistoryPayload<ExtArgs>[]
+    createdPurchaseOrders: Prisma.$PurchaseOrderPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -3898,6 +4141,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   requestedRateChanges<T extends Prisma.User$requestedRateChangesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$requestedRateChangesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RateChangeRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   decidedRateChanges<T extends Prisma.User$decidedRateChangesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$decidedRateChangesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RateChangeRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   reportDownloads<T extends Prisma.User$reportDownloadsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$reportDownloadsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReportDownloadHistoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  createdPurchaseOrders<T extends Prisma.User$createdPurchaseOrdersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$createdPurchaseOrdersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PurchaseOrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4740,6 +4984,30 @@ export type User$reportDownloadsArgs<ExtArgs extends runtime.Types.Extensions.In
   take?: number
   skip?: number
   distinct?: Prisma.ReportDownloadHistoryScalarFieldEnum | Prisma.ReportDownloadHistoryScalarFieldEnum[]
+}
+
+/**
+ * User.createdPurchaseOrders
+ */
+export type User$createdPurchaseOrdersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PurchaseOrder
+   */
+  select?: Prisma.PurchaseOrderSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PurchaseOrder
+   */
+  omit?: Prisma.PurchaseOrderOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PurchaseOrderInclude<ExtArgs> | null
+  where?: Prisma.PurchaseOrderWhereInput
+  orderBy?: Prisma.PurchaseOrderOrderByWithRelationInput | Prisma.PurchaseOrderOrderByWithRelationInput[]
+  cursor?: Prisma.PurchaseOrderWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PurchaseOrderScalarFieldEnum | Prisma.PurchaseOrderScalarFieldEnum[]
 }
 
 /**

@@ -21,7 +21,7 @@ export function CustomerProfileDialog({
   });
 
   const customerPurchases = (salesRes?.items ?? [])
-    .filter(s => s.customerId === customer?.id || s.sareeId === customer?.id)
+    .filter(s => s.customerId === customer?.id)
     .map(s => ({
       id: s.sareeId,
       design: s.channel === "WHOLESALE" ? "Wholesale Purchase" : "Retail Purchase",

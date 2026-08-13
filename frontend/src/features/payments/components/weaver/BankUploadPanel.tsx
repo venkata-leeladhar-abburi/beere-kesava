@@ -12,7 +12,7 @@ import { Button, Input } from "../../../../shared/ui/primitives";
 // processed synchronously against real Weaver rows, instead of parsing/matching
 // the file client-side — the backend is the single source of truth for which
 // weaverId values actually exist.
-export function BankUploadPanel({ onReset }: { onMatchUpdate?: (matched: unknown[]) => void; onReset?: () => void }) {
+export function BankUploadPanel({ onReset, onUploaded }: { onMatchUpdate?: (matched: unknown[]) => void; onReset?: () => void; onUploaded?: () => void }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [result, setResult] = useState<ImportResult | null>(null);
@@ -27,12 +27,18 @@ export function BankUploadPanel({ onReset }: { onMatchUpdate?: (matched: unknown
     try {
       const finalResult = await weaverPaymentsApi.importExcel(file);
       setResult(finalResult);
+      // Fire immediately once rows are actually saved, not only when the
+      // admin later clicks Clear — otherwise the production table below
+      // keeps showing stale (pre-upload) payment data until then.
+      if (finalResult.created > 0) {
+        onUploaded?.();
+      }
     } catch (err) {
       setError(err instanceof ApiError ? err.message : err instanceof Error ? err.message : "Failed to import this file.");
     } finally {
       setUploading(false);
     }
-  }, []);
+  }, [onUploaded]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -59,8 +65,12 @@ export function BankUploadPanel({ onReset }: { onMatchUpdate?: (matched: unknown
           </div>
           <div>
             <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown, marginBottom: 3 }}>Upload Bank Payment File</div>
-            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, lineHeight: 1.55, maxWidth: 560 }}>
-              Upload an Excel file (.xlsx) with a header row. Required columns: <span style={{ fontFamily: F.mono, color: T.luxuryBrown }}>weaverId, amountPaid</span>. Optional: <span style={{ fontFamily: F.mono, color: T.luxuryBrown }}>utrNumber, firmId, paymentDate, batchNo, loomNumber, noOfSarees, deduction</span>. Rows are matched against real weaver records and saved directly.
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, lineHeight: 1.55, maxWidth: 620 }}>
+              Upload an Excel file (.xlsx) with a header row — same columns as the table above, in this order:
+              {" "}<span style={{ fontFamily: F.mono, color: T.luxuryBrown }}>weaverId, weaverName, batchNo, loomNumber, noOfSarees, makingCharges, deduction, amountPaid, utrNumber, firmId, paymentDate</span>.
+              {" "}Required: <span style={{ fontFamily: F.mono, color: T.luxuryBrown }}>weaverId, amountPaid</span>. Optional: <span style={{ fontFamily: F.mono, color: T.luxuryBrown }}>utrNumber, firmId, paymentDate, batchNo, loomNumber, noOfSarees, deduction</span>.
+              {" "}<span style={{ fontFamily: F.mono, color: T.luxuryBrown }}>weaverName</span> and <span style={{ fontFamily: F.mono, color: T.luxuryBrown }}>makingCharges</span> are reference-only — kept for readability but ignored on import.
+              {" "}Rows are matched against real weaver records and saved directly.
             </div>
             {result ? (
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.green, marginTop: 6, display: "flex", alignItems: "center", gap: 5 }}>

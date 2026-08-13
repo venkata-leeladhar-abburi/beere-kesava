@@ -8,11 +8,11 @@ import { useBatches } from "../../../production/contexts/BatchContext";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { useMaterialIssue } from "../../../materials/contexts/MaterialIssueContext";
 import { weaversApi, BackendWeaver } from "../../../../shared/api/weavers";
-import { weaverPaymentsApi, BackendWeaverPayment, WeaverEarnings } from "../../../../shared/api/payments";
+import { weaverPaymentsApi, BackendWeaverPayment } from "../../../../shared/api/payments";
 import { firmsApi } from "../../../../shared/api/firms";
 import { EASE, F, T } from "../../theme";
 import { WeaverRecord } from "../../types";
-import { RATES, calcCharges, calcCompletedSarees, calcDeduction, calcNet } from "../../utils/charges";
+import { RATES, calcCharges, calcCompletedSarees, calcDeduction, calcNet, calcPaid } from "../../utils/charges";
 import { FadeUp } from "../common/motion";
 import { DropBtn, Pip, SectionCard, StatusBadge } from "../common/primitives";
 import { Button, Checkbox, SearchInput } from "../../../../shared/ui/primitives";
@@ -41,8 +41,9 @@ function toWeaverRecord(
   w: BackendWeaver,
   index: number,
   latestPayment: BackendWeaverPayment | undefined,
-  earnings: WeaverEarnings | undefined,
+  production: { charges: number; sarees: number } | undefined,
   accruedDeduction: number | undefined,
+  totalPaid: number | undefined,
 ): WeaverRecord {
   return {
     id: w.id,
@@ -58,9 +59,17 @@ function toWeaverRecord(
     uploadedNoOfSarees: latestPayment?.noOfSarees ?? undefined,
     uploadedBatchNo: latestPayment?.batchNo ?? undefined,
     uploadedLoomNumber: latestPayment?.loomNumber ?? undefined,
-    earnedAmount: earnings?.totalEarned,
-    completedSarees: earnings?.totalCompletedSarees,
+    // Gross charges/sarees-completed now come from the same QcRecord rows
+    // that back the Production Summary table below (weaverPaymentsApi.
+    // productionRows()) instead of the separate earnings() endpoint, which
+    // computed gross pay off current SareeTypeRate pricing for qcPassed-only
+    // rows — a different number than the table's actual per-QC-record
+    // makingCharge (which also reflects SEMI/DEFECTIVE sarees). Card and
+    // table must show the same figure for the same weaver.
+    earnedAmount: production?.charges,
+    completedSarees: production?.sarees,
     accruedDeduction,
+    totalPaid,
   };
 }
 
@@ -72,10 +81,6 @@ export function WeaverMakingChargesSection() {
   const { data: paymentsRes, isLoading: paymentsLoading, isError: paymentsError, refetch: refetchPayments } = useQuery({
     queryKey: ["payments-weaver-payments"],
     queryFn: () => weaverPaymentsApi.list(),
-  });
-  const { data: earningsRes, isLoading: earningsLoading, isError: earningsError } = useQuery({
-    queryKey: ["payments-weaver-earnings"],
-    queryFn: () => weaverPaymentsApi.earnings(),
   });
   // Real SEMI-verdict QC deductions, per weaver — so a defect deduction
   // shows up here immediately rather than only after someone manually
@@ -94,7 +99,6 @@ export function WeaverMakingChargesSection() {
 
   const roster = weaversRes?.items ?? [];
   const payments = paymentsRes?.items ?? [];
-  const earningsList = earningsRes ?? [];
 
   // Reused by both the card/list roster (below) and the printable payment
   // report (handleDownloadReport) — a weaver's most recent payment record.
@@ -114,17 +118,32 @@ export function WeaverMakingChargesSection() {
     [firmsRes],
   );
 
+  // Every payment recorded for a weaver, not just the latest one — a weaver
+  // paid in several installments needs all of them summed to know what's
+  // actually been transferred so far.
+  const totalPaidByWeaver = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const p of payments) {
+      map.set(p.weaverId, (map.get(p.weaverId) ?? 0) + Number(p.amountPaid));
+    }
+    return map;
+  }, [payments]);
+
   const weaversList: WeaverRecord[] = useMemo(() => {
-    const earningsByWeaver = new Map(earningsList.map(e => [e.weaverId, e]));
     const accruedDeductionByWeaver = new Map<string, number>();
+    const productionByWeaver = new Map<string, { charges: number; sarees: number }>();
     for (const r of productionRows) {
       accruedDeductionByWeaver.set(r.weaverId, (accruedDeductionByWeaver.get(r.weaverId) ?? 0) + r.deduction);
+      const prod = productionByWeaver.get(r.weaverId) ?? { charges: 0, sarees: 0 };
+      prod.charges += r.makingCharge;
+      prod.sarees += 1;
+      productionByWeaver.set(r.weaverId, prod);
     }
-    return roster.map((w, i) => toWeaverRecord(w, i, latestByWeaver.get(w.id), earningsByWeaver.get(w.id), accruedDeductionByWeaver.get(w.id)));
-  }, [roster, latestByWeaver, earningsList, productionRows]);
+    return roster.map((w, i) => toWeaverRecord(w, i, latestByWeaver.get(w.id), productionByWeaver.get(w.id), accruedDeductionByWeaver.get(w.id), totalPaidByWeaver.get(w.id)));
+  }, [roster, latestByWeaver, productionRows, totalPaidByWeaver]);
 
-  const isLoading = weaversLoading || paymentsLoading || earningsLoading || productionRowsLoading;
-  const isError = weaversError || paymentsError || earningsError || productionRowsError;
+  const isLoading = weaversLoading || paymentsLoading || productionRowsLoading;
+  const isError = weaversError || paymentsError || productionRowsError;
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [view, setView] = useState<"card" | "list">("card");
@@ -181,7 +200,7 @@ export function WeaverMakingChargesSection() {
       
       const loomNumber = activeRow?.weaverLoom?.toString() || "1";
       const noOfSarees = calcCompletedSarees(w) || 1;
-      const grossAmount = w.uploadedAmount !== undefined ? w.uploadedAmount : calcCharges(w);
+      const grossAmount = calcCharges(w);
       const deduction = calcDeduction(w);
 
       // Dynamic Batches Info
@@ -363,6 +382,10 @@ export function WeaverMakingChargesSection() {
             derived live from GET /weavers + GET /payments/weavers, so a
             successful import is reflected here once the query refetches. */}
         <BankUploadPanel
+          onUploaded={() => {
+            void refetchPayments();
+            setUploadRefreshKey(k => k + 1);
+          }}
           onReset={() => {
             void refetchPayments();
             setUploadRefreshKey(k => k + 1);
@@ -451,6 +474,7 @@ export function WeaverMakingChargesSection() {
               const charges = calcCharges(w); const net = calcNet(w);
               const completedSarees = calcCompletedSarees(w);
               const deduction = calcDeduction(w);
+              const amountPaid = calcPaid(w);
               return (
                 <div
                   key={w.id}
@@ -492,8 +516,12 @@ export function WeaverMakingChargesSection() {
                     <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Deductions</div>
                     <div style={{ fontFamily: F.mono, fontSize: 13, color: T.crimson, fontWeight: 600 }}>−<Money value={rupees(deduction)} /></div>
                   </div>
+                  <div style={{ flex: "0 0 120px" }}>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Amount Paid</div>
+                    <div style={{ fontFamily: F.mono, fontSize: 13, color: T.green, fontWeight: 600 }}>{amountPaid > 0 ? <>−<Money value={rupees(amountPaid)} /></> : "—"}</div>
+                  </div>
                   <div style={{ flex: "0 0 130px" }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Net Payable</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Balance Due</div>
                     <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 800, color: w.status === "Paid" ? T.green : T.royalBurgundy }}><Money value={rupees(net)} /></div>
                   </div>
                   <div style={{ flex: "0 0 110px" }}>

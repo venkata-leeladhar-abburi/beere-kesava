@@ -73,6 +73,10 @@ export class ScanService {
         : null,
       inventoryStatus: inventory?.status ?? null,
       saleEligibility: saleEligible,
+      // Worker Staff's per-saree price entered at receipt — takes priority
+      // over the saree type's shared SareeTypeRate.retailPrice when set.
+      // Null for a saree received before this field existed.
+      sellingPrice: row.receivedSellingPrice ? Number(row.receivedSellingPrice) : null,
     };
   }
 }

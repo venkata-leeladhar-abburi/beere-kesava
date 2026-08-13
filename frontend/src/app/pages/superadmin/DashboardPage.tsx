@@ -4,12 +4,12 @@ import { SuperadminDashboard } from "../../../features/dashboards/components/Sup
 import { useAuth } from "../../../contexts/AuthContext";
 
 export function SuperadminDashboardPage() {
-  const { selectRole } = useAuth();
+  const { logout } = useAuth();
   const navigate = useNavigate();
 
   const handleBack = () => {
-    selectRole(null);
-    navigate("/select-role");
+    logout();
+    navigate("/login");
   };
 
   return <SuperadminDashboard onBack={handleBack} />;

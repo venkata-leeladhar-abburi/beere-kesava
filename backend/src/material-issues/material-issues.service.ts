@@ -10,7 +10,12 @@ import { ListMaterialIssuesQueryDto } from "./dto/list-material-issues-query.dto
 
 const MIR_ID_PREFIX_BASE = "MIR";
 
-const includeItems = { items: true } satisfies Prisma.MaterialIssueRecordInclude;
+// issuedBy trimmed to just name — surfaced on the frontend as "Issued by
+// [name]" so every material issue record shows who created it.
+const includeItems = {
+  items: true,
+  issuedBy: { select: { firstName: true, lastName: true } },
+} satisfies Prisma.MaterialIssueRecordInclude;
 
 @Injectable()
 export class MaterialIssuesService {
@@ -54,6 +59,22 @@ export class MaterialIssuesService {
         throw new NotFoundException(`Batch ${dto.batchId} not found`);
       }
     }
+    if (dto.warpRequestId) {
+      const warpRequest = await this.prisma.warpRequest.findUnique({ where: { id: dto.warpRequestId } });
+      if (!warpRequest) {
+        throw new NotFoundException(`Warp request ${dto.warpRequestId} not found`);
+      }
+      if (warpRequest.status !== "APPROVED") {
+        throw new BadRequestException(
+          `Warp request ${dto.warpRequestId} is not approved (status: ${warpRequest.status})`,
+        );
+      }
+      if (dto.weaverId && warpRequest.weaverId !== dto.weaverId) {
+        throw new BadRequestException(
+          `Warp request ${dto.warpRequestId} belongs to a different weaver`,
+        );
+      }
+    }
 
     const year = new Date().getFullYear();
     const id = await this.idGenerator.nextFormatted(`${MIR_ID_PREFIX_BASE}-${year}`);
@@ -68,10 +89,20 @@ export class MaterialIssuesService {
         issuedById: dto.issuedById,
         signatureMethod: dto.signatureMethod,
         notes: dto.notes,
+        warpRequestId: dto.warpRequestId,
         items: { create: dto.items },
       },
       include: includeItems,
     });
+
+    // Pulls the request out of the Issue Material page's "Approved Warp
+    // Requests" queue now that it's been fulfilled.
+    if (dto.warpRequestId) {
+      await this.prisma.warpRequest.update({
+        where: { id: dto.warpRequestId },
+        data: { status: "ISSUED" },
+      });
+    }
 
     // Deduct issued material quantities from RawMaterialStock
     for (const item of dto.items) {

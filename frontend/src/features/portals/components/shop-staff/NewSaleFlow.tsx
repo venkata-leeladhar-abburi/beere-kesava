@@ -67,9 +67,9 @@ export function NewSaleFlow() {
         id: c.id,
         name: c.name,
         phone: c.phone ?? "—",
-        purchases: 1,
-        total: formatMoney(rupees(12500)),
-        lastPurchase: new Date(c.createdAt).toLocaleDateString("en-IN", { month: "short", day: "numeric" }),
+        purchases: c.totalPurchases,
+        total: formatMoney(rupees(c.totalSpend)),
+        lastPurchase: new Date(c.lastPurchaseDate ?? c.createdAt).toLocaleDateString("en-IN", { month: "short", day: "numeric" }),
         initials,
       };
     });
@@ -105,7 +105,7 @@ export function NewSaleFlow() {
   const handleScan = async (overrideId?: string) => {
     const id = (overrideId ?? manualId).trim();
     if (!id) {
-      setScanError("Enter a saree ID to look it up (no live camera decoding yet).");
+      setScanError("Enter a saree ID to look it up, or scan its barcode with the camera.");
       return;
     }
     setScanError(null);
@@ -135,7 +135,10 @@ export function NewSaleFlow() {
         weaver: result.weaver?.name ?? (result.factoryLoom ? `Factory Loom ${result.factoryLoom.loomNumber}` : "—"),
       };
       setSaree(nextSaree);
-      setSoldPrice(Number(getSareeTypeByCode(typeCode)?.retail ?? 0));
+      // The price Worker Staff entered for THIS specific saree at receipt
+      // takes priority over the saree type's shared rate — falls back to
+      // the type rate for a saree received before that field existed.
+      setSoldPrice(result.sellingPrice ?? Number(getSareeTypeByCode(typeCode)?.retail ?? 0));
       setSareeFound(true);
       setShowSareeList(false);
     } catch (err) {
@@ -406,7 +409,19 @@ export function NewSaleFlow() {
               setIsSubmitting(true);
               setSubmitError(null);
               try {
-                await salesApi.create({ sareeId: saree.id, channel: "RETAIL", amount: soldPrice });
+                // Every sale needs a real customerId so it actually shows up
+                // in that customer's purchase history/lifetime spend — a new
+                // walk-in customer gets a Customer record created first,
+                // an existing one is reused as-is.
+                const customerId = selectedCustomer
+                  ? selectedCustomer.id
+                  : (await customersApi.create({
+                      name: custName.trim(),
+                      phone: phone.trim() || undefined,
+                      address: custAddress.trim() || undefined,
+                      type: "RETAIL",
+                    })).id;
+                await salesApi.create({ sareeId: saree.id, channel: "RETAIL", amount: soldPrice, customerId });
                 setStep("success");
               } catch (err) {
                 setSubmitError(err instanceof ApiError ? err.message : "Failed to record sale — please try again.");

@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { BackendPurchaseOrder, purchaseOrdersApi } from "../../../shared/api/purchase-orders";
 import { vendorsApi } from "../../../shared/api/vendors";
+import { useAuth } from "../../../contexts/AuthContext";
 import type { DocumentStatus } from "@/lib/domain/status";
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
@@ -69,7 +70,7 @@ function toPurchaseOrder(po: BackendPurchaseOrder, materials: POItem[] = []): Pu
     status: po.status === "PENDING" ? "pending" : po.status === "APPROVED" ? "approved" : po.status === "REJECTED" ? "rejected" : "received",
     submittedDate: po.createdAt.split("T")[0],
     grnId: po.grnId ?? undefined,
-    raisedBy: "",
+    raisedBy: po.createdBy ? `${po.createdBy.firstName} ${po.createdBy.lastName}`.trim() : "",
   };
 }
 
@@ -91,6 +92,7 @@ const QUERY_KEY = ["purchaseOrders"] as const;
 
 export function POProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   const { data: pos = [], isError, error } = useQuery({
     queryKey: QUERY_KEY,
@@ -113,6 +115,7 @@ export function POProvider({ children }: { children: React.ReactNode }) {
         throw new Error(`Could not find vendor "${po.vendor}" to create the purchase order.`);
       }
       const created = await purchaseOrdersApi.create({
+        actorId: user?.id,
         vendorId,
         deliveryDate: po.deliveryDate || undefined,
         totalValue: po.totalValue || 0,
@@ -134,7 +137,7 @@ export function POProvider({ children }: { children: React.ReactNode }) {
   });
 
   const approvePOMutation = useMutation({
-    mutationFn: (id: string) => purchaseOrdersApi.approve(id),
+    mutationFn: (id: string) => purchaseOrdersApi.approve(id, user?.id),
     onSuccess: (updated) => {
       setPos(prev =>
         prev.map(p =>
@@ -151,7 +154,7 @@ export function POProvider({ children }: { children: React.ReactNode }) {
   });
 
   const rejectPOMutation = useMutation({
-    mutationFn: (args: { id: string; reason?: string }) => purchaseOrdersApi.reject(args.id, args.reason),
+    mutationFn: (args: { id: string; reason?: string }) => purchaseOrdersApi.reject(args.id, args.reason, user?.id),
     onSuccess: (updated) => {
       setPos(prev =>
         prev.map(p =>

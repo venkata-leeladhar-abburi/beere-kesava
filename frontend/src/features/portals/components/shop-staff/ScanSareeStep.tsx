@@ -71,7 +71,7 @@ export function ScanSareeStep({
               hint="Point the camera at the barcode tag on the saree label."
               value={manualId}
               onValueChange={v => { setManualId(v); setShowSareeList(true); }}
-              onSubmit={() => handleScan()}
+              onSubmit={overrideId => handleScan(overrideId)}
               error={scanError}
             />
 

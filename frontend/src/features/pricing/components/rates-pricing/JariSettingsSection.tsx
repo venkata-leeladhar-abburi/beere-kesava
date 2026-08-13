@@ -6,62 +6,62 @@ import { Button, Input, NumberInput } from "../../../../shared/ui/primitives";
 export function JariSettingsSection() {
   return (
     <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40 }}>
-    <SectionCard
-      icon={Scale}
-      title="Jari Measurement Settings"
-      subtitle="Define the conversion ratio between Buns and Reels for Jari material. This setting affects all Jari-related calculations system-wide."
-    >
-      <div style={{ ...cardStyle, padding: 40 }}>
-        <div style={{ textAlign: "center", marginBottom: 24 }}>
-          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 38, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1, marginBottom: 8 }}>
-            1 Bun = 4 Reels
+      <SectionCard
+        icon={Scale}
+        title="Jari Measurement Settings"
+        subtitle="Define the conversion ratio between Buns and Reels for Jari material. This setting affects all Jari-related calculations system-wide."
+      >
+        <div style={{ ...cardStyle, padding: 40 }}>
+          <div style={{ textAlign: "center", marginBottom: 24 }}>
+            <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 38, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1, marginBottom: 8 }}>
+              1 Bun = 4 Reels
+            </div>
+            <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, maxWidth: 480, margin: "0 auto", lineHeight: 1.7 }}>
+              The current conversion is set to 4 Reels per Bun. This is used when calculating Jari deductions and stock tracking across all weaver accounts.
+            </p>
           </div>
-          <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, maxWidth: 480, margin: "0 auto", lineHeight: 1.7 }}>
-            The current conversion is set to 4 Reels per Bun. This is used when calculating Jari deductions and stock tracking across all weaver accounts.
-          </p>
-        </div>
 
-        <div style={{ borderTop: `1px solid ${T.borderDef}`, margin: "0 0 28px 0" }} />
+          <div style={{ borderTop: `1px solid ${T.borderDef}`, margin: "0 0 28px 0" }} />
 
-        <div style={{ display: "flex", gap: 24, justifyContent: "center", marginBottom: 24, flexWrap: "wrap" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <label style={{ ...labelStyle, marginBottom: 0, whiteSpace: "nowrap" }}>1 Bun equals:</label>
-            <NumberInput
-              defaultValue={4}
-              className="w-[90px] bg-[#FFF8F0] border-[rgba(110,15,45,0.18)] text-center text-[20px] font-bold font-[var(--font-mono)]"
-            />
+          <div style={{ display: "flex", gap: 24, justifyContent: "center", marginBottom: 24, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <label style={{ ...labelStyle, marginBottom: 0, whiteSpace: "nowrap" }}>1 Bun equals:</label>
+              <NumberInput
+                defaultValue={4}
+                className="w-[90px] bg-[#FFF8F0] border-[rgba(110,15,45,0.18)] text-center text-[20px] font-bold font-[var(--font-mono)]"
+              />
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <label style={{ ...labelStyle, marginBottom: 0, whiteSpace: "nowrap" }}>Unit name (singular):</label>
+              <Input defaultValue="Reel" className="w-[110px] bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <label style={{ ...labelStyle, marginBottom: 0, whiteSpace: "nowrap" }}>Unit name (plural):</label>
+              <Input defaultValue="Reels" className="w-[110px] bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
+            </div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <label style={{ ...labelStyle, marginBottom: 0, whiteSpace: "nowrap" }}>Unit name (singular):</label>
-            <Input defaultValue="Reel" className="w-[110px] bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <label style={{ ...labelStyle, marginBottom: 0, whiteSpace: "nowrap" }}>Unit name (plural):</label>
-            <Input defaultValue="Reels" className="w-[110px] bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
-          </div>
-        </div>
 
-        <div style={{
-          background: "rgba(192,57,43,0.08)", border: `1px solid rgba(192,57,43,0.22)`,
-          borderRadius: 8, padding: "12px 18px", display: "flex", alignItems: "center",
-          gap: 10, marginBottom: 24, maxWidth: 600, margin: "0 auto 24px",
-        }}>
-          <AlertTriangle size={16} color={T.crimson} style={{ flexShrink: 0 }} />
-          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.crimson, lineHeight: 1.6 }}>
-            <strong>Warning:</strong> Changing the Bun-to-Reel conversion will affect all Jari calculations system-wide, including historical display values and future deduction calculations. This should only be changed if the physical measurement standard changes.
-          </span>
-        </div>
+          <div style={{
+            background: "rgba(192,57,43,0.08)", border: `1px solid rgba(192,57,43,0.22)`,
+            borderRadius: 8, padding: "12px 18px", display: "flex", alignItems: "center",
+            gap: 10, marginBottom: 24, maxWidth: 600, margin: "0 auto 24px",
+          }}>
+            <AlertTriangle size={16} color={T.crimson} style={{ flexShrink: 0 }} />
+            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.crimson, lineHeight: 1.6 }}>
+              <strong>Warning:</strong> Changing the Bun-to-Reel conversion will affect all Jari calculations system-wide, including historical display values and future deduction calculations. This should only be changed if the physical measurement standard changes.
+            </span>
+          </div>
 
-        <div style={{ display: "flex", justifyContent: "center", gap: 12 }}>
-          <Button variant="primary" iconLeft={Check} className="rounded-full bg-[#1E6640] hover:bg-[#1E6640]/90 h-auto py-2.5 px-7 text-[14px] font-semibold">
-            Save Conversion Settings
-          </Button>
-          <Button variant="secondary" iconLeft={X} className="rounded-full h-auto py-2.5 px-5 text-[14px]">
-            Cancel
-          </Button>
+          <div style={{ display: "flex", justifyContent: "center", gap: 12 }}>
+            <Button variant="primary" iconLeft={Check} className="rounded-full bg-[#1E6640] hover:bg-[#1E6640]/90 h-auto py-2.5 px-7 text-[14px] font-semibold">
+              Save Conversion Settings
+            </Button>
+            <Button variant="secondary" iconLeft={X} className="rounded-full h-auto py-2.5 px-5 text-[14px]">
+              Cancel
+            </Button>
+          </div>
         </div>
-      </div>
-    </SectionCard>
+      </SectionCard>
     </div>
   );
 }

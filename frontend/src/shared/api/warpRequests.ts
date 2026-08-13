@@ -8,7 +8,7 @@ export interface BackendWarpRequest {
   warpType: string;
   lengthMeters: number;
   color?: string | null;
-  status: "PENDING" | "APPROVED" | "REJECTED";
+  status: "PENDING" | "APPROVED" | "REJECTED" | "ISSUED";
   requestedAt: string;
   decidedAt?: string | null;
   decidedBy?: { id: string; firstName: string; lastName: string } | null;

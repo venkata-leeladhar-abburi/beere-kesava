@@ -12,6 +12,8 @@ export interface ScanLookupResult {
   finishing: { status: string; staffName: string | null; condition: string | null } | null;
   inventoryStatus: string | null;
   saleEligibility: "PASSED" | "QC_NOT_PASSED" | "DISPATCHED" | "SOLD" | "DAMAGED_REVIEW_NEEDED";
+  /** Worker-entered per-saree retail price from receipt, if set — overrides the type's shared rate. */
+  sellingPrice: number | null;
 }
 
 export const scanApi = {

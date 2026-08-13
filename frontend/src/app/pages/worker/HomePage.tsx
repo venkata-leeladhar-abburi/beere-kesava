@@ -4,12 +4,12 @@ import { WorkerPortal } from "../../../features/portals/components/WorkerPortal"
 import { useAuth } from "../../../contexts/AuthContext";
 
 export function WorkerHomePage() {
-  const { selectRole } = useAuth();
+  const { logout } = useAuth();
   const navigate = useNavigate();
 
   const handleBack = () => {
-    selectRole(null);
-    navigate("/select-role");
+    logout();
+    navigate("/login");
   };
 
   return <WorkerPortal onBack={handleBack} />;

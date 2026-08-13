@@ -8,7 +8,7 @@ import { customersApi } from "../../../../../shared/api/customers";
 import { salesApi } from "../../../../../shared/api/sales";
 import { rupees, formatMoney } from "@/lib/domain/money";
 
-type ShopCustomer = { name: string; phone: string; purchases: number; total: string; lastPurchase?: string; last?: string; initials: string; regular?: boolean; [key: string]: any };
+type ShopCustomer = { id: string; name: string; phone: string; purchases: number; total: string; lastPurchase?: string; last?: string; initials: string; regular?: boolean; [key: string]: any };
 
 export function CustomersSection({
   bp, isTablet, canSeePrices, setSelectedCustomer,
@@ -44,6 +44,7 @@ export function CustomersSection({
       const totalAmount = customerSales.reduce((acc, curr) => acc + Number(curr.amount), 0);
       
       return {
+        id: c.id,
         name: c.name,
         phone: c.phone || "—",
         purchases: customerSales.length,

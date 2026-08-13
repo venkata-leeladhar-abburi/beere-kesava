@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "motion/react";
-import { Camera, Check, AlertTriangle, RotateCcw } from "lucide-react";
+import { Camera, Check, AlertTriangle, RotateCcw, List } from "lucide-react";
 import { C, F, Card, Btn } from "./theme";
 import { Button, Input, Textarea } from "../../../../shared/ui/primitives";
 import {
@@ -10,14 +10,22 @@ import {
 } from "./flow-kit";
 import { Money } from "../../../../shared/ui/domain/Money";
 import { rupees } from "../../../../lib/domain/money";
+import type { BackendSaleRecord } from "../../../../shared/api/sales";
 
 interface ProcessReturnRetailFlowProps {
   step: 1 | 2 | 3;
   setStep: (s: any) => void;
   saleFound: boolean;
   setSaleFound: (v: boolean) => void;
+  foundSale: BackendSaleRecord | null;
+  findError: string | null;
   retailManualId: string;
   setRetailManualId: (v: string) => void;
+  handleFindSale: (overrideId?: string) => void;
+  availableSales: BackendSaleRecord[];
+  showSaleList: boolean;
+  setShowSaleList: (v: boolean) => void;
+  handleSelectSale: (id: string) => void;
   reason: string | null;
   setReason: (r: string | null) => void;
   otherReason: string;
@@ -32,8 +40,15 @@ export function ProcessReturnRetailFlow({
   setStep,
   saleFound,
   setSaleFound,
+  foundSale,
+  findError,
   retailManualId,
   setRetailManualId,
+  handleFindSale,
+  availableSales,
+  showSaleList,
+  setShowSaleList,
+  handleSelectSale,
   reason,
   setReason,
   otherReason,
@@ -43,7 +58,10 @@ export function ProcessReturnRetailFlow({
   onConfirm,
 }: ProcessReturnRetailFlowProps) {
   const chosenReason = returnReasons.find(r => r.id === reason);
-  const sareeRef = retailManualId.trim() || "PADMA-L1-004";
+  const sareeRef = foundSale?.sareeId ?? retailManualId.trim();
+  const customerName = foundSale?.customer?.name ?? "Walk-in Customer";
+  const saleDateLabel = foundSale ? new Date(foundSale.saleDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—";
+  const amount = foundSale ? Number(foundSale.amount) : 0;
 
   const steps: FlowStep[] = [
     { label: "Find Sale",     summary: saleFound ? sareeRef : undefined },
@@ -78,9 +96,59 @@ export function ProcessReturnRetailFlow({
                 title="Scan Saree Barcode"
                 hint="Scanning locates the original sale record — customer, date and amount all fill in automatically."
                 value={retailManualId}
-                onValueChange={setRetailManualId}
-                onSubmit={() => setSaleFound(true)}
+                onValueChange={v => { setRetailManualId(v); setShowSaleList(true); }}
+                onSubmit={overrideId => handleFindSale(overrideId)}
+                error={findError}
               />
+
+              <div style={{ display: "flex", alignItems: "center", gap: 14, margin: "18px 0" }}>
+                <div style={{ flex: 1, height: 1, background: C.bdr }} />
+                <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>or pick from sold sarees</span>
+                <div style={{ flex: 1, height: 1, background: C.bdr }} />
+              </div>
+
+              {!showSaleList ? (
+                <Button variant="secondary" fullWidth iconLeft={List} onClick={() => setShowSaleList(true)}
+                  className="h-[50px] rounded-xl border-[1.5px] border-dashed border-[rgba(171,56,50,0.30)] bg-transparent text-[#AB3832]">
+                  Browse Sold Sarees ({availableSales.length} eligible)
+                </Button>
+              ) : (
+                <div style={{
+                  background: C.white, border: `1.5px solid ${C.crim}`, borderRadius: 14,
+                  boxShadow: "0 8px 24px rgba(44,24,16,0.12)", overflow: "hidden",
+                }}>
+                  <div style={{ padding: "8px 14px", background: "rgba(171,56,50,0.03)", borderBottom: `1px solid ${C.bdr}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 1.5, color: C.muted, textTransform: "uppercase" as const }}>
+                      {availableSales.length} Sold, Not Yet Returned
+                    </span>
+                    <Button variant="link" onClick={() => setShowSaleList(false)} className="p-0 text-xs text-[#69635E] underline">
+                      Hide
+                    </Button>
+                  </div>
+                  <div style={{ maxHeight: 360, overflowY: "auto" as const }}>
+                    {availableSales.length > 0 ? availableSales.slice(0, 50).map((s, i) => (
+                      <Button key={s.sareeId} variant="tertiary" fullWidth onClick={() => handleSelectSale(s.sareeId)}
+                        className={`justify-start gap-3 rounded-none border-0 px-3.5 py-3 ${i < Math.min(availableSales.length, 50) - 1 ? "border-b border-[rgba(171,56,50,0.12)]" : ""}`}>
+                        <div style={{ flex: 1, textAlign: "left" as const }}>
+                          <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 13, color: C.crim }}>{s.sareeId}</div>
+                          <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>
+                            {s.customer?.name ?? "Walk-in Customer"} · {new Date(s.saleDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short" })}
+                          </div>
+                        </div>
+                        {canSeePrices && (
+                          <div style={{ textAlign: "right" as const, flexShrink: 0, fontFamily: F.m, fontSize: 13, color: C.gold, fontWeight: 700 }}>
+                            <Money value={rupees(Number(s.amount))} />
+                          </div>
+                        )}
+                      </Button>
+                    )) : (
+                      <div style={{ padding: "20px", textAlign: "center" as const }}>
+                        <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>No eligible sold sarees to return.</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </StepBody>
             <FlowActions
               accent={ACCENT_RETURN}
@@ -108,11 +176,10 @@ export function ProcessReturnRetailFlow({
                 accent={ACCENT_RETURN}
                 rows={([
                   { label: "Saree ID", value: sareeRef, mono: true },
-                  { label: "Design", value: "BKB-045 · Cream Zari Border Saree" },
-                  { label: "Sale date", value: "05 Jun 2026" },
-                  { label: "Customer", value: "Smt. Meenakshi" },
-                  ...(canSeePrices ? [{ label: "Amount paid", value: <Money value={rupees(8500)} />, emphasis: true }] : []),
-                  { label: "Payment method", value: "UPI", mono: true },
+                  { label: "Sale date", value: saleDateLabel },
+                  { label: "Customer", value: customerName },
+                  { label: "Channel", value: foundSale?.channel === "WHOLESALE" ? "Wholesale" : "Retail" },
+                  ...(canSeePrices ? [{ label: "Amount paid", value: <Money value={rupees(amount)} />, emphasis: true }] : []),
                 ] as SummaryRow[])}
               />
             </StepBody>
@@ -187,12 +254,12 @@ export function ProcessReturnRetailFlow({
               title="Return summary"
               accent={ACCENT_RETURN}
               rows={([
-                { label: "Saree", value: `${sareeRef} · BKB-045`, mono: true },
-                { label: "Customer", value: "Smt. Meenakshi" },
-                { label: "Original sale", value: "05 Jun 2026" },
+                { label: "Saree", value: sareeRef, mono: true },
+                { label: "Customer", value: customerName },
+                { label: "Original sale", value: saleDateLabel },
                 { label: "Return reason", value: chosenReason?.label ?? "Other", emphasis: true },
                 ...(otherReason && reason === "other" ? [{ label: "Notes", value: otherReason }] : []),
-                ...(canSeePrices ? [{ label: "Refund amount", value: <Money value={rupees(8500)} />, emphasis: true }] : []),
+                ...(canSeePrices ? [{ label: "Refund amount", value: <Money value={rupees(amount)} />, emphasis: true }] : []),
               ] as SummaryRow[])}
             />
             <ConsequenceNote>

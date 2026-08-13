@@ -4,12 +4,12 @@ import { AccountantDashboard } from "../../../features/dashboards/components/Acc
 import { useAuth } from "../../../contexts/AuthContext";
 
 export function AccountantHomePage() {
-  const { selectRole } = useAuth();
+  const { logout } = useAuth();
   const navigate = useNavigate();
 
   const handleBack = () => {
-    selectRole(null);
-    navigate("/select-role");
+    logout();
+    navigate("/login");
   };
 
   return <AccountantDashboard onBack={handleBack} />;

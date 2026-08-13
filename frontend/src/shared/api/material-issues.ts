@@ -34,6 +34,7 @@ export interface BackendMaterialIssueRecord {
   loomNumber: string | null;
   batchId: string | null;
   issuedById: string;
+  issuedBy?: { firstName: string; lastName: string } | null;
   issuedAt: string;
   signatureMethod: BackendSignatureMethod | null;
   signatureCaptured: boolean;
@@ -41,6 +42,7 @@ export interface BackendMaterialIssueRecord {
   signatureUrl: string | null;
   status: BackendMaterialIssueStatus;
   notes: string | null;
+  warpRequestId: string | null;
   items: BackendMaterialIssueItem[];
 }
 
@@ -70,6 +72,7 @@ export interface CreateMaterialIssuePayload {
   issuedById: string;
   signatureMethod?: BackendSignatureMethod;
   notes?: string;
+  warpRequestId?: string;
   items: CreateMaterialIssueItemPayload[];
 }
 

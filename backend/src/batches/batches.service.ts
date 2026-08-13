@@ -349,6 +349,7 @@ export class BatchesService {
         receivedWarpG: dto.warpG,
         receivedReshamG: dto.reshamG,
         receivedJariReels: dto.jariReels,
+        receivedSellingPrice: dto.sellingPrice,
         // Clears the failed SEMI verdict's flag so the reworked saree re-enters
         // the QC queue (which keys off qcPassed being null). No-op on a first
         // receipt, where it is already null. The QcRecord history is untouched.

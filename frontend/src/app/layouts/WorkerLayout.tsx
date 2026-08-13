@@ -24,9 +24,9 @@ const WorkerContexts = composeProviders([
 export function WorkerLayout() {
   const { isAuthenticated, role } = useAuth();
 
-  // Auth guard
+  // Auth guard — no cross-portal viewing, not even for admin/superadmin.
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (role !== "worker") return <Navigate to="/select-role" replace />;
+  if (role !== "worker") return <Navigate to="/login" replace />;
 
   return (
     <WorkerContexts>

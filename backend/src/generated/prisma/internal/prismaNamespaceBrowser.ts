@@ -315,6 +315,7 @@ export const BatchSareeRowScalarFieldEnum = {
   receivedWarpG: 'receivedWarpG',
   receivedReshamG: 'receivedReshamG',
   receivedJariReels: 'receivedJariReels',
+  receivedSellingPrice: 'receivedSellingPrice',
   tallied: 'tallied',
   talliedBy: 'talliedBy',
   talliedAt: 'talliedAt'
@@ -336,7 +337,8 @@ export const MaterialIssueRecordScalarFieldEnum = {
   signatureTimestamp: 'signatureTimestamp',
   signatureUrl: 'signatureUrl',
   status: 'status',
-  notes: 'notes'
+  notes: 'notes',
+  warpRequestId: 'warpRequestId'
 } as const
 
 export type MaterialIssueRecordScalarFieldEnum = (typeof MaterialIssueRecordScalarFieldEnum)[keyof typeof MaterialIssueRecordScalarFieldEnum]
@@ -716,7 +718,8 @@ export const PurchaseOrderScalarFieldEnum = {
   grnReceiptId: 'grnReceiptId',
   actualReceivedDate: 'actualReceivedDate',
   rejectionReason: 'rejectionReason',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  createdById: 'createdById'
 } as const
 
 export type PurchaseOrderScalarFieldEnum = (typeof PurchaseOrderScalarFieldEnum)[keyof typeof PurchaseOrderScalarFieldEnum]

@@ -29,7 +29,7 @@ export function SuperadminLayout() {
 
   // Auth guard
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (role !== "superadmin") return <Navigate to="/select-role" replace />;
+  if (role !== "superadmin") return <Navigate to="/login" replace />;
 
   return (
     <SuperadminContexts>

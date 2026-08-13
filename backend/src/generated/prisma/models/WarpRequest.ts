@@ -266,6 +266,7 @@ export type WarpRequestWhereInput = {
   notes?: Prisma.StringNullableFilter<"WarpRequest"> | string | null
   weaver?: Prisma.XOR<Prisma.WeaverScalarRelationFilter, Prisma.WeaverWhereInput>
   decidedBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
+  materialIssue?: Prisma.XOR<Prisma.MaterialIssueRecordNullableScalarRelationFilter, Prisma.MaterialIssueRecordWhereInput> | null
 }
 
 export type WarpRequestOrderByWithRelationInput = {
@@ -282,6 +283,7 @@ export type WarpRequestOrderByWithRelationInput = {
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
   weaver?: Prisma.WeaverOrderByWithRelationInput
   decidedBy?: Prisma.UserOrderByWithRelationInput
+  materialIssue?: Prisma.MaterialIssueRecordOrderByWithRelationInput
 }
 
 export type WarpRequestWhereUniqueInput = Prisma.AtLeast<{
@@ -301,6 +303,7 @@ export type WarpRequestWhereUniqueInput = Prisma.AtLeast<{
   notes?: Prisma.StringNullableFilter<"WarpRequest"> | string | null
   weaver?: Prisma.XOR<Prisma.WeaverScalarRelationFilter, Prisma.WeaverWhereInput>
   decidedBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
+  materialIssue?: Prisma.XOR<Prisma.MaterialIssueRecordNullableScalarRelationFilter, Prisma.MaterialIssueRecordWhereInput> | null
 }, "id">
 
 export type WarpRequestOrderByWithAggregationInput = {
@@ -351,6 +354,7 @@ export type WarpRequestCreateInput = {
   notes?: string | null
   weaver: Prisma.WeaverCreateNestedOneWithoutWarpRequestsInput
   decidedBy?: Prisma.UserCreateNestedOneWithoutDecidedWarpRequestsInput
+  materialIssue?: Prisma.MaterialIssueRecordCreateNestedOneWithoutWarpRequestInput
 }
 
 export type WarpRequestUncheckedCreateInput = {
@@ -365,6 +369,7 @@ export type WarpRequestUncheckedCreateInput = {
   decidedAt?: Date | string | null
   decidedById?: string | null
   notes?: string | null
+  materialIssue?: Prisma.MaterialIssueRecordUncheckedCreateNestedOneWithoutWarpRequestInput
 }
 
 export type WarpRequestUpdateInput = {
@@ -379,6 +384,7 @@ export type WarpRequestUpdateInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   weaver?: Prisma.WeaverUpdateOneRequiredWithoutWarpRequestsNestedInput
   decidedBy?: Prisma.UserUpdateOneWithoutDecidedWarpRequestsNestedInput
+  materialIssue?: Prisma.MaterialIssueRecordUpdateOneWithoutWarpRequestNestedInput
 }
 
 export type WarpRequestUncheckedUpdateInput = {
@@ -393,6 +399,7 @@ export type WarpRequestUncheckedUpdateInput = {
   decidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   decidedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  materialIssue?: Prisma.MaterialIssueRecordUncheckedUpdateOneWithoutWarpRequestNestedInput
 }
 
 export type WarpRequestCreateManyInput = {
@@ -443,6 +450,11 @@ export type WarpRequestListRelationFilter = {
 
 export type WarpRequestOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type WarpRequestNullableScalarRelationFilter = {
+  is?: Prisma.WarpRequestWhereInput | null
+  isNot?: Prisma.WarpRequestWhereInput | null
 }
 
 export type WarpRequestCountOrderByAggregateInput = {
@@ -579,6 +591,22 @@ export type WarpRequestUncheckedUpdateManyWithoutWeaverNestedInput = {
   deleteMany?: Prisma.WarpRequestScalarWhereInput | Prisma.WarpRequestScalarWhereInput[]
 }
 
+export type WarpRequestCreateNestedOneWithoutMaterialIssueInput = {
+  create?: Prisma.XOR<Prisma.WarpRequestCreateWithoutMaterialIssueInput, Prisma.WarpRequestUncheckedCreateWithoutMaterialIssueInput>
+  connectOrCreate?: Prisma.WarpRequestCreateOrConnectWithoutMaterialIssueInput
+  connect?: Prisma.WarpRequestWhereUniqueInput
+}
+
+export type WarpRequestUpdateOneWithoutMaterialIssueNestedInput = {
+  create?: Prisma.XOR<Prisma.WarpRequestCreateWithoutMaterialIssueInput, Prisma.WarpRequestUncheckedCreateWithoutMaterialIssueInput>
+  connectOrCreate?: Prisma.WarpRequestCreateOrConnectWithoutMaterialIssueInput
+  upsert?: Prisma.WarpRequestUpsertWithoutMaterialIssueInput
+  disconnect?: Prisma.WarpRequestWhereInput | boolean
+  delete?: Prisma.WarpRequestWhereInput | boolean
+  connect?: Prisma.WarpRequestWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.WarpRequestUpdateToOneWithWhereWithoutMaterialIssueInput, Prisma.WarpRequestUpdateWithoutMaterialIssueInput>, Prisma.WarpRequestUncheckedUpdateWithoutMaterialIssueInput>
+}
+
 export type EnumWarpRequestStatusFieldUpdateOperationsInput = {
   set?: $Enums.WarpRequestStatus
 }
@@ -594,6 +622,7 @@ export type WarpRequestCreateWithoutDecidedByInput = {
   decidedAt?: Date | string | null
   notes?: string | null
   weaver: Prisma.WeaverCreateNestedOneWithoutWarpRequestsInput
+  materialIssue?: Prisma.MaterialIssueRecordCreateNestedOneWithoutWarpRequestInput
 }
 
 export type WarpRequestUncheckedCreateWithoutDecidedByInput = {
@@ -607,6 +636,7 @@ export type WarpRequestUncheckedCreateWithoutDecidedByInput = {
   requestedAt?: Date | string
   decidedAt?: Date | string | null
   notes?: string | null
+  materialIssue?: Prisma.MaterialIssueRecordUncheckedCreateNestedOneWithoutWarpRequestInput
 }
 
 export type WarpRequestCreateOrConnectWithoutDecidedByInput = {
@@ -663,6 +693,7 @@ export type WarpRequestCreateWithoutWeaverInput = {
   decidedAt?: Date | string | null
   notes?: string | null
   decidedBy?: Prisma.UserCreateNestedOneWithoutDecidedWarpRequestsInput
+  materialIssue?: Prisma.MaterialIssueRecordCreateNestedOneWithoutWarpRequestInput
 }
 
 export type WarpRequestUncheckedCreateWithoutWeaverInput = {
@@ -676,6 +707,7 @@ export type WarpRequestUncheckedCreateWithoutWeaverInput = {
   decidedAt?: Date | string | null
   decidedById?: string | null
   notes?: string | null
+  materialIssue?: Prisma.MaterialIssueRecordUncheckedCreateNestedOneWithoutWarpRequestInput
 }
 
 export type WarpRequestCreateOrConnectWithoutWeaverInput = {
@@ -704,6 +736,78 @@ export type WarpRequestUpdateManyWithWhereWithoutWeaverInput = {
   data: Prisma.XOR<Prisma.WarpRequestUpdateManyMutationInput, Prisma.WarpRequestUncheckedUpdateManyWithoutWeaverInput>
 }
 
+export type WarpRequestCreateWithoutMaterialIssueInput = {
+  id: string
+  loomNumber?: string | null
+  warpType: string
+  lengthMeters: runtime.Decimal | runtime.DecimalJsLike | number | string
+  color?: string | null
+  status?: $Enums.WarpRequestStatus
+  requestedAt?: Date | string
+  decidedAt?: Date | string | null
+  notes?: string | null
+  weaver: Prisma.WeaverCreateNestedOneWithoutWarpRequestsInput
+  decidedBy?: Prisma.UserCreateNestedOneWithoutDecidedWarpRequestsInput
+}
+
+export type WarpRequestUncheckedCreateWithoutMaterialIssueInput = {
+  id: string
+  weaverId: string
+  loomNumber?: string | null
+  warpType: string
+  lengthMeters: runtime.Decimal | runtime.DecimalJsLike | number | string
+  color?: string | null
+  status?: $Enums.WarpRequestStatus
+  requestedAt?: Date | string
+  decidedAt?: Date | string | null
+  decidedById?: string | null
+  notes?: string | null
+}
+
+export type WarpRequestCreateOrConnectWithoutMaterialIssueInput = {
+  where: Prisma.WarpRequestWhereUniqueInput
+  create: Prisma.XOR<Prisma.WarpRequestCreateWithoutMaterialIssueInput, Prisma.WarpRequestUncheckedCreateWithoutMaterialIssueInput>
+}
+
+export type WarpRequestUpsertWithoutMaterialIssueInput = {
+  update: Prisma.XOR<Prisma.WarpRequestUpdateWithoutMaterialIssueInput, Prisma.WarpRequestUncheckedUpdateWithoutMaterialIssueInput>
+  create: Prisma.XOR<Prisma.WarpRequestCreateWithoutMaterialIssueInput, Prisma.WarpRequestUncheckedCreateWithoutMaterialIssueInput>
+  where?: Prisma.WarpRequestWhereInput
+}
+
+export type WarpRequestUpdateToOneWithWhereWithoutMaterialIssueInput = {
+  where?: Prisma.WarpRequestWhereInput
+  data: Prisma.XOR<Prisma.WarpRequestUpdateWithoutMaterialIssueInput, Prisma.WarpRequestUncheckedUpdateWithoutMaterialIssueInput>
+}
+
+export type WarpRequestUpdateWithoutMaterialIssueInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  loomNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  warpType?: Prisma.StringFieldUpdateOperationsInput | string
+  lengthMeters?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumWarpRequestStatusFieldUpdateOperationsInput | $Enums.WarpRequestStatus
+  requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  decidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  weaver?: Prisma.WeaverUpdateOneRequiredWithoutWarpRequestsNestedInput
+  decidedBy?: Prisma.UserUpdateOneWithoutDecidedWarpRequestsNestedInput
+}
+
+export type WarpRequestUncheckedUpdateWithoutMaterialIssueInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  weaverId?: Prisma.StringFieldUpdateOperationsInput | string
+  loomNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  warpType?: Prisma.StringFieldUpdateOperationsInput | string
+  lengthMeters?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumWarpRequestStatusFieldUpdateOperationsInput | $Enums.WarpRequestStatus
+  requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  decidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  decidedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+}
+
 export type WarpRequestCreateManyDecidedByInput = {
   id: string
   weaverId: string
@@ -728,6 +832,7 @@ export type WarpRequestUpdateWithoutDecidedByInput = {
   decidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   weaver?: Prisma.WeaverUpdateOneRequiredWithoutWarpRequestsNestedInput
+  materialIssue?: Prisma.MaterialIssueRecordUpdateOneWithoutWarpRequestNestedInput
 }
 
 export type WarpRequestUncheckedUpdateWithoutDecidedByInput = {
@@ -741,6 +846,7 @@ export type WarpRequestUncheckedUpdateWithoutDecidedByInput = {
   requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   decidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  materialIssue?: Prisma.MaterialIssueRecordUncheckedUpdateOneWithoutWarpRequestNestedInput
 }
 
 export type WarpRequestUncheckedUpdateManyWithoutDecidedByInput = {
@@ -780,6 +886,7 @@ export type WarpRequestUpdateWithoutWeaverInput = {
   decidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   decidedBy?: Prisma.UserUpdateOneWithoutDecidedWarpRequestsNestedInput
+  materialIssue?: Prisma.MaterialIssueRecordUpdateOneWithoutWarpRequestNestedInput
 }
 
 export type WarpRequestUncheckedUpdateWithoutWeaverInput = {
@@ -793,6 +900,7 @@ export type WarpRequestUncheckedUpdateWithoutWeaverInput = {
   decidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   decidedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  materialIssue?: Prisma.MaterialIssueRecordUncheckedUpdateOneWithoutWarpRequestNestedInput
 }
 
 export type WarpRequestUncheckedUpdateManyWithoutWeaverInput = {
@@ -824,6 +932,7 @@ export type WarpRequestSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   notes?: boolean
   weaver?: boolean | Prisma.WeaverDefaultArgs<ExtArgs>
   decidedBy?: boolean | Prisma.WarpRequest$decidedByArgs<ExtArgs>
+  materialIssue?: boolean | Prisma.WarpRequest$materialIssueArgs<ExtArgs>
 }, ExtArgs["result"]["warpRequest"]>
 
 export type WarpRequestSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -876,6 +985,7 @@ export type WarpRequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArg
 export type WarpRequestInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   weaver?: boolean | Prisma.WeaverDefaultArgs<ExtArgs>
   decidedBy?: boolean | Prisma.WarpRequest$decidedByArgs<ExtArgs>
+  materialIssue?: boolean | Prisma.WarpRequest$materialIssueArgs<ExtArgs>
 }
 export type WarpRequestIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   weaver?: boolean | Prisma.WeaverDefaultArgs<ExtArgs>
@@ -891,6 +1001,7 @@ export type $WarpRequestPayload<ExtArgs extends runtime.Types.Extensions.Interna
   objects: {
     weaver: Prisma.$WeaverPayload<ExtArgs>
     decidedBy: Prisma.$UserPayload<ExtArgs> | null
+    materialIssue: Prisma.$MaterialIssueRecordPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1300,6 +1411,7 @@ export interface Prisma__WarpRequestClient<T, Null = never, ExtArgs extends runt
   readonly [Symbol.toStringTag]: "PrismaPromise"
   weaver<T extends Prisma.WeaverDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WeaverDefaultArgs<ExtArgs>>): Prisma.Prisma__WeaverClient<runtime.Types.Result.GetResult<Prisma.$WeaverPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   decidedBy<T extends Prisma.WarpRequest$decidedByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WarpRequest$decidedByArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  materialIssue<T extends Prisma.WarpRequest$materialIssueArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WarpRequest$materialIssueArgs<ExtArgs>>): Prisma.Prisma__MaterialIssueRecordClient<runtime.Types.Result.GetResult<Prisma.$MaterialIssueRecordPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1757,6 +1869,25 @@ export type WarpRequest$decidedByArgs<ExtArgs extends runtime.Types.Extensions.I
    */
   include?: Prisma.UserInclude<ExtArgs> | null
   where?: Prisma.UserWhereInput
+}
+
+/**
+ * WarpRequest.materialIssue
+ */
+export type WarpRequest$materialIssueArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the MaterialIssueRecord
+   */
+  select?: Prisma.MaterialIssueRecordSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the MaterialIssueRecord
+   */
+  omit?: Prisma.MaterialIssueRecordOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.MaterialIssueRecordInclude<ExtArgs> | null
+  where?: Prisma.MaterialIssueRecordWhereInput
 }
 
 /**

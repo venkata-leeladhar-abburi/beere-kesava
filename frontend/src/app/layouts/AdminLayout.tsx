@@ -27,9 +27,13 @@ const AdminContexts = composeProviders([
 export function AdminLayout() {
   const { isAuthenticated, role } = useAuth();
 
-  // Auth guard
+  // Auth guard — a session whose role isn't exactly "admin" (including
+  // admin/superadmin trying to view "as" another portal, which no longer
+  // exists) never renders this portal. /login's own authenticated-redirect
+  // sends a still-logged-in user straight back to their real one portal
+  // rather than any picker.
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (role !== "admin") return <Navigate to="/select-role" replace />;
+  if (role !== "admin") return <Navigate to="/login" replace />;
 
   return (
     <AdminContexts>

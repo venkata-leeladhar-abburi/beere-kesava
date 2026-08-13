@@ -38,6 +38,7 @@ export type MaterialIssueRecordMinAggregateOutputType = {
   signatureUrl: string | null
   status: $Enums.MaterialIssueStatus | null
   notes: string | null
+  warpRequestId: string | null
 }
 
 export type MaterialIssueRecordMaxAggregateOutputType = {
@@ -54,6 +55,7 @@ export type MaterialIssueRecordMaxAggregateOutputType = {
   signatureUrl: string | null
   status: $Enums.MaterialIssueStatus | null
   notes: string | null
+  warpRequestId: string | null
 }
 
 export type MaterialIssueRecordCountAggregateOutputType = {
@@ -70,6 +72,7 @@ export type MaterialIssueRecordCountAggregateOutputType = {
   signatureUrl: number
   status: number
   notes: number
+  warpRequestId: number
   _all: number
 }
 
@@ -88,6 +91,7 @@ export type MaterialIssueRecordMinAggregateInputType = {
   signatureUrl?: true
   status?: true
   notes?: true
+  warpRequestId?: true
 }
 
 export type MaterialIssueRecordMaxAggregateInputType = {
@@ -104,6 +108,7 @@ export type MaterialIssueRecordMaxAggregateInputType = {
   signatureUrl?: true
   status?: true
   notes?: true
+  warpRequestId?: true
 }
 
 export type MaterialIssueRecordCountAggregateInputType = {
@@ -120,6 +125,7 @@ export type MaterialIssueRecordCountAggregateInputType = {
   signatureUrl?: true
   status?: true
   notes?: true
+  warpRequestId?: true
   _all?: true
 }
 
@@ -209,6 +215,7 @@ export type MaterialIssueRecordGroupByOutputType = {
   signatureUrl: string | null
   status: $Enums.MaterialIssueStatus
   notes: string | null
+  warpRequestId: string | null
   _count: MaterialIssueRecordCountAggregateOutputType | null
   _min: MaterialIssueRecordMinAggregateOutputType | null
   _max: MaterialIssueRecordMaxAggregateOutputType | null
@@ -246,10 +253,12 @@ export type MaterialIssueRecordWhereInput = {
   signatureUrl?: Prisma.StringNullableFilter<"MaterialIssueRecord"> | string | null
   status?: Prisma.EnumMaterialIssueStatusFilter<"MaterialIssueRecord"> | $Enums.MaterialIssueStatus
   notes?: Prisma.StringNullableFilter<"MaterialIssueRecord"> | string | null
+  warpRequestId?: Prisma.StringNullableFilter<"MaterialIssueRecord"> | string | null
   weaver?: Prisma.XOR<Prisma.WeaverNullableScalarRelationFilter, Prisma.WeaverWhereInput> | null
   factoryLoom?: Prisma.XOR<Prisma.FactoryLoomNullableScalarRelationFilter, Prisma.FactoryLoomWhereInput> | null
   batch?: Prisma.XOR<Prisma.BatchNullableScalarRelationFilter, Prisma.BatchWhereInput> | null
   issuedBy?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  warpRequest?: Prisma.XOR<Prisma.WarpRequestNullableScalarRelationFilter, Prisma.WarpRequestWhereInput> | null
   items?: Prisma.MaterialIssueItemListRelationFilter
 }
 
@@ -267,15 +276,18 @@ export type MaterialIssueRecordOrderByWithRelationInput = {
   signatureUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
+  warpRequestId?: Prisma.SortOrderInput | Prisma.SortOrder
   weaver?: Prisma.WeaverOrderByWithRelationInput
   factoryLoom?: Prisma.FactoryLoomOrderByWithRelationInput
   batch?: Prisma.BatchOrderByWithRelationInput
   issuedBy?: Prisma.UserOrderByWithRelationInput
+  warpRequest?: Prisma.WarpRequestOrderByWithRelationInput
   items?: Prisma.MaterialIssueItemOrderByRelationAggregateInput
 }
 
 export type MaterialIssueRecordWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  warpRequestId?: string
   AND?: Prisma.MaterialIssueRecordWhereInput | Prisma.MaterialIssueRecordWhereInput[]
   OR?: Prisma.MaterialIssueRecordWhereInput[]
   NOT?: Prisma.MaterialIssueRecordWhereInput | Prisma.MaterialIssueRecordWhereInput[]
@@ -295,8 +307,9 @@ export type MaterialIssueRecordWhereUniqueInput = Prisma.AtLeast<{
   factoryLoom?: Prisma.XOR<Prisma.FactoryLoomNullableScalarRelationFilter, Prisma.FactoryLoomWhereInput> | null
   batch?: Prisma.XOR<Prisma.BatchNullableScalarRelationFilter, Prisma.BatchWhereInput> | null
   issuedBy?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  warpRequest?: Prisma.XOR<Prisma.WarpRequestNullableScalarRelationFilter, Prisma.WarpRequestWhereInput> | null
   items?: Prisma.MaterialIssueItemListRelationFilter
-}, "id">
+}, "id" | "warpRequestId">
 
 export type MaterialIssueRecordOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -312,6 +325,7 @@ export type MaterialIssueRecordOrderByWithAggregationInput = {
   signatureUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
+  warpRequestId?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.MaterialIssueRecordCountOrderByAggregateInput
   _max?: Prisma.MaterialIssueRecordMaxOrderByAggregateInput
   _min?: Prisma.MaterialIssueRecordMinOrderByAggregateInput
@@ -334,6 +348,7 @@ export type MaterialIssueRecordScalarWhereWithAggregatesInput = {
   signatureUrl?: Prisma.StringNullableWithAggregatesFilter<"MaterialIssueRecord"> | string | null
   status?: Prisma.EnumMaterialIssueStatusWithAggregatesFilter<"MaterialIssueRecord"> | $Enums.MaterialIssueStatus
   notes?: Prisma.StringNullableWithAggregatesFilter<"MaterialIssueRecord"> | string | null
+  warpRequestId?: Prisma.StringNullableWithAggregatesFilter<"MaterialIssueRecord"> | string | null
 }
 
 export type MaterialIssueRecordCreateInput = {
@@ -350,6 +365,7 @@ export type MaterialIssueRecordCreateInput = {
   factoryLoom?: Prisma.FactoryLoomCreateNestedOneWithoutMaterialIssuesInput
   batch?: Prisma.BatchCreateNestedOneWithoutMaterialIssuesInput
   issuedBy: Prisma.UserCreateNestedOneWithoutIssuedMaterialIssuesInput
+  warpRequest?: Prisma.WarpRequestCreateNestedOneWithoutMaterialIssueInput
   items?: Prisma.MaterialIssueItemCreateNestedManyWithoutIssueInput
 }
 
@@ -367,6 +383,7 @@ export type MaterialIssueRecordUncheckedCreateInput = {
   signatureUrl?: string | null
   status?: $Enums.MaterialIssueStatus
   notes?: string | null
+  warpRequestId?: string | null
   items?: Prisma.MaterialIssueItemUncheckedCreateNestedManyWithoutIssueInput
 }
 
@@ -384,6 +401,7 @@ export type MaterialIssueRecordUpdateInput = {
   factoryLoom?: Prisma.FactoryLoomUpdateOneWithoutMaterialIssuesNestedInput
   batch?: Prisma.BatchUpdateOneWithoutMaterialIssuesNestedInput
   issuedBy?: Prisma.UserUpdateOneRequiredWithoutIssuedMaterialIssuesNestedInput
+  warpRequest?: Prisma.WarpRequestUpdateOneWithoutMaterialIssueNestedInput
   items?: Prisma.MaterialIssueItemUpdateManyWithoutIssueNestedInput
 }
 
@@ -401,6 +419,7 @@ export type MaterialIssueRecordUncheckedUpdateInput = {
   signatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumMaterialIssueStatusFieldUpdateOperationsInput | $Enums.MaterialIssueStatus
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  warpRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   items?: Prisma.MaterialIssueItemUncheckedUpdateManyWithoutIssueNestedInput
 }
 
@@ -418,6 +437,7 @@ export type MaterialIssueRecordCreateManyInput = {
   signatureUrl?: string | null
   status?: $Enums.MaterialIssueStatus
   notes?: string | null
+  warpRequestId?: string | null
 }
 
 export type MaterialIssueRecordUpdateManyMutationInput = {
@@ -446,6 +466,7 @@ export type MaterialIssueRecordUncheckedUpdateManyInput = {
   signatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumMaterialIssueStatusFieldUpdateOperationsInput | $Enums.MaterialIssueStatus
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  warpRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type MaterialIssueRecordListRelationFilter = {
@@ -472,6 +493,7 @@ export type MaterialIssueRecordCountOrderByAggregateInput = {
   signatureUrl?: Prisma.SortOrder
   status?: Prisma.SortOrder
   notes?: Prisma.SortOrder
+  warpRequestId?: Prisma.SortOrder
 }
 
 export type MaterialIssueRecordMaxOrderByAggregateInput = {
@@ -488,6 +510,7 @@ export type MaterialIssueRecordMaxOrderByAggregateInput = {
   signatureUrl?: Prisma.SortOrder
   status?: Prisma.SortOrder
   notes?: Prisma.SortOrder
+  warpRequestId?: Prisma.SortOrder
 }
 
 export type MaterialIssueRecordMinOrderByAggregateInput = {
@@ -504,11 +527,17 @@ export type MaterialIssueRecordMinOrderByAggregateInput = {
   signatureUrl?: Prisma.SortOrder
   status?: Prisma.SortOrder
   notes?: Prisma.SortOrder
+  warpRequestId?: Prisma.SortOrder
 }
 
 export type MaterialIssueRecordScalarRelationFilter = {
   is?: Prisma.MaterialIssueRecordWhereInput
   isNot?: Prisma.MaterialIssueRecordWhereInput
+}
+
+export type MaterialIssueRecordNullableScalarRelationFilter = {
+  is?: Prisma.MaterialIssueRecordWhereInput | null
+  isNot?: Prisma.MaterialIssueRecordWhereInput | null
 }
 
 export type MaterialIssueRecordCreateNestedManyWithoutIssuedByInput = {
@@ -701,6 +730,38 @@ export type MaterialIssueRecordUpdateOneRequiredWithoutItemsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.MaterialIssueRecordUpdateToOneWithWhereWithoutItemsInput, Prisma.MaterialIssueRecordUpdateWithoutItemsInput>, Prisma.MaterialIssueRecordUncheckedUpdateWithoutItemsInput>
 }
 
+export type MaterialIssueRecordCreateNestedOneWithoutWarpRequestInput = {
+  create?: Prisma.XOR<Prisma.MaterialIssueRecordCreateWithoutWarpRequestInput, Prisma.MaterialIssueRecordUncheckedCreateWithoutWarpRequestInput>
+  connectOrCreate?: Prisma.MaterialIssueRecordCreateOrConnectWithoutWarpRequestInput
+  connect?: Prisma.MaterialIssueRecordWhereUniqueInput
+}
+
+export type MaterialIssueRecordUncheckedCreateNestedOneWithoutWarpRequestInput = {
+  create?: Prisma.XOR<Prisma.MaterialIssueRecordCreateWithoutWarpRequestInput, Prisma.MaterialIssueRecordUncheckedCreateWithoutWarpRequestInput>
+  connectOrCreate?: Prisma.MaterialIssueRecordCreateOrConnectWithoutWarpRequestInput
+  connect?: Prisma.MaterialIssueRecordWhereUniqueInput
+}
+
+export type MaterialIssueRecordUpdateOneWithoutWarpRequestNestedInput = {
+  create?: Prisma.XOR<Prisma.MaterialIssueRecordCreateWithoutWarpRequestInput, Prisma.MaterialIssueRecordUncheckedCreateWithoutWarpRequestInput>
+  connectOrCreate?: Prisma.MaterialIssueRecordCreateOrConnectWithoutWarpRequestInput
+  upsert?: Prisma.MaterialIssueRecordUpsertWithoutWarpRequestInput
+  disconnect?: Prisma.MaterialIssueRecordWhereInput | boolean
+  delete?: Prisma.MaterialIssueRecordWhereInput | boolean
+  connect?: Prisma.MaterialIssueRecordWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.MaterialIssueRecordUpdateToOneWithWhereWithoutWarpRequestInput, Prisma.MaterialIssueRecordUpdateWithoutWarpRequestInput>, Prisma.MaterialIssueRecordUncheckedUpdateWithoutWarpRequestInput>
+}
+
+export type MaterialIssueRecordUncheckedUpdateOneWithoutWarpRequestNestedInput = {
+  create?: Prisma.XOR<Prisma.MaterialIssueRecordCreateWithoutWarpRequestInput, Prisma.MaterialIssueRecordUncheckedCreateWithoutWarpRequestInput>
+  connectOrCreate?: Prisma.MaterialIssueRecordCreateOrConnectWithoutWarpRequestInput
+  upsert?: Prisma.MaterialIssueRecordUpsertWithoutWarpRequestInput
+  disconnect?: Prisma.MaterialIssueRecordWhereInput | boolean
+  delete?: Prisma.MaterialIssueRecordWhereInput | boolean
+  connect?: Prisma.MaterialIssueRecordWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.MaterialIssueRecordUpdateToOneWithWhereWithoutWarpRequestInput, Prisma.MaterialIssueRecordUpdateWithoutWarpRequestInput>, Prisma.MaterialIssueRecordUncheckedUpdateWithoutWarpRequestInput>
+}
+
 export type MaterialIssueRecordCreateWithoutIssuedByInput = {
   id: string
   loomNumber?: string | null
@@ -714,6 +775,7 @@ export type MaterialIssueRecordCreateWithoutIssuedByInput = {
   weaver?: Prisma.WeaverCreateNestedOneWithoutMaterialIssuesInput
   factoryLoom?: Prisma.FactoryLoomCreateNestedOneWithoutMaterialIssuesInput
   batch?: Prisma.BatchCreateNestedOneWithoutMaterialIssuesInput
+  warpRequest?: Prisma.WarpRequestCreateNestedOneWithoutMaterialIssueInput
   items?: Prisma.MaterialIssueItemCreateNestedManyWithoutIssueInput
 }
 
@@ -730,6 +792,7 @@ export type MaterialIssueRecordUncheckedCreateWithoutIssuedByInput = {
   signatureUrl?: string | null
   status?: $Enums.MaterialIssueStatus
   notes?: string | null
+  warpRequestId?: string | null
   items?: Prisma.MaterialIssueItemUncheckedCreateNestedManyWithoutIssueInput
 }
 
@@ -776,6 +839,7 @@ export type MaterialIssueRecordScalarWhereInput = {
   signatureUrl?: Prisma.StringNullableFilter<"MaterialIssueRecord"> | string | null
   status?: Prisma.EnumMaterialIssueStatusFilter<"MaterialIssueRecord"> | $Enums.MaterialIssueStatus
   notes?: Prisma.StringNullableFilter<"MaterialIssueRecord"> | string | null
+  warpRequestId?: Prisma.StringNullableFilter<"MaterialIssueRecord"> | string | null
 }
 
 export type MaterialIssueRecordCreateWithoutWeaverInput = {
@@ -791,6 +855,7 @@ export type MaterialIssueRecordCreateWithoutWeaverInput = {
   factoryLoom?: Prisma.FactoryLoomCreateNestedOneWithoutMaterialIssuesInput
   batch?: Prisma.BatchCreateNestedOneWithoutMaterialIssuesInput
   issuedBy: Prisma.UserCreateNestedOneWithoutIssuedMaterialIssuesInput
+  warpRequest?: Prisma.WarpRequestCreateNestedOneWithoutMaterialIssueInput
   items?: Prisma.MaterialIssueItemCreateNestedManyWithoutIssueInput
 }
 
@@ -807,6 +872,7 @@ export type MaterialIssueRecordUncheckedCreateWithoutWeaverInput = {
   signatureUrl?: string | null
   status?: $Enums.MaterialIssueStatus
   notes?: string | null
+  warpRequestId?: string | null
   items?: Prisma.MaterialIssueItemUncheckedCreateNestedManyWithoutIssueInput
 }
 
@@ -849,6 +915,7 @@ export type MaterialIssueRecordCreateWithoutFactoryLoomInput = {
   weaver?: Prisma.WeaverCreateNestedOneWithoutMaterialIssuesInput
   batch?: Prisma.BatchCreateNestedOneWithoutMaterialIssuesInput
   issuedBy: Prisma.UserCreateNestedOneWithoutIssuedMaterialIssuesInput
+  warpRequest?: Prisma.WarpRequestCreateNestedOneWithoutMaterialIssueInput
   items?: Prisma.MaterialIssueItemCreateNestedManyWithoutIssueInput
 }
 
@@ -865,6 +932,7 @@ export type MaterialIssueRecordUncheckedCreateWithoutFactoryLoomInput = {
   signatureUrl?: string | null
   status?: $Enums.MaterialIssueStatus
   notes?: string | null
+  warpRequestId?: string | null
   items?: Prisma.MaterialIssueItemUncheckedCreateNestedManyWithoutIssueInput
 }
 
@@ -907,6 +975,7 @@ export type MaterialIssueRecordCreateWithoutBatchInput = {
   weaver?: Prisma.WeaverCreateNestedOneWithoutMaterialIssuesInput
   factoryLoom?: Prisma.FactoryLoomCreateNestedOneWithoutMaterialIssuesInput
   issuedBy: Prisma.UserCreateNestedOneWithoutIssuedMaterialIssuesInput
+  warpRequest?: Prisma.WarpRequestCreateNestedOneWithoutMaterialIssueInput
   items?: Prisma.MaterialIssueItemCreateNestedManyWithoutIssueInput
 }
 
@@ -923,6 +992,7 @@ export type MaterialIssueRecordUncheckedCreateWithoutBatchInput = {
   signatureUrl?: string | null
   status?: $Enums.MaterialIssueStatus
   notes?: string | null
+  warpRequestId?: string | null
   items?: Prisma.MaterialIssueItemUncheckedCreateNestedManyWithoutIssueInput
 }
 
@@ -966,6 +1036,7 @@ export type MaterialIssueRecordCreateWithoutItemsInput = {
   factoryLoom?: Prisma.FactoryLoomCreateNestedOneWithoutMaterialIssuesInput
   batch?: Prisma.BatchCreateNestedOneWithoutMaterialIssuesInput
   issuedBy: Prisma.UserCreateNestedOneWithoutIssuedMaterialIssuesInput
+  warpRequest?: Prisma.WarpRequestCreateNestedOneWithoutMaterialIssueInput
 }
 
 export type MaterialIssueRecordUncheckedCreateWithoutItemsInput = {
@@ -982,6 +1053,7 @@ export type MaterialIssueRecordUncheckedCreateWithoutItemsInput = {
   signatureUrl?: string | null
   status?: $Enums.MaterialIssueStatus
   notes?: string | null
+  warpRequestId?: string | null
 }
 
 export type MaterialIssueRecordCreateOrConnectWithoutItemsInput = {
@@ -1014,6 +1086,7 @@ export type MaterialIssueRecordUpdateWithoutItemsInput = {
   factoryLoom?: Prisma.FactoryLoomUpdateOneWithoutMaterialIssuesNestedInput
   batch?: Prisma.BatchUpdateOneWithoutMaterialIssuesNestedInput
   issuedBy?: Prisma.UserUpdateOneRequiredWithoutIssuedMaterialIssuesNestedInput
+  warpRequest?: Prisma.WarpRequestUpdateOneWithoutMaterialIssueNestedInput
 }
 
 export type MaterialIssueRecordUncheckedUpdateWithoutItemsInput = {
@@ -1030,6 +1103,91 @@ export type MaterialIssueRecordUncheckedUpdateWithoutItemsInput = {
   signatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumMaterialIssueStatusFieldUpdateOperationsInput | $Enums.MaterialIssueStatus
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  warpRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+}
+
+export type MaterialIssueRecordCreateWithoutWarpRequestInput = {
+  id: string
+  loomNumber?: string | null
+  issuedAt?: Date | string
+  signatureMethod?: $Enums.SignatureMethod | null
+  signatureCaptured?: boolean
+  signatureTimestamp?: Date | string | null
+  signatureUrl?: string | null
+  status?: $Enums.MaterialIssueStatus
+  notes?: string | null
+  weaver?: Prisma.WeaverCreateNestedOneWithoutMaterialIssuesInput
+  factoryLoom?: Prisma.FactoryLoomCreateNestedOneWithoutMaterialIssuesInput
+  batch?: Prisma.BatchCreateNestedOneWithoutMaterialIssuesInput
+  issuedBy: Prisma.UserCreateNestedOneWithoutIssuedMaterialIssuesInput
+  items?: Prisma.MaterialIssueItemCreateNestedManyWithoutIssueInput
+}
+
+export type MaterialIssueRecordUncheckedCreateWithoutWarpRequestInput = {
+  id: string
+  weaverId?: string | null
+  factoryLoomId?: string | null
+  loomNumber?: string | null
+  batchId?: string | null
+  issuedById: string
+  issuedAt?: Date | string
+  signatureMethod?: $Enums.SignatureMethod | null
+  signatureCaptured?: boolean
+  signatureTimestamp?: Date | string | null
+  signatureUrl?: string | null
+  status?: $Enums.MaterialIssueStatus
+  notes?: string | null
+  items?: Prisma.MaterialIssueItemUncheckedCreateNestedManyWithoutIssueInput
+}
+
+export type MaterialIssueRecordCreateOrConnectWithoutWarpRequestInput = {
+  where: Prisma.MaterialIssueRecordWhereUniqueInput
+  create: Prisma.XOR<Prisma.MaterialIssueRecordCreateWithoutWarpRequestInput, Prisma.MaterialIssueRecordUncheckedCreateWithoutWarpRequestInput>
+}
+
+export type MaterialIssueRecordUpsertWithoutWarpRequestInput = {
+  update: Prisma.XOR<Prisma.MaterialIssueRecordUpdateWithoutWarpRequestInput, Prisma.MaterialIssueRecordUncheckedUpdateWithoutWarpRequestInput>
+  create: Prisma.XOR<Prisma.MaterialIssueRecordCreateWithoutWarpRequestInput, Prisma.MaterialIssueRecordUncheckedCreateWithoutWarpRequestInput>
+  where?: Prisma.MaterialIssueRecordWhereInput
+}
+
+export type MaterialIssueRecordUpdateToOneWithWhereWithoutWarpRequestInput = {
+  where?: Prisma.MaterialIssueRecordWhereInput
+  data: Prisma.XOR<Prisma.MaterialIssueRecordUpdateWithoutWarpRequestInput, Prisma.MaterialIssueRecordUncheckedUpdateWithoutWarpRequestInput>
+}
+
+export type MaterialIssueRecordUpdateWithoutWarpRequestInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  loomNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  signatureMethod?: Prisma.NullableEnumSignatureMethodFieldUpdateOperationsInput | $Enums.SignatureMethod | null
+  signatureCaptured?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  signatureTimestamp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  signatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumMaterialIssueStatusFieldUpdateOperationsInput | $Enums.MaterialIssueStatus
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  weaver?: Prisma.WeaverUpdateOneWithoutMaterialIssuesNestedInput
+  factoryLoom?: Prisma.FactoryLoomUpdateOneWithoutMaterialIssuesNestedInput
+  batch?: Prisma.BatchUpdateOneWithoutMaterialIssuesNestedInput
+  issuedBy?: Prisma.UserUpdateOneRequiredWithoutIssuedMaterialIssuesNestedInput
+  items?: Prisma.MaterialIssueItemUpdateManyWithoutIssueNestedInput
+}
+
+export type MaterialIssueRecordUncheckedUpdateWithoutWarpRequestInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  weaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  factoryLoomId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  loomNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  batchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuedById?: Prisma.StringFieldUpdateOperationsInput | string
+  issuedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  signatureMethod?: Prisma.NullableEnumSignatureMethodFieldUpdateOperationsInput | $Enums.SignatureMethod | null
+  signatureCaptured?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  signatureTimestamp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  signatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumMaterialIssueStatusFieldUpdateOperationsInput | $Enums.MaterialIssueStatus
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  items?: Prisma.MaterialIssueItemUncheckedUpdateManyWithoutIssueNestedInput
 }
 
 export type MaterialIssueRecordCreateManyIssuedByInput = {
@@ -1045,6 +1203,7 @@ export type MaterialIssueRecordCreateManyIssuedByInput = {
   signatureUrl?: string | null
   status?: $Enums.MaterialIssueStatus
   notes?: string | null
+  warpRequestId?: string | null
 }
 
 export type MaterialIssueRecordUpdateWithoutIssuedByInput = {
@@ -1060,6 +1219,7 @@ export type MaterialIssueRecordUpdateWithoutIssuedByInput = {
   weaver?: Prisma.WeaverUpdateOneWithoutMaterialIssuesNestedInput
   factoryLoom?: Prisma.FactoryLoomUpdateOneWithoutMaterialIssuesNestedInput
   batch?: Prisma.BatchUpdateOneWithoutMaterialIssuesNestedInput
+  warpRequest?: Prisma.WarpRequestUpdateOneWithoutMaterialIssueNestedInput
   items?: Prisma.MaterialIssueItemUpdateManyWithoutIssueNestedInput
 }
 
@@ -1076,6 +1236,7 @@ export type MaterialIssueRecordUncheckedUpdateWithoutIssuedByInput = {
   signatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumMaterialIssueStatusFieldUpdateOperationsInput | $Enums.MaterialIssueStatus
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  warpRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   items?: Prisma.MaterialIssueItemUncheckedUpdateManyWithoutIssueNestedInput
 }
 
@@ -1092,6 +1253,7 @@ export type MaterialIssueRecordUncheckedUpdateManyWithoutIssuedByInput = {
   signatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumMaterialIssueStatusFieldUpdateOperationsInput | $Enums.MaterialIssueStatus
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  warpRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type MaterialIssueRecordCreateManyWeaverInput = {
@@ -1107,6 +1269,7 @@ export type MaterialIssueRecordCreateManyWeaverInput = {
   signatureUrl?: string | null
   status?: $Enums.MaterialIssueStatus
   notes?: string | null
+  warpRequestId?: string | null
 }
 
 export type MaterialIssueRecordUpdateWithoutWeaverInput = {
@@ -1122,6 +1285,7 @@ export type MaterialIssueRecordUpdateWithoutWeaverInput = {
   factoryLoom?: Prisma.FactoryLoomUpdateOneWithoutMaterialIssuesNestedInput
   batch?: Prisma.BatchUpdateOneWithoutMaterialIssuesNestedInput
   issuedBy?: Prisma.UserUpdateOneRequiredWithoutIssuedMaterialIssuesNestedInput
+  warpRequest?: Prisma.WarpRequestUpdateOneWithoutMaterialIssueNestedInput
   items?: Prisma.MaterialIssueItemUpdateManyWithoutIssueNestedInput
 }
 
@@ -1138,6 +1302,7 @@ export type MaterialIssueRecordUncheckedUpdateWithoutWeaverInput = {
   signatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumMaterialIssueStatusFieldUpdateOperationsInput | $Enums.MaterialIssueStatus
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  warpRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   items?: Prisma.MaterialIssueItemUncheckedUpdateManyWithoutIssueNestedInput
 }
 
@@ -1154,6 +1319,7 @@ export type MaterialIssueRecordUncheckedUpdateManyWithoutWeaverInput = {
   signatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumMaterialIssueStatusFieldUpdateOperationsInput | $Enums.MaterialIssueStatus
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  warpRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type MaterialIssueRecordCreateManyFactoryLoomInput = {
@@ -1169,6 +1335,7 @@ export type MaterialIssueRecordCreateManyFactoryLoomInput = {
   signatureUrl?: string | null
   status?: $Enums.MaterialIssueStatus
   notes?: string | null
+  warpRequestId?: string | null
 }
 
 export type MaterialIssueRecordUpdateWithoutFactoryLoomInput = {
@@ -1184,6 +1351,7 @@ export type MaterialIssueRecordUpdateWithoutFactoryLoomInput = {
   weaver?: Prisma.WeaverUpdateOneWithoutMaterialIssuesNestedInput
   batch?: Prisma.BatchUpdateOneWithoutMaterialIssuesNestedInput
   issuedBy?: Prisma.UserUpdateOneRequiredWithoutIssuedMaterialIssuesNestedInput
+  warpRequest?: Prisma.WarpRequestUpdateOneWithoutMaterialIssueNestedInput
   items?: Prisma.MaterialIssueItemUpdateManyWithoutIssueNestedInput
 }
 
@@ -1200,6 +1368,7 @@ export type MaterialIssueRecordUncheckedUpdateWithoutFactoryLoomInput = {
   signatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumMaterialIssueStatusFieldUpdateOperationsInput | $Enums.MaterialIssueStatus
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  warpRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   items?: Prisma.MaterialIssueItemUncheckedUpdateManyWithoutIssueNestedInput
 }
 
@@ -1216,6 +1385,7 @@ export type MaterialIssueRecordUncheckedUpdateManyWithoutFactoryLoomInput = {
   signatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumMaterialIssueStatusFieldUpdateOperationsInput | $Enums.MaterialIssueStatus
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  warpRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type MaterialIssueRecordCreateManyBatchInput = {
@@ -1231,6 +1401,7 @@ export type MaterialIssueRecordCreateManyBatchInput = {
   signatureUrl?: string | null
   status?: $Enums.MaterialIssueStatus
   notes?: string | null
+  warpRequestId?: string | null
 }
 
 export type MaterialIssueRecordUpdateWithoutBatchInput = {
@@ -1246,6 +1417,7 @@ export type MaterialIssueRecordUpdateWithoutBatchInput = {
   weaver?: Prisma.WeaverUpdateOneWithoutMaterialIssuesNestedInput
   factoryLoom?: Prisma.FactoryLoomUpdateOneWithoutMaterialIssuesNestedInput
   issuedBy?: Prisma.UserUpdateOneRequiredWithoutIssuedMaterialIssuesNestedInput
+  warpRequest?: Prisma.WarpRequestUpdateOneWithoutMaterialIssueNestedInput
   items?: Prisma.MaterialIssueItemUpdateManyWithoutIssueNestedInput
 }
 
@@ -1262,6 +1434,7 @@ export type MaterialIssueRecordUncheckedUpdateWithoutBatchInput = {
   signatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumMaterialIssueStatusFieldUpdateOperationsInput | $Enums.MaterialIssueStatus
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  warpRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   items?: Prisma.MaterialIssueItemUncheckedUpdateManyWithoutIssueNestedInput
 }
 
@@ -1278,6 +1451,7 @@ export type MaterialIssueRecordUncheckedUpdateManyWithoutBatchInput = {
   signatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumMaterialIssueStatusFieldUpdateOperationsInput | $Enums.MaterialIssueStatus
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  warpRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -1325,10 +1499,12 @@ export type MaterialIssueRecordSelect<ExtArgs extends runtime.Types.Extensions.I
   signatureUrl?: boolean
   status?: boolean
   notes?: boolean
+  warpRequestId?: boolean
   weaver?: boolean | Prisma.MaterialIssueRecord$weaverArgs<ExtArgs>
   factoryLoom?: boolean | Prisma.MaterialIssueRecord$factoryLoomArgs<ExtArgs>
   batch?: boolean | Prisma.MaterialIssueRecord$batchArgs<ExtArgs>
   issuedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  warpRequest?: boolean | Prisma.MaterialIssueRecord$warpRequestArgs<ExtArgs>
   items?: boolean | Prisma.MaterialIssueRecord$itemsArgs<ExtArgs>
   _count?: boolean | Prisma.MaterialIssueRecordCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["materialIssueRecord"]>
@@ -1347,10 +1523,12 @@ export type MaterialIssueRecordSelectCreateManyAndReturn<ExtArgs extends runtime
   signatureUrl?: boolean
   status?: boolean
   notes?: boolean
+  warpRequestId?: boolean
   weaver?: boolean | Prisma.MaterialIssueRecord$weaverArgs<ExtArgs>
   factoryLoom?: boolean | Prisma.MaterialIssueRecord$factoryLoomArgs<ExtArgs>
   batch?: boolean | Prisma.MaterialIssueRecord$batchArgs<ExtArgs>
   issuedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  warpRequest?: boolean | Prisma.MaterialIssueRecord$warpRequestArgs<ExtArgs>
 }, ExtArgs["result"]["materialIssueRecord"]>
 
 export type MaterialIssueRecordSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1367,10 +1545,12 @@ export type MaterialIssueRecordSelectUpdateManyAndReturn<ExtArgs extends runtime
   signatureUrl?: boolean
   status?: boolean
   notes?: boolean
+  warpRequestId?: boolean
   weaver?: boolean | Prisma.MaterialIssueRecord$weaverArgs<ExtArgs>
   factoryLoom?: boolean | Prisma.MaterialIssueRecord$factoryLoomArgs<ExtArgs>
   batch?: boolean | Prisma.MaterialIssueRecord$batchArgs<ExtArgs>
   issuedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  warpRequest?: boolean | Prisma.MaterialIssueRecord$warpRequestArgs<ExtArgs>
 }, ExtArgs["result"]["materialIssueRecord"]>
 
 export type MaterialIssueRecordSelectScalar = {
@@ -1387,14 +1567,16 @@ export type MaterialIssueRecordSelectScalar = {
   signatureUrl?: boolean
   status?: boolean
   notes?: boolean
+  warpRequestId?: boolean
 }
 
-export type MaterialIssueRecordOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "weaverId" | "factoryLoomId" | "loomNumber" | "batchId" | "issuedById" | "issuedAt" | "signatureMethod" | "signatureCaptured" | "signatureTimestamp" | "signatureUrl" | "status" | "notes", ExtArgs["result"]["materialIssueRecord"]>
+export type MaterialIssueRecordOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "weaverId" | "factoryLoomId" | "loomNumber" | "batchId" | "issuedById" | "issuedAt" | "signatureMethod" | "signatureCaptured" | "signatureTimestamp" | "signatureUrl" | "status" | "notes" | "warpRequestId", ExtArgs["result"]["materialIssueRecord"]>
 export type MaterialIssueRecordInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   weaver?: boolean | Prisma.MaterialIssueRecord$weaverArgs<ExtArgs>
   factoryLoom?: boolean | Prisma.MaterialIssueRecord$factoryLoomArgs<ExtArgs>
   batch?: boolean | Prisma.MaterialIssueRecord$batchArgs<ExtArgs>
   issuedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  warpRequest?: boolean | Prisma.MaterialIssueRecord$warpRequestArgs<ExtArgs>
   items?: boolean | Prisma.MaterialIssueRecord$itemsArgs<ExtArgs>
   _count?: boolean | Prisma.MaterialIssueRecordCountOutputTypeDefaultArgs<ExtArgs>
 }
@@ -1403,12 +1585,14 @@ export type MaterialIssueRecordIncludeCreateManyAndReturn<ExtArgs extends runtim
   factoryLoom?: boolean | Prisma.MaterialIssueRecord$factoryLoomArgs<ExtArgs>
   batch?: boolean | Prisma.MaterialIssueRecord$batchArgs<ExtArgs>
   issuedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  warpRequest?: boolean | Prisma.MaterialIssueRecord$warpRequestArgs<ExtArgs>
 }
 export type MaterialIssueRecordIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   weaver?: boolean | Prisma.MaterialIssueRecord$weaverArgs<ExtArgs>
   factoryLoom?: boolean | Prisma.MaterialIssueRecord$factoryLoomArgs<ExtArgs>
   batch?: boolean | Prisma.MaterialIssueRecord$batchArgs<ExtArgs>
   issuedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  warpRequest?: boolean | Prisma.MaterialIssueRecord$warpRequestArgs<ExtArgs>
 }
 
 export type $MaterialIssueRecordPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1418,6 +1602,7 @@ export type $MaterialIssueRecordPayload<ExtArgs extends runtime.Types.Extensions
     factoryLoom: Prisma.$FactoryLoomPayload<ExtArgs> | null
     batch: Prisma.$BatchPayload<ExtArgs> | null
     issuedBy: Prisma.$UserPayload<ExtArgs>
+    warpRequest: Prisma.$WarpRequestPayload<ExtArgs> | null
     items: Prisma.$MaterialIssueItemPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -1434,6 +1619,7 @@ export type $MaterialIssueRecordPayload<ExtArgs extends runtime.Types.Extensions
     signatureUrl: string | null
     status: $Enums.MaterialIssueStatus
     notes: string | null
+    warpRequestId: string | null
   }, ExtArgs["result"]["materialIssueRecord"]>
   composites: {}
 }
@@ -1832,6 +2018,7 @@ export interface Prisma__MaterialIssueRecordClient<T, Null = never, ExtArgs exte
   factoryLoom<T extends Prisma.MaterialIssueRecord$factoryLoomArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MaterialIssueRecord$factoryLoomArgs<ExtArgs>>): Prisma.Prisma__FactoryLoomClient<runtime.Types.Result.GetResult<Prisma.$FactoryLoomPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   batch<T extends Prisma.MaterialIssueRecord$batchArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MaterialIssueRecord$batchArgs<ExtArgs>>): Prisma.Prisma__BatchClient<runtime.Types.Result.GetResult<Prisma.$BatchPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   issuedBy<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  warpRequest<T extends Prisma.MaterialIssueRecord$warpRequestArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MaterialIssueRecord$warpRequestArgs<ExtArgs>>): Prisma.Prisma__WarpRequestClient<runtime.Types.Result.GetResult<Prisma.$WarpRequestPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   items<T extends Prisma.MaterialIssueRecord$itemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MaterialIssueRecord$itemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MaterialIssueItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1875,6 +2062,7 @@ export interface MaterialIssueRecordFieldRefs {
   readonly signatureUrl: Prisma.FieldRef<"MaterialIssueRecord", 'String'>
   readonly status: Prisma.FieldRef<"MaterialIssueRecord", 'MaterialIssueStatus'>
   readonly notes: Prisma.FieldRef<"MaterialIssueRecord", 'String'>
+  readonly warpRequestId: Prisma.FieldRef<"MaterialIssueRecord", 'String'>
 }
     
 
@@ -2330,6 +2518,25 @@ export type MaterialIssueRecord$batchArgs<ExtArgs extends runtime.Types.Extensio
    */
   include?: Prisma.BatchInclude<ExtArgs> | null
   where?: Prisma.BatchWhereInput
+}
+
+/**
+ * MaterialIssueRecord.warpRequest
+ */
+export type MaterialIssueRecord$warpRequestArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the WarpRequest
+   */
+  select?: Prisma.WarpRequestSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the WarpRequest
+   */
+  omit?: Prisma.WarpRequestOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WarpRequestInclude<ExtArgs> | null
+  where?: Prisma.WarpRequestWhereInput
 }
 
 /**

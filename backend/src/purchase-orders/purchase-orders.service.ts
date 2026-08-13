@@ -36,6 +36,7 @@ export class PurchaseOrdersService {
         deliveryDate: dto.deliveryDate ? new Date(dto.deliveryDate) : undefined,
         totalValue: dto.totalValue ?? 0,
         urgency: dto.urgency,
+        createdById: dto.actorId,
         items: dto.items?.length
           ? {
               create: dto.items.map((item) => ({
@@ -50,7 +51,7 @@ export class PurchaseOrdersService {
             }
           : undefined,
       },
-      include: { vendor: true, items: true },
+      include: { vendor: true, items: true, createdBy: { select: { firstName: true, lastName: true } } },
     });
 
     await this.auditLog.recordAction({
@@ -67,7 +68,11 @@ export class PurchaseOrdersService {
 
   async findAll(
     query: ListPurchaseOrdersQueryDto,
-  ): Promise<PaginatedResult<Prisma.PurchaseOrderGetPayload<{ include: { vendor: true, items: true } }>>> {
+  ): Promise<
+    PaginatedResult<
+      Prisma.PurchaseOrderGetPayload<{ include: { vendor: true; items: true; createdBy: { select: { firstName: true; lastName: true } } } }>
+    >
+  > {
     const where: Prisma.PurchaseOrderWhereInput = {
       status: query.status,
       vendorId: query.vendorId,
@@ -76,7 +81,7 @@ export class PurchaseOrdersService {
     const [items, total] = await Promise.all([
       this.prisma.purchaseOrder.findMany({
         where,
-        include: { vendor: true, items: true },
+        include: { vendor: true, items: true, createdBy: { select: { firstName: true, lastName: true } } },
         skip: (query.page - 1) * query.pageSize,
         take: query.pageSize,
         orderBy: { createdAt: "desc" },
@@ -90,7 +95,7 @@ export class PurchaseOrdersService {
   async findOne(id: string) {
     const po = await this.prisma.purchaseOrder.findUnique({
       where: { id },
-      include: { vendor: true },
+      include: { vendor: true, createdBy: { select: { firstName: true, lastName: true } } },
     });
     if (!po) {
       throw new NotFoundException(`Purchase order ${id} not found`);

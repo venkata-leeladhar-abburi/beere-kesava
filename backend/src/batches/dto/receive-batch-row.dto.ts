@@ -35,4 +35,12 @@ export class ReceiveBatchRowDto {
   @IsNumber()
   @Min(0)
   jariReels?: number;
+
+  // Retail selling price for THIS specific saree, entered by Worker Staff at
+  // receipt — overrides the saree type's shared SareeTypeRate.retailPrice
+  // when the New Sale flow prices it later.
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  sellingPrice?: number;
 }

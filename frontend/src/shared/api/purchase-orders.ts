@@ -12,6 +12,7 @@ export interface BackendPurchaseOrder {
   grnId: string | null;
   rejectionReason: string | null;
   createdAt: string;
+  createdBy?: { firstName: string; lastName: string } | null;
   items?: {
     id: string;
     materialType: string;
@@ -26,6 +27,7 @@ export interface BackendPurchaseOrder {
 }
 
 export interface CreatePurchaseOrderPayload {
+  actorId?: string;
   vendorId: string;
   deliveryDate?: string;
   totalValue?: number;
@@ -51,9 +53,10 @@ export const purchaseOrdersApi = {
     apiClient.get<PaginatedResponse<BackendPurchaseOrder>>(`/purchase-orders?pageSize=${pageSize}`),
   create: (payload: CreatePurchaseOrderPayload) =>
     apiClient.post<BackendPurchaseOrder>("/purchase-orders", payload),
-  approve: (id: string) => apiClient.post<BackendPurchaseOrder>(`/purchase-orders/${id}/approve`, {}),
-  reject: (id: string, reason?: string) =>
-    apiClient.post<BackendPurchaseOrder>(`/purchase-orders/${id}/reject`, { reason }),
+  approve: (id: string, actorId?: string) =>
+    apiClient.post<BackendPurchaseOrder>(`/purchase-orders/${id}/approve`, { actorId }),
+  reject: (id: string, reason?: string, actorId?: string) =>
+    apiClient.post<BackendPurchaseOrder>(`/purchase-orders/${id}/reject`, { reason, actorId }),
   receiveGrn: (id: string, payload: { grnReceiptId?: string; actorId?: string } = {}) =>
     apiClient.post<BackendPurchaseOrder>(`/purchase-orders/${id}/grn`, payload),
   remove: (id: string) => apiClient.delete<void>(`/purchase-orders/${id}`),

@@ -82,6 +82,8 @@ export interface ReceiveBatchRowPayload {
   warpG?: number;
   reshamG?: number;
   jariReels?: number;
+  /** Retail selling price for this specific saree, overriding the type's shared rate. */
+  sellingPrice?: number;
 }
 
 export const batchesApi = {

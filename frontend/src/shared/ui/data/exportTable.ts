@@ -80,11 +80,30 @@ function triggerDownload(blob: Blob, filename: string) {
   URL.revokeObjectURL(url);
 }
 
+/** How long a cell's value reads as plain text, for column-width sizing. */
+function displayLength(value: string | number | Date | boolean | null): number {
+  if (value == null) return 0;
+  if (value instanceof Date) return 10; // ISO date, e.g. "2026-08-13"
+  return String(value).length;
+}
+
 async function exportXlsx<T>(cols: ColumnDef<T>[], rows: T[], filename: string) {
   const XLSX = await import("xlsx");
   const headers = cols.map(c => headerText(c.header));
   const data = rows.map(row => cols.map(c => cellValue(c, row)));
   const ws = XLSX.utils.aoa_to_sheet([headers, ...data]);
+
+  // Excel's default column width (~8.43 chars) is too narrow for almost
+  // every real column here — headers and values both get clipped/hidden
+  // until the user manually widens each one. Size each column from its own
+  // widest cell instead, clamped to a sane range.
+  ws["!cols"] = cols.map((c, ci) => {
+    const widest = Math.max(
+      headerText(c.header).length,
+      ...data.map(row => displayLength(row[ci])),
+    );
+    return { wch: Math.min(40, Math.max(12, widest + 2)) };
+  });
 
   // Force `code`-type columns to Excel's text cell type (`s`) so a value
   // like "007" or "1E5" — a real entity-code shape in this app — survives

@@ -104,7 +104,7 @@ function backendRecordToFrontend(
     batchId: r.batchId ?? undefined,
     factoryLoomId: r.factoryLoomId ?? undefined,
     factoryLoomNumber: r.factoryLoomId ? loomLookup.get(r.factoryLoomId) : undefined,
-    issuedBy: "Admin (Kesava Rao)",
+    issuedBy: r.issuedBy ? `${r.issuedBy.firstName} ${r.issuedBy.lastName}`.trim() : "—",
     issuedAt: r.issuedAt,
     materials: r.items.map(backendItemToFrontend),
     signatureMethod: r.signatureMethod === "REMOTE" ? "remote" : "here",
@@ -218,6 +218,9 @@ export interface AddIssueRecordInput {
   factoryLoomId?: string;
   factoryLoomNumber?: string;
   batchId?: string;
+  /** Set when this issuance fulfils an approved warp request — the backend
+   *  flips that request to ISSUED once the material issue is created. */
+  warpRequestId?: string;
   materials: IssuedMaterialItem[];
   signatureMethod: "here" | "remote";
   notes?: string;
@@ -288,6 +291,7 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
         factoryLoomId: input.factoryLoomId,
         loomNumber: input.loomNumber,
         batchId: input.batchId,
+        warpRequestId: input.warpRequestId,
         issuedById: actingUserId,
         signatureMethod: input.signatureMethod === "remote" ? "REMOTE" : "HERE",
         notes: input.notes,
@@ -302,8 +306,14 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
       // server-side until that lands.
       return created;
     },
-    onSuccess: () => {
+    onSuccess: (_data, input) => {
       void queryClient.invalidateQueries({ queryKey: ISSUE_RECORDS_KEY });
+      // Fulfilling a warp request flips it to ISSUED server-side — refresh
+      // whatever "approved warp requests" list the Issue Material page has
+      // open so the just-fulfilled one drops out of it.
+      if (input.warpRequestId) {
+        void queryClient.invalidateQueries({ queryKey: ["warp-requests"] });
+      }
       toast.success("Materials issued");
     },
     onError: (err: unknown) => {

@@ -237,6 +237,10 @@ enum WarpRequestStatus {
   PENDING
   APPROVED
   REJECTED
+  // Set once an admin has actually issued the material against an APPROVED
+  // request (MaterialIssuesService.create) — distinguishes "approved,
+  // waiting to be issued" from "already fulfilled".
+  ISSUED
 }
 
 enum RateRequestStatus {
@@ -335,6 +339,7 @@ model User {
   requestedRateChanges RateChangeRequest[]     @relation("RequestedRateChanges")
   decidedRateChanges   RateChangeRequest[]     @relation("DecidedRateChanges")
   reportDownloads      ReportDownloadHistory[]
+  createdPurchaseOrders PurchaseOrder[]
 
   @@index([role])
 }
@@ -519,6 +524,11 @@ model BatchSareeRow {
   receivedWarpG      Decimal? @db.Decimal(8, 2)
   receivedReshamG    Decimal? @db.Decimal(8, 2)
   receivedJariReels  Decimal? @db.Decimal(8, 2)
+  // Retail selling price Worker Staff enters for THIS specific saree at
+  // receipt, overriding the saree type's shared SareeTypeRate.retailPrice —
+  // null until received, and null forever for a saree received before this
+  // field existed (the New Sale flow falls back to the type rate then).
+  receivedSellingPrice Decimal? @db.Decimal(12, 2)
 
   // Admin's physical-count verification of this one saree, separate from
   // BulkOrder.tallied (which only confirms the order's overall saree count).
@@ -560,6 +570,10 @@ model MaterialIssueRecord {
   signatureUrl       String?
   status             MaterialIssueStatus @default(PENDING_SIGNATURE)
   notes              String?
+  // Set when this issuance fulfils an approved WarpRequest — lets the Issue
+  // Material page's "Approved Warp Requests" queue know it's been handled.
+  warpRequestId      String?             @unique
+  warpRequest        WarpRequest?        @relation(fields: [warpRequestId], references: [id])
 
   items MaterialIssueItem[]
 
@@ -1053,6 +1067,8 @@ model PurchaseOrder {
   actualReceivedDate DateTime? // stamped on receiveGrn(); compare against deliveryDate for on-time-delivery
   rejectionReason   String?
   createdAt         DateTime            @default(now())
+  createdById       String?
+  createdBy         User?               @relation(fields: [createdById], references: [id])
 
   items PurchaseOrderItem[]
   vendorBills VendorBill[]
@@ -1410,6 +1426,8 @@ model WarpRequest {
   decidedById  String?
   decidedBy    User?             @relation("DecidedWarpRequests", fields: [decidedById], references: [id])
   notes        String?
+
+  materialIssue MaterialIssueRecord?
 
   @@index([weaverId])
   @@index([status])

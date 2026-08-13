@@ -17,12 +17,14 @@ import { BeereDashboard } from "../../../features/dashboards/components/BeereDas
 import { useAuth } from "../../../contexts/AuthContext";
 
 export function AdminDashboardPage() {
-  const { selectRole } = useAuth();
+  const { logout } = useAuth();
   const navigate = useNavigate();
 
+  // No cross-portal "switch" — leaving a portal always ends the session and
+  // requires a fresh mobile+OTP login, even for admin/superadmin.
   const handleBack = () => {
-    selectRole(null);
-    navigate("/select-role");
+    logout();
+    navigate("/login");
   };
 
   return <BeereDashboard onBack={handleBack} />;

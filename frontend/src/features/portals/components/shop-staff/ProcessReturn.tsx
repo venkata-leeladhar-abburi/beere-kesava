@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useQuery } from "@tanstack/react-query";
-import { salesApi } from "../../../../shared/api/sales";
+import { salesApi, BackendSaleRecord } from "../../../../shared/api/sales";
 import { 
   AlertTriangle, Palette, ThumbsDown, Scale, FileText, Building2, ShoppingBag
 } from 'lucide-react';
@@ -28,11 +28,34 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
     queryFn: () => salesApi.listReturns(100),
   });
 
+  // The real sales ledger — "Find the original sale" looks a scanned/typed/
+  // browsed sareeId up in here rather than accepting anything the operator
+  // types, and "Return History" resolves the real buyer's name off it too
+  // (ReturnRecord itself has no customer/name field, only sareeId).
+  const { data: salesRes } = useQuery({
+    queryKey: ["sales-list-processreturn"],
+    queryFn: () => salesApi.list(200),
+  });
+  const allSales = salesRes?.items ?? [];
+  const saleBySareeId = useMemo(() => new Map(allSales.map(s => [s.sareeId, s])), [allSales]);
+
+  const returnedSareeIds = useMemo(
+    () => new Set((returnsRes?.items ?? []).map(r => r.sareeId)),
+    [returnsRes],
+  );
+
+  // Sold-but-not-yet-returned retail sarees — what "Find the original sale"
+  // scans/types/browses against, and what's actually eligible to come back.
+  const eligibleSales: BackendSaleRecord[] = useMemo(
+    () => allSales.filter(s => s.channel === "RETAIL" && !returnedSareeIds.has(s.sareeId)),
+    [allSales, returnedSareeIds],
+  );
+
   const returnLog: ReturnRecord[] = (returnsRes?.items ?? []).map(r => ({
     id: r.returnRef,
     type: "retail",
     date: new Date(r.returnDate).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" }),
-    customer: "Retail Customer",
+    customer: saleBySareeId.get(r.sareeId)?.customer?.name ?? "Walk-in Customer",
     // ReturnRecord has no saleRef FK — a return only ever references the
     // sareeId, so that's the closest thing to an "original sale" identifier.
     originalSaleId: r.sareeId,
@@ -42,9 +65,37 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
 
   // Retail state
   const [saleFound, setSaleFound] = useState(false);
+  const [foundSale, setFoundSale] = useState<BackendSaleRecord | null>(null);
+  const [findError, setFindError] = useState<string | null>(null);
+  const [showSaleList, setShowSaleList] = useState(false);
   const [retailManualId, setRetailManualId] = useState("");
   const [reason, setReason] = useState<string | null>(null);
   const [otherReason, setOtherReason] = useState("");
+
+  const handleFindSale = (overrideId?: string) => {
+    const id = (overrideId ?? retailManualId).trim();
+    if (!id) {
+      setFindError("Enter a saree ID to look it up, or scan its barcode with the camera.");
+      return;
+    }
+    const sale = eligibleSales.find(s => s.sareeId === id);
+    if (!sale) {
+      const alreadyReturned = returnedSareeIds.has(id);
+      setFindError(alreadyReturned
+        ? `Saree ${id} has already been returned.`
+        : `No retail sale found for saree ${id}.`);
+      return;
+    }
+    setFindError(null);
+    setFoundSale(sale);
+    setRetailManualId(id);
+    setSaleFound(true);
+    setShowSaleList(false);
+  };
+
+  const handleSelectSale = (id: string) => {
+    handleFindSale(id);
+  };
 
   // Wholesale state
   const [wsVendor, setWsVendor] = useState("");
@@ -69,7 +120,8 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
 
   const resetReturn = () => {
     setReturnType(null); setStep("type");
-    setSaleFound(false); setRetailManualId(""); setReason(null); setOtherReason("");
+    setSaleFound(false); setFoundSale(null); setFindError(null); setShowSaleList(false);
+    setRetailManualId(""); setReason(null); setOtherReason("");
     setWsVendor(""); setWsDesign(""); setWsColor(""); setWsType("Self Brocade");
     setWsWeight(""); setWsPrice(""); setWsReason(null); setWsNewId(""); setWsBarcodeGenerated(false);
   };
@@ -165,8 +217,15 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
           setStep={setStep}
           saleFound={saleFound}
           setSaleFound={setSaleFound}
+          foundSale={foundSale}
+          findError={findError}
           retailManualId={retailManualId}
           setRetailManualId={setRetailManualId}
+          handleFindSale={handleFindSale}
+          availableSales={eligibleSales}
+          showSaleList={showSaleList}
+          setShowSaleList={setShowSaleList}
+          handleSelectSale={handleSelectSale}
           reason={reason}
           setReason={setReason}
           otherReason={otherReason}
@@ -174,11 +233,12 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
           returnReasons={returnReasons}
           canSeePrices={canSeePrices}
           onConfirm={async () => {
+            if (!foundSale) return;
             try {
               await salesApi.createReturn({
-                sareeId: retailManualId || "PADMA-L1-004",
-                reason: returnReasons.find(r => r.id === reason)?.label ?? reason ?? "Other",
-                refundAmount: 8500,
+                sareeId: foundSale.sareeId,
+                reason: returnReasons.find(r => r.id === reason)?.label ?? (reason === "other" ? otherReason.trim() : reason) ?? "Other",
+                refundAmount: Number(foundSale.amount),
                 restocked: true,
               });
               refetch();

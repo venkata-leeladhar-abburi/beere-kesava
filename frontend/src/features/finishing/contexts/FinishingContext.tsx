@@ -169,18 +169,23 @@ function backendQuotationToFrontend(
 
 export function FinishingProvider({ children }: { children: React.ReactNode }) {
   const qc = useQueryClient();
-  // Mounted globally (App.tsx) for every role. The backend restricts these
-  // to WORKER (ADMIN/SUPERADMIN bypass every role check) — dispatch also
-  // allows SHOP. Skip the fetch for roles that would just get a 403.
+  // Mounted globally (App.tsx) for every role. The backend restricts write
+  // access to WORKER (ADMIN/SUPERADMIN bypass every role check), but the
+  // read-only ready-for-finishing/assignments/dispatch endpoints also allow
+  // SHOP — the shop-staff portal's Finished Goods & Dispatch page reuses
+  // this same InventoryPage component and needs to show the identical
+  // Total/Pending/Ready/Dispatched stats as the admin portal, not zeros.
+  // Skip the fetch for roles that would just get a 403.
   const { role, user } = useAuth();
   const workerScoped = role === "worker" || role === "admin" || role === "superadmin";
+  const readScoped = workerScoped || role === "shop";
   const dispatchEnabled = workerScoped || role === "shop";
   const actingUserId = user?.id ?? STOPGAP_ACTING_USER_ID;
   const { getSareeTypeByCode } = useRatesPricing();
 
   const { data: readySarees = [], isError: isReadyError, error: readyError } = useQuery({
     queryKey: READY_KEY,
-    enabled: workerScoped,
+    enabled: readScoped,
     queryFn: async () => {
       const records = await qcApi.readyForFinishing();
       return records.map((r): ReadySaree => ({
@@ -198,7 +203,7 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
   });
   const { data: backendAssignments = [], isError: isAssignmentsError, error: assignmentsError } = useQuery({
     queryKey: ASSIGNMENTS_KEY,
-    enabled: workerScoped,
+    enabled: readScoped,
     queryFn: async () => (await finishingAssignmentsApi.list()).items,
   });
   const { data: dispatches = [], isError: isDispatchesError, error: dispatchesError } = useQuery({

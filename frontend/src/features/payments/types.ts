@@ -28,6 +28,9 @@ export interface WeaverRecord {
   // figure, used whenever no manual payment has been uploaded yet.
   earnedAmount?: number;
   completedSarees?: number;
+  // Sum of every WeaverPayment recorded for this weaver (not just the most
+  // recent one) — what's actually been transferred to them so far.
+  totalPaid?: number;
 }
 
 // ── Types for Excel upload matching ───────────────────────────────────────────

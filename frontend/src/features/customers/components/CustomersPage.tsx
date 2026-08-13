@@ -127,13 +127,15 @@ export function CustomersPage() {
       initials: (c.name || "C").split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase(),
       phone: c.phone || "—",
       city: c.city || "—",
-      purchases: 0,
-      spend: "0",
-      totalSpend: 0,
-      totalPurchases: 0,
-      lastVisit: c.createdAt ? new Date(c.createdAt).toLocaleDateString("en-IN") : "—",
-      regular: true,
-      inactive: false,
+      purchases: c.totalPurchases,
+      spend: String(c.totalSpend),
+      totalSpend: c.totalSpend,
+      totalPurchases: c.totalPurchases,
+      lastVisit: c.lastPurchaseDate
+        ? new Date(c.lastPurchaseDate).toLocaleDateString("en-IN")
+        : (c.createdAt ? new Date(c.createdAt).toLocaleDateString("en-IN") : "—"),
+      regular: c.totalPurchases >= 2,
+      inactive: c.totalPurchases === 0,
     }));
     return [...mapped, ...retailData];
   }, [customers]);

@@ -300,16 +300,27 @@ export class PaymentsService {
       orderBy: { qcDate: "asc" },
     });
 
-    return records.map((r) => ({
-      sareeId: r.sareeId,
-      weaverId: r.weaverId as string,
-      weaverName: r.weaver ? `${r.weaver.firstName} ${r.weaver.lastName}`.trim() : (r.weaverId as string),
-      batchId: r.batchId,
-      loomNumber: r.loomNumber,
-      qcDate: r.qcDate,
-      makingCharge: Number(r.makingCharge),
-      deduction: Number(r.deduction),
-    }));
+    return records.map((r) => {
+      // A weaver's own loom isn't a stored column on QcRecord (loomNumber
+      // there is only ever set for factory-loom rows) — it's baked into the
+      // generated sareeId as -L{n}- (see generateSareeId on the frontend),
+      // so recover it from there when the column itself is empty. Without
+      // this every weaver-loom row collapses onto the same blank "—" bucket
+      // regardless of which of their looms actually produced it.
+      const loomMatch = r.sareeId.match(/-L(\d+)-B/);
+      const loomNumber = r.loomNumber ?? (loomMatch ? loomMatch[1] : null);
+
+      return {
+        sareeId: r.sareeId,
+        weaverId: r.weaverId as string,
+        weaverName: r.weaver ? `${r.weaver.firstName} ${r.weaver.lastName}`.trim() : (r.weaverId as string),
+        batchId: r.batchId,
+        loomNumber,
+        qcDate: r.qcDate,
+        makingCharge: Number(r.makingCharge),
+        deduction: Number(r.deduction),
+      };
+    });
   }
 
   async getPaymentSummary() {
@@ -366,10 +377,14 @@ export class PaymentsService {
    */
   async importWeaverPaymentsFromExcel(buffer: Buffer): Promise<ImportResult> {
     const workbook = new ExcelJS.Workbook();
-    // exceljs's bundled .d.ts predates the newer generic Buffer<T>/Uint8Array<T> typings
-    // shipped in current @types/node, so this Buffer-to-Buffer call trips a structural
-    // mismatch that doesn't exist at runtime.
-    await workbook.xlsx.load(buffer as unknown as Parameters<typeof workbook.xlsx.load>[0]);
+    try {
+      // exceljs's bundled .d.ts predates the newer generic Buffer<T>/Uint8Array<T> typings
+      // shipped in current @types/node, so this Buffer-to-Buffer call trips a structural
+      // mismatch that doesn't exist at runtime.
+      await workbook.xlsx.load(buffer as unknown as Parameters<typeof workbook.xlsx.load>[0]);
+    } catch {
+      return { created: 0, failed: 0, errors: [{ row: 0, message: "Couldn't read this file — make sure it's a valid .xlsx exported from the template." }] };
+    }
     const sheet = workbook.worksheets[0];
     if (!sheet) {
       return { created: 0, failed: 0, errors: [{ row: 0, message: "No worksheet found" }] };
@@ -415,7 +430,7 @@ export class PaymentsService {
     const errors: ImportRowError[] = [];
     const validRows: Prisma.WeaverPaymentCreateManyInput[] = [];
     const weaverIds = new Set<string>();
-    const rowsRaw: { rowNumber: number; weaverId: string; amountPaid: number; data: Prisma.WeaverPaymentCreateManyInput }[] = [];
+    const rowsRaw: { rowNumber: number; weaverId: string; amountPaid: number; firmRaw?: string; data: Prisma.WeaverPaymentCreateManyInput }[] = [];
 
     sheet.eachRow((row, rowNumber) => {
       if (rowNumber === 1) return;
@@ -432,12 +447,19 @@ export class PaymentsService {
       }
 
       const paymentDateStr = asString(cell(row, "paymentDate"));
+      const paymentDate = paymentDateStr ? new Date(paymentDateStr) : undefined;
+      if (paymentDate && Number.isNaN(paymentDate.getTime())) {
+        errors.push({ row: rowNumber, message: `Invalid paymentDate "${paymentDateStr}"` });
+        return;
+      }
+
+      const firmRaw = asString(cell(row, "firmId"));
       const data: Prisma.WeaverPaymentCreateManyInput = {
         weaverId,
         amountPaid,
         utrNumber: asString(cell(row, "utrNumber")),
-        firmId: asString(cell(row, "firmId")),
-        paymentDate: paymentDateStr ? new Date(paymentDateStr) : undefined,
+        firmId: firmRaw, // resolved (id-or-name -> real id) once firms are loaded below
+        paymentDate,
         batchNo: asString(cell(row, "batchNo")),
         loomNumber: asString(cell(row, "loomNumber")),
         noOfSarees: asNumber(cell(row, "noOfSarees")),
@@ -445,20 +467,121 @@ export class PaymentsService {
       };
 
       weaverIds.add(weaverId);
-      rowsRaw.push({ rowNumber, weaverId, amountPaid, data });
+      rowsRaw.push({ rowNumber, weaverId, amountPaid, firmRaw, data });
     });
 
-    const existingWeavers = await this.prisma.weaver.findMany({
-      where: { id: { in: Array.from(weaverIds) } },
-      select: { id: true },
-    });
-    const existingWeaverIds = new Set(existingWeavers.map((w) => w.id));
+    const [allWeavers, firms] = await Promise.all([
+      // Fetched in full (not just the ids seen in the sheet) so a row that
+      // typed the weaver's code or display name instead of the raw id can
+      // still be resolved below.
+      this.prisma.weaver.findMany({ select: { id: true, code: true, name: true } }),
+      this.prisma.firm.findMany({ select: { id: true, firmName: true } }),
+    ]);
+    const weaverIdById = new Set(allWeavers.map((w) => w.id));
+    const weaverIdByCode = new Map(allWeavers.map((w) => [w.code.trim().toLowerCase(), w.id]));
+    const weaverIdByName = new Map(allWeavers.map((w) => [w.name.trim().toLowerCase(), w.id]));
+    const firmIds = new Set(firms.map((f) => f.id));
+    // The production-summary table shows "Firm Name", not the raw firmId, so
+    // an admin filling the template by hand naturally types the name they
+    // can see — accept either instead of hard-failing (or worse, letting an
+    // unmatched value hit the DB as a broken foreign key, which previously
+    // crashed the whole import with an uncaught 500).
+    const firmIdByName = new Map(firms.map((f) => [f.firmName.trim().toLowerCase(), f.id]));
 
+    // Resolve weaverId to its real id up front (rather than inline in the
+    // loop below) so the owed/already-paid lookup below can be scoped to the
+    // exact set of real weaver ids this sheet touches.
+    const resolvedWeaverIdByRow = new Map<number, string>();
     for (const row of rowsRaw) {
-      if (!existingWeaverIds.has(row.weaverId)) {
-        errors.push({ row: row.rowNumber, message: `Weaver ${row.weaverId} not found` });
+      if (weaverIdById.has(row.weaverId)) {
+        resolvedWeaverIdByRow.set(row.rowNumber, row.weaverId);
         continue;
       }
+      const resolved =
+        weaverIdByCode.get(row.weaverId.trim().toLowerCase()) ??
+        weaverIdByName.get(row.weaverId.trim().toLowerCase());
+      if (resolved) resolvedWeaverIdByRow.set(row.rowNumber, resolved);
+    }
+    const touchedWeaverIds = Array.from(new Set(resolvedWeaverIdByRow.values()));
+
+    // A payment can never push a weaver's total paid past what they've
+    // actually earned — "owed" is the same Making Charges − Deduction figure
+    // shown on the Production Summary table (QcRecord.makingCharge minus
+    // QcRecord.deduction, summed per weaver), and "already paid" is every
+    // WeaverPayment row saved for them so far, across all previous uploads.
+    const [qcRecordsForOwed, existingPayments] = await Promise.all([
+      this.prisma.qcRecord.findMany({
+        where: { weaverId: { in: touchedWeaverIds } },
+        select: { sareeId: true, weaverId: true, makingCharge: true, deduction: true, qcDate: true },
+        orderBy: { qcDate: "asc" },
+      }),
+      this.prisma.weaverPayment.findMany({
+        where: { weaverId: { in: touchedWeaverIds } },
+        select: { weaverId: true, amountPaid: true },
+      }),
+    ]);
+    // Same rework dedup as getWeaverProductionRows: a reworked saree has more
+    // than one QcRecord (its failed attempt(s) plus the final verdict) — only
+    // the latest one is real, otherwise a superseded DEFECTIVE/SEMI record's
+    // making charge and deduction get double-counted into "owed".
+    const latestQcBySareeId = new Map<string, (typeof qcRecordsForOwed)[number]>();
+    for (const r of qcRecordsForOwed) {
+      latestQcBySareeId.set(r.sareeId, r);
+    }
+    const owedByWeaver = new Map<string, number>();
+    for (const r of latestQcBySareeId.values()) {
+      if (!r.weaverId) continue;
+      const net = Number(r.makingCharge) - Number(r.deduction);
+      owedByWeaver.set(r.weaverId, (owedByWeaver.get(r.weaverId) ?? 0) + net);
+    }
+    // Running total per weaver — starts at what's already saved, then grows
+    // as each row in *this* sheet is accepted, so two rows for the same
+    // weaver in one upload are checked against each other too, not just
+    // against the pre-existing DB total.
+    const runningPaidByWeaver = new Map<string, number>();
+    for (const p of existingPayments) {
+      runningPaidByWeaver.set(p.weaverId, (runningPaidByWeaver.get(p.weaverId) ?? 0) + Number(p.amountPaid));
+    }
+
+    const weaverNameById = new Map(allWeavers.map((w) => [w.id, w.name]));
+
+    for (const row of rowsRaw) {
+      const resolvedWeaverId = resolvedWeaverIdByRow.get(row.rowNumber);
+      if (!resolvedWeaverId) {
+        errors.push({ row: row.rowNumber, message: `Weaver "${row.weaverId}" not found (checked weaver ID, code, and name)` });
+        continue;
+      }
+      row.data.weaverId = resolvedWeaverId;
+
+      if (row.firmRaw) {
+        if (firmIds.has(row.firmRaw)) {
+          // already a real id — leave as-is
+        } else {
+          const resolvedId = firmIdByName.get(row.firmRaw.trim().toLowerCase());
+          if (!resolvedId) {
+            errors.push({ row: row.rowNumber, message: `Firm "${row.firmRaw}" not found (checked both firm ID and firm name)` });
+            continue;
+          }
+          row.data.firmId = resolvedId;
+        }
+      }
+
+      // Never let a payment push the weaver's running total past what
+      // they've actually earned — checked against everything already saved
+      // for them PLUS everything already accepted earlier in this same sheet.
+      const owed = owedByWeaver.get(resolvedWeaverId) ?? 0;
+      const paidSoFar = runningPaidByWeaver.get(resolvedWeaverId) ?? 0;
+      const remaining = owed - paidSoFar;
+      if (row.amountPaid > remaining) {
+        const weaverName = weaverNameById.get(resolvedWeaverId) ?? resolvedWeaverId;
+        errors.push({
+          row: row.rowNumber,
+          message: `Payment ₹${row.amountPaid} exceeds remaining balance ₹${remaining} for ${weaverName} (owed ₹${owed}, already paid ₹${paidSoFar}) — not saved.`,
+        });
+        continue;
+      }
+      runningPaidByWeaver.set(resolvedWeaverId, paidSoFar + row.amountPaid);
+
       validRows.push(row.data);
     }
 

@@ -6,6 +6,7 @@ import { StepHeader, StepBody, FlowActions, ACCENT_SALE } from "./flow-kit";
 import { Button, Input, Textarea } from "../../../../shared/ui/primitives";
 
 export interface Customer {
+  id: string;
   name: string;
   phone: string;
   purchases: number;

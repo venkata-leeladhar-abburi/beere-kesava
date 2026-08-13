@@ -32,7 +32,9 @@ export class CustomersService {
 
   async findAll(
     query: ListCustomersQueryDto,
-  ): Promise<PaginatedResult<Prisma.CustomerGetPayload<object>>> {
+  ): Promise<
+    PaginatedResult<Prisma.CustomerGetPayload<object> & { totalPurchases: number; totalSpend: number; lastPurchaseDate: Date | null }>
+  > {
     const where: Prisma.CustomerWhereInput = {
       type: query.type,
       ...(query.search
@@ -56,7 +58,42 @@ export class CustomersService {
       this.prisma.customer.count({ where }),
     ]);
 
-    return { items, total, page: query.page, pageSize: query.pageSize };
+    // Real purchase count/spend/last-visit per customer, off SaleRecord —
+    // previously the frontend hardcoded these (1 purchase/₹12,500 in the
+    // sale flow, 0/0 on the customers list), two different fake numbers for
+    // the same customer. Scoped to just this page's customer ids rather than
+    // a groupBy over the whole table, since findMany above is already paginated.
+    const customerIds = items.map((c) => c.id);
+    // ReturnRecord has no saleRef FK — sareeId is the only link back to the
+    // original sale (same pattern the frontend already uses) — so a
+    // returned saree's sale is excluded here rather than counted as a live
+    // purchase. Without this, returning a saree would revert its stock/QC
+    // status but leave it still inflating the customer's purchase count.
+    const returnedSareeIds = customerIds.length
+      ? (await this.prisma.returnRecord.findMany({ select: { sareeId: true } })).map((r) => r.sareeId)
+      : [];
+    const sales = customerIds.length
+      ? await this.prisma.saleRecord.groupBy({
+          by: ["customerId"],
+          where: { customerId: { in: customerIds }, sareeId: { notIn: returnedSareeIds } },
+          _count: { _all: true },
+          _sum: { amount: true },
+          _max: { date: true },
+        })
+      : [];
+    const salesByCustomer = new Map(sales.map((s) => [s.customerId as string, s]));
+
+    const enriched = items.map((c) => {
+      const agg = salesByCustomer.get(c.id);
+      return {
+        ...c,
+        totalPurchases: agg?._count._all ?? 0,
+        totalSpend: Number(agg?._sum.amount ?? 0),
+        lastPurchaseDate: agg?._max.date ?? null,
+      };
+    });
+
+    return { items: enriched, total, page: query.page, pageSize: query.pageSize };
   }
 
   async findOne(id: string) {

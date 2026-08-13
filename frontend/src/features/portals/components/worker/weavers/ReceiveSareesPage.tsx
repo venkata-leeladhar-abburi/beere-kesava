@@ -99,6 +99,9 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
 
   const [sareeColor, setSareeColor] = useState("");
   const [sareeWeight, setSareeWeight] = useState("");
+  // Retail selling price for this specific saree — optional; when left
+  // blank, the New Sale flow falls back to the saree type's shared rate.
+  const [sareePrice, setSareePrice] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const hasPhoto = photoUrl !== null;
   const setHasPhoto = (v: boolean) => { if (!v) setPhotoUrl(null); };
@@ -137,13 +140,13 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
     setSelectedWeaver(w);
     setSelectedBatchId(w ? (batches[w.code]?.[0]?.id ?? null) : null);
     setSelectedSareeNos(new Set());
-    setSareeColor(""); setSareeWeight(""); setHasPhoto(false); setMatEdits({});
+    setSareeColor(""); setSareeWeight(""); setSareePrice(""); setHasPhoto(false); setMatEdits({});
   };
 
   const pickBatch = (batchId: string) => {
     setSelectedBatchId(batchId);
     setSelectedSareeNos(new Set());
-    setSareeColor(""); setSareeWeight(""); setHasPhoto(false); setMatEdits({});
+    setSareeColor(""); setSareeWeight(""); setSareePrice(""); setHasPhoto(false); setMatEdits({});
   };
 
   const selectSareeSlot = (no: number) => {
@@ -155,14 +158,14 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
       else next.add(no);
       return next;
     });
-    setSareeColor(""); setSareeWeight(""); setHasPhoto(false); setMatEdits({});
+    setSareeColor(""); setSareeWeight(""); setSareePrice(""); setHasPhoto(false); setMatEdits({});
   };
 
   const toggleAllSarees = () => {
     const pending = currentBatch?.sarees.filter(s => s.status === "pending") ?? [];
     const allSelected = pending.length > 0 && pending.every(s => selectedSareeNos.has(s.no));
     setSelectedSareeNos(allSelected ? new Set() : new Set(pending.map(s => s.no)));
-    setSareeColor(""); setSareeWeight(""); setHasPhoto(false); setMatEdits({});
+    setSareeColor(""); setSareeWeight(""); setSareePrice(""); setHasPhoto(false); setMatEdits({});
   };
 
   const canSaveSaree = selectedSareeNos.size > 0 && !!sareeColor && !!sareeWeight && hasPhoto && !isSaving;
@@ -190,6 +193,7 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
           warpG: Number.isFinite(warpG) ? warpG : undefined,
           reshamG: Number.isFinite(reshamG) ? reshamG : undefined,
           jariReels: Number.isFinite(jariReels) ? jariReels : undefined,
+          sellingPrice: sareePrice ? parseFloat(sareePrice) : undefined,
         });
         onSareeReceived?.({
           id: s.sareeId, weaver: selectedWeaver.name, wcode: selectedWeaver.code, batch: currentBatch.id,
@@ -197,7 +201,7 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
           color: sareeColor, status: "Pending QC",
         });
       }
-      setSelectedSareeNos(new Set()); setSareeColor(""); setSareeWeight(""); setHasPhoto(false); setMatEdits({});
+      setSelectedSareeNos(new Set()); setSareeColor(""); setSareeWeight(""); setSareePrice(""); setHasPhoto(false); setMatEdits({});
     } finally {
       setIsSaving(false);
     }
@@ -330,6 +334,13 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
                     className="h-12 text-sm" />
                 </div>
 
+                <div style={{ marginBottom: 10 }}>
+                  <FieldLabel>Selling Price (₹) — optional</FieldLabel>
+                  <Input type="number" value={sareePrice} onChange={e => setSareePrice(e.target.value)}
+                    placeholder="Leave blank to use the saree type's standard rate"
+                    className="h-12 text-sm font-mono" />
+                </div>
+
                 <div className="grid-cols-1 md:grid-cols-2" style={{ display: "grid", gap: 10, marginBottom: 10 }}>
                   <div>
                     <FieldLabel>Weight (grams)</FieldLabel>
@@ -449,7 +460,7 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
                   }
                   setShowDefectPrompt(false);
                   setSelectedSareeNos(new Set());
-                  setSareeColor(""); setSareeWeight(""); setHasPhoto(false); setMatEdits({});
+                  setSareeColor(""); setSareeWeight(""); setSareePrice(""); setHasPhoto(false); setMatEdits({});
                 }}
               />
             )}

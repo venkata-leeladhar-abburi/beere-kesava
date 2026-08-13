@@ -4,12 +4,12 @@ import { ShopStaffPortal } from "../../../features/portals/components/ShopStaffP
 import { useAuth } from "../../../contexts/AuthContext";
 
 export function ShopHomePage() {
-  const { selectRole } = useAuth();
+  const { logout } = useAuth();
   const navigate = useNavigate();
 
   const handleBack = () => {
-    selectRole(null);
-    navigate("/select-role");
+    logout();
+    navigate("/login");
   };
 
   return <ShopStaffPortal onBack={handleBack} />;

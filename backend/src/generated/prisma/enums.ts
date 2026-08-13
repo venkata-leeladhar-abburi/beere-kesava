@@ -339,7 +339,8 @@ export type NotificationTargetType = (typeof NotificationTargetType)[keyof typeo
 export const WarpRequestStatus = {
   PENDING: 'PENDING',
   APPROVED: 'APPROVED',
-  REJECTED: 'REJECTED'
+  REJECTED: 'REJECTED',
+  ISSUED: 'ISSUED'
 } as const
 
 export type WarpRequestStatus = (typeof WarpRequestStatus)[keyof typeof WarpRequestStatus]

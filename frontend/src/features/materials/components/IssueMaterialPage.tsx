@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "motion/react";
-import { Check, Plus, X, CheckCircle2, Send } from "lucide-react";
+import { Check, Plus, X, CheckCircle2, Send, Scissors } from "lucide-react";
 import { Button, IconButton } from "../../../shared/ui/primitives";
 import { useMaterialIssue, MaterialIssueRecord } from "../contexts/MaterialIssueContext";
 import { FactoryLoom } from "../../production/data/factoryLooms";
@@ -9,6 +10,7 @@ import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../.
 import { weaversApi } from "../../../shared/api/weavers";
 import { factoryLoomsApi } from "../../../shared/api/factory-looms";
 import { rawMaterialsApi } from "../../../shared/api/rawMaterials";
+import { warpRequestsApi } from "../../../shared/api/warpRequests";
 
 import { F, GrnBatch, MaterialRowState, T, WeaverLite, emptyRow } from "./issueMaterial/theme";
 import { SectionPill, SectionCard } from "./issueMaterial/primitives";
@@ -121,6 +123,24 @@ export function IssueMaterialPage() {
   const canvasRef = useRef<SignatureCanvasHandle | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  // Approved warp requests waiting for someone to actually issue the
+  // material — superadmin approval only flips the request's status;
+  // fulfilling it happens here.
+  const { data: approvedWarpRequestsRes } = useQuery({
+    queryKey: ["warp-requests", "APPROVED"],
+    queryFn: () => warpRequestsApi.list("APPROVED"),
+  });
+  const approvedWarpRequests = approvedWarpRequestsRes?.items ?? [];
+  const [warpRequestId, setWarpRequestId] = useState<string | null>(null);
+
+  function issueForWarpRequest(reqId: string, weaverId: string, loomNumber?: string | null) {
+    setWarpRequestId(reqId);
+    setRecipientType("weaver");
+    setSelectedWeaverId(weaverId);
+    setSelectedLoom(loomNumber ? parseInt(loomNumber, 10) || "" : "");
+    window.scrollTo({ top: document.getElementById("issue-material-form")?.offsetTop ?? 0, behavior: "smooth" });
+  }
+
   const selectedWeaver = weavers.find(w => w.id === selectedWeaverId) || null;
   const selectedFactoryLoom = looms.find(l => l.id === selectedLoomId) || null;
 
@@ -156,6 +176,7 @@ export function IssueMaterialPage() {
     setSelectedBatchId(null);
     setRows([emptyRow()]); setNotes("");
     setSigMethod("none"); setSigned(false); setRemoteSent(false); setRemoteConfirmed(false);
+    setWarpRequestId(null);
   }
 
   async function handleConfirm() {
@@ -185,6 +206,7 @@ export function IssueMaterialPage() {
           ? { weaverId: selectedWeaver!.id, weaverName: selectedWeaver!.name, loomNumber: selectedLoom || undefined }
           : { factoryLoomId: selectedFactoryLoom!.id, factoryLoomNumber: selectedFactoryLoom!.loomNumber }),
         batchId: selectedBatchId || undefined,
+        warpRequestId: warpRequestId || undefined,
         materials,
         signatureMethod: sigMethod === "remote" ? "remote" : "here",
         signatureBlob,
@@ -258,9 +280,42 @@ export function IssueMaterialPage() {
           )}
         </AnimatePresence>
 
+        {/* ═══ APPROVED WARP REQUESTS — READY TO ISSUE ═══ */}
+        {approvedWarpRequests.length > 0 && (
+          <div style={{ marginBottom: 32 }}>
+            <SectionCard icon={Scissors} title="Approved Warp Requests" subtitle="A weaver raised these and superadmin approved them — issue the material to close them out.">
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {approvedWarpRequests.map(r => (
+                  <div key={r.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "14px 16px", flexWrap: "wrap" }}>
+                    <div>
+                      <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>
+                        {r.weaver.name} {r.loomNumber ? <span style={{ color: T.royalBurgundy }}>· Loom {r.loomNumber}</span> : ""}
+                      </div>
+                      <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 2 }}>
+                        {r.warpType} · {r.lengthMeters}m{r.color ? ` · ${r.color}` : ""}
+                      </div>
+                    </div>
+                    <Button onClick={() => issueForWarpRequest(r.id, r.weaverId, r.loomNumber)} variant="primary" size="sm" iconLeft={Send}>
+                      Issue Material
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </SectionCard>
+          </div>
+        )}
+
         {/* ═══ SECTION A — ISSUE MATERIAL FORM ═══ */}
-        <div style={{ marginBottom: 48 }}>
+        <div id="issue-material-form" style={{ marginBottom: 48 }}>
         <SectionCard icon={Send} title="Issue Material" subtitle="Give raw materials to a weaver or factory loom and record who signed for it.">
+          {warpRequestId && (
+            <div style={{ background: "rgba(200,155,71,0.10)", border: `1px solid ${T.antiqueGold}`, borderRadius: 10, padding: "10px 14px", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+              <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>
+                Issuing against approved warp request <strong>{warpRequestId}</strong> — it'll be marked fulfilled once you confirm.
+              </span>
+              <Button onClick={() => setWarpRequestId(null)} variant="ghost" size="sm">Clear</Button>
+            </div>
+          )}
 
           {/* STEP 1 — Select Recipient */}
           <SectionPill label="Step 1 · Select Recipient" />

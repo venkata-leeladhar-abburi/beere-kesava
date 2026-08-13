@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "motion/react";
 import { Check, ChevronLeft, ChevronRight, Camera, AlertCircle } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { C, F } from "./theme";
 import { Button, Input } from "../../../../shared/ui/primitives";
+import { BarcodeScannerModal } from "./BarcodeScannerModal";
 
 /**
  * Shared counter-flow kit for the Shop Staff portal — used by New Sale,
@@ -285,7 +286,9 @@ export function ScanPanel({
   hint: string;
   value: string;
   onValueChange: (v: string) => void;
-  onSubmit: () => void;
+  /** overrideValue is set when submitting straight from a decoded barcode, since
+   *  the value state hasn't re-rendered yet at that point. */
+  onSubmit: (overrideValue?: string) => void;
   inputLabel?: string;
   placeholder?: string;
   error?: string | null;
@@ -293,9 +296,22 @@ export function ScanPanel({
   busy?: boolean;
 }) {
   const canSubmit = value.trim().length > 2 && !busy;
+  const [scannerOpen, setScannerOpen] = useState(false);
+
+  // A decoded barcode is a real value, not a keystroke — so it goes straight
+  // to onValueChange + onSubmit rather than waiting for the operator to
+  // notice the input filled in and press Find themselves.
+  const handleDetected = (text: string) => {
+    setScannerOpen(false);
+    const decoded = text.trim();
+    if (!decoded) return;
+    onValueChange(decoded);
+    onSubmit(decoded);
+  };
 
   return (
     <div>
+      <BarcodeScannerModal open={scannerOpen} onClose={() => setScannerOpen(false)} onDetected={handleDetected} accent={accent} />
       <div
         style={{
           background: `linear-gradient(135deg, ${accent.deep} 0%, ${accent.base} 100%)`,
@@ -317,7 +333,7 @@ export function ScanPanel({
         </div>
         <Button
           variant="secondary"
-          onClick={onSubmit}
+          onClick={() => setScannerOpen(true)}
           iconLeft={Camera}
           className="relative z-10 h-11 rounded-full border-[rgba(255,255,255,0.32)] bg-[rgba(255,255,255,0.14)] px-6 text-[14px] font-semibold !text-white hover:!bg-[rgba(255,255,255,0.22)]"
         >
@@ -350,7 +366,7 @@ export function ScanPanel({
           <Button
             variant="primary"
             size="lg"
-            onClick={onSubmit}
+            onClick={() => onSubmit()}
             disabled={!canSubmit}
             className="h-12 rounded-xl bg-[var(--cta-bg)] px-6 hover:bg-[var(--cta-bg-hover)] disabled:cursor-not-allowed disabled:opacity-45"
           >

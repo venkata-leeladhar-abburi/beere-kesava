@@ -17,12 +17,18 @@ export class FinishingAssignmentsController {
     return this.finishingAssignmentsService.create(dto);
   }
 
+  // Read-only, also open to SHOP — same reasoning as QcController's
+  // ready-for-finishing endpoint: the shop-staff Finished Goods & Dispatch
+  // page's "Pending Finishing"/"Ready for Dispatch" stats are derived from
+  // these assignment records, and need to match the admin portal's numbers.
   @Get()
+  @RequireRoles(UserRole.WORKER, UserRole.ADMIN, UserRole.SUPERADMIN, UserRole.SHOP)
   findAll(@Query() query: ListFinishingAssignmentsQueryDto) {
     return this.finishingAssignmentsService.findAll(query);
   }
 
   @Get(":id")
+  @RequireRoles(UserRole.WORKER, UserRole.ADMIN, UserRole.SUPERADMIN, UserRole.SHOP)
   findOne(@Param("id") id: string) {
     return this.finishingAssignmentsService.findOne(id);
   }

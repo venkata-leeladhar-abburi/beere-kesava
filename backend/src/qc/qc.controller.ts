@@ -28,8 +28,12 @@ export class QcController {
     return this.qcService.findAll(query, weaverId);
   }
 
+  // Read-only, also open to SHOP — the shop-staff portal's Finished
+  // Goods & Dispatch page reuses the same inventory stats as the admin
+  // portal (Total in Inventory / Pending Finishing / Ready for Dispatch),
+  // which needs this figure to match rather than always reading 0.
   @Get("ready-for-finishing")
-  @RequireRoles(UserRole.WORKER, UserRole.ADMIN, UserRole.SUPERADMIN)
+  @RequireRoles(UserRole.WORKER, UserRole.ADMIN, UserRole.SUPERADMIN, UserRole.SHOP)
   findReadyForFinishing() {
     return this.qcService.findReadyForFinishing();
   }

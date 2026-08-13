@@ -31,6 +31,13 @@ export class CreateMaterialIssueDto {
   @IsString()
   batchId?: string;
 
+  // When set, this issuance fulfils an approved WarpRequest — the service
+  // validates it's APPROVED and belongs to the same weaver, then flips it
+  // to ISSUED once the material issue record is created.
+  @IsOptional()
+  @IsString()
+  warpRequestId?: string;
+
   // No auth yet — the issuing user's id must be supplied explicitly until
   // JWT/OTP auth exists and req.user is available.
   @IsUUID()
