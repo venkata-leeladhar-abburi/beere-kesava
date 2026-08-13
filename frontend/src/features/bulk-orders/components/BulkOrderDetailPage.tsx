@@ -287,7 +287,7 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
 
   return (
     <div style={{ background: T.silkCream, minHeight: "100dvh", paddingBottom: 100 }}>
-      <div style={{ padding: "40px 56px 0" }}>
+      <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40 }}>
         <div style={{ marginBottom: 16 }}>
           <Breadcrumbs
             items={[
