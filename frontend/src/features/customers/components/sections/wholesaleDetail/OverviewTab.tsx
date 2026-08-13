@@ -35,18 +35,18 @@ export function OverviewTab({
 }) {
   const orderColumns: ColumnDef<BulkOrder>[] = [
     {
-      id: "ref", header: "Order Ref", accessor: o => o.ref,
+      id: "ref", header: "Order Ref", accessor: o => o.ref, priority: 1,
       cell: (_v, o) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, fontWeight: 700 }}>{o.ref}</span>,
     },
     {
-      id: "invoice", header: "Invoice No", accessor: o => o.invoiceId,
+      id: "invoice", header: "Invoice No", accessor: o => o.invoiceId, priority: 3,
       cell: (_v, o) => {
         const m = custOrderMoney.get(o.ref)!;
         return <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{o.invoiceId || m.invoiceId || "—"}</span>;
       },
     },
     {
-      id: "deadline", header: "Deadline", accessor: o => o.due,
+      id: "deadline", header: "Deadline", accessor: o => o.due, priority: 3,
       cell: (_v, o) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{o.due}</span>,
     },
     {
@@ -131,6 +131,7 @@ export function OverviewTab({
         ) : (
           <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden" }}>
             <DataTable
+              responsive
               columns={orderColumns}
               data={custOrders.slice(0, 4)}
               getRowId={o => o.ref}
