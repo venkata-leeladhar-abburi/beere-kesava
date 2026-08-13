@@ -111,7 +111,7 @@ export function ReportsStatsStrip() {
       className="px-4 md:px-7 xl:px-12"
       style={{ marginTop: -80, position: "relative", zIndex: 20 }}
     >
-      <div className="grid grid-cols-2 md:flex" style={{
+      <div className="grid grid-cols-2 xl:flex" style={{
         background: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)",
         borderRadius: 28,
         alignItems: "stretch",

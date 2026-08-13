@@ -32,7 +32,7 @@ export function ReportTabNav({ activeTab, setActiveTab, activePeriod, setActiveP
     <div style={{ position: "sticky", top: 0, zIndex: 40, boxShadow: "0 6px 28px rgba(0,0,0,0.22)" }}>
 
       {/* ── Mobile: current-report picker — replaces the tab strip below `md` ── */}
-      <div className="md:hidden" style={{
+      <div className="xl:hidden" style={{
         background: "linear-gradient(135deg, #2C0913 0%, #5D1027 60%, #3D0E1A 100%)",
         padding: "12px 16px",
         borderBottom: "1px solid rgba(200,155,71,0.16)",
@@ -81,7 +81,7 @@ export function ReportTabNav({ activeTab, setActiveTab, activePeriod, setActiveP
       </div>
 
       {/* ── Desktop/tablet: Tab strip — dark gradient ─────────────────────── */}
-      <div className="hidden md:flex md:px-7 xl:px-12" style={{
+      <div className="hidden xl:flex xl:px-12" style={{
         background: "linear-gradient(135deg, #2C0913 0%, #5D1027 60%, #3D0E1A 100%)",
         alignItems: "stretch",
         borderBottom: "1px solid rgba(200,155,71,0.16)",
