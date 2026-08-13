@@ -32,7 +32,7 @@ export function RetailDetailSection({
       cell: (_v, r) => <span style={{ color: T.taupe }}>{r.date}</span>,
     },
     {
-      id: "items", header: "Sarees (ID & Type)", accessor: r => r.items,
+      id: "items", header: "Sarees (ID & Type)", accessor: r => r.items, priority: 1,
       cell: (_v, r) => (
         <>
           {r.items.map((item, idx) => (
@@ -49,7 +49,7 @@ export function RetailDetailSection({
       cell: (_v, r) => <span style={{ color: T.antiqueGold, fontWeight: 600 }}><Money value={rupees(r.price)} /></span>,
     },
     {
-      id: "return", header: "Return", accessor: () => "—",
+      id: "return", header: "Return", accessor: () => "—", priority: 3,
       cell: () => <span style={{ color: T.taupe }}>—</span>,
     },
   ];
@@ -123,6 +123,7 @@ export function RetailDetailSection({
           <DateFilterBar filter={retailPurchaseDateFilter} onChange={setRetailPurchaseDateFilter} />
           <div style={{ background: "#FFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", fontFamily: F.ui, fontSize: 13 }}>
             <DataTable
+              responsive
               columns={purchaseColumns}
               data={retailPurchaseRows}
               getRowId={r => r.date + r.items.map(i => i.id).join(",")}

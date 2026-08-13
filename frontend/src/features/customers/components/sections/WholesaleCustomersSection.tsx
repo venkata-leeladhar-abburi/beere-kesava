@@ -64,9 +64,9 @@ export function WholesaleCustomersSection({
   const [error, setError] = useState<string | null>(null);
 
   const listColumns: ColumnDef<WholesaleCustomer>[] = [
-    { id: "code", header: "Code", accessor: w => w.id, cell: (_v, w) => <span style={{ fontFamily: F.mono, color: T.royalBurgundy, fontSize: 13 }}>{w.id}</span> },
-    { id: "name", header: "Business Name", accessor: w => w.name, cell: (_v, w) => <span style={{ fontWeight: 600, color: T.luxuryBrown }}>{w.name}</span> },
-    { id: "city", header: "City", accessor: w => w.city, cell: (_v, w) => <span style={{ color: T.taupe }}>{w.city}</span> },
+    { id: "code", header: "Code", accessor: w => w.id, priority: 3, cell: (_v, w) => <span style={{ fontFamily: F.mono, color: T.royalBurgundy, fontSize: 13 }}>{w.id}</span> },
+    { id: "name", header: "Business Name", accessor: w => w.name, priority: 1, cell: (_v, w) => <span style={{ fontWeight: 600, color: T.luxuryBrown }}>{w.name}</span> },
+    { id: "city", header: "City", accessor: w => w.city, priority: 3, cell: (_v, w) => <span style={{ color: T.taupe }}>{w.city}</span> },
     { id: "orders", header: "Orders", accessor: w => w.orders, cell: (_v, w) => <span style={{ color: T.luxuryBrown }}>{w.orders}</span> },
     { id: "outstanding", header: "Outstanding", accessor: w => w.out, cell: (_v, w) => <span style={{ color: w.out === "0" ? T.greenMid : T.crimson, fontWeight: 600 }}>{formatMoney(rupees(Number(w.out) || 0))}</span> },
     {
@@ -77,14 +77,14 @@ export function WholesaleCustomersSection({
   ];
 
   const tableColumns: ColumnDef<WholesaleCustomer>[] = [
-    { id: "code", header: "Code", accessor: w => w.id, cell: (_v, w) => <span style={{ fontFamily: F.mono, color: T.royalBurgundy, fontSize: 13 }}>{w.id}</span> },
-    { id: "name", header: "Business Name", accessor: w => w.name, cell: (_v, w) => <span style={{ fontWeight: 600, color: T.luxuryBrown }}>{w.name}</span> },
-    { id: "city", header: "City", accessor: w => w.city, cell: (_v, w) => <span style={{ color: T.taupe }}>{w.city}</span> },
+    { id: "code", header: "Code", accessor: w => w.id, priority: 3, cell: (_v, w) => <span style={{ fontFamily: F.mono, color: T.royalBurgundy, fontSize: 13 }}>{w.id}</span> },
+    { id: "name", header: "Business Name", accessor: w => w.name, priority: 1, cell: (_v, w) => <span style={{ fontWeight: 600, color: T.luxuryBrown }}>{w.name}</span> },
+    { id: "city", header: "City", accessor: w => w.city, priority: 3, cell: (_v, w) => <span style={{ color: T.taupe }}>{w.city}</span> },
     { id: "totalOrders", header: "Total Orders", accessor: w => w.orders, cell: (_v, w) => <span style={{ color: T.luxuryBrown }}>{w.orders}</span> },
     { id: "totalSpend", header: "Total Spend", accessor: w => w.spend, cell: (_v, w) => <span style={{ color: T.antiqueGold, fontWeight: 600 }}>{formatMoney(rupees(Number(w.spend) || 0))}</span> },
     { id: "outstanding", header: "Outstanding", accessor: w => w.out, cell: (_v, w) => <span style={{ color: w.out === "0" ? T.greenMid : T.crimson, fontWeight: 600 }}>{formatMoney(rupees(Number(w.out) || 0))}</span> },
-    { id: "terms", header: "Terms", accessor: w => w.terms, cell: (_v, w) => <span style={{ color: T.luxuryBrown }}>{w.terms}</span> },
-    { id: "lastOrder", header: "Last Order", accessor: w => w.lastOrder, cell: (_v, w) => <span style={{ color: T.taupe }}>{w.lastOrder}</span> },
+    { id: "terms", header: "Terms", accessor: w => w.terms, priority: 3, cell: (_v, w) => <span style={{ color: T.luxuryBrown }}>{w.terms}</span> },
+    { id: "lastOrder", header: "Last Order", accessor: w => w.lastOrder, priority: 3, cell: (_v, w) => <span style={{ color: T.taupe }}>{w.lastOrder}</span> },
     {
       id: "status", header: "Status", accessor: w => w.status, type: "status",
       cell: (_v, w) => <span style={{ padding: "4px 10px", background: w.status === "clear" ? T.greenBg : w.status === "overdue" ? T.crimsonBg : "rgba(200,155,71,0.10)", color: w.status === "clear" ? T.greenMid : w.status === "overdue" ? T.crimson : T.antiqueGold, fontSize: 12, borderRadius: 5, fontWeight: 600 }}>{w.status.toUpperCase()}</span>,
