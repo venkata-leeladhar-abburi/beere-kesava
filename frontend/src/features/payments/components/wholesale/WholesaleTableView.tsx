@@ -78,11 +78,11 @@ export function WholesaleTableView({ view, filtered, setViewInvoice, setRecordPa
       cell: (_v, inv) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700 }}>{inv.id}</span>,
     },
     {
-      id: "customer", header: "Customer", accessor: inv => inv.customer,
+      id: "customer", header: "Customer", accessor: inv => inv.customer, priority: 1,
       cell: (_v, inv) => <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{inv.customer}</span>,
     },
     {
-      id: "city", header: "City", accessor: inv => inv.city,
+      id: "city", header: "City", accessor: inv => inv.city, priority: 3,
       cell: (_v, inv) => (
         <div style={{ display: "flex", alignItems: "center", gap: 5, color: T.taupe, fontSize: 13 }}>
           <MapPin size={12} />{inv.city}
@@ -90,7 +90,7 @@ export function WholesaleTableView({ view, filtered, setViewInvoice, setRecordPa
       ),
     },
     {
-      id: "invoiceDate", header: "Invoice Date", accessor: inv => inv.invoiceDate,
+      id: "invoiceDate", header: "Invoice Date", accessor: inv => inv.invoiceDate, priority: 3,
       cell: (_v, inv) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{inv.invoiceDate}</span>,
     },
     {
@@ -107,7 +107,7 @@ export function WholesaleTableView({ view, filtered, setViewInvoice, setRecordPa
       cell: (_v, inv) => <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}><Money value={rupees(inv.total)} /></span>,
     },
     {
-      id: "paid", header: "Paid Amount", accessor: inv => inv.paid, align: "end",
+      id: "paid", header: "Paid Amount", accessor: inv => inv.paid, align: "end", priority: 3,
       cell: (_v, inv) => <span style={{ fontFamily: F.mono, fontWeight: 600, fontSize: 13, color: T.green }}><Money value={rupees(inv.paid)} /></span>,
     },
     {
@@ -148,6 +148,7 @@ export function WholesaleTableView({ view, filtered, setViewInvoice, setRecordPa
     <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)", marginBottom: 32 }}>
       <div style={{ overflowX: "auto", minWidth: 860 }}>
         <DataTable
+          responsive
           columns={columns}
           data={filtered}
           getRowId={inv => inv.id}
