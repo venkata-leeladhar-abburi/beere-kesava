@@ -474,7 +474,7 @@ per-portal reports. Charts need mobile heights and legend handling; filter toolb
 mobile filter sheet; export/print controls need a mobile home. **Scope this with the user
 before starting** — it involves genuine design decisions, unlike R1–R3.
 
-### R5 — Forms & filter bars — ⚠️ PARTIALLY COMPLETE (2026-08-13)
+### R5 — Forms & filter bars — ✅ COMPLETE (2026-08-13)
 
 **`DateFilterBar` needed no work** — verified it already uses unconditional `flex flex-wrap`
 with no breakpoint gating at all, so it already wraps safely at any width. Nothing to fix.
@@ -495,16 +495,30 @@ modals/reports/dashboards (already covered by R1-R4) and found 9 files. Fixed al
   record-card grids (not simple stat tiles), all given a `md:grid-cols-2 xl:grid-cols-N`
   tablet step for the same reason.
 
-**Not done — "sticky mobile action bar for long forms"** from the original R5 sketch. This is
-a real structural feature (a fixed bottom bar with Save/Cancel that stays visible while a long
-form scrolls), not a mechanical class swap like everything else in this rollout — it needs its
-own design pass (which forms qualify as "long", what the bar contains, interaction with
-existing bottom nav on mobile portals). Deliberately left for a dedicated future session rather
-than guessing. **R5 is not fully closed** until this is scoped and either built or explicitly
-descoped.
+**"Sticky mobile action bar for long forms" — now done.** Before building, checked whether
+modals needed this too: they don't — `Modal.Footer` is already `flex-shrink: 0` inside a
+flex-column dialog, so modal action buttons are inherently pinned at the bottom of the dialog
+box regardless of viewport. The gap is specific to full-page (non-modal) forms whose buttons
+sit in-flow at the natural end of the page.
+
+Built `shared/ui/MobileFormActionBar.tsx` — mobile-only (`<768px`, renders `null` at `md+`) fixed
+bottom bar with primary/secondary actions, `env(safe-area-inset-bottom)`-aware. Adopted on
+`users/components/AddUserForm.tsx`, the one confirmed real case in this rollout (a long
+standalone page — not a modal, not an inline-table-edit row). Original inline buttons hidden
+below `md` (`max-md:hidden`) since the bar replaces them there; unchanged at `md`+.
+
+Scanned for other full-page long-form candidates (`SectionCard` + `Field`/`Textarea` +
+Save-style icon button, outside modals/dashboards/reports) — found none. The other hits were
+all modal-context or inline-table-edit-row forms (`WholesaleTermsSection`,
+`MakingChargesSection` — already excluded from R1's card-mode for the same `renderExpandedRow`
+reason), a structurally different shape that doesn't need this pattern. The primitive is built
+and ready to adopt on any future long form — same "build once, adopt incrementally" precedent
+as `DataTable`/`Modal` from earlier design-system phases.
+
+**R5 is now fully complete.**
 
 Verified via `tsc`/`build`/`lint` — clean, same baseline. Not visually verified in-browser
-(same recurring stuck preview policy-check).
+(same recurring stuck preview policy-check throughout this rollout).
 
 ### R6 — Navigation audit
 Verification, not construction. Each portal's mobile nav already exists. Confirm nav items
