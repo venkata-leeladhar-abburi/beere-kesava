@@ -103,7 +103,7 @@ export function WholesaleSalesReport() {
 
   if (isError) {
     return (
-      <div id="rep-wholesale" style={{ padding: "32px 40px" }}>
+      <div id="rep-wholesale" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 32 }}>
         <SectionCard icon={Boxes} title="Wholesale Sales Report" subtitle="Track all wholesale dispatches, invoices raised, payments received, and outstanding dues from every wholesale customer.">
           <div style={{ padding: "24px", borderRadius: 12, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.22)", color: T.crimson, fontFamily: F.ui, fontSize: 14, fontWeight: 600 }}>
             Failed to load wholesale sales data. Please try again.
@@ -131,11 +131,11 @@ export function WholesaleSalesReport() {
 
   const bulkOrderColumns: ColumnDef<BulkOrder>[] = [
     {
-      id: "ref", header: "Bulk Order Ref", accessor: o => o.ref, priority: 3,
+      id: "ref", header: "Bulk Order Ref", accessor: o => o.ref,
       cell: (_v, o) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{o.ref}</span>,
     },
     {
-      id: "customer", header: "Customer Name", accessor: o => o.customer, priority: 1,
+      id: "customer", header: "Customer Name", accessor: o => o.customer,
       cell: (_v, o) => <span style={{ fontFamily: F.ui, fontWeight: 600 }}>{o.customer}</span>,
     },
     {
@@ -164,7 +164,7 @@ export function WholesaleSalesReport() {
       },
     },
     {
-      id: "dispatchDate", header: "Dispatch Date", accessor: o => o.dispatchDate, priority: 3,
+      id: "dispatchDate", header: "Dispatch Date", accessor: o => o.dispatchDate,
       cell: (_v, o) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{o.dispatchDate || "—"}</span>,
     },
     {
@@ -174,7 +174,7 @@ export function WholesaleSalesReport() {
   ];
 
   return (
-    <div id="rep-wholesale" style={{ padding: "32px 40px" }}>
+    <div id="rep-wholesale" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 32 }}>
     <SectionCard
       icon={Boxes}
       title="Wholesale Sales Report"
@@ -213,7 +213,7 @@ export function WholesaleSalesReport() {
         </div>
       </FadeUp>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20, marginBottom: 24 }}>
+      <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 20, marginBottom: 24 }}>
         <ChartCard title="Wholesale Revenue — Last Months" sub="Monthly invoiced amount">
           {wsMonthlyRev.length === 0 ? (
             <div style={{ padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
@@ -280,7 +280,7 @@ export function WholesaleSalesReport() {
         </ChartCard>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 24, alignItems: "stretch" }}>
+      <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 16, marginBottom: 24, alignItems: "stretch" }}>
         <SumCard icon={<ReceiptText size={22} color={T.royalBurgundy} />} label="Total Bulk Orders" value={`${bulkOrders.length} orders`} sub="All-time" />
         <SumCard icon={<Banknote size={22} color={T.royalBurgundy} />} label="Total Invoiced Amount" value={formatMoney(rupees(totalInvoiced))} sub="Across all customers" />
         <SumCard icon={<CheckCircle2 size={22} color={T.green} />} label="Total Collected" value={formatMoney(rupees(totalCollected))} sub="Payments received" greenHi />
@@ -291,7 +291,6 @@ export function WholesaleSalesReport() {
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
           <div style={{ overflowX: "auto" }}>
             <DataTable
-              responsive
               columns={bulkOrderColumns}
               data={bulkOrders}
               getRowId={o => o.ref}
