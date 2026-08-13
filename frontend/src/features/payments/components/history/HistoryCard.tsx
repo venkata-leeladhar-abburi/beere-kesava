@@ -28,7 +28,7 @@ export function getHistTypeIcon(type: PayHistType) {
   return                                  { Icon: Package,         color: "#8B6018",       iconBg: "rgba(200,155,71,0.12)",    iconBorder: T.borderGold            };
 }
 
-export function HistoryCard({ r }: { r: PayHistRecord }) {
+export function HistoryCard({ r, onView }: { r: PayHistRecord; onView?: () => void }) {
   const typeCfg = HIST_TYPE_CFG[r.type];
   const stsCfg  = HIST_STATUS_CFG[r.status];
   const { Icon, color: iconColor, iconBg, iconBorder } = getHistTypeIcon(r.type);
@@ -110,7 +110,7 @@ export function HistoryCard({ r }: { r: PayHistRecord }) {
 
       {/* Actions */}
       <div style={{ padding: "14px 20px 20px", display: "flex", gap: 8, flexShrink: 0 }}>
-        <Button variant="secondary" size="sm" iconLeft={Eye}
+        <Button variant="secondary" size="sm" iconLeft={Eye} onClick={onView}
           className="flex-1 rounded-[10px] border-[1.5px] border-[rgba(110,15,45,0.12)] text-[#6E0F2D]">
           View Details
         </Button>

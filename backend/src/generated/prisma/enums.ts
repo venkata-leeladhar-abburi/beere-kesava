@@ -203,7 +203,8 @@ export const InventoryStatus = {
   QC_PASSED: 'QC_PASSED',
   FINISHING_COMPLETE: 'FINISHING_COMPLETE',
   DISPATCHED: 'DISPATCHED',
-  DAMAGED_REVIEW_NEEDED: 'DAMAGED_REVIEW_NEEDED'
+  DAMAGED_REVIEW_NEEDED: 'DAMAGED_REVIEW_NEEDED',
+  SOLD: 'SOLD'
 } as const
 
 export type InventoryStatus = (typeof InventoryStatus)[keyof typeof InventoryStatus]
@@ -360,3 +361,12 @@ export const ReportFrequency = {
 } as const
 
 export type ReportFrequency = (typeof ReportFrequency)[keyof typeof ReportFrequency]
+
+
+export const MaterialReturnStatus = {
+  PENDING_SIGNATURE: 'PENDING_SIGNATURE',
+  APPROVED: 'APPROVED',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export type MaterialReturnStatus = (typeof MaterialReturnStatus)[keyof typeof MaterialReturnStatus]

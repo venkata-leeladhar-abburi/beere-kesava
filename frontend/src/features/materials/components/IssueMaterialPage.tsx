@@ -205,13 +205,14 @@ export function IssueMaterialPage() {
   }
 
   // History filtering
-  const weaverNames = ["All Weavers", ...Array.from(new Set(issueRecords.map(r => r.weaverName)))];
+  const weaverNames = ["All Weavers", ...Array.from(new Set(issueRecords.map(r => r.weaverName ?? r.factoryLoomNumber).filter((n): n is string => !!n)))];
   const filteredHistory = issueRecords.filter(r => {
+    const recipientName = r.weaverName ?? r.factoryLoomNumber ?? "";
     const matchSearch = !histSearch ||
-      r.weaverName.toLowerCase().includes(histSearch.toLowerCase()) ||
+      recipientName.toLowerCase().includes(histSearch.toLowerCase()) ||
       r.id.toLowerCase().includes(histSearch.toLowerCase()) ||
       r.materials.some(m => m.grnBatchId.toLowerCase().includes(histSearch.toLowerCase()));
-    const matchWeaver = histWeaverFilter === "All Weavers" || r.weaverName === histWeaverFilter;
+    const matchWeaver = histWeaverFilter === "All Weavers" || recipientName === histWeaverFilter;
     const matchDate = matchesDateFilter(r.issuedAt, histDateFilter);
     return matchSearch && matchWeaver && matchDate;
   });

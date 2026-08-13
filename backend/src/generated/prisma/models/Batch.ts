@@ -226,6 +226,7 @@ export type BatchWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Batch"> | Date | string
   rows?: Prisma.BatchSareeRowListRelationFilter
   materialIssues?: Prisma.MaterialIssueRecordListRelationFilter
+  materialReturns?: Prisma.MaterialReturnRecordListRelationFilter
   sarees?: Prisma.SareeListRelationFilter
   inventoryRecords?: Prisma.InventoryRecordListRelationFilter
 }
@@ -239,6 +240,7 @@ export type BatchOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   rows?: Prisma.BatchSareeRowOrderByRelationAggregateInput
   materialIssues?: Prisma.MaterialIssueRecordOrderByRelationAggregateInput
+  materialReturns?: Prisma.MaterialReturnRecordOrderByRelationAggregateInput
   sarees?: Prisma.SareeOrderByRelationAggregateInput
   inventoryRecords?: Prisma.InventoryRecordOrderByRelationAggregateInput
 }
@@ -255,6 +257,7 @@ export type BatchWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"Batch"> | Date | string
   rows?: Prisma.BatchSareeRowListRelationFilter
   materialIssues?: Prisma.MaterialIssueRecordListRelationFilter
+  materialReturns?: Prisma.MaterialReturnRecordListRelationFilter
   sarees?: Prisma.SareeListRelationFilter
   inventoryRecords?: Prisma.InventoryRecordListRelationFilter
 }, "id">
@@ -294,6 +297,7 @@ export type BatchCreateInput = {
   updatedAt?: Date | string
   rows?: Prisma.BatchSareeRowCreateNestedManyWithoutBatchInput
   materialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutBatchInput
+  materialReturns?: Prisma.MaterialReturnRecordCreateNestedManyWithoutBatchInput
   sarees?: Prisma.SareeCreateNestedManyWithoutBatchInput
   inventoryRecords?: Prisma.InventoryRecordCreateNestedManyWithoutBatchInput
 }
@@ -307,6 +311,7 @@ export type BatchUncheckedCreateInput = {
   updatedAt?: Date | string
   rows?: Prisma.BatchSareeRowUncheckedCreateNestedManyWithoutBatchInput
   materialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutBatchInput
+  materialReturns?: Prisma.MaterialReturnRecordUncheckedCreateNestedManyWithoutBatchInput
   sarees?: Prisma.SareeUncheckedCreateNestedManyWithoutBatchInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedCreateNestedManyWithoutBatchInput
 }
@@ -320,6 +325,7 @@ export type BatchUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rows?: Prisma.BatchSareeRowUpdateManyWithoutBatchNestedInput
   materialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutBatchNestedInput
+  materialReturns?: Prisma.MaterialReturnRecordUpdateManyWithoutBatchNestedInput
   sarees?: Prisma.SareeUpdateManyWithoutBatchNestedInput
   inventoryRecords?: Prisma.InventoryRecordUpdateManyWithoutBatchNestedInput
 }
@@ -333,6 +339,7 @@ export type BatchUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rows?: Prisma.BatchSareeRowUncheckedUpdateManyWithoutBatchNestedInput
   materialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutBatchNestedInput
+  materialReturns?: Prisma.MaterialReturnRecordUncheckedUpdateManyWithoutBatchNestedInput
   sarees?: Prisma.SareeUncheckedUpdateManyWithoutBatchNestedInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedUpdateManyWithoutBatchNestedInput
 }
@@ -443,6 +450,22 @@ export type BatchUpdateOneWithoutMaterialIssuesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.BatchUpdateToOneWithWhereWithoutMaterialIssuesInput, Prisma.BatchUpdateWithoutMaterialIssuesInput>, Prisma.BatchUncheckedUpdateWithoutMaterialIssuesInput>
 }
 
+export type BatchCreateNestedOneWithoutMaterialReturnsInput = {
+  create?: Prisma.XOR<Prisma.BatchCreateWithoutMaterialReturnsInput, Prisma.BatchUncheckedCreateWithoutMaterialReturnsInput>
+  connectOrCreate?: Prisma.BatchCreateOrConnectWithoutMaterialReturnsInput
+  connect?: Prisma.BatchWhereUniqueInput
+}
+
+export type BatchUpdateOneWithoutMaterialReturnsNestedInput = {
+  create?: Prisma.XOR<Prisma.BatchCreateWithoutMaterialReturnsInput, Prisma.BatchUncheckedCreateWithoutMaterialReturnsInput>
+  connectOrCreate?: Prisma.BatchCreateOrConnectWithoutMaterialReturnsInput
+  upsert?: Prisma.BatchUpsertWithoutMaterialReturnsInput
+  disconnect?: Prisma.BatchWhereInput | boolean
+  delete?: Prisma.BatchWhereInput | boolean
+  connect?: Prisma.BatchWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.BatchUpdateToOneWithWhereWithoutMaterialReturnsInput, Prisma.BatchUpdateWithoutMaterialReturnsInput>, Prisma.BatchUncheckedUpdateWithoutMaterialReturnsInput>
+}
+
 export type BatchCreateNestedOneWithoutInventoryRecordsInput = {
   create?: Prisma.XOR<Prisma.BatchCreateWithoutInventoryRecordsInput, Prisma.BatchUncheckedCreateWithoutInventoryRecordsInput>
   connectOrCreate?: Prisma.BatchCreateOrConnectWithoutInventoryRecordsInput
@@ -483,6 +506,7 @@ export type BatchCreateWithoutRowsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   materialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutBatchInput
+  materialReturns?: Prisma.MaterialReturnRecordCreateNestedManyWithoutBatchInput
   sarees?: Prisma.SareeCreateNestedManyWithoutBatchInput
   inventoryRecords?: Prisma.InventoryRecordCreateNestedManyWithoutBatchInput
 }
@@ -495,6 +519,7 @@ export type BatchUncheckedCreateWithoutRowsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   materialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutBatchInput
+  materialReturns?: Prisma.MaterialReturnRecordUncheckedCreateNestedManyWithoutBatchInput
   sarees?: Prisma.SareeUncheckedCreateNestedManyWithoutBatchInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedCreateNestedManyWithoutBatchInput
 }
@@ -523,6 +548,7 @@ export type BatchUpdateWithoutRowsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   materialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutBatchNestedInput
+  materialReturns?: Prisma.MaterialReturnRecordUpdateManyWithoutBatchNestedInput
   sarees?: Prisma.SareeUpdateManyWithoutBatchNestedInput
   inventoryRecords?: Prisma.InventoryRecordUpdateManyWithoutBatchNestedInput
 }
@@ -535,6 +561,7 @@ export type BatchUncheckedUpdateWithoutRowsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   materialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutBatchNestedInput
+  materialReturns?: Prisma.MaterialReturnRecordUncheckedUpdateManyWithoutBatchNestedInput
   sarees?: Prisma.SareeUncheckedUpdateManyWithoutBatchNestedInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedUpdateManyWithoutBatchNestedInput
 }
@@ -547,6 +574,7 @@ export type BatchCreateWithoutMaterialIssuesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   rows?: Prisma.BatchSareeRowCreateNestedManyWithoutBatchInput
+  materialReturns?: Prisma.MaterialReturnRecordCreateNestedManyWithoutBatchInput
   sarees?: Prisma.SareeCreateNestedManyWithoutBatchInput
   inventoryRecords?: Prisma.InventoryRecordCreateNestedManyWithoutBatchInput
 }
@@ -559,6 +587,7 @@ export type BatchUncheckedCreateWithoutMaterialIssuesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   rows?: Prisma.BatchSareeRowUncheckedCreateNestedManyWithoutBatchInput
+  materialReturns?: Prisma.MaterialReturnRecordUncheckedCreateNestedManyWithoutBatchInput
   sarees?: Prisma.SareeUncheckedCreateNestedManyWithoutBatchInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedCreateNestedManyWithoutBatchInput
 }
@@ -587,6 +616,7 @@ export type BatchUpdateWithoutMaterialIssuesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rows?: Prisma.BatchSareeRowUpdateManyWithoutBatchNestedInput
+  materialReturns?: Prisma.MaterialReturnRecordUpdateManyWithoutBatchNestedInput
   sarees?: Prisma.SareeUpdateManyWithoutBatchNestedInput
   inventoryRecords?: Prisma.InventoryRecordUpdateManyWithoutBatchNestedInput
 }
@@ -599,6 +629,75 @@ export type BatchUncheckedUpdateWithoutMaterialIssuesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rows?: Prisma.BatchSareeRowUncheckedUpdateManyWithoutBatchNestedInput
+  materialReturns?: Prisma.MaterialReturnRecordUncheckedUpdateManyWithoutBatchNestedInput
+  sarees?: Prisma.SareeUncheckedUpdateManyWithoutBatchNestedInput
+  inventoryRecords?: Prisma.InventoryRecordUncheckedUpdateManyWithoutBatchNestedInput
+}
+
+export type BatchCreateWithoutMaterialReturnsInput = {
+  id: string
+  totalCount: number
+  dueDate: Date | string
+  status?: $Enums.BatchStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  rows?: Prisma.BatchSareeRowCreateNestedManyWithoutBatchInput
+  materialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutBatchInput
+  sarees?: Prisma.SareeCreateNestedManyWithoutBatchInput
+  inventoryRecords?: Prisma.InventoryRecordCreateNestedManyWithoutBatchInput
+}
+
+export type BatchUncheckedCreateWithoutMaterialReturnsInput = {
+  id: string
+  totalCount: number
+  dueDate: Date | string
+  status?: $Enums.BatchStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  rows?: Prisma.BatchSareeRowUncheckedCreateNestedManyWithoutBatchInput
+  materialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutBatchInput
+  sarees?: Prisma.SareeUncheckedCreateNestedManyWithoutBatchInput
+  inventoryRecords?: Prisma.InventoryRecordUncheckedCreateNestedManyWithoutBatchInput
+}
+
+export type BatchCreateOrConnectWithoutMaterialReturnsInput = {
+  where: Prisma.BatchWhereUniqueInput
+  create: Prisma.XOR<Prisma.BatchCreateWithoutMaterialReturnsInput, Prisma.BatchUncheckedCreateWithoutMaterialReturnsInput>
+}
+
+export type BatchUpsertWithoutMaterialReturnsInput = {
+  update: Prisma.XOR<Prisma.BatchUpdateWithoutMaterialReturnsInput, Prisma.BatchUncheckedUpdateWithoutMaterialReturnsInput>
+  create: Prisma.XOR<Prisma.BatchCreateWithoutMaterialReturnsInput, Prisma.BatchUncheckedCreateWithoutMaterialReturnsInput>
+  where?: Prisma.BatchWhereInput
+}
+
+export type BatchUpdateToOneWithWhereWithoutMaterialReturnsInput = {
+  where?: Prisma.BatchWhereInput
+  data: Prisma.XOR<Prisma.BatchUpdateWithoutMaterialReturnsInput, Prisma.BatchUncheckedUpdateWithoutMaterialReturnsInput>
+}
+
+export type BatchUpdateWithoutMaterialReturnsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  totalCount?: Prisma.IntFieldUpdateOperationsInput | number
+  dueDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  status?: Prisma.EnumBatchStatusFieldUpdateOperationsInput | $Enums.BatchStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  rows?: Prisma.BatchSareeRowUpdateManyWithoutBatchNestedInput
+  materialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutBatchNestedInput
+  sarees?: Prisma.SareeUpdateManyWithoutBatchNestedInput
+  inventoryRecords?: Prisma.InventoryRecordUpdateManyWithoutBatchNestedInput
+}
+
+export type BatchUncheckedUpdateWithoutMaterialReturnsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  totalCount?: Prisma.IntFieldUpdateOperationsInput | number
+  dueDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  status?: Prisma.EnumBatchStatusFieldUpdateOperationsInput | $Enums.BatchStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  rows?: Prisma.BatchSareeRowUncheckedUpdateManyWithoutBatchNestedInput
+  materialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutBatchNestedInput
   sarees?: Prisma.SareeUncheckedUpdateManyWithoutBatchNestedInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedUpdateManyWithoutBatchNestedInput
 }
@@ -612,6 +711,7 @@ export type BatchCreateWithoutInventoryRecordsInput = {
   updatedAt?: Date | string
   rows?: Prisma.BatchSareeRowCreateNestedManyWithoutBatchInput
   materialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutBatchInput
+  materialReturns?: Prisma.MaterialReturnRecordCreateNestedManyWithoutBatchInput
   sarees?: Prisma.SareeCreateNestedManyWithoutBatchInput
 }
 
@@ -624,6 +724,7 @@ export type BatchUncheckedCreateWithoutInventoryRecordsInput = {
   updatedAt?: Date | string
   rows?: Prisma.BatchSareeRowUncheckedCreateNestedManyWithoutBatchInput
   materialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutBatchInput
+  materialReturns?: Prisma.MaterialReturnRecordUncheckedCreateNestedManyWithoutBatchInput
   sarees?: Prisma.SareeUncheckedCreateNestedManyWithoutBatchInput
 }
 
@@ -652,6 +753,7 @@ export type BatchUpdateWithoutInventoryRecordsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rows?: Prisma.BatchSareeRowUpdateManyWithoutBatchNestedInput
   materialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutBatchNestedInput
+  materialReturns?: Prisma.MaterialReturnRecordUpdateManyWithoutBatchNestedInput
   sarees?: Prisma.SareeUpdateManyWithoutBatchNestedInput
 }
 
@@ -664,6 +766,7 @@ export type BatchUncheckedUpdateWithoutInventoryRecordsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rows?: Prisma.BatchSareeRowUncheckedUpdateManyWithoutBatchNestedInput
   materialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutBatchNestedInput
+  materialReturns?: Prisma.MaterialReturnRecordUncheckedUpdateManyWithoutBatchNestedInput
   sarees?: Prisma.SareeUncheckedUpdateManyWithoutBatchNestedInput
 }
 
@@ -676,6 +779,7 @@ export type BatchCreateWithoutSareesInput = {
   updatedAt?: Date | string
   rows?: Prisma.BatchSareeRowCreateNestedManyWithoutBatchInput
   materialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutBatchInput
+  materialReturns?: Prisma.MaterialReturnRecordCreateNestedManyWithoutBatchInput
   inventoryRecords?: Prisma.InventoryRecordCreateNestedManyWithoutBatchInput
 }
 
@@ -688,6 +792,7 @@ export type BatchUncheckedCreateWithoutSareesInput = {
   updatedAt?: Date | string
   rows?: Prisma.BatchSareeRowUncheckedCreateNestedManyWithoutBatchInput
   materialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutBatchInput
+  materialReturns?: Prisma.MaterialReturnRecordUncheckedCreateNestedManyWithoutBatchInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedCreateNestedManyWithoutBatchInput
 }
 
@@ -716,6 +821,7 @@ export type BatchUpdateWithoutSareesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rows?: Prisma.BatchSareeRowUpdateManyWithoutBatchNestedInput
   materialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutBatchNestedInput
+  materialReturns?: Prisma.MaterialReturnRecordUpdateManyWithoutBatchNestedInput
   inventoryRecords?: Prisma.InventoryRecordUpdateManyWithoutBatchNestedInput
 }
 
@@ -728,6 +834,7 @@ export type BatchUncheckedUpdateWithoutSareesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rows?: Prisma.BatchSareeRowUncheckedUpdateManyWithoutBatchNestedInput
   materialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutBatchNestedInput
+  materialReturns?: Prisma.MaterialReturnRecordUncheckedUpdateManyWithoutBatchNestedInput
   inventoryRecords?: Prisma.InventoryRecordUncheckedUpdateManyWithoutBatchNestedInput
 }
 
@@ -739,6 +846,7 @@ export type BatchUncheckedUpdateWithoutSareesInput = {
 export type BatchCountOutputType = {
   rows: number
   materialIssues: number
+  materialReturns: number
   sarees: number
   inventoryRecords: number
 }
@@ -746,6 +854,7 @@ export type BatchCountOutputType = {
 export type BatchCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   rows?: boolean | BatchCountOutputTypeCountRowsArgs
   materialIssues?: boolean | BatchCountOutputTypeCountMaterialIssuesArgs
+  materialReturns?: boolean | BatchCountOutputTypeCountMaterialReturnsArgs
   sarees?: boolean | BatchCountOutputTypeCountSareesArgs
   inventoryRecords?: boolean | BatchCountOutputTypeCountInventoryRecordsArgs
 }
@@ -777,6 +886,13 @@ export type BatchCountOutputTypeCountMaterialIssuesArgs<ExtArgs extends runtime.
 /**
  * BatchCountOutputType without action
  */
+export type BatchCountOutputTypeCountMaterialReturnsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.MaterialReturnRecordWhereInput
+}
+
+/**
+ * BatchCountOutputType without action
+ */
 export type BatchCountOutputTypeCountSareesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.SareeWhereInput
 }
@@ -798,6 +914,7 @@ export type BatchSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   updatedAt?: boolean
   rows?: boolean | Prisma.Batch$rowsArgs<ExtArgs>
   materialIssues?: boolean | Prisma.Batch$materialIssuesArgs<ExtArgs>
+  materialReturns?: boolean | Prisma.Batch$materialReturnsArgs<ExtArgs>
   sarees?: boolean | Prisma.Batch$sareesArgs<ExtArgs>
   inventoryRecords?: boolean | Prisma.Batch$inventoryRecordsArgs<ExtArgs>
   _count?: boolean | Prisma.BatchCountOutputTypeDefaultArgs<ExtArgs>
@@ -834,6 +951,7 @@ export type BatchOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = ru
 export type BatchInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   rows?: boolean | Prisma.Batch$rowsArgs<ExtArgs>
   materialIssues?: boolean | Prisma.Batch$materialIssuesArgs<ExtArgs>
+  materialReturns?: boolean | Prisma.Batch$materialReturnsArgs<ExtArgs>
   sarees?: boolean | Prisma.Batch$sareesArgs<ExtArgs>
   inventoryRecords?: boolean | Prisma.Batch$inventoryRecordsArgs<ExtArgs>
   _count?: boolean | Prisma.BatchCountOutputTypeDefaultArgs<ExtArgs>
@@ -846,6 +964,7 @@ export type $BatchPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   objects: {
     rows: Prisma.$BatchSareeRowPayload<ExtArgs>[]
     materialIssues: Prisma.$MaterialIssueRecordPayload<ExtArgs>[]
+    materialReturns: Prisma.$MaterialReturnRecordPayload<ExtArgs>[]
     sarees: Prisma.$SareePayload<ExtArgs>[]
     inventoryRecords: Prisma.$InventoryRecordPayload<ExtArgs>[]
   }
@@ -1252,6 +1371,7 @@ export interface Prisma__BatchClient<T, Null = never, ExtArgs extends runtime.Ty
   readonly [Symbol.toStringTag]: "PrismaPromise"
   rows<T extends Prisma.Batch$rowsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Batch$rowsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BatchSareeRowPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   materialIssues<T extends Prisma.Batch$materialIssuesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Batch$materialIssuesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MaterialIssueRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  materialReturns<T extends Prisma.Batch$materialReturnsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Batch$materialReturnsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MaterialReturnRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   sarees<T extends Prisma.Batch$sareesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Batch$sareesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SareePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   inventoryRecords<T extends Prisma.Batch$inventoryRecordsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Batch$inventoryRecordsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InventoryRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
@@ -1727,6 +1847,30 @@ export type Batch$materialIssuesArgs<ExtArgs extends runtime.Types.Extensions.In
   take?: number
   skip?: number
   distinct?: Prisma.MaterialIssueRecordScalarFieldEnum | Prisma.MaterialIssueRecordScalarFieldEnum[]
+}
+
+/**
+ * Batch.materialReturns
+ */
+export type Batch$materialReturnsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the MaterialReturnRecord
+   */
+  select?: Prisma.MaterialReturnRecordSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the MaterialReturnRecord
+   */
+  omit?: Prisma.MaterialReturnRecordOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.MaterialReturnRecordInclude<ExtArgs> | null
+  where?: Prisma.MaterialReturnRecordWhereInput
+  orderBy?: Prisma.MaterialReturnRecordOrderByWithRelationInput | Prisma.MaterialReturnRecordOrderByWithRelationInput[]
+  cursor?: Prisma.MaterialReturnRecordWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.MaterialReturnRecordScalarFieldEnum | Prisma.MaterialReturnRecordScalarFieldEnum[]
 }
 
 /**

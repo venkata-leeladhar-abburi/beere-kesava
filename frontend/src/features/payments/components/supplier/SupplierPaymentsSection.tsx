@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { AlignJustify, BadgeCheck, CircleAlert, Clock, LayoutGrid, Store, Wallet } from "lucide-react";
+import { AlignJustify, BadgeCheck, CircleAlert, Clock, LayoutGrid, Receipt, Store, Wallet } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
 
@@ -70,6 +70,7 @@ export function SupplierPaymentsSection() {
   }, [suppliers, statsFor]);
 
   const totalSupplierPaymentsRecorded = payments.reduce((s, p) => s + p.amount, 0);
+  const totalInvoiced = rows.reduce((s, r) => s + r.totalPurchased, 0);
   const pendingBalance = rows.reduce((s, r) => s + r.outstanding, 0);
   const overdueRows = rows.filter(r => r.status === "Overdue");
 
@@ -160,8 +161,16 @@ export function SupplierPaymentsSection() {
         title="Supplier Payments"
         subtitle="Track payments made to saree suppliers. Record and monitor all supplier purchase settlements."
       >
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginTop: 24, marginBottom: 22, alignItems: "stretch" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 16, marginTop: 24, marginBottom: 22, alignItems: "stretch" }}>
           {[
+            {
+              icon: <Receipt size={22} color={T.luxuryBrown} />,
+              iconBg: "rgba(59,35,20,0.08)",
+              label: "Total Invoiced",
+              value: formatMoney(rupees(totalInvoiced)),
+              sub: "What all supplier purchases add up to",
+              crimson: false, green: false,
+            },
             {
               icon: <Wallet size={22} color={T.royalBurgundy} />,
               iconBg: "rgba(110,15,45,0.08)",

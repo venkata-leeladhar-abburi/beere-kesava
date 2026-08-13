@@ -38,17 +38,13 @@ export function IssuanceHistorySection({
       cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>{new Date(r.issuedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>,
     },
     {
-      id: "weaver", header: "Weaver Name", accessor: r => r.weaverName,
+      id: "weaver", header: "Weaver / Factory Loom", accessor: r => r.weaverName ?? r.factoryLoomNumber,
       cell: (_v, r) => (
         <div style={{ whiteSpace: "nowrap" }}>
-          <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: T.luxuryBrown }}>{r.weaverName}</div>
+          <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: T.luxuryBrown }}>{r.weaverName ?? r.factoryLoomNumber}</div>
           {r.loomNumber && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, fontWeight: 700, marginTop: 2 }}>Loom {r.loomNumber}</div>}
         </div>
       ),
-    },
-    {
-      id: "weaverId", header: "Weaver ID", accessor: r => r.weaverId,
-      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.weaverId}</span>,
     },
     {
       id: "materials", header: "Materials Summary", accessor: r => r.materials,

@@ -258,6 +258,7 @@ export type FactoryLoomWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"FactoryLoom"> | Date | string
   batchSareeRows?: Prisma.BatchSareeRowListRelationFilter
   materialIssues?: Prisma.MaterialIssueRecordListRelationFilter
+  materialReturns?: Prisma.MaterialReturnRecordListRelationFilter
   qcRecords?: Prisma.QcRecordListRelationFilter
   sarees?: Prisma.SareeListRelationFilter
 }
@@ -275,6 +276,7 @@ export type FactoryLoomOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   batchSareeRows?: Prisma.BatchSareeRowOrderByRelationAggregateInput
   materialIssues?: Prisma.MaterialIssueRecordOrderByRelationAggregateInput
+  materialReturns?: Prisma.MaterialReturnRecordOrderByRelationAggregateInput
   qcRecords?: Prisma.QcRecordOrderByRelationAggregateInput
   sarees?: Prisma.SareeOrderByRelationAggregateInput
 }
@@ -295,6 +297,7 @@ export type FactoryLoomWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"FactoryLoom"> | Date | string
   batchSareeRows?: Prisma.BatchSareeRowListRelationFilter
   materialIssues?: Prisma.MaterialIssueRecordListRelationFilter
+  materialReturns?: Prisma.MaterialReturnRecordListRelationFilter
   qcRecords?: Prisma.QcRecordListRelationFilter
   sarees?: Prisma.SareeListRelationFilter
 }, "id" | "loomNumber">
@@ -346,6 +349,7 @@ export type FactoryLoomCreateInput = {
   updatedAt?: Date | string
   batchSareeRows?: Prisma.BatchSareeRowCreateNestedManyWithoutFactoryLoomInput
   materialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutFactoryLoomInput
+  materialReturns?: Prisma.MaterialReturnRecordCreateNestedManyWithoutFactoryLoomInput
   qcRecords?: Prisma.QcRecordCreateNestedManyWithoutFactoryLoomInput
   sarees?: Prisma.SareeCreateNestedManyWithoutFactoryLoomInput
 }
@@ -363,6 +367,7 @@ export type FactoryLoomUncheckedCreateInput = {
   updatedAt?: Date | string
   batchSareeRows?: Prisma.BatchSareeRowUncheckedCreateNestedManyWithoutFactoryLoomInput
   materialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutFactoryLoomInput
+  materialReturns?: Prisma.MaterialReturnRecordUncheckedCreateNestedManyWithoutFactoryLoomInput
   qcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutFactoryLoomInput
   sarees?: Prisma.SareeUncheckedCreateNestedManyWithoutFactoryLoomInput
 }
@@ -380,6 +385,7 @@ export type FactoryLoomUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   batchSareeRows?: Prisma.BatchSareeRowUpdateManyWithoutFactoryLoomNestedInput
   materialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutFactoryLoomNestedInput
+  materialReturns?: Prisma.MaterialReturnRecordUpdateManyWithoutFactoryLoomNestedInput
   qcRecords?: Prisma.QcRecordUpdateManyWithoutFactoryLoomNestedInput
   sarees?: Prisma.SareeUpdateManyWithoutFactoryLoomNestedInput
 }
@@ -397,6 +403,7 @@ export type FactoryLoomUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   batchSareeRows?: Prisma.BatchSareeRowUncheckedUpdateManyWithoutFactoryLoomNestedInput
   materialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutFactoryLoomNestedInput
+  materialReturns?: Prisma.MaterialReturnRecordUncheckedUpdateManyWithoutFactoryLoomNestedInput
   qcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutFactoryLoomNestedInput
   sarees?: Prisma.SareeUncheckedUpdateManyWithoutFactoryLoomNestedInput
 }
@@ -536,6 +543,22 @@ export type FactoryLoomUpdateOneWithoutMaterialIssuesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.FactoryLoomUpdateToOneWithWhereWithoutMaterialIssuesInput, Prisma.FactoryLoomUpdateWithoutMaterialIssuesInput>, Prisma.FactoryLoomUncheckedUpdateWithoutMaterialIssuesInput>
 }
 
+export type FactoryLoomCreateNestedOneWithoutMaterialReturnsInput = {
+  create?: Prisma.XOR<Prisma.FactoryLoomCreateWithoutMaterialReturnsInput, Prisma.FactoryLoomUncheckedCreateWithoutMaterialReturnsInput>
+  connectOrCreate?: Prisma.FactoryLoomCreateOrConnectWithoutMaterialReturnsInput
+  connect?: Prisma.FactoryLoomWhereUniqueInput
+}
+
+export type FactoryLoomUpdateOneWithoutMaterialReturnsNestedInput = {
+  create?: Prisma.XOR<Prisma.FactoryLoomCreateWithoutMaterialReturnsInput, Prisma.FactoryLoomUncheckedCreateWithoutMaterialReturnsInput>
+  connectOrCreate?: Prisma.FactoryLoomCreateOrConnectWithoutMaterialReturnsInput
+  upsert?: Prisma.FactoryLoomUpsertWithoutMaterialReturnsInput
+  disconnect?: Prisma.FactoryLoomWhereInput | boolean
+  delete?: Prisma.FactoryLoomWhereInput | boolean
+  connect?: Prisma.FactoryLoomWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.FactoryLoomUpdateToOneWithWhereWithoutMaterialReturnsInput, Prisma.FactoryLoomUpdateWithoutMaterialReturnsInput>, Prisma.FactoryLoomUncheckedUpdateWithoutMaterialReturnsInput>
+}
+
 export type FactoryLoomCreateNestedOneWithoutQcRecordsInput = {
   create?: Prisma.XOR<Prisma.FactoryLoomCreateWithoutQcRecordsInput, Prisma.FactoryLoomUncheckedCreateWithoutQcRecordsInput>
   connectOrCreate?: Prisma.FactoryLoomCreateOrConnectWithoutQcRecordsInput
@@ -580,6 +603,7 @@ export type FactoryLoomCreateWithoutBatchSareeRowsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   materialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutFactoryLoomInput
+  materialReturns?: Prisma.MaterialReturnRecordCreateNestedManyWithoutFactoryLoomInput
   qcRecords?: Prisma.QcRecordCreateNestedManyWithoutFactoryLoomInput
   sarees?: Prisma.SareeCreateNestedManyWithoutFactoryLoomInput
 }
@@ -596,6 +620,7 @@ export type FactoryLoomUncheckedCreateWithoutBatchSareeRowsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   materialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutFactoryLoomInput
+  materialReturns?: Prisma.MaterialReturnRecordUncheckedCreateNestedManyWithoutFactoryLoomInput
   qcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutFactoryLoomInput
   sarees?: Prisma.SareeUncheckedCreateNestedManyWithoutFactoryLoomInput
 }
@@ -628,6 +653,7 @@ export type FactoryLoomUpdateWithoutBatchSareeRowsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   materialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutFactoryLoomNestedInput
+  materialReturns?: Prisma.MaterialReturnRecordUpdateManyWithoutFactoryLoomNestedInput
   qcRecords?: Prisma.QcRecordUpdateManyWithoutFactoryLoomNestedInput
   sarees?: Prisma.SareeUpdateManyWithoutFactoryLoomNestedInput
 }
@@ -644,6 +670,7 @@ export type FactoryLoomUncheckedUpdateWithoutBatchSareeRowsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   materialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutFactoryLoomNestedInput
+  materialReturns?: Prisma.MaterialReturnRecordUncheckedUpdateManyWithoutFactoryLoomNestedInput
   qcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutFactoryLoomNestedInput
   sarees?: Prisma.SareeUncheckedUpdateManyWithoutFactoryLoomNestedInput
 }
@@ -660,6 +687,7 @@ export type FactoryLoomCreateWithoutMaterialIssuesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   batchSareeRows?: Prisma.BatchSareeRowCreateNestedManyWithoutFactoryLoomInput
+  materialReturns?: Prisma.MaterialReturnRecordCreateNestedManyWithoutFactoryLoomInput
   qcRecords?: Prisma.QcRecordCreateNestedManyWithoutFactoryLoomInput
   sarees?: Prisma.SareeCreateNestedManyWithoutFactoryLoomInput
 }
@@ -676,6 +704,7 @@ export type FactoryLoomUncheckedCreateWithoutMaterialIssuesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   batchSareeRows?: Prisma.BatchSareeRowUncheckedCreateNestedManyWithoutFactoryLoomInput
+  materialReturns?: Prisma.MaterialReturnRecordUncheckedCreateNestedManyWithoutFactoryLoomInput
   qcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutFactoryLoomInput
   sarees?: Prisma.SareeUncheckedCreateNestedManyWithoutFactoryLoomInput
 }
@@ -708,6 +737,7 @@ export type FactoryLoomUpdateWithoutMaterialIssuesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   batchSareeRows?: Prisma.BatchSareeRowUpdateManyWithoutFactoryLoomNestedInput
+  materialReturns?: Prisma.MaterialReturnRecordUpdateManyWithoutFactoryLoomNestedInput
   qcRecords?: Prisma.QcRecordUpdateManyWithoutFactoryLoomNestedInput
   sarees?: Prisma.SareeUpdateManyWithoutFactoryLoomNestedInput
 }
@@ -724,6 +754,91 @@ export type FactoryLoomUncheckedUpdateWithoutMaterialIssuesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   batchSareeRows?: Prisma.BatchSareeRowUncheckedUpdateManyWithoutFactoryLoomNestedInput
+  materialReturns?: Prisma.MaterialReturnRecordUncheckedUpdateManyWithoutFactoryLoomNestedInput
+  qcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutFactoryLoomNestedInput
+  sarees?: Prisma.SareeUncheckedUpdateManyWithoutFactoryLoomNestedInput
+}
+
+export type FactoryLoomCreateWithoutMaterialReturnsInput = {
+  id?: string
+  loomNumber: string
+  location?: string | null
+  operatorName?: string | null
+  operatorPhone?: string | null
+  status?: $Enums.LoomStatus
+  installedYear?: number | null
+  notes?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  batchSareeRows?: Prisma.BatchSareeRowCreateNestedManyWithoutFactoryLoomInput
+  materialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutFactoryLoomInput
+  qcRecords?: Prisma.QcRecordCreateNestedManyWithoutFactoryLoomInput
+  sarees?: Prisma.SareeCreateNestedManyWithoutFactoryLoomInput
+}
+
+export type FactoryLoomUncheckedCreateWithoutMaterialReturnsInput = {
+  id?: string
+  loomNumber: string
+  location?: string | null
+  operatorName?: string | null
+  operatorPhone?: string | null
+  status?: $Enums.LoomStatus
+  installedYear?: number | null
+  notes?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  batchSareeRows?: Prisma.BatchSareeRowUncheckedCreateNestedManyWithoutFactoryLoomInput
+  materialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutFactoryLoomInput
+  qcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutFactoryLoomInput
+  sarees?: Prisma.SareeUncheckedCreateNestedManyWithoutFactoryLoomInput
+}
+
+export type FactoryLoomCreateOrConnectWithoutMaterialReturnsInput = {
+  where: Prisma.FactoryLoomWhereUniqueInput
+  create: Prisma.XOR<Prisma.FactoryLoomCreateWithoutMaterialReturnsInput, Prisma.FactoryLoomUncheckedCreateWithoutMaterialReturnsInput>
+}
+
+export type FactoryLoomUpsertWithoutMaterialReturnsInput = {
+  update: Prisma.XOR<Prisma.FactoryLoomUpdateWithoutMaterialReturnsInput, Prisma.FactoryLoomUncheckedUpdateWithoutMaterialReturnsInput>
+  create: Prisma.XOR<Prisma.FactoryLoomCreateWithoutMaterialReturnsInput, Prisma.FactoryLoomUncheckedCreateWithoutMaterialReturnsInput>
+  where?: Prisma.FactoryLoomWhereInput
+}
+
+export type FactoryLoomUpdateToOneWithWhereWithoutMaterialReturnsInput = {
+  where?: Prisma.FactoryLoomWhereInput
+  data: Prisma.XOR<Prisma.FactoryLoomUpdateWithoutMaterialReturnsInput, Prisma.FactoryLoomUncheckedUpdateWithoutMaterialReturnsInput>
+}
+
+export type FactoryLoomUpdateWithoutMaterialReturnsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  loomNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  operatorName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  operatorPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumLoomStatusFieldUpdateOperationsInput | $Enums.LoomStatus
+  installedYear?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  batchSareeRows?: Prisma.BatchSareeRowUpdateManyWithoutFactoryLoomNestedInput
+  materialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutFactoryLoomNestedInput
+  qcRecords?: Prisma.QcRecordUpdateManyWithoutFactoryLoomNestedInput
+  sarees?: Prisma.SareeUpdateManyWithoutFactoryLoomNestedInput
+}
+
+export type FactoryLoomUncheckedUpdateWithoutMaterialReturnsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  loomNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  operatorName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  operatorPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumLoomStatusFieldUpdateOperationsInput | $Enums.LoomStatus
+  installedYear?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  batchSareeRows?: Prisma.BatchSareeRowUncheckedUpdateManyWithoutFactoryLoomNestedInput
+  materialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutFactoryLoomNestedInput
   qcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutFactoryLoomNestedInput
   sarees?: Prisma.SareeUncheckedUpdateManyWithoutFactoryLoomNestedInput
 }
@@ -741,6 +856,7 @@ export type FactoryLoomCreateWithoutQcRecordsInput = {
   updatedAt?: Date | string
   batchSareeRows?: Prisma.BatchSareeRowCreateNestedManyWithoutFactoryLoomInput
   materialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutFactoryLoomInput
+  materialReturns?: Prisma.MaterialReturnRecordCreateNestedManyWithoutFactoryLoomInput
   sarees?: Prisma.SareeCreateNestedManyWithoutFactoryLoomInput
 }
 
@@ -757,6 +873,7 @@ export type FactoryLoomUncheckedCreateWithoutQcRecordsInput = {
   updatedAt?: Date | string
   batchSareeRows?: Prisma.BatchSareeRowUncheckedCreateNestedManyWithoutFactoryLoomInput
   materialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutFactoryLoomInput
+  materialReturns?: Prisma.MaterialReturnRecordUncheckedCreateNestedManyWithoutFactoryLoomInput
   sarees?: Prisma.SareeUncheckedCreateNestedManyWithoutFactoryLoomInput
 }
 
@@ -789,6 +906,7 @@ export type FactoryLoomUpdateWithoutQcRecordsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   batchSareeRows?: Prisma.BatchSareeRowUpdateManyWithoutFactoryLoomNestedInput
   materialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutFactoryLoomNestedInput
+  materialReturns?: Prisma.MaterialReturnRecordUpdateManyWithoutFactoryLoomNestedInput
   sarees?: Prisma.SareeUpdateManyWithoutFactoryLoomNestedInput
 }
 
@@ -805,6 +923,7 @@ export type FactoryLoomUncheckedUpdateWithoutQcRecordsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   batchSareeRows?: Prisma.BatchSareeRowUncheckedUpdateManyWithoutFactoryLoomNestedInput
   materialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutFactoryLoomNestedInput
+  materialReturns?: Prisma.MaterialReturnRecordUncheckedUpdateManyWithoutFactoryLoomNestedInput
   sarees?: Prisma.SareeUncheckedUpdateManyWithoutFactoryLoomNestedInput
 }
 
@@ -821,6 +940,7 @@ export type FactoryLoomCreateWithoutSareesInput = {
   updatedAt?: Date | string
   batchSareeRows?: Prisma.BatchSareeRowCreateNestedManyWithoutFactoryLoomInput
   materialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutFactoryLoomInput
+  materialReturns?: Prisma.MaterialReturnRecordCreateNestedManyWithoutFactoryLoomInput
   qcRecords?: Prisma.QcRecordCreateNestedManyWithoutFactoryLoomInput
 }
 
@@ -837,6 +957,7 @@ export type FactoryLoomUncheckedCreateWithoutSareesInput = {
   updatedAt?: Date | string
   batchSareeRows?: Prisma.BatchSareeRowUncheckedCreateNestedManyWithoutFactoryLoomInput
   materialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutFactoryLoomInput
+  materialReturns?: Prisma.MaterialReturnRecordUncheckedCreateNestedManyWithoutFactoryLoomInput
   qcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutFactoryLoomInput
 }
 
@@ -869,6 +990,7 @@ export type FactoryLoomUpdateWithoutSareesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   batchSareeRows?: Prisma.BatchSareeRowUpdateManyWithoutFactoryLoomNestedInput
   materialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutFactoryLoomNestedInput
+  materialReturns?: Prisma.MaterialReturnRecordUpdateManyWithoutFactoryLoomNestedInput
   qcRecords?: Prisma.QcRecordUpdateManyWithoutFactoryLoomNestedInput
 }
 
@@ -885,6 +1007,7 @@ export type FactoryLoomUncheckedUpdateWithoutSareesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   batchSareeRows?: Prisma.BatchSareeRowUncheckedUpdateManyWithoutFactoryLoomNestedInput
   materialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutFactoryLoomNestedInput
+  materialReturns?: Prisma.MaterialReturnRecordUncheckedUpdateManyWithoutFactoryLoomNestedInput
   qcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutFactoryLoomNestedInput
 }
 
@@ -896,6 +1019,7 @@ export type FactoryLoomUncheckedUpdateWithoutSareesInput = {
 export type FactoryLoomCountOutputType = {
   batchSareeRows: number
   materialIssues: number
+  materialReturns: number
   qcRecords: number
   sarees: number
 }
@@ -903,6 +1027,7 @@ export type FactoryLoomCountOutputType = {
 export type FactoryLoomCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   batchSareeRows?: boolean | FactoryLoomCountOutputTypeCountBatchSareeRowsArgs
   materialIssues?: boolean | FactoryLoomCountOutputTypeCountMaterialIssuesArgs
+  materialReturns?: boolean | FactoryLoomCountOutputTypeCountMaterialReturnsArgs
   qcRecords?: boolean | FactoryLoomCountOutputTypeCountQcRecordsArgs
   sarees?: boolean | FactoryLoomCountOutputTypeCountSareesArgs
 }
@@ -934,6 +1059,13 @@ export type FactoryLoomCountOutputTypeCountMaterialIssuesArgs<ExtArgs extends ru
 /**
  * FactoryLoomCountOutputType without action
  */
+export type FactoryLoomCountOutputTypeCountMaterialReturnsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.MaterialReturnRecordWhereInput
+}
+
+/**
+ * FactoryLoomCountOutputType without action
+ */
 export type FactoryLoomCountOutputTypeCountQcRecordsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.QcRecordWhereInput
 }
@@ -959,6 +1091,7 @@ export type FactoryLoomSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   updatedAt?: boolean
   batchSareeRows?: boolean | Prisma.FactoryLoom$batchSareeRowsArgs<ExtArgs>
   materialIssues?: boolean | Prisma.FactoryLoom$materialIssuesArgs<ExtArgs>
+  materialReturns?: boolean | Prisma.FactoryLoom$materialReturnsArgs<ExtArgs>
   qcRecords?: boolean | Prisma.FactoryLoom$qcRecordsArgs<ExtArgs>
   sarees?: boolean | Prisma.FactoryLoom$sareesArgs<ExtArgs>
   _count?: boolean | Prisma.FactoryLoomCountOutputTypeDefaultArgs<ExtArgs>
@@ -1007,6 +1140,7 @@ export type FactoryLoomOmit<ExtArgs extends runtime.Types.Extensions.InternalArg
 export type FactoryLoomInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   batchSareeRows?: boolean | Prisma.FactoryLoom$batchSareeRowsArgs<ExtArgs>
   materialIssues?: boolean | Prisma.FactoryLoom$materialIssuesArgs<ExtArgs>
+  materialReturns?: boolean | Prisma.FactoryLoom$materialReturnsArgs<ExtArgs>
   qcRecords?: boolean | Prisma.FactoryLoom$qcRecordsArgs<ExtArgs>
   sarees?: boolean | Prisma.FactoryLoom$sareesArgs<ExtArgs>
   _count?: boolean | Prisma.FactoryLoomCountOutputTypeDefaultArgs<ExtArgs>
@@ -1019,6 +1153,7 @@ export type $FactoryLoomPayload<ExtArgs extends runtime.Types.Extensions.Interna
   objects: {
     batchSareeRows: Prisma.$BatchSareeRowPayload<ExtArgs>[]
     materialIssues: Prisma.$MaterialIssueRecordPayload<ExtArgs>[]
+    materialReturns: Prisma.$MaterialReturnRecordPayload<ExtArgs>[]
     qcRecords: Prisma.$QcRecordPayload<ExtArgs>[]
     sarees: Prisma.$SareePayload<ExtArgs>[]
   }
@@ -1429,6 +1564,7 @@ export interface Prisma__FactoryLoomClient<T, Null = never, ExtArgs extends runt
   readonly [Symbol.toStringTag]: "PrismaPromise"
   batchSareeRows<T extends Prisma.FactoryLoom$batchSareeRowsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.FactoryLoom$batchSareeRowsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BatchSareeRowPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   materialIssues<T extends Prisma.FactoryLoom$materialIssuesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.FactoryLoom$materialIssuesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MaterialIssueRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  materialReturns<T extends Prisma.FactoryLoom$materialReturnsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.FactoryLoom$materialReturnsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MaterialReturnRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   qcRecords<T extends Prisma.FactoryLoom$qcRecordsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.FactoryLoom$qcRecordsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$QcRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   sarees<T extends Prisma.FactoryLoom$sareesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.FactoryLoom$sareesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SareePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
@@ -1908,6 +2044,30 @@ export type FactoryLoom$materialIssuesArgs<ExtArgs extends runtime.Types.Extensi
   take?: number
   skip?: number
   distinct?: Prisma.MaterialIssueRecordScalarFieldEnum | Prisma.MaterialIssueRecordScalarFieldEnum[]
+}
+
+/**
+ * FactoryLoom.materialReturns
+ */
+export type FactoryLoom$materialReturnsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the MaterialReturnRecord
+   */
+  select?: Prisma.MaterialReturnRecordSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the MaterialReturnRecord
+   */
+  omit?: Prisma.MaterialReturnRecordOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.MaterialReturnRecordInclude<ExtArgs> | null
+  where?: Prisma.MaterialReturnRecordWhereInput
+  orderBy?: Prisma.MaterialReturnRecordOrderByWithRelationInput | Prisma.MaterialReturnRecordOrderByWithRelationInput[]
+  cursor?: Prisma.MaterialReturnRecordWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.MaterialReturnRecordScalarFieldEnum | Prisma.MaterialReturnRecordScalarFieldEnum[]
 }
 
 /**

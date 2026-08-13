@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit, OnModuleDestroy } from "@nestjs/common";
+import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../generated/prisma/client";
@@ -6,13 +6,20 @@ import { Pool } from "pg";
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+  private readonly logger = new Logger(PrismaService.name);
   private pool: Pool;
 
   constructor(configService: ConfigService) {
     const connectionString = configService.getOrThrow<string>("DATABASE_URL");
-    const pool = new Pool({ 
+    const pool = new Pool({
       connectionString,
       max: 50, // Increased to handle high concurrent requests from frontend
+      // Supabase's pooler (pgbouncer) can silently drop idle connections on
+      // its own schedule; proactively recycling them here means the pg Pool
+      // never hands out a connection the far side already closed, which is
+      // what surfaced as "Server has closed the connection" mid-query.
+      idleTimeoutMillis: 30_000,
+      connectionTimeoutMillis: 20_000,
     });
     super({
       adapter: new PrismaPg(pool),
@@ -27,6 +34,14 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       transactionOptions: { timeout: 20_000, maxWait: 20_000 },
     });
     this.pool = pool;
+    // node-postgres emits 'error' on the Pool when an *idle* client is
+    // dropped by the server (exactly the pgbouncer-closed-connection case
+    // above). Without a listener here, that's an unhandled EventEmitter
+    // error and can crash the process instead of just failing the next
+    // query, which gets a fresh connection from the pool.
+    this.pool.on("error", (err) => {
+      this.logger.warn(`Idle Postgres client error (pool will recover): ${err.message}`);
+    });
   }
 
   async onModuleInit() {

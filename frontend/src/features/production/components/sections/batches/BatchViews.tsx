@@ -4,7 +4,7 @@ import {
   Calendar as CalendarBlank, AlertCircle as WarningCircle, CheckCircle2 as CheckCircle,
   Eye as PhEye, Pencil as PencilSimple,
 } from "lucide-react";
-import { useMaterialIssue } from "../../../../materials/contexts/MaterialIssueContext";
+import { useMaterialIssue, materialItemToGrams, REELS_PER_BUN } from "../../../../materials/contexts/MaterialIssueContext";
 import { T, F, EASE } from "../../theme";
 import { STAGE_CFG } from "../../data";
 import type { Batch, BatchStage } from "../../types";
@@ -248,6 +248,57 @@ export function BatchListView({ batches, onView, onEdit }: { batches: Batch[]; o
   );
 }
 
+/** Materials issued for one batch, broken out per loom — a batch can hand
+ * material to more than one weaver/loom, and lumping every loom's issuance
+ * into a single line hides how much any one loom actually got. */
+function BatchMaterialsCell({ batchId }: { batchId: string }) {
+  const { getRecordsForBatch } = useMaterialIssue();
+  const records = getRecordsForBatch(batchId);
+
+  if (records.length === 0) {
+    return <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontStyle: "italic" }}>No materials issued</span>;
+  }
+
+  const byLoom = new Map<string, Map<string, { grams: number; reels: number }>>();
+  records.forEach(r => {
+    const loomLabel = r.loomNumber
+      ? `Loom ${r.loomNumber}`
+      : r.factoryLoomNumber
+        ? `Factory Loom ${r.factoryLoomNumber}`
+        : "Unassigned Loom";
+    if (!byLoom.has(loomLabel)) byLoom.set(loomLabel, new Map());
+    const totals = byLoom.get(loomLabel)!;
+    r.materials.forEach(m => {
+      if (!totals.has(m.materialType)) totals.set(m.materialType, { grams: 0, reels: 0 });
+      const t = totals.get(m.materialType)!;
+      t.grams += materialItemToGrams(m);
+      if (m.materialType === "Jari") {
+        t.reels += (m.unit || "").toLowerCase().startsWith("bun")
+          ? (m.quantity || 0) * REELS_PER_BUN
+          : (m.quantity || 0);
+      }
+    });
+  });
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 6, maxWidth: 240 }}>
+      {Array.from(byLoom.entries()).map(([loomLabel, totals]) => (
+        <div key={loomLabel} style={{ lineHeight: 1.5 }}>
+          <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.royalBurgundy }}>{loomLabel}: </span>
+          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
+            {Array.from(totals.entries()).map(([type, t], i) => (
+              <span key={type}>
+                {i > 0 && " · "}
+                {type} {(t.grams / 1000).toFixed(2)}kg{t.reels > 0 ? ` (${t.reels} reels)` : ""}
+              </span>
+            ))}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function BatchTableView({ batches, onView, onEdit }: { batches: Batch[]; onView?: (b: Batch) => void; onEdit?: (b: Batch) => void }) {
   const columns: ColumnDef<Batch>[] = [
     {
@@ -272,7 +323,7 @@ export function BatchTableView({ batches, onView, onEdit }: { batches: Batch[]; 
     },
     {
       id: "materials", header: "Materials Given", accessor: b => b.materials,
-      cell: (_v, b) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, maxWidth: 200, lineHeight: 1.5, display: "inline-block" }}>{b.materials}</span>,
+      cell: (_v, b) => <BatchMaterialsCell batchId={b.id} />,
     },
     {
       id: "started", header: "Started", accessor: b => b.started,

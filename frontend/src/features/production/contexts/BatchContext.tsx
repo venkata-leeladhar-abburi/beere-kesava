@@ -97,6 +97,8 @@ interface BatchContextValue {
   // server's IdCounter is authoritative), so callers must adopt the
   // returned id rather than assuming their local batchId was persisted.
   saveDraft: (batch: BatchRecord) => Promise<string>;
+  /** True while saveDraft's request is in flight — drives the Save/Finalize buttons' loading state. */
+  isSaving: boolean;
   updateBatch: (batchId: string, patch: Partial<BatchRecord>) => void;
   receiveRow: (batchId: string, serial: number, payload: ReceiveBatchRowPayload) => Promise<void>;
   tallyRow: (
@@ -104,6 +106,8 @@ interface BatchContextValue {
     corrections?: { weight?: number; warpG?: number; reshamG?: number; jariReels?: number },
   ) => Promise<void>;
   finalizeBatch: (batchId: string) => Promise<void>;
+  /** True while finalizeBatch's request is in flight. */
+  isFinalizing: boolean;
   // Rejects with the backend's message when the batch has existing records
   // (materials issued, QC, finishing) attached — deletion is blocked, not
   // silently ignored.
@@ -243,26 +247,37 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
         ? batch.batchId
         : (await batchesApi.create({ totalCount: batch.totalCount, dueDate: batch.dueDate })).id;
 
-      for (const row of batch.rows) {
-        const recipientType = row.weaverId ? "WEAVER" : row.factoryLoomId ? "FACTORY_LOOM" : null;
-        if (!recipientType || !row.sareeTypeCode) continue;
+      // One bulk request for every assignable row, instead of one
+      // PATCH-per-row round trip — a 50-row batch used to mean 50 sequential
+      // requests against the pooled Supabase connection (each doing several
+      // of its own lookups server-side), which is what made saving/
+      // finalizing a batch feel hung. See BatchesService.assignRows.
+      const assignable = batch.rows
+        .map(row => {
+          const recipientType = row.weaverId ? "WEAVER" as const : row.factoryLoomId ? "FACTORY_LOOM" as const : null;
+          if (!recipientType || !row.sareeTypeCode) return null;
+          return {
+            serial: row.serial,
+            recipientType,
+            weaverId: row.weaverId ?? undefined,
+            factoryLoomId: row.factoryLoomId ?? undefined,
+            designCode: row.designCode ?? undefined,
+            sareeTypeCode: row.sareeTypeCode,
+            // Persists the row's bulk-order link so it survives a refetch —
+            // previously withheld because the backend wrote an unvalidated FK
+            // (any bad ref 500'd); assignRows now validates it and returns a
+            // clean 404 instead, so it's safe to send. Without this, a saree's
+            // link to its bulk order lived only in local draft state and was
+            // lost the moment the batch list refetched, leaving the order's
+            // Sarees tab to rely entirely on a fragile design/type name match.
+            bulkOrderRef: row.bulkOrderRef ?? undefined,
+            loomNumber: row.weaverLoom ?? undefined,
+          };
+        })
+        .filter((r): r is NonNullable<typeof r> => r !== null);
 
-        await batchesApi.assignRow(realBatchId, row.serial, {
-          recipientType,
-          weaverId: row.weaverId ?? undefined,
-          factoryLoomId: row.factoryLoomId ?? undefined,
-          designCode: row.designCode ?? undefined,
-          sareeTypeCode: row.sareeTypeCode,
-          // Persists the row's bulk-order link so it survives a refetch —
-          // previously withheld because the backend wrote an unvalidated FK
-          // (any bad ref 500'd); assignRow now validates it and returns a
-          // clean 404 instead, so it's safe to send. Without this, a saree's
-          // link to its bulk order lived only in local draft state and was
-          // lost the moment the batch list refetched, leaving the order's
-          // Sarees tab to rely entirely on a fragile design/type name match.
-          bulkOrderRef: row.bulkOrderRef ?? undefined,
-          loomNumber: row.weaverLoom ?? undefined,
-        });
+      if (assignable.length > 0) {
+        await batchesApi.assignRows(realBatchId, { rows: assignable });
       }
 
       return realBatchId;
@@ -391,7 +406,7 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
   const safeBatches = Array.isArray(batches) ? batches : [];
 
   return (
-    <BatchContext.Provider value={{ batches: safeBatches, saveDraft, updateBatch, receiveRow, tallyRow, finalizeBatch, deleteBatch, isError, error, nextBatchId, pendingOpenBatchId, setPendingOpenBatchId }}>
+    <BatchContext.Provider value={{ batches: safeBatches, saveDraft, isSaving: saveDraftMutation.isPending, updateBatch, receiveRow, tallyRow, finalizeBatch, isFinalizing: finalizeBatchMutation.isPending, deleteBatch, isError, error, nextBatchId, pendingOpenBatchId, setPendingOpenBatchId }}>
       {children}
     </BatchContext.Provider>
   );

@@ -244,6 +244,8 @@ export type UserWhereInput = {
   actionLogs?: Prisma.ActionLogListRelationFilter
   notifications?: Prisma.NotificationListRelationFilter
   issuedMaterialIssues?: Prisma.MaterialIssueRecordListRelationFilter
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordListRelationFilter
+  addedPurchases?: Prisma.PurchaseListRelationFilter
   inspectedQcRecords?: Prisma.QcRecordListRelationFilter
   assignedFinishings?: Prisma.FinishingAssignmentListRelationFilter
   raisedQuotations?: Prisma.QuotationListRelationFilter
@@ -274,6 +276,8 @@ export type UserOrderByWithRelationInput = {
   actionLogs?: Prisma.ActionLogOrderByRelationAggregateInput
   notifications?: Prisma.NotificationOrderByRelationAggregateInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordOrderByRelationAggregateInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordOrderByRelationAggregateInput
+  addedPurchases?: Prisma.PurchaseOrderByRelationAggregateInput
   inspectedQcRecords?: Prisma.QcRecordOrderByRelationAggregateInput
   assignedFinishings?: Prisma.FinishingAssignmentOrderByRelationAggregateInput
   raisedQuotations?: Prisma.QuotationOrderByRelationAggregateInput
@@ -307,6 +311,8 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   actionLogs?: Prisma.ActionLogListRelationFilter
   notifications?: Prisma.NotificationListRelationFilter
   issuedMaterialIssues?: Prisma.MaterialIssueRecordListRelationFilter
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordListRelationFilter
+  addedPurchases?: Prisma.PurchaseListRelationFilter
   inspectedQcRecords?: Prisma.QcRecordListRelationFilter
   assignedFinishings?: Prisma.FinishingAssignmentListRelationFilter
   raisedQuotations?: Prisma.QuotationListRelationFilter
@@ -372,6 +378,8 @@ export type UserCreateInput = {
   actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutIssuedByInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordCreateNestedManyWithoutReceivedByInput
+  addedPurchases?: Prisma.PurchaseCreateNestedManyWithoutAddedByInput
   inspectedQcRecords?: Prisma.QcRecordCreateNestedManyWithoutInspectedByInput
   assignedFinishings?: Prisma.FinishingAssignmentCreateNestedManyWithoutAssignedByInput
   raisedQuotations?: Prisma.QuotationCreateNestedManyWithoutRaisedByInput
@@ -401,6 +409,8 @@ export type UserUncheckedCreateInput = {
   actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutIssuedByInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUncheckedCreateNestedManyWithoutReceivedByInput
+  addedPurchases?: Prisma.PurchaseUncheckedCreateNestedManyWithoutAddedByInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutInspectedByInput
   assignedFinishings?: Prisma.FinishingAssignmentUncheckedCreateNestedManyWithoutAssignedByInput
   raisedQuotations?: Prisma.QuotationUncheckedCreateNestedManyWithoutRaisedByInput
@@ -430,6 +440,8 @@ export type UserUpdateInput = {
   actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutIssuedByNestedInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUpdateManyWithoutReceivedByNestedInput
+  addedPurchases?: Prisma.PurchaseUpdateManyWithoutAddedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUpdateManyWithoutInspectedByNestedInput
   assignedFinishings?: Prisma.FinishingAssignmentUpdateManyWithoutAssignedByNestedInput
   raisedQuotations?: Prisma.QuotationUpdateManyWithoutRaisedByNestedInput
@@ -459,6 +471,8 @@ export type UserUncheckedUpdateInput = {
   actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutIssuedByNestedInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUncheckedUpdateManyWithoutReceivedByNestedInput
+  addedPurchases?: Prisma.PurchaseUncheckedUpdateManyWithoutAddedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutInspectedByNestedInput
   assignedFinishings?: Prisma.FinishingAssignmentUncheckedUpdateManyWithoutAssignedByNestedInput
   raisedQuotations?: Prisma.QuotationUncheckedUpdateManyWithoutRaisedByNestedInput
@@ -641,6 +655,20 @@ export type UserUpdateOneRequiredWithoutIssuedMaterialIssuesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutIssuedMaterialIssuesInput, Prisma.UserUpdateWithoutIssuedMaterialIssuesInput>, Prisma.UserUncheckedUpdateWithoutIssuedMaterialIssuesInput>
 }
 
+export type UserCreateNestedOneWithoutReceivedMaterialReturnsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutReceivedMaterialReturnsInput, Prisma.UserUncheckedCreateWithoutReceivedMaterialReturnsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutReceivedMaterialReturnsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutReceivedMaterialReturnsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutReceivedMaterialReturnsInput, Prisma.UserUncheckedCreateWithoutReceivedMaterialReturnsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutReceivedMaterialReturnsInput
+  upsert?: Prisma.UserUpsertWithoutReceivedMaterialReturnsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutReceivedMaterialReturnsInput, Prisma.UserUpdateWithoutReceivedMaterialReturnsInput>, Prisma.UserUncheckedUpdateWithoutReceivedMaterialReturnsInput>
+}
+
 export type UserCreateNestedOneWithoutInspectedQcRecordsInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutInspectedQcRecordsInput, Prisma.UserUncheckedCreateWithoutInspectedQcRecordsInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutInspectedQcRecordsInput
@@ -681,6 +709,22 @@ export type UserUpdateOneRequiredWithoutRaisedQuotationsNestedInput = {
   upsert?: Prisma.UserUpsertWithoutRaisedQuotationsInput
   connect?: Prisma.UserWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutRaisedQuotationsInput, Prisma.UserUpdateWithoutRaisedQuotationsInput>, Prisma.UserUncheckedUpdateWithoutRaisedQuotationsInput>
+}
+
+export type UserCreateNestedOneWithoutAddedPurchasesInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutAddedPurchasesInput, Prisma.UserUncheckedCreateWithoutAddedPurchasesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutAddedPurchasesInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutAddedPurchasesNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutAddedPurchasesInput, Prisma.UserUncheckedCreateWithoutAddedPurchasesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutAddedPurchasesInput
+  upsert?: Prisma.UserUpsertWithoutAddedPurchasesInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutAddedPurchasesInput, Prisma.UserUpdateWithoutAddedPurchasesInput>, Prisma.UserUncheckedUpdateWithoutAddedPurchasesInput>
 }
 
 export type UserCreateNestedOneWithoutRequestedPurchasesInput = {
@@ -840,6 +884,8 @@ export type UserCreateWithoutPermissionOverridesInput = {
   actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutIssuedByInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordCreateNestedManyWithoutReceivedByInput
+  addedPurchases?: Prisma.PurchaseCreateNestedManyWithoutAddedByInput
   inspectedQcRecords?: Prisma.QcRecordCreateNestedManyWithoutInspectedByInput
   assignedFinishings?: Prisma.FinishingAssignmentCreateNestedManyWithoutAssignedByInput
   raisedQuotations?: Prisma.QuotationCreateNestedManyWithoutRaisedByInput
@@ -868,6 +914,8 @@ export type UserUncheckedCreateWithoutPermissionOverridesInput = {
   actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutIssuedByInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUncheckedCreateNestedManyWithoutReceivedByInput
+  addedPurchases?: Prisma.PurchaseUncheckedCreateNestedManyWithoutAddedByInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutInspectedByInput
   assignedFinishings?: Prisma.FinishingAssignmentUncheckedCreateNestedManyWithoutAssignedByInput
   raisedQuotations?: Prisma.QuotationUncheckedCreateNestedManyWithoutRaisedByInput
@@ -912,6 +960,8 @@ export type UserUpdateWithoutPermissionOverridesInput = {
   actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutIssuedByNestedInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUpdateManyWithoutReceivedByNestedInput
+  addedPurchases?: Prisma.PurchaseUpdateManyWithoutAddedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUpdateManyWithoutInspectedByNestedInput
   assignedFinishings?: Prisma.FinishingAssignmentUpdateManyWithoutAssignedByNestedInput
   raisedQuotations?: Prisma.QuotationUpdateManyWithoutRaisedByNestedInput
@@ -940,6 +990,8 @@ export type UserUncheckedUpdateWithoutPermissionOverridesInput = {
   actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutIssuedByNestedInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUncheckedUpdateManyWithoutReceivedByNestedInput
+  addedPurchases?: Prisma.PurchaseUncheckedUpdateManyWithoutAddedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutInspectedByNestedInput
   assignedFinishings?: Prisma.FinishingAssignmentUncheckedUpdateManyWithoutAssignedByNestedInput
   raisedQuotations?: Prisma.QuotationUncheckedUpdateManyWithoutRaisedByNestedInput
@@ -968,6 +1020,8 @@ export type UserCreateWithoutLinkedWeaverInput = {
   actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutIssuedByInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordCreateNestedManyWithoutReceivedByInput
+  addedPurchases?: Prisma.PurchaseCreateNestedManyWithoutAddedByInput
   inspectedQcRecords?: Prisma.QcRecordCreateNestedManyWithoutInspectedByInput
   assignedFinishings?: Prisma.FinishingAssignmentCreateNestedManyWithoutAssignedByInput
   raisedQuotations?: Prisma.QuotationCreateNestedManyWithoutRaisedByInput
@@ -996,6 +1050,8 @@ export type UserUncheckedCreateWithoutLinkedWeaverInput = {
   actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutIssuedByInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUncheckedCreateNestedManyWithoutReceivedByInput
+  addedPurchases?: Prisma.PurchaseUncheckedCreateNestedManyWithoutAddedByInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutInspectedByInput
   assignedFinishings?: Prisma.FinishingAssignmentUncheckedCreateNestedManyWithoutAssignedByInput
   raisedQuotations?: Prisma.QuotationUncheckedCreateNestedManyWithoutRaisedByInput
@@ -1040,6 +1096,8 @@ export type UserUpdateWithoutLinkedWeaverInput = {
   actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutIssuedByNestedInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUpdateManyWithoutReceivedByNestedInput
+  addedPurchases?: Prisma.PurchaseUpdateManyWithoutAddedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUpdateManyWithoutInspectedByNestedInput
   assignedFinishings?: Prisma.FinishingAssignmentUpdateManyWithoutAssignedByNestedInput
   raisedQuotations?: Prisma.QuotationUpdateManyWithoutRaisedByNestedInput
@@ -1068,6 +1126,8 @@ export type UserUncheckedUpdateWithoutLinkedWeaverInput = {
   actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutIssuedByNestedInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUncheckedUpdateManyWithoutReceivedByNestedInput
+  addedPurchases?: Prisma.PurchaseUncheckedUpdateManyWithoutAddedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutInspectedByNestedInput
   assignedFinishings?: Prisma.FinishingAssignmentUncheckedUpdateManyWithoutAssignedByNestedInput
   raisedQuotations?: Prisma.QuotationUncheckedUpdateManyWithoutRaisedByNestedInput
@@ -1096,6 +1156,8 @@ export type UserCreateWithoutIssuedMaterialIssuesInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordCreateNestedManyWithoutReceivedByInput
+  addedPurchases?: Prisma.PurchaseCreateNestedManyWithoutAddedByInput
   inspectedQcRecords?: Prisma.QcRecordCreateNestedManyWithoutInspectedByInput
   assignedFinishings?: Prisma.FinishingAssignmentCreateNestedManyWithoutAssignedByInput
   raisedQuotations?: Prisma.QuotationCreateNestedManyWithoutRaisedByInput
@@ -1124,6 +1186,8 @@ export type UserUncheckedCreateWithoutIssuedMaterialIssuesInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
   actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUncheckedCreateNestedManyWithoutReceivedByInput
+  addedPurchases?: Prisma.PurchaseUncheckedCreateNestedManyWithoutAddedByInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutInspectedByInput
   assignedFinishings?: Prisma.FinishingAssignmentUncheckedCreateNestedManyWithoutAssignedByInput
   raisedQuotations?: Prisma.QuotationUncheckedCreateNestedManyWithoutRaisedByInput
@@ -1168,6 +1232,8 @@ export type UserUpdateWithoutIssuedMaterialIssuesInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUpdateManyWithoutReceivedByNestedInput
+  addedPurchases?: Prisma.PurchaseUpdateManyWithoutAddedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUpdateManyWithoutInspectedByNestedInput
   assignedFinishings?: Prisma.FinishingAssignmentUpdateManyWithoutAssignedByNestedInput
   raisedQuotations?: Prisma.QuotationUpdateManyWithoutRaisedByNestedInput
@@ -1196,6 +1262,144 @@ export type UserUncheckedUpdateWithoutIssuedMaterialIssuesInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
   actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUncheckedUpdateManyWithoutReceivedByNestedInput
+  addedPurchases?: Prisma.PurchaseUncheckedUpdateManyWithoutAddedByNestedInput
+  inspectedQcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutInspectedByNestedInput
+  assignedFinishings?: Prisma.FinishingAssignmentUncheckedUpdateManyWithoutAssignedByNestedInput
+  raisedQuotations?: Prisma.QuotationUncheckedUpdateManyWithoutRaisedByNestedInput
+  requestedPurchases?: Prisma.PurchaseRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+  decidedPurchases?: Prisma.PurchaseRequestUncheckedUpdateManyWithoutDecidedByNestedInput
+  decidedWarpRequests?: Prisma.WarpRequestUncheckedUpdateManyWithoutDecidedByNestedInput
+  requestedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+  decidedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutDecidedByNestedInput
+  reportDownloads?: Prisma.ReportDownloadHistoryUncheckedUpdateManyWithoutDownloadedByNestedInput
+}
+
+export type UserCreateWithoutReceivedMaterialReturnsInput = {
+  id?: string
+  empId: string
+  firstName: string
+  lastName: string
+  mobile: string
+  email?: string | null
+  role: $Enums.UserRole
+  accessLevel?: $Enums.AccessLevel
+  status?: $Enums.ActiveStatus
+  dateAdded?: Date | string
+  updatedAt?: Date | string
+  linkedWeaver?: Prisma.WeaverCreateNestedOneWithoutLinkedUserInput
+  permissionOverrides?: Prisma.UserPermissionOverrideCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  issuedMaterialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutIssuedByInput
+  addedPurchases?: Prisma.PurchaseCreateNestedManyWithoutAddedByInput
+  inspectedQcRecords?: Prisma.QcRecordCreateNestedManyWithoutInspectedByInput
+  assignedFinishings?: Prisma.FinishingAssignmentCreateNestedManyWithoutAssignedByInput
+  raisedQuotations?: Prisma.QuotationCreateNestedManyWithoutRaisedByInput
+  requestedPurchases?: Prisma.PurchaseRequestCreateNestedManyWithoutRequestedByInput
+  decidedPurchases?: Prisma.PurchaseRequestCreateNestedManyWithoutDecidedByInput
+  decidedWarpRequests?: Prisma.WarpRequestCreateNestedManyWithoutDecidedByInput
+  requestedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutRequestedByInput
+  decidedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutDecidedByInput
+  reportDownloads?: Prisma.ReportDownloadHistoryCreateNestedManyWithoutDownloadedByInput
+}
+
+export type UserUncheckedCreateWithoutReceivedMaterialReturnsInput = {
+  id?: string
+  empId: string
+  firstName: string
+  lastName: string
+  mobile: string
+  email?: string | null
+  role: $Enums.UserRole
+  accessLevel?: $Enums.AccessLevel
+  status?: $Enums.ActiveStatus
+  dateAdded?: Date | string
+  updatedAt?: Date | string
+  linkedWeaverId?: string | null
+  permissionOverrides?: Prisma.UserPermissionOverrideUncheckedCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutIssuedByInput
+  addedPurchases?: Prisma.PurchaseUncheckedCreateNestedManyWithoutAddedByInput
+  inspectedQcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutInspectedByInput
+  assignedFinishings?: Prisma.FinishingAssignmentUncheckedCreateNestedManyWithoutAssignedByInput
+  raisedQuotations?: Prisma.QuotationUncheckedCreateNestedManyWithoutRaisedByInput
+  requestedPurchases?: Prisma.PurchaseRequestUncheckedCreateNestedManyWithoutRequestedByInput
+  decidedPurchases?: Prisma.PurchaseRequestUncheckedCreateNestedManyWithoutDecidedByInput
+  decidedWarpRequests?: Prisma.WarpRequestUncheckedCreateNestedManyWithoutDecidedByInput
+  requestedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutRequestedByInput
+  decidedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutDecidedByInput
+  reportDownloads?: Prisma.ReportDownloadHistoryUncheckedCreateNestedManyWithoutDownloadedByInput
+}
+
+export type UserCreateOrConnectWithoutReceivedMaterialReturnsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutReceivedMaterialReturnsInput, Prisma.UserUncheckedCreateWithoutReceivedMaterialReturnsInput>
+}
+
+export type UserUpsertWithoutReceivedMaterialReturnsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutReceivedMaterialReturnsInput, Prisma.UserUncheckedUpdateWithoutReceivedMaterialReturnsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutReceivedMaterialReturnsInput, Prisma.UserUncheckedCreateWithoutReceivedMaterialReturnsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutReceivedMaterialReturnsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutReceivedMaterialReturnsInput, Prisma.UserUncheckedUpdateWithoutReceivedMaterialReturnsInput>
+}
+
+export type UserUpdateWithoutReceivedMaterialReturnsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  empId?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  mobile?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accessLevel?: Prisma.EnumAccessLevelFieldUpdateOperationsInput | $Enums.AccessLevel
+  status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
+  dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedWeaver?: Prisma.WeaverUpdateOneWithoutLinkedUserNestedInput
+  permissionOverrides?: Prisma.UserPermissionOverrideUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  issuedMaterialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutIssuedByNestedInput
+  addedPurchases?: Prisma.PurchaseUpdateManyWithoutAddedByNestedInput
+  inspectedQcRecords?: Prisma.QcRecordUpdateManyWithoutInspectedByNestedInput
+  assignedFinishings?: Prisma.FinishingAssignmentUpdateManyWithoutAssignedByNestedInput
+  raisedQuotations?: Prisma.QuotationUpdateManyWithoutRaisedByNestedInput
+  requestedPurchases?: Prisma.PurchaseRequestUpdateManyWithoutRequestedByNestedInput
+  decidedPurchases?: Prisma.PurchaseRequestUpdateManyWithoutDecidedByNestedInput
+  decidedWarpRequests?: Prisma.WarpRequestUpdateManyWithoutDecidedByNestedInput
+  requestedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutRequestedByNestedInput
+  decidedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutDecidedByNestedInput
+  reportDownloads?: Prisma.ReportDownloadHistoryUpdateManyWithoutDownloadedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutReceivedMaterialReturnsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  empId?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  mobile?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accessLevel?: Prisma.EnumAccessLevelFieldUpdateOperationsInput | $Enums.AccessLevel
+  status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
+  dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedWeaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  permissionOverrides?: Prisma.UserPermissionOverrideUncheckedUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutIssuedByNestedInput
+  addedPurchases?: Prisma.PurchaseUncheckedUpdateManyWithoutAddedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutInspectedByNestedInput
   assignedFinishings?: Prisma.FinishingAssignmentUncheckedUpdateManyWithoutAssignedByNestedInput
   raisedQuotations?: Prisma.QuotationUncheckedUpdateManyWithoutRaisedByNestedInput
@@ -1225,6 +1429,8 @@ export type UserCreateWithoutInspectedQcRecordsInput = {
   actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutIssuedByInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordCreateNestedManyWithoutReceivedByInput
+  addedPurchases?: Prisma.PurchaseCreateNestedManyWithoutAddedByInput
   assignedFinishings?: Prisma.FinishingAssignmentCreateNestedManyWithoutAssignedByInput
   raisedQuotations?: Prisma.QuotationCreateNestedManyWithoutRaisedByInput
   requestedPurchases?: Prisma.PurchaseRequestCreateNestedManyWithoutRequestedByInput
@@ -1253,6 +1459,8 @@ export type UserUncheckedCreateWithoutInspectedQcRecordsInput = {
   actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutIssuedByInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUncheckedCreateNestedManyWithoutReceivedByInput
+  addedPurchases?: Prisma.PurchaseUncheckedCreateNestedManyWithoutAddedByInput
   assignedFinishings?: Prisma.FinishingAssignmentUncheckedCreateNestedManyWithoutAssignedByInput
   raisedQuotations?: Prisma.QuotationUncheckedCreateNestedManyWithoutRaisedByInput
   requestedPurchases?: Prisma.PurchaseRequestUncheckedCreateNestedManyWithoutRequestedByInput
@@ -1297,6 +1505,8 @@ export type UserUpdateWithoutInspectedQcRecordsInput = {
   actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutIssuedByNestedInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUpdateManyWithoutReceivedByNestedInput
+  addedPurchases?: Prisma.PurchaseUpdateManyWithoutAddedByNestedInput
   assignedFinishings?: Prisma.FinishingAssignmentUpdateManyWithoutAssignedByNestedInput
   raisedQuotations?: Prisma.QuotationUpdateManyWithoutRaisedByNestedInput
   requestedPurchases?: Prisma.PurchaseRequestUpdateManyWithoutRequestedByNestedInput
@@ -1325,6 +1535,8 @@ export type UserUncheckedUpdateWithoutInspectedQcRecordsInput = {
   actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutIssuedByNestedInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUncheckedUpdateManyWithoutReceivedByNestedInput
+  addedPurchases?: Prisma.PurchaseUncheckedUpdateManyWithoutAddedByNestedInput
   assignedFinishings?: Prisma.FinishingAssignmentUncheckedUpdateManyWithoutAssignedByNestedInput
   raisedQuotations?: Prisma.QuotationUncheckedUpdateManyWithoutRaisedByNestedInput
   requestedPurchases?: Prisma.PurchaseRequestUncheckedUpdateManyWithoutRequestedByNestedInput
@@ -1353,6 +1565,8 @@ export type UserCreateWithoutAssignedFinishingsInput = {
   actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutIssuedByInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordCreateNestedManyWithoutReceivedByInput
+  addedPurchases?: Prisma.PurchaseCreateNestedManyWithoutAddedByInput
   inspectedQcRecords?: Prisma.QcRecordCreateNestedManyWithoutInspectedByInput
   raisedQuotations?: Prisma.QuotationCreateNestedManyWithoutRaisedByInput
   requestedPurchases?: Prisma.PurchaseRequestCreateNestedManyWithoutRequestedByInput
@@ -1381,6 +1595,8 @@ export type UserUncheckedCreateWithoutAssignedFinishingsInput = {
   actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutIssuedByInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUncheckedCreateNestedManyWithoutReceivedByInput
+  addedPurchases?: Prisma.PurchaseUncheckedCreateNestedManyWithoutAddedByInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutInspectedByInput
   raisedQuotations?: Prisma.QuotationUncheckedCreateNestedManyWithoutRaisedByInput
   requestedPurchases?: Prisma.PurchaseRequestUncheckedCreateNestedManyWithoutRequestedByInput
@@ -1425,6 +1641,8 @@ export type UserUpdateWithoutAssignedFinishingsInput = {
   actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutIssuedByNestedInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUpdateManyWithoutReceivedByNestedInput
+  addedPurchases?: Prisma.PurchaseUpdateManyWithoutAddedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUpdateManyWithoutInspectedByNestedInput
   raisedQuotations?: Prisma.QuotationUpdateManyWithoutRaisedByNestedInput
   requestedPurchases?: Prisma.PurchaseRequestUpdateManyWithoutRequestedByNestedInput
@@ -1453,6 +1671,8 @@ export type UserUncheckedUpdateWithoutAssignedFinishingsInput = {
   actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutIssuedByNestedInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUncheckedUpdateManyWithoutReceivedByNestedInput
+  addedPurchases?: Prisma.PurchaseUncheckedUpdateManyWithoutAddedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutInspectedByNestedInput
   raisedQuotations?: Prisma.QuotationUncheckedUpdateManyWithoutRaisedByNestedInput
   requestedPurchases?: Prisma.PurchaseRequestUncheckedUpdateManyWithoutRequestedByNestedInput
@@ -1481,6 +1701,8 @@ export type UserCreateWithoutRaisedQuotationsInput = {
   actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutIssuedByInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordCreateNestedManyWithoutReceivedByInput
+  addedPurchases?: Prisma.PurchaseCreateNestedManyWithoutAddedByInput
   inspectedQcRecords?: Prisma.QcRecordCreateNestedManyWithoutInspectedByInput
   assignedFinishings?: Prisma.FinishingAssignmentCreateNestedManyWithoutAssignedByInput
   requestedPurchases?: Prisma.PurchaseRequestCreateNestedManyWithoutRequestedByInput
@@ -1509,6 +1731,8 @@ export type UserUncheckedCreateWithoutRaisedQuotationsInput = {
   actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutIssuedByInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUncheckedCreateNestedManyWithoutReceivedByInput
+  addedPurchases?: Prisma.PurchaseUncheckedCreateNestedManyWithoutAddedByInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutInspectedByInput
   assignedFinishings?: Prisma.FinishingAssignmentUncheckedCreateNestedManyWithoutAssignedByInput
   requestedPurchases?: Prisma.PurchaseRequestUncheckedCreateNestedManyWithoutRequestedByInput
@@ -1553,6 +1777,8 @@ export type UserUpdateWithoutRaisedQuotationsInput = {
   actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutIssuedByNestedInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUpdateManyWithoutReceivedByNestedInput
+  addedPurchases?: Prisma.PurchaseUpdateManyWithoutAddedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUpdateManyWithoutInspectedByNestedInput
   assignedFinishings?: Prisma.FinishingAssignmentUpdateManyWithoutAssignedByNestedInput
   requestedPurchases?: Prisma.PurchaseRequestUpdateManyWithoutRequestedByNestedInput
@@ -1581,8 +1807,146 @@ export type UserUncheckedUpdateWithoutRaisedQuotationsInput = {
   actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutIssuedByNestedInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUncheckedUpdateManyWithoutReceivedByNestedInput
+  addedPurchases?: Prisma.PurchaseUncheckedUpdateManyWithoutAddedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutInspectedByNestedInput
   assignedFinishings?: Prisma.FinishingAssignmentUncheckedUpdateManyWithoutAssignedByNestedInput
+  requestedPurchases?: Prisma.PurchaseRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+  decidedPurchases?: Prisma.PurchaseRequestUncheckedUpdateManyWithoutDecidedByNestedInput
+  decidedWarpRequests?: Prisma.WarpRequestUncheckedUpdateManyWithoutDecidedByNestedInput
+  requestedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+  decidedRateChanges?: Prisma.RateChangeRequestUncheckedUpdateManyWithoutDecidedByNestedInput
+  reportDownloads?: Prisma.ReportDownloadHistoryUncheckedUpdateManyWithoutDownloadedByNestedInput
+}
+
+export type UserCreateWithoutAddedPurchasesInput = {
+  id?: string
+  empId: string
+  firstName: string
+  lastName: string
+  mobile: string
+  email?: string | null
+  role: $Enums.UserRole
+  accessLevel?: $Enums.AccessLevel
+  status?: $Enums.ActiveStatus
+  dateAdded?: Date | string
+  updatedAt?: Date | string
+  linkedWeaver?: Prisma.WeaverCreateNestedOneWithoutLinkedUserInput
+  permissionOverrides?: Prisma.UserPermissionOverrideCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  issuedMaterialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutIssuedByInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordCreateNestedManyWithoutReceivedByInput
+  inspectedQcRecords?: Prisma.QcRecordCreateNestedManyWithoutInspectedByInput
+  assignedFinishings?: Prisma.FinishingAssignmentCreateNestedManyWithoutAssignedByInput
+  raisedQuotations?: Prisma.QuotationCreateNestedManyWithoutRaisedByInput
+  requestedPurchases?: Prisma.PurchaseRequestCreateNestedManyWithoutRequestedByInput
+  decidedPurchases?: Prisma.PurchaseRequestCreateNestedManyWithoutDecidedByInput
+  decidedWarpRequests?: Prisma.WarpRequestCreateNestedManyWithoutDecidedByInput
+  requestedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutRequestedByInput
+  decidedRateChanges?: Prisma.RateChangeRequestCreateNestedManyWithoutDecidedByInput
+  reportDownloads?: Prisma.ReportDownloadHistoryCreateNestedManyWithoutDownloadedByInput
+}
+
+export type UserUncheckedCreateWithoutAddedPurchasesInput = {
+  id?: string
+  empId: string
+  firstName: string
+  lastName: string
+  mobile: string
+  email?: string | null
+  role: $Enums.UserRole
+  accessLevel?: $Enums.AccessLevel
+  status?: $Enums.ActiveStatus
+  dateAdded?: Date | string
+  updatedAt?: Date | string
+  linkedWeaverId?: string | null
+  permissionOverrides?: Prisma.UserPermissionOverrideUncheckedCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutIssuedByInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUncheckedCreateNestedManyWithoutReceivedByInput
+  inspectedQcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutInspectedByInput
+  assignedFinishings?: Prisma.FinishingAssignmentUncheckedCreateNestedManyWithoutAssignedByInput
+  raisedQuotations?: Prisma.QuotationUncheckedCreateNestedManyWithoutRaisedByInput
+  requestedPurchases?: Prisma.PurchaseRequestUncheckedCreateNestedManyWithoutRequestedByInput
+  decidedPurchases?: Prisma.PurchaseRequestUncheckedCreateNestedManyWithoutDecidedByInput
+  decidedWarpRequests?: Prisma.WarpRequestUncheckedCreateNestedManyWithoutDecidedByInput
+  requestedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutRequestedByInput
+  decidedRateChanges?: Prisma.RateChangeRequestUncheckedCreateNestedManyWithoutDecidedByInput
+  reportDownloads?: Prisma.ReportDownloadHistoryUncheckedCreateNestedManyWithoutDownloadedByInput
+}
+
+export type UserCreateOrConnectWithoutAddedPurchasesInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutAddedPurchasesInput, Prisma.UserUncheckedCreateWithoutAddedPurchasesInput>
+}
+
+export type UserUpsertWithoutAddedPurchasesInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutAddedPurchasesInput, Prisma.UserUncheckedUpdateWithoutAddedPurchasesInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutAddedPurchasesInput, Prisma.UserUncheckedCreateWithoutAddedPurchasesInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutAddedPurchasesInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutAddedPurchasesInput, Prisma.UserUncheckedUpdateWithoutAddedPurchasesInput>
+}
+
+export type UserUpdateWithoutAddedPurchasesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  empId?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  mobile?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accessLevel?: Prisma.EnumAccessLevelFieldUpdateOperationsInput | $Enums.AccessLevel
+  status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
+  dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedWeaver?: Prisma.WeaverUpdateOneWithoutLinkedUserNestedInput
+  permissionOverrides?: Prisma.UserPermissionOverrideUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  issuedMaterialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutIssuedByNestedInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUpdateManyWithoutReceivedByNestedInput
+  inspectedQcRecords?: Prisma.QcRecordUpdateManyWithoutInspectedByNestedInput
+  assignedFinishings?: Prisma.FinishingAssignmentUpdateManyWithoutAssignedByNestedInput
+  raisedQuotations?: Prisma.QuotationUpdateManyWithoutRaisedByNestedInput
+  requestedPurchases?: Prisma.PurchaseRequestUpdateManyWithoutRequestedByNestedInput
+  decidedPurchases?: Prisma.PurchaseRequestUpdateManyWithoutDecidedByNestedInput
+  decidedWarpRequests?: Prisma.WarpRequestUpdateManyWithoutDecidedByNestedInput
+  requestedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutRequestedByNestedInput
+  decidedRateChanges?: Prisma.RateChangeRequestUpdateManyWithoutDecidedByNestedInput
+  reportDownloads?: Prisma.ReportDownloadHistoryUpdateManyWithoutDownloadedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutAddedPurchasesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  empId?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  mobile?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accessLevel?: Prisma.EnumAccessLevelFieldUpdateOperationsInput | $Enums.AccessLevel
+  status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
+  dateAdded?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedWeaverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  permissionOverrides?: Prisma.UserPermissionOverrideUncheckedUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutIssuedByNestedInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUncheckedUpdateManyWithoutReceivedByNestedInput
+  inspectedQcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutInspectedByNestedInput
+  assignedFinishings?: Prisma.FinishingAssignmentUncheckedUpdateManyWithoutAssignedByNestedInput
+  raisedQuotations?: Prisma.QuotationUncheckedUpdateManyWithoutRaisedByNestedInput
   requestedPurchases?: Prisma.PurchaseRequestUncheckedUpdateManyWithoutRequestedByNestedInput
   decidedPurchases?: Prisma.PurchaseRequestUncheckedUpdateManyWithoutDecidedByNestedInput
   decidedWarpRequests?: Prisma.WarpRequestUncheckedUpdateManyWithoutDecidedByNestedInput
@@ -1609,6 +1973,8 @@ export type UserCreateWithoutRequestedPurchasesInput = {
   actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutIssuedByInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordCreateNestedManyWithoutReceivedByInput
+  addedPurchases?: Prisma.PurchaseCreateNestedManyWithoutAddedByInput
   inspectedQcRecords?: Prisma.QcRecordCreateNestedManyWithoutInspectedByInput
   assignedFinishings?: Prisma.FinishingAssignmentCreateNestedManyWithoutAssignedByInput
   raisedQuotations?: Prisma.QuotationCreateNestedManyWithoutRaisedByInput
@@ -1637,6 +2003,8 @@ export type UserUncheckedCreateWithoutRequestedPurchasesInput = {
   actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutIssuedByInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUncheckedCreateNestedManyWithoutReceivedByInput
+  addedPurchases?: Prisma.PurchaseUncheckedCreateNestedManyWithoutAddedByInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutInspectedByInput
   assignedFinishings?: Prisma.FinishingAssignmentUncheckedCreateNestedManyWithoutAssignedByInput
   raisedQuotations?: Prisma.QuotationUncheckedCreateNestedManyWithoutRaisedByInput
@@ -1670,6 +2038,8 @@ export type UserCreateWithoutDecidedPurchasesInput = {
   actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutIssuedByInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordCreateNestedManyWithoutReceivedByInput
+  addedPurchases?: Prisma.PurchaseCreateNestedManyWithoutAddedByInput
   inspectedQcRecords?: Prisma.QcRecordCreateNestedManyWithoutInspectedByInput
   assignedFinishings?: Prisma.FinishingAssignmentCreateNestedManyWithoutAssignedByInput
   raisedQuotations?: Prisma.QuotationCreateNestedManyWithoutRaisedByInput
@@ -1698,6 +2068,8 @@ export type UserUncheckedCreateWithoutDecidedPurchasesInput = {
   actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutIssuedByInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUncheckedCreateNestedManyWithoutReceivedByInput
+  addedPurchases?: Prisma.PurchaseUncheckedCreateNestedManyWithoutAddedByInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutInspectedByInput
   assignedFinishings?: Prisma.FinishingAssignmentUncheckedCreateNestedManyWithoutAssignedByInput
   raisedQuotations?: Prisma.QuotationUncheckedCreateNestedManyWithoutRaisedByInput
@@ -1742,6 +2114,8 @@ export type UserUpdateWithoutRequestedPurchasesInput = {
   actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutIssuedByNestedInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUpdateManyWithoutReceivedByNestedInput
+  addedPurchases?: Prisma.PurchaseUpdateManyWithoutAddedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUpdateManyWithoutInspectedByNestedInput
   assignedFinishings?: Prisma.FinishingAssignmentUpdateManyWithoutAssignedByNestedInput
   raisedQuotations?: Prisma.QuotationUpdateManyWithoutRaisedByNestedInput
@@ -1770,6 +2144,8 @@ export type UserUncheckedUpdateWithoutRequestedPurchasesInput = {
   actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutIssuedByNestedInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUncheckedUpdateManyWithoutReceivedByNestedInput
+  addedPurchases?: Prisma.PurchaseUncheckedUpdateManyWithoutAddedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutInspectedByNestedInput
   assignedFinishings?: Prisma.FinishingAssignmentUncheckedUpdateManyWithoutAssignedByNestedInput
   raisedQuotations?: Prisma.QuotationUncheckedUpdateManyWithoutRaisedByNestedInput
@@ -1809,6 +2185,8 @@ export type UserUpdateWithoutDecidedPurchasesInput = {
   actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutIssuedByNestedInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUpdateManyWithoutReceivedByNestedInput
+  addedPurchases?: Prisma.PurchaseUpdateManyWithoutAddedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUpdateManyWithoutInspectedByNestedInput
   assignedFinishings?: Prisma.FinishingAssignmentUpdateManyWithoutAssignedByNestedInput
   raisedQuotations?: Prisma.QuotationUpdateManyWithoutRaisedByNestedInput
@@ -1837,6 +2215,8 @@ export type UserUncheckedUpdateWithoutDecidedPurchasesInput = {
   actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutIssuedByNestedInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUncheckedUpdateManyWithoutReceivedByNestedInput
+  addedPurchases?: Prisma.PurchaseUncheckedUpdateManyWithoutAddedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutInspectedByNestedInput
   assignedFinishings?: Prisma.FinishingAssignmentUncheckedUpdateManyWithoutAssignedByNestedInput
   raisedQuotations?: Prisma.QuotationUncheckedUpdateManyWithoutRaisedByNestedInput
@@ -1864,6 +2244,8 @@ export type UserCreateWithoutAuditLogsInput = {
   actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutIssuedByInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordCreateNestedManyWithoutReceivedByInput
+  addedPurchases?: Prisma.PurchaseCreateNestedManyWithoutAddedByInput
   inspectedQcRecords?: Prisma.QcRecordCreateNestedManyWithoutInspectedByInput
   assignedFinishings?: Prisma.FinishingAssignmentCreateNestedManyWithoutAssignedByInput
   raisedQuotations?: Prisma.QuotationCreateNestedManyWithoutRaisedByInput
@@ -1892,6 +2274,8 @@ export type UserUncheckedCreateWithoutAuditLogsInput = {
   actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutIssuedByInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUncheckedCreateNestedManyWithoutReceivedByInput
+  addedPurchases?: Prisma.PurchaseUncheckedCreateNestedManyWithoutAddedByInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutInspectedByInput
   assignedFinishings?: Prisma.FinishingAssignmentUncheckedCreateNestedManyWithoutAssignedByInput
   raisedQuotations?: Prisma.QuotationUncheckedCreateNestedManyWithoutRaisedByInput
@@ -1936,6 +2320,8 @@ export type UserUpdateWithoutAuditLogsInput = {
   actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutIssuedByNestedInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUpdateManyWithoutReceivedByNestedInput
+  addedPurchases?: Prisma.PurchaseUpdateManyWithoutAddedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUpdateManyWithoutInspectedByNestedInput
   assignedFinishings?: Prisma.FinishingAssignmentUpdateManyWithoutAssignedByNestedInput
   raisedQuotations?: Prisma.QuotationUpdateManyWithoutRaisedByNestedInput
@@ -1964,6 +2350,8 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
   actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutIssuedByNestedInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUncheckedUpdateManyWithoutReceivedByNestedInput
+  addedPurchases?: Prisma.PurchaseUncheckedUpdateManyWithoutAddedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutInspectedByNestedInput
   assignedFinishings?: Prisma.FinishingAssignmentUncheckedUpdateManyWithoutAssignedByNestedInput
   raisedQuotations?: Prisma.QuotationUncheckedUpdateManyWithoutRaisedByNestedInput
@@ -1992,6 +2380,8 @@ export type UserCreateWithoutActionLogsInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutIssuedByInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordCreateNestedManyWithoutReceivedByInput
+  addedPurchases?: Prisma.PurchaseCreateNestedManyWithoutAddedByInput
   inspectedQcRecords?: Prisma.QcRecordCreateNestedManyWithoutInspectedByInput
   assignedFinishings?: Prisma.FinishingAssignmentCreateNestedManyWithoutAssignedByInput
   raisedQuotations?: Prisma.QuotationCreateNestedManyWithoutRaisedByInput
@@ -2020,6 +2410,8 @@ export type UserUncheckedCreateWithoutActionLogsInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutIssuedByInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUncheckedCreateNestedManyWithoutReceivedByInput
+  addedPurchases?: Prisma.PurchaseUncheckedCreateNestedManyWithoutAddedByInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutInspectedByInput
   assignedFinishings?: Prisma.FinishingAssignmentUncheckedCreateNestedManyWithoutAssignedByInput
   raisedQuotations?: Prisma.QuotationUncheckedCreateNestedManyWithoutRaisedByInput
@@ -2064,6 +2456,8 @@ export type UserUpdateWithoutActionLogsInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutIssuedByNestedInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUpdateManyWithoutReceivedByNestedInput
+  addedPurchases?: Prisma.PurchaseUpdateManyWithoutAddedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUpdateManyWithoutInspectedByNestedInput
   assignedFinishings?: Prisma.FinishingAssignmentUpdateManyWithoutAssignedByNestedInput
   raisedQuotations?: Prisma.QuotationUpdateManyWithoutRaisedByNestedInput
@@ -2092,6 +2486,8 @@ export type UserUncheckedUpdateWithoutActionLogsInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutIssuedByNestedInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUncheckedUpdateManyWithoutReceivedByNestedInput
+  addedPurchases?: Prisma.PurchaseUncheckedUpdateManyWithoutAddedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutInspectedByNestedInput
   assignedFinishings?: Prisma.FinishingAssignmentUncheckedUpdateManyWithoutAssignedByNestedInput
   raisedQuotations?: Prisma.QuotationUncheckedUpdateManyWithoutRaisedByNestedInput
@@ -2120,6 +2516,8 @@ export type UserCreateWithoutNotificationsInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutIssuedByInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordCreateNestedManyWithoutReceivedByInput
+  addedPurchases?: Prisma.PurchaseCreateNestedManyWithoutAddedByInput
   inspectedQcRecords?: Prisma.QcRecordCreateNestedManyWithoutInspectedByInput
   assignedFinishings?: Prisma.FinishingAssignmentCreateNestedManyWithoutAssignedByInput
   raisedQuotations?: Prisma.QuotationCreateNestedManyWithoutRaisedByInput
@@ -2148,6 +2546,8 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
   actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutIssuedByInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUncheckedCreateNestedManyWithoutReceivedByInput
+  addedPurchases?: Prisma.PurchaseUncheckedCreateNestedManyWithoutAddedByInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutInspectedByInput
   assignedFinishings?: Prisma.FinishingAssignmentUncheckedCreateNestedManyWithoutAssignedByInput
   raisedQuotations?: Prisma.QuotationUncheckedCreateNestedManyWithoutRaisedByInput
@@ -2192,6 +2592,8 @@ export type UserUpdateWithoutNotificationsInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutIssuedByNestedInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUpdateManyWithoutReceivedByNestedInput
+  addedPurchases?: Prisma.PurchaseUpdateManyWithoutAddedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUpdateManyWithoutInspectedByNestedInput
   assignedFinishings?: Prisma.FinishingAssignmentUpdateManyWithoutAssignedByNestedInput
   raisedQuotations?: Prisma.QuotationUpdateManyWithoutRaisedByNestedInput
@@ -2220,6 +2622,8 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
   actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutIssuedByNestedInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUncheckedUpdateManyWithoutReceivedByNestedInput
+  addedPurchases?: Prisma.PurchaseUncheckedUpdateManyWithoutAddedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutInspectedByNestedInput
   assignedFinishings?: Prisma.FinishingAssignmentUncheckedUpdateManyWithoutAssignedByNestedInput
   raisedQuotations?: Prisma.QuotationUncheckedUpdateManyWithoutRaisedByNestedInput
@@ -2249,6 +2653,8 @@ export type UserCreateWithoutDecidedWarpRequestsInput = {
   actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutIssuedByInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordCreateNestedManyWithoutReceivedByInput
+  addedPurchases?: Prisma.PurchaseCreateNestedManyWithoutAddedByInput
   inspectedQcRecords?: Prisma.QcRecordCreateNestedManyWithoutInspectedByInput
   assignedFinishings?: Prisma.FinishingAssignmentCreateNestedManyWithoutAssignedByInput
   raisedQuotations?: Prisma.QuotationCreateNestedManyWithoutRaisedByInput
@@ -2277,6 +2683,8 @@ export type UserUncheckedCreateWithoutDecidedWarpRequestsInput = {
   actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutIssuedByInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUncheckedCreateNestedManyWithoutReceivedByInput
+  addedPurchases?: Prisma.PurchaseUncheckedCreateNestedManyWithoutAddedByInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutInspectedByInput
   assignedFinishings?: Prisma.FinishingAssignmentUncheckedCreateNestedManyWithoutAssignedByInput
   raisedQuotations?: Prisma.QuotationUncheckedCreateNestedManyWithoutRaisedByInput
@@ -2321,6 +2729,8 @@ export type UserUpdateWithoutDecidedWarpRequestsInput = {
   actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutIssuedByNestedInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUpdateManyWithoutReceivedByNestedInput
+  addedPurchases?: Prisma.PurchaseUpdateManyWithoutAddedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUpdateManyWithoutInspectedByNestedInput
   assignedFinishings?: Prisma.FinishingAssignmentUpdateManyWithoutAssignedByNestedInput
   raisedQuotations?: Prisma.QuotationUpdateManyWithoutRaisedByNestedInput
@@ -2349,6 +2759,8 @@ export type UserUncheckedUpdateWithoutDecidedWarpRequestsInput = {
   actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutIssuedByNestedInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUncheckedUpdateManyWithoutReceivedByNestedInput
+  addedPurchases?: Prisma.PurchaseUncheckedUpdateManyWithoutAddedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutInspectedByNestedInput
   assignedFinishings?: Prisma.FinishingAssignmentUncheckedUpdateManyWithoutAssignedByNestedInput
   raisedQuotations?: Prisma.QuotationUncheckedUpdateManyWithoutRaisedByNestedInput
@@ -2377,6 +2789,8 @@ export type UserCreateWithoutRequestedRateChangesInput = {
   actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutIssuedByInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordCreateNestedManyWithoutReceivedByInput
+  addedPurchases?: Prisma.PurchaseCreateNestedManyWithoutAddedByInput
   inspectedQcRecords?: Prisma.QcRecordCreateNestedManyWithoutInspectedByInput
   assignedFinishings?: Prisma.FinishingAssignmentCreateNestedManyWithoutAssignedByInput
   raisedQuotations?: Prisma.QuotationCreateNestedManyWithoutRaisedByInput
@@ -2405,6 +2819,8 @@ export type UserUncheckedCreateWithoutRequestedRateChangesInput = {
   actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutIssuedByInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUncheckedCreateNestedManyWithoutReceivedByInput
+  addedPurchases?: Prisma.PurchaseUncheckedCreateNestedManyWithoutAddedByInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutInspectedByInput
   assignedFinishings?: Prisma.FinishingAssignmentUncheckedCreateNestedManyWithoutAssignedByInput
   raisedQuotations?: Prisma.QuotationUncheckedCreateNestedManyWithoutRaisedByInput
@@ -2438,6 +2854,8 @@ export type UserCreateWithoutDecidedRateChangesInput = {
   actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutIssuedByInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordCreateNestedManyWithoutReceivedByInput
+  addedPurchases?: Prisma.PurchaseCreateNestedManyWithoutAddedByInput
   inspectedQcRecords?: Prisma.QcRecordCreateNestedManyWithoutInspectedByInput
   assignedFinishings?: Prisma.FinishingAssignmentCreateNestedManyWithoutAssignedByInput
   raisedQuotations?: Prisma.QuotationCreateNestedManyWithoutRaisedByInput
@@ -2466,6 +2884,8 @@ export type UserUncheckedCreateWithoutDecidedRateChangesInput = {
   actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutIssuedByInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUncheckedCreateNestedManyWithoutReceivedByInput
+  addedPurchases?: Prisma.PurchaseUncheckedCreateNestedManyWithoutAddedByInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutInspectedByInput
   assignedFinishings?: Prisma.FinishingAssignmentUncheckedCreateNestedManyWithoutAssignedByInput
   raisedQuotations?: Prisma.QuotationUncheckedCreateNestedManyWithoutRaisedByInput
@@ -2510,6 +2930,8 @@ export type UserUpdateWithoutRequestedRateChangesInput = {
   actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutIssuedByNestedInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUpdateManyWithoutReceivedByNestedInput
+  addedPurchases?: Prisma.PurchaseUpdateManyWithoutAddedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUpdateManyWithoutInspectedByNestedInput
   assignedFinishings?: Prisma.FinishingAssignmentUpdateManyWithoutAssignedByNestedInput
   raisedQuotations?: Prisma.QuotationUpdateManyWithoutRaisedByNestedInput
@@ -2538,6 +2960,8 @@ export type UserUncheckedUpdateWithoutRequestedRateChangesInput = {
   actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutIssuedByNestedInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUncheckedUpdateManyWithoutReceivedByNestedInput
+  addedPurchases?: Prisma.PurchaseUncheckedUpdateManyWithoutAddedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutInspectedByNestedInput
   assignedFinishings?: Prisma.FinishingAssignmentUncheckedUpdateManyWithoutAssignedByNestedInput
   raisedQuotations?: Prisma.QuotationUncheckedUpdateManyWithoutRaisedByNestedInput
@@ -2577,6 +3001,8 @@ export type UserUpdateWithoutDecidedRateChangesInput = {
   actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutIssuedByNestedInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUpdateManyWithoutReceivedByNestedInput
+  addedPurchases?: Prisma.PurchaseUpdateManyWithoutAddedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUpdateManyWithoutInspectedByNestedInput
   assignedFinishings?: Prisma.FinishingAssignmentUpdateManyWithoutAssignedByNestedInput
   raisedQuotations?: Prisma.QuotationUpdateManyWithoutRaisedByNestedInput
@@ -2605,6 +3031,8 @@ export type UserUncheckedUpdateWithoutDecidedRateChangesInput = {
   actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutIssuedByNestedInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUncheckedUpdateManyWithoutReceivedByNestedInput
+  addedPurchases?: Prisma.PurchaseUncheckedUpdateManyWithoutAddedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutInspectedByNestedInput
   assignedFinishings?: Prisma.FinishingAssignmentUncheckedUpdateManyWithoutAssignedByNestedInput
   raisedQuotations?: Prisma.QuotationUncheckedUpdateManyWithoutRaisedByNestedInput
@@ -2633,6 +3061,8 @@ export type UserCreateWithoutReportDownloadsInput = {
   actionLogs?: Prisma.ActionLogCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutIssuedByInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordCreateNestedManyWithoutReceivedByInput
+  addedPurchases?: Prisma.PurchaseCreateNestedManyWithoutAddedByInput
   inspectedQcRecords?: Prisma.QcRecordCreateNestedManyWithoutInspectedByInput
   assignedFinishings?: Prisma.FinishingAssignmentCreateNestedManyWithoutAssignedByInput
   raisedQuotations?: Prisma.QuotationCreateNestedManyWithoutRaisedByInput
@@ -2661,6 +3091,8 @@ export type UserUncheckedCreateWithoutReportDownloadsInput = {
   actionLogs?: Prisma.ActionLogUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutIssuedByInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUncheckedCreateNestedManyWithoutReceivedByInput
+  addedPurchases?: Prisma.PurchaseUncheckedCreateNestedManyWithoutAddedByInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutInspectedByInput
   assignedFinishings?: Prisma.FinishingAssignmentUncheckedCreateNestedManyWithoutAssignedByInput
   raisedQuotations?: Prisma.QuotationUncheckedCreateNestedManyWithoutRaisedByInput
@@ -2705,6 +3137,8 @@ export type UserUpdateWithoutReportDownloadsInput = {
   actionLogs?: Prisma.ActionLogUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutIssuedByNestedInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUpdateManyWithoutReceivedByNestedInput
+  addedPurchases?: Prisma.PurchaseUpdateManyWithoutAddedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUpdateManyWithoutInspectedByNestedInput
   assignedFinishings?: Prisma.FinishingAssignmentUpdateManyWithoutAssignedByNestedInput
   raisedQuotations?: Prisma.QuotationUpdateManyWithoutRaisedByNestedInput
@@ -2733,6 +3167,8 @@ export type UserUncheckedUpdateWithoutReportDownloadsInput = {
   actionLogs?: Prisma.ActionLogUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   issuedMaterialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutIssuedByNestedInput
+  receivedMaterialReturns?: Prisma.MaterialReturnRecordUncheckedUpdateManyWithoutReceivedByNestedInput
+  addedPurchases?: Prisma.PurchaseUncheckedUpdateManyWithoutAddedByNestedInput
   inspectedQcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutInspectedByNestedInput
   assignedFinishings?: Prisma.FinishingAssignmentUncheckedUpdateManyWithoutAssignedByNestedInput
   raisedQuotations?: Prisma.QuotationUncheckedUpdateManyWithoutRaisedByNestedInput
@@ -2754,6 +3190,8 @@ export type UserCountOutputType = {
   actionLogs: number
   notifications: number
   issuedMaterialIssues: number
+  receivedMaterialReturns: number
+  addedPurchases: number
   inspectedQcRecords: number
   assignedFinishings: number
   raisedQuotations: number
@@ -2771,6 +3209,8 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   actionLogs?: boolean | UserCountOutputTypeCountActionLogsArgs
   notifications?: boolean | UserCountOutputTypeCountNotificationsArgs
   issuedMaterialIssues?: boolean | UserCountOutputTypeCountIssuedMaterialIssuesArgs
+  receivedMaterialReturns?: boolean | UserCountOutputTypeCountReceivedMaterialReturnsArgs
+  addedPurchases?: boolean | UserCountOutputTypeCountAddedPurchasesArgs
   inspectedQcRecords?: boolean | UserCountOutputTypeCountInspectedQcRecordsArgs
   assignedFinishings?: boolean | UserCountOutputTypeCountAssignedFinishingsArgs
   raisedQuotations?: boolean | UserCountOutputTypeCountRaisedQuotationsArgs
@@ -2825,6 +3265,20 @@ export type UserCountOutputTypeCountNotificationsArgs<ExtArgs extends runtime.Ty
  */
 export type UserCountOutputTypeCountIssuedMaterialIssuesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.MaterialIssueRecordWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountReceivedMaterialReturnsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.MaterialReturnRecordWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountAddedPurchasesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PurchaseWhereInput
 }
 
 /**
@@ -2910,6 +3364,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   actionLogs?: boolean | Prisma.User$actionLogsArgs<ExtArgs>
   notifications?: boolean | Prisma.User$notificationsArgs<ExtArgs>
   issuedMaterialIssues?: boolean | Prisma.User$issuedMaterialIssuesArgs<ExtArgs>
+  receivedMaterialReturns?: boolean | Prisma.User$receivedMaterialReturnsArgs<ExtArgs>
+  addedPurchases?: boolean | Prisma.User$addedPurchasesArgs<ExtArgs>
   inspectedQcRecords?: boolean | Prisma.User$inspectedQcRecordsArgs<ExtArgs>
   assignedFinishings?: boolean | Prisma.User$assignedFinishingsArgs<ExtArgs>
   raisedQuotations?: boolean | Prisma.User$raisedQuotationsArgs<ExtArgs>
@@ -2977,6 +3433,8 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   actionLogs?: boolean | Prisma.User$actionLogsArgs<ExtArgs>
   notifications?: boolean | Prisma.User$notificationsArgs<ExtArgs>
   issuedMaterialIssues?: boolean | Prisma.User$issuedMaterialIssuesArgs<ExtArgs>
+  receivedMaterialReturns?: boolean | Prisma.User$receivedMaterialReturnsArgs<ExtArgs>
+  addedPurchases?: boolean | Prisma.User$addedPurchasesArgs<ExtArgs>
   inspectedQcRecords?: boolean | Prisma.User$inspectedQcRecordsArgs<ExtArgs>
   assignedFinishings?: boolean | Prisma.User$assignedFinishingsArgs<ExtArgs>
   raisedQuotations?: boolean | Prisma.User$raisedQuotationsArgs<ExtArgs>
@@ -3004,6 +3462,8 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     actionLogs: Prisma.$ActionLogPayload<ExtArgs>[]
     notifications: Prisma.$NotificationPayload<ExtArgs>[]
     issuedMaterialIssues: Prisma.$MaterialIssueRecordPayload<ExtArgs>[]
+    receivedMaterialReturns: Prisma.$MaterialReturnRecordPayload<ExtArgs>[]
+    addedPurchases: Prisma.$PurchasePayload<ExtArgs>[]
     inspectedQcRecords: Prisma.$QcRecordPayload<ExtArgs>[]
     assignedFinishings: Prisma.$FinishingAssignmentPayload<ExtArgs>[]
     raisedQuotations: Prisma.$QuotationPayload<ExtArgs>[]
@@ -3427,6 +3887,8 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   actionLogs<T extends Prisma.User$actionLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$actionLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ActionLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   notifications<T extends Prisma.User$notificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   issuedMaterialIssues<T extends Prisma.User$issuedMaterialIssuesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$issuedMaterialIssuesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MaterialIssueRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  receivedMaterialReturns<T extends Prisma.User$receivedMaterialReturnsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$receivedMaterialReturnsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MaterialReturnRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  addedPurchases<T extends Prisma.User$addedPurchasesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$addedPurchasesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PurchasePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   inspectedQcRecords<T extends Prisma.User$inspectedQcRecordsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$inspectedQcRecordsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$QcRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   assignedFinishings<T extends Prisma.User$assignedFinishingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$assignedFinishingsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FinishingAssignmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   raisedQuotations<T extends Prisma.User$raisedQuotationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$raisedQuotationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$QuotationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -4014,6 +4476,54 @@ export type User$issuedMaterialIssuesArgs<ExtArgs extends runtime.Types.Extensio
   take?: number
   skip?: number
   distinct?: Prisma.MaterialIssueRecordScalarFieldEnum | Prisma.MaterialIssueRecordScalarFieldEnum[]
+}
+
+/**
+ * User.receivedMaterialReturns
+ */
+export type User$receivedMaterialReturnsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the MaterialReturnRecord
+   */
+  select?: Prisma.MaterialReturnRecordSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the MaterialReturnRecord
+   */
+  omit?: Prisma.MaterialReturnRecordOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.MaterialReturnRecordInclude<ExtArgs> | null
+  where?: Prisma.MaterialReturnRecordWhereInput
+  orderBy?: Prisma.MaterialReturnRecordOrderByWithRelationInput | Prisma.MaterialReturnRecordOrderByWithRelationInput[]
+  cursor?: Prisma.MaterialReturnRecordWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.MaterialReturnRecordScalarFieldEnum | Prisma.MaterialReturnRecordScalarFieldEnum[]
+}
+
+/**
+ * User.addedPurchases
+ */
+export type User$addedPurchasesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Purchase
+   */
+  select?: Prisma.PurchaseSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Purchase
+   */
+  omit?: Prisma.PurchaseOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PurchaseInclude<ExtArgs> | null
+  where?: Prisma.PurchaseWhereInput
+  orderBy?: Prisma.PurchaseOrderByWithRelationInput | Prisma.PurchaseOrderByWithRelationInput[]
+  cursor?: Prisma.PurchaseWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PurchaseScalarFieldEnum | Prisma.PurchaseScalarFieldEnum[]
 }
 
 /**

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from "@nestjs/common";
 import { RequireRoles } from "../auth/decorators/require-roles.decorator";
 import { UserRole } from "../generated/prisma/client";
 import { CreateFinancialEntryDto } from "./dto/create-financial-entry.dto";
@@ -33,6 +33,13 @@ export class FirmsController {
   @RequireRoles(UserRole.ACCOUNTANT, UserRole.SUPERADMIN)
   update(@Param("id") id: string, @Body() dto: UpdateFirmDto) {
     return this.firmsService.update(id, dto);
+  }
+
+  @Delete(":id")
+  @RequireRoles(UserRole.ACCOUNTANT, UserRole.SUPERADMIN)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remove(@Param("id") id: string) {
+    return this.firmsService.remove(id);
   }
 
   @Post(":id/entries")

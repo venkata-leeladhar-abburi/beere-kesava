@@ -5,7 +5,7 @@ import { composeProviders } from "../../lib/composeProviders";
 import { ErrorBoundary } from "../../components/ErrorBoundary";
 import {
   POProvider, BulkOrderProvider, DesignLibraryProvider,
-  BatchProvider, MaterialIssueProvider, FirmsProvider,
+  BatchProvider, MaterialIssueProvider, MaterialReturnProvider, FirmsProvider,
   WeaverPaymentsProvider, SalesProvider, CustomersProvider,
 } from "../../contexts";
 
@@ -19,6 +19,7 @@ const AdminContexts = composeProviders([
   DesignLibraryProvider,
   BatchProvider,
   MaterialIssueProvider,
+  MaterialReturnProvider,
   FirmsProvider,
   WeaverPaymentsProvider,
 ]);

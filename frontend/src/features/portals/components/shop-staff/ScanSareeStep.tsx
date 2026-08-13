@@ -1,9 +1,10 @@
 import React from "react";
 import { motion } from "motion/react";
-import { Camera, Check } from "lucide-react";
+import { Camera, Check, List } from "lucide-react";
 import { C, F, Card, Btn, Chip } from "./theme";
 import { Button, Input, CurrencyInput } from "../../../../shared/ui/primitives";
 import { StepHeader, StepBody, FlowActions, ScanPanel, FoundBanner, ACCENT_SALE } from "./flow-kit";
+import type { BackendStockItem } from "../../../../shared/api/inventory";
 
 interface Saree {
   id: string;
@@ -27,8 +28,12 @@ interface ScanSareeStepProps {
   canSeePrices: boolean;
   isMobile?: boolean;
   fmtPrice: (n: number) => string;
-  handleScan: () => void;
+  handleScan: (overrideId?: string) => void;
   scanError?: string | null;
+  availableSarees: BackendStockItem[];
+  showSareeList: boolean;
+  setShowSareeList: (v: boolean) => void;
+  handleSelectSaree: (id: string) => void;
   onBack: () => void;
   onNext: () => void;
 }
@@ -47,6 +52,10 @@ export function ScanSareeStep({
   fmtPrice,
   handleScan,
   scanError,
+  availableSarees,
+  showSareeList,
+  setShowSareeList,
+  handleSelectSaree,
   onBack,
   onNext,
 }: ScanSareeStepProps) {
@@ -61,10 +70,58 @@ export function ScanSareeStep({
               title="Scan Saree Barcode"
               hint="Point the camera at the barcode tag on the saree label."
               value={manualId}
-              onValueChange={setManualId}
-              onSubmit={handleScan}
+              onValueChange={v => { setManualId(v); setShowSareeList(true); }}
+              onSubmit={() => handleScan()}
               error={scanError}
             />
+
+            <div style={{ display: "flex", alignItems: "center", gap: 14, margin: "18px 0" }}>
+              <div style={{ flex: 1, height: 1, background: C.bdr }} />
+              <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>or pick from sarees in stock</span>
+              <div style={{ flex: 1, height: 1, background: C.bdr }} />
+            </div>
+
+            {!showSareeList ? (
+              <Button variant="secondary" fullWidth iconLeft={List} onClick={() => setShowSareeList(true)}
+                className="h-[50px] rounded-xl border-[1.5px] border-dashed border-[rgba(110,15,45,0.30)] bg-transparent text-[#6E0F2D]">
+                Browse All Sarees ({availableSarees.length} in stock)
+              </Button>
+            ) : (
+              <div style={{
+                background: C.white, border: `1.5px solid ${C.burg}`, borderRadius: 14,
+                boxShadow: "0 8px 24px rgba(44,24,16,0.12)", overflow: "hidden",
+              }}>
+                <div style={{ padding: "8px 14px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${C.bdr}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 1.5, color: C.muted, textTransform: "uppercase" as const }}>
+                    {manualId.trim().length >= 2 ? `${availableSarees.length} result${availableSarees.length !== 1 ? "s" : ""} for "${manualId.trim()}"` : `${availableSarees.length} Available in Stock`}
+                  </span>
+                  <Button variant="link" onClick={() => setShowSareeList(false)} className="p-0 text-xs text-[#69635E] underline">
+                    Hide
+                  </Button>
+                </div>
+                <div style={{ maxHeight: 360, overflowY: "auto" as const }}>
+                  {availableSarees.length > 0 ? availableSarees.slice(0, 50).map((s, i) => (
+                    <Button key={s.sareeId} variant="tertiary" fullWidth onClick={() => handleSelectSaree(s.sareeId)}
+                      className={`justify-start gap-3 rounded-none border-0 px-3.5 py-3 ${i < Math.min(availableSarees.length, 50) - 1 ? "border-b border-[rgba(110,15,45,0.12)]" : ""}`}>
+                      <div style={{ flex: 1, textAlign: "left" as const }}>
+                        <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 13, color: C.burg }}>{s.sareeId}</div>
+                        <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>
+                          {s.sareeTypeLabel || "—"}{s.designCode ? ` · ${s.designCode}` : ""}
+                        </div>
+                      </div>
+                      <div style={{ textAlign: "right" as const, flexShrink: 0 }}>
+                        <div style={{ fontFamily: F.u, fontSize: 12, color: C.text }}>{s.weaverName ?? (s.loomNumber ? `Loom ${s.loomNumber}` : "—")}</div>
+                        <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, textTransform: "capitalize" as const }}>{s.source}</div>
+                      </div>
+                    </Button>
+                  )) : (
+                    <div style={{ padding: "20px", textAlign: "center" as const }}>
+                      <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>No sarees in stock match "{manualId.trim()}"</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </StepBody>
           <FlowActions
             accent={ACCENT_SALE}

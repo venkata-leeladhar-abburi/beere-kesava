@@ -71,6 +71,10 @@ export interface AssignBatchRowPayload {
   loomNumber?: number;
 }
 
+export interface AssignBatchRowsPayload {
+  rows: (AssignBatchRowPayload & { serial: number })[];
+}
+
 export interface ReceiveBatchRowPayload {
   weight: number;
   color?: string;
@@ -88,6 +92,11 @@ export const batchesApi = {
 
   assignRow: (batchId: string, serial: number, payload: AssignBatchRowPayload) =>
     apiClient.patch<BackendBatchSareeRow>(`/batches/${batchId}/rows/${serial}`, payload),
+
+  // Bulk counterpart — assigns every row in one request instead of the
+  // caller looping one PATCH per row (see BatchContext.tsx saveDraftMutation).
+  assignRows: (batchId: string, payload: AssignBatchRowsPayload) =>
+    apiClient.patch<BackendBatch>(`/batches/${batchId}/rows`, payload),
 
   receiveRow: (batchId: string, serial: number, payload: ReceiveBatchRowPayload) =>
     apiClient.patch<BackendBatchSareeRow>(`/batches/${batchId}/rows/${serial}/receive`, payload),

@@ -8,6 +8,7 @@ import { DateFilterBar } from "../../../../../shared/ui/DateFilterBar";
 import { Button } from "../../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
+import { materialItemToGrams, REELS_PER_BUN } from "../../../../materials/contexts/MaterialIssueContext";
 
 export function BatchesTab({ sortedAllWeaverBatches, dispatches, weaver, batchDateFilter, setBatchDateFilter, setViewDispatches, onNavigate }: any) {
   return (
@@ -252,6 +253,29 @@ export function MaterialsTab({ materialRecords, materialByBatch }: any) {
                     {materialByBatch.map(b => {
                       const outColor = b.outstandingGrams > 0 ? T.crimson : T.green;
                       const records = recordsByBatch.get(b.batchId) ?? [];
+
+                      // Break down issued/outstanding by material type. Returns are only
+                      // weighed in aggregate per batch (no per-material split at receipt),
+                      // so each material's outstanding is apportioned from the batch-level
+                      // outstanding in proportion to how much of that material was issued.
+                      const byMaterial = new Map<string, { label: string; issuedGrams: number; reels: number }>();
+                      records.forEach(r => r.materials.forEach(m => {
+                        const key = m.materialType === "Warp" && m.warpSubtype ? `Warp — ${m.warpSubtype}` : m.materialType;
+                        if (!byMaterial.has(key)) byMaterial.set(key, { label: key, issuedGrams: 0, reels: 0 });
+                        const entry = byMaterial.get(key)!;
+                        entry.issuedGrams += materialItemToGrams(m);
+                        if (m.materialType === "Jari") {
+                          entry.reels += (m.unit || "").toLowerCase().startsWith("bun")
+                            ? (m.quantity || 0) * REELS_PER_BUN
+                            : (m.quantity || 0);
+                        }
+                      }));
+                      const outstandingRatio = b.issuedGrams > 0 ? b.outstandingGrams / b.issuedGrams : 0;
+                      const materialBreakdown = Array.from(byMaterial.values()).map(entry => ({
+                        ...entry,
+                        outstandingGrams: entry.issuedGrams * outstandingRatio,
+                      }));
+
                       return (
                         <div key={b.batchId} style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
                           {/* Batch header */}
@@ -274,6 +298,32 @@ export function MaterialsTab({ materialRecords, materialByBatch }: any) {
                               </div>
                             ))}
                           </div>
+
+                          {/* Outstanding broken down per material */}
+                          {materialBreakdown.length > 0 && (
+                            <div style={{ padding: "16px 22px", borderBottom: `1px solid ${T.borderDef}` }}>
+                              <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 10 }}>Outstanding by Material</div>
+                              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                                {materialBreakdown.map(m => {
+                                  const mOutColor = m.outstandingGrams > 0 ? T.crimson : T.green;
+                                  return (
+                                    <div key={m.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "10px 14px", flexWrap: "wrap" }}>
+                                      <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown }}>{m.label}</span>
+                                      <div style={{ display: "flex", alignItems: "baseline", gap: 16 }}>
+                                        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
+                                          Issued: <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.luxuryBrown }}>{fmtKg(m.issuedGrams)}</span>
+                                          {m.reels > 0 && ` (${m.reels} reels)`}
+                                        </span>
+                                        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
+                                          Outstanding: <span style={{ fontFamily: F.mono, fontWeight: 700, color: mOutColor }}>{fmtKg(m.outstandingGrams)}</span>
+                                        </span>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
 
                           {/* Individual handover records for this batch */}
                           <div style={{ padding: "16px 22px", display: "flex", flexDirection: "column", gap: 12 }}>

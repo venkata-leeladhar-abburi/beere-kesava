@@ -6,6 +6,7 @@ import { IdGeneratorService } from "../id-generator/id-generator.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { ActorOnlyDto } from "./dto/actor-only.dto";
 import { AssignBatchRowDto } from "./dto/assign-batch-row.dto";
+import { AssignBatchRowsDto } from "./dto/assign-batch-rows.dto";
 import { CreateBatchDto } from "./dto/create-batch.dto";
 import { ListBatchesQueryDto } from "./dto/list-batches-query.dto";
 import { ReceiveBatchRowDto } from "./dto/receive-batch-row.dto";
@@ -192,6 +193,123 @@ export class BatchesService {
     return updatedRow;
   }
 
+  // Bulk counterpart to assignRow — assigns every row passed in one request
+  // instead of the caller making one PATCH per row. Saving/finalizing an
+  // N-row batch previously meant N sequential HTTP round trips, each running
+  // assignRow's own ~6 sequential queries (row lookup, design/bulk-order/
+  // saree-type existence checks, buildSareeId's weaver/loom lookup, the
+  // update, the audit log) — against a remote pooled Supabase connection
+  // (see prisma.service.ts's cold-start/pooler-latency comments) that adds
+  // up to a very visible multi-second "hang" for anything but a tiny batch.
+  // This collapses it to: 1 batch fetch + up to 5 bulk existence-check
+  // queries (each `IN (...)`, not one per row) + N updates run inside a
+  // single transaction + 1 summary audit-log entry.
+  async assignRows(batchId: string, dto: AssignBatchRowsDto) {
+    const batch = await this.findOne(batchId);
+    const rowsBySerial = new Map(batch.rows.map((r) => [r.serial, r]));
+
+    for (const item of dto.rows) {
+      if (!rowsBySerial.has(item.serial)) {
+        throw new NotFoundException(`Row ${item.serial} not found in batch ${batchId}`);
+      }
+      if (item.recipientType === RecipientType.WEAVER) {
+        if (!item.weaverId || item.factoryLoomId) {
+          throw new BadRequestException(
+            `Row ${item.serial}: recipientType WEAVER requires exactly weaverId (not factoryLoomId)`,
+          );
+        }
+      } else if (!item.factoryLoomId || item.weaverId) {
+        throw new BadRequestException(
+          `Row ${item.serial}: recipientType FACTORY_LOOM requires exactly factoryLoomId (not weaverId)`,
+        );
+      }
+    }
+
+    const designCodes = [...new Set(dto.rows.map((r) => r.designCode || null).filter((v): v is string => !!v))];
+    const bulkOrderRefs = [...new Set(dto.rows.map((r) => r.bulkOrderRef || null).filter((v): v is string => !!v))];
+    const sareeTypeCodes = [...new Set(dto.rows.map((r) => r.sareeTypeCode))];
+    const weaverIds = [
+      ...new Set(dto.rows.filter((r) => r.recipientType === RecipientType.WEAVER).map((r) => r.weaverId!)),
+    ];
+    const factoryLoomIds = [
+      ...new Set(dto.rows.filter((r) => r.recipientType === RecipientType.FACTORY_LOOM).map((r) => r.factoryLoomId!)),
+    ];
+
+    const [designs, bulkOrders, sareeTypes, weavers, factoryLooms] = await Promise.all([
+      designCodes.length ? this.prisma.designLibrary.findMany({ where: { code: { in: designCodes } } }) : [],
+      bulkOrderRefs.length ? this.prisma.bulkOrder.findMany({ where: { ref: { in: bulkOrderRefs } } }) : [],
+      this.prisma.sareeTypeRate.findMany({ where: { code: { in: sareeTypeCodes } } }),
+      weaverIds.length ? this.prisma.weaver.findMany({ where: { id: { in: weaverIds } } }) : [],
+      factoryLoomIds.length ? this.prisma.factoryLoom.findMany({ where: { id: { in: factoryLoomIds } } }) : [],
+    ]);
+
+    const designSet = new Set(designs.map((d) => d.code));
+    const bulkOrderSet = new Set(bulkOrders.map((b) => b.ref));
+    const sareeTypeSet = new Set(sareeTypes.map((s) => s.code));
+    const weaverMap = new Map(weavers.map((w) => [w.id, w]));
+    const loomMap = new Map(factoryLooms.map((l) => [l.id, l]));
+
+    const batchSeq = batchId.split("-").pop() || batchId;
+
+    const updates = dto.rows.map((item) => {
+      const designCode = item.designCode || null;
+      const bulkOrderRef = item.bulkOrderRef || null;
+
+      if (designCode && !designSet.has(designCode)) {
+        throw new NotFoundException(`Design ${designCode} not found (row ${item.serial})`);
+      }
+      if (bulkOrderRef && !bulkOrderSet.has(bulkOrderRef)) {
+        throw new NotFoundException(`Bulk order ${bulkOrderRef} not found (row ${item.serial})`);
+      }
+      if (!sareeTypeSet.has(item.sareeTypeCode)) {
+        throw new NotFoundException(`Saree type ${item.sareeTypeCode} not found (row ${item.serial})`);
+      }
+
+      const seq3 = String(item.serial).padStart(3, "0");
+      let sareeId: string;
+      if (item.recipientType === RecipientType.WEAVER) {
+        const weaver = weaverMap.get(item.weaverId!);
+        if (!weaver) {
+          throw new NotFoundException(`Weaver ${item.weaverId} not found (row ${item.serial})`);
+        }
+        const loomNumber = item.loomNumber ?? 1;
+        sareeId = `${weaver.firstName.toUpperCase()}-L${loomNumber}-B${batchSeq}-${seq3}`;
+      } else {
+        const loom = loomMap.get(item.factoryLoomId!);
+        if (!loom) {
+          throw new NotFoundException(`Factory loom ${item.factoryLoomId} not found (row ${item.serial})`);
+        }
+        sareeId = `${loom.loomNumber}-B${batchSeq}-${seq3}`;
+      }
+
+      return this.prisma.batchSareeRow.update({
+        where: { batchId_serial: { batchId, serial: item.serial } },
+        data: {
+          sareeId,
+          recipientType: item.recipientType,
+          weaverId: item.weaverId,
+          factoryLoomId: item.factoryLoomId,
+          designCode,
+          sareeTypeCode: item.sareeTypeCode,
+          bulkOrderRef,
+        },
+      });
+    });
+
+    await this.prisma.$transaction(updates);
+
+    await this.auditLog.recordAction({
+      actorId: dto.actorId,
+      module: "BATCHES",
+      action: `Assigned ${dto.rows.length} row(s) of batch ${batchId}`,
+      entityType: "Batch",
+      entityId: batchId,
+      recordLabel: batchId,
+    });
+
+    return this.findOne(batchId);
+  }
+
   async receiveRow(batchId: string, serial: number, dto: ReceiveBatchRowDto) {
     await this.findOne(batchId);
 
@@ -349,6 +467,7 @@ export class BatchesService {
         where: { OR: [{ batchId: id }, { sareeId: { in: sareeIds } }] },
       }),
       this.prisma.materialIssueRecord.deleteMany({ where: { batchId: id } }),
+      this.prisma.materialReturnRecord.deleteMany({ where: { batchId: id } }),
       this.prisma.inventoryRecord.deleteMany({
         where: { OR: [{ batchId: id }, { sareeId: { in: sareeIds } }] },
       }),

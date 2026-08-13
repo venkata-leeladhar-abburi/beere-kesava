@@ -9,6 +9,7 @@ import { Invoice, PayHistRecord } from "../../types";
 import { FadeUp } from "../common/motion";
 import { SectionCard } from "../common/primitives";
 import { HIST_TYPE_CFG, HistoryCard, getHistTypeIcon } from "./HistoryCard";
+import { TransactionDetailModal } from "./TransactionDetailModal";
 import { vendorsApi } from "../../../../shared/api/vendors";
 import { suppliersApi } from "../../../../shared/api/suppliers";
 import { weaversApi } from "../../../../shared/api/weavers";
@@ -40,6 +41,7 @@ export function PaymentHistorySection() {
   const [search,       setSearch]       = useState("");
   const [view,         setView]         = useState<"card" | "list" | "table">("card");
   const [page,         setPage]         = useState(1);
+  const [viewRecord,   setViewRecord]   = useState<PayHistRecord | null>(null);
   const PER_PAGE = 10;
 
   const { data: vendorsRes } = useQuery({ queryKey: ["history-vendors"], queryFn: () => vendorsApi.list() });
@@ -190,8 +192,8 @@ export function PaymentHistorySection() {
     { id: "recordedBy", header: "Recorded By", accessor: r => r.recordedBy, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{r.recordedBy}</span> },
     {
       id: "action", header: "Action", accessor: () => null, type: "actions", align: "center",
-      cell: () => (
-        <Button variant="secondary" size="sm" iconLeft={Eye} className="rounded-[8px] border-[1.5px] border-[rgba(110,15,45,0.12)] text-[#6E0F2D]">
+      cell: (_v, r) => (
+        <Button variant="secondary" size="sm" iconLeft={Eye} onClick={() => setViewRecord(r)} className="rounded-[8px] border-[1.5px] border-[rgba(110,15,45,0.12)] text-[#6E0F2D]">
           View
         </Button>
       ),
@@ -307,7 +309,7 @@ export function PaymentHistorySection() {
               <motion.div key={r.id} style={{ display: "flex", flexDirection: "column" }}
                 initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.06, ease: EASE }}>
-                <HistoryCard r={r} />
+                <HistoryCard r={r} onView={() => setViewRecord(r)} />
               </motion.div>
             ))}
             {filtered.length === 0 && (
@@ -386,7 +388,7 @@ export function PaymentHistorySection() {
                   </div>
 
                   {/* View button */}
-                  <IconButton icon={Eye} label="View" variant="secondary" size="sm" className="flex-shrink-0 rounded-[8px] text-[#6E0F2D]" />
+                  <IconButton icon={Eye} label="View" variant="secondary" size="sm" onClick={() => setViewRecord(r)} className="flex-shrink-0 rounded-[8px] text-[#6E0F2D]" />
                 </motion.div>
               );
             })}
@@ -447,6 +449,7 @@ export function PaymentHistorySection() {
         )}
       </SectionCard>
       </FadeUp>
+      {viewRecord && <TransactionDetailModal record={viewRecord} onClose={() => setViewRecord(null)} />}
     </div>
   );
 }

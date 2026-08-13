@@ -28,7 +28,15 @@ export class InventoryService {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
-   * Returns all sarees in the inventory queue as a rich StockItem array.
+   * Returns every QC-passed saree that hasn't left the shop yet — i.e.
+   * `qcPassed: true` (a clean PASSED verdict — see QcService, SEMI/DEFECTIVE
+   * never set this), minus anything already dispatched or already sold.
+   * Deliberately NOT gated on finishing/InventoryRecord status — a saree is
+   * "in stock" as soon as QC passes, whether or not it's separately gone
+   * through the finishing department.
+   *   - DispatchSaree row exists → already sent out (excluded)
+   *   - SaleRecord row exists → already sold (excluded, see SalesService.createSale)
+   *   - InventoryRecord.status === DAMAGED_REVIEW_NEEDED → not sellable (excluded)
    *
    * Scope — woven sarees only (outsourced/factory). External-purchase sarees
    * (Purchase records) are not yet joined here; they'll be added once the
@@ -39,49 +47,69 @@ export class InventoryService {
    *   - assignedBy / assignedAt (no actor-tracking on InventoryRecord yet)
    */
   async findAll(): Promise<StockItem[]> {
-    const qcRows = await this.prisma.qcRecord.findMany({
-      where: { result: { in: ["PASSED", "SEMI"] } },
+    const rows = await this.prisma.batchSareeRow.findMany({
+      where: { qcPassed: true, sareeId: { not: null } },
       include: {
-        batchSareeRow: {
-          include: {
-            weaver: true,
-            factoryLoom: true,
-            sareeType: true,
-            design: true,
-          },
-        },
+        weaver: true,
+        factoryLoom: true,
+        sareeType: true,
+        design: true,
+        qcRecords: { orderBy: { qcDate: "desc" }, take: 1 },
       },
-      orderBy: { qcDate: "desc" },
     });
+    if (rows.length === 0) {
+      return [];
+    }
+    const sareeIds = rows.map((r) => r.sareeId!) as string[];
 
-    return qcRows.map((qc) => {
-      const row = qc.batchSareeRow;
-      const isFactory =
-        row.recipientType === "FACTORY_LOOM" || row.factoryLoomId != null;
+    const [dispatched, sold, inventoryRecords] = await Promise.all([
+      this.prisma.dispatchSaree.findMany({
+        where: { sareeId: { in: sareeIds } },
+        select: { sareeId: true },
+      }),
+      this.prisma.saleRecord.findMany({
+        where: { sareeId: { in: sareeIds } },
+        select: { sareeId: true },
+      }),
+      this.prisma.inventoryRecord.findMany({
+        where: { sareeId: { in: sareeIds }, status: "DAMAGED_REVIEW_NEEDED" },
+        select: { sareeId: true },
+      }),
+    ]);
+    const excluded = new Set([
+      ...dispatched.map((d) => d.sareeId),
+      ...sold.map((s) => s.sareeId),
+      ...inventoryRecords.map((i) => i.sareeId),
+    ]);
 
-      const source: StockSource = isFactory ? "factory" : "outsourced";
+    return rows
+      .filter((row) => !excluded.has(row.sareeId!))
+      .map((row): StockItem => {
+        const isFactory =
+          row.recipientType === "FACTORY_LOOM" || row.factoryLoomId != null;
+        const source: StockSource = isFactory ? "factory" : "outsourced";
+        const latestQc = row.qcRecords[0];
+        const loomNumber = row.factoryLoom?.loomNumber ?? latestQc?.loomNumber ?? null;
 
-      const loomNumber =
-        row.factoryLoom?.loomNumber ?? qc.loomNumber ?? null;
-
-      return {
-        sareeId: qc.sareeId,
-        source,
-        status: "available" as StockStatus, // sale/dispatch lookup deferred
-        weaverName: row.weaver
-          ? `${row.weaver.firstName} ${row.weaver.lastName}`.trim()
-          : null,
-        weaverId: row.weaverId ?? null,
-        loomNumber,
-        designCode: row.designCode ?? null,
-        sareeTypeCode: row.sareeTypeCode ?? null,
-        sareeTypeLabel: row.sareeType
-          ? `${row.sareeTypeCode} · ${row.sareeType.type}`
-          : row.sareeTypeCode ?? null,
-        qcDate: qc.qcDate.toISOString(),
-        saleRef: null,
-        customer: null,
-      };
-    });
+        return {
+          sareeId: row.sareeId!,
+          source,
+          status: "available" as StockStatus,
+          weaverName: row.weaver
+            ? `${row.weaver.firstName} ${row.weaver.lastName}`.trim()
+            : null,
+          weaverId: row.weaverId ?? null,
+          loomNumber,
+          designCode: row.designCode ?? null,
+          sareeTypeCode: row.sareeTypeCode ?? null,
+          sareeTypeLabel: row.sareeType
+            ? `${row.sareeTypeCode} · ${row.sareeType.type}`
+            : row.sareeTypeCode ?? null,
+          qcDate: (latestQc?.qcDate ?? row.createdAt).toISOString(),
+          saleRef: null,
+          customer: null,
+        };
+      })
+      .sort((a, b) => new Date(b.qcDate).getTime() - new Date(a.qcDate).getTime());
   }
 }

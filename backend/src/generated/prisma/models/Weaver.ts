@@ -323,6 +323,7 @@ export type WeaverWhereInput = {
   designs?: Prisma.DesignLibraryListRelationFilter
   batchSareeRows?: Prisma.BatchSareeRowListRelationFilter
   materialIssues?: Prisma.MaterialIssueRecordListRelationFilter
+  materialReturns?: Prisma.MaterialReturnRecordListRelationFilter
   qcRecords?: Prisma.QcRecordListRelationFilter
   sarees?: Prisma.SareeListRelationFilter
   payments?: Prisma.WeaverPaymentListRelationFilter
@@ -352,6 +353,7 @@ export type WeaverOrderByWithRelationInput = {
   designs?: Prisma.DesignLibraryOrderByRelationAggregateInput
   batchSareeRows?: Prisma.BatchSareeRowOrderByRelationAggregateInput
   materialIssues?: Prisma.MaterialIssueRecordOrderByRelationAggregateInput
+  materialReturns?: Prisma.MaterialReturnRecordOrderByRelationAggregateInput
   qcRecords?: Prisma.QcRecordOrderByRelationAggregateInput
   sarees?: Prisma.SareeOrderByRelationAggregateInput
   payments?: Prisma.WeaverPaymentOrderByRelationAggregateInput
@@ -384,6 +386,7 @@ export type WeaverWhereUniqueInput = Prisma.AtLeast<{
   designs?: Prisma.DesignLibraryListRelationFilter
   batchSareeRows?: Prisma.BatchSareeRowListRelationFilter
   materialIssues?: Prisma.MaterialIssueRecordListRelationFilter
+  materialReturns?: Prisma.MaterialReturnRecordListRelationFilter
   qcRecords?: Prisma.QcRecordListRelationFilter
   sarees?: Prisma.SareeListRelationFilter
   payments?: Prisma.WeaverPaymentListRelationFilter
@@ -463,6 +466,7 @@ export type WeaverCreateInput = {
   designs?: Prisma.DesignLibraryCreateNestedManyWithoutWeaverInput
   batchSareeRows?: Prisma.BatchSareeRowCreateNestedManyWithoutWeaverInput
   materialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutWeaverInput
+  materialReturns?: Prisma.MaterialReturnRecordCreateNestedManyWithoutWeaverInput
   qcRecords?: Prisma.QcRecordCreateNestedManyWithoutWeaverInput
   sarees?: Prisma.SareeCreateNestedManyWithoutWeaverInput
   payments?: Prisma.WeaverPaymentCreateNestedManyWithoutWeaverInput
@@ -492,6 +496,7 @@ export type WeaverUncheckedCreateInput = {
   designs?: Prisma.DesignLibraryUncheckedCreateNestedManyWithoutWeaverInput
   batchSareeRows?: Prisma.BatchSareeRowUncheckedCreateNestedManyWithoutWeaverInput
   materialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutWeaverInput
+  materialReturns?: Prisma.MaterialReturnRecordUncheckedCreateNestedManyWithoutWeaverInput
   qcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutWeaverInput
   sarees?: Prisma.SareeUncheckedCreateNestedManyWithoutWeaverInput
   payments?: Prisma.WeaverPaymentUncheckedCreateNestedManyWithoutWeaverInput
@@ -521,6 +526,7 @@ export type WeaverUpdateInput = {
   designs?: Prisma.DesignLibraryUpdateManyWithoutWeaverNestedInput
   batchSareeRows?: Prisma.BatchSareeRowUpdateManyWithoutWeaverNestedInput
   materialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutWeaverNestedInput
+  materialReturns?: Prisma.MaterialReturnRecordUpdateManyWithoutWeaverNestedInput
   qcRecords?: Prisma.QcRecordUpdateManyWithoutWeaverNestedInput
   sarees?: Prisma.SareeUpdateManyWithoutWeaverNestedInput
   payments?: Prisma.WeaverPaymentUpdateManyWithoutWeaverNestedInput
@@ -550,6 +556,7 @@ export type WeaverUncheckedUpdateInput = {
   designs?: Prisma.DesignLibraryUncheckedUpdateManyWithoutWeaverNestedInput
   batchSareeRows?: Prisma.BatchSareeRowUncheckedUpdateManyWithoutWeaverNestedInput
   materialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutWeaverNestedInput
+  materialReturns?: Prisma.MaterialReturnRecordUncheckedUpdateManyWithoutWeaverNestedInput
   qcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutWeaverNestedInput
   sarees?: Prisma.SareeUncheckedUpdateManyWithoutWeaverNestedInput
   payments?: Prisma.WeaverPaymentUncheckedUpdateManyWithoutWeaverNestedInput
@@ -765,6 +772,22 @@ export type WeaverUpdateOneWithoutMaterialIssuesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.WeaverUpdateToOneWithWhereWithoutMaterialIssuesInput, Prisma.WeaverUpdateWithoutMaterialIssuesInput>, Prisma.WeaverUncheckedUpdateWithoutMaterialIssuesInput>
 }
 
+export type WeaverCreateNestedOneWithoutMaterialReturnsInput = {
+  create?: Prisma.XOR<Prisma.WeaverCreateWithoutMaterialReturnsInput, Prisma.WeaverUncheckedCreateWithoutMaterialReturnsInput>
+  connectOrCreate?: Prisma.WeaverCreateOrConnectWithoutMaterialReturnsInput
+  connect?: Prisma.WeaverWhereUniqueInput
+}
+
+export type WeaverUpdateOneWithoutMaterialReturnsNestedInput = {
+  create?: Prisma.XOR<Prisma.WeaverCreateWithoutMaterialReturnsInput, Prisma.WeaverUncheckedCreateWithoutMaterialReturnsInput>
+  connectOrCreate?: Prisma.WeaverCreateOrConnectWithoutMaterialReturnsInput
+  upsert?: Prisma.WeaverUpsertWithoutMaterialReturnsInput
+  disconnect?: Prisma.WeaverWhereInput | boolean
+  delete?: Prisma.WeaverWhereInput | boolean
+  connect?: Prisma.WeaverWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.WeaverUpdateToOneWithWhereWithoutMaterialReturnsInput, Prisma.WeaverUpdateWithoutMaterialReturnsInput>, Prisma.WeaverUncheckedUpdateWithoutMaterialReturnsInput>
+}
+
 export type WeaverCreateNestedOneWithoutQcRecordsInput = {
   create?: Prisma.XOR<Prisma.WeaverCreateWithoutQcRecordsInput, Prisma.WeaverUncheckedCreateWithoutQcRecordsInput>
   connectOrCreate?: Prisma.WeaverCreateOrConnectWithoutQcRecordsInput
@@ -847,6 +870,7 @@ export type WeaverCreateWithoutLinkedUserInput = {
   designs?: Prisma.DesignLibraryCreateNestedManyWithoutWeaverInput
   batchSareeRows?: Prisma.BatchSareeRowCreateNestedManyWithoutWeaverInput
   materialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutWeaverInput
+  materialReturns?: Prisma.MaterialReturnRecordCreateNestedManyWithoutWeaverInput
   qcRecords?: Prisma.QcRecordCreateNestedManyWithoutWeaverInput
   sarees?: Prisma.SareeCreateNestedManyWithoutWeaverInput
   payments?: Prisma.WeaverPaymentCreateNestedManyWithoutWeaverInput
@@ -875,6 +899,7 @@ export type WeaverUncheckedCreateWithoutLinkedUserInput = {
   designs?: Prisma.DesignLibraryUncheckedCreateNestedManyWithoutWeaverInput
   batchSareeRows?: Prisma.BatchSareeRowUncheckedCreateNestedManyWithoutWeaverInput
   materialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutWeaverInput
+  materialReturns?: Prisma.MaterialReturnRecordUncheckedCreateNestedManyWithoutWeaverInput
   qcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutWeaverInput
   sarees?: Prisma.SareeUncheckedCreateNestedManyWithoutWeaverInput
   payments?: Prisma.WeaverPaymentUncheckedCreateNestedManyWithoutWeaverInput
@@ -919,6 +944,7 @@ export type WeaverUpdateWithoutLinkedUserInput = {
   designs?: Prisma.DesignLibraryUpdateManyWithoutWeaverNestedInput
   batchSareeRows?: Prisma.BatchSareeRowUpdateManyWithoutWeaverNestedInput
   materialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutWeaverNestedInput
+  materialReturns?: Prisma.MaterialReturnRecordUpdateManyWithoutWeaverNestedInput
   qcRecords?: Prisma.QcRecordUpdateManyWithoutWeaverNestedInput
   sarees?: Prisma.SareeUpdateManyWithoutWeaverNestedInput
   payments?: Prisma.WeaverPaymentUpdateManyWithoutWeaverNestedInput
@@ -947,6 +973,7 @@ export type WeaverUncheckedUpdateWithoutLinkedUserInput = {
   designs?: Prisma.DesignLibraryUncheckedUpdateManyWithoutWeaverNestedInput
   batchSareeRows?: Prisma.BatchSareeRowUncheckedUpdateManyWithoutWeaverNestedInput
   materialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutWeaverNestedInput
+  materialReturns?: Prisma.MaterialReturnRecordUncheckedUpdateManyWithoutWeaverNestedInput
   qcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutWeaverNestedInput
   sarees?: Prisma.SareeUncheckedUpdateManyWithoutWeaverNestedInput
   payments?: Prisma.WeaverPaymentUncheckedUpdateManyWithoutWeaverNestedInput
@@ -974,6 +1001,7 @@ export type WeaverCreateWithoutDesignsInput = {
   updatedAt?: Date | string
   batchSareeRows?: Prisma.BatchSareeRowCreateNestedManyWithoutWeaverInput
   materialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutWeaverInput
+  materialReturns?: Prisma.MaterialReturnRecordCreateNestedManyWithoutWeaverInput
   qcRecords?: Prisma.QcRecordCreateNestedManyWithoutWeaverInput
   sarees?: Prisma.SareeCreateNestedManyWithoutWeaverInput
   payments?: Prisma.WeaverPaymentCreateNestedManyWithoutWeaverInput
@@ -1002,6 +1030,7 @@ export type WeaverUncheckedCreateWithoutDesignsInput = {
   updatedAt?: Date | string
   batchSareeRows?: Prisma.BatchSareeRowUncheckedCreateNestedManyWithoutWeaverInput
   materialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutWeaverInput
+  materialReturns?: Prisma.MaterialReturnRecordUncheckedCreateNestedManyWithoutWeaverInput
   qcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutWeaverInput
   sarees?: Prisma.SareeUncheckedCreateNestedManyWithoutWeaverInput
   payments?: Prisma.WeaverPaymentUncheckedCreateNestedManyWithoutWeaverInput
@@ -1046,6 +1075,7 @@ export type WeaverUpdateWithoutDesignsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   batchSareeRows?: Prisma.BatchSareeRowUpdateManyWithoutWeaverNestedInput
   materialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutWeaverNestedInput
+  materialReturns?: Prisma.MaterialReturnRecordUpdateManyWithoutWeaverNestedInput
   qcRecords?: Prisma.QcRecordUpdateManyWithoutWeaverNestedInput
   sarees?: Prisma.SareeUpdateManyWithoutWeaverNestedInput
   payments?: Prisma.WeaverPaymentUpdateManyWithoutWeaverNestedInput
@@ -1074,6 +1104,7 @@ export type WeaverUncheckedUpdateWithoutDesignsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   batchSareeRows?: Prisma.BatchSareeRowUncheckedUpdateManyWithoutWeaverNestedInput
   materialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutWeaverNestedInput
+  materialReturns?: Prisma.MaterialReturnRecordUncheckedUpdateManyWithoutWeaverNestedInput
   qcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutWeaverNestedInput
   sarees?: Prisma.SareeUncheckedUpdateManyWithoutWeaverNestedInput
   payments?: Prisma.WeaverPaymentUncheckedUpdateManyWithoutWeaverNestedInput
@@ -1102,6 +1133,7 @@ export type WeaverCreateWithoutBatchSareeRowsInput = {
   updatedAt?: Date | string
   designs?: Prisma.DesignLibraryCreateNestedManyWithoutWeaverInput
   materialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutWeaverInput
+  materialReturns?: Prisma.MaterialReturnRecordCreateNestedManyWithoutWeaverInput
   qcRecords?: Prisma.QcRecordCreateNestedManyWithoutWeaverInput
   sarees?: Prisma.SareeCreateNestedManyWithoutWeaverInput
   payments?: Prisma.WeaverPaymentCreateNestedManyWithoutWeaverInput
@@ -1130,6 +1162,7 @@ export type WeaverUncheckedCreateWithoutBatchSareeRowsInput = {
   updatedAt?: Date | string
   designs?: Prisma.DesignLibraryUncheckedCreateNestedManyWithoutWeaverInput
   materialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutWeaverInput
+  materialReturns?: Prisma.MaterialReturnRecordUncheckedCreateNestedManyWithoutWeaverInput
   qcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutWeaverInput
   sarees?: Prisma.SareeUncheckedCreateNestedManyWithoutWeaverInput
   payments?: Prisma.WeaverPaymentUncheckedCreateNestedManyWithoutWeaverInput
@@ -1174,6 +1207,7 @@ export type WeaverUpdateWithoutBatchSareeRowsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   designs?: Prisma.DesignLibraryUpdateManyWithoutWeaverNestedInput
   materialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutWeaverNestedInput
+  materialReturns?: Prisma.MaterialReturnRecordUpdateManyWithoutWeaverNestedInput
   qcRecords?: Prisma.QcRecordUpdateManyWithoutWeaverNestedInput
   sarees?: Prisma.SareeUpdateManyWithoutWeaverNestedInput
   payments?: Prisma.WeaverPaymentUpdateManyWithoutWeaverNestedInput
@@ -1202,6 +1236,7 @@ export type WeaverUncheckedUpdateWithoutBatchSareeRowsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   designs?: Prisma.DesignLibraryUncheckedUpdateManyWithoutWeaverNestedInput
   materialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutWeaverNestedInput
+  materialReturns?: Prisma.MaterialReturnRecordUncheckedUpdateManyWithoutWeaverNestedInput
   qcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutWeaverNestedInput
   sarees?: Prisma.SareeUncheckedUpdateManyWithoutWeaverNestedInput
   payments?: Prisma.WeaverPaymentUncheckedUpdateManyWithoutWeaverNestedInput
@@ -1230,6 +1265,7 @@ export type WeaverCreateWithoutMaterialIssuesInput = {
   updatedAt?: Date | string
   designs?: Prisma.DesignLibraryCreateNestedManyWithoutWeaverInput
   batchSareeRows?: Prisma.BatchSareeRowCreateNestedManyWithoutWeaverInput
+  materialReturns?: Prisma.MaterialReturnRecordCreateNestedManyWithoutWeaverInput
   qcRecords?: Prisma.QcRecordCreateNestedManyWithoutWeaverInput
   sarees?: Prisma.SareeCreateNestedManyWithoutWeaverInput
   payments?: Prisma.WeaverPaymentCreateNestedManyWithoutWeaverInput
@@ -1258,6 +1294,7 @@ export type WeaverUncheckedCreateWithoutMaterialIssuesInput = {
   updatedAt?: Date | string
   designs?: Prisma.DesignLibraryUncheckedCreateNestedManyWithoutWeaverInput
   batchSareeRows?: Prisma.BatchSareeRowUncheckedCreateNestedManyWithoutWeaverInput
+  materialReturns?: Prisma.MaterialReturnRecordUncheckedCreateNestedManyWithoutWeaverInput
   qcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutWeaverInput
   sarees?: Prisma.SareeUncheckedCreateNestedManyWithoutWeaverInput
   payments?: Prisma.WeaverPaymentUncheckedCreateNestedManyWithoutWeaverInput
@@ -1302,6 +1339,7 @@ export type WeaverUpdateWithoutMaterialIssuesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   designs?: Prisma.DesignLibraryUpdateManyWithoutWeaverNestedInput
   batchSareeRows?: Prisma.BatchSareeRowUpdateManyWithoutWeaverNestedInput
+  materialReturns?: Prisma.MaterialReturnRecordUpdateManyWithoutWeaverNestedInput
   qcRecords?: Prisma.QcRecordUpdateManyWithoutWeaverNestedInput
   sarees?: Prisma.SareeUpdateManyWithoutWeaverNestedInput
   payments?: Prisma.WeaverPaymentUpdateManyWithoutWeaverNestedInput
@@ -1330,6 +1368,139 @@ export type WeaverUncheckedUpdateWithoutMaterialIssuesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   designs?: Prisma.DesignLibraryUncheckedUpdateManyWithoutWeaverNestedInput
   batchSareeRows?: Prisma.BatchSareeRowUncheckedUpdateManyWithoutWeaverNestedInput
+  materialReturns?: Prisma.MaterialReturnRecordUncheckedUpdateManyWithoutWeaverNestedInput
+  qcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutWeaverNestedInput
+  sarees?: Prisma.SareeUncheckedUpdateManyWithoutWeaverNestedInput
+  payments?: Prisma.WeaverPaymentUncheckedUpdateManyWithoutWeaverNestedInput
+  warpRequests?: Prisma.WarpRequestUncheckedUpdateManyWithoutWeaverNestedInput
+  linkedUser?: Prisma.UserUncheckedUpdateOneWithoutLinkedWeaverNestedInput
+}
+
+export type WeaverCreateWithoutMaterialReturnsInput = {
+  id?: string
+  code: string
+  name: string
+  firstName: string
+  lastName: string
+  initials: string
+  village?: string | null
+  cluster?: string | null
+  looms?: number
+  status?: $Enums.ActiveStatus
+  photoUrl: string
+  email: string
+  phone: string
+  bankName?: string | null
+  accountNo?: string | null
+  ifsc?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  designs?: Prisma.DesignLibraryCreateNestedManyWithoutWeaverInput
+  batchSareeRows?: Prisma.BatchSareeRowCreateNestedManyWithoutWeaverInput
+  materialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutWeaverInput
+  qcRecords?: Prisma.QcRecordCreateNestedManyWithoutWeaverInput
+  sarees?: Prisma.SareeCreateNestedManyWithoutWeaverInput
+  payments?: Prisma.WeaverPaymentCreateNestedManyWithoutWeaverInput
+  warpRequests?: Prisma.WarpRequestCreateNestedManyWithoutWeaverInput
+  linkedUser?: Prisma.UserCreateNestedOneWithoutLinkedWeaverInput
+}
+
+export type WeaverUncheckedCreateWithoutMaterialReturnsInput = {
+  id?: string
+  code: string
+  name: string
+  firstName: string
+  lastName: string
+  initials: string
+  village?: string | null
+  cluster?: string | null
+  looms?: number
+  status?: $Enums.ActiveStatus
+  photoUrl: string
+  email: string
+  phone: string
+  bankName?: string | null
+  accountNo?: string | null
+  ifsc?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  designs?: Prisma.DesignLibraryUncheckedCreateNestedManyWithoutWeaverInput
+  batchSareeRows?: Prisma.BatchSareeRowUncheckedCreateNestedManyWithoutWeaverInput
+  materialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutWeaverInput
+  qcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutWeaverInput
+  sarees?: Prisma.SareeUncheckedCreateNestedManyWithoutWeaverInput
+  payments?: Prisma.WeaverPaymentUncheckedCreateNestedManyWithoutWeaverInput
+  warpRequests?: Prisma.WarpRequestUncheckedCreateNestedManyWithoutWeaverInput
+  linkedUser?: Prisma.UserUncheckedCreateNestedOneWithoutLinkedWeaverInput
+}
+
+export type WeaverCreateOrConnectWithoutMaterialReturnsInput = {
+  where: Prisma.WeaverWhereUniqueInput
+  create: Prisma.XOR<Prisma.WeaverCreateWithoutMaterialReturnsInput, Prisma.WeaverUncheckedCreateWithoutMaterialReturnsInput>
+}
+
+export type WeaverUpsertWithoutMaterialReturnsInput = {
+  update: Prisma.XOR<Prisma.WeaverUpdateWithoutMaterialReturnsInput, Prisma.WeaverUncheckedUpdateWithoutMaterialReturnsInput>
+  create: Prisma.XOR<Prisma.WeaverCreateWithoutMaterialReturnsInput, Prisma.WeaverUncheckedCreateWithoutMaterialReturnsInput>
+  where?: Prisma.WeaverWhereInput
+}
+
+export type WeaverUpdateToOneWithWhereWithoutMaterialReturnsInput = {
+  where?: Prisma.WeaverWhereInput
+  data: Prisma.XOR<Prisma.WeaverUpdateWithoutMaterialReturnsInput, Prisma.WeaverUncheckedUpdateWithoutMaterialReturnsInput>
+}
+
+export type WeaverUpdateWithoutMaterialReturnsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  initials?: Prisma.StringFieldUpdateOperationsInput | string
+  village?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cluster?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  looms?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
+  photoUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  bankName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accountNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ifsc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  designs?: Prisma.DesignLibraryUpdateManyWithoutWeaverNestedInput
+  batchSareeRows?: Prisma.BatchSareeRowUpdateManyWithoutWeaverNestedInput
+  materialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutWeaverNestedInput
+  qcRecords?: Prisma.QcRecordUpdateManyWithoutWeaverNestedInput
+  sarees?: Prisma.SareeUpdateManyWithoutWeaverNestedInput
+  payments?: Prisma.WeaverPaymentUpdateManyWithoutWeaverNestedInput
+  warpRequests?: Prisma.WarpRequestUpdateManyWithoutWeaverNestedInput
+  linkedUser?: Prisma.UserUpdateOneWithoutLinkedWeaverNestedInput
+}
+
+export type WeaverUncheckedUpdateWithoutMaterialReturnsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  initials?: Prisma.StringFieldUpdateOperationsInput | string
+  village?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cluster?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  looms?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumActiveStatusFieldUpdateOperationsInput | $Enums.ActiveStatus
+  photoUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  bankName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accountNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ifsc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  designs?: Prisma.DesignLibraryUncheckedUpdateManyWithoutWeaverNestedInput
+  batchSareeRows?: Prisma.BatchSareeRowUncheckedUpdateManyWithoutWeaverNestedInput
+  materialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutWeaverNestedInput
   qcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutWeaverNestedInput
   sarees?: Prisma.SareeUncheckedUpdateManyWithoutWeaverNestedInput
   payments?: Prisma.WeaverPaymentUncheckedUpdateManyWithoutWeaverNestedInput
@@ -1359,6 +1530,7 @@ export type WeaverCreateWithoutQcRecordsInput = {
   designs?: Prisma.DesignLibraryCreateNestedManyWithoutWeaverInput
   batchSareeRows?: Prisma.BatchSareeRowCreateNestedManyWithoutWeaverInput
   materialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutWeaverInput
+  materialReturns?: Prisma.MaterialReturnRecordCreateNestedManyWithoutWeaverInput
   sarees?: Prisma.SareeCreateNestedManyWithoutWeaverInput
   payments?: Prisma.WeaverPaymentCreateNestedManyWithoutWeaverInput
   warpRequests?: Prisma.WarpRequestCreateNestedManyWithoutWeaverInput
@@ -1387,6 +1559,7 @@ export type WeaverUncheckedCreateWithoutQcRecordsInput = {
   designs?: Prisma.DesignLibraryUncheckedCreateNestedManyWithoutWeaverInput
   batchSareeRows?: Prisma.BatchSareeRowUncheckedCreateNestedManyWithoutWeaverInput
   materialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutWeaverInput
+  materialReturns?: Prisma.MaterialReturnRecordUncheckedCreateNestedManyWithoutWeaverInput
   sarees?: Prisma.SareeUncheckedCreateNestedManyWithoutWeaverInput
   payments?: Prisma.WeaverPaymentUncheckedCreateNestedManyWithoutWeaverInput
   warpRequests?: Prisma.WarpRequestUncheckedCreateNestedManyWithoutWeaverInput
@@ -1431,6 +1604,7 @@ export type WeaverUpdateWithoutQcRecordsInput = {
   designs?: Prisma.DesignLibraryUpdateManyWithoutWeaverNestedInput
   batchSareeRows?: Prisma.BatchSareeRowUpdateManyWithoutWeaverNestedInput
   materialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutWeaverNestedInput
+  materialReturns?: Prisma.MaterialReturnRecordUpdateManyWithoutWeaverNestedInput
   sarees?: Prisma.SareeUpdateManyWithoutWeaverNestedInput
   payments?: Prisma.WeaverPaymentUpdateManyWithoutWeaverNestedInput
   warpRequests?: Prisma.WarpRequestUpdateManyWithoutWeaverNestedInput
@@ -1459,6 +1633,7 @@ export type WeaverUncheckedUpdateWithoutQcRecordsInput = {
   designs?: Prisma.DesignLibraryUncheckedUpdateManyWithoutWeaverNestedInput
   batchSareeRows?: Prisma.BatchSareeRowUncheckedUpdateManyWithoutWeaverNestedInput
   materialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutWeaverNestedInput
+  materialReturns?: Prisma.MaterialReturnRecordUncheckedUpdateManyWithoutWeaverNestedInput
   sarees?: Prisma.SareeUncheckedUpdateManyWithoutWeaverNestedInput
   payments?: Prisma.WeaverPaymentUncheckedUpdateManyWithoutWeaverNestedInput
   warpRequests?: Prisma.WarpRequestUncheckedUpdateManyWithoutWeaverNestedInput
@@ -1487,6 +1662,7 @@ export type WeaverCreateWithoutSareesInput = {
   designs?: Prisma.DesignLibraryCreateNestedManyWithoutWeaverInput
   batchSareeRows?: Prisma.BatchSareeRowCreateNestedManyWithoutWeaverInput
   materialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutWeaverInput
+  materialReturns?: Prisma.MaterialReturnRecordCreateNestedManyWithoutWeaverInput
   qcRecords?: Prisma.QcRecordCreateNestedManyWithoutWeaverInput
   payments?: Prisma.WeaverPaymentCreateNestedManyWithoutWeaverInput
   warpRequests?: Prisma.WarpRequestCreateNestedManyWithoutWeaverInput
@@ -1515,6 +1691,7 @@ export type WeaverUncheckedCreateWithoutSareesInput = {
   designs?: Prisma.DesignLibraryUncheckedCreateNestedManyWithoutWeaverInput
   batchSareeRows?: Prisma.BatchSareeRowUncheckedCreateNestedManyWithoutWeaverInput
   materialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutWeaverInput
+  materialReturns?: Prisma.MaterialReturnRecordUncheckedCreateNestedManyWithoutWeaverInput
   qcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutWeaverInput
   payments?: Prisma.WeaverPaymentUncheckedCreateNestedManyWithoutWeaverInput
   warpRequests?: Prisma.WarpRequestUncheckedCreateNestedManyWithoutWeaverInput
@@ -1559,6 +1736,7 @@ export type WeaverUpdateWithoutSareesInput = {
   designs?: Prisma.DesignLibraryUpdateManyWithoutWeaverNestedInput
   batchSareeRows?: Prisma.BatchSareeRowUpdateManyWithoutWeaverNestedInput
   materialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutWeaverNestedInput
+  materialReturns?: Prisma.MaterialReturnRecordUpdateManyWithoutWeaverNestedInput
   qcRecords?: Prisma.QcRecordUpdateManyWithoutWeaverNestedInput
   payments?: Prisma.WeaverPaymentUpdateManyWithoutWeaverNestedInput
   warpRequests?: Prisma.WarpRequestUpdateManyWithoutWeaverNestedInput
@@ -1587,6 +1765,7 @@ export type WeaverUncheckedUpdateWithoutSareesInput = {
   designs?: Prisma.DesignLibraryUncheckedUpdateManyWithoutWeaverNestedInput
   batchSareeRows?: Prisma.BatchSareeRowUncheckedUpdateManyWithoutWeaverNestedInput
   materialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutWeaverNestedInput
+  materialReturns?: Prisma.MaterialReturnRecordUncheckedUpdateManyWithoutWeaverNestedInput
   qcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutWeaverNestedInput
   payments?: Prisma.WeaverPaymentUncheckedUpdateManyWithoutWeaverNestedInput
   warpRequests?: Prisma.WarpRequestUncheckedUpdateManyWithoutWeaverNestedInput
@@ -1615,6 +1794,7 @@ export type WeaverCreateWithoutPaymentsInput = {
   designs?: Prisma.DesignLibraryCreateNestedManyWithoutWeaverInput
   batchSareeRows?: Prisma.BatchSareeRowCreateNestedManyWithoutWeaverInput
   materialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutWeaverInput
+  materialReturns?: Prisma.MaterialReturnRecordCreateNestedManyWithoutWeaverInput
   qcRecords?: Prisma.QcRecordCreateNestedManyWithoutWeaverInput
   sarees?: Prisma.SareeCreateNestedManyWithoutWeaverInput
   warpRequests?: Prisma.WarpRequestCreateNestedManyWithoutWeaverInput
@@ -1643,6 +1823,7 @@ export type WeaverUncheckedCreateWithoutPaymentsInput = {
   designs?: Prisma.DesignLibraryUncheckedCreateNestedManyWithoutWeaverInput
   batchSareeRows?: Prisma.BatchSareeRowUncheckedCreateNestedManyWithoutWeaverInput
   materialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutWeaverInput
+  materialReturns?: Prisma.MaterialReturnRecordUncheckedCreateNestedManyWithoutWeaverInput
   qcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutWeaverInput
   sarees?: Prisma.SareeUncheckedCreateNestedManyWithoutWeaverInput
   warpRequests?: Prisma.WarpRequestUncheckedCreateNestedManyWithoutWeaverInput
@@ -1687,6 +1868,7 @@ export type WeaverUpdateWithoutPaymentsInput = {
   designs?: Prisma.DesignLibraryUpdateManyWithoutWeaverNestedInput
   batchSareeRows?: Prisma.BatchSareeRowUpdateManyWithoutWeaverNestedInput
   materialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutWeaverNestedInput
+  materialReturns?: Prisma.MaterialReturnRecordUpdateManyWithoutWeaverNestedInput
   qcRecords?: Prisma.QcRecordUpdateManyWithoutWeaverNestedInput
   sarees?: Prisma.SareeUpdateManyWithoutWeaverNestedInput
   warpRequests?: Prisma.WarpRequestUpdateManyWithoutWeaverNestedInput
@@ -1715,6 +1897,7 @@ export type WeaverUncheckedUpdateWithoutPaymentsInput = {
   designs?: Prisma.DesignLibraryUncheckedUpdateManyWithoutWeaverNestedInput
   batchSareeRows?: Prisma.BatchSareeRowUncheckedUpdateManyWithoutWeaverNestedInput
   materialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutWeaverNestedInput
+  materialReturns?: Prisma.MaterialReturnRecordUncheckedUpdateManyWithoutWeaverNestedInput
   qcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutWeaverNestedInput
   sarees?: Prisma.SareeUncheckedUpdateManyWithoutWeaverNestedInput
   warpRequests?: Prisma.WarpRequestUncheckedUpdateManyWithoutWeaverNestedInput
@@ -1743,6 +1926,7 @@ export type WeaverCreateWithoutWarpRequestsInput = {
   designs?: Prisma.DesignLibraryCreateNestedManyWithoutWeaverInput
   batchSareeRows?: Prisma.BatchSareeRowCreateNestedManyWithoutWeaverInput
   materialIssues?: Prisma.MaterialIssueRecordCreateNestedManyWithoutWeaverInput
+  materialReturns?: Prisma.MaterialReturnRecordCreateNestedManyWithoutWeaverInput
   qcRecords?: Prisma.QcRecordCreateNestedManyWithoutWeaverInput
   sarees?: Prisma.SareeCreateNestedManyWithoutWeaverInput
   payments?: Prisma.WeaverPaymentCreateNestedManyWithoutWeaverInput
@@ -1771,6 +1955,7 @@ export type WeaverUncheckedCreateWithoutWarpRequestsInput = {
   designs?: Prisma.DesignLibraryUncheckedCreateNestedManyWithoutWeaverInput
   batchSareeRows?: Prisma.BatchSareeRowUncheckedCreateNestedManyWithoutWeaverInput
   materialIssues?: Prisma.MaterialIssueRecordUncheckedCreateNestedManyWithoutWeaverInput
+  materialReturns?: Prisma.MaterialReturnRecordUncheckedCreateNestedManyWithoutWeaverInput
   qcRecords?: Prisma.QcRecordUncheckedCreateNestedManyWithoutWeaverInput
   sarees?: Prisma.SareeUncheckedCreateNestedManyWithoutWeaverInput
   payments?: Prisma.WeaverPaymentUncheckedCreateNestedManyWithoutWeaverInput
@@ -1815,6 +2000,7 @@ export type WeaverUpdateWithoutWarpRequestsInput = {
   designs?: Prisma.DesignLibraryUpdateManyWithoutWeaverNestedInput
   batchSareeRows?: Prisma.BatchSareeRowUpdateManyWithoutWeaverNestedInput
   materialIssues?: Prisma.MaterialIssueRecordUpdateManyWithoutWeaverNestedInput
+  materialReturns?: Prisma.MaterialReturnRecordUpdateManyWithoutWeaverNestedInput
   qcRecords?: Prisma.QcRecordUpdateManyWithoutWeaverNestedInput
   sarees?: Prisma.SareeUpdateManyWithoutWeaverNestedInput
   payments?: Prisma.WeaverPaymentUpdateManyWithoutWeaverNestedInput
@@ -1843,6 +2029,7 @@ export type WeaverUncheckedUpdateWithoutWarpRequestsInput = {
   designs?: Prisma.DesignLibraryUncheckedUpdateManyWithoutWeaverNestedInput
   batchSareeRows?: Prisma.BatchSareeRowUncheckedUpdateManyWithoutWeaverNestedInput
   materialIssues?: Prisma.MaterialIssueRecordUncheckedUpdateManyWithoutWeaverNestedInput
+  materialReturns?: Prisma.MaterialReturnRecordUncheckedUpdateManyWithoutWeaverNestedInput
   qcRecords?: Prisma.QcRecordUncheckedUpdateManyWithoutWeaverNestedInput
   sarees?: Prisma.SareeUncheckedUpdateManyWithoutWeaverNestedInput
   payments?: Prisma.WeaverPaymentUncheckedUpdateManyWithoutWeaverNestedInput
@@ -1858,6 +2045,7 @@ export type WeaverCountOutputType = {
   designs: number
   batchSareeRows: number
   materialIssues: number
+  materialReturns: number
   qcRecords: number
   sarees: number
   payments: number
@@ -1868,6 +2056,7 @@ export type WeaverCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions
   designs?: boolean | WeaverCountOutputTypeCountDesignsArgs
   batchSareeRows?: boolean | WeaverCountOutputTypeCountBatchSareeRowsArgs
   materialIssues?: boolean | WeaverCountOutputTypeCountMaterialIssuesArgs
+  materialReturns?: boolean | WeaverCountOutputTypeCountMaterialReturnsArgs
   qcRecords?: boolean | WeaverCountOutputTypeCountQcRecordsArgs
   sarees?: boolean | WeaverCountOutputTypeCountSareesArgs
   payments?: boolean | WeaverCountOutputTypeCountPaymentsArgs
@@ -1903,6 +2092,13 @@ export type WeaverCountOutputTypeCountBatchSareeRowsArgs<ExtArgs extends runtime
  */
 export type WeaverCountOutputTypeCountMaterialIssuesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.MaterialIssueRecordWhereInput
+}
+
+/**
+ * WeaverCountOutputType without action
+ */
+export type WeaverCountOutputTypeCountMaterialReturnsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.MaterialReturnRecordWhereInput
 }
 
 /**
@@ -1956,6 +2152,7 @@ export type WeaverSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   designs?: boolean | Prisma.Weaver$designsArgs<ExtArgs>
   batchSareeRows?: boolean | Prisma.Weaver$batchSareeRowsArgs<ExtArgs>
   materialIssues?: boolean | Prisma.Weaver$materialIssuesArgs<ExtArgs>
+  materialReturns?: boolean | Prisma.Weaver$materialReturnsArgs<ExtArgs>
   qcRecords?: boolean | Prisma.Weaver$qcRecordsArgs<ExtArgs>
   sarees?: boolean | Prisma.Weaver$sareesArgs<ExtArgs>
   payments?: boolean | Prisma.Weaver$paymentsArgs<ExtArgs>
@@ -2032,6 +2229,7 @@ export type WeaverInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   designs?: boolean | Prisma.Weaver$designsArgs<ExtArgs>
   batchSareeRows?: boolean | Prisma.Weaver$batchSareeRowsArgs<ExtArgs>
   materialIssues?: boolean | Prisma.Weaver$materialIssuesArgs<ExtArgs>
+  materialReturns?: boolean | Prisma.Weaver$materialReturnsArgs<ExtArgs>
   qcRecords?: boolean | Prisma.Weaver$qcRecordsArgs<ExtArgs>
   sarees?: boolean | Prisma.Weaver$sareesArgs<ExtArgs>
   payments?: boolean | Prisma.Weaver$paymentsArgs<ExtArgs>
@@ -2048,6 +2246,7 @@ export type $WeaverPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     designs: Prisma.$DesignLibraryPayload<ExtArgs>[]
     batchSareeRows: Prisma.$BatchSareeRowPayload<ExtArgs>[]
     materialIssues: Prisma.$MaterialIssueRecordPayload<ExtArgs>[]
+    materialReturns: Prisma.$MaterialReturnRecordPayload<ExtArgs>[]
     qcRecords: Prisma.$QcRecordPayload<ExtArgs>[]
     sarees: Prisma.$SareePayload<ExtArgs>[]
     payments: Prisma.$WeaverPaymentPayload<ExtArgs>[]
@@ -2470,6 +2669,7 @@ export interface Prisma__WeaverClient<T, Null = never, ExtArgs extends runtime.T
   designs<T extends Prisma.Weaver$designsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Weaver$designsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DesignLibraryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   batchSareeRows<T extends Prisma.Weaver$batchSareeRowsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Weaver$batchSareeRowsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BatchSareeRowPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   materialIssues<T extends Prisma.Weaver$materialIssuesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Weaver$materialIssuesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MaterialIssueRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  materialReturns<T extends Prisma.Weaver$materialReturnsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Weaver$materialReturnsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MaterialReturnRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   qcRecords<T extends Prisma.Weaver$qcRecordsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Weaver$qcRecordsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$QcRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   sarees<T extends Prisma.Weaver$sareesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Weaver$sareesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SareePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   payments<T extends Prisma.Weaver$paymentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Weaver$paymentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WeaverPaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -2984,6 +3184,30 @@ export type Weaver$materialIssuesArgs<ExtArgs extends runtime.Types.Extensions.I
   take?: number
   skip?: number
   distinct?: Prisma.MaterialIssueRecordScalarFieldEnum | Prisma.MaterialIssueRecordScalarFieldEnum[]
+}
+
+/**
+ * Weaver.materialReturns
+ */
+export type Weaver$materialReturnsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the MaterialReturnRecord
+   */
+  select?: Prisma.MaterialReturnRecordSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the MaterialReturnRecord
+   */
+  omit?: Prisma.MaterialReturnRecordOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.MaterialReturnRecordInclude<ExtArgs> | null
+  where?: Prisma.MaterialReturnRecordWhereInput
+  orderBy?: Prisma.MaterialReturnRecordOrderByWithRelationInput | Prisma.MaterialReturnRecordOrderByWithRelationInput[]
+  cursor?: Prisma.MaterialReturnRecordWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.MaterialReturnRecordScalarFieldEnum | Prisma.MaterialReturnRecordScalarFieldEnum[]
 }
 
 /**

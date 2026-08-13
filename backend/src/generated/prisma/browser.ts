@@ -93,6 +93,16 @@ export type MaterialIssueRecord = Prisma.MaterialIssueRecordModel
  */
 export type MaterialIssueItem = Prisma.MaterialIssueItemModel
 /**
+ * Model MaterialReturnRecord
+ * 
+ */
+export type MaterialReturnRecord = Prisma.MaterialReturnRecordModel
+/**
+ * Model MaterialReturnItem
+ * 
+ */
+export type MaterialReturnItem = Prisma.MaterialReturnItemModel
+/**
  * Model QcRecord
  * 
  */
@@ -172,6 +182,11 @@ export type Vendor = Prisma.VendorModel
  * 
  */
 export type Purchase = Prisma.PurchaseModel
+/**
+ * Model PurchaseSareeLine
+ * 
+ */
+export type PurchaseSareeLine = Prisma.PurchaseSareeLineModel
 /**
  * Model PurchaseOrder
  * 

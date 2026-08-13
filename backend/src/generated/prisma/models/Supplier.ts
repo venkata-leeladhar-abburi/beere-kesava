@@ -668,10 +668,12 @@ export type SupplierCreateNestedOneWithoutPurchasesInput = {
   connect?: Prisma.SupplierWhereUniqueInput
 }
 
-export type SupplierUpdateOneRequiredWithoutPurchasesNestedInput = {
+export type SupplierUpdateOneWithoutPurchasesNestedInput = {
   create?: Prisma.XOR<Prisma.SupplierCreateWithoutPurchasesInput, Prisma.SupplierUncheckedCreateWithoutPurchasesInput>
   connectOrCreate?: Prisma.SupplierCreateOrConnectWithoutPurchasesInput
   upsert?: Prisma.SupplierUpsertWithoutPurchasesInput
+  disconnect?: Prisma.SupplierWhereInput | boolean
+  delete?: Prisma.SupplierWhereInput | boolean
   connect?: Prisma.SupplierWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.SupplierUpdateToOneWithWhereWithoutPurchasesInput, Prisma.SupplierUpdateWithoutPurchasesInput>, Prisma.SupplierUncheckedUpdateWithoutPurchasesInput>
 }

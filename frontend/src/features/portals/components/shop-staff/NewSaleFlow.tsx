@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { customersApi } from '../../../../shared/api/customers';
+import { inventoryApi } from '../../../../shared/api/inventory';
 import { 
   IndianRupee, Plus, Wallet, CreditCard, Check,
 } from 'lucide-react';
@@ -42,6 +43,7 @@ export function NewSaleFlow() {
 
   const [saree, setSaree] = useState({ id: "", design: "", name: "", type: "", typeCode: "", weight: "—", weaver: "" });
   const [scanError, setScanError] = useState<string | null>(null);
+  const [showSareeList, setShowSareeList] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -51,8 +53,10 @@ export function NewSaleFlow() {
   const fmtPrice = (n: number) => formatMoney(rupees(n));
 
   const { data: customersRes } = useQuery({
-    queryKey: ["customers-list-newsale"],
-    queryFn: () => customersApi.list(100),
+    queryKey: ["customers-list-newsale", "RETAIL"],
+    // Counter sales are always to a retail customer — wholesale accounts are
+    // handled through Bulk Orders, not this flow.
+    queryFn: () => customersApi.list(100, "RETAIL"),
   });
 
   const prevCustomers: Customer[] = useMemo(() => {
@@ -78,8 +82,28 @@ export function NewSaleFlow() {
     )
     : prevCustomers;
 
-  const handleScan = async () => {
-    const id = manualId.trim();
+  // Every QC-passed saree still sitting in shop stock — lets staff pick a
+  // saree by browsing/searching instead of only scanning or typing an ID.
+  const { data: inventoryRes } = useQuery({
+    queryKey: ["inventory-list-newsale"],
+    queryFn: () => inventoryApi.list(),
+  });
+
+  const availableSarees = useMemo(
+    () => (inventoryRes ?? []).filter(item => item.status === "available"),
+    [inventoryRes],
+  );
+
+  const filteredSarees = manualId.trim().length >= 2
+    ? availableSarees.filter(s =>
+      s.sareeId.toLowerCase().includes(manualId.trim().toLowerCase()) ||
+      (s.designCode ?? "").toLowerCase().includes(manualId.trim().toLowerCase()) ||
+      (s.weaverName ?? "").toLowerCase().includes(manualId.trim().toLowerCase())
+    )
+    : availableSarees;
+
+  const handleScan = async (overrideId?: string) => {
+    const id = (overrideId ?? manualId).trim();
     if (!id) {
       setScanError("Enter a saree ID to look it up (no live camera decoding yet).");
       return;
@@ -87,6 +111,19 @@ export function NewSaleFlow() {
     setScanError(null);
     try {
       const result = await scanApi.lookup(id);
+      // A scanned/typed ID can belong to any saree ever produced — reject
+      // anything not actually sellable (QC not passed, already dispatched,
+      // already sold, or flagged for damage review) instead of letting
+      // staff proceed to sell it again. Not gated on finishing — a saree
+      // counts as in-stock the moment QC passes.
+      if (result.saleEligibility !== "PASSED") {
+        const reason = result.saleEligibility === "DISPATCHED" ? "already dispatched"
+          : result.saleEligibility === "SOLD" ? "already sold"
+          : result.saleEligibility === "DAMAGED_REVIEW_NEEDED" ? "flagged for damage review"
+          : "has not passed QC yet";
+        setScanError(`Saree ${id} is ${reason} — it can't be sold from the counter.`);
+        return;
+      }
       const typeCode = result.sareeType?.code ?? "";
       const nextSaree = {
         id: result.sareeId,
@@ -100,9 +137,15 @@ export function NewSaleFlow() {
       setSaree(nextSaree);
       setSoldPrice(Number(getSareeTypeByCode(typeCode)?.retail ?? 0));
       setSareeFound(true);
+      setShowSareeList(false);
     } catch (err) {
       setScanError(err instanceof ApiError ? err.message : "Could not find this saree.");
     }
+  };
+
+  const handleSelectSaree = (id: string) => {
+    setManualId(id);
+    handleScan(id);
   };
 
   const handleSelectCustomer = (cust: Customer) => {
@@ -128,6 +171,7 @@ export function NewSaleFlow() {
     setPhone(""); setCustName(""); setCustAddress("");
     setCustSearch(""); setSelectedCustomer(null); setIsEditingCustomer(false);
     setIsNewCustomer(false); setShowCustomerList(false); setSoldPrice(originalPrice);
+    setShowSareeList(false);
   };
 
   const canProceedStep1 = selectedCustomer !== null || (isNewCustomer && custName.trim() !== "");
@@ -234,6 +278,10 @@ export function NewSaleFlow() {
           fmtPrice={fmtPrice}
           handleScan={handleScan}
           scanError={scanError}
+          availableSarees={filteredSarees}
+          showSareeList={showSareeList}
+          setShowSareeList={setShowSareeList}
+          handleSelectSaree={handleSelectSaree}
           onBack={() => setStep(1)}
           onNext={() => setStep(3)}
         />

@@ -41,8 +41,11 @@ export interface UpdateCustomerPayload {
 }
 
 export const customersApi = {
-  list: (pageSize = 100) =>
-    apiClient.get<PaginatedResponse<BackendCustomer>>(`/customers?pageSize=${pageSize}`),
+  list: (pageSize = 100, type?: BackendCustomerType) => {
+    const params = new URLSearchParams({ pageSize: String(pageSize) });
+    if (type) params.set("type", type);
+    return apiClient.get<PaginatedResponse<BackendCustomer>>(`/customers?${params.toString()}`);
+  },
 
   findOne: (id: string) => apiClient.get<BackendCustomer>(`/customers/${id}`),
 

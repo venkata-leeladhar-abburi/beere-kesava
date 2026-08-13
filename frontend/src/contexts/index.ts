@@ -15,6 +15,7 @@ export { BulkOrderProvider, useBulkOrders } from "../features/bulk-orders/contex
 export { DesignLibraryProvider, useDesignLibrary } from "../features/design-library/contexts/DesignLibraryContext";
 export { BatchProvider, useBatches } from "../features/production/contexts/BatchContext";
 export { MaterialIssueProvider, useMaterialIssue } from "../features/materials/contexts/MaterialIssueContext";
+export { MaterialReturnProvider, useMaterialReturn } from "../features/materials/contexts/MaterialReturnContext";
 export { FirmsProvider, useFirms } from "../features/firms/contexts/FirmsContext";
 export { WeaverPaymentsProvider, useWeaverPayments } from "../features/weavers/contexts/WeaverPaymentsContext";
 export { FinishingStaffProvider, useFinishingStaff } from "../features/finishing/contexts/FinishingStaffContext";

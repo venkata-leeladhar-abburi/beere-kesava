@@ -64,15 +64,21 @@ export function BatchTable({
   setLoomPickerRow: (r: SareeRow) => void;
   openSareeTypeCard: (code: string) => void;
 }) {
-  // ── Merge "Materials Given" cell across consecutive rows for the same weaver/factory loom
+  // ── Merge "Materials Given" cell across consecutive rows for the same
+  // weaver+loom / factory loom — a single weaver can have several looms
+  // working the same batch, each issued its own materials, so the merge key
+  // (and the material lookup below) must include the loom number, not just
+  // the weaver.
+  const materialsRowKey = (row: SareeRow) =>
+    row.weaverId ? `${row.weaverId}::${row.weaverLoom ?? ""}` : row.factoryLoomId || null;
   const materialsCellSpan: Record<number, number> = {}; // serial -> rowSpan (only set for the first row of a run)
   {
     let i = 0;
     while (i < displayRows.length) {
-      const key = displayRows[i].weaverId || displayRows[i].factoryLoomId || null;
+      const key = materialsRowKey(displayRows[i]);
       let span = 1;
       if (key) {
-        while (i + span < displayRows.length && (displayRows[i + span].weaverId || displayRows[i + span].factoryLoomId) === key) {
+        while (i + span < displayRows.length && materialsRowKey(displayRows[i + span]) === key) {
           span++;
         }
       }
@@ -153,7 +159,9 @@ export function BatchTable({
               const materialsSummary = (row.weaverId || row.factoryLoomId)
                 ? issueRecords
                     .filter(r => r.batchId === batchId && r.status !== "cancelled" && (
-                      row.weaverId ? r.weaverId === row.weaverId : r.factoryLoomId === row.factoryLoomId
+                      row.weaverId
+                        ? r.weaverId === row.weaverId && r.loomNumber === row.weaverLoom
+                        : r.factoryLoomId === row.factoryLoomId
                     ))
                     .flatMap(r => r.materials)
                     .reduce((acc: Record<string, { qty: number; unit: string }>, m: any) => {

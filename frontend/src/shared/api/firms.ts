@@ -69,6 +69,7 @@ export const firmsApi = {
   create: (payload: CreateFirmPayload) => apiClient.post<BackendFirm>("/firms", payload),
   update: (id: string, payload: CreateFirmPayload) =>
     apiClient.patch<BackendFirm>(`/firms/${id}`, payload),
+  remove: (id: string) => apiClient.delete<void>(`/firms/${id}`),
   listEntries: (firmId: string, pageSize = 200) =>
     apiClient.get<PaginatedResponse<BackendFinancialEntry>>(
       `/firms/${firmId}/entries?pageSize=${pageSize}`,

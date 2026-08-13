@@ -4,11 +4,14 @@ import { toast } from "sonner";
 import { useAuth } from "../../../contexts/AuthContext";
 
 export * from "./supplier-types";
-import { Supplier, Purchase, SupplierPayment, PurchaseRequest, initialsOf, totalPieces, purchaseTotals, parseINR, computeFinalAmount, buildSareeCode, buildSareePieceCode, pieceCodeFromLineCode, expandSareePieces } from "./supplier-types";
-import { SEED_PURCHASES } from "./supplier-seed";
+import { Supplier, Purchase, SareeTag, SupplierPayment, PurchaseRequest, initialsOf, totalPieces, purchaseTotals, parseINR, computeFinalAmount, buildSareeCode, buildSareePieceCode, pieceCodeFromLineCode, expandSareePieces } from "./supplier-types";
 import { BackendSupplier, suppliersApi } from "../../../shared/api/suppliers";
 import { supplierPaymentsApi } from "../../../shared/api/payments";
-import { BackendPurchaseRequest, purchaseRequestsApi } from "../../../shared/api/purchase-requests";
+import { BackendPurchaseRequest, purchaseRequestsApi, STOPGAP_ACTING_USER_ID } from "../../../shared/api/purchase-requests";
+import {
+  BackendPurchase, BackendPurchaseSareeLine, CreatePurchasePayload,
+  CreatePurchaseSareeLinePayload, UpdatePurchasePayload, purchasesApi,
+} from "../../../shared/api/purchases";
 import { rupees, formatMoney } from "@/lib/domain/money";
 
 // suppliers + payments + requests are wired to the real backend; purchases
@@ -40,6 +43,102 @@ function toSupplier(s: BackendSupplier): Supplier {
     rating: s.rating ?? 0,
   };
 }
+function toSareeTag(l: BackendPurchaseSareeLine): SareeTag {
+  return {
+    id: l.code,
+    weight: l.weight ?? "",
+    date: l.sareeDate ? l.sareeDate.split("T")[0] : "",
+    sareeType: l.sareeType ?? "",
+    color: l.color ?? "",
+    price: Number(l.price),
+    sellPercent: Number(l.sellPercent),
+    quantity: l.quantity,
+    finalAmount: Number(l.finalAmount),
+    notes: l.notes ?? "",
+    imageUrl: l.imageUrl ?? undefined,
+    returnedQuantity: l.returnedQuantity ?? 0,
+  };
+}
+
+function toPurchase(p: BackendPurchase): Purchase {
+  return {
+    id: p.id,
+    supplierId: p.supplierId ?? undefined,
+    supplier: p.supplier?.name ?? p.supplierName ?? "",
+    location: p.location ?? (p.supplier ? `${p.supplier.city ?? ""}, ${p.supplier.state ?? ""}`.replace(/^, |, $/, "") : ""),
+    date: p.date.split("T")[0],
+    sareeCount: p.sareeCount,
+    gstNumber: p.gstNumber ?? "",
+    invoiceNumber: p.invoiceNumber ?? "",
+    billAmount: formatMoney(rupees(Number(p.billAmount))),
+    status: p.status === "PAID" ? "Paid" : p.status === "PARTIAL" ? "Partial" : "Pending",
+    notes: p.notes ?? "",
+    invoiceFileName: p.invoiceFileName ?? undefined,
+    sarees: p.sareeLines.map(toSareeTag),
+  };
+}
+
+/** A date string only counts as real input if it's non-empty and not the form's "unset" placeholder. */
+function cleanDate(d: string | undefined): string | undefined {
+  return d && d !== "—" ? d : undefined;
+}
+
+function toStatusPayload(status: string): "PAID" | "PENDING" | "PARTIAL" {
+  return status === "Paid" ? "PAID" : status === "Partial" ? "PARTIAL" : "PENDING";
+}
+
+function toSareeLinePayload(s: SareeTag): CreatePurchaseSareeLinePayload {
+  return {
+    code: s.id,
+    weight: s.weight || undefined,
+    date: cleanDate(s.date),
+    sareeType: s.sareeType || undefined,
+    color: s.color || undefined,
+    price: s.price,
+    sellPercent: s.sellPercent,
+    quantity: s.quantity,
+    finalAmount: s.finalAmount,
+    notes: s.notes || undefined,
+    imageUrl: s.imageUrl,
+    returnedQuantity: s.returnedQuantity ?? 0,
+  };
+}
+
+function toCreatePurchasePayload(p: Omit<Purchase, "id">, addedById: string): CreatePurchasePayload {
+  return {
+    supplierId: p.supplierId || undefined,
+    supplierName: p.supplierId ? undefined : p.supplier,
+    location: p.location || undefined,
+    date: cleanDate(p.date),
+    sareeCount: p.sareeCount,
+    gstNumber: p.gstNumber || undefined,
+    invoiceNumber: p.invoiceNumber || undefined,
+    billAmount: parseINR(p.billAmount),
+    status: toStatusPayload(p.status),
+    notes: p.notes || undefined,
+    invoiceFileName: p.invoiceFileName,
+    addedById,
+    sarees: p.sarees.map(toSareeLinePayload),
+  };
+}
+
+function toUpdatePurchasePayload(patch: Partial<Purchase>): UpdatePurchasePayload {
+  return {
+    supplierId: patch.supplierId || undefined,
+    supplierName: patch.supplierId ? undefined : patch.supplier,
+    location: patch.location,
+    date: cleanDate(patch.date),
+    sareeCount: patch.sareeCount,
+    gstNumber: patch.gstNumber,
+    invoiceNumber: patch.invoiceNumber,
+    billAmount: patch.billAmount !== undefined ? parseINR(patch.billAmount) : undefined,
+    status: patch.status ? toStatusPayload(patch.status) : undefined,
+    notes: patch.notes,
+    invoiceFileName: patch.invoiceFileName,
+    sarees: patch.sarees?.map(toSareeLinePayload),
+  };
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Context
 // ─────────────────────────────────────────────────────────────────────────────
@@ -59,6 +158,8 @@ interface SupplierContextValue {
   addPurchase: (p: Omit<Purchase, "id">) => string;
   updatePurchase: (id: string, patch: Partial<Purchase>) => void;
   deletePurchase: (id: string) => void;
+  /** Marks the given number of pieces on one saree line as returned to the supplier. */
+  returnSareePieces: (purchaseId: string, lineCode: string, count: number) => void;
 
   addPayment: (p: Omit<SupplierPayment, "id">) => void;
   raiseRequest: (r: Omit<PurchaseRequest, "id" | "status">) => void;
@@ -117,16 +218,19 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
   // to ACCOUNTANT (ADMIN/SUPERADMIN bypass every role check there) — skip
   // the fetch for every other role rather than firing a request that's
   // guaranteed to 403.
-  const { role } = useAuth();
+  const { role, user } = useAuth();
   const enabled = role === "accountant" || role === "admin" || role === "superadmin";
+  const actingUserId = user?.id ?? STOPGAP_ACTING_USER_ID;
 
   const { data: suppliers = [], isError: isSuppliersError, error: suppliersError } = useQuery({
     queryKey: SUPPLIERS_KEY,
     queryFn: async () => (await suppliersApi.list()).items.map(toSupplier),
     enabled,
   });
-  const { data: purchases = SEED_PURCHASES } = useQuery({
-    queryKey: PURCHASES_KEY, queryFn: () => Promise.resolve(SEED_PURCHASES), initialData: SEED_PURCHASES,
+  const { data: purchases = [] } = useQuery({
+    queryKey: PURCHASES_KEY,
+    queryFn: async () => (await purchasesApi.list()).items.map(toPurchase),
+    enabled,
   });
   const { data: payments = [], isError: isPaymentsError, error: paymentsError } = useQuery({
     queryKey: PAYMENTS_KEY,
@@ -222,27 +326,36 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
   );
 
   const addPurchaseMutation = useMutation({
-    mutationFn: (p: Omit<Purchase, "id">) => Promise.resolve(p),
-    onSuccess: (p) => {
-      const id = `EXT-2026-${String(Date.now()).slice(-4)}`;
-      setPurchases(prev => [{ ...p, id }, ...prev]);
+    mutationFn: (p: Omit<Purchase, "id">) => purchasesApi.create(toCreatePurchasePayload(p, actingUserId)),
+    onSuccess: (created) => {
+      setPurchases(prev => [toPurchase(created), ...prev]);
       toast.success("Purchase recorded");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to record purchase");
     },
   });
 
   const updatePurchaseMutation = useMutation({
-    mutationFn: (args: { id: string; patch: Partial<Purchase> }) => Promise.resolve(args),
-    onSuccess: ({ id, patch }) => {
-      setPurchases(prev => prev.map(p => p.id === id ? { ...p, ...patch } : p));
+    mutationFn: (args: { id: string; patch: Partial<Purchase> }) =>
+      purchasesApi.update(args.id, toUpdatePurchasePayload(args.patch)),
+    onSuccess: (updated) => {
+      setPurchases(prev => prev.map(p => p.id === updated.id ? toPurchase(updated) : p));
       toast.success("Purchase updated");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to update purchase");
     },
   });
 
   const deletePurchaseMutation = useMutation({
-    mutationFn: (id: string) => Promise.resolve(id),
-    onSuccess: (id) => {
+    mutationFn: (id: string) => purchasesApi.remove(id),
+    onSuccess: (_void, id) => {
       setPurchases(prev => prev.filter(p => p.id !== id));
       toast.success("Purchase deleted");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to delete purchase");
     },
   });
 
@@ -292,16 +405,14 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
     onError: (err: unknown) => {
       toast.error(err instanceof Error ? err.message : "Failed to decide purchase request");
     },
-    onSuccess: (updated) => {
+    onSuccess: async (updated) => {
       // Approving a request with a full rich saree payload attached (raised via
       // an older local-only flow) turns it into a real external purchase — the
       // backend PurchaseRequest has no such payload itself, so this only fires
       // when the caller-side `requests` entry still carries local `sarees` data.
       const local = requests.find(r => r.id === updated.id);
       if (updated.status === "APPROVED" && local?.sarees && local.sarees.length > 0) {
-        const createdPurchaseId = `EXT-2026-${String(Date.now()).slice(-4)}`;
-        const purchase: Purchase = {
-          id: createdPurchaseId,
+        const purchase: Omit<Purchase, "id"> = {
           supplierId: local.supplierId || undefined,
           supplier: local.supplierName,
           location: local.location ?? "—",
@@ -315,7 +426,12 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
           invoiceFileName: local.invoiceFileName,
           sarees: local.sarees,
         };
-        setPurchases(prevP => [purchase, ...prevP]);
+        try {
+          const created = await purchasesApi.create(toCreatePurchasePayload(purchase, actingUserId));
+          setPurchases(prevP => [toPurchase(created), ...prevP]);
+        } catch (err) {
+          toast.error(err instanceof Error ? err.message : "Approved, but failed to record the purchase");
+        }
       }
       setRawRequests(prev => prev.map(r => (r.id === updated.id ? updated : r)));
       toast.success(updated.status === "APPROVED" ? "Purchase request approved" : "Purchase request rejected");
@@ -337,6 +453,18 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
   };
   const updatePurchase = (id: string, patch: Partial<Purchase>) => updatePurchaseMutation.mutate({ id, patch });
   const deletePurchase = (id: string) => deletePurchaseMutation.mutate(id);
+
+  const returnSareePieces = (purchaseId: string, lineCode: string, count: number) => {
+    const purchase = purchases.find(p => p.id === purchaseId);
+    if (!purchase) return;
+    const sarees = purchase.sarees.map(s => {
+      if (s.id !== lineCode) return s;
+      const qty = Number(s.quantity) || 1;
+      const nextReturned = Math.min(qty, (Number(s.returnedQuantity) || 0) + count);
+      return { ...s, returnedQuantity: nextReturned };
+    });
+    updatePurchase(purchaseId, { sarees });
+  };
 
   const addPayment = (p: Omit<SupplierPayment, "id">) => addPaymentMutation.mutate(p);
   const raiseRequest = (r: Omit<PurchaseRequest, "id" | "status">) => raiseRequestMutation.mutate(r);
@@ -364,7 +492,7 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
   const value: SupplierContextValue = {
     suppliers, purchases, payments, requests,
     addSupplier, updateSupplier, deleteSupplier, getSupplier, nextSupplierId,
-    addPurchase, updatePurchase, deletePurchase,
+    addPurchase, updatePurchase, deletePurchase, returnSareePieces,
     addPayment, raiseRequest, decideRequest, statsFor,
     isError, error,
   };

@@ -19,6 +19,7 @@ import { InventoryModule } from "./inventory/inventory.module";
 import { InvoicesModule } from "./invoices/invoices.module";
 import { LabelsModule } from "./labels/labels.module";
 import { MaterialIssuesModule } from "./material-issues/material-issues.module";
+import { MaterialReturnsModule } from "./material-returns/material-returns.module";
 import { NotificationsModule } from "./notifications/notifications.module";
 import { PaymentsModule } from "./payments/payments.module";
 import { PrismaModule } from "./prisma/prisma.module";
@@ -68,6 +69,7 @@ import { AuthModule } from "./auth/auth.module";
     FactoryLoomsModule,
     BatchesModule,
     MaterialIssuesModule,
+    MaterialReturnsModule,
     RawMaterialsModule,
     WarpRequestsModule,
     RateRequestsModule,

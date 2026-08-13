@@ -2,22 +2,63 @@ import { apiClient } from "./client";
 
 export type SalesChannel = "RETAIL" | "WHOLESALE";
 
+// Raw shapes exactly as Prisma serialises SaleRecord / ReturnRecord — kept
+// private so a backend field-name change can only ever break this one file.
+interface RawSaleRecord {
+  saleRef: string;
+  sareeId: string;
+  channel: SalesChannel;
+  date: string;
+  customerId: string | null;
+  amount: string; // Prisma Decimal serialised as string
+  // Included by SalesService's saleInclude, but only the fields this app
+  // actually reads are declared here.
+  saree?: { designCode: string | null; sareeTypeCode: string | null } | null;
+  customer?: { id: string; name: string } | null;
+}
+
+interface RawReturnRecord {
+  returnRef: string;
+  sareeId: string;
+  reason: string | null;
+  refundAmount: string | null;
+  restocked: boolean;
+  createdAt: string;
+}
+
+// Normalised shapes the rest of the app reads — `saleDate` / `returnDate`
+// instead of Prisma's `date` / `createdAt`, since that's what every existing
+// call site already expected (the previous version of this file declared
+// those names but never actually produced them, so every reader silently got
+// `undefined`).
 export interface BackendSaleRecord {
-  ref: string;
+  saleRef: string;
   sareeId: string;
   channel: SalesChannel;
   customerId: string | null;
-  amount: string; // Prisma Decimal serialised as string
+  amount: string;
   saleDate: string;
+  saree?: { designCode: string | null; sareeTypeCode: string | null } | null;
+  customer?: { id: string; name: string } | null;
 }
 
 export interface BackendSaleReturn {
-  ref: string;
-  saleRef: string;
+  returnRef: string;
   sareeId: string;
-  reason: string;
+  reason: string | null;
+  refundAmount: string | null;
+  restocked: boolean;
   returnDate: string;
-  refundAmount: string;
+}
+
+function normalizeSale(raw: RawSaleRecord): BackendSaleRecord {
+  const { date, ...rest } = raw;
+  return { ...rest, saleDate: date };
+}
+
+function normalizeReturn(raw: RawReturnRecord): BackendSaleReturn {
+  const { createdAt, ...rest } = raw;
+  return { ...rest, returnDate: createdAt };
 }
 
 interface PaginatedResponse<T> {
@@ -36,29 +77,34 @@ export interface CreateSalePayload {
 }
 
 export interface CreateReturnPayload {
-  saleRef: string;
-  reason: string;
+  sareeId: string;
+  reason?: string;
   refundAmount?: number;
+  restocked?: boolean;
 }
 
 export const salesApi = {
   /** POST /sales — record a completed retail or wholesale sale */
-  create: (payload: CreateSalePayload) =>
-    apiClient.post<BackendSaleRecord>("/sales", payload),
+  create: async (payload: CreateSalePayload) =>
+    normalizeSale(await apiClient.post<RawSaleRecord>("/sales", payload)),
 
   /** GET /sales — paginated list of all sales */
-  list: (pageSize = 100) =>
-    apiClient.get<PaginatedResponse<BackendSaleRecord>>(`/sales?pageSize=${pageSize}`),
+  list: async (pageSize = 100): Promise<PaginatedResponse<BackendSaleRecord>> => {
+    const res = await apiClient.get<PaginatedResponse<RawSaleRecord>>(`/sales?pageSize=${pageSize}`);
+    return { ...res, items: res.items.map(normalizeSale) };
+  },
 
   /** GET /sales/:saleRef */
-  findOne: (saleRef: string) =>
-    apiClient.get<BackendSaleRecord>(`/sales/${saleRef}`),
+  findOne: async (saleRef: string) =>
+    normalizeSale(await apiClient.get<RawSaleRecord>(`/sales/${saleRef}`)),
 
   /** POST /sales/returns — record a returned saree */
-  createReturn: (payload: CreateReturnPayload) =>
-    apiClient.post<BackendSaleReturn>("/sales/returns", payload),
+  createReturn: async (payload: CreateReturnPayload) =>
+    normalizeReturn(await apiClient.post<RawReturnRecord>("/sales/returns", payload)),
 
   /** GET /sales/returns/all */
-  listReturns: (pageSize = 100) =>
-    apiClient.get<PaginatedResponse<BackendSaleReturn>>(`/sales/returns/all?pageSize=${pageSize}`),
+  listReturns: async (pageSize = 100): Promise<PaginatedResponse<BackendSaleReturn>> => {
+    const res = await apiClient.get<PaginatedResponse<RawReturnRecord>>(`/sales/returns/all?pageSize=${pageSize}`);
+    return { ...res, items: res.items.map(normalizeReturn) };
+  },
 };

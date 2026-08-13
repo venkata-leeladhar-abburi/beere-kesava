@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { DateFilterBar, DateFilterState, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { T, F } from "../theme";
 import { RetailCustomer } from "../types";
@@ -6,11 +8,14 @@ import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { Breadcrumbs } from "../../../../shared/ui/nav/Breadcrumbs";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
+import { salesApi } from "../../../../shared/api/sales";
+import { useRatesPricing } from "../../../pricing/contexts/RatesContext";
 
 interface RetailPurchaseRow {
   date: string;
   items: { id: string; type: string }[];
   price: number;
+  returned: boolean;
 }
 
 export interface RetailDetailSectionProps {
@@ -49,18 +54,55 @@ export function RetailDetailSection({
       cell: (_v, r) => <span style={{ color: T.antiqueGold, fontWeight: 600 }}><Money value={rupees(r.price)} /></span>,
     },
     {
-      id: "return", header: "Return", accessor: () => "—",
-      cell: () => <span style={{ color: T.taupe }}>—</span>,
+      id: "return", header: "Return", accessor: r => r.returned,
+      cell: (_v, r) => r.returned
+        ? <span style={{ color: T.crimson, fontWeight: 600 }}>Returned</span>
+        : <span style={{ color: T.taupe }}>—</span>,
     },
   ];
 
-  const retailPurchaseRows: RetailPurchaseRow[] = [
-    { date: customer.lastVisit, items: [{ id: "RAVI-L2-008", type: "Heavy Zari" }], price: 14500 },
-    { date: "12 Feb 2026", items: [{ id: "PADMA-L1-012", type: "Plain Silk" }, { id: "PADMA-L1-013", type: "Plain Silk" }], price: 44000 },
-    { date: "08 Jan 2026", items: [{ id: "BKB-L3-004", type: "Self Brocade" }], price: 9800 },
-    { date: "14 Dec 2025", items: [{ id: "SURESH-L2-007", type: "Bridal Special" }], price: 38500 },
-    { date: "02 Nov 2025", items: [{ id: "RAVI-L2-003", type: "Heavy Zari" }], price: 16200 },
-  ].filter(row => matchesDateFilter(row.date, retailPurchaseDateFilter));
+  const { getSareeTypeByCode } = useRatesPricing();
+
+  const { data: salesRes } = useQuery({
+    queryKey: ["sales-list-retail-detail"],
+    queryFn: () => salesApi.list(200),
+  });
+  const { data: returnsRes } = useQuery({
+    queryKey: ["returns-list-retail-detail"],
+    queryFn: () => salesApi.listReturns(200),
+  });
+
+  // ReturnRecord has no saleRef FK — a saree only has one active sale at a
+  // time, so sareeId is the closest usable link back to "was this returned".
+  const returnedSareeIds = useMemo(
+    () => new Set((returnsRes?.items ?? []).map(r => r.sareeId)),
+    [returnsRes],
+  );
+
+  const customerSales = useMemo(
+    () => (salesRes?.items ?? []).filter(s => s.channel === "RETAIL" && s.customerId === customer.id),
+    [salesRes, customer.id],
+  );
+
+  const retailPurchaseRows: RetailPurchaseRow[] = useMemo(() => customerSales
+    .map(s => {
+      const typeCode = s.saree?.sareeTypeCode;
+      const typeLabel = typeCode ? (getSareeTypeByCode(typeCode)?.type ?? typeCode) : (s.saree?.designCode ?? "—");
+      return {
+        date: new Date(s.saleDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+        items: [{ id: s.sareeId, type: typeLabel }],
+        price: Number(s.amount),
+        returned: returnedSareeIds.has(s.sareeId),
+      };
+    })
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .filter(row => matchesDateFilter(row.date, retailPurchaseDateFilter)),
+  [customerSales, returnedSareeIds, getSareeTypeByCode, retailPurchaseDateFilter]);
+
+  const totalPurchases = retailPurchaseRows.length;
+  const totalSpent = retailPurchaseRows.reduce((sum, r) => sum + r.price, 0);
+  const avgPerVisit = totalPurchases > 0 ? Math.round(totalSpent / totalPurchases) : 0;
+  const totalReturns = retailPurchaseRows.filter(r => r.returned).length;
 
   return (
     <div style={{ padding: "48px 56px" }}>
@@ -102,21 +144,21 @@ export function RetailDetailSection({
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 16, marginBottom: 28, background: T.silkCream, borderRadius: 14, padding: "20px 24px" }}>
             <div>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Total Purchases</div>
-              <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1 }}>{(customer as any).totalPurchases ?? customer.purchases ?? 0}</div>
+              <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1 }}>{totalPurchases}</div>
             </div>
             <div>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Total Spent</div>
-              <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.antiqueGold, lineHeight: 1 }}>{formatMoney(rupees((customer as any).totalSpend ?? parseInt(String(customer.spend || "0").replace(/,/g, ''), 10) ?? 0))}</div>
+              <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.antiqueGold, lineHeight: 1 }}>{formatMoney(rupees(totalSpent))}</div>
             </div>
             <div>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Avg per Visit</div>
               <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 600, color: T.taupe, marginTop: 4 }}>
-                {formatMoney(rupees(Math.round(((customer as any).totalSpend ?? parseInt(String(customer.spend || "0").replace(/,/g, ''), 10) ?? 0) / Math.max((customer as any).totalPurchases ?? customer.purchases ?? 0, 1))))}
+                {formatMoney(rupees(avgPerVisit))}
               </div>
             </div>
             <div>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Total Returns</div>
-              <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 600, color: T.crimson, marginTop: 4 }}>0</div>
+              <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 600, color: T.crimson, marginTop: 4 }}>{totalReturns}</div>
             </div>
           </div>
 
@@ -135,11 +177,11 @@ export function RetailDetailSection({
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
             <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Phone Number</div>
-              <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>+91 99887 76655</div>
+              <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{customer.phone && customer.phone !== "—" ? `+91 ${customer.phone}` : "—"}</div>
             </div>
             <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>City / Location</div>
-              <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{customer.city || "Hyderabad, TG"}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{customer.city || "—"}</div>
             </div>
           </div>
           <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}>
@@ -147,8 +189,9 @@ export function RetailDetailSection({
               <span>Relationship Manager Notes</span>
               <Button variant="link" size="sm">Save</Button>
             </div>
+            {/* No backend field for CRM notes yet — left blank rather than a fabricated default. */}
             <textarea
-              defaultValue="Prefers deep burgundy and gold heavy zari borders. Usually visits during festive/wedding seasons. Add to priority lists for exclusive product drops."
+              placeholder="Add notes about this customer's preferences..."
               style={{ width: "100%", minHeight: 80, padding: 12, borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: "#FFF", resize: "vertical", outline: "none" }}
             />
           </div>

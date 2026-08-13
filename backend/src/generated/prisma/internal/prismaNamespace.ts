@@ -412,6 +412,8 @@ export const ModelName = {
   BatchSareeRow: 'BatchSareeRow',
   MaterialIssueRecord: 'MaterialIssueRecord',
   MaterialIssueItem: 'MaterialIssueItem',
+  MaterialReturnRecord: 'MaterialReturnRecord',
+  MaterialReturnItem: 'MaterialReturnItem',
   QcRecord: 'QcRecord',
   FinishingStaff: 'FinishingStaff',
   FinishingAssignment: 'FinishingAssignment',
@@ -428,6 +430,7 @@ export const ModelName = {
   SupplierPayment: 'SupplierPayment',
   Vendor: 'Vendor',
   Purchase: 'Purchase',
+  PurchaseSareeLine: 'PurchaseSareeLine',
   PurchaseOrder: 'PurchaseOrder',
   VendorBill: 'VendorBill',
   PurchaseOrderItem: 'PurchaseOrderItem',
@@ -465,7 +468,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "idCounter" | "permission" | "rolePermission" | "userPermissionOverride" | "user" | "otpCode" | "weaver" | "factoryLoom" | "designLibrary" | "designDispatch" | "sareeTypeRate" | "batch" | "batchSareeRow" | "materialIssueRecord" | "materialIssueItem" | "qcRecord" | "finishingStaff" | "finishingAssignment" | "quotation" | "quotationSaree" | "bulkOrder" | "dispatchRecord" | "dispatchSaree" | "inventoryRecord" | "saree" | "saleRecord" | "returnRecord" | "supplier" | "supplierPayment" | "vendor" | "purchase" | "purchaseOrder" | "vendorBill" | "purchaseOrderItem" | "purchaseRequest" | "firm" | "firmFinancialEntry" | "weaverPayment" | "vendorPayment" | "invoice" | "invoicePayment" | "customer" | "labelSettings" | "auditLog" | "actionLog" | "notification" | "rawMaterialStock" | "grnReceipt" | "grnItem" | "warpRequest" | "rateChangeRequest" | "scheduledReport" | "reportDownloadHistory"
+    modelProps: "idCounter" | "permission" | "rolePermission" | "userPermissionOverride" | "user" | "otpCode" | "weaver" | "factoryLoom" | "designLibrary" | "designDispatch" | "sareeTypeRate" | "batch" | "batchSareeRow" | "materialIssueRecord" | "materialIssueItem" | "materialReturnRecord" | "materialReturnItem" | "qcRecord" | "finishingStaff" | "finishingAssignment" | "quotation" | "quotationSaree" | "bulkOrder" | "dispatchRecord" | "dispatchSaree" | "inventoryRecord" | "saree" | "saleRecord" | "returnRecord" | "supplier" | "supplierPayment" | "vendor" | "purchase" | "purchaseSareeLine" | "purchaseOrder" | "vendorBill" | "purchaseOrderItem" | "purchaseRequest" | "firm" | "firmFinancialEntry" | "weaverPayment" | "vendorPayment" | "invoice" | "invoicePayment" | "customer" | "labelSettings" | "auditLog" | "actionLog" | "notification" | "rawMaterialStock" | "grnReceipt" | "grnItem" | "warpRequest" | "rateChangeRequest" | "scheduledReport" | "reportDownloadHistory"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1576,6 +1579,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.MaterialIssueItemCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.MaterialIssueItemCountAggregateOutputType> | number
+        }
+      }
+    }
+    MaterialReturnRecord: {
+      payload: Prisma.$MaterialReturnRecordPayload<ExtArgs>
+      fields: Prisma.MaterialReturnRecordFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.MaterialReturnRecordFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaterialReturnRecordPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.MaterialReturnRecordFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaterialReturnRecordPayload>
+        }
+        findFirst: {
+          args: Prisma.MaterialReturnRecordFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaterialReturnRecordPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.MaterialReturnRecordFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaterialReturnRecordPayload>
+        }
+        findMany: {
+          args: Prisma.MaterialReturnRecordFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaterialReturnRecordPayload>[]
+        }
+        create: {
+          args: Prisma.MaterialReturnRecordCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaterialReturnRecordPayload>
+        }
+        createMany: {
+          args: Prisma.MaterialReturnRecordCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.MaterialReturnRecordCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaterialReturnRecordPayload>[]
+        }
+        delete: {
+          args: Prisma.MaterialReturnRecordDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaterialReturnRecordPayload>
+        }
+        update: {
+          args: Prisma.MaterialReturnRecordUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaterialReturnRecordPayload>
+        }
+        deleteMany: {
+          args: Prisma.MaterialReturnRecordDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.MaterialReturnRecordUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.MaterialReturnRecordUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaterialReturnRecordPayload>[]
+        }
+        upsert: {
+          args: Prisma.MaterialReturnRecordUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaterialReturnRecordPayload>
+        }
+        aggregate: {
+          args: Prisma.MaterialReturnRecordAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMaterialReturnRecord>
+        }
+        groupBy: {
+          args: Prisma.MaterialReturnRecordGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MaterialReturnRecordGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.MaterialReturnRecordCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MaterialReturnRecordCountAggregateOutputType> | number
+        }
+      }
+    }
+    MaterialReturnItem: {
+      payload: Prisma.$MaterialReturnItemPayload<ExtArgs>
+      fields: Prisma.MaterialReturnItemFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.MaterialReturnItemFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaterialReturnItemPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.MaterialReturnItemFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaterialReturnItemPayload>
+        }
+        findFirst: {
+          args: Prisma.MaterialReturnItemFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaterialReturnItemPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.MaterialReturnItemFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaterialReturnItemPayload>
+        }
+        findMany: {
+          args: Prisma.MaterialReturnItemFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaterialReturnItemPayload>[]
+        }
+        create: {
+          args: Prisma.MaterialReturnItemCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaterialReturnItemPayload>
+        }
+        createMany: {
+          args: Prisma.MaterialReturnItemCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.MaterialReturnItemCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaterialReturnItemPayload>[]
+        }
+        delete: {
+          args: Prisma.MaterialReturnItemDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaterialReturnItemPayload>
+        }
+        update: {
+          args: Prisma.MaterialReturnItemUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaterialReturnItemPayload>
+        }
+        deleteMany: {
+          args: Prisma.MaterialReturnItemDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.MaterialReturnItemUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.MaterialReturnItemUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaterialReturnItemPayload>[]
+        }
+        upsert: {
+          args: Prisma.MaterialReturnItemUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MaterialReturnItemPayload>
+        }
+        aggregate: {
+          args: Prisma.MaterialReturnItemAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMaterialReturnItem>
+        }
+        groupBy: {
+          args: Prisma.MaterialReturnItemGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MaterialReturnItemGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.MaterialReturnItemCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MaterialReturnItemCountAggregateOutputType> | number
         }
       }
     }
@@ -2760,6 +2911,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.PurchaseCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.PurchaseCountAggregateOutputType> | number
+        }
+      }
+    }
+    PurchaseSareeLine: {
+      payload: Prisma.$PurchaseSareeLinePayload<ExtArgs>
+      fields: Prisma.PurchaseSareeLineFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PurchaseSareeLineFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PurchaseSareeLinePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PurchaseSareeLineFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PurchaseSareeLinePayload>
+        }
+        findFirst: {
+          args: Prisma.PurchaseSareeLineFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PurchaseSareeLinePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PurchaseSareeLineFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PurchaseSareeLinePayload>
+        }
+        findMany: {
+          args: Prisma.PurchaseSareeLineFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PurchaseSareeLinePayload>[]
+        }
+        create: {
+          args: Prisma.PurchaseSareeLineCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PurchaseSareeLinePayload>
+        }
+        createMany: {
+          args: Prisma.PurchaseSareeLineCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PurchaseSareeLineCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PurchaseSareeLinePayload>[]
+        }
+        delete: {
+          args: Prisma.PurchaseSareeLineDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PurchaseSareeLinePayload>
+        }
+        update: {
+          args: Prisma.PurchaseSareeLineUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PurchaseSareeLinePayload>
+        }
+        deleteMany: {
+          args: Prisma.PurchaseSareeLineDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PurchaseSareeLineUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PurchaseSareeLineUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PurchaseSareeLinePayload>[]
+        }
+        upsert: {
+          args: Prisma.PurchaseSareeLineUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PurchaseSareeLinePayload>
+        }
+        aggregate: {
+          args: Prisma.PurchaseSareeLineAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePurchaseSareeLine>
+        }
+        groupBy: {
+          args: Prisma.PurchaseSareeLineGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PurchaseSareeLineGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PurchaseSareeLineCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PurchaseSareeLineCountAggregateOutputType> | number
         }
       }
     }
@@ -4663,6 +4888,42 @@ export const MaterialIssueItemScalarFieldEnum = {
 export type MaterialIssueItemScalarFieldEnum = (typeof MaterialIssueItemScalarFieldEnum)[keyof typeof MaterialIssueItemScalarFieldEnum]
 
 
+export const MaterialReturnRecordScalarFieldEnum = {
+  id: 'id',
+  weaverId: 'weaverId',
+  factoryLoomId: 'factoryLoomId',
+  loomNumber: 'loomNumber',
+  batchId: 'batchId',
+  receivedById: 'receivedById',
+  receivedAt: 'receivedAt',
+  signatureMethod: 'signatureMethod',
+  signatureCaptured: 'signatureCaptured',
+  signatureTimestamp: 'signatureTimestamp',
+  signatureUrl: 'signatureUrl',
+  status: 'status',
+  deductionAmount: 'deductionAmount',
+  deductionReason: 'deductionReason',
+  notes: 'notes'
+} as const
+
+export type MaterialReturnRecordScalarFieldEnum = (typeof MaterialReturnRecordScalarFieldEnum)[keyof typeof MaterialReturnRecordScalarFieldEnum]
+
+
+export const MaterialReturnItemScalarFieldEnum = {
+  id: 'id',
+  returnId: 'returnId',
+  materialType: 'materialType',
+  warpSubtype: 'warpSubtype',
+  quantity: 'quantity',
+  unit: 'unit',
+  jariType: 'jariType',
+  jariGrade: 'jariGrade',
+  jariColor: 'jariColor'
+} as const
+
+export type MaterialReturnItemScalarFieldEnum = (typeof MaterialReturnItemScalarFieldEnum)[keyof typeof MaterialReturnItemScalarFieldEnum]
+
+
 export const QcRecordScalarFieldEnum = {
   id: 'id',
   sareeId: 'sareeId',
@@ -4936,15 +5197,41 @@ export type VendorScalarFieldEnum = (typeof VendorScalarFieldEnum)[keyof typeof 
 export const PurchaseScalarFieldEnum = {
   id: 'id',
   supplierId: 'supplierId',
+  supplierName: 'supplierName',
+  location: 'location',
   date: 'date',
   sareeCount: 'sareeCount',
   gstNumber: 'gstNumber',
   invoiceNumber: 'invoiceNumber',
   billAmount: 'billAmount',
-  status: 'status'
+  status: 'status',
+  notes: 'notes',
+  invoiceFileName: 'invoiceFileName',
+  addedById: 'addedById',
+  createdAt: 'createdAt'
 } as const
 
 export type PurchaseScalarFieldEnum = (typeof PurchaseScalarFieldEnum)[keyof typeof PurchaseScalarFieldEnum]
+
+
+export const PurchaseSareeLineScalarFieldEnum = {
+  id: 'id',
+  purchaseId: 'purchaseId',
+  code: 'code',
+  weight: 'weight',
+  sareeDate: 'sareeDate',
+  sareeType: 'sareeType',
+  color: 'color',
+  price: 'price',
+  sellPercent: 'sellPercent',
+  quantity: 'quantity',
+  finalAmount: 'finalAmount',
+  notes: 'notes',
+  imageUrl: 'imageUrl',
+  returnedQuantity: 'returnedQuantity'
+} as const
+
+export type PurchaseSareeLineScalarFieldEnum = (typeof PurchaseSareeLineScalarFieldEnum)[keyof typeof PurchaseSareeLineScalarFieldEnum]
 
 
 export const PurchaseOrderScalarFieldEnum = {
@@ -5564,6 +5851,20 @@ export type ListEnumJariGradeFieldRefInput<$PrismaModel> = FieldRefInputType<$Pr
 
 
 /**
+ * Reference to a field of type 'MaterialReturnStatus'
+ */
+export type EnumMaterialReturnStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MaterialReturnStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'MaterialReturnStatus[]'
+ */
+export type ListEnumMaterialReturnStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MaterialReturnStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'QcResult'
  */
 export type EnumQcResultFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QcResult'>
@@ -6148,6 +6449,8 @@ export type GlobalOmitConfig = {
   batchSareeRow?: Prisma.BatchSareeRowOmit
   materialIssueRecord?: Prisma.MaterialIssueRecordOmit
   materialIssueItem?: Prisma.MaterialIssueItemOmit
+  materialReturnRecord?: Prisma.MaterialReturnRecordOmit
+  materialReturnItem?: Prisma.MaterialReturnItemOmit
   qcRecord?: Prisma.QcRecordOmit
   finishingStaff?: Prisma.FinishingStaffOmit
   finishingAssignment?: Prisma.FinishingAssignmentOmit
@@ -6164,6 +6467,7 @@ export type GlobalOmitConfig = {
   supplierPayment?: Prisma.SupplierPaymentOmit
   vendor?: Prisma.VendorOmit
   purchase?: Prisma.PurchaseOmit
+  purchaseSareeLine?: Prisma.PurchaseSareeLineOmit
   purchaseOrder?: Prisma.PurchaseOrderOmit
   vendorBill?: Prisma.VendorBillOmit
   purchaseOrderItem?: Prisma.PurchaseOrderItemOmit

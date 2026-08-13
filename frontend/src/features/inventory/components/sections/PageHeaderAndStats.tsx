@@ -20,7 +20,7 @@ export function PageHeaderAndStats({
   damaged,
 }: PageHeaderAndStatsProps) {
   const stats = [
-    { val: total,        label: "TOTAL IN INVENTORY",     sub: "All finished sarees",          hi: false, crimson: false, goldVal: false, Icon: Package },
+    { val: total,        label: "TOTAL IN INVENTORY",     sub: "All QC-passed stock",          hi: false, crimson: false, goldVal: false, Icon: Package },
     { val: pendingCount, label: "PENDING FINISHING",      sub: "QC passed, needs finishing",   hi: false, crimson: false, goldVal: false, Icon: Clock },
     { val: ready,        label: "READY FOR DISPATCH",     sub: "Cleared, awaiting dispatch",   hi: true,  crimson: false, goldVal: true,  Icon: CheckCircle2 },
     { val: thisMonth,    label: "DISPATCHED THIS MONTH",  sub: "To shop + wholesale",          hi: false, crimson: false, goldVal: false, Icon: Truck },

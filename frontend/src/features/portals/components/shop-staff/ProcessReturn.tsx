@@ -29,12 +29,14 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
   });
 
   const returnLog: ReturnRecord[] = (returnsRes?.items ?? []).map(r => ({
-    id: r.ref,
+    id: r.returnRef,
     type: "retail",
     date: new Date(r.returnDate).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" }),
     customer: "Retail Customer",
-    originalSaleId: r.saleRef ?? r.sareeId,
-    reason: r.reason,
+    // ReturnRecord has no saleRef FK — a return only ever references the
+    // sareeId, so that's the closest thing to an "original sale" identifier.
+    originalSaleId: r.sareeId,
+    reason: r.reason ?? "—",
     amount: r.refundAmount ? formatMoney(rupees(Number(r.refundAmount))) : formatMoney(rupees(0)),
   }));
 
@@ -174,9 +176,10 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
           onConfirm={async () => {
             try {
               await salesApi.createReturn({
-                saleRef: retailManualId || "PADMA-L1-004",
+                sareeId: retailManualId || "PADMA-L1-004",
                 reason: returnReasons.find(r => r.id === reason)?.label ?? reason ?? "Other",
                 refundAmount: 8500,
+                restocked: true,
               });
               refetch();
             } catch (err) {
@@ -221,9 +224,10 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
         onConfirm={async () => {
           try {
             await salesApi.createReturn({
-              saleRef: wsNewId || "WS-RET-001",
+              sareeId: wsNewId || "WS-RET-001",
               reason: wsReason ?? "Wholesale Return",
               refundAmount: Number(wsPrice) || 0,
+              restocked: true,
             });
             refetch();
           } catch (err) {

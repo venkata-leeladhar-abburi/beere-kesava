@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { PaginatedResult } from "../common/pagination";
 import { FinancialEntryKind, Prisma } from "../generated/prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
@@ -52,6 +52,44 @@ export class FirmsService {
   async update(id: string, dto: UpdateFirmDto) {
     await this.findOne(id);
     return this.prisma.firm.update({ where: { id }, data: dto });
+  }
+
+  // No cascade/setNull declared on any of these relations (all default to
+  // Restrict), so a direct `firm.delete()` on a firm with real activity
+  // would surface as an opaque Prisma FK-constraint 500. Count everything
+  // first and give the caller a clear reason instead.
+  async remove(id: string) {
+    await this.findOne(id);
+
+    const [entries, quotations, dispatches, supplierPayments, weaverPayments, vendorPayments, invoicePayments, grnReceipts] =
+      await Promise.all([
+        this.prisma.firmFinancialEntry.count({ where: { firmId: id } }),
+        this.prisma.quotation.count({ where: { firmId: id } }),
+        this.prisma.dispatchRecord.count({ where: { firmId: id } }),
+        this.prisma.supplierPayment.count({ where: { firmId: id } }),
+        this.prisma.weaverPayment.count({ where: { firmId: id } }),
+        this.prisma.vendorPayment.count({ where: { firmId: id } }),
+        this.prisma.invoicePayment.count({ where: { firmId: id } }),
+        this.prisma.grnReceipt.count({ where: { firmId: id } }),
+      ]);
+
+    const blockers: string[] = [];
+    if (entries > 0) blockers.push(`${entries} financial entr${entries === 1 ? "y" : "ies"}`);
+    if (quotations > 0) blockers.push(`${quotations} quotation${quotations === 1 ? "" : "s"}`);
+    if (dispatches > 0) blockers.push(`${dispatches} dispatch record${dispatches === 1 ? "" : "s"}`);
+    if (supplierPayments > 0) blockers.push(`${supplierPayments} supplier payment${supplierPayments === 1 ? "" : "s"}`);
+    if (weaverPayments > 0) blockers.push(`${weaverPayments} weaver payment${weaverPayments === 1 ? "" : "s"}`);
+    if (vendorPayments > 0) blockers.push(`${vendorPayments} vendor payment${vendorPayments === 1 ? "" : "s"}`);
+    if (invoicePayments > 0) blockers.push(`${invoicePayments} invoice payment${invoicePayments === 1 ? "" : "s"}`);
+    if (grnReceipts > 0) blockers.push(`${grnReceipts} GRN receipt${grnReceipts === 1 ? "" : "s"}`);
+
+    if (blockers.length > 0) {
+      throw new BadRequestException(
+        `Cannot delete this firm — it has ${blockers.join(", ")} recorded against it.`,
+      );
+    }
+
+    await this.prisma.firm.delete({ where: { id } });
   }
 
   async addEntry(firmId: string, dto: CreateFinancialEntryDto) {

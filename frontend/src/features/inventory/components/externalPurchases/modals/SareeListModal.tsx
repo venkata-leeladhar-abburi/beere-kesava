@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { X, Printer } from "lucide-react";
+import { X, Printer, Undo2 } from "lucide-react";
 import {
   Purchase, SareeTag,
-  lineProfit, purchaseTotals, expandSareePieces,
+  lineProfit, purchaseTotals, expandSareePieces, useSuppliers,
 } from "../../../../suppliers/contexts/SupplierContext";
 import { formatMoney, rupees } from "@/lib/domain/money";
 import { T, F } from "../theme";
@@ -23,9 +23,27 @@ export function SareeListModal({
   onPrint: (saree: SareeTag) => void;
 }) {
   const { print } = useDocument();
+  const { returnSareePieces } = useSuppliers();
   // One row per physical saree — a line bought in bulk is tagged piece by piece.
   const pieces = expandSareePieces(purchase.sarees);
   type Piece = (typeof pieces)[number];
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  // Only not-yet-returned pieces can be selected — a returned piece has
+  // nothing left to act on.
+  const selectablePieces = pieces.filter(s => !s.returned);
+  const selectedReturnablePieces = pieces.filter(s => selectedIds.has(s.id) && !s.returned);
+
+  const handleReturnSelected = () => {
+    if (selectedReturnablePieces.length === 0) return;
+    // Group by parent line — one API call per line, incrementing that
+    // line's returnedQuantity by however many of its pieces were selected.
+    const countByLine = new Map<string, number>();
+    selectedReturnablePieces.forEach(s => {
+      countByLine.set(s.lineCode, (countByLine.get(s.lineCode) ?? 0) + 1);
+    });
+    countByLine.forEach((count, lineCode) => returnSareePieces(purchase.id, lineCode, count));
+    setSelectedIds(new Set());
+  };
 
   const columns: ColumnDef<Piece>[] = [
     {
@@ -35,6 +53,12 @@ export function SareeListModal({
     {
       id: "sareeCode", header: "Saree Code", accessor: s => s.id,
       cell: (_v, s) => <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 12, color: T.royalBurgundy, whiteSpace: "nowrap" as const }}>{s.id}</span>,
+    },
+    {
+      id: "status", header: "Status", accessor: s => s.returned, type: "status",
+      cell: (_v, s) => s.returned
+        ? <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.crimson, background: "rgba(192,57,43,0.08)", borderRadius: 6, padding: "2px 8px", whiteSpace: "nowrap" as const }}>Returned</span>
+        : <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.green, background: "rgba(30,102,64,0.08)", borderRadius: 6, padding: "2px 8px", whiteSpace: "nowrap" as const }}>With Us</span>,
     },
     {
       id: "lineSerial", header: "Line Serial", accessor: s => s.lineCode,
@@ -182,7 +206,13 @@ export function SareeListModal({
           </div>
 
           <div style={{ overflow: "auto", flex: 1 }}>
-            <DataTable columns={columns} data={pieces} getRowId={s => s.id} />
+            <DataTable
+              columns={columns}
+              data={pieces}
+              getRowId={s => s.id}
+              selectedIds={selectedIds}
+              onSelectionChange={next => setSelectedIds(new Set([...next].filter(id => selectablePieces.some(s => s.id === id))))}
+            />
             {/* DataTable has no tfoot support — totals row rendered as a matching footer bar. */}
             <div
               style={{
@@ -213,6 +243,17 @@ export function SareeListModal({
               flexShrink: 0,
             }}
           >
+            {selectedReturnablePieces.length > 0 && (
+              <Button
+                variant="danger"
+                iconLeft={Undo2}
+                onClick={handleReturnSelected}
+                fullWidth
+                className="rounded-full"
+              >
+                Return {selectedReturnablePieces.length} Selected Saree{selectedReturnablePieces.length !== 1 ? "s" : ""}
+              </Button>
+            )}
             <Button
               variant="primary"
               iconLeft={Printer}

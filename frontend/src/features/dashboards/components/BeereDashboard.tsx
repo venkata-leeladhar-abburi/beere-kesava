@@ -31,6 +31,7 @@ const RatesPricingPage = lazy(() => import("../../pricing/components/RatesPricin
 const DesignLibraryPage = lazy(() => import("../../design-library/components/DesignLibraryPage").then(m => ({ default: m.DesignLibraryPage })));
 const BatchCreationPage = lazy(() => import("../../production/components/BatchCreationPage").then(m => ({ default: m.BatchCreationPage })));
 const IssueMaterialPage = lazy(() => import("../../materials/components/IssueMaterialPage").then(m => ({ default: m.IssueMaterialPage })));
+const ReturnMaterialPage = lazy(() => import("../../materials/components/ReturnMaterialPage").then(m => ({ default: m.ReturnMaterialPage })));
 const InventoryPage = lazy(() => import("../../inventory/components/InventoryPage").then(m => ({ default: m.InventoryPage })));
 const VendorsPage = lazy(() => import("../../vendors/components/VendorsPage").then(m => ({ default: m.VendorsPage })));
 const SuppliersPage = lazy(() => import("../../suppliers/components/SuppliersPage").then(m => ({ default: m.SuppliersPage })));
@@ -105,6 +106,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
   else if (tab === "finishing") nav = "Finishing";
   else if (tab === "rates") nav = "Rates";
   else if (tab === "issue-material") nav = "IssueMaterial";
+  else if (tab === "return-material") nav = "ReturnMaterial";
   else if (tab === "overview") nav = "Overview";
 
   const mobileTab = nav;
@@ -148,6 +150,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
       Finishing: "/admin/finishing",
       Rates: "/admin/rates",
       IssueMaterial: "/admin/issue-material",
+      ReturnMaterial: "/admin/return-material",
       ProductionHistory: "/admin/production-history",
     };
     const path = routeMap[tab] || "/admin/materials";
@@ -223,6 +226,8 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
         <RatesPricingPage />
       ) : mobileTab === "IssueMaterial" ? (
         <IssueMaterialPage />
+      ) : mobileTab === "ReturnMaterial" ? (
+        <ReturnMaterialPage />
       ) : mobileTab === "FactoryLooms" ? (
         <FactoryLoomPage />
       ) : mobileTab === "Firms" ? (
@@ -365,6 +370,8 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
         <RatesPricingPage />
       ) : nav === "IssueMaterial" ? (
         <IssueMaterialPage />
+      ) : nav === "ReturnMaterial" ? (
+        <ReturnMaterialPage />
       ) : (
         <>
           <Hero />

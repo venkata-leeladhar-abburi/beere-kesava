@@ -79,7 +79,7 @@ export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; 
           </Dialog.Close>
         </div>
 
-        <div style={{ padding: "24px 28px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32, alignItems: "start", overflowY: "auto" }}>
+        <div style={{ padding: "24px 28px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32, alignItems: "start", overflowY: "auto", flex: 1, minHeight: 0 }}>
           {/* Left Column: Payment History & Invoice Upload */}
           <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
             <div>

@@ -19,6 +19,8 @@ export interface SareeTag {
   notes: string;
   /** Optional photo of the saree, stored as a data URL. */
   imageUrl?: string;
+  /** How many of this line's `quantity` pieces have been returned to the supplier. */
+  returnedQuantity?: number;
 }
 
 export interface Purchase {
@@ -185,6 +187,8 @@ export interface SareePiece extends SareeTag {
   pieceNo: number;
   /** How many pieces the parent line covers. */
   lineQuantity: number;
+  /** Whether this specific piece has been returned to the supplier. */
+  returned: boolean;
 }
 
 /**
@@ -196,6 +200,7 @@ export function expandSareePieces<T extends SareeTag>(sarees: T[]): (T & SareePi
     const qty = Number(s.quantity) || 1;
     const price = Number(s.price) || 0;
     const sellPercent = Number(s.sellPercent) || 0;
+    const returnedQty = Math.min(Number(s.returnedQuantity) || 0, qty);
     return Array.from({ length: qty }, (_, i) => ({
       ...s,
       id: pieceCodeFromLineCode(s.id, i + 1),
@@ -205,6 +210,9 @@ export function expandSareePieces<T extends SareeTag>(sarees: T[]): (T & SareePi
       quantity: 1,
       price,
       finalAmount: computeFinalAmount(price, sellPercent, 1),
+      // The line only tracks *how many* pieces came back, not which — treat
+      // the first `returnedQuantity` pieces of the line as the returned ones.
+      returned: i + 1 <= returnedQty,
     }));
   });
 }

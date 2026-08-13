@@ -127,6 +127,9 @@ interface FirmsContextValue {
   financials: FirmFinancials[];
   addFirm: (firm: Omit<Firm, "id" | "createdAt">) => void;
   updateFirm: (id: string, updates: Omit<Firm, "id" | "createdAt">) => void;
+  /** Rejects with the backend's message when the firm has financial entries
+   *  or payments recorded against it — deletion is blocked, not silently ignored. */
+  deleteFirm: (id: string) => Promise<void>;
   addIncomeEntry: (firmId: string, entry: Omit<FinancialEntry, "id">) => void;
   addExpenseEntry: (firmId: string, entry: Omit<FinancialEntry, "id">) => void;
   addMiscEntry: (firmId: string, entry: Omit<MiscEntry, "id">) => void;
@@ -187,6 +190,18 @@ export function FirmsProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
+  const deleteFirmMutation = useMutation({
+    mutationFn: (id: string) => firmsApi.remove(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: FIRMS_KEY });
+      void queryClient.invalidateQueries({ queryKey: FINANCIALS_KEY });
+      toast.success("Firm deleted");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to delete firm");
+    },
+  });
+
   const addEntryMutation = useMutation({
     mutationFn: (args: { firmId: string; payload: CreateFinancialEntryPayload }) =>
       firmsApi.addEntry(args.firmId, args.payload),
@@ -217,6 +232,7 @@ export function FirmsProvider({ children }: { children: React.ReactNode }) {
   const addFirm = (data: Omit<Firm, "id" | "createdAt">) => addFirmMutation.mutate(data);
   const updateFirm = (id: string, updates: Omit<Firm, "id" | "createdAt">) =>
     updateFirmMutation.mutate({ id, updates });
+  const deleteFirm = (id: string): Promise<void> => deleteFirmMutation.mutateAsync(id).then(() => undefined);
 
   const addIncomeEntry = (firmId: string, entry: Omit<FinancialEntry, "id">) =>
     addEntryMutation.mutate({
@@ -281,6 +297,7 @@ export function FirmsProvider({ children }: { children: React.ReactNode }) {
         financials,
         addFirm,
         updateFirm,
+        deleteFirm,
         addIncomeEntry,
         addExpenseEntry,
         addMiscEntry,

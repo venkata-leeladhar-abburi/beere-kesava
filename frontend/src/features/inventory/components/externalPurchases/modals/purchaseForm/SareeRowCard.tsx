@@ -106,8 +106,16 @@ export function SareeRowCard({
           <NumberInput
             size="sm"
             min={1}
-            value={s.quantity ?? 1}
-            onValueChange={(v) => updateSareeRow(s._uid, { quantity: Math.max(1, Number(v) || 1) })}
+            value={s.quantity === undefined || (s.quantity as unknown) === "" ? "" : s.quantity}
+            onValueChange={(v) => {
+              // Let the field go empty while typing (e.g. backspacing "1" to
+              // type "3") instead of snapping back to 1 on every keystroke —
+              // only clamp to a real minimum-1 quantity once a number lands.
+              // computeFinalAmount/purchaseTotals already fall back to 1 via
+              // `Number(s.quantity) || 1` wherever an in-progress empty value
+              // could otherwise reach a calculation.
+              updateSareeRow(s._uid, { quantity: v === "" ? undefined : Math.max(1, Number(v) || 1) });
+            }}
             placeholder="1"
           />
         </Field>

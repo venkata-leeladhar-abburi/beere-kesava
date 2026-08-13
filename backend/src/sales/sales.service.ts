@@ -27,12 +27,32 @@ export class SalesService {
   ) {}
 
   async createSale(dto: CreateSaleDto) {
-    const saree = await this.prisma.saree.findUnique({ where: { id: dto.sareeId } });
-    if (!saree) {
+    // The real production pipeline (BatchSareeRow → QcRecord) never writes a
+    // `Saree` row — that table only exists to satisfy SaleRecord/ReturnRecord's
+    // FK. So availability is decided the same way InventoryService.findAll()
+    // decides it: a clean QC pass, not already dispatched, not already sold,
+    // not flagged for damage review — NOT gated on finishing/InventoryRecord
+    // status, since a saree counts as "in stock" the moment QC passes.
+    const row = await this.prisma.batchSareeRow.findUnique({ where: { sareeId: dto.sareeId } });
+    if (!row) {
       throw new NotFoundException(`Saree ${dto.sareeId} not found`);
     }
-    if (saree.status !== "UNSOLD") {
-      throw new BadRequestException(`Saree ${dto.sareeId} is not available for sale (status: ${saree.status})`);
+    if (!row.qcPassed) {
+      throw new BadRequestException(`Saree ${dto.sareeId} has not passed QC yet`);
+    }
+    const [dispatched, alreadySold, inventory] = await Promise.all([
+      this.prisma.dispatchSaree.findFirst({ where: { sareeId: dto.sareeId } }),
+      this.prisma.saleRecord.findFirst({ where: { sareeId: dto.sareeId } }),
+      this.prisma.inventoryRecord.findUnique({ where: { sareeId: dto.sareeId } }),
+    ]);
+    if (dispatched) {
+      throw new BadRequestException(`Saree ${dto.sareeId} has already been dispatched`);
+    }
+    if (alreadySold) {
+      throw new BadRequestException(`Saree ${dto.sareeId} has already been sold`);
+    }
+    if (inventory?.status === "DAMAGED_REVIEW_NEEDED") {
+      throw new BadRequestException(`Saree ${dto.sareeId} is flagged for damage review`);
     }
     if (dto.channel === SalesChannel.WHOLESALE && dto.customerId) {
       const customer = await this.prisma.customer.findUnique({ where: { id: dto.customerId } });
@@ -42,8 +62,25 @@ export class SalesService {
     }
 
     const saleRef = await this.idGenerator.nextFormatted("SALE");
+    const sareeStatus = dto.channel === SalesChannel.WHOLESALE ? "WHOLESALE" : "RETAIL";
 
     await this.prisma.$transaction([
+      // Upsert rather than update: this is the first time this sareeId ever
+      // touches the `Saree` table, so the row doesn't exist yet.
+      this.prisma.saree.upsert({
+        where: { id: dto.sareeId },
+        create: {
+          id: dto.sareeId,
+          origin: row.recipientType === "FACTORY_LOOM" || row.factoryLoomId ? "FACTORY_LOOM" : "WEAVER",
+          weaverId: row.weaverId,
+          factoryLoomId: row.factoryLoomId,
+          batchId: row.batchId,
+          designCode: row.designCode,
+          sareeTypeCode: row.sareeTypeCode,
+          status: sareeStatus,
+        },
+        update: { status: sareeStatus },
+      }),
       this.prisma.saleRecord.create({
         data: {
           saleRef,
@@ -53,9 +90,15 @@ export class SalesService {
           amount: dto.amount,
         },
       }),
-      this.prisma.saree.update({
-        where: { id: dto.sareeId },
-        data: { status: dto.channel === SalesChannel.WHOLESALE ? "WHOLESALE" : "RETAIL" },
+      // Pulls the saree out of the shop-stock browse list
+      // (InventoryService.findAll excludes it via the SaleRecord check above
+      // regardless, but this keeps InventoryRecord.status accurate for
+      // anything else that reads it). Upsert: a saree that was never sent
+      // through finishing has no InventoryRecord row yet.
+      this.prisma.inventoryRecord.upsert({
+        where: { sareeId: dto.sareeId },
+        create: { sareeId: dto.sareeId, status: "SOLD", rawType: "READY_SAREE", batchId: row.batchId },
+        update: { status: "SOLD" },
       }),
     ]);
 
@@ -128,6 +171,19 @@ export class SalesService {
         where: { id: dto.sareeId },
         data: { status: restocked ? "UNSOLD" : "RETURNED" },
       }),
+      // Only a restock puts it back in the shop-stock browse list — an
+      // unrestocked return (e.g. damaged) stays out of InventoryService.findAll().
+      // Upsert, not update: a saree sold before InventoryRecord tracking
+      // existed (or one whose record was never created) has no row yet.
+      ...(restocked
+        ? [
+            this.prisma.inventoryRecord.upsert({
+              where: { sareeId: dto.sareeId },
+              create: { sareeId: dto.sareeId, status: "FINISHING_COMPLETE", rawType: "RETURN" },
+              update: { status: "FINISHING_COMPLETE" },
+            }),
+          ]
+        : []),
     ]);
 
     await this.auditLog.recordAction({

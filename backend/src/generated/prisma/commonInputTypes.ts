@@ -473,6 +473,23 @@ export type EnumJariGradeNullableWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumJariGradeNullableFilter<$PrismaModel>
 }
 
+export type EnumMaterialReturnStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.MaterialReturnStatus | Prisma.EnumMaterialReturnStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.MaterialReturnStatus[] | Prisma.ListEnumMaterialReturnStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MaterialReturnStatus[] | Prisma.ListEnumMaterialReturnStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMaterialReturnStatusFilter<$PrismaModel> | $Enums.MaterialReturnStatus
+}
+
+export type EnumMaterialReturnStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.MaterialReturnStatus | Prisma.EnumMaterialReturnStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.MaterialReturnStatus[] | Prisma.ListEnumMaterialReturnStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MaterialReturnStatus[] | Prisma.ListEnumMaterialReturnStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMaterialReturnStatusWithAggregatesFilter<$PrismaModel> | $Enums.MaterialReturnStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumMaterialReturnStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumMaterialReturnStatusFilter<$PrismaModel>
+}
+
 export type EnumQcResultFilter<$PrismaModel = never> = {
   equals?: $Enums.QcResult | Prisma.EnumQcResultFieldRefInput<$PrismaModel>
   in?: $Enums.QcResult[] | Prisma.ListEnumQcResultFieldRefInput<$PrismaModel>
@@ -1487,6 +1504,23 @@ export type NestedEnumJariGradeNullableWithAggregatesFilter<$PrismaModel = never
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
   _min?: Prisma.NestedEnumJariGradeNullableFilter<$PrismaModel>
   _max?: Prisma.NestedEnumJariGradeNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumMaterialReturnStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.MaterialReturnStatus | Prisma.EnumMaterialReturnStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.MaterialReturnStatus[] | Prisma.ListEnumMaterialReturnStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MaterialReturnStatus[] | Prisma.ListEnumMaterialReturnStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMaterialReturnStatusFilter<$PrismaModel> | $Enums.MaterialReturnStatus
+}
+
+export type NestedEnumMaterialReturnStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.MaterialReturnStatus | Prisma.EnumMaterialReturnStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.MaterialReturnStatus[] | Prisma.ListEnumMaterialReturnStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MaterialReturnStatus[] | Prisma.ListEnumMaterialReturnStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMaterialReturnStatusWithAggregatesFilter<$PrismaModel> | $Enums.MaterialReturnStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumMaterialReturnStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumMaterialReturnStatusFilter<$PrismaModel>
 }
 
 export type NestedEnumQcResultFilter<$PrismaModel = never> = {

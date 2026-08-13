@@ -66,6 +66,8 @@ export const ModelName = {
   BatchSareeRow: 'BatchSareeRow',
   MaterialIssueRecord: 'MaterialIssueRecord',
   MaterialIssueItem: 'MaterialIssueItem',
+  MaterialReturnRecord: 'MaterialReturnRecord',
+  MaterialReturnItem: 'MaterialReturnItem',
   QcRecord: 'QcRecord',
   FinishingStaff: 'FinishingStaff',
   FinishingAssignment: 'FinishingAssignment',
@@ -82,6 +84,7 @@ export const ModelName = {
   SupplierPayment: 'SupplierPayment',
   Vendor: 'Vendor',
   Purchase: 'Purchase',
+  PurchaseSareeLine: 'PurchaseSareeLine',
   PurchaseOrder: 'PurchaseOrder',
   VendorBill: 'VendorBill',
   PurchaseOrderItem: 'PurchaseOrderItem',
@@ -353,6 +356,42 @@ export const MaterialIssueItemScalarFieldEnum = {
 } as const
 
 export type MaterialIssueItemScalarFieldEnum = (typeof MaterialIssueItemScalarFieldEnum)[keyof typeof MaterialIssueItemScalarFieldEnum]
+
+
+export const MaterialReturnRecordScalarFieldEnum = {
+  id: 'id',
+  weaverId: 'weaverId',
+  factoryLoomId: 'factoryLoomId',
+  loomNumber: 'loomNumber',
+  batchId: 'batchId',
+  receivedById: 'receivedById',
+  receivedAt: 'receivedAt',
+  signatureMethod: 'signatureMethod',
+  signatureCaptured: 'signatureCaptured',
+  signatureTimestamp: 'signatureTimestamp',
+  signatureUrl: 'signatureUrl',
+  status: 'status',
+  deductionAmount: 'deductionAmount',
+  deductionReason: 'deductionReason',
+  notes: 'notes'
+} as const
+
+export type MaterialReturnRecordScalarFieldEnum = (typeof MaterialReturnRecordScalarFieldEnum)[keyof typeof MaterialReturnRecordScalarFieldEnum]
+
+
+export const MaterialReturnItemScalarFieldEnum = {
+  id: 'id',
+  returnId: 'returnId',
+  materialType: 'materialType',
+  warpSubtype: 'warpSubtype',
+  quantity: 'quantity',
+  unit: 'unit',
+  jariType: 'jariType',
+  jariGrade: 'jariGrade',
+  jariColor: 'jariColor'
+} as const
+
+export type MaterialReturnItemScalarFieldEnum = (typeof MaterialReturnItemScalarFieldEnum)[keyof typeof MaterialReturnItemScalarFieldEnum]
 
 
 export const QcRecordScalarFieldEnum = {
@@ -628,15 +667,41 @@ export type VendorScalarFieldEnum = (typeof VendorScalarFieldEnum)[keyof typeof 
 export const PurchaseScalarFieldEnum = {
   id: 'id',
   supplierId: 'supplierId',
+  supplierName: 'supplierName',
+  location: 'location',
   date: 'date',
   sareeCount: 'sareeCount',
   gstNumber: 'gstNumber',
   invoiceNumber: 'invoiceNumber',
   billAmount: 'billAmount',
-  status: 'status'
+  status: 'status',
+  notes: 'notes',
+  invoiceFileName: 'invoiceFileName',
+  addedById: 'addedById',
+  createdAt: 'createdAt'
 } as const
 
 export type PurchaseScalarFieldEnum = (typeof PurchaseScalarFieldEnum)[keyof typeof PurchaseScalarFieldEnum]
+
+
+export const PurchaseSareeLineScalarFieldEnum = {
+  id: 'id',
+  purchaseId: 'purchaseId',
+  code: 'code',
+  weight: 'weight',
+  sareeDate: 'sareeDate',
+  sareeType: 'sareeType',
+  color: 'color',
+  price: 'price',
+  sellPercent: 'sellPercent',
+  quantity: 'quantity',
+  finalAmount: 'finalAmount',
+  notes: 'notes',
+  imageUrl: 'imageUrl',
+  returnedQuantity: 'returnedQuantity'
+} as const
+
+export type PurchaseSareeLineScalarFieldEnum = (typeof PurchaseSareeLineScalarFieldEnum)[keyof typeof PurchaseSareeLineScalarFieldEnum]
 
 
 export const PurchaseOrderScalarFieldEnum = {

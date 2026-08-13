@@ -11,6 +11,7 @@ export const LabelSettingsPage = lazy(() => import("../../../settings/components
 export const ExternalPurchasesPage = lazy(() => import("../../../inventory/components/ExternalPurchasesPage").then(m => ({ default: m.ExternalPurchasesPage })));
 export const AddUserPage = lazy(() => import("../../../users/components/AddUserPage").then(m => ({ default: m.AddUserPage })));
 export const IssueMaterialPage = lazy(() => import("../../../materials/components/IssueMaterialPage").then(m => ({ default: m.IssueMaterialPage })));
+export const ReturnMaterialPage = lazy(() => import("../../../materials/components/ReturnMaterialPage").then(m => ({ default: m.ReturnMaterialPage })));
 export const MaterialsPage = lazy(() => import("../../../materials/components/MaterialsPage").then(m => ({ default: m.MaterialsPage })));
 export const WeaversPage = lazy(() => import("../../../weavers/components/WeaversPage").then(m => ({ default: m.WeaversPage })));
 export const ProductionPage = lazy(() => import("../../../production/components/ProductionPage").then(m => ({ default: m.ProductionPage })));

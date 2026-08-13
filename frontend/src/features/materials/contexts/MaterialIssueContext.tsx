@@ -51,28 +51,30 @@ export interface MaterialIssueRecord {
 }
 
 // ─── Backend <-> frontend enum mapping ─────────────────────────────────────────
-const MATERIAL_TYPE_TO_BACKEND: Record<IssuedMaterialItem["materialType"], BackendMaterialType> = {
+// Exported so MaterialReturnContext.tsx (return-materials flow) can reuse the
+// exact same mapping instead of duplicating it.
+export const MATERIAL_TYPE_TO_BACKEND: Record<IssuedMaterialItem["materialType"], BackendMaterialType> = {
   Warp: "WARP",
   Resham: "RESHAM",
   Jari: "JARI",
 };
-const MATERIAL_TYPE_FROM_BACKEND: Record<BackendMaterialType, IssuedMaterialItem["materialType"]> = {
+export const MATERIAL_TYPE_FROM_BACKEND: Record<BackendMaterialType, IssuedMaterialItem["materialType"]> = {
   WARP: "Warp",
   RESHAM: "Resham",
   JARI: "Jari",
 };
-const WARP_SUBTYPE_TO_BACKEND: Record<string, BackendWarpSubtype> = {
+export const WARP_SUBTYPE_TO_BACKEND: Record<string, BackendWarpSubtype> = {
   "Resham Warp": "RESHAM_WARP",
   "Jari Warp": "JARI_WARP",
 };
-const WARP_SUBTYPE_FROM_BACKEND: Record<BackendWarpSubtype, "Resham Warp" | "Jari Warp"> = {
+export const WARP_SUBTYPE_FROM_BACKEND: Record<BackendWarpSubtype, "Resham Warp" | "Jari Warp"> = {
   RESHAM_WARP: "Resham Warp",
   JARI_WARP: "Jari Warp",
 };
-const JARI_GRADE_TO_BACKEND: Record<string, BackendJariGrade> = {
+export const JARI_GRADE_TO_BACKEND: Record<string, BackendJariGrade> = {
   "1G": "G1", "2G": "G2", "3G": "G3", "4G": "G4", "5G": "G5",
 };
-const JARI_GRADE_FROM_BACKEND: Record<BackendJariGrade, "1G" | "2G" | "3G" | "4G" | "5G"> = {
+export const JARI_GRADE_FROM_BACKEND: Record<BackendJariGrade, "1G" | "2G" | "3G" | "4G" | "5G"> = {
   G1: "1G", G2: "2G", G3: "3G", G4: "4G", G5: "5G",
 };
 
@@ -230,6 +232,7 @@ interface MaterialIssueContextValue {
   deleteIssueRecord: (id: string) => Promise<void>;
   addReceivedSaree: (rec: ReceivedSareeRecord) => void;
   getRecordsForWeaver: (weaverId: string) => MaterialIssueRecord[];
+  getRecordsForBatch: (batchId: string) => MaterialIssueRecord[];
   getReceivedForWeaver: (weaverId: string) => ReceivedSareeRecord[];
   getReceivedForBatch: (batchId: string) => ReceivedSareeRecord[];
   getMaterialSummaryForWeaver: (weaverId: string) => WeaverMaterialSummary;
@@ -373,6 +376,10 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
     return receivedSarees.filter(r => r.batchId === batchId);
   }, [receivedSarees]);
 
+  const getRecordsForBatch = useCallback((batchId: string) => {
+    return issueRecords.filter(r => r.batchId === batchId);
+  }, [issueRecords]);
+
   const finalizeReceivedWeight = (id: string, finalWeightGrams: number) =>
     finalizeReceivedWeightMutation.mutate({ id, finalWeightGrams });
 
@@ -407,7 +414,7 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
     updateSignatureStatusMutation.mutate({ recordId, method });
 
   return (
-    <MaterialIssueContext.Provider value={{ issueRecords, receivedSarees, addIssueRecord, deleteIssueRecord, addReceivedSaree, getRecordsForWeaver, getReceivedForWeaver, getReceivedForBatch, getMaterialSummaryForWeaver, getMaterialSummaryByBatch, updateSignatureStatus, finalizeReceivedWeight, isError, error }}>
+    <MaterialIssueContext.Provider value={{ issueRecords, receivedSarees, addIssueRecord, deleteIssueRecord, addReceivedSaree, getRecordsForWeaver, getRecordsForBatch, getReceivedForWeaver, getReceivedForBatch, getMaterialSummaryForWeaver, getMaterialSummaryByBatch, updateSignatureStatus, finalizeReceivedWeight, isError, error }}>
       {children}
     </MaterialIssueContext.Provider>
   );

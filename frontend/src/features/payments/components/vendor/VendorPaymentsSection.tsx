@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { AlignJustify, BadgeCheck, CheckCircle2, CircleAlert, Clock, Download, FileText, LayoutGrid, LayoutList, Wallet, Truck } from "lucide-react";
+import { AlignJustify, BadgeCheck, CheckCircle2, CircleAlert, Clock, Download, FileText, LayoutGrid, LayoutList, Receipt, Wallet, Truck } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -186,8 +186,17 @@ export function VendorPaymentsSection() {
   const selBalance = selVP ? selVP.invoiceAmt - selVP.paidAmt : 0;
   const afterPay = selBalance - (parseFloat(payAmount) || 0);
 
+  // Real vendor names from the actual PO/vendor-bill data — was previously a
+  // hardcoded list of five made-up names that never matched a real vendor,
+  // so picking any of them silently filtered the table down to nothing.
+  const vendorFilterOptions = useMemo(
+    () => ["All Vendors", ...Array.from(new Set(vendorPayments.map(v => v.vendor))).sort()],
+    [vendorPayments],
+  );
+
   const overdueVendors = vendorPayments.filter(v => v.status === "Overdue");
   const maxDaysOverdue = overdueVendors.length > 0 ? Math.max(...overdueVendors.map(v => v.daysOverdue ?? 0)) : 0;
+  const totalInvoiced = vendorPayments.reduce((s, v) => s + v.invoiceAmt, 0);
   const pendingBalance = vendorPayments.reduce((s, v) => s + (v.invoiceAmt - v.paidAmt), 0);
 
   const filtered = vendorPayments.filter(v => {
@@ -292,8 +301,16 @@ export function VendorPaymentsSection() {
           </DownloadGate>
         }
       >
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginTop: 24, marginBottom: 22, alignItems: "stretch" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 16, marginTop: 24, marginBottom: 22, alignItems: "stretch" }}>
           {[
+            {
+              icon: <Receipt size={22} color={T.luxuryBrown} />,
+              iconBg: "rgba(59,35,20,0.08)",
+              label: "Total Invoiced",
+              value: formatMoney(rupees(totalInvoiced)),
+              sub: "What all vendor bills add up to",
+              hi: false, crimson: false, green: false,
+            },
             {
               icon: <Wallet size={22} color={T.royalBurgundy} />,
               iconBg: "rgba(110,15,45,0.08)",
@@ -370,7 +387,7 @@ export function VendorPaymentsSection() {
               </Button>
             ))}
           </div>
-          <DropBtn value={vendorFilter} options={["All Vendors", "Sri Lakshmi Raw Silks", "Banarasi Thread House", "Nanak Silk Traders", "Vijaylakshmi Silks", "Ratan Zari Works"]} onChange={setVendorFilter} />
+          <DropBtn value={vendorFilter} options={vendorFilterOptions} onChange={setVendorFilter} />
           <Select value={statusFilter} onValueChange={setStatusFilter} size="sm">
             {["All Bill Status","Paid","Partial","Overdue","Pending"].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
           </Select>

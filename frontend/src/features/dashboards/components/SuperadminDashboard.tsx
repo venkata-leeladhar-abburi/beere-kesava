@@ -14,7 +14,7 @@ import { SAOverviewPage } from "./superadmin-dashboard/SAOverviewPage";
 import { UserProfileModal } from "../../../shared/ui/UserProfileModal";
 import {
   RatesPricingPage, DesignLibraryPage, BatchCreationPage, ApprovalsPage, AuditLogPage,
-  LabelSettingsPage, ExternalPurchasesPage, AddUserPage, IssueMaterialPage, MaterialsPage,
+  LabelSettingsPage, ExternalPurchasesPage, AddUserPage, IssueMaterialPage, ReturnMaterialPage, MaterialsPage,
   WeaversPage, ProductionPage, PaymentsPage, ReportsPage, CustomersPage, VendorsPage,
   SuppliersPage, FactoryLoomPage, FirmsPage, InventoryPage, QcHistoryPage, NotificationsPage,
   WorkerGRN, AllWeaversPage, AllStockPage, AllOrdersPage, ProductionHistoryPage,
@@ -59,6 +59,7 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
   else if (tab === "finishing") nav = "Finishing";
   else if (tab === "rates") nav = "Rates";
   else if (tab === "issue-material") nav = "IssueMaterial";
+  else if (tab === "return-material") nav = "ReturnMaterial";
   else if (tab === "approvals") nav = "Approvals";
   else if (tab === "audit-log") nav = "AuditLog";
   else if (tab === "label-settings") nav = "LabelSettings";
@@ -104,6 +105,7 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
       Finishing: "/superadmin/finishing",
       Rates: "/superadmin/rates",
       IssueMaterial: "/superadmin/issue-material",
+      ReturnMaterial: "/superadmin/return-material",
       ProductionHistory: "/superadmin/production-history",
       Approvals: "/superadmin/approvals",
       AuditLog: "/superadmin/audit-log",
@@ -141,6 +143,7 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
       case "LabelSettings": return <LabelSettingsPage />;
       case "ExternalPurchases": return <ExternalPurchasesPage />;
       case "IssueMaterial": return <IssueMaterialPage />;
+      case "ReturnMaterial": return <ReturnMaterialPage />;
       case "ReceiveStock": return <WorkerGRN />;
       case "QcHistory": return <QcHistoryPage onBack={() => navigate("Production")} />;
       case "Notifications": return <NotificationsPage />;

@@ -39,7 +39,7 @@ export function SupplierPayNowModal({
         </Dialog.Close>
       </div>
 
-      <div style={{ padding: "24px 28px", display: "flex", flexDirection: "column", gap: 16 }}>
+      <div style={{ padding: "24px 28px", display: "flex", flexDirection: "column", gap: 16, flex: 1, minHeight: 0, overflowY: "auto" }}>
         <div style={{ background: "rgba(200,155,71,0.10)", border: `1px solid ${T.borderGold}`, borderRadius: 10, padding: "14px 16px", textAlign: "center" }}>
           <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Outstanding Balance</div>
           <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.antiqueGold }}><Money value={rupees(outstanding)} /></div>

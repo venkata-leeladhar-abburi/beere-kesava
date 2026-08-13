@@ -79,14 +79,14 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
         finalAmount: 8500,
         status,
         sale: sale ? {
-          saleRef: sale.ref,
+          saleRef: sale.saleRef,
           channel: sale.channel === "WHOLESALE" ? "wholesale" : "retail",
           date: new Date(sale.saleDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
           customer: item.customer ?? "Counter Customer",
           amount: Number(sale.amount),
         } : null,
         ret: ret ? {
-          returnRef: ret.ref,
+          returnRef: ret.returnRef,
           date: new Date(ret.returnDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
           reason: ret.reason,
           refundAmount: Number(ret.refundAmount ?? 0),

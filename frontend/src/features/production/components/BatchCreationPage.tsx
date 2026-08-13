@@ -29,7 +29,7 @@ import { useBatchFormHandlers, WeaverOption, LoomOption } from "./useBatchFormHa
 
 export function BatchCreationPage() {
   const { rates, getSareeTypeByName, getSareeTypeByCode } = useRatesPricing();
-  const { batches, saveDraft, finalizeBatch, nextBatchId, pendingOpenBatchId, setPendingOpenBatchId } = useBatches();
+  const { batches, saveDraft, isSaving, finalizeBatch, isFinalizing, nextBatchId, pendingOpenBatchId, setPendingOpenBatchId } = useBatches();
   const { bulkOrders } = useBulkOrders();
   const { issueRecords } = useMaterialIssue();
 
@@ -346,11 +346,11 @@ export function BatchCreationPage() {
           {/* Step 5: Save buttons */}
           {generated && rows.length > 0 && (
             <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-              <Button onClick={() => void handleSaveDraft()} variant="secondary" size="lg">
-                <FloppyDisk size={17} /> Save as Draft
+              <Button onClick={() => void handleSaveDraft()} disabled={isSaving || isFinalizing} variant="secondary" size="lg">
+                <FloppyDisk size={17} /> {isSaving ? "Saving…" : "Save as Draft"}
               </Button>
-              <Button onClick={() => void handleFinalize()} disabled={!canFinalize} variant="primary" size="lg">
-                <CheckCircle size={17} /> Finalize Batch
+              <Button onClick={() => void handleFinalize()} disabled={!canFinalize || isSaving || isFinalizing} variant="primary" size="lg">
+                <CheckCircle size={17} /> {isFinalizing || isSaving ? "Finalizing…" : "Finalize Batch"}
               </Button>
               {savedMsg && (
                 <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}

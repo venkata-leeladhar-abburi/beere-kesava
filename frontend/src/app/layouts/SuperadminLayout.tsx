@@ -5,7 +5,7 @@ import { composeProviders } from "../../lib/composeProviders";
 import { ErrorBoundary } from "../../components/ErrorBoundary";
 import {
   POProvider, BulkOrderProvider, DesignLibraryProvider,
-  BatchProvider, MaterialIssueProvider, FirmsProvider,
+  BatchProvider, MaterialIssueProvider, MaterialReturnProvider, FirmsProvider,
   WeaverPaymentsProvider, SalesProvider, CustomersProvider,
 } from "../../contexts";
 
@@ -21,6 +21,7 @@ const SuperadminContexts = composeProviders([
   DesignLibraryProvider,
   BatchProvider,
   MaterialIssueProvider,
+  MaterialReturnProvider,
 ]);
 
 export function SuperadminLayout() {

@@ -3,8 +3,8 @@ import { useLocation } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 const imgFirmsHero = "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
 import {
-  Plus, Edit, Eye, X, Building2, CreditCard, User, Phone,
-  MapPin, Hash, IndianRupee, Check,
+  Plus, Edit, Edit3, Eye, X, Building2, CreditCard, User, Phone,
+  MapPin, Hash, IndianRupee, Check, Trash2,
   TrendingUp, TrendingDown, Minus, Upload, ChevronDown, ChevronUp, ChevronRight,
   PlusCircle, FileSpreadsheet, ArrowRight, AlertTriangle,
 } from "lucide-react";
@@ -21,6 +21,7 @@ import { Button, IconButton, SearchInput } from "../../../shared/ui/primitives";
 import { Money } from "../../../shared/ui/domain";
 import { rupees } from "@/lib/domain/money";
 import { DataTable, type ColumnDef } from "../../../shared/ui/data";
+import { useConfirm } from "../../../shared/ui/overlay";
 
 
 
@@ -175,101 +176,107 @@ function BusinessOverview({ onGoToFirm }: { onGoToFirm?: (firmId: string) => voi
 }
 
 // ─── Firm card ────────────────────────────────────────────────────────────────
-const FirmCard = React.forwardRef<HTMLDivElement, { firm: Firm; onEdit: () => void; onView: () => void }>(({ firm, onEdit, onView }, ref) => {
+// Restyled after the Weaver card (features/weavers/.../WeaverCardAndListViews.tsx):
+// gradient photo-banner header with floating id badge + status pill, a
+// content area with meta rows + a bordered "stat tile" panel, and a
+// three-button footer — same visual language, adapted for a firm (no photo,
+// so the banner is always the gradient-initials fallback; "status" reads
+// net balance instead of a weaving state).
+const FirmCard = React.forwardRef<HTMLDivElement, { firm: Firm; onEdit: () => void; onView: () => void; onDelete: () => void }>(({ firm, onEdit, onView, onDelete }, ref) => {
   const { getFirmFinancials } = useFirms();
-  const [hov, setHov] = useState(false);
   const color = cardColor(firm.id);
 
   const fin = getFirmFinancials(firm.id);
   const inc = fin.income.reduce((s, e) => s + e.amount, 0) + fin.misc.filter(m => m.type === "income").reduce((s, m) => s + m.amount, 0);
   const exp = fin.expenses.reduce((s, e) => s + e.amount, 0) + fin.misc.filter(m => m.type === "expense").reduce((s, m) => s + m.amount, 0);
   const net = inc - exp;
+  const isPositive = net >= 0;
 
   return (
     <motion.div ref={ref} layout initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.97 }}
-      onHoverStart={() => setHov(true)} onHoverEnd={() => setHov(false)}
-      style={{ background: "#FFF", borderRadius: 18, border: `1.5px solid ${hov ? T.royalBurgundy : T.borderDef}`, boxShadow: hov ? "0 8px 32px rgba(110,15,45,0.12)" : "0 2px 12px rgba(44,24,16,0.06)", overflow: "hidden", transition: "border-color 0.2s, box-shadow 0.2s", display: "flex", flexDirection: "column" }}>
+      whileHover={{ y: -6, boxShadow: "0 30px 70px rgba(74,6,27,0.12)" }}
+      transition={{ type: "spring", stiffness: 240, damping: 22 }}
+      style={{ background: "#FFFFFF", borderRadius: 24, border: `1px solid ${T.borderDef}`, overflow: "hidden", display: "flex", flexDirection: "column", height: "100%" }}>
 
-      {/* Color band header */}
-      <div style={{ background: color, padding: "14px 18px", display: "flex", alignItems: "center", gap: 12 }}>
-        <div style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(255,255,255,0.18)", border: "1.5px solid rgba(255,255,255,0.30)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 14, color: "#FFF" }}>{initials(firm.firmName)}</span>
+      {/* Header banner — gradient-initials fallback (firms have no photo) */}
+      <div style={{ height: 128, position: "relative", overflow: "hidden", background: `linear-gradient(135deg, ${color} 0%, ${T.luxuryBrown} 100%)`, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <span style={{ fontFamily: F.display, fontSize: 40, fontWeight: 700, color: "#FFFDF9", letterSpacing: "1px" }}>{initials(firm.firmName)}</span>
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.4) 100%)", pointerEvents: "none" }} />
+
+        <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(26,10,15,0.65)", backdropFilter: "blur(6px)", color: "#FFFDF9", fontFamily: F.mono, fontSize: 11, fontWeight: 600, letterSpacing: "0.5px", padding: "4px 10px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.15)", maxWidth: "calc(100% - 24px)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
+          {firm.id}
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 14, color: "#FFF", lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{firm.firmName}</div>
-          <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,255,255,0.65)", letterSpacing: "1px", marginTop: 2 }}>{firm.id}</div>
+
+        <div style={{ position: "absolute", bottom: 12, left: 12, display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 8px" }}>
+          {isPositive ? <TrendingUp size={13} color="#2ECC71" style={{ flexShrink: 0 }} /> : <TrendingDown size={13} color="#F47B72" style={{ flexShrink: 0 }} />}
+          <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "#FFFFFF", textTransform: "uppercase" as const, letterSpacing: "0.5px", textShadow: "0 1px 4px rgba(0,0,0,0.6)" }}>
+            {net === 0 ? "No Activity Yet" : isPositive ? "Net Positive" : "Net Outstanding"}
+          </span>
         </div>
-        {firm.purchaseAmount && (
-          <div style={{ textAlign: "right", flexShrink: 0 }}>
-            <div style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 16, color: "#FFF" }}>{fmtAmt(firm.purchaseAmount)}</div>
-            <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.55)", marginTop: 1 }}>Total Purchase</div>
-          </div>
-        )}
       </div>
 
-      {/* Financial mini-strip */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", borderBottom: `1px solid ${T.borderDef}` }}>
-        {[
-          { label: "Income",   val: inc, color: T.green   },
-          { label: "Expenses", val: exp, color: T.crimson  },
-          { label: "Net",      val: net, color: net >= 0 ? T.green : T.crimson },
-        ].map((s, i) => (
-          <div key={i} style={{ padding: "9px 14px", borderRight: i < 2 ? `1px solid ${T.borderDef}` : "none", textAlign: i === 2 ? "right" : "left" }}>
-            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 2 }}>{s.label}</div>
-            <div style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 13, color: s.color }}>{fmtFull(s.val)}</div>
-          </div>
-        ))}
-      </div>
+      {/* Content */}
+      <div style={{ padding: 20, display: "flex", flexDirection: "column", flex: 1 }}>
+        <div style={{ fontFamily: F.display, fontSize: 18, color: T.luxuryBrown, fontWeight: 800, lineHeight: 1.25, marginBottom: 10, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
+          {firm.firmName}
+        </div>
 
-      {/* Body */}
-      <div style={{ padding: "16px 18px", flex: 1, display: "flex", flexDirection: "column", gap: 10 }}>
-        {firm.gstNumber && (
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <Hash size={13} color={T.taupe} />
-            <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, letterSpacing: "0.5px" }}>{firm.gstNumber}</span>
-          </div>
-        )}
-        {firm.address && (
-          <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-            <MapPin size={13} color={T.taupe} style={{ flexShrink: 0, marginTop: 2 }} />
-            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, lineHeight: 1.5 }}>{firm.address}</span>
-          </div>
-        )}
-        {(firm.bankName || firm.accountNumber) && (
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <CreditCard size={13} color={T.taupe} />
-            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>
-              {firm.bankName}{firm.bankName && firm.accountNumber ? " · " : ""}{firm.accountNumber ? `···${firm.accountNumber.slice(-4)}` : ""}
-            </span>
-          </div>
-        )}
-        {firm.ifscCode && (
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, background: "rgba(139,112,96,0.10)", border: "1px solid rgba(139,112,96,0.18)", borderRadius: 4, padding: "2px 8px" }}>IFSC</span>
-            <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{firm.ifscCode}</span>
-          </div>
-        )}
-        {(firm.contactPersonName || firm.contactPersonPhone) && (
-          <div style={{ display: "flex", alignItems: "center", gap: 8, paddingTop: 4, borderTop: `1px solid ${T.borderDef}`, marginTop: 4 }}>
-            <User size={13} color={T.taupe} />
-            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{firm.contactPersonName}</span>
-            {firm.contactPersonPhone && (<>
-              <span style={{ color: T.borderDef, fontSize: 12 }}>·</span>
-              <Phone size={11} color={T.taupe} />
-              <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{firm.contactPersonPhone}</span>
-            </>)}
-          </div>
-        )}
-      </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 14 }}>
+          {firm.gstNumber && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+              <Hash size={14} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
+              <span style={{ fontFamily: F.mono, letterSpacing: "0.4px" }}>{firm.gstNumber}</span>
+            </div>
+          )}
+          {firm.address && (
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 8, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+              <MapPin size={14} color={T.royalBurgundy} style={{ flexShrink: 0, marginTop: 1 }} />
+              <span style={{ lineHeight: 1.4 }}>{firm.address}</span>
+            </div>
+          )}
+          {(firm.contactPersonName || firm.contactPersonPhone) && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+              <Phone size={14} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
+              <span>{firm.contactPersonName}{firm.contactPersonName && firm.contactPersonPhone ? " · " : ""}{firm.contactPersonPhone}</span>
+            </div>
+          )}
+          {(firm.bankName || firm.accountNumber) && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+              <CreditCard size={14} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
+              <span>{firm.bankName}{firm.bankName && firm.accountNumber ? " · " : ""}{firm.accountNumber ? `···${firm.accountNumber.slice(-4)}` : ""}</span>
+            </div>
+          )}
+        </div>
 
-      {/* Actions */}
-      <div style={{ padding: "12px 18px", borderTop: `1px solid ${T.borderDef}`, display: "flex", gap: 8 }}>
-        <Button onClick={onView} variant="tertiary" size="sm" iconLeft={Eye} fullWidth>
-          View Details
-        </Button>
-        <Button onClick={onEdit} variant="secondary" size="sm" iconLeft={Edit} fullWidth>
-          Edit
-        </Button>
+        <div style={{ height: 1, background: "rgba(110,15,45,0.06)", margin: "4px 0 12px 0" }} />
+
+        {/* Financials stat tile */}
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+            {[
+              { label: "Income", val: inc, color: T.green },
+              { label: "Expenses", val: exp, color: T.crimson },
+              { label: "Net", val: net, color: isPositive ? T.green : T.crimson },
+            ].map(s => (
+              <div key={s.label} style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, letterSpacing: "0.5px", textTransform: "uppercase" as const }}>{s.label}</span>
+                <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: s.color }}>{fmtAmt(s.val)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Action buttons */}
+        <div style={{ display: "flex", gap: 8, marginTop: "auto", paddingTop: 8 }}>
+          <Button onClick={onView} variant="secondary" size="sm" className="flex-1 rounded-xl bg-[rgba(110,15,45,0.04)] text-[#6E0F2D] border-[1.5px] border-[rgba(110,15,45,0.15)]">
+            <Eye size={14} /> Details
+          </Button>
+          <Button onClick={onEdit} variant="secondary" size="sm" className="flex-1 rounded-xl bg-transparent text-[#6E0F2D] border border-[#6E0F2D]">
+            <Edit3 size={13} /> Edit
+          </Button>
+          <IconButton icon={Trash2} label={`Delete ${firm.firmName}`} onClick={onDelete} variant="secondary" size="sm"
+            className="rounded-xl border-[1.5px] border-[rgba(192,57,43,0.20)] bg-[rgba(192,57,43,0.05)] text-[var(--text-danger)] hover:bg-[rgba(192,57,43,0.12)]" />
+        </div>
       </div>
     </motion.div>
   );
@@ -282,7 +289,8 @@ const BLANK = { firmName: "", gstNumber: "", address: "", accountNumber: "", ifs
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 export function FirmsPage() {
-  const { firms, addFirm, updateFirm, getFirmFinancials } = useFirms();
+  const { firms, addFirm, updateFirm, deleteFirm, getFirmFinancials } = useFirms();
+  const confirm = useConfirm();
   const location = useLocation();
   const [search, setSearch] = useState("");
   // Command palette "New Firm" action deep-links here with ?new=1 to open
@@ -300,11 +308,33 @@ export function FirmsPage() {
     (f.contactPersonName ?? "").toLowerCase().includes(search.toLowerCase())
   );
 
-  const totalPurchase = firms.reduce((s, f) => s + (f.purchaseAmount ?? 0), 0);
+  // Real per-firm expense totals (money actually spent — vendor/supplier/
+  // weaver payments recorded against the firm), the same source
+  // BusinessOverview below already uses. Previously this summed
+  // `firm.purchaseAmount`, a free-text field typed once when a firm is
+  // created/edited that's never kept in sync with real payments — showing
+  // whatever placeholder number was entered instead of the real total.
+  const firmExpenseTotals = firms.map(f => {
+    const fin = getFirmFinancials(f.id);
+    return fin.expenses.reduce((s, e) => s + e.amount, 0) + fin.misc.filter(m => m.type === "expense").reduce((s, m) => s + m.amount, 0);
+  });
+  const totalPurchase = firmExpenseTotals.reduce((s, v) => s + v, 0);
+  const firmsWithBalanceCount = firmExpenseTotals.filter(v => v > 0).length;
 
   function openFirmView(firmId: string) {
     const firm = firms.find(f => f.id === firmId);
     if (firm) setModal({ type: "view", firm });
+  }
+
+  async function handleDeleteFirm(firm: Firm) {
+    const confirmed = await confirm({
+      title: `Delete ${firm.firmName}?`,
+      description: "This permanently removes the firm and cannot be undone. Firms with financial entries or payments recorded against them can't be deleted — clear those first. Type the firm name to confirm.",
+      typeToConfirm: firm.firmName,
+      confirmLabel: "Delete",
+    });
+    if (!confirmed) return;
+    await deleteFirm(firm.id);
   }
 
   return (
@@ -335,7 +365,7 @@ export function FirmsPage() {
           {[
             { label: "REGISTERED FIRMS",   val: String(firms.length),    sub: "Active vendor accounts",         hi: false, Icon: Building2 },
             { label: "TOTAL PURCHASES",    val: fmtAmt(totalPurchase),   sub: "Across all registered firms",    hi: true,  Icon: IndianRupee },
-            { label: "FIRMS WITH BALANCE", val: String(firms.filter(f => (f.purchaseAmount ?? 0) > 0).length), sub: "Active purchase records", hi: false, Icon: CreditCard },
+            { label: "FIRMS WITH BALANCE", val: String(firmsWithBalanceCount), sub: "Active purchase records", hi: false, Icon: CreditCard },
             { label: "AVG PURCHASE",       val: firms.length ? fmtAmt(totalPurchase / firms.length) : <Money value={rupees(0)} />, sub: "Per registered firm", hi: false, Icon: TrendingUp },
           ].map((m, i) => (
             <motion.div
@@ -420,7 +450,8 @@ export function FirmsPage() {
               {filtered.map(firm => (
                 <FirmCard key={firm.id} firm={firm}
                   onEdit={() => setModal({ type: "edit", firm })}
-                  onView={() => setModal({ type: "view", firm })} />
+                  onView={() => setModal({ type: "view", firm })}
+                  onDelete={() => void handleDeleteFirm(firm)} />
               ))}
             </AnimatePresence>
           </motion.div>

@@ -18,6 +18,7 @@ import { resolveWeaverScope } from "../auth/weaver-scope";
 import { UserRole } from "../generated/prisma/client";
 import { ActorOnlyDto } from "./dto/actor-only.dto";
 import { AssignBatchRowDto } from "./dto/assign-batch-row.dto";
+import { AssignBatchRowsDto } from "./dto/assign-batch-rows.dto";
 import { CreateBatchDto } from "./dto/create-batch.dto";
 import { ListBatchesQueryDto } from "./dto/list-batches-query.dto";
 import { ReceiveBatchRowDto } from "./dto/receive-batch-row.dto";
@@ -57,6 +58,16 @@ export class BatchesController {
     @Body() dto: AssignBatchRowDto,
   ) {
     return this.batchesService.assignRow(id, serial, dto);
+  }
+
+  // Bulk row assignment — assigns every row of a batch in one request/
+  // transaction instead of one PATCH per row (see BatchesService.assignRows
+  // for why: N sequential requests against a remote pooled DB connection is
+  // the actual cause of "saving a batch is slow").
+  @Patch(":id/rows")
+  @RequireRoles(UserRole.WORKER, UserRole.ADMIN, UserRole.SUPERADMIN)
+  assignRows(@Param("id") id: string, @Body() dto: AssignBatchRowsDto) {
+    return this.batchesService.assignRows(id, dto);
   }
 
   @Patch(":id/rows/:serial/receive")

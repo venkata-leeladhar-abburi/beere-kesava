@@ -61,8 +61,10 @@ export function RetailSalesReport() {
     return new Map((customersRes?.items ?? []).map(c => [c.id, c]));
   }, [customersRes]);
 
-  const returnBySaleRef = useMemo(() => {
-    return new Map((returnsRes?.items ?? []).map(r => [r.saleRef, r]));
+  // ReturnRecord has no saleRef FK — the closest linkage back to a sale is
+  // the shared sareeId (a saree only has one active sale at a time).
+  const returnBySareeId = useMemo(() => {
+    return new Map((returnsRes?.items ?? []).map(r => [r.sareeId, r]));
   }, [returnsRes]);
 
   const sareeInfoMap = useMemo(() => {
@@ -84,10 +86,10 @@ export function RetailSalesReport() {
       .slice()
       .sort((a, b) => b.saleDate.localeCompare(a.saleDate))
       .map(s => {
-        const ret = returnBySaleRef.get(s.ref);
+        const ret = returnBySareeId.get(s.sareeId);
         const customer = s.customerId ? customerById.get(s.customerId) : undefined;
         return {
-          id: s.ref,
+          id: s.saleRef,
           date: new Date(s.saleDate).toLocaleDateString("en-IN"),
           customer: ret ? "RETURN" : (customer?.name ?? "Walk-in Customer"),
           phone: customer?.phone ?? "—",
@@ -95,7 +97,7 @@ export function RetailSalesReport() {
           price: ret ? -Number(ret.refundAmount) : Number(s.amount),
         };
       });
-  }, [retailSales, returnBySaleRef, customerById]);
+  }, [retailSales, returnBySareeId, customerById]);
 
   const totalRevenue = retailRows.filter(r => r.price > 0).reduce((s, r) => s + r.price, 0);
   const returnsTotal = retailRows.filter(r => r.price < 0).length;

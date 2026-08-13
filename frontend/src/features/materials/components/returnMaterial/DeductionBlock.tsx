@@ -1,0 +1,45 @@
+import React from "react";
+import { AlertTriangle } from "lucide-react";
+import { F, T } from "../issueMaterial/theme";
+import { Input, NumberInput } from "../../../../shared/ui/primitives";
+
+// Optional deduction entry — used when the material actually returned
+// doesn't match what was issued/outstanding, mirroring the deduction field
+// already used on WeaverPayment/QcRecord elsewhere in the app. Stored on the
+// return record for visibility; applying it to the weaver's payout is a
+// manual step on the Payments page (not auto-wired here).
+export function DeductionBlock({ amount, setAmount, reason, setReason }: {
+  amount: string; setAmount: (v: string) => void;
+  reason: string; setReason: (v: string) => void;
+}) {
+  return (
+    <div style={{ background: "rgba(196,146,58,0.08)", border: `1px solid ${T.antiqueGold}`, borderRadius: 14, padding: "16px 20px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+        <AlertTriangle size={15} color="#8B6018" />
+        <span style={{ fontFamily: F.ui, fontSize: 13, color: "#8B6018", fontWeight: 600 }}>
+          If the returned material doesn't match what's outstanding, note a deduction here.
+        </span>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 14 }}>
+        <div>
+          <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 6 }}>Deduction Amount (₹)</label>
+          <NumberInput
+            value={amount === "" ? "" : Number(amount)}
+            onValueChange={v => setAmount(v === "" ? "" : String(v))}
+            placeholder="0"
+            className="w-full"
+          />
+        </div>
+        <div>
+          <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 6 }}>Reason</label>
+          <Input
+            value={reason}
+            onChange={e => setReason(e.target.value)}
+            placeholder="e.g. 400g Warp short-returned"
+            className="w-full"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}

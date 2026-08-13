@@ -1,6 +1,6 @@
 import React from "react";
 import { Check, CheckCircle2, Clock } from "lucide-react";
-import { JARI_REEL_GRAMS, MaterialIssueRecord, BatchMaterialSummary, WeaverMaterialSummary } from "../../../../materials/contexts/MaterialIssueContext";
+import { JARI_REEL_GRAMS, MaterialIssueRecord, BatchMaterialSummary, WeaverMaterialSummary, materialItemToGrams, REELS_PER_BUN } from "../../../../materials/contexts/MaterialIssueContext";
 import { C, F, FABRIC_BG, MaterialHistoryCard, Tab5 } from "../theme";
 import { SectionHeading } from "@/shared/ui/portal/PortalChrome";
 import { DesktopHero } from "./DesktopHero";
@@ -147,6 +147,29 @@ export function ConfirmSection({
                   return matByBatch.map(b => {
                     const records = (recordsByBatch.get(b.batchId) ?? []).slice()
                       .sort((a, c) => new Date(c.issuedAt).getTime() - new Date(a.issuedAt).getTime());
+
+                    // Break outstanding down per material type. Submitted sarees are
+                    // only weighed in aggregate (no per-material split at receipt),
+                    // so each material's outstanding is apportioned from the batch's
+                    // total outstanding in proportion to how much of it was issued.
+                    const byMaterial = new Map<string, { label: string; issuedGrams: number; reels: number }>();
+                    records.forEach(r => r.materials.forEach(m => {
+                      const key = m.materialType === "Warp" && m.warpSubtype ? `Warp — ${m.warpSubtype}` : m.materialType;
+                      if (!byMaterial.has(key)) byMaterial.set(key, { label: key, issuedGrams: 0, reels: 0 });
+                      const entry = byMaterial.get(key)!;
+                      entry.issuedGrams += materialItemToGrams(m);
+                      if (m.materialType === "Jari") {
+                        entry.reels += (m.unit || "").toLowerCase().startsWith("bun")
+                          ? (m.quantity || 0) * REELS_PER_BUN
+                          : (m.quantity || 0);
+                      }
+                    }));
+                    const outstandingRatio = b.issuedGrams > 0 ? b.outstandingGrams / b.issuedGrams : 0;
+                    const materialBreakdown = Array.from(byMaterial.values()).map(entry => ({
+                      ...entry,
+                      outstandingGrams: entry.issuedGrams * outstandingRatio,
+                    }));
+
                     return (
                       <div key={b.batchId} style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 16, overflow: "hidden" }}>
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 22px", background: C.cream, borderBottom: `1px solid ${C.bdr}`, flexWrap: "wrap" as const, gap: 8 }}>
@@ -166,6 +189,28 @@ export function ConfirmSection({
                             </div>
                           ))}
                         </div>
+                        {materialBreakdown.length > 0 && (
+                          <div style={{ padding: "14px 22px", borderBottom: `1px solid ${C.bdr}`, display: "flex", flexDirection: "column" as const, gap: 10 }}>
+                            <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.5px" }}>Outstanding by Material</div>
+                            {materialBreakdown.map(m => {
+                              const mOutColor = m.outstandingGrams > 0 ? C.crim : C.green;
+                              return (
+                                <div key={m.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, background: C.cream, border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "10px 14px", flexWrap: "wrap" as const }}>
+                                  <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 13, color: C.text }}>{m.label}</span>
+                                  <div style={{ display: "flex", alignItems: "baseline", gap: 16 }}>
+                                    <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>
+                                      Issued: <span style={{ fontFamily: F.m, fontWeight: 700, color: C.text }}>{fmtKg(m.issuedGrams)}</span>
+                                      {m.reels > 0 && ` (${m.reels} reels)`}
+                                    </span>
+                                    <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>
+                                      Outstanding: <span style={{ fontFamily: F.m, fontWeight: 700, color: mOutColor }}>{fmtKg(m.outstandingGrams)}</span>
+                                    </span>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
                         <div style={{ padding: "18px 22px", display: "flex", flexDirection: "column" as const, gap: 16 }}>
                           {records.map(r => (
                             <MaterialHistoryCard key={r.id} r={r} isTablet={isTablet} />

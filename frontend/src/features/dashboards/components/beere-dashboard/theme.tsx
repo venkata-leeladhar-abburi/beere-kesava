@@ -80,6 +80,7 @@ const NAV_GROUPS: NavGroup[] = [
       { key: "Materials",         label: "Materials" },
       { key: "ReceiveStock",      label: "Receive Stock" },
       { key: "IssueMaterial",     label: "Issue Material" },
+      { key: "ReturnMaterial",    label: "Return Materials" },
       { key: "ExternalPurchases", label: "External Purchases" },
   ]},
   { key: "finance", label: "Finance", icon: IndianRupee, pages: [

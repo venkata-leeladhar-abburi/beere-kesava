@@ -11,6 +11,7 @@ export interface ScanLookupResult {
   qc: { result: string; payable: number; date: string } | null;
   finishing: { status: string; staffName: string | null; condition: string | null } | null;
   inventoryStatus: string | null;
+  saleEligibility: "PASSED" | "QC_NOT_PASSED" | "DISPATCHED" | "SOLD" | "DAMAGED_REVIEW_NEEDED";
 }
 
 export const scanApi = {

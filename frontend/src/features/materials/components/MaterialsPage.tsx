@@ -12,7 +12,7 @@ import { F, MobileCtx } from "./theme";
 import { PageHeader, MetricsBar } from "./sections/PageHeaderAndMetrics";
 import { AlertsCard } from "./sections/AlertsCard";
 import { POTrackerSection } from "./sections/POTrackerSection";
-import { StockOverview, IssuedThisMonthCard } from "./sections/StockOverviewAndIssued";
+import { StockOverview, IssuedThisMonthCard, ReturnedThisMonthCard } from "./sections/StockOverviewAndIssued";
 import { BatchesSection } from "./sections/BatchesSection";
 import { PurchaseHistorySection } from "./sections/PurchaseHistorySection";
 import { MovementHistorySection } from "./sections/MovementHistorySection";
@@ -96,6 +96,7 @@ export function MaterialsPage({ onNavigate }: { onNavigate?: (tab: string, ctx?:
           />
           <StockOverview onSeeFullReports={() => setShowFullReports(true)} />
           <IssuedThisMonthCard onNavigate={onNavigate} />
+          <ReturnedThisMonthCard onNavigate={onNavigate} />
           <BatchesSection onAddNewStock={() => onNavigate?.("ReceiveStock")} />
           <PurchaseHistorySection onDownloadReport={() => setShowPurchaseDownload(true)} />
           <MovementHistorySection onDownloadMovementReport={() => setShowMovementDownload(true)} />

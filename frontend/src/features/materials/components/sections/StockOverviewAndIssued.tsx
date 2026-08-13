@@ -1,7 +1,8 @@
 import React, { useContext } from "react";
 import { motion, useInView } from "motion/react";
-import { BarChart2, ClipboardList, Layers, Tag, Sparkles, ArrowRight, Package } from "lucide-react";
+import { BarChart2, ClipboardList, Layers, Tag, Sparkles, ArrowRight, Package, Undo2 } from "lucide-react";
 import { useMaterialIssue } from "../../contexts/MaterialIssueContext";
+import { useMaterialReturn } from "../../contexts/MaterialReturnContext";
 import { T, F, EASE, G_GOLD, MobileCtx } from "../theme";
 import { MAT_CARDS_TEMPLATE } from "../materialConfig";
 import { SectionCard, FadeUp } from "../common/primitives";
@@ -218,6 +219,121 @@ export function IssuedThisMonthCard({ onNavigate }: { onNavigate?: (tab: string)
         <div style={{ flex: "1 1 15%", display: "flex", justifyContent: isMobile ? "stretch" : "flex-end" }}>
           <Button
             onClick={() => onNavigate?.("IssueMaterial")}
+            variant="secondary"
+            size="md"
+            iconRight={ArrowRight}
+            fullWidth={isMobile}
+          >
+            View Full History
+          </Button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// Real-data counterpart to IssuedThisMonthCard above, same layout — sourced
+// from MaterialReturnContext (backed by the material-returns DB table) rather
+// than any mock. Only APPROVED returns are counted, since those are the ones
+// that actually restored stock (a still-pending-signature return hasn't).
+export function ReturnedThisMonthCard({ onNavigate }: { onNavigate?: (tab: string) => void }) {
+  const { isMobile, px } = useContext(MobileCtx);
+  const { returnRecords, isError: returnError } = useMaterialReturn();
+
+  const now = new Date();
+  const thisMonthRecords = returnRecords.filter(r => {
+    if (r.status !== "approved") return false;
+    const d = new Date(r.receivedAt);
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  });
+
+  let warpKg = 0, reshamKg = 0, jariReels = 0, jariBuns = 0;
+  thisMonthRecords.forEach(r => r.materials.forEach(m => {
+    const qty = Number(m.quantity || 0);
+    const unit = (m.unit || "").toLowerCase();
+    if (m.materialType === "Warp") {
+      warpKg += unit.includes("g") && !unit.includes("kg") ? qty / 1000 : qty;
+    } else if (m.materialType === "Resham") {
+      reshamKg += unit.includes("g") && !unit.includes("kg") ? qty / 1000 : qty;
+    } else if (m.materialType === "Jari") {
+      if (unit.startsWith("bun")) {
+        jariBuns += qty;
+        jariReels += qty * 4;
+      } else {
+        jariReels += qty;
+        jariBuns += qty / 4;
+      }
+    }
+  }));
+
+  return (
+    <section id="mat-returned" style={{ padding: `24px ${px}px 0` }}>
+      <div style={{
+        background: `linear-gradient(135deg, ${T.warmIvory} 0%, #FFFFFF 100%)`,
+        border: `1.5px solid ${T.borderDef}`,
+        borderRadius: 20,
+        padding: "24px 30px",
+        boxShadow: "0 10px 30px rgba(74,6,27,0.04), 0 1px 3px rgba(0,0,0,0.02)",
+        display: "flex",
+        flexDirection: isMobile ? "column" : "row",
+        alignItems: isMobile ? "stretch" : "center",
+        justifyContent: "space-between",
+        gap: 24,
+        position: "relative",
+        overflow: "hidden",
+      }}>
+        <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 4, background: returnError ? "#C0392B" : T.green }} />
+        {returnError && (
+          <div style={{ position: "absolute", top: 10, right: 14, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "#C0392B" }}>
+            Failed to load returned materials.
+          </div>
+        )}
+
+        <div style={{ flex: "1 1 25%", display: "flex", flexDirection: "column", gap: 6 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <Undo2 size={18} color={T.green} />
+            <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: T.luxuryBrown }}>
+              Returned from Weavers
+            </span>
+          </div>
+          <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+            Weaver material returns recorded for {now.toLocaleDateString("en-IN", { month: "long", year: "numeric" })}
+          </div>
+          <div style={{
+            display: "inline-flex", alignItems: "center", width: "fit-content", gap: 6,
+            background: "rgba(30,102,64,0.08)", color: T.green, fontFamily: F.mono,
+            fontSize: 12, fontWeight: 600, padding: "4px 10px", borderRadius: 6, marginTop: 4,
+          }}>
+            {thisMonthRecords.length} {thisMonthRecords.length === 1 ? "Return" : "Returns"}
+          </div>
+        </div>
+
+        <div style={{ flex: "1 1 55%", display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: 16 }}>
+          {[
+            { label: "Warp Returned", val: `${warpKg.toFixed(warpKg % 1 === 0 ? 0 : 1)} kg`, sub: "Back in stock", color: T.royalBurgundy, bg: "rgba(110,15,45,0.04)", border: "rgba(110,15,45,0.12)", icon: <Layers size={16} color={T.royalBurgundy} /> },
+            { label: "Resham Returned", val: `${reshamKg.toFixed(reshamKg % 1 === 0 ? 0 : 1)} kg`, sub: "Back in stock", color: T.antiqueGold, bg: "rgba(200,155,71,0.06)", border: "rgba(200,155,71,0.18)", icon: <Tag size={16} color="#7A5E1C" /> },
+            { label: "Jari Returned", val: `${Math.round(jariReels)} Reels`, sub: `${Math.round(jariBuns)} Buns`, color: T.luxuryBrown, bg: "rgba(59,35,20,0.04)", border: "rgba(59,35,20,0.12)", icon: <Sparkles size={16} color={T.luxuryBrown} /> },
+          ].map(s => (
+            <div key={s.label} style={{ background: s.bg, border: `1px solid ${s.border}`, borderRadius: 14, padding: "14px 16px", display: "flex", flexDirection: "column", gap: 4 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                {s.icon}
+                <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                  {s.label}
+                </span>
+              </div>
+              <div style={{ fontFamily: F.display, fontWeight: 800, fontSize: 20, color: s.color, marginTop: 4 }}>
+                {s.val}
+              </div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 500 }}>
+                {s.sub}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ flex: "1 1 15%", display: "flex", justifyContent: isMobile ? "stretch" : "flex-end" }}>
+          <Button
+            onClick={() => onNavigate?.("ReturnMaterial")}
             variant="secondary"
             size="md"
             iconRight={ArrowRight}

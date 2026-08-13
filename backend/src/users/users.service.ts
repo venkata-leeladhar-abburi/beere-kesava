@@ -42,7 +42,7 @@ export class UsersService {
           dto.role === "WEAVER"
             ? await tx.weaver.create({
                 data: {
-                  code: await nextWeaverCode(tx),
+                  code: await nextWeaverCode(tx, dto.firstName),
                   name: `${dto.firstName} ${dto.lastName}`.trim(),
                   firstName: dto.firstName,
                   lastName: dto.lastName,

@@ -25,8 +25,29 @@ export class ScanService {
       throw new NotFoundException(`No saree found for scanned code "${sareeId}"`);
     }
 
-    const inventory = await this.prisma.inventoryRecord.findUnique({ where: { sareeId } });
+    const [inventory, dispatched, sold] = await Promise.all([
+      this.prisma.inventoryRecord.findUnique({ where: { sareeId } }),
+      this.prisma.dispatchSaree.findFirst({ where: { sareeId } }),
+      this.prisma.saleRecord.findFirst({ where: { sareeId } }),
+    ]);
     const latestQc = row.qcRecords[0];
+
+    // Same eligibility rule as InventoryService.findAll() / SalesService.createSale
+    // — a clean QC pass, not dispatched, not already sold, not damaged.
+    // NOT gated on finishing: a saree counts as "in stock" as soon as QC
+    // passes, whether or not it's separately gone through finishing.
+    let saleEligible: "PASSED" | "QC_NOT_PASSED" | "DISPATCHED" | "SOLD" | "DAMAGED_REVIEW_NEEDED";
+    if (dispatched) {
+      saleEligible = "DISPATCHED";
+    } else if (sold) {
+      saleEligible = "SOLD";
+    } else if (inventory?.status === "DAMAGED_REVIEW_NEEDED") {
+      saleEligible = "DAMAGED_REVIEW_NEEDED";
+    } else if (!row.qcPassed) {
+      saleEligible = "QC_NOT_PASSED";
+    } else {
+      saleEligible = "PASSED";
+    }
 
     return {
       sareeId,
@@ -51,6 +72,7 @@ export class ScanService {
           }
         : null,
       inventoryStatus: inventory?.status ?? null,
+      saleEligibility: saleEligible,
     };
   }
 }
