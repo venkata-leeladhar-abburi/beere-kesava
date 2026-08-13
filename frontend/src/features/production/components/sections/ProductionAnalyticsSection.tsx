@@ -134,7 +134,7 @@ export function ProductionAnalyticsSection() {
   });
 
   return (
-    <div id="prod-analytics" style={{ padding: "32px 40px 0" }}>
+    <div id="prod-analytics" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 32 }}>
       <FadeUp>
 
         <div style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`, borderRadius: 20, padding: "22px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12, marginBottom: 24, boxShadow: "0 6px 32px rgba(74,6,27,0.08)" }}>

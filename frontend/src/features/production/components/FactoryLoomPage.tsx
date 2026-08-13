@@ -207,7 +207,7 @@ export function FactoryLoomPage() {
         <>
           {/* Hero Header */}
           <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", minHeight: 380, display: "flex", alignItems: "center" }}>
-            <div style={{ position: "relative", zIndex: 2, padding: "48px 0 90px 48px", flex: "0 0 65%", maxWidth: "65%" }}>
+            <div className="pl-4 md:pl-7 xl:pl-12" style={{ position: "relative", zIndex: 2, paddingTop: 48, paddingBottom: 90, flex: "0 0 65%", maxWidth: "65%" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
                 <span style={{ fontFamily: F.mono, fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase", fontWeight: 400 }}>
                   Since 1999 · Power Loom Management
@@ -239,7 +239,7 @@ export function FactoryLoomPage() {
           </header>
 
           {/* Stats strip */}
-          <div style={{ padding: "0 48px", marginTop: -80, position: "relative", zIndex: 20 }}>
+          <div className="px-4 md:px-7 xl:px-12" style={{ marginTop: -80, position: "relative", zIndex: 20 }}>
             <div style={{ background: "linear-gradient(135deg,#5D1027 0%,#2C0913 100%)", borderRadius: 24, display: "flex", alignItems: "stretch", boxShadow: "0 24px 72px rgba(0,0,0,0.32),0 0 0 1px rgba(200,155,71,0.16)", overflow: "hidden", minHeight: 140 }}>
               {[
                 { icon: Factory, label: "Total In-House Looms", val: looms.length, sub: "Registered units", hi: false },
@@ -263,7 +263,7 @@ export function FactoryLoomPage() {
           </div>
 
           {/* Main Body */}
-          <div style={{ padding: "32px 56px 0" }}>
+          <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 32 }}>
             <SectionCard
               icon={Factory}
               title="Looms Directory"

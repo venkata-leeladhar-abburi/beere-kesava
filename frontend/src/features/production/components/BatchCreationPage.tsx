@@ -247,7 +247,7 @@ export function BatchCreationPage() {
   return (
     <div style={{ background: T.silkCream, minHeight: "100dvh", fontFamily: F.ui }}>
       {directoryError && (
-        <div style={{ background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)", padding: "12px 56px", fontFamily: F.ui, fontSize: 13, color: T.red, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div className="px-4 md:px-7 xl:px-14" style={{ background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)", paddingTop: 12, paddingBottom: 12, fontFamily: F.ui, fontSize: 13, color: T.red, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span>Could not load weavers/factory looms: {directoryError}</span>
           <Button onClick={() => void loadDirectories()} variant="ghost" size="sm" className="border border-[var(--text-danger)] text-[var(--text-danger)] hover:bg-[var(--surface-danger-subtle)]">Retry</Button>
         </div>
@@ -274,7 +274,7 @@ export function BatchCreationPage() {
 
       {/* ════════════════════ TAB: NEW BATCH ════════════════════ */}
       {tab === "new" && (
-        <div style={{ padding: "28px 56px 64px" }}>
+        <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 28, paddingBottom: 64 }}>
 
           <BatchSetupStep
             batchId={batchId}

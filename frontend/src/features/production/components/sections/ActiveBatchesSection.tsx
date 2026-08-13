@@ -142,7 +142,7 @@ export function ActiveBatchesSection({ onNavigate, onOpenTally }: { onNavigate?:
   };
 
   return (
-    <div id="prod-active-batches" style={{ padding: "40px 48px 0" }}>
+    <div id="prod-active-batches" className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 40 }}>
       <FadeUp>
         <div style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`, boxShadow: "0 6px 32px rgba(74,6,27,0.08)", overflow: "hidden" }}>
           <div style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`, padding: "22px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>

@@ -98,7 +98,7 @@ export function BatchCreationStatsHeader({
       </div>
 
       {/* ── Tab bar ── */}
-      <div style={{ padding: "32px 56px 0" }}>
+      <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 32 }}>
         <div style={{ display: "flex", gap: 4, background: "#fff", borderRadius: 12, padding: 4, width: "fit-content", border: `1px solid ${T.borderDef}` }}>
           <Button
             onClick={() => {
