@@ -117,7 +117,7 @@ export function WeaverPaymentReport() {
   const totalMakingCharges = totalNetPaid + totalDeductions;
 
   return (
-    <div id="rep-weaver-payments" style={{ padding: "32px 40px" }}>
+    <div id="rep-weaver-payments" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 32 }}>
     <SectionCard
       icon={Users}
       title="Weaver Payment Report"
@@ -125,7 +125,7 @@ export function WeaverPaymentReport() {
     >
       <ReportDLBar />
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 24, alignItems: "stretch" }}>
+      <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 20, marginBottom: 24, alignItems: "stretch" }}>
         <ChartCard title="Total Making Charges Paid Each Month" sub="Monthly breakdown from live payments" icon={<IndianRupee size={22} color={T.antiqueGold} />}>
           {weaverPayMonthly.length === 0 ? (
             <div style={{ padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
@@ -187,7 +187,7 @@ export function WeaverPaymentReport() {
         </ChartCard>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 24, alignItems: "stretch" }}>
+      <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 16, marginBottom: 24, alignItems: "stretch" }}>
         <SumCard icon={<Users size={22} color={T.royalBurgundy} />} label="Total Weavers Paid" value={`${paidWeaverIds.size} of ${weavers.length}`} sub={`${Math.max(weavers.length - paidWeaverIds.size, 0)} with no payments on record`} />
         <SumCard icon={<IndianRupee size={22} color={T.antiqueGold} />} label="Total Making Charges" value={canSeePayroll ? formatMoney(rupees(totalMakingCharges)) : "••••"} sub="All recorded payments" hi />
         <SumCard icon={<TrendingDown size={22} color={T.crimson} />} label="Total Deductions" value={canSeePayroll ? formatMoney(rupees(totalDeductions)) : "••••"} sub="Deducted from making charges" crimsonHi />
@@ -204,8 +204,8 @@ export function WeaverPaymentReport() {
           <div style={{ overflowX: "auto" }}>
             <DataTable<(typeof weaverPayRows)[number]>
               columns={[
-                { id: "code", header: "Weaver ID", accessor: r => r.code, priority: 3, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy }}>{r.code}</span> },
-                { id: "name", header: "Weaver Name", accessor: r => r.name, priority: 1, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600 }}>{r.name}</span> },
+                { id: "code", header: "Weaver ID", accessor: r => r.code, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy }}>{r.code}</span> },
+                { id: "name", header: "Weaver Name", accessor: r => r.name, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600 }}>{r.name}</span> },
                 { id: "totalSarees", header: "Sarees Produced", accessor: r => r.totalSarees, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{r.totalSarees > 0 ? `${r.totalSarees} sarees` : "—"}</span> },
                 {
                   id: "amountPaid", header: "Amount Paid", accessor: r => r.latest?.amountPaid, align: "end",
@@ -215,15 +215,14 @@ export function WeaverPaymentReport() {
                   },
                 },
                 { id: "utr", header: "UTR Number", accessor: r => r.latest?.utrNumber, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: r.latest ? T.green : T.taupe }}>{r.latest?.utrNumber || "—"}</span> },
-                { id: "firmName", header: "Firm Name", accessor: r => r.latest?.firmName, priority: 3, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{r.latest?.firmName || "—"}</span> },
-                { id: "paymentDate", header: "Payment Date", accessor: r => r.latest?.paymentDate, priority: 3, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{r.latest?.paymentDate ?? "—"}</span> },
+                { id: "firmName", header: "Firm Name", accessor: r => r.latest?.firmName, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{r.latest?.firmName || "—"}</span> },
+                { id: "paymentDate", header: "Payment Date", accessor: r => r.latest?.paymentDate, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{r.latest?.paymentDate ?? "—"}</span> },
               ]}
               data={weaverPayRows}
               getRowId={r => r.code}
               loading={weaversLoading}
               error={!!weaversError}
               emptyTitle="No weavers on record yet."
-              responsive
             />
           </div>
           <TablePager total={weaverPayRows.length} showing={weaverPayRows.length} />
