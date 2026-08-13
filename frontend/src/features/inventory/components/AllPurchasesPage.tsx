@@ -206,7 +206,7 @@ export function AllPurchasesPage({ onBack }: { onBack: () => void }) {
           </div>
         ) : (
           <>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 22 }}>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4" style={{ gap: 22 }}>
               {pag.pageItems.map((p, i) => (
                 <PurchaseCard key={p.id} p={p} index={i} onView={setViewPurchase} onPrint={setPrintPurchase} />
               ))}

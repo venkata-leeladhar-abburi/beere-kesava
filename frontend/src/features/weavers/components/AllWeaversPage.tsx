@@ -323,7 +323,7 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
             </div>
           </div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24, alignItems: "stretch" }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4" style={{ gap: 24, alignItems: "stretch" }}>
             {filtered.map((w, i) => (
               <FadeUp key={w.id} delay={i * 0.04} style={{ height: "100%" }}>
                 <motion.div

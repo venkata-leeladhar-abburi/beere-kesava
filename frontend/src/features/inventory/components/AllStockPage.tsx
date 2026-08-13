@@ -237,7 +237,7 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
           </FadeUp>
         ) : filtered.length > 0 ? (
           <>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20, alignItems: "stretch" }}>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3" style={{ gap: 20, alignItems: "stretch" }}>
               {pag.pageItems.map((s, i) => (
                 <FadeUp key={s.id} delay={i * 0.05} style={{ height: "100%" }}>
                   <StockCard s={s} onView={setViewSaree} />
