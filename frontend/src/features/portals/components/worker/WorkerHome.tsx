@@ -120,7 +120,7 @@ export function WorkerHome({ onNavigate }: WorkerHomeProps) {
       </div>
 
       {/* Quick Stats */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: "#FFF", borderBottom: `1px solid ${C.bdr}`, boxShadow: "0 2px 10px rgba(110,15,45,0.05)" }}>
+      <div className="grid-cols-1 md:grid-cols-3" style={{ display: "grid", background: "#FFF", borderBottom: `1px solid ${C.bdr}`, boxShadow: "0 2px 10px rgba(110,15,45,0.05)" }}>
         {[
           { val: String(pendingQcCount), label: "Pending QC", col: "#C0392B" },
           { val: String(withFinishingCount), label: "With Finishing", col: "#B85C00" },

@@ -128,7 +128,7 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
 
       {/* ── MAIN CONTENT ─────────────────────────────────────────────────── */}
       <div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 40, paddingBottom: 64 }}>
-        <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) 400px", gap: 40, alignItems: "start" }}>
+        <div className="grid-cols-1 md:grid-cols-[minmax(0,1fr)_400px]" style={{ display: "grid", gap: 40, alignItems: "start" }}>
 
           {/* ── Today's Tasks ─────────────────────────────────────────── */}
           <div>

@@ -71,7 +71,7 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
       <div style={{ paddingBottom: 28 }}>
         {/* Step 1 — Source */}
         <SectionLabel step={1} title="Who is producing?" />
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, margin: "0 16px" }}>
+        <div className="grid-cols-1 md:grid-cols-2" style={{ display: "grid", gap: 10, margin: "0 16px" }}>
           {[
             { key: "own" as IssueSource, Icon: Building2, title: "Own Factory", sub: "Our looms", color: C.burg },
             { key: "outsourced" as IssueSource, Icon: Users, title: "Outsourced", sub: "External weaver", color: C.green },
@@ -158,7 +158,7 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
         <SectionLabel step={3} title="Materials Being Given" />
 
         {/* Warp + Resham side by side */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, margin: "0 16px 10px" }}>
+        <div className="grid-cols-1 md:grid-cols-2" style={{ display: "grid", gap: 10, margin: "0 16px 10px" }}>
           {/* Warp — kg / g toggle + quantity */}
           <div style={{ ...card, padding: 12 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 10 }}>
@@ -223,7 +223,7 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
             <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.text }}>Jari</span>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
+          <div className="grid-cols-1 md:grid-cols-2" style={{ display: "grid", gap: 10, marginBottom: 10 }}>
             <div>
               <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 500, color: C.text, marginBottom: 5 }}>Type</div>
               <div style={{ display: "flex", gap: 6 }}>
@@ -250,7 +250,7 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
           </div>
 
           {/* Unit selector + Quantity */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          <div className="grid-cols-1 md:grid-cols-2" style={{ display: "grid", gap: 10 }}>
             <div>
               <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 500, color: C.text, marginBottom: 5 }}>Unit</div>
               <div style={{ display: "flex", gap: 6 }}>
@@ -287,7 +287,7 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
           </p>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, margin: "0 16px" }}>
+        <div className="grid-cols-1 md:grid-cols-2" style={{ display: "grid", gap: 10, margin: "0 16px" }}>
           <Button variant="tertiary" onClick={() => { setSigMethod(sigMethod === "here" ? "none" : "here"); setSigned(false); setRemoteSent(false); setRemoteConfirmed(false); }}
             className={`h-auto flex-col items-center whitespace-normal rounded-xl px-3 py-3.5 text-center relative ${sigMethod === "here" ? "border-2 border-[#6E0F2D] bg-[rgba(110,15,45,0.05)]" : "border border-[rgba(110,15,45,0.12)] bg-white"}`}>
             {sigMethod === "here" && <div style={{ position: "absolute", top: 6, right: 6, width: 14, height: 14, background: C.gold, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><CheckCircle2 size={9} color="#FFF" /></div>}

@@ -39,7 +39,7 @@ export function WeaverSigBlock({ weaverName, sigMethod, setSigMethod, signed, se
         <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.crim, background: "rgba(171,56,50,0.08)", border: "1px solid rgba(171,56,50,0.20)", padding: "4px 10px", borderRadius: 999, flexShrink: 0 }}>Required</span>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, margin: "14px 16px 0" }}>
+      <div className="grid-cols-1 md:grid-cols-2" style={{ display: "grid", gap: 14, margin: "14px 16px 0" }}>
         <Button variant="tertiary" onClick={() => reset("here")}
           className={`h-auto flex-col items-center whitespace-normal rounded-[16px] px-4 py-5 text-center relative transition-all ${sigMethod === "here" ? "border-2 border-[#6E0F2D] bg-[rgba(110,15,45,0.05)] shadow-[0_6px_24px_rgba(74,6,27,0.10)]" : "border border-[rgba(110,15,45,0.10)] bg-white shadow-[0_2px_12px_rgba(74,6,27,0.06)]"}`}>
           {sigMethod === "here" && <div style={{ position: "absolute", top: 10, right: 10, width: 18, height: 18, background: C.burg, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><CheckCircle2 size={12} color="#FFF" /></div>}

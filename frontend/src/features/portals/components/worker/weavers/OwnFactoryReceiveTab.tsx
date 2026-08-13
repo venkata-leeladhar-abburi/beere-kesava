@@ -47,7 +47,7 @@ export function OwnFactoryReceiveTab() {
           Saree #{sareeCount} {loomNum ? `· Loom ${loomNum}` : ""}
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
+        <div className="grid-cols-1 md:grid-cols-2" style={{ display: "grid", gap: 10, marginBottom: 10 }}>
           <div>
             <FieldLabel>Weight (grams)</FieldLabel>
             <div style={{ position: "relative" }}>

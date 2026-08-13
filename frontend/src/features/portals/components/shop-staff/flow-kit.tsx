@@ -412,8 +412,9 @@ export function SummaryPanel({
         {rows.map((r, i) => (
           <div
             key={i}
+            className="grid-cols-1 md:grid-cols-[minmax(120px,34%)_1fr]"
             style={{
-              display: "grid", gridTemplateColumns: "minmax(120px, 34%) 1fr", gap: 20,
+              display: "grid", gap: 20,
               alignItems: "baseline", padding: "13px 0",
               borderBottom: i < rows.length - 1 ? `1px solid ${C.bdr}` : "none",
             }}

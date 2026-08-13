@@ -101,7 +101,7 @@ export function ScanSareeStep({
                   </div>
                   <Chip label="Factory" color={C.green} bg="rgba(30,102,64,0.10)" />
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px 16px" }}>
+                <div className="grid-cols-1 md:grid-cols-2" style={{ display: "grid", gap: "10px 16px" }}>
                   {[
                     ["Design Code", saree.design, true],
                     ["Type", saree.type, false],

@@ -58,7 +58,7 @@ export function WorkerFinishing({ isDesktop, isTablet }: { isDesktop?: boolean; 
       </div>
 
       {/* Two primary action buttons */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24 }}>
+      <div className="grid-cols-1 md:grid-cols-2" style={{ display: "grid", gap: 16, marginBottom: 24 }}>
         <Button
           variant="tertiary"
           onClick={() => setActiveAction(activeAction === "assign" ? null : "assign")}

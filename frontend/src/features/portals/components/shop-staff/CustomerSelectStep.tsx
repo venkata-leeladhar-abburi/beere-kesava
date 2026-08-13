@@ -153,7 +153,7 @@ export function CustomerSelectStep({
                   <span style={{ fontFamily: F.u, fontSize: 12, color: C.burg }}>Edit</span>
                 </Button>
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 12 }}>
+              <div className="grid-cols-1 md:grid-cols-3" style={{ display: "grid", gap: 8, marginBottom: 12 }}>
                 {[
                   { val: String(selectedCustomer.purchases), label: "Purchases", color: C.burg },
                   { val: selectedCustomer.total, label: "Lifetime", color: C.gold },

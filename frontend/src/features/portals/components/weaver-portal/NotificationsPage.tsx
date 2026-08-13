@@ -380,7 +380,7 @@ export function NotificationsPage() {
                       <div style={{ background: WN_T.silkCream, borderRadius: 14, border: `1px solid ${WN_T.borderDef}`, padding: "18px 20px", marginBottom: 20 }}>
                         <p style={{ fontFamily: F.u, fontWeight: 400, fontSize: 14, color: WN_T.luxuryBrown, lineHeight: 1.85, margin: 0 }}>{selected.body}</p>
                       </div>
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 22 }}>
+                      <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 10, marginBottom: 22 }}>
                         {[
                           { label: "Priority", value: pcfg.label,     color: pcfg.color },
                           { label: "Category", value: catCfg.label,   color: catCfg.color },

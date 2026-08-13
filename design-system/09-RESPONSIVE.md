@@ -1034,8 +1034,116 @@ pre-existing baseline throughout, zero new errors in any touched file.
   lint` (33 pre-existing errors, same baseline as R7-batch3 — zero new errors
   in any file touched this batch).
 
-  `portals` (~50 files: shop-staff, weaver-portal, worker) remains untriaged
-  — next session should resume there per §7's stated priority order.
+  **Batch 5 (2026-08-13)** — triaged the deferred `src/features/portals`
+  chunk (shop-staff, weaver-portal, worker; ~48 files with
+  `gridTemplateColumns`), via 3 parallel worktree-isolated agents split by
+  sub-portal (same pattern as batch3/batch4). 20 files converted (27 grids;
+  form/stat/summary-panel grids → `grid-cols-1 md:grid-cols-N`), 5 files
+  logged below as real data grids / inner-grid-of-repeated-row templates
+  needing Phase 4 `DataTable`/`CardList` migration, 1 apparent dead-code
+  component flagged, the rest skipped as already-responsive (`isTablet`/
+  `isDesktop`/`isMobile`-gated column counts, the shared `cols()` helper, or
+  `repeat(auto-fit/auto-fill, minmax(...))` fluid grids).
+
+  Converted:
+  - `weaver-portal/theme.tsx` (2026-08-13) — 4 grids (`DesignDetailCard`/
+    `SareeTypeDetailCard` field pairs, re-verified beyond R2's original find)
+  - `weaver-portal/ConfirmMaterialPage.tsx` (2026-08-13) — 1 grid (3-tile
+    stat row)
+  - `weaver-portal/NotificationsPage.tsx` (2026-08-13) — 1 grid (2-col
+    field pair)
+  - `weaver-portal/PaymentLedgerPage.tsx` (2026-08-13) — 1 of the 4 R3-noted
+    grids converted (a plain 2-col stat pair); the 6-col ledger table stays
+    on its existing `overflow-x:auto`+`minWidth:640` fallback per R3, still
+    correct and untouched
+  - `weaver-portal/desktop/ConfirmSection.tsx` (2026-08-13) — 1 grid (3-tile
+    stat row, was gated by `isTablet` for a 3-vs-3 no-op — now genuinely
+    responsive under `md`)
+  - `weaver-portal/desktop/PaymentsSection.tsx` (2026-08-13) — 1 grid,
+    uneven `2fr 1fr 1fr 1fr` preserved via `md:grid-cols-[2fr_1fr_1fr_1fr]`;
+    desktop-only (imported only by `DesktopWeaverPortal.tsx` per R1's prior
+    finding), converted anyway per the parent instructions' "safe no-op"
+    guidance
+  - `shop-staff/CustomerSelectStep.tsx` (2026-08-13) — 1 grid (3-tile row)
+  - `shop-staff/ScanSareeStep.tsx` (2026-08-13) — 1 grid (2-col field pair)
+  - `shop-staff/desktop/ReturnSection.tsx` (2026-08-13) — 1 grid, uneven
+    `1fr 340px` preserved via `md:grid-cols-[1fr_340px]`
+  - `shop-staff/flow-kit.tsx` (2026-08-13) — 1 grid, uneven
+    `minmax(120px, 34%) 1fr` preserved via
+    `md:grid-cols-[minmax(120px,34%)_1fr]`
+  - `WorkerPortal.tsx` (2026-08-13) — 2 grids (3-tile top row, 2-col pair)
+  - `worker/WorkerFinishing.tsx` (2026-08-13) — 1 grid (2-col pair)
+  - `worker/WorkerHome.tsx` (2026-08-13) — 1 grid (3-tile top row); this
+    supersedes R3's "3 short stat tiles, mobile-safe as-is, not converted"
+    call — applying R7's more mechanical recipe converts it anyway since it
+    is a genuine fixed grid and the conversion is a strict no-op at `md:`+
+  - `worker/WorkerHomeDesktop.tsx` (2026-08-13) — 1 grid, uneven
+    `minmax(0,1fr) 400px` preserved via `md:grid-cols-[minmax(0,1fr)_400px]`
+  - `worker/WorkerQCInspectionScreen.tsx` (2026-08-13) — 1 grid (3-tile row)
+  - `worker/weavers/MaterialSplitPanel.tsx` (2026-08-13) — 1 grid (3-tile
+    row)
+  - `worker/weavers/OwnFactoryReceiveTab.tsx` (2026-08-13) — 1 grid (2-col
+    pair)
+  - `worker/weavers/ReceiveSareesPage.tsx` (2026-08-13) — 1 grid (2-col
+    pair)
+  - `worker/weavers/WeaverSigBlock.tsx` (2026-08-13) — 1 grid (2-col pair)
+  - `worker/weavers/WorkerIssueMaterialPage.tsx` (2026-08-13) — 4 grids
+    (2-col field pairs)
+
+  **Found, needs Phase 4 `DataTable`/`CardList` migration (real data grids
+  or inner-grid-of-repeated-row templates, not touched):**
+  - `weaver-portal/BatchHistoryPage.tsx` — outer `repeat(4, 1fr)` grid of
+    `MobileBatchCard`/`CompletedBatchCard`, `filtered.map((b, i) => ...)`;
+    has zero mobile collapse today, flagged for a real migration rather than
+    a grid-collapse patch
+  - `weaver-portal/WeaverMobileBatchCard.tsx` — inner 2-col stat grid inside
+    `MobileBatchCard`/`CompletedBatchCard`, the per-row template rendered by
+    the `BatchHistoryPage.tsx`/`MyBatchesPage.tsx` grids above —
+    inner-grid-of-repeated-row, same class as the R7-batch3/4
+    `CustomerCard`/`HistoryCard`/`LoomCard` exclusions
+  - `worker/WorkerQCPassedCard.tsx` — inner `1fr auto` grid inside the
+    per-item card rendered via `.map` in
+    `WorkerQCCompletedTodaySection.tsx`/`WorkerQCHistorySection.tsx`
+  - `worker/GRNItemVerificationCard.tsx` — inner 2-col field grid inside the
+    per-item card rendered via `.map` in `WorkerGRN.tsx`
+  - `worker/GRNSuccessPrint.tsx` (`GRNPrintView`) — 2-col grid of barcode
+    label cards, `batches.map((b, i) => ...)`; not a print document (it's
+    the on-screen "tap to print" trigger UI, not `mm`-based CSS), so this is
+    a real data grid, not an R7 print exclusion
+
+  **Found, not fixed — apparent dead code (out of scope to remove in a
+  responsive pass):**
+  - `weaver-portal/WeaverBatchNotifData.tsx` (`BatchCard` export) — contains
+    a 3-tile `gridTemplateColumns` stat grid but `grep` found zero
+    `<BatchCard` usages anywhere in `src/features/portals`; the file's other
+    exports (`WNFadeUp`, `WN_*` constants) are still imported elsewhere, so
+    only this one component looks dead. Not touched — flag for a cleanup
+    session, same treatment as the batch3 `SupplierCard.tsx` dead-code find.
+
+  Verified via `tsc --noEmit` (clean) / `npm run build` (succeeds) / `npm run
+  lint` (33 pre-existing errors, same baseline as batch3/batch4 — confirmed
+  all 6 error-bearing files are pre-existing dashboard baseline files
+  untouched by this batch; zero new errors in any file touched this batch).
+
+  **`gridTemplateColumns` still remains in files outside `src/features/portals`
+  that were not part of batch3/batch4/batch5's scope** — re-ran
+  `grep -rl "gridTemplateColumns" src/features --include="*.tsx"` (excluding
+  `reports`/`dashboards`, already R3/R4 territory) and found 10 files with no
+  prior mention anywhere in this document: `materials/components/issueMaterial/RecipientSelector.tsx`,
+  `materials/components/modals/WeaverModals.tsx`,
+  `materials/components/sections/MaterialsFooter.tsx`,
+  `materials/components/sections/POTrackerSection.tsx`,
+  `materials/components/sections/RecentProcurementSection.tsx`,
+  `materials/components/sections/StockOverviewAndIssued.tsx`,
+  `payments/components/OutstandingPage.tsx`,
+  `payments/components/wholesale/PaymentRemindersModal.tsx`,
+  `purchasing/components/PODocPreview.tsx`,
+  `weavers/components/sections/WeaverDrawer.tsx`. These were apparently
+  missed by batch3/4's per-directory sweeps (both claimed `materials` and
+  `payments` as fully triaged). **R7 is therefore not yet fully complete** —
+  a future session should triage these 10 files plus re-confirm the rest of
+  the previously-"complete" directories with a fresh full-repo grep before
+  marking R7 done.
 - [ ] R8 QA, device matrix, ratchet metrics
 
 ### Out-of-band: hero+stats pattern + universal gutter sweep (2026-08-13)
@@ -1124,6 +1232,11 @@ problem and recording it is the correct response, not fixing it.
 | 2026-08-13 | out-of-band | 4 files: `materials/AlertsCard.tsx`, `payments/weaver/BankUploadPanel.tsx`, `payments/vendor/VendorUploadPanel.tsx`, `inventory/sections/ActionBar.tsx` | **Fixed, not a numbered phase.** User-reported via 8 screenshots: several "icon+label+description left, action button(s) right" rows used `display:flex` with no `flexWrap`, so on mobile the description/status text wrapped to multiple lines while the button block stayed vertically centered on the same row, visually overlapping the wrapped text. Fixed by adding `flexWrap: "wrap"` (commit `8d522a8`) — the button block now drops to its own line instead of overlapping. This is a distinct bug class from the page-level horizontal-scroll bugs fixed earlier (§3.6/§3.7) — worth grepping for the same `display: "flex", alignItems: "center", justifyContent: "space-between"` (or similar) pattern with no `flexWrap` across the rest of the app in a future session, since these 4 were found from user screenshots, not an exhaustive sweep. |
 | 2026-08-13 | R7 | `payments/components/wholesale/CustomerCard.tsx`, `payments/components/history/HistoryCard.tsx`, `payments/components/vendor/VendorUploadPanel.tsx` (the matched-bill card at line ~195) | **Deliberately not converted.** Each has a small fixed 2-column field grid *inside* a single card template that is itself the repeated unit of a real data grid (rendered via `.map()` in a parent file — see the Phase-4-migration list above). Converting the internal field grid would be inert/pointless while the outer grid stays a fixed 3-column layout (mobile still crams 3 un-collapsed cards per row), and the whole card's internal layout is going to be redefined anyway when Phase 4 migrates the parent to `DataTable`/`CardList`. Left both the outer and inner grids untouched for these three files, consistent with the "don't touch real data grids" rule extending to their per-row card templates. |
 | 2026-08-13 | R7 | `suppliers/components/sections/SupplierCard.tsx` | **Found, not fixed — likely dead code, not a responsive bug.** This file defines its own `SupplierCard` component with a 3-col `gridTemplateColumns` stat strip, but `grep` found zero importers anywhere in `src/features/suppliers`. The only `SupplierCard` actually rendered (`SupplierDirectorySection.tsx`) imports a *different* component of the same name from `@/shared/ui/domain`. Not touched (out of scope to fix/delete dead code in a responsive pass) — flag for a cleanup session. |
+| 2026-08-13 | R7 batch5 | `weaver-portal/WeaverMobileBatchCard.tsx`, `worker/WorkerQCPassedCard.tsx`, `worker/GRNItemVerificationCard.tsx` | **Deliberately not converted.** Each has a small fixed grid *inside* a card template that is itself the repeated unit of a real data grid rendered via `.map()` in a parent file (`BatchHistoryPage.tsx`/`MyBatchesPage.tsx`, `WorkerQCCompletedTodaySection.tsx`/`WorkerQCHistorySection.tsx`, `WorkerGRN.tsx` respectively) — same inner-grid-of-repeated-row exclusion class as the R7-batch3/4 `CustomerCard`/`HistoryCard`/`LoomCard` finds. Logged in §9's batch5 entry for Phase 4 migration. |
+| 2026-08-13 | R7 batch5 | `weaver-portal/BatchHistoryPage.tsx` | **Found, not fixed.** Its outer `repeat(4, 1fr)` grid of `MobileBatchCard`/`CompletedBatchCard` (`filtered.map`) has zero mobile collapse today — a real data grid, not a form/stat layout, so this is Phase 4 `DataTable`/`CardList` migration work rather than a grid-collapse patch. |
+| 2026-08-13 | R7 batch5 | `weaver-portal/WeaverBatchNotifData.tsx` (`BatchCard` export) | **Found, not fixed — likely dead code.** Contains a 3-tile stat grid but `grep` found zero `<BatchCard` usages anywhere in `src/features/portals`. Other exports in the same file are still used elsewhere. Not touched (out of scope to remove dead code here) — flag for a cleanup session, same treatment as the batch3 `SupplierCard.tsx` find. |
+| 2026-08-13 | R7 batch5 | `worker/GRNSuccessPrint.tsx` (`GRNPrintView`) | **Found, not fixed.** Despite the filename, this is not an R7 print-document exclusion — it's on-screen "tap to print barcode labels" UI (no `mm`-based CSS), and its 2-col grid of label cards (`batches.map`) is a real data grid. Logged for Phase 4 migration rather than converted. |
+| 2026-08-13 | R7 batch5 | 10 files across `materials`, `payments`, `purchasing`, `weavers` | **Found via a fresh full-repo grep, not yet triaged.** `materials/components/issueMaterial/RecipientSelector.tsx`, `materials/components/modals/WeaverModals.tsx`, `materials/components/sections/MaterialsFooter.tsx`, `materials/components/sections/POTrackerSection.tsx`, `materials/components/sections/RecentProcurementSection.tsx`, `materials/components/sections/StockOverviewAndIssued.tsx`, `payments/components/OutstandingPage.tsx`, `payments/components/wholesale/PaymentRemindersModal.tsx`, `purchasing/components/PODocPreview.tsx`, `weavers/components/sections/WeaverDrawer.tsx` all still contain `gridTemplateColumns` and have no prior mention in this document, despite `materials`/`payments` being claimed fully triaged in R7-batch3. A future session should triage these 10 plus re-run the full-repo grep against every directory batch3/4 marked complete before declaring R7 done. |
 
 ---
 
