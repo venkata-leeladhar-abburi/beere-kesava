@@ -446,7 +446,7 @@ work.** Tick with a date: `- [x] FileName.tsx (2026-08-13)`.
 - [x] R0.2 Fluid numerals in `StatsStrip` (2026-08-12) — `fontSize: 48` → `clamp(28px, 8vw, 48px)` in `PortalChrome.tsx`. Desktop (≥1280px, ~8vw≈102px clamped to max 48px) unchanged; shrinks only below ~600px viewport width. `tsc` clean. Not yet visually verified in-browser (no session dev server up at edit time) — flag for next browser-access session.
 - [x] R0.3 Gutter-scale audit (2026-08-12) — user-reported bug (screenshot: bulk-orders "All Orders" page wasting ~25% of a 375px viewport on each side). Root cause identified and the reusable recipe documented at §3.3. Fixed the reported page (6 spots across `AllOrdersPage.tsx`/`AllOrdersFilterBar.tsx`/`AllOrdersAnalyticsSection.tsx`). **Not exhaustive** — same bug pattern likely exists on other pages; §3.3 flags this for R7/a future grep pass rather than fixing all instances now (out of scope for one report).
 
-### R1 — Tables → card mode (44 / 70, incl. 6 documented exclusions)
+### R1 — Tables → card mode — ✅ COMPLETE (70 / 70, incl. 9 documented exclusions)
 
 **audit** (2/2) ✅
 - [x] `audit/components/audit-log/ActionLogSection.tsx` (2026-08-12)
@@ -509,48 +509,50 @@ work.** Tick with a date: `- [x] FileName.tsx (2026-08-13)`.
 - [x] `pricing/components/rates-pricing/MakingChargesSection.tsx` — **excluded, not applicable.** Uses `DataTable`'s `renderExpandedRow` for inline-edit-row editing; `CardList` (the `responsive` mobile fallback) does not support `renderExpandedRow` at all, so enabling it would silently drop the ability to edit rates on mobile. §0 forbids removing functionality. Left as a table-only (non-responsive) `DataTable`, same as before.
 - [x] `pricing/components/rates-pricing/WholesaleTermsSection.tsx` — **excluded, same reason** (also uses `renderExpandedRow` for inline term editing).
 
-**production** (6)
-- [ ] `production/components/FactoryLoomPage.tsx`
-- [ ] `production/components/ProductionHistoryPage.tsx`
-- [ ] `production/components/factory-loom/LoomDetailPage.tsx`
-- [ ] `production/components/sections/DefectiveSareesSection.tsx`
-- [ ] `production/components/sections/ProductionHistorySection.tsx`
-- [ ] `production/components/sections/batches/BatchViews.tsx`
+**production** (6/6) ✅
+- [x] `production/components/FactoryLoomPage.tsx` (2026-08-13)
+- [x] `production/components/ProductionHistoryPage.tsx` (2026-08-13)
+- [x] `production/components/factory-loom/LoomDetailPage.tsx` (2026-08-13)
+- [x] `production/components/sections/DefectiveSareesSection.tsx` (2026-08-13)
+- [x] `production/components/sections/ProductionHistorySection.tsx` (2026-08-13)
+- [x] `production/components/sections/batches/BatchViews.tsx` (2026-08-13) — 2 `<DataTable>` instances (BatchListView + BatchTableView), both done
 
-**purchasing** (2)
-- [ ] `purchasing/components/approvals/ExternalPurchaseCard.tsx`
-- [ ] `purchasing/components/approvals/HistorySection.tsx`
+**purchasing** (2/2) ✅
+- [x] `purchasing/components/approvals/ExternalPurchaseCard.tsx` (2026-08-13)
+- [x] `purchasing/components/approvals/HistorySection.tsx` (2026-08-13)
 
-**reports** (3/9) — *tables only; full report layout is R4*
+**reports** (8/9, 1 excluded) — *tables only; full report layout is R4*
 - [x] `reports/components/sections/CustomerReport.tsx` (2026-08-12)
 - [x] `reports/components/sections/OutstandingPaymentsReport.tsx` (2026-08-12)
 - [x] `reports/components/sections/OverdueAlertsReport.tsx` (2026-08-12) — 4 separate `<DataTable>` instances in this file, all done
-- [ ] `reports/components/sections/ProfitLossReport.tsx` *(ledger layout — card mode may be a semantic mismatch; if so, use §3.6 scroll container and note it)*
-- [ ] `reports/components/sections/RawMaterialReport.tsx`
-- [ ] `reports/components/sections/RetailSalesReport.tsx`
-- [ ] `reports/components/sections/SareeProductionReport.tsx`
-- [ ] `reports/components/sections/WeaverPaymentReport.tsx`
-- [ ] `reports/components/sections/WholesaleSalesReport.tsx`
+- [x] `reports/components/sections/ProfitLossReport.tsx` (2026-08-13) — its 2-column `ledgerColumns` table (label/amount with section headers, subtotals, net row) is a genuine semantic mismatch for card mode, left untouched. Its `perFirmColumns` table (real row-collection) got the standard treatment.
+- [x] `reports/components/sections/RawMaterialReport.tsx` (2026-08-13) — 2 `<DataTable>` instances (stock comparison + receipt batch log)
+- [x] `reports/components/sections/RetailSalesReport.tsx` (2026-08-13)
+- [x] `reports/components/sections/SareeProductionReport.tsx` (2026-08-13) — 2 `<DataTable>` instances (external purchases + per-weaver production)
+- [x] `reports/components/sections/WeaverPaymentReport.tsx` (2026-08-13)
+- [x] `reports/components/sections/WholesaleSalesReport.tsx` (2026-08-13)
 
-**suppliers** (4)
-- [ ] `suppliers/components/sections/ExternalPurchaseHistorySection.tsx`
-- [ ] `suppliers/components/sections/PurchaseHistoryTable.tsx`
-- [ ] `suppliers/components/sections/SareeInventoryTable.tsx` *(partial — §6)*
-- [ ] `suppliers/components/sections/supplierProfile/PaymentsTab.tsx`
+**suppliers** (2/4, 2 excluded)
+- [x] `suppliers/components/sections/ExternalPurchaseHistorySection.tsx` (2026-08-13)
+- [x] `suppliers/components/sections/PurchaseHistoryTable.tsx` — **excluded, not applicable.** Uses `renderExpandedRow` to drill into a nested `SareeInventoryTable` per purchase; `CardList` doesn't support it. Same reasoning as the pricing exclusions.
+- [x] `suppliers/components/sections/SareeInventoryTable.tsx` — **excluded, same reason** (its own `renderExpandedRow` drills into individual saree pieces). Also has a partial-migration raw `<table>` — see §6 — untouched either way.
+- [x] `suppliers/components/sections/supplierProfile/PaymentsTab.tsx` (2026-08-13)
 
-**users** (1)
-- [ ] `users/components/UserTable.tsx`
+**users** (1/1) ✅
+- [x] `users/components/UserTable.tsx` (2026-08-13)
 
-**vendors** (2)
-- [ ] `vendors/components/vendors-page/PurchaseOrderHistoryTable.tsx`
-- [ ] `vendors/components/vendors-page/VendorProfile.tsx`
+**vendors** (2/2) ✅
+- [x] `vendors/components/vendors-page/PurchaseOrderHistoryTable.tsx` (2026-08-13)
+- [x] `vendors/components/vendors-page/VendorProfile.tsx` (2026-08-13) — 2 `<DataTable>` instances (bills + payment transactions)
 
-**weavers** (5)
-- [ ] `weavers/components/WeaverSareesSection/ExternalSareesTable.tsx`
-- [ ] `weavers/components/WeaverSareesSection/MainSareesTable.tsx`
-- [ ] `weavers/components/sections/WeaverCardAndListViews.tsx`
-- [ ] `weavers/components/sections/WeaverTableAndDirectory.tsx`
-- [ ] `weavers/components/sections/weaverDrawer/WeaverDrawerTabs.tsx`
+**weavers** (5/5) ✅
+- [x] `weavers/components/WeaverSareesSection/ExternalSareesTable.tsx` (2026-08-13)
+- [x] `weavers/components/WeaverSareesSection/MainSareesTable.tsx` (2026-08-13) — ~13-20 conditionally-rendered columns; assigned title + 2 always-present secondary fields, rest default to priority 2
+- [x] `weavers/components/sections/WeaverCardAndListViews.tsx` (2026-08-13)
+- [x] `weavers/components/sections/WeaverTableAndDirectory.tsx` (2026-08-13)
+- [x] `weavers/components/sections/weaverDrawer/WeaverDrawerTabs.tsx` (2026-08-13)
+
+**R1 COMPLETE** (2026-08-13) — all 70 originally-assigned files resolved: either `responsive`-enabled or documented as a deliberate exclusion (9 total: 4 portal "island" files already responsive via a different mechanism, 4 `renderExpandedRow`-based drill-down tables incompatible with `CardList`, 1 genuine ledger-layout semantic mismatch). Verified via `grep -rl "<DataTable" src/features` (71 consumers — one more than the original count, pre-existing drift not part of this effort) vs `grep -rl "responsive"` (61) vs `grep -rl "priority:"` (66) — the arithmetic checks out against the exclusion list. `tsc`/`build`/`lint` clean at every commit, same pre-existing baseline throughout.
 
 ### R2–R8
 - [ ] R2 Modal content — *expand §7 into a full recipe when starting*
