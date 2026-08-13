@@ -35,7 +35,7 @@ export function WeaverHero({ weaverName, onExploreBatches, onGoToPayments }: {
       <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, #0D0207 0%, #0D0207 32%, rgba(13,2,7,0.97) 40%, rgba(13,2,7,0.88) 48%, rgba(13,2,7,0.55) 58%, rgba(13,2,7,0.18) 72%, rgba(13,2,7,0) 80%)", pointerEvents: "none", zIndex: 1 }} />
       <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 120, background: "linear-gradient(to top, rgba(13,2,7,0.7) 0%, rgba(13,2,7,0) 100%)", pointerEvents: "none", zIndex: 2 }} />
 
-      <div style={{ position: "relative", zIndex: 5, width: "56%", height: "100%", padding: "36px 48px 72px", display: "flex", flexDirection: "column", justifyContent: "center", gap: 16 }}>
+      <div className="px-4 md:px-7 xl:px-12" style={{ position: "relative", zIndex: 5, width: "56%", height: "100%", paddingTop: 36, paddingBottom: 72, display: "flex", flexDirection: "column", justifyContent: "center", gap: 16 }}>
         <motion.div
           initial={{ opacity: 0, x: -24 }} animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.7, delay: 0.25, ease: EASE }}
