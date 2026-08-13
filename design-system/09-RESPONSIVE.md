@@ -474,9 +474,37 @@ per-portal reports. Charts need mobile heights and legend handling; filter toolb
 mobile filter sheet; export/print controls need a mobile home. **Scope this with the user
 before starting** — it involves genuine design decisions, unlike R1–R3.
 
-### R5 — Forms & filter bars
-Full-page multi-column forms → one column under `md`. `DateFilterBar` and filter toolbars →
-mobile layout instead of overflow. Sticky mobile action bar for long forms.
+### R5 — Forms & filter bars — ⚠️ PARTIALLY COMPLETE (2026-08-13)
+
+**`DateFilterBar` needed no work** — verified it already uses unconditional `flex flex-wrap`
+with no breakpoint gating at all, so it already wraps safely at any width. Nothing to fix.
+
+**Full-page multi-column forms** — grepped `src/features` for `gridTemplateColumns` outside
+modals/reports/dashboards (already covered by R1-R4) and found 9 files. Fixed all 9:
+
+- [x] `inventory/components/modals/shared/TransportForm.tsx` — 1 grid, standard Field form
+- [x] `users/components/AddUserForm.tsx` — 2 grids, standard Field form
+- [x] `firms/components/FirmsPage.tsx` — totals row (fixed pixel columns, stacks below `md`,
+  exact desktop preserved via arbitrary `grid-cols` value) + financial mini-strip (3 plain
+  label/value pairs, safe at `md:grid-cols-3`)
+- [x] `users/components/AddUserPage.tsx` — 6-column role stat strip, given a tablet step
+  (`grid-cols-1 md:grid-cols-3 xl:grid-cols-6`) rather than jumping straight to 6 at `md:`,
+  applying the §3.7 lesson from the same-day tablet regression
+- [x] `bulk-orders/components/BulkOrderDetailPage.tsx`, `inventory/components/AllPurchasesPage.tsx`,
+  `inventory/components/AllStockPage.tsx`, `weavers/components/AllWeaversPage.tsx` — full
+  record-card grids (not simple stat tiles), all given a `md:grid-cols-2 xl:grid-cols-N`
+  tablet step for the same reason.
+
+**Not done — "sticky mobile action bar for long forms"** from the original R5 sketch. This is
+a real structural feature (a fixed bottom bar with Save/Cancel that stays visible while a long
+form scrolls), not a mechanical class swap like everything else in this rollout — it needs its
+own design pass (which forms qualify as "long", what the bar contains, interaction with
+existing bottom nav on mobile portals). Deliberately left for a dedicated future session rather
+than guessing. **R5 is not fully closed** until this is scoped and either built or explicitly
+descoped.
+
+Verified via `tsc`/`build`/`lint` — clean, same baseline. Not visually verified in-browser
+(same recurring stuck preview policy-check).
 
 ### R6 — Navigation audit
 Verification, not construction. Each portal's mobile nav already exists. Confirm nav items
