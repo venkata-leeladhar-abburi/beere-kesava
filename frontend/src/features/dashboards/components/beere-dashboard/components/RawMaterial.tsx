@@ -35,7 +35,7 @@ export function RawMaterial({ onNavigate }: { onNavigate: (tab: string) => void 
       {stockLoading && (
         <div style={{ padding: "12px 0", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loading stock…</div>
       )}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 28 }}>
+      <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 28 }}>
         {mats.map((m, i) => (
           <FadeUp key={m.name} delay={i * 0.1} style={{ height: "100%" }}>
             <motion.div

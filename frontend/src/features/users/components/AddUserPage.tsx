@@ -376,7 +376,8 @@ export function AddUserPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1, ease: EASE }}
-          style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 20 }}
+          className="grid grid-cols-1 md:grid-cols-3"
+          style={{ gap: 16, marginBottom: 20 }}
         >
           {[
             { icon: <Users size={20} color={T.royalBurgundy} />,  val: String(totalAll),      label: "Total Users",    sub: "Across all portals",     accent: T.royalBurgundy, bg: "rgba(110,15,45,0.05)", border: T.borderDef },

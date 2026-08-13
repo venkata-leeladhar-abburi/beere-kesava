@@ -132,7 +132,7 @@ export function FeaturedProduct({ compact }: { compact?: boolean }) {
   const v = (n: number) => (isError ? "Error" : isLoading ? "—" : String(n));
   return (
     <Card style={{ flex: 1, display: "flex", flexDirection: "column", padding: 0, overflow: "hidden" }}>
-      <div style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 1fr" }}>
+      <div className="grid grid-cols-1 md:grid-cols-2" style={{ flex: 1 }}>
         {[
           { label: "Weavers", val: `${v(weaversWorkingCount)} active`, vc: T.luxuryBrown, rb: true, bb: true },
           { label: "Saree Codes", val: `${v(designCodesCount)} codes`, vc: T.luxuryBrown, rb: false, bb: true },

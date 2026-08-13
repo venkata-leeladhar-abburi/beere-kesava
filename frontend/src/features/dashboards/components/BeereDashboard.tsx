@@ -308,7 +308,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
           </div>
           {/* Content */}
           <div style={{ padding: "40px 56px 80px", display: "flex", flexDirection: "column", gap: 24 }}>
-            <div style={{ display: "grid", gridTemplateColumns: "minmax(0,2fr) minmax(0,1fr)", gap: 24, alignItems: "start" }}>
+            <div className="grid grid-cols-1 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]" style={{ gap: 24, alignItems: "start" }}>
               <SectionCard icon={PackageCheck} title="Receive Stock" subtitle="Record incoming raw materials from vendors and generate a GRN number.">
                 <div style={{ margin: "-24px -28px" }}>
                   <WorkerGRN mode="form" history={grnHistory} setHistory={setGrnHistory} initialPOId={(state as any)?.poId} />

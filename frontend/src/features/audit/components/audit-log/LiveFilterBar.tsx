@@ -78,9 +78,8 @@ export function LiveFilterBar({
         </div>
 
         {/* Filter row */}
-        <div style={{
+        <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr]" style={{
           display: "grid",
-          gridTemplateColumns: "2fr 1fr 1fr 1fr",
           gap: 12,
           marginBottom: 14,
         }}>
