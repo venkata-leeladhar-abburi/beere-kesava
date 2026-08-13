@@ -104,7 +104,7 @@ export function NewWeaverModal({ expanded, setExpanded }: { expanded: boolean; s
         />
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 32 }}>
+      <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 24, marginBottom: 32 }}>
         {/* First / Last name split */}
         <Field label="First Name *">
           <Input placeholder="First name" value={form.firstName} onChange={set("firstName")} />
@@ -133,7 +133,7 @@ export function NewWeaverModal({ expanded, setExpanded }: { expanded: boolean; s
       <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 18, color: T.luxuryBrown, marginBottom: 20, paddingTop: 8, borderTop: `1px solid ${T.borderDef}` }}>
         Bank Account Details
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 24 }}>
+      <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 24, marginBottom: 24 }}>
         <Field label="Bank Name"><Input placeholder="E.g., State Bank of India" value={form.bankName} onChange={set("bankName")} /></Field>
         <Field label="Account Number"><Input placeholder="Account number" value={form.accountNo} onChange={set("accountNo")} /></Field>
         <Field label="IFSC Code"><Input placeholder="11-character IFSC code" value={form.ifsc} onChange={set("ifsc")} /></Field>
