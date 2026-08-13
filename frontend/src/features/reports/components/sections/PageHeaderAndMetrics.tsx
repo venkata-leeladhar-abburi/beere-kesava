@@ -10,7 +10,7 @@ import { reportsApi } from "../../../../shared/api/reports";
 export function ReportsHeader() {
   return (
     <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", display: "flex", alignItems: "center" }}>
-      <div style={{ position: "relative", zIndex: 3, padding: "48px 0 110px 48px", flex: "0 0 100%", maxWidth: "100%" }}>
+      <div className="pl-4 md:pl-7 xl:pl-12" style={{ position: "relative", zIndex: 3, paddingTop: 48, paddingBottom: 110, flex: "0 0 100%", maxWidth: "100%" }}>
         {/* Eyebrow */}
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
           <div style={{ width: 36, height: 2, background: `linear-gradient(90deg, ${T.antiqueGold}, rgba(200,155,71,0))` }} />
@@ -108,12 +108,12 @@ export function ReportsStatsStrip() {
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, delay: 0.2, ease: EASE }}
-      style={{ padding: "0 48px", marginTop: -80, position: "relative", zIndex: 20 }}
+      className="px-4 md:px-7 xl:px-12"
+      style={{ marginTop: -80, position: "relative", zIndex: 20 }}
     >
-      <div style={{
+      <div className="grid grid-cols-2 md:flex" style={{
         background: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)",
         borderRadius: 28,
-        display: "flex",
         alignItems: "stretch",
         boxShadow: "0 30px 80px rgba(0,0,0,0.32), 0 0 0 1px rgba(200,155,71,0.16)",
         overflow: "hidden",
