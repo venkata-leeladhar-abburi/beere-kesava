@@ -277,7 +277,7 @@ export function VendorPaymentsSection() {
   ];
 
   return (
-    <div id="pay-vendor" style={{ padding: "36px 40px 0" }}>
+    <div id="pay-vendor" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 36 }}>
       <FadeUp>
       <SectionCard
         icon={Truck}

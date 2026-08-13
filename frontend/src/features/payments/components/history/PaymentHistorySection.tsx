@@ -211,7 +211,7 @@ export function PaymentHistorySection() {
   ];
 
   return (
-    <div id="pay-history" style={{ padding: "36px 40px 0" }}>
+    <div id="pay-history" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 36 }}>
       <FadeUp>
       <SectionCard
         icon={History}

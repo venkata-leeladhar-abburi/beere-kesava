@@ -165,7 +165,7 @@ export function PaymentAnalyticsSection() {
   ];
 
   return (
-    <div id="pay-analytics" style={{ padding: "36px 40px 40px" }}>
+    <div id="pay-analytics" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 36, paddingBottom: 40 }}>
       <FadeUp>
       <SectionCard
         icon={TrendingUp}

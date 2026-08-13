@@ -136,7 +136,7 @@ export function OutstandingPage({ embedded = false }: { embedded?: boolean }) {
       </motion.div>
 
       {/* ── TAB STRIP ──────────────────────────────────────────────────────── */}
-      <div style={{ padding: "40px 56px 0" }}>
+      <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40 }}>
         <div style={{ background: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)", borderRadius: 20, padding: 12, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12, boxShadow: "0 12px 40px rgba(0,0,0,0.18), 0 0 0 1px rgba(200,155,71,0.14)" }}>
           {OUT_TABS.map(t => {
             const active = tab === t.key;
@@ -175,7 +175,7 @@ export function OutstandingPage({ embedded = false }: { embedded?: boolean }) {
 
       {/* AGED ALERT */}
       {totals.aged90 > 0 && (
-        <div style={{ padding: "24px 56px 0" }}>
+        <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 24 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 11, background: "rgba(192,57,43,0.07)", border: `1px solid rgba(192,57,43,0.22)`, borderRadius: 12, padding: "13px 18px" }}>
             <AlertTriangle size={17} color={T.crimson} />
             <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>
@@ -186,7 +186,7 @@ export function OutstandingPage({ embedded = false }: { embedded?: boolean }) {
       )}
 
       {/* BODY */}
-      <div style={{ padding: "24px 56px 80px", display: "flex", flexDirection: "column", gap: 20, width: "100%" }}>
+      <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 24, paddingBottom: 80, display: "flex", flexDirection: "column", gap: 20, width: "100%" }}>
         {tab !== "ranking" && (
           <FilterBar
             search={search} setSearch={setSearch}

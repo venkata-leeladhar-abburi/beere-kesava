@@ -8,7 +8,7 @@ export function PaymentsFooter() {
   return (
     <footer style={{ background: T.darkBurgundy, borderTop: `1px solid rgba(200,155,71,0.18)` }}>
       {/* Main footer grid */}
-      <div style={{ padding: "44px 40px 36px", display: "grid", gridTemplateColumns: "1.6fr 1fr 1fr 1fr 1fr", gap: 40 }}>
+      <div className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 44, paddingBottom: 36, display: "grid", gridTemplateColumns: "1.6fr 1fr 1fr 1fr 1fr", gap: 40 }}>
 
         {/* ── Brand column ──────────────────────────────────── */}
         <div>
@@ -90,7 +90,7 @@ export function PaymentsFooter() {
       </div>
 
       {/* ── Bottom bar ─────────────────────────────────────── */}
-      <div style={{ borderTop: "1px solid rgba(200,155,71,0.12)", padding: "14px 40px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+      <div className="px-4 md:px-7 xl:px-10" style={{ borderTop: "1px solid rgba(200,155,71,0.12)", paddingTop: 14, paddingBottom: 14, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
         <span style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.35)" }}>
           © 2026 Beers Keshara &amp; Brothers Silks. All rights reserved.
         </span>
