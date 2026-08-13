@@ -18,7 +18,7 @@ import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 export function BatchTableView({ rows, onViewDetails, onPrintBarcode }: { rows: BatchRow[]; onViewDetails: (b: BatchRow) => void; onPrintBarcode: (b: BatchRow) => void }) {
   const columns: ColumnDef<BatchRow>[] = [
     {
-      id: "id", header: "Batch ID", accessor: r => r.id,
+      id: "id", header: "Batch ID", accessor: r => r.id, priority: 1,
       cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, letterSpacing: "0.2px", background: "rgba(110,15,45,0.05)", padding: "4px 8px", borderRadius: 6, display: "inline-block" }}>{r.id}</span>,
     },
     {
@@ -29,15 +29,15 @@ export function BatchTableView({ rows, onViewDetails, onPrintBarcode }: { rows: 
       },
     },
     {
-      id: "details", header: "Description", accessor: r => r.details,
+      id: "details", header: "Description", accessor: r => r.details, priority: 3,
       cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{r.details}</span>,
     },
     {
-      id: "vendor", header: "Vendor", accessor: r => r.vendor,
+      id: "vendor", header: "Vendor", accessor: r => r.vendor, priority: 3,
       cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{r.vendor}</span>,
     },
     {
-      id: "date", header: "Received On", accessor: r => r.date,
+      id: "date", header: "Received On", accessor: r => r.date, priority: 3,
       cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.date}</span>,
     },
     {
@@ -101,7 +101,7 @@ export function BatchTableView({ rows, onViewDetails, onPrintBarcode }: { rows: 
 
   return (
     <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, boxShadow: "0 2px 14px rgba(74,6,27,0.05)", overflowX: "auto" }}>
-      <DataTable columns={columns} data={rows} getRowId={r => r.rowKey} />
+      <DataTable responsive columns={columns} data={rows} getRowId={r => r.rowKey} />
     </div>
   );
 }
