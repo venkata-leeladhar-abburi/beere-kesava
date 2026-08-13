@@ -400,54 +400,54 @@ work.** Tick with a date: `- [x] FileName.tsx (2026-08-13)`.
 - [x] R0.2 Fluid numerals in `StatsStrip` (2026-08-12) — `fontSize: 48` → `clamp(28px, 8vw, 48px)` in `PortalChrome.tsx`. Desktop (≥1280px, ~8vw≈102px clamped to max 48px) unchanged; shrinks only below ~600px viewport width. `tsc` clean. Not yet visually verified in-browser (no session dev server up at edit time) — flag for next browser-access session.
 - [ ] R0.3 Gutter-scale audit (findings → §10)
 
-### R1 — Tables → card mode (0 / 70)
+### R1 — Tables → card mode (27 / 70)
 
-**audit** (2)
-- [ ] `audit/components/audit-log/ActionLogSection.tsx`
-- [ ] `audit/components/audit-log/LoginHistorySection.tsx`
+**audit** (2/2) ✅
+- [x] `audit/components/audit-log/ActionLogSection.tsx` (2026-08-12)
+- [x] `audit/components/audit-log/LoginHistorySection.tsx` (2026-08-12)
 
-**bulk-orders** (2)
-- [ ] `bulk-orders/components/BulkOrderOverviewPaymentsTabs.tsx`
-- [ ] `bulk-orders/components/BulkOrderSareesTab.tsx`
+**bulk-orders** (2/2) ✅
+- [x] `bulk-orders/components/BulkOrderOverviewPaymentsTabs.tsx` (2026-08-12)
+- [x] `bulk-orders/components/BulkOrderSareesTab.tsx` (2026-08-12)
 
-**customers** (7)
-- [ ] `customers/components/sections/InactiveCustomersSection.tsx`
-- [ ] `customers/components/sections/RetailCustomersSection.tsx`
-- [ ] `customers/components/sections/RetailDetailSection.tsx`
-- [ ] `customers/components/sections/WholesaleCustomersSection.tsx`
+**customers** (4/7)
+- [x] `customers/components/sections/InactiveCustomersSection.tsx` (2026-08-12)
+- [x] `customers/components/sections/RetailCustomersSection.tsx` (2026-08-12)
+- [x] `customers/components/sections/RetailDetailSection.tsx` (2026-08-12)
+- [x] `customers/components/sections/WholesaleCustomersSection.tsx` (2026-08-12)
 - [ ] `customers/components/sections/wholesaleDetail/OrderHistoryTab.tsx`
 - [ ] `customers/components/sections/wholesaleDetail/OverviewTab.tsx`
 - [ ] `customers/components/sections/wholesaleDetail/PaymentHistoryTab.tsx`
 
-**finishing** (2)
-- [ ] `finishing/components/FinishingQuotationsSection.tsx`
-- [ ] `finishing/components/FinishingStaffSection.tsx`
+**finishing** (2/2) ✅
+- [x] `finishing/components/FinishingQuotationsSection.tsx` (2026-08-12)
+- [x] `finishing/components/FinishingStaffSection.tsx` (2026-08-12)
 
-**firms** (2)
-- [ ] `firms/components/FirmFinanceSections.tsx` *(also has a raw table — see §6 exclusions)*
-- [ ] `firms/components/FirmsPage.tsx`
+**firms** (2/2) ✅
+- [x] `firms/components/FirmFinanceSections.tsx` (2026-08-12) *(also has a raw table — see §6 exclusions, only the DataTable part was touched)*
+- [x] `firms/components/FirmsPage.tsx` (2026-08-12)
 
-**inventory** (5)
+**inventory** (0/5)
 - [ ] `inventory/components/externalPurchases/modals/SareeListModal.tsx` *(partial — §6)*
 - [ ] `inventory/components/externalPurchases/sections/PurchasesTable.tsx`
 - [ ] `inventory/components/modals/shared/InvoiceGenerator.tsx`
 - [ ] `inventory/components/modals/shared/SareeReviewList.tsx`
 - [ ] `inventory/components/sections/DispatchHistorySection.tsx`
 
-**materials** (4)
-- [ ] `materials/components/issueMaterial/IssuanceHistorySection.tsx`
-- [ ] `materials/components/issueMaterial/RecordDetailsModal.tsx`
+**materials** (2/4)
+- [x] `materials/components/issueMaterial/IssuanceHistorySection.tsx` (2026-08-12)
+- [x] `materials/components/issueMaterial/RecordDetailsModal.tsx` (2026-08-12)
 - [ ] `materials/components/sections/BatchesSection.tsx`
 - [ ] `materials/components/sections/PurchaseHistorySection.tsx`
 
-**payments** (7)
-- [ ] `payments/components/history/PaymentHistorySection.tsx`
-- [ ] `payments/components/outstanding/ExternalOutstanding.tsx`
-- [ ] `payments/components/outstanding/SareeDetailTable.tsx`
-- [ ] `payments/components/outstanding/TopSellers.tsx`
-- [ ] `payments/components/vendor/VendorPaymentsSection.tsx`
-- [ ] `payments/components/weaver/WeaverPaymentDetailModal.tsx`
-- [ ] `payments/components/weaver/WeaverProductionSummaryPanel.tsx`
+**payments** (7/8)
+- [x] `payments/components/history/PaymentHistorySection.tsx` (2026-08-12)
+- [x] `payments/components/outstanding/ExternalOutstanding.tsx` (2026-08-12)
+- [x] `payments/components/outstanding/SareeDetailTable.tsx` (2026-08-12) *(fixed a real `priority` type-widening bug from a conditional-spread column — see commit)*
+- [x] `payments/components/outstanding/TopSellers.tsx` (2026-08-12)
+- [x] `payments/components/vendor/VendorPaymentsSection.tsx` (2026-08-12)
+- [x] `payments/components/weaver/WeaverPaymentDetailModal.tsx` (2026-08-12)
+- [x] `payments/components/weaver/WeaverProductionSummaryPanel.tsx` (2026-08-12)
 - [ ] `payments/components/wholesale/WholesaleTableView.tsx`
 
 **portals** (6)
@@ -475,10 +475,10 @@ work.** Tick with a date: `- [x] FileName.tsx (2026-08-13)`.
 - [ ] `purchasing/components/approvals/ExternalPurchaseCard.tsx`
 - [ ] `purchasing/components/approvals/HistorySection.tsx`
 
-**reports** (9) — *tables only; full report layout is R4*
-- [ ] `reports/components/sections/CustomerReport.tsx`
-- [ ] `reports/components/sections/OutstandingPaymentsReport.tsx`
-- [ ] `reports/components/sections/OverdueAlertsReport.tsx`
+**reports** (3/9) — *tables only; full report layout is R4*
+- [x] `reports/components/sections/CustomerReport.tsx` (2026-08-12)
+- [x] `reports/components/sections/OutstandingPaymentsReport.tsx` (2026-08-12)
+- [x] `reports/components/sections/OverdueAlertsReport.tsx` (2026-08-12) — 4 separate `<DataTable>` instances in this file, all done
 - [ ] `reports/components/sections/ProfitLossReport.tsx` *(ledger layout — card mode may be a semantic mismatch; if so, use §3.5 scroll container and note it)*
 - [ ] `reports/components/sections/RawMaterialReport.tsx`
 - [ ] `reports/components/sections/RetailSalesReport.tsx`
