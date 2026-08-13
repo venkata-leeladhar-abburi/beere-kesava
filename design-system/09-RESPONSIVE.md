@@ -446,7 +446,7 @@ work.** Tick with a date: `- [x] FileName.tsx (2026-08-13)`.
 - [x] R0.2 Fluid numerals in `StatsStrip` (2026-08-12) — `fontSize: 48` → `clamp(28px, 8vw, 48px)` in `PortalChrome.tsx`. Desktop (≥1280px, ~8vw≈102px clamped to max 48px) unchanged; shrinks only below ~600px viewport width. `tsc` clean. Not yet visually verified in-browser (no session dev server up at edit time) — flag for next browser-access session.
 - [x] R0.3 Gutter-scale audit (2026-08-12) — user-reported bug (screenshot: bulk-orders "All Orders" page wasting ~25% of a 375px viewport on each side). Root cause identified and the reusable recipe documented at §3.3. Fixed the reported page (6 spots across `AllOrdersPage.tsx`/`AllOrdersFilterBar.tsx`/`AllOrdersAnalyticsSection.tsx`). **Not exhaustive** — same bug pattern likely exists on other pages; §3.3 flags this for R7/a future grep pass rather than fixing all instances now (out of scope for one report).
 
-### R1 — Tables → card mode (33 / 70, incl. 2 documented exclusions)
+### R1 — Tables → card mode (44 / 70, incl. 6 documented exclusions)
 
 **audit** (2/2) ✅
 - [x] `audit/components/audit-log/ActionLogSection.tsx` (2026-08-12)
@@ -496,13 +496,13 @@ work.** Tick with a date: `- [x] FileName.tsx (2026-08-13)`.
 - [x] `payments/components/weaver/WeaverProductionSummaryPanel.tsx` (2026-08-12)
 - [x] `payments/components/wholesale/WholesaleTableView.tsx` (2026-08-13)
 
-**portals** (6)
-- [ ] `portals/components/weaver-portal/ReferenceHistorySection.tsx`
-- [ ] `portals/components/weaver-portal/WarpRequestPage.tsx`
-- [ ] `portals/components/weaver-portal/desktop/PaymentsSection.tsx`
-- [ ] `portals/components/worker/ReceiptHistoryTable.tsx`
-- [ ] `portals/components/worker/finishing/SectionC.tsx`
-- [ ] `portals/components/worker/weavers/SareeSelectionTable.tsx`
+**portals** (6/6, 2 responsive + 4 already-covered)
+- [x] `portals/components/weaver-portal/ReferenceHistorySection.tsx` — **excluded, not applicable.** Already has a hand-built `isMobile` branch per tab (3 separate card lists) that fully replaces its 3 `DataTable` instances on mobile; the tables only render in the `!isMobile` branch, so `responsive` would be dead code.
+- [x] `portals/components/weaver-portal/WarpRequestPage.tsx` — **excluded, same reason** (own `isMobile` branch with a bespoke card list; `DataTable` only renders on desktop/tablet).
+- [x] `portals/components/weaver-portal/desktop/PaymentsSection.tsx` — **excluded, not applicable.** Only imported by `DesktopWeaverPortal.tsx`; mobile users get `MobileWeaverPortal.tsx`'s own UI, this component never renders on mobile.
+- [x] `portals/components/worker/ReceiptHistoryTable.tsx` (2026-08-13)
+- [x] `portals/components/worker/finishing/SectionC.tsx` — **excluded, same reason as ReferenceHistorySection** (own `isMobile` card-list branch; the desktop `DataTable`+`renderExpandedRow` never renders on mobile).
+- [x] `portals/components/worker/weavers/SareeSelectionTable.tsx` (2026-08-13)
 
 **pricing** (1/3, 2 excluded)
 - [x] `pricing/components/rates-pricing/RateHistorySection.tsx` (2026-08-13)
