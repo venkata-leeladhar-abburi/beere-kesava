@@ -9,7 +9,7 @@ import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
 
 const paymentColumns: ColumnDef<SupplierPayment>[] = [
   {
-    id: "id", header: "Payment Ref", accessor: p => p.id,
+    id: "id", header: "Payment Ref", accessor: p => p.id, priority: 1,
     cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy }}>{p.id}</span>,
   },
   {
@@ -17,7 +17,7 @@ const paymentColumns: ColumnDef<SupplierPayment>[] = [
     cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.date}</span>,
   },
   {
-    id: "purchaseId", header: "Against Purchase", accessor: p => p.purchaseId,
+    id: "purchaseId", header: "Against Purchase", accessor: p => p.purchaseId, priority: 3,
     cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{p.purchaseId || "—"}</span>,
   },
   {
@@ -25,7 +25,7 @@ const paymentColumns: ColumnDef<SupplierPayment>[] = [
     cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{p.mode}</span>,
   },
   {
-    id: "reference", header: "Reference", accessor: p => p.reference,
+    id: "reference", header: "Reference", accessor: p => p.reference, priority: 3,
     cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{p.reference}</span>,
   },
   {
@@ -69,6 +69,7 @@ export function PaymentsTab({
           <div style={{ padding: "40px 24px", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No payments in this period.</div>
         ) : (
           <DataTable
+            responsive
             columns={paymentColumns}
             data={filteredPayments}
             getRowId={p => p.id}

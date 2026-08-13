@@ -15,7 +15,7 @@ export function ExternalPurchaseHistorySection({ purchases }: { purchases: Purch
 
   const columns: ColumnDef<Purchase>[] = [
     {
-      id: "id", header: "Purchase Ref", accessor: p => p.id,
+      id: "id", header: "Purchase Ref", accessor: p => p.id, priority: 1,
       cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{p.id}</span>,
     },
     {
@@ -23,7 +23,7 @@ export function ExternalPurchaseHistorySection({ purchases }: { purchases: Purch
       cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{p.supplier}</span>,
     },
     {
-      id: "invoice", header: "Invoice", accessor: p => p.invoiceNumber,
+      id: "invoice", header: "Invoice", accessor: p => p.invoiceNumber, priority: 3,
       cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{p.invoiceNumber || "—"}</span>,
     },
     {
@@ -35,7 +35,7 @@ export function ExternalPurchaseHistorySection({ purchases }: { purchases: Purch
       cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: "#8B6018" }}>{p.billAmount}</span>,
     },
     {
-      id: "date", header: "Date", accessor: p => p.date,
+      id: "date", header: "Date", accessor: p => p.date, priority: 3,
       cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.date}</span>,
     },
     {
@@ -63,6 +63,7 @@ export function ExternalPurchaseHistorySection({ purchases }: { purchases: Purch
         </div>
         <div style={{ background: "#FFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, overflow: "hidden" }}>
           <DataTable
+            responsive
             columns={columns}
             data={filtered}
             getRowId={p => p.id}
