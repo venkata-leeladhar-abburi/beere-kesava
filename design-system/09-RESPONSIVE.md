@@ -833,10 +833,83 @@ Verified via `tsc`/`build`/`lint` on every batch before merge — clean, same ~3
 pre-existing baseline throughout, zero new errors in any touched file.
 
 ### R5–R8
-- [ ] R5 Forms & filter bars
-- [ ] R6 Navigation audit
-- [ ] R7 Grid-as-table triage
+- [x] R5 Forms & filter bars — see ✅ COMPLETE section above.
+- [x] R6 Navigation audit — see ✅ COMPLETE section above.
+- [~] R7 Grid-as-table triage — **partially done**, no formal ledger entry yet.
+  Two commits (`responsive(r7-batch2)`, `responsive(r7-misc)`) collapsed a batch
+  of form/stat `gridTemplateColumns` grids to `grid-cols-1` under `md`, but the
+  full 165-file triage (real-data-grids vs form-layouts vs print-docs, §7) was
+  never completed or logged file-by-file. A future session should re-run
+  `grep -rl "gridTemplateColumns" src/features --include="*.tsx"` from
+  `frontend/`, diff against what's already responsive, and resume the R7
+  recipe from there.
 - [ ] R8 QA, device matrix, ratchet metrics
+
+### Out-of-band: hero+stats pattern + universal gutter sweep (2026-08-13)
+
+Two user-reported mobile bugs, fixed outside the numbered phase sequence
+(reported directly against Production/Inventory/Materials, then generalized
+per explicit user request to "every section, every portal"):
+
+**1. Hero header + floating stats-strip pattern** — every major page has a dark
+`<header>` (headline/eyebrow/body + a 50%-width decorative image) with a
+`StatsStrip`/`MetricsBar` floating up over its bottom edge via negative
+`marginTop`. Fixed on all genuine instances app-wide:
+- Recipe: hero text column → full width below `xl`, decorative image →
+  `hidden xl:block`, stats grid → `grid grid-cols-2 xl:flex`, gutter → the
+  standard `px-4 md:px-7 xl:px-<original/4>` scale (§3.3).
+- Two refinements added on top, also app-wide: (a) the negative overlap margin
+  is now responsive (`-mt-6..8 md:-mt-8..14 xl:-mt-[original]`) instead of one
+  fixed value, so a hero paragraph that wraps to more lines on a narrow phone
+  is never covered by the floating stats card; (b) hero heading/subtitle/body
+  and stat-tile numerals use `clamp()` instead of a fixed desktop px size
+  (numeral clamp `clamp(28px, 8vw, 48px)` reuses the exact formula already
+  verified for `StatsStrip` in R0.2).
+- Files: `production`, `inventory`, `customers`, `weavers`, `materials`,
+  `reports`, `finishing`, `vendors`, `payments` (header+stats+Outstanding),
+  `suppliers`, `audit`, Superadmin dashboard overview, inventory
+  external-purchases, production batch-creation header + Factory Looms,
+  `pricing`, `firms`, `notifications`, `purchasing/approvals`.
+- Explicitly skipped, correctly: `settings/LabelSettingsPage.tsx` (no stats
+  strip, different shape); Admin dashboard `Hero.tsx`/`MetricsBar.tsx` and
+  Weaver portal desktop `WeaverHero.tsx`/`WeaverMetricsBar.tsx` (both
+  desktop-only per R3's mobile-tree-swap finding — mobile renders a separate,
+  already-correct component).
+- **Found, not fixed** (needs more than the mechanical recipe):
+  - `audit/components/audit-log/PageHeaderStats.tsx` — its stats use a
+    different `StatCol`-based layout that doesn't reflow into a grid the way
+    the array-mapped strips do; would need a `StatCol`/shared.tsx change.
+  - `dashboards/components/superadmin-dashboard/SAOverviewPage.tsx`'s
+    `SAHero()` — text column uses a fixed `width: "50%"` / fixed `padding: "0
+    56px"` instead of the 65%/xl-basis pattern. Unlike Admin's dashboard, this
+    one *does* render on mobile (chrome-only swap, not a full tree swap — see
+    R3 notes), so it's still squeezed there. Needs a real structural edit, not
+    just the font/overlap refinements (which were applied).
+
+**2. Universal page-gutter sweep** — after approving the hero+stats fix, the
+user asked for the §3.3 gutter convention applied to *every* section-level
+wrapper in every portal, not just hero headers. Ran via 5 parallel
+worktree-isolated agents split by feature area (payments/firms/suppliers/
+vendors/purchasing; weavers/production/materials/customers/inventory;
+pricing/reports/audit/notifications/design-library/users/finishing/settings;
+dashboards admin+superadmin/bulk-orders; the 3 portals), each grepping for
+`padding:\s*"...\d+px \d+px..."` and fixed `paddingLeft`/`paddingRight`/
+`margin` gutters, converting every genuine page/section-level outer horizontal
+gutter to `px-4 md:px-7 xl:px-<original/4>` (or `pl-/pr-`/`mx-` splits for
+asymmetric cases), and leaving inner card padding, vertical-only padding,
+modal internals, and print documents untouched. ~95 files touched across the
+whole app. Two merge conflicts (both against files the hero+stats pass had
+already fixed more completely — `purchasing/approvals/ApprovalsHeader.tsx`,
+`StatsStrip.tsx`, `production/FactoryLoomPage.tsx`) resolved in favor of the
+more complete hero+stats version. Verified via `tsc`/`build`/`lint` after
+merging all 5 branches into `main` — clean, same ~33-error pre-existing
+baseline, zero new errors.
+
+Neither of these was verified in-browser — the recurring stuck
+preview-policy-check blocker (see multiple earlier entries in this log) was
+present for the entire session. The Inventory page fix was confirmed correct
+by the user via a real device/browser screenshot; the rest follow the
+identical, now-proven recipe but are structurally unverified.
 
 ---
 
