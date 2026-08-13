@@ -1220,7 +1220,44 @@ pre-existing baseline throughout, zero new errors in any touched file.
   list confirms no `gridTemplateColumns` instance remains untriaged in
   `src/features` outside `reports/`/`dashboards/` (R3/R4 territory) and
   `shared/ui/document/**` (print docs, out of scope by design).
-- [ ] R8 QA, device matrix, ratchet metrics
+- [x] R8 QA, device matrix, ratchet metrics — ✅ **COMPLETE (2026-08-13)**,
+  with one sub-item left explicitly unexecuted (see below). Three
+  deliverables:
+  1. **Ratchet metrics** — added 4 metrics to `METRICS` in
+     `frontend/scripts/ratchet.mjs` under a new "Phase 9: Responsive rollout"
+     block: `datatable-responsive` (0→70, now 47), `column-priority` (0→70,
+     now 54), `hand-rolled-breakpoints` (3→0, now 7 — see §10 note on why
+     this reads higher than R0.1's "3 sites" framing), `fixed-width-px`
+     (re-measured baseline 9→0, now 9). `npm run ratchet` runs clean and
+     writes `design-system/RATCHET.md` with all 4 under "PHASE 9".
+  2. **Device-matrix checklist** — built as a separate file,
+     `design-system/RESPONSIVE-QA-CHECKLIST.md` (linked from §11), covering
+     all 5 portals × 6 widths (320/375/414/768/1024/1280px) × 6 checks (nav
+     collapse, no h-scroll, tables→cards, modals=sheets, hero+stats overlap,
+     forms usable) plus a touch-target spot-check. **This is a built
+     deliverable, not an executed QA pass** — no browser session ran through
+     it this session (§7.1's blocker: Superadmin login, and this rollout's
+     recurring stuck browser-preview access, were both still in effect). A
+     future session with working browser access should be the one to check
+     its boxes.
+  3. **ESLint rule** — added a `no-restricted-syntax` selector to the
+     existing consolidated Phase 3–7 ratchet block in `frontend/eslint.config.js`
+     (not a new config object — flat config doesn't merge same-rule-name
+     objects matching the same glob, per that block's own comment) that
+     warns on `width`/`minWidth`/`maxWidth: <literal ≥320>` under
+     `src/features/**/*.tsx`. `warn` severity, matching the block's existing
+     convention. Confirmed it fires (104 new warnings across the tree) and
+     that `npm run lint` still reports the same 33-error baseline (only new
+     warnings, zero new errors).
+
+  Verified via `npx tsc --noEmit` (clean) / `npm run build` (succeeds) /
+  `npm run lint` (33 pre-existing errors, unchanged; +104 warnings from the
+  new rule, as intended).
+
+  **This closes Phase R.** R0–R8 are all now complete or explicitly
+  documented as partially-open (R1's 5 `renderExpandedRow`/raw-`<table>`
+  exclusions, R7's Phase-4-migration backlog, this R8 checklist's unexecuted
+  browser walkthrough) — see §10 for the full found-not-fixed log.
 
 ### Out-of-band: hero+stats pattern + universal gutter sweep (2026-08-13)
 
@@ -1315,6 +1352,9 @@ problem and recording it is the correct response, not fixing it.
 | 2026-08-13 | R7 batch5 | 10 files across `materials`, `payments`, `purchasing`, `weavers` | **Found via a fresh full-repo grep, not yet triaged.** `materials/components/issueMaterial/RecipientSelector.tsx`, `materials/components/modals/WeaverModals.tsx`, `materials/components/sections/MaterialsFooter.tsx`, `materials/components/sections/POTrackerSection.tsx`, `materials/components/sections/RecentProcurementSection.tsx`, `materials/components/sections/StockOverviewAndIssued.tsx`, `payments/components/OutstandingPage.tsx`, `payments/components/wholesale/PaymentRemindersModal.tsx`, `purchasing/components/PODocPreview.tsx`, `weavers/components/sections/WeaverDrawer.tsx` all still contain `gridTemplateColumns` and have no prior mention in this document, despite `materials`/`payments` being claimed fully triaged in R7-batch3. A future session should triage these 10 plus re-run the full-repo grep against every directory batch3/4 marked complete before declaring R7 done. |
 | 2026-08-13 | R7 batch6 | `materials/components/modals/WeaverModals.tsx` | **Re-verified, confirmed correct exclusion.** Re-checked batch3's print-document reasoning against the current file: `IssueSlipModal`'s 4 grids still sit inside the `slip` JSX, explicitly commented "Same JSX rendered on screen and portaled to `#document-print-root` via `useDocument()`" (lines 94-96). Still accurate — left untouched. |
 | 2026-08-13 | R7 batch6 | `purchasing/components/PODocPreview.tsx` | **Found, not fixed.** The materials table's header row (`["Material","Description","Qty / Unit","Amount"]`) and its `materials.map((m, i) => ...)` row template both use a fixed `"1fr 1.6fr 0.7fr 0.7fr"` grid — a real data grid (repeated rows of uniform records), not a form layout. Logged for Phase 4 `DataTable`/`CardList` migration; the signature block in the same file (a genuine fixed 2-col form pair, not repeated) was converted separately. |
+| 2026-08-13 | R8 | `hand-rolled-breakpoints` ratchet metric | **Judgment call.** §8's spec table gives baseline 3 for this metric (matching R0.1's "3 hand-rolled sites" framing at the time the doc was written). A fresh `grep -rn "window.innerWidth" src --include="*.tsx" --include="*.ts" | grep -v useResponsive.ts` now finds 7 files / 9 occurrences: `auth/components/LoginPage.tsx` (1, not previously logged anywhere in this doc), `shared/ui/SectionNavigator.tsx` (3, not previously logged), `shared/ui/_legacy/use-mobile.ts` (2, deliberately kept per §2 — backs the shadcn sidebar primitive), and the 3 R0.1-assessed sites in `Modal.tsx`/`Popover.tsx`/`Drawer.tsx` (deliberately kept, see the 2026-08-12 R0.1 log entry above). Kept the doc's stated baseline of 3 in the ratchet metric (per this section's own instruction to use the given shape/values), but the *live* count the ratchet script reports is 7 — `LoginPage.tsx` and `SectionNavigator.tsx` were never triaged in R0 and are new findings from this pass. Not fixed here (out of scope for R8 to start converting call sites — that's R0-shaped work); flagging for a future session to decide whether `SectionNavigator.tsx`'s 3 sites and `LoginPage.tsx`'s 1 site should convert to `useIsMobile()` or get the same "deliberately kept" reasoning as the original 3. |
+| 2026-08-13 | R8 | `fixed-width-px` ratchet metric | **Baseline re-measured per §8's instruction** (doc listed it as TBD). Current count across `src/features/**/*.tsx`: 9 literal `width: <n>` occurrences with `n >= 320` (decorative circles/icons in `LoginBrandPanel.tsx`/`SplashScreen.tsx`/`ApprovalsHeader.tsx`, fixed card/panel widths in `LabelPreviewCard.tsx`/`ReportModals.tsx`/`PageHeaderStats.tsx`/`SariTagPhysicalLabel.tsx`/`SareeTypeCard.tsx`). Not fixed in R8 (§0 — R8 is QA/governance, not a conversion pass); the new ESLint rule (see §9 R8 entry) now warns on any *new* instance so this becomes a ratchet-down target for a future session rather than growing further. |
+| 2026-08-13 | R8 | Device-matrix checklist | **Explicitly not executed this session.** `design-system/RESPONSIVE-QA-CHECKLIST.md` was built as the R8 deliverable per §7's instruction, but no boxes were checked — this session had no working browser-QA path (§7.1's Superadmin-login blocker plus the rollout's recurring stuck browser-preview access). Do not treat any portal/width combination in that file as visually verified until a session with real browser access walks through it. |
 
 ---
 
@@ -1326,3 +1366,6 @@ problem and recording it is the correct response, not fixing it.
 - `design-system/05-OVERLAYS.md` — `Modal`, Part D.1 defines the mobile bottom sheet
 - `design-system/07-DOCUMENTS.md` — print documents, **explicitly out of scope for Phase R**
 - `design-system/RATCHET.md` — auto-generated; regenerate with `npm run ratchet`
+- `design-system/RESPONSIVE-QA-CHECKLIST.md` — R8's per-portal × per-width device
+  checklist (320/375/414/768/1024/1280px, 5 portals). **Unexecuted deliverable** —
+  built for a future browser session to walk through, not run this session (§7.1).

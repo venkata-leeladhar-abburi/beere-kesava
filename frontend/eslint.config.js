@@ -460,6 +460,17 @@ export default tseslint.config(
           selector: "CallExpression[callee.name='parseFloat']",
           message: "If this is money, use lib/gst's integer-paise helpers instead — parseFloat on currency reintroduces float-drift totals that don't reconcile. design-system/07-DOCUMENTS.md Part A.4/I.5.",
         },
+        {
+          // PHASE R8 (design-system/09-RESPONSIVE.md §7/§8) — discourage new
+          // fixed-width containers. Matches a `width:` (or `minWidth:`/
+          // `maxWidth:`) numeric literal of 320 or more, the recurring shape
+          // that overflows a 375px phone viewport. `warn`, added to this same
+          // consolidated block (not a new config object) for the same
+          // same-selector-collision reason documented above this block.
+          selector:
+            "Property[key.name=/^(width|minWidth|maxWidth)$/] Literal[raw=/^(3[2-9][0-9]|[4-9][0-9]{2}|[1-9][0-9]{3,})$/]",
+          message: "Fixed pixel width ≥320 — this will overflow on mobile. Use a fluid/percentage width, a responsive className, or useResponsive() instead — design-system/09-RESPONSIVE.md §0/§3.",
+        },
       ],
     },
   },

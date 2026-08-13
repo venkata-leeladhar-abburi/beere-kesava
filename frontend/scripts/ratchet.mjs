@@ -372,6 +372,64 @@ const METRICS = [
     measure: () =>
       countMatchesIn(allStyleFiles, "@media print") + countMatchesIn(allTsxFiles, "@media print"),
   },
+
+  // ── Phase 9: Responsive rollout (Phase R) ──────────────────────────────
+  {
+    id: "datatable-responsive",
+    label: "<DataTable responsive> adoption",
+    phase: 9,
+    baseline: 0,
+    target: 70,
+    higherIsBetter: true,
+    measure: () => countFilesIn(featureTsx, "<DataTable\\s+responsive\\b|<DataTable\\b[^>]*\\n\\s*responsive\\b"),
+  },
+  {
+    id: "column-priority",
+    label: "files assigning priority: in ColumnDef",
+    phase: 9,
+    baseline: 0,
+    target: 70,
+    higherIsBetter: true,
+    measure: () => countFilesIn(featureTsx, "priority:\\s*[123]"),
+  },
+  {
+    id: "hand-rolled-breakpoints",
+    label: "hand-rolled window.innerWidth checks",
+    phase: 9,
+    baseline: 3,
+    target: 0,
+    measure: () => {
+      const files = walk(SRC, [".ts", ".tsx"]).filter(
+        (f) => path.basename(f) !== "useResponsive.ts"
+      );
+      let total = 0;
+      for (const f of files) {
+        const content = readFileSync(f, "utf8");
+        const m = content.match(/window\.innerWidth/g);
+        if (m) total += m.length;
+      }
+      return total;
+    },
+  },
+  {
+    id: "fixed-width-px",
+    label: "fixed width: <n> (n>=320) in features/**",
+    phase: 9,
+    baseline: 9,
+    target: 0,
+    measure: () => {
+      let total = 0;
+      for (const { content } of featureTsx) {
+        const m = content.match(/width:\s*(\d+)/g);
+        if (!m) continue;
+        for (const mm of m) {
+          const n = parseInt(mm.match(/\d+/)[0], 10);
+          if (n >= 320) total++;
+        }
+      }
+      return total;
+    },
+  },
 ];
 
 function bar(pct, width = 10) {
