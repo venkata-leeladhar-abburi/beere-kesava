@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router";
 import { useAuth } from "../../../contexts/AuthContext";
 import { motion, AnimatePresence } from "motion/react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Home, Package, Users, Bell, ChevronLeft, Menu, Search, X, UserRound, Sparkles, UserCheck, Truck } from "lucide-react";
+import { Home, Users, Bell, ChevronLeft, Menu, Search, X, UserRound, Sparkles, UserCheck, Truck } from "lucide-react";
 import { C, F } from "./worker/tokens";
 import { Drawer } from "../../../shared/ui/overlay";
 import { WorkerHome } from "./worker/WorkerHome";
@@ -24,7 +24,7 @@ type Tab = "home" | "qc" | "weavers" | "finishing" | "dispatch" | "profile";
 const TABS: { id: Tab; Icon: IconComponent; label: string; badge?: string }[] = [
   { id: "home",      Icon: Home,       label: "Home"          },
   { id: "qc",        Icon: Search,     label: "QC", badge: "6" },
-  { id: "weavers",   Icon: Package,    label: "Receive"       },
+  { id: "weavers",   Icon: Users,      label: "Receive"       },
   { id: "finishing", Icon: Sparkles,   label: "Finishing", badge: "2" },
   { id: "dispatch",  Icon: Truck,      label: "Dispatch"      },
 ];
