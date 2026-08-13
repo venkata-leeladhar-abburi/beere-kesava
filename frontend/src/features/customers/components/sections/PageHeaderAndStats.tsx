@@ -15,10 +15,10 @@ export function PageHeader() {
           Since 1999 · Customer Management
         </div>
         <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
-          <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 56, fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Customers</h1>
-          <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: 36, fontStyle: "italic", color: T.antiqueGold, fontWeight: 400 }}>&amp; Relationship Overview</span>
+          <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(32px, 8vw, 56px)", fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Customers</h1>
+          <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(22px, 6vw, 36px)", fontStyle: "italic", color: T.antiqueGold, fontWeight: 400 }}>&amp; Relationship Overview</span>
         </div>
-        <p style={{ fontFamily: F.ui, fontSize: 18, color: "rgba(255,253,249,0.70)", margin: "0 0 20px", maxWidth: 600, lineHeight: 1.6 }}>
+        <p style={{ fontFamily: F.ui, fontSize: "clamp(15px, 3.5vw, 18px)", color: "rgba(255,253,249,0.70)", margin: "0 0 20px", maxWidth: 600, lineHeight: 1.6 }}>
           Manage all wholesale business customers and view retail customer profiles. Track purchase history, outstanding payments, and order records for every customer.
         </p>
       </div>
@@ -36,7 +36,7 @@ export function StatsStrip() {
   const { wholesaleCustomers = [], retailCustomers = [], customers = [] } = useCustomers() ?? {};
 
   return (
-    <div className="px-4 md:px-7 xl:px-12" style={{ marginTop: -80, position: "relative", zIndex: 20 }}>
+    <div className="px-4 md:px-7 xl:px-12 -mt-8 md:-mt-14 xl:-mt-[80px]" style={{ position: "relative", zIndex: 20 }}>
       <div className="grid grid-cols-2 xl:flex" style={{
         background: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)",
         borderRadius: 24,
@@ -71,7 +71,7 @@ export function StatsStrip() {
               <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, letterSpacing: "1.8px", textTransform: "uppercase" as const, marginBottom: 7, color: m.hi ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.70)" }}>
                 {m.label}
               </div>
-              <div style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontSize: 48, letterSpacing: "-0.01em", color: m.hi ? T.goldLight : "#FFFDF9", lineHeight: 1.1, marginBottom: 8, fontVariantNumeric: "tabular-nums" }}>
+              <div style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontSize: "clamp(28px, 8vw, 48px)", letterSpacing: "-0.01em", color: m.hi ? T.goldLight : "#FFFDF9", lineHeight: 1.1, marginBottom: 8, fontVariantNumeric: "tabular-nums" }}>
                 {m.val}
               </div>
               <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: m.hi ? "rgba(231,201,131,0.90)" : "rgba(245,232,208,0.55)", letterSpacing: "0.1px" }}>
