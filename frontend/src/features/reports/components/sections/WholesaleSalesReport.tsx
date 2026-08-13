@@ -131,11 +131,11 @@ export function WholesaleSalesReport() {
 
   const bulkOrderColumns: ColumnDef<BulkOrder>[] = [
     {
-      id: "ref", header: "Bulk Order Ref", accessor: o => o.ref,
+      id: "ref", header: "Bulk Order Ref", accessor: o => o.ref, priority: 3,
       cell: (_v, o) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{o.ref}</span>,
     },
     {
-      id: "customer", header: "Customer Name", accessor: o => o.customer,
+      id: "customer", header: "Customer Name", accessor: o => o.customer, priority: 1,
       cell: (_v, o) => <span style={{ fontFamily: F.ui, fontWeight: 600 }}>{o.customer}</span>,
     },
     {
@@ -164,7 +164,7 @@ export function WholesaleSalesReport() {
       },
     },
     {
-      id: "dispatchDate", header: "Dispatch Date", accessor: o => o.dispatchDate,
+      id: "dispatchDate", header: "Dispatch Date", accessor: o => o.dispatchDate, priority: 3,
       cell: (_v, o) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{o.dispatchDate || "—"}</span>,
     },
     {
@@ -291,6 +291,7 @@ export function WholesaleSalesReport() {
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
           <div style={{ overflowX: "auto" }}>
             <DataTable
+              responsive
               columns={bulkOrderColumns}
               data={bulkOrders}
               getRowId={o => o.ref}
