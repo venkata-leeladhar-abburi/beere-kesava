@@ -33,11 +33,11 @@ const historyColumns: ColumnDef<HistoryRow>[] = [
     cell: (_v, row) => <TypePill type={row.type} typeColor={T.royalBurgundy} />,
   },
   {
-    id: "by", header: "Requested By", accessor: row => row.by,
+    id: "by", header: "Requested By", accessor: row => row.by, priority: 3,
     cell: (_v, row) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{row.by}</span>,
   },
   {
-    id: "details", header: "Details", accessor: row => row.details,
+    id: "details", header: "Details", accessor: row => row.details, priority: 1,
     cell: (_v, row) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{row.details}</span>,
   },
   {
@@ -56,7 +56,7 @@ const historyColumns: ColumnDef<HistoryRow>[] = [
     ),
   },
   {
-    id: "notified", header: "Notified", accessor: () => "Sent",
+    id: "notified", header: "Notified", accessor: () => "Sent", priority: 3,
     cell: () => (
       <span style={{ fontFamily: F.ui, fontSize: 12, color: T.green, display: "flex", alignItems: "center", gap: 4 }}>
         <Check size={11} /> Sent
@@ -162,6 +162,7 @@ export function HistorySection({
         overflow: "hidden",
       }}>
         <DataTable<HistoryRow>
+          responsive
           columns={historyColumns}
           data={filteredRows}
           getRowId={row => `${row.date}-${row.by}-${row.details}`}
