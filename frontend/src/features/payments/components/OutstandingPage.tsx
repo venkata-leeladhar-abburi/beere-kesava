@@ -73,14 +73,14 @@ export function OutstandingPage({ embedded = false }: { embedded?: boolean }) {
       <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", minHeight: 380, display: "flex", alignItems: "center" }}>
         {/* Left text content */}
         <div className="pl-4 md:pl-7 xl:pl-14 w-full xl:w-auto xl:basis-[64%] xl:max-w-[64%]" style={{ position: "relative", zIndex: 2, paddingTop: 48, paddingBottom: 110 }}>
-          <div style={{ fontFamily: F.mono, fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase" as const, marginBottom: 12 }}>
+          <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase" as const, marginBottom: 12 }}>
             SINCE 1999 · REPORTS &amp; OUTSTANDING STOCK
           </div>
           <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" as const, marginBottom: 10 }}>
             <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(32px, 8vw, 56px)", fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Outstanding Sarees</h1>
             <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(22px, 6vw, 36px)", fontStyle: "italic", color: T.antiqueGold, fontWeight: 400 }}>Report</span>
           </div>
-          <p style={{ fontFamily: F.ui, fontSize: "clamp(15px, 3.5vw, 18px)", color: "rgba(255,253,249,0.70)", margin: 0, maxWidth: 600, lineHeight: 1.6 }}>
+          <p className="max-w-[600px]" style={{ fontFamily: F.ui, fontSize: "clamp(15px, 3.5vw, 18px)", color: "rgba(255,253,249,0.70)", margin: 0, lineHeight: 1.6 }}>
             Every saree still not sold — retail or wholesale — split by where it came from: weavers, factory looms, and external purchases.
           </p>
         </div>

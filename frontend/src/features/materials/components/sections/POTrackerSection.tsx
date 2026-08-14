@@ -12,7 +12,7 @@ import { FadeUp, SectionCard } from "../common/primitives";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { POVendorDetailModal } from "../modals/ReportModals";
 import { rupees } from "@/lib/domain/money";
-import { Money } from "@/shared/ui/domain";
+import { Money, EntityCode } from "@/shared/ui/domain";
 
 export function POTrackerSection({
   onCreatePO,
@@ -138,10 +138,8 @@ export function POTrackerSection({
 
                 <div style={{ padding: "20px 22px 22px", display: "flex", flexDirection: "column", flex: 1 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-                    <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "4px 10px", borderRadius: 8 }}>
-                      {po.poNumber}
-                    </span>
-                    <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, background: "#F7F2EA", padding: "4px 10px", borderRadius: 8 }}>
+                    <EntityCode type="purchaseOrder" value={po.poNumber} size="sm" />
+                    <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, background: "#F7F2EA", padding: "4px 10px", borderRadius: 8 }}>
                       {new Date(po.submittedDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
                     </span>
                   </div>
@@ -167,7 +165,7 @@ export function POTrackerSection({
                   </div>
 
                   <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 18, background: "rgba(110,15,45,0.015)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: 12 }}>
-                    <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 4 }}>Materials Requested</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 4 }}>Materials Requested</div>
                       {po.materials.map((m, mi) => {
                         const mt = MAT_TAG[m.materialType] || MAT_TAG.Warp;
                         return (
@@ -192,7 +190,7 @@ export function POTrackerSection({
                                   <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>—</div>
                                 )}
                               </div>
-                              <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700, flexShrink: 0, background: "rgba(110,15,45,0.06)", padding: "2px 7px", borderRadius: 5, marginTop: 1, whiteSpace: "nowrap" as const }}>
+                              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.royalBurgundy, fontWeight: 700, flexShrink: 0, background: "rgba(110,15,45,0.06)", padding: "2px 7px", borderRadius: 5, marginTop: 1, whiteSpace: "nowrap" as const }}>
                                 {m.quantity} {m.unit}
                                 {m.pricePerUnit > 0 && <> · <Money value={rupees(m.pricePerUnit)} />/{m.unit}</>}
                               </span>
@@ -201,7 +199,7 @@ export function POTrackerSection({
                             <div style={{ paddingLeft: 60, marginTop: 4 }}>
                               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#FDFBF7", padding: "6px 10px", borderRadius: 6, border: `1px solid ${T.borderGold}40` }}>
                                 <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Invoice Amount</span>
-                                <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: m.invoiceAmount ? "#8B6018" : T.taupe }}>
+                                <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: m.invoiceAmount ? "#8B6018" : T.taupe }}>
                                   {m.invoiceAmount ? <Money value={rupees(m.invoiceAmount)} /> : "Not yet invoiced"}
                                 </span>
                               </div>

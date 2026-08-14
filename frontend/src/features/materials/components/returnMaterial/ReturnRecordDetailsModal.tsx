@@ -43,7 +43,7 @@ export function ReturnRecordDetailsModal({ record, onClose }: { record: Material
     },
     {
       id: "qty", header: "Qty", accessor: m => m.quantity,
-      cell: (_v, m) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown }}>{m.quantity} {m.unit}</span>,
+      cell: (_v, m) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{m.quantity} {m.unit}</span>,
     },
   ];
 

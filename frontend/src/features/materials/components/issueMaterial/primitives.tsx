@@ -5,7 +5,7 @@ import { Button } from "../../../../shared/ui/primitives";
 
 // ── Shared small UI helpers ───────────────────────────────────────────────────
 export function SectionPill({ label }: { label: string }) {
-  return <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, letterSpacing: "1.2px", textTransform: "uppercase" as const, marginBottom: 10 }}>{label}</div>;
+  return <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, letterSpacing: "1.2px", textTransform: "uppercase" as const, marginBottom: 10 }}>{label}</div>;
 }
 
 // Section banner card — dark maroon gradient header (icon + title + subtitle

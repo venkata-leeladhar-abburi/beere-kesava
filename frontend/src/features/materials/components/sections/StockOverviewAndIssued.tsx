@@ -186,7 +186,7 @@ export function IssuedThisMonthCard({ onNavigate }: { onNavigate?: (tab: string)
           </div>
           <div style={{
             display: "inline-flex", alignItems: "center", width: "fit-content", gap: 6,
-            background: "rgba(110,15,45,0.06)", color: T.royalBurgundy, fontFamily: F.mono,
+            background: "rgba(110,15,45,0.06)", color: T.royalBurgundy, fontFamily: F.ui,
             fontSize: 12, fontWeight: 600, padding: "4px 10px", borderRadius: 6, marginTop: 4,
           }}>
             {thisMonthRecords.length} {thisMonthRecords.length === 1 ? "Issuance" : "Issuances"}
@@ -301,7 +301,7 @@ export function ReturnedThisMonthCard({ onNavigate }: { onNavigate?: (tab: strin
           </div>
           <div style={{
             display: "inline-flex", alignItems: "center", width: "fit-content", gap: 6,
-            background: "rgba(30,102,64,0.08)", color: T.green, fontFamily: F.mono,
+            background: "rgba(30,102,64,0.08)", color: T.green, fontFamily: F.ui,
             fontSize: 12, fontWeight: 600, padding: "4px 10px", borderRadius: 6, marginTop: 4,
           }}>
             {thisMonthRecords.length} {thisMonthRecords.length === 1 ? "Return" : "Returns"}

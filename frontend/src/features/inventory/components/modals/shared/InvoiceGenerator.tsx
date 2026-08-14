@@ -331,7 +331,7 @@ export function InvoiceGenerator({
               ].map(([k, v]) => (
                 <div key={k}>
                   <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{k}: </span>
-                  <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{v}</span>
+                  <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{v}</span>
                 </div>
               ))}
             </div>

@@ -284,7 +284,7 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
         <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-start" }}>
           {v.materials.map(m => {
             const mt = MAT_TAG[m.type as keyof typeof MAT_TAG] || MAT_TAG.Warp;
-            return <span key={m.label} style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 500, color: mt.col, background: mt.bg, padding: "4px 11px", borderRadius: 7, letterSpacing: "1.2px", whiteSpace: "nowrap" }}>{m.label}</span>;
+            return <span key={m.label} style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 500, color: mt.col, background: mt.bg, padding: "4px 11px", borderRadius: 7, letterSpacing: "1.2px", whiteSpace: "nowrap" }}>{m.label}</span>;
           })}
         </div>
       ),
@@ -299,7 +299,7 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
     },
     {
       id: "paid", header: "Total Paid", accessor: v => v.paid,
-      cell: (_v, v) => <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: T.antiqueGold }}>{v.paid}</span>,
+      cell: (_v, v) => <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.antiqueGold }}>{v.paid}</span>,
     },
     {
       id: "orders", header: "Orders", accessor: v => v.orders, align: "center",
@@ -307,7 +307,7 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
     },
     {
       id: "last", header: "Last Purchase", accessor: v => v.last, priority: 3,
-      cell: (_v, v) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.taupe }}>{v.last}</span>,
+      cell: (_v, v) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{v.last}</span>,
     },
   ];
 
@@ -348,10 +348,10 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
                 <div style={{ width: 40, height: 40, borderRadius: 12, background: card.dark ? "rgba(200,155,71,0.12)" : "rgba(110,15,45,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   <card.Icon size={19} color={card.dark ? T.antiqueGold : T.royalBurgundy} />
                 </div>
-                <span style={{ fontFamily: card.dark ? F.mono : F.ui, fontWeight: 600, fontSize: card.dark ? 10 : 13, color: card.dark ? "rgba(200,155,71,0.85)" : T.taupe, letterSpacing: card.dark ? "2px" : 0, textTransform: card.dark ? "uppercase" : "none", lineHeight: 1.3 }}>{card.label}</span>
+                <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: card.dark ? 10 : 13, color: card.dark ? "rgba(200,155,71,0.85)" : T.taupe, letterSpacing: card.dark ? "2px" : 0, textTransform: card.dark ? "uppercase" : "none", lineHeight: 1.3 }}>{card.label}</span>
               </div>
               <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 30, letterSpacing: "-0.02em", color: card.dark ? T.goldLight : T.luxuryBrown, lineHeight: 1.1, marginBottom: 8, fontVariantNumeric: "tabular-nums" }}>{card.amount}</div>
-              {card.cost && <div style={{ fontFamily: F.mono, fontWeight: 600, fontSize: 16, color: T.antiqueGold, marginBottom: 8 }}>{card.cost}</div>}
+              {card.cost && <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 16, color: T.antiqueGold, marginBottom: 8 }}>{card.cost}</div>}
               <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13, color: card.dark ? "rgba(255,253,249,0.55)" : T.taupe, lineHeight: 1.5, marginTop: "auto" }}>{card.sub}</div>
             </div>
           </FadeUp>
@@ -364,7 +364,7 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
             <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 20, color: T.luxuryBrown, marginBottom: 6 }}>How Much Was Bought From Each Vendor</div>
             <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, lineHeight: 1.55 }}>Each vendor listed separately — what material they supplied, how much, and what it cost in total.</div>
           </div>
-          <div style={{ overflowX: "auto", minWidth: 800 }}>
+          <div className="overflow-x-auto w-full">
             <DataTable
               responsive
               columns={vendorColumns}
@@ -399,9 +399,9 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
                       <div style={{ width: 12, height: 12, borderRadius: 3, background: s.color, flexShrink: 0 }} />
                       <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 14, color: T.luxuryBrown, flex: 1 }}>{s.name}</span>
-                      <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 16, color: s.color }}>{s.pct}%</span>
+                      <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 16, color: s.color }}>{s.pct}%</span>
                     </div>
-                    <div style={{ fontFamily: F.mono, fontSize: 13, color: T.antiqueGold, paddingLeft: 22 }}>{s.value}</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 13, color: T.antiqueGold, paddingLeft: 22 }}>{s.value}</div>
                     <AnimatedBar pct={s.pct} color={s.color} height={5} trackBg="rgba(110,15,45,0.07)" />
                   </div>
                 ))}

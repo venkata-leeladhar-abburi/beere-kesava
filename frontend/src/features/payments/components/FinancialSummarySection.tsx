@@ -13,7 +13,7 @@ export function SummaryLineItem({ label, value, color }: { label: string; value:
   return (
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "13px 0", borderBottom: `1px solid ${T.borderDef}` }}>
       <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>{label}</span>
-      <span style={{ fontFamily: F.mono, fontSize: 16, fontWeight: 700, color }}>{value}</span>
+      <span style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color }}>{value}</span>
     </div>
   );
 }
@@ -97,7 +97,7 @@ export function FinancialSummarySection() {
                 <div key={item.label} style={{ display: "flex", alignItems: "center", gap: 7, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
                   <span style={{ width: 6, height: 6, borderRadius: "50%", background: T.green, flexShrink: 0 }} />
                   <span style={{ flex: 1 }}>{item.label}</span>
-                  <span style={{ fontFamily: F.mono, color: T.luxuryBrown, fontWeight: 700 }}>{item.value}</span>
+                  <span style={{ fontFamily: F.ui, color: T.luxuryBrown, fontWeight: 700 }}>{item.value}</span>
                 </div>
               ))}
             </div>
@@ -128,7 +128,7 @@ export function FinancialSummarySection() {
                 <div key={item.label} style={{ display: "flex", alignItems: "center", gap: 7, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
                   <span style={{ width: 6, height: 6, borderRadius: "50%", background: T.crimson, flexShrink: 0 }} />
                   <span style={{ flex: 1 }}>{item.label}</span>
-                  <span style={{ fontFamily: F.mono, color: T.luxuryBrown, fontWeight: 700 }}>{item.value}</span>
+                  <span style={{ fontFamily: F.ui, color: T.luxuryBrown, fontWeight: 700 }}>{item.value}</span>
                 </div>
               ))}
             </div>
