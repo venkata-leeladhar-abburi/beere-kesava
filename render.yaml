@@ -2,7 +2,7 @@ services:
   - type: web
     name: beere-kesava-backend
     runtime: node
-    plan: starter
+    plan: free
     rootDir: backend
     buildCommand: npm install && npm run build
     startCommand: npm run start:prod
@@ -27,11 +27,9 @@ services:
         sync: false
       - key: CORS_ORIGIN
         sync: false
-    disk:
-      # Persists backend/uploads/ (signature + photo files) across deploys —
-      # Render's filesystem is otherwise ephemeral and wipes on every deploy.
-      # This is a stopgap: for real production scale, move uploads to object
-      # storage (S3 / Supabase Storage) instead of a single instance's disk.
-      name: uploads
-      mountPath: /opt/render/project/src/backend/uploads
-      sizeGB: 1
+    # NOTE: free-tier Render services don't support persistent disks, so the
+    # 'uploads' disk mount is removed here. backend/uploads/ (signature +
+    # photo files) will be wiped on every deploy and on free-tier spin-down.
+    # This is fine for testing, but move uploads to object storage (S3 /
+    # Supabase Storage) before relying on this in real production use — or
+    # switch back to plan: starter with a disk mount (see git history).
