@@ -28,7 +28,7 @@ export function SupplierCard({ supplier, onView }: { supplier: Supplier; onView:
             <div>
               <div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.2, marginBottom: 3 }}>{supplier.name}</div>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", padding: "1px 7px", borderRadius: 4 }}>{supplier.id}</span>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", padding: "1px 7px", borderRadius: 4 }}>{supplier.id}</span>
                 <StatusPill status={supplier.status} />
               </div>
             </div>
@@ -44,13 +44,13 @@ export function SupplierCard({ supplier, onView }: { supplier: Supplier; onView:
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: T.silkCream, borderRadius: 10, overflow: "hidden", border: `1px solid ${T.borderDef}` }}>
           {[
-            { label: "Purchases", value: String(stats.purchases.length) },
-            { label: "Sarees",    value: String(stats.sareeCount) },
+            { label: "Purchases", value: String(stats.purchases.length), alert: false },
+            { label: "Sarees",    value: String(stats.sareeCount), alert: false },
             { label: "Outstanding", value: formatMoney(rupees(stats.outstanding)), alert: stats.outstanding > 0 },
           ].map((s, i) => (
             <div key={s.label} style={{ padding: "10px 12px", borderRight: i < 2 ? `1px solid ${T.borderDef}` : "none", textAlign: "center" }}>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, letterSpacing: "0.5px", marginBottom: 3 }}>{s.label}</div>
-              <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: (s as any).alert ? T.crimson : T.luxuryBrown }}>{s.value}</div>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: s.alert ? T.crimson : T.luxuryBrown }}>{s.value}</div>
             </div>
           ))}
         </div>

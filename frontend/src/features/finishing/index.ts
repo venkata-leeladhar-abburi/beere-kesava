@@ -7,3 +7,4 @@
 export * from "./components/FinishingTrackingPage";
 export * from "./contexts/FinishingContext";
 export * from "./contexts/FinishingStaffContext";
+export * from "./contexts/finishing-types";

@@ -93,6 +93,7 @@ export function SariTagPrintSettings({
 
       <div style={{ marginBottom: 20 }}>
         <label
+          htmlFor="tag-copies"
           style={{
             fontFamily: F.ui, fontSize: 12, fontWeight: 600,
             color: T.luxuryBrown, display: "block", marginBottom: 6,
@@ -101,6 +102,7 @@ export function SariTagPrintSettings({
           Number of Copies
         </label>
         <NumberInput
+          id="tag-copies"
           min={1} max={100} value={copies}
           onValueChange={v => setCopies(v === "" ? 1 : v)}
         />

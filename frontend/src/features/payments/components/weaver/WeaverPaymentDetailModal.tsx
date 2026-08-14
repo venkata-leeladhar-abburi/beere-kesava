@@ -2,11 +2,10 @@ import React, { useState } from "react";
 import { X } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
 
-import { useBatches } from "../../../production/contexts/BatchContext";
-import { useDesignLibrary } from "../../../design-library/contexts/DesignLibraryContext";
-import { SareeTypeCard } from "../../../pricing/components/RatesPricingPage";
-import { useRatesPricing } from "../../../pricing/contexts/RatesContext";
-import { useWeaverPayments } from "../../../weavers/contexts/WeaverPaymentsContext";
+import { useBatches } from "@/features/production";
+import { SareeTypeCard } from "@/features/pricing";
+import { useRatesPricing } from "@/features/pricing";
+import { useWeaverPayments } from "@/features/weavers";
 import { F, T } from "../../theme";
 import { WeaverRecord } from "../../types";
 import { calcCharges } from "../../utils/charges";
@@ -16,13 +15,12 @@ import { Modal } from "../../../../shared/ui/overlay";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import type { WeaverEarningsBreakdown } from "../../../../shared/api/payments";
 import { rupees } from "@/lib/domain/money";
-import { Money } from "@/shared/ui/domain";
+import { EntityCode, Money } from "@/shared/ui/domain";
 
 // ── Weaver Payment Detail Modal ───────────────────────────────────────────────
 export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRecord | null; onClose: () => void }) {
   const { getPaymentsForWeaver, getEarningsForWeaver } = useWeaverPayments();
   const { batches } = useBatches();
-  const { getDesign } = useDesignLibrary();
   const { getSareeTypeByCode } = useRatesPricing();
 
   const [openSareeTypeCode, setOpenSareeTypeCode] = useState<string | null>(null);
@@ -47,25 +45,26 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
     {
       id: "sareeTypeCode", header: "Saree Type Code", accessor: r => r.sareeTypeCode,
       cell: (_v, r) => (
-        <span
+        <button
+          type="button"
           onClick={() => setOpenSareeTypeCode(r.sareeTypeCode)}
-          onMouseEnter={e => (e.currentTarget as HTMLSpanElement).style.textDecoration = "underline"}
-          onMouseLeave={e => (e.currentTarget as HTMLSpanElement).style.textDecoration = "none"}
-          style={{ fontFamily: F.mono, fontWeight: 700, color: T.royalBurgundy, cursor: "pointer" }}
+          onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.textDecoration = "underline"}
+          onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.textDecoration = "none"}
+          style={{ fontWeight: 700, color: T.royalBurgundy, cursor: "pointer", background: "none", border: "none", padding: 0 }}
         >
           {r.sareeTypeCode}
-        </span>
+        </button>
       ),
     },
     { id: "sareeTypeName", header: "Saree Type Name", accessor: r => r.sareeTypeName },
     { id: "completedCount", header: "Count", accessor: r => r.completedCount, type: "number" },
     {
       id: "ratePerSaree", header: "Rate", accessor: r => r.ratePerSaree,
-      cell: (_v, r) => <span style={{ fontFamily: F.mono }}><Money value={rupees(r.ratePerSaree)} /></span>,
+      cell: (_v, r) => <Money value={rupees(r.ratePerSaree)} />,
     },
     {
       id: "amount", header: "Subtotal", accessor: r => r.amount,
-      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 600 }}><Money value={rupees(r.amount)} /></span>,
+      cell: (_v, r) => <span style={{ fontWeight: 600 }}><Money value={rupees(r.amount)} /></span>,
     },
   ];
 
@@ -79,7 +78,7 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
             <Dialog.Title asChild>
               <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#FFFDF9" }}>{weaver.name}</div>
             </Dialog.Title>
-            <div style={{ fontFamily: F.mono, fontSize: 12, color: T.goldLight, marginTop: 2 }}>{weaver.id}</div>
+            <div style={{ marginTop: 2 }}><EntityCode type="weaver" value={weaver.id} size="sm" /></div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.70)", marginTop: 2 }}>📍 {weaver.village}</div>
           </div>
           <StatusBadge status={weaver.status} />
@@ -125,22 +124,22 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {payments.map((p, i) => (
-                  <div key={i} className="grid grid-cols-1 md:grid-cols-4" style={{ background: "#FFFFFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, padding: "12px 16px", display: "grid", gap: 10, alignItems: "center" }}>
+                {payments.map((p) => (
+                  <div key={`${p.utrNumber || "no-utr"}-${p.paymentDate}-${p.firmName}`} className="grid grid-cols-1 md:grid-cols-4" style={{ background: "#FFFFFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, padding: "12px 16px", display: "grid", gap: 10, alignItems: "center" }}>
                     <div>
-                      <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>Amount Paid</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>Amount Paid</div>
                       <div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.green }}><Money value={rupees(p.amountPaid)} /></div>
                     </div>
                     <div>
-                      <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>UTR Number</div>
-                      <div style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{p.utrNumber}</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>UTR Number</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, fontVariantNumeric: "tabular-nums" }}>{p.utrNumber}</div>
                     </div>
                     <div>
-                      <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>Firm</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>Firm</div>
                       <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{p.firmName}</div>
                     </div>
                     <div>
-                      <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>Payment Date</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>Payment Date</div>
                       <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{p.paymentDate}</div>
                     </div>
                   </div>
@@ -162,13 +161,13 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
                   const row = b.rows.find(r => r.weaverId === weaver.id);
                   return (
                     <div key={b.batchId} style={{ background: "#FFFFFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, padding: "12px 16px", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" as const }}>
-                      <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{b.batchId}</span>
+                      <EntityCode type="batch" value={b.batchId} size="sm" />
 
                       {row?.sareeTypeCode && (
-                        <span onClick={() => setOpenSareeTypeCode(row.sareeTypeCode!)}
-                          onMouseEnter={e => (e.currentTarget as HTMLSpanElement).style.textDecoration = "underline"}
-                          onMouseLeave={e => (e.currentTarget as HTMLSpanElement).style.textDecoration = "none"}
-                          style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, cursor: "pointer" }}>{row.sareeTypeCode}</span>
+                        <button type="button" onClick={() => setOpenSareeTypeCode(row.sareeTypeCode!)}
+                          onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.textDecoration = "underline"}
+                          onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.textDecoration = "none"}
+                          style={{ fontSize: 12, color: T.royalBurgundy, cursor: "pointer", background: "none", border: "none", padding: 0 }}>{row.sareeTypeCode}</button>
                       )}
                       <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: b.status === "active" ? T.green : T.antiqueGold, background: b.status === "active" ? "rgba(30,102,64,0.10)" : "rgba(200,155,71,0.13)", padding: "3px 10px", borderRadius: 20, marginLeft: "auto" }}>
                         {b.status === "active" ? "Active" : "Draft"}

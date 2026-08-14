@@ -1,7 +1,7 @@
 import React from "react";
 import { motion } from "motion/react";
 import { Search, PhoneCall, UserPlus, Pencil, Check, MapPin } from "lucide-react";
-import { C, F, Card, Btn } from "./theme";
+import { C, F, Card } from "./theme";
 import { StepHeader, StepBody, FlowActions, ACCENT_SALE } from "./flow-kit";
 import { Button, Input, Textarea } from "../../../../shared/ui/primitives";
 
@@ -101,7 +101,7 @@ export function CustomerSelectStep({
                 </span>
               </div>
               {filteredCustomers.length > 0 ? filteredCustomers.slice(0, 4).map((c, i) => (
-                <Button key={i} variant="tertiary" fullWidth onClick={() => handleSelectCustomer(c)}
+                <Button key={c.id} variant="tertiary" fullWidth onClick={() => handleSelectCustomer(c)}
                   className={`justify-start gap-3 rounded-none border-0 px-3.5 py-3 ${i < Math.min(filteredCustomers.length, 4) - 1 ? "border-b border-[rgba(110,15,45,0.12)]" : ""}`}>
                   <div style={{ width: 38, height: 38, borderRadius: "50%", background: `linear-gradient(135deg, ${C.burg}, ${C.dark})`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 12, color: "#FFF" }}>{c.initials}</span>
@@ -159,8 +159,8 @@ export function CustomerSelectStep({
                   { val: String(selectedCustomer.purchases), label: "Purchases", color: C.burg },
                   { val: selectedCustomer.total, label: "Lifetime", color: C.gold },
                   { val: selectedCustomer.lastPurchase, label: "Last Visit", color: C.green },
-                ].map((s, i) => (
-                  <div key={i} style={{ background: "rgba(110,15,45,0.04)", borderRadius: 10, padding: "8px 10px", textAlign: "center" as const }}>
+                ].map((s) => (
+                  <div key={s.label} style={{ background: "rgba(110,15,45,0.04)", borderRadius: 10, padding: "8px 10px", textAlign: "center" as const }}>
                     <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 14, color: s.color, lineHeight: 1.3 }}>{s.val}</div>
                     <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>{s.label}</div>
                   </div>
@@ -193,22 +193,22 @@ export function CustomerSelectStep({
             )}
             <div style={{ display: isMobile ? "block" : "grid", gridTemplateColumns: isMobile ? undefined : "1fr 1fr", gap: isMobile ? 0 : 16 }}>
               {[
-                { label: "Full Name", val: custName, setter: setCustName, placeholder: "e.g. Smt. Annapurna Devi", type: "text", mono: false },
-                { label: "Phone Number", val: phone, setter: setPhone, placeholder: "10-digit mobile number", type: "tel", mono: true },
-              ].map((f, i) => (
-                <div key={i} style={{ marginBottom: 14 }}>
-                  <label style={{ fontFamily: F.u, fontWeight: 500, fontSize: 13, color: C.text, display: "block", marginBottom: 8 }}>{f.label}</label>
-                  <Input value={f.val} onChange={e => f.setter(e.target.value)} placeholder={f.placeholder} type={f.type}
+                { id: "cust-name", label: "Full Name", val: custName, setter: setCustName, placeholder: "e.g. Smt. Annapurna Devi", type: "text", mono: false },
+                { id: "cust-phone", label: "Phone Number", val: phone, setter: setPhone, placeholder: "10-digit mobile number", type: "tel", mono: true },
+              ].map((f) => (
+                <div key={f.label} style={{ marginBottom: 14 }}>
+                  <label htmlFor={f.id} style={{ fontFamily: F.u, fontWeight: 500, fontSize: 13, color: C.text, display: "block", marginBottom: 8 }}>{f.label}</label>
+                  <Input id={f.id} value={f.val} onChange={e => f.setter(e.target.value)} placeholder={f.placeholder} type={f.type}
                     size="lg" className={f.mono ? "w-full font-mono" : "w-full"}
                   />
                 </div>
               ))}
             </div>
             <div style={{ marginBottom: 14 }}>
-              <label style={{ fontFamily: F.u, fontWeight: 500, fontSize: 13, color: C.text, display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+              <label htmlFor="customer-address" style={{ fontFamily: F.u, fontWeight: 500, fontSize: 13, color: C.text, display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
                 <MapPin size={14} color={C.muted} /> Address <span style={{ color: C.muted, fontWeight: 400 }}>(Optional)</span>
               </label>
-              <Textarea value={custAddress} onChange={e => setCustAddress(e.target.value)} placeholder="Door number, street, city..." rows={2}
+              <Textarea id="customer-address" value={custAddress} onChange={e => setCustAddress(e.target.value)} placeholder="Door number, street, city..." rows={2}
                 className="w-full resize-none"
               />
             </div>

@@ -5,6 +5,7 @@ import { T, F, Pip } from "./constants";
 import { PickerShell, pipColor } from "./PickerModals";
 import type { WeaverOption, LoomOption } from "../useBatchFormHandlers";
 import { rupees, formatMoney } from "@/lib/domain/money";
+import { EntityCode } from "@/shared/ui/domain";
 
 // ── Detail Modals ────────────────────────────────────────────────────────────
 export function WeaverDetailsModal({ weaver, onClose }: { weaver: WeaverOption; onClose: () => void }) {
@@ -25,11 +26,9 @@ export function WeaverDetailsModal({ weaver, onClose }: { weaver: WeaverOption; 
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" as const }}>
                 <span style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown }}>{weaver.name}</span>
-                {activeBatch && (
-                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 6, padding: "2px 8px" }}>{activeBatch.batchId}</span>
-                )}
+                {activeBatch && <EntityCode type="batch" value={activeBatch.batchId} size="sm" />}
               </div>
-              <div style={{ fontFamily: F.mono, fontSize: 13, color: T.taupe }}>ID: {weaver.id}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, display: "flex", alignItems: "center", gap: 4 }}>ID: <EntityCode type="weaver" value={weaver.id} size="sm" /></div>
             </div>
           </div>
           <span style={{ display: "flex", alignItems: "center", gap: 5, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: isWeaving ? T.green : T.taupe, background: isWeaving ? "rgba(30,102,64,0.10)" : "rgba(139,112,96,0.10)", borderRadius: 999, padding: "4px 10px", whiteSpace: "nowrap" as const }}>
@@ -81,7 +80,7 @@ export function FactoryLoomDetailsModal({ loom, onClose }: { loom: LoomOption; o
             </div>
             <div>
               <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown }}>{loom.loomNumber}</div>
-              <div style={{ fontFamily: F.mono, fontSize: 13, color: T.taupe }}>{loom.id}</div>
+              <EntityCode type="loom" value={loom.id} size="sm" />
             </div>
           </div>
           <span style={{ display: "flex", alignItems: "center", gap: 5, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: statusColor, background: statusBg, borderRadius: 999, padding: "4px 10px", whiteSpace: "nowrap" as const, textTransform: "capitalize" as const }}>
@@ -135,7 +134,18 @@ export function FactoryLoomDetailsModal({ loom, onClose }: { loom: LoomOption; o
   );
 }
 
-export function BulkOrderDetailsModal({ order, onClose }: { order: any; onClose: () => void }) {
+interface BulkOrderDetails {
+  status?: string;
+  amountDue?: number;
+  customer?: string;
+  ref?: string;
+  photoUrls?: string[];
+  total?: number | string;
+  due?: string;
+  instructions?: string;
+}
+
+export function BulkOrderDetailsModal({ order, onClose }: { order: BulkOrderDetails; onClose: () => void }) {
   const priority = order.status === "overdue" ? "Urgent" : order.status === "at-risk" ? "High" : "Normal";
   const priorityColor = priority === "Urgent" ? T.red : priority === "High" ? T.amber : T.green;
   const estimatedValue = order.amountDue !== undefined ? order.amountDue : undefined;
@@ -148,7 +158,7 @@ export function BulkOrderDetailsModal({ order, onClose }: { order: any; onClose:
             <Pip initials={(order.customer || "?").charAt(0)} bg={T.royalBurgundy} size={40} />
             <div>
               <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{order.customer}</div>
-              <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{order.ref}</div>
+              <EntityCode type="order" value={order.ref} size="sm" />
             </div>
           </div>
           <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, color: order.status === "completed" ? T.green : order.status === "overdue" ? T.red : T.amber, whiteSpace: "nowrap" as const }}>
@@ -162,7 +172,7 @@ export function BulkOrderDetailsModal({ order, onClose }: { order: any; onClose:
           {order.photoUrls && order.photoUrls.length > 0 ? (
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" as const }}>
               {order.photoUrls.map((url: string, i: number) => (
-                <img key={i} src={url} alt={`Order photo ${i + 1}`} style={{ width: 72, height: 72, borderRadius: 10, objectFit: "cover", border: `1px solid ${T.borderDef}` }} />
+                <img key={url} src={url} alt={`Order ${i + 1}`} style={{ width: 72, height: 72, borderRadius: 10, objectFit: "cover", border: `1px solid ${T.borderDef}` }} />
               ))}
             </div>
           ) : (
@@ -207,9 +217,13 @@ export function SareeDetailsModal({ row, onClose }: { row: SareeRow; onClose: ()
     <PickerShell title="Saree Item Details" onClose={onClose} width={450}>
       <div style={{ padding: "0 24px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "4px 10px", borderRadius: 8 }}>
-            {row.sareeId || "UNASSIGNED"}
-          </span>
+          {row.sareeId ? (
+            <EntityCode type="saree" value={row.sareeId} />
+          ) : (
+            <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "4px 10px", borderRadius: 8 }}>
+              UNASSIGNED
+            </span>
+          )}
           <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe }}>
             Serial #{row.serial}
           </span>

@@ -16,7 +16,7 @@ export function ExternalPurchaseHistorySection({ purchases }: { purchases: Purch
   const columns: ColumnDef<Purchase>[] = [
     {
       id: "id", header: "Purchase Ref", accessor: p => p.id, priority: 1,
-      cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{p.id}</span>,
+      cell: (_v, p) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{p.id}</span>,
     },
     {
       id: "supplier", header: "Supplier", accessor: p => p.supplier,
@@ -32,7 +32,7 @@ export function ExternalPurchaseHistorySection({ purchases }: { purchases: Purch
     },
     {
       id: "bill", header: "Bill Amount", accessor: p => p.billAmount,
-      cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: "#8B6018" }}>{p.billAmount}</span>,
+      cell: (_v, p) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: "#8B6018" }}>{p.billAmount}</span>,
     },
     {
       id: "date", header: "Date", accessor: p => p.date, priority: 3,

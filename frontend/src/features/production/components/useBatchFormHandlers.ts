@@ -2,6 +2,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { SareeRow, generateSareeId } from "../contexts/BatchContext";
 import type { ActivePicker } from "./batch-creation/types";
+import type { BulkOrder } from "@/features/bulk-orders";
 
 // Minimal shapes accepted by the row-mutation helpers below — real data now
 // comes from the backend (see WeaverOption/LoomOption in PickerModals.tsx),
@@ -12,7 +13,7 @@ export interface LoomOption {
   operatorName: string; operatorPhone: string; installedYear: number | null; notes: string;
 }
 
-export function useBatchFormHandlers(bulkOrders: any[]) {
+export function useBatchFormHandlers(bulkOrders: BulkOrder[]) {
   const [rows, setRows] = useState<SareeRow[]>([]);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [picker, setPicker] = useState<ActivePicker>(null);

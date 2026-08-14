@@ -1,5 +1,5 @@
 import { AccessLevel } from "./theme";
-import type { FinishingStaffMember } from "../../finishing/contexts/FinishingStaffContext";
+import type { FinishingStaffMember } from "@/features/finishing";
 
 export function todayFormatted(): string {
   return new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });

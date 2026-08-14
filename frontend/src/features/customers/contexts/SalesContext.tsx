@@ -1,11 +1,11 @@
-import React, { createContext, useContext, useMemo } from "react";
+import React, { createContext, useCallback, useContext, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 export * from "./sales-types";
 export * from "./sales-seed";
 import { UnifiedSaree, SaleInfo, ReturnInfo, SalesContextValue, SareeOrigin, SareeSaleStatus } from "./sales-types";
-import { SEED_UNIFIED_SAREES, SEED_PURCHASE_SUMMARIES } from "./sales-seed";
+import { SEED_PURCHASE_SUMMARIES } from "./sales-seed";
 
 import { inventoryApi } from "../../../shared/api/inventory";
 import { salesApi } from "../../../shared/api/sales";
@@ -121,12 +121,18 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
-  const recordSale = (sareeId: string, sale: SaleInfo) => recordSaleMutation.mutate({ sareeId, sale });
-  const recordReturn = (sareeId: string, ret: ReturnInfo) => recordReturnMutation.mutate({ sareeId, ret });
+  const recordSale = useCallback(
+    (sareeId: string, sale: SaleInfo) => recordSaleMutation.mutate({ sareeId, sale }),
+    [recordSaleMutation],
+  );
+  const recordReturn = useCallback(
+    (sareeId: string, ret: ReturnInfo) => recordReturnMutation.mutate({ sareeId, ret }),
+    [recordReturnMutation],
+  );
 
   const value = useMemo(
     () => ({ sarees, purchases: SEED_PURCHASE_SUMMARIES, recordSale, recordReturn, isError, error }),
-    [sarees, isError, error],
+    [sarees, isError, error, recordSale, recordReturn],
   );
   return <SalesContext.Provider value={value}>{children}</SalesContext.Provider>;
 }

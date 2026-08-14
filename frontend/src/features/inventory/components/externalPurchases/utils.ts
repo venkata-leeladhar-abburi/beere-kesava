@@ -1,4 +1,4 @@
-import type { SareeTag } from "../../../suppliers/contexts/SupplierContext";
+import type { SareeTag } from "@/features/suppliers";
 import { SareeRow } from "./types";
 
 let rowUidCounter = 0;
@@ -8,6 +8,6 @@ export function nextRowUid() {
 }
 
 export function toSareeRow(s: SareeTag): SareeRow {
-  const { id, ...rest } = s;
+  const { id: _id, ...rest } = s;
   return { ...rest, _uid: nextRowUid() };
 }

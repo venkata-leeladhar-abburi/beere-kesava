@@ -1,10 +1,11 @@
 import React from "react";
 import { motion } from "motion/react";
 import { Palette, ArrowRight } from "lucide-react";
-import { useDesignLibrary } from "../../../../design-library/contexts/DesignLibraryContext";
+import { useDesignLibrary } from "@/features/design-library";
 import { type BatchRecord, type SareeRow } from "../../../contexts/BatchContext";
 import { T, F } from "../../theme";
 import { Button } from "../../../../../shared/ui/primitives";
+import { EntityCode } from "@/shared/ui/domain";
 
 const imgSaree = "https://images.unsplash.com/photo-1588140686379-1b76a52103dc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
 
@@ -28,30 +29,47 @@ export function bulkOrderBreakdown(rows: SareeRow[]): { label: string; count: nu
   return Object.entries(map).map(([label, count]) => ({ label, count }));
 }
 
-export function ContextBatchCard({ b, onNavigateBatches, onClick }: { b: BatchRecord; onNavigateBatches?: (batchId: string) => void; onClick?: () => void }) {
-  const completeCount = b.rows.filter(rowComplete).length;
-  const pct = b.totalCount > 0 ? Math.round((completeCount / b.totalCount) * 100) : 0;
-  const weavers = weaverBreakdown(b.rows);
-  const orders = bulkOrderBreakdown(b.rows);
-  const hasDueDate = !!b.dueDate;
-
+export function ContextBatchCard({
+  b,
+  onNavigateBatches,
+  onClick,
+}: {
+  b: BatchRecord;
+  onNavigateBatches?: (batchId: string) => void;
+  onClick?: () => void;
+}) {
   const { getDesign } = useDesignLibrary();
   const firstRow = b.rows[0];
   const designObj = firstRow ? getDesign(firstRow.designCode) : undefined;
   const designImage = designObj?.colorSlipPhoto || designObj?.designGraph || imgSaree;
+
+  const completeCount = b.rows.filter(rowComplete).length;
+  const pct = b.totalCount > 0 ? Math.round((completeCount / b.totalCount) * 100) : 0;
+  const weavers = weaverBreakdown(b.rows);
+  const orders = bulkOrderBreakdown(b.rows);
+  const hasDueDate = Boolean(b.dueDate);
 
   return (
     <motion.div
       onClick={onClick}
       whileHover={{ y: -6, scale: 1.008, boxShadow: "0 24px 60px rgba(110,15,45,0.12)" }}
       transition={{ type: "spring", stiffness: 240, damping: 22 }}
-      style={{ background: "#FFFFFF", borderRadius: 24, border: `1px solid ${T.borderDef}`, boxShadow: "0 6px 24px rgba(74,6,27,0.05)", overflow: "hidden", display: "flex", flexDirection: "column", height: "100%", position: "relative", cursor: "pointer" }}
+      style={{
+        background: "#FFFFFF",
+        border: `1px solid ${T.borderDef}`,
+        borderRadius: 20,
+        overflow: "hidden",
+        boxShadow: "0 4px 20px rgba(74,6,27,0.06)",
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+        cursor: "pointer",
+      }}
     >
-      <div style={{ width: "100%", height: 5, background: b.status === "active" ? T.green : T.antiqueGold, flexShrink: 0 }} />
-
-      <div style={{ height: 160, position: "relative", overflow: "hidden", background: T.silkCream, flexShrink: 0 }}>
+      <div style={{ height: 160, position: "relative", overflow: "hidden", background: T.silkCream }}>
         <motion.img
-          whileHover={{ scale: 1.05 }}
+          initial={{ scale: 1.05 }}
+          animate={{ scale: 1 }}
           transition={{ duration: 0.5 }}
           src={designImage}
           alt={b.batchId}
@@ -59,8 +77,8 @@ export function ContextBatchCard({ b, onNavigateBatches, onClick }: { b: BatchRe
         />
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.55) 100%)", pointerEvents: "none" }} />
 
-        <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(26,10,15,0.65)", backdropFilter: "blur(6px)", color: "#FFFDF9", fontFamily: F.mono, fontSize: 12, fontWeight: 700, letterSpacing: "0.5px", padding: "4px 10px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.15)" }}>
-          {b.batchId}
+        <div style={{ position: "absolute", top: 12, left: 12 }}>
+          <EntityCode type="batch" value={b.batchId} size="sm" />
         </div>
 
         <div style={{ position: "absolute", top: 12, right: 12 }}>
@@ -78,7 +96,7 @@ export function ContextBatchCard({ b, onNavigateBatches, onClick }: { b: BatchRe
           {hasDueDate && (
             <div style={{ textAlign: "right" }}>
               <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.75)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Due Date</div>
-              <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.goldLight }}>{b.dueDate}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.goldLight }}>{b.dueDate}</div>
             </div>
           )}
         </div>
@@ -89,7 +107,7 @@ export function ContextBatchCard({ b, onNavigateBatches, onClick }: { b: BatchRe
           <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(110,15,45,0.02)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "8px 12px" }}>
             <Palette size={14} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
             <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {firstRow.sareeTypeName} · <span style={{ fontFamily: F.mono, color: T.royalBurgundy }}>{firstRow.designCode}</span>
+              {firstRow.sareeTypeName} · <span style={{ fontFamily: F.ui, color: T.royalBurgundy }}>{firstRow.designCode}</span>
             </span>
           </div>
         )}

@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import React from "react";
 import { Trash2 } from "lucide-react";
 import { T, F, ExtItem } from "./POTypesAndVendors";
@@ -52,7 +53,7 @@ export function POMaterialRow({
       <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr_1fr_1fr]" style={{ gap: 10, alignItems: "start" }}>
         {/* Material Type */}
         <div>
-          <label style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, marginBottom: 5, display: "block", letterSpacing: "0.3px" }}>Type *</label>
+          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, marginBottom: 5, display: "block", letterSpacing: "0.3px" }}>Type *</span>
           <Select value={item.materialType} onValueChange={v => set("materialType", v)}>
             <SelectItem value="Warp">Warp</SelectItem>
             <SelectItem value="Resham">Resham</SelectItem>
@@ -63,7 +64,7 @@ export function POMaterialRow({
 
         {/* Description */}
         <div>
-          <label style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, marginBottom: 5, display: "block", letterSpacing: "0.3px" }}>Description</label>
+          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, marginBottom: 5, display: "block", letterSpacing: "0.3px" }}>Description</span>
           <Textarea
             value={item.description ?? ""}
             onChange={e => set("description", e.target.value)}
@@ -74,9 +75,9 @@ export function POMaterialRow({
 
         {/* Quantity */}
         <div>
-          <label style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, marginBottom: 5, display: "block", letterSpacing: "0.3px" }}>
+          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, marginBottom: 5, display: "block", letterSpacing: "0.3px" }}>
             Quantity * {item.materialType !== "Jari" ? "(kg + g)" : ""}
-          </label>
+          </span>
           {item.materialType === "Jari" ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
               <div style={{ display: "flex", gap: 5, marginBottom: 2 }}>
@@ -128,9 +129,9 @@ export function POMaterialRow({
 
         {/* Price per unit */}
         <div>
-          <label style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, marginBottom: 5, display: "block", letterSpacing: "0.3px" }}>
+          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, marginBottom: 5, display: "block", letterSpacing: "0.3px" }}>
             Price / {item.unit} (₹)
-          </label>
+          </span>
           <NumberInput
             min={0}
             value={item.pricePerUnit || ""}

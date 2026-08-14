@@ -3,8 +3,8 @@ import { AlignJustify, BadgeCheck, CircleAlert, Clock, LayoutGrid, Receipt, Stor
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
 
-import { useSuppliers } from "../../../suppliers/contexts/SupplierContext";
-import { Supplier } from "../../../suppliers/contexts/supplier-types";
+import { useSuppliers } from "@/features/suppliers";
+import { Supplier } from "@/features/suppliers";
 import { F, T, DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../theme";
 import { FadeUp } from "../common/motion";
 import { DropBtn, SectionCard } from "../common/primitives";
@@ -113,16 +113,16 @@ export function SupplierPaymentsSection() {
     },
     {
       id: "totalPurchased", header: "Total Purchased", accessor: r => r.totalPurchased, type: "number",
-      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14 }}><Money value={rupees(r.totalPurchased)} /></span>,
+      cell: (_v, r) => <span style={{ fontWeight: 700, fontSize: 14 }}><Money value={rupees(r.totalPurchased)} /></span>,
     },
     {
       id: "totalPaid", header: "Paid Amt", accessor: r => r.totalPaid, type: "number",
-      cell: (_v, r) => <span style={{ fontFamily: F.mono, color: T.green, fontWeight: 600 }}><Money value={rupees(r.totalPaid)} /></span>,
+      cell: (_v, r) => <span style={{ color: T.green, fontWeight: 600 }}><Money value={rupees(r.totalPaid)} /></span>,
     },
     {
       id: "outstanding", header: "Balance Due", accessor: r => r.outstanding, type: "number",
       cell: (_v, r) => (
-        <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: r.outstanding === 0 ? T.green : r.status === "Overdue" ? T.crimson : T.antiqueGold }}>
+        <span style={{ fontWeight: 700, fontSize: 14, color: r.outstanding === 0 ? T.green : r.status === "Overdue" ? T.crimson : T.antiqueGold }}>
           {r.outstanding === 0 && r.totalPurchased > 0 ? "Paid ✓" : <Money value={rupees(r.outstanding)} />}
         </span>
       ),
@@ -203,8 +203,8 @@ export function SupplierPaymentsSection() {
               sub: "Suppliers flagged overdue",
               crimson: false, green: false,
             },
-          ].map((s, i) => (
-            <div key={i} style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, padding: "20px 20px 18px", boxShadow: "0 2px 14px rgba(74,6,27,0.07)", display: "flex", flexDirection: "column", gap: 10 }}>
+          ].map((s) => (
+            <div key={s.label} style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, padding: "20px 20px 18px", boxShadow: "0 2px 14px rgba(74,6,27,0.07)", display: "flex", flexDirection: "column", gap: 10 }}>
               <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
                 <div style={{ width: 44, height: 44, borderRadius: 12, background: s.iconBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   {s.icon}
@@ -257,15 +257,15 @@ export function SupplierPaymentsSection() {
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                   <div>
                     <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 2 }}>Purchased</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}><Money value={rupees(r.totalPurchased)} /></div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}><Money value={rupees(r.totalPurchased)} /></div>
                   </div>
                   <div>
                     <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 2 }}>Paid</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.green }}><Money value={rupees(r.totalPaid)} /></div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: T.green }}><Money value={rupees(r.totalPaid)} /></div>
                   </div>
                   <div style={{ gridColumn: "1 / 3" }}>
                     <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 2 }}>Balance Due</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 16, fontWeight: 700, color: r.outstanding === 0 ? T.green : r.status === "Overdue" ? T.crimson : T.antiqueGold }}>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: r.outstanding === 0 ? T.green : r.status === "Overdue" ? T.crimson : T.antiqueGold }}>
                       {r.outstanding === 0 && r.totalPurchased > 0 ? "Paid ✓" : <Money value={rupees(r.outstanding)} />}
                     </div>
                   </div>

@@ -33,7 +33,7 @@ describe("RawMaterialsService.createGrn", () => {
       id: "GRN-2026-0001",
       items: [],
     });
-    tx.rawMaterialStock.findFirst.mockResolvedValue({ id: "stock-1" });
+    tx.rawMaterialStock.findFirst.mockResolvedValue({ id: "stock-1", unit: "KG", currentStock: 0 });
 
     await service.createGrn({
       supplierName: "Acme Yarns",
@@ -50,14 +50,14 @@ describe("RawMaterialsService.createGrn", () => {
 
     expect(tx.rawMaterialStock.update).toHaveBeenCalledWith({
       where: { id: "stock-1" },
-      data: { currentStock: { increment: 88 } }, // 100 - 12
+      data: { currentStock: 88 }, // 100 - 12, converted through grams and back at the same KG unit
     });
     expect(tx.rawMaterialStock.create).not.toHaveBeenCalled();
   });
 
   it("treats a missing rejectedQuantity as 0 and adds the full quantity", async () => {
     tx.grnReceipt.create.mockResolvedValue({ id: "GRN-2026-0002", items: [] });
-    tx.rawMaterialStock.findFirst.mockResolvedValue({ id: "stock-2" });
+    tx.rawMaterialStock.findFirst.mockResolvedValue({ id: "stock-2", unit: "KG", currentStock: 0 });
 
     await service.createGrn({
       supplierName: "Acme Yarns",
@@ -66,7 +66,7 @@ describe("RawMaterialsService.createGrn", () => {
 
     expect(tx.rawMaterialStock.update).toHaveBeenCalledWith({
       where: { id: "stock-2" },
-      data: { currentStock: { increment: 50 } },
+      data: { currentStock: 50 },
     });
   });
 
@@ -104,7 +104,7 @@ describe("RawMaterialsService.createGrn", () => {
 
   it("computes each GRN item's totalPrice as quantity * unitPrice and records the audit action", async () => {
     tx.grnReceipt.create.mockResolvedValue({ id: "GRN-2026-0004", items: [] });
-    tx.rawMaterialStock.findFirst.mockResolvedValue({ id: "stock-4" });
+    tx.rawMaterialStock.findFirst.mockResolvedValue({ id: "stock-4", unit: "KG", currentStock: 0 });
 
     await service.createGrn({
       supplierName: "Acme Yarns",

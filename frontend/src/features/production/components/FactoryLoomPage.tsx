@@ -3,7 +3,7 @@ import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Plus, Edit2,
-  LayoutGrid, LayoutList, FileText,
+  LayoutGrid, LayoutList,
   Factory, CheckCircle2, AlertTriangle, Settings2
 } from "lucide-react";
 import factoryLoomsHero from "../../../assets/inline/factoryLoomsHero.jpg";
@@ -15,7 +15,6 @@ import { AddLoomModal } from "./factory-loom/AddLoomModal";
 import { LoomDetailPage } from "./factory-loom/LoomDetailPage";
 import { LoomCard } from "./factory-loom/LoomCard";
 import { LoomAnalytics } from "./factory-loom/LoomAnalytics";
-import { FadeUp } from "./factory-loom/theme";
 import { SectionCard } from "./common/primitives";
 import { ApiError } from "../../../shared/api/client";
 import { BackendFactoryLoom, BackendLoomStatus, factoryLoomsApi } from "../../../shared/api/factory-looms";
@@ -24,7 +23,7 @@ import { rawMaterialsApi } from "../../../shared/api/rawMaterials";
 import { qcApi } from "../../../shared/api/qc";
 import { Button, IconButton, SearchInput } from "../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../shared/ui/data";
-import { MaterialsFooter } from "../../materials/components/sections/MaterialsFooter";
+import { MaterialsFooter } from "@/features/materials";
 
 function backendLoomToFrontend(l: BackendFactoryLoom): FactoryLoom {
   return {
@@ -50,7 +49,7 @@ export function FactoryLoomPage() {
   const [looms, setLooms] = useState<FactoryLoom[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [saveError, setSaveError] = useState<string | null>(null);
+  const [_saveError, setSaveError] = useState<string | null>(null);
   const [view, setView] = useState<"card"|"table">("card");
   const [search, setSearch] = useState("");
   const [sf, setSf] = useState<"all"|"active"|"idle"|"maintenance">("all");
@@ -86,7 +85,7 @@ export function FactoryLoomPage() {
         designCode: b.rows[0]?.designCode ?? "Design",
         designName: b.rows[0]?.designCode ?? "Design",
         orderRef: b.id,
-        status: b.status.toLowerCase() as any,
+        status: b.status.toLowerCase() as LoomBatch["status"],
         startDate: new Date(b.createdAt).toLocaleDateString("en-IN"),
       };
     });
@@ -187,14 +186,6 @@ export function FactoryLoomPage() {
     }
   };
 
-  const handleStatusChange = async (loomId: string, st: FactoryLoom["status"]) => {
-    try {
-      const updated = await factoryLoomsApi.update(loomId, { status: FRONTEND_TO_BACKEND_STATUS[st] });
-      setLooms(prev => prev.map(l => (l.id === loomId ? backendLoomToFrontend(updated) : l)));
-    } catch (err) {
-      alert(err instanceof ApiError ? err.message : "Could not update status.");
-    }
-  };
   return (
     <div style={{ background: "#FFFDF9", minHeight: "var(--shell-content-min-h)", display: "flex", flexDirection: "column", paddingBottom: 0 }}>
       {selected ? (
@@ -209,7 +200,7 @@ export function FactoryLoomPage() {
           <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", minHeight: 380, display: "flex", alignItems: "center" }}>
             <div className="pl-4 md:pl-7 xl:pl-12 w-full xl:w-auto xl:basis-[65%] xl:max-w-[65%]" style={{ position: "relative", zIndex: 2, paddingTop: 48, paddingBottom: 90 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                <span style={{ fontFamily: F.mono, fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase", fontWeight: 400 }}>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase", fontWeight: 400 }}>
                   Since 1999 · Power Loom Management
                 </span>
               </div>
@@ -217,7 +208,7 @@ export function FactoryLoomPage() {
                 <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(32px, 8vw, 56px)", fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Factory Looms</h1>
                 <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(22px, 6vw, 36px)", fontStyle: "italic", color: T.antiqueGold, fontWeight: 400 }}>&amp; Production</span>
               </div>
-              <p style={{ fontFamily: F.ui, fontSize: "clamp(15px, 3.5vw, 18px)", color: "rgba(255,253,249,0.70)", margin: "0 0 20px", maxWidth: 600, lineHeight: 1.6 }}>
+              <p className="max-w-[600px]" style={{ fontFamily: F.ui, fontSize: "clamp(15px, 3.5vw, 18px)", color: "rgba(255,253,249,0.70)", margin: "0 0 20px", lineHeight: 1.6 }}>
                 Real-time monitoring of in-house power looms, weaver assignments, production output & maintenance schedules.
               </p>
               <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} style={{ alignSelf: "flex-start", flexShrink: 0, display: "inline-block" }}>

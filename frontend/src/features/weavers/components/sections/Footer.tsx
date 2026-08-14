@@ -19,10 +19,10 @@ export function Footer() {
               <div style={{ fontFamily: F.display, fontSize: 20, color: "#FFFDF9", lineHeight: 1.2 }}>&amp; Brothers Silks</div>
             </div>
           </div>
-          <div style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.50)", lineHeight: 1.6, marginBottom: 24, maxWidth: 300 }}>Managing our weavers and preserving the art of traditional Indian silk weaving since 1999.</div>
+          <div className="max-w-[300px]" style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.50)", lineHeight: 1.6, marginBottom: 24 }}>Managing our weavers and preserving the art of traditional Indian silk weaving since 1999.</div>
           <div style={{ display: "flex", gap: 16 }}>
-            {[Facebook, Instagram, Youtube, Linkedin].map((Icon, i) => (
-              <motion.a key={i} href="#" whileHover={{ y: -3, color: T.antiqueGold }} style={{ color: "rgba(255,253,249,0.50)", transition: "color 0.2s" }}>
+            {[Facebook, Instagram, Youtube, Linkedin].map((Icon) => (
+              <motion.a key={Icon.displayName} href="#" whileHover={{ y: -3, color: T.antiqueGold }} style={{ color: "rgba(255,253,249,0.50)", transition: "color 0.2s" }}>
                 <Icon size={20} />
               </motion.a>
             ))}
@@ -33,7 +33,7 @@ export function Footer() {
           { title: "Management", links: ["Payments", "Reports", "Customers", "Settings", "Help"] },
         ].map(c => (
           <div key={c.title} style={{ minWidth: 140 }}>
-            <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 20 }}>{c.title}</div>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.antiqueGold, letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 20 }}>{c.title}</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               {c.links.map(l => (
                 <motion.span key={l} whileHover={{ x: 3 }} style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.55)", cursor: "pointer", display: "block" }}>{l}</motion.span>
@@ -42,12 +42,12 @@ export function Footer() {
           </div>
         ))}
         <div style={{ minWidth: 240 }}>
-          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 20 }}>Need Help?</div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.antiqueGold, letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 20 }}>Need Help?</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 24 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}><Phone size={16} color={T.antiqueGold} /><span style={{ fontFamily: F.mono, fontSize: 14, color: "rgba(255,253,249,0.70)" }}>+91 70428 78199</span></div>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}><Phone size={16} color={T.antiqueGold} /><span style={{ fontFamily: "var(--font-mono)", fontSize: 14, color: "rgba(255,253,249,0.70)" }}>+91 70428 78199</span></div>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}><Mail size={16} color={T.antiqueGold} /><span style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.70)" }}>Admin@beerekeshava.in</span></div>
           </div>
-          <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,253,249,0.35)", letterSpacing: "1px", textTransform: "uppercase", marginBottom: 12 }}>Newsletter</div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(255,253,249,0.35)", letterSpacing: "1px", textTransform: "uppercase", marginBottom: 12 }}>Newsletter</div>
           <div style={{ display: "flex", gap: 8 }}>
             <Input aria-label="Email address" placeholder="Email address" className="bg-white/[0.07] border-white/[0.14] text-[#FFFDF9]" />
             <Button variant="primary" className="shrink-0">
@@ -58,7 +58,7 @@ export function Footer() {
       </div>
       <div style={{ borderTop: "1px solid rgba(255,253,249,0.1)", paddingTop: 32, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
         <div style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.35)" }}>© 2026 Beere Kesava &amp; Brothers Silks. All rights reserved.</div>
-        <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,253,249,0.25)", letterSpacing: "2px", textTransform: "uppercase" }}>TRADITION · TIMELESS QUALITY</div>
+        <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(255,253,249,0.25)", letterSpacing: "2px", textTransform: "uppercase" }}>TRADITION · TIMELESS QUALITY</div>
       </div>
     </footer>
   );

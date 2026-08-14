@@ -1,17 +1,9 @@
 
 
 import { brand, fonts, semantic } from '@/design-system/tokens';
-import React, { useState, useEffect, useRef, createContext, useContext } from 'react';
+import React from 'react';
 import { useResponsive } from "../../../../hooks/useResponsive";
 import { Button } from "../../../../shared/ui/primitives";
-import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Menu, X, Search, Bell, LogOut, Package, IndianRupee, RotateCcw, 
-  Users, BarChart3, ChevronRight, UserRound, ArrowLeft, Plus, MapPin, 
-  Phone, Eye, Download, Printer, Filter, Calendar, Activity,
-  ShoppingCart, Store, ArrowRight, Tag, Wallet, CreditCard, ChevronDown, CheckCircle2,
-  TrendingUp, ArrowDownRight, ArrowUpRight, TrendingDown
-} from 'lucide-react';
 
 const ShopPriceContext = React.createContext<boolean>(false);
 export function useCanSeePrices() { return React.useContext(ShopPriceContext); }
@@ -58,11 +50,11 @@ function ShopDesktopHero({ breadcrumb, titleMain, titleSub, description, pills, 
             </div>
           )}
         </div>
-        <div style={{ fontFamily: F.u, fontSize: 18, color: "rgba(255,253,249,0.70)", lineHeight: 1.6, maxWidth: 640, marginBottom: 22 }}>{description}</div>
+        <div className="max-w-[640px]" style={{ fontFamily: F.u, fontSize: 18, color: "rgba(255,253,249,0.70)", lineHeight: 1.6, marginBottom: 22 }}>{description}</div>
         {pills && pills.length > 0 && (
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" as const, marginBottom: 32 }}>
-            {pills.map((p, i) => (
-              <div key={i} style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 999, padding: "6px 16px" }}>
+            {pills.map((p) => (
+              <div key={p.text} style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 999, padding: "6px 16px" }}>
                 <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: p.color || "#FFF" }}>{p.text}</span>
               </div>
             ))}
@@ -75,7 +67,7 @@ function ShopDesktopHero({ breadcrumb, titleMain, titleSub, description, pills, 
           margin: isTablet ? "0 28px" : "0 48px", borderTop: "1px solid rgba(255,255,255,0.08)",
         }}>
           {stats.map((s, i) => (
-            <div key={i} style={{
+            <div key={s.label} style={{
               width: isTablet ? "calc(50% - 1px)" : undefined, flex: isTablet ? undefined : 1,
               boxSizing: "border-box" as const,
               padding: isTablet ? "18px 20px" : "24px 28px",
@@ -124,7 +116,7 @@ function StatsStrip({ items }: { items: { label: string; val: string; sub: strin
   return (
     <div style={{ background: C.dark, display: "flex", flexWrap: wrap2 ? "wrap" as const : "nowrap" as const, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
       {items.map((s, i) => (
-        <div key={i} style={{
+        <div key={s.label} style={{
           flex: wrap2 ? undefined : 1, width: wrap2 ? "calc(50% - 1px)" : undefined, boxSizing: "border-box" as const,
           padding: "14px 10px", textAlign: "center" as const,
           borderRight: wrap2 ? (i % 2 === 0 ? "1px solid rgba(255,255,255,0.08)" : "none") : (i < items.length - 1 ? "1px solid rgba(255,255,255,0.08)" : "none"),

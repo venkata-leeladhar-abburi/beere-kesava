@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { motion } from "motion/react";
 import { ChevronDown, ChevronUp, Factory, Truck, Users, type LucideIcon } from "lucide-react";
 import { T, F } from "../../theme";
-import { UnifiedSaree, SellerRank, rankSellers } from "../../../customers/contexts/SalesContext";
+import { UnifiedSaree, SellerRank, rankSellers } from "@/features/customers";
 import { Card, ExportBtn, SectionCard, exportCsv, inr } from "./primitives";
 import { Button } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
@@ -42,17 +42,17 @@ function RankTable({ title, sub, ranks, unitLabel, icon }: { title: string; sub:
             <motion.div initial={{ width: 0 }} animate={{ width: `${(r.sold / max) * 100}%` }} transition={{ duration: 0.6 }}
               style={{ height: "100%", borderRadius: 99, background: `linear-gradient(90deg, ${T.royalBurgundy}, ${T.antiqueGold})` }} />
           </div>
-          <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.royalBurgundy, minWidth: 22 }}>{r.sold}</span>
+          <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.royalBurgundy, minWidth: 22 }}>{r.sold}</span>
         </div>
       ),
     },
-    { id: "produced", header: "Produced", priority: 3, accessor: r => r.produced, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{r.produced}</span> },
-    { id: "retail", header: "Retail", priority: 3, accessor: r => r.retail, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: "#4A7FB5" }}>{r.retail}</span> },
-    { id: "wholesale", header: "Wholesale", priority: 3, accessor: r => r.wholesale, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: "#9B4DCA" }}>{r.wholesale}</span> },
-    { id: "returned", header: "Returned", priority: 3, accessor: r => r.returned, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: r.returned ? T.crimson : T.taupe }}>{r.returned}</span> },
-    { id: "outstanding", header: "Outstanding", accessor: r => r.outstanding, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.orange }}>{r.outstanding}</span> },
-    { id: "sellThrough", header: "Sell-through", priority: 3, accessor: r => r.sellThroughPct, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: r.sellThroughPct >= 60 ? T.green : r.sellThroughPct >= 35 ? T.antiqueGold : T.crimson }}>{r.sellThroughPct}%</span> },
-    { id: "revenue", header: "Net Revenue", accessor: r => r.revenue, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{inr(r.revenue)}</span> },
+    { id: "produced", header: "Produced", priority: 3, accessor: r => r.produced, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{r.produced}</span> },
+    { id: "retail", header: "Retail", priority: 3, accessor: r => r.retail, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: "#4A7FB5" }}>{r.retail}</span> },
+    { id: "wholesale", header: "Wholesale", priority: 3, accessor: r => r.wholesale, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: "#9B4DCA" }}>{r.wholesale}</span> },
+    { id: "returned", header: "Returned", priority: 3, accessor: r => r.returned, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: r.returned ? T.crimson : T.taupe }}>{r.returned}</span> },
+    { id: "outstanding", header: "Outstanding", accessor: r => r.outstanding, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.orange }}>{r.outstanding}</span> },
+    { id: "sellThrough", header: "Sell-through", priority: 3, accessor: r => r.sellThroughPct, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: r.sellThroughPct >= 60 ? T.green : r.sellThroughPct >= 35 ? T.antiqueGold : T.crimson }}>{r.sellThroughPct}%</span> },
+    { id: "revenue", header: "Net Revenue", accessor: r => r.revenue, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{inr(r.revenue)}</span> },
   ];
 
   return (

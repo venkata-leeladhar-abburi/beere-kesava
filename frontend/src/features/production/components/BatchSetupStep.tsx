@@ -35,13 +35,13 @@ export function BatchSetupStep({
       <SectionCard icon={ClipboardList} title="Batch Setup" subtitle="Set the batch ID, saree count, and due date to generate the saree table.">
         <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_auto]" style={{ gap: 16, alignItems: "end" }}>
           <div>
-            <label style={lbl}>Batch ID</label>
-            <div style={{ ...fld, display: "flex", alignItems: "center", background: T.warmCream, color: T.taupe, fontFamily: F.mono, fontSize: 14, fontWeight: 700, borderStyle: "dashed", cursor: "default" }}>
+            <span style={lbl}>Batch ID</span>
+            <div style={{ ...fld, display: "flex", alignItems: "center", background: T.warmCream, color: T.taupe, fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, borderStyle: "dashed", cursor: "default" }}>
               {batchId}
             </div>
           </div>
           <div>
-            <label style={lbl}>Total Saree Count <span style={{ color: T.royalBurgundy }}>*</span></label>
+            <span style={lbl}>Total Saree Count <span style={{ color: T.royalBurgundy }}>*</span></span>
             <NumberInput min={1} max={500} value={totalCount === "" ? "" : Number(totalCount)}
               onValueChange={v => { setTotalCount(v === "" ? "" : String(v)); setGenerated(false); }}
               placeholder="e.g. 30" />

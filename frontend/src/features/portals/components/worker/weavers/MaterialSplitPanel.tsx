@@ -1,10 +1,11 @@
+/* eslint-disable no-restricted-syntax -- material weight/quantity parsing (grams, reels, buns, factors), not currency */
 import React, { useState } from "react";
 import { C, F } from "../tokens";
 import {
   jariFromReels, jariGrams, jariToReels, trimNum,
   type JariUnit, type SareeTypeRecord,
-} from "../../../../pricing/components/RatesPricingPage";
-import { useRatesPricing } from "../../../../pricing/contexts/RatesContext";
+} from "@/features/pricing";
+import { useRatesPricing } from "@/features/pricing";
 import { Button, Input } from "../../../../../shared/ui/primitives";
 
 // ─── Material weight split (warp / resham / jari) ────────────────────────────

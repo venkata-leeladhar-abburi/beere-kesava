@@ -10,6 +10,7 @@ import { SectionCard, FadeUp } from "../common/primitives";
 import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
 import { materialIssuesApi } from "../../../../shared/api/material-issues";
 import { IconButton, Button } from "../../../../shared/ui/primitives";
+import { EntityCode } from "@/shared/ui/domain";
 
 function parseKg(quantity: number | string | null | undefined, unit?: string | null): number {
   const q = Number(quantity || 0);
@@ -74,7 +75,7 @@ export function MovementHistorySection({ onDownloadMovementReport }: { onDownloa
     let receivedKg = 0;
     grns.forEach(g => {
       g.items.forEach(i => {
-        receivedKg += parseKg(i.quantity, (i as any).unit || "KG");
+        receivedKg += parseKg(i.quantity, i.unit || "KG");
       });
     });
 
@@ -90,7 +91,7 @@ export function MovementHistorySection({ onDownloadMovementReport }: { onDownloa
 
     // Timeline entries
     const grnEntries = grns.map(g => {
-      const totalQtyKg = g.items.reduce((s, i) => s + parseKg(i.quantity, (i as any).unit || "KG"), 0);
+      const totalQtyKg = g.items.reduce((s, i) => s + parseKg(i.quantity, i.unit || "KG"), 0);
       return {
         type: "in" as const,
         desc: `${g.supplierName ?? "Vendor"} — ${g.items.map(i => `${i.name} (${i.quantity} ${i.materialType === "JARI" ? (i.unit || "Reels") : (i.unit || "kg")})`).join(", ")}`,
@@ -183,7 +184,7 @@ export function MovementHistorySection({ onDownloadMovementReport }: { onDownloa
                           <motion.div initial={{ scaleY: 0 }} whileInView={{ scaleY: 1 }} viewport={{ once: true }} transition={{ duration: 0.65, ease: EASE }} style={{ width: 18, height: `${(d.received / maxVal) * 100}%`, background: T.royalBurgundy, borderRadius: "5px 5px 0 0", minHeight: 4, transformOrigin: "bottom" }} />
                           <motion.div initial={{ scaleY: 0 }} whileInView={{ scaleY: 1 }} viewport={{ once: true }} transition={{ duration: 0.65, delay: 0.1, ease: EASE }} style={{ width: 18, height: `${(d.given / maxVal) * 100}%`, background: T.antiqueGold, borderRadius: "5px 5px 0 0", minHeight: 4, transformOrigin: "bottom" }} />
                         </div>
-                        <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textAlign: "center", lineHeight: 1.35, marginTop: 8, flexShrink: 0 }}>{d.label}</span>
+                        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textAlign: "center", lineHeight: 1.35, marginTop: 8, flexShrink: 0 }}>{d.label}</span>
                       </div>
                     ))}
                   </div>
@@ -246,16 +247,14 @@ export function MovementHistorySection({ onDownloadMovementReport }: { onDownloa
                 <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 4 }}>
                   <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 14, color: T.luxuryBrown }}>{entry.desc}</div>
                   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <span style={{ fontFamily: F.mono, fontSize: 12, color: entry.type === "in" ? T.green : T.crimson, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                    <span style={{ fontFamily: F.ui, fontSize: 12, color: entry.type === "in" ? T.green : T.crimson, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>
                       {entry.type === "in" ? "Received" : "Given"}
                     </span>
-                    <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{entry.time}</span>
+                    <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{entry.time}</span>
                   </div>
                 </div>
 
-                <div style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, letterSpacing: "0.5px", background: "rgba(110,15,45,0.05)", padding: "4px 8px", borderRadius: 6, flexShrink: 0 }}>
-                  {entry.ref}
-                </div>
+                <EntityCode type="goodsReceipt" value={entry.ref} size="sm" />
 
                 {entry.type === "out" && (
                   <IconButton

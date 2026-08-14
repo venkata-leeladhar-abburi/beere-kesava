@@ -87,7 +87,7 @@ export function AllOrdersFilterBar({
               ].map(item => (
                 <Button
                   key={item.key}
-                  onClick={() => setStatusFilter(item.key as any)}
+                  onClick={() => setStatusFilter(item.key as "all" | "on-track" | "at-risk" | "completed")}
                   size="sm"
                   variant={statusFilter === item.key ? "primary" : "tertiary"}
                 >
@@ -109,7 +109,7 @@ export function AllOrdersFilterBar({
               ].map(item => (
                 <Button
                   key={item.key}
-                  onClick={() => setPaymentFilter(item.key as any)}
+                  onClick={() => setPaymentFilter(item.key as "all" | "paid" | "partial" | "pending")}
                   size="sm"
                   variant={paymentFilter === item.key ? "primary" : "tertiary"}
                 >

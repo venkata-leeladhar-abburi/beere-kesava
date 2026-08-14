@@ -10,7 +10,7 @@ import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
 const paymentColumns: ColumnDef<SupplierPayment>[] = [
   {
     id: "id", header: "Payment Ref", accessor: p => p.id, priority: 1,
-    cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy }}>{p.id}</span>,
+    cell: (_v, p) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, color: T.royalBurgundy }}>{p.id}</span>,
   },
   {
     id: "date", header: "Date", accessor: p => p.date,
@@ -18,7 +18,7 @@ const paymentColumns: ColumnDef<SupplierPayment>[] = [
   },
   {
     id: "purchaseId", header: "Against Purchase", accessor: p => p.purchaseId, priority: 3,
-    cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{p.purchaseId || "—"}</span>,
+    cell: (_v, p) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.luxuryBrown }}>{p.purchaseId || "—"}</span>,
   },
   {
     id: "mode", header: "Mode", accessor: p => p.mode,
@@ -26,11 +26,11 @@ const paymentColumns: ColumnDef<SupplierPayment>[] = [
   },
   {
     id: "reference", header: "Reference", accessor: p => p.reference, priority: 3,
-    cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{p.reference}</span>,
+    cell: (_v, p) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{p.reference}</span>,
   },
   {
     id: "amount", header: "Amount", accessor: p => p.amount,
-    cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.green }}>{formatMoney(rupees(p.amount))}</span>,
+    cell: (_v, p) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, color: T.green }}>{formatMoney(rupees(p.amount))}</span>,
   },
 ];
 

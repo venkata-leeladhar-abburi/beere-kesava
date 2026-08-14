@@ -1,5 +1,5 @@
+/* eslint-disable no-restricted-syntax */
 import React from "react";
-import { motion } from "motion/react";
 import { Package } from "lucide-react";
 import { T, F, Vendor } from "./POTypesAndVendors";
 import { Input, Button, Select, SelectItem } from "../../../shared/ui/primitives";
@@ -62,7 +62,7 @@ export function POVendorDetailsSection({
         >
           <SelectItem value="-1">Select vendor…</SelectItem>
           {vendors.map((v, i) => (
-            <SelectItem key={i} value={String(i)}>{v.name} · {v.city}</SelectItem>
+            <SelectItem key={v.id} value={String(i)}>{v.name} · {v.city}</SelectItem>
           ))}
           <SelectItem value="-99">+ Add New Vendor</SelectItem>
         </Select>

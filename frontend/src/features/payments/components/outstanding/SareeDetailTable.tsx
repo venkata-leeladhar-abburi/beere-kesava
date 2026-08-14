@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { T, F } from "../../theme";
-import { UnifiedSaree } from "../../../customers/contexts/SalesContext";
+import { UnifiedSaree } from "@/features/customers";
 import { AgePill, Empty, Pill, inr } from "./primitives";
 import { Button } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
@@ -53,7 +53,7 @@ export function SareeDetailTable({ sarees, mode = "outstanding", showReturn = fa
       ),
     }] : []),
     { id: "sareeType", header: "Saree Type", accessor: s => s.sareeTypeName, cell: (_v, s) => (s.sareeTypeCode !== "EX-000" ? `${s.sareeTypeCode} · ` : "") + s.sareeTypeName },
-    { id: "weight", header: "Weight", priority: 3, accessor: s => s.weight, cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{s.weight}</span> },
+    { id: "weight", header: "Weight", priority: 3, accessor: s => s.weight, cell: (_v, s) => <span style={{ fontFamily: F.ui, fontSize: 12 }}>{s.weight}</span> },
     { id: "date", header: showReturn ? "Received" : "QC Date", priority: 3, accessor: s => s.qcDate },
     ...(mode === "outstanding" ? [{ id: "ageDays", header: "Days In Stock", accessor: (s: UnifiedSaree) => s.ageDays, sortable: true, cell: (_v: unknown, s: UnifiedSaree) => <AgePill days={s.ageDays} /> }] : []),
     ...(mode === "produced" ? [{ id: "status", header: "Status", accessor: (s: UnifiedSaree) => s.status, cell: (_v: unknown, s: UnifiedSaree) => <StatusChip s={s} /> }] : []),
@@ -63,10 +63,10 @@ export function SareeDetailTable({ sarees, mode = "outstanding", showReturn = fa
       { id: "customer", header: "Customer", accessor: (s: UnifiedSaree) => s.sale?.customer, cell: (_v: unknown, s: UnifiedSaree) => s.sale?.customer || "—" },
       { id: "saleRef", header: "Sale Ref", accessor: (s: UnifiedSaree) => s.sale?.saleRef, type: "code" as const, cell: (_v: unknown, s: UnifiedSaree) => s.sale?.saleRef || "—" },
     ] : []),
-    { id: "cost", header: "Cost", priority: 3, accessor: s => s.costPrice, align: "end", cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{canSeeCost ? inr(s.costPrice) : "••••"}</span> },
+    { id: "cost", header: "Cost", priority: 3, accessor: s => s.costPrice, align: "end", cell: (_v, s) => <span style={{ fontFamily: F.ui, fontSize: 12 }}>{canSeeCost ? inr(s.costPrice) : "••••"}</span> },
     {
       id: "amount", header: mode === "sold" ? "Sold For" : "Sell Price", accessor: s => (mode === "sold" ? s.sale?.amount || 0 : s.finalAmount), align: "end",
-      cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: mode === "sold" ? T.green : T.royalBurgundy }}>{mode === "sold" ? inr(s.sale?.amount || 0) : inr(s.finalAmount)}</span>,
+      cell: (_v, s) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: mode === "sold" ? T.green : T.royalBurgundy }}>{mode === "sold" ? inr(s.sale?.amount || 0) : inr(s.finalAmount)}</span>,
     },
     ...(showReturn ? [{
       id: "return", header: "Return", accessor: (s: UnifiedSaree) => s.ret?.returnRef,
@@ -117,7 +117,7 @@ export function DrilldownTabs({ produced, sold, outstanding, showBatch = false, 
                   : "rounded-full border-[1.5px] border-[var(--border-default)] bg-white text-[var(--text-tertiary)]"}>
                 {t.label}
                 <span style={{
-                  fontFamily: F.mono, fontSize: 12, fontWeight: 700, padding: "1px 7px", borderRadius: 99,
+                  fontFamily: F.ui, fontSize: 12, fontWeight: 700, padding: "1px 7px", borderRadius: 99,
                   background: on ? "rgba(255,255,255,0.22)" : "rgba(110,15,45,0.07)",
                   color: on ? "#FFFDF9" : t.color,
                 }}>{t.rows.length}</span>

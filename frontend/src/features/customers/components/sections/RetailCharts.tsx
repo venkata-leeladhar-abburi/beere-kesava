@@ -41,12 +41,12 @@ export function RetailChartsRow1() {
 
   // Top 10 retail customers by spend
   const top10RetailCustomers = useMemo(() => {
-    const spends: Record<string, { name: string; spend: number }> = {};
+    const spends: Record<string, { customerId: string; name: string; spend: number }> = {};
     for (const sale of retailSales) {
       if (sale.customerId) {
         const cust = customerMap.get(sale.customerId);
         const name = cust?.name ?? "Walk-in Customer";
-        if (!spends[sale.customerId]) spends[sale.customerId] = { name, spend: 0 };
+        if (!spends[sale.customerId]) spends[sale.customerId] = { customerId: sale.customerId, name, spend: 0 };
         spends[sale.customerId].spend += Number(sale.amount);
       }
     }
@@ -141,9 +141,9 @@ export function RetailChartsRow1() {
               const rankBg = i === 0 ? T.royalBurgundy : i === 1 ? "rgba(200,155,71,0.22)" : i === 2 ? T.greenBg : T.silkCream;
               const rankColor = i === 0 ? "#FFF" : i === 1 ? T.antiqueGold : i === 2 ? T.greenMid : T.taupe;
               return (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: isTop ? "8px 10px" : "4px 6px", borderRadius: 8, background: isTop ? "rgba(110,15,45,0.04)" : "transparent", border: isTop ? `1px solid rgba(110,15,45,0.08)` : "1px solid transparent" }}>
+                <div key={c.customerId} style={{ display: "flex", alignItems: "center", gap: 10, padding: isTop ? "8px 10px" : "4px 6px", borderRadius: 8, background: isTop ? "rgba(110,15,45,0.04)" : "transparent", border: isTop ? `1px solid rgba(110,15,45,0.08)` : "1px solid transparent" }}>
                   <div style={{ width: 22, height: 22, minWidth: 22, borderRadius: "50%", background: rankBg, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: rankColor }}>{i + 1}</span>
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: rankColor }}>{i + 1}</span>
                   </div>
                   <div style={{ width: 96, minWidth: 96, fontFamily: F.ui, fontSize: 12, fontWeight: i < 3 ? 700 : 500, color: i < 3 ? T.luxuryBrown : T.taupe, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis" }}>
                     {c.name}
@@ -151,7 +151,7 @@ export function RetailChartsRow1() {
                   <div style={{ flex: 1, height: 7, background: T.silkCream, borderRadius: 4, overflow: "hidden" }}>
                     <div style={{ width: `${pct}%`, height: "100%", backgroundImage: barBg, borderRadius: 4 }} />
                   </div>
-                  <div style={{ width: 54, textAlign: "right", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: i < 3 ? T.luxuryBrown : T.taupe }}>
+                  <div style={{ width: 54, textAlign: "right", fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: i < 3 ? T.luxuryBrown : T.taupe }}>
                     {formatMoney(rupees(c.spend || 0))}
                   </div>
                 </div>
@@ -188,8 +188,8 @@ export function RetailChartsRow1() {
               <ResponsiveContainer key="rc-rt-2" width="100%" height="100%">
                 <PieChart key="pie-chart-rt" id="retail-category-pie-chart">
                   <Pie key="rt-pie" id="rt-pie" data={retailCategorySplit} innerRadius={60} outerRadius={90} paddingAngle={3} dataKey="value" nameKey="name" stroke="none">
-                    {retailCategorySplit.map((entry, index) => (
-                      <Cell key={`cell-pie-rt-${index}`} fill={entry.fill} />
+                    {retailCategorySplit.map((entry) => (
+                      <Cell key={`cell-pie-rt-${entry.name}`} fill={entry.fill} />
                     ))}
                   </Pie>
                 </PieChart>
@@ -201,8 +201,8 @@ export function RetailChartsRow1() {
             </div>
             </ChartFigure>
             <div style={{ display: "flex", justifyContent: "center", gap: 18, marginTop: 18, flexWrap: "wrap" as const }}>
-              {retailCategorySplit.map((item, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              {retailCategorySplit.map((item) => (
+                <div key={item.name} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <div style={{ width: 10, height: 10, borderRadius: "50%", background: item.fill }} />
                   <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, fontWeight: 500 }}>{item.name}</span>
                 </div>
@@ -272,12 +272,12 @@ export function RetailChartsRow2() {
 
   // Frequent retail buyers
   const frequentRetailBuyers = useMemo(() => {
-    const counts: Record<string, { name: string; count: number }> = {};
+    const counts: Record<string, { customerId: string; name: string; count: number }> = {};
     for (const sale of retailSales) {
       if (sale.customerId) {
         const cust = customerMap.get(sale.customerId);
         const name = cust?.name ?? "Walk-in Customer";
-        if (!counts[sale.customerId]) counts[sale.customerId] = { name, count: 0 };
+        if (!counts[sale.customerId]) counts[sale.customerId] = { customerId: sale.customerId, name, count: 0 };
         counts[sale.customerId].count += 1;
       }
     }
@@ -289,7 +289,7 @@ export function RetailChartsRow2() {
   const inactiveRetailAlerts = useMemo(() => {
     const now = new Date();
     const sixMonthsAgo = new Date(now.getTime() - 180 * 86400000);
-    const lastSaleByCust: Record<string, { name: string; time: string; date: Date }> = {};
+    const lastSaleByCust: Record<string, { customerId: string; name: string; time: string; date: Date }> = {};
 
     for (const sale of retailSales) {
       if (sale.customerId) {
@@ -298,6 +298,7 @@ export function RetailChartsRow2() {
         const d = new Date(sale.saleDate);
         if (!lastSaleByCust[sale.customerId] || d.getTime() > lastSaleByCust[sale.customerId].date.getTime()) {
           lastSaleByCust[sale.customerId] = {
+            customerId: sale.customerId,
             name,
             time: d.toLocaleDateString("en-IN"),
             date: d,
@@ -333,9 +334,9 @@ export function RetailChartsRow2() {
             </div>
           ) : (
             frequentRetailBuyers.map((fb, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 16 }}>
+              <div key={fb.customerId} style={{ display: "flex", alignItems: "center", gap: 16 }}>
                 <div style={{ width: 30, height: 30, minWidth: 30, borderRadius: "50%", background: i === 0 ? T.royalBurgundy : "rgba(200,155,71,0.14)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: i === 0 ? "#FFF" : T.antiqueGold }}>#{i+1}</span>
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: i === 0 ? "#FFF" : T.antiqueGold }}>#{i+1}</span>
                 </div>
                 <div style={{ flex: 1, fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{fb.name}</div>
                 <div style={{ flex: 2 }}>
@@ -344,7 +345,7 @@ export function RetailChartsRow2() {
                   </div>
                 </div>
                 <div style={{ width: 100, textAlign: "right" }}>
-                  <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{fb.count} orders</div>
+                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{fb.count} orders</div>
                 </div>
               </div>
             ))
@@ -371,8 +372,8 @@ export function RetailChartsRow2() {
               No inactive retail customers detected.
             </div>
           ) : (
-            inactiveRetailAlerts.map((al, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 10, boxShadow: "0 1px 4px rgba(74,6,27,0.04)" }}>
+            inactiveRetailAlerts.map((al) => (
+              <div key={al.customerId} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 10, boxShadow: "0 1px 4px rgba(74,6,27,0.04)" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
                   <div style={{ width: 44, height: 44, borderRadius: "50%", background: T.silkCream, border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 16, color: T.royalBurgundy, fontWeight: 700 }}>
                     {al.name.replace("Smt. ", "").substring(0, 2).toUpperCase()}

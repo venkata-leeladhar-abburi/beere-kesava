@@ -1,7 +1,7 @@
 import React from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, Edit2 } from "lucide-react";
-import { FinishingStaffMember } from "../../finishing/contexts/FinishingStaffContext";
+import { FinishingStaffMember } from "@/features/finishing";
 import { T, F } from "./theme";
 import { StatusBadge } from "./UserBadges";
 import { Button, IconButton } from "../../../shared/ui/primitives";
@@ -28,7 +28,7 @@ export function ViewProfileModal({ member, onClose, onEdit }: {
               <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#fff", lineHeight: 1.2 }}>
                 {member.firstName} {member.lastName}
               </div>
-              <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(200,155,71,0.80)", marginTop: 3 }}>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(200,155,71,0.80)", marginTop: 3 }}>
                 {member.empId} · Finishing Staff
               </div>
             </div>
@@ -43,10 +43,10 @@ export function ViewProfileModal({ member, onClose, onEdit }: {
         <div style={{ padding: "22px 28px 28px" }}>
           <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: "16px 20px" }}>
             {[
-              { label: "Mobile Number",   value: member.mobile || "—",          mono: true  },
+              { label: "Mobile Number",   value: member.mobile || "—",          mono: false },
               { label: "Email",           value: member.email  || "—",          mono: false },
               { label: "Employee ID",     value: member.empId  || "—",          mono: true  },
-              { label: "Date Added",      value: member.dateAdded,              mono: true  },
+              { label: "Date Added",      value: member.dateAdded,              mono: false },
               { label: "Specialisation",  value: member.specialisation || "—",  mono: false },
               { label: "Status",          value: member.status,                 mono: false, badge: true },
             ].map(f => (
@@ -55,7 +55,8 @@ export function ViewProfileModal({ member, onClose, onEdit }: {
                 {f.badge ? (
                   <StatusBadge status={f.value} />
                 ) : (
-                  <div style={{ fontFamily: f.mono ? F.mono : F.ui, fontSize: 13, color: T.luxuryBrown, fontWeight: 500 }}>{f.value}</div>
+                  // eslint-disable-next-line no-restricted-syntax -- empId is a plain staff code, not a chart series
+                  <div style={{ fontFamily: f.mono ? "var(--font-mono)" : F.ui, fontSize: 13, color: T.luxuryBrown, fontWeight: 500 }}>{f.value}</div>
                 )}
               </div>
             ))}

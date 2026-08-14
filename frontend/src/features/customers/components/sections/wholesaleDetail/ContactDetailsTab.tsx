@@ -17,17 +17,17 @@ export function ContactDetailsTab({ customer, onViewCard }: {
           </div>
           <div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>GSTIN Registration</div>
-            <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 600, color: T.royalBurgundy, marginTop: 4 }}>{customer.gstNumber || "Unregistered"}</div>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 600, color: T.royalBurgundy, marginTop: 4 }}>{customer.gstNumber || "Unregistered"}</div>
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
           <div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Phone Number</div>
-            <div style={{ fontFamily: F.mono, fontSize: 14, color: T.luxuryBrown, marginTop: 4 }}>+91 98480 12345</div>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, color: T.luxuryBrown, marginTop: 4 }}>+91 98480 12345</div>
           </div>
           <div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>WhatsApp Contact</div>
-            <div style={{ fontFamily: F.mono, fontSize: 14, color: T.luxuryBrown, marginTop: 4 }}>+91 98480 12345</div>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, color: T.luxuryBrown, marginTop: 4 }}>+91 98480 12345</div>
           </div>
         </div>
         <div>
@@ -41,7 +41,7 @@ export function ContactDetailsTab({ customer, onViewCard }: {
           <div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, marginTop: 4 }}>
             HDFC Bank · Account No. 4872 1938 8901 · IFSC: HDFC0001842
           </div>
-          <span style={{ fontSize: 12, fontFamily: F.mono, color: T.taupe, marginTop: 6, display: "block" }}>🔒 Superadmin access encryption active</span>
+          <span style={{ fontSize: 12, fontFamily: "var(--font-mono)", color: T.taupe, marginTop: 6, display: "block" }}>🔒 Superadmin access encryption active</span>
         </div>
       </div>
 

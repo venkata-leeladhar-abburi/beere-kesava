@@ -1,29 +1,16 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { isSold, isOutstanding } from "../../../customers/contexts/SalesContext";
+import { isSold, isOutstanding } from "@/features/customers";
 import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
-import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
+import { usePagination } from "../../../../shared/ui/DataPagination";
 import { useCanSeeMoney } from "../../../../shared/ui/MoneyAccess";
-import { T, F, th, td, tdMono } from "./theme";
-import { WeaverSareeRow, FinishingStatus, TabKey, tabDate } from "./types";
-import { inr, fmtDate, externalSerialOf, AGE_COLOR, QC_CFG, FIN_CFG } from "./utils";
+import { T, F } from "./theme";
+import { WeaverSareeRow, TabKey, tabDate } from "./types";
+import { inr, externalSerialOf, QC_CFG, FIN_CFG } from "./utils";
 import { ExternalSareesTable } from "./ExternalSareesTable";
 import { Button, SearchInput } from "../../../../shared/ui/primitives";
 import { MainSareesTable } from "./MainSareesTable";
 import { Select, TabsBar } from "./WeaverSareesControls";
 import { useWeaverSareeRows } from "./useWeaverSareeRows";
-
-// ── Small presentational bits ────────────────────────────────────────────────
-function Chip({ label, color }: { label: string; color: string }) {
-  return (
-    <span style={{
-      display: "inline-flex", alignItems: "center", gap: 5, fontFamily: F.ui, fontSize: 12,
-      fontWeight: 700, color, background: `${color}1A`, borderRadius: 99, padding: "3px 9px", whiteSpace: "nowrap",
-    }}>
-      <span style={{ width: 5, height: 5, borderRadius: "50%", background: color }} />
-      {label}
-    </span>
-  );
-}
 
 
 
@@ -195,6 +182,10 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
   // filtered set so select-all and the parent's onVisibleChange (scan / bulk
   // actions) keep working across every matching row, not just the current page.
   const pag = usePagination(visible, 25);
+  // `pag` (from usePagination) is a new object every render, so it can't be
+  // added as a dep without resetting the page on every unrelated render;
+  // only its setPage function (stable across renders) is actually needed here.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { pag.setPage(1); }, [tab, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier, fPurchaseOrder, fSerial]);
   const pageRows = pag.pageItems;
 
@@ -363,7 +354,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
               <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: s.c, marginTop: 3 }}>{s.v}</div>
             </div>
           ))}
-          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, alignSelf: "center", maxWidth: 320, lineHeight: 1.5 }}>
+          <div className="max-w-[320px]" style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, alignSelf: "center", lineHeight: 1.5 }}>
             {tab === "defective"
               ? (isAll
                   ? `Defective sarees carry no making-charge credit — the full charge is written off.`

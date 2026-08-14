@@ -1,9 +1,8 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { ChevronRight, SlidersHorizontal, Moon } from 'lucide-react';
-import { T, F, G, EASE } from '../theme';
+import { T, F, EASE } from '../theme';
 import { Button, IconButton } from '../../../../../shared/ui/primitives';
-// @ts-ignore
 import imgHero from '../../../../../assets/hero.webp';
 
 export function Hero() {
@@ -77,7 +76,8 @@ export function Hero() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 1.0 }}
-          style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 18, color: "rgba(245,232,208,0.88)", lineHeight: 1.8, margin: 0, maxWidth: 460, letterSpacing: "0.1px" }}
+          className="max-w-[460px]"
+          style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 18, color: "rgba(245,232,208,0.88)", lineHeight: 1.8, margin: 0, letterSpacing: "0.1px" }}
         >
           From the finest raw silk to masterful craftsmanship,<br />we deliver excellence at every step — for four generations.
         </motion.p>
@@ -130,9 +130,9 @@ export function Hero() {
       </div>
 
       <div style={{ position: "absolute", right: 24, top: "40%", transform: "translateY(-50%)", zIndex: 6, display: "flex", flexDirection: "column", gap: 10 }}>
-        {[{ Icon: SlidersHorizontal, label: "Filters" }, { Icon: Moon, label: "Toggle theme" }].map(({ Icon, label }, i) => (
+        {[{ Icon: SlidersHorizontal, label: "Filters" }, { Icon: Moon, label: "Toggle theme" }].map(({ Icon, label }) => (
           <motion.div
-            key={i}
+            key={label}
             initial={{ backgroundColor: "rgba(245,232,208,0.07)" }}
             whileHover={{ scale: 1.1, backgroundColor: "rgba(245,232,208,0.12)" }}
             whileTap={{ scale: 0.93 }}

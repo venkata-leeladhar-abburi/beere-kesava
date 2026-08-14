@@ -1,9 +1,10 @@
 import React from "react";
-import { Factory, Search } from "lucide-react";
-import { FactoryLoom } from "../../../production/data/factoryLooms";
-import { BatchRecord } from "../../../production/contexts/BatchContext";
+import { Factory } from "lucide-react";
+import { FactoryLoom } from "@/features/production";
+import { BatchRecord } from "@/features/production";
 import { F, STATUS_CFG, T, WeaverLite } from "./theme";
 import { Button, SearchInput } from "../../../../shared/ui/primitives";
+import { EntityCode } from "@/shared/ui/domain";
 
 export function RecipientSelector({
   recipientType, setRecipientType,
@@ -67,7 +68,7 @@ export function RecipientSelector({
                       <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 12, color: "#FFF" }}>{w.initials}</span>
                     </div>
                     <div style={{ flex: 1, textAlign: "left" }}>
-                      <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown }}>{w.name} <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, fontWeight: 400 }}>· {w.id}</span></div>
+                      <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 6 }}>{w.name} <EntityCode type="weaver" value={w.id} size="sm" /></div>
                       <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{w.village} · {w.looms} active loom{w.looms !== 1 ? "s" : ""}</div>
                     </div>
                     <span style={{ background: STATUS_CFG[w.status].bg, color: STATUS_CFG[w.status].color, borderRadius: 999, padding: "3px 10px", fontFamily: F.ui, fontSize: 12, fontWeight: 600 }}>{STATUS_CFG[w.status].label}</span>
@@ -83,7 +84,7 @@ export function RecipientSelector({
                 <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: "#FFF" }}>{selectedWeaver.initials}</span>
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>{selectedWeaver.name} <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, fontWeight: 400 }}>· {selectedWeaver.id}</span></div>
+                <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 6 }}>{selectedWeaver.name} <EntityCode type="weaver" value={selectedWeaver.id} size="sm" /></div>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{selectedWeaver.village} · {selectedWeaver.looms} active looms</div>
               </div>
               <span style={{ background: STATUS_CFG[selectedWeaver.status].bg, color: STATUS_CFG[selectedWeaver.status].color, borderRadius: 999, padding: "4px 12px", fontFamily: F.ui, fontSize: 12, fontWeight: 600 }}>{STATUS_CFG[selectedWeaver.status].label}</span>
@@ -113,7 +114,7 @@ export function RecipientSelector({
                     return (
                       <Button key={b.batchId} onClick={() => setSelectedBatchId(b.batchId)} variant={active ? "primary" : "secondary"} size="md"
                         className="flex-col items-start gap-0.5 h-auto py-2">
-                        <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700 }}>{b.batchId}</span>
+                        <EntityCode type="batch" value={b.batchId} size="sm" />
                         <span style={{ fontFamily: F.ui, fontSize: 12, color: active ? "rgba(255,255,255,0.75)" : T.taupe, textTransform: "capitalize" }}>{b.status} · {sareeCount} saree{sareeCount !== 1 ? "s" : ""}</span>
                       </Button>
                     );
@@ -138,7 +139,7 @@ export function RecipientSelector({
                   </div>
                   <div>
                     <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown }}>{loom.loomNumber}</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{loom.id}</div>
+                    <EntityCode type="loom" value={loom.id} size="sm" />
                   </div>
                 </div>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{loom.location} · {loom.operatorName}</div>
@@ -155,7 +156,7 @@ export function RecipientSelector({
                 <Factory size={22} color="#FFF" />
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>{selectedFactoryLoom.loomNumber} <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, fontWeight: 400 }}>· {selectedFactoryLoom.id}</span></div>
+                <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 6 }}>{selectedFactoryLoom.loomNumber} <EntityCode type="loom" value={selectedFactoryLoom.id} size="sm" /></div>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{selectedFactoryLoom.location} · Operator: {selectedFactoryLoom.operatorName}</div>
               </div>
               <Button onClick={() => { setSelectedLoomId(null); setSelectedBatchId(null); }} variant="link" size="sm">Change</Button>
@@ -175,7 +176,7 @@ export function RecipientSelector({
                     return (
                       <Button key={b.batchId} onClick={() => setSelectedBatchId(b.batchId)} variant={active ? "primary" : "secondary"} size="md"
                         className="flex-col items-start gap-0.5 h-auto py-2">
-                        <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700 }}>{b.batchId}</span>
+                        <EntityCode type="batch" value={b.batchId} size="sm" />
                         <span style={{ fontFamily: F.ui, fontSize: 12, color: active ? "rgba(255,255,255,0.75)" : T.taupe, textTransform: "capitalize" }}>{b.status} · {sareeCount} saree{sareeCount !== 1 ? "s" : ""}</span>
                       </Button>
                     );

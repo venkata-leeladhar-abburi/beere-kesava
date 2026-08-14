@@ -1,6 +1,6 @@
 import React from "react";
 import { Plus } from "lucide-react";
-import { purchaseTotals } from "../../../../../suppliers/contexts/SupplierContext";
+import { purchaseTotals } from "@/features/suppliers";
 import { formatMoney, rupees } from "@/lib/domain/money";
 import { T, F } from "../../theme";
 import { Button } from "../../../../../../shared/ui/primitives";
@@ -62,10 +62,10 @@ export function SareeDetailsEditor({
             { label: "Total Profit", value: totals.profit, color: T.green, bg: T.greenBg, border: "rgba(30,102,64,0.20)" },
           ].map(({ label, value, color, bg, border }) => (
             <div key={label} style={{ background: bg, border: `1px solid ${border}`, borderRadius: 10, padding: "10px 12px" }}>
-              <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: 0.6, marginBottom: 4 }}>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: 0.6, marginBottom: 4 }}>
                 {label}
               </div>
-              <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color }}>{formatMoney(rupees(value))}</div>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color }}>{formatMoney(rupees(value))}</div>
             </div>
           ))}
         </div>
@@ -90,7 +90,7 @@ export function SareeDetailsEditor({
           <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>
             Total — {pieceCount} piece{pieceCount !== 1 ? "s" : ""}
           </span>
-          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>
             buying {formatMoney(rupees(totals.buying))} · selling{" "}
             <strong style={{ color: T.royalBurgundy }}>{formatMoney(rupees(totals.selling))}</strong> · profit{" "}
             <strong style={{ color: T.green }}>{formatMoney(rupees(totals.profit))}</strong>

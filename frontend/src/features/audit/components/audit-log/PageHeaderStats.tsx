@@ -63,7 +63,7 @@ export function PageHeaderStats() {
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
             <div style={{ width: 28, height: 1, background: T.antiqueGold }} />
             <span style={{
-              fontFamily: F.mono,
+              fontFamily: "var(--font-mono)",
               fontSize: 12,
               color: `${T.antiqueGold}80`,
               letterSpacing: "1.5px",
@@ -96,11 +96,10 @@ export function PageHeaderStats() {
             &amp; System Activity
           </div>
           {/* Description */}
-          <p style={{
+          <p className="max-w-[520px]" style={{
             fontFamily: F.ui,
             fontSize: 14,
             color: "rgba(255,255,255,0.60)",
-            maxWidth: 520,
             margin: 0,
             lineHeight: 1.65,
           }}>
@@ -174,12 +173,10 @@ export function PageHeaderStats() {
         </div>
 
         {/* Decorative rings */}
-        <div style={{
+        <div className="w-[400px] h-[400px]" style={{
           position: "absolute",
           right: -120,
           bottom: -120,
-          width: 400,
-          height: 400,
           borderRadius: "50%",
           border: "1px solid rgba(200,155,71,0.12)",
           pointerEvents: "none",

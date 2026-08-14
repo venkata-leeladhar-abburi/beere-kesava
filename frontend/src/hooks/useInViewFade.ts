@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { useInView } from "motion/react";
+import { useInView, type UseInViewOptions } from "motion/react";
 
 /**
  * Returns a ref and inView boolean for scroll-triggered fade/slide animations.
@@ -15,8 +15,8 @@ import { useInView } from "motion/react";
  *   />
  * );
  */
-export function useInViewFade(margin = "-80px 0px") {
+export function useInViewFade(margin: UseInViewOptions["margin"] = "-80px 0px") {
   const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: margin as any });
+  const inView = useInView(ref, { once: true, margin });
   return { ref, inView };
 }

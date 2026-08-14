@@ -3,13 +3,33 @@ import { T, F } from "./theme";
 import { MAT_TAG_PO } from "./data";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
-export function PurchaseOrderHistoryTable({ orders }: { orders: any[] }) {
-  const columns: ColumnDef<any>[] = [
+interface PurchaseOrderMaterial {
+  type: string;
+  description: string;
+  qty: string;
+  invoiceAmount?: string;
+}
+
+export interface PurchaseOrderHistoryRow {
+  id: string;
+  date: string;
+  materials: PurchaseOrderMaterial[];
+  totalAmount: string;
+  amount: number;
+  grnId?: string;
+  firmName?: string;
+  receivedDate?: string;
+  status: "Delivered" | "Approved" | "Cancelled" | "Pending";
+  receiveStatus?: string;
+}
+
+export function PurchaseOrderHistoryTable({ orders }: { orders: PurchaseOrderHistoryRow[] }) {
+  const columns: ColumnDef<PurchaseOrderHistoryRow>[] = [
     {
       id: "po", header: "PO Reference", accessor: o => o.id, priority: 1,
       cell: (_v, o) => (
         <div>
-          <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy, marginBottom: 4 }}>{o.id}</div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, color: T.royalBurgundy, marginBottom: 4 }}>{o.id}</div>
           <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{o.date}</div>
         </div>
       ),
@@ -18,16 +38,18 @@ export function PurchaseOrderHistoryTable({ orders }: { orders: any[] }) {
       id: "materials", header: "Materials", accessor: o => o.materials,
       cell: (_v, o) => (
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          {o.materials.map((m: any, mi: number) => {
+          {o.materials.map((m, mi: number) => {
             const mt = MAT_TAG_PO[m.type] || MAT_TAG_PO.Warp;
             return (
-              <div key={mi} style={{ display: "flex", alignItems: "flex-start", gap: 8, paddingBottom: 6, borderBottom: mi < o.materials.length - 1 ? `1px solid ${T.borderDef}` : "none" }}>
+              // Material rows have no stable id and type/description can repeat, so pair them with index.
+              // eslint-disable-next-line react/no-array-index-key
+              <div key={`${m.type}-${m.description}-${mi}`} style={{ display: "flex", alignItems: "flex-start", gap: 8, paddingBottom: 6, borderBottom: mi < o.materials.length - 1 ? `1px solid ${T.borderDef}` : "none" }}>
                 <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: mt.col, background: mt.bg, borderRadius: 4, padding: "2px 6px", marginTop: 1 }}>{m.type}</span>
                 <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
                   <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{m.description}</span>
-                  {m.invoiceAmount && <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Invoice: <span style={{ fontFamily: F.mono, fontWeight: 600 }}>{m.invoiceAmount}</span></span>}
+                  {m.invoiceAmount && <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Invoice: <span style={{ fontFamily: "var(--font-mono)", fontWeight: 600 }}>{m.invoiceAmount}</span></span>}
                 </div>
-                <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "2px 6px", borderRadius: 4, marginTop: 1 }}>{m.qty}</span>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "2px 6px", borderRadius: 4, marginTop: 1 }}>{m.qty}</span>
               </div>
             );
           })}
@@ -36,13 +58,13 @@ export function PurchaseOrderHistoryTable({ orders }: { orders: any[] }) {
     },
     {
       id: "total", header: "Total Value", accessor: o => o.totalAmount, type: "currency",
-      cell: (_v, o) => <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: "#8B6018" }}>{o.totalAmount}</span>,
+      cell: (_v, o) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color: "#8B6018" }}>{o.totalAmount}</span>,
     },
     {
       id: "receipt", header: "Receipt Details", accessor: o => o.grnId, priority: 3,
       cell: (_v, o) => o.grnId ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-          <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy }}>{o.grnId}</div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, color: T.royalBurgundy }}>{o.grnId}</div>
           <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{o.firmName}</div>
           <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{o.receivedDate}</div>
         </div>

@@ -1,5 +1,5 @@
 import React from "react";
-import { MaterialIssueRecord } from "../../../materials/contexts/MaterialIssueContext";
+import { MaterialIssueRecord } from "@/features/materials";
 import { T, F } from "./theme";
 
 const fmtIssueDate = (iso: string) => {
@@ -8,7 +8,7 @@ const fmtIssueDate = (iso: string) => {
 };
 
 function SectionPill({ label }: { label: string }) {
-  return <div style={{ fontFamily: F.mono, fontSize: 13, color: T.taupe, letterSpacing: "1.2px", textTransform: "uppercase" as const, marginBottom: 4 }}>{label}</div>;
+  return <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.taupe, letterSpacing: "1.2px", textTransform: "uppercase" as const, marginBottom: 4 }}>{label}</div>;
 }
 
 export function LoomMaterialsTab({ materialRecords }: { materialRecords: MaterialIssueRecord[] }) {
@@ -44,7 +44,7 @@ export function LoomMaterialsTab({ materialRecords }: { materialRecords: Materia
             return (
               <div key={batchId} style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden", marginBottom: 20 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "16px 22px", background: T.warmIvory, borderBottom: `1px solid ${T.borderDef}` }}>
-                  <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", borderRadius: 7, padding: "5px 12px" }}>{batchId}</span>
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", borderRadius: 7, padding: "5px 12px" }}>{batchId}</span>
                   <span style={{ fontFamily: F.ui, fontSize: 12, background: "rgba(110,15,45,0.08)", color: T.royalBurgundy, borderRadius: 6, padding: "3px 8px", fontWeight: 700 }}>{recs.length} issuance{recs.length > 1 ? "s" : ""}</span>
                 </div>
 
@@ -56,7 +56,7 @@ export function LoomMaterialsTab({ materialRecords }: { materialRecords: Materia
                   ].map((s, i) => (
                     <div key={s.label} style={{ padding: "14px 22px", borderRight: i < 2 ? `1px solid ${T.borderDef}` : "none" }}>
                       <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 5 }}>{s.label}</div>
-                      <div style={{ fontFamily: F.mono, fontSize: 18, fontWeight: 700, color: s.color, lineHeight: 1.1 }}>{s.value}</div>
+                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 18, fontWeight: 700, color: s.color, lineHeight: 1.1 }}>{s.value}</div>
                     </div>
                   ))}
                 </div>
@@ -66,17 +66,17 @@ export function LoomMaterialsTab({ materialRecords }: { materialRecords: Materia
                     <div key={r.id} style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "14px 16px" }}>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, flexWrap: "wrap" as const, gap: 8 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                          <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", borderRadius: 6, padding: "3px 9px" }}>{r.id}</span>
+                          <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", borderRadius: 6, padding: "3px 9px" }}>{r.id}</span>
                           <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{fmtIssueDate(r.issuedAt)}</span>
                         </div>
                       </div>
                       <div style={{ display: "flex", flexDirection: "column" as const, gap: 8 }}>
-                        {r.materials.map((m, i) => (
-                          <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "10px 14px", flexWrap: "wrap" as const }}>
+                        {r.materials.map((m) => (
+                          <div key={`${m.grnBatchId}-${m.materialType}-${m.quantity}-${m.unit}`} style={{ display: "flex", alignItems: "center", gap: 10, background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "10px 14px", flexWrap: "wrap" as const }}>
                             <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown }}>{m.materialType}</span>
                             {m.description && <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{m.description}</span>}
-                            <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, marginLeft: "auto" }}>{m.quantity} {m.unit}</span>
-                            <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, background: "rgba(139,112,96,0.10)", borderRadius: 5, padding: "2px 8px" }}>{m.grnBatchId}</span>
+                            <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy, marginLeft: "auto" }}>{m.quantity} {m.unit}</span>
+                            <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, background: "rgba(139,112,96,0.10)", borderRadius: 5, padding: "2px 8px" }}>{m.grnBatchId}</span>
                           </div>
                         ))}
                       </div>

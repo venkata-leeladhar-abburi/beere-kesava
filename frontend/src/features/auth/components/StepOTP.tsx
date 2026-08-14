@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "motion/react";
 import { Clock, Check, X, MessageSquare } from "lucide-react";
 import { Button, CodeInput } from "../../../shared/ui/primitives";
 import { cn } from "../../../shared/ui/utils";
-// @ts-ignore
 import crest from "../../../assets/bk-crest.png";
 import { Flourish } from "./LoginBrandPanel";
 
@@ -47,7 +46,7 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("Incorrect code. Please check and try again. You have 2 more attempts.");
   const [shake, setShake] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [, setLoading] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   // Mirrors `digits` synchronously — the focus-jump-to-first-empty check on
   // each box needs the value at the instant of focus, and `digits` state
@@ -56,25 +55,6 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
   const timer = useTimer(108, true);
 
   const formatted = `+91 ${phone.slice(0, 5)} ${phone.slice(5)}`;
-
-  const handleKey = useCallback((i: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Backspace") {
-      if (digits[i] === "") {
-        if (i > 0) { inputRefs.current[i - 1]?.focus(); setFocused(i - 1); }
-      } else {
-        const next = [...digits]; next[i] = "";
-        digitsRef.current = next;
-        setDigits(next); setError(false);
-      }
-    } else if (e.key === "ArrowLeft" && i > 0) {
-      inputRefs.current[i - 1]?.focus(); setFocused(i - 1);
-    } else if (e.key === "ArrowRight" && i < 5) {
-      inputRefs.current[i + 1]?.focus(); setFocused(i + 1);
-    } else if (e.key === "Enter") {
-      const otp = digits.join("");
-      if (otp.length === 6) handleVerify(otp);
-    }
-  }, [digits]);
 
   const handleInput = (i: number, val: string) => {
     const ch = val.replace(/\D/g, "").slice(-1);
@@ -97,7 +77,7 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
     e.preventDefault();
   };
 
-  const handleVerify = async (otp: string) => {
+  const handleVerify = useCallback(async (otp: string) => {
     if (otp !== "123456") {
       digitsRef.current = Array(6).fill("");
       setErrorMessage("Incorrect code. Please check and try again. You have 2 more attempts.");
@@ -121,7 +101,26 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
     } finally {
       setLoading(false);
     }
-  };
+  }, [phone, onVerify]);
+
+  const handleKey = useCallback((i: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Backspace") {
+      if (digits[i] === "") {
+        if (i > 0) { inputRefs.current[i - 1]?.focus(); setFocused(i - 1); }
+      } else {
+        const next = [...digits]; next[i] = "";
+        digitsRef.current = next;
+        setDigits(next); setError(false);
+      }
+    } else if (e.key === "ArrowLeft" && i > 0) {
+      inputRefs.current[i - 1]?.focus(); setFocused(i - 1);
+    } else if (e.key === "ArrowRight" && i < 5) {
+      inputRefs.current[i + 1]?.focus(); setFocused(i + 1);
+    } else if (e.key === "Enter") {
+      const otp = digits.join("");
+      if (otp.length === 6) handleVerify(otp);
+    }
+  }, [digits, handleVerify]);
 
   const otp = digits.join("");
 
@@ -146,7 +145,7 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
         </div>
         <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: "clamp(30px, 4.4vh, 38px)", color: C.burgundyDeep, lineHeight: 1.1, marginBottom: 8 }}>Check Your Phone</div>
         <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 14, color: C.textMuted, marginBottom: 6 }}>We sent a 6-digit code to</div>
-        <div style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 16, color: C.burgundy, marginBottom: 6 }}>{formatted}</div>
+        <div style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 16, color: C.burgundy, marginBottom: 6 }}>{formatted}</div>
         <Button variant="link" size="sm" onClick={onBack} className="underline">
           Change Number
         </Button>
@@ -163,9 +162,13 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
       >
         {digits.map((d, i) => (
           <CodeInput
+            // Each box is a fixed OTP digit position (not a data-backed item), so
+            // its index is a stable, semantically-meaningful identifier here.
+            // eslint-disable-next-line react/no-array-index-key
             key={i}
             ref={el => { inputRefs.current[i] = el; }}
             inputMode="numeric"
+            // eslint-disable-next-line jsx-a11y/no-autofocus -- first OTP box should receive focus immediately so users can start typing the code
             autoFocus={i === 0}
             autoComplete={i === 0 ? "one-time-code" : "off"}
             maxLength={1}
@@ -217,7 +220,7 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
       <div style={{ textAlign: "center" as const, marginBottom: 20 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, marginBottom: 8 }}>
           <Clock size={15} color={C.textMuted} />
-          <span style={{ fontFamily: F.mono, fontWeight: 600, fontSize: 14, color: C.textMuted }}>
+          <span style={{ fontFamily: "var(--font-mono)", fontWeight: 600, fontSize: 14, color: C.textMuted }}>
             Code expires in: {timer.display}
           </span>
         </div>

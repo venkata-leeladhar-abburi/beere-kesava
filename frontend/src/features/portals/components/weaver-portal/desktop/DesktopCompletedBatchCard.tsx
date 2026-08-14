@@ -6,7 +6,7 @@ import { DispatchInstructionsBlock, MaterialsGivenBlock } from "./batchCardHelpe
 import { Button } from "../../../../../shared/ui/primitives";
 
 // Completed batch card — same full info as the active batch card, but with a completed badge
-export function DesktopCompletedBatchCard({ b, idx, bp = "desktop" }: { b: MyBatchEntry; idx: number; bp?: "tablet" | "desktop" }) {
+export function DesktopCompletedBatchCard({ b, bp = "desktop" }: { b: MyBatchEntry; idx: number; bp?: "tablet" | "desktop" }) {
   const [expandedType, setExpandedType] = useState<string | null>(null);
   const isTablet = bp === "tablet";
 

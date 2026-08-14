@@ -2,11 +2,12 @@ import React, { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ChevronDown, ChevronRight, Layers } from "lucide-react";
 import { T, F } from "../../theme";
-import { UnifiedSaree, isOutstanding, isSold, ageBucket } from "../../../customers/contexts/SalesContext";
+import { UnifiedSaree, isOutstanding, isSold, ageBucket } from "@/features/customers";
 import { Empty, ExportBtn, SectionCard, exportCsv, inr } from "./primitives";
 import type { AgeKey } from "./primitives";
 import { DrilldownTabs, sareeOriginName, sareeOriginSub } from "./SareeDetailTable";
 import { Button } from "../../../../shared/ui/primitives";
+import { EntityCode } from "@/shared/ui/domain";
 
 // ── Outstanding by batch (in-house batches across weavers + factory looms) ───
 export function BatchOutstanding({ sarees, search, ageFilter }: { sarees: UnifiedSaree[]; search: string; ageFilter: AgeKey }) {
@@ -81,8 +82,8 @@ export function BatchOutstanding({ sarees, search, ageFilter }: { sarees: Unifie
                   className={`h-auto w-full justify-start gap-[14px] rounded-none px-[18px] py-[14px] text-left ${isOpen ? "bg-[rgba(110,15,45,0.04)]" : "bg-white"}`}>
                   {isOpen ? <ChevronDown size={17} color={T.royalBurgundy} /> : <ChevronRight size={17} color={T.taupe} />}
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}>{g.key}</div>
-                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{parts || "—"}</div>
+                    <div><EntityCode type="batch" value={g.key} size="sm" /></div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{parts || "—"}</div>
                   </div>
                   <div style={{ display: "flex", gap: 22, alignItems: "center", flexWrap: "wrap", justifyContent: "flex-end" }}>
                     {[
@@ -93,7 +94,7 @@ export function BatchOutstanding({ sarees, search, ageFilter }: { sarees: Unifie
                     ].map(k => (
                       <div key={k.l} style={{ textAlign: "right", minWidth: 62 }}>
                         <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.7px" }}>{k.l}</div>
-                        <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: k.c }}>{k.v}</div>
+                        <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: k.c }}>{k.v}</div>
                       </div>
                     ))}
                   </div>

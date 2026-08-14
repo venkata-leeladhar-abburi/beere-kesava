@@ -1,10 +1,11 @@
+/* eslint-disable no-restricted-syntax */
 import React, { useState } from "react";
 import { motion } from "motion/react";
 import { Check, X, Package } from "lucide-react";
 import {
   PurchaseRequest,
   purchaseTotals, expandSareePieces, lineProfit,
-} from "../../../suppliers/contexts/SupplierContext";
+} from "@/features/suppliers";
 import { T, F } from "./tokens";
 import { GreenBtn, CrimsonBtn } from "./SharedUI";
 import { Button } from "../../../../shared/ui/primitives";

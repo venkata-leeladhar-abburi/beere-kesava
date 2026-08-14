@@ -1,13 +1,12 @@
 import React from "react";
 import { AnimatePresence } from "motion/react";
-import { FinishingReturn, DispatchRecord, Quotation } from "../../finishing/contexts/FinishingContext";
-import { DesignCodeCard } from "../../design-library/components/DesignLibraryComponents";
-import { SareeTypeCard } from "../../pricing/components/RatesPricingPage";
-import { WeaverSareesSection } from "../../weavers/components/WeaverSareesSection";
+import { DesignCodeCard } from "@/features/design-library";
+import { SareeTypeCard } from "@/features/pricing";
+import { WeaverSareesSection } from "@/features/weavers";
 import { MoneyAccessProvider } from "../../../shared/ui/MoneyAccess";
 
 import { T, F, card } from "./theme";
-import { TransportData, InvoiceData, InventoryRecord } from "./types";
+import { InventoryRecord } from "./types";
 import { getLoomForRecord, getSareeColor } from "./utils";
 import { Toast } from "./common/primitives";
 import { DispatchShopModal } from "./modals/DispatchShopModal";
@@ -62,15 +61,12 @@ export function InventoryPage({
     updateDispatch,
     bulkOrders,
     firms,
-    openDesignCode,
     setOpenDesignCode,
-    openSareeTypeCode,
     setOpenSareeTypeCode,
     openDesign,
     openSareeType,
     selected,
     setSelected,
-    mirroredRows,
     setMirroredRows,
     viewingItem,
     setViewingItem,

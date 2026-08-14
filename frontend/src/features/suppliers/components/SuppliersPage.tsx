@@ -4,8 +4,8 @@ import { AnimatePresence } from "motion/react";
 import {
   useSuppliers, Supplier, SareeTag,
 } from "../contexts/SupplierContext";
-import { MaterialsFooter } from "../../materials/components/sections/MaterialsFooter";
-import { PurchaseFormModal, FormState as PurchaseFormState, EMPTY_FORM as EMPTY_PURCHASE_FORM } from "../../inventory/components/ExternalPurchasesPage";
+import { MaterialsFooter } from "@/features/materials";
+import { PurchaseFormModal, FormState as PurchaseFormState, EMPTY_FORM as EMPTY_PURCHASE_FORM } from "@/features/inventory";
 
 import { T } from "./theme";
 import { Toast } from "./common/primitives";
@@ -28,9 +28,7 @@ import { AddSupplierModal } from "./modals/AddSupplierModal";
  * purchase request here reuses that exact form.
  */
 export function SuppliersPage() {
-  // `raiseRequest` and `requests` (below, for `pendingRequests`) are kept for
-  // parity with the pre-split file — both were already unused dead code there.
-  const { suppliers, statsFor, addSupplier, raiseRequest, requests, purchases, addPurchase, nextSupplierId } = useSuppliers();
+  const { suppliers, statsFor, addSupplier, purchases, addPurchase, nextSupplierId } = useSuppliers();
   const location = useLocation();
   const [selected, setSelected] = useState<Supplier | null>(null);
   // Command palette "New Supplier" action deep-links here with ?new=1 to open
@@ -74,8 +72,6 @@ export function SuppliersPage() {
     return mSearch && mStatus && mRating;
   });
 
-  const pendingRequests = requests.filter(r => r.status === "pending").length;
-
   // Raising a purchase request uses the exact same form as adding an external
   // purchase — supplier, invoice and per-saree detail — so it's ready to convert
   // into a real purchase the moment the superadmin approves it.
@@ -100,6 +96,7 @@ export function SuppliersPage() {
       sareeCount: sarees.length,
       gstNumber: form.gstNumber,
       invoiceNumber: form.invoiceNumber,
+      // eslint-disable-next-line no-restricted-syntax -- fallback string format
       billAmount: form.billAmount || "₹0",
       status: form.status || "Pending",
       notes: form.notes,

@@ -84,8 +84,12 @@ export function AvatarGroup({ avatars, size = "md", max = 4 }: AvatarGroupProps)
 
   return (
     <div className="flex items-center" role="group" aria-label={`${avatars.length} people`}>
+      {/* AvatarGroupProps only carries name/src, and duplicate names are
+          possible (e.g. two people with the same display name), so the
+          index is combined with the name to keep the key stable per-slot. */}
       {visible.map((a, i) => (
-        <div key={a.name + i} style={{ marginLeft: i === 0 ? 0 : -px * 0.2 }}>
+        // eslint-disable-next-line react/no-array-index-key -- AvatarGroupProps only carries name/src, and duplicate names are possible, so index is combined with name to keep the key stable per-slot.
+        <div key={`${a.name}-${i}`} style={{ marginLeft: i === 0 ? 0 : -px * 0.2 }}>
           <Avatar name={a.name} src={a.src} size={size} className="ring-2 ring-[var(--surface-raised)]" />
         </div>
       ))}

@@ -7,6 +7,8 @@ import { SectionCard } from "../issueMaterial/primitives";
 import { renderReturnedMaterials } from "./materialFormatters";
 import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { rupees } from "@/lib/domain/money";
+import { Money, EntityCode } from "@/shared/ui/domain";
 
 const STATUS_BADGE: Record<string, { label: string; color: string; bg: string }> = {
   approved: { label: "Approved", color: T.green, bg: "rgba(30,102,64,0.10)" },
@@ -31,7 +33,7 @@ export function ReturnHistorySection({
   const columns: ColumnDef<MaterialReturnRecord>[] = [
     {
       id: "id", header: "MRR ID", accessor: r => r.id,
-      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", borderRadius: 6, padding: "3px 8px" }}>{r.id}</span>,
+      cell: (_v, r) => <EntityCode type="goodsReceipt" value={r.id} size="sm" />,
     },
     {
       id: "date", header: "Date", accessor: r => r.receivedAt,
@@ -42,7 +44,7 @@ export function ReturnHistorySection({
       cell: (_v, r) => (
         <div style={{ whiteSpace: "nowrap" }}>
           <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: T.luxuryBrown }}>{r.weaverName ?? r.factoryLoomNumber}</div>
-          {r.loomNumber && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, fontWeight: 700, marginTop: 2 }}>Loom {r.loomNumber}</div>}
+          {r.loomNumber && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.antiqueGold, fontWeight: 700, marginTop: 2 }}>Loom {r.loomNumber}</div>}
         </div>
       ),
     },
@@ -53,7 +55,7 @@ export function ReturnHistorySection({
     {
       id: "deduction", header: "Deduction", accessor: r => r.deductionAmount,
       cell: (_v, r) => r.deductionAmount ? (
-        <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: "#8B6018", background: "rgba(196,146,58,0.14)", borderRadius: 6, padding: "3px 8px", whiteSpace: "nowrap" }}>₹{r.deductionAmount}</span>
+        <span style={{ fontSize: 12, fontWeight: 700, color: "#8B6018", background: "rgba(196,146,58,0.14)", borderRadius: 6, padding: "3px 8px", whiteSpace: "nowrap" }}><Money value={rupees(r.deductionAmount)} /></span>
       ) : (
         <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>—</span>
       ),

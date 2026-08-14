@@ -67,13 +67,13 @@ export function POCard({
       {/* Top row: ID + raised */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <span style={{
-          fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy,
+          fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy,
           background: "rgba(110,15,45,0.07)", borderRadius: 6, padding: "3px 8px",
         }}>
           {item.id}
         </span>
         <span style={{
-          fontFamily: F.mono, fontSize: 12, color: T.taupe,
+          fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe,
           background: T.cream, borderRadius: 6, padding: "3px 8px",
         }}>
           Raised {item.raised}
@@ -82,7 +82,7 @@ export function POCard({
 
       {/* Urgency chip */}
       {item.urgency === "Urgent" && (
-        <div style={{ background: "rgba(192,57,43,0.09)", borderRadius: 7, padding: "6px 10px", fontFamily: F.mono, fontSize: 12, color: T.crimson, fontWeight: 600 }}>
+        <div style={{ background: "rgba(192,57,43,0.09)", borderRadius: 7, padding: "6px 10px", fontFamily: "var(--font-mono)", fontSize: 12, color: T.crimson, fontWeight: 600 }}>
           🔴 Urgent — Low Stock Alert
         </div>
       )}
@@ -95,7 +95,7 @@ export function POCard({
             {item.vendor}
           </span>
         </div>
-        <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, paddingLeft: 24 }}>
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, paddingLeft: 24 }}>
           {item.vendorCity}
         </span>
       </div>
@@ -111,7 +111,9 @@ export function POCard({
       {/* Materials */}
       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
         {item.materials.map((m, i) => (
-          <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          // Material rows have no id and label can repeat, so pair it with index.
+          // eslint-disable-next-line react/no-array-index-key
+          <div key={`${m.label}-${i}`} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 500, color: T.taupe }}>
               {m.label}
             </span>

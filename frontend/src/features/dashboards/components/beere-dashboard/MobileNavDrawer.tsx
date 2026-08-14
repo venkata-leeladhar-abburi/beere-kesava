@@ -1,11 +1,9 @@
 import React from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { motion } from 'motion/react';
-import { useNavigate } from 'react-router';
-import { ChevronLeft, ChevronRight, Menu, LogOut, UserRound, ShoppingCart, Package, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Menu, LogOut, UserRound, X } from 'lucide-react';
 import { imgBKLogo } from '../../../../shared/constants/weaverImages';
 import { T, F, G, EASE, findNavGroup, NAV_GROUPS } from './theme';
-import { useAuth } from '../../../../contexts/AuthContext';
 import { Button, IconButton } from '../../../../shared/ui/primitives';
 import { Drawer } from '../../../../shared/ui/overlay';
 
@@ -115,15 +113,13 @@ export function MobileMenuDrawer({ open, onClose, activeTab, setTab }: {
 }
 
 export function MobileTopNav({ onMenuOpen, onBack, onLogout, onProfile }: { onMenuOpen: () => void; onBack?: () => void; onLogout?: () => void; onProfile?: () => void }) {
-  const navigate = useNavigate();
-  const { selectRole } = useAuth();
   const [showProfile, setShowProfile] = React.useState(false);
   return (
     <motion.nav
       initial={{ y: -60, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: EASE }}
-      style={{ position: "sticky", top: 0, zIndex: 100, height: 60, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 18px", background: "rgba(255,253,249,0.96)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)" as any, borderBottom: `1px solid rgba(110,15,45,0.08)`, boxShadow: "0 2px 20px rgba(74,6,27,0.05)" }}
+      style={{ position: "sticky", top: 0, zIndex: 100, height: 60, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 18px", background: "rgba(255,253,249,0.96)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", borderBottom: `1px solid rgba(110,15,45,0.08)`, boxShadow: "0 2px 20px rgba(74,6,27,0.05)" }}
     >
       <IconButton
         icon={Menu}
@@ -155,7 +151,7 @@ export function MobileTopNav({ onMenuOpen, onBack, onLogout, onProfile }: { onMe
           <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: "var(--z-tooltip)", background: "#FFFDF9", borderRadius: 14, border: `1px solid ${T.borderDef}`, boxShadow: "0 8px 32px rgba(44,24,16,0.14)", minWidth: 210, overflow: "hidden" }}>
             <div style={{ padding: "14px 16px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${T.borderDef}` }}>
               <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>Admin User</div>
-              <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2 }}>Admin · Beere Kesava Silks</div>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 2 }}>Admin · Beere Kesava Silks</div>
             </div>
             <div style={{ padding: "6px 0" }}>
               <Button onClick={() => { setShowProfile(false); onProfile?.(); }} variant="tertiary" fullWidth

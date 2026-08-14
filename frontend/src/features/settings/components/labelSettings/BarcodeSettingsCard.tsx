@@ -53,7 +53,7 @@ export function BarcodeSettingsCard() {
             background: "#F0EDE8",
             borderRadius: 8,
             padding: "10px 12px",
-            fontFamily: F.mono,
+            fontFamily: "var(--font-mono)",
             fontSize: 12,
             color: T.taupe,
           }}

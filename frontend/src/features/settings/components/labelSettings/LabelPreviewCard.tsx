@@ -34,8 +34,8 @@ export function LabelPreviewCard({ fields }: {
 
         {/* Label preview box */}
         <div
+          className="w-[360px] max-w-full"
           style={{
-            width: 360,
             height: 180,
             background: "white",
             border: "1.5px solid #6E0F2D",
@@ -71,7 +71,7 @@ export function LabelPreviewCard({ fields }: {
             )}
             <span
               style={{
-                fontFamily: F.mono,
+                fontFamily: "var(--font-mono)",
                 fontSize: 12,
                 color: T.taupe,
                 background: T.cream,
@@ -90,7 +90,7 @@ export function LabelPreviewCard({ fields }: {
               <BarcodePreview code="RAVI-L2-001" />
               <div
                 style={{
-                  fontFamily: F.mono,
+                  fontFamily: "var(--font-mono)",
                   fontWeight: 700,
                   fontSize: 12,
                   textAlign: "center",
@@ -116,7 +116,7 @@ export function LabelPreviewCard({ fields }: {
               <div>
                 <div
                   style={{
-                    fontFamily: F.mono,
+                    fontFamily: "var(--font-mono)",
                     fontSize: 7,
                     color: T.antiqueGold,
                     textTransform: "uppercase",
@@ -126,7 +126,7 @@ export function LabelPreviewCard({ fields }: {
                 </div>
                 <div
                   style={{
-                    fontFamily: F.mono,
+                    fontFamily: "var(--font-mono)",
                     fontWeight: 700,
                     fontSize: 12,
                     color: "#000",
@@ -140,7 +140,7 @@ export function LabelPreviewCard({ fields }: {
               <div style={{ textAlign: "center" }}>
                 <div
                   style={{
-                    fontFamily: F.mono,
+                    fontFamily: "var(--font-mono)",
                     fontSize: 7,
                     color: T.antiqueGold,
                     textTransform: "uppercase",
@@ -150,7 +150,7 @@ export function LabelPreviewCard({ fields }: {
                 </div>
                 <div
                   style={{
-                    fontFamily: F.mono,
+                    fontFamily: "var(--font-mono)",
                     fontWeight: 700,
                     fontSize: 12,
                     color: "#000",
@@ -163,7 +163,7 @@ export function LabelPreviewCard({ fields }: {
             <div style={{ textAlign: "right" }}>
               <div
                 style={{
-                  fontFamily: F.mono,
+                  fontFamily: "var(--font-mono)",
                   fontSize: 7,
                   color: T.antiqueGold,
                   textTransform: "uppercase",
@@ -173,7 +173,7 @@ export function LabelPreviewCard({ fields }: {
               </div>
               <div
                 style={{
-                  fontFamily: F.mono,
+                  fontFamily: "var(--font-mono)",
                   fontWeight: 700,
                   fontSize: 12,
                   color: "#000",
@@ -188,7 +188,7 @@ export function LabelPreviewCard({ fields }: {
           {fields.branding && (
             <div
               style={{
-                fontFamily: F.mono,
+                fontFamily: "var(--font-mono)",
                 fontSize: 6,
                 color: T.royalBurgundy,
                 opacity: 0.6,

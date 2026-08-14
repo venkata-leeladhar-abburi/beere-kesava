@@ -102,7 +102,7 @@ export function ImportWeaversModal({ open, onClose, onImport, nextIdStart }: {
     const palette = ["#5A3E6B", "#2D6B6B", "#4A6B4A", "#9B6B8A", "#2D7D6B", "#4A5E7A", "#7A2040", "#6B4A2A"];
     const rows: ImportedWeaver[] = valid.map((v, i) => ({
       id: crypto.randomUUID(),
-      name: v.name, village: v.village, photo: null,
+      name: v.name, village: v.village, cluster: v.village, photo: null,
       initials: initialsOf(v.name), bg: palette[(nextIdStart + i) % palette.length],
       status: v.status, thisMonth: 0, passRate: 0, totalEver: 0,
       looms: v.looms, batch: null, design: null, mobile: v.mobile,
@@ -164,7 +164,7 @@ export function ImportWeaversModal({ open, onClose, onImport, nextIdStart }: {
               <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden", marginBottom: invalid.length > 0 ? 14 : 0 }}>
                 <div style={{ maxHeight: 220, overflowY: "auto" }}>
                   {valid.map((v, i) => (
-                    <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "10px 14px", borderBottom: i < valid.length - 1 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 1 ? "rgba(247,242,234,0.5)" : "#FFF" }}>
+                    <div key={v.mobile} style={{ display: "flex", justifyContent: "space-between", padding: "10px 14px", borderBottom: i < valid.length - 1 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 1 ? "rgba(247,242,234,0.5)" : "#FFF" }}>
                       <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, fontWeight: 600 }}>{v.name}</span>
                       <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{v.village} · {v.mobile} · {v.looms} loom{v.looms !== 1 ? "s" : ""}</span>
                     </div>
@@ -175,7 +175,7 @@ export function ImportWeaversModal({ open, onClose, onImport, nextIdStart }: {
 
             {invalid.length > 0 && (
               <div style={{ fontFamily: F.ui, fontSize: 12, color: "#C0392B" }}>
-                {invalid.map((b, i) => <div key={i}>Row {b.row}: {b.reason}</div>)}
+                {invalid.map((b) => <div key={b.row}>Row {b.row}: {b.reason}</div>)}
               </div>
             )}
           </div>

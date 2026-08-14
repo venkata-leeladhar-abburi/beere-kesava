@@ -5,9 +5,9 @@ import { inventoryApi } from '../../../../shared/api/inventory';
 import { 
   IndianRupee, Plus, Wallet, CreditCard, Check,
 } from 'lucide-react';
-import { useRatesPricing } from "../../../pricing/contexts/RatesContext";
+import { useRatesPricing } from "@/features/pricing";
 import { useResponsive } from "../../../../hooks/useResponsive";
-import { C, F, Card, Btn, Chip, useCanSeePrices, HeroHeader } from './theme';
+import { C, F, Chip, useCanSeePrices, HeroHeader } from './theme';
 import {
   Stepper, StepHeader, StepBody, FlowActions, SummaryPanel, OptionCard,
   ConsequenceNote, ACCENT_SALE, type FlowStep, type SummaryRow,
@@ -19,7 +19,7 @@ import { ScanSareeStep } from './ScanSareeStep';
 import { ApiError } from "../../../../shared/api/client";
 import { scanApi } from "../../../../shared/api/scan";
 import { salesApi } from "../../../../shared/api/sales";
-import { Button, Input } from '../../../../shared/ui/primitives';
+import { Input } from '../../../../shared/ui/primitives';
 import { rupees, formatMoney } from "@/lib/domain/money";
 
 export function NewSaleFlow() {
@@ -318,7 +318,7 @@ export function NewSaleFlow() {
             {/* The reference field only exists for the methods that have one —
                 showing it always would be four fields of dead space. */}
             {(payment === "upi" || payment === "card") && (
-              <div style={{ maxWidth: 340 }}>
+              <div className="max-w-[340px]">
                 <label htmlFor="pay-ref" style={{ fontFamily: F.u, fontWeight: 500, fontSize: 14, color: C.text, display: "block", marginBottom: 8 }}>
                   {payment === "upi" ? "UPI reference" : "Card last 4 digits"}
                   <span style={{ color: C.muted, fontWeight: 400 }}> (optional)</span>

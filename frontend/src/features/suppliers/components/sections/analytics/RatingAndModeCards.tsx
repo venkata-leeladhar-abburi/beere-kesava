@@ -45,7 +45,7 @@ export function RatingCard({
             <XAxis type="number" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
             <YAxis dataKey="rating" type="category" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={50} />
             <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
-              formatter={(v: any, _n: any, p: any) => [`${v} suppliers`, p.payload.rating]} />
+              formatter={(v: number, _n: string, p: { payload: (typeof data)[number] }) => [`${v} suppliers`, p.payload.rating]} />
             <Bar dataKey="count" fill={semantic.chart.series[1]} radius={[0, 5, 5, 0]} barSize={16} />
           </BarChart>
         </ResponsiveContainer>
@@ -82,9 +82,9 @@ export function PaymentModeCard({
             <ResponsiveContainer width="100%" height={168}>
               <PieChart>
                 <Pie data={byMode} dataKey="amount" nameKey="mode" cx="50%" cy="50%" innerRadius={44} outerRadius={72} paddingAngle={3} stroke="none">
-                  {byMode.map((d, i) => <Cell key={i} fill={d.fill} />)}
+                  {byMode.map((d) => <Cell key={d.mode} fill={d.fill} />)}
                 </Pie>
-                <RechartsTooltip contentStyle={tip} formatter={(v: any, _n: any, p: any) => [formatMoney(rupees(v)), p.payload.mode]} />
+                <RechartsTooltip contentStyle={tip} formatter={(v: number, _n: string, p: { payload: (typeof byMode)[number] }) => [formatMoney(rupees(v)), p.payload.mode]} />
               </PieChart>
             </ResponsiveContainer>
           </ChartFigure>
@@ -95,7 +95,7 @@ export function PaymentModeCard({
                   <div style={{ width: 10, height: 10, borderRadius: 3, background: d.fill }} />
                   <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{d.mode}</span>
                 </div>
-                <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>
                   {settled ? Math.round((d.amount / settled) * 100) : 0}%
                 </span>
               </div>
@@ -145,7 +145,7 @@ export function SettlementHealthCard({
         ].map(k => (
           <div key={k.label} style={{ background: T.silkCream, borderRadius: 10, padding: "10px 12px", border: `1px solid ${T.borderDef}` }}>
             <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, letterSpacing: "0.5px", color: T.taupe, marginBottom: 4, textTransform: "uppercase" }}>{k.label}</div>
-            <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{k.value}</div>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{k.value}</div>
           </div>
         ))}
       </div>

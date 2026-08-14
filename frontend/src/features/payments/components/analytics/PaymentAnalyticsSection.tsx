@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { CheckCircle2, CircleAlert, Download, IndianRupee, Scissors, TrendingUp, Users } from "lucide-react";
 import { motion } from "motion/react";
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
@@ -27,7 +27,6 @@ function formatMonthLabel(month: string): string {
 }
 
 export function PaymentAnalyticsSection() {
-  const [exportModal, setExportModal] = useState(false);
 
   const { data: cashFlowRes, isLoading: cashFlowLoading, isError: cashFlowError } = useQuery({
     queryKey: ["analytics-cash-flow-monthly"],
@@ -183,7 +182,7 @@ export function PaymentAnalyticsSection() {
 
         {/* ── 4 summary stat cards ───────────────────────────── */}
         <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 18, marginBottom: 24, alignItems: "stretch" }}>
-          {METRICS.map((m, i) => (
+          {METRICS.map((m, _i) => (
             <motion.div
               key={m.label}
               whileHover={{ y: -5, boxShadow: m.hi ? "0 8px 24px rgba(200,155,71,0.18)" : "0 8px 20px rgba(74,6,27,0.10)" }}
@@ -251,11 +250,11 @@ export function PaymentAnalyticsSection() {
                 <ResponsiveContainer width="100%" height={210}>
                   <BarChart data={cashFlowData} barGap={4} barCategoryGap="28%">
                     <CartesianGrid key="cf-grid"     strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
-                    <XAxis         key="cf-xaxis"    dataKey="month" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
-                    <YAxis         key="cf-yaxis"    tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => formatMoney(rupees(v), { compact: true })} width={46} />
+                    <XAxis         key="cf-xaxis"    dataKey="month" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
+                    <YAxis         key="cf-yaxis"    tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => formatMoney(rupees(v), { compact: true })} width={46} />
                     <Tooltip       key="cf-tooltip"  content={<CashFlowTooltip />} cursor={{ fill: "rgba(110,15,45,0.04)" }} />
-                    <Bar           key="cf-income"   dataKey="income"   name="Income"   fill={T.green}  radius={[5,5,0,0] as any} />
-                    <Bar           key="cf-expenses" dataKey="expenses" name="Expenses" fill={T.crimson} radius={[5,5,0,0] as any} opacity={0.80} />
+                    <Bar           key="cf-income"   dataKey="income"   name="Income"   fill={T.green}  radius={[5,5,0,0] as [number, number, number, number]} />
+                    <Bar           key="cf-expenses" dataKey="expenses" name="Expenses" fill={T.crimson} radius={[5,5,0,0] as [number, number, number, number]} opacity={0.80} />
                   </BarChart>
                 </ResponsiveContainer>
               </ChartFigure>
@@ -303,7 +302,7 @@ export function PaymentAnalyticsSection() {
                         <Cell key={`cell-${entry.name}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip key="compliance-tooltip" formatter={(val: any, name: any) => [`${val} invoice${val > 1 ? "s" : ""}`, name]}
+                    <Tooltip key="compliance-tooltip" formatter={(val: number, name: string) => [`${val} invoice${val > 1 ? "s" : ""}`, name]}
                       contentStyle={{ fontFamily: F.ui, fontSize: 13, borderRadius: 9, border: `1px solid ${T.borderDef}` }} />
                   </PieChart>
                 </ResponsiveContainer>
@@ -318,7 +317,7 @@ export function PaymentAnalyticsSection() {
                       <div style={{ flex: 2, height: 6, background: "rgba(110,15,45,0.07)", borderRadius: 99, overflow: "hidden" }}>
                         <div style={{ height: "100%", width: `${pct}%`, background: d.color, borderRadius: 99 }} />
                       </div>
-                      <span style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown, fontWeight: 700, width: 34, textAlign: "right" }}>{pct}%</span>
+                      <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, fontWeight: 700, width: 34, textAlign: "right" }}>{pct}%</span>
                     </div>
                   );
                 })}
@@ -358,7 +357,7 @@ export function PaymentAnalyticsSection() {
                       </div>
                       <span style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, fontWeight: 600 }}>{d.name}</span>
                     </div>
-                    <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}><Money value={rupees(d.amount)} /></span>
+                    <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}><Money value={rupees(d.amount)} /></span>
                   </div>
                   <div style={{ height: 7, background: "rgba(110,15,45,0.08)", borderRadius: 99, overflow: "hidden" }}>
                     <motion.div

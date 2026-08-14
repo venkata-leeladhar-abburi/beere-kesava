@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Truck, X, Upload, CheckCircle2, FileText } from "lucide-react";
-import { DispatchRecord } from "../../../finishing/contexts/FinishingContext";
+import { DispatchRecord } from "@/features/finishing";
 import { T, F } from "../theme";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { TransportData } from "../types";
@@ -59,10 +59,21 @@ export function ResumeDispatchModal({ record, onSave, onClose }: {
           {record.pendingReceipt && (
             <div style={{ marginTop: 18, display: "flex", flexDirection: "column", gap: 12 }}>
               <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Upload Receipt</div>
-              <input type="file" accept=".jpg,.jpeg,.png,.pdf" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileChange} />
-              
+              <input type="file" accept=".jpg,.jpeg,.png,.pdf" ref={fileInputRef} aria-label="Upload LR receipt" style={{ display: 'none' }} onChange={handleFileChange} />
+
               {!receiptFile ? (
-                <div onClick={() => fileInputRef.current?.click()} style={{ border: `2px dashed rgba(110,15,45,0.20)`, borderRadius: 14, padding: "28px 24px", textAlign: "center" as const, cursor: "pointer", background: T.silkCream }}>
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => fileInputRef.current?.click()}
+                  onKeyDown={e => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      fileInputRef.current?.click();
+                    }
+                  }}
+                  style={{ border: `2px dashed rgba(110,15,45,0.20)`, borderRadius: 14, padding: "28px 24px", textAlign: "center" as const, cursor: "pointer", background: T.silkCream }}
+                >
                   <Upload size={28} color={T.taupe} style={{ margin: "0 auto 10px" }} />
                   <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, marginBottom: 4 }}>Click to upload LR receipt</div>
                   <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>JPG, PNG or PDF — max 10 MB</div>

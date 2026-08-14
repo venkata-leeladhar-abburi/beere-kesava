@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { weaversApi, BackendWeaver } from "../../../../shared/api/weavers";
-import { useBatches } from "../../../production/contexts/BatchContext";
+import { useBatches } from "@/features/production";
 
 export function useCurrentWeaver() {
   const { user } = useAuth();

@@ -2,9 +2,7 @@ import React from "react";
 import { motion } from "motion/react";
 import { ShieldCheck, User, HardHat, Frame, ShoppingBag } from "lucide-react";
 import { imgSareeFooter } from "../../../shared/constants/weaverImages";
-// @ts-ignore
 import crest from "../../../assets/bk-crest.png";
-// @ts-ignore
 import ribbon from "../../../assets/saree-ribbon.webp";
 
 const C = {
@@ -85,9 +83,10 @@ export function LoginBrandPanel() {
 
       {/* Warm halo behind the crest */}
       <div
+        className="w-[520px] h-[520px]"
         style={{
           position: "absolute", top: "6%", left: "50%", transform: "translateX(-50%)",
-          width: 520, height: 520, borderRadius: "50%", zIndex: 1, pointerEvents: "none",
+          borderRadius: "50%", zIndex: 1, pointerEvents: "none",
           background: "radial-gradient(circle, rgba(196,146,58,0.14) 0%, rgba(196,146,58,0) 68%)",
         }}
       />
@@ -136,7 +135,7 @@ export function LoginBrandPanel() {
 
           <div style={{ display: "flex", alignItems: "center", gap: 14, margin: "clamp(8px,1.6vh,14px) 0 clamp(14px,2.9vh,26px)" }}>
             <span style={{ width: 40, height: 1, background: `linear-gradient(90deg, transparent, ${C.gold})`, opacity: 0.6 }} />
-            <span style={{ fontFamily: F.mono, fontWeight: 600, fontSize: 13, letterSpacing: "4px", color: C.gold, paddingLeft: 4 }}>
+            <span style={{ fontFamily: "var(--font-mono)", fontWeight: 600, fontSize: 13, letterSpacing: "4px", color: C.gold, paddingLeft: 4 }}>
               SINCE 1999
             </span>
             <span style={{ width: 40, height: 1, background: `linear-gradient(270deg, transparent, ${C.gold})`, opacity: 0.6 }} />
@@ -160,10 +159,11 @@ export function LoginBrandPanel() {
         </div>
 
         <motion.p
+          className="max-w-[400px]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.45 }}
-          style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 15, color: "rgba(227,184,92,0.78)", lineHeight: 1.75, maxWidth: 400, margin: 0 }}
+          style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 15, color: "rgba(227,184,92,0.78)", lineHeight: 1.75, margin: 0 }}
         >
           Four generations of passion, precision, and pure silk craftsmanship. Welcome back.
         </motion.p>
@@ -204,7 +204,7 @@ export function LoginBrandPanel() {
       >
         <div
           style={{
-            fontFamily: F.mono, fontSize: 11, fontWeight: 600, letterSpacing: "2.5px",
+            fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600, letterSpacing: "2.5px",
             textTransform: "uppercase" as const, color: "rgba(245,237,208,0.55)",
             textAlign: "center" as const, marginBottom: 14, paddingLeft: 2.5,
           }}

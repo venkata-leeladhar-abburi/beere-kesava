@@ -4,8 +4,8 @@ import { motion, AnimatePresence } from "motion/react";
 import { Check, Plus, X, CheckCircle2, Send, Scissors } from "lucide-react";
 import { Button, IconButton } from "../../../shared/ui/primitives";
 import { useMaterialIssue, MaterialIssueRecord } from "../contexts/MaterialIssueContext";
-import { FactoryLoom } from "../../production/data/factoryLooms";
-import { useBatches } from "../../production/contexts/BatchContext";
+import { FactoryLoom } from "@/features/production";
+import { useBatches } from "@/features/production";
 import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
 import { weaversApi } from "../../../shared/api/weavers";
 import { factoryLoomsApi } from "../../../shared/api/factory-looms";
@@ -21,6 +21,7 @@ import { SignatureCanvasHandle } from "./issueMaterial/SignatureCanvas";
 import { RecordDetailsModal } from "./issueMaterial/RecordDetailsModal";
 import { IssuanceHistorySection } from "./issueMaterial/IssuanceHistorySection";
 import { summarizeMaterials } from "./issueMaterial/materialFormatters";
+import { EntityCode } from "@/shared/ui/domain";
 
 // Deterministic avatar colors for weavers fetched from the backend (no bg field there).
 const WEAVER_AVATAR_COLORS = ["#5A3E6B", "#9B6B8A", "#2D6B6B", "#4A6B4A", "#2D7D6B", "#4A5E7A", "#7A2040"];
@@ -153,6 +154,7 @@ export function IssueMaterialPage() {
 
   const isSigned = (sigMethod === "here" && signed) || (sigMethod === "remote" && remoteConfirmed);
 
+  // eslint-disable-next-line no-restricted-syntax -- material quantity (kg/g/reels/buns), not currency
   const validRows = rows.filter(r => r.materialType && r.quantity && parseFloat(r.quantity) > 0 && r.grnBatchId);
   const recipientReady = recipientType === "weaver"
     ? (!!selectedWeaver && selectedLoom !== "" && !!selectedBatchId)
@@ -187,6 +189,7 @@ export function IssueMaterialPage() {
     const materials = validRows.map(r => {
       const base: MaterialIssueRecord["materials"][number] = {
         materialType: r.materialType,
+        // eslint-disable-next-line no-restricted-syntax -- material quantity (kg/g/reels/buns), not currency
         quantity: parseFloat(r.quantity),
         unit: r.materialType === "Jari" ? r.jariUnit : (r.warpReshamUnit || "kg"),
         grnBatchId: r.grnBatchId,
@@ -246,13 +249,13 @@ export function IssueMaterialPage() {
       {/* Header */}
       <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", display: "flex", alignItems: "center" }}>
         <div className="pl-4 md:pl-7 xl:pl-14" style={{ position: "relative", zIndex: 2, paddingTop: 48, paddingBottom: 110, flex: "0 0 100%", maxWidth: "100%" }}>
-          <div style={{ fontFamily: F.mono, fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase", marginBottom: 12 }}>
+          <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase", marginBottom: 12 }}>
             Since 1999 · Material Issuance
           </div>
           <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
             <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 56, fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Issue Raw Materials to Weaver</h1>
           </div>
-          <p style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 18, color: "rgba(255,253,249,0.70)", lineHeight: 1.6, maxWidth: 600, margin: "0 0 20px" }}>
+          <p style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 18, color: "rgba(255,253,249,0.70)", lineHeight: 1.6, maxWidth: "min(600px, 100%)", margin: "0 0 20px" }}>
             Record material handover, link GRN batch, and collect weaver's digital signature
           </p>
         </div>
@@ -271,7 +274,7 @@ export function IssueMaterialPage() {
                 <div style={{ flex: 1 }}>
                   <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: T.green, marginBottom: 4 }}>Materials Issued Successfully</div>
                   <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>
-                    <span style={{ fontFamily: F.mono, color: T.royalBurgundy, fontWeight: 700 }}>{successRecord.id}</span> · Given to {successRecord.weaverName} {successRecord.loomNumber ? `(Loom ${successRecord.loomNumber})` : ""} · {summarizeMaterials(successRecord.materials)}
+                    <EntityCode type="goodsReceipt" value={successRecord.id} size="sm" /> · Given to {successRecord.weaverName} {successRecord.loomNumber ? `(Loom ${successRecord.loomNumber})` : ""} · {summarizeMaterials(successRecord.materials)}
                   </div>
                 </div>
                 <IconButton icon={X} label="Dismiss" onClick={() => setSuccessRecord(null)} variant="ghost" className="text-[var(--text-success)]" />
@@ -345,7 +348,7 @@ export function IssueMaterialPage() {
           {/* STEP 4 — Notes */}
           <div style={{ marginTop: 32 }}>
             <SectionPill label="Step 3 · Notes (Optional)" />
-            <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder="Any special instructions, batch references, or remarks"
+            <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder="Any special instructions, batch references, or remarks" aria-label="Notes"
               style={{ width: "100%", borderRadius: 12, border: `1.5px solid ${T.borderDef}`, padding: "12px 14px", fontFamily: F.ui, fontSize: 13, outline: "none", resize: "vertical" as const, boxSizing: "border-box" as const }} />
           </div>
 

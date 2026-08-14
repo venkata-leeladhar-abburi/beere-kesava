@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router";
-import { BulkOrder } from "../../bulk-orders/contexts/BulkOrderContext";
+import { BulkOrder } from "@/features/bulk-orders";
 import { DateFilterState, DEFAULT_DATE_FILTER } from "../../../shared/ui/DateFilterBar";
-import { BulkOrderDetailPage } from "../../bulk-orders/components/BulkOrderDetailPage";
-import { MaterialsFooter } from "../../materials/components/sections/MaterialsFooter";
+import { BulkOrderDetailPage } from "@/features/bulk-orders";
+import { MaterialsFooter } from "@/features/materials";
 import { PageHeader, StatsStrip } from "./sections/PageHeaderAndStats";
 import { WholesaleDetailSection } from "./sections/wholesaleDetail/WholesaleDetailSection";
 import { RetailDetailSection } from "./sections/RetailDetailSection";

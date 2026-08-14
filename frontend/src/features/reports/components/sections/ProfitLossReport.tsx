@@ -1,7 +1,9 @@
 import { useMemo } from "react";
 import { FileText, BarChart2 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { useFirms } from "../../../firms/contexts/FirmsContext";
+import type { TooltipProps } from "recharts";
+import type { ValueType, NameType } from "recharts/types/component/DefaultTooltipContent";
+import { useFirms } from "@/features/firms";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { useMoneyVisible } from "../../../../shared/ui/MoneyValue";
 import { rupees, formatMoney } from "@/lib/domain/money";
@@ -14,16 +16,16 @@ import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 // value through the Money system (formatMoney/rupees) instead of a raw "₹"
 // prefix + toLocaleString — ChartTip itself is shared across non-money chart
 // tooltips (kg, customers, sarees) and is out of scope for this pass.
-function MoneyChartTip({ active, payload, label, moneyVisible }: any) {
+function MoneyChartTip({ active, payload, label, moneyVisible }: TooltipProps<ValueType, NameType> & { moneyVisible: boolean }) {
   if (!active || !payload?.length) return null;
   return (
     <div style={{ background: "#FFFDF9", border: `1px solid ${T.borderDef}`, borderRadius: 9, padding: "10px 14px", boxShadow: "0 4px 16px rgba(74,6,27,0.12)" }}>
-      {label && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginBottom: 5, textTransform: "uppercase" }}>{label}</div>}
-      {payload.map((p: any, i: number) => (
-        <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
+      {label && <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginBottom: 5, textTransform: "uppercase" }}>{label}</div>}
+      {payload.map((p) => (
+        <div key={p.dataKey ?? p.name} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
           <div style={{ width: 8, height: 8, borderRadius: "50%", background: p.color || p.fill || p.stroke }} />
           <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.name}:</span>
-          <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{!moneyVisible ? "••••" : typeof p.value === "number" ? formatMoney(rupees(p.value)) : p.value}</span>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{!moneyVisible ? "••••" : typeof p.value === "number" ? formatMoney(rupees(p.value)) : p.value}</span>
         </div>
       ))}
     </div>
@@ -85,7 +87,7 @@ export function ProfitLossReport() {
     {
       id: "label", header: "", accessor: r => r.label,
       cell: (_v, r) => {
-        if (r.kind === "section") return <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: r.color, textTransform: "uppercase", letterSpacing: "1.5px" }}>{r.label}</span>;
+        if (r.kind === "section") return <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: r.color, textTransform: "uppercase", letterSpacing: "1.5px" }}>{r.label}</span>;
         if (r.kind === "subtotal") return <span style={{ fontFamily: F.ui, fontWeight: 700, color: r.color }}>{r.label}</span>;
         if (r.kind === "net") return <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: r.color }}>{r.label}</span>;
         return <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>{r.label}</span>;
@@ -97,7 +99,7 @@ export function ProfitLossReport() {
         if (r.amount == null) return null;
         if (r.kind === "subtotal") return <span style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: r.color }}>{inr(r.amount)}</span>;
         if (r.kind === "net") return <span style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: r.color }}>{inr(r.amount)}</span>;
-        return <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: r.color }}>{inr(r.amount)}</span>;
+        return <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color: r.color }}>{inr(r.amount)}</span>;
       },
     },
   ];
@@ -116,11 +118,11 @@ export function ProfitLossReport() {
     },
     {
       id: "income", header: "Total Income", accessor: f => f.income, type: "number",
-      cell: (_v, f) => <span style={{ fontFamily: F.mono, color: T.green, fontWeight: 600 }}>{inr(f.income)}</span>,
+      cell: (_v, f) => <span style={{ fontFamily: "var(--font-mono)", color: T.green, fontWeight: 600 }}>{inr(f.income)}</span>,
     },
     {
       id: "expenses", header: "Total Expenses", accessor: f => f.expenses, type: "number",
-      cell: (_v, f) => <span style={{ fontFamily: F.mono, color: T.crimson, fontWeight: 600 }}>{inr(f.expenses)}</span>,
+      cell: (_v, f) => <span style={{ fontFamily: "var(--font-mono)", color: T.crimson, fontWeight: 600 }}>{inr(f.expenses)}</span>,
     },
     {
       id: "net", header: "Net", accessor: f => f.net, type: "number",
@@ -130,8 +132,8 @@ export function ProfitLossReport() {
 
   const perFirm = firms.map(firm => {
     const fin = financials.find(f => f.firmId === firm.id) ?? { income: [] as { amount: number }[], expenses: [] as { amount: number }[], misc: [] as { type: string; amount: number }[] };
-    let income = 0; (fin.income as any[]).forEach(e => income += (e.amount || 0)); (fin.misc as any[]).filter(m => m.type === "income").forEach(m => income += (m.amount || 0));
-    let expenses = 0; (fin.expenses as any[]).forEach(e => expenses += (e.amount || 0)); (fin.misc as any[]).filter(m => m.type === "expense").forEach(m => expenses += (m.amount || 0));
+    let income = 0; fin.income.forEach(e => income += (e.amount || 0)); fin.misc.filter(m => m.type === "income").forEach(m => income += (m.amount || 0));
+    let expenses = 0; fin.expenses.forEach(e => expenses += (e.amount || 0)); fin.misc.filter(m => m.type === "expense").forEach(m => expenses += (m.amount || 0));
     return { name: firm.firmName, income, expenses, net: income - expenses };
   });
 
@@ -200,11 +202,11 @@ export function ProfitLossReport() {
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={pnlMonthlyData} barGap={6}>
                 <CartesianGrid key="pnl-grid" strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
-                <XAxis key="pnl-x" dataKey="month" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
-                <YAxis key="pnl-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => (moneyVisible ? formatMoney(rupees(v)) : "••••")} width={55} />
+                <XAxis key="pnl-x" dataKey="month" tick={{ fontFamily: "var(--font-mono)", fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
+                <YAxis key="pnl-y" tick={{ fontFamily: "var(--font-mono)", fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => (moneyVisible ? formatMoney(rupees(v)) : "••••")} width={55} />
                 <Tooltip key="pnl-tip" content={<MoneyChartTip moneyVisible={moneyVisible} />} />
-                <Bar key="pnl-income"   dataKey="income"   name="Income"   fill={T.green}  radius={[4,4,0,0] as any} />
-                <Bar key="pnl-expenses" dataKey="expenses" name="Expenses" fill={T.crimson} radius={[4,4,0,0] as any} opacity={0.8} />
+                <Bar key="pnl-income"   dataKey="income"   name="Income"   fill={T.green}  radius={[4, 4, 0, 0]} />
+                <Bar key="pnl-expenses" dataKey="expenses" name="Expenses" fill={T.crimson} radius={[4, 4, 0, 0]} opacity={0.8} />
               </BarChart>
             </ResponsiveContainer>
           )}
@@ -222,7 +224,7 @@ export function ProfitLossReport() {
                   <Pie key="exp-pie" data={expenseDonut} cx="50%" cy="50%" innerRadius={50} outerRadius={70} dataKey="value" stroke="none" paddingAngle={3}>
                     {expenseDonut.map(e => <Cell key={`exp-cell-${e.name}`} fill={e.color} />)}
                   </Pie>
-                  <Tooltip key="exp-tip" formatter={(v: any, n: any) => [moneyVisible ? formatMoney(rupees(Number(v))) : "••••", n]} contentStyle={{ fontFamily: F.ui, fontSize: 12, borderRadius: 8 }} />
+                  <Tooltip key="exp-tip" formatter={(v: ValueType, n: NameType) => [moneyVisible ? formatMoney(rupees(Number(v))) : "••••", n]} contentStyle={{ fontFamily: F.ui, fontSize: 12, borderRadius: 8 }} />
                 </PieChart>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: "0 8px" }}>
@@ -233,12 +235,12 @@ export function ProfitLossReport() {
                         <div style={{ width: 9, height: 9, borderRadius: "50%", background: d.color }} />
                         <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{d.name}</span>
                       </div>
-                      <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: d.color }}>{inr(d.value)}</span>
+                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: d.color }}>{inr(d.value)}</span>
                     </div>
                     <AnimBar pct={totalExpenses > 0 ? Math.round((d.value / totalExpenses) * 100) : 0} color={d.color} height={5} />
                   </div>
                 ))}
-                <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.crimson, textAlign: "right", marginTop: 4 }}>Total: {inr(totalExpenses)}</div>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.crimson, textAlign: "right", marginTop: 4 }}>Total: {inr(totalExpenses)}</div>
               </div>
             </>
           )}

@@ -37,9 +37,8 @@ function QuotationStatusBadge({ status }: { status: Quotation["status"] }) {
   return <Pill label={s.label} color={s.color} bg={s.bg} />;
 }
 
-const th: React.CSSProperties = { fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", textAlign: "left", padding: "10px 12px", borderBottom: `1.5px solid ${T.borderDef}`, whiteSpace: "nowrap" };
 const td: React.CSSProperties = { fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, padding: "11px 12px", borderBottom: `1px solid rgba(110,15,45,0.06)`, verticalAlign: "middle" };
-const tdMono: React.CSSProperties = { ...td, fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy };
+const tdMono: React.CSSProperties = { ...td, fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, color: T.royalBurgundy };
 
 interface FinishingQuotationsSectionProps {
   filteredQuotations: Quotation[];
@@ -106,7 +105,7 @@ export function FinishingQuotationsSection({
                   {isOpen ? <ChevronDown size={17} color={T.royalBurgundy} /> : <ChevronRight size={17} color={T.taupe} />}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                      <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>{qt.quotationNumber}</span>
+                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>{qt.quotationNumber}</span>
                       <QuotationStatusBadge status={qt.status} />
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
@@ -126,7 +125,7 @@ export function FinishingQuotationsSection({
                   {isOpen && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ overflow: "hidden", background: "#FFFDF9" }}>
                       <div style={{ padding: "6px 18px 16px" }}>
-                        <div style={{ overflowX: "auto", minWidth: 680 }}>
+                        <div className="min-w-[680px]" style={{ overflowX: "auto" }}>
                           <DataTable
                             responsive
                             columns={sareeColumns}

@@ -6,17 +6,17 @@ import {
   Eye as PhEye,
 } from "lucide-react";
 import { X as XIcon } from "lucide-react";
-import { useBulkOrders } from "../../../bulk-orders/contexts/BulkOrderContext";
-import { useFinishing } from "../../../finishing/contexts/FinishingContext";
-import { computeBulkOrderProducedSareeIds } from "../../../bulk-orders/utils/BulkOrderLinking";
-import { BulkOrderCreateModal } from "../../../bulk-orders/components/BulkOrderCreateModal";
+import { useBulkOrders } from "@/features/bulk-orders";
+import { useFinishing } from "@/features/finishing";
+import { computeBulkOrderProducedSareeIds } from "@/features/bulk-orders";
+import { BulkOrderCreateModal } from "@/features/bulk-orders";
 import { T, F } from "../theme";
 import { ORDER_CFG, STATUS_LABELS } from "../data";
 import type { BulkOrder } from "../types";
 import { FadeUp } from "../common/primitives";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { rupees } from "@/lib/domain/money";
-import { Money } from "@/shared/ui/domain";
+import { EntityCode, Money } from "@/shared/ui/domain";
 
 export function BulkOrderCard({ o, onView, onSlip, superadmin = false }: { o: BulkOrder; onView?: (o: BulkOrder) => void; onSlip?: (o: BulkOrder) => void; superadmin?: boolean }) {
   const cfg = ORDER_CFG[o.status];
@@ -50,7 +50,7 @@ export function BulkOrderCard({ o, onView, onSlip, superadmin = false }: { o: Bu
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.2, marginBottom: 4 }}>{o.customer}</div>
-          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, letterSpacing: "0.3px" }}>{o.ref}</div>
+          <div><EntityCode type="order" value={o.ref} size="sm" /></div>
         </div>
       </div>
 
@@ -70,7 +70,7 @@ export function BulkOrderCard({ o, onView, onSlip, superadmin = false }: { o: Bu
             <CheckCircle size={20} color={T.royalBurgundy} />
           </div>
           <div>
-            <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1.4px", marginBottom: 3 }}>Delivery Deadline</div>
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1.4px", marginBottom: 3 }}>Delivery Deadline</div>
             <div style={{ fontFamily: F.ui, fontSize: 15.5, fontWeight: 700, color: T.luxuryBrown }}>{o.due}</div>
           </div>
         </div>
@@ -115,7 +115,7 @@ export function BulkOrderCard({ o, onView, onSlip, superadmin = false }: { o: Bu
         {(o.amountDue ?? 0) > 0 && (
           <div style={{ display: "flex", alignItems: "center", gap: 9, background: "rgba(200,155,71,0.07)", borderRadius: 10, padding: "10px 13px", marginTop: "auto" }}>
             <CurrencyInr size={16} color={T.antiqueGold} />
-            <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px" }}>Est. Order Value</span>
+            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px" }}>Est. Order Value</span>
             <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.antiqueGold, marginLeft: "auto" }}><Money value={rupees(o.amountDue ?? 0)} /></span>
           </div>
         )}

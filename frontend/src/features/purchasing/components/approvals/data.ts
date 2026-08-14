@@ -1,5 +1,3 @@
-import { imgPadmaVeni, imgRaviKumar, imgSureshMurti } from "../../../../shared/constants/weaverImages";
-import { T_burgundy, T_gold, T_brown } from "./tokens";
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 // NOTE: PO_DATA (mock purchase orders) was removed — the "Purchase Orders" tab
@@ -9,6 +7,6 @@ import { T_burgundy, T_gold, T_brown } from "./tokens";
 // GAP: there is no backend module for weaver-raised "warp material requests"
 // (no warp-requests controller/service/prisma model exists in backend/src).
 // This stays mock data until that module is built — do not invent real numbers.
-export const WARP_DATA: any[] = [];
-export const RATE_DATA: any[] = [];
-export const HISTORY_ROWS: any[] = [];
+export const WARP_DATA: unknown[] = [];
+export const RATE_DATA: unknown[] = [];
+export const HISTORY_ROWS: unknown[] = [];

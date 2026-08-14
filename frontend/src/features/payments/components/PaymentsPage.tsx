@@ -1,7 +1,7 @@
 import React from "react";
 import { F, T } from "../theme";
 import { FinancialSummarySection } from "./FinancialSummarySection";
-import { MaterialsFooter } from "../../materials/components/sections/MaterialsFooter";
+import { MaterialsFooter } from "@/features/materials";
 import { PaymentsHeader } from "./PaymentsHeader";
 import { StatsStrip } from "./StatsStrip";
 import { PaymentAnalyticsSection } from "./analytics/PaymentAnalyticsSection";

@@ -1,9 +1,10 @@
 import React, { useState, useMemo } from "react";
 import { FileText, Truck } from "lucide-react";
-import { Quotation } from "../../../finishing/contexts/FinishingContext";
+import { Quotation } from "@/features/finishing";
 import { T, F } from "../theme";
 import { Button } from "../../../../shared/ui/primitives";
 import { SectionCard } from "../common/primitives";
+import { EntityCode } from "@/shared/ui/domain";
 
 // ── Quotations section (raised from this page, dispatch once finishing is done) ─
 function quotationStatusStyle(status: Quotation["status"]) {
@@ -57,14 +58,14 @@ export function QuotationsSection({ quotations, onDispatch }: { quotations: Quot
           return (
             <div key={q.id} style={{ display: "flex", alignItems: "center", gap: 16, padding: "15px 24px", borderBottom: i < rows.length - 1 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 0 ? "#FFF" : T.warmIvory, flexWrap: "wrap" as const }}>
               <div style={{ minWidth: 140 }}>
-                <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{q.quotationNumber}</div>
+                <EntityCode type="quotation" value={q.quotationNumber} />
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>{q.quotationDate}</div>
               </div>
               <div style={{ flex: 1, minWidth: 160 }}>
                 <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{q.customerName}</div>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>{q.customerCity || "—"}</div>
               </div>
-              <div style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, minWidth: 70 }}>{receivedCount}/{q.sarees.length}<span style={{ color: T.taupe, fontWeight: 400 }}> received</span></div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, minWidth: 70, fontVariantNumeric: "tabular-nums" }}>{receivedCount}/{q.sarees.length}<span style={{ color: T.taupe, fontWeight: 400 }}> received</span></div>
               <div style={{ background: st.bg, border: `1px solid ${st.border}`, borderRadius: 999, padding: "3px 11px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: st.color, textTransform: "capitalize" as const, whiteSpace: "nowrap" as const }}>
                 {q.status.replace("-", " ")}
               </div>

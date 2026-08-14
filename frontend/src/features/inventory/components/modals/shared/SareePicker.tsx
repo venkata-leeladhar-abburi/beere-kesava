@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback } from "react";
 import { Scan, Package, ChevronDown, ChevronUp } from "lucide-react";
-import { FinishingReturn } from "../../../../finishing/contexts/FinishingContext";
-import { WeaverSareesSection, WeaverSareeRow } from "../../../../weavers/components/WeaverSareesSection";
+import { FinishingReturn } from "@/features/finishing";
+import { WeaverSareesSection, WeaverSareeRow } from "@/features/weavers";
 import { T, F } from "../../theme";
 import { Button, Chip } from "../../../../../shared/ui/primitives";
 
@@ -109,7 +109,7 @@ export function SareePicker({ available, picked, onChange, label, onBrowseChange
         </Button>
       </div>
       {scanMsg && (
-        <div style={{ marginTop: 10, fontFamily: F.mono, fontSize: 12, color: T.green, background: T.greenBg, borderRadius: 8, padding: "7px 12px", display: "inline-block" }}>{scanMsg}</div>
+        <div style={{ marginTop: 10, fontFamily: F.ui, fontSize: 12, color: T.green, background: T.greenBg, borderRadius: 8, padding: "7px 12px", display: "inline-block" }}>{scanMsg}</div>
       )}
 
       {/* The page's own inventory table, with its tabs and filters intact */}

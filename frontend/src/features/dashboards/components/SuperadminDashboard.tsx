@@ -1,5 +1,5 @@
 import React, { useState, Suspense, useEffect } from "react";
-import { useLocation, useNavigate, useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { AnimatePresence, motion } from "motion/react";
 import { useIsMobile } from "../../../hooks/useResponsive";
 import {
@@ -28,7 +28,6 @@ export { UserProfileModal };
 // SUPERADMIN DASHBOARD (main export)
 // ═══════════════════════════════════════════════════════════════════════════════
 export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
-  const { pathname } = useLocation();
   const { tab } = useParams();
   const routerNavigate = useNavigate();
 
@@ -78,7 +77,7 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
     }
   }, [nav]);
 
-  const navigate = (tab: string, ctx?: any) => {
+  const navigate = (tab: string, ctx?: unknown) => {
     const routeMap: Record<string, string> = {
       Overview: "/superadmin/overview",
       Materials: "/superadmin/materials",
@@ -116,7 +115,7 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
     routerNavigate(path, { state: ctx });
   };
 
-  function renderPage(navigate: (v: string, ctx?: any) => void) {
+  function renderPage(navigate: (v: string, ctx?: unknown) => void) {
     switch (nav) {
       case "Materials": return <MaterialsPage onNavigate={navigate} />;
       case "Weavers": return <WeaversPage onNavigate={navigate} />;

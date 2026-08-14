@@ -2,15 +2,6 @@
 // SECTION NAVIGATOR — shared sticky "jump to section" pill bar for long pages
 // Used by both BeereDashboard (Admin) and SuperadminDashboard.
 // ═══════════════════════════════════════════════════════════════════════════════
-const T = {
-  royalBurgundy: "#6E0F2D",
-  taupe: "#69635E",
-  borderDef: "rgba(110,15,45,0.10)",
-};
-const F = {
-  ui: "'Inter', sans-serif",
-};
-
 // Sticky-stack layout constants — re-pointed at the app-shell tokens in
 // design-system/02-LAYOUT.md Part C.2 (single source of truth: 4 base
 // heights, not 9 independently-drifting ones). Names are UNCHANGED from
@@ -129,19 +120,3 @@ export const SECTION_NAV_GLOBAL_STYLE = `
   }
 `;
 
-// Find the element that's actually doing the scrolling for this page. In
-// this app that's sometimes `document.body` rather than the window/
-// documentElement (window.scrollY stays 0 while body.scrollTop moves), so
-// window.scrollTo() alone silently does nothing. Walk up from the target
-// looking for the nearest ancestor whose content overflows its box.
-const findScrollContainer = (el: HTMLElement): HTMLElement | null => {
-  let node: HTMLElement | null = el.parentElement;
-  while (node) {
-    if (node.scrollHeight > node.clientHeight + 1) {
-      const { overflowY } = getComputedStyle(node);
-      if (overflowY === "auto" || overflowY === "scroll" || node === document.body) return node;
-    }
-    node = node.parentElement;
-  }
-  return document.scrollingElement as HTMLElement | null;
-};

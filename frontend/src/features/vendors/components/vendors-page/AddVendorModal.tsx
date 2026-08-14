@@ -20,12 +20,6 @@ export function AddVendorModal({ onSave, onCancel, nextId }: { onSave: (v: Vendo
 
   const set = (k: string, v: string) => setForm(p => ({ ...p, [k]: v }));
 
-  const inp: React.CSSProperties = {
-    width: "100%", padding: "10px 12px", borderRadius: 6,
-    border: `1px solid rgba(110,15,45,0.12)`, fontFamily: F.ui,
-    fontSize: 14, color: T.luxuryBrown, background: "#FFF",
-    outline: "none", boxSizing: "border-box" as const,
-  };
   const lbl: React.CSSProperties = {
     fontFamily: F.ui, fontSize: 12, fontWeight: 600,
     color: T.luxuryBrown, display: "block", marginBottom: 6,
@@ -48,7 +42,7 @@ export function AddVendorModal({ onSave, onCancel, nextId }: { onSave: (v: Vendo
       notes: form.notes, visitingCard: cardPreview || undefined,
       status: "active", totalOrders: 0, totalSpend: "0",
       outstanding: "0", lastOrder: "—", rating: form.rating,
-    } as any);
+    });
   };
 
   return (
@@ -62,7 +56,7 @@ export function AddVendorModal({ onSave, onCancel, nextId }: { onSave: (v: Vendo
             </Dialog.Title>
             <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, margin: 0 }}>Fill in the business and contact details. Payment terms can be set here and changed later.</p>
           </div>
-          <div style={{ padding: "4px 12px", background: T.silkCream, borderRadius: 20, fontFamily: F.mono, fontSize: 12, color: T.taupe, flexShrink: 0 }}>{nextId} will be assigned</div>
+          <div style={{ padding: "4px 12px", background: T.silkCream, borderRadius: 20, fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, flexShrink: 0 }}>{nextId} will be assigned</div>
         </div>
 
         {/* Form Grid */}
@@ -95,7 +89,7 @@ export function AddVendorModal({ onSave, onCancel, nextId }: { onSave: (v: Vendo
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
               <div>
-                <label style={lbl}>Material Types</label>
+                <span style={{ ...lbl, display: "block" }}>Material Types</span>
                 <div style={{ display: "flex", gap: 16, flexWrap: "wrap", padding: "10px 0" }}>
                   {["Warp", "Resham", "Jari"].map(t => (
                     <CheckboxField
@@ -116,10 +110,11 @@ export function AddVendorModal({ onSave, onCancel, nextId }: { onSave: (v: Vendo
                     {PAYMENT_TERMS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                   </Select>
                 </Field>
-                <label style={lbl}>Vendor Rating</label>
+                <span style={{ ...lbl, display: "block" }}>Vendor Rating</span>
                 <div style={{ display: "flex", gap: 6, cursor: "pointer", marginTop: 8 }}>
                   {[1, 2, 3, 4, 5].map(i => (
-                    <div key={i} onClick={() => setForm(p => ({ ...p, rating: i }))} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => setForm(p => ({ ...p, rating: i })))?.(); } }}>
+                    <div key={i} onClick={() => setForm(p => ({ ...p, rating: i }))} role="button" tabIndex={0} aria-label={`Rate ${i} stars`} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => setForm(p => ({ ...p, rating: i })))?.(); } }}>
+                      {/* eslint-disable-next-line no-restricted-syntax -- star rating UI, not chart series */}
                       <Star size={20} fill={i <= form.rating ? T.antiqueGold : "none"} color={i <= form.rating ? T.antiqueGold : T.taupe} />
                     </div>
                   ))}

@@ -7,7 +7,8 @@ import { VendorExcelRow, VendorMatchedRow, VendorPayment, VendorUnmatchedRow, Ve
 import { vendorPaymentsApi } from "../../../../shared/api/payments";
 import { Button, Input } from "../../../../shared/ui/primitives";
 import { rupees } from "@/lib/domain/money";
-import { Money } from "@/shared/ui/domain";
+import { EntityCode, Money } from "@/shared/ui/domain";
+import { toPaise, fromPaise } from "@/lib/gst";
 
 // ── Vendor Payment Excel Upload Panel ─────────────────────────────────────────
 // `vendorPayments` is the same real per-PO ledger rendered on the page —
@@ -15,17 +16,17 @@ import { Money } from "@/shared/ui/domain";
 // to save a VendorPayment against it. Matching by PO Number here just looks
 // that row up; the actual POST /payments/vendors calls happen here too, so
 // by the time onMatched fires the payments are already real, saved rows.
+const normalize = (s: unknown) => String(s ?? "").trim().toLowerCase().replace(/[\s_-]+/g, "");
+const HEADER_MAP: Record<string, keyof VendorExcelRow> = {
+  ponumber: "poNumber", amountpaid: "amountPaid", utrnumber: "utrNumber", paymentdate: "paymentDate", firmname: "firmName",
+};
+
 export function VendorUploadPanel({ vendorPayments, onMatched }: { vendorPayments: VendorPayment[]; onMatched: (matched: VendorMatchedRow[]) => void }) {
   const { firms } = useFirms();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [result, setResult] = useState<VendorUploadResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [parsing, setParsing] = useState(false);
-
-  const normalize = (s: unknown) => String(s ?? "").trim().toLowerCase().replace(/[\s_-]+/g, "");
-  const HEADER_MAP: Record<string, keyof VendorExcelRow> = {
-    ponumber: "poNumber", amountpaid: "amountPaid", utrnumber: "utrNumber", paymentdate: "paymentDate", firmname: "firmName",
-  };
 
   const parseFile = useCallback((file: File) => {
     setParsing(true);
@@ -60,7 +61,7 @@ export function VendorUploadPanel({ vendorPayments, onMatched }: { vendorPayment
         const rows: VendorExcelRow[] = raw.map(r => {
           const out: Partial<VendorExcelRow> = {};
           Object.entries(colMap).forEach(([col, key]) => {
-            if (key === "amountPaid") out[key] = parseFloat(String(r[col]).replace(/[^\d.]/g, "")) || 0;
+            if (key === "amountPaid") out[key] = fromPaise(toPaise(Number(String(r[col]).replace(/[^\d.]/g, "")) || 0)) || 0;
             else (out as Record<string, unknown>)[key] = String(r[col] ?? "").trim();
           });
           return out as VendorExcelRow;
@@ -108,7 +109,7 @@ export function VendorUploadPanel({ vendorPayments, onMatched }: { vendorPayment
       }
     };
     reader.readAsArrayBuffer(file);
-  }, [vendorPayments, onMatched]);
+  }, [vendorPayments, onMatched, firms]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -126,8 +127,8 @@ export function VendorUploadPanel({ vendorPayments, onMatched }: { vendorPayment
           </div>
           <div>
             <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown, marginBottom: 3 }}>Upload Vendor Payment File</div>
-            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, lineHeight: 1.55, maxWidth: 560 }}>
-              Upload an Excel file (.xlsx / .xls) with columns: <span style={{ fontFamily: F.mono, color: T.luxuryBrown }}>PO Number · Amount Paid · UTR Number · Payment Date · Firm Name</span>. System will auto-match vendor bills and flag unmatched rows.
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, lineHeight: 1.55, width: "100%", maxWidth: "35rem" }}>
+              Upload an Excel file (.xlsx / .xls) with columns: <span style={{ color: T.luxuryBrown }}>PO Number · Amount Paid · UTR Number · Payment Date · Firm Name</span>. System will auto-match vendor bills and flag unmatched rows.
             </div>
             {result && (
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.green, marginTop: 6, display: "flex", alignItems: "center", gap: 5 }}>
@@ -166,8 +167,8 @@ export function VendorUploadPanel({ vendorPayments, onMatched }: { vendorPayment
               { label: "Total Rows", value: String(result.totalRows), color: T.luxuryBrown, bg: "#FFFFFF", icon: <FileText size={18} color={T.royalBurgundy} /> },
               { label: "Matched Bills", value: String(result.matched.length), color: T.green, bg: "rgba(30,102,64,0.07)", icon: <CheckCircle2 size={18} color={T.green} /> },
               { label: "Unmatched Rows", value: String(result.unmatched.length), color: T.crimson, bg: "rgba(192,57,43,0.06)", icon: <AlertTriangle size={18} color={T.crimson} /> },
-            ].map((s, i) => (
-              <div key={i} style={{ background: s.bg, borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "16px 18px", display: "flex", alignItems: "center", gap: 12, boxShadow: "0 2px 8px rgba(74,6,27,0.05)" }}>
+            ].map((s) => (
+              <div key={s.label} style={{ background: s.bg, borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "16px 18px", display: "flex", alignItems: "center", gap: 12, boxShadow: "0 2px 8px rgba(74,6,27,0.05)" }}>
                 <div style={{ width: 38, height: 38, borderRadius: 10, background: "#fff", border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{s.icon}</div>
                 <div>
                   <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: s.color, lineHeight: 1.1 }}>{s.value}</div>
@@ -182,19 +183,19 @@ export function VendorUploadPanel({ vendorPayments, onMatched }: { vendorPayment
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
                 <CheckCircle2 size={16} color={T.green} />
                 <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>Matched Vendor Bills</span>
-                <span style={{ fontFamily: F.mono, fontSize: 12, color: T.green, background: "rgba(30,102,64,0.10)", padding: "2px 9px", borderRadius: 20 }}>{result.matched.length}</span>
+                <span style={{ fontSize: 12, color: T.green, background: "rgba(30,102,64,0.10)", padding: "2px 9px", borderRadius: 20, fontVariantNumeric: "tabular-nums" }}>{result.matched.length}</span>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 12 }}>
                 {result.matched.map((m, i) => (
-                  <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: i * 0.04 }}
+                  <motion.div key={m.vendorPayment.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: i * 0.04 }}
                     style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid rgba(30,102,64,0.22)`, borderLeft: `4px solid ${T.green}`, boxShadow: "0 2px 10px rgba(30,102,64,0.06)", padding: "14px 16px" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
                       <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{m.vendorPayment.vendor}</span>
-                      <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{m.poNumber}</span>
+                      <EntityCode type="purchaseOrder" value={m.poNumber} size="sm" />
                     </div>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 16px" }}>
-                      <div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const }}>Amount</div><div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.green }}><Money value={rupees(m.amountPaid)} /></div></div>
-                      <div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const }}>UTR</div><div style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{m.utrNumber || "—"}</div></div>
+                      <div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const }}>Amount</div><div style={{ fontSize: 14, fontWeight: 700, color: T.green }}><Money value={rupees(m.amountPaid)} /></div></div>
+                      <div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const }}>UTR</div><div style={{ fontSize: 12, color: T.luxuryBrown, fontVariantNumeric: "tabular-nums" }}>{m.utrNumber || "—"}</div></div>
                       <div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const }}>Date</div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{m.paymentDate}</div></div>
                       <div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const }}>Firm</div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{m.firmName || "—"}</div></div>
                     </div>
@@ -209,11 +210,11 @@ export function VendorUploadPanel({ vendorPayments, onMatched }: { vendorPayment
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
                 <AlertTriangle size={16} color={T.crimson} />
                 <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>Unmatched Rows</span>
-                <span style={{ fontFamily: F.mono, fontSize: 12, color: T.crimson, background: "rgba(192,57,43,0.10)", padding: "2px 9px", borderRadius: 20 }}>{result.unmatched.length}</span>
+                <span style={{ fontSize: 12, color: T.crimson, background: "rgba(192,57,43,0.10)", padding: "2px 9px", borderRadius: 20, fontVariantNumeric: "tabular-nums" }}>{result.unmatched.length}</span>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {result.unmatched.map((u, i) => (
-                  <div key={i} style={{ background: "rgba(192,57,43,0.04)", borderRadius: 12, border: `1px solid rgba(192,57,43,0.22)`, borderLeft: `4px solid ${T.crimson}`, padding: "12px 16px", fontFamily: F.ui, fontSize: 12, color: T.crimson }}>
+                {result.unmatched.map((u) => (
+                  <div key={`${u.poNumber || "unknown"}-${u.reason ?? ""}`} style={{ background: "rgba(192,57,43,0.04)", borderRadius: 12, border: `1px solid rgba(192,57,43,0.22)`, borderLeft: `4px solid ${T.crimson}`, padding: "12px 16px", fontFamily: F.ui, fontSize: 12, color: T.crimson }}>
                     <strong>{u.poNumber || "—"}</strong> — {u.reason ?? "Could not be matched — please verify manually"}
                   </div>
                 ))}

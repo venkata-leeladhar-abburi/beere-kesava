@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { motion } from "motion/react";
 import { ArrowLeft, ShoppingBag } from "lucide-react";
 import { useBulkOrders } from "../contexts/BulkOrderContext";
-import { BulkOrder, BulkOrderCard } from "../../production/components/ProductionPage";
+import { BulkOrder, BulkOrderCard } from "@/features/production";
 import { BulkOrderDetailPage } from "./BulkOrderDetailPage";
 import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
 import { AllOrdersFilterBar } from "./AllOrdersFilterBar";

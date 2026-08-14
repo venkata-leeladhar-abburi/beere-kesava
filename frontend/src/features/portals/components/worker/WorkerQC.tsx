@@ -1,18 +1,18 @@
 import React, { useState, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { useBatches } from "../../../production/contexts/BatchContext";
-import { useFinishing } from "../../../finishing/contexts/FinishingContext";
-import { useDesignLibrary } from "../../../design-library/contexts/DesignLibraryContext";
-import { useQc } from "../../../qc/contexts/QcContext";
-import { DesignCodeCard } from "../../../design-library/components/DesignLibraryPage";
-import { SareeTypeCard } from "../../../pricing/components/RatesPricingPage";
-import { useRatesPricing } from "../../../pricing/contexts/RatesContext";
+import { useBatches } from "@/features/production";
+import { useFinishing } from "@/features/finishing";
+import { useDesignLibrary } from "@/features/design-library";
+import { useQc } from "@/features/qc";
+import { DesignCodeCard } from "@/features/design-library";
+import { SareeTypeCard } from "@/features/pricing";
+import { useRatesPricing } from "@/features/pricing";
 import { AnimatePresence } from "motion/react";
 import {
-  ChevronLeft, CheckCircle2, Search, ChevronRight, Package, AlertTriangle, ClipboardCheck,
+  ChevronLeft, CheckCircle2, Search, AlertTriangle, ClipboardCheck,
 } from "lucide-react";
 import {
-  T, F, baseCard, SareeItem, InspectionResult, DefectiveLogItem, PassedLogItem, initials, splitDesignField,
+  T, F, SareeItem, InspectionResult, DefectiveLogItem, PassedLogItem, initials, splitDesignField,
 } from "./WorkerQCTypes";
 import { SectionCard } from "./primitives";
 import { WorkerQCInspectionScreen } from "./WorkerQCInspectionScreen";
@@ -24,7 +24,7 @@ import { WorkerQCQueueHeader } from "./WorkerQCQueueHeader";
 import { WorkerQCWeaverGrid, WorkerQCBatchGrid } from "./WorkerQCGridCards";
 import { IconButton, Input } from "../../../../shared/ui/primitives";
 import { rupees, formatMoney } from "@/lib/domain/money";
-import { DateFilterBar, type DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
+import { type DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 
 export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTablet?: boolean }) {
   const { batches } = useBatches();

@@ -8,6 +8,7 @@ import { ApiError } from "../../../../shared/api/client";
 import { T, F } from "./constants";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { SectionCard } from "../common/primitives";
+import { EntityCode } from "@/shared/ui/domain";
 
 export function DraftsTab({
   batches, batchDateFilter, setBatchDateFilter, setTab, openDraft,
@@ -67,7 +68,6 @@ export function DraftsTab({
             const done = b.rows.filter(r => r.qcPassed === true || r.finished === true).length;
             const pct = b.totalCount > 0 ? Math.round((done / b.totalCount) * 100) : 0;
             const isCompleted = b.status === "completed" || (b.totalCount > 0 && done === b.totalCount);
-            const isActive = b.status === "active" && !isCompleted;
             const isDraft = b.status === "draft" && !isCompleted;
 
             const accentColor = isCompleted ? T.green : isDraft ? T.royalBurgundy : T.green;
@@ -86,7 +86,7 @@ export function DraftsTab({
               <div key={b.batchId} style={{ background: "#fff", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, borderLeft: `5px solid ${accentColor}`, padding: "20px 24px", boxShadow: "0 2px 10px rgba(74,6,27,0.05)", display: "flex", alignItems: "center", gap: 20 }}>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8, flexWrap: "wrap" }}>
-                    <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: accentColor }}>{b.batchId}</span>
+                    <EntityCode type="batch" value={b.batchId} />
                     <span style={{ fontFamily: F.ui, fontSize: 12, background: chipBg, color: accentColor, borderRadius: 6, padding: "2px 9px", fontWeight: 600 }}>{chipLabel}</span>
                     <span style={{ fontFamily: F.ui, fontSize: 12, background: "rgba(110,15,45,0.04)", color: T.darkBurgundy, border: `1px solid ${T.borderDef}`, borderRadius: 6, padding: "2px 9px", fontWeight: 600 }}>
                       {assignmentText}

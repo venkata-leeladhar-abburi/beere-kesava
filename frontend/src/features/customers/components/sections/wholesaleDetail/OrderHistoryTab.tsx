@@ -1,7 +1,7 @@
 import { Eye, ShoppingBag } from "lucide-react";
-import { BulkOrder } from "../../../../bulk-orders/contexts/BulkOrderContext";
+import { BulkOrder } from "@/features/bulk-orders";
 import { DateFilterBar, DateFilterState, matchesDateFilter } from "../../../../../shared/ui/DateFilterBar";
-import { OrderMoney } from "../../../../bulk-orders/utils/BulkOrderLinking";
+import { OrderMoney } from "@/features/bulk-orders";
 import { T, F } from "../../theme";
 import { Button } from "../../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
@@ -41,7 +41,7 @@ export function OrderHistoryTab({
       id: "ref", header: "Order Ref", accessor: o => o.ref, priority: 1,
       cell: (_v, o) => (
         <>
-          <span style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, fontWeight: 700 }}>{o.ref}</span>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.royalBurgundy, fontWeight: 700 }}>{o.ref}</span>
           {o.tallied && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.green, marginTop: 3 }}>✓ Tallied</div>}
         </>
       ),
@@ -55,7 +55,7 @@ export function OrderHistoryTab({
       cell: (_v, o) => (
         <>
           <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{o.sareeType}</span>
-          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2 }}>{o.design}</div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 2 }}>{o.design}</div>
         </>
       ),
     },
@@ -66,7 +66,7 @@ export function OrderHistoryTab({
         const meta = ORDER_STATUS_META[o.status] ?? ORDER_STATUS_META["on-track"];
         return (
           <div style={{ minWidth: 130 }}>
-            <div style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, marginBottom: 5 }}>{o.done}/{o.total} · {pct}%</div>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.luxuryBrown, marginBottom: 5 }}>{o.done}/{o.total} · {pct}%</div>
             <div style={{ height: 6, background: T.silkCream, borderRadius: 4, overflow: "hidden" }}>
               <div style={{ width: `${pct}%`, height: "100%", background: meta.color, borderRadius: 4 }} />
             </div>
@@ -88,7 +88,7 @@ export function OrderHistoryTab({
       id: "outstanding", header: "Outstanding", accessor: o => custOrderMoney.get(o.ref)?.balance ?? 0,
       cell: (_v, o) => {
         const m = custOrderMoney.get(o.ref)!;
-        return <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: m.balance > 0 ? T.crimson : T.taupe }}>{m.balance > 0 ? inr(m.balance) : "—"}</span>;
+        return <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, color: m.balance > 0 ? T.crimson : T.taupe }}>{m.balance > 0 ? inr(m.balance) : "—"}</span>;
       },
     },
     {

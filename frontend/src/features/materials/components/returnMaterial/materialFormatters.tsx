@@ -28,15 +28,18 @@ export function renderReturnedMaterials(items: ReturnedMaterialItem[]) {
         }
 
         return (
-          <div key={idx} style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+          // ReturnedMaterialItem carries no unique id/sku — fall back to a composite of its
+          // distinguishing fields plus index, since two entries can otherwise be identical.
+          // eslint-disable-next-line react/no-array-index-key
+          <div key={`${m.materialType}-${m.warpSubtype ?? ""}-${m.jariColor ?? ""}-${idx}`} style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
             <span style={{
-              fontFamily: F.mono, fontSize: 12, fontWeight: 700,
+              fontFamily: F.ui, fontSize: 12, fontWeight: 700,
               color: m.materialType === "Warp" ? "#7A5010" : m.materialType === "Resham" ? "#7A5E1C" : T.royalBurgundy,
               background: m.materialType === "Warp" ? "rgba(196,146,58,0.14)" : m.materialType === "Resham" ? "rgba(200,155,71,0.13)" : "rgba(110,15,45,0.08)",
               padding: "2px 6px", borderRadius: 4
             }}>{m.materialType}</span>
             {desc && <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{desc}</span>}
-            <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{m.quantity} {m.unit}</span>
+            <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{m.quantity} {m.unit}</span>
           </div>
         );
       })}

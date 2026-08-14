@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FinishingStaffMember } from "../../finishing/contexts/FinishingStaffContext";
+import { FinishingStaffMember } from "@/features/finishing";
 import { Button, Field, Input, Textarea } from "../../../shared/ui/primitives";
 import { Modal } from "../../../shared/ui/overlay";
 

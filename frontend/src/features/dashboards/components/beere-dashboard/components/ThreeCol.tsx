@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { TrendingUp } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { T, F, G, NUM } from '../theme';
+import { T, F, NUM } from '../theme';
 import { AnimatedNumber, Card, SectionHeader, Donut, BarChart } from '../ui';
 import { useDashboardAnalytics } from '../hooks/useDashboardAnalytics';
 import { Button } from '../../../../../shared/ui/primitives';
@@ -150,7 +150,7 @@ export function FeaturedProduct({ compact }: { compact?: boolean }) {
           }}>
             <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: compact ? 10 : 11, color: T.taupe, marginBottom: 8, textTransform: "uppercase", letterSpacing: "1.5px" }}>{s.label}</div>
             <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: compact ? 20 : 24, color: s.vc, lineHeight: 1.1, ...NUM, display: "flex", alignItems: "center", gap: 6 }}>
-              {(s as any).alert && <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#C0392B", flexShrink: 0, display: "inline-block" }} />}
+              {s.alert && <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#C0392B", flexShrink: 0, display: "inline-block" }} />}
               {s.val}
             </div>
           </div>

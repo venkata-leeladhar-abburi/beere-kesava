@@ -4,15 +4,15 @@ import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 
-import { useBatches } from "../../../production/contexts/BatchContext";
+import { useBatches } from "@/features/production";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
-import { useMaterialIssue } from "../../../materials/contexts/MaterialIssueContext";
+import { useMaterialIssue } from "@/features/materials";
 import { weaversApi, BackendWeaver } from "../../../../shared/api/weavers";
 import { weaverPaymentsApi, BackendWeaverPayment } from "../../../../shared/api/payments";
 import { firmsApi } from "../../../../shared/api/firms";
 import { EASE, F, T } from "../../theme";
 import { WeaverRecord } from "../../types";
-import { RATES, calcCharges, calcCompletedSarees, calcDeduction, calcNet, calcPaid } from "../../utils/charges";
+import { calcCharges, calcCompletedSarees, calcDeduction, calcNet, calcPaid } from "../../utils/charges";
 import { FadeUp } from "../common/motion";
 import { DropBtn, Pip, SectionCard, StatusBadge } from "../common/primitives";
 import { Button, Checkbox, SearchInput } from "../../../../shared/ui/primitives";
@@ -24,7 +24,7 @@ import { WeaverCard } from "./WeaverCard";
 import { WeaverPaymentDetailModal } from "./WeaverPaymentDetailModal";
 import { WeaverPaymentReportDocument, type WeaverPaymentReportRow } from "./WeaverPaymentReportDocument";
 import { rupees, formatMoney } from "@/lib/domain/money";
-import { Money } from "@/shared/ui/domain";
+import { EntityCode, Money } from "@/shared/ui/domain";
 
 const AVATAR_PALETTE = ["#5A3E6B", "#6E0F2D", "#2D6B6B", "#4A6B4A", "#9B6B8A", "#2D7D6B", "#4A5E7A", "#7A2040"];
 
@@ -97,8 +97,8 @@ export function WeaverMakingChargesSection() {
     queryFn: () => firmsApi.list(),
   });
 
-  const roster = weaversRes?.items ?? [];
-  const payments = paymentsRes?.items ?? [];
+  const roster = useMemo(() => weaversRes?.items ?? [], [weaversRes]);
+  const payments = useMemo(() => paymentsRes?.items ?? [], [paymentsRes]);
 
   // Reused by both the card/list roster (below) and the printable payment
   // report (handleDownloadReport) — a weaver's most recent payment record.
@@ -154,7 +154,7 @@ export function WeaverMakingChargesSection() {
   const [filterVillage, setFilterVillage] = useState("All Villages");
   const [filterStatus, setFilterStatus] = useState("All Payment Status");
   const { batches } = useBatches();
-  const { getRecordsForWeaver } = useMaterialIssue();
+  useMaterialIssue();
   const { download } = useDocument();
 
   const viewOptions = [
@@ -358,8 +358,8 @@ export function WeaverMakingChargesSection() {
               sub: "After all deductions",
               hi: true,
             },
-          ].map((s, i) => (
-            <div key={i} style={{ background: s.hi ? "linear-gradient(135deg,rgba(200,155,71,0.14),rgba(200,155,71,0.04))" : "#FFFFFF", borderRadius: 14, border: `1px solid ${s.hi ? T.borderGold : T.borderDef}`, padding: "20px 20px 18px", boxShadow: "0 2px 14px rgba(74,6,27,0.07)", position: "relative", overflow: "hidden", display: "flex", flexDirection: "column", gap: 10 }}>
+          ].map((s) => (
+            <div key={s.label} style={{ background: s.hi ? "linear-gradient(135deg,rgba(200,155,71,0.14),rgba(200,155,71,0.04))" : "#FFFFFF", borderRadius: 14, border: `1px solid ${s.hi ? T.borderGold : T.borderDef}`, padding: "20px 20px 18px", boxShadow: "0 2px 14px rgba(74,6,27,0.07)", position: "relative", overflow: "hidden", display: "flex", flexDirection: "column", gap: 10 }}>
               {s.hi && <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg,${T.antiqueGold},${T.goldLight})` }} />}
               {/* Icon + label row */}
               <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
@@ -400,14 +400,15 @@ export function WeaverMakingChargesSection() {
           <div style={{ display: "flex", border: `1px solid ${T.borderDef}`, borderRadius: 9, overflow: "hidden", background: "#fff" }}>
             {viewOptions.map(({ key, Icon, label }) => (
               <Button key={key} variant={view === key ? "primary" : "tertiary"} size="sm" iconLeft={Icon}
-                onClick={() => setView(key as any)}
+                onClick={() => setView(key as "card" | "list")}
                 className="!rounded-none">
                 {label}
               </Button>
             ))}
           </div>
-          <label style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 12px", border: `1px solid ${T.borderDef}`, borderRadius: 9, background: "#fff", fontFamily: F.ui, fontSize: 13, fontWeight: 500, color: T.luxuryBrown, cursor: "pointer" }}>
+          <label htmlFor="select-all-filtered-weavers" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 12px", border: `1px solid ${T.borderDef}`, borderRadius: 9, background: "#fff", fontFamily: F.ui, fontSize: 13, fontWeight: 500, color: T.luxuryBrown, cursor: "pointer" }}>
             <Checkbox
+              id="select-all-filtered-weavers"
               checked={filtered.length > 0 && filtered.every(w => selectedIds.has(w.id))}
               onCheckedChange={() => {
                 const allSelected = filtered.every(w => selectedIds.has(w.id));
@@ -426,6 +427,7 @@ export function WeaverMakingChargesSection() {
           <DropBtn value="All Weavers" options={["All Weavers", "Master Weavers", "Junior Weavers"]} />
           <DropBtn value={filterVillage} options={["All Villages", ...villageOptions]} onChange={setFilterVillage} />
           <DropBtn value={filterStatus} options={["All Payment Status", "Pending", "Paid"]} onChange={setFilterStatus} />
+          {/* eslint-disable-next-line no-restricted-syntax -- DropBtn's `options` is string[] (shared/ui primitive, out of scope here); these are static filter-label text, not a rendered money amount, so <Money> can't be embedded without changing that API */}
           <DropBtn value="All Making Charge Rate" options={["All Making Charge Rate", "Self Brocade (₹450)", "Heavy Zari (₹680)", "Plain Silk (₹280)"]} />
           <div style={{ flex: 1, minWidth: 200 }}>
             <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search weaver name, ID, or village..." size="sm" />
@@ -496,29 +498,30 @@ export function WeaverMakingChargesSection() {
                   <div style={{ flex: "0 0 180px" }}>
                     <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{w.name}</div>
                     <div style={{ display: "flex", gap: 6, alignItems: "center", marginTop: 2 }}>
-                      <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "1px 5px", borderRadius: 4 }}>{w.id}</span>
+                      <EntityCode type="weaver" value={w.id} size="sm" />
                       <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>📍 {w.village}</span>
                     </div>
                   </div>
                   <div style={{ flex: 1, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-                    <strong style={{ color: T.luxuryBrown, fontFamily: F.mono }}>{completedSarees}</strong> sarees completed
+                    <strong style={{ color: T.luxuryBrown, fontVariantNumeric: "tabular-nums" }}>{completedSarees}</strong> sarees completed
                     {w.uploadedBatchNo && (
-                      <span style={{ color: T.royalBurgundy, display: "block", marginTop: 2, fontSize: 12, fontFamily: F.mono, fontWeight: 600 }}>
-                        Batch: {w.uploadedBatchNo} · Loom: {w.uploadedLoomNumber}
+                      <span style={{ color: T.royalBurgundy, display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap", marginTop: 2, fontSize: 12, fontFamily: F.ui, fontWeight: 600 }}>
+                        Batch: <EntityCode type="batch" value={w.uploadedBatchNo} size="sm" />
+                        {w.uploadedLoomNumber ? <>· Loom: <EntityCode type="loom" value={w.uploadedLoomNumber} size="sm" /></> : null}
                       </span>
                     )}
                   </div>
                   <div style={{ flex: "0 0 120px" }}>
                     <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Gross Charges</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown, fontWeight: 600 }}><Money value={rupees(charges)} /></div>
+                    <div style={{ fontSize: 13, color: T.luxuryBrown, fontWeight: 600 }}><Money value={rupees(charges)} /></div>
                   </div>
                   <div style={{ flex: "0 0 120px" }}>
                     <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Deductions</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 13, color: T.crimson, fontWeight: 600 }}>−<Money value={rupees(deduction)} /></div>
+                    <div style={{ fontSize: 13, color: T.crimson, fontWeight: 600 }}>−<Money value={rupees(deduction)} /></div>
                   </div>
                   <div style={{ flex: "0 0 120px" }}>
                     <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Amount Paid</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 13, color: T.green, fontWeight: 600 }}>{amountPaid > 0 ? <>−<Money value={rupees(amountPaid)} /></> : "—"}</div>
+                    <div style={{ fontSize: 13, color: T.green, fontWeight: 600 }}>{amountPaid > 0 ? <>−<Money value={rupees(amountPaid)} /></> : "—"}</div>
                   </div>
                   <div style={{ flex: "0 0 130px" }}>
                     <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Balance Due</div>

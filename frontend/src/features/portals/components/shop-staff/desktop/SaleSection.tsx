@@ -28,7 +28,7 @@ export function SaleSection({ bp, isTablet }: { bp: "tablet" | "desktop"; isTabl
                 { n: "3", title: "Customer Details", desc: "Search by phone — auto-fills for returning customers" },
                 { n: "4", title: "Confirm & Bill", desc: "Review summary and generate the bill" },
               ].map((s, i) => (
-                <div key={i} style={{ display: "flex", gap: 14, marginBottom: i < 3 ? 18 : 0, paddingBottom: i < 3 ? 18 : 0, borderBottom: i < 3 ? "1px solid rgba(255,255,255,0.08)" : "none" }}>
+                <div key={s.n} style={{ display: "flex", gap: 14, marginBottom: i < 3 ? 18 : 0, paddingBottom: i < 3 ? 18 : 0, borderBottom: i < 3 ? "1px solid rgba(255,255,255,0.08)" : "none" }}>
                   <div style={{ width: 32, height: 32, borderRadius: "50%", background: C.gold, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <span style={{ fontFamily: F.m, fontSize: 14, fontWeight: 700, color: C.dark }}>{s.n}</span>
                   </div>

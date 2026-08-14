@@ -11,6 +11,7 @@ import { fmtFull, today } from "./utils";
 import { Button, Input, Select, SelectItem } from "../../../shared/ui/primitives";
 import { DatePicker, formatDate } from "../../../shared/ui/date";
 import { rupees, formatMoney } from "@/lib/domain/money";
+import { toPaise, fromPaise } from "@/lib/gst";
 import { DataTable, type ColumnDef } from "../../../shared/ui/data";
 
 function Inp({ value, onChange, placeholder, type = "text", mono }: {
@@ -49,12 +50,12 @@ export function FinSummaryStrip({ income, expenses, misc }: { income: FinancialE
         { label: "Total Expenses", val: totalExp, color: T.crimson, bg: T.crimsonBg, icon: <TrendingDown size={16} color={T.crimson} /> },
         { label: "Net Balance", val: net, color: net >= 0 ? T.green : T.crimson, bg: net >= 0 ? T.greenBg : T.crimsonBg, icon: net >= 0 ? <TrendingUp size={16} color={net >= 0 ? T.green : T.crimson} /> : <TrendingDown size={16} color={T.crimson} /> },
       ].map((s, i) => (
-        <div key={i} style={{ padding: "14px 18px", borderRight: i < 2 ? `1px solid ${T.borderDef}` : "none", background: s.bg }}>
+        <div key={s.label} style={{ padding: "14px 18px", borderRight: i < 2 ? `1px solid ${T.borderDef}` : "none", background: s.bg }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 5 }}>
             {s.icon}
             <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.04em" }}>{s.label}</span>
           </div>
-          <div style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 18, color: s.color }}>{fmtFull(s.val)}</div>
+          <div style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 18, color: s.color }}>{fmtFull(s.val)}</div>
         </div>
       ))}
     </div>
@@ -73,14 +74,15 @@ export function AddEntryForm({ type, onSave, onCancel }: {
   const [notes, setNotes]       = React.useState("");
   const [otherLabel, setOtherLabel] = React.useState("");
   const isOther = cat === "Other" && type !== "misc";
-  function canSave() { return desc.trim() && parseFloat(amount) > 0 && date && (!isOther || otherLabel.trim()); }
+  function canSave() { return desc.trim() && toPaise(Number(amount) || 0) > 0 && date && (!isOther || otherLabel.trim()); }
   function handleSave() {
     if (!canSave()) return;
     const finalCat = isOther ? `Other — ${otherLabel.trim()}` : cat;
+    const amountValue = fromPaise(toPaise(Number(amount) || 0));
     if (type === "misc") {
-      onSave({ description: desc.trim(), amount: parseFloat(amount), date, notes: notes.trim() || undefined, type: cat as MiscType });
+      onSave({ description: desc.trim(), amount: amountValue, date, notes: notes.trim() || undefined, type: cat as MiscType });
     } else {
-      onSave({ description: desc.trim(), amount: parseFloat(amount), date, category: finalCat as IncomeCategory | ExpenseCategory });
+      onSave({ description: desc.trim(), amount: amountValue, date, category: finalCat as IncomeCategory | ExpenseCategory });
     }
   }
   const cats = type === "income" ? INCOME_CATS : type === "expense" ? EXPENSE_CATS : ["income", "expense"];
@@ -140,7 +142,7 @@ export function ExcelUploadBtn({ onImport, type }: { onImport: (rows: Omit<Finan
           .filter(r => r["Description"] && r["Amount"])
           .map(r => ({
             description: String(r["Description"]),
-            amount: parseFloat(String(r["Amount"]).replace(/[^0-9.]/g, "")) || 0,
+            amount: fromPaise(toPaise(Number(String(r["Amount"]).replace(/[^0-9.]/g, "")) || 0)),
             date: r["Date"] ? String(r["Date"]) : today(),
             category: (r["Category"] || defaultCat) as IncomeCategory | ExpenseCategory,
           }))
@@ -186,7 +188,7 @@ function EntryTable({ entries, type }: { entries: (FinancialEntry | MiscEntry)[]
       cell: (_v, e) => {
         const isIncome = isIncomeOf(e);
         return (
-          <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 13, color: isIncome ? T.green : T.crimson }}>
+          <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 13, color: isIncome ? T.green : T.crimson }}>
             {isIncome ? "+" : "−"}{formatMoney(rupees(e.amount))}
           </span>
         );
@@ -194,7 +196,7 @@ function EntryTable({ entries, type }: { entries: (FinancialEntry | MiscEntry)[]
     },
     {
       id: "date", header: "Date", accessor: e => e.date, priority: 3,
-      cell: (_v, e) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{e.date}</span>,
+      cell: (_v, e) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{e.date}</span>,
     },
     {
       id: "category", header: type ? "Category" : "Type", accessor: e => catOf(e),
@@ -242,7 +244,7 @@ export function FinSection({ title, icon, entries, color, bg, onAdd, onBulkImpor
       <div style={{ background: bg, padding: "12px 18px", display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }} onClick={() => setOpen(o => !o)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => setOpen(o => !o))?.(); } }}>
         <span style={{ color }}>{icon}</span>
         <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, flex: 1 }}>{title}</span>
-        <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14, color }}>{fmtFull(total)}</span>
+        <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 14, color }}>{fmtFull(total)}</span>
         <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginLeft: 4 }}>({entries.length} entries)</span>
         {open ? <ChevronUp size={15} color={T.taupe} /> : <ChevronDown size={15} color={T.taupe} />}
       </div>

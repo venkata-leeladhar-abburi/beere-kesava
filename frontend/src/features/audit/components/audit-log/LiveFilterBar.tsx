@@ -49,7 +49,7 @@ export function LiveFilterBar({
           </span>
         </div>
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>
             Last refreshed: just now
           </span>
           <Button variant="secondary" size="sm" iconLeft={RefreshCw}>
@@ -150,7 +150,7 @@ export function LiveFilterBar({
         </div>
 
         {/* Results label */}
-        <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 10 }}>
+        <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 10 }}>
           {resultsLabel ?? "Filters apply to the action log below."}
         </div>
       </div>

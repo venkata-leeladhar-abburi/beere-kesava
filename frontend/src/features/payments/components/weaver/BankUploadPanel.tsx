@@ -65,11 +65,11 @@ export function BankUploadPanel({ onReset, onUploaded }: { onMatchUpdate?: (matc
           </div>
           <div>
             <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown, marginBottom: 3 }}>Upload Bank Payment File</div>
-            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, lineHeight: 1.55, maxWidth: 620 }}>
+            <div className="sm:max-w-[620px]" style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, lineHeight: 1.55, maxWidth: "100%" }}>
               Upload an Excel file (.xlsx) with a header row — same columns as the table above, in this order:
-              {" "}<span style={{ fontFamily: F.mono, color: T.luxuryBrown }}>weaverId, weaverName, batchNo, loomNumber, noOfSarees, makingCharges, deduction, amountPaid, utrNumber, firmId, paymentDate</span>.
-              {" "}Required: <span style={{ fontFamily: F.mono, color: T.luxuryBrown }}>weaverId, amountPaid</span>. Optional: <span style={{ fontFamily: F.mono, color: T.luxuryBrown }}>utrNumber, firmId, paymentDate, batchNo, loomNumber, noOfSarees, deduction</span>.
-              {" "}<span style={{ fontFamily: F.mono, color: T.luxuryBrown }}>weaverName</span> and <span style={{ fontFamily: F.mono, color: T.luxuryBrown }}>makingCharges</span> are reference-only — kept for readability but ignored on import.
+              {" "}<span style={{ fontWeight: 600, color: T.luxuryBrown }}>weaverId, weaverName, batchNo, loomNumber, noOfSarees, makingCharges, deduction, amountPaid, utrNumber, firmId, paymentDate</span>.
+              {" "}Required: <span style={{ fontWeight: 600, color: T.luxuryBrown }}>weaverId, amountPaid</span>. Optional: <span style={{ fontWeight: 600, color: T.luxuryBrown }}>utrNumber, firmId, paymentDate, batchNo, loomNumber, noOfSarees, deduction</span>.
+              {" "}<span style={{ fontWeight: 600, color: T.luxuryBrown }}>weaverName</span> and <span style={{ fontWeight: 600, color: T.luxuryBrown }}>makingCharges</span> are reference-only — kept for readability but ignored on import.
               {" "}Rows are matched against real weaver records and saved directly.
             </div>
             {result ? (
@@ -124,8 +124,8 @@ export function BankUploadPanel({ onReset, onUploaded }: { onMatchUpdate?: (matc
               { label: "Total Rows", value: String(totalRows), color: T.luxuryBrown, bg: "#FFFFFF", icon: <FileText size={18} color={T.royalBurgundy} /> },
               { label: "Payments Saved", value: String(result.created), color: T.green, bg: "rgba(30,102,64,0.07)", icon: <CheckCircle2 size={18} color={T.green} /> },
               { label: "Failed Rows", value: String(result.failed), color: T.crimson, bg: "rgba(192,57,43,0.06)", icon: <IndianRupee size={18} color={T.crimson} /> },
-            ].map((s, i) => (
-              <div key={i} style={{ background: s.bg, borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "16px 18px", display: "flex", alignItems: "center", gap: 12, boxShadow: "0 2px 8px rgba(74,6,27,0.05)" }}>
+            ].map((s) => (
+              <div key={s.label} style={{ background: s.bg, borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "16px 18px", display: "flex", alignItems: "center", gap: 12, boxShadow: "0 2px 8px rgba(74,6,27,0.05)" }}>
                 <div style={{ width: 38, height: 38, borderRadius: 10, background: "#fff", border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   {s.icon}
                 </div>
@@ -150,11 +150,11 @@ export function BankUploadPanel({ onReset, onUploaded }: { onMatchUpdate?: (matc
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
                 <AlertTriangle size={16} color={T.crimson} />
                 <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>Failed Rows</span>
-                <span style={{ fontFamily: F.mono, fontSize: 12, color: T.crimson, background: "rgba(192,57,43,0.10)", padding: "2px 9px", borderRadius: 20 }}>{result.errors.length}</span>
+                <span style={{ fontVariantNumeric: "tabular-nums", fontSize: 12, color: T.crimson, background: "rgba(192,57,43,0.10)", padding: "2px 9px", borderRadius: 20 }}>{result.errors.length}</span>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {result.errors.map((e, i) => (
-                  <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: i * 0.04 }}
+                  <motion.div key={e.row} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: i * 0.04 }}
                     style={{ background: "rgba(192,57,43,0.04)", borderRadius: 12, border: `1px solid rgba(192,57,43,0.22)`, borderLeft: `4px solid ${T.crimson}`, padding: "12px 16px", display: "flex", alignItems: "center", gap: 10 }}>
                     <CircleAlert size={14} color={T.crimson} style={{ flexShrink: 0 }} />
                     <span style={{ fontFamily: F.ui, fontSize: 13, color: T.crimson }}>

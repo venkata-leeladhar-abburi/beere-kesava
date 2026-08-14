@@ -68,12 +68,14 @@ const INTENT_COLOR: Record<NonNullable<ProgressProps["intent"]>, string> = {
 export function Progress({ value, size = "md", intent = "brand", label, indeterminate, className, ...props }: ProgressProps) {
   const clamped = Math.max(0, Math.min(100, value));
   const height = PROGRESS_HEIGHT[size];
+  const generatedLabelId = React.useId();
+  const labelId = label ? generatedLabelId : undefined;
 
   return (
     <div className={cn("flex flex-col gap-1", className)} {...props}>
       {label && (
         <div className="flex items-center justify-between">
-          <span className="bk-label-md" style={{ color: "var(--text-secondary)" }}>{label}</span>
+          <span id={labelId} className="bk-label-md" style={{ color: "var(--text-secondary)" }}>{label}</span>
           <span className="bk-label-md tabular-nums" style={{ color: "var(--text-primary)" }}>{clamped}%</span>
         </div>
       )}
@@ -82,6 +84,8 @@ export function Progress({ value, size = "md", intent = "brand", label, indeterm
         aria-valuenow={indeterminate ? undefined : clamped}
         aria-valuemin={0}
         aria-valuemax={100}
+        aria-labelledby={labelId}
+        aria-label={labelId ? undefined : "Progress"}
         className="w-full rounded-[var(--radius-full)] overflow-hidden bg-[var(--bk-neutral-200)]"
         style={{ height }}
       >

@@ -9,8 +9,8 @@ import {
   bulkOrdersApi,
 } from "../../../shared/api/bulk-orders";
 import { customersApi } from "../../../shared/api/customers";
-import { useRatesPricing } from "../../pricing/contexts/RatesContext";
-import { type SareeTypeRecord } from "../../pricing/components/RatesPricingPage";
+import { useRatesPricing } from "@/features/pricing";
+import { type SareeTypeRecord } from "@/features/pricing";
 
 // ─── BulkOrder Interface ──────────────────────────────────────────────────────
 export interface BulkOrder {

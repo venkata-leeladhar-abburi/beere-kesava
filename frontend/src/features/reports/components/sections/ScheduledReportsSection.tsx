@@ -3,7 +3,7 @@ import { motion } from "motion/react";
 import { Users, Scissors, BarChart3, BellRing, UsersRound, Plus, Pause, Play, Trash2, X, CalendarClock } from "lucide-react";
 import { T, F } from "../theme";
 import { FadeUp, SectionCard } from "../common/primitives";
-import { Button, IconButton, Select, SelectItem, Input, CheckboxField } from "../../../../shared/ui/primitives";
+import { Button, IconButton, Select, SelectItem, Input } from "../../../../shared/ui/primitives";
 
 // Wired to real backend: GET/POST /reports/schedules, PATCH/DELETE /reports/schedules/:id.
 // Record-keeping only — creating a schedule here persists the record for the
@@ -121,7 +121,7 @@ export function ScheduledReportsSection() {
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.3, marginBottom: 7 }}>{s.reportName}</div>
-                      <span style={{ display: "inline-block", padding: "3px 12px", borderRadius: 99, background: "rgba(200,155,71,0.13)", color: T.antiqueGold, fontFamily: F.mono, fontSize: 12, fontWeight: 700, letterSpacing: "0.4px" }}>{s.frequency}</span>
+                      <span style={{ display: "inline-block", padding: "3px 12px", borderRadius: 99, background: "rgba(200,155,71,0.13)", color: T.antiqueGold, fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "0.4px" }}>{s.frequency}</span>
                     </div>
                   </div>
 
@@ -131,11 +131,11 @@ export function ScheduledReportsSection() {
                       <span style={{ fontWeight: 700, color: T.luxuryBrown }}>Send to: </span>{s.recipientEmail}
                     </div>
                     <div style={{ display: "flex", gap: 6, flexWrap: "wrap" as const }}>
-                      <span style={{ padding: "3px 11px", borderRadius: 6, background: "rgba(110,15,45,0.07)", color: T.royalBurgundy, fontFamily: F.mono, fontSize: 12, fontWeight: 700 }}>{s.format}</span>
+                      <span style={{ padding: "3px 11px", borderRadius: 6, background: "rgba(110,15,45,0.07)", color: T.royalBurgundy, fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700 }}>{s.format}</span>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
                       <div style={{ width: 10, height: 10, borderRadius: "50%", background: s.active ? T.green : T.taupe }} />
-                      <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: s.active ? T.green : T.taupe }}>{s.active ? "Active" : "Paused"}</span>
+                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, color: s.active ? T.green : T.taupe }}>{s.active ? "Active" : "Paused"}</span>
                     </div>
                   </div>
 
@@ -181,7 +181,7 @@ export function ScheduledReportsSection() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 18 }}>
               <div>
-                <label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>Select Report Type</label>
+                <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>Select Report Type</span>
                 <Select size="sm" value={reportType} onValueChange={setReportType}>
                   {["Raw Material Report","Saree Production Report","Weaver Payment Report","Retail Sales Report","Wholesale Sales Report","Profit & Loss Report","Customer Report","Overdue & Alerts Report"].map((o) => (
                     <SelectItem key={o} value={o}>{o}</SelectItem>
@@ -189,15 +189,15 @@ export function ScheduledReportsSection() {
                 </Select>
               </div>
               <div>
-                <label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>Frequency</label>
-                <Select size="sm" value={frequency} onValueChange={(v: string) => setFrequency(v as any)}>
+                <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>Frequency</span>
+                <Select size="sm" value={frequency} onValueChange={(v: string) => setFrequency(v as "Daily" | "Weekly" | "Monthly" | "Quarterly")}>
                   {["Daily","Weekly","Monthly","Quarterly"].map((o) => (
                     <SelectItem key={o} value={o}>{o}</SelectItem>
                   ))}
                 </Select>
               </div>
               <div>
-                <label style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>Recipient Email</label>
+                <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, display: "block", marginBottom: 6 }}>Recipient Email</span>
                 <Input
                   size="sm"
                   type="email"

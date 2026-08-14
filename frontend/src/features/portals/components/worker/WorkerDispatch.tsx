@@ -3,11 +3,11 @@ import { AnimatePresence } from "motion/react";
 import { Truck, Clock, CheckCircle2, Package } from "lucide-react";
 import { C, F } from "./tokens";
 import { PageHero, StatsStrip, SectionHeading, GUTTER_X, type WorkerStat } from "./primitives";
-import { useFinishing, DispatchRecord } from "../../../finishing/contexts/FinishingContext";
-import { useFirms } from "../../../firms/contexts/FirmsContext";
+import { useFinishing, DispatchRecord } from "@/features/finishing";
+import { useFirms } from "@/features/firms";
 // The admin Inventory page's own section and form — reused as-is so the worker
 // screen stays identical to what admin sees.
-import { DispatchHistorySection, ResumeDispatchModal } from "../../../inventory/components/InventoryPage";
+import { DispatchHistorySection, ResumeDispatchModal } from "@/features/inventory";
 
 export function WorkerDispatch({ isDesktop = false }: { isDesktop?: boolean }) {
   const { dispatches, updateDispatch, returns, deleteDispatch } = useFinishing();
@@ -85,13 +85,13 @@ export function WorkerDispatch({ isDesktop = false }: { isDesktop?: boolean }) {
       {/* The admin Dispatch History section, unchanged. Horizontal scroll keeps
           its fixed column grid intact on narrow screens. */}
       <div style={{ overflowX: "auto" }}>
-        <div style={{ minWidth: 900 }}>
+        <div className="min-w-[900px]">
           <DispatchHistorySection 
             dispatches={dispatches} 
             firms={firms} 
             onResume={setResume} 
             onDelete={(d) => deleteDispatch(d.id, "worker-staff")}
-            onViewInvoice={(d) => alert("Invoice viewing coming soon")}
+            onViewInvoice={(_d) => alert("Invoice viewing coming soon")}
           />
         </div>
       </div>

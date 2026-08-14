@@ -8,7 +8,7 @@ import { AnimatedBar } from './ui';
 import { useDashboardWeavers } from './hooks/useDashboardWeavers';
 import { Button } from "../../../../shared/ui/primitives";
 
-export function MobileWeavers({ onNavigate }: { onNavigate: (tab: string, ctx?: any) => void }) {
+export function MobileWeavers({ onNavigate }: { onNavigate: (tab: string, ctx?: { weaverId: string; mode: "view" | "edit" }) => void }) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-60px 0px" });
   const { data: weavers = [], isLoading } = useDashboardWeavers();
@@ -24,8 +24,11 @@ export function MobileWeavers({ onNavigate }: { onNavigate: (tab: string, ctx?: 
       </div>
       {isLoading ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+          {/* static loading skeletons with no backing data — index is a stable
+              fallback since the list length never changes at runtime */}
           {Array.from({ length: 2 }).map((_, i) => (
-            <div key={i} style={{ height: 320, borderRadius: 24, background: "rgba(110,15,45,0.05)", border: `1px solid rgba(110,15,45,0.10)` }} />
+            // eslint-disable-next-line react/no-array-index-key -- static loading skeletons with no backing data; list length never changes at runtime.
+            <div key={`skeleton-${i}`} style={{ height: 320, borderRadius: 24, background: "rgba(110,15,45,0.05)", border: `1px solid rgba(110,15,45,0.10)` }} />
           ))}
         </div>
       ) : weavers.length === 0 ? (
@@ -64,7 +67,7 @@ export function MobileWeavers({ onNavigate }: { onNavigate: (tab: string, ctx?: 
               <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.4) 100%)", pointerEvents: "none" }} />
 
               {/* Floating ID badge in top left */}
-              <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(26,10,15,0.65)", backdropFilter: "blur(6px)", color: "#FFFDF9", fontFamily: F.mono, fontSize: 12, fontWeight: 600, letterSpacing: "0.5px", padding: "4px 10px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.15)" }}>
+              <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(26,10,15,0.65)", backdropFilter: "blur(6px)", color: "#FFFDF9", fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, letterSpacing: "0.5px", padding: "4px 10px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.15)" }}>
                 {w.id.slice(0, 8).toUpperCase()}
               </div>
 
@@ -218,7 +221,7 @@ export function MobileRawMaterial({ onNavigate }: { onNavigate: (tab: string) =>
               <AnimatedBar pct={m.pct} color={m.barColor} height={5} />
               <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: T.taupe, margin: "8px 0 12px" }}>{m.pct}% of storage capacity</div>
               <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: m.green ? "rgba(30,102,64,0.09)" : "rgba(192,57,43,0.08)", border: `1px solid ${m.green ? "rgba(30,102,64,0.20)" : "rgba(192,57,43,0.20)"}`, borderRadius: 8, padding: "5px 12px" }}>
-                <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 500, color: m.green ? T.green : T.crimson }}>{m.badge}</span>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 500, color: m.green ? T.green : T.crimson }}>{m.badge}</span>
               </div>
             </div>
           </motion.div>

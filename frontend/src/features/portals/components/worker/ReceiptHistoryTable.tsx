@@ -41,7 +41,10 @@ function renderMaterialsSummary(summary: string) {
           const desc = matchDesc[2].trim();
           const qty = matchDesc[3].trim();
           return (
-            <div key={idx} style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+            // Parsed from a comma-joined summary string with no per-item id; combine
+            // the raw text with its position since duplicate lines are possible.
+            // eslint-disable-next-line react/no-array-index-key
+            <div key={`${p}-${idx}`} style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
               <span style={{ 
                 fontFamily: F.u, fontSize: 12, fontWeight: 700,
                 color: type === "Warp" ? "#7A5010" : type === "Resham" ? "#7A5E1C" : C.burg, 
@@ -54,7 +57,9 @@ function renderMaterialsSummary(summary: string) {
           );
         }
         return (
-          <div key={idx} style={{ fontFamily: F.u, fontSize: 12, color: C.text }}>
+          // Same fallback as above: raw text has no id, combine with index.
+          // eslint-disable-next-line react/no-array-index-key
+          <div key={`${p}-${idx}`} style={{ fontFamily: F.u, fontSize: 12, color: C.text }}>
             {p}
           </div>
         );
@@ -147,7 +152,7 @@ export function ReceiptHistoryTable({ receiptHistory: propReceiptHistory, compac
       <DateFilterBar filter={historyDateFilter} onChange={f => { setHistoryDateFilter(f); setHistoryPage(1); }} />
 
       <div style={{ ...card, overflow: "hidden", border: `1.5px solid ${C.bdr}` }}>
-        <div style={{ overflowX: "auto", minWidth: 760 }}>
+        <div className="min-w-[760px]" style={{ overflowX: "auto" }}>
           <DataTable
             responsive
             columns={columns}

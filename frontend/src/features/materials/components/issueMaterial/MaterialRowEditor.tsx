@@ -11,6 +11,7 @@ export function MaterialRowEditor({ row, grnBatches, onChange, onRemove, showRem
 }) {
   const patch = (p: Partial<MaterialRowState>) => onChange({ ...row, ...p });
   const selectedGrn = grnBatches.find(g => g.grnBatchId === row.grnBatchId);
+  // eslint-disable-next-line no-restricted-syntax -- material quantity (kg/g/reels/buns), not currency
   const qtyNum = parseFloat(row.quantity) || 0;
   const overAvailable = selectedGrn && qtyNum > selectedGrn.availableQty;
   const reelsToBuns = row.jariUnit === "Reels" ? (qtyNum / 4) : (qtyNum * 4);
@@ -30,17 +31,18 @@ export function MaterialRowEditor({ row, grnBatches, onChange, onRemove, showRem
 
       {/* Material Type */}
       <div style={{ marginBottom: 16 }}>
-        <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 8 }}>Material Type</label>
-        <PillTab options={["Warp", "Resham", "Jari"]} value={row.materialType} onChange={v => patch({ materialType: v as any, grnBatchId: "", description: "", quantity: "" })} />
+        <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 8 }}>Material Type</span>
+        <PillTab options={["Warp", "Resham", "Jari"]} value={row.materialType} onChange={v => patch({ materialType: v as "Warp" | "Resham" | "Jari", grnBatchId: "", description: "", quantity: "" })} />
       </div>
 
       {/* Description + Quantity */}
       <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr]" style={{ gap: 14, marginBottom: 16 }}>
         <div>
-          <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 6 }}>
+          <label htmlFor={`material-description-${row.uid}`} style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 6 }}>
             Description
           </label>
           <Input
+            id={`material-description-${row.uid}`}
             value={row.description}
             onChange={e => patch({ description: e.target.value })}
             placeholder={
@@ -63,7 +65,7 @@ export function MaterialRowEditor({ row, grnBatches, onChange, onRemove, showRem
                     key={u}
                     variant={row.jariUnit === u ? "primary" : "secondary"}
                     size="sm"
-                    onClick={() => patch({ jariUnit: u as any })}
+                    onClick={() => patch({ jariUnit: u as "Reels" | "Buns" })}
                     className="flex-1"
                   >{u}</Button>
                 ))}
@@ -78,7 +80,7 @@ export function MaterialRowEditor({ row, grnBatches, onChange, onRemove, showRem
                 <span style={{ position: "absolute" as const, right: 10, top: "50%", transform: "translateY(-50%)", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{row.jariUnit}</span>
               </div>
               {row.quantity && (
-                <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, marginTop: 4 }}>
+                <div style={{ fontFamily: F.ui, fontVariantNumeric: "tabular-nums", fontSize: 12, color: T.antiqueGold, marginTop: 4 }}>
                   = {reelsToBuns.toFixed(reelsToBuns % 1 === 0 ? 0 : 1)} {row.jariUnit === "Reels" ? "Buns" : "Reels"} <span style={{ color: T.taupe }}>(1 Bun = 4 Reels)</span>
                 </div>
               )}
@@ -91,7 +93,7 @@ export function MaterialRowEditor({ row, grnBatches, onChange, onRemove, showRem
                     key={u}
                     variant={(row.warpReshamUnit || "kg") === u ? "primary" : "secondary"}
                     size="sm"
-                    onClick={() => patch({ warpReshamUnit: u as any })}
+                    onClick={() => patch({ warpReshamUnit: u as "kg" | "g" })}
                     className="flex-1"
                   >{u}</Button>
                 ))}
@@ -106,7 +108,8 @@ export function MaterialRowEditor({ row, grnBatches, onChange, onRemove, showRem
                 <span style={{ position: "absolute" as const, right: 10, top: "50%", transform: "translateY(-50%)", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{row.warpReshamUnit || "kg"}</span>
               </div>
               {row.quantity && (
-                <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold }}>
+                <div style={{ fontFamily: F.ui, fontVariantNumeric: "tabular-nums", fontSize: 12, color: T.antiqueGold }}>
+                  {/* eslint-disable-next-line no-restricted-syntax -- material weight (kg/g) conversion, not currency */}
                   = {(row.warpReshamUnit || "kg") === "kg" ? `${(parseFloat(row.quantity) * 1000).toFixed(0)} g` : `${(parseFloat(row.quantity) / 1000).toFixed(3)} kg`}
                 </div>
               )}

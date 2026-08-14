@@ -1,8 +1,6 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router";
 import { motion } from "motion/react";
-import { Search, Bell, ChevronDown, ChevronLeft, UserRound, ShoppingCart, Package, LogOut } from "lucide-react";
-import { useAuth } from "../../../../contexts/AuthContext";
+import { Search, Bell, ChevronDown, ChevronLeft, UserRound, LogOut } from "lucide-react";
 import { useResponsive } from "../../../../hooks/useResponsive";
 import {
   SectionNavigator, MAIN_NAV_H, SUB_NAV_H, SectionNavItem,
@@ -19,8 +17,6 @@ import { NAV_GROUPS, findNavGroup } from "./data";
 // visual-hierarchy regression, not a restyle. Permanent exception.
 
 export function SATopNav({ active, set, onBack, sections, onProfile }: { active: string; set: (v: string) => void; onBack?: () => void; sections?: SectionNavItem[]; onProfile?: () => void }) {
-  const navigate = useNavigate();
-  const { selectRole } = useAuth();
   const { w } = useResponsive();
   const compact = w < 1320;
   const [showProfile, setShowProfile] = useState(false);
@@ -236,7 +232,7 @@ export function SATopNav({ active, set, onBack, sections, onProfile }: { active:
                 </div>
                 <div>
                   <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>Superadmin</div>
-                  <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2 }}>Full Access · All Portals</div>
+                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 2 }}>Full Access · All Portals</div>
                 </div>
               </div>
               <div style={{ padding: "6px 0" }}>

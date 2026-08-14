@@ -20,6 +20,7 @@ export function SupplierFormFields({
   onCardChange: (dataUrl: string | null) => void;
 }) {
   const set = (k: keyof SupplierFormValues, v: string) => setForm({ ...form, [k]: v });
+  const setRating = (v: number) => setForm({ ...form, rating: v });
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 32 }}>
@@ -51,10 +52,11 @@ export function SupplierFormFields({
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
           <div>
-            <label style={lbl}>Supplier Rating</label>
+            <span style={{ ...lbl, display: "block" }}>Supplier Rating</span>
             <div style={{ display: "flex", gap: 6, cursor: "pointer", marginTop: 8 }}>
               {[1, 2, 3, 4, 5].map(i => (
-                <div key={i} onClick={() => set("rating", i as any)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => set("rating", i as any))?.(); } }}>
+                <div key={i} onClick={() => setRating(i)} role="button" tabIndex={0} aria-label={`Rate ${i} stars`} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setRating(i); } }}>
+                  {/* eslint-disable-next-line no-restricted-syntax -- star rating UI, not chart series */}
                   <Star size={20} fill={i <= (form.rating || 3) ? T.antiqueGold : "none"} color={i <= (form.rating || 3) ? T.antiqueGold : T.taupe} />
                 </div>
               ))}
@@ -72,7 +74,7 @@ export function SupplierFormFields({
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         <div>
           <label style={lbl} htmlFor="business-address">Business Address</label>
-          <textarea id="business-address" value={form.address} onChange={e => set("address", e.target.value)} placeholder="Full address for delivery and billing" rows={3}
+          <textarea id="business-address" aria-label="Business Address" value={form.address} onChange={e => set("address", e.target.value)} placeholder="Full address for delivery and billing" rows={3}
             style={{ ...inp, resize: "none", lineHeight: 1.5 }} />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
@@ -114,7 +116,7 @@ export function SupplierFormFields({
         )}
         <div>
           <label style={lbl} htmlFor="notes">Notes</label>
-          <textarea id="notes" value={form.notes} onChange={e => set("notes", e.target.value)} placeholder="Any special instructions or supplier notes..." rows={2}
+          <textarea id="notes" aria-label="Notes" value={form.notes} onChange={e => set("notes", e.target.value)} placeholder="Any special instructions or supplier notes..." rows={2}
             style={{ ...inp, resize: "none", lineHeight: 1.5 }} />
         </div>
       </div>

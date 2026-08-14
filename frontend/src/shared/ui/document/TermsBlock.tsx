@@ -54,7 +54,10 @@ export function TermsBlock({ bank, terms, termsLabel = "Terms & Conditions" }: T
           <div className="bk-doc__eyebrow">{termsLabel}</div>
           <div style={{ marginTop: "1.5mm", display: "flex", flexDirection: "column", gap: "0.8mm" }}>
             {terms!.map((t, i) => (
-              <div key={i} style={{ fontSize: "var(--doc-small)", color: "var(--doc-muted)", lineHeight: 1.5 }}>{t}</div>
+              // Terms are free-text strings and could repeat verbatim, so the text is
+              // paired with its index for a guaranteed-unique key.
+              // eslint-disable-next-line react/no-array-index-key
+              <div key={`${t}-${i}`} style={{ fontSize: "var(--doc-small)", color: "var(--doc-muted)", lineHeight: 1.5 }}>{t}</div>
             ))}
           </div>
         </div>

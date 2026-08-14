@@ -174,8 +174,8 @@ export function WorkerQCInspectionScreen({
               <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: T.brown, marginBottom: 8 }}>Photo of defect</div>
               {!hasPhoto ? (
                 <div style={{ border: "1px dashed rgba(110,15,45,0.25)", borderRadius: 10, padding: "14px 12px", marginBottom: 14 }}>
-                  <input type="file" accept="image/*" capture="environment" ref={cameraInputRef} style={{ display: 'none' }} onChange={handlePhotoSelect} />
-                  <input type="file" accept="image/*" ref={fileInputRef} style={{ display: 'none' }} onChange={handlePhotoSelect} />
+                  <input type="file" accept="image/*" capture="environment" ref={cameraInputRef} style={{ display: 'none' }} onChange={handlePhotoSelect} aria-label="Camera photo input" />
+                  <input type="file" accept="image/*" ref={fileInputRef} style={{ display: 'none' }} onChange={handlePhotoSelect} aria-label="Gallery photo input" />
                   <div style={{ display: "flex", gap: 8 }}>
                     <Button variant="primary" fullWidth size="sm" iconLeft={Camera} onClick={() => cameraInputRef.current?.click()} className="h-11 rounded-full bg-[#6E0F2D] hover:bg-[#6E0F2D]">
                       Take Photo

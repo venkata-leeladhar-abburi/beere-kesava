@@ -72,8 +72,9 @@ export function ActivityStrip({ onNavigate }: { onNavigate: (tab: string) => voi
         </div>
         <div style={{ display: "flex", gap: 14 }}>
           {liveActions.map((a, i) => (
+            // No stable id on activity entries (static fallback or derived text/time); composite key avoids index-only key.
             <motion.div
-              key={i}
+              key={`${a.text}-${a.time}`}
               initial={{ opacity: 0, y: 36, scale: 0.88, filter: "blur(7px)", boxShadow: "0px 0px 0px rgba(0,0,0,0)", backgroundColor: "rgba(255,255,255,0.04)" }}
               animate={inView ? { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", boxShadow: "0px 0px 0px rgba(0,0,0,0)", backgroundColor: "rgba(255,255,255,0.04)" } : undefined}
               whileHover={{ y: -7, scale: 1.025, boxShadow: `0px 22px 56px ${a.glow}`, backgroundColor: "rgba(255,255,255,0.08)" }}
@@ -95,7 +96,7 @@ export function ActivityStrip({ onNavigate }: { onNavigate: (tab: string) => voi
               <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 14, color: "rgba(245,232,208,0.97)", lineHeight: 1.65, flex: 1, letterSpacing: "0.05px" }}>{a.text}</div>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <div style={{ width: 6, height: 6, borderRadius: "50%", background: a.bg, boxShadow: `0 0 8px ${a.glow}` }} />
-                <span style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(245,232,208,0.70)", letterSpacing: "0.3px" }}>{a.time}</span>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(245,232,208,0.70)", letterSpacing: "0.3px" }}>{a.time}</span>
               </div>
             </motion.div>
           ))}

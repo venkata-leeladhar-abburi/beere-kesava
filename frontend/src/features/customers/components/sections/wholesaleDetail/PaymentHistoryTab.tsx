@@ -25,7 +25,7 @@ const PAYMENTS: PaymentRow[] = [
 const columns: ColumnDef<PaymentRow>[] = [
   {
     id: "rec", header: "Receipt No", accessor: p => p.rec, priority: 1,
-    cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy }}>{p.rec}</span>,
+    cell: (_v, p) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.royalBurgundy }}>{p.rec}</span>,
   },
   {
     id: "date", header: "Payment Date", accessor: p => p.date,
@@ -33,7 +33,7 @@ const columns: ColumnDef<PaymentRow>[] = [
   },
   {
     id: "utr", header: "UTR Number", accessor: p => p.utr, priority: 3,
-    cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.taupe }}>{p.utr}</span>,
+    cell: (_v, p) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.taupe }}>{p.utr}</span>,
   },
   {
     id: "amt", header: "Amount Paid", accessor: p => p.amt,

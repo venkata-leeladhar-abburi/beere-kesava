@@ -11,6 +11,7 @@ import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { Modal } from "../../../../shared/ui/overlay";
 import { StatusPill } from "../../../../shared/ui/domain/StatusPill";
 import type { StatusValueOf } from "@/lib/domain/status";
+import { EntityCode } from "@/shared/ui/domain";
 
 type MaterialLine = MaterialIssueRecord["materials"][number];
 
@@ -40,11 +41,11 @@ export function RecordDetailsModal({ record, onClose }: { record: MaterialIssueR
     },
     {
       id: "qty", header: "Qty", accessor: m => m.quantity,
-      cell: (_v, m) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown }}>{m.quantity} {m.unit}</span>,
+      cell: (_v, m) => <span style={{ fontFamily: F.ui, fontVariantNumeric: "tabular-nums", fontSize: 13, color: T.luxuryBrown }}>{m.quantity} {m.unit}</span>,
     },
     {
       id: "grn", header: "GRN Batch", accessor: m => m.grnBatchId,
-      cell: (_v, m) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{m.grnBatchId}</span>,
+      cell: (_v, m) => <EntityCode type="goodsReceipt" value={m.grnBatchId} size="sm" />,
     },
   ];
 
@@ -53,7 +54,9 @@ export function RecordDetailsModal({ record, onClose }: { record: MaterialIssueR
       <div style={{ display: "flex", flexDirection: "column", overflow: "hidden", background: T.warmIvory, borderTopLeftRadius: "var(--radius-xl)", borderTopRightRadius: "var(--radius-xl)" }}>
         <div style={{ background: T.darkBurgundy, padding: "22px 26px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
-            <Dialog.Title style={{ fontFamily: F.mono, fontSize: 16, color: T.goldLight, fontWeight: 700, marginBottom: 4 }}>{record.id}</Dialog.Title>
+            <Dialog.Title style={{ marginBottom: 4 }}>
+              <EntityCode type="goodsReceipt" value={record.id} size="md" />
+            </Dialog.Title>
             <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.65)" }}>{record.weaverName} · {record.weaverId}{record.loomNumber ? ` · Loom ${record.loomNumber}` : ""}</div>
           </div>
           <Dialog.Close asChild>
@@ -75,12 +78,12 @@ export function RecordDetailsModal({ record, onClose }: { record: MaterialIssueR
               { label: "Signature Method", val: record.signatureMethod === "here" ? "Signed on Admin device" : "Sent to weaver's phone" },
             ].map(r => (
               <div key={r.label} style={{ background: "#FFF", borderRadius: 10, padding: "10px 14px", border: `1px solid ${T.borderDef}` }}>
-                <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.6px", marginBottom: 3 }}>{r.label}</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.6px", marginBottom: 3 }}>{r.label}</div>
                 <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, textTransform: "capitalize" as const }}>{r.val}</div>
               </div>
             ))}
             <div style={{ background: "#FFF", borderRadius: 10, padding: "10px 14px", border: `1px solid ${T.borderDef}` }}>
-              <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.6px", marginBottom: 3 }}>Status</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.6px", marginBottom: 3 }}>Status</div>
               <StatusPill taxonomy="document" status={ISSUE_STATUS_TO_DOCUMENT[record.status]} size="sm" />
             </div>
           </div>
@@ -106,9 +109,10 @@ export function RecordDetailsModal({ record, onClose }: { record: MaterialIssueR
           <div>
             <SectionPill label="Stock Impact" />
             <div style={{ display: "flex", flexDirection: "column" as const, gap: 6 }}>
-              {record.materials.map((m, i) => (
-                <div key={i} style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, display: "flex", alignItems: "center", gap: 6 }}>
-                  <CheckCircle2 size={13} color={T.green} /> Reduced {m.quantity} {m.unit} from <span style={{ fontFamily: F.mono, color: T.royalBurgundy }}>{m.grnBatchId}</span>
+              {record.materials.map((m) => (
+                // grnBatchId can repeat if multiple lines draw from the same batch, so it's combined with quantity/unit for a stable key.
+                <div key={`${m.grnBatchId}-${m.quantity}-${m.unit}`} style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, display: "flex", alignItems: "center", gap: 6 }}>
+                  <CheckCircle2 size={13} color={T.green} /> Reduced {m.quantity} {m.unit} from <EntityCode type="goodsReceipt" value={m.grnBatchId} size="sm" />
                 </div>
               ))}
             </div>

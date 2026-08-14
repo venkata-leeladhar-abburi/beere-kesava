@@ -6,6 +6,7 @@ import type { AuthenticatedUser } from "../strategies/jwt.strategy";
 
 describe("PermissionsGuard", () => {
   let reflector: Reflector;
+  let prisma: any;
   let guard: PermissionsGuard;
 
   const buildContext = (user?: AuthenticatedUser): ExecutionContext =>
@@ -26,70 +27,107 @@ describe("PermissionsGuard", () => {
 
   beforeEach(() => {
     reflector = new Reflector();
-    guard = new PermissionsGuard(reflector);
+    prisma = { permission: { findMany: jest.fn() } };
+    guard = new PermissionsGuard(reflector, prisma);
   });
 
-  it("allows any authenticated user through when no @RequirePermissions/@RequireRoles metadata is present", () => {
+  it("allows any authenticated user through when no @RequirePermissions/@RequireRoles metadata is present", async () => {
     jest.spyOn(reflector, "getAllAndOverride").mockReturnValue(undefined);
 
-    expect(guard.canActivate(buildContext(user(UserRole.WORKER)))).toBe(true);
+    await expect(guard.canActivate(buildContext(user(UserRole.WORKER)))).resolves.toBe(true);
   });
 
-  it("throws ForbiddenException when a guarded route is hit with no user on the request", () => {
+  it("throws ForbiddenException when a guarded route is hit with no user on the request", async () => {
     jest
       .spyOn(reflector, "getAllAndOverride")
       .mockReturnValueOnce(["some.permission"]) // requiredPermissions
       .mockReturnValueOnce(undefined); // requiredRoles
 
-    expect(() => guard.canActivate(buildContext(undefined))).toThrow(ForbiddenException);
+    await expect(guard.canActivate(buildContext(undefined))).rejects.toThrow(ForbiddenException);
   });
 
-  it("lets SUPERADMIN bypass a @RequirePermissions check", () => {
+  it("lets SUPERADMIN bypass a @RequirePermissions check", async () => {
     jest
       .spyOn(reflector, "getAllAndOverride")
       .mockReturnValueOnce(["some.permission"])
       .mockReturnValueOnce(undefined);
 
-    expect(guard.canActivate(buildContext(user(UserRole.SUPERADMIN)))).toBe(true);
+    await expect(
+      guard.canActivate(buildContext(user(UserRole.SUPERADMIN))),
+    ).resolves.toBe(true);
   });
 
-  it("lets ADMIN bypass a @RequireRoles check even when ADMIN isn't in the listed roles", () => {
+  it("lets ADMIN bypass a @RequireRoles check even when ADMIN isn't in the listed roles", async () => {
     jest
       .spyOn(reflector, "getAllAndOverride")
       .mockReturnValueOnce(undefined)
       .mockReturnValueOnce([UserRole.WEAVER]);
 
-    expect(guard.canActivate(buildContext(user(UserRole.ADMIN)))).toBe(true);
+    await expect(guard.canActivate(buildContext(user(UserRole.ADMIN)))).resolves.toBe(true);
   });
 
-  it("denies any non-admin role outright when @RequirePermissions is set (no granular check exists)", () => {
+  it("denies when @RequirePermissions is set and the role has no matching RolePermission or override", async () => {
     jest
       .spyOn(reflector, "getAllAndOverride")
       .mockReturnValueOnce(["inventory.write"])
       .mockReturnValueOnce(undefined);
+    prisma.permission.findMany.mockResolvedValue([
+      { id: "p1", key: "inventory.write", rolePermissions: [], userOverrides: [] },
+    ]);
 
-    expect(() => guard.canActivate(buildContext(user(UserRole.WORKER)))).toThrow(
+    await expect(guard.canActivate(buildContext(user(UserRole.WORKER)))).rejects.toThrow(
       ForbiddenException,
     );
   });
 
-  it("denies a role not present in @RequireRoles", () => {
+  it("allows when the role has a matching RolePermission row for every required key", async () => {
+    jest
+      .spyOn(reflector, "getAllAndOverride")
+      .mockReturnValueOnce(["inventory.write"])
+      .mockReturnValueOnce(undefined);
+    prisma.permission.findMany.mockResolvedValue([
+      { id: "p1", key: "inventory.write", rolePermissions: [{ id: "rp1" }], userOverrides: [] },
+    ]);
+
+    await expect(guard.canActivate(buildContext(user(UserRole.WORKER)))).resolves.toBe(true);
+  });
+
+  it("a per-user override wins over the role default in both directions", async () => {
+    jest
+      .spyOn(reflector, "getAllAndOverride")
+      .mockReturnValueOnce(["inventory.write"])
+      .mockReturnValueOnce(undefined);
+    prisma.permission.findMany.mockResolvedValue([
+      {
+        id: "p1",
+        key: "inventory.write",
+        rolePermissions: [{ id: "rp1" }], // role default: allowed
+        userOverrides: [{ granted: false }], // but this user is explicitly denied
+      },
+    ]);
+
+    await expect(guard.canActivate(buildContext(user(UserRole.WORKER)))).rejects.toThrow(
+      ForbiddenException,
+    );
+  });
+
+  it("denies a role not present in @RequireRoles", async () => {
     jest
       .spyOn(reflector, "getAllAndOverride")
       .mockReturnValueOnce(undefined)
       .mockReturnValueOnce([UserRole.WEAVER]);
 
-    expect(() => guard.canActivate(buildContext(user(UserRole.WORKER)))).toThrow(
+    await expect(guard.canActivate(buildContext(user(UserRole.WORKER)))).rejects.toThrow(
       ForbiddenException,
     );
   });
 
-  it("allows a role that is present in @RequireRoles", () => {
+  it("allows a role that is present in @RequireRoles", async () => {
     jest
       .spyOn(reflector, "getAllAndOverride")
       .mockReturnValueOnce(undefined)
       .mockReturnValueOnce([UserRole.WEAVER, UserRole.WORKER]);
 
-    expect(guard.canActivate(buildContext(user(UserRole.WEAVER)))).toBe(true);
+    await expect(guard.canActivate(buildContext(user(UserRole.WEAVER)))).resolves.toBe(true);
   });
 });

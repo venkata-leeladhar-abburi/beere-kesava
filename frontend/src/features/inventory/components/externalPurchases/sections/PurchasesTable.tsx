@@ -1,6 +1,6 @@
 import React from "react";
 import { Eye, Edit2, Trash2, Tag } from "lucide-react";
-import { Purchase, purchaseTotals } from "../../../../suppliers/contexts/SupplierContext";
+import { Purchase, purchaseTotals } from "@/features/suppliers";
 import { formatMoney, rupees } from "@/lib/domain/money";
 import { T, F } from "../theme";
 import { StatusPill } from "../common/primitives";
@@ -19,7 +19,6 @@ export function PurchasesTable({
   filtered,
   totalCount,
   hoveredRow,
-  setHoveredRow,
   onView,
   onViewSarees,
   onEdit,
@@ -35,7 +34,7 @@ export function PurchasesTable({
   onDelete: (id: string) => void;
 }) {
   const mono = (color: string, extra?: React.CSSProperties): React.CSSProperties => ({
-    fontFamily: F.mono, fontSize: 12, color, whiteSpace: "nowrap", ...extra,
+    fontFamily: "var(--font-mono)", fontSize: 12, color, whiteSpace: "nowrap", ...extra,
   });
 
   const columns: ColumnDef<Purchase>[] = [
@@ -58,6 +57,7 @@ export function PurchasesTable({
     {
       id: "sarees", header: "Sarees", accessor: row => row.sareeCount,
       cell: (_v, row) => (
+        // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events -- shields nested Button from row click; the Button itself is the real interactive control
         <div onClick={e => e.stopPropagation()}>
           <Button onClick={() => onViewSarees(row)} variant="secondary" size="sm" iconLeft={Tag} title="View / Print saree barcodes" className="rounded-full">
             {row.sareeCount}
@@ -100,6 +100,7 @@ export function PurchasesTable({
     {
       id: "actions", header: "Actions", accessor: () => null, type: "actions",
       cell: (_v, row) => (
+        // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events -- shields nested IconButtons from row click; the buttons themselves are the real interactive controls
         <div style={{ display: "flex", gap: 4 }} onClick={e => e.stopPropagation()}>
           <IconButton icon={Eye} label="View" onClick={() => onView(row)} variant="ghost" size="sm" className="text-[var(--text-brand)]" />
           <IconButton icon={Edit2} label="Edit" onClick={() => onEdit(row.id)} variant="ghost" size="sm" />
@@ -142,13 +143,13 @@ export function PurchasesTable({
             padding: "12px 20px",
           }}
         >
-          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>
             Showing 1–{filtered.length} of {totalCount} entries
           </span>
           <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
-            {["← Previous", "1", "Next →"].map((p, i) => (
+            {["← Previous", "1", "Next →"].map((p) => (
               <Button
-                key={i}
+                key={p}
                 variant={p === "1" ? "secondary" : "ghost"}
                 size="sm"
                 className="shadow-none"

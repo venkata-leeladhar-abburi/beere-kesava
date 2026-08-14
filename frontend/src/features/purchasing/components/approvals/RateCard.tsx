@@ -15,8 +15,8 @@ export function RateCard({ item, onAction }: { item: BackendRateChangeRequest; o
       await rateRequestsApi.approve(item.id);
       toast.success(`Approved rate change for ${item.sareeTypeCode}`);
       onAction(item.id);
-    } catch (err: any) {
-      toast.error(err.message || "Failed to approve rate change");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to approve rate change");
     }
   };
 
@@ -25,8 +25,8 @@ export function RateCard({ item, onAction }: { item: BackendRateChangeRequest; o
       await rateRequestsApi.reject(item.id);
       toast.success(`Rejected rate change for ${item.sareeTypeCode}`);
       onAction(item.id);
-    } catch (err: any) {
-      toast.error(err.message || "Failed to reject rate change");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to reject rate change");
     }
   };
 
@@ -58,7 +58,7 @@ export function RateCard({ item, onAction }: { item: BackendRateChangeRequest; o
           </span>
         </div>
         <span style={{
-          fontFamily: F.mono, fontSize: 12, color: T.taupe,
+          fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe,
           background: T.cream, borderRadius: 6, padding: "4px 10px",
         }}>
           {new Date(item.createdAt).toLocaleDateString("en-IN")}
@@ -77,7 +77,7 @@ export function RateCard({ item, onAction }: { item: BackendRateChangeRequest; o
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Saree Type:</span>
         <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>
-          {item.sareeType?.type || item.sareeTypeCode} <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>({item.sareeTypeCode})</span>
+          {item.sareeType?.type || item.sareeTypeCode} <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>({item.sareeTypeCode})</span>
         </span>
       </div>
 
@@ -88,7 +88,7 @@ export function RateCard({ item, onAction }: { item: BackendRateChangeRequest; o
           flex: 1, background: T.crimsonBg, borderRadius: 10, padding: "12px 16px",
           border: "1px solid rgba(192,57,43,0.15)", textAlign: "center",
         }}>
-          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.crimson, marginBottom: 4, letterSpacing: 1 }}>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.crimson, marginBottom: 4, letterSpacing: 1 }}>
             CURRENT RATE
           </div>
           <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.crimson }}>
@@ -104,7 +104,7 @@ export function RateCard({ item, onAction }: { item: BackendRateChangeRequest; o
           flex: 1, background: T.greenBg, borderRadius: 10, padding: "12px 16px",
           border: "1px solid rgba(30,102,64,0.15)", textAlign: "center",
         }}>
-          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.green, marginBottom: 4, letterSpacing: 1 }}>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.green, marginBottom: 4, letterSpacing: 1 }}>
             REQUESTED RATE
           </div>
           <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.green }}>

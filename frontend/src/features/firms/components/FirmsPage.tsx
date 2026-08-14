@@ -1,17 +1,14 @@
-import React, { useState, useMemo, useRef } from "react";
+import React, { useState, useMemo } from "react";
 import { useLocation } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
-const imgFirmsHero = "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
 import {
-  Plus, Edit, Edit3, Eye, X, Building2, CreditCard, User, Phone,
-  MapPin, Hash, IndianRupee, Check, Trash2,
-  TrendingUp, TrendingDown, Minus, Upload, ChevronDown, ChevronUp, ChevronRight,
-  PlusCircle, FileSpreadsheet, ArrowRight, AlertTriangle,
+  Plus, Edit3, Eye, Building2, CreditCard, Phone,
+  MapPin, Hash, IndianRupee, Trash2,
+  TrendingUp, TrendingDown, ChevronDown, ChevronUp, ChevronRight,
+  ArrowRight,
 } from "lucide-react";
 import {
   useFirms, Firm,
-  FinancialEntry, MiscEntry,
-  IncomeCategory, ExpenseCategory, MiscType,
 } from "../contexts/FirmsContext";
 
 import { T, F, EASE } from "./theme";
@@ -39,7 +36,7 @@ function overviewColumns(onGoToFirm?: (firmId: string) => void): ColumnDef<Overv
           </div>
           <div style={{ minWidth: 0 }}>
             <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis" }}>{r.firm.firmName}</div>
-            <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2 }}>{r.firm.id}{r.firm.gstNumber ? ` · ${r.firm.gstNumber}` : ""}</div>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 2 }}>{r.firm.id}{r.firm.gstNumber ? ` · ${r.firm.gstNumber}` : ""}</div>
           </div>
         </div>
       ),
@@ -48,7 +45,7 @@ function overviewColumns(onGoToFirm?: (firmId: string) => void): ColumnDef<Overv
       id: "income", header: "Income", type: "currency", align: "end", accessor: r => r.inc,
       cell: (_v, r) => (
         <div style={{ textAlign: "right" as const }}>
-          <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.green }}>{fmtFull(r.inc)}</div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color: T.green }}>{fmtFull(r.inc)}</div>
           {r.inc > 0 && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>↑ earned</div>}
         </div>
       ),
@@ -57,7 +54,7 @@ function overviewColumns(onGoToFirm?: (firmId: string) => void): ColumnDef<Overv
       id: "expenses", header: "Expenses", type: "currency", align: "end", accessor: r => r.exp,
       cell: (_v, r) => (
         <div style={{ textAlign: "right" as const }}>
-          <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.crimson }}>{fmtFull(r.exp)}</div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color: T.crimson }}>{fmtFull(r.exp)}</div>
           {r.exp > 0 && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>↓ spent</div>}
         </div>
       ),
@@ -66,7 +63,7 @@ function overviewColumns(onGoToFirm?: (firmId: string) => void): ColumnDef<Overv
       id: "net", header: "Net Balance", type: "currency", align: "end", accessor: r => r.net,
       cell: (_v, r) => (
         <div style={{ textAlign: "right" as const }}>
-          <span style={{ display: "inline-block", fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: r.net >= 0 ? T.green : T.crimson, background: r.net >= 0 ? T.greenBg : T.crimsonBg, border: `1px solid ${r.net >= 0 ? "rgba(30,102,64,0.18)" : "rgba(192,57,43,0.18)"}`, borderRadius: 8, padding: "4px 10px" }}>
+          <span style={{ display: "inline-block", fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color: r.net >= 0 ? T.green : T.crimson, background: r.net >= 0 ? T.greenBg : T.crimsonBg, border: `1px solid ${r.net >= 0 ? "rgba(30,102,64,0.18)" : "rgba(192,57,43,0.18)"}`, borderRadius: 8, padding: "4px 10px" }}>
             {r.net >= 0 ? "+" : ""}{fmtFull(r.net)}
           </span>
         </div>
@@ -76,7 +73,7 @@ function overviewColumns(onGoToFirm?: (firmId: string) => void): ColumnDef<Overv
       id: "entries", header: "Entries", align: "end", accessor: r => r.entryCount, priority: 3,
       cell: (_v, r) => (
         <div style={{ textAlign: "right" as const }}>
-          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, background: "rgba(139,112,96,0.09)", border: `1px solid ${T.borderDef}`, borderRadius: 6, padding: "3px 8px" }}>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, background: "rgba(139,112,96,0.09)", border: `1px solid ${T.borderDef}`, borderRadius: 6, padding: "3px 8px" }}>
             {r.entryCount} entries
           </span>
         </div>
@@ -135,9 +132,9 @@ function BusinessOverview({ onGoToFirm }: { onGoToFirm?: (firmId: string) => voi
             { label: "Total Income",   val: totInc, color: "#4CAF82", bg: "rgba(76,175,130,0.15)" },
             { label: "Total Expenses", val: totExp, color: "#E57373", bg: "rgba(229,115,115,0.15)" },
             { label: "Net Balance",    val: totNet, color: totNet >= 0 ? "#4CAF82" : "#E57373", bg: totNet >= 0 ? "rgba(76,175,130,0.15)" : "rgba(229,115,115,0.15)" },
-          ].map((c, i) => (
-            <div key={i} style={{ textAlign: "right", background: c.bg, border: "1px solid rgba(255,255,255,0.10)", borderRadius: 12, padding: "10px 16px" }}>
-              <div style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 16, color: c.color, letterSpacing: "-0.5px" }}>{fmtAmt(c.val)}</div>
+          ].map((c) => (
+            <div key={c.label} style={{ textAlign: "right", background: c.bg, border: "1px solid rgba(255,255,255,0.10)", borderRadius: 12, padding: "10px 16px" }}>
+              <div style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 16, color: c.color, letterSpacing: "-0.5px" }}>{fmtAmt(c.val)}</div>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.55)", marginTop: 2, letterSpacing: "0.3px" }}>{c.label}</div>
             </div>
           ))}
@@ -160,10 +157,10 @@ function BusinessOverview({ onGoToFirm }: { onGoToFirm?: (firmId: string) => voi
                 <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>All Firms Total</div>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{rows.length} firms · manual entries</div>
               </div>
-              <div style={{ textAlign: "right" as const, fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.green }}>{fmtFull(totInc)}</div>
-              <div style={{ textAlign: "right" as const, fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.crimson }}>{fmtFull(totExp)}</div>
+              <div style={{ textAlign: "right" as const, fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color: T.green }}>{fmtFull(totInc)}</div>
+              <div style={{ textAlign: "right" as const, fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color: T.crimson }}>{fmtFull(totExp)}</div>
               <div style={{ textAlign: "right" as const }}>
-                <span style={{ fontFamily: F.mono, fontSize: 16, fontWeight: 700, color: totNet >= 0 ? T.green : T.crimson }}>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, fontWeight: 700, color: totNet >= 0 ? T.green : T.crimson }}>
                   {totNet >= 0 ? "+" : ""}{fmtFull(totNet)}
                 </span>
               </div>
@@ -204,7 +201,7 @@ const FirmCard = React.forwardRef<HTMLDivElement, { firm: Firm; onEdit: () => vo
         <span style={{ fontFamily: F.display, fontSize: 40, fontWeight: 700, color: "#FFFDF9", letterSpacing: "1px" }}>{initials(firm.firmName)}</span>
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.4) 100%)", pointerEvents: "none" }} />
 
-        <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(26,10,15,0.65)", backdropFilter: "blur(6px)", color: "#FFFDF9", fontFamily: F.mono, fontSize: 11, fontWeight: 600, letterSpacing: "0.5px", padding: "4px 10px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.15)", maxWidth: "calc(100% - 24px)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
+        <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(26,10,15,0.65)", backdropFilter: "blur(6px)", color: "#FFFDF9", fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600, letterSpacing: "0.5px", padding: "4px 10px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.15)", maxWidth: "calc(100% - 24px)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
           {firm.id}
         </div>
 
@@ -223,9 +220,9 @@ const FirmCard = React.forwardRef<HTMLDivElement, { firm: Firm; onEdit: () => vo
           { label: "Expenses", val: exp, color: T.crimson  },
           { label: "Net",      val: net, color: net >= 0 ? T.green : T.crimson },
         ].map((s, i) => (
-          <div key={i} style={{ padding: "9px 14px", borderRight: i < 2 ? `1px solid ${T.borderDef}` : "none", textAlign: i === 2 ? "right" : "left" }}>
+          <div key={s.label} style={{ padding: "9px 14px", borderRight: i < 2 ? `1px solid ${T.borderDef}` : "none", textAlign: i === 2 ? "right" : "left" }}>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 2 }}>{s.label}</div>
-            <div style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 13, color: s.color }}>{fmtFull(s.val)}</div>
+            <div style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 13, color: s.color }}>{fmtFull(s.val)}</div>
           </div>
         ))}
       </div>
@@ -240,7 +237,7 @@ const FirmCard = React.forwardRef<HTMLDivElement, { firm: Firm; onEdit: () => vo
           {firm.gstNumber && (
             <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
               <Hash size={14} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
-              <span style={{ fontFamily: F.mono, letterSpacing: "0.4px" }}>{firm.gstNumber}</span>
+              <span style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.4px" }}>{firm.gstNumber}</span>
             </div>
           )}
           {firm.address && (
@@ -358,12 +355,12 @@ export function FirmsPage() {
       {/* ── PAGE HEADER ───────────────────────────────────────────────────── */}
       <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", display: "flex", alignItems: "center" }}>
         <div className="pl-4 md:pl-7 xl:pl-12 w-full xl:w-auto" style={{ position: "relative", zIndex: 2, paddingTop: 48, paddingBottom: 110, flex: "0 0 100%", maxWidth: "100%" }}>
-          <div style={{ fontFamily: F.mono, fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase" as const, marginBottom: 12 }}>SINCE 1999 · FIRMS &amp; VENDORS</div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase" as const, marginBottom: 12 }}>SINCE 1999 · FIRMS &amp; VENDORS</div>
           <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" as const, marginBottom: 10 }}>
             <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(32px, 8vw, 56px)", fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Firms</h1>
             <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(22px, 6vw, 36px)", fontStyle: "italic", color: T.antiqueGold, fontWeight: 400 }}>&amp; Vendor Management</span>
           </div>
-          <p style={{ fontFamily: F.ui, fontSize: "clamp(15px, 3.5vw, 18px)", fontWeight: 400, color: "rgba(255,253,249,0.70)", margin: "0 0 20px", maxWidth: 600, lineHeight: 1.6 }}>
+          <p className="max-w-[600px]" style={{ fontFamily: F.ui, fontSize: "clamp(15px, 3.5vw, 18px)", fontWeight: 400, color: "rgba(255,253,249,0.70)", margin: "0 0 20px", lineHeight: 1.6 }}>
             Manage all firms used for material purchases, weaver payments, and customer invoicing. Track income, expenses, and net balance per firm.
           </p>
         </div>
@@ -450,7 +447,7 @@ export function FirmsPage() {
           </motion.div>
         }
       >
-        <div style={{ marginBottom: 20, maxWidth: 380 }}>
+        <div className="max-w-[380px]" style={{ marginBottom: 20 }}>
           <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by firm name, GST, or contact..." />
         </div>
 

@@ -42,7 +42,7 @@ export function CustomerModals({
                 </Dialog.Title>
                 <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                   <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.antiqueGold, background: "rgba(200,155,71,0.18)", padding: "3px 10px", borderRadius: 999, border: "1px solid rgba(200,155,71,0.30)" }}>Wholesale Customer</span>
-                  <span style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,255,255,0.50)" }}>{modalWholesale.id}</span>
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(255,255,255,0.50)" }}>{modalWholesale.id}</span>
                 </div>
               </div>
               <Dialog.Close asChild>
@@ -51,7 +51,7 @@ export function CustomerModals({
             </div>
             <div style={{ display: "flex", borderBottom: `1px solid ${T.borderDef}`, background: T.silkCream, padding: "0 32px" }}>
               {["Overview", "Order History", "Payment History", "Contact Details", "Edit Profile"].map((t, i) => (
-                <div key={i} style={{ padding: "16px 24px", fontFamily: F.ui, fontSize: 14, fontWeight: i===0?600:500, color: i===0?T.royalBurgundy:T.taupe, borderBottom: i===0?`2px solid ${T.royalBurgundy}`:"2px solid transparent", cursor: "pointer" }}>{t}</div>
+                <div key={t} style={{ padding: "16px 24px", fontFamily: F.ui, fontSize: 14, fontWeight: i===0?600:500, color: i===0?T.royalBurgundy:T.taupe, borderBottom: i===0?`2px solid ${T.royalBurgundy}`:"2px solid transparent", cursor: "pointer" }}>{t}</div>
               ))}
             </div>
             <div style={{ padding: 32, overflowY: "auto", display: "flex", gap: 32 }}>
@@ -60,12 +60,12 @@ export function CustomerModals({
                   <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Total Orders Ever</div><div style={{ fontFamily: F.display, fontSize: 30, color: T.luxuryBrown, fontWeight: 700 }}>{modalWholesale.orders}</div></div>
                   <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Total Spend</div><div style={{ fontFamily: F.display, fontSize: 30, color: T.antiqueGold, fontWeight: 700 }}>{formatMoney(rupees(Number(modalWholesale.spend) || 0))}</div></div>
                   <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Outstanding Balance</div><div style={{ fontFamily: F.display, fontSize: 30, color: modalWholesale.out==="0"?T.greenMid:T.crimson, fontWeight: 700 }}>{formatMoney(rupees(Number(modalWholesale.out) || 0))}</div></div>
-                  <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Payment Terms</div><div style={{ fontFamily: F.mono, fontSize: 20, color: T.luxuryBrown, fontWeight: 600 }}>{modalWholesale.terms}</div></div>
+                  <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}><div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Payment Terms</div><div style={{ fontFamily: "var(--font-mono)", fontSize: 20, color: T.luxuryBrown, fontWeight: 600 }}>{modalWholesale.terms}</div></div>
                 </div>
                 {modalWholesale.activeOrder && (
                   <div style={{ background: T.luxuryBrown, padding: 20, borderRadius: 12, color: "#FFF" }}>
                     <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.6)", marginBottom: 4 }}>Active Order in Production</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 16, color: T.goldLight, marginBottom: 12 }}>{modalWholesale.activeOrder} · 80 sarees</div>
+                    <div style={{ fontFamily: "var(--font-mono)", fontSize: 16, color: T.goldLight, marginBottom: 12 }}>{String(modalWholesale.activeOrder)} · 80 sarees</div>
                     <div style={{ width: "100%", height: 4, background: "rgba(255,255,255,0.2)", borderRadius: 2 }}><div style={{ width: "60%", height: "100%", background: T.antiqueGold, borderRadius: 2 }}/></div>
                   </div>
                 )}
@@ -79,12 +79,12 @@ export function CustomerModals({
                   <div>
                     <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 2 }}>Bank Details</div>
                     <div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown }}>HDFC Bank · 4872 1938 8901</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 4, display: "flex", alignItems: "center", gap: 4 }}>🔒 Visible to Superadmin only</div>
+                    <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 4, display: "flex", alignItems: "center", gap: 4 }}>🔒 Visible to Superadmin only</div>
                   </div>
                   <div>
                     <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 2 }}>Special Terms / Credit Notes</div>
                     <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>Extended 45-day terms approved · FY2026</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 4 }}>🔒 Superadmin only</div>
+                    <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 4 }}>🔒 Superadmin only</div>
                   </div>
                 </div>
               </div>

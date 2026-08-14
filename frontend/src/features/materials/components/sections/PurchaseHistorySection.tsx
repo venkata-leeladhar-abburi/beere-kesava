@@ -1,10 +1,9 @@
 import React, { useContext, useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { motion } from "motion/react";
 import { PieChart, Pie, Cell } from "recharts";
 import { Layers, Tag, Sparkles, Calculator, Users, IndianRupee, Download, History } from "lucide-react";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER } from "../../../../shared/ui/DateFilterBar";
-import { T, F, EASE, MobileCtx } from "../theme";
+import { T, F, MobileCtx } from "../theme";
 import { MAT_TAG } from "../materialConfig";
 import { SectionCard, FadeUp, AnimatedBar } from "../common/primitives";
 import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
@@ -14,6 +13,7 @@ import { vendorPaymentsApi } from "../../../../shared/api/payments";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Button } from "../../../../shared/ui/primitives";
+import { jariToReels } from "../../../../shared/lib/weightUnits";
 
 interface VendorRow {
   name: string;
@@ -81,7 +81,7 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
         const qty = Number(i.quantity || 0);
         if (i.materialType === "WARP") { warpKg += qty; warpVendors.add(vName); }
         else if (i.materialType === "RESHAM") { reshamKg += qty; reshamVendors.add(vName); }
-        else if (i.materialType === "JARI") { jariReels += qty; jariVendors.add(vName); }
+        else if (i.materialType === "JARI") { jariReels += jariToReels(qty, i.unit || "Reels"); jariVendors.add(vName); }
       });
     });
 
@@ -96,7 +96,7 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
         const qty = Number(i.quantity || 0);
         if (i.materialType === "WARP") { warpKg += qty; warpVendors.add(vName); }
         else if (i.materialType === "RESHAM") { reshamKg += qty; reshamVendors.add(vName); }
-        else if (i.materialType === "JARI") { jariReels += qty; jariVendors.add(vName); }
+        else if (i.materialType === "JARI") { jariReels += jariToReels(qty, i.unit || "Reels"); jariVendors.add(vName); }
       });
     });
 
@@ -190,7 +190,7 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
 
         if (i.materialType === "WARP") entry.warpQty += qty;
         else if (i.materialType === "RESHAM") entry.reshamQty += qty;
-        else if (i.materialType === "JARI") entry.jariQty += qty;
+        else if (i.materialType === "JARI") entry.jariQty += jariToReels(qty, i.unit || "Reels");
       });
       if (!entry.orders) entry.orders = 1;
       if (new Date(g.receivedDate) > new Date(entry.lastDate)) {
@@ -212,7 +212,7 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
         const qty = Number(i.quantity || 0);
         if (i.materialType === "WARP") entry.warpQty += qty;
         else if (i.materialType === "RESHAM") entry.reshamQty += qty;
-        else if (i.materialType === "JARI") entry.jariQty += qty;
+        else if (i.materialType === "JARI") entry.jariQty += jariToReels(qty, i.unit || "Reels");
       });
     });
 
@@ -271,7 +271,7 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
       vendorRows,
       spendData,
     };
-  }, [rawGrns, rawPos, rawVendors]);
+  }, [rawGrns, rawPos, rawVendors, rawVendorPayments?.items]);
 
   const vendorColumns: ColumnDef<VendorRow>[] = [
     {
@@ -293,7 +293,7 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
       id: "totals", header: "Total Purchased", accessor: v => v.totals,
       cell: (_v, v) => (
         <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 4 }}>
-          {v.totals.map((t, idx) => <div key={idx} style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>{t}</div>)}
+          {v.totals.map((t) => <div key={t} style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>{t}</div>)}
         </div>
       ),
     },

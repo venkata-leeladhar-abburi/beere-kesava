@@ -52,7 +52,7 @@ export function ActionBar({
               border: `1px solid rgba(110,15,45,0.12)`,
               borderRadius: 8,
               padding: "7px 12px",
-              fontFamily: F.mono,
+              fontFamily: F.ui,
               fontSize: 12,
               color: T.royalBurgundy,
             }}

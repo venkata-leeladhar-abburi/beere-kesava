@@ -3,6 +3,7 @@ import { Bell, ChevronLeft, Flower2, LogOut, UserRound } from "lucide-react";
 import { C, F } from "./theme";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "../../../../shared/ui/overlay";
+import type { Role } from "../../../../contexts/AuthContext";
 
 type TabId = "home" | "sale" | "inventory" | "customers" | "reports";
 
@@ -15,7 +16,7 @@ export function MobileHeader({
   setShowProfile: React.Dispatch<React.SetStateAction<boolean>>;
   setShowProfileModal: (v: boolean) => void;
   handleLogout: () => void;
-  selectRole: (role: any) => void;
+  selectRole: (role: Role) => void;
   routerNavigate: (path: string) => void;
 }) {
   return (
@@ -55,7 +56,7 @@ export function MobileHeader({
                   const origAdminRole = localStorage.getItem("bk_original_admin_role");
                   if (origAdminRole) {
                     localStorage.removeItem("bk_original_admin_role");
-                    selectRole(origAdminRole as any);
+                    selectRole(origAdminRole as Role);
                     routerNavigate(origAdminRole === "superadmin" ? "/superadmin" : "/admin");
                   }
                 }} className="!h-auto !py-2.5 !px-4 !text-[13px] !text-[#1A0A0F]">

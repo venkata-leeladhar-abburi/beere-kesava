@@ -1,7 +1,7 @@
 import React from "react";
 import { motion } from "motion/react";
 import { useNavigate } from "react-router";
-import { T, F, G_GOLD } from "../theme";
+import { T, F } from "../theme";
 import { FOOTER_LINKS } from "../materialConfig";
 import { useResponsive } from "../../../../hooks/useResponsive";
 
@@ -40,10 +40,10 @@ export function MaterialsFooter() {
       <div style={{ position: "absolute", top: 0, right: 0, width: "40%", height: "100%", background: "radial-gradient(ellipse at top right, rgba(245,232,208,0.06), transparent 70%)", pointerEvents: "none" }} />
       <div style={{ position: "absolute", bottom: 0, left: 0, width: "40%", height: "100%", background: "radial-gradient(ellipse at bottom left, rgba(245,232,208,0.04), transparent 70%)", pointerEvents: "none" }} />
 
-      <div style={{ position: "relative", zIndex: 2, padding: `${isMobile ? 48 : 80}px ${px}px 32px`, display: "flex", flexDirection: isMobile ? "column" : "row", gap: isMobile ? 48 : 80, maxWidth: 1600, margin: "0 auto" }}>
+      <div className="max-w-[1600px] mx-auto" style={{ position: "relative", zIndex: 2, padding: `${isMobile ? 48 : 80}px ${px}px 32px`, display: "flex", flexDirection: isMobile ? "column" : "row", gap: isMobile ? 48 : 80 }}>
         
         {/* Brand Block */}
-        <div style={{ flex: "0 0 320px" }}>
+        <div className="flex-shrink-0 w-full md:w-[320px]">
           <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 28 }}>
             <div style={{ width: 56, height: 56, borderRadius: 16, background: T.warmCream, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 12px 32px rgba(0,0,0,0.2)" }}>
               <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: 22, color: T.darkBurgundy, fontWeight: 600 }}>BK</span>
@@ -51,7 +51,7 @@ export function MaterialsFooter() {
             <div>
               <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: 24, color: T.warmCream, lineHeight: 1.1 }}>Beere Kesava</div>
               <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 13, color: "rgba(245,232,208,0.75)", marginTop: 4 }}>&amp; Brothers Silks</div>
-              <div style={{ fontFamily: F.mono, fontWeight: 500, fontSize: 11, color: T.antiqueGold, letterSpacing: "3px", textTransform: "uppercase", marginTop: 4 }}>Est. 1999</div>
+              <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 11, color: T.antiqueGold, letterSpacing: "3px", textTransform: "uppercase", marginTop: 4 }}>Est. 1999</div>
             </div>
           </div>
           <p style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 15, color: "rgba(245,232,208,0.6)", lineHeight: 1.7, margin: "0 0 32px" }}>
@@ -60,7 +60,7 @@ export function MaterialsFooter() {
           <div style={{ display: "flex", gap: 12 }}>
             {["f", "in", "yt", "li"].map((s) => (
               <motion.div key={s} whileHover={{ scale: 1.12, y: -2, backgroundColor: T.warmCream, borderColor: "transparent", color: T.darkBurgundy }} style={{ width: 40, height: 40, borderRadius: 12, border: `1px solid rgba(245,232,208,0.2)`, background: "rgba(245,232,208,0.04)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "all 0.3s ease", color: "rgba(245,232,208,0.7)" }}>
-                <span style={{ fontFamily: F.mono, fontSize: 14 }}>{s}</span>
+                <span style={{ fontFamily: F.ui, fontSize: 14 }}>{s}</span>
               </motion.div>
             ))}
           </div>
@@ -94,14 +94,14 @@ export function MaterialsFooter() {
       </div>
 
       {/* Bottom Bar */}
-      <div style={{ position: "relative", zIndex: 2, margin: `0 auto`, maxWidth: 1600, padding: `24px ${px}px 32px`, display: "flex", flexDirection: isMobile ? "column" : "row", gap: isMobile ? 16 : 0, justifyContent: "space-between", alignItems: isMobile ? "flex-start" : "center" }}>
+      <div className="max-w-[1600px] mx-auto w-full" style={{ position: "relative", zIndex: 2, padding: `24px ${px}px 32px`, display: "flex", flexDirection: isMobile ? "column" : "row", gap: isMobile ? 16 : 0, justifyContent: "space-between", alignItems: isMobile ? "flex-start" : "center" }}>
         <div style={{ position: "absolute", top: 0, left: px, right: px, height: 1, background: "linear-gradient(90deg, rgba(245,232,208,0.02) 0%, rgba(245,232,208,0.15) 50%, rgba(245,232,208,0.02) 100%)" }} />
         <span style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13, color: "rgba(245,232,208,0.4)" }}>
           © 2026 Beere Kesava &amp; Brothers Silks. All rights reserved.
         </span>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ width: 5, height: 5, borderRadius: "50%", background: T.antiqueGold, opacity: 0.6 }} />
-          <span style={{ fontFamily: F.mono, fontWeight: 500, fontSize: 12, color: "rgba(245,232,208,0.6)", letterSpacing: "2.5px", textTransform: "uppercase" }}>Tradition · Trust · Timeless Quality</span>
+          <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: "rgba(245,232,208,0.6)", letterSpacing: "2.5px", textTransform: "uppercase" }}>Tradition · Trust · Timeless Quality</span>
           <div style={{ width: 5, height: 5, borderRadius: "50%", background: T.antiqueGold, opacity: 0.6 }} />
         </div>
       </div>

@@ -64,7 +64,7 @@ export function WholesaleCustomersSection({
   const [error, setError] = useState<string | null>(null);
 
   const listColumns: ColumnDef<WholesaleCustomer>[] = [
-    { id: "code", header: "Code", accessor: w => w.id, priority: 3, cell: (_v, w) => <span style={{ fontFamily: F.mono, color: T.royalBurgundy, fontSize: 13 }}>{w.id}</span> },
+    { id: "code", header: "Code", accessor: w => w.id, priority: 3, cell: (_v, w) => <span style={{ fontFamily: "var(--font-mono)", color: T.royalBurgundy, fontSize: 13 }}>{w.id}</span> },
     { id: "name", header: "Business Name", accessor: w => w.name, priority: 1, cell: (_v, w) => <span style={{ fontWeight: 600, color: T.luxuryBrown }}>{w.name}</span> },
     { id: "city", header: "City", accessor: w => w.city, priority: 3, cell: (_v, w) => <span style={{ color: T.taupe }}>{w.city}</span> },
     { id: "orders", header: "Orders", accessor: w => w.orders, cell: (_v, w) => <span style={{ color: T.luxuryBrown }}>{w.orders}</span> },
@@ -77,7 +77,7 @@ export function WholesaleCustomersSection({
   ];
 
   const tableColumns: ColumnDef<WholesaleCustomer>[] = [
-    { id: "code", header: "Code", accessor: w => w.id, priority: 3, cell: (_v, w) => <span style={{ fontFamily: F.mono, color: T.royalBurgundy, fontSize: 13 }}>{w.id}</span> },
+    { id: "code", header: "Code", accessor: w => w.id, priority: 3, cell: (_v, w) => <span style={{ fontFamily: "var(--font-mono)", color: T.royalBurgundy, fontSize: 13 }}>{w.id}</span> },
     { id: "name", header: "Business Name", accessor: w => w.name, priority: 1, cell: (_v, w) => <span style={{ fontWeight: 600, color: T.luxuryBrown }}>{w.name}</span> },
     { id: "city", header: "City", accessor: w => w.city, priority: 3, cell: (_v, w) => <span style={{ color: T.taupe }}>{w.city}</span> },
     { id: "totalOrders", header: "Total Orders", accessor: w => w.orders, cell: (_v, w) => <span style={{ color: T.luxuryBrown }}>{w.orders}</span> },
@@ -145,7 +145,7 @@ export function WholesaleCustomersSection({
                 <h3 style={{ fontFamily: F.display, fontSize: 20, color: T.luxuryBrown, margin: "0 0 6px 0" }}>Add a New Wholesale Customer</h3>
                 <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, margin: 0 }}>Fill in the business and contact details. Payment terms can be set here and changed later.</p>
               </div>
-              <div style={{ padding: "4px 12px", background: T.silkCream, borderRadius: 20, fontFamily: F.mono, fontSize: 12, color: T.taupe }}>WHL-049 will be assigned</div>
+              <div style={{ padding: "4px 12px", background: T.silkCream, borderRadius: 20, fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>WHL-049 will be assigned</div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 32 }}>
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -207,8 +207,8 @@ export function WholesaleCustomersSection({
           { ico: <AlertTriangle size={24} color={T.crimson} />, bg: T.crimsonBg, l: "Total Outstanding", v: <Money value={paise(0)} />, c: T.crimson, sub: "Across all overdue accounts" },
           { ico: <Eye size={24} color={T.antiqueGold} />, bg: "rgba(200,155,71,0.09)", l: "Active Orders Right Now", v: "0", c: T.antiqueGold, sub: "Bulk orders in production" },
           { ico: <Users size={24} color={T.taupe} />, bg: "rgba(139,112,96,0.08)", l: "Inactive Customers", v: "0", c: T.taupe, sub: "No order in 6+ months" },
-        ].map((st, i) => (
-          <div key={i} style={{ background: "#FFF", padding: "22px 22px 20px", borderRadius: 14, border: `1px solid ${T.borderDef}`, display: "flex", flexDirection: "column", gap: 14, boxShadow: "0 2px 10px rgba(74,6,27,0.04)" }}>
+        ].map((st) => (
+          <div key={st.l} style={{ background: "#FFF", padding: "22px 22px 20px", borderRadius: 14, border: `1px solid ${T.borderDef}`, display: "flex", flexDirection: "column", gap: 14, boxShadow: "0 2px 10px rgba(74,6,27,0.04)" }}>
             <div style={{ width: 52, height: 52, borderRadius: 13, background: st.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
               {st.ico}
             </div>
@@ -250,7 +250,7 @@ export function WholesaleCustomersSection({
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 22, alignItems: "stretch" }}>
           {wholesaleList.map((w, i) => {
             return (
-              <div key={i} style={{
+              <div key={w.id} style={{
                 background: `linear-gradient(135deg, ${T.warmIvory} 0%, ${T.silkCream} 100%)`,
                 borderRadius: 20,
                 border: `1.5px solid ${T.borderGold}`,
@@ -274,7 +274,7 @@ export function WholesaleCustomersSection({
                       {w.code}
                     </div>
                     <div>
-                      <div style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700, letterSpacing: "1px" }}>{w.id}</div>
+                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy, fontWeight: 700, letterSpacing: "1px" }}>{w.id}</div>
                       <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>EST. {2020 + (i % 5)}</div>
                     </div>
                   </div>
@@ -299,7 +299,7 @@ export function WholesaleCustomersSection({
                 <div style={{ borderTop: `1px solid ${T.borderDef}`, paddingTop: 16, display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
                   <div>
                     <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 3 }}>GSTIN</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, fontWeight: 600 }}>{w.gstNumber || "Unregistered"}</div>
+                    <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.luxuryBrown, fontWeight: 600 }}>{w.gstNumber || "Unregistered"}</div>
                     <div style={{ fontFamily: F.ui, fontSize: 12, color: T.royalBurgundy, marginTop: 6, fontWeight: 600 }}>Credit Terms: {w.terms}</div>
                   </div>
 

@@ -1,5 +1,6 @@
 import React from "react";
 import { labelsApi } from "../../../shared/api/labels";
+import { EntityCode } from "../../../shared/ui/domain";
 
 const T = {
   royalBurgundy: "#6E0F2D",
@@ -65,7 +66,7 @@ export function SariTagPhysicalLabel({
 
       <div
         style={{
-          width: 360, height: 180,
+          width: "min(360px, 100%)", aspectRatio: "2 / 1",
           background: "#FFFFFF",
           border: `1.5px solid ${T.royalBurgundy}`,
           borderRadius: 4,
@@ -86,8 +87,8 @@ export function SariTagPhysicalLabel({
             </div>
 
             <div style={{ textAlign: "center", marginBottom: 4 }}>
-              <div style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: "#1A1A1A", letterSpacing: "1px" }}>
-                {saree.id}
+              <div style={{ fontSize: 14 }}>
+                <EntityCode type="saree" value={saree.id} />
               </div>
             </div>
 
@@ -123,7 +124,7 @@ export function SariTagPhysicalLabel({
                   BKB Silks
                 </div>
               )}
-              <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginLeft: "auto" }}>
+              <div style={{ fontFamily: F.ui, fontVariantNumeric: "tabular-nums", fontSize: 12, color: T.taupe, marginLeft: "auto" }}>
                 {saree.sareeType}
               </div>
             </div>
@@ -132,8 +133,8 @@ export function SariTagPhysicalLabel({
               <div style={{ width: "100%", maxWidth: 280 }}>
                 <BarcodeStrip code={saree.id} />
               </div>
-              <div style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 12, color: "#1A1A1A", marginTop: 4, letterSpacing: "1.5px" }}>
-                {saree.id}
+              <div style={{ marginTop: 4 }}>
+                <EntityCode type="saree" value={saree.id} />
               </div>
             </div>
 
@@ -183,7 +184,7 @@ export function SariTagPhysicalLabel({
           </div>
         ) : (
           <>
-            <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
+            <div style={{ fontFamily: F.ui, fontVariantNumeric: "tabular-nums", fontSize: 12, color: T.taupe }}>
               {saree.design} · {saree.sareeType}
             </div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>

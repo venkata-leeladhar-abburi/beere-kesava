@@ -1,8 +1,8 @@
 import { useState, useMemo } from "react";
 import { AnimatePresence } from "motion/react";
 import { Users, Package, ArrowDownToLine, FileText, Building2 } from "lucide-react";
-import { C, F, card } from "../tokens";
-import { useFinishing, Quotation } from "../../../../finishing/contexts/FinishingContext";
+import { C, F } from "../tokens";
+import { useFinishing, Quotation } from "@/features/finishing";
 import { WORKER_NAME, Toast } from "./shared";
 import { SectionCard } from "../primitives";
 import { StaffPickerModal } from "./StaffPickerModal";
@@ -26,7 +26,7 @@ function QuotationStatusBadge({ status }: { status: Quotation["status"] }) {
   );
 }
 
-export function QuotationsSection({ isMobile }: { isMobile?: boolean }) {
+export function QuotationsSection(_props: { isMobile?: boolean }) {
   const { quotations, assignQuotationFinishing, receiveQuotationSarees } = useFinishing();
   const { user } = useAuth();
   const actingUserId = user?.id ?? STOPGAP_ACTING_USER_ID;

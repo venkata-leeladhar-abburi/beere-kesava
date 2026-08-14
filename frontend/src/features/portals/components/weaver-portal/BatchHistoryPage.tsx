@@ -1,31 +1,18 @@
 
-import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { useLocation, useNavigate } from "react-router";
-import { createPortal } from "react-dom";
-import { useResponsive } from "../../../../hooks/useResponsive";
-import { useBatches, SareeRow } from "../../../production/contexts/BatchContext";
-import { useDesignLibrary, DesignEntry } from "../../../design-library/contexts/DesignLibraryContext";
-import { DesignCodeCard } from "../../../design-library/components/DesignLibraryPage";
-import { useMaterialIssue, MaterialIssueRecord, JARI_REEL_GRAMS } from "../../../materials/contexts/MaterialIssueContext";
-import { useWeaverPayments } from "../../../weavers/contexts/WeaverPaymentsContext";
-import { useAuth } from "../../../../contexts/AuthContext";
+import React, { useState } from "react";
+import { useBatches } from "@/features/production";
 import { useCurrentWeaver } from "./useCurrentWeaver";
-import { motion, AnimatePresence, useInView } from "motion/react";
 import {
-  Bell, ClipboardList, CheckSquare, Palette, ArrowUpRight,
-  Wallet, Shield, Send, ChevronRight, X, ChevronLeft,
-  Package, Check, Eye, LogOut, Search, RotateCcw,
-  AlertCircle, Clock, Flower2, Layers, Info, Pencil,
-  Scissors, LayoutGrid, CreditCard, ClipboardCheck,
-  TrendingUp, ArrowRight, Sparkles, UserRound,
-  CheckCircle2, History, ListChecks,
-  AlertTriangle, Inbox, Zap,
+  ChevronLeft,
+  Search,
+  Clock, Layers,
+  CheckCircle2, ListChecks,
+  AlertTriangle,
 } from "lucide-react";
-import { imgBKLogo } from "../../../../shared/constants/weaverImages";
 
 // ─── Design Tokens ─────────────────────────────────────────────────────────
 import {
-  C, F, SAREE_TYPE_RATES, DesignDetailCard, SareeTypeDetailCard, SectionTitle, Card, ProgressBar, StatusBadge, SignatureCanvas, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid, MobileBatchCard, CompletedBatchCard, BATCH_QUICK_FILTERS, BatchQuickFilterPills, WN_T, WN_G, WN_EASE, WN_NUM, WN_DATA, WN_PRIORITY, WN_CATEGORY, WN_FILTERS, WNFadeUp, FadeUpBatch, BG_IMAGE, FABRIC_BG, MyBatchEntry
+  F, MobileBatchCard, CompletedBatchCard, FadeUpBatch, MyBatchEntry
 } from './theme';
 import { Button, Input } from '../../../../shared/ui/primitives';
 import { Breadcrumbs } from '../../../../shared/ui/nav/Breadcrumbs';
@@ -107,7 +94,7 @@ export function BatchHistoryPage({ onBack, defaultFilter = "all" }: { onBack: ()
             {defaultFilter === "completed" ? "Completed Batches" : "Batch History"}{" "}
             <span style={{ fontStyle: "italic", color: T2.antiqueGold }}>{defaultFilter === "completed" ? "& Payment Records" : "& All Work"}</span>
           </h1>
-          <p style={{ fontFamily: F.u, fontSize: 14, color: "rgba(245,232,208,0.72)", margin: "0 0 24px", maxWidth: 540, lineHeight: 1.7 }}>
+          <p className="max-w-[540px]" style={{ fontFamily: F.u, fontSize: 14, color: "rgba(245,232,208,0.72)", margin: "0 0 24px", lineHeight: 1.7 }}>
             {defaultFilter === "completed"
               ? "A full record of all the batches you have completed — sarees produced, quality results, and amounts earned."
               : "See all your batches — active and completed. A full history of all your weaving work with Beere Kesava."}

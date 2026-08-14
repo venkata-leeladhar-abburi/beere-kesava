@@ -10,7 +10,7 @@ import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter 
 import { DataTable, exportTable, type ColumnDef } from "../../../../shared/ui/data";
 import { Button } from "../../../../shared/ui/primitives";
 import { DropBtn } from "../common/primitives";
-import { rupees, formatMoney } from "@/lib/domain/money";
+import { rupees } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
 import { T, F } from "../../theme";
 
@@ -69,16 +69,16 @@ const displayColumns: ColumnDef<GroupedRow>[] = [
   { id: "loomNumber", header: "Loom Number", accessor: r => r.loomNumber },
   { id: "noOfSarees", header: "No. of Sarees", accessor: r => r.noOfSarees, type: "number" },
   { id: "makingCharges", header: "Making Charges", accessor: r => r.makingCharges, type: "currency",
-    cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.luxuryBrown }}><Money value={rupees(r.makingCharges)} /></span> },
+    cell: (_v, r) => <span style={{ fontWeight: 700, color: T.luxuryBrown }}><Money value={rupees(r.makingCharges)} /></span> },
   { id: "deduction", header: "Deduction", accessor: r => r.deduction, type: "currency",
-    cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.crimson }}><Money value={rupees(r.deduction)} /></span> },
+    cell: (_v, r) => <span style={{ fontWeight: 700, color: T.crimson }}><Money value={rupees(r.deduction)} /></span> },
   { id: "amount", header: "Amount", accessor: r => r.makingCharges - r.deduction, type: "currency",
-    cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.royalBurgundy }}><Money value={rupees(r.makingCharges - r.deduction)} /></span> },
+    cell: (_v, r) => <span style={{ fontWeight: 700, color: T.royalBurgundy }}><Money value={rupees(r.makingCharges - r.deduction)} /></span> },
   // Blank, not a placeholder — an unfilled field should occupy no visible
   // content in its column, only whatever was actually uploaded/saved.
   { id: "amountPaid", header: "Amount Paid", accessor: r => r.amountPaid ?? 0, type: "currency",
     cell: (_v, r) => r.amountPaid != null
-      ? <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.green }}><Money value={rupees(r.amountPaid)} /></span>
+      ? <span style={{ fontWeight: 700, color: T.green }}><Money value={rupees(r.amountPaid)} /></span>
       : null },
   // What's left to pay on THIS batch/loom specifically — Amount minus
   // whatever's already been paid against this exact row — so a partial
@@ -88,10 +88,10 @@ const displayColumns: ColumnDef<GroupedRow>[] = [
   { id: "remaining", header: "Remaining", accessor: r => Math.max(0, r.makingCharges - r.deduction - (r.amountPaid ?? 0)), type: "currency",
     cell: (_v, r) => {
       const remaining = Math.max(0, r.makingCharges - r.deduction - (r.amountPaid ?? 0));
-      return <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.crimson }}><Money value={rupees(remaining)} /></span>;
+      return <span style={{ fontWeight: 700, color: T.crimson }}><Money value={rupees(remaining)} /></span>;
     } },
   { id: "utrNumber", header: "UTR Number", priority: 3, accessor: r => r.utrNumber ?? "",
-    cell: (_v, r) => r.utrNumber ? <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{r.utrNumber}</span> : null },
+    cell: (_v, r) => r.utrNumber ? <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{r.utrNumber}</span> : null },
   { id: "firmName", header: "Firm Name", priority: 3, accessor: r => r.firmName ?? "",
     cell: (_v, r) => r.firmName ? <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{r.firmName}</span> : null },
   { id: "paymentDate", header: "Payment Date", priority: 3, accessor: r => r.paymentDate ?? "", type: "date",

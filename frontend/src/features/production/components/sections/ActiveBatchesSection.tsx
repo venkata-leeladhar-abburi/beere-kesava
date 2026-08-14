@@ -199,8 +199,8 @@ export function ActiveBatchesSection({ onNavigate, onOpenTally }: { onNavigate?:
           </DropdownMenu>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
             <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
-            <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: T.silkCream, border: `1px solid ${T.borderDef}`, padding: "9px 12px", borderRadius: 10 }}>
-              <Checkbox checked={activeOnly} onCheckedChange={c => setActiveOnly(c === true)} />
+            <label htmlFor="active-only-filter" style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: T.silkCream, border: `1px solid ${T.borderDef}`, padding: "9px 12px", borderRadius: 10 }}>
+              <Checkbox id="active-only-filter" checked={activeOnly} onCheckedChange={c => setActiveOnly(c === true)} />
               Active Only
             </label>
           </div>

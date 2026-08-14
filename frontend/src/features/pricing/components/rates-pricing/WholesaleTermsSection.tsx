@@ -53,27 +53,27 @@ export function WholesaleTermsSection() {
     { id: "name", header: "Customer Name", accessor: c => c.name, cell: v => <span style={{ fontWeight: 500 }}>{v as string}</span> },
     {
       id: "code", header: "Code", accessor: c => c.id.slice(-6).toUpperCase(),
-      cell: v => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>WHL-{v as string}</span>,
+      cell: v => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy }}>WHL-{v as string}</span>,
     },
     {
       id: "terms", header: "Current Terms", accessor: c => customerTerms[c.id]?.termsDays || 30,
       cell: v => (
-        <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, background: T.cream, padding: "3px 10px", borderRadius: 6 }}>
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, color: T.luxuryBrown, background: T.cream, padding: "3px 10px", borderRadius: 6 }}>
           {v as number} days
         </span>
       ),
     },
     {
       id: "alertStarts", header: "Alert Starts", accessor: () => globalAlertDay,
-      cell: v => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold }}>Day {v as number}</span>,
+      cell: v => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.antiqueGold }}>Day {v as number}</span>,
     },
     {
       id: "overdueFrom", header: "Overdue From", accessor: () => globalAlertDay + 1,
-      cell: v => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.crimson }}>Day {v as number}</span>,
+      cell: v => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.crimson }}>Day {v as number}</span>,
     },
     {
       id: "lastChanged", header: "Last Changed", accessor: c => c.createdAt,
-      cell: v => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{new Date(v as string).toLocaleDateString("en-IN")}</span>,
+      cell: v => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{new Date(v as string).toLocaleDateString("en-IN")}</span>,
     },
     {
       id: "edit", header: "Edit", accessor: () => null,

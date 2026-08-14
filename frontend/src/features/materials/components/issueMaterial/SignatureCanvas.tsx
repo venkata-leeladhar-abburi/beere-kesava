@@ -100,6 +100,7 @@ export const SignatureCanvas = forwardRef<
       <div style={{ position: "relative" as const }}>
         <canvas
           ref={canvasRef}
+          aria-label="Signature drawing area"
           width={520}
           height={150}
           onPointerDown={handlePointerDown}

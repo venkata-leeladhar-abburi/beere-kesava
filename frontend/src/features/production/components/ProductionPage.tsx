@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { AnimatePresence } from "motion/react";
-import { useDesignLibrary } from "../../design-library/contexts/DesignLibraryContext";
-import { DesignCodeCard } from "../../design-library/components/DesignLibraryPage";
-import { SareeTypeCard } from "../../pricing/components/RatesPricingPage";
-import { useRatesPricing } from "../../pricing/contexts/RatesContext";
-import { BulkOrderDetailPage } from "../../bulk-orders/components/BulkOrderDetailPage";
+import { useDesignLibrary } from "@/features/design-library";
+import { DesignCodeCard } from "@/features/design-library";
+import { SareeTypeCard } from "@/features/pricing";
+import { useRatesPricing } from "@/features/pricing";
+import { BulkOrderDetailPage } from "@/features/bulk-orders";
 import { useBatches } from "../contexts/BatchContext";
 
 import { F } from "./theme";
@@ -16,7 +16,7 @@ import { BatchTallyPage } from "./BatchTallyPage";
 import { DefectiveSareesSection } from "./sections/DefectiveSareesSection";
 import { ProductionAnalyticsSection } from "./sections/ProductionAnalyticsSection";
 import { ProductionHistorySection } from "./sections/ProductionHistorySection";
-import { MaterialsFooter } from "../../materials/components/sections/MaterialsFooter";
+import { MaterialsFooter } from "@/features/materials";
 import { DesignLibraryLinkCard, AllSareesSection } from "./sections/MiscCards";
 
 /**

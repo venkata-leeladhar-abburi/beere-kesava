@@ -1,7 +1,7 @@
 import React from "react";
 import { motion } from "motion/react";
 import { ChevronRight } from "lucide-react";
-import { T, F, G, EASE } from "../../../../dashboards/components/beere-dashboard/theme";
+import { T, F, G, EASE } from "@/features/dashboards";
 import { BG_IMAGE } from "../WeaverBatchNotifData";
 
 /**
@@ -66,7 +66,7 @@ export function WeaverHero({ weaverName, onExploreBatches, onGoToPayments }: {
 
         <motion.p
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.85 }}
-          style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 14, color: "rgba(245,232,208,0.90)", lineHeight: 1.75, margin: 0, maxWidth: 380 }}
+          style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 14, color: "rgba(245,232,208,0.90)", lineHeight: 1.75, margin: 0, maxWidth: "380px" }}
         >
           Your batches, materials, and earnings — all in one place, updated in real time as your work moves through the workshop.
         </motion.p>

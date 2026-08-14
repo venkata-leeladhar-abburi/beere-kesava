@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { AlertTriangle, CheckCircle2, Pencil, Scale, X } from "lucide-react";
 import { T, F } from "../../theme";
-import { trimNum } from "../../../../pricing/components/rates-pricing/jariUtils";
-import type { SareeTypeRecord } from "../../../../pricing/components/RatesPricingPage";
+import { trimNum } from "@/features/pricing";
+import type { SareeTypeRecord } from "@/features/pricing";
 import { Button, NumberInput } from "../../../../../shared/ui/primitives";
+import { EntityCode } from "@/shared/ui/domain";
 
 // ── Per-saree weight & material tally ───────────────────────────────────────
 // Shared between the batch admin view (every saree in a batch) and the bulk
@@ -24,9 +25,9 @@ export interface TallyRowItem {
   actualWarpG: number | null;
   actualReshamG: number | null;
   actualJariReels: number | null;
-  tallied: boolean;
-  talliedBy: string | null;
-  talliedAt: string | null;
+  tallied?: boolean;
+  talliedBy?: string | null;
+  talliedAt?: string | null;
 }
 
 export interface TallyCorrection {
@@ -36,16 +37,21 @@ export interface TallyCorrection {
   jariReels?: number;
 }
 
-function EditRow({ item, onCancel, onSave, busy }: {
+function EditRow({
+  item,
+  busy,
+  onCancel,
+  onSave,
+}: {
   item: TallyRowItem;
+  busy: boolean;
   onCancel: () => void;
   onSave: (correction: TallyCorrection) => void;
-  busy: boolean;
 }) {
-  const [weight, setWeight] = useState(item.actualWeight !== null ? String(item.actualWeight) : "");
-  const [warpG, setWarpG] = useState(item.actualWarpG !== null ? String(item.actualWarpG) : "");
-  const [reshamG, setReshamG] = useState(item.actualReshamG !== null ? String(item.actualReshamG) : "");
-  const [jariReels, setJariReels] = useState(item.actualJariReels !== null ? String(item.actualJariReels) : "");
+  const [weight, setWeight] = useState<string>(item.actualWeight !== null ? String(item.actualWeight) : "");
+  const [warpG, setWarpG] = useState<string>(item.actualWarpG !== null ? String(item.actualWarpG) : "");
+  const [reshamG, setReshamG] = useState<string>(item.actualReshamG !== null ? String(item.actualReshamG) : "");
+  const [jariReels, setJariReels] = useState<string>(item.actualJariReels !== null ? String(item.actualJariReels) : "");
 
   const fields = [
     { label: "Weight (g)", value: weight, set: setWeight },
@@ -67,10 +73,10 @@ function EditRow({ item, onCancel, onSave, busy }: {
     <div style={{ display: "flex", flexDirection: "column", gap: 12, width: "100%" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" as const }}>
         <div style={{ minWidth: 150 }}>
-          <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>{item.sareeId}</div>
+          <EntityCode type="saree" value={item.sareeId} size="sm" />
           <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{item.weaverName || "—"}</div>
         </div>
-        <div style={{ flex: 1, minWidth: 320, display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10 }}>
+        <div className="flex-1 min-w-[280px]" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10 }}>
           {fields.map(f => (
             <div key={f.label}>
               <div style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: 3 }}>{f.label}</div>
@@ -119,10 +125,10 @@ export function SareeWeightTallyList({
       {items.map(item => {
         const rate = item.sareeTypeCode ? getSareeTypeByCode(item.sareeTypeCode) : undefined;
         const weighed = item.actualWeight !== null;
-        const expectedWeight = rate ? parseFloat(rate.stdWeight) || 0 : 0;
-        const expectedWarpG = rate ? parseFloat(rate.warpWeight) || 0 : 0;
-        const expectedReshamG = rate ? parseFloat(rate.reshamWeight) || 0 : 0;
-        const expectedJariReels = rate ? parseFloat(rate.jariWeight) || 0 : 0;
+        const expectedWeight = rate ? Number(rate.stdWeight) || 0 : 0;
+        const expectedWarpG = rate ? Number(rate.warpWeight) || 0 : 0;
+        const expectedReshamG = rate ? Number(rate.reshamWeight) || 0 : 0;
+        const expectedJariReels = rate ? Number(rate.jariWeight) || 0 : 0;
         const short = weighed && expectedWeight > 0 && (item.actualWeight ?? 0) < expectedWeight * 0.95;
         const key = `${item.batchId}-${item.serial}`;
         const busy = busyKey === key;
@@ -148,11 +154,11 @@ export function SareeWeightTallyList({
             ) : (
               <>
                 <div style={{ minWidth: 150 }}>
-                  <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>{item.sareeId}</div>
+                  <EntityCode type="saree" value={item.sareeId} size="sm" />
                   <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{item.weaverName || "—"}</div>
                 </div>
 
-                <div style={{ flex: 1, minWidth: 280, display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10 }}>
+                <div className="flex-1 min-w-[280px]" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10 }}>
                   {[
                     { label: "Weight", actual: item.actualWeight, expected: expectedWeight, unit: "g" },
                     { label: "Warp", actual: item.actualWarpG, expected: expectedWarpG, unit: "g" },
@@ -160,8 +166,8 @@ export function SareeWeightTallyList({
                     { label: "Jari", actual: item.actualJariReels, expected: expectedJariReels, unit: "reels" },
                   ].map(m => (
                     <div key={m.label}>
-                      <div style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>{m.label}</div>
-                      <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: short ? T.crimson : T.luxuryBrown }}>
+                      <div style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: 3 }}>{m.label}</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: short ? T.crimson : T.luxuryBrown }}>
                         {m.actual === null ? "—" : trimNum(m.actual, m.unit === "reels" ? 2 : 0)}
                         <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 400, color: T.taupe }}> / {trimNum(m.expected, m.unit === "reels" ? 2 : 0)}{m.unit}</span>
                       </div>

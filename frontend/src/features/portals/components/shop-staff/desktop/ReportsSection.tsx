@@ -38,9 +38,9 @@ export function ReportsSection({
     queryFn: () => customersApi.list(100),
   });
 
-  const salesList = salesRes?.items ?? [];
+  const salesList = React.useMemo(() => salesRes?.items ?? [], [salesRes]);
   const returnsList = returnsRes?.items ?? [];
-  const customerMap = new Map((customersRes?.items ?? []).map(c => [c.id, c.name]));
+  const customerMap = React.useMemo(() => new Map((customersRes?.items ?? []).map(c => [c.id, c.name])), [customersRes]);
 
   const totalSalesCount = salesList.length;
   const totalRevenue = salesList.reduce((sum, s) => sum + Number(s.amount), 0);
@@ -53,6 +53,7 @@ export function ReportsSection({
   ];
 
   const salesRows = salesList.map(s => ({
+    saleId: s.saleRef,
     time: timeLabel(s.saleDate),
     id: s.sareeId,
     customer: s.customerId ? (customerMap.get(s.customerId) ?? `Customer ${s.customerId.slice(0, 6)}`) : "Walk-in Customer",
@@ -63,11 +64,11 @@ export function ReportsSection({
   }));
 
   const topCustomers = React.useMemo(() => {
-    const map = new Map<string, { name: string; purchases: number; total: number }>();
+    const map = new Map<string, { custId: string; name: string; purchases: number; total: number }>();
     for (const s of salesList) {
       const custId = s.customerId ?? "walkin";
       const name = s.customerId ? (customerMap.get(s.customerId) ?? `Customer ${s.customerId.slice(0, 6)}`) : "Walk-in Counter Customer";
-      const existing = map.get(custId) ?? { name, purchases: 0, total: 0 };
+      const existing = map.get(custId) ?? { custId, name, purchases: 0, total: 0 };
       existing.purchases += 1;
       existing.total += Number(s.amount);
       map.set(custId, existing);
@@ -75,12 +76,14 @@ export function ReportsSection({
     const sorted = Array.from(map.values()).sort((a, b) => b.total - a.total).slice(0, 5);
     if (sorted.length === 0 && customersRes?.items) {
       return customersRes.items.slice(0, 5).map(c => ({
+        custId: c.id,
         name: c.name,
         purchases: 0,
         amt: formatMoney(rupees(0)),
       }));
     }
     return sorted.map(c => ({
+      custId: c.custId,
       name: c.name,
       purchases: c.purchases,
       amt: formatMoney(rupees(c.total)),
@@ -128,7 +131,7 @@ export function ReportsSection({
                 </div>
               ) : (
                 salesRows.map((s, i) => (
-                  <div key={i} style={{ display: "grid", gridTemplateColumns: `80px 160px 1fr 1fr 80px${canSeePrices ? " 120px" : ""}`, padding: "18px 24px", borderBottom: i < salesRows.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", alignItems: "center" }}>
+                  <div key={s.saleId} style={{ display: "grid", gridTemplateColumns: `80px 160px 1fr 1fr 80px${canSeePrices ? " 120px" : ""}`, padding: "18px 24px", borderBottom: i < salesRows.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", alignItems: "center" }}>
                     <div style={{ fontFamily: F.m, fontSize: 13, color: C.muted }}>{s.time}</div>
                     <div style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{s.id}</div>
                     <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: C.text }}>{s.customer}</div>
@@ -154,7 +157,7 @@ export function ReportsSection({
                 </div>
               ) : (
                 returnsList.map((r, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 16, padding: "20px 24px", borderBottom: i < returnsList.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", borderLeft: `6px solid ${C.crim}` }}>
+                  <div key={r.returnRef} style={{ display: "flex", alignItems: "center", gap: 16, padding: "20px 24px", borderBottom: i < returnsList.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", borderLeft: `6px solid ${C.crim}` }}>
                     <div style={{ width: 44, height: 44, borderRadius: "50%", background: "rgba(192,57,43,0.10)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                       <RotateCcw size={20} color={C.crim} />
                     </div>
@@ -204,7 +207,7 @@ export function ReportsSection({
                 </div>
               ) : (
                 topCustomers.map((c, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 14, padding: "16px 24px", borderBottom: i < topCustomers.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none" }}>
+                  <div key={c.custId} style={{ display: "flex", alignItems: "center", gap: 14, padding: "16px 24px", borderBottom: i < topCustomers.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none" }}>
                     <div style={{ fontFamily: F.d, fontWeight: i === 0 ? 700 : 600, fontSize: i === 0 ? 26 : 22, color: i === 0 ? C.gold : C.text, width: 30, textAlign: "center" as const }}>{i + 1}</div>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text }}>{c.name}</div>

@@ -25,14 +25,14 @@ export function LineItemTable<T>({ columns, rows }: LineItemTableProps<T>) {
   return (
     <table className="bk-doc__table" style={{ marginTop: "5mm" }}>
       <colgroup>
-        {columns.map((c, i) => (
-          <col key={i} style={c.width ? { width: c.width } : undefined} />
+        {columns.map((c) => (
+          <col key={c.header} style={c.width ? { width: c.width } : undefined} />
         ))}
       </colgroup>
       <thead>
         <tr>
-          {columns.map((c, i) => (
-            <th key={i} style={{ textAlign: c.align === "end" ? "end" : c.align === "center" ? "center" : "start" }}>
+          {columns.map((c) => (
+            <th key={c.header} style={{ textAlign: c.align === "end" ? "end" : c.align === "center" ? "center" : "start" }}>
               {c.header}
             </th>
           ))}
@@ -40,9 +40,12 @@ export function LineItemTable<T>({ columns, rows }: LineItemTableProps<T>) {
       </thead>
       <tbody>
         {rows.map((row, ri) => (
-          <tr key={ri}>
-            {columns.map((c, ci) => (
-              <td key={ci} data-num={c.align === "end" || undefined} style={{ textAlign: c.align === "end" ? "end" : c.align === "center" ? "center" : "start" }}>
+          // `rows` is a generic T with no guaranteed unique field on this shared component;
+          // fall back to a row-index composite key.
+          // eslint-disable-next-line react/no-array-index-key
+          <tr key={`row-${ri}`}>
+            {columns.map((c) => (
+              <td key={c.header} data-num={c.align === "end" || undefined} style={{ textAlign: c.align === "end" ? "end" : c.align === "center" ? "center" : "start" }}>
                 {c.cell(row, ri)}
               </td>
             ))}

@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
-  Search, ChevronDown, Eye, Calendar, Users, Download,
+  ChevronDown, Eye, Calendar, Users, Download,
   CheckCircle2, Loader2, TriangleAlert,
 } from "lucide-react";
 import { ProductionHistoryFooter } from "./ProductionHistoryFooter";
@@ -149,8 +149,11 @@ function BatchSquares({ size }: { size: number }) {
   const colors = ["#7C3AED", "#C0392B", "#0F766E", "#B45309"];
   return (
     <div style={{ display: "flex", gap: 3, flexWrap: "wrap", maxWidth: 56 }}>
+      {/* purely decorative filler squares with no backing data — size and
+          position are the only identity available, so key on both */}
       {Array.from({ length: filled }).map((_, i) => (
-        <div key={i} style={{ width: 10, height: 10, borderRadius: 2, background: colors[i % colors.length], opacity: 0.85 }} />
+        // eslint-disable-next-line react/no-array-index-key -- decorative filler squares with no backing data; size + index is the only identity available.
+        <div key={`${size}-${i}`} style={{ width: 10, height: 10, borderRadius: 2, background: colors[i % colors.length], opacity: 0.85 }} />
       ))}
     </div>
   );
@@ -194,15 +197,21 @@ function PageHeader() {
       <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
         <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
           <rect width="36" height="36" rx="8" fill="rgba(200,155,71,0.18)" />
+          {/* eslint-disable-next-line no-restricted-syntax -- decorative logo icon glyph, not chart series data */}
           <rect x="8" y="10" width="20" height="3" rx="1.5" fill={T.antiqueGold} />
+          {/* eslint-disable-next-line no-restricted-syntax -- decorative logo icon glyph, not chart series data */}
           <rect x="8" y="23" width="20" height="3" rx="1.5" fill={T.antiqueGold} />
+          {/* eslint-disable-next-line no-restricted-syntax -- decorative logo icon glyph, not chart series data */}
           <rect x="12" y="13" width="1.5" height="10" rx="0.75" fill={T.goldLight} />
+          {/* eslint-disable-next-line no-restricted-syntax -- decorative logo icon glyph, not chart series data */}
           <rect x="15.5" y="13" width="1.5" height="10" rx="0.75" fill={T.goldLight} />
+          {/* eslint-disable-next-line no-restricted-syntax -- decorative logo icon glyph, not chart series data */}
           <rect x="19" y="13" width="1.5" height="10" rx="0.75" fill={T.goldLight} />
+          {/* eslint-disable-next-line no-restricted-syntax -- decorative logo icon glyph, not chart series data */}
           <rect x="22.5" y="13" width="1.5" height="10" rx="0.75" fill={T.goldLight} />
         </svg>
         <div>
-          <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,253,249,0.45)", letterSpacing: "2px", textTransform: "uppercase", marginBottom: 2 }}>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(255,253,249,0.45)", letterSpacing: "2px", textTransform: "uppercase", marginBottom: 2 }}>
             SINCE 1999 · BATCH RECORDS
           </div>
           <h1 style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: "#FFFDF9", margin: 0, lineHeight: 1.1, letterSpacing: "-0.3px" }}>
@@ -252,11 +261,11 @@ function StatsBar({ batches, totalMakingCharges }: { batches: HistoryBatch[]; to
       <div style={{ display: "flex", gap: 32 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 500 }}>Total Completed:</span>
-          <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}>{batches.length}</span>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}>{batches.length}</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 500 }}>Total Making Charges:</span>
-          <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.green }}>{formatMoney(totalMakingCharges)}</span>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color: T.green }}>{formatMoney(totalMakingCharges)}</span>
         </div>
       </div>
     </div>
@@ -269,14 +278,14 @@ function TableSection({ batches, isLoading }: { batches: HistoryBatch[]; isLoadi
     {
       id: "id", header: "Batch Number", accessor: b => b.batchId, priority: 1,
       cell: (_v, b) => (
-        <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 7px", borderRadius: 5 }}>
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 7px", borderRadius: 5 }}>
           {b.batchId}
         </span>
       ),
     },
     {
       id: "designCode", header: "Design Code", accessor: b => b.designCode, priority: 3,
-      cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{b.designCode}</span>,
+      cell: (_v, b) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{b.designCode}</span>,
     },
     {
       id: "sareeType", header: "Saree Type", accessor: b => b.sareeType,
@@ -300,7 +309,7 @@ function TableSection({ batches, isLoading }: { batches: HistoryBatch[]; isLoadi
       cell: (_v, b) => (
         <div style={{ display: "flex", gap: -4 }}>
           {b.weavers.map((w, wi) => (
-            <div key={wi} style={{ marginLeft: wi > 0 ? -8 : 0 }}>
+            <div key={w.initials} style={{ marginLeft: wi > 0 ? -8 : 0 }}>
               <Pip initials={w.initials} bg={w.bg} />
             </div>
           ))}
@@ -309,16 +318,16 @@ function TableSection({ batches, isLoading }: { batches: HistoryBatch[]; isLoadi
     },
     {
       id: "completion", header: "Completion", accessor: b => b.completion, align: "center",
-      cell: (_v, b) => <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>{b.completion}</span>,
+      cell: (_v, b) => <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>{b.completion}</span>,
     },
     {
       id: "allPieces", header: "All Pieces", accessor: b => b.allPieces, align: "center", priority: 3,
-      cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.taupe }}>{b.allPieces}</span>,
+      cell: (_v, b) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.taupe }}>{b.allPieces}</span>,
     },
     {
       id: "okFound", header: "OK / Found", accessor: b => b.okPieces, align: "center",
       cell: (_v, b) => b.okPieces !== null ? (
-        <span style={{ fontFamily: F.mono, fontSize: 12 }}>
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>
           <span style={{ color: T.green, fontWeight: 600 }}>{b.okPieces}</span>
           <span style={{ color: T.taupe }}> / </span>
           <span style={{ color: T.amber, fontWeight: 600 }}>{b.found}</span>
@@ -333,16 +342,16 @@ function TableSection({ batches, isLoading }: { batches: HistoryBatch[]; isLoadi
     },
     {
       id: "makingCharges", header: "Making Charges", accessor: b => b.makingCharges, align: "end",
-      cell: (_v, b) => <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 13, color: T.luxuryBrown }}>{b.makingCharges}</span>,
+      cell: (_v, b) => <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 13, color: T.luxuryBrown }}>{b.makingCharges}</span>,
     },
     {
       id: "completedOn", header: "Completed On", accessor: b => b.completedOn, priority: 3,
-      cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{b.completedOn}</span>,
+      cell: (_v, b) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{b.completedOn}</span>,
     },
     {
       id: "bulkOrder", header: "Bulk Order", accessor: b => b.bulkOrder, align: "center", priority: 3,
       cell: (_v, b) => b.bulkOrder ? (
-        <span style={{ fontFamily: F.mono, fontSize: 12, background: "rgba(110,15,45,0.08)", color: T.royalBurgundy, padding: "2px 7px", borderRadius: 5, fontWeight: 600 }}>{b.bulkOrder}</span>
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, background: "rgba(110,15,45,0.08)", color: T.royalBurgundy, padding: "2px 7px", borderRadius: 5, fontWeight: 600 }}>{b.bulkOrder}</span>
       ) : (
         <span style={{ color: "#D1C5BC", fontSize: 12 }}>—</span>
       ),

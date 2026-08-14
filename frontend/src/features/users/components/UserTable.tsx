@@ -1,10 +1,10 @@
 import React from "react";
 import { Edit2, ShieldOff, Eye, Trash2, ChevronLeft, ChevronRight, Users } from "lucide-react";
 import { DateFilterBar, DateFilterState } from "../../../shared/ui/DateFilterBar";
-import { T, F, ROLE_COLORS, ROLES } from "./theme";
+import { T, F, ROLES } from "./theme";
 import { TableRow } from "./utils";
 import { SectionCard, RoleBadge, AccessBadge, StatusBadge } from "./UserBadges";
-import { FinishingStaffMember } from "../../finishing/contexts/FinishingStaffContext";
+import { FinishingStaffMember } from "@/features/finishing";
 import { Button, IconButton, SearchInput, Select, SelectItem } from "../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../shared/ui/data";
 
@@ -51,7 +51,7 @@ export const userTableColumns = ({
         <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 14, color: T.luxuryBrown }}>
           {row.firstName} {row.lastName}
         </div>
-        <div style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, marginTop: 2 }}>
+        <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: T.taupe, marginTop: 2 }}>
           {row.empId}
         </div>
       </div>
@@ -73,7 +73,7 @@ export const userTableColumns = ({
     header: "Contact",
     accessor: (row) => row.mobile,
     cell: (_, row) => (
-      <div style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown }}>
+      <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.luxuryBrown }}>
         +91 {row.mobile}
       </div>
     ),
@@ -136,7 +136,7 @@ export function UserTable({
   allRows, searchQ, setSearchQ, roleFilter, setRoleFilter,
   dateFilter, setDateFilter, page, setPage, pagedRows, filtered,
   totalPages, ROWS_PER_PAGE, onToggleStatus, onDelete,
-  setEditingMember, setViewingMember, cardStyle, inputStyle
+  setEditingMember, setViewingMember
 }: UserTableProps) {
   return (
     <SectionCard
@@ -170,7 +170,7 @@ export function UserTable({
       </div>
 
       {/* Table */}
-      <div style={{ overflowX: "auto" as const, minWidth: 1040, margin: "0 -28px" }}>
+      <div className="min-w-[1040px]" style={{ overflowX: "auto" as const, margin: "0 -28px" }}>
         <DataTable
           responsive
           columns={userTableColumns({ setEditingMember, onToggleStatus, onDelete, setViewingMember })}

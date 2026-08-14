@@ -1,6 +1,6 @@
-import { useBatches } from "../../../../production/contexts/BatchContext";
-import { useQc } from "../../../../qc/contexts/QcContext";
-import { useRatesPricing } from "../../../../pricing/contexts/RatesContext";
+import { useBatches } from "@/features/production";
+import { useQc } from "@/features/qc";
+import { useRatesPricing } from "@/features/pricing";
 import { useCurrentWeaver } from "../useCurrentWeaver";
 import { formatMoney, rupees } from "../../../../../lib/domain/money";
 
@@ -38,7 +38,6 @@ export function useWeaverDashboardMetrics() {
   // has to be handed in and received again.
   const producedRows = myRows.filter(r => r.qcPassed === true || r.finished === true);
   const producedCount = producedRows.length;
-  const reworkCount = myRows.filter(r => r.awaitingRework === true).length;
   const totalCharge = producedRows.reduce(
     (sum, r) => sum + (r.sareeTypeCode ? Number(getSareeTypeByCode(r.sareeTypeCode)?.charge ?? 0) : 0),
     0,

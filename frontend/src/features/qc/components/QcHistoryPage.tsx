@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ArrowLeft, ClipboardCheck } from "lucide-react";
-import { ProductionDialog } from "../../production/components/ProductionPage";
+import { ProductionDialog } from "@/features/production";
 import { PageShell } from "../../../shared/ui/PageShell";
 import { Button } from "../../../shared/ui/primitives";
 import { Breadcrumbs } from "../../../shared/ui/nav/Breadcrumbs";
@@ -62,6 +62,7 @@ export function QcHistoryPage({ onBack }: { onBack?: () => void }) {
             <div className="bk-layout-cards">
               {QC_QUEUE.concat(QC_QUEUE).map((q, i) => (
                 <div
+                  // eslint-disable-next-line react/no-array-index-key
                   key={`${q.batchId}-${i}`}
                   style={{
                     background: "#fff", border: `1px solid ${T.borderDef}`,
@@ -69,7 +70,7 @@ export function QcHistoryPage({ onBack }: { onBack?: () => void }) {
                     borderRadius: 18, padding: 22, boxShadow: "0 6px 24px rgba(74,6,27,0.07)",
                   }}
                 >
-                  <div style={{ fontFamily: F.mono, color: T.royalBurgundy, fontWeight: 700 }}>{q.batchId}</div>
+                  <div style={{ fontFamily: "var(--font-mono)", color: T.royalBurgundy, fontWeight: 700 }}>{q.batchId}</div>
                   <h3 style={{ fontFamily: F.display, color: T.luxuryBrown, margin: "8px 0" }}>{q.weaver}</h3>
                   <div style={{ color: T.taupe, lineHeight: 1.6 }}>
                     {q.count} sarees · {q.sareeType}

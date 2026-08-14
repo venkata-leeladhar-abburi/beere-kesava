@@ -34,13 +34,13 @@ export function ReportsFooter() {
               <div style={{ fontFamily: F.display, fontSize: 14, fontStyle: "italic", color: T.antiqueGold, lineHeight: 1.2 }}>&amp; Brothers Silks</div>
             </div>
           </div>
-          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, letterSpacing: "2.5px", textTransform: "uppercase", marginBottom: 12 }}>SINCE 1999</div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.antiqueGold, letterSpacing: "2.5px", textTransform: "uppercase", marginBottom: 12 }}>SINCE 1999</div>
           <p style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.52)", lineHeight: 1.7, marginBottom: 20, maxWidth: 280 }}>
             Preserving the art of pure silk weaving. Banarasi heritage crafted with trust, transparency, and timeless quality.
           </p>
           <div style={{ display: "flex", gap: 8 }}>
-            {[Globe, Mail, Phone].map((Icon, i) => (
-              <div key={i} style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid rgba(200,155,71,0.25)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+            {[Globe, Mail, Phone].map((Icon) => (
+              <div key={Icon.displayName ?? Icon.name} style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid rgba(200,155,71,0.25)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
                 <Icon size={14} color="rgba(255,253,249,0.50)" />
               </div>
             ))}
@@ -48,43 +48,37 @@ export function ReportsFooter() {
         </div>
 
         <div>
-          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 16 }}>QUICK LINKS</div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.antiqueGold, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 16 }}>QUICK LINKS</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {FOOTER_QL.map(l => (
               <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
                 <span style={{ color: "rgba(200,155,71,0.55)" }}>{l.icon}</span>
-                <span style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.60)" }}
-                  onMouseEnter={e => (e.currentTarget.style.color = "#FFFDF9")}
-                  onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,253,249,0.60)")}>{l.label}</span>
+                <span className="hover:text-[#FFFDF9] transition-colors" style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.60)" }}>{l.label}</span>
               </div>
             ))}
           </div>
         </div>
 
         <div>
-          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 16 }}>REPORT SHORTCUTS</div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.antiqueGold, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 16 }}>REPORT SHORTCUTS</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {FOOTER_RPTS.map(l => (
-              <span key={l} style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.60)", cursor: "pointer" }}
-                onMouseEnter={e => (e.currentTarget.style.color = "#FFFDF9")}
-                onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,253,249,0.60)")}>{l}</span>
+              <span key={l} className="hover:text-[#FFFDF9] transition-colors cursor-pointer" style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.60)" }}>{l}</span>
             ))}
           </div>
         </div>
 
         <div>
-          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 16 }}>NEED HELP</div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.antiqueGold, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 16 }}>NEED HELP</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {FOOTER_HELP.map(l => (
-              <span key={l} style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.60)", cursor: "pointer" }}
-                onMouseEnter={e => (e.currentTarget.style.color = "#FFFDF9")}
-                onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,253,249,0.60)")}>{l}</span>
+              <span key={l} className="hover:text-[#FFFDF9] transition-colors cursor-pointer" style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.60)" }}>{l}</span>
             ))}
           </div>
         </div>
 
         <div>
-          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 16 }}>OUR COMMITMENT</div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.antiqueGold, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 16 }}>OUR COMMITMENT</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {FOOTER_COMM.map(c => (
               <div key={c} style={{ display: "flex", alignItems: "center", gap: 9 }}>

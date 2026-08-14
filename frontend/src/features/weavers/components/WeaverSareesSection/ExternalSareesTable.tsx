@@ -1,6 +1,6 @@
 import React from "react";
 import { Pagination, UsePaginationReturn } from "../../../../shared/ui/DataPagination";
-import { T, F } from "./theme";
+import { T } from "./theme";
 import { WeaverSareeRow } from "./types";
 import { inr, fmtDate, externalSerialOf } from "./utils";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
@@ -15,11 +15,11 @@ export function ExternalSareesTable({ pageRows, canSeeMoney, pag }: ExternalSare
   const columns: ColumnDef<WeaverSareeRow>[] = [
     {
       id: "sareeId", header: "Saree ID", accessor: r => r.sareeId, type: "code", priority: 1,
-      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, whiteSpace: "nowrap" as const }}>{r.sareeId}</span>,
+      cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy, whiteSpace: "nowrap" as const }}>{r.sareeId}</span>,
     },
     {
       id: "serialNo", header: "Serial No.", accessor: r => externalSerialOf(r.sareeId), priority: 3,
-      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.luxuryBrown }}>{externalSerialOf(r.sareeId) || "—"}</span>,
+      cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: T.luxuryBrown }}>{externalSerialOf(r.sareeId) || "—"}</span>,
     },
     {
       id: "supplier", header: "Supplier", accessor: r => r.stock?.supplier,
@@ -27,7 +27,7 @@ export function ExternalSareesTable({ pageRows, canSeeMoney, pag }: ExternalSare
     },
     {
       id: "purchaseOrder", header: "Purchase Order", accessor: r => r.stock?.purchaseId, priority: 3,
-      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{r.stock?.purchaseId || "—"}</span>,
+      cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>{r.stock?.purchaseId || "—"}</span>,
     },
     { id: "location", header: "Location", accessor: r => r.stock?.supplierLocation ?? "—", priority: 3 },
     { id: "sareeType", header: "Saree Type", accessor: r => r.sareeTypeName ?? "—" },
@@ -43,15 +43,15 @@ export function ExternalSareesTable({ pageRows, canSeeMoney, pag }: ExternalSare
     ...(canSeeMoney ? [
       {
         id: "costPrice", header: "Cost Price", accessor: r => r.stock?.costPrice, align: "end",
-        cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{r.stock ? inr(r.stock.costPrice) : "—"}</span>,
+        cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>{r.stock ? inr(r.stock.costPrice) : "—"}</span>,
       } as ColumnDef<WeaverSareeRow>,
       {
         id: "sellPercent", header: "Sell %", accessor: r => r.stock?.sellPercent, align: "end",
-        cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{r.stock ? `${r.stock.sellPercent}%` : "—"}</span>,
+        cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>{r.stock ? `${r.stock.sellPercent}%` : "—"}</span>,
       } as ColumnDef<WeaverSareeRow>,
       {
         id: "finalAmount", header: "Final Amount", accessor: r => r.stock?.finalAmount, align: "end",
-        cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{r.stock ? inr(r.stock.finalAmount) : "—"}</span>,
+        cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{r.stock ? inr(r.stock.finalAmount) : "—"}</span>,
       } as ColumnDef<WeaverSareeRow>,
     ] : []),
   ];

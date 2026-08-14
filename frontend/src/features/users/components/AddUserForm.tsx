@@ -74,12 +74,12 @@ export function AddUserForm({
                   <CheckCircle2 size={32} color={T.green} />
                 </div>
                 <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 24, color: T.luxuryBrown, marginBottom: 6 }}>User Account Created</div>
-                <div style={{ fontFamily: F.mono, fontSize: 16, fontWeight: 600, color: T.royalBurgundy, marginBottom: 4 }}>{createdUser?.name}</div>
-                <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginBottom: 16 }}>{createdUser?.empId}</div>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 16, fontWeight: 600, color: T.royalBurgundy, marginBottom: 4 }}>{createdUser?.name}</div>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginBottom: 16 }}>{createdUser?.empId}</div>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 12, flexWrap: "wrap" as const }}>
                   {createdUser && <RoleBadge role={createdUser.role} />}
                   {createdUser?.accessLevel && <AccessBadge level={createdUser.accessLevel} />}
-                  <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>Portal: {createdUser && ROLE_TO_PORTAL[createdUser.role]}</span>
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>Portal: {createdUser && ROLE_TO_PORTAL[createdUser.role]}</span>
                 </div>
                 <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, margin: 0, lineHeight: 1.65 }}>
                   Login credentials have been sent to <strong style={{ color: T.luxuryBrown }}>{createdUser?.mobile}</strong> via WhatsApp.<br />

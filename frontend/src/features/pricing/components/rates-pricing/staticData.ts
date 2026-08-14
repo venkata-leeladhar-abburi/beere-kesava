@@ -1,2 +1,2 @@
-export const WHOLESALE: any[] = [];
-export const HISTORY: any[] = [];
+export const WHOLESALE: unknown[] = [];
+export const HISTORY: unknown[] = [];

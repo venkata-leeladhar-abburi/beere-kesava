@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { motion } from "motion/react";
 
-import { MAIN_NAV_H, SUB_NAV_H, SECTION_NAV_H, MOBILE_NAV_H, WORKER_MOBILE_HEADER_H, WORKER_TOPNAV_H, WORKER_SECTION_NAV_H, SHOP_MOBILE_HEADER_H, SHOP_SECTION_NAV_H, PAGE_SECTIONS, SECTION_NAV_GLOBAL_STYLE } from "./section-navigator-data";
+import { MAIN_NAV_H, SUB_NAV_H, SECTION_NAV_H, MOBILE_NAV_H } from "./section-navigator-data";
 import type { SectionNavItem } from "./section-navigator-data";
 export { MAIN_NAV_H, SUB_NAV_H, SECTION_NAV_H, MOBILE_NAV_H, WORKER_MOBILE_HEADER_H, WORKER_TOPNAV_H, WORKER_SECTION_NAV_H, SHOP_MOBILE_HEADER_H, SHOP_SECTION_NAV_H, PAGE_SECTIONS, SECTION_NAV_GLOBAL_STYLE } from "./section-navigator-data";
 export type { SectionNavItem } from "./section-navigator-data";
@@ -43,6 +43,7 @@ export function SectionNavigator({
   const stripRef = useRef<HTMLDivElement | null>(null);
 
   const horizontalScrollRafRef = useRef<number>(0);
+  const sectionIds = useMemo(() => sections.map(s => s.id).join("|"), [sections]);
 
   const smoothScrollHorizontal = (container: HTMLElement, targetX: number) => {
     if (horizontalScrollRafRef.current) cancelAnimationFrame(horizontalScrollRafRef.current);
@@ -91,7 +92,7 @@ export function SectionNavigator({
     }, 60);
 
     return () => clearTimeout(timer);
-  }, [active, sections.map(s => s.id).join("|")]);
+  }, [active, sectionIds]);
 
   const isTransitioningRef = useRef(true);
 

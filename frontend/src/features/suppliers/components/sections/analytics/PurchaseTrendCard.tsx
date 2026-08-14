@@ -48,7 +48,7 @@ export function PurchaseTrendCard({
             <YAxis yAxisId="l" hide />
             <YAxis yAxisId="r" orientation="right" hide />
             <RechartsTooltip contentStyle={tip}
-              formatter={(v: any, n: any) => n === "Purchased" ? [formatMoney(rupees(v)), n] : [`${v} sarees`, n]} />
+              formatter={(v: number, n: string) => n === "Purchased" ? [formatMoney(rupees(v)), n] : [`${v} sarees`, n]} />
             <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, paddingTop: 8 }} />
             <Bar yAxisId="l" name="Purchased" dataKey="spend" fill={T.royalBurgundy} radius={[6, 6, 0, 0]} />
             <Line yAxisId="r" name="Sarees" dataKey="pieces" stroke={semantic.chart.series[1]} strokeWidth={2.5} dot={{ r: 4, fill: semantic.chart.series[1], strokeWidth: 0 }} activeDot={{ r: 6 }} />

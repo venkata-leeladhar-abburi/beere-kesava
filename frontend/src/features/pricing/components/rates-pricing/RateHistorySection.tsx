@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Download, Lock, ChevronLeft, ChevronRight, History } from "lucide-react";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { Button } from "../../../../shared/ui/primitives";
-import { T, F, cardStyle, thStyle, tdStyle } from "./theme";
+import { T, F, cardStyle } from "./theme";
 import { SectionCard, GoldLink } from "./sharedUI";
 import { rateRequestsApi, type BackendRateChangeRequest } from "../../../../shared/api/rateRequests";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
@@ -44,7 +44,7 @@ export function RateHistorySection() {
   const [isError, setIsError] = useState(false);
   const [histPage, setHistPage] = useState(1);
 
-  function loadHistory() {
+  const loadHistory = useCallback(() => {
     setIsLoading(true);
     setIsError(false);
     Promise.all([rateRequestsApi.list("APPROVED"), rateRequestsApi.list("REJECTED")])
@@ -59,18 +59,18 @@ export function RateHistorySection() {
         setIsError(true);
       })
       .finally(() => setIsLoading(false));
-  }
+  }, [canSeeCost]);
 
   useEffect(() => {
     loadHistory();
-  }, []);
+  }, [loadHistory]);
 
   const filteredHistory = history.filter(row => matchesDateFilter(row.date.split(" · ")[0], histDateFilter));
 
   const historyColumns: ColumnDef<HistoryRow>[] = [
     {
       id: "date", header: "Date & Time", accessor: r => r.date,
-      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>{r.date}</span>,
+      cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>{r.date}</span>,
     },
     {
       id: "by", header: "Changed By", accessor: r => r.by, priority: 3,
@@ -137,7 +137,7 @@ export function RateHistorySection() {
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <Lock size={12} color={T.taupe} />
-            <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>
               This history is permanent and cannot be edited or deleted.
             </span>
           </div>

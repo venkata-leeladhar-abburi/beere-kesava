@@ -1,6 +1,6 @@
 import React from "react";
 import { Check, CheckCircle2, Clock } from "lucide-react";
-import { JARI_REEL_GRAMS, MaterialIssueRecord, BatchMaterialSummary, WeaverMaterialSummary, materialItemToGrams, REELS_PER_BUN } from "../../../../materials/contexts/MaterialIssueContext";
+import { JARI_REEL_GRAMS, MaterialIssueRecord, BatchMaterialSummary, WeaverMaterialSummary, materialItemToGrams, REELS_PER_BUN } from "@/features/materials";
 import { C, F, FABRIC_BG, MaterialHistoryCard, Tab5 } from "../theme";
 import { SectionHeading } from "@/shared/ui/portal/PortalChrome";
 import { DesktopHero } from "./DesktopHero";
@@ -56,7 +56,7 @@ export function ConfirmSection({
       />
       <div style={{ padding: isTablet ? "24px 28px 40px" : "40px 48px 56px" }}>
         {confirmed && confirmedRecord ? (
-          <div style={{ maxWidth: 600, margin: "0 auto", textAlign: "center" as const, padding: "60px 48px", background: "#FFF", borderRadius: 24, border: `1px solid ${C.bdr}`, boxShadow: "0 4px 32px rgba(44,24,16,0.10)" }}>
+          <div style={{ maxWidth: "600px", margin: "0 auto", textAlign: "center" as const, padding: "60px 48px", background: "#FFF", borderRadius: 24, border: `1px solid ${C.bdr}`, boxShadow: "0 4px 32px rgba(44,24,16,0.10)" }}>
             <div style={{ width: 96, height: 96, borderRadius: "50%", background: "rgba(30,102,64,0.12)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 28px" }}>
               <Check size={52} color={C.green} />
             </div>
@@ -68,7 +68,7 @@ export function ConfirmSection({
             </Button>
           </div>
         ) : !pendingMaterialRecord ? (
-          <div style={{ maxWidth: 600, margin: "0 auto", textAlign: "center" as const, padding: "60px 48px", background: "#FFF", borderRadius: 24, border: `1px solid ${C.bdr}`, boxShadow: "0 4px 32px rgba(44,24,16,0.10)" }}>
+          <div style={{ maxWidth: "600px", margin: "0 auto", textAlign: "center" as const, padding: "60px 48px", background: "#FFF", borderRadius: 24, border: `1px solid ${C.bdr}`, boxShadow: "0 4px 32px rgba(44,24,16,0.10)" }}>
             <div style={{ width: 96, height: 96, borderRadius: "50%", background: "rgba(30,102,64,0.12)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 28px" }}>
               <Check size={52} color={C.green} />
             </div>
@@ -194,16 +194,17 @@ export function ConfirmSection({
                             <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.5px" }}>Outstanding by Material</div>
                             {materialBreakdown.map(m => {
                               const mOutColor = m.outstandingGrams > 0 ? C.crim : C.green;
+                              const isJari = m.label === "Jari";
+                              const outstandingReels = Math.round(m.outstandingGrams / JARI_REEL_GRAMS);
                               return (
                                 <div key={m.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, background: C.cream, border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "10px 14px", flexWrap: "wrap" as const }}>
                                   <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 13, color: C.text }}>{m.label}</span>
                                   <div style={{ display: "flex", alignItems: "baseline", gap: 16 }}>
                                     <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>
-                                      Issued: <span style={{ fontFamily: F.m, fontWeight: 700, color: C.text }}>{fmtKg(m.issuedGrams)}</span>
-                                      {m.reels > 0 && ` (${m.reels} reels)`}
+                                      Issued: <span style={{ fontFamily: F.m, fontWeight: 700, color: C.text }}>{isJari ? `${m.reels} reels` : fmtKg(m.issuedGrams)}</span>
                                     </span>
                                     <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>
-                                      Outstanding: <span style={{ fontFamily: F.m, fontWeight: 700, color: mOutColor }}>{fmtKg(m.outstandingGrams)}</span>
+                                      Outstanding: <span style={{ fontFamily: F.m, fontWeight: 700, color: mOutColor }}>{isJari ? `${outstandingReels} reels` : fmtKg(m.outstandingGrams)}</span>
                                     </span>
                                   </div>
                                 </div>

@@ -1,4 +1,4 @@
-import type { SareeTag } from "../../../suppliers/contexts/SupplierContext";
+import type { SareeTag } from "@/features/suppliers";
 
 export interface FormState {
   /** Registered supplier this purchase is against — empty for a one-off supplier typed by hand. */

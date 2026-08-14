@@ -5,7 +5,6 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useResponsive } from "../../hooks/useResponsive";
 import { T, F } from "../../lib/tokens";
 import { ROLE_ROUTES } from "../roleRoutes";
-// @ts-ignore
 import logo from "../../assets/logo.webp";
 
 /**

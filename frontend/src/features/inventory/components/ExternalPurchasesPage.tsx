@@ -2,9 +2,9 @@ import React, { useState, useMemo } from "react";
 import {
   useSuppliers, SareeTag, Purchase,
   totalPieces,
-} from "../../suppliers/contexts/SupplierContext";
+} from "@/features/suppliers";
 import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
-import { SariTagPrintModal } from "../../production/components/SariTagPrintModal";
+import { SariTagPrintModal } from "@/features/production";
 
 import { T } from "./externalPurchases/theme";
 import { FormState } from "./externalPurchases/types";

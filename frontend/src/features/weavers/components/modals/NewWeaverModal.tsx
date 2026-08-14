@@ -168,7 +168,7 @@ export function NewWeaverModal({ expanded, setExpanded }: { expanded: boolean; s
   return (
     <div style={{ padding: "40px 48px", paddingBottom: 80 }}>
       <FadeUp>
-        <div style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`, padding: "32px", boxShadow: "0 8px 32px rgba(74,6,27,0.06)", maxWidth: 900, margin: "0 auto" }}>
+        <div className="max-w-[900px]" style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`, padding: "32px", boxShadow: "0 8px 32px rgba(74,6,27,0.06)", margin: "0 auto" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
             <h2 style={{ fontFamily: F.display, fontSize: 30, color: T.luxuryBrown, margin: 0 }}>Add a New Weaver</h2>
             <Button onClick={() => setExpanded(true)} variant="primary" className="rounded-[10px] bg-[#6E0F2D]">Open Form</Button>

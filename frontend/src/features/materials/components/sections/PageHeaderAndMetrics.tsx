@@ -2,11 +2,10 @@ import React, { useContext } from "react";
 import { motion } from "motion/react";
 import { ChevronRight, Package, Layers, Palette, Bell } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { ImageWithFallback } from "../../../../shared/ui/ImageWithFallback";
-import { imgWarp } from "../../../../shared/constants/imageData";
 import { T, F, EASE, G_CARD, NUM, MobileCtx } from "../theme";
 import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
 import { AnimatedNumber } from "../common/primitives";
+import { jariToReels } from "../../../../shared/lib/weightUnits";
 
 export function PageHeader() {
   const { px } = useContext(MobileCtx);
@@ -44,17 +43,11 @@ export function MetricsBar() {
   const reshamKg = reshamItems.reduce((s, i) => s + Number(i.currentStock), 0);
   const reshamColors = new Set(reshamItems.map(i => i.color).filter(Boolean)).size;
 
+  // Jari is always tallied in Reels — never sum raw quantities of mismatched
+  // units (a stock row might be recorded in KG or Buns).
   const jariItems = stockItems.filter(i => i.materialType === "JARI");
-  const jariBuns = jariItems
-    .filter(i => (i.unit ?? "").toLowerCase().includes("bun"))
-    .reduce((s, i) => s + Number(i.currentStock), 0);
-  const jariReels = jariItems
-    .filter(i => (i.unit ?? "").toLowerCase().includes("reel"))
-    .reduce((s, i) => s + Number(i.currentStock), 0);
-
-  const totalJariStock = jariItems.reduce((s, i) => s + Number(i.currentStock), 0);
-  const displayJariBuns = jariBuns > 0 ? jariBuns : totalJariStock;
-  const displayJariReels = jariReels > 0 ? jariReels : totalJariStock * 4;
+  const displayJariReels = jariItems.reduce((s, i) => s + jariToReels(Number(i.currentStock), i.unit || "Reels"), 0);
+  const displayJariBuns = displayJariReels / 4;
 
   const totalStockKg = Math.round(warpKg + reshamKg);
 
@@ -86,10 +79,10 @@ export function MetricsBar() {
   ];
 
   const ICONS = [
-    <Package size={22} color={T.warmCream} />,
-    <Layers size={22} color={T.warmCream} />,
-    <Palette size={22} color={T.warmCream} />,
-    <Bell size={22} color={T.warmCream} />,
+    <Package key="package" size={22} color={T.warmCream} />,
+    <Layers key="layers" size={22} color={T.warmCream} />,
+    <Palette key="palette" size={22} color={T.warmCream} />,
+    <Bell key="bell" size={22} color={T.warmCream} />,
   ];
 
   return (
@@ -103,7 +96,7 @@ export function MetricsBar() {
       <div className="grid grid-cols-2 xl:flex" style={{ background: G_CARD, borderRadius: 28, alignItems: "stretch", boxShadow: "0 30px 80px rgba(0,0,0,0.32), 0 0 0 1px rgba(200,155,71,0.16)", overflow: "hidden", minHeight: 140 }}>
         {materialMetrics.map((m, i) => (
           <motion.div
-            key={i}
+            key={m.label}
             initial={{ opacity: 0, y: 20, backgroundColor: "rgba(0,0,0,0)" }}
             animate={{ opacity: 1, y: 0, backgroundColor: "rgba(0,0,0,0)" }}
             transition={{ duration: 0.6, delay: 0.4 + i * 0.09, ease: EASE }}

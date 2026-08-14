@@ -1,7 +1,7 @@
 import React from "react";
 import { CheckCircle2, Printer } from "lucide-react";
 import { C, F, card } from "./tokens";
-import { PurchaseOrder } from "../../../purchasing/contexts/POContext";
+import { PurchaseOrder } from "@/features/purchasing";
 import { Button } from "../../../../shared/ui/primitives";
 
 interface GRNSuccessProps {
@@ -54,8 +54,8 @@ export function GRNPrintView({ selectedPO, receivedQty, receivedUnit, grnBatchId
       <div style={{ padding: "14px 20px 0", fontFamily: F.u, fontSize: 14, fontWeight: 600, color: C.text }}>Barcode Labels</div>
       <div style={{ padding: "4px 20px 12px", fontFamily: F.u, fontSize: 13, color: C.muted }}>Print labels for all batches in {grnBatchId}</div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, padding: "0 20px 16px" }}>
-        {batches.map((b, i) => (
-          <div key={i} style={{ ...card, padding: 14 }}>
+        {batches.map((b) => (
+          <div key={b.id} style={{ ...card, padding: 14 }}>
             <div style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, color: C.burg, marginBottom: 2 }}>{b.id}</div>
             <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 10 }}>{b.type} · {b.qty}</div>
             <div style={{ background: "#000", height: 32, borderRadius: 3, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 8 }}>

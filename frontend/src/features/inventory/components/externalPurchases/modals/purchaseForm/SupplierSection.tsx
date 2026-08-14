@@ -1,6 +1,6 @@
 import React from "react";
 import { FileText, UploadCloud } from "lucide-react";
-import { Supplier } from "../../../../../suppliers/contexts/SupplierContext";
+import { Supplier } from "@/features/suppliers";
 import { T, F } from "../../theme";
 import { FormState } from "../../types";
 import { inputStyle, labelStyle } from "../../common/primitives";
@@ -71,7 +71,7 @@ export function SupplierSection({
             ["GST", selectedSupplier.gstCode || "—"],
           ].map(([k, v]) => (
             <div key={k}>
-              <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, letterSpacing: "0.9px", color: T.taupe, marginBottom: 3 }}>{String(k).toUpperCase()}</div>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "0.9px", color: T.taupe, marginBottom: 3 }}>{String(k).toUpperCase()}</div>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, fontWeight: 600, wordBreak: "break-word" }}>{v}</div>
             </div>
           ))}
@@ -100,7 +100,7 @@ export function SupplierSection({
           />
         </Field>
         <div>
-          <label style={labelStyle}>Number of Sarees</label>
+          <div style={labelStyle}>Number of Sarees</div>
           <div style={{ ...inputStyle, display: "flex", alignItems: "center", color: T.taupe, background: T.cream }}>
             {pieceCount} saree{pieceCount !== 1 ? "s" : ""} in {sareeDetailsCount} line{sareeDetailsCount !== 1 ? "s" : ""} below
           </div>
@@ -132,11 +132,11 @@ export function SupplierSection({
           <Input
             value={form.billAmount}
             onChange={(e) => set("billAmount", e.target.value)}
-            placeholder="e.g. ₹34,000"
+            placeholder="e.g. INR 34,000"
           />
         </Field>
         <div>
-          <label style={labelStyle}>Upload Invoice</label>
+          <span style={labelStyle}>Upload Invoice</span>
           <label
             style={{
               ...inputStyle,

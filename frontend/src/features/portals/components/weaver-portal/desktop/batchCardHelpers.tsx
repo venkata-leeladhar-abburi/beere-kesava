@@ -1,6 +1,6 @@
 import React from "react";
-import { useMaterialIssue } from "../../../../materials/contexts/MaterialIssueContext";
-import { useDesignLibrary } from "../../../../design-library/contexts/DesignLibraryContext";
+import { useMaterialIssue } from "@/features/materials";
+import { useDesignLibrary } from "@/features/design-library";
 import { Package } from "lucide-react";
 import { C, F } from "../theme";
 import { useCurrentWeaver } from "../useCurrentWeaver";

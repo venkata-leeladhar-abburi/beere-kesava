@@ -89,6 +89,7 @@ export function DatePicker({
             (as this used to) misses clicks on the icon, and never reopens the
             calendar once the input is already focused but closed (e.g. after
             Escape) since a focus event only fires on a focus *transition*. */}
+        {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
         <div style={{ position: "relative" }} onMouseDown={() => { if (!disabled) setOpen(true); }}>
           <Input
             id={resolvedId}

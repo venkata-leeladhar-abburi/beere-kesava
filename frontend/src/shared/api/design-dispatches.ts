@@ -24,7 +24,7 @@ export const designDispatchesApi = {
   }) => apiClient.post<BackendDesignDispatch>("/design-dispatches", data),
 
   list: (params?: { page?: number; pageSize?: number }) => {
-    const qs = params ? "?" + new URLSearchParams(params as any).toString() : "";
+    const qs = params ? "?" + new URLSearchParams(params as Record<string, string>).toString() : "";
     return apiClient.get<{ items: BackendDesignDispatch[]; total: number; page: number; pageSize: number }>(`/design-dispatches${qs}`);
   },
 

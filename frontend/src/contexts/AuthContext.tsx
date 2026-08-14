@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 
 export type Role = "admin" | "superadmin" | "worker" | "weaver" | "shop" | "accountant";
 
-interface AuthState {
+export interface AuthState {
   isAuthenticated: boolean;
   role: Role | null;
   phone: string | null;

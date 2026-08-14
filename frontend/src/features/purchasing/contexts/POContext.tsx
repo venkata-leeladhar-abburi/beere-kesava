@@ -105,7 +105,7 @@ export function POProvider({ children }: { children: React.ReactNode }) {
 
   const addPOMutation = useMutation({
     mutationFn: async (po: PurchaseOrder) => {
-      let vendorId = (po as any).vendorId;
+      let vendorId = po.vendorId;
       if (!vendorId) {
         const vendorsRes = await vendorsApi.list(100);
         const match = vendorsRes.items.find(v => v.name.toLowerCase() === po.vendor.toLowerCase());

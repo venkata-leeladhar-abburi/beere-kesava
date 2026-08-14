@@ -1,7 +1,6 @@
 import React from "react";
-import { motion } from "motion/react";
 import { ArrowRight, Palette as Swatches, Layers as Stack } from "lucide-react";
-import { WeaverSareesSection } from "../../../weavers/components/WeaverSareesSection";
+import { WeaverSareesSection } from "@/features/weavers";
 import { T, F } from "../theme";
 import { FadeUp } from "../common/primitives";
 import { Button } from "../../../../shared/ui/primitives";

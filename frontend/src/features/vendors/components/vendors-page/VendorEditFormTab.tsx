@@ -7,7 +7,7 @@ import { Button, Field, Input, Textarea, Select, SelectItem, CheckboxField } fro
 
 export function VendorEditFormTab({ vendor, onUpdate }: { vendor: Vendor; onUpdate?: (v: Vendor) => void }) {
   const [form, setForm] = React.useState(vendor);
-  const set = (k: keyof Vendor, v: any) => setForm(p => ({ ...p, [k]: v }));
+  const set = <K extends keyof Vendor>(k: K, v: Vendor[K]) => setForm(p => ({ ...p, [k]: v }));
 
   React.useEffect(() => { setForm(vendor); }, [vendor]);
 
@@ -50,7 +50,7 @@ export function VendorEditFormTab({ vendor, onUpdate }: { vendor: Vendor; onUpda
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
             <div>
-              <label style={lbl}>Material Types</label>
+              <span style={{ ...lbl, display: "block" }}>Material Types</span>
               <div style={{ display: "flex", gap: 16, flexWrap: "wrap", padding: "10px 0" }}>
                 {["Warp", "Resham", "Jari"].map(t => {
                   const typesArr = form.type ? form.type.split(" / ").map(s => s.trim()).filter(Boolean) : [];
@@ -74,12 +74,13 @@ export function VendorEditFormTab({ vendor, onUpdate }: { vendor: Vendor; onUpda
                   {PAYMENT_TERMS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                 </Select>
               </Field>
-              <label style={lbl}>Vendor Rating</label>
+              <span style={{ ...lbl, display: "block" }}>Vendor Rating</span>
               <div style={{ display: "flex", gap: 6, cursor: "pointer", marginTop: 8 }}>
                 {[1, 2, 3, 4, 5].map(i => {
-                  const ratingVal = (form as any).rating || 3;
+                  const ratingVal = form.rating || 3;
                   return (
-                    <div key={i} onClick={() => set("rating", i)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => set("rating", i))?.(); } }}>
+                    <div key={i} onClick={() => set("rating", i)} role="button" tabIndex={0} aria-label={`Rate ${i} stars`} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => set("rating", i))?.(); } }}>
+                      {/* eslint-disable-next-line no-restricted-syntax -- star rating UI, not chart series */}
                       <Star size={20} fill={i <= ratingVal ? T.antiqueGold : "none"} color={i <= ratingVal ? T.antiqueGold : T.taupe} />
                     </div>
                   );

@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Trash2, ShoppingCart } from "lucide-react";
-import { usePO, PurchaseOrder } from "../../../purchasing/contexts/POContext";
+import { usePO, PurchaseOrder } from "@/features/purchasing";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER } from "../../../../shared/ui/DateFilterBar";
 import { ConfirmDialog } from "../../../../shared/ui/ConfirmDialog";
 import { ApiError } from "../../../../shared/api/client";
@@ -21,7 +21,7 @@ export function POTrackerSection({
 }: {
   onCreatePO: () => void;
   onViewPO: (po: PurchaseOrder) => void;
-  onNavigate?: (tab: string, ctx?: any) => void;
+  onNavigate?: (tab: string, ctx?: unknown) => void;
 }) {
   const { px } = useContext(MobileCtx);
   const { pos, isError, deletePO } = usePO();
@@ -171,7 +171,7 @@ export function POTrackerSection({
                       {po.materials.map((m, mi) => {
                         const mt = MAT_TAG[m.materialType] || MAT_TAG.Warp;
                         return (
-                          <div key={mi} style={{ display: "flex", flexDirection: "column", gap: 8, borderBottom: mi < po.materials.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", paddingBottom: mi < po.materials.length - 1 ? 12 : 0, paddingTop: mi > 0 ? 8 : 0 }}>
+                          <div key={`${m.materialType}-${m.subtype || m.description || "item"}`} style={{ display: "flex", flexDirection: "column", gap: 8, borderBottom: mi < po.materials.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", paddingBottom: mi < po.materials.length - 1 ? 12 : 0, paddingTop: mi > 0 ? 8 : 0 }}>
                             <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
                               <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: mt.col, background: mt.bg, borderRadius: 6, padding: "2px 8px", minWidth: 50, textAlign: "center", marginTop: 1, flexShrink: 0 }}>
                                 {m.materialType}

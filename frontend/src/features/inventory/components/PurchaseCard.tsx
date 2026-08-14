@@ -63,7 +63,7 @@ export function PurchaseCard({ p, onView, onPrint, index }: { p: Purchase; onVie
               <div>
                 <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, lineHeight: 1.2 }}>{p.vendor}</div>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>{p.vendorCity}</div>
-                <div style={{ fontFamily: F.mono, fontSize: 12, color: mc.col, letterSpacing: "1px", marginTop: 2 }}>{p.type} · {p.material}</div>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: mc.col, letterSpacing: "1px", marginTop: 2 }}>{p.type} · {p.material}</div>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.antiqueGold, fontWeight: 600, marginTop: 2 }}>{p.firmName}</div>
               </div>
             </div>
@@ -75,7 +75,7 @@ export function PurchaseCard({ p, onView, onPrint, index }: { p: Purchase; onVie
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 6 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <Hash size={11} color={T.royalBurgundy} />
-              <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, letterSpacing: "0.3px" }}>{p.po}</span>
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy, letterSpacing: "0.3px" }}>{p.po}</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
               <Calendar size={11} color={T.taupe} />
@@ -91,7 +91,7 @@ export function PurchaseCard({ p, onView, onPrint, index }: { p: Purchase; onVie
               <div key={stat.label} style={{ background: T.silkCream, borderRadius: 10, padding: "10px 12px", border: `1px solid ${T.borderDef}` }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 4 }}>
                   <stat.Icon size={11} color={T.taupe} />
-                  <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, letterSpacing: "1px", textTransform: "uppercase" }}>{stat.label}</span>
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, letterSpacing: "1px", textTransform: "uppercase" }}>{stat.label}</span>
                 </div>
                 <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: stat.color, ...NUM }}>{stat.value}</div>
               </div>
@@ -100,7 +100,7 @@ export function PurchaseCard({ p, onView, onPrint, index }: { p: Purchase; onVie
 
           <div style={{ background: G.card, borderRadius: 12, padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div>
-              <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(200,155,71,0.75)", letterSpacing: "2px", textTransform: "uppercase", marginBottom: 4 }}>Total Paid</div>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(200,155,71,0.75)", letterSpacing: "2px", textTransform: "uppercase", marginBottom: 4 }}>Total Paid</div>
               <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 24, color: T.goldLight, lineHeight: 1, ...NUM }}><Money value={p.totalPaid} /></div>
             </div>
             <div style={{ width: 38, height: 38, borderRadius: 11, background: "rgba(200,155,71,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -110,7 +110,7 @@ export function PurchaseCard({ p, onView, onPrint, index }: { p: Purchase; onVie
 
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <FileText size={11} color={T.taupe} />
-            <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, letterSpacing: "0.3px" }}>{p.grn}</span>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, letterSpacing: "0.3px" }}>{p.grn}</span>
           </div>
 
           <div style={{ display: "flex", gap: 8, marginTop: "auto" }}>

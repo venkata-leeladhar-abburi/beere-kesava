@@ -31,8 +31,8 @@ export function WorkerQCCompletedTodaySection({ items, isDesktop, isTablet }: Wo
           </div>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: cols, gap: 16 }}>
-            {items.map((p, i) => (
-              <WorkerQCPassedCard key={p.id + i} id={p.id} weaver={p.weaver} date={p.date} sareeType={p.sareeType} payable={p.payable} />
+            {items.map((p) => (
+              <WorkerQCPassedCard key={p.id} id={p.id} weaver={p.weaver} date={p.date} sareeType={p.sareeType} payable={p.payable} />
             ))}
           </div>
         )}

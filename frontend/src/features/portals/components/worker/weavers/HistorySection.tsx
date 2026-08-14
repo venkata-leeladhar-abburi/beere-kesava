@@ -4,7 +4,7 @@ import { C, F } from "../tokens";
 import { SectionCard } from "../primitives";
 import { type ReceivedSareeLog } from "./shared";
 import { Button, Input } from "../../../../../shared/ui/primitives";
-import { useQc } from "../../../../qc/contexts/QcContext";
+import { useQc } from "@/features/qc";
 import { StatusPill } from "../../../../../shared/ui/domain";
 import type { StatusValueOf } from "@/lib/domain/status";
 import { DateFilterBar, type DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../../shared/ui/DateFilterBar";

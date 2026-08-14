@@ -2,9 +2,10 @@ import React, { useState } from "react";
 import { motion } from "motion/react";
 import {
   Calendar as CalendarBlank, AlertCircle as WarningCircle, CheckCircle2 as CheckCircle,
-  Eye as PhEye, Pencil as PencilSimple,
+  Eye as PhEye,
 } from "lucide-react";
-import { useMaterialIssue, materialItemToGrams, REELS_PER_BUN } from "../../../../materials/contexts/MaterialIssueContext";
+import { useMaterialIssue, materialItemToGrams, REELS_PER_BUN } from "@/features/materials";
+import { formatBunsReels } from "@/shared/lib/weightUnits";
 import { T, F, EASE } from "../../theme";
 import { STAGE_CFG } from "../../data";
 import type { Batch, BatchStage } from "../../types";
@@ -12,7 +13,7 @@ import { FadeUp, Pip } from "../../common/primitives";
 import { Button } from "../../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
 import { rupees } from "@/lib/domain/money";
-import { Money, StatusPill } from "@/shared/ui/domain";
+import { EntityCode, Money, StatusPill } from "@/shared/ui/domain";
 import type { StatusValueOf } from "@/lib/domain/status";
 
 // A batch's `stage` is this feature's own BatchStage union — "submitted"
@@ -43,7 +44,7 @@ export function SwipeToTally({ tallied, onOpen }: { tallied?: boolean; onOpen?: 
 }
 
 
-export function BatchCard({ b, onView, onSlip, onEdit }: { b: Batch; expandedId: string | null; setExpandedId: (id: string | null) => void; onView?: (b: Batch) => void; onSlip?: (b: Batch) => void; onEdit?: (b: Batch) => void }) {
+export function BatchCard({ b, onView }: { b: Batch; expandedId: string | null; setExpandedId: (id: string | null) => void; onView?: (b: Batch) => void; onSlip?: (b: Batch) => void; onEdit?: (b: Batch) => void }) {
   const cfg = STAGE_CFG[b.stage];
   const pct = Math.round((b.done / b.total) * 100);
   const { getReceivedForBatch } = useMaterialIssue();
@@ -61,7 +62,9 @@ export function BatchCard({ b, onView, onSlip, onEdit }: { b: Batch; expandedId:
       <div style={{ paddingLeft: 6, display: "flex", flexDirection: "column", height: "100%", flex: 1 }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", padding: "18px 20px 14px" }}>
           <div>
-            <div style={{ fontFamily: F.mono, fontSize: 16, fontWeight: 700, color: T.royalBurgundy, marginBottom: 8, letterSpacing: "0.2px" }}>{b.id}</div>
+            <div style={{ marginBottom: 8 }}>
+              <EntityCode type="batch" value={b.id} size="md" />
+            </div>
             <StatusPill taxonomy="production" status={STAGE_TO_PRODUCTION[b.stage]} />
           </div>
         </div>
@@ -88,9 +91,9 @@ export function BatchCard({ b, onView, onSlip, onEdit }: { b: Batch; expandedId:
               <CalendarBlank size={17} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
               <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>
                 {b.submitted ? (
-                  <span>Started <strong style={{ fontFamily: F.mono }}>{b.started}</strong> · Submitted <strong style={{ fontFamily: F.mono }}>{b.submitted}</strong></span>
+                  <span>Started <strong style={{ fontFamily: F.ui }}>{b.started}</strong> · Submitted <strong style={{ fontFamily: F.ui }}>{b.submitted}</strong></span>
                 ) : (
-                  <span>Started <strong style={{ fontFamily: F.mono }}>{b.started}</strong> · Expected <strong style={{ fontFamily: F.mono }}>{b.expected}</strong></span>
+                  <span>Started <strong style={{ fontFamily: F.ui }}>{b.started}</strong> · Expected <strong style={{ fontFamily: F.ui }}>{b.expected}</strong></span>
                 )}
               </div>
             </div>
@@ -174,7 +177,7 @@ export function BatchListView({ batches, onView, onEdit }: { batches: Batch[]; o
   const columns: ColumnDef<Batch>[] = [
     {
       id: "id", header: "Batch Number", accessor: b => b.id, priority: 1,
-      cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>{b.id}</span>,
+      cell: (_v, b) => <EntityCode type="batch" value={b.id} size="sm" />,
     },
     {
       id: "stage", header: "Stage", accessor: b => b.stage, type: "status",
@@ -186,11 +189,11 @@ export function BatchListView({ batches, onView, onEdit }: { batches: Batch[]; o
     },
     {
       id: "design", header: "Design", accessor: b => b.design, priority: 3,
-      cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 600 }}>{b.design}<div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 400, marginTop: 2 }}>{b.designName}</div></span>,
+      cell: (_v, b) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.royalBurgundy, fontWeight: 600 }}>{b.design}<div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 400, marginTop: 2 }}>{b.designName}</div></span>,
     },
     {
       id: "sareeCode", header: "Saree Type", accessor: b => b.sareeCode,
-      cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, fontWeight: 600 }}>{b.sareeCode}<div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 400, marginTop: 2 }}>{b.sareeTypeName}</div></span>,
+      cell: (_v, b) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, fontWeight: 600 }}>{b.sareeCode}<div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 400, marginTop: 2 }}>{b.sareeTypeName}</div></span>,
     },
     {
       id: "progress", header: "Progress", accessor: b => b.done,
@@ -198,53 +201,37 @@ export function BatchListView({ batches, onView, onEdit }: { batches: Batch[]; o
         const cfg = STAGE_CFG[b.stage];
         const pct = Math.round((b.done / b.total) * 100);
         return (
-          <div>
-            <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, fontWeight: 700, marginBottom: 5 }}>Produced {b.done} / Assigned {b.total}</div>
-            <div style={{ height: 6, background: "rgba(110,15,45,0.08)", borderRadius: 99, overflow: "hidden", width: 110 }}>
-              <div style={{ height: "100%", width: `${pct}%`, background: cfg.border, borderRadius: 99 }} />
+          <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 140 }}>
+            <div style={{ flex: 1, height: 6, background: "rgba(110,15,45,0.08)", borderRadius: 3, overflow: "hidden" }}>
+              <div style={{ width: `${pct}%`, height: "100%", background: cfg.border, borderRadius: 3 }} />
             </div>
+            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>{b.done}/{b.total}</span>
           </div>
         );
       },
-    },
-    {
-      id: "started", header: "Started", accessor: b => b.started, priority: 3,
-      cell: (_v, b) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{b.started}</span>,
-    },
-    {
-      id: "expected", header: "Expected End", accessor: b => b.submitted ?? b.expected, priority: 3,
-      cell: (_v, b) => (
-        <span style={{ fontFamily: F.ui, fontSize: 12, color: b.late ? T.crimson : T.taupe }}>
-          {b.submitted ?? b.expected}
-          {b.late && <div style={{ fontSize: 12, fontWeight: 700, marginTop: 2, display: "flex", alignItems: "center", gap: 4 }}><WarningCircle size={13} /> {b.late}d late</div>}
-        </span>
-      ),
-    },
-    {
-      id: "charges", header: "Making Charges", accessor: b => b.total * b.rate,
-      cell: (_v, b) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.antiqueGold, fontWeight: 700 }}><Money value={rupees(b.total * b.rate)} /></span>,
     },
     {
       id: "action", header: "Action", accessor: () => null, type: "actions",
       cell: (_v, b) => (
         <div style={{ display: "flex", gap: 6 }}>
           <Button onClick={() => onView?.(b)} variant="secondary" size="sm">
-            <PhEye size={14} /> View
+            View
           </Button>
-          {b.isLive && onEdit && (
-            <Button onClick={() => onEdit(b)} variant="tertiary" size="sm">
-              <PencilSimple size={14} /> Edit
-            </Button>
-          )}
+          <Button onClick={() => onEdit?.(b)} variant="secondary" size="sm">
+            Edit
+          </Button>
         </div>
       ),
     },
   ];
 
   return (
-    <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 6px 24px rgba(74,6,27,0.05)" }}>
-      <DataTable responsive columns={columns} data={batches} getRowId={b => b.id} />
-    </div>
+    <DataTable
+      columns={columns}
+      data={batches}
+      getRowId={b => b.id}
+      emptyTitle="No batches found"
+    />
   );
 }
 
@@ -284,12 +271,12 @@ function BatchMaterialsCell({ batchId }: { batchId: string }) {
     <div style={{ display: "flex", flexDirection: "column", gap: 6, maxWidth: 240 }}>
       {Array.from(byLoom.entries()).map(([loomLabel, totals]) => (
         <div key={loomLabel} style={{ lineHeight: 1.5 }}>
-          <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.royalBurgundy }}>{loomLabel}: </span>
+          <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.royalBurgundy }}>{loomLabel}: </span>
           <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
             {Array.from(totals.entries()).map(([type, t], i) => (
               <span key={type}>
                 {i > 0 && " · "}
-                {type} {(t.grams / 1000).toFixed(2)}kg{t.reels > 0 ? ` (${t.reels} reels)` : ""}
+                {type} {type === "Jari" ? formatBunsReels(Math.round(t.reels)) : `${(t.grams / 1000).toFixed(2)}kg`}
               </span>
             ))}
           </span>
@@ -303,7 +290,7 @@ export function BatchTableView({ batches, onView, onEdit }: { batches: Batch[]; 
   const columns: ColumnDef<Batch>[] = [
     {
       id: "id", header: "Batch No.", accessor: b => b.id, priority: 1,
-      cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, fontWeight: 700, whiteSpace: "nowrap" }}>{b.id}</span>,
+      cell: (_v, b) => <EntityCode type="batch" value={b.id} size="sm" />,
     },
     {
       id: "stage", header: "Stage", accessor: b => b.stage, type: "status",
@@ -319,7 +306,7 @@ export function BatchTableView({ batches, onView, onEdit }: { batches: Batch[]; 
     },
     {
       id: "sareeCode", header: "Saree Type", accessor: b => b.sareeCode,
-      cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown, fontWeight: 600 }}>{b.sareeCode}</span>,
+      cell: (_v, b) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, fontWeight: 600 }}>{b.sareeCode}</span>,
     },
     {
       id: "materials", header: "Materials Given", accessor: b => b.materials, priority: 3,
@@ -347,7 +334,7 @@ export function BatchTableView({ batches, onView, onEdit }: { batches: Batch[]; 
     },
     {
       id: "rate", header: "Rate/Saree", accessor: b => b.rate, priority: 3,
-      cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown }}><Money value={rupees(b.rate)} /></span>,
+      cell: (_v, b) => <span style={{ fontSize: 13, color: T.luxuryBrown }}><Money value={rupees(b.rate)} /></span>,
     },
     {
       id: "est", header: "Est. Charges", accessor: b => b.total * b.rate,
@@ -358,13 +345,11 @@ export function BatchTableView({ batches, onView, onEdit }: { batches: Batch[]; 
       cell: (_v, b) => (
         <div style={{ display: "flex", gap: 6 }}>
           <Button onClick={() => onView?.(b)} variant="secondary" size="sm">
-            <PhEye size={14} /> View
+            View
           </Button>
-          {b.isLive && onEdit && (
-            <Button onClick={() => onEdit(b)} variant="tertiary" size="sm">
-              <PencilSimple size={14} /> Edit
-            </Button>
-          )}
+          <Button onClick={() => onEdit?.(b)} variant="secondary" size="sm">
+            Edit
+          </Button>
         </div>
       ),
     },

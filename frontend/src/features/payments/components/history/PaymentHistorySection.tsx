@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { EASE, F, T, DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../theme";
-import { Invoice, PayHistRecord } from "../../types";
+import { PayHistRecord } from "../../types";
 import { FadeUp } from "../common/motion";
 import { SectionCard } from "../common/primitives";
 import { HIST_TYPE_CFG, HistoryCard, getHistTypeIcon } from "./HistoryCard";
@@ -18,7 +18,7 @@ import { invoicesApi } from "../../../../shared/api/invoices";
 import { Button, IconButton, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
-import { Money, StatusPill } from "@/shared/ui/domain";
+import { Money, StatusPill, EntityCode } from "@/shared/ui/domain";
 import type { PaymentStatus } from "@/lib/domain/status";
 
 function formatHistDate(iso: string): string {
@@ -154,7 +154,7 @@ export function PaymentHistorySection() {
   const clearFilters = () => { setTypeFilter("All Payment Types"); setStatusFilter("All Statuses"); setSearch(""); setDateFilter(DEFAULT_DATE_FILTER); };
 
   const tableColumns: ColumnDef<PayHistRecord>[] = [
-    { id: "date", header: "Date", accessor: r => r.date, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown, fontWeight: 600 }}>{r.date}</span> },
+    { id: "date", header: "Date", accessor: r => r.date, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, fontWeight: 600 }}>{r.date}</span> },
     {
       id: "type", header: "Payment Type", accessor: r => r.type,
       cell: (_v, r) => {
@@ -163,19 +163,19 @@ export function PaymentHistorySection() {
       },
     },
     { id: "party", header: "Party Name", priority: 1, accessor: r => r.party, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{r.party}</span> },
-    { id: "refNo", header: "Reference No", priority: 3, accessor: r => r.refNo, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.refNo}</span> },
+    { id: "refNo", header: "Reference No", priority: 3, accessor: r => r.refNo, cell: (_v, r) => <EntityCode type="payment" value={r.refNo} size="sm" /> },
     {
       id: "description", header: "Description", priority: 3, accessor: r => r.description,
       cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, overflow: "hidden", textOverflow: "ellipsis", display: "block", maxWidth: 200 }}>{r.description}</span>,
     },
     {
       id: "invoicePO", header: "Invoice / PO No", priority: 3, accessor: r => r.invoicePO,
-      cell: (_v, r) => r.invoicePO ? <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.invoicePO}</span> : <span style={{ color: T.borderDef }}>—</span>,
+      cell: (_v, r) => r.invoicePO ? <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{r.invoicePO}</span> : <span style={{ color: T.borderDef }}>—</span>,
     },
     {
-      id: "amount", header: "Amount (₹)", accessor: r => r.amount, align: "end",
+      id: "amount", header: "Amount", accessor: r => r.amount, align: "end",
       cell: (_v, r) => (
-        <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: r.type === "Customer Receipt" ? T.green : T.crimson }}>
+        <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: r.type === "Customer Receipt" ? T.green : T.crimson }}>
           {r.type !== "Customer Receipt" && "−"}<Money value={rupees(r.amount)} />
         </span>
       ),
@@ -187,7 +187,7 @@ export function PaymentHistorySection() {
     { id: "mode", header: "Payment Mode", priority: 3, accessor: r => r.mode, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{r.mode}</span> },
     {
       id: "utr", header: "UTR / Ref No", priority: 3, accessor: r => r.utr,
-      cell: (_v, r) => r.utr ? <span style={{ fontFamily: F.mono, fontSize: 12, color: T.green }}>{r.utr}</span> : <span style={{ fontFamily: F.ui, fontSize: 13, color: T.borderDef }}>—</span>,
+      cell: (_v, r) => r.utr ? <span style={{ fontFamily: F.ui, fontSize: 12, color: T.green }}>{r.utr}</span> : <span style={{ fontFamily: F.ui, fontSize: 13, color: T.borderDef }}>—</span>,
     },
     { id: "recordedBy", header: "Recorded By", priority: 3, accessor: r => r.recordedBy, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{r.recordedBy}</span> },
     {
@@ -363,19 +363,19 @@ export function PaymentHistorySection() {
 
                   {/* Ref + PO */}
                   <div style={{ flex: "0 0 130px" }}>
-                    <div style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 600 }}>{r.refNo}</div>
-                    {r.invoicePO && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2 }}>{r.invoicePO}</div>}
+                    <div><EntityCode type="payment" value={r.refNo} size="sm" /></div>
+                    {r.invoicePO && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{r.invoicePO}</div>}
                   </div>
 
                   {/* Date */}
-                  <div style={{ flex: "0 0 100px", fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, fontWeight: 600 }}>{r.date}</div>
+                  <div style={{ flex: "0 0 100px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, fontWeight: 600 }}>{r.date}</div>
 
                   {/* Amount */}
                   <div style={{ flex: "0 0 120px", textAlign: "right" as const }}>
-                    <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: isReceipt ? T.green : T.crimson }}>
+                    <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: isReceipt ? T.green : T.crimson }}>
                       {isReceipt ? "+" : "−"}<Money value={rupees(r.amount)} />
                     </div>
-                    {r.utr && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.green, marginTop: 2 }}>{r.utr}</div>}
+                    {r.utr && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.green, marginTop: 2 }}>{r.utr}</div>}
                   </div>
 
                   {/* Status badge */}
@@ -397,9 +397,9 @@ export function PaymentHistorySection() {
               <div style={{ padding: "14px 20px", borderTop: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between", background: T.warmCream }}>
                 <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{filtered.length} transaction{filtered.length > 1 ? "s" : ""}</span>
                 <div style={{ display: "flex", gap: 24 }}>
-                  <span style={{ fontFamily: F.mono, fontSize: 13, color: T.green, fontWeight: 700 }}>+<Money value={rupees(totalIn)} /></span>
-                  <span style={{ fontFamily: F.mono, fontSize: 13, color: T.crimson, fontWeight: 700 }}>−<Money value={rupees(totalOut)} /></span>
-                  <span style={{ fontFamily: F.mono, fontSize: 13, color: netFlow >= 0 ? T.green : T.crimson, fontWeight: 700, borderLeft: `1px solid ${T.borderDef}`, paddingLeft: 24 }}>Net: {netFlow >= 0 ? "+" : "−"}<Money value={rupees(Math.abs(netFlow))} /></span>
+                  <span style={{ fontFamily: F.ui, fontSize: 13, color: T.green, fontWeight: 700 }}>+<Money value={rupees(totalIn)} /></span>
+                  <span style={{ fontFamily: F.ui, fontSize: 13, color: T.crimson, fontWeight: 700 }}>−<Money value={rupees(totalOut)} /></span>
+                  <span style={{ fontFamily: F.ui, fontSize: 13, color: netFlow >= 0 ? T.green : T.crimson, fontWeight: 700, borderLeft: `1px solid ${T.borderDef}`, paddingLeft: 24 }}>Net: {netFlow >= 0 ? "+" : "−"}<Money value={rupees(Math.abs(netFlow))} /></span>
                 </div>
               </div>
             )}
@@ -409,16 +409,16 @@ export function PaymentHistorySection() {
         {/* ── TABLE VIEW ──────────────────────────────────────── */}
         {view === "table" && (
           <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
-            <div style={{ overflowX: "auto", minWidth: 1200 }}>
+            <div className="overflow-x-auto w-full">
               <DataTable responsive columns={tableColumns} data={filtered} getRowId={r => r.id} emptyTitle="No transactions match your filters" />
             </div>
             {filtered.length > 0 && (
               <div style={{ background: T.darkBurgundy, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 14px" }}>
                 <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: "#FFFDF9" }}>TOTALS FOR SELECTED PERIOD</span>
-                <span style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,253,249,0.50)" }}>{filtered.length} rows</span>
+                <span style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.50)" }}>{filtered.length} rows</span>
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3 }}>
-                  <span style={{ fontFamily: F.mono, fontSize: 12, color: T.goldLight }}>+<Money value={rupees(totalIn)} /></span>
-                  <span style={{ fontFamily: F.mono, fontSize: 12, color: "#F47B72"  }}>−<Money value={rupees(totalOut)} /></span>
+                  <span style={{ fontFamily: F.ui, fontSize: 12, color: T.goldLight }}>+<Money value={rupees(totalIn)} /></span>
+                  <span style={{ fontFamily: F.ui, fontSize: 12, color: "#F47B72"  }}>−<Money value={rupees(totalOut)} /></span>
                   <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.antiqueGold }}><Money value={rupees(totalAmt)} /></span>
                 </div>
               </div>

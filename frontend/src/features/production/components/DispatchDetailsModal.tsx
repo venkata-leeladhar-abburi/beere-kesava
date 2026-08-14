@@ -1,7 +1,7 @@
 import React from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
-import { DispatchRecord } from "../../design-library/contexts/DesignLibraryContext";
+import { DispatchRecord } from "@/features/design-library";
 import { IconButton } from "../../../shared/ui/primitives";
 import { Modal, type ModalSize } from "../../../shared/ui/overlay";
 
@@ -28,6 +28,7 @@ function sizeForWidth(width: number): ModalSize {
   return "lg";
 }
 
+// eslint-disable-next-line no-restricted-syntax -- `width` here is a bucketing input to sizeForWidth(), never applied as CSS; Modal's own size enum handles responsive sizing
 function PickerShell({ title, onClose, children, width = 480 }: { title: string; onClose: () => void; children: React.ReactNode; width?: number }) {
   return (
     <Modal open onOpenChange={o => !o && onClose()} size={sizeForWidth(width)}>
@@ -51,7 +52,7 @@ export function DispatchDetailsModal({ weaverName, records, onClose }: { weaverN
         {records.map(d => (
           <div key={d.id} style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "14px 16px" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-              <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{d.id}</span>
+              <span style={{ fontFamily: F.ui, fontVariantNumeric: "tabular-nums", fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{d.id}</span>
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{d.sentAt}</span>
             </div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 4 }}>Instructions</div>

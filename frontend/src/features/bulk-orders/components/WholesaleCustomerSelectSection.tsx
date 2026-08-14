@@ -1,5 +1,5 @@
 import React, { useContext, useMemo } from "react";
-import { CustomersContext } from "../../customers/contexts/CustomersContext";
+import { CustomersContext } from "@/features/customers";
 import { Button, Field, Select, SelectItem } from "../../../shared/ui/primitives";
 
 const T = {
@@ -22,9 +22,9 @@ export interface WholesaleCustomer {
 
 export function useAllWholesaleCustomers(): WholesaleCustomer[] {
   const ctx = useContext(CustomersContext);
-  const backendWholesale = ctx?.wholesaleCustomers ?? [];
 
   return useMemo(() => {
+    const backendWholesale = ctx?.wholesaleCustomers ?? [];
     return backendWholesale.map(c => ({
       id: c.id,
       name: c.name,
@@ -34,7 +34,7 @@ export function useAllWholesaleCustomers(): WholesaleCustomer[] {
       address: c.address || "—",
       gstCode: c.gstCode || "—",
     }));
-  }, [backendWholesale]);
+  }, [ctx?.wholesaleCustomers]);
 }
 
 interface WholesaleCustomerSelectSectionProps {
@@ -60,7 +60,7 @@ export function WholesaleCustomerSelectSection({
   const customersList = wholesaleCustomersList || hookCustomers;
 
   const sectionLabel: React.CSSProperties = {
-    fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.taupe,
+    fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.taupe,
     textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: 16,
     paddingBottom: 8, borderBottom: `1px solid ${T.borderDef}`,
   };
@@ -90,34 +90,34 @@ export function WholesaleCustomerSelectSection({
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 800, color: T.luxuryBrown, lineHeight: 1.2 }}>{selectedCustomer.name}</div>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 3 }}>
-                <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.10)", padding: "2px 8px", borderRadius: 5 }}>{selectedCustomer.id}</span>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.10)", padding: "2px 8px", borderRadius: 5 }}>{selectedCustomer.id}</span>
                 <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>📍 {selectedCustomer.city}</span>
               </div>
             </div>
             <div style={{ background: "rgba(200,155,71,0.15)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 8, padding: "4px 10px", flexShrink: 0 }}>
-              <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.antiqueGold }}>{selectedCustomer.terms}</span>
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.antiqueGold }}>{selectedCustomer.terms}</span>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 0 }}>
             <div style={{ padding: "12px 16px", borderRight: `1px solid rgba(110,15,45,0.07)`, borderBottom: `1px solid rgba(110,15,45,0.07)` }}>
-              <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe, marginBottom: 4 }}>Phone</div>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe, marginBottom: 4 }}>Phone</div>
               <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{selectedCustomer.phone}</div>
             </div>
             <div style={{ padding: "12px 16px", borderBottom: `1px solid rgba(110,15,45,0.07)` }}>
-              <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe, marginBottom: 4 }}>Payment Terms</div>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe, marginBottom: 4 }}>Payment Terms</div>
               <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{selectedCustomer.terms}</div>
             </div>
             <div style={{ padding: "12px 16px", borderRight: `1px solid rgba(110,15,45,0.07)` }}>
-              <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe, marginBottom: 4 }}>GST Number</div>
-              <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, letterSpacing: "0.5px" }}>{selectedCustomer.gstCode}</div>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe, marginBottom: 4 }}>GST Number</div>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy, letterSpacing: "0.5px" }}>{selectedCustomer.gstCode}</div>
             </div>
             <div style={{ padding: "12px 16px" }}>
-              <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe, marginBottom: 4 }}>City</div>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe, marginBottom: 4 }}>City</div>
               <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{selectedCustomer.city}</div>
             </div>
           </div>
           <div style={{ padding: "12px 16px", borderTop: `1px solid rgba(110,15,45,0.07)`, background: "rgba(247,242,234,0.5)" }}>
-            <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe, marginBottom: 4 }}>Address</div>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe, marginBottom: 4 }}>Address</div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, lineHeight: 1.5 }}>{selectedCustomer.address}</div>
           </div>
         </div>

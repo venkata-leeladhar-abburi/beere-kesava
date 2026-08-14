@@ -1,7 +1,7 @@
 import React from "react";
 import { ChevronDown } from "lucide-react";
 import { C, F, card } from "./tokens";
-import { PurchaseOrder } from "../../../purchasing/contexts/POContext";
+import { PurchaseOrder } from "@/features/purchasing";
 import { Button } from "../../../../shared/ui/primitives";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "../../../../shared/ui/overlay";
 
@@ -34,7 +34,8 @@ export function GRNPODropdown({
                   </div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 4 }}>
                     {selectedPO.materials.map((m, idx) => (
-                      <span key={idx} style={{
+                      // eslint-disable-next-line react/no-array-index-key -- PO material lines have no id
+                      <span key={`${m.materialType}-${m.unit}-${idx}`} style={{
                         fontFamily: F.u,
                         fontSize: 12,
                         fontWeight: 700,

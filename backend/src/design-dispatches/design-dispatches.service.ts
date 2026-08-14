@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { IdGeneratorService } from '../id-generator/id-generator.service';
 import { CreateDesignDispatchDto } from './dto/create-design-dispatch.dto';
 import { PaginatedResult } from '../common/pagination';
+import { DesignDispatch } from '../generated/prisma/client';
 
 @Injectable()
 export class DesignDispatchesService {
@@ -30,7 +31,7 @@ export class DesignDispatchesService {
     return dispatch;
   }
 
-  async findAll(page: number, pageSize: number): Promise<PaginatedResult<any>> {
+  async findAll(page: number, pageSize: number): Promise<PaginatedResult<DesignDispatch>> {
     const [items, total] = await Promise.all([
       this.prisma.designDispatch.findMany({
         skip: (page - 1) * pageSize,

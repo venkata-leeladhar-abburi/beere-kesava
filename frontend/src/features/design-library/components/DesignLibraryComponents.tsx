@@ -8,9 +8,10 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { DesignEntry } from "../contexts/DesignLibraryContext";
-import { T, F, G } from "./theme";
+import { T, F } from "./theme";
 import { Button, IconButton, Input } from "../../../shared/ui/primitives";
 import { Modal } from "../../../shared/ui/overlay";
+import { EntityCode } from "@/shared/ui/domain";
 
 export { AddDesignModal, SlipModal } from "./DesignModals";
 
@@ -171,7 +172,7 @@ export function DesignCodeCard({ design, onClose }: { design: DesignEntry; onClo
             <img src={design.colorSlipPhoto} alt={design.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(61,14,26,0.7) 0%, transparent 55%)" }} />
             <Dialog.Title asChild>
-              <div style={{ position: "absolute", bottom: 16, left: 20, fontFamily: F.mono, fontSize: 16, fontWeight: 700, color: T.goldLight, letterSpacing: "0.5px" }}>{design.code}</div>
+              <div style={{ position: "absolute", bottom: 16, left: 20, fontFamily: "var(--font-mono)", fontSize: 16, fontWeight: 700, color: T.goldLight, letterSpacing: "0.5px" }}>{design.code}</div>
             </Dialog.Title>
             <Dialog.Close asChild>
               <IconButton label="Close" icon={PhX} variant="secondary" size="sm" shape="circle"
@@ -180,9 +181,9 @@ export function DesignCodeCard({ design, onClose }: { design: DesignEntry; onClo
           </div>
         ) : (
           <div style={{ background: T.darkBurgundy, padding: "24px 24px 20px", borderRadius: "var(--radius-xl) var(--radius-xl) 0 0", position: "relative", flexShrink: 0 }}>
-            <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "0.14em", color: T.antiqueGold, textTransform: "uppercase", marginBottom: 8 }}>Design Code</div>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, letterSpacing: "0.14em", color: T.antiqueGold, textTransform: "uppercase", marginBottom: 8 }}>Design Code</div>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <span style={{ fontFamily: F.mono, fontSize: 14, color: T.antiqueGold, background: "rgba(200,155,71,0.15)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 6, padding: "4px 10px" }}>{design.code}</span>
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, color: T.antiqueGold, background: "rgba(200,155,71,0.15)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 6, padding: "4px 10px" }}>{design.code}</span>
               <Dialog.Title asChild>
                 <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#fff" }}>{design.name || design.code}</span>
               </Dialog.Title>
@@ -197,14 +198,18 @@ export function DesignCodeCard({ design, onClose }: { design: DesignEntry; onClo
         <div style={{ padding: "20px 24px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
           <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 12 }}>
             {[
-              { label: "Design Code", val: design.code,     mono: true  },
-              { label: "Saree Type",  val: design.typeName || "—",  mono: false },
-              { label: "Type Code",   val: design.typeCode || "—",  mono: true  },
-              { label: "Total Produced", val: design.total ? `${design.total.toLocaleString()} sarees` : "—", mono: false },
+              { label: "Design Code", val: design.code,     entityType: "design" as const },
+              { label: "Saree Type",  val: design.typeName || "—" },
+              { label: "Type Code",   val: design.typeCode || "—" },
+              { label: "Total Produced", val: design.total ? `${design.total.toLocaleString("en-IN")} sarees` : "—" },
             ].map(r => (
               <div key={r.label} style={{ background: T.warmCream, borderRadius: 10, padding: "11px 14px" }}>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 4 }}>{r.label}</div>
-                <div style={{ fontFamily: r.mono ? F.mono : F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{r.val}</div>
+                {"entityType" in r && r.entityType ? (
+                  <EntityCode type={r.entityType} value={r.val} />
+                ) : (
+                  <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, fontVariantNumeric: "tabular-nums" }}>{r.val}</div>
+                )}
               </div>
             ))}
           </div>
@@ -219,7 +224,7 @@ export function DesignCodeCard({ design, onClose }: { design: DesignEntry; onClo
           {design.weaverName && (
             <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(30,102,64,0.06)", border: "1px solid rgba(30,102,64,0.18)", borderRadius: 10, padding: "11px 14px" }}>
               <div style={{ width: 32, height: 32, borderRadius: 9, background: T.royalBurgundy, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.goldLight }}>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.goldLight }}>
                   {design.weaverName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()}
                 </span>
               </div>
@@ -282,7 +287,7 @@ export function DesignCard({ d, onView, onSlip, onDispatch }: { d: DesignEntry; 
           <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.04) 0%, rgba(61,14,26,0.45) 100%)" }} />
           <div style={{ position: "absolute", bottom: 12, left: 14, display: "flex", alignItems: "center", gap: 6, background: "rgba(61,14,26,0.72)", backdropFilter: "blur(6px)", borderRadius: 8, padding: "5px 10px" }}>
             <Hash size={13} color={T.goldLight} />
-            <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.goldLight, letterSpacing: "0.4px" }}>{d.code}</span>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, color: T.goldLight, letterSpacing: "0.4px" }}>{d.code}</span>
           </div>
           <div style={{ position: "absolute", top: 12, right: 12, width: 30, height: 30, borderRadius: 8, background: "rgba(255,253,249,0.18)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <ImageSquare size={16} color="#FFFDF9" />
@@ -296,7 +301,7 @@ export function DesignCard({ d, onView, onSlip, onDispatch }: { d: DesignEntry; 
           <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, fontWeight: 500 }}>Color Slip Not Uploaded</span>
           <div style={{ position: "absolute", bottom: 12, left: 14, display: "flex", alignItems: "center", gap: 6, background: "rgba(139,112,96,0.14)", borderRadius: 8, padding: "5px 10px" }}>
             <Hash size={13} color={T.taupe} />
-            <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.taupe }}>{d.code}</span>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, color: T.taupe }}>{d.code}</span>
           </div>
         </div>
       )}
@@ -307,14 +312,14 @@ export function DesignCard({ d, onView, onSlip, onDispatch }: { d: DesignEntry; 
         {d.typeCode && (
           <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 8, padding: "5px 10px", marginBottom: 10, alignSelf: "flex-start" }}>
             <Swatches size={13} color={T.royalBurgundy} />
-            <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700 }}>{d.typeCode}</span>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy, fontWeight: 700 }}>{d.typeCode}</span>
             <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>· {d.typeName}</span>
           </div>
         )}
 
         {d.weaverName && (
           <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 6, display: "flex", alignItems: "center", gap: 5 }}>
-            <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", borderRadius: 5, padding: "2px 6px" }}>Weaver</span>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", borderRadius: 5, padding: "2px 6px" }}>Weaver</span>
             {d.weaverName}
           </div>
         )}
@@ -329,7 +334,7 @@ export function DesignCard({ d, onView, onSlip, onDispatch }: { d: DesignEntry; 
           <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, background: "rgba(110,15,45,0.05)", borderRadius: 10, padding: "10px 12px" }}>
             <Package size={18} color={T.royalBurgundy} />
             <div>
-              <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1 }}>{d.total.toLocaleString()}</div>
+              <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1 }}>{d.total.toLocaleString("en-IN")}</div>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>total produced</div>
             </div>
           </div>

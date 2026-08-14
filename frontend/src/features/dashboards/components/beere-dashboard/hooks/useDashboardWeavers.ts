@@ -41,7 +41,7 @@ export function useDashboardWeavers() {
     queryKey: ["weavers", "dashboard-preview"],
     queryFn: async () => {
       const res = await weaversApi.list(100);
-      const items: BackendWeaver[] = Array.isArray(res) ? res : ((res as any)?.items ?? []);
+      const items: BackendWeaver[] = Array.isArray(res) ? res : ((res as { items?: BackendWeaver[] })?.items ?? []);
       const activeList = items.filter((w) => !w.status || String(w.status).toUpperCase() === "ACTIVE");
       const listToUse = activeList.length > 0 ? activeList : items;
       return listToUse

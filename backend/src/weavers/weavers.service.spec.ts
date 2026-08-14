@@ -9,11 +9,10 @@ describe("WeaversService", () => {
   beforeEach(() => {
     prisma = {
       weaver: { findUnique: jest.fn(), findMany: jest.fn() },
-      saree: { count: jest.fn() },
-      qcRecord: { count: jest.fn() },
+      qcRecord: { findMany: jest.fn() },
+      finishingAssignment: { findMany: jest.fn() },
       batchSareeRow: { count: jest.fn() },
       materialIssueRecord: { count: jest.fn() },
-      $transaction: jest.fn(),
     };
     auditLog = { recordAction: jest.fn() };
     service = new WeaversService(prisma, auditLog);
@@ -28,8 +27,20 @@ describe("WeaversService", () => {
 
     it("computes qcPassRate as a percentage rounded to 1 decimal", async () => {
       prisma.weaver.findUnique.mockResolvedValue({ id: "w1" });
-      // totalSareesWoven=7, qcPassCount=5 -> 71.4285... -> 71.4
-      prisma.$transaction.mockResolvedValue([7, 5, 2, 3]);
+      // 5 passed QC records across 7 distinct sarees -> 5/7 = 71.4285... -> 71.4
+      prisma.qcRecord.findMany.mockResolvedValue([
+        { weaverId: "w1", sareeId: "s1" },
+        { weaverId: "w1", sareeId: "s2" },
+        { weaverId: "w1", sareeId: "s3" },
+        { weaverId: "w1", sareeId: "s4" },
+        { weaverId: "w1", sareeId: "s5" },
+      ]);
+      prisma.finishingAssignment.findMany.mockResolvedValue([
+        { sareeId: "s6", batchSareeRow: { weaverId: "w1" } },
+        { sareeId: "s7", batchSareeRow: { weaverId: "w1" } },
+      ]);
+      prisma.batchSareeRow.count.mockResolvedValue(2);
+      prisma.materialIssueRecord.count.mockResolvedValue(3);
 
       const stats = await service.getWeaverStats("w1");
 
@@ -45,7 +56,10 @@ describe("WeaversService", () => {
 
     it("returns 0% qcPassRate (not NaN) when the weaver has zero sarees", async () => {
       prisma.weaver.findUnique.mockResolvedValue({ id: "w1" });
-      prisma.$transaction.mockResolvedValue([0, 0, 0, 0]);
+      prisma.qcRecord.findMany.mockResolvedValue([]);
+      prisma.finishingAssignment.findMany.mockResolvedValue([]);
+      prisma.batchSareeRow.count.mockResolvedValue(0);
+      prisma.materialIssueRecord.count.mockResolvedValue(0);
 
       const stats = await service.getWeaverStats("w1");
 
@@ -54,22 +68,40 @@ describe("WeaversService", () => {
   });
 
   describe("getLeaderboard", () => {
-    it("ranks active weavers by qcPassRate desc, using total output as tiebreaker, capped at 10", async () => {
-      const makeWeaver = (id: string, sarees: number, passed: number) => ({
-        id,
-        name: id,
-        initials: id,
-        photoUrl: null,
-        village: null,
-        _count: { sarees, qcRecords: passed },
-      });
+    const makeWeaver = (id: string) => ({
+      id,
+      name: id,
+      initials: id,
+      photoUrl: null,
+      village: null,
+    });
 
+    // sareeCount PASSED qc records for `id`, generating distinct sarees s0..s{n-1}
+    const qc = (weaverId: string, sareeCount: number) =>
+      Array.from({ length: sareeCount }, (_, i) => ({
+        weaverId,
+        sareeId: `${weaverId}-s${i}`,
+      }));
+
+    it("ranks active weavers by qcPassRate desc, using total output as tiebreaker, capped at 10", async () => {
       prisma.weaver.findMany.mockResolvedValue([
-        makeWeaver("low-rate-high-volume", 100, 50), // 50%
-        makeWeaver("tie-a", 10, 10), // 100%, total 10
-        makeWeaver("tie-b", 20, 20), // 100%, total 20 -> should rank above tie-a
-        makeWeaver("zero-sarees", 0, 0), // 0%
+        makeWeaver("low-rate-high-volume"),
+        makeWeaver("tie-a"),
+        makeWeaver("tie-b"),
+        makeWeaver("zero-sarees"),
       ]);
+      prisma.qcRecord.findMany.mockResolvedValue([
+        ...qc("low-rate-high-volume", 50), // 50/100 produced -> 50%
+        ...qc("tie-a", 10), // 100%, total 10
+        ...qc("tie-b", 20), // 100%, total 20 -> should rank above tie-a
+      ]);
+      // extra non-QC-passed production for low-rate-high-volume, via returned finishing assignments
+      prisma.finishingAssignment.findMany.mockResolvedValue(
+        Array.from({ length: 50 }, (_, i) => ({
+          sareeId: `low-rate-high-volume-extra${i}`,
+          batchSareeRow: { weaverId: "low-rate-high-volume" },
+        })),
+      );
 
       const leaderboard = await service.getLeaderboard();
 
@@ -85,15 +117,10 @@ describe("WeaversService", () => {
 
     it("only queries ACTIVE weavers and caps the result at 10 entries", async () => {
       prisma.weaver.findMany.mockResolvedValue(
-        Array.from({ length: 15 }, (_, i) => ({
-          id: `w${i}`,
-          name: `w${i}`,
-          initials: "W",
-          photoUrl: null,
-          village: null,
-          _count: { sarees: i + 1, qcRecords: 0 },
-        })),
+        Array.from({ length: 15 }, (_, i) => makeWeaver(`w${i}`)),
       );
+      prisma.qcRecord.findMany.mockResolvedValue([]);
+      prisma.finishingAssignment.findMany.mockResolvedValue([]);
 
       const leaderboard = await service.getLeaderboard();
 

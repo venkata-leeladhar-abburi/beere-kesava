@@ -13,7 +13,6 @@
 // batches/QC/payments are wired to real weaver ids.
 import type React from "react";
 import { Package, CheckCircle2 as CheckCircle, AlertCircle as WarningCircle, Medal, BarChart3 as ChartBar, LayoutGrid as SquaresFour, List as PhList, Table2 as PhTable } from "lucide-react";
-import { imgPadmaVeni, imgRaviKumar, imgSureshMurti, imgAnandK } from "../../../shared/constants/weaverImages";
 import { T } from "./theme";
 import type { Status } from "./types";
 
@@ -27,10 +26,33 @@ export const WEAVER_RATES: Record<string, { code: string; type: string; rate: st
   "51490482-11cf-425b-8d54-7bd918f6db18": { code: "BS-004", type: "Bridal Special", rate: "₹820/saree" },
 };
 
-export const WEAVERS: any[] = [];
+// Shape matches the object built in useRealWeavers() (WeaverCardAndListViews.tsx),
+// which is what these mock arrays are concatenated/typed against.
+export interface WeaverCardEntry {
+  id: string;
+  code?: string;
+  name: string;
+  initials: string;
+  bg: string;
+  village: string;
+  cluster: string;
+  mobile: string;
+  looms: number;
+  status: "active" | "idle" | "qc";
+  batch: string;
+  design: string;
+  photo: string | undefined;
+  thisMonth: number;
+  passRate: number;
+  totalEver: number;
+  totalPaid: string;
+  lastActive: string;
+}
+
+export const WEAVERS: WeaverCardEntry[] = [];
 export type ImportedWeaver = typeof WEAVERS[0];
-export const TABLE_ROWS: any[] = [];
-export const LEADERBOARD: any[] = [];
+export const TABLE_ROWS: unknown[] = [];
+export const LEADERBOARD: unknown[] = [];
 export const QC_DATA = [
   { name: "Passed", value: 238, color: T.green },
   { name: "Rejected", value: 10, color: T.crimson },
@@ -39,8 +61,18 @@ export const QC_DATA = [
 // in your queue rather than just being FYI — that's the distinction that was
 // missing before: everything looked the same regardless of whether it wanted
 // a decision from you or was just a record of something already finished.
-export const ACTIVITIES: any[] = [];
-export const BATCH_HISTORY: any[] = [];
+export interface WeaverActivity {
+  date?: string;
+  timestamp?: string;
+  needsAction: boolean;
+  icon: string;
+  action: string;
+  category: string;
+  detail: string;
+  time: string;
+}
+export const ACTIVITIES: WeaverActivity[] = [];
+export const BATCH_HISTORY: unknown[] = [];
 
 export const HEADER_CHIPS = [
   { value: "0", label: "Active Weavers", crimson: false },
@@ -58,7 +90,7 @@ export const STATS = [
   { label: "TOTAL PAID TO WEAVERS", value: "₹0", sub: "This month's making charges", gold: false, crimson: false },
 ];
 
-export const WARP_REQUESTS: any[] = [];
+export const WARP_REQUESTS: unknown[] = [];
 
 export const FILTER_PILLS = ["All Weavers", "Currently Working", "Submitted — Waiting Quality Check", "Idle — No Active Batch"];
 export const VIEW_OPTIONS = [

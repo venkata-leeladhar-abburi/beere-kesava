@@ -15,3 +15,5 @@ export { WorkerFinishing } from "./components/worker/WorkerFinishing";
 export { WorkerGRN, INITIAL_HISTORY } from "./components/worker/WorkerGRN";
 export { WorkerQC } from "./components/worker/WorkerQC";
 export { WorkerWeavers } from "./components/worker/WorkerWeavers";
+export * from "./components/worker/weavers/MaterialSplitPanel";
+export * from "./components/worker/ReceiptHistoryTable";

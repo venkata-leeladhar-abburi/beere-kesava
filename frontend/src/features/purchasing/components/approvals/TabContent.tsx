@@ -2,9 +2,8 @@ import React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Check } from "lucide-react";
 import { PurchaseOrder } from "../../contexts/POContext";
-import { PurchaseRequest } from "../../../suppliers/contexts/SupplierContext";
+import { PurchaseRequest } from "@/features/suppliers";
 import { T, F } from "./tokens";
-import { WARP_DATA, RATE_DATA } from "./data";
 import { BulkActionStrip, EmptyState } from "./SharedUI";
 import { Button } from "../../../../shared/ui/primitives";
 import { POCard, POListItem } from "./POCard";
@@ -88,8 +87,8 @@ export function TabContent({
   // See ApprovalsPage.tsx's decideExternal — mirrors SupplierContext's
   // out-of-scope decideRequest signature, kept as a local literal union.
   decideExternal: (id: string, status: "approved" | "rejected") => void;
-  setWarpList?: any;
-  setRateList?: any;
+  setWarpList?: React.Dispatch<React.SetStateAction<BackendWarpRequest[]>>;
+  setRateList?: React.Dispatch<React.SetStateAction<BackendRateChangeRequest[]>>;
 }) {
   const queryClient = useQueryClient();
   const handleWarpAction = () => {
@@ -259,7 +258,7 @@ export function TabContent({
           <span style={{ fontFamily: F.display, fontSize: 24, fontWeight: 600, color: T.luxuryBrown }}>
             All caught up!
           </span>
-          <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, textAlign: "center", maxWidth: 400, lineHeight: 1.6 }}>
+          <span className="max-w-[400px]" style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, textAlign: "center", lineHeight: 1.6 }}>
             There are no pending approvals right now. All purchase orders, warp requests, and rate changes have been actioned.
           </span>
         </motion.div>

@@ -2,12 +2,13 @@ import React, { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ChevronDown, ChevronRight, RotateCcw, Truck, Building2 } from "lucide-react";
 import { T, F } from "../../theme";
-import { UnifiedSaree, isSold, ageBucket, purchaseOutstanding } from "../../../customers/contexts/SalesContext";
+import { UnifiedSaree, isSold, ageBucket, purchaseOutstanding } from "@/features/customers";
 import { Empty, ExportBtn, Pill, SectionCard, exportCsv, inr, tdMono } from "./primitives";
 import type { AgeKey } from "./primitives";
 import { DrilldownTabs, SareeDetailTable } from "./SareeDetailTable";
 import { Button } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { EntityCode } from "@/shared/ui/domain";
 
 interface SupplierRollup { supplier: string; purchases: number; bought: number; unsold: number; returned: number; due: number; unsoldValue: number; }
 
@@ -93,8 +94,9 @@ export function ExternalOutstanding({ sarees, search, ageFilter }: { sarees: Uni
                         <Pill label={p.status} color={statusCfg.color} bg={statusCfg.bg} />
                         {p.returnedCount > 0 && <Pill label={`${p.returnedCount} returned`} color={T.crimson} bg="rgba(192,57,43,0.10)" />}
                       </div>
-                      <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 3 }}>
-                        {p.id} · {p.invoiceNumber} · {p.date} · {p.location}
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginTop: 4 }}>
+                        <EntityCode type="purchaseOrder" value={p.id} size="sm" />
+                        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>· {p.invoiceNumber} · {p.date} · {p.location}</span>
                       </div>
                     </div>
                     <div style={{ display: "flex", gap: 22, alignItems: "center", flexWrap: "wrap", justifyContent: "flex-end" }}>
@@ -106,7 +108,7 @@ export function ExternalOutstanding({ sarees, search, ageFilter }: { sarees: Uni
                       ].map(k => (
                         <div key={k.l} style={{ textAlign: "right", minWidth: 60 }}>
                           <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.7px" }}>{k.l}</div>
-                          <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: k.c }}>{k.v}</div>
+                          <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: k.c }}>{k.v}</div>
                         </div>
                       ))}
                     </div>
@@ -129,7 +131,7 @@ export function ExternalOutstanding({ sarees, search, ageFilter }: { sarees: Uni
                             ].map(k => (
                               <div key={k.l} style={{ background: T.warmCream, borderRadius: 10, padding: "10px 13px" }}>
                                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 4 }}>{k.l}</div>
-                                <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{k.v}</div>
+                                <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{k.v}</div>
                               </div>
                             ))}
                           </div>

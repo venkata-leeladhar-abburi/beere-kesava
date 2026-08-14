@@ -26,7 +26,7 @@ function Pill({ label, color, bg }: { label: string; color: string; bg: string }
 }
 
 const td: React.CSSProperties = { fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, padding: "11px 12px", borderBottom: `1px solid rgba(110,15,45,0.06)`, verticalAlign: "middle" };
-const tdMono: React.CSSProperties = { ...td, fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy };
+const tdMono: React.CSSProperties = { ...td, fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, color: T.royalBurgundy };
 
 function buildAssignmentColumns(returns: FinishingReturn[]): ColumnDef<FinishingAssignment>[] {
   const findRet = (a: FinishingAssignment) => returns.find(rt => rt.sareeId === a.sareeId);
@@ -144,7 +144,7 @@ export function FinishingStaffSection({
                     ].map(k => (
                       <div key={k.l} style={{ textAlign: "right", minWidth: 58 }}>
                         <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.7px" }}>{k.l}</div>
-                        <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: k.c }}>{k.v}</div>
+                        <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color: k.c }}>{k.v}</div>
                       </div>
                     ))}
                   </div>
@@ -153,7 +153,7 @@ export function FinishingStaffSection({
                   {isOpen && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ overflow: "hidden", background: "#FFFDF9" }}>
                       <div style={{ padding: "6px 18px 16px" }}>
-                        <div style={{ overflowX: "auto", minWidth: 680 }}>
+                        <div className="min-w-[680px]" style={{ overflowX: "auto" }}>
                           <DataTable
                             responsive
                             columns={buildAssignmentColumns(returns)}

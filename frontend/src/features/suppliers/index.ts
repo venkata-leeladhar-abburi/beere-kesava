@@ -6,3 +6,4 @@
 
 export * from "./components/SuppliersPage";
 export * from "./contexts/SupplierContext";
+export * from "./contexts/supplier-types";

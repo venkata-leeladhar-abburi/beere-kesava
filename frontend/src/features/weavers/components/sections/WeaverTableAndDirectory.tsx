@@ -73,7 +73,7 @@ export function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }
   const columns: ColumnDef<WeaverTableRow>[] = [
     {
       id: "code", header: "Weaver Code", accessor: r => r.code ?? r.id, priority: 3,
-      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 14, color: T.royalBurgundy, fontWeight: 700, letterSpacing: "0.4px" }}>{r.code ?? r.id}</span>,
+      cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, color: T.royalBurgundy, fontWeight: 700, letterSpacing: "0.4px" }}>{r.code ?? r.id}</span>,
     },
     {
       id: "name", header: "Name", accessor: r => r.name, priority: 1,
@@ -90,7 +90,7 @@ export function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }
     },
     {
       id: "mobile", header: "Mobile", accessor: r => r.mobile, priority: 3,
-      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 14, color: T.luxuryBrown }}>{r.mobile}</span>,
+      cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, color: T.luxuryBrown }}>{r.mobile}</span>,
     },
     {
       id: "looms", header: "Looms", accessor: r => r.looms, type: "number", align: "center", sortable: true,
@@ -130,7 +130,7 @@ export function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }
     },
     {
       id: "lastActive", header: "Last Active", accessor: r => r.lastActive, priority: 3,
-      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 14, color: T.taupe }}>{r.lastActive}</span>,
+      cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, color: T.taupe }}>{r.lastActive}</span>,
     },
     {
       id: "actions", header: "", accessor: () => null, type: "actions",

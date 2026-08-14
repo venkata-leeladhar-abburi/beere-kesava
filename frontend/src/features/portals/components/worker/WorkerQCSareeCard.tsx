@@ -1,7 +1,7 @@
 import React from "react";
 import { CheckCircle2, AlertTriangle, XCircle } from "lucide-react";
 import { T, F, baseCard, SareeItem, variance, splitDesignField } from "./WorkerQCTypes";
-import { useRatesPricing } from "../../../pricing/contexts/RatesContext";
+import { useRatesPricing } from "@/features/pricing";
 import { Button } from "../../../../shared/ui/primitives";
 
 interface WorkerQCSareeCardProps {
@@ -25,7 +25,6 @@ export function WorkerQCSareeCard({
 }: WorkerQCSareeCardProps) {
   const { getSareeTypeByName } = useRatesPricing();
   const v = variance(s.weight, s.std);
-  const btnH = 52;
   const idSize = isDesktop ? 13 : 11;
   const labelSize = isDesktop ? 13 : 11;
   const metaSize = isDesktop ? 12 : 10;
@@ -53,11 +52,15 @@ export function WorkerQCSareeCard({
             return (
               <>
                 <span onClick={e => { e.stopPropagation(); onOpenDesignCode(code); }}
+                  role="button" tabIndex={0}
+                  onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.stopPropagation(); e.preventDefault(); onOpenDesignCode(code); } }}
                   style={{ cursor: "pointer" }}
                   onMouseEnter={e => (e.currentTarget as HTMLSpanElement).style.textDecoration = "underline"}
                   onMouseLeave={e => (e.currentTarget as HTMLSpanElement).style.textDecoration = "none"}
                 >{code}</span>
                 {typeName && <> · <span onClick={e => { e.stopPropagation(); if (typeRec) onOpenSareeTypeCode(typeRec.code); }}
+                  role="button" tabIndex={0}
+                  onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.stopPropagation(); e.preventDefault(); if (typeRec) onOpenSareeTypeCode(typeRec.code); } }}
                   style={{ cursor: typeRec ? "pointer" : "default" }}
                   onMouseEnter={e => (e.currentTarget as HTMLSpanElement).style.textDecoration = "underline"}
                   onMouseLeave={e => (e.currentTarget as HTMLSpanElement).style.textDecoration = "none"}

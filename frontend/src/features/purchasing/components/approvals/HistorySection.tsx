@@ -21,12 +21,13 @@ type HistoryRow = {
   by: string;
   details: string;
   decision: "Approved" | "Rejected";
+  _createdAt: string;
 };
 
 const historyColumns: ColumnDef<HistoryRow>[] = [
   {
     id: "date", header: "Date & Time", accessor: row => row.date,
-    cell: (_v, row) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{row.date}</span>,
+    cell: (_v, row) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{row.date}</span>,
   },
   {
     id: "type", header: "Type", accessor: row => row.type,
@@ -111,7 +112,7 @@ export function HistorySection({
 
     if (histPeriod !== "All Time") {
       const cutoff = histPeriod === "This Month" ? monthsAgo(1) : monthsAgo(3);
-      out = out.filter(r => new Date((r as any)._createdAt) >= cutoff);
+      out = out.filter(r => new Date(r._createdAt) >= cutoff);
     }
     return out;
   }, [rows, histFilter, histPeriod]);
@@ -173,15 +174,15 @@ export function HistorySection({
       </div>
 
       {/* Permanent record note */}
-      <div style={{ textAlign: "right", marginTop: 10, fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
+      <div style={{ textAlign: "right", marginTop: 10, fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>
         🔒 This history is permanent and cannot be edited or deleted.
       </div>
 
       {/* Pagination */}
       <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 20, alignItems: "center" }}>
-        {["Previous", "1", "2", "3", "Next"].map((p, i) => (
+        {["Previous", "1", "2", "3", "Next"].map((p) => (
           <Button
-            key={i}
+            key={p}
             variant={p === "1" ? "primary" : "secondary"} size="sm"
           >
             {p}

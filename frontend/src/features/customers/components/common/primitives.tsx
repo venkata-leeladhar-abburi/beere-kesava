@@ -97,7 +97,7 @@ export function CardStat({ label, value, valueColor = T.luxuryBrown, isMono = fa
     <div>
       <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 2 }}>{label}</div>
       <div style={{
-        fontFamily: isMono ? F.mono : F.display,
+        fontFamily: isMono ? "var(--font-mono)" : F.display,
         fontSize: isSmall ? 16 : 18,
         fontWeight: 600,
         color: valueColor,
@@ -107,7 +107,7 @@ export function CardStat({ label, value, valueColor = T.luxuryBrown, isMono = fa
   );
 }
 
-export function CardActionButton({ icon: Icon, label, color, onClick }: { icon: any, label: string, color: string, onClick?: () => void }) {
+export function CardActionButton({ icon: Icon, label, color, onClick }: { icon: LucideIcon, label: string, color: string, onClick?: () => void }) {
   return (
     <Button variant="tertiary" size="sm" onClick={onClick} className="h-auto p-0 gap-1">
       <Icon size={14} color={color} /> <span style={{ color }}>{label}</span>

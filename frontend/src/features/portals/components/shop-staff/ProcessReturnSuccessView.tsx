@@ -67,8 +67,14 @@ export function WholesaleReturnSuccessView({
         <div style={{ padding: 18 }}>
           <div style={{ background: "#111", borderRadius: 8, padding: "14px 10px", marginBottom: 16, display: "flex", flexDirection: "column" as const, alignItems: "center", gap: 6 }}>
             <div style={{ display: "flex", gap: 2, alignItems: "flex-end", height: 40 }}>
-              {[3, 1, 4, 1, 2, 3, 1, 2, 4, 1, 3, 2, 1, 4, 2, 1, 3, 1, 2, 3].map((w, i) => (
-                <div key={i} style={{ width: w * 2, background: "#FFF", height: i % 3 === 0 ? 40 : i % 2 === 0 ? 34 : 38, borderRadius: 1 }} />
+              {[
+                { id: "b0", w: 6, h: 40 }, { id: "b1", w: 2, h: 38 }, { id: "b2", w: 8, h: 34 }, { id: "b3", w: 2, h: 40 },
+                { id: "b4", w: 4, h: 34 }, { id: "b5", w: 6, h: 38 }, { id: "b6", w: 2, h: 40 }, { id: "b7", w: 4, h: 38 },
+                { id: "b8", w: 8, h: 34 }, { id: "b9", w: 2, h: 40 }, { id: "b10", w: 6, h: 34 }, { id: "b11", w: 4, h: 38 },
+                { id: "b12", w: 2, h: 40 }, { id: "b13", w: 8, h: 38 }, { id: "b14", w: 4, h: 34 }, { id: "b15", w: 2, h: 40 },
+                { id: "b16", w: 6, h: 34 }, { id: "b17", w: 2, h: 38 }, { id: "b18", w: 4, h: 40 }, { id: "b19", w: 6, h: 38 },
+              ].map(bar => (
+                <div key={bar.id} style={{ width: bar.w, background: "#FFF", height: bar.h, borderRadius: 1 }} />
               ))}
             </div>
             <div style={{ fontFamily: F.m, fontSize: 12, color: "#AAA", letterSpacing: 2 }}>{wsNewId}</div>
@@ -78,7 +84,7 @@ export function WholesaleReturnSuccessView({
             ["Vendor", wsVendor || "—"], ["Design Code", wsDesign || "—"],
             ["Color", wsColor || "—"], ["Weight", wsWeight ? `${wsWeight}g` : "—"],
           ].map(([k, v], i) => (
-            <div key={i} style={{ display: "flex", justifyContent: "space-between", marginBottom: 10, paddingBottom: 10, borderBottom: i < 3 ? `1px solid ${C.bdr}` : "none" }}>
+            <div key={k} style={{ display: "flex", justifyContent: "space-between", marginBottom: 10, paddingBottom: 10, borderBottom: i < 3 ? `1px solid ${C.bdr}` : "none" }}>
               <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{k}</span>
               <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, color: C.text }}>{v}</span>
             </div>

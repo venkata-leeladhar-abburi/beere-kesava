@@ -4,12 +4,12 @@ import {
   CheckCircle2, X, Building2, ShoppingBag, FileText,
   Upload, ArrowRight, Users, Truck, Zap,
 } from "lucide-react";
-import { useFinishing, FinishingReturn } from "../../../../finishing/contexts/FinishingContext";
-import { useBulkOrders } from "../../../../bulk-orders/contexts/BulkOrderContext";
-import { useBatches } from "../../../../production/contexts/BatchContext";
+import { useFinishing, FinishingReturn } from "@/features/finishing";
+import { useBulkOrders } from "@/features/bulk-orders";
+import { useBatches } from "@/features/production";
 import { T, F } from "../../theme";
 import { Button, IconButton, SearchInput } from "../../../../../shared/ui/primitives";
-import { useAllWholesaleCustomers } from "../../../../bulk-orders/components/WholesaleCustomerSelectSection";
+import { useAllWholesaleCustomers } from "@/features/bulk-orders";
 import { TransportData, InvoiceData } from "../../types";
 import { TransportForm } from "../shared/TransportForm";
 import { SareePicker } from "../shared/SareePicker";
@@ -20,6 +20,7 @@ import { SelectInput } from "../../common/primitives";
 import { Modal } from "../../../../../shared/ui/overlay";
 import { rupees } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
+import { toPaise } from "../../../../../lib/gst";
 
 // ── Dispatch to Wholesale modal ───────────────────────────────────────────────
 // Customer → Quotation (optional) → Tax Invoice → Sarees → Transport → Receipt.
@@ -40,7 +41,7 @@ export function DispatchWholesaleModal({ sarees, available, onConfirm, onClose, 
   const [customerSearch, setCustomerSearch] = useState("");
   const [bulkOrderRef, setBulkOrderRef] = useState(initialBulkOrderRef || "");
   const { bulkOrders } = useBulkOrders();
-  const { batches } = useBatches();
+  useBatches();
   const { quotations } = useFinishing();
   const [picked, setPicked] = useState<FinishingReturn[]>(sarees);
   const [quotationId, setQuotationId] = useState<string>("");
@@ -95,7 +96,7 @@ export function DispatchWholesaleModal({ sarees, available, onConfirm, onClose, 
   const noSarees = picked.length === 0;
   // Every picked saree must carry a price — an empty map would pass a length
   // check on its own, so the count is guarded explicitly.
-  const pricesComplete = picked.every(s => parseFloat(inv.prices[s.sareeId || s.id]) > 0);
+  const pricesComplete = picked.every(s => toPaise(Number(inv.prices[s.sareeId || s.id]) || 0) > 0);
   const canInvoice = !noSarees && !!inv.invoiceNumber.trim() && !!inv.firmId && pricesComplete;
   const canTransport = transport.lrNumber.trim() && transport.transportCompany.trim() && transport.vehicleNumber.trim() && transport.dispatchDate;
 
@@ -133,7 +134,7 @@ export function DispatchWholesaleModal({ sarees, available, onConfirm, onClose, 
               <div key={s} style={{ flex: 1, display: "flex", alignItems: "center" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 4, flex: 1 }}>
                   <div style={{ width: 20, height: 20, borderRadius: "50%", flexShrink: 0, background: step > i + 1 ? T.antiqueGold : step === i + 1 ? "#FFF" : "rgba(255,255,255,0.20)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    {step > i + 1 ? <CheckCircle2 size={10} color={T.deepWine} /> : <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: step === i + 1 ? T.royalBurgundy : "rgba(255,255,255,0.45)" }}>{i + 1}</span>}
+                    {step > i + 1 ? <CheckCircle2 size={10} color={T.deepWine} /> : <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: step === i + 1 ? T.royalBurgundy : "rgba(255,255,255,0.45)" }}>{i + 1}</span>}
                   </div>
                   <span style={{ fontFamily: F.ui, fontSize: 12, color: step === i + 1 ? "#FFF" : "rgba(255,255,255,0.40)", fontWeight: step === i + 1 ? 600 : 400 }}>{s}</span>
                 </div>
@@ -189,7 +190,7 @@ export function DispatchWholesaleModal({ sarees, available, onConfirm, onClose, 
                     <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: "rgba(110,15,45,0.04)", border: `1.5px solid rgba(110,15,45,0.14)`, borderRadius: 10 }}>
                       <ShoppingBag size={16} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{linked.ref}</div>
+                        <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{linked.ref}</div>
                         <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{linked.customer} · {linked.total} sarees · Due {linked.due}</div>
                       </div>
                       <div style={{ background: linked.status === "on-track" ? "rgba(30,102,64,0.10)" : "rgba(192,57,43,0.10)", border: `1px solid ${linked.status === "on-track" ? "rgba(30,102,64,0.22)" : "rgba(192,57,43,0.22)"}`, borderRadius: 6, padding: "3px 8px" }}>
@@ -234,16 +235,16 @@ export function DispatchWholesaleModal({ sarees, available, onConfirm, onClose, 
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" as const }}>
-                            <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>{q.quotationNumber}</span>
+                            <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>{q.quotationNumber}</span>
                             <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, textTransform: "capitalize" as const, color: q.status === "received" ? T.green : "#8B6018", background: q.status === "received" ? T.greenBg : "rgba(200,155,71,0.14)", borderRadius: 20, padding: "2px 9px" }}>{q.status.replace(/-/g, " ")}</span>
-                            {q.bulkOrderRef && <span style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, background: "rgba(200,155,71,0.08)", border: "1px solid rgba(200,155,71,0.18)", padding: "1px 6px", borderRadius: 4 }}>{q.bulkOrderRef}</span>}
+                            {q.bulkOrderRef && <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.antiqueGold, background: "rgba(200,155,71,0.08)", border: "1px solid rgba(200,155,71,0.18)", padding: "1px 6px", borderRadius: 4 }}>{q.bulkOrderRef}</span>}
                           </div>
                           <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3 }}>
                             {q.quotationDate} · {q.sarees.length} saree{q.sarees.length === 1 ? "" : "s"} · {q.firmName || "—"}
                           </div>
                         </div>
                         <div style={{ textAlign: "right" as const, flexShrink: 0 }}>
-                          <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}><Money value={rupees(q.grandTotal)} /></div>
+                          <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}><Money value={rupees(q.grandTotal)} /></div>
                           {on && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.royalBurgundy, fontWeight: 700, marginTop: 3 }}>Tap to unlink</div>}
                         </div>
                         {on && <CheckCircle2 size={18} color={T.royalBurgundy} style={{ flexShrink: 0 }} />}
@@ -282,7 +283,7 @@ export function DispatchWholesaleModal({ sarees, available, onConfirm, onClose, 
                 <div style={{ marginBottom: 14, display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: "rgba(110,15,45,0.04)", border: `1.5px solid rgba(110,15,45,0.14)`, borderRadius: 10 }}>
                   <FileText size={15} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
                   <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-                    Prefilled from quotation <strong style={{ fontFamily: F.mono, color: T.royalBurgundy }}>{chosenQuotation.quotationNumber}</strong> — edit freely.
+                    Prefilled from quotation <strong style={{ fontFamily: "var(--font-mono)", color: T.royalBurgundy }}>{chosenQuotation.quotationNumber}</strong> — edit freely.
                   </span>
                 </div>
               )}
@@ -320,7 +321,7 @@ export function DispatchWholesaleModal({ sarees, available, onConfirm, onClose, 
                   <div style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", background: "rgba(110,15,45,0.05)", border: `1.5px solid rgba(110,15,45,0.16)`, borderRadius: 12 }}>
                     <ShoppingBag size={18} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{linked.ref}</div>
+                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{linked.ref}</div>
                       <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>{linked.customer} · {linked.total} sarees · Due {linked.due}</div>
                     </div>
                     <div style={{ background: linked.status === "on-track" ? "rgba(30,102,64,0.10)" : "rgba(192,57,43,0.10)", border: `1px solid ${linked.status === "on-track" ? "rgba(30,102,64,0.22)" : "rgba(192,57,43,0.22)"}`, borderRadius: 6, padding: "3px 8px" }}>
@@ -330,8 +331,8 @@ export function DispatchWholesaleModal({ sarees, available, onConfirm, onClose, 
                 ) : null;
               })()}
               <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 12 }}>
-                Invoice <strong style={{ fontFamily: F.mono, color: T.royalBurgundy }}>{inv.invoiceNumber}</strong> for {selectedCustomer?.name}
-                {chosenQuotation && <> · from quotation <strong style={{ fontFamily: F.mono, color: T.royalBurgundy }}>{chosenQuotation.quotationNumber}</strong></>}
+                Invoice <strong style={{ fontFamily: "var(--font-mono)", color: T.royalBurgundy }}>{inv.invoiceNumber}</strong> for {selectedCustomer?.name}
+                {chosenQuotation && <> · from quotation <strong style={{ fontFamily: "var(--font-mono)", color: T.royalBurgundy }}>{chosenQuotation.quotationNumber}</strong></>}
               </div>
               <SareeReviewList
                 sarees={picked}

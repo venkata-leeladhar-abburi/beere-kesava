@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { AnimatePresence } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronDown, Calendar, Users, Download, Eye } from "lucide-react";
-import { useRatesPricing } from "../../../pricing/contexts/RatesContext";
+import { useRatesPricing } from "@/features/pricing";
 import { T, F } from "../theme";
 import type { CodeCallbacks } from "../types";
 import type { HistoryBatch } from "../types";
@@ -12,6 +12,7 @@ import { FadeUp, Pip, ClickableCode, ProductionDialog } from "../common/primitiv
 import { Button, SearchInput, Select, SelectItem, Checkbox, IconButton } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees, formatMoney, addMoney, type Paise } from "@/lib/domain/money";
+import { EntityCode } from "@/shared/ui/domain";
 
 const PIP_COLORS = ["#7C3AED", T.royalBurgundy, T.taupe, "#B45309"];
 
@@ -20,7 +21,10 @@ function HistoryBatchSquares({ size }: { size: number }) {
   return (
     <div style={{ display: "flex", gap: 3, flexWrap: "wrap", maxWidth: 56 }}>
       {Array.from({ length: Math.min(size, 4) }).map((_, i) => (
-        <div key={i} style={{ width: 10, height: 10, borderRadius: 2, background: colors[i % colors.length], opacity: 0.85 }} />
+        // Purely decorative filler squares generated from a count — there is no
+        // underlying data item to key on, so the position is the only identity.
+        // eslint-disable-next-line react/no-array-index-key
+        <div key={`sq-${i}`} style={{ width: 10, height: 10, borderRadius: 2, background: colors[i % colors.length], opacity: 0.85 }} />
       ))}
     </div>
   );
@@ -138,7 +142,7 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
   const columns: ColumnDef<HistoryBatch>[] = [
     {
       id: "batchNumber", header: "Batch Number", accessor: b => b.batchId, priority: 1,
-      cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 7px", borderRadius: 5 }}>{b.batchId}</span>,
+      cell: (_v, b) => <EntityCode type="batch" value={b.batchId} size="sm" />,
     },
     {
       id: "sareeType", header: "Saree Type", accessor: b => b.sareeType,
@@ -171,7 +175,10 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
       cell: (_v, b) => (
         <div style={{ display: "flex" }}>
           {b.weavers.map((w, wi) => (
-            <div key={wi} style={{ marginLeft: wi > 0 ? -8 : 0 }}>
+            // Weaver pip labels (initials) can repeat across a batch, so combine
+            // with position for a stable key since there's no per-pip id.
+            // eslint-disable-next-line react/no-array-index-key
+            <div key={`${w.initials}-${wi}`} style={{ marginLeft: wi > 0 ? -8 : 0 }}>
               <Pip initials={w.initials} bg={w.bg} size={26} />
             </div>
           ))}
@@ -180,24 +187,24 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
     },
     {
       id: "completion", header: "Completion", accessor: b => b.completion, align: "center",
-      cell: (_v, b) => <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14 }}>{b.completion}</span>,
+      cell: (_v, b) => <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14 }}>{b.completion}</span>,
     },
     {
       id: "allPieces", header: "All Pieces", accessor: b => b.allPieces, align: "center", priority: 3,
-      cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.taupe }}>{b.allPieces}</span>,
+      cell: (_v, b) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{b.allPieces}</span>,
     },
     {
       id: "makingCharges", header: "Making Charges", accessor: b => b.makingCharges, align: "end",
-      cell: (_v, b) => <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 13 }}>{b.makingCharges}</span>,
+      cell: (_v, b) => <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13 }}>{b.makingCharges}</span>,
     },
     {
       id: "completedOn", header: "Completed On", accessor: b => b.completedOn, priority: 3,
-      cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{b.completedOn}</span>,
+      cell: (_v, b) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{b.completedOn}</span>,
     },
     {
       id: "bulkOrder", header: "Bulk Order", accessor: b => b.bulkOrder, align: "center", priority: 3,
       cell: (_v, b) => b.bulkOrder
-        ? <span style={{ fontFamily: F.mono, fontSize: 12, background: "rgba(110,15,45,0.08)", color: T.royalBurgundy, padding: "2px 7px", borderRadius: 5, fontWeight: 600 }}>{b.bulkOrder}</span>
+        ? <EntityCode type="order" value={b.bulkOrder} size="sm" />
         : <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontStyle: "italic" }}>General Stock</span>,
     },
     {
@@ -213,15 +220,15 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
               <rect width="34" height="34" rx="7" fill="rgba(200,155,71,0.18)" />
-              <rect x="7" y="9"  width="20" height="3" rx="1.5" fill={T.antiqueGold} />
-              <rect x="7" y="22" width="20" height="3" rx="1.5" fill={T.antiqueGold} />
-              <rect x="11"  y="12" width="1.5" height="10" rx="0.75" fill={T.goldLight} />
-              <rect x="14.5" y="12" width="1.5" height="10" rx="0.75" fill={T.goldLight} />
-              <rect x="18"  y="12" width="1.5" height="10" rx="0.75" fill={T.goldLight} />
-              <rect x="21.5" y="12" width="1.5" height="10" rx="0.75" fill={T.goldLight} />
+              <rect x="7" y="9"  width="20" height="3" rx="1.5" fill="#C89B47" />
+              <rect x="7" y="22" width="20" height="3" rx="1.5" fill="#C89B47" />
+              <rect x="11"  y="12" width="1.5" height="10" rx="0.75" fill="#E7C983" />
+              <rect x="14.5" y="12" width="1.5" height="10" rx="0.75" fill="#E7C983" />
+              <rect x="18"  y="12" width="1.5" height="10" rx="0.75" fill="#E7C983" />
+              <rect x="21.5" y="12" width="1.5" height="10" rx="0.75" fill="#E7C983" />
             </svg>
             <div>
-              <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,253,249,0.45)", letterSpacing: "2px", textTransform: "uppercase", marginBottom: 2 }}>COMPLETED BATCHES · RECORDS</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.45)", letterSpacing: "2px", textTransform: "uppercase", marginBottom: 2 }}>COMPLETED BATCHES · RECORDS</div>
               <h2 style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Production History</h2>
             </div>
           </div>
@@ -247,11 +254,11 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
           <div style={{ display: "flex", gap: 28 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Total Completed:</span>
-              <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}>{HISTORY_BATCHES.length}</span>
+              <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}>{HISTORY_BATCHES.length}</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Total Making Charges:</span>
-              <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.green }}>
+              <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.green }}>
                 {formatMoney(totalMakingCharges)}
               </span>
             </div>

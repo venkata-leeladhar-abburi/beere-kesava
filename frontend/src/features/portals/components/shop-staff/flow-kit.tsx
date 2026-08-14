@@ -329,7 +329,7 @@ export function ScanPanel({
         </div>
         <div style={{ textAlign: "center", position: "relative", zIndex: 1 }}>
           <div style={{ fontFamily: F.d, fontWeight: 400, fontSize: 24, color: "#FFFDF9", marginBottom: 6 }}>{title}</div>
-          <div style={{ fontFamily: F.u, fontSize: 14, color: "rgba(255,253,249,0.72)", lineHeight: 1.55, maxWidth: 380 }}>{hint}</div>
+          <div style={{ fontFamily: F.u, fontSize: 14, color: "rgba(255,253,249,0.72)", lineHeight: 1.55, maxWidth: "min(380px, 100%)" }}>{hint}</div>
         </div>
         <Button
           variant="secondary"
@@ -427,7 +427,7 @@ export function SummaryPanel({
       <dl style={{ margin: 0, padding: "6px 20px" }}>
         {rows.map((r, i) => (
           <div
-            key={i}
+            key={r.label}
             className="grid-cols-1 md:grid-cols-[minmax(120px,34%)_1fr]"
             style={{
               display: "grid", gap: 20,
@@ -439,7 +439,8 @@ export function SummaryPanel({
             <dd
               style={{
                 margin: 0, textAlign: "right",
-                fontFamily: r.mono ? F.m : F.u,
+                fontFamily: F.u,
+                fontVariantNumeric: r.mono ? "tabular-nums" : undefined,
                 fontSize: r.emphasis ? 16 : 14,
                 fontWeight: 600,
                 color: r.emphasis ? accent.base : C.text,

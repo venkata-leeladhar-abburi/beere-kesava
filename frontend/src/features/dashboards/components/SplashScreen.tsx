@@ -45,9 +45,9 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
     >
       {/* ── Silk threads SVG background ── */}
       <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }}>
-        {THREADS.map((l, i) => (
+        {THREADS.map((l) => (
           <motion.line
-            key={`t${i}`}
+            key={`${l.x1}-${l.x2}`}
             x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2}
             stroke={`rgba(200,155,71,${l.opacity})`}
             strokeWidth={1}
@@ -56,10 +56,9 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
             transition={{ duration: 1.6, delay: l.delay, ease: EASE }}
           />
         ))}
-        {/* Floating gold particles */}
-        {PARTICLES.map((p, i) => (
+        {PARTICLES.map((p) => (
           <motion.circle
-            key={`p${i}`}
+            key={`${p.cx}-${p.cy}`}
             cx={p.cx} cy={p.cy} r={p.r}
             fill="rgba(200,155,71,0.35)"
             initial={{ opacity: 0, scale: 0 }}
@@ -70,20 +69,11 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
       </svg>
 
       {/* ── Central ambient glow ── */}
-      <div style={{
-        position: "absolute", width: 480, height: 480, borderRadius: "50%",
+      <div className="w-[480px] h-[480px]" style={{
+        position: "absolute", borderRadius: "50%",
         background: "radial-gradient(circle, rgba(200,155,71,0.14) 0%, rgba(110,15,45,0.10) 40%, transparent 70%)",
         filter: "blur(50px)", pointerEvents: "none",
       }} />
-      <motion.div
-        animate={{ scale: [1, 1.12, 1], opacity: [0.5, 0.85, 0.5] }}
-        transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
-        style={{
-          position: "absolute", width: 280, height: 280, borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(200,155,71,0.22) 0%, transparent 70%)",
-          filter: "blur(28px)", pointerEvents: "none",
-        }}
-      />
 
       {/* ── Logo with pulse rings ── */}
       <motion.div
@@ -112,7 +102,6 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
         }}>
           <img src={imgBKLogo} alt="BK" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
         </div>
-
       </motion.div>
 
       {/* ── Brand name ── */}
@@ -175,7 +164,7 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 0.38 }}
         transition={{ duration: 0.6, delay: 1.5 }}
-        style={{ position: "absolute", bottom: 18, fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, letterSpacing: "1.5px" }}
+        style={{ position: "absolute", bottom: 18, fontFamily: "var(--font-mono)", fontSize: 12, color: T.antiqueGold, letterSpacing: "1.5px" }}
       >
         Admin Dashboard v2.0 · Est. 1999
       </motion.div>

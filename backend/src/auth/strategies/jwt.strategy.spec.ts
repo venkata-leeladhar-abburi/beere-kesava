@@ -17,6 +17,8 @@ describe("JwtStrategy", () => {
       mobile: "9999999999",
       role: UserRole.ADMIN,
       name: "Store Admin",
+      accessLevel: undefined,
+      weaverId: null,
     });
   });
 
@@ -33,6 +35,8 @@ describe("JwtStrategy", () => {
       mobile: "8888888888",
       role: UserRole.WEAVER,
       name: "Some Weaver",
+      accessLevel: undefined,
+      weaverId: null,
     });
   });
 });

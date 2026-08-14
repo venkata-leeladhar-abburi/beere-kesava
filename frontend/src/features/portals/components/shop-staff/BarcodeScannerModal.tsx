@@ -75,7 +75,7 @@ export function BarcodeScannerModal({
         padding: 20,
       }}
     >
-      <div style={{ width: "100%", maxWidth: 460, background: "#0F0906", borderRadius: 20, overflow: "hidden", boxShadow: "0 24px 60px rgba(0,0,0,0.5)" }}>
+      <div className="w-full max-w-[460px]" style={{ background: "#0F0906", borderRadius: 20, overflow: "hidden", boxShadow: "0 24px 60px rgba(0,0,0,0.5)" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 18px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <ScanLine size={18} color={accent.base === C.burg ? "#E8B4C0" : "#FFDFA0"} />
@@ -88,7 +88,7 @@ export function BarcodeScannerModal({
         </div>
 
         <div style={{ position: "relative", aspectRatio: "4 / 3", background: "#000" }}>
-          <video ref={videoRef} style={{ width: "100%", height: "100%", objectFit: "cover" }} muted playsInline />
+          <video ref={videoRef} aria-label="Live camera feed for barcode scanning" style={{ width: "100%", height: "100%", objectFit: "cover" }} muted playsInline />
           {!error && (
             <div aria-hidden style={{ position: "absolute", inset: "18% 12%", border: `2px solid ${accent.base}`, borderRadius: 12, boxShadow: "0 0 0 2000px rgba(0,0,0,0.35)" }} />
           )}

@@ -92,7 +92,6 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
                 {state.typeToConfirm && (
                   <div className="mt-4">
                     <Input
-                      autoFocus={false}
                       value={typedValue}
                       onChange={e => setTypedValue(e.target.value)}
                       placeholder={state.typeToConfirm}
@@ -102,6 +101,7 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
                 )}
                 <div className="mt-5 flex items-center justify-end gap-2">
                   <AlertDialog.Cancel asChild>
+                    {/* eslint-disable-next-line jsx-a11y/no-autofocus */}
                     <Button variant="tertiary" autoFocus>{state.cancelLabel ?? "Cancel"}</Button>
                   </AlertDialog.Cancel>
                   <Button

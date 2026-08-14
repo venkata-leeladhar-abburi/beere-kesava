@@ -2,12 +2,12 @@ import React, { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { IndianRupee, TrendingDown, CheckCircle2, Users, BarChart2 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { useWeaverPayments } from "../../../weavers/contexts/WeaverPaymentsContext";
+import { useWeaverPayments } from "@/features/weavers";
 import { weaversApi } from "../../../../shared/api/weavers";
 import { qcApi } from "../../../../shared/api/qc";
 import { T, F } from "../theme";
 import { FadeUp, ChartCard, SumCard, SectionCard, ReportDLBar, AnimBar, TablePager } from "../common/primitives";
-import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { DataTable } from "../../../../shared/ui/data";
 import { semantic } from "../../../../design-system/tokens";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money, useDataAccess } from "@/shared/ui/domain";
@@ -16,16 +16,29 @@ import { Money, useDataAccess } from "@/shared/ui/domain";
 // value through the Money system (formatMoney/rupees) instead of a raw "₹"
 // prefix + toLocaleString — ChartTip itself is shared across non-money chart
 // tooltips (kg, customers, sarees) and is out of scope for this pass.
-function MoneyChartTip({ active, payload, label, canSeePayroll }: any) {
+interface MoneyChartTipPayloadEntry {
+  name?: string;
+  value?: number | string;
+  color?: string;
+  fill?: string;
+  stroke?: string;
+}
+
+function MoneyChartTip({ active, payload, label, canSeePayroll }: {
+  active?: boolean;
+  payload?: MoneyChartTipPayloadEntry[];
+  label?: string;
+  canSeePayroll?: boolean;
+}) {
   if (!active || !payload?.length) return null;
   return (
     <div style={{ background: "#FFFDF9", border: `1px solid ${T.borderDef}`, borderRadius: 9, padding: "10px 14px", boxShadow: "0 4px 16px rgba(74,6,27,0.12)" }}>
-      {label && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginBottom: 5, textTransform: "uppercase" }}>{label}</div>}
-      {payload.map((p: any, i: number) => (
-        <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
+      {label && <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginBottom: 5, textTransform: "uppercase" }}>{label}</div>}
+      {payload.map((p) => (
+        <div key={p.name} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
           <div style={{ width: 8, height: 8, borderRadius: "50%", background: p.color || p.fill || p.stroke }} />
           <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.name}:</span>
-          <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{!canSeePayroll ? "••••" : typeof p.value === "number" ? formatMoney(rupees(p.value)) : p.value}</span>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{!canSeePayroll ? "••••" : typeof p.value === "number" ? formatMoney(rupees(p.value)) : p.value}</span>
         </div>
       ))}
     </div>
@@ -44,8 +57,8 @@ export function WeaverPaymentReport() {
     queryFn: () => qcApi.list(200),
   });
 
-  const weavers = weaversRes?.items ?? [];
-  const qcItems = qcRes?.items ?? [];
+  const weavers = useMemo(() => weaversRes?.items ?? [], [weaversRes]);
+  const qcItems = useMemo(() => qcRes?.items ?? [], [qcRes]);
 
   // Monthly making charges calculated dynamically from live payments
   const weaverPayMonthly = useMemo(() => {
@@ -82,7 +95,6 @@ export function WeaverPaymentReport() {
       }
     }
 
-    const total = payments.length || 1;
     return [
       { name: "No Deductions", value: noDeductionCount, color: T.green },
       { name: "Advance / Other Deductions", value: otherDeductionCount, color: T.antiqueGold },
@@ -135,8 +147,8 @@ export function WeaverPaymentReport() {
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={weaverPayMonthly}>
                 <CartesianGrid key="wp-grid" strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
-                <XAxis key="wp-x" dataKey="month" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
-                <YAxis key="wp-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => (canSeePayroll ? formatMoney(rupees(v)) : "••••")} width={55} />
+                <XAxis key="wp-x" dataKey="month" tick={{ fontFamily: "var(--font-mono)", fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
+                <YAxis key="wp-y" tick={{ fontFamily: "var(--font-mono)", fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => (canSeePayroll ? formatMoney(rupees(v)) : "••••")} width={55} />
                 <Tooltip key="wp-tip" content={<MoneyChartTip canSeePayroll={canSeePayroll} />} />
                 <Bar key="wp-amt" dataKey="amt" name="Making Charges">
                   {weaverPayMonthly.map((e, i) => (
@@ -160,12 +172,12 @@ export function WeaverPaymentReport() {
                   <Pie key="ded-pie" data={deductionBreakdown} cx="50%" cy="50%" innerRadius={48} outerRadius={68} dataKey="value" stroke="none" paddingAngle={3}>
                     {deductionBreakdown.map(e => <Cell key={`ded-cell-${e.name}`} fill={e.color} />)}
                   </Pie>
-                  <Tooltip key="ded-tip" formatter={(v: any, n: any) => [`${v} payments`, n]}
+                  <Tooltip key="ded-tip" formatter={(v: number | string, n: string) => [`${v} payments`, n]}
                     contentStyle={{ fontFamily: F.ui, fontSize: 12, borderRadius: 8 }} />
                 </PieChart>
                 <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", textAlign: "center" }}>
-                  <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.crimson }}><Money value={rupees(totalDeductions)} gate="payroll" /></div>
-                  <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>TOTAL DEDUCTIONS</div>
+                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color: T.crimson }}><Money value={rupees(totalDeductions)} gate="payroll" /></div>
+                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>TOTAL DEDUCTIONS</div>
                 </div>
               </div>
               <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10 }}>
@@ -176,7 +188,7 @@ export function WeaverPaymentReport() {
                         <div style={{ width: 9, height: 9, borderRadius: "50%", background: d.color }} />
                         <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{d.name}</span>
                       </div>
-                      <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: d.color }}>{d.value}</span>
+                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: d.color }}>{d.value}</span>
                     </div>
                     <AnimBar pct={Math.round((d.value / (payments.length || 1)) * 100)} color={d.color} height={5} />
                   </div>
@@ -204,7 +216,7 @@ export function WeaverPaymentReport() {
           <div style={{ overflowX: "auto" }}>
             <DataTable<(typeof weaverPayRows)[number]>
               columns={[
-                { id: "code", header: "Weaver ID", accessor: r => r.code, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy }}>{r.code}</span> },
+                { id: "code", header: "Weaver ID", accessor: r => r.code, cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.royalBurgundy }}>{r.code}</span> },
                 { id: "name", header: "Weaver Name", accessor: r => r.name, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600 }}>{r.name}</span> },
                 { id: "totalSarees", header: "Sarees Produced", accessor: r => r.totalSarees, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{r.totalSarees > 0 ? `${r.totalSarees} sarees` : "—"}</span> },
                 {
@@ -214,7 +226,7 @@ export function WeaverPaymentReport() {
                     return <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: r.latest ? T.green : T.taupe }}>{amountPaid === undefined ? "—" : canSeePayroll ? formatMoney(rupees(amountPaid)) : "••••"}</span>;
                   },
                 },
-                { id: "utr", header: "UTR Number", accessor: r => r.latest?.utrNumber, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: r.latest ? T.green : T.taupe }}>{r.latest?.utrNumber || "—"}</span> },
+                { id: "utr", header: "UTR Number", accessor: r => r.latest?.utrNumber, cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: r.latest ? T.green : T.taupe }}>{r.latest?.utrNumber || "—"}</span> },
                 { id: "firmName", header: "Firm Name", accessor: r => r.latest?.firmName, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{r.latest?.firmName || "—"}</span> },
                 { id: "paymentDate", header: "Payment Date", accessor: r => r.latest?.paymentDate, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{r.latest?.paymentDate ?? "—"}</span> },
               ]}

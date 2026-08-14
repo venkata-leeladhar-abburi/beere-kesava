@@ -53,9 +53,11 @@ export function WeaverPaymentReportDocument({
         <div style={{ fontSize: "var(--doc-small)", color: "var(--doc-muted)" }}>Generated {generatedDate}</div>
       </div>
 
+      {/* eslint-disable-next-line no-restricted-syntax -- printable document template */}
       <table className="bk-doc__table" style={{ marginTop: "4mm" }}>
         <thead>
           <tr>
+            {/* eslint-disable no-restricted-syntax -- printable document table headers */}
             <th>Weaver ID</th>
             <th>Weaver Name</th>
             <th>Batches</th>
@@ -67,6 +69,7 @@ export function WeaverPaymentReportDocument({
             <th>UTR Number</th>
             <th>Firm</th>
             <th>Payment Date</th>
+            {/* eslint-enable no-restricted-syntax */}
           </tr>
         </thead>
         <tbody>
@@ -74,8 +77,10 @@ export function WeaverPaymentReportDocument({
             <tr>
               <td colSpan={11} style={{ textAlign: "center", color: "var(--doc-muted)" }}>No weaver payment data for this period.</td>
             </tr>
-          ) : rows.map((r, i) => (
-            <tr key={`${r.weaverId}-${i}`}>
+          ) : rows.map((r) => (
+            // UTR number is the bank's own unique reference for a payment,
+            // making it a stable natural key for a payment-report row.
+            <tr key={r.utrNumber || `${r.weaverId}-${r.paymentDate}`}>
               <td style={{ fontFamily: "var(--font-code)" }}>{r.weaverId}</td>
               <td>{r.weaverName}</td>
               <td style={{ fontFamily: "var(--font-code)" }}>{r.batches || "—"}</td>
@@ -97,7 +102,7 @@ export function WeaverPaymentReportDocument({
               <td data-num>{formatMoney(rupees(totals.makingCharges))}</td>
               <td data-num>{formatMoney(rupees(totals.deduction))}</td>
               <td data-num>{formatMoney(rupees(totals.amountPaid))}</td>
-              <td colSpan={3}></td>
+              <td colSpan={3} aria-hidden="true" />
             </tr>
           </tfoot>
         )}

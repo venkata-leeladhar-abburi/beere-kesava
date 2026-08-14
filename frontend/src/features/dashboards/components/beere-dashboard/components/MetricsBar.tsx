@@ -8,11 +8,11 @@ import { useDashboardMetrics } from '../hooks/useDashboardMetrics';
 
 /** Icon set in the same order as the metrics array from useDashboardMetrics */
 const ICONS = [
-  <IcoResourceMgmt sz={22} col={T.warmCream} />,
-  <IcoFabricRoll   sz={22} col={T.warmCream} />,
-  <IcoInvoice      sz={22} col={T.warmCream} />,
-  <IcoQualityCheck sz={22} col={T.warmCream} />,
-  <IcoTruck        sz={22} col={T.warmCream} />,
+  <IcoResourceMgmt key="resource-mgmt" sz={22} col={T.warmCream} />,
+  <IcoFabricRoll   key="fabric-roll"   sz={22} col={T.warmCream} />,
+  <IcoInvoice      key="invoice"       sz={22} col={T.warmCream} />,
+  <IcoQualityCheck key="quality-check" sz={22} col={T.warmCream} />,
+  <IcoTruck        key="truck"         sz={22} col={T.warmCream} />,
 ];
 
 export function MetricsBar() {

@@ -92,6 +92,7 @@ export function PhotoUploadField({
         ref={inputRef}
         type="file"
         accept="image/png,image/jpeg"
+        aria-label={labelText || "Upload photo"}
         style={{ display: "none" }}
         onChange={e => {
           const file = e.target.files?.[0];

@@ -5,7 +5,7 @@ import { UsersRound, CheckCircle2, TrendingUp, ShieldAlert } from "lucide-react"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { T, F } from "../theme";
-import { FadeUp, ChartCard, SumCard, SectionCard, ReportDLBar, ChartTip, AnimBar, TablePager, StatusPill, TH, TD } from "../common/primitives";
+import { FadeUp, ChartCard, SumCard, SectionCard, ReportDLBar, ChartTip, AnimBar, TablePager, StatusPill } from "../common/primitives";
 import { Button, SearchInput } from "../../../../shared/ui/primitives";
 import { customersApi, BackendCustomer } from "../../../../shared/api/customers";
 import { invoicesApi } from "../../../../shared/api/invoices";
@@ -43,8 +43,8 @@ function downloadCustomerData(r: CustomerRow) {
     ["Type", r.type],
     ["Phone", r.phone],
     ["Total Purchases", String(r.purchases)],
-    ["Total Spend (₹)", String(r.spend)],
-    ["Outstanding Due (₹)", String(r.due)],
+    ["Total Spend (INR)", String(r.spend)],
+    ["Outstanding Due (INR)", String(r.due)],
     ["Last Purchase Date", r.lastPurchase],
     ["Status", PAYMENT_STATUS[r.status].label],
   ];
@@ -161,23 +161,23 @@ export function CustomerReport() {
     },
     {
       id: "phone", header: "Phone", accessor: r => r.phone, priority: 3,
-      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.phone}</span>,
+      cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{r.phone}</span>,
     },
     {
       id: "purchases", header: "Total Purchases", accessor: r => r.purchases, align: "center",
-      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700 }}>{r.purchases}</span>,
+      cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700 }}>{r.purchases}</span>,
     },
     {
       id: "spend", header: "Total Spend", accessor: r => r.spend, align: "end",
-      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700 }}><Money value={rupees(r.spend)} /></span>,
+      cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700 }}><Money value={rupees(r.spend)} /></span>,
     },
     {
       id: "due", header: "Outstanding Due", accessor: r => r.due, align: "end",
-      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700, color: r.due > 0 ? T.crimson : T.green }}>{r.due > 0 ? <Money value={rupees(r.due)} /> : "— Nil"}</span>,
+      cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: r.due > 0 ? T.crimson : T.green }}>{r.due > 0 ? <Money value={rupees(r.due)} /> : "— Nil"}</span>,
     },
     {
       id: "lastPurchase", header: "Last Purchase", accessor: r => r.lastPurchase, priority: 3,
-      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.lastPurchase}</span>,
+      cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{r.lastPurchase}</span>,
     },
     {
       id: "status", header: "Status", accessor: r => r.status, align: "center", type: "status",
@@ -207,7 +207,7 @@ export function CustomerReport() {
               <div key={c.name}>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
                   <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{c.name}</span>
-                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.antiqueGold }}>{formatMoney(rupees(c.total))}</span>
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.antiqueGold }}>{formatMoney(rupees(c.total))}</span>
                 </div>
                 <AnimBar pct={Math.round((c.total / maxTop) * 100)} color={T.antiqueGold} height={7} delay={i * 0.07} />
               </div>
@@ -224,11 +224,11 @@ export function CustomerReport() {
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={custMonthly} barGap={4}>
                 <CartesianGrid key="cust-grid" strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
-                <XAxis key="cust-x" dataKey="month" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
-                <YAxis key="cust-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={28} />
+                <XAxis key="cust-x" dataKey="month" tick={{ fontFamily: "var(--font-mono)", fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
+                <YAxis key="cust-y" tick={{ fontFamily: "var(--font-mono)", fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={28} />
                 <Tooltip key="cust-tip" content={<ChartTip suffix=" customers" />} />
-                <Bar key="cust-new" dataKey="newC" name="New"      fill={T.royalBurgundy} radius={[4,4,0,0] as any} />
-                <Bar key="cust-ret" dataKey="ret"  name="Returning" fill={semantic.chart.series[1]}   radius={[4,4,0,0] as any} opacity={0.7} />
+                <Bar key="cust-new" dataKey="newC" name="New"      fill={T.royalBurgundy} radius={[4,4,0,0] as [number, number, number, number]} />
+                <Bar key="cust-ret" dataKey="ret"  name="Returning" fill={semantic.chart.series[1]}   radius={[4,4,0,0] as [number, number, number, number]} opacity={0.7} />
               </BarChart>
             </ResponsiveContainer>
           )}
@@ -244,7 +244,7 @@ export function CustomerReport() {
               <Pie key="cust-split-pie" data={custSplitDonut} cx="50%" cy="50%" innerRadius={45} outerRadius={65} dataKey="value" stroke="none" paddingAngle={3}>
                 {custSplitDonut.map(e => <Cell key={`cust-cell-${e.name}`} fill={e.color} />)}
               </Pie>
-              <Tooltip key="cust-split-tip" formatter={(v: any, n: any) => [formatMoney(rupees(Number(v))), n]} contentStyle={{ fontFamily: F.ui, fontSize: 12, borderRadius: 8 }} />
+              <Tooltip key="cust-split-tip" formatter={(v: number | string, n: React.ReactNode) => [formatMoney(rupees(Number(v))), n]} contentStyle={{ fontFamily: F.ui, fontSize: 12, borderRadius: 8 }} />
             </PieChart>
           </ResponsiveContainer>
           <div style={{ display: "flex", flexDirection: "column", gap: 7, padding: "0 8px" }}>
@@ -257,7 +257,7 @@ export function CustomerReport() {
                   <div style={{ width: 9, height: 9, borderRadius: "50%", background: d.color }} />
                   <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{d.name}</span>
                 </div>
-                <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: d.color }}>{formatMoney(rupees(d.value))}</span>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: d.color }}>{formatMoney(rupees(d.value))}</span>
               </div>
             ))}
           </div>
@@ -286,7 +286,7 @@ export function CustomerReport() {
 
       <FadeUp>
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
-          <div style={{ overflowX: "auto", minWidth: 900 }}>
+          <div className="min-w-[900px]" style={{ overflowX: "auto" }}>
             <DataTable
               responsive
               columns={customerColumns}
@@ -307,7 +307,7 @@ export function CustomerReport() {
           <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: T.luxuryBrown, marginBottom: 12 }}>Customer Details</div>
           <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 16 }}>
             {custRows.map(r => (
-              <div key={r.id} style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, boxShadow: "0 2px 12px rgba(74,6,27,0.06)", padding: "16px 18px", display: "flex", flexDirection: "column", gap: 10 }}>
+              <div key={r.id} style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, boxShadow: "0 2px 14px rgba(74,6,27,0.06)", padding: "16px 18px", display: "flex", flexDirection: "column", gap: 10 }}>
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
                   <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>{r.name}</div>
                   <StatusPill label={r.type} type={r.type === "Wholesale" ? "neutral" : "gold"} />
@@ -317,14 +317,14 @@ export function CustomerReport() {
                     <>
                       <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>City: <span style={{ color: T.luxuryBrown }}>{r.city}</span></div>
                       <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Address: <span style={{ color: T.luxuryBrown }}>{r.address}</span></div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Phone: <span style={{ fontFamily: F.mono, color: T.luxuryBrown }}>{r.phone}</span></div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>GST Code: <span style={{ fontFamily: F.mono, color: T.luxuryBrown }}>{r.gstCode}</span></div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Phone: <span style={{ fontFamily: "var(--font-mono)", color: T.luxuryBrown }}>{r.phone}</span></div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>GST Code: <span style={{ fontFamily: "var(--font-mono)", color: T.luxuryBrown }}>{r.gstCode}</span></div>
                     </>
                   ) : (
                     <>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Phone: <span style={{ fontFamily: F.mono, color: T.luxuryBrown }}>{r.phone}</span></div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Total Purchases: <span style={{ fontFamily: F.mono, color: T.luxuryBrown, fontWeight: 700 }}>{r.purchases}</span></div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Last Purchase: <span style={{ fontFamily: F.mono, color: T.luxuryBrown }}>{r.lastPurchase}</span></div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Phone: <span style={{ fontFamily: "var(--font-mono)", color: T.luxuryBrown }}>{r.phone}</span></div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Total Purchases: <span style={{ fontFamily: "var(--font-mono)", color: T.luxuryBrown, fontWeight: 700 }}>{r.purchases}</span></div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Last Purchase: <span style={{ fontFamily: "var(--font-mono)", color: T.luxuryBrown }}>{r.lastPurchase}</span></div>
                     </>
                   )}
                 </div>

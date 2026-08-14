@@ -1,38 +1,30 @@
 
-import React, { useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { 
-  ChevronLeft, ChevronRight, ChevronDown, ArrowRight,
-  Bell, Search, TrendingUp, SlidersHorizontal, Moon,
-  Facebook, Instagram, Youtube, Linkedin, Menu,
-  LogOut, UserRound, AlertTriangle, CheckCircle2, AlertCircle,
-  Package, LayoutDashboard, Factory, IndianRupee, Users, Settings2,
-  Activity, MapPin, Phone, Eye, Edit3, Layers3, ShoppingCart, Layers, X
+import React, { useRef } from 'react';
+import { motion } from 'motion/react';
+import {
+  ChevronRight, ArrowRight,
+  Facebook, Instagram, Youtube, Linkedin,
+  CheckCircle2,
+  Package, IndianRupee, Users,
+  Layers
 , Flower2 as Lotus } from 'lucide-react';
-import { Rows3 as Rows, Clock as PhClock } from "lucide-react";
-import { ImageWithFallback } from "../../../../shared/ui/ImageWithFallback";
-import { useNavigate } from 'react-router';
 import { useInView } from 'motion/react';
-import { useAuth } from '../../../../contexts/AuthContext';
 import { imgBKLogo, imgSareeFooter, imgShowroom } from '../../../../shared/constants/weaverImages';
-import { T, F, G, NUM, DARK_MAROON, EASE, findNavGroup, NAV_GROUPS, NAV_GROUP_FALLBACK } from './theme';
-import { FadeUp, FadeIn, AnimatedNumber, AnimatedBar, SectionHeader, Card, Label, Body, Donut, BarChart } from './ui';
+import { T, F, G, NUM, DARK_MAROON, EASE } from './theme';
+import { FadeUp, AnimatedNumber, AnimatedBar, Donut } from './ui';
 import { useDashboardMetrics } from './hooks/useDashboardMetrics';
 import { useDashboardAnalytics } from './hooks/useDashboardAnalytics';
 
-function SareesProduced(props: any) { return null; }
-function FeaturedProduct(props: any) { return null; }
+import { SareesProduced, FeaturedProduct } from './components/ThreeCol';
 
 /** Icon set in the same order as the metrics array from useDashboardMetrics. */
 const METRIC_ICONS = [
-  <Users size={22} color={T.warmCream} />,
-  <Layers size={22} color={T.warmCream} />,
-  <IndianRupee size={22} color={T.warmCream} />,
-  <CheckCircle2 size={22} color={T.warmCream} />,
-  <Package size={22} color={T.warmCream} />,
+  <Users key="users" size={22} color={T.warmCream} />,
+  <Layers key="layers" size={22} color={T.warmCream} />,
+  <IndianRupee key="indian-rupee" size={22} color={T.warmCream} />,
+  <CheckCircle2 key="check-circle" size={22} color={T.warmCream} />,
+  <Package key="package" size={22} color={T.warmCream} />,
 ];
-
-const imgSaree       = "https://images.unsplash.com/photo-1588140686379-1b76a52103dc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
 
 import { MobileMenuDrawer, MobileTopNav } from './MobileNavDrawer';
 import { Button } from "../../../../shared/ui/primitives";
@@ -109,7 +101,8 @@ function MobileHero() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.7, delay: 0.95 }}
-          style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13, color: "rgba(245,232,208,0.88)", lineHeight: 1.75, margin: 0, maxWidth: 320, letterSpacing: "0.05px" }}
+          className="max-w-[320px]"
+          style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13, color: "rgba(245,232,208,0.88)", lineHeight: 1.75, margin: 0, letterSpacing: "0.05px" }}
         >
           From the finest raw silk to masterful craftsmanship — four generations of excellence.
         </motion.p>
@@ -376,9 +369,9 @@ function MobileFooter() {
           ))}
         </div>
         <div style={{ display: "flex", gap: 10, paddingTop: 20, paddingBottom: 16 }}>
-          {([Facebook, Instagram, Youtube, Linkedin] as const).map((Icon, i) => (
+          {([Facebook, Instagram, Youtube, Linkedin] as const).map((Icon) => (
             <motion.div
-              key={i}
+              key={Icon.displayName}
               whileHover={{ scale: 1.14, y: -3 }}
               whileTap={{ scale: 0.92 }}
               style={{ width: 40, height: 40, borderRadius: 12, border: `1px solid ${T.borderDef}`, background: T.warmIvory, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}

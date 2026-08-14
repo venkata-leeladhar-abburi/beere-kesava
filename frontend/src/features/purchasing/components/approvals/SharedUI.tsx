@@ -62,7 +62,7 @@ export function InfoStrip({ children, style }: { children: React.ReactNode; styl
   return (
     <div style={{
       background: T.cream, borderRadius: 8, padding: "8px 12px",
-      fontFamily: F.mono, fontSize: 12, color: T.taupe, ...style,
+      fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, ...style,
     }}>
       {children}
     </div>
@@ -98,7 +98,7 @@ export function EmptyState({ message }: { message: string }) {
       <span style={{ fontFamily: F.display, fontSize: 18, fontWeight: 600, color: T.luxuryBrown }}>
         {message}
       </span>
-      <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, textAlign: "center", maxWidth: 340 }}>
+      <span className="max-w-[340px]" style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, textAlign: "center" }}>
         All items in this category have been reviewed and actioned.
       </span>
     </div>

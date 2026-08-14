@@ -46,8 +46,8 @@ export function NewSaleSuccessView({
               ["Customer", custName || "Smt. Annapurna", false],
               ["Date & Time", "13 Jun 2026 · 11:42 AM", true],
               ["Payment", payment?.toUpperCase() ?? "UPI", true],
-            ].map(([k, v, mono], i) => (
-              <div key={i} style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
+            ].map(([k, v, mono]) => (
+              <div key={k as string} style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
                 <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{k as string}</span>
                 <span style={{ fontFamily: mono ? F.m : F.u, fontSize: 13, color: C.text }}>{v as string}</span>
               </div>

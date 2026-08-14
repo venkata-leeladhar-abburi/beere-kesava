@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
-import { useFinishing } from "../../../finishing/contexts/FinishingContext";
+import { useFinishing } from "@/features/finishing";
 import { invoicesApi, BackendInvoice } from "../../../../shared/api/invoices";
 import { EASE, F, T, useBulkOrders, BulkOrder, useFirms, DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../theme";
 import { Invoice } from "../../types";
@@ -226,8 +226,11 @@ export function WholesaleCollectionsSection() {
               sub: "Payments received this month",
               hi: true, crimson: false,
             },
-          ].map((s: any, i) => (
-            <div key={i} style={{ background: s.hi ? "linear-gradient(135deg,rgba(200,155,71,0.14),rgba(200,155,71,0.04))" : "#FFFFFF", borderRadius: 14, border: `1px solid ${s.hi ? T.borderGold : T.borderDef}`, padding: "20px 20px 18px", boxShadow: "0 2px 14px rgba(74,6,27,0.07)", position: "relative", overflow: "hidden", display: "flex", flexDirection: "column", gap: 10 }}>
+          ].map((s: {
+            icon: React.ReactNode; iconBg: string; label: string; value: string; sub: string;
+            hi: boolean; crimson: boolean; green?: boolean;
+          }) => (
+            <div key={s.label} style={{ background: s.hi ? "linear-gradient(135deg,rgba(200,155,71,0.14),rgba(200,155,71,0.04))" : "#FFFFFF", borderRadius: 14, border: `1px solid ${s.hi ? T.borderGold : T.borderDef}`, padding: "20px 20px 18px", boxShadow: "0 2px 14px rgba(74,6,27,0.07)", position: "relative", overflow: "hidden", display: "flex", flexDirection: "column", gap: 10 }}>
               {s.hi && <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg,${T.antiqueGold},${T.goldLight})` }} />}
               <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
                 <div style={{ width: 44, height: 44, borderRadius: 12, background: s.iconBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -256,7 +259,7 @@ export function WholesaleCollectionsSection() {
               <CircleAlert size={18} style={{ color: T.crimson, flexShrink: 0 }} />
               <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.crimson }}>
                 {overdueInvs.length} invoices are overdue (60+ days) — Total overdue amount:{" "}
-                <span style={{ fontFamily: F.mono }}><Money value={rupees(overdueTotal)} /></span>
+                <Money value={rupees(overdueTotal)} />
               </span>
             </div>
             <Button variant="danger" size="md" onClick={() => setRemindersModal(true)} className="flex-shrink-0 rounded-[8px]">
@@ -269,7 +272,7 @@ export function WholesaleCollectionsSection() {
           <div style={{ display: "flex", border: `1px solid ${T.borderDef}`, borderRadius: 9, overflow: "hidden", background: "#fff" }}>
             {viewOptions.map(({ key, Icon, label }) => (
               <Button key={key} variant={view === key ? "primary" : "tertiary"} size="sm" iconLeft={Icon}
-                onClick={() => setView(key as any)}
+                onClick={() => setView(key)}
                 className={view === key ? "rounded-none bg-[#6E0F2D] text-[#FFFDF9]" : "rounded-none bg-white text-[var(--text-tertiary)]"}>
                 {label}
               </Button>

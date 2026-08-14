@@ -1,11 +1,12 @@
 import React, { useState, useMemo } from "react";
 import { Truck, Users, ShoppingBag, Clock, CheckCircle2, Trash2, FileText } from "lucide-react";
-import { DispatchRecord } from "../../../finishing/contexts/FinishingContext";
+import { DispatchRecord } from "@/features/finishing";
 import { T, F } from "../theme";
 import { Button } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { SectionCard } from "../common/primitives";
 import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
+import { EntityCode } from "@/shared/ui/domain";
 
 // ── Dispatch History section ──────────────────────────────────────────────────
 // Exported for the Worker Staff portal — same component, same markup, so the two
@@ -39,7 +40,7 @@ export function DispatchHistorySection({ dispatches, firms, onResume, onDelete, 
               size="sm"
               className={tab === t.key ? "rounded-full" : "rounded-full bg-white/10 text-[#FFFDF9] border-white/20"}
             >
-              {t.label} <span style={{ fontFamily: F.mono, fontSize: 12 }}>({t.count})</span>
+              {t.label} <span style={{ fontFamily: F.ui, fontSize: 12, fontVariantNumeric: "tabular-nums" }}>({t.count})</span>
             </Button>
           ))}
         </div>
@@ -55,7 +56,7 @@ function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { row
   const columns: ColumnDef<DispatchRecord>[] = [
     {
       id: "date", header: "Date", accessor: d => d.dispatchDate, width: 110,
-      cell: (_v, d) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{d.dispatchDate}</span>,
+      cell: (_v, d) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontVariantNumeric: "tabular-nums" }}>{d.dispatchDate}</span>,
     },
     {
       id: "type", header: "Type", accessor: d => d.type, width: 90,
@@ -73,18 +74,20 @@ function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { row
       id: "lr", header: "LR / Transport", accessor: d => d.lrNumber, width: 130, priority: 3,
       cell: (_v, d) => (
         <div>
-          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{d.lrNumber || "—"}</div>
+          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.royalBurgundy, fontVariantNumeric: "tabular-nums" }}>{d.lrNumber || "—"}</div>
           <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>{d.transportCompany || "—"}</div>
         </div>
       ),
     },
     {
       id: "invoice", header: "Invoice", accessor: d => d.invoiceNumber, width: 100, priority: 3,
-      cell: (_v, d) => <span style={{ fontFamily: F.mono, fontSize: 12, color: d.invoiceNumber ? T.luxuryBrown : T.taupe }}>{d.invoiceNumber || "—"}</span>,
+      cell: (_v, d) => d.invoiceNumber
+        ? <EntityCode type="invoice" value={d.invoiceNumber} />
+        : <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>—</span>,
     },
     {
       id: "sarees", header: "Sarees", accessor: d => d.sareeIds.length, type: "number", width: 80,
-      cell: (_v, d) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{d.sareeIds.length}</span>,
+      cell: (_v, d) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, fontVariantNumeric: "tabular-nums" }}>{d.sareeIds.length}</span>,
     },
     {
       id: "firm", header: "Firm", accessor: d => d.firmName, width: 110, priority: 3,

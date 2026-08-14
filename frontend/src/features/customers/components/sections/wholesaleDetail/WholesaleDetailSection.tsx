@@ -1,9 +1,9 @@
 import React from "react";
 import { MapPin } from "lucide-react";
-import { useBulkOrders, BulkOrder } from "../../../../bulk-orders/contexts/BulkOrderContext";
+import { useBulkOrders, BulkOrder } from "@/features/bulk-orders";
 import { DateFilterState } from "../../../../../shared/ui/DateFilterBar";
-import { resolveOrderMoney } from "../../../../bulk-orders/utils/BulkOrderLinking";
-import { INVOICES } from "../../../../payments/data/invoices";
+import { resolveOrderMoney } from "@/features/bulk-orders";
+import { INVOICES } from "@/features/payments";
 import { T, F } from "../../theme";
 import { WholesaleCustomer, WholesaleTab } from "../../types";
 import { OrderHistoryTab } from "./OrderHistoryTab";
@@ -75,7 +75,7 @@ export function WholesaleDetailSection({
           <span style={{ fontFamily: F.ui, fontSize: 13, background: customer.status === "clear" ? T.greenBg : T.crimsonBg, color: customer.status === "clear" ? T.greenMid : T.crimson, padding: "5px 12px", borderRadius: 6, fontWeight: 700 }}>
             {customer.status.toUpperCase()}
           </span>
-          <span style={{ fontFamily: F.mono, fontSize: 13, background: T.silkCream, border: `1px solid ${T.borderDef}`, padding: "5px 12px", borderRadius: 6, color: T.luxuryBrown, fontWeight: 600 }}>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, background: T.silkCream, border: `1px solid ${T.borderDef}`, padding: "5px 12px", borderRadius: 6, color: T.luxuryBrown, fontWeight: 600 }}>
             {customer.id}
           </span>
         </div>

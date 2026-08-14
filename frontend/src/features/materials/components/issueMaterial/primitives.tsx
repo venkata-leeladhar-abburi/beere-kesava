@@ -72,7 +72,7 @@ export function ColorSwatchPicker({ colors, value, onChange }: { colors: { name:
   return (
     <div style={{ display: "flex", gap: 10, flexWrap: "wrap" as const }}>
       {colors.map(c => (
-        <button key={c.name} type="button" title={c.name} onClick={() => onChange(c.name)} style={{
+        <button key={c.name} type="button" title={c.name} aria-label={c.name} onClick={() => onChange(c.name)} style={{
           width: 32, height: 32, borderRadius: "50%", background: c.hex, cursor: "pointer",
           border: value === c.name ? `3px solid ${T.luxuryBrown}` : "3px solid transparent",
           boxShadow: "0 1px 4px rgba(0,0,0,0.18)", flexShrink: 0,

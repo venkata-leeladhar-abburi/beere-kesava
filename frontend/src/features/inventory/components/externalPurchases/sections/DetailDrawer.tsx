@@ -1,7 +1,7 @@
 import React from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, Tag } from "lucide-react";
-import { Purchase, totalPieces } from "../../../../suppliers/contexts/SupplierContext";
+import { Purchase, totalPieces } from "@/features/suppliers";
 import { T, F } from "../theme";
 import { StatusPill } from "../common/primitives";
 import { Button, IconButton } from "../../../../../shared/ui/primitives";
@@ -95,10 +95,11 @@ export function DetailDrawer({
                   ) : (
                     <div
                       style={{
-                        fontFamily: field.mono ? F.mono : F.ui,
+                        fontFamily: F.ui,
                         fontSize: 14,
                         color: field.gold ? T.antiqueGold : field.mono ? T.royalBurgundy : T.taupe,
                         fontWeight: field.mono ? 700 : 400,
+                        fontVariantNumeric: "tabular-nums",
                       }}
                     >
                       {field.value}

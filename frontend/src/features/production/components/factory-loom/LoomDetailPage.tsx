@@ -5,11 +5,11 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { useBatches } from "../../contexts/BatchContext";
-import { useDesignLibrary, DispatchRecord } from "../../../design-library/contexts/DesignLibraryContext";
-import { useMaterialIssue } from "../../../materials/contexts/MaterialIssueContext";
-import { useQc } from "../../../qc/contexts/QcContext";
+import { useDesignLibrary, DispatchRecord } from "@/features/design-library";
+import { useMaterialIssue } from "@/features/materials";
+import { useQc } from "@/features/qc";
 import { DispatchDetailsModal } from "../DispatchDetailsModal";
-import { WeaverSareesSection } from "../../../weavers/components/WeaverSareesSection";
+import { WeaverSareesSection } from "@/features/weavers";
 import { FactoryLoom } from "../../data/factoryLooms";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { T, F } from "./theme";
@@ -27,7 +27,7 @@ const fmtIssueDate = (iso: string) => {
 };
 
 function SectionPill({ label }: { label: string }) {
-  return <div style={{ fontFamily: F.mono, fontSize: 13, color: T.taupe, letterSpacing: "1.2px", textTransform: "uppercase" as const, marginBottom: 4 }}>{label}</div>;
+  return <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, letterSpacing: "1.2px", textTransform: "uppercase" as const, marginBottom: 4 }}>{label}</div>;
 }
 
 function loomDispatchAliases(loom: FactoryLoom): string[] {
@@ -114,7 +114,7 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
         <Button onClick={onBack} variant="link" iconLeft={ArrowLeft} className="text-[#6E0F2D] font-bold text-sm">
           Back to Factory Looms
         </Button>
-        <span style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "1px", textTransform: "uppercase" as const, color: T.taupe }}>Factory Loom Profile</span>
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, letterSpacing: "1px", textTransform: "uppercase" as const, color: T.taupe }}>Factory Loom Profile</span>
       </div>
 
       <div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 16, background: "#FFFFFF" }}>
@@ -157,7 +157,7 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
 
       <div className="px-4 md:px-7 xl:px-12" style={{ borderBottom: `1px solid ${T.borderDef}`, display: "flex", gap: 24, background: "#FFFFFF", overflowX: "auto" as const }}>
         {TABS.map(t => (
-          <Button key={t.k} onClick={() => setTab(t.k as any)} variant="ghost"
+          <Button key={t.k} onClick={() => setTab(t.k as "overview" | "batches" | "dispatches" | "materials")} variant="ghost"
             className={`h-auto py-4 rounded-none gap-2 text-sm font-semibold whitespace-nowrap border-b-[3px] ${tab === t.k ? "border-[#6E0F2D] text-[#6E0F2D]" : "border-transparent text-[var(--text-tertiary)]"} hover:bg-transparent`}>
             {t.icon}{t.l}
           </Button>
@@ -214,11 +214,11 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
                   ) : materialRecords.map(r => (
                     <div key={r.id} style={{ background: "#FFFFFF", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "14px 16px" }}>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8, gap: 10 }}>
-                        <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", borderRadius: 6, padding: "2px 8px" }}>{r.id}</span>
+                        <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", borderRadius: 6, padding: "2px 8px" }}>{r.id}</span>
                         <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{fmtIssueDate(r.issuedAt)}</span>
                       </div>
-                      {r.materials.map((m, i) => (
-                        <div key={i} style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>
+                      {r.materials.map((m) => (
+                        <div key={`${m.materialType}-${m.quantity}-${m.unit}-${m.description || ""}`} style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>
                           • {m.materialType}: <strong>{m.quantity} {m.unit}</strong>{m.description ? ` ${m.description}` : ""}
                         </div>
                       ))}
@@ -251,7 +251,7 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
                 <div key={b.batchId} style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: 20, boxShadow: "0 4px 16px rgba(0,0,0,0.02)" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap" as const, gap: 10 }}>
                     <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                      <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}>{b.batchId}</span>
+                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}>{b.batchId}</span>
                       <span style={{ fontFamily: F.ui, fontSize: 12, background: statusBg, color: statusColor, borderRadius: 6, padding: "3px 8px", fontWeight: 700, textTransform: "uppercase" as const }}>{b.status}</span>
                     </div>
                     {b.dueDate && <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Due Date: {b.dueDate}</div>}
@@ -259,25 +259,25 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
 
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" as const, marginBottom: 6 }}>
                     <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>Progress: {doneCount} of {rowsInBatch.length} sarees done</span>
-                    <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.antiqueGold }}>{pct}%</span>
+                    <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.antiqueGold }}>{pct}%</span>
                   </div>
                   <div style={{ height: 6, background: "rgba(110,15,45,0.08)", borderRadius: 99, overflow: "hidden", marginBottom: 16 }}>
                     <div style={{ height: "100%", width: `${pct}%`, background: `linear-gradient(90deg, ${T.antiqueGold}, ${T.goldLight})`, borderRadius: 99 }} />
                   </div>
 
-                  <div style={{ overflowX: "auto" as const, border: `1px solid ${T.borderDef}`, borderRadius: 10, background: "#FFFFFF", minWidth: 560 }}>
+                  <div style={{ overflowX: "auto" as const, border: `1px solid ${T.borderDef}`, borderRadius: 10, background: "#FFFFFF" }}>
                     <DataTable
                       responsive
                       columns={[
                         {
                           id: "sareeId", header: "Saree ID", accessor: (row: typeof rowsInBatch[number]) => row.sareeId, priority: 1,
                           cell: (_v, row) => row.sareeId
-                            ? <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", borderRadius: 5, padding: "2px 6px" }}>{row.sareeId}</span>
+                            ? <EntityCode type="saree" value={row.sareeId} size="sm" />
                             : <span style={{ color: "rgba(139,112,96,0.4)", fontSize: 12 }}>—</span>,
                         },
                         {
                           id: "sareeTypeCode", header: "Saree Type", accessor: row => row.sareeTypeCode,
-                          cell: (_v, row) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{row.sareeTypeCode || "—"}</span>,
+                          cell: (_v, row) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{row.sareeTypeCode || "—"}</span>,
                         },
                         {
                           id: "bulkOrder", header: "Bulk Order", accessor: row => row.bulkOrderLabel, priority: 3,
@@ -328,14 +328,14 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
             {dispatchGroups.length > 0 ? dispatchGroups.map(group => (
               <div key={group.batchId} style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: 20, boxShadow: "0 4px 16px rgba(0,0,0,0.02)" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-                  <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}>{group.batchId}</span>
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}>{group.batchId}</span>
                   <span style={{ fontFamily: F.ui, fontSize: 12, background: "rgba(110,15,45,0.08)", color: T.royalBurgundy, borderRadius: 6, padding: "3px 8px", fontWeight: 700 }}>{group.records.length} dispatch{group.records.length > 1 ? "es" : ""}</span>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column" as const, gap: 14 }}>
                   {group.records.map(h => (
                     <div key={h.id} style={{ background: T.warmIvory, borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "16px 18px", display: "flex", flexDirection: "column" as const, gap: 10 }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{h.id}</span>
+                        <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{h.id}</span>
                         <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Sent on {h.sentAt}</span>
                       </div>
                       <div style={{ background: "rgba(110,15,45,0.03)", border: "1px solid rgba(110,15,45,0.06)", borderRadius: 10, padding: "10px 14px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, lineHeight: 1.5 }}>
@@ -345,15 +345,21 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
                         {h.colorSlipImage && (
                           <div style={{ display: "flex", flexDirection: "column" as const, gap: 4 }}>
                             <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.4px" }}>Color Slip</span>
-                            <img src={h.colorSlipImage} alt="Color slip" onClick={() => setZoomImage({ url: h.colorSlipImage!, label: `Color Slip — ${h.id}` })}
-                              style={{ width: 72, height: 72, borderRadius: 10, objectFit: "cover" as const, border: `1px solid ${T.borderDef}`, cursor: "pointer" }} />
+                            <button type="button" onClick={() => setZoomImage({ url: h.colorSlipImage!, label: `Color Slip — ${h.id}` })}
+                              style={{ padding: 0, border: "none", background: "transparent", cursor: "pointer", display: "block" }}>
+                              <img src={h.colorSlipImage} alt="Color slip"
+                                style={{ width: 72, height: 72, borderRadius: 10, objectFit: "cover" as const, border: `1px solid ${T.borderDef}`, cursor: "pointer" }} />
+                            </button>
                           </div>
                         )}
                         {h.designGraphImage && (
                           <div style={{ display: "flex", flexDirection: "column" as const, gap: 4 }}>
                             <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.4px" }}>Design Graph</span>
-                            <img src={h.designGraphImage} alt="Design graph" onClick={() => setZoomImage({ url: h.designGraphImage!, label: `Design Graph — ${h.id}` })}
-                              style={{ width: 72, height: 72, borderRadius: 10, objectFit: "cover" as const, border: `1px solid ${T.borderDef}`, cursor: "pointer" }} />
+                            <button type="button" onClick={() => setZoomImage({ url: h.designGraphImage!, label: `Design Graph — ${h.id}` })}
+                              style={{ padding: 0, border: "none", background: "transparent", cursor: "pointer", display: "block" }}>
+                              <img src={h.designGraphImage} alt="Design graph"
+                                style={{ width: 72, height: 72, borderRadius: 10, objectFit: "cover" as const, border: `1px solid ${T.borderDef}`, cursor: "pointer" }} />
+                            </button>
                           </div>
                         )}
                         {!h.colorSlipImage && !h.designGraphImage && (

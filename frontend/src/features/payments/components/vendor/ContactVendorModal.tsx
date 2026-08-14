@@ -10,12 +10,12 @@ import { vendorsApi } from "../../../../shared/api/vendors";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
 import { rupees, formatMoney } from "@/lib/domain/money";
-import { Money } from "@/shared/ui/domain";
+import { EntityCode, Money } from "@/shared/ui/domain";
 
 // ── Contact Vendor Modal ──────────────────────────────────────────────────────
 export function ContactVendorModal({ vendors, onClose }: { vendors: VendorPayment[]; onClose: () => void }) {
   const [selected, setSelected] = useState(vendors[0]?.id ?? "");
-  const [msgType, setMsgType]   = useState<"whatsapp"|"email"|"call">("whatsapp");
+  const [msgType]   = useState<"whatsapp"|"email"|"call">("whatsapp");
   const [sending, setSending]   = useState(false);
   const [sent, setSent]         = useState(false);
 
@@ -116,11 +116,11 @@ Thank you.`;
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{v.vendor}</div>
-                      <div style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, marginTop: 2 }}>{v.poNumber}</div>
+                      <div style={{ marginTop: 2 }}><EntityCode type="purchaseOrder" value={v.poNumber} size="sm" /></div>
                     </div>
                     <div style={{ textAlign: "right" as const, flexShrink: 0 }}>
-                      <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.crimson }}><Money value={rupees(bal)} /></div>
-                      {v.daysOverdue && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.crimson, background: "rgba(192,57,43,0.10)", padding: "1px 6px", borderRadius: 4, marginTop: 2 }}>{v.daysOverdue}d overdue</div>}
+                      <div style={{ fontSize: 14, fontWeight: 700, color: T.crimson }}><Money value={rupees(bal)} /></div>
+                      {v.daysOverdue && <div style={{ fontSize: 12, color: T.crimson, background: "rgba(192,57,43,0.10)", padding: "1px 6px", borderRadius: 4, marginTop: 2, fontVariantNumeric: "tabular-nums" }}>{v.daysOverdue}d overdue</div>}
                     </div>
                     {isSelected && <div style={{ width: 20, height: 20, borderRadius: "50%", background: T.royalBurgundy, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><CheckCircle2 size={12} color="#FFF" /></div>}
                   </div>
@@ -164,7 +164,7 @@ Thank you.`;
           {/* Message preview */}
           <div>
             <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 8 }}>Message Preview</div>
-            <div style={{ background: "#FFFFFF", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "14px 16px", fontFamily: F.mono, fontSize: 12, color: T.taupe, lineHeight: 1.75, whiteSpace: "pre-wrap" as const }}>
+            <div style={{ background: "#FFFFFF", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "14px 16px", fontSize: 12, color: T.taupe, lineHeight: 1.75, whiteSpace: "pre-wrap" as const }}>
               {MESSAGE_PREVIEW}
             </div>
           </div>

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ChevronRight, Check } from "lucide-react";
-import { MaterialIssueRecord } from "../../../materials/contexts/MaterialIssueContext";
+import { MaterialIssueRecord } from "@/features/materials";
 import { C, F, SectionTitle } from "./theme";
 import { Button } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
@@ -64,7 +64,7 @@ export function ReferenceHistorySection({
               ].map(t => (
                 <Button
                   key={t.id}
-                  onClick={() => setHistoryTab(t.id as any)}
+                  onClick={() => setHistoryTab(t.id as "materials" | "batches" | "sarees")}
                   size="sm"
                   className={
                     historyTab === t.id
@@ -102,7 +102,7 @@ export function ReferenceHistorySection({
                 </div>
               ) : (
                 <div style={{ margin: "16px 20px", background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, overflowX: isTablet ? "auto" : "hidden" }}>
-                  <div style={{ minWidth: isTablet ? 560 : undefined }}>
+                  <div style={{ minWidth: isTablet ? "560px" : undefined }}>
                     <DataTable<MaterialIssueRecord>
                       columns={[
                         { id: "date", header: "Date", accessor: r => r.issuedAt, cell: (_v, r) => <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{new Date(r.issuedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span> },
@@ -147,7 +147,7 @@ export function ReferenceHistorySection({
                 </div>
               ) : (
                 <div style={{ margin: "16px 20px", background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, overflowX: isTablet ? "auto" : "hidden" }}>
-                  <div style={{ minWidth: isTablet ? 560 : undefined }}>
+                  <div style={{ minWidth: isTablet ? "560px" : undefined }}>
                     <DataTable<WeavingBatchItem>
                       columns={[
                         { id: "batchId", header: "Batch ID", accessor: b => b.batchId, cell: (_v, b) => <span style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{b.batchId}</span> },
@@ -171,8 +171,8 @@ export function ReferenceHistorySection({
                 </div>
               ) : isMobile ? (
                 <div style={{ marginTop: 12 }}>
-                  {mySarees.map((s, i) => (
-                    <div key={i} style={{ margin: "0 20px 12px", background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "14px 16px" }}>
+                  {mySarees.map((s) => (
+                    <div key={s.sareeId} style={{ margin: "0 20px 12px", background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "14px 16px" }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                         <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 13, color: C.burg }}>{s.sareeId}</span>
                         <span style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{s.batchId}</span>
@@ -190,7 +190,7 @@ export function ReferenceHistorySection({
                 </div>
               ) : (
                 <div style={{ margin: "16px 20px", background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, overflowX: isTablet ? "auto" : "hidden" }}>
-                  <div style={{ minWidth: isTablet ? 640 : undefined }}>
+                  <div style={{ minWidth: isTablet ? "640px" : undefined }}>
                     <DataTable<SareeLogItem>
                       columns={[
                         { id: "sareeId", header: "Saree ID", accessor: s => s.sareeId, cell: (_v, s) => <span style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{s.sareeId}</span> },

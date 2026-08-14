@@ -1,6 +1,6 @@
 import React from "react";
 import { Truck } from "lucide-react";
-import { DispatchRecord } from "../../finishing/contexts/FinishingContext";
+import { DispatchRecord } from "@/features/finishing";
 import { Button, SearchInput, Select, SelectItem } from "../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../shared/ui/data";
 
@@ -95,7 +95,7 @@ export function BulkOrderSareesTab({
   const columns: ColumnDef<LinkedSaree>[] = [
     {
       id: "id", header: "Saree ID", accessor: s => s.id, priority: 1,
-      cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{s.id}</span>,
+      cell: (_v, s) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{s.id}</span>,
     },
     {
       id: "design", header: "Design / Type", accessor: s => s.designCode,
@@ -107,7 +107,7 @@ export function BulkOrderSareesTab({
     },
     {
       id: "batch", header: "Batch", accessor: s => s.batchId, priority: 3,
-      cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{s.batchId || "—"}</span>,
+      cell: (_v, s) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.luxuryBrown }}>{s.batchId || "—"}</span>,
     },
     {
       id: "status", header: "Status", accessor: s => s.status, type: "status",
@@ -115,7 +115,7 @@ export function BulkOrderSareesTab({
     },
     {
       id: "quotation", header: "Quotation", accessor: s => s.quotationRef, priority: 3,
-      cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, color: s.quotationRef ? T.royalBurgundy : T.taupe }}>{s.quotationRef || "—"}</span>,
+      cell: (_v, s) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: s.quotationRef ? T.royalBurgundy : T.taupe }}>{s.quotationRef || "—"}</span>,
     },
     {
       id: "dispatch", header: "Dispatch", accessor: s => s.dispatch,

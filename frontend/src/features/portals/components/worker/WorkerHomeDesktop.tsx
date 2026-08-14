@@ -7,8 +7,8 @@ import { C, F } from "./tokens";
 import { PageHero, StatsStrip, SectionHeading, GUTTER_X, type WorkerStat } from "./primitives";
 import { Button } from "../../../../shared/ui/primitives";
 import { useAuth } from "../../../../contexts/AuthContext";
-import { useBatches } from "../../../production/contexts/BatchContext";
-import { useQc } from "../../../qc/contexts/QcContext";
+import { useBatches } from "@/features/production";
+import { useQc } from "@/features/qc";
 
 type Tab = "home" | "qc" | "weavers";
 type WeaversSubPage = "menu" | "design" | "issue" | "receive-sarees";
@@ -144,7 +144,7 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
               {tasks.map((task, i) => {
                 const Icon = task.icon;
                 return (
-                  <FadeUp key={i} delay={i * 0.07}>
+                  <FadeUp key={task.title} delay={i * 0.07}>
                     <motion.div
                       whileHover={{ y: -3, boxShadow: "0 16px 48px rgba(110,15,45,0.14)" }}
                       whileTap={{ scale: 0.99 }}
@@ -190,7 +190,7 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
               <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 20, overflow: "hidden", boxShadow: "0 6px 32px rgba(74,6,27,0.08)" }}>
                 {activities.map((a, i) => (
                   <div
-                    key={i}
+                    key={a.id}
                     style={{ display: "flex", alignItems: "flex-start", gap: 14, padding: "16px 20px", borderBottom: i < activities.length - 1 ? `1px solid rgba(110,15,45,0.07)` : "none" }}
                   >
                     <div style={{ width: 10, height: 10, borderRadius: "50%", background: a.dot, marginTop: 5, flexShrink: 0, boxShadow: `0 0 8px ${a.dot}60` }} />

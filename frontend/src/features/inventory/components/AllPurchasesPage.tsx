@@ -9,6 +9,7 @@ import { Pagination, usePagination } from "../../../shared/ui/DataPagination";
 import { Button, SearchInput } from "../../../shared/ui/primitives";
 import { Breadcrumbs } from "../../../shared/ui/nav/Breadcrumbs";
 import { rupees, formatMoney, sumMoney } from "@/lib/domain/money";
+import { jariToReels, formatBunsReels } from "../../../shared/lib/weightUnits";
 
 const T = {
   silkCream:     "#F7F2EA",
@@ -108,7 +109,7 @@ export function AllPurchasesPage({ onBack }: { onBack: () => void }) {
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, ease: EASE }}
             style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
             <div style={{ width: 20, height: 1, background: T.antiqueGold, opacity: 0.6 }} />
-            <span style={{ fontFamily: F.mono, fontWeight: 600, fontSize: 12, color: "rgba(200,155,71,0.80)", letterSpacing: "3px", textTransform: "uppercase" }}>
+            <span style={{ fontFamily: "var(--font-mono)", fontWeight: 600, fontSize: 12, color: "rgba(200,155,71,0.80)", letterSpacing: "3px", textTransform: "uppercase" }}>
               Since 1999 · Purchase Records
             </span>
           </motion.div>
@@ -120,7 +121,8 @@ export function AllPurchasesPage({ onBack }: { onBack: () => void }) {
           </motion.h1>
 
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.7, delay: 0.25 }}
-            style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 14, color: "rgba(245,232,208,0.72)", margin: "0 0 20px", maxWidth: 520, lineHeight: 1.7 }}>
+            className="max-w-[520px]"
+            style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 14, color: "rgba(245,232,208,0.72)", margin: "0 0 20px", lineHeight: 1.7 }}>
             Complete purchase history for all raw materials — Warp, Resham, and Jari — from every vendor since the system started.
           </motion.p>
 
@@ -143,7 +145,7 @@ export function AllPurchasesPage({ onBack }: { onBack: () => void }) {
             {[
               { label: "Total Warp Purchased",   val: "2,840 kg",                   sub: "From 2 vendors",         Icon: Layers,      hi: false },
               { label: "Total Resham Purchased", val: "1,240 kg",                   sub: "All colors combined",    Icon: Tag,         hi: false },
-              { label: "Total Jari Purchased",   val: "680 kg",                     sub: "All types and grades",   Icon: Sparkles,    hi: false },
+              { label: "Total Jari Purchased",   val: formatBunsReels(jariToReels(680, "KG")), sub: "All types and grades",   Icon: Sparkles,    hi: false },
               { label: "Total Amount Spent",     val: formatMoney(totalSpend, { compact: true }), sub: "All materials combined", Icon: IndianRupee, hi: true  },
               { label: "Active Vendors",         val: "6",                          sub: "Across 3 states",        Icon: Building2,   hi: false },
             ].map((m, i) => (
@@ -152,7 +154,7 @@ export function AllPurchasesPage({ onBack }: { onBack: () => void }) {
                   <m.Icon size={18} color={m.hi ? T.antiqueGold : "rgba(245,232,208,0.70)"} />
                 </div>
                 <div>
-                  <div style={{ fontFamily: F.mono, fontWeight: 600, fontSize: 12, letterSpacing: "1.8px", textTransform: "uppercase", color: m.hi ? "rgba(200,155,71,0.85)" : "rgba(245,232,208,0.55)", marginBottom: 3 }}>{m.label}</div>
+                  <div style={{ fontFamily: "var(--font-mono)", fontWeight: 600, fontSize: 12, letterSpacing: "1.8px", textTransform: "uppercase", color: m.hi ? "rgba(200,155,71,0.85)" : "rgba(245,232,208,0.55)", marginBottom: 3 }}>{m.label}</div>
                   <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 30, color: m.hi ? T.goldLight : T.warmCream, lineHeight: 1, ...NUM }}>{m.val}</div>
                   <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(245,232,208,0.55)", marginTop: 2 }}>{m.sub}</div>
                 </div>
@@ -179,7 +181,7 @@ export function AllPurchasesPage({ onBack }: { onBack: () => void }) {
               className={`h-full rounded-none px-[18px] gap-[7px] border-b-2 ${typeFilter === f.key ? "border-[#6E0F2D]" : "border-transparent"}`}
             >
               <span style={{ fontFamily: F.ui, fontWeight: typeFilter === f.key ? 600 : 400, fontSize: 13, color: typeFilter === f.key ? T.royalBurgundy : T.taupe, whiteSpace: "nowrap" }}>{f.label}</span>
-              <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, padding: "2px 7px", borderRadius: 999, background: typeFilter === f.key ? "rgba(110,15,45,0.08)" : "rgba(139,112,96,0.08)", color: typeFilter === f.key ? T.royalBurgundy : T.taupe }}>{f.count}</span>
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, padding: "2px 7px", borderRadius: 999, background: typeFilter === f.key ? "rgba(110,15,45,0.08)" : "rgba(139,112,96,0.08)", color: typeFilter === f.key ? T.royalBurgundy : T.taupe }}>{f.count}</span>
             </Button>
           ))}
 
@@ -190,7 +192,7 @@ export function AllPurchasesPage({ onBack }: { onBack: () => void }) {
             containerClassName="ml-auto w-[280px] h-[38px] bg-[var(--silkCream,#F7F2EA)]"
             className="text-[13px]"
           />
-          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>{filtered.length} purchase{filtered.length !== 1 ? "s" : ""}</span>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>{filtered.length} purchase{filtered.length !== 1 ? "s" : ""}</span>
         </div>
       </div>
 

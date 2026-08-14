@@ -1,7 +1,7 @@
 import React from "react";
 import { Download, Package, type LucideIcon } from "lucide-react";
 import { T, F } from "../../theme";
-import { ageBucket } from "../../../customers/contexts/SalesContext";
+import { ageBucket } from "@/features/customers";
 import { useDownloadsAllowed } from "../../../../shared/ui/DownloadAccess";
 import { Button } from "../../../../shared/ui/primitives";
 import { rupees, formatMoney } from "@/lib/domain/money";
@@ -104,7 +104,7 @@ export function SectionCard({
 const td: React.CSSProperties = {
   fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, padding: "11px 12px", borderBottom: `1px solid rgba(110,15,45,0.06)`, verticalAlign: "middle",
 };
-export const tdMono: React.CSSProperties = { ...td, fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy };
+export const tdMono: React.CSSProperties = { ...td, fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.royalBurgundy };
 
 export function Empty({ msg }: { msg: string }) {
   return (

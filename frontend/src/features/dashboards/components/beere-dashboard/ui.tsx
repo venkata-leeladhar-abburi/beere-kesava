@@ -1,9 +1,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
-import { motion, useInView, AnimatePresence } from 'motion/react';
-import { T, F, NUM, G, EASE , DARK_MAROON } from './theme';
-import type { IconComponent } from "../../../../lib/icon";
-import { useIsMobile } from "../../../../hooks/useResponsive";
+import { motion, useInView } from 'motion/react';
+import { T, F, G, EASE , DARK_MAROON } from './theme';
 import { Button } from "../../../../shared/ui/primitives";
 
 function FadeUp({
@@ -75,7 +73,7 @@ function AnimatedNumber({ raw }: { raw: string }) {
     const match = raw.match(/(\d+(?:\.\d+)?)/);
     if (!match) { setDisplayed(raw); return; }
     const numStr = match[1];
-    const target = parseFloat(numStr);
+    const target = Number(numStr);
     const isFloat = numStr.includes(".");
     const idx = raw.indexOf(numStr);
     const pre = raw.slice(0, idx);
@@ -177,7 +175,7 @@ function Donut({ pct = 72, size }: { pct?: number; size?: number | string }) {
           style={{ transformOrigin: `${cx}px ${cy}px` }}
         >
           {/* Outer glowing halo */}
-          <circle cx={cx} cy={cy - r} r="8.5" fill={T.antiqueGold} opacity="0.6" filter="url(#glow)" />
+          <circle cx={cx} cy={cy - r} r="8.5" fill="#C89B47" opacity="0.6" filter="url(#glow)" />
           {/* Inner solid dot */}
           <circle cx={cx} cy={cy - r} r="4.5" fill="#FFFDF9" stroke={T.royalBurgundy} strokeWidth="2.5" />
         </motion.g>
@@ -250,7 +248,7 @@ function BarChart({ data }: { data?: BarChartPoint[] }) {
           const h1 = (d.p / maxV) * iH;
           const h2 = (d.d / maxV) * iH;
           return (
-            <g key={`g${i}`}>
+            <g key={d.w}>
               <motion.rect
                 x={gx - bW - gap / 2} width={bW} rx={5} fill="url(#barGrad1)"
                 initial={{ y: baseY, height: 0 }}
@@ -364,8 +362,6 @@ function Card({ children, style }: { children: React.ReactNode; style?: React.CS
 // ═══════════════════════════════════════════════════════════════════════════════
 // DESKTOP — TOP NAV (grouped)
 // ═══════════════════════════════════════════════════════════════════════════════
-type NavPage  = { key: string; label: string };
-type NavGroup = { key: string; label: string; icon: IconComponent; pages: NavPage[] };
 
 
 export { FadeUp, FadeIn, AnimatedBar, AnimatedNumber, IcoRawMaterial, IcoYarnInventory, IcoFabricRoll, IcoQualityCheck, IcoTruck, IcoInvoice, IcoResourceMgmt, IcoWarehouse, IcoHandshake, IcoProductionPlan, Lotus, Donut, BarChart, Label, Body, SectionHeader, Card };

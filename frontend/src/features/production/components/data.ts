@@ -53,13 +53,13 @@ export const VIEW_OPTIONS = [
 ];
 
 // ─── Defective sarees ───────────────────────────────────────────────────────────
-export const DEFECTIVE_DATA: any[] = [];
+export const DEFECTIVE_DATA: unknown[] = [];
 
 // ─── Analytics ────────────────────────────────────────────────────────────────
-export const WEEKLY_DATA: any[] = [];
-export const STAGE_FUNNEL: any[] = [];
-export const TOP_WEAVERS_CHART: any[] = [];
-export const ORDER_PROGRESS: any[] = [];
+export const WEEKLY_DATA: unknown[] = [];
+export const STAGE_FUNNEL: unknown[] = [];
+export const TOP_WEAVERS_CHART: unknown[] = [];
+export const ORDER_PROGRESS: unknown[] = [];
 export const ANALYTICS_PERIODS = ["This Week", "This Month", "Last 3 Months", "This Year"];
 
 // ─── Production history ─────────────────────────────────────────────────────────

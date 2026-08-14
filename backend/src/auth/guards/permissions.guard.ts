@@ -95,7 +95,7 @@ export class PermissionsGuard implements CanActivate {
       select: {
         id: true,
         key: true,
-        rolePermissions: { where: { role: user.role as UserRole }, select: { id: true } },
+        rolePermissions: { where: { role: user.role }, select: { id: true } },
         userOverrides: { where: { userId: user.id ?? "" }, select: { granted: true } },
       },
     });

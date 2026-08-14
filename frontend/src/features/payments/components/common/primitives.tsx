@@ -31,7 +31,15 @@ export function StatusBadge({ status }: { status: "Paid" | "Pending" }) {
 }
 
 // helper: ActionModal
-export function ActionModal({ open, onClose, title, desc, actionLabel, icon: Icon = CheckCircle2, hideAction = false }: any) {
+export function ActionModal({ open, onClose, title, desc, actionLabel, icon: Icon = CheckCircle2, hideAction = false }: {
+  open: boolean;
+  onClose: () => void;
+  title: string;
+  desc: React.ReactNode;
+  actionLabel?: React.ReactNode;
+  icon?: LucideIcon;
+  hideAction?: boolean;
+}) {
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
 

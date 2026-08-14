@@ -176,7 +176,7 @@ export function QuickActionsSidebar({
               <div key={b.label} style={{ marginBottom: 12 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
                   <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{b.label}</span>
-                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: b.color }}>
+                  <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: b.color, fontVariantNumeric: "tabular-nums" }}>
                     {b.val} <span style={{ color: T.taupe, fontWeight: 400 }}>({pct}%)</span>
                   </span>
                 </div>

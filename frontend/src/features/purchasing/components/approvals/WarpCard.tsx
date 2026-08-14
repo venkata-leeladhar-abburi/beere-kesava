@@ -1,9 +1,8 @@
 import React from "react";
 import { motion } from "motion/react";
-import { Check, X, Package, TrendingUp } from "lucide-react";
+import { Check, X, Package } from "lucide-react";
 import { T, F } from "./tokens";
-import { WARP_DATA } from "./data";
-import { GreenBtn, CrimsonBtn, InfoStrip } from "./SharedUI";
+import { GreenBtn, CrimsonBtn } from "./SharedUI";
 
 import { BackendWarpRequest, warpRequestsApi } from "../../../../shared/api/warpRequests";
 import { toast } from "sonner";
@@ -15,8 +14,8 @@ export function WarpCard({ item, onAction }: { item: BackendWarpRequest; onActio
       await warpRequestsApi.approve(item.id);
       toast.success(`Approved warp request ${item.id}`);
       onAction(item.id);
-    } catch (err: any) {
-      toast.error(err.message || "Failed to approve warp request");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to approve warp request");
     }
   };
 
@@ -25,8 +24,8 @@ export function WarpCard({ item, onAction }: { item: BackendWarpRequest; onActio
       await warpRequestsApi.reject(item.id);
       toast.success(`Rejected warp request ${item.id}`);
       onAction(item.id);
-    } catch (err: any) {
-      toast.error(err.message || "Failed to reject warp request");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to reject warp request");
     }
   };
 
@@ -60,7 +59,7 @@ export function WarpCard({ item, onAction }: { item: BackendWarpRequest; onActio
               {name}
             </div>
             <span style={{
-              fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy,
+              fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy,
               background: "rgba(110,15,45,0.07)", borderRadius: 5, padding: "2px 7px",
             }}>
               {item.id}
@@ -69,7 +68,7 @@ export function WarpCard({ item, onAction }: { item: BackendWarpRequest; onActio
         </div>
         {item.loomNumber && (
           <span style={{
-            fontFamily: F.mono, fontSize: 12, color: T.taupe,
+            fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe,
             background: T.cream, borderRadius: 6, padding: "4px 10px",
           }}>
             Loom {item.loomNumber}
@@ -79,7 +78,7 @@ export function WarpCard({ item, onAction }: { item: BackendWarpRequest; onActio
 
       {/* Raised chip */}
       <span style={{
-        fontFamily: F.mono, fontSize: 12, color: T.taupe,
+        fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe,
         background: T.cream, borderRadius: 6, padding: "4px 10px", alignSelf: "flex-start",
       }}>
         Requested: {new Date(item.requestedAt).toLocaleDateString("en-IN")}

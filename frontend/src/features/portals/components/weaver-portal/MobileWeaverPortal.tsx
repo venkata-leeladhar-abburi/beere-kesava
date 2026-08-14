@@ -4,7 +4,8 @@ import { ClipboardList, CheckSquare, Package, Wallet, Flower2, Bell, UserRound, 
 import { motion, AnimatePresence } from 'motion/react';
 
 import { useAuth } from '../../../../contexts/AuthContext';
-import { useMaterialIssue } from '../../../materials/contexts/MaterialIssueContext';
+import type { Role } from '../../../../contexts/AuthContext';
+import { useMaterialIssue } from '@/features/materials';
 import {
   C, F, Tab5
 } from './theme';
@@ -89,7 +90,7 @@ export function MobileWeaverPortal({ onBack, active, setActive, onProfile }: { o
                     const origAdminRole = localStorage.getItem('bk_original_admin_role');
                     if (origAdminRole) {
                       localStorage.removeItem('bk_original_admin_role');
-                      selectRole(origAdminRole as any);
+                      selectRole(origAdminRole as Role);
                       navigate(origAdminRole === 'superadmin' ? '/superadmin' : '/admin');
                     }
                   }} className="!h-auto !py-2.5 !px-4 !text-[13px] !text-[#3B2314]">

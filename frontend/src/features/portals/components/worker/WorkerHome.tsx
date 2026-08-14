@@ -3,9 +3,9 @@ import { ChevronRight, Package, Shield, Sparkles } from "lucide-react";
 import { C, F } from "./tokens";
 import { useResponsive } from "../../../../hooks/useResponsive";
 import { useAuth } from "../../../../contexts/AuthContext";
-import { useBatches } from "../../../production/contexts/BatchContext";
-import { useFinishing } from "../../../finishing/contexts/FinishingContext";
-import { useQc } from "../../../qc/contexts/QcContext";
+import { useBatches } from "@/features/production";
+import { useFinishing } from "@/features/finishing";
+import { useQc } from "@/features/qc";
 import { Button } from "../../../../shared/ui/primitives";
 
 type Tab = "home" | "qc" | "weavers" | "finishing";
@@ -87,6 +87,8 @@ export function WorkerHome({ onNavigate }: WorkerHomeProps) {
     .sort((a, b) => new Date(b.qcDate).getTime() - new Date(a.qcDate).getTime())
     .slice(0, 3)
     .map(r => ({
+      // sareeId is the natural unique key for a QC record — each saree has one QC record.
+      sareeId: r.sareeId,
       dot: r.result === "passed" ? C.green : r.result === "defective" ? "#C0392B" : C.gold,
       desc: `Saree ${r.sareeId} ${r.result === "passed" ? "passed" : r.result === "defective" ? "failed" : "semi-passed"} quality check`,
       time: new Date(r.qcDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short" }),
@@ -126,7 +128,7 @@ export function WorkerHome({ onNavigate }: WorkerHomeProps) {
           { val: String(withFinishingCount), label: "With Finishing", col: "#B85C00" },
           { val: String(doneTodayCount), label: "Done Today", col: C.green },
         ].map((s, i) => (
-          <div key={i} style={{ padding: "12px 8px", textAlign: "center" as const, borderRight: i < 2 ? `1px solid ${C.bdr}` : "none" }}>
+          <div key={s.label} style={{ padding: "12px 8px", textAlign: "center" as const, borderRight: i < 2 ? `1px solid ${C.bdr}` : "none" }}>
             <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: s.col, marginBottom: 2 }}>{s.val}</div>
             <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{s.label}</div>
           </div>
@@ -181,7 +183,7 @@ export function WorkerHome({ onNavigate }: WorkerHomeProps) {
       </div>
       <div style={{ margin: "0 16px", background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 14, overflow: "hidden" }}>
         {activities.map((a, i) => (
-          <div key={i} style={{
+          <div key={a.sareeId} style={{
             display: "flex", alignItems: "flex-start", gap: 12, padding: "13px 16px",
             borderBottom: i < activities.length - 1 ? `1px solid rgba(110,15,45,0.07)` : "none",
           }}>

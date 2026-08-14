@@ -2,9 +2,7 @@ import React from "react";
 import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 import { BarChart2, Clock, Calendar, Download, FileText } from "lucide-react";
-import { imgSaree } from "../../../../shared/constants/weaverImages";
 import { T, F, EASE } from "../theme";
-import { AnimCount } from "../common/primitives";
 import { reportsApi } from "../../../../shared/api/reports";
 
 export function ReportsHeader() {
@@ -14,7 +12,7 @@ export function ReportsHeader() {
         {/* Eyebrow */}
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
           <div style={{ width: 36, height: 2, background: `linear-gradient(90deg, ${T.antiqueGold}, rgba(200,155,71,0))` }} />
-          <span style={{ fontFamily: F.mono, fontSize: 13, color: "rgba(200,155,71,0.85)", letterSpacing: "1.5px", textTransform: "uppercase" as const, fontWeight: 600 }}>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: "rgba(200,155,71,0.85)", letterSpacing: "1.5px", textTransform: "uppercase" as const, fontWeight: 600 }}>
             BEERE KANCHI SILKS · REPORTS &amp; ANALYTICS
           </span>
         </div>
@@ -28,7 +26,7 @@ export function ReportsHeader() {
           </div>
         </div>
         {/* Body */}
-        <p style={{ fontFamily: F.ui, fontSize: "clamp(15px, 3.5vw, 18px)", fontWeight: 400, color: "rgba(255,253,249,0.70)", margin: "0 0 20px", maxWidth: 600, lineHeight: 1.6 }}>
+        <p className="max-w-[600px]" style={{ fontFamily: F.ui, fontSize: "clamp(15px, 3.5vw, 18px)", fontWeight: 400, color: "rgba(255,253,249,0.70)", margin: "0 0 20px", lineHeight: 1.6 }}>
           View detailed reports for every part of the business — production, payments, weavers, sales, and customers. Compare periods, download as PDF or Excel, and schedule automatic delivery.
         </p>
       </div>

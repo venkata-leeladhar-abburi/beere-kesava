@@ -1,12 +1,14 @@
 import React, { useMemo } from "react";
 import { ReceiptText, Banknote, CheckCircle2, BellRing, Boxes } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { useBulkOrders } from "../../../bulk-orders/contexts/BulkOrderContext";
+import type { TooltipProps } from "recharts";
+import type { ValueType, NameType } from "recharts/types/component/DefaultTooltipContent";
+import { useBulkOrders } from "@/features/bulk-orders";
 import { T, F } from "../theme";
 import { FadeUp, ChartCard, SumCard, SectionCard, ReportDLBar, AnimBar, TablePager } from "../common/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { semantic } from "../../../../design-system/tokens";
-import type { BulkOrder } from "../../../bulk-orders/contexts/BulkOrderContext";
+import type { BulkOrder } from "@/features/bulk-orders";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money, StatusPill } from "@/shared/ui/domain";
 import type { StatusValueOf } from "@/lib/domain/status";
@@ -20,9 +22,9 @@ const PAYMENT_STATUS_KEY: Record<string, StatusValueOf<"payment">> = {
   pending: "unpaid",
 };
 
-function WholesaleWeeklyTooltip({ active, payload, label }: any) {
+function WholesaleWeeklyTooltip({ active, payload, label }: TooltipProps<ValueType, NameType>) {
   if (!active || !payload || !payload.length) return null;
-  const d = payload[0].payload;
+  const d = payload[0].payload as { sarees: number; revenue: number };
   return (
     <div style={{ background: "#FFFFFF", border: `1px solid ${T.borderDef}`, borderRadius: 8, padding: "8px 12px", boxShadow: "0 4px 16px rgba(74,6,27,0.12)" }}>
       <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, fontWeight: 600 }}>
@@ -36,16 +38,16 @@ function WholesaleWeeklyTooltip({ active, payload, label }: any) {
 // value through the Money system (formatMoney/rupees) instead of a raw "₹"
 // prefix + toLocaleString — ChartTip itself is shared across non-money chart
 // tooltips (kg, customers, sarees) and is out of scope for this pass.
-function MoneyChartTip({ active, payload, label }: any) {
+function MoneyChartTip({ active, payload, label }: TooltipProps<ValueType, NameType>) {
   if (!active || !payload?.length) return null;
   return (
     <div style={{ background: "#FFFDF9", border: `1px solid ${T.borderDef}`, borderRadius: 9, padding: "10px 14px", boxShadow: "0 4px 16px rgba(74,6,27,0.12)" }}>
-      {label && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginBottom: 5, textTransform: "uppercase" }}>{label}</div>}
-      {payload.map((p: any, i: number) => (
-        <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
+      {label && <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginBottom: 5, textTransform: "uppercase" }}>{label}</div>}
+      {payload.map((p) => (
+        <div key={p.name ?? p.dataKey} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
           <div style={{ width: 8, height: 8, borderRadius: "50%", background: p.color || p.fill || p.stroke }} />
           <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.name}:</span>
-          <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{typeof p.value === "number" ? formatMoney(rupees(p.value)) : p.value}</span>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{typeof p.value === "number" ? formatMoney(rupees(p.value)) : p.value}</span>
         </div>
       ))}
     </div>
@@ -132,7 +134,7 @@ export function WholesaleSalesReport() {
   const bulkOrderColumns: ColumnDef<BulkOrder>[] = [
     {
       id: "ref", header: "Bulk Order Ref", accessor: o => o.ref,
-      cell: (_v, o) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{o.ref}</span>,
+      cell: (_v, o) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy }}>{o.ref}</span>,
     },
     {
       id: "customer", header: "Customer Name", accessor: o => o.customer,
@@ -140,32 +142,32 @@ export function WholesaleSalesReport() {
     },
     {
       id: "sarees", header: "Sarees", accessor: o => o.total, align: "center",
-      cell: (_v, o) => <span style={{ fontFamily: F.mono, fontWeight: 700 }}>{o.total}</span>,
+      cell: (_v, o) => <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700 }}>{o.total}</span>,
     },
     {
       id: "invoiceAmt", header: "Invoice Amount", accessor: o => o.amountDue ?? 0, type: "number",
       cell: (_v, o) => {
         const invoiceAmt = o.amountDue ?? 0;
-        return <span style={{ fontFamily: F.mono, fontWeight: 700 }}>{invoiceAmt > 0 ? formatMoney(rupees(invoiceAmt)) : "—"}</span>;
+        return <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700 }}>{invoiceAmt > 0 ? formatMoney(rupees(invoiceAmt)) : "—"}</span>;
       },
     },
     {
       id: "collected", header: "Collected", accessor: o => o.amountPaid ?? 0, type: "number",
       cell: (_v, o) => {
         const collected = o.amountPaid ?? 0;
-        return <span style={{ fontFamily: F.mono, color: T.green, fontWeight: 600 }}>{collected > 0 ? formatMoney(rupees(collected)) : "—"}</span>;
+        return <span style={{ fontFamily: "var(--font-mono)", color: T.green, fontWeight: 600 }}>{collected > 0 ? formatMoney(rupees(collected)) : "—"}</span>;
       },
     },
     {
       id: "balance", header: "Balance Due", accessor: o => (o.amountDue ?? 0) - (o.amountPaid ?? 0), type: "number",
       cell: (_v, o) => {
         const balance = (o.amountDue ?? 0) - (o.amountPaid ?? 0);
-        return <span style={{ fontFamily: F.mono, fontWeight: 700, color: balance <= 0 ? T.green : T.crimson }}>{balance > 0 ? formatMoney(rupees(balance)) : "— Paid"}</span>;
+        return <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: balance <= 0 ? T.green : T.crimson }}>{balance > 0 ? formatMoney(rupees(balance)) : "— Paid"}</span>;
       },
     },
     {
       id: "dispatchDate", header: "Dispatch Date", accessor: o => o.dispatchDate,
-      cell: (_v, o) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{o.dispatchDate || "—"}</span>,
+      cell: (_v, o) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>{o.dispatchDate || "—"}</span>,
     },
     {
       id: "status", header: "Status", accessor: o => o.paymentStatus, type: "status", align: "center",
@@ -192,11 +194,11 @@ export function WholesaleSalesReport() {
             </div>
             <div style={{ display: "flex", gap: 24 }}>
               <div>
-                <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Sarees (All Orders)</div>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Sarees (All Orders)</div>
                 <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.royalBurgundy }}>{bulkOrders.reduce((s, o) => s + o.total, 0)}</div>
               </div>
               <div>
-                <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Invoiced (All Orders)</div>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Invoiced (All Orders)</div>
                 <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.green }}><Money value={rupees(totalInvoiced)} /></div>
               </div>
             </div>
@@ -204,10 +206,10 @@ export function WholesaleSalesReport() {
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={wholesaleWeeklyData}>
               <CartesianGrid key="wsw-grid" strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
-              <XAxis key="wsw-x" dataKey="week" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
-              <YAxis key="wsw-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={30} />
+              <XAxis key="wsw-x" dataKey="week" tick={{ fontFamily: "var(--font-mono)", fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
+              <YAxis key="wsw-y" tick={{ fontFamily: "var(--font-mono)", fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={30} />
               <Tooltip key="wsw-tip" content={<WholesaleWeeklyTooltip />} cursor={{ fill: "rgba(110,15,45,0.04)" }} />
-              <Bar key="wsw-bar" dataKey="sarees" name="Sarees Dispatched" fill={T.royalBurgundy} radius={[6, 6, 0, 0] as any} />
+              <Bar key="wsw-bar" dataKey="sarees" name="Sarees Dispatched" fill={T.royalBurgundy} radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -223,8 +225,8 @@ export function WholesaleSalesReport() {
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={wsMonthlyRev}>
                 <CartesianGrid key="ws-grid" strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
-                <XAxis key="ws-x" dataKey="month" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
-                <YAxis key="ws-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => formatMoney(rupees(v))} width={55} />
+                <XAxis key="ws-x" dataKey="month" tick={{ fontFamily: "var(--font-mono)", fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
+                <YAxis key="ws-y" tick={{ fontFamily: "var(--font-mono)", fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => formatMoney(rupees(v))} width={55} />
                 <Tooltip key="ws-tip" content={<MoneyChartTip />} />
                 <Bar key="ws-rev" dataKey="rev" name="Revenue">
                   {wsMonthlyRev.map((e, i) => <Cell key={`ws-cell-${e.month}`} fill={i === wsMonthlyRev.length - 1 ? semantic.chart.series[0] : "rgba(154,45,74,0.35)"} />)}
@@ -243,7 +245,7 @@ export function WholesaleSalesReport() {
               <div key={d.customer}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
                   <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{d.customer}</span>
-                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: d.color }}>{d.amt === 0 ? "Paid ✓" : formatMoney(rupees(d.amt))}</span>
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: d.color }}>{d.amt === 0 ? "Paid ✓" : formatMoney(rupees(d.amt))}</span>
                 </div>
                 <AnimBar pct={d.amt === 0 ? 100 : Math.round((d.amt / maxOutstanding) * 100)} color={d.color} height={6} delay={i * 0.06} />
               </div>
@@ -261,7 +263,7 @@ export function WholesaleSalesReport() {
               <Pie key="ws-inv-pie" data={wsInvStatus} cx="50%" cy="50%" innerRadius={45} outerRadius={65} dataKey="value" stroke="none" paddingAngle={3}>
                 {wsInvStatus.map(e => <Cell key={`ws-inv-cell-${e.name}`} fill={e.color} />)}
               </Pie>
-              <Tooltip key="ws-inv-tip" formatter={(v: any, n: any) => [`${v} invoices`, n]} contentStyle={{ fontFamily: F.ui, fontSize: 12, borderRadius: 8 }} />
+              <Tooltip key="ws-inv-tip" formatter={(v: ValueType, n: NameType) => [`${v} invoices`, n]} contentStyle={{ fontFamily: F.ui, fontSize: 12, borderRadius: 8 }} />
             </PieChart>
           </ResponsiveContainer>
           <div style={{ display: "flex", flexDirection: "column", gap: 6, padding: "0 8px" }}>
@@ -271,7 +273,7 @@ export function WholesaleSalesReport() {
                   <div style={{ width: 9, height: 9, borderRadius: "50%", background: d.color }} />
                   <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{d.name}</span>
                 </div>
-                <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: d.color }}>{d.value}</span>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: d.color }}>{d.value}</span>
               </div>
             ))}
           </div>

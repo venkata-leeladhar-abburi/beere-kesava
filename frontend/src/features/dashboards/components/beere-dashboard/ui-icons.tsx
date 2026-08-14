@@ -84,9 +84,9 @@ function IcoResourceMgmt({ sz = 20, col = T.gold }: { sz?: number; col?: string 
       <circle cx="9" cy="7" r="3.2" stroke={col} strokeWidth="1.4" />
       <path d="M2 21 C2 16.5 5 14 9 14 C10.2 14 11.3 14.3 12.3 14.9" stroke={col} strokeWidth="1.4" />
       <circle cx="18" cy="18" r="2.8" stroke={col} strokeWidth="1.3" />
-      {[0,60,120,180,240,300].map((deg, i) => {
+      {[0,60,120,180,240,300].map((deg) => {
         const r = (deg * Math.PI) / 180;
-        return <line key={i} x1={18+2.8*Math.cos(r)} y1={18+2.8*Math.sin(r)} x2={18+4.2*Math.cos(r)} y2={18+4.2*Math.sin(r)} stroke={col} strokeWidth="1.8" />;
+        return <line key={deg} x1={18+2.8*Math.cos(r)} y1={18+2.8*Math.sin(r)} x2={18+4.2*Math.cos(r)} y2={18+4.2*Math.sin(r)} stroke={col} strokeWidth="1.8" />;
       })}
     </svg>
   );

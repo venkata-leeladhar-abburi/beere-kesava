@@ -3,12 +3,13 @@ import { X } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
 
 import { F, T } from "../../theme";
-import { Supplier } from "../../../suppliers/contexts/SupplierContext";
+import { Supplier } from "@/features/suppliers";
 import { Button, CurrencyInput, Field, IconButton, Input, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
 import { DatePicker, formatDate } from "../../../../shared/ui/date";
 import { rupees } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
+import { toPaise, fromPaise } from "@/lib/gst";
 
 export function SupplierPayNowModal({
   supplier, outstanding, onClose, onSave, saving,
@@ -24,7 +25,7 @@ export function SupplierPayNowModal({
   const [mode, setMode] = useState<"Cash" | "Bank Transfer" | "UPI" | "Cheque">("Bank Transfer");
   const [reference, setReference] = useState("");
 
-  const numericAmount = parseFloat(amount);
+  const numericAmount = amount === "" || isNaN(Number(amount)) ? NaN : fromPaise(toPaise(Number(amount)));
   const canSave = !!amount && !isNaN(numericAmount) && numericAmount > 0 && !saving;
 
   return (
@@ -45,6 +46,7 @@ export function SupplierPayNowModal({
           <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.antiqueGold }}><Money value={rupees(outstanding)} /></div>
         </div>
 
+        {/* eslint-disable-next-line no-restricted-syntax -- form field label text, not a money value display */}
         <Field label="Amount to Pay (₹)" required id="supplier-amount-to-pay">
           <CurrencyInput value={amount === "" ? "" : Number(amount)} onValueChange={v => setAmount(v === "" ? "" : String(v))} />
         </Field>

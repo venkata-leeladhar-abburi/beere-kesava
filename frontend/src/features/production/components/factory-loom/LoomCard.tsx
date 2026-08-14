@@ -23,7 +23,7 @@ export function LoomCard({ loom, batches, sarees, onView }: { loom: FactoryLoom;
             <div style={{ width: 48, height: 48, borderRadius: 14, background: tc, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Factory size={22} color="#FFF" /></div>
             <div>
               <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: T.luxuryBrown }}>{loom.loomNumber}</div>
-              <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2 }}>{loom.id}</div>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 2 }}>{loom.id}</div>
             </div>
           </div>
           <StatusPill taxonomy="condition" status={LOOM_STATUS_TO_CONDITION[loom.status]} />
@@ -31,7 +31,7 @@ export function LoomCard({ loom, batches, sarees, onView }: { loom: FactoryLoom;
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 14 }}>
           {[{ l: "Location", v: loom.location }, { l: "Operator", v: loom.operatorName }, { l: "Installed", v: loom.installedYear || "—" }].map(f => (
             <div key={f.l} style={{ background: T.silkCream, borderRadius: 10, padding: "9px 11px" }}>
-              <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 3 }}>{f.l}</div>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 3 }}>{f.l}</div>
               <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{f.v}</div>
             </div>
           ))}

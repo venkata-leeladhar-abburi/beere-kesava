@@ -35,5 +35,21 @@ export default tseslint.config(
     },
   },
 
+  {
+    // Test doubles are deliberately loosely typed (`let prisma: any = {...}`)
+    // rather than reimplementing PrismaService's full generated type per
+    // test — the strict any/unsafe-* rules below exist for production code,
+    // not mocks.
+    files: ["**/*.spec.ts"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-unsafe-argument": "off",
+      "@typescript-eslint/no-unsafe-assignment": "off",
+      "@typescript-eslint/no-unsafe-call": "off",
+      "@typescript-eslint/no-unsafe-member-access": "off",
+      "@typescript-eslint/no-unsafe-return": "off",
+    },
+  },
+
   prettierConfig,
 );

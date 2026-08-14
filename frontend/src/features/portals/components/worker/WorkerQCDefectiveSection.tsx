@@ -120,8 +120,8 @@ export function WorkerQCDefectiveSection({
           </div>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: cols, gap: 16 }}>
-            {filteredDefLog.map((d, i) => (
-              <DefectiveCard key={d.id + i} d={d} onView={() => setViewing(d)} />
+            {filteredDefLog.map((d) => (
+              <DefectiveCard key={d.id} d={d} onView={() => setViewing(d)} />
             ))}
           </div>
         )}

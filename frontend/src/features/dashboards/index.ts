@@ -11,3 +11,5 @@
 export { AccountantDashboard } from "./components/AccountantDashboard";
 export { BeereDashboard } from "./components/BeereDashboard";
 export { SuperadminDashboard } from "./components/SuperadminDashboard";
+export * from "./components/beere-dashboard/theme";
+export * from "./components/beere-dashboard/ui";

@@ -1,8 +1,8 @@
 import React from "react";
 import { motion } from "motion/react";
-import { Camera, Check, List } from "lucide-react";
-import { C, F, Card, Btn, Chip } from "./theme";
-import { Button, Input, CurrencyInput } from "../../../../shared/ui/primitives";
+import { List } from "lucide-react";
+import { C, F, Card, Chip } from "./theme";
+import { Button, CurrencyInput } from "../../../../shared/ui/primitives";
 import { StepHeader, StepBody, FlowActions, ScanPanel, FoundBanner, ACCENT_SALE } from "./flow-kit";
 import type { BackendStockItem } from "../../../../shared/api/inventory";
 
@@ -164,8 +164,8 @@ export function ScanSareeStep({
                     ["Type", saree.type, false],
                     ["Weight", saree.weight, true],
                     ["Weaver", saree.weaver, false],
-                  ].map(([k, v, mono], i) => (
-                    <div key={i}>
+                  ].map(([k, v, mono]) => (
+                    <div key={k as string}>
                       <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 3 }}>{k as string}</div>
                       <div style={{ fontFamily: mono ? F.m : F.u, fontWeight: 600, fontSize: 13, color: C.text }}>{v as string}</div>
                     </div>
@@ -174,8 +174,9 @@ export function ScanSareeStep({
               </div>
               {canSeePrices && (
                 <div style={{ borderTop: isMobile ? `1px solid ${C.bdr}` : "none", borderLeft: isMobile ? "none" : `1px solid ${C.bdr}`, paddingTop: isMobile ? 14 : 0, marginTop: isMobile ? 16 : 0, paddingLeft: isMobile ? 0 : 24, width: isMobile ? undefined : 220, flexShrink: 0 }}>
-                  <label style={{ fontFamily: F.u, fontWeight: 500, fontSize: 13, color: C.muted, display: "block", marginBottom: 8 }}>Selling Price (₹)</label>
+                  <label htmlFor="selling-price" style={{ fontFamily: F.u, fontWeight: 500, fontSize: 13, color: C.muted, display: "block", marginBottom: 8 }}>Selling Price</label>
                   <CurrencyInput
+                    id="selling-price"
                     value={soldPrice}
                     onValueChange={v => setSoldPrice(v === "" ? 0 : v)}
                     size="lg"

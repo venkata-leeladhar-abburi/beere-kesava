@@ -9,3 +9,4 @@ export * from "./components/BulkOrderCreateModal";
 export * from "./components/BulkOrderDetailPage";
 export * from "./contexts/BulkOrderContext";
 export * from "./utils/BulkOrderLinking";
+export * from "./components/WholesaleCustomerSelectSection";

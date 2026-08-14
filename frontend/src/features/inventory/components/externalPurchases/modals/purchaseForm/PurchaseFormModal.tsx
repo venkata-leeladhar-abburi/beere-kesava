@@ -4,7 +4,7 @@ import { X, Save } from "lucide-react";
 import {
   useSuppliers, SareeTag,
   buildSareeCode, computeFinalAmount, purchaseTotals,
-} from "../../../../../suppliers/contexts/SupplierContext";
+} from "@/features/suppliers";
 import { T, F } from "../../theme";
 import { Button, IconButton } from "../../../../../../shared/ui/primitives";
 import { FormState } from "../../types";
@@ -34,11 +34,6 @@ export function PurchaseFormModal({
   const { suppliers } = useSuppliers();
   const [form, setForm] = useState<FormState>(initial);
   const [sareeDetails, setSareeDetails] = useState(() => initialSarees.map(toSareeRow));
-  // Declared for a not-yet-wired "request" flow — kept for parity with the
-  // pre-split file rather than pruned; unused in the current render.
-  const [urgency, setUrgency] = useState<"Normal" | "Urgent">("Normal");
-  const [reason, setReason] = useState("");
-
   const selectedSupplier = suppliers.find((s) => s.id === form.supplierId) ?? null;
 
   const set = (key: keyof FormState, value: string) =>

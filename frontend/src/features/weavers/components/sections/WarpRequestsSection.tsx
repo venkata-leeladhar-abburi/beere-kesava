@@ -55,7 +55,7 @@ export function WarpRequestsSection() {
         actions={
           <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(192,57,43,0.30)", border: "1px solid rgba(192,57,43,0.45)", borderRadius: 10, padding: "8px 16px" }}>
             <Clock size={18} color="#F4A6A6" />
-            <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 600, color: "#F4A6A6", letterSpacing: "0.3px" }}>{requests.length} request{requests.length === 1 ? "" : "s"} pending</span>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 600, color: "#F4A6A6", letterSpacing: "0.3px" }}>{requests.length} request{requests.length === 1 ? "" : "s"} pending</span>
           </div>
         }
       >
@@ -85,8 +85,8 @@ export function WarpRequestsSection() {
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontFamily: F.display, fontSize: 20, color: T.luxuryBrown, fontWeight: 700, lineHeight: 1.2, marginBottom: 4 }}>{r.weaver.name}</div>
-                    {r.weaver.village && <div style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, letterSpacing: "0.4px", marginBottom: 3 }}>{r.weaver.village}</div>}
-                    {r.loomNumber && <div style={{ display: "inline-block", fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 7, padding: "3px 10px" }}>Loom {r.loomNumber}</div>}
+                    {r.weaver.village && <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.royalBurgundy, letterSpacing: "0.4px", marginBottom: 3 }}>{r.weaver.village}</div>}
+                    {r.loomNumber && <div style={{ display: "inline-block", fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy, background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 7, padding: "3px 10px" }}>Loom {r.loomNumber}</div>}
                   </div>
                 </div>
 
@@ -102,7 +102,7 @@ export function WarpRequestsSection() {
                       <Clock size={20} color={T.royalBurgundy} />
                     </div>
                     <div>
-                      <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 500, color: T.taupe, letterSpacing: "1.6px", textTransform: "uppercase", marginBottom: 3 }}>Request raised</div>
+                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 500, color: T.taupe, letterSpacing: "1.6px", textTransform: "uppercase", marginBottom: 3 }}>Request raised</div>
                       <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{new Date(r.requestedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</div>
                     </div>
                   </div>
@@ -113,7 +113,7 @@ export function WarpRequestsSection() {
                       <Package size={20} color={T.royalBurgundy} />
                     </div>
                     <div>
-                      <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 500, color: T.taupe, letterSpacing: "1.6px", textTransform: "uppercase", marginBottom: 3 }}>Material requested</div>
+                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 500, color: T.taupe, letterSpacing: "1.6px", textTransform: "uppercase", marginBottom: 3 }}>Material requested</div>
                       <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, marginBottom: 2 }}>{r.warpType} · {r.lengthMeters}m{r.color ? ` · ${r.color}` : ""}</div>
                       {r.notes && <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, lineHeight: 1.45 }}>{r.notes}</div>}
                     </div>

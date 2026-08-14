@@ -76,7 +76,7 @@ export function DownloadHistorySection() {
                   <div style={{ display: "flex", gap: 32 }}>
                     <div>
                       <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe, marginBottom: 2 }}>Generated On</div>
-                      <div style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown }}>{new Date(r.downloadedAt).toLocaleDateString("en-IN")}</div>
+                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.luxuryBrown }}>{new Date(r.downloadedAt).toLocaleDateString("en-IN")}</div>
                     </div>
                     {r.downloadedBy && (
                       <div>
@@ -86,7 +86,7 @@ export function DownloadHistorySection() {
                     )}
                   </div>
                   <div style={{ display: "flex", gap: 6, flexWrap: "wrap" as const }}>
-                    <span style={{ padding: "3px 11px", borderRadius: 6, background: "rgba(110,15,45,0.07)", color: T.royalBurgundy, fontFamily: F.mono, fontSize: 12, fontWeight: 700 }}>{r.fileType}</span>
+                    <span style={{ padding: "3px 11px", borderRadius: 6, background: "rgba(110,15,45,0.07)", color: T.royalBurgundy, fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700 }}>{r.fileType}</span>
                   </div>
                 </div>
 

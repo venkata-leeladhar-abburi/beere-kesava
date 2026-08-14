@@ -17,10 +17,10 @@ export function TotalsBlock({ rows }: { rows: TotalsRow[] }) {
   return (
     <div className="bk-doc__totals" style={{ display: "flex", justifyContent: "flex-end" }}>
       <div className="bk-doc__totals-card">
-        {rows.map((r, i) =>
+        {rows.map((r) =>
           r.grand ? (
             <div
-              key={i}
+              key={r.label}
               className="bk-doc__totals-grand"
               style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "3.2mm 4mm" }}
             >
@@ -31,7 +31,7 @@ export function TotalsBlock({ rows }: { rows: TotalsRow[] }) {
             </div>
           ) : (
             <div
-              key={i}
+              key={r.label}
               style={{
                 display: "flex", justifyContent: "space-between", padding: "2.2mm 4mm",
                 borderBottom: "0.25mm solid var(--doc-rule-soft)",

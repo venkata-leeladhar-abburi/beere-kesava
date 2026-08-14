@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax -- material unit/quantity parsing (kg, g, reels, buns), not currency */
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { CheckSquare, Square, Users, X } from "lucide-react";
 import { C, F } from "../tokens";
-import { useFinishing } from "../../../../finishing/contexts/FinishingContext";
+import { useFinishing } from "@/features/finishing";
 import { EASE, WORKER_NAME, ScanBarBtn, useScanSim, Toast } from "./shared";
 import { StaffPickerModal } from "./StaffPickerModal";
 import { Button, IconButton } from "../../../../../shared/ui/primitives";

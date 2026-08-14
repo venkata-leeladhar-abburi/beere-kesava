@@ -1,37 +1,12 @@
 
-import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router";
-import { createPortal } from "react-dom";
 import { useResponsive } from "../../../hooks/useResponsive";
-import { useBatches, SareeRow } from "../../production/contexts/BatchContext";
-import { useDesignLibrary, DesignEntry } from "../../design-library/contexts/DesignLibraryContext";
-import { DesignCodeCard } from "../../design-library/components/DesignLibraryPage";
-import { useMaterialIssue, MaterialIssueRecord, JARI_REEL_GRAMS } from "../../materials/contexts/MaterialIssueContext";
-import { useWeaverPayments } from "../../weavers/contexts/WeaverPaymentsContext";
-import { useAuth } from "../../../contexts/AuthContext";
-import { motion, AnimatePresence, useInView } from "motion/react";
-import {
-  Bell, ClipboardList, CheckSquare, Palette, ArrowUpRight,
-  Wallet, Shield, Send, ChevronRight, X, ChevronLeft,
-  Package, Check, Eye, LogOut, Search, RotateCcw,
-  AlertCircle, Clock, Flower2, Layers, Info, Pencil,
-  Scissors, LayoutGrid, CreditCard, ClipboardCheck,
-  TrendingUp, ArrowRight, Sparkles, UserRound,
-  CheckCircle2, History, ListChecks,
-  AlertTriangle, Inbox, Zap,
-} from "lucide-react";
-import { imgBKLogo } from "../../../shared/constants/weaverImages";
-import { Button, IconButton } from "../../../shared/ui/primitives";
+import { AnimatePresence } from "motion/react";
 import { UserProfileModal } from "../../../shared/ui/UserProfileModal";
 
 // ─── Design Tokens ─────────────────────────────────────────────────────────
 
-import { MyBatchesPage } from './weaver-portal/MyBatchesPage';
-import { ConfirmMaterialPage } from './weaver-portal/ConfirmMaterialPage';
-import { WarpRequestPage } from './weaver-portal/WarpRequestPage';
-import { PaymentLedgerPage } from './weaver-portal/PaymentLedgerPage';
-import { NotificationsPage } from './weaver-portal/NotificationsPage';
-import { BatchHistoryPage } from './weaver-portal/BatchHistoryPage';
 import { DesktopWeaverPortal } from './weaver-portal/DesktopWeaverPortal';
 import { MobileWeaverPortal } from './weaver-portal/MobileWeaverPortal';
 type Tab5 = "batches" | "confirm" | "warp" | "payments";

@@ -90,7 +90,6 @@ export function WeaverCardGrid({ onSelect, onEdit, onBatches, extraWeavers = [] 
     <div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24, alignItems: "stretch" }}>
         {visible.map((w, i) => {
-          const cfg = STATUS_CFG[w.status];
           return (
             <FadeUp key={w.id} delay={i * 0.05} style={{ height: "100%" }}>
               <motion.div
@@ -118,7 +117,7 @@ export function WeaverCardGrid({ onSelect, onEdit, onBatches, extraWeavers = [] 
                   <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.4) 100%)", pointerEvents: "none" }} />
 
                   {/* Floating ID badge in top left */}
-                  <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(26,10,15,0.65)", backdropFilter: "blur(6px)", color: "#FFFDF9", fontFamily: F.mono, fontSize: 12, fontWeight: 600, letterSpacing: "0.5px", padding: "4px 10px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.15)" }}>
+                  <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(26,10,15,0.65)", backdropFilter: "blur(6px)", color: "#FFFDF9", fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, letterSpacing: "0.5px", padding: "4px 10px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.15)" }}>
                     {w.code ?? w.id}
                   </div>
 
@@ -161,7 +160,7 @@ export function WeaverCardGrid({ onSelect, onEdit, onBatches, extraWeavers = [] 
                       {w.name}
                     </div>
                     {w.batch && (
-                      <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 6, padding: "3px 8px", textTransform: "uppercase" }}>
+                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 6, padding: "3px 8px", textTransform: "uppercase" }}>
                         {w.batch}
                       </span>
                     )}
@@ -285,7 +284,7 @@ export function WeaverListView({ onSelect, extraWeavers = [] }: { onSelect: (w: 
           </div>
           <div>
             <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 16, color: T.luxuryBrown, marginBottom: 4 }}>{w.name}</div>
-            <div style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, letterSpacing: "0.4px" }}>{w.code ?? w.id}</div>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.royalBurgundy, letterSpacing: "0.4px" }}>{w.code ?? w.id}</div>
           </div>
         </div>
       ),

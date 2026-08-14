@@ -1,14 +1,14 @@
 import { useState, useMemo, useCallback } from "react";
-import { useFinishing, FinishingReturn, DispatchRecord, Quotation } from "../../finishing/contexts/FinishingContext";
-import { useDesignLibrary } from "../../design-library/contexts/DesignLibraryContext";
-import { useBulkOrders } from "../../bulk-orders/contexts/BulkOrderContext";
-import { useBatches } from "../../production/contexts/BatchContext";
-import { useFirms } from "../../firms/contexts/FirmsContext";
-import { useRatesPricing } from "../../pricing/contexts/RatesContext";
-import { useCustomers } from "../../customers/contexts/CustomersContext";
+import { useFinishing, FinishingReturn, DispatchRecord, Quotation } from "@/features/finishing";
+import { useDesignLibrary } from "@/features/design-library";
+import { useBulkOrders } from "@/features/bulk-orders";
+import { useBatches } from "@/features/production";
+import { useFirms } from "@/features/firms";
+import { useRatesPricing } from "@/features/pricing";
+import { useCustomers } from "@/features/customers";
 import { TransportData, InvoiceData, InventoryRecord } from "../components/types";
 import { rowToDispatchSaree } from "../components/modals/shared/SareePicker";
-import { WeaverSareeRow } from "../../weavers/components/WeaverSareesSection";
+import { WeaverSareeRow } from "@/features/weavers";
 
 export function useInventoryPageState() {
   const { returns, dispatches, dispatchSarees, updateDispatch, deleteDispatch, readySarees, raiseQuotation, quotations, markQuotationDispatched } = useFinishing();
@@ -47,7 +47,7 @@ export function useInventoryPageState() {
 
     // 1. Ready sarees (QC Passed — pending finishing)
     readySarees.forEach(s => {
-      const boRef = (s as any).bulkOrderRef || bulkOrders.find(bo =>
+      const boRef = s.bulkOrderRef || bulkOrders.find(bo =>
         bo.design === s.designCode &&
         (bo.sareeType.toLowerCase().includes(s.sareeType.toLowerCase()) ||
          s.sareeType.toLowerCase().includes(bo.sareeType.split(" · ")[0].toLowerCase()))
@@ -84,7 +84,7 @@ export function useInventoryPageState() {
         sareeType: r.sareeType,
         weaverName: r.weaverName,
         date: r.receivedDate,
-        status: status as any,
+        status: status as InventoryRecord["status"],
         rawType: "return",
         originalId: r.id,
         bulkOrderRef: boRef,

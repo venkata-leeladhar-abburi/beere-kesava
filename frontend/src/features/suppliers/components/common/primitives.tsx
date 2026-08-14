@@ -95,6 +95,7 @@ export function PayStatusPill({ status }: { status: string }) {
 export function StarRating({ rating }: { rating: number }) {
   return (
     <div style={{ display: "flex", gap: 2 }}>
+      {/* eslint-disable-next-line no-restricted-syntax -- star rating UI, not chart series */}
       {[1, 2, 3, 4, 5].map(i => <Star key={i} size={12} fill={i <= rating ? T.antiqueGold : "none"} color={i <= rating ? T.antiqueGold : T.taupe} />)}
     </div>
   );

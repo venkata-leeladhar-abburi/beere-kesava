@@ -68,7 +68,7 @@ export function MakingChargesSection({
     {
       id: "code", header: "Code", accessor: r => r.code,
       cell: v => (
-        <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 600, background: "rgba(110,15,45,0.08)", padding: "3px 8px", borderRadius: 6 }}>{v as string}</span>
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy, fontWeight: 600, background: "rgba(110,15,45,0.08)", padding: "3px 8px", borderRadius: 6 }}>{v as string}</span>
       ),
     },
     { id: "type", header: "Saree Type", accessor: r => r.type, cell: v => <span style={{ fontWeight: 500 }}>{v as string}</span> },
@@ -78,8 +78,8 @@ export function MakingChargesSection({
     },
     { id: "retail", header: "Retail", accessor: r => r.retail, cell: v => <>{formatMoney(rupees(parseInt(v as string)))}</> },
     { id: "wholesale", header: "Wholesale", accessor: r => r.wholesale, cell: v => <>{formatMoney(rupees(parseInt(v as string)))}</> },
-    { id: "stdWeight", header: "Std Weight", accessor: r => r.stdWeight, cell: v => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{v as string}g</span> },
-    { id: "changed", header: "Last Changed", accessor: r => r.changed, cell: v => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{v as string}</span> },
+    { id: "stdWeight", header: "Std Weight", accessor: r => r.stdWeight, cell: v => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>{v as string}g</span> },
+    { id: "changed", header: "Last Changed", accessor: r => r.changed, cell: v => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{v as string}</span> },
     {
       id: "actions", header: "Actions", accessor: () => null,
       cell: (_v, row) => (
@@ -106,7 +106,7 @@ export function MakingChargesSection({
     <SectionCard
       icon={Tags}
       title="Making Charge Rates — Per Saree Type"
-      subtitle="Applied to each saree during production billing. Making charge is the amount paid to the weaver per saree woven. All prices in Indian Rupees (₹)."
+      subtitle="Applied to each saree during production billing. Making charge is the amount paid to the weaver per saree woven. All prices in Indian Rupees (INR)."
       actions={<GoldLink><BarChart2 size={13} /> View Rate Change History →</GoldLink>}
     >
       {/* Rates Table */}
@@ -130,7 +130,7 @@ export function MakingChargesSection({
                 <div style={{ background: T.cream, borderTop: `2px solid ${T.antiqueGold}`, padding: 24 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
                     <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>
-                      Editing: {row.type} — <span style={{ fontFamily: F.mono, color: T.royalBurgundy }}>{row.code}</span>
+                      Editing: {row.type} — <span style={{ fontFamily: "var(--font-mono)", color: T.royalBurgundy }}>{row.code}</span>
                     </span>
                     <IconButton
                       icon={X} label="Close" variant="ghost" size="sm"
@@ -143,7 +143,7 @@ export function MakingChargesSection({
                     {/* Col 1 — Identity */}
                     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                       <div>
-                        <label style={labelStyle}>Saree Type Name *</label>
+                        <span style={{ ...labelStyle, display: "block" }}>Saree Type Name *</span>
                         <SareeTypeCombobox
                           value={editVals.type ?? row.type}
                           onChange={v => setEditVals(p => ({ ...p, type: v }))}
@@ -163,16 +163,16 @@ export function MakingChargesSection({
                     {/* Col 2 — Pricing */}
                     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                       <div>
-                        <label style={labelStyle} htmlFor="making-charge">Making Charge (₹) *</label>
-                        <NumberInput id="making-charge" addonLeft="₹" value={Number(editVals.charge ?? row.charge)} onValueChange={v => setEditVals(p => ({ ...p, charge: String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
+                        <label style={labelStyle} htmlFor="making-charge">Making Charge (INR) *</label>
+                        <NumberInput id="making-charge" addonLeft="INR" value={Number(editVals.charge ?? row.charge)} onValueChange={v => setEditVals(p => ({ ...p, charge: String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
                       </div>
                       <div>
-                        <label style={labelStyle} htmlFor="retail-price">Retail Price (₹)</label>
-                        <NumberInput id="retail-price" addonLeft="₹" value={Number(editVals.retail ?? row.retail)} onValueChange={v => setEditVals(p => ({ ...p, retail: String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
+                        <label style={labelStyle} htmlFor="retail-price">Retail Price (INR)</label>
+                        <NumberInput id="retail-price" addonLeft="INR" value={Number(editVals.retail ?? row.retail)} onValueChange={v => setEditVals(p => ({ ...p, retail: String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
                       </div>
                       <div>
-                        <label style={labelStyle} htmlFor="wholesale-price">Wholesale Price (₹)</label>
-                        <NumberInput id="wholesale-price" addonLeft="₹" value={Number(editVals.wholesale ?? row.wholesale)} onValueChange={v => setEditVals(p => ({ ...p, wholesale: String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
+                        <label style={labelStyle} htmlFor="wholesale-price">Wholesale Price (INR)</label>
+                        <NumberInput id="wholesale-price" addonLeft="INR" value={Number(editVals.wholesale ?? row.wholesale)} onValueChange={v => setEditVals(p => ({ ...p, wholesale: String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
                       </div>
                     </div>
                     {/* Col 3 — Weights */}
@@ -182,14 +182,14 @@ export function MakingChargesSection({
                         <NumberInput id="standard-weight-g" value={Number(editVals.stdWeight ?? row.stdWeight)} onValueChange={v => setEditVals(p => ({ ...p, stdWeight: String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" placeholder="Enter manually" />
                       </div>
                       <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: 14 }}>
-                        <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "0.10em", color: T.taupe, textTransform: "uppercase", marginBottom: 10 }}>Material Weight Breakdown</div>
+                        <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, letterSpacing: "0.10em", color: T.taupe, textTransform: "uppercase", marginBottom: 10 }}>Material Weight Breakdown</div>
                         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                           <div>
-                            <label style={{ ...labelStyle, marginBottom: 3 }}>Warp Weight (g)</label>
+                            <span style={{ ...labelStyle, marginBottom: 3, display: "block" }}>Warp Weight (g)</span>
                             <NumberInput value={Number(editVals.warpWeight ?? row.warpWeight)} onValueChange={v => setEditVals(p => ({ ...p, warpWeight: String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
                           </div>
                           <div>
-                            <label style={{ ...labelStyle, marginBottom: 3 }}>Resham Weight (g)</label>
+                            <span style={{ ...labelStyle, marginBottom: 3, display: "block" }}>Resham Weight (g)</span>
                             <NumberInput value={Number(editVals.reshamWeight ?? row.reshamWeight)} onValueChange={v => setEditVals(p => ({ ...p, reshamWeight: String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
                           </div>
                           <JariWeightField
@@ -252,7 +252,7 @@ export function MakingChargesSection({
                 {/* Col 1 — Identity */}
                 <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                   <div>
-                    <label style={labelStyle}>Saree Type Name * <span style={{ color: T.antiqueGold, fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>(select existing or type new)</span></label>
+                    <span style={{ ...labelStyle, display: "block" }}>Saree Type Name * <span style={{ color: T.antiqueGold, fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>(select existing or type new)</span></span>
                     <SareeTypeCombobox
                       value={newVals.type ?? ""}
                       onChange={v => setNewVals(p => ({ ...p, type: v }))}
@@ -271,16 +271,16 @@ export function MakingChargesSection({
                 {/* Col 2 — Pricing */}
                 <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                   <div>
-                    <label style={labelStyle} htmlFor="making-charge-2">Making Charge (₹) *</label>
-                    <NumberInput id="making-charge-2" addonLeft="₹" value={newVals.charge ? Number(newVals.charge) : ""} onValueChange={v => setNewVals(p => ({ ...p, charge: v === "" ? "" : String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" placeholder="0" />
+                    <label style={labelStyle} htmlFor="making-charge-2">Making Charge (INR) *</label>
+                    <NumberInput id="making-charge-2" addonLeft="INR" value={newVals.charge ? Number(newVals.charge) : ""} onValueChange={v => setNewVals(p => ({ ...p, charge: v === "" ? "" : String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" placeholder="0" />
                   </div>
                   <div>
-                    <label style={labelStyle} htmlFor="retail-price-2">Retail Price (₹)</label>
-                    <NumberInput id="retail-price-2" addonLeft="₹" value={newVals.retail ? Number(newVals.retail) : ""} onValueChange={v => setNewVals(p => ({ ...p, retail: v === "" ? "" : String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" placeholder="0" />
+                    <label style={labelStyle} htmlFor="retail-price-2">Retail Price (INR)</label>
+                    <NumberInput id="retail-price-2" addonLeft="INR" value={newVals.retail ? Number(newVals.retail) : ""} onValueChange={v => setNewVals(p => ({ ...p, retail: v === "" ? "" : String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" placeholder="0" />
                   </div>
                   <div>
-                    <label style={labelStyle} htmlFor="wholesale-price-2">Wholesale Price (₹)</label>
-                    <NumberInput id="wholesale-price-2" addonLeft="₹" value={newVals.wholesale ? Number(newVals.wholesale) : ""} onValueChange={v => setNewVals(p => ({ ...p, wholesale: v === "" ? "" : String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" placeholder="0" />
+                    <label style={labelStyle} htmlFor="wholesale-price-2">Wholesale Price (INR)</label>
+                    <NumberInput id="wholesale-price-2" addonLeft="INR" value={newVals.wholesale ? Number(newVals.wholesale) : ""} onValueChange={v => setNewVals(p => ({ ...p, wholesale: v === "" ? "" : String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" placeholder="0" />
                   </div>
                 </div>
                 {/* Col 3 — Weights */}
@@ -290,14 +290,14 @@ export function MakingChargesSection({
                     <NumberInput id="standard-weight-g-2" value={newVals.stdWeight ? Number(newVals.stdWeight) : ""} onValueChange={v => setNewVals(p => ({ ...p, stdWeight: v === "" ? "" : String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" placeholder="Enter manually" />
                   </div>
                   <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: 14 }}>
-                    <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "0.10em", color: T.taupe, textTransform: "uppercase", marginBottom: 10 }}>Material Weight Breakdown</div>
+                    <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, letterSpacing: "0.10em", color: T.taupe, textTransform: "uppercase", marginBottom: 10 }}>Material Weight Breakdown</div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                       <div>
-                        <label style={{ ...labelStyle, marginBottom: 3 }}>Warp Weight (g)</label>
+                        <span style={{ ...labelStyle, marginBottom: 3, display: "block" }}>Warp Weight (g)</span>
                         <NumberInput value={newVals.warpWeight ? Number(newVals.warpWeight) : ""} onValueChange={v => setNewVals(p => ({ ...p, warpWeight: v === "" ? "" : String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" placeholder="0" />
                       </div>
                       <div>
-                        <label style={{ ...labelStyle, marginBottom: 3 }}>Resham Weight (g)</label>
+                        <span style={{ ...labelStyle, marginBottom: 3, display: "block" }}>Resham Weight (g)</span>
                         <NumberInput value={newVals.reshamWeight ? Number(newVals.reshamWeight) : ""} onValueChange={v => setNewVals(p => ({ ...p, reshamWeight: v === "" ? "" : String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" placeholder="0" />
                       </div>
                       <JariWeightField

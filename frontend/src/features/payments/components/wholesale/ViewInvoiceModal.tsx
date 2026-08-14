@@ -1,7 +1,7 @@
 import { X } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
 
-import { useFinishing } from "../../../finishing/contexts/FinishingContext";
+import { useFinishing } from "@/features/finishing";
 import { BulkOrder } from "../../theme";
 import { Invoice } from "../../types";
 import { IconButton } from "../../../../shared/ui/primitives";

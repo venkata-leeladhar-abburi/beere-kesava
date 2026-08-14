@@ -2,9 +2,11 @@ import React, { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Tag, Banknote, Percent, RefreshCcw, Store } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import type { TooltipProps } from "recharts";
+import type { ValueType, NameType } from "recharts/types/component/DefaultTooltipContent";
 import { T, F } from "../theme";
 import { semantic } from "../../../../design-system/tokens";
-import { FadeUp, ChartCard, SumCard, SectionCard, ReportDLBar, AnimBar, TablePager, TH, TD } from "../common/primitives";
+import { FadeUp, ChartCard, SumCard, SectionCard, ReportDLBar, AnimBar, TablePager } from "../common/primitives";
 import { salesApi } from "../../../../shared/api/sales";
 import { customersApi } from "../../../../shared/api/customers";
 import { batchesApi } from "../../../../shared/api/batches";
@@ -21,7 +23,7 @@ interface RetailSaleRow {
   price: number;
 }
 
-function RetailWeeklyTooltip({ active, payload, label }: any) {
+function RetailWeeklyTooltip({ active, payload, label }: TooltipProps<ValueType, NameType>) {
   if (!active || !payload || !payload.length) return null;
   const d = payload[0].payload;
   return (
@@ -159,11 +161,11 @@ export function RetailSalesReport() {
   const retailColumns: ColumnDef<RetailSaleRow>[] = [
     {
       id: "id", header: "Sale ID", accessor: r => r.id,
-      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.id}</span>,
+      cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy }}>{r.id}</span>,
     },
     {
       id: "date", header: "Sale Date", accessor: r => r.date,
-      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{r.date}</span>,
+      cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>{r.date}</span>,
     },
     {
       id: "customer", header: "Customer Name", accessor: r => r.customer,
@@ -175,12 +177,12 @@ export function RetailSalesReport() {
     },
     {
       id: "sarId", header: "Saree ID", accessor: r => r.sarId,
-      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.sarId}</span>,
+      cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{r.sarId}</span>,
     },
     {
       id: "price", header: "Retail Price", accessor: r => r.price, align: "end",
       cell: (_v, r) => (
-        <span style={{ fontFamily: F.mono, fontWeight: 700, color: r.price < 0 ? T.crimson : T.green }}>
+        <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: r.price < 0 ? T.crimson : T.green }}>
           <Money value={rupees(r.price)} sign={r.price < 0} />
         </span>
       ),
@@ -206,11 +208,11 @@ export function RetailSalesReport() {
             </div>
             <div style={{ display: "flex", gap: 24 }}>
               <div>
-                <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Sarees This Month</div>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Sarees This Month</div>
                 <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.royalBurgundy }}>{retailWeeklyData.reduce((s, w) => s + w.sarees, 0)}</div>
               </div>
               <div>
-                <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Revenue This Month</div>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Revenue This Month</div>
                 <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.green }}><Money value={rupees(retailWeeklyData.reduce((s, w) => s + w.revenue, 0))} /></div>
               </div>
             </div>
@@ -218,10 +220,10 @@ export function RetailSalesReport() {
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={retailWeeklyData}>
               <CartesianGrid key="retw-grid" strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
-              <XAxis key="retw-x" dataKey="week" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
-              <YAxis key="retw-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={30} />
+              <XAxis key="retw-x" dataKey="week" tick={{ fontFamily: "var(--font-mono)", fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
+              <YAxis key="retw-y" tick={{ fontFamily: "var(--font-mono)", fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={30} />
               <Tooltip key="retw-tip" content={<RetailWeeklyTooltip />} cursor={{ fill: "rgba(110,15,45,0.04)" }} />
-              <Bar key="retw-bar" dataKey="sarees" name="Sarees Sold" fill={T.royalBurgundy} radius={[6, 6, 0, 0] as any} />
+              <Bar key="retw-bar" dataKey="sarees" name="Sarees Sold" fill={T.royalBurgundy} radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -238,8 +240,8 @@ export function RetailSalesReport() {
               {retailDesignSales.map((d, i) => (
                 <div key={d.design}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
-                    <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{d.design}</span>
-                    <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{d.count} sarees</span>
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{d.design}</span>
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{d.count} sarees</span>
                   </div>
                   <AnimBar pct={Math.round((d.count / maxDesignCount) * 100)} color={T.royalBurgundy} height={7} delay={i * 0.07} />
                 </div>
@@ -260,7 +262,7 @@ export function RetailSalesReport() {
                   <Pie key="ret-rev-pie" data={retailRevenueDonut} cx="50%" cy="50%" innerRadius={45} outerRadius={65} dataKey="value" stroke="none" paddingAngle={3}>
                     {retailRevenueDonut.map(e => <Cell key={`ret-rev-cell-${e.name}`} fill={e.color} />)}
                   </Pie>
-                  <Tooltip key="ret-rev-tip" formatter={(v: any, n: any) => [formatMoney(rupees(Number(v))), n]} contentStyle={{ fontFamily: F.ui, fontSize: 12, borderRadius: 8 }} />
+                  <Tooltip key="ret-rev-tip" formatter={(v: number | string, n: string) => [formatMoney(rupees(Number(v))), n]} contentStyle={{ fontFamily: F.ui, fontSize: 12, borderRadius: 8 }} />
                 </PieChart>
               </ResponsiveContainer>
               <div style={{ display: "flex", flexDirection: "column", gap: 5, padding: "0 4px" }}>
@@ -270,7 +272,7 @@ export function RetailSalesReport() {
                       <div style={{ width: 9, height: 9, borderRadius: "50%", background: d.color }} />
                       <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{d.name}</span>
                     </div>
-                    <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: d.color }}><Money value={rupees(d.value)} /></span>
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: d.color }}><Money value={rupees(d.value)} /></span>
                   </div>
                 ))}
               </div>
@@ -288,7 +290,7 @@ export function RetailSalesReport() {
 
       <FadeUp>
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
-          <div style={{ overflowX: "auto", minWidth: 700 }}>
+          <div className="min-w-[700px]" style={{ overflowX: "auto" }}>
             <DataTable
               columns={retailColumns}
               data={retailRows}

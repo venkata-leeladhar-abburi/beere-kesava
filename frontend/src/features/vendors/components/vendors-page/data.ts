@@ -52,8 +52,6 @@ export const MATERIAL_FILL: Record<string, string> = { Warp: T.royalBurgundy, Re
 // not-tracked state. (Previously this was a `DELIVERY_PERF` map keyed to
 // fake ids like "VEN-001", which never matched real vendor UUIDs anyway —
 // every real vendor was silently falling back to the same flat mock numbers.)
-const spendByType: any[] = [];
-
 export const MAT_TAG_PO: Record<string, { col: string; bg: string }> = {
   Warp:   { col: T.royalBurgundy, bg: "rgba(110,15,45,0.09)"   },
   Resham: { col: "#7A5E1C",       bg: "rgba(200,155,71,0.13)"  },

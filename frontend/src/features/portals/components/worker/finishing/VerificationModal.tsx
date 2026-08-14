@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { CheckCircle2, AlertTriangle, Camera, UploadCloud } from "lucide-react";
 import { C, F } from "../tokens";
-import { FinishingAssignment } from "../../../../finishing/contexts/FinishingContext";
+import { FinishingAssignment } from "@/features/finishing";
 import { EASE } from "./shared";
 import { Button, Input, Textarea, Select, SelectItem } from "../../../../../shared/ui/primitives";
 import { Modal } from "../../../../../shared/ui/overlay";
@@ -17,8 +17,20 @@ export interface VerifData {
 
 function DamagePhotoPrompt({ onCapture, onCancel }: { onCapture: () => void; onCancel: () => void }) {
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: "var(--z-popover)", background: "var(--surface-scrim)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={onCancel}>
-      <div onClick={e => e.stopPropagation()} style={{ background: "#FFF", borderRadius: 16, padding: 20, width: "min(92vw, 340px)", boxShadow: "0 24px 60px rgba(27,12,8,0.30)" }}>
+    <div
+      role="button"
+      aria-label="Close photo prompt"
+      tabIndex={0}
+      style={{ position: "fixed", inset: 0, zIndex: "var(--z-popover)", background: "var(--surface-scrim)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+      onClick={onCancel}
+      onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { onCancel(); } }}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Photo Required"
+        style={{ background: "#FFF", borderRadius: 16, padding: 20, width: "min(92vw, 340px)", boxShadow: "0 24px 60px rgba(27,12,8,0.30)" }}
+      >
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
           <AlertTriangle size={18} color={C.crim} />
           <span style={{ fontFamily: F.d, fontSize: 14, fontWeight: 700, color: C.text }}>Photo Required</span>

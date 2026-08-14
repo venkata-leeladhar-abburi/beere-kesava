@@ -1,8 +1,9 @@
 import React from "react";
 import { motion } from "motion/react";
-import { Camera, Check, AlertTriangle, RotateCcw, List } from "lucide-react";
-import { C, F, Card, Btn } from "./theme";
-import { Button, Input, Textarea } from "../../../../shared/ui/primitives";
+import { RotateCcw, List } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { C, F } from "./theme";
+import { Button, Textarea } from "../../../../shared/ui/primitives";
 import {
   Stepper, StepHeader, StepBody, FlowActions, ScanPanel, FoundBanner,
   SummaryPanel, OptionCard, ConsequenceNote, ACCENT_RETURN,
@@ -12,9 +13,18 @@ import { Money } from "../../../../shared/ui/domain/Money";
 import { rupees } from "../../../../lib/domain/money";
 import type { BackendSaleRecord } from "../../../../shared/api/sales";
 
+interface ReturnReasonOption {
+  id: string;
+  label: string;
+  sub: string;
+  Icon: LucideIcon;
+  color: string;
+  bg: string;
+}
+
 interface ProcessReturnRetailFlowProps {
   step: 1 | 2 | 3;
-  setStep: (s: any) => void;
+  setStep: (s: 1 | 2 | 3) => void;
   saleFound: boolean;
   setSaleFound: (v: boolean) => void;
   foundSale: BackendSaleRecord | null;
@@ -30,7 +40,7 @@ interface ProcessReturnRetailFlowProps {
   setReason: (r: string | null) => void;
   otherReason: string;
   setOtherReason: (v: string) => void;
-  returnReasons: any[];
+  returnReasons: ReturnReasonOption[];
   canSeePrices: boolean;
   onConfirm: () => void;
 }
@@ -79,7 +89,7 @@ export function ProcessReturnRetailFlow({
         steps={steps}
         current={step as number}
         accent={ACCENT_RETURN}
-        onJump={n => setStep(n)}
+        onJump={n => setStep(n as 1 | 2 | 3)}
       />
 
       {/* ── Step 1 — Find the original sale ── */}
@@ -201,7 +211,7 @@ export function ProcessReturnRetailFlow({
               subtitle="The reason drives whether the saree returns to sale stock or goes to the defective pile — pick carefully."
             />
             <div role="radiogroup" aria-label="Return reason" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 14 }}>
-              {returnReasons.map((r: any) => (
+              {returnReasons.map((r) => (
                 <OptionCard
                   key={r.id}
                   name="return-reason"

@@ -1,17 +1,15 @@
 
 
-import React, { useState, useEffect, useMemo, useRef, createContext, useContext } from 'react';
+import React, { useState, useMemo } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { Modal } from "../../../../shared/ui/overlay";
 import {
-  Menu, X, Search, Bell, LogOut, Package, IndianRupee, RotateCcw, 
-  Users, BarChart3, ChevronRight, UserRound, ArrowLeft, Plus, MapPin, 
-  Phone, Eye, Download, Printer, Filter, Calendar, Activity,
-  ShoppingCart, Store, ArrowRight, Tag, Wallet, CreditCard, ChevronDown, CheckCircle2,
-  TrendingUp, ArrowDownRight, ArrowUpRight, TrendingDown, ShoppingBag, Star
+  X, Search, UserRound,
+  Phone,
+  ArrowRight, ShoppingBag, Star
 } from 'lucide-react';
 
-import { C, F, TEAL, Card, Btn, Chip, CUSTOMER_PURCHASES, useCanSeePrices } from './theme';
+import { C, F, Card, Chip, useCanSeePrices } from './theme';
 import { Button, IconButton, Input } from "../../../../shared/ui/primitives";
 import { useQuery } from '@tanstack/react-query';
 import { customersApi } from '../../../../shared/api/customers';
@@ -34,13 +32,13 @@ function CustomerProfiles() {
     queryFn: () => salesApi.list(100),
   });
 
-  const salesList = salesRes?.items ?? [];
+  const salesList = useMemo(() => salesRes?.items ?? [], [salesRes]);
 
   const customers = useMemo(() => {
     const raw = customersRes?.items ?? [];
     if (raw.length === 0) return [];
 
-    const salesByCustomer = new Map<string, any[]>();
+    const salesByCustomer = new Map<string, typeof salesList>();
     for (const sale of salesList) {
       if (!sale.customerId) continue;
       const list = salesByCustomer.get(sale.customerId) || [];
@@ -149,7 +147,7 @@ function CustomerProfiles() {
 
       <div style={{ padding: "8px 20px 0", display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 }}>
         {filtered.map((c, i) => (
-          <Card key={i} style={{ padding: 20 }}>
+          <Card key={c.id} style={{ padding: 20 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
               <div style={{ width: 54, height: 54, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <span style={{ fontFamily: F.d, fontSize: 18, fontWeight: 700, color: "#FFF" }}>{c.initials}</span>
@@ -225,7 +223,7 @@ function CustomerProfiles() {
                   <div style={{ width: 4, height: 18, background: C.burg, borderRadius: 2 }} /> Purchase History ({activePurchases.length})
                 </div>
                 {activePurchases.map((p, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 0", borderBottom: i < activePurchases.length - 1 ? `1px solid rgba(110,15,45,0.08)` : "none" }}>
+                  <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 0", borderBottom: i < activePurchases.length - 1 ? `1px solid rgba(110,15,45,0.08)` : "none" }}>
                     <div style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(110,15,45,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                       <ShoppingBag size={17} color={C.burg} />
                     </div>

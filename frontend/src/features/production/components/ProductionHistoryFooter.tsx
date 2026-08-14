@@ -1,5 +1,5 @@
 import React from "react";
-import { ChevronDown, Facebook, Instagram, Youtube, Linkedin, Phone } from "lucide-react";
+import { ChevronDown, Facebook, Instagram, Youtube, Linkedin, Phone, type LucideIcon } from "lucide-react";
 import { ImageWithFallback } from "../../../shared/ui/ImageWithFallback";
 import { imgBKLogo } from "../../../shared/constants/weaverImages";
 import { IconButton } from "../../../shared/ui/primitives";
@@ -44,6 +44,7 @@ function FooterLink({ label }: { label: string }) {
 export function ProductionHistoryFooter() {
   return (
     <footer style={{ background: T.darkBurgundy, paddingTop: 48, borderTop: `3px solid ${T.antiqueGold}` }}>
+      {/* eslint-disable-next-line no-restricted-syntax -- block-level div is already 100% wide by default; maxWidth only caps growth on large screens, no overflow risk */}
       <div className="px-4 md:px-7 xl:px-10" style={{ maxWidth: 1280, margin: "0 auto" }}>
         <div style={{ display: "flex", gap: 48, flexWrap: "wrap", paddingBottom: 40, borderBottom: "1px solid rgba(200,155,71,0.15)" }}>
           {/* Brand column */}
@@ -59,13 +60,13 @@ export function ProductionHistoryFooter() {
                 <div style={{ fontFamily: F.display, fontSize: 14, color: T.antiqueGold, lineHeight: 1.2 }}>&amp; Brothers Silks</div>
               </div>
             </div>
-            <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, letterSpacing: "2px", marginBottom: 10 }}>SINCE 1944</div>
+            <div style={{ fontFamily: F.ui, fontVariantNumeric: "tabular-nums", fontSize: 12, color: T.antiqueGold, letterSpacing: "2px", marginBottom: 10 }}>SINCE 1944</div>
             <p style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.55)", lineHeight: 1.7, marginBottom: 20 }}>
               Generating self-employment, we are traditional banarasi silk weaving manufacturers.
             </p>
             <div style={{ display: "flex", gap: 10 }}>
-              {[["Facebook", Facebook], ["Instagram", Instagram], ["Youtube", Youtube], ["Linkedin", Linkedin]].map(([name, Icon]: any, i) => (
-                <IconButton key={i} variant="secondary" size="sm" label={name} icon={Icon} />
+              {([["Facebook", Facebook], ["Instagram", Instagram], ["Youtube", Youtube], ["Linkedin", Linkedin]] as [string, LucideIcon][]).map(([name, Icon]) => (
+                <IconButton key={name} variant="secondary" size="sm" label={name} icon={Icon} />
               ))}
             </div>
           </div>
@@ -85,7 +86,7 @@ export function ProductionHistoryFooter() {
             {NEED_HELP.map((l) => <FooterLink key={l} label={l} />)}
             <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 7 }}>
               <Phone size={13} style={{ color: T.antiqueGold }} />
-              <span style={{ fontFamily: F.mono, fontSize: 12, color: T.goldLight, fontWeight: 600 }}>+91 98400 32045</span>
+              <span style={{ fontFamily: F.ui, fontVariantNumeric: "tabular-nums", fontSize: 12, color: T.goldLight, fontWeight: 600 }}>+91 98400 32045</span>
             </div>
           </FooterCol>
 
@@ -109,8 +110,8 @@ export function ProductionHistoryFooter() {
             Tradition Woven From Quality Creates Legacy
           </span>
           <div style={{ display: "flex", gap: 8 }}>
-            {[Facebook, Instagram, Youtube, Linkedin].map((Icon, i) => (
-              <Icon key={i} size={13} style={{ color: "rgba(255,253,249,0.30)", cursor: "pointer" }} />
+            {[Facebook, Instagram, Youtube, Linkedin].map((Icon) => (
+              <Icon key={Icon.displayName || Icon.name} size={13} style={{ color: "rgba(255,253,249,0.30)", cursor: "pointer" }} />
             ))}
           </div>
         </div>

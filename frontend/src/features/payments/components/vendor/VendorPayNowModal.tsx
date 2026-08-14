@@ -11,6 +11,7 @@ import { Modal } from "../../../../shared/ui/overlay";
 import { DatePicker, formatDate } from "../../../../shared/ui/date";
 import { rupees } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
+import { toPaise, fromPaise } from "@/lib/gst";
 
 export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; onClose: () => void; onSave: (amount: number, firmId: string) => void }) {
   const { firms } = useFirms();
@@ -23,6 +24,7 @@ export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; 
   const history = (paymentsRes?.items ?? [])
     .filter(p => !vp.billId || p.billId === vp.billId)
     .map(p => ({
+      id: p.id,
       amount: Number(p.amount),
       date: p.date ? p.date.split("T")[0] : "—",
       firm: firms.find(f => f.id === p.firmId)?.firmName ?? p.firmId ?? "—",
@@ -40,7 +42,7 @@ export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSave = async () => {
-    const numericAmount = parseFloat(amount);
+    const numericAmount = amount === "" || isNaN(Number(amount)) ? NaN : fromPaise(toPaise(Number(amount)));
     if (!amount || isNaN(numericAmount) || numericAmount <= 0 || !utr || !firmId) return;
     if (!vp.billId) {
       setSaveError("No bill has been raised against this PO yet — add an invoice first.");
@@ -88,13 +90,13 @@ export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; 
                 <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "16px", fontFamily: F.ui, fontSize: 13, color: T.taupe, textAlign: "center" }}>No payments recorded yet.</div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  {history.map((h, i) => (
-                    <div key={i} className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1.2fr]" style={{ background: "#FFFFFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, padding: "12px 14px", display: "grid", gap: "8px 10px" }}>
-                      <div><div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>Amount</div><div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.green }}><Money value={rupees(h.amount)} /></div></div>
-                      <div><div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>Date</div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{h.date}</div></div>
-                      <div><div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>Paying Firm</div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{h.firm}</div></div>
-                      <div style={{ gridColumn: "1 / 3" }}><div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>UTR</div><div style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{h.utr}</div></div>
-                      <div><div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>Method</div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{h.method}</div></div>
+                  {history.map((h) => (
+                    <div key={h.id} className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1.2fr]" style={{ background: "#FFFFFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, padding: "12px 14px", display: "grid", gap: "8px 10px" }}>
+                      <div><div style={{ fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>Amount</div><div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.green }}><Money value={rupees(h.amount)} /></div></div>
+                      <div><div style={{ fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>Date</div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{h.date}</div></div>
+                      <div><div style={{ fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>Paying Firm</div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{h.firm}</div></div>
+                      <div style={{ gridColumn: "1 / 3" }}><div style={{ fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>UTR</div><div style={{ fontSize: 12, color: T.luxuryBrown, fontVariantNumeric: "tabular-nums" }}>{h.utr}</div></div>
+                      <div><div style={{ fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>Method</div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{h.method}</div></div>
                     </div>
                   ))}
                 </div>
@@ -130,6 +132,7 @@ export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; 
               <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.antiqueGold }}><Money value={rupees(balance)} /></div>
             </div>
 
+            {/* eslint-disable-next-line no-restricted-syntax -- form field label text, not a money value display */}
             <Field label="Amount to Pay (₹)" required id="amount-to-pay">
               <CurrencyInput value={amount === "" ? "" : Number(amount)} onValueChange={v => setAmount(v === "" ? "" : String(v))} />
             </Field>

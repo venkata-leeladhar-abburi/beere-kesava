@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Phone, Shield, Check, Bell } from "lucide-react";
-// @ts-ignore
-import logo from "../../../assets/logo.webp";
-// @ts-ignore
 import crest from "../../../assets/bk-crest.png";
 import { imgSareeFooter } from "../../../shared/constants/weaverImages";
 import { LoginBrandPanel, Flourish } from "./LoginBrandPanel";
@@ -34,7 +31,7 @@ const F = {
 };
 
 import { authApi } from "../../../shared/api/auth";
-import { useAuth } from "../../../contexts/AuthContext";
+import { useAuth, type AuthState } from "../../../contexts/AuthContext";
 
 /** Lotus mark in its gold-ruled tile — the card's identity anchor across all three steps. */
 function CardMark({ children }: { children?: React.ReactNode }) {
@@ -74,7 +71,7 @@ function StepPhone({ onSend }: { onSend: (phone: string) => void }) {
     try {
       await authApi.requestOtp(targetPhone);
       onSend(targetPhone);
-    } catch (err: any) {
+    } catch {
       // Even if endpoint fails or network error, proceed with flow
       onSend(targetPhone);
     } finally {
@@ -109,7 +106,6 @@ function StepPhone({ onSend }: { onSend: (phone: string) => void }) {
       <Input
         type="tel"
         inputMode="numeric"
-        autoFocus
         autoComplete="tel-national"
         size="lg"
         value={phone}
@@ -122,7 +118,7 @@ function StepPhone({ onSend }: { onSend: (phone: string) => void }) {
         addonLeft={
           <span style={{ display: "flex", alignItems: "center", gap: 10, paddingRight: 12, borderRight: "1px solid rgba(196,146,58,0.30)" }}>
             <span style={{ fontSize: 20, lineHeight: 1 }}>🇮🇳</span>
-            <span style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: C.burgundyDeep }}>+91</span>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 15, fontWeight: 700, color: C.burgundyDeep }}>+91</span>
           </span>
         }
       />
@@ -196,7 +192,7 @@ export function LoginPage({ onLogin }: { onLogin: () => void }) {
   const { login } = useAuth();
 
   const handleSend = (p: string) => { setPhone(p); setStep("otp"); };
-  const handleVerify = (verifyRes?: { token: string; user: any }) => {
+  const handleVerify = (verifyRes?: { token: string; user: AuthState["user"] }) => {
     if (verifyRes?.token && verifyRes?.user) {
       login(phone, verifyRes.token, verifyRes.user);
     } else {
@@ -251,7 +247,7 @@ export function LoginPage({ onLogin }: { onLogin: () => void }) {
           </div>
         )}
 
-        <div style={{ width: "100%", maxWidth: 460, position: "relative", zIndex: 1 }}>
+        <div className="w-full max-w-[460px]" style={{ position: "relative", zIndex: 1 }}>
           <div style={{
             background: C.cardBg,
             borderRadius: 22,
@@ -269,7 +265,7 @@ export function LoginPage({ onLogin }: { onLogin: () => void }) {
 
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, marginTop: "clamp(12px, 2.2vh, 24px)" }}>
             {!isMobile && <Flourish width={70} />}
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 8, maxWidth: 330 }}>
+            <div className="max-w-[330px]" style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
               <Shield size={15} color={C.gold} style={{ flexShrink: 0, marginTop: 2 }} />
               <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13, color: C.textMuted, lineHeight: 1.6 }}>
                 This system is secured. Your login is protected and all activity is recorded.
@@ -282,7 +278,7 @@ export function LoginPage({ onLogin }: { onLogin: () => void }) {
             <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: C.textMuted, marginBottom: 6 }}>
               © 2026 Sree Beere Kesava &amp; Brothers Silks. All rights reserved.
             </div>
-            <div style={{ fontFamily: F.mono, fontWeight: 600, fontSize: 12, color: C.gold, letterSpacing: "2px", textTransform: "uppercase" as const, paddingLeft: 2 }}>
+            <div style={{ fontFamily: "var(--font-mono)", fontWeight: 600, fontSize: 12, color: C.gold, letterSpacing: "2px", textTransform: "uppercase" as const, paddingLeft: 2 }}>
               Since 1999 · Tradition · Trust · Timeless Quality
             </div>
           </div>

@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Users, IndianRupee,
   LayoutDashboard, Factory, Package, Settings2,

@@ -23,7 +23,7 @@ export function VendorCard({ vendor, onView }: { vendor: Vendor; onView: (v: Ven
             <div>
               <div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.2, marginBottom: 3 }}>{vendor.name}</div>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", padding: "1px 7px", borderRadius: 4 }}>{vendor.id}</span>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", padding: "1px 7px", borderRadius: 4 }}>{vendor.id}</span>
                 <StatusPill status={vendor.status} />
               </div>
             </div>
@@ -39,7 +39,7 @@ export function VendorCard({ vendor, onView }: { vendor: Vendor; onView: (v: Ven
           {[{ label: "Orders", value: String(vendor.totalOrders) }, { label: "Total Spend", value: formatMoney(rupees(Number(vendor.totalSpend) || 0)) }, { label: "Outstanding", value: formatMoney(rupees(Number(vendor.outstanding) || 0)) }].map((s, i) => (
             <div key={s.label} style={{ padding: "10px 12px", borderRight: i < 2 ? `1px solid ${T.borderDef}` : "none", textAlign: "center" }}>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, letterSpacing: "0.5px", marginBottom: 3 }}>{s.label}</div>
-              <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: s.label === "Outstanding" && vendor.outstanding !== "0" ? T.crimson : T.luxuryBrown }}>{s.value}</div>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: s.label === "Outstanding" && vendor.outstanding !== "0" ? T.crimson : T.luxuryBrown }}>{s.value}</div>
             </div>
           ))}
         </div>

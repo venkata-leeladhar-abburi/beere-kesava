@@ -7,11 +7,10 @@ import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
 import { SectionHeader, FadeUp } from "../common/primitives";
 import { RecentReceivedDetailModal } from "../modals/ReportModals";
 import { Button } from "../../../../shared/ui/primitives";
+import { jariToReels, formatBunsReels } from "../../../../shared/lib/weightUnits";
 
 export function RecentProcurementSection({ onViewAllPurchases }: { onViewAllPurchases: () => void }) {
   const { isMobile, px } = useContext(MobileCtx);
-  const [viewItem, setViewItem] = useState<any | null>(null);
-
   const { data: grnRes } = useQuery({
     queryKey: ["grn-receipts"],
     queryFn: () => rawMaterialsApi.listGrns(),
@@ -23,8 +22,11 @@ export function RecentProcurementSection({ onViewAllPurchases }: { onViewAllPurc
     grn.items.map(item => ({
       po: grn.invoiceNo ?? grn.id,
       grnId: grn.id,
+      itemId: item.id,
       type: item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari",
-      quantity: `${item.quantity} ${item.materialType === "JARI" ? (item.unit || "Reels") : (item.unit || "kg")}`,
+      quantity: item.materialType === "JARI"
+        ? formatBunsReels(jariToReels(Number(item.quantity) || 0, item.unit || "Reels"))
+        : `${item.quantity} ${item.unit || "kg"}`,
       description: `${item.name}${item.grade ? ` (${item.grade})` : ""}`,
       vendor: grn.supplierName,
       vendorCity: "Vendor Store",
@@ -34,6 +36,8 @@ export function RecentProcurementSection({ onViewAllPurchases }: { onViewAllPurc
       grnRaw: grn,
     }))
   ).slice(0, 8);
+
+  const [viewItem, setViewItem] = useState<(typeof recentItems)[number] | null>(null);
 
   return (
     <section id="mat-recent" style={{ padding: `44px ${px}px 0` }}>
@@ -58,7 +62,7 @@ export function RecentProcurementSection({ onViewAllPurchases }: { onViewAllPurc
             const typeLight = r.type === "Warp" ? "rgba(110,15,45,0.07)" : r.type === "Resham" ? "rgba(200,155,71,0.10)" : "rgba(30,102,64,0.07)";
             const initials = r.vendor.split(" ").slice(0, 2).map((w: string) => w[0]).join("").toUpperCase();
             return (
-              <FadeUp key={`${r.grnId}-${i}`} delay={i * 0.09} style={{ height: "100%" }}>
+              <FadeUp key={r.itemId} delay={i * 0.09} style={{ height: "100%" }}>
                 <motion.div
                   whileHover={{ y: -6, boxShadow: "0px 28px 64px rgba(74,6,27,0.18)" }}
                   transition={{ type: "spring", stiffness: 240, damping: 22 }}

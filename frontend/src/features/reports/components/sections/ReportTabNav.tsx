@@ -55,7 +55,7 @@ export function ReportTabNav({ activeTab, setActiveTab, activePeriod, setActiveP
               </div>
               <div style={{ flex: 1, minWidth: 0, textAlign: "left" as const }}>
                 <div style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 700, color: "#FFFDF9" }}>{activeReportTab.label}</div>
-                <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(200,155,71,0.82)" }}>{activeReportTab.desc}</div>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(200,155,71,0.82)" }}>{activeReportTab.desc}</div>
               </div>
               <ChevronDown size={18} color="rgba(245,232,208,0.60)" />
             </button>
@@ -122,7 +122,7 @@ export function ReportTabNav({ activeTab, setActiveTab, activePeriod, setActiveP
                   {tab.label}
                 </div>
                 <div style={{
-                  fontFamily: F.mono,
+                  fontFamily: "var(--font-mono)",
                   fontSize: 12,
                   color: active ? "rgba(200,155,71,0.82)" : "rgba(245,232,208,0.28)",
                   letterSpacing: "0.3px",
@@ -197,16 +197,16 @@ export function ReportTabNav({ activeTab, setActiveTab, activePeriod, setActiveP
         <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
           <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 500, color: T.taupe, whiteSpace: "nowrap" as const }}>Compare period</span>
           <div
-            onClick={() => setCompareOn(!compareOn)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => setCompareOn(!compareOn))?.(); } }}
+            onClick={() => setCompareOn(!compareOn)} role="button" tabIndex={0} aria-label="Toggle compare period" onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => setCompareOn(!compareOn))?.(); } }}
             style={{ width: 50, height: 28, borderRadius: 14, background: compareOn ? T.royalBurgundy : "rgba(110,15,45,0.12)", cursor: "pointer", position: "relative" as const, transition: "background 0.22s", flexShrink: 0 }}
           >
             <div style={{ position: "absolute", top: 4, left: compareOn ? 26 : 4, width: 20, height: 20, borderRadius: "50%", background: "#fff", transition: "left 0.22s", boxShadow: "0 1px 5px rgba(0,0,0,0.25)" }} />
           </div>
           {compareOn && (
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ fontFamily: F.mono, fontSize: 14, background: "rgba(110,15,45,0.08)", color: T.royalBurgundy, padding: "6px 14px", borderRadius: 99, fontWeight: 600 }}>May 2026</span>
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, background: "rgba(110,15,45,0.08)", color: T.royalBurgundy, padding: "6px 14px", borderRadius: 99, fontWeight: 600 }}>May 2026</span>
               <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>vs</span>
-              <span style={{ fontFamily: F.mono, fontSize: 14, background: "rgba(200,155,71,0.13)", color: "#8B6018", padding: "6px 14px", borderRadius: 99, fontWeight: 600 }}>April 2026</span>
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, background: "rgba(200,155,71,0.13)", color: "#8B6018", padding: "6px 14px", borderRadius: 99, fontWeight: 600 }}>April 2026</span>
             </div>
           )}
         </div>

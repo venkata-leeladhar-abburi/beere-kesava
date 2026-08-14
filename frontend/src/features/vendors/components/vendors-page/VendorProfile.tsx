@@ -25,6 +25,10 @@ import { Breadcrumbs } from "../../../../shared/ui/nav/Breadcrumbs";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { recordView, useConfirm } from "../../../../shared/ui/overlay";
 
+const BILL_STATUS_LABEL: Record<VendorBillStatus, VendorBill["status"]> = {
+  PAID: "Paid", PARTIAL: "Partial", PENDING: "Pending", OVERDUE: "Overdue",
+};
+
 export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: Vendor; onBack: () => void; onUpdate?: (v: Vendor) => void; onDelete?: (v: Vendor) => void }) {
   const [tab, setTab] = useState<"overview" | "orders" | "payments" | "contact" | "edit">("overview");
   const confirm = useConfirm();
@@ -59,9 +63,6 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
   const ledgerLoading = billsLoading || paymentsLoading;
   const ledgerError = billsError || paymentsError;
 
-  const BILL_STATUS_LABEL: Record<VendorBillStatus, VendorBill["status"]> = {
-    PAID: "Paid", PARTIAL: "Partial", PENDING: "Pending", OVERDUE: "Overdue",
-  };
   // VendorBill.status normalized onto the shared payment taxonomy
   // (lib/domain/status.ts) per design-system/06-DOMAIN.md Part D.
   const BILL_STATUS_KEY: Record<VendorBill["status"], StatusValueOf<"payment">> = {
@@ -129,7 +130,7 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
     grnId: p.grnId || undefined,
     firmName: p.grnId ? "Beere Kesava Silks (Head Firm)" : undefined,
     receivedDate: undefined as string | undefined,
-    status: (p.status === "RECEIVED" ? "Delivered" : p.status === "APPROVED" ? "Approved" : p.status === "REJECTED" ? "Cancelled" : "Pending") as any,
+    status: (p.status === "RECEIVED" ? "Delivered" : p.status === "APPROVED" ? "Approved" : p.status === "REJECTED" ? "Cancelled" : "Pending") as "Delivered" | "Approved" | "Cancelled" | "Pending",
     receiveStatus: undefined as string | undefined,
   })), [vendorPos]);
   const realTotalSpend = React.useMemo(() => vendorPos.reduce((a, p) => a + Number(p.totalValue || 0), 0), [vendorPos]);
@@ -161,8 +162,8 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
       id: "poInvoice", header: "PO / Invoice", accessor: b => b.id, priority: 1,
       cell: (_v, b) => (
         <div>
-          <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{b.id}</div>
-          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 3 }}>{b.invoiceNo}</div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{b.id}</div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 3 }}>{b.invoiceNo}</div>
         </div>
       ),
     },
@@ -176,9 +177,9 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
         </span>
       ),
     },
-    { id: "amount", header: "Invoice Amount", accessor: b => b.amount, cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: "#8B6018" }}>{inr(b.amount)}</span> },
-    { id: "paid", header: "Paid", accessor: b => b.paid, priority: 3, cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.greenMid }}>{inr(b.paid)}</span> },
-    { id: "balance", header: "Balance", accessor: b => b.balance, cell: (_v, b) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: b.balance > 0 ? T.crimson : T.taupe }}>{b.balance > 0 ? inr(b.balance) : "—"}</span> },
+    { id: "amount", header: "Invoice Amount", accessor: b => b.amount, cell: (_v, b) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: "#8B6018" }}>{inr(b.amount)}</span> },
+    { id: "paid", header: "Paid", accessor: b => b.paid, priority: 3, cell: (_v, b) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, color: T.greenMid }}>{inr(b.paid)}</span> },
+    { id: "balance", header: "Balance", accessor: b => b.balance, cell: (_v, b) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: b.balance > 0 ? T.crimson : T.taupe }}>{b.balance > 0 ? inr(b.balance) : "—"}</span> },
     {
       id: "status", header: "Status", accessor: b => b.status, type: "status",
       cell: (_v, b) => <DomainStatusPill taxonomy="payment" status={BILL_STATUS_KEY[b.status]} />,
@@ -186,9 +187,9 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
   ];
 
   const txnColumns: ColumnDef<VendorPaymentTxn>[] = [
-    { id: "ref", header: "Payment Ref", accessor: p => p.id, priority: 1, cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{p.id}</span> },
+    { id: "ref", header: "Payment Ref", accessor: p => p.id, priority: 1, cell: (_v, p) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{p.id}</span> },
     { id: "date", header: "Date", accessor: p => p.date, cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.date}</span> },
-    { id: "billId", header: "Against PO", accessor: p => p.billId, cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{p.billId}</span> },
+    { id: "billId", header: "Against PO", accessor: p => p.billId, cell: (_v, p) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.luxuryBrown }}>{p.billId}</span> },
     {
       id: "mode", header: "Mode", accessor: p => p.mode,
       cell: (_v, p) => (
@@ -197,9 +198,9 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
         </span>
       ),
     },
-    { id: "reference", header: "UTR / Reference", accessor: p => p.reference, priority: 3, cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{p.reference}</span> },
+    { id: "reference", header: "UTR / Reference", accessor: p => p.reference, priority: 3, cell: (_v, p) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{p.reference}</span> },
     { id: "firm", header: "Paying Firm", accessor: p => p.firm, priority: 3, cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.firm}</span> },
-    { id: "amount", header: "Amount", accessor: p => p.amount, align: "end", cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.greenMid }}>{inr(p.amount)}</span> },
+    { id: "amount", header: "Amount", accessor: p => p.amount, align: "end", cell: (_v, p) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, color: T.greenMid }}>{inr(p.amount)}</span> },
   ];
 
   return (
@@ -356,7 +357,7 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
               <div style={{ background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, padding: "20px 24px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
                   <div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>Settlement Progress</div>
-                  <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>
+                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>
                     {ledger.totalBilled ? Math.round((ledger.totalPaid / ledger.totalBilled) * 100) : 0}% cleared
                   </div>
                 </div>
@@ -373,7 +374,7 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
                       <div key={m.mode} style={{ display: "flex", alignItems: "center", gap: 8, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 20, padding: "6px 14px" }}>
                         <div style={{ width: 9, height: 9, borderRadius: 3, background: PAY_MODE_FILL[m.mode] ?? T.taupe }} />
                         <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{m.mode}</span>
-                        <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{inr(m.amount)}</span>
+                        <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{inr(m.amount)}</span>
                       </div>
                     ))}
                   </div>
@@ -403,7 +404,7 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
               <div style={{ background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, overflow: "hidden" }}>
                 <div style={{ padding: "18px 22px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 600, color: T.luxuryBrown }}>Payments Made</div>
-                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.greenMid }}>{inr(paidInRange)}</span>
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.greenMid }}>{inr(paidInRange)}</span>
                 </div>
                 {ledgerLoading ? (
                   <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loading payments…</div>
@@ -442,17 +443,17 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
                 { label: "Account Number", value: vendor.accountNo || "—", Icon: IndianRupee },
               ].map(f => (
                 <div key={f.label} style={{ background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, padding: "20px 22px" }}>
-                  <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe, marginBottom: 8 }}>{f.label}</div>
+                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe, marginBottom: 8 }}>{f.label}</div>
                   <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 8 }}><f.Icon size={14} color={T.royalBurgundy} /> {f.value}</div>
                 </div>
               ))}
               <div style={{ gridColumn: "1 / -1", background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, padding: "20px 22px" }}>
-                <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe, marginBottom: 8 }}>Address</div>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe, marginBottom: 8 }}>Address</div>
                 <div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, lineHeight: 1.65 }}>{vendor.address || "—"}</div>
               </div>
               {vendor.notes && (
                 <div style={{ gridColumn: "1 / -1", background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, padding: "20px 22px" }}>
-                  <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe, marginBottom: 8 }}>Notes</div>
+                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe, marginBottom: 8 }}>Notes</div>
                   <div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, lineHeight: 1.65 }}>{vendor.notes}</div>
                 </div>
               )}

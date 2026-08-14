@@ -3,10 +3,10 @@ import { X } from "lucide-react";
 import { toast } from "sonner";
 import { IconButton } from "../../../shared/ui/primitives";
 import { useIsMobile } from "../../../hooks/useResponsive";
-import { usePO, PurchaseOrder } from "../../purchasing/contexts/POContext";
-import { POCreateModal } from "../../purchasing/components/POCreateModal";
-import { PODocumentModal } from "../../purchasing/components/PODocumentModal";
-import { AllPurchasesPage } from "../../inventory/components/AllPurchasesPage";
+import { usePO, PurchaseOrder } from "@/features/purchasing";
+import { POCreateModal } from "@/features/purchasing";
+import { PODocumentModal } from "@/features/purchasing";
+import { AllPurchasesPage } from "@/features/inventory";
 
 import { F, MobileCtx } from "./theme";
 import { PageHeader, MetricsBar } from "./sections/PageHeaderAndMetrics";
@@ -26,7 +26,7 @@ import { FullReportsModal, DownloadReportModal } from "./modals/ReportModals";
  * modals/ + sections/, all under this same directory. See git history for
  * the pre-split version if you need to trace exactly what moved where.
  */
-export function MaterialsPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: any) => void } = {}) {
+export function MaterialsPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: unknown) => void } = {}) {
   const isMobile = useIsMobile();
   const px = isMobile ? 16 : 56;
 

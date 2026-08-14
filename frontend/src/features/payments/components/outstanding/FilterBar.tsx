@@ -33,7 +33,7 @@ export function FilterBar({
 
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: "auto", background: T.warmCream, borderRadius: 10, padding: "8px 14px" }}>
           <Package size={15} color={T.taupe} />
-          <span style={{ fontFamily: F.mono, fontSize: 13, color: T.taupe, fontWeight: 600 }}>{count} outstanding</span>
+          <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, fontWeight: 600 }}>{count} outstanding</span>
         </div>
       </div>
     </Card>

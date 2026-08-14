@@ -4,14 +4,13 @@ import { toast } from "sonner";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, Plus, FileText, ClipboardList, Building2 } from "lucide-react";
 import { PurchaseOrder } from "../contexts/POContext";
-import { useFirms } from "../../firms/contexts/FirmsContext";
+import { useFirms } from "@/features/firms";
 import { T, F, Vendor, ExtItem, emptyItem } from "./POTypesAndVendors";
 import { PODocPreview } from "./PODocPreview";
 import { POMaterialRow } from "./POMaterialRow";
 import { POVendorDetailsSection } from "./POVendorDetailsSection";
 import { Button, IconButton, Input, Textarea, Select, SelectItem, RadioGroup, RadioField } from "../../../shared/ui/primitives";
 import { vendorsApi } from "../../../shared/api/vendors";
-import { purchaseOrdersApi } from "../../../shared/api/purchase-orders";
 import { Modal } from "../../../shared/ui/overlay";
 
 const poFormSchema = z
@@ -135,7 +134,7 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
       firmName: selectedFirm?.firmName,
       deliveryDate: deliveryDate || new Date().toISOString().split("T")[0],
       materials: materials.map(m => ({
-        materialType: m.materialType as any,
+        materialType: m.materialType,
         subtype: m.subtype,
         description: m.description,
         quantity: m.quantity,
@@ -182,7 +181,7 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
                     Create Purchase Order
                   </div>
                 </Dialog.Title>
-                <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, letterSpacing: "0.5px" }}>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.antiqueGold, letterSpacing: "0.5px" }}>
                   New material request to vendor — requires Superadmin approval
                 </div>
               </div>
@@ -231,12 +230,12 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
                     {errors.firm && <div style={{ color: T.crimson, fontSize: 12, marginTop: 4 }}>{errors.firm}</div>}
                     {selectedFirm && (
                       <div style={{ marginTop: 8, display: "flex", gap: 8, flexWrap: "wrap" }}>
-                        <span style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, background: "rgba(200,155,71,0.10)", padding: "3px 10px", borderRadius: 6 }}>{selectedFirm.firmName}</span>
+                        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.antiqueGold, background: "rgba(200,155,71,0.10)", padding: "3px 10px", borderRadius: 6 }}>{selectedFirm.firmName}</span>
                         {selectedFirm.gstNumber && (
-                          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, background: T.silkCream, padding: "3px 10px", borderRadius: 6 }}>GST: {selectedFirm.gstNumber}</span>
+                          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, background: T.silkCream, padding: "3px 10px", borderRadius: 6 }}>GST: {selectedFirm.gstNumber}</span>
                         )}
                         {selectedFirm.bankName && (
-                          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, background: T.silkCream, padding: "3px 10px", borderRadius: 6 }}>{selectedFirm.bankName}</span>
+                          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, background: T.silkCream, padding: "3px 10px", borderRadius: 6 }}>{selectedFirm.bankName}</span>
                         )}
                       </div>
                     )}
@@ -318,8 +317,8 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
 
                   {/* Urgency */}
                   <div>
-                    <label style={labelStyle}>Urgency</label>
-                    <RadioGroup value={urgency} onValueChange={v => setUrgency(v as "Normal" | "Urgent")} className="flex gap-3">
+                    <div id="urgency-group-label" style={labelStyle}>Urgency</div>
+                    <RadioGroup aria-labelledby="urgency-group-label" value={urgency} onValueChange={v => setUrgency(v as "Normal" | "Urgent")} className="flex gap-3">
                       {(["Normal", "Urgent"] as const).map(u => (
                         <RadioField key={u} value={u} label={u === "Normal" ? "Normal" : "🔴 Urgent — Low Stock"} />
                       ))}

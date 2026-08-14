@@ -65,7 +65,7 @@ export interface ReportDownloadHistoryItem {
   downloadUrl?: string | null;
   downloadedBy?: { id: string; firstName: string; lastName: string } | null;
   downloadedAt: string;
-  filtersUsed?: any;
+  filtersUsed?: Record<string, unknown>;
 }
 
 export interface RecordDownloadPayload {
@@ -73,7 +73,7 @@ export interface RecordDownloadPayload {
   fileType?: string;
   downloadUrl?: string;
   downloadedById?: string;
-  filtersUsed?: any;
+  filtersUsed?: Record<string, unknown>;
 }
 
 export const reportsApi = {

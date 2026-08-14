@@ -1,6 +1,8 @@
 import React, { useRef, useEffect, useState } from "react";
 import { motion, useInView } from "motion/react";
 import { Download, FileText, Calendar, type LucideIcon } from "lucide-react";
+import type { TooltipProps } from "recharts";
+import type { ValueType, NameType } from "recharts/types/component/DefaultTooltipContent";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { T, F, EASE } from "../theme";
 import { Button } from "../../../../shared/ui/primitives";
@@ -27,6 +29,7 @@ export function AnimCount({ raw }: { raw: string }) {
     if (!inView) return;
     const m = raw.match(/[\d.]+/);
     if (!m) { setDisp(raw); return; }
+    // eslint-disable-next-line no-restricted-syntax
     const target = parseFloat(m[0]);
     const isFloat = m[0].includes(".");
     const idx = raw.indexOf(m[0]);
@@ -57,7 +60,7 @@ export function AnimBar({ pct, color, height = 6, delay = 0 }: { pct: number; co
 }
 
 // ── Shared Table Styles ───────────────────────────────────────────────────────
-export const TH: React.CSSProperties = { fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", padding: "13px 14px", textAlign: "left" as const, background: T.warmCream, borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" as const };
+export const TH: React.CSSProperties = { fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.8px", padding: "13px 14px", textAlign: "left" as const, background: T.warmCream, borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" as const };
 export const TD: React.CSSProperties = { fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, padding: "13px 14px", verticalAlign: "middle" as const, borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" as const };
 
 // ── ChartCard ─────────────────────────────────────────────────────────────────
@@ -212,16 +215,16 @@ export function SectionCard({
 }
 
 // ── Shared Chart Tooltip ──────────────────────────────────────────────────────
-export function ChartTip({ active, payload, label, prefix = "", suffix = "" }: any) {
+export function ChartTip({ active, payload, label, prefix = "", suffix = "" }: TooltipProps<ValueType, NameType> & { prefix?: string; suffix?: string }) {
   if (!active || !payload?.length) return null;
   return (
     <div style={{ background: "#FFFDF9", border: `1px solid ${T.borderDef}`, borderRadius: 9, padding: "10px 14px", boxShadow: "0 4px 16px rgba(74,6,27,0.12)" }}>
-      {label && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginBottom: 5, textTransform: "uppercase" }}>{label}</div>}
-      {payload.map((p: any, i: number) => (
-        <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
+      {label && <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginBottom: 5, textTransform: "uppercase" }}>{label}</div>}
+      {payload.map((p) => (
+        <div key={p.name} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
           <div style={{ width: 8, height: 8, borderRadius: "50%", background: p.color || p.fill || p.stroke }} />
           <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.name}:</span>
-          <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{prefix}{typeof p.value === "number" ? p.value.toLocaleString("en-IN") : p.value}{suffix}</span>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{prefix}{typeof p.value === "number" ? p.value.toLocaleString("en-IN") : p.value}{suffix}</span>
         </div>
       ))}
     </div>
@@ -251,13 +254,13 @@ export function MiniDonut({ value, max, color, label, unit = "kg", badge, badgeT
         </svg>
         <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
           <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{value}</span>
-          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{unit}</span>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{unit}</span>
         </div>
       </div>
       <div style={{ textAlign: "center" }}>
         <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, marginBottom: 3 }}>{label}</div>
-        {footNote && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginBottom: 3 }}>{footNote}</div>}
-        {badge && <span style={{ display: "inline-block", padding: "2px 8px", borderRadius: 10, background: badgeBg, color: badgeColor, fontFamily: F.mono, fontSize: 12, fontWeight: 700 }}>{badge}</span>}
+        {footNote && <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginBottom: 3 }}>{footNote}</div>}
+        {badge && <span style={{ display: "inline-block", padding: "2px 8px", borderRadius: 10, background: badgeBg, color: badgeColor, fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700 }}>{badge}</span>}
       </div>
     </div>
   );
@@ -288,7 +291,7 @@ export function StatusPill({ label, type = "neutral" }: { label: string; type?: 
   };
   const c = map[type];
   return (
-    <span style={{ display: "inline-block", padding: "4px 11px", borderRadius: 20, fontFamily: F.mono, fontSize: 12, fontWeight: 700, background: c.bg, color: c.color, whiteSpace: "nowrap" as const }}>{label}</span>
+    <span style={{ display: "inline-block", padding: "4px 11px", borderRadius: 20, fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, background: c.bg, color: c.color, whiteSpace: "nowrap" as const }}>{label}</span>
   );
 }
 

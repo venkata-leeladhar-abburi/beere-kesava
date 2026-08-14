@@ -148,6 +148,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       >
         <Search size={16} className="shrink-0" />
         <Command.Input
+          // eslint-disable-next-line jsx-a11y/no-autofocus -- command palette opens as a modal search overlay; the input must be focused immediately for keyboard-driven search
           autoFocus
           placeholder="Search or jump to…"
           className="h-12 flex-1 bg-transparent outline-none border-none text-[14px] text-[var(--text-primary)] placeholder:text-[var(--text-placeholder)]"

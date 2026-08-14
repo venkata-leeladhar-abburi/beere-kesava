@@ -6,3 +6,4 @@
 
 export * from "./components/CustomersPage";
 export * from "./contexts/SalesContext";
+export * from "./contexts/CustomersContext";

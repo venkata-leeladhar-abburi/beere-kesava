@@ -67,7 +67,7 @@ export function LiveSummarySnapshot() {
               {c.icon}
             </div>
             <div>
-              <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.4px" }}>{c.label}</div>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.4px" }}>{c.label}</div>
               <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{c.value}</div>
             </div>
           </div>

@@ -28,7 +28,7 @@ export function PurchaseHistoryTable({ purchases }: { purchases: Purchase[] }) {
       id: "ref", header: "Purchase Ref", accessor: p => p.id,
       cell: (_v, p) => (
         <>
-          <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy, marginBottom: 4 }}>{p.id}</div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, color: T.royalBurgundy, marginBottom: 4 }}>{p.id}</div>
           <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.date}</div>
         </>
       ),
@@ -37,7 +37,7 @@ export function PurchaseHistoryTable({ purchases }: { purchases: Purchase[] }) {
       id: "invoice", header: "Invoice", accessor: p => p.invoiceNumber,
       cell: (_v, p) => (
         <>
-          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{p.invoiceNumber || "—"}</div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.luxuryBrown }}>{p.invoiceNumber || "—"}</div>
           {p.invoiceFileName && (
             <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 4 }}>
               <FileText size={11} color={T.royalBurgundy} />
@@ -49,23 +49,23 @@ export function PurchaseHistoryTable({ purchases }: { purchases: Purchase[] }) {
     },
     {
       id: "sarees", header: "Sarees", accessor: p => p.sareeCount,
-      cell: v => <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{v as number}</span>,
+      cell: v => <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{v as number}</span>,
     },
     {
       id: "buying", header: "Buying Price", accessor: p => purchaseTotals(p.sarees).buying,
-      cell: v => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, whiteSpace: "nowrap" }}>{formatMoney(rupees(v as number))}</span>,
+      cell: v => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.luxuryBrown, whiteSpace: "nowrap" }}>{formatMoney(rupees(v as number))}</span>,
     },
     {
       id: "selling", header: "Selling Price", accessor: p => purchaseTotals(p.sarees).selling,
-      cell: v => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.antiqueGold, whiteSpace: "nowrap" }}>{formatMoney(rupees(v as number))}</span>,
+      cell: v => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, color: T.antiqueGold, whiteSpace: "nowrap" }}>{formatMoney(rupees(v as number))}</span>,
     },
     {
       id: "profit", header: "Profit", accessor: p => purchaseTotals(p.sarees).profit,
-      cell: v => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.green, whiteSpace: "nowrap" }}>{formatMoney(rupees(v as number))}</span>,
+      cell: v => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.green, whiteSpace: "nowrap" }}>{formatMoney(rupees(v as number))}</span>,
     },
     {
       id: "billAmount", header: "Bill Amount", accessor: p => p.billAmount,
-      cell: v => <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: "#8B6018" }}>{v as string}</span>,
+      cell: v => <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, color: "#8B6018" }}>{v as string}</span>,
     },
     {
       id: "payment", header: "Payment", accessor: p => p.status,

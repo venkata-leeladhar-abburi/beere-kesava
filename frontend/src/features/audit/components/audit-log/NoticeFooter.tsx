@@ -23,13 +23,12 @@ export function NoticeFooter() {
               <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: T.luxuryBrown, marginBottom: 6 }}>
                 🔒 This audit log is permanent and immutable.
               </div>
-              <p style={{
+              <p className="max-w-[600px]" style={{
                 fontFamily: F.ui,
                 fontWeight: 400,
                 fontSize: 12,
                 color: T.taupe,
                 lineHeight: 1.65,
-                maxWidth: 600,
                 margin: 0,
               }}>
                 No one — including the Superadmin — can edit, delete, or modify any entry in this log. Every action recorded here is final and permanent. This log is your legal and operational record.
@@ -41,7 +40,7 @@ export function NoticeFooter() {
             <Button variant="secondary" size="md" iconLeft={Download}>
               Export Full Log
             </Button>
-            <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>
               PDF · Excel
             </span>
           </div>

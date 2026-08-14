@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ChevronDown, ChevronRight, Users, Factory } from "lucide-react";
 import { T, F } from "../../theme";
-import { UnifiedSaree, SareeOrigin, isOutstanding, isSold, ageBucket } from "../../../customers/contexts/SalesContext";
+import { UnifiedSaree, SareeOrigin, isOutstanding, isSold, ageBucket } from "@/features/customers";
 import { Empty, ExportBtn, SectionCard, exportCsv, inr } from "./primitives";
 import type { AgeKey } from "./primitives";
 import { DrilldownTabs } from "./SareeDetailTable";
@@ -93,19 +93,19 @@ export function InHouseOutstanding({
                   <div style={{ display: "flex", gap: 22, alignItems: "center", flexWrap: "wrap", justifyContent: "flex-end" }}>
                     <div style={{ textAlign: "right" }}>
                       <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.7px" }}>Produced</div>
-                      <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{g.all.length}</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{g.all.length}</div>
                     </div>
                     <div style={{ textAlign: "right" }}>
                       <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.7px" }}>Sold</div>
-                      <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.green }}>{g.soldRows.length}</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.green }}>{g.soldRows.length}</div>
                     </div>
                     <div style={{ textAlign: "right" }}>
                       <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.7px" }}>Outstanding</div>
-                      <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.crimson }}>{g.rows.length}</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.crimson }}>{g.rows.length}</div>
                     </div>
                     <div style={{ textAlign: "right", minWidth: 96 }}>
                       <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.7px" }}>Value</div>
-                      <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}>{inr(val)}</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}>{inr(val)}</div>
                     </div>
                   </div>
                 </Button>

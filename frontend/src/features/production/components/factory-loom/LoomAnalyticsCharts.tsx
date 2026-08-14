@@ -8,10 +8,8 @@ import {
 } from "recharts";
 import { FactoryLoom } from "../../data/factoryLooms";
 import { T, F } from "./theme";
-import { MAT_TAG } from "./types";
 import { ChartFigure } from "../../../../shared/ui/data";
 
-const FLOOR_FILLS = [T.royalBurgundy, T.antiqueGold, T.green, "#5A3E6B", "#2D6B6B"];
 const laQcColor = (r: number) => (r >= 95 ? T.green : r >= 85 ? "#8B6018" : T.crimson);
 
 const card: React.CSSProperties = {
@@ -22,15 +20,33 @@ const cardTitle: React.CSSProperties = { fontFamily: F.display, fontSize: 16, fo
 const cardSub: React.CSSProperties = { fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3 };
 const tip = { fontFamily: F.ui, fontSize: 12, borderRadius: 10, border: `1px solid ${T.borderDef}`, boxShadow: "0 8px 24px rgba(74,6,27,0.12)" };
 
+interface MonthlyThroughputDatum {
+  month: string;
+  produced: number;
+  passed: number;
+  rate: number;
+}
+
+interface UtilisationDatum {
+  name: string;
+  value: number;
+  color: string;
+}
+
+interface PerLoomDatum {
+  wip: number;
+  [key: string]: unknown;
+}
+
 interface LoomThroughputAndAvailabilityProps {
   produced: number;
   passRate: number;
   failed: number;
   pipeline: number;
-  monthly: any[];
-  utilisation: any[];
+  monthly: MonthlyThroughputDatum[];
+  utilisation: UtilisationDatum[];
   utilRate: number;
-  perLoom: any[];
+  perLoom: PerLoomDatum[];
 }
 
 export function LoomThroughputAndAvailability({
@@ -68,7 +84,7 @@ export function LoomThroughputAndAvailability({
                 <XAxis dataKey="month" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={32} allowDecimals={false} />
                 <YAxis yAxisId="r" orientation="right" domain={[0, 100]} hide />
-                <RechartsTooltip contentStyle={tip} formatter={(v: any, n: any) => n === "Pass Rate" ? [`${v}%`, n] : [`${v} sarees`, n]} />
+                <RechartsTooltip contentStyle={tip} formatter={(v: number | string, n: string) => n === "Pass Rate" ? [`${v}%`, n] : [`${v} sarees`, n]} />
                 <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, paddingTop: 8 }} />
                 <Bar name="Completed" dataKey="produced" fill={T.royalBurgundy} radius={[5, 5, 0, 0]} />
                 <Bar name="Passed QC" dataKey="passed" fill={semantic.chart.series[1]} radius={[5, 5, 0, 0]} />
@@ -90,9 +106,9 @@ export function LoomThroughputAndAvailability({
             <ResponsiveContainer width="100%" height={172}>
               <PieChart>
                 <Pie data={utilisation} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={54} outerRadius={78} paddingAngle={3} stroke="none">
-                  {utilisation.map((d, i) => <Cell key={i} fill={d.color} />)}
+                  {utilisation.map((d) => <Cell key={d.name} fill={d.color} />)}
                 </Pie>
-                <RechartsTooltip contentStyle={tip} formatter={(v: any, _n: any, p: any) => [`${v} looms`, p.payload.name]} />
+                <RechartsTooltip contentStyle={tip} formatter={(v: number | string, _n: string, p: { payload: UtilisationDatum }) => [`${v} looms`, p.payload.name]} />
               </PieChart>
             </ResponsiveContainer>
             <div style={{ position: "absolute" as const, inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", pointerEvents: "none" as const }}>
@@ -108,24 +124,39 @@ export function LoomThroughputAndAvailability({
                 <div style={{ width: 10, height: 10, borderRadius: 3, background: d.color }} />
                 <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{d.name}</span>
               </div>
-              <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{d.value}</span>
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{d.value}</span>
             </div>
           ))}
         </div>
         <div style={{ borderTop: `1px solid ${T.borderDef}`, marginTop: 14, paddingTop: 14, display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
           <span>Sarees in progress</span>
-          <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.luxuryBrown }}>{perLoom.reduce((a, l) => a + l.wip, 0)}</span>
+          <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: T.luxuryBrown }}>{perLoom.reduce((a, l) => a + l.wip, 0)}</span>
         </div>
       </div>
     </div>
   );
 }
 
+interface MaterialConsumptionDatum {
+  label: string;
+  qty: number;
+  unit: string;
+  type: string;
+  fill: string;
+}
+
+interface DesignOutputDatum {
+  short: string;
+  produced: number;
+  type: string;
+  fill: string;
+}
+
 interface LoomMaterialDesignRowProps {
-  byMaterial: any[];
+  byMaterial: MaterialConsumptionDatum[];
   warpKg: number;
   produced: number;
-  byDesign: any[];
+  byDesign: DesignOutputDatum[];
   passRate: number;
   failed: number;
   activeLooms: number;
@@ -163,7 +194,7 @@ export function LoomMaterialDesignRow({
                   <XAxis dataKey="label" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} interval={0} />
                   <YAxis tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={38} />
                   <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
-                    formatter={(v: any, _n: any, p: any) => [`${v} ${p.payload.unit}`, p.payload.type]} />
+                    formatter={(v: number | string, _n: string, p: { payload: MaterialConsumptionDatum }) => [`${v} ${p.payload.unit}`, p.payload.type]} />
                   <Bar dataKey="qty" radius={[5, 5, 0, 0]}>
                     {byMaterial.map(d => <Cell key={d.label} fill={d.fill} />)}
                   </Bar>
@@ -193,7 +224,7 @@ export function LoomMaterialDesignRow({
               <XAxis dataKey="short" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={34} allowDecimals={false} />
               <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
-                formatter={(v: any, _n: any, p: any) => [`${v} sarees`, p.payload.type]} />
+                formatter={(v: number | string, _n: string, p: { payload: DesignOutputDatum }) => [`${v} sarees`, p.payload.type]} />
               <Bar dataKey="produced" radius={[5, 5, 0, 0]}>
                 {byDesign.map(d => <Cell key={d.type} fill={d.fill} />)}
               </Bar>
@@ -231,7 +262,7 @@ export function LoomMaterialDesignRow({
           ].map(k => (
             <div key={k.label} style={{ background: T.silkCream, borderRadius: 10, padding: "10px 12px", border: `1px solid ${T.borderDef}` }}>
               <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, letterSpacing: "0.5px", color: T.taupe, marginBottom: 4, textTransform: "uppercase" as const }}>{k.label}</div>
-              <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{k.value}</div>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{k.value}</div>
             </div>
           ))}
         </div>

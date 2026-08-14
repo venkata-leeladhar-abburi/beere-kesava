@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { C, F } from "../tokens";
-import { useFinishingStaff } from "../../../../finishing/contexts/FinishingStaffContext";
+import { useFinishingStaff } from "@/features/finishing";
 import { Button } from "../../../../../shared/ui/primitives";
 import { Modal } from "../../../../../shared/ui/overlay";
 

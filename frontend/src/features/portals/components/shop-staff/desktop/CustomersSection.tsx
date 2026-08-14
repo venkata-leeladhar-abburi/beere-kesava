@@ -5,10 +5,10 @@ import { ArrowRight, Search, Star } from "lucide-react";
 import { C, F, ShopDesktopHero, SILK_BG } from "../theme";
 import { Button, Input } from "../../../../../shared/ui/primitives";
 import { customersApi } from "../../../../../shared/api/customers";
-import { salesApi } from "../../../../../shared/api/sales";
+import { salesApi, type BackendSaleRecord } from "../../../../../shared/api/sales";
 import { rupees, formatMoney } from "@/lib/domain/money";
 
-type ShopCustomer = { id: string; name: string; phone: string; purchases: number; total: string; lastPurchase?: string; last?: string; initials: string; regular?: boolean; [key: string]: any };
+type ShopCustomer = { id: string; name: string; phone: string; purchases: number; total: string; lastPurchase?: string; last?: string; initials: string; regular?: boolean };
 
 export function CustomersSection({
   bp, isTablet, canSeePrices, setSelectedCustomer,
@@ -26,12 +26,12 @@ export function CustomersSection({
     queryFn: () => salesApi.list(100),
   });
   
-  const salesList = salesRes?.items ?? [];
+  const salesList = React.useMemo(() => salesRes?.items ?? [], [salesRes]);
 
   const customers: ShopCustomer[] = React.useMemo(() => {
     if (!custRes?.items) return [];
     
-    const salesByCustomer = new Map<string, any[]>();
+    const salesByCustomer = new Map<string, BackendSaleRecord[]>();
     for (const sale of salesList) {
       if (!sale.customerId) continue;
       const list = salesByCustomer.get(sale.customerId) || [];
@@ -95,8 +95,8 @@ export function CustomersSection({
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: isTablet ? "repeat(2, 1fr)" : "repeat(3, 1fr)", gap: 22 }}>
-          {customers.map((c, i) => (
-            <motion.div key={i}
+          {customers.map((c) => (
+            <motion.div key={c.id}
               whileHover={{ y: -6, boxShadow: "0 12px 40px rgba(44,24,16,0.14)" }}
               transition={{ type: "spring", stiffness: 300, damping: 24 }}
               style={{ background: "#FFF", borderRadius: 18, border: `1px solid ${C.bdr}`, padding: "26px 24px", boxShadow: "0 4px 20px rgba(44,24,16,0.08)", cursor: "pointer", display: "flex", flexDirection: "column" as const }}>

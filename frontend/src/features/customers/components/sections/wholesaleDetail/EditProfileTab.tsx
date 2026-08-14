@@ -38,7 +38,7 @@ export function EditProfileTab({ customer, setWholesaleTab, onSave }: {
               <SelectItem value="90 days">90 days</SelectItem>
             </Select>
           </Field>
-          <Field label="Outstanding Amount (₹)">
+          <Field label="Outstanding Amount (INR)">
             <Input type="text" defaultValue={customer.out} id="edit-out" />
           </Field>
         </div>

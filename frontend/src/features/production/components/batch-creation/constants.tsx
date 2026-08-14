@@ -77,12 +77,12 @@ export function rowEmpty(r: SareeRow) {
 export function Pip({ initials, bg, size = 28 }: { initials: string; bg: string; size?: number }) {
   return (
     <div style={{ width: size, height: size, borderRadius: "50%", background: bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-      <span style={{ fontFamily: F.mono, fontSize: size * 0.38, fontWeight: 700, color: "#fff", letterSpacing: "-0.5px" }}>{initials}</span>
+      <span style={{ fontFamily: F.ui, fontSize: size * 0.38, fontWeight: 700, color: "#fff", letterSpacing: "-0.5px" }}>{initials}</span>
     </div>
   );
 }
 
 // ─── Small helpers ────────────────────────────────────────────────────────────
 export function EmptyCell() {
-  return <span style={{ color: "rgba(139,112,96,0.35)", fontSize: 13, fontFamily: F.mono }}>—</span>;
+  return <span style={{ color: "rgba(139,112,96,0.35)", fontSize: 13, fontFamily: F.ui }}>—</span>;
 }

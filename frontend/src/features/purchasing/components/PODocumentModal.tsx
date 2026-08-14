@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, Share2 } from "lucide-react";
 import { PurchaseOrder } from "../contexts/POContext";

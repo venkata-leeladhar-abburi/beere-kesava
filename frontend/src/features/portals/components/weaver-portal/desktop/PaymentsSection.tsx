@@ -1,15 +1,15 @@
 import React from "react";
-import { Check, TrendingUp } from "lucide-react";
+import { Check } from "lucide-react";
 import { C, F, FABRIC_BG } from "../theme";
 import { SectionHeading } from "@/shared/ui/portal/PortalChrome";
 import { DesktopHero } from "./DesktopHero";
 import { Button } from "../../../../../shared/ui/primitives";
 import { useCurrentWeaver } from "../useCurrentWeaver";
 import { useAuth } from "../../../../../contexts/AuthContext";
-import { useQc } from "../../../../qc/contexts/QcContext";
-import { useWeaverPayments } from "../../../../weavers/contexts/WeaverPaymentsContext";
-import { useBatches } from "../../../../production/contexts/BatchContext";
-import { useRatesPricing } from "../../../../pricing/contexts/RatesContext";
+import { useQc } from "@/features/qc";
+import { useWeaverPayments } from "@/features/weavers";
+import { useBatches } from "@/features/production";
+import { useRatesPricing } from "@/features/pricing";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
 import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
@@ -186,7 +186,7 @@ export function PaymentsSection({ bp, isTablet }: { bp: "tablet" | "desktop"; is
               </div>
             ) : (
               <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 20, overflow: isTablet ? "auto" : "hidden", boxShadow: "0 4px 20px rgba(44,24,16,0.08)", marginBottom: 40 }}>
-                <div style={{ minWidth: isTablet ? 520 : undefined }}>
+                <div style={{ minWidth: isTablet ? "520px" : undefined }}>
                   <DataTable columns={chargesByTypeColumns} data={chargesByType} getRowId={t => t.code} />
                   <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr]" style={{ padding: "16px 26px", background: C.cream, alignItems: "center" }}>
                     <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>Total</div>
@@ -207,8 +207,8 @@ export function PaymentsSection({ bp, isTablet }: { bp: "tablet" | "desktop"; is
                 <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginTop: 4 }}>You have a 100% clean quality inspection record for {monthName}.</div>
               </div>
             ) : (
-              defectiveRecords.map((d, i) => (
-                <div key={i} style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderLeft: `6px solid ${C.crim}`, borderRadius: 20, padding: "26px 28px", boxShadow: "0 4px 20px rgba(44,24,16,0.08)", marginBottom: 20 }}>
+              defectiveRecords.map((d) => (
+                <div key={d.sareeId} style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderLeft: `6px solid ${C.crim}`, borderRadius: 20, padding: "26px 28px", boxShadow: "0 4px 20px rgba(44,24,16,0.08)", marginBottom: 20 }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
                     <div>
                       <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 20, color: C.crim }}>Defective Saree Deduction</div>
@@ -232,7 +232,7 @@ export function PaymentsSection({ bp, isTablet }: { bp: "tablet" | "desktop"; is
               </div>
             ) : (
               <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 20, overflow: isTablet ? "auto" : "hidden", boxShadow: "0 4px 20px rgba(44,24,16,0.08)" }}>
-                <div style={{ minWidth: isTablet ? 560 : undefined }}>
+                <div style={{ minWidth: isTablet ? "560px" : undefined }}>
                   <DataTable columns={paymentHistoryColumns} data={myPayments} getRowId={p => p.id ?? `${p.paymentDate ?? p.uploadedAt}-${p.amountPaid}-${p.utrNumber ?? ""}`} />
                 </div>
               </div>

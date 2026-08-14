@@ -1,12 +1,11 @@
 import { AlertTriangle, FileText, IndianRupee, TrendingUp, Users } from "lucide-react";
 
-import { T } from "../theme";
 import { rupees, formatMoney } from "@/lib/domain/money";
 
 const ZERO = formatMoney(rupees(0));
 
-export const COMING_IN: any[] = [];
-export const GOING_OUT: any[] = [];
+export const COMING_IN: unknown[] = [];
+export const GOING_OUT: unknown[] = [];
 export const TOTAL_IN  = 0;
 export const TOTAL_OUT = 0;
 export const NET       = 0;

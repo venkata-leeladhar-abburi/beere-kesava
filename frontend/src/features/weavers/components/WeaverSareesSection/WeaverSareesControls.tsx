@@ -1,8 +1,6 @@
 import React from "react";
-import { Search } from "lucide-react";
 import { DateFilterBar, DateFilterState } from "../../../../shared/ui/DateFilterBar";
 import { Button, Select as SelectPrimitive, SelectItem } from "../../../../shared/ui/primitives";
-import { T, F } from "./theme";
 import { TabKey } from "./types";
 
 export function Select({ label, value, options, onChange }: {
@@ -38,7 +36,7 @@ export function TabsBar({ TABS, tab, setTab, counts, dateFilter, setDateFilter }
             <Button key={t.key} onClick={() => setTab(t.key)} variant={on ? "primary" : "secondary"} size="sm" className="rounded-full">
               {t.label}
               <span style={{
-                fontFamily: F.mono, fontSize: 12, fontWeight: 700, padding: "1px 7px", borderRadius: 99,
+                fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, padding: "1px 7px", borderRadius: 99,
                 background: on ? "rgba(255,255,255,0.22)" : "rgba(110,15,45,0.07)",
                 color: on ? "#FFFDF9" : t.color,
               }}>{counts[t.key]}</span>

@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { CheckSquare, Square, X, CheckCircle2, Clock } from "lucide-react";
 import { C, F } from "../tokens";
-import { useFinishing } from "../../../../finishing/contexts/FinishingContext";
+import { useFinishing } from "@/features/finishing";
 import { EASE, WORKER_NAME, ScanBarBtn, useScanSim, Toast } from "./shared";
 import { VerificationModal, VerifData } from "./VerificationModal";
 import { Button, IconButton, Select, SelectItem } from "../../../../../shared/ui/primitives";

@@ -121,7 +121,7 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
           </div>
         ) : (
           recentSales.map((s, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "center", padding: "16px", borderBottom: i < recentSales.length - 1 ? `1px solid rgba(110,15,45,0.08)` : "none" }}>
+            <div key={s.id} style={{ display: "flex", alignItems: "center", padding: "16px", borderBottom: i < recentSales.length - 1 ? `1px solid rgba(110,15,45,0.08)` : "none" }}>
               <div style={{ width: 6, height: 40, borderRadius: 3, background: s.color, marginRight: 14, flexShrink: 0 }} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" as const }}>

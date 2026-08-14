@@ -52,8 +52,8 @@ export function AddDesignModal({ onClose, onSave }: { onClose: () => void; onSav
         <div style={{ display: "flex", flexDirection: "column", gap: 16, paddingTop: 4, paddingBottom: 20 }}>
           <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 12 }}>
             <div>
-              <label style={labelStyle}>Design Code <span style={{ color: T.royalBurgundy }}>*</span></label>
-              <Input value={form.code ?? ""} onChange={e => set("code", e.target.value)} placeholder="e.g. BKB-047" />
+              <label style={labelStyle} htmlFor="design-code">Design Code <span style={{ color: T.royalBurgundy }}>*</span></label>
+              <Input id="design-code" value={form.code ?? ""} onChange={e => set("code", e.target.value)} placeholder="e.g. BKB-047" />
             </div>
             <div>
               <label style={labelStyle} htmlFor="saree-type">Saree Type</label>
@@ -64,18 +64,18 @@ export function AddDesignModal({ onClose, onSave }: { onClose: () => void; onSav
           </div>
 
           <div>
-            <label style={labelStyle}>Colour <span style={{ fontWeight: 400, color: T.taupe }}>(optional)</span></label>
-            <Input value={form.color ?? ""} onChange={e => set("color", e.target.value)} placeholder="e.g. Maroon, Cream, Indigo" />
+            <label style={labelStyle} htmlFor="design-colour">Colour <span style={{ fontWeight: 400, color: T.taupe }}>(optional)</span></label>
+            <Input id="design-colour" value={form.color ?? ""} onChange={e => set("color", e.target.value)} placeholder="e.g. Maroon, Cream, Indigo" />
           </div>
 
           <div>
-            <label style={labelStyle}>Weaver Name <span style={{ fontWeight: 400, color: T.taupe }}>(optional)</span></label>
+            <span style={labelStyle}>Weaver Name <span style={{ fontWeight: 400, color: T.taupe }}>(optional)</span></span>
             <WeaverCombobox value={form.weaverName ?? ""} onChange={v => set("weaverName", v)} />
           </div>
 
           <div>
-            <label style={labelStyle}>Notes for Weaver <span style={{ fontWeight: 400, color: T.taupe }}>(optional)</span></label>
-            <Textarea value={form.notesForWeaver ?? ""} onChange={e => set("notesForWeaver", e.target.value)} rows={2} placeholder="Special instructions for the weaver…" />
+            <label style={labelStyle} htmlFor="design-notes-for-weaver">Notes for Weaver <span style={{ fontWeight: 400, color: T.taupe }}>(optional)</span></label>
+            <Textarea id="design-notes-for-weaver" value={form.notesForWeaver ?? ""} onChange={e => set("notesForWeaver", e.target.value)} rows={2} placeholder="Special instructions for the weaver…" />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 12 }}>

@@ -94,7 +94,10 @@ export function StatementOfAccountDocument({
         </thead>
         <tbody>
           {rows.map((r, i) => (
-            <tr key={i}>
+            // StatementRow has no unique id and `ref` is optional/often blank, so fall back
+            // to a composite of its visible fields plus index to distinguish identical rows.
+            // eslint-disable-next-line react/no-array-index-key
+            <tr key={`${r.date}-${r.particulars}-${r.ref ?? ""}-${i}`}>
               <td>{r.date}</td>
               <td>{r.particulars}</td>
               <td style={{ fontFamily: "var(--font-code)" }}>{r.ref || "—"}</td>

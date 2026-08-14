@@ -6,3 +6,4 @@
 
 export * from "./components/DesignLibraryPage";
 export * from "./contexts/DesignLibraryContext";
+export * from "./components/DesignLibraryComponents";

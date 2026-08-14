@@ -118,7 +118,7 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
   // Top 10 customers by total spend.
   const top10Customers = useMemo(
     () => [...custRows].filter(c => c.spend > 0).sort((a, b) => b.spend - a.spend).slice(0, 10)
-      .map(c => ({ name: c.name, spend: c.spend })),
+      .map(c => ({ id: c.id, name: c.name, spend: c.spend })),
     [custRows],
   );
   const topSpend = top10Customers[0]?.spend ?? 0;
@@ -142,7 +142,7 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
           const avgGap = Math.round(spanDays / (c.purchases - 1));
           freq = avgGap <= 1 ? "Daily" : `Every ~${avgGap} days`;
         }
-        return { name: c.name, count: c.purchases, freq };
+        return { id: c.id, name: c.name, count: c.purchases, freq };
       });
   }, [custRows]);
   const maxFreqCount = frequentBuyers[0]?.count || 1;
@@ -156,6 +156,7 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
       .filter(c => c.purchases > 0)
       .filter(c => new Date(c.dates[c.dates.length - 1]).getTime() < sixMonthsAgo)
       .map(c => ({
+        id: c.id,
         name: c.name,
         type: c.type,
         time: new Date(c.dates[c.dates.length - 1]).toLocaleDateString("en-IN"),
@@ -216,7 +217,7 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
             <DownloadGate><IconButton
               icon={Download}
               label="Download CSV"
-              onClick={() => downloadDataAsCSV("top_10_customers.csv", ["Rank", "Customer Name", "Total Spend (₹)"], top10Customers.map((c, i) => [i + 1, c.name, c.spend]))}
+              onClick={() => downloadDataAsCSV("top_10_customers.csv", ["Rank", "Customer Name", "Total Spend (INR)"], top10Customers.map((c, i) => [i + 1, c.name, c.spend]))}
               title="Download CSV"
               variant="ghost"
               shape="circle"
@@ -230,8 +231,8 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
               { label: "Top Spender", val: formatMoney(rupees(topSpend)), color: T.royalBurgundy },
               { label: "Combined Value", val: formatMoney(rupees(combinedTop10)), color: T.antiqueGold },
               { label: "Avg Spend", val: formatMoney(rupees(avgTop10)), color: T.greenMid },
-            ].map((s, i) => (
-              <div key={i} style={{ flex: 1, background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "10px 12px" }}>
+            ].map((s) => (
+              <div key={s.label} style={{ flex: 1, background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "10px 12px" }}>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 500, letterSpacing: "0.4px", marginBottom: 4 }}>{s.label}</div>
                 <div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: s.color }}>{s.val}</div>
               </div>
@@ -254,9 +255,9 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
               const rankBg = i === 0 ? T.royalBurgundy : i === 1 ? "rgba(200,155,71,0.22)" : i === 2 ? T.greenBg : T.silkCream;
               const rankColor = i === 0 ? "#FFF" : i === 1 ? T.antiqueGold : i === 2 ? T.greenMid : T.taupe;
               return (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: isTop ? "8px 10px" : "4px 6px", borderRadius: 8, background: isTop ? "rgba(110,15,45,0.04)" : "transparent", border: isTop ? `1px solid rgba(110,15,45,0.08)` : "1px solid transparent" }}>
+                <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: isTop ? "8px 10px" : "4px 6px", borderRadius: 8, background: isTop ? "rgba(110,15,45,0.04)" : "transparent", border: isTop ? `1px solid rgba(110,15,45,0.08)` : "1px solid transparent" }}>
                   <div style={{ width: 22, height: 22, minWidth: 22, borderRadius: "50%", background: rankBg, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: rankColor }}>{i + 1}</span>
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: rankColor }}>{i + 1}</span>
                   </div>
                   <div style={{ width: 96, minWidth: 96, fontFamily: F.ui, fontSize: 12, fontWeight: i < 3 ? 700 : 500, color: i < 3 ? T.luxuryBrown : T.taupe, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis" }}>
                     {c.name}
@@ -264,7 +265,7 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
                   <div style={{ flex: 1, height: 7, background: T.silkCream, borderRadius: 4, overflow: "hidden" }}>
                     <div style={{ width: `${pct}%`, height: "100%", backgroundImage: barBg, borderRadius: 4 }} />
                   </div>
-                  <div style={{ width: 44, textAlign: "right", fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: i < 3 ? T.luxuryBrown : T.taupe }}>
+                  <div style={{ width: 44, textAlign: "right", fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: i < 3 ? T.luxuryBrown : T.taupe }}>
                     {c.spend >= 100000 ? `${(c.spend / 100000).toFixed(1)}L` : `${Math.round(c.spend / 1000)}K`}
                   </div>
                 </div>
@@ -291,7 +292,7 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
             <DownloadGate><IconButton
               icon={Download}
               label="Download CSV"
-              onClick={() => downloadDataAsCSV("revenue_split.csv", ["Channel", "Revenue Value (₹)"], liveRevSplit.map(item => [item.name, item.value]))}
+              onClick={() => downloadDataAsCSV("revenue_split.csv", ["Channel", "Revenue Value (INR)"], liveRevSplit.map(item => [item.name, item.value]))}
               title="Download CSV"
               variant="ghost"
               shape="circle"
@@ -317,8 +318,8 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
             <ResponsiveContainer key="rc-2" width="100%" height="100%">
               <PieChart key="pie-chart" id="revenue-pie-chart">
                 <Pie key="revenue-pie" id="revenue-pie" data={liveRevSplit} innerRadius={75} outerRadius={108} paddingAngle={3} dataKey="value" nameKey="name" stroke="none">
-                  {liveRevSplit.map((entry, index) => (
-                    <Cell key={`cell-pie-${index}`} fill={entry.fill} />
+                  {liveRevSplit.map((entry) => (
+                    <Cell key={entry.name} fill={entry.fill} />
                   ))}
                 </Pie>
               </PieChart>
@@ -330,8 +331,8 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
           </div>
           </ChartFigure>
           <div style={{ display: "flex", justifyContent: "center", gap: 28, marginTop: 18 }}>
-            {liveRevSplit.map((item, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {liveRevSplit.map((item) => (
+              <div key={item.name} style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <div style={{ width: 12, height: 12, borderRadius: "50%", background: item.fill }} />
                 <span style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, fontWeight: 500 }}>{item.name}: {formatMoney(rupees(item.value), { compact: true })}</span>
               </div>
@@ -429,9 +430,9 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
               <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No customer purchases recorded yet.</div>
             ) : null}
             {!custDataLoading && !custDataError && frequentBuyers.map((fb, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 16 }}>
+              <div key={fb.id} style={{ display: "flex", alignItems: "center", gap: 16 }}>
                 <div style={{ width: 30, height: 30, minWidth: 30, borderRadius: "50%", background: i === 0 ? T.royalBurgundy : "rgba(200,155,71,0.14)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: i === 0 ? "#FFF" : T.antiqueGold }}>#{i+1}</span>
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: i === 0 ? "#FFF" : T.antiqueGold }}>#{i+1}</span>
                 </div>
                 <div style={{ flex: 1, fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{fb.name}</div>
                 <div style={{ flex: 2 }}>
@@ -440,7 +441,7 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
                   </div>
                 </div>
                 <div style={{ width: 120, textAlign: "right" }}>
-                  <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{fb.count} orders</div>
+                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{fb.count} orders</div>
                   <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{fb.freq}</div>
                 </div>
               </div>
@@ -479,8 +480,8 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
             ) : inactiveAlerts.length === 0 ? (
               <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No inactive customers — everyone has purchased recently.</div>
             ) : null}
-            {!custDataLoading && !custDataError && inactiveAlerts.map((al, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 10, boxShadow: "0 1px 4px rgba(74,6,27,0.04)" }}>
+            {!custDataLoading && !custDataError && inactiveAlerts.map((al) => (
+              <div key={al.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 10, boxShadow: "0 1px 4px rgba(74,6,27,0.04)" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
                   <div style={{ width: 44, height: 44, borderRadius: "50%", background: T.silkCream, border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 16, color: T.royalBurgundy, fontWeight: 700 }}>
                     {al.name.substring(0, 2).toUpperCase()}
@@ -537,8 +538,8 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
             ) : locationData.length === 0 ? (
               <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No customers on record yet.</div>
             ) : null}
-            {!custDataLoading && !custDataError && locationData.map((loc, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 18 }}>
+            {!custDataLoading && !custDataError && locationData.map((loc) => (
+              <div key={loc.state} style={{ display: "flex", alignItems: "center", gap: 18 }}>
                 <div style={{ width: 28, display: "flex", justifyContent: "center" }}>
                   <div style={{ width: loc.size, height: loc.size, borderRadius: "50%", background: loc.color }} />
                 </div>
@@ -581,7 +582,7 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
                   nameKey="name"
                   stroke="none"
                 >
-                  {locationData.map((l, i) => <Cell key={`loc-cell-${i}`} fill={l.color} />)}
+                  {locationData.map((l) => <Cell key={l.state} fill={l.color} />)}
                 </Pie>
               </PieChart>
             </ResponsiveContainer>
@@ -592,11 +593,11 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
           </div>
           </ChartFigure>
           <div style={{ display: "flex", flexWrap: "wrap" as const, gap: "10px 18px", marginTop: 22, justifyContent: "center" }}>
-            {locationData.map((s, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 7 }}>
+            {locationData.map((s) => (
+              <div key={s.state} style={{ display: "flex", alignItems: "center", gap: 7 }}>
                 <div style={{ width: 10, height: 10, borderRadius: "50%", background: s.color, flexShrink: 0 }} />
                 <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, fontWeight: 500 }}>{s.state}</span>
-                <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, fontWeight: 600 }}>{s.pct}%</span>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, fontWeight: 600 }}>{s.pct}%</span>
               </div>
             ))}
           </div>

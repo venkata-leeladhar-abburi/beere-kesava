@@ -1,5 +1,3 @@
-import { Receipt } from "lucide-react";
-
 export interface WeaverRecord {
   id: string; name: string; initials: string; bg: string;
   village: string; sb: number; hz: number; ps: number; bs: number; st: number;

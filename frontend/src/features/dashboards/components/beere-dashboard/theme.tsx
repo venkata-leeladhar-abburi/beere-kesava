@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { imgWarp as _imgWarpLocal, imgResham as _imgReshamLocal, imgJari as _imgJariLocal } from "../../../../shared/constants/imageData";
-import { imgPadmaVeni, imgRaviKumar, imgSureshMurti, imgAnandK } from "../../../../shared/constants/weaverImages";
 
 const T = {
   silkCream:      semantic.surface.canvas,

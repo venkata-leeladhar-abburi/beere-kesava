@@ -4,6 +4,7 @@ import { Medal, MapPin as PhMapPin } from "lucide-react";
 import { T, F } from "../theme";
 import { Avatar, qcColor } from "../common/primitives";
 import { ChartFigure } from "../../../../shared/ui/data";
+import type { ValueType, NameType, Payload } from "recharts/types/component/DefaultTooltipContent";
 
 const card: React.CSSProperties = {
   background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`,
@@ -13,11 +14,31 @@ const cardTitle: React.CSSProperties = { fontFamily: F.display, fontSize: 18, fo
 const cardSub: React.CSSProperties = { fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 3 };
 const tip = { fontFamily: F.ui, fontSize: 12, borderRadius: 10, border: `1px solid ${T.borderDef}`, boxShadow: "0 8px 24px rgba(74,6,27,0.12)" };
 
+// Shapes mirror the `top10` / `byCluster` memos built in WeaverAnalytics.tsx
+// (perWeaver rows sorted/mapped for the chart, and per-cluster aggregates).
+interface TopWeaverRow {
+  id: string;
+  name: string;
+  short: string;
+  photo: string | undefined;
+  initials: string;
+  bg: string;
+  produced: number;
+  periodPassRate: number;
+}
+
+interface ClusterRow {
+  cluster: string;
+  produced: number;
+  weavers: number;
+  fill: string;
+}
+
 interface WeaverLeaderboardClusterRowProps {
-  top10: any[];
+  top10: TopWeaverRow[];
   periodLabel: string;
   totalProduced: number;
-  byCluster: any[];
+  byCluster: ClusterRow[];
 }
 
 export function WeaverLeaderboardClusterRow({
@@ -55,9 +76,9 @@ export function WeaverLeaderboardClusterRow({
               <XAxis type="number" hide />
               <YAxis type="category" dataKey="short" width={116} tick={{ fontFamily: F.ui, fontSize: 12, fill: T.luxuryBrown }} axisLine={false} tickLine={false} />
               <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
-                formatter={(v: any, _n: any, p: any) => [`${v} sarees · ${p.payload.periodPassRate}% pass`, p.payload.name]} />
+                formatter={(v: number, _n: string, p: { payload: TopWeaverRow }) => [`${v} sarees · ${p.payload.periodPassRate}% pass`, p.payload.name]} />
               <Bar dataKey="produced" radius={[0, 6, 6, 0]}
-                label={{ position: "right", formatter: (v: any) => `${v}`, fontFamily: F.mono, fontSize: 12, fontWeight: 700, fill: T.luxuryBrown }}>
+                label={{ position: "right", formatter: (v: number) => `${v}`, fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, fill: T.luxuryBrown }}>
                 {top10.map(w => <Cell key={w.id} fill={qcColor(w.periodPassRate)} />)}
               </Bar>
             </BarChart>
@@ -70,7 +91,7 @@ export function WeaverLeaderboardClusterRow({
               <Avatar photo={w.photo} initials={w.initials} bg={w.bg} size={36} />
               <div style={{ minWidth: 0, flex: 1 }}>
                 <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{w.name}</div>
-                <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{w.produced} sarees · {totalProduced ? Math.round((w.produced / totalProduced) * 100) : 0}% of output</div>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{w.produced} sarees · {totalProduced ? Math.round((w.produced / totalProduced) * 100) : 0}% of output</div>
               </div>
             </div>
           ))}
@@ -87,9 +108,12 @@ export function WeaverLeaderboardClusterRow({
           <ResponsiveContainer width="100%" height={186}>
             <PieChart>
               <Pie data={byCluster} dataKey="produced" nameKey="cluster" cx="50%" cy="50%" innerRadius={44} outerRadius={74} paddingAngle={3} stroke="none">
-                {byCluster.map((d, i) => <Cell key={i} fill={d.fill} />)}
+                {byCluster.map((d) => <Cell key={d.cluster} fill={d.fill} />)}
               </Pie>
-              <RechartsTooltip contentStyle={tip} formatter={(v: any, _n: any, p: any) => [`${v} sarees · ${p.payload.weavers} weavers`, p.payload.cluster]} />
+              <RechartsTooltip contentStyle={tip} formatter={(v: ValueType, _n: NameType, p: Payload<ValueType, NameType>) => {
+                const entry = p.payload as ClusterRow;
+                return [`${v} sarees · ${entry.weavers} weavers`, entry.cluster];
+              }} />
             </PieChart>
           </ResponsiveContainer>
         </ChartFigure>
@@ -101,7 +125,7 @@ export function WeaverLeaderboardClusterRow({
                   <div style={{ width: 10, height: 10, borderRadius: 3, background: c.fill, flexShrink: 0 }} />
                   <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.cluster}</span>
                 </div>
-                <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.luxuryBrown, flexShrink: 0 }}>{totalProduced ? Math.round((c.produced / totalProduced) * 100) : 0}%</span>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.luxuryBrown, flexShrink: 0 }}>{totalProduced ? Math.round((c.produced / totalProduced) * 100) : 0}%</span>
               </div>
               <div style={{ height: 6, borderRadius: 4, background: "rgba(110,15,45,0.06)", overflow: "hidden" }}>
                 <div style={{ width: `${totalProduced ? (c.produced / totalProduced) * 100 : 0}%`, height: "100%", background: c.fill, borderRadius: 4 }} />

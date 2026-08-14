@@ -234,12 +234,11 @@ export class AnalyticsService {
   async getCustomersNewVsReturningMonthly(months?: number) {
     const n = this.clampMonths(months);
     const buckets = this.buildMonthBuckets(n);
-    const rangeStart = buckets[0].start;
 
     // Pull every purchase (invoice or sale) with a date, up to "now", so we
     // can determine each customer's first-ever purchase month — including
-    // purchases that happened before rangeStart, which is needed to tell
-    // whether an in-range purchase is a "return" or a first-time one.
+    // purchases that happened before the range start, which is needed to
+    // tell whether an in-range purchase is a "return" or a first-time one.
     const [invoices, sales] = await Promise.all([
       this.prisma.invoice.findMany({
         select: { customerId: true, invoiceDate: true },

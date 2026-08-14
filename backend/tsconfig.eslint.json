@@ -2,7 +2,8 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "rootDir": ".",
-    "noEmit": true
+    "noEmit": true,
+    "types": ["node", "jest", "multer"]
   },
   "include": ["src/**/*", "prisma/**/*", "test/**/*", "prisma.config.ts"],
   "exclude": ["node_modules", "dist"]

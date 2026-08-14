@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router";
-import { useBatches } from "../../../production/contexts/BatchContext";
-import { DesignEntry } from "../../../design-library/contexts/DesignLibraryContext";
-import { DesignCodeCard } from "../../../design-library/components/DesignLibraryPage";
-import { useMaterialIssue } from "../../../materials/contexts/MaterialIssueContext";
+import { useBatches } from "@/features/production";
+import { DesignEntry } from "@/features/design-library";
+import { DesignCodeCard } from "@/features/design-library";
+import { useMaterialIssue } from "@/features/materials";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { motion, AnimatePresence } from "motion/react";
 import { Layers, ClipboardCheck, Package, CreditCard } from "lucide-react";
@@ -90,18 +90,11 @@ export function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive,
   const [viewDesign, setViewDesign] = useState<DesignEntry | null>(null);
 
   // Confirm page state
-  const [sigMethod, setSigMethod] = useState<"none" | "here" | "remote">("none");
-  const [hasSig, setHasSig] = useState(false);
+  const [_sigMethod, setSigMethod] = useState<"none" | "here" | "remote">("none");
+  const [_hasSig, setHasSig] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [confirmedRecord, setConfirmedRecord] = useState<typeof pendingMaterialRecord>(null);
-  const [requestSent, setRequestSent] = useState(false);
-
-  // Warp request state
-  const [warpBatch, setWarpBatch] = useState<"086" | "089">("086");
-  const [materials, setMaterials] = useState({ warp: false, resham: false, jari: false });
-  const [amounts, setAmounts] = useState({ warp: "", resham: "", jari: "" });
-  const [reason, setReason] = useState("");
-  const [warpSubmitted, setWarpSubmitted] = useState(false);
+  const [_requestSent, setRequestSent] = useState(false);
 
   const NAV: { id: Tab5; label: string; icon: React.ReactNode }[] = [
     { id: "batches",   label: "My Batches",   icon: <Layers size={16} /> },

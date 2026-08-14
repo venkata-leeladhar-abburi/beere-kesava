@@ -8,12 +8,12 @@ import {
   ResponsiveContainer, PieChart, Pie, Cell, ComposedChart, Line, Legend,
   RadialBarChart, RadialBar,
 } from "recharts";
-import { BulkOrder } from "../../production/components/ProductionPage";
+import { BulkOrder } from "@/features/production";
 import { DateFilterState } from "../../../shared/ui/DateFilterBar";
 import { resolveOrderMoney, computeBulkOrderProducedSareeIds } from "../utils/BulkOrderLinking";
 import { useBulkOrders } from "../contexts/BulkOrderContext";
-import { useFinishing } from "../../finishing/contexts/FinishingContext";
-import { INVOICES } from "../../payments/data/invoices";
+import { useFinishing } from "@/features/finishing";
+import { INVOICES } from "@/features/payments";
 import { ChartFigure } from "../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
 
@@ -166,7 +166,7 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18, flexWrap: "wrap" }}>
         <div style={{ width: 3, height: 26, background: T.antiqueGold, borderRadius: 2 }} />
         <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0, fontWeight: 600 }}>Order Analytics</h2>
-        <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, letterSpacing: "1px", color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "4px 10px", borderRadius: 20, textTransform: "uppercase" }}>{periodLabel}</span>
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "1px", color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "4px 10px", borderRadius: 20, textTransform: "uppercase" }}>{periodLabel}</span>
         <div style={{ display: "flex", gap: 24, marginLeft: "auto", flexWrap: "wrap" }}>
           {[
             { label: "ORDERS", value: String(filteredOrders.length), color: T.royalBurgundy },
@@ -218,7 +218,7 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
                     <XAxis dataKey="month" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={34} allowDecimals={false} />
                     <YAxis yAxisId="r" orientation="right" domain={[0, 100]} hide />
-                    <RechartsTooltip contentStyle={tip} formatter={(v: any, n: any) => n === "Completion" ? [`${v}%`, n] : [`${v} sarees`, n]} />
+                    <RechartsTooltip contentStyle={tip} formatter={(v: number | string, n: string) => n === "Completion" ? [`${v}%`, n] : [`${v} sarees`, n]} />
                     <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, paddingTop: 8 }} />
                     <Bar name="Ordered" dataKey="ordered" fill={T.royalBurgundy} radius={[5, 5, 0, 0]} />
                     <Bar name="Completed" dataKey="done" fill={semantic.chart.series[1]} radius={[5, 5, 0, 0]} />
@@ -236,9 +236,9 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
                   <ResponsiveContainer width="100%" height={172}>
                     <PieChart>
                       <Pie data={statusMix} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={54} outerRadius={78} paddingAngle={3} stroke="none">
-                        {statusMix.map((d, i) => <Cell key={i} fill={d.color} />)}
+                        {statusMix.map((d) => <Cell key={d.name} fill={d.color} />)}
                       </Pie>
-                      <RechartsTooltip contentStyle={tip} formatter={(v: any, _n: any, p: any) => [`${v} order${v === 1 ? "" : "s"}`, p.payload.name]} />
+                      <RechartsTooltip contentStyle={tip} formatter={(v: number | string, _n: string, p: { payload: { name: string } }) => [`${v} order${v === 1 ? "" : "s"}`, p.payload.name]} />
                     </PieChart>
                   </ResponsiveContainer>
                   <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
@@ -254,14 +254,14 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
                       <div style={{ width: 10, height: 10, borderRadius: 3, background: d.color }} />
                       <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{d.name}</span>
                     </div>
-                    <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{d.value}</span>
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{d.value}</span>
                   </div>
                 ))}
               </div>
               {totalShortage > 0 && (
                 <div style={{ borderTop: `1px solid ${T.borderDef}`, marginTop: 14, paddingTop: 14, display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
                   <span>Total shortage</span>
-                  <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.crimson }}>{totalShortage} sarees</span>
+                  <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: T.crimson }}>{totalShortage} sarees</span>
                 </div>
               )}
             </div>
@@ -284,9 +284,9 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
                     <XAxis type="number" hide />
                     <YAxis type="category" dataKey="short" width={140} tick={{ fontFamily: F.ui, fontSize: 12, fill: T.luxuryBrown }} axisLine={false} tickLine={false} />
                     <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
-                      formatter={(v: any, _n: any, p: any) => [`${inr(v)} · ${p.payload.sarees} sarees · ${p.payload.orders} order(s)`, p.payload.customer]} />
+                      formatter={(v: number | string, _n: string, p: { payload: { sarees: number; orders: number; customer: string } }) => [`${inr(Number(v))} · ${p.payload.sarees} sarees · ${p.payload.orders} order(s)`, p.payload.customer]} />
                     <Bar dataKey="value" radius={[0, 6, 6, 0]}
-                      label={{ position: "right", formatter: (v: any) => L(v), fontFamily: F.mono, fontSize: 12, fontWeight: 700, fill: T.luxuryBrown }}>
+                      label={{ position: "right", formatter: (v: number | string) => L(Number(v)), fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, fill: T.luxuryBrown }}>
                       {topCustomers.map((c, i) => (
                         <Cell key={c.customer} fill={semantic.chart.series[i % semantic.chart.series.length]} />
                       ))}
@@ -307,7 +307,7 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
               </div>
               <div style={cardSub}>Billed against collected</div>
               <div style={{ background: outstanding > 0 ? "rgba(192,57,43,0.07)" : "rgba(30,102,64,0.09)", borderRadius: 14, padding: "16px 18px", margin: "16px 0" }}>
-                <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, letterSpacing: "1.1px", color: T.taupe, marginBottom: 6 }}>OUTSTANDING</div>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "1.1px", color: T.taupe, marginBottom: 6 }}>OUTSTANDING</div>
                 <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: outstanding > 0 ? T.crimson : T.green, lineHeight: 1 }}>{inr(outstanding)}</div>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 6 }}>{collectionRate}% of {inr(billed)} collected</div>
               </div>
@@ -321,7 +321,7 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
                       <div style={{ width: 10, height: 10, borderRadius: 3, background: p.color }} />
                       <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.label}</span>
                     </div>
-                    <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{p.count}</span>
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{p.count}</span>
                   </div>
                 ))}
               </div>
@@ -343,7 +343,7 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
                   return (
                     <div key={o.ref}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-                        <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{o.ref}</span>
+                        <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{o.ref}</span>
                         <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: late ? T.crimson : soon ? "#E67E22" : T.taupe }}>
                           {o.daysToGo === null ? o.due : late ? `${Math.abs(o.daysToGo)}d overdue` : `${o.daysToGo}d left`}
                         </span>
@@ -374,7 +374,7 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
                     <XAxis dataKey="type" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} interval={0} />
                     <YAxis tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={34} allowDecimals={false} />
                     <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
-                      formatter={(v: any, _n: any, p: any) => [`${v} sarees`, p.payload.type]} />
+                      formatter={(v: number | string, _n: string, p: { payload: { type: string } }) => [`${v} sarees`, p.payload.type]} />
                     <Bar dataKey="sarees" radius={[5, 5, 0, 0]}>
                       {byType.map(d => <Cell key={d.type} fill={d.fill} />)}
                     </Bar>
@@ -390,7 +390,7 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
             <div style={card}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <Percent size={16} color={T.royalBurgundy} />
-                <div style={cardTitle}>Order Book Health</div>
+                <div style={{ cardTitle }}>Order Book Health</div>
               </div>
               <div style={cardSub}>Delivery and value snapshot</div>
               <ChartFigure title="Order Book Health" summary={`${completionPct}% completed, ${atRisk} at risk, ${totalShortage} sarees short.`}>
@@ -412,7 +412,7 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
                 ].map(k => (
                   <div key={k.label} style={{ background: T.silkCream, borderRadius: 10, padding: "10px 12px", border: `1px solid ${T.borderDef}` }}>
                     <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, letterSpacing: "0.5px", color: T.taupe, marginBottom: 4, textTransform: "uppercase" }}>{k.label}</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{k.value}</div>
+                    <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{k.value}</div>
                   </div>
                 ))}
               </div>

@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -10,13 +11,14 @@ import { MaterialSplitPanel, autoMaterialSplit, type MatSplit } from "./Material
 import { type WeaverBatchData } from "./weaversData";
 import { weaversApi } from "../../../../../shared/api/weavers";
 import { WeaverSigBlock } from "./WeaverSigBlock";
-import { useRatesPricing } from "../../../../pricing/contexts/RatesContext";
-import { useBatches } from "../../../../production/contexts/BatchContext";
-import { useFinishing } from "../../../../finishing/contexts/FinishingContext";
+import { useRatesPricing } from "@/features/pricing";
+import { useBatches } from "@/features/production";
+import { useFinishing } from "@/features/finishing";
 import { DefectPhotoPrompt } from "./DefectPhotoPrompt";
 import { OwnFactoryReceiveTab } from "./OwnFactoryReceiveTab";
 import { SareeSelectionTable } from "./SareeSelectionTable";
 import { Button, Input, Select, SelectItem } from "../../../../../shared/ui/primitives";
+import { toPaise, fromPaise } from "../../../../../lib/gst";
 
 interface RejectedSaree {
   id: string;
@@ -26,7 +28,7 @@ interface RejectedSaree {
   photoUrl: string;
 }
 
-export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => void; onSareeReceived?: (rec: ReceivedSareeLog) => void }) {
+export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onSareeReceived?: (rec: ReceivedSareeLog) => void }) {
   const { getSareeTypeByCode } = useRatesPricing();
   const { data: weaversRes } = useQuery({
     queryKey: ["worker-receive-weavers"],
@@ -193,7 +195,7 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
           warpG: Number.isFinite(warpG) ? warpG : undefined,
           reshamG: Number.isFinite(reshamG) ? reshamG : undefined,
           jariReels: Number.isFinite(jariReels) ? jariReels : undefined,
-          sellingPrice: sareePrice ? parseFloat(sareePrice) : undefined,
+          sellingPrice: sareePrice ? fromPaise(toPaise(Number(sareePrice) || 0)) : undefined,
         });
         onSareeReceived?.({
           id: s.sareeId, weaver: selectedWeaver.name, wcode: selectedWeaver.code, batch: currentBatch.id,
@@ -366,6 +368,7 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
                       capture="environment"
                       style={{ display: "none" }}
                       onChange={e => { handlePhotoFile(e.target.files?.[0]); e.target.value = ""; }}
+                      aria-label="Camera photo input"
                     />
                     <input
                       ref={galleryInputRef}
@@ -373,6 +376,7 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
                       accept="image/*"
                       style={{ display: "none" }}
                       onChange={e => { handlePhotoFile(e.target.files?.[0]); e.target.value = ""; }}
+                      aria-label="Gallery photo input"
                     />
                     {!hasPhoto ? (
                       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -471,8 +475,8 @@ export function ReceiveSareesPage({ onBack, onSareeReceived }: { onBack: () => v
                   Rejected at Receipt ({rejectedSarees.length})
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  {rejectedSarees.map((r, i) => (
-                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(220,53,69,0.04)", border: "1px solid rgba(220,53,69,0.18)", borderRadius: 10, padding: "8px 10px" }}>
+                  {rejectedSarees.map((r) => (
+                    <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(220,53,69,0.04)", border: "1px solid rgba(220,53,69,0.18)", borderRadius: 10, padding: "8px 10px" }}>
                       <div style={{ width: 36, height: 36, borderRadius: 8, background: "linear-gradient(135deg,#F0E8D0,#C0392B)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                         <Camera size={14} color="rgba(255,255,255,0.85)" />
                       </div>

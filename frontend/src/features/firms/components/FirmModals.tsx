@@ -18,7 +18,7 @@ import { Modal } from "../../../shared/ui/overlay";
 
 function SLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, letterSpacing: "2px", color: T.taupe, textTransform: "uppercase", marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
+    <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, letterSpacing: "2px", color: T.taupe, textTransform: "uppercase", marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
       <div style={{ height: 1, width: 24, background: T.borderDef }} />
       {children}
       <div style={{ flex: 1, height: 1, background: T.borderDef }} />
@@ -57,7 +57,7 @@ export function FirmFormModal({ initial, onSave, onClose, title }: { initial: Fo
     <Modal open onOpenChange={o => !o && onClose()} size="md">
         <div style={{ background: T.darkBurgundy, borderRadius: "var(--radius-xl) var(--radius-xl) 0 0", padding: "24px 28px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
           <div>
-            <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(200,155,71,0.7)", letterSpacing: "2px", textTransform: "uppercase", marginBottom: 4 }}>FIRMS MANAGEMENT</div>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(200,155,71,0.7)", letterSpacing: "2px", textTransform: "uppercase", marginBottom: 4 }}>FIRMS MANAGEMENT</div>
             <Dialog.Title asChild>
               <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFF" }}>{title}</div>
             </Dialog.Title>
@@ -74,7 +74,7 @@ export function FirmFormModal({ initial, onSave, onClose, title }: { initial: Fo
             </div>
             <Field label="GST Number" value={form.gstNumber ?? ""} onChange={v => set("gstNumber", v)} placeholder="29ABCDE1234F1Z5" icon={Hash} />
             <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
-              <Field label="Total Purchase Amount (₹)" value={form.purchaseAmount?.toString() ?? ""} onChange={v => set("purchaseAmount", v)} type="number" placeholder="e.g. 1500000" icon={IndianRupee} />
+              <Field label="Total Purchase Amount (INR)" value={form.purchaseAmount?.toString() ?? ""} onChange={v => set("purchaseAmount", v)} type="number" placeholder="e.g. 1500000" icon={IndianRupee} />
             </div>
             <div style={{ gridColumn: "1 / -1" }}>
               <Field label="Address" value={form.address ?? ""} onChange={v => set("address", v)} placeholder="Street, City, State, PIN" textarea icon={MapPin} />
@@ -114,7 +114,7 @@ export function FirmDetailModal({ firm, onClose, onEdit }: { firm: Firm; onClose
     return (
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "10px 0", borderBottom: `1px solid ${T.borderDef}`, gap: 16 }}>
         <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, flexShrink: 0 }}>{label}</span>
-        <span style={{ fontFamily: mono ? F.mono : F.ui, fontSize: 13, color: T.luxuryBrown, textAlign: "right", wordBreak: "break-all" }}>{value}</span>
+        <span style={{ fontFamily: mono ? "var(--font-mono)" : F.ui, fontSize: 13, color: T.luxuryBrown, textAlign: "right", wordBreak: "break-all" }}>{value}</span>
       </div>
     );
   }
@@ -128,7 +128,7 @@ export function FirmDetailModal({ firm, onClose, onEdit }: { firm: Firm; onClose
             <Dialog.Title asChild>
               <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFF", lineHeight: 1.2 }}>{firm.firmName}</div>
             </Dialog.Title>
-            <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,255,255,0.60)", letterSpacing: "1px", marginTop: 3 }}>{firm.id} · Added {firm.createdAt}</div>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(255,255,255,0.60)", letterSpacing: "1px", marginTop: 3 }}>{firm.id} · Added {firm.createdAt}</div>
           </div>
           <Button variant="secondary" size="sm" iconLeft={Edit} className="text-white border-white/25 bg-white/10 hover:bg-white/20" onClick={() => { onClose(); onEdit(); }}>
             Edit
@@ -154,15 +154,15 @@ export function FirmDetailModal({ firm, onClose, onEdit }: { firm: Firm; onClose
               {firm.purchaseAmount && (
                 <div style={{ background: T.bgGold, border: `1px solid ${T.borderGold}`, borderRadius: 12, padding: "14px 18px", display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
                   <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Total Purchase Amount</span>
-                  <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 20, color: T.antiqueGold }}>{fmtAmt(firm.purchaseAmount)}</span>
+                  <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 20, color: T.antiqueGold }}>{fmtAmt(firm.purchaseAmount)}</span>
                 </div>
               )}
-              <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, letterSpacing: "2px", color: T.taupe, textTransform: "uppercase", marginBottom: 4 }}>Firm Details</div>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, letterSpacing: "2px", color: T.taupe, textTransform: "uppercase", marginBottom: 4 }}>Firm Details</div>
               <Row label="GST Number" value={firm.gstNumber} mono />
               <Row label="Address" value={firm.address} />
               {(firm.bankName || firm.accountNumber || firm.ifscCode) && (
                 <>
-                  <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, letterSpacing: "2px", color: T.taupe, textTransform: "uppercase", marginBottom: 4, marginTop: 18 }}>Bank Details</div>
+                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, letterSpacing: "2px", color: T.taupe, textTransform: "uppercase", marginBottom: 4, marginTop: 18 }}>Bank Details</div>
                   <Row label="Bank Name" value={firm.bankName} />
                   <Row label="Account Number" value={firm.accountNumber} mono />
                   <Row label="IFSC Code" value={firm.ifscCode} mono />
@@ -170,7 +170,7 @@ export function FirmDetailModal({ firm, onClose, onEdit }: { firm: Firm; onClose
               )}
               {(firm.contactPersonName || firm.contactPersonPhone) && (
                 <>
-                  <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, letterSpacing: "2px", color: T.taupe, textTransform: "uppercase", marginBottom: 4, marginTop: 18 }}>Contact Person</div>
+                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, letterSpacing: "2px", color: T.taupe, textTransform: "uppercase", marginBottom: 4, marginTop: 18 }}>Contact Person</div>
                   <Row label="Name" value={firm.contactPersonName} />
                   <Row label="Phone" value={firm.contactPersonPhone} mono />
                 </>

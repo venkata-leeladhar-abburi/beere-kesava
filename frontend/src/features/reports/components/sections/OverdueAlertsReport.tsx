@@ -4,7 +4,7 @@ import { AlertTriangle, Clock, BellRing, Boxes, ShieldAlert, MessageSquare, Pack
 import { T, F } from "../theme";
 import { FadeUp, SumCard, SectionCard, StatusPill } from "../common/primitives";
 import { Button } from "../../../../shared/ui/primitives";
-import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { DataTable } from "../../../../shared/ui/data";
 import { invoicesApi } from "../../../../shared/api/invoices";
 import { bulkOrdersApi } from "../../../../shared/api/bulk-orders";
 import { customersApi } from "../../../../shared/api/customers";
@@ -13,6 +13,7 @@ import { batchesApi } from "../../../../shared/api/batches";
 import { weaversApi } from "../../../../shared/api/weavers";
 import { rupees } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
+import { jariToReels, formatBunsReels } from "../../../../shared/lib/weightUnits";
 
 function daysBetween(a: Date, b: Date): number {
   return Math.max(0, Math.round((a.getTime() - b.getTime()) / 86400000));
@@ -58,22 +59,28 @@ export function OverdueAlertsReport() {
 
   const customerNameById = useMemo(() => new Map((customersRes?.items ?? []).map(c => [c.id, c.name])), [customersRes]);
   const weaverMap = useMemo(() => new Map((weaversRes?.items ?? []).map(w => [w.id, w])), [weaversRes]);
-  const now = new Date();
+  const now = useMemo(() => new Date(), []);
 
   // Dynamic low stock materials from rawMaterialsApi
   const lowStockMaterials = useMemo(() => {
     const items = stockRes?.items ?? [];
     return items
       .filter(item => item.currentStock <= item.reorderLevel)
-      .map(item => ({
-        type: item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari",
-        sub: [item.name, item.color, item.grade].filter(Boolean).join(" - "),
-        batch: `RM-${item.id.slice(-6).toUpperCase()}`,
-        current: item.currentStock,
-        minimum: item.reorderLevel,
-        shortage: Math.max(0, item.reorderLevel - item.currentStock),
-        lastOrder: item.vendor?.name ?? "Vendor",
-      }));
+      .map(item => {
+        const isJari = item.materialType === "JARI";
+        return {
+          type: item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari",
+          sub: [item.name, item.color, item.grade].filter(Boolean).join(" - "),
+          batch: `RM-${item.id.slice(-6).toUpperCase()}`,
+          isJari,
+          current: isJari ? jariToReels(item.currentStock, item.unit) : item.currentStock,
+          minimum: isJari ? jariToReels(item.reorderLevel, item.unit) : item.reorderLevel,
+          shortage: isJari
+            ? Math.max(0, jariToReels(item.reorderLevel, item.unit) - jariToReels(item.currentStock, item.unit))
+            : Math.max(0, item.reorderLevel - item.currentStock),
+          lastOrder: item.vendor?.name ?? "Vendor",
+        };
+      });
   }, [stockRes]);
 
   // Dynamic late weavers from active batches with overdue dueDates
@@ -139,7 +146,7 @@ export function OverdueAlertsReport() {
       <div style={{ background: "rgba(200,155,71,0.08)", border: `1px solid ${T.borderGold}`, borderRadius: 10, padding: "10px 16px", marginBottom: 22, display: "flex", alignItems: "center", gap: 8 }}>
         <Clock size={14} color={T.antiqueGold} />
         <span style={{ fontFamily: F.ui, fontSize: 12, color: "#7B5C18" }}>This report always shows today's live status. Period filter does not apply.</span>
-        <span style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, marginLeft: "auto" }}>{now.toLocaleDateString("en-IN")} · {now.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</span>
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.antiqueGold, marginLeft: "auto" }}>{now.toLocaleDateString("en-IN")} · {now.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</span>
       </div>
 
       {/* 4 alert cards */}
@@ -158,13 +165,13 @@ export function OverdueAlertsReport() {
             <DataTable<(typeof overdueCustomers)[number]>
               columns={[
                 { id: "customer", header: "Customer Name", accessor: r => r.customer, priority: 1, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.customer}</span> },
-                { id: "inv", header: "Invoice No.", accessor: r => r.inv, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.inv}</span> },
-                { id: "total", header: "Invoice Amount", accessor: r => r.total, align: "end", priority: 3, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700 }}><Money value={rupees(r.total)} /></span> },
-                { id: "paid", header: "Amount Paid", accessor: r => r.paid, align: "end", priority: 3, cell: (_v, r) => <span style={{ fontFamily: F.mono, color: T.green }}><Money value={rupees(r.paid)} /></span> },
-                { id: "overdue", header: "Amount Overdue", accessor: r => r.overdue, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.crimson }}><Money value={rupees(r.overdue)} /></span> },
+                { id: "inv", header: "Invoice No.", accessor: r => r.inv, cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy }}>{r.inv}</span> },
+                { id: "total", header: "Invoice Amount", accessor: r => r.total, align: "end", priority: 3, cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700 }}><Money value={rupees(r.total)} /></span> },
+                { id: "paid", header: "Amount Paid", accessor: r => r.paid, align: "end", priority: 3, cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", color: T.green }}><Money value={rupees(r.paid)} /></span> },
+                { id: "overdue", header: "Amount Overdue", accessor: r => r.overdue, align: "end", cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: T.crimson }}><Money value={rupees(r.overdue)} /></span> },
                 { id: "dueDate", header: "Due Date", accessor: r => r.dueDate, cell: (_v, r) => <span style={{ color: T.crimson, fontWeight: 600 }}>{r.dueDate}</span> },
-                { id: "days", header: "Days Overdue", accessor: r => r.days, align: "center", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.crimson }}>{r.days}d overdue</span> },
-                { id: "reminder", header: "Last Reminder Sent", accessor: () => "—", priority: 3, cell: () => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>—</span> },
+                { id: "days", header: "Days Overdue", accessor: r => r.days, align: "center", cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.crimson }}>{r.days}d overdue</span> },
+                { id: "reminder", header: "Last Reminder Sent", accessor: () => "—", priority: 3, cell: () => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>—</span> },
                 { id: "action", header: "Action", accessor: () => null, type: "actions", align: "center", cell: () => <Button variant="primary" size="sm" iconLeft={MessageSquare}>Send WhatsApp Reminder</Button> },
               ]}
               data={overdueCustomers}
@@ -185,12 +192,12 @@ export function OverdueAlertsReport() {
           <div style={{ overflowX: "auto" }}>
             <DataTable<(typeof lowStockMaterials)[number]>
               columns={[
-                { id: "type", header: "Material Type", accessor: r => r.type, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 7px", borderRadius: 5 }}>{r.type}</span> },
+                { id: "type", header: "Material Type", accessor: r => r.type, cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 7px", borderRadius: 5 }}>{r.type}</span> },
                 { id: "sub", header: "Sub-type / Color / Grade", accessor: r => r.sub, priority: 1 },
-                { id: "batch", header: "Batch No.", accessor: r => r.batch, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.batch}</span> },
-                { id: "current", header: "Current Stock", accessor: r => r.current, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.crimson }}>{r.current} kg</span> },
-                { id: "minimum", header: "Minimum Required", accessor: r => r.minimum, align: "end", priority: 3, cell: (_v, r) => <span style={{ fontFamily: F.mono }}>{r.minimum} kg</span> },
-                { id: "shortage", header: "Shortage", accessor: r => r.shortage, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.crimson }}>{r.shortage} kg</span> },
+                { id: "batch", header: "Batch No.", accessor: r => r.batch, cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{r.batch}</span> },
+                { id: "current", header: "Current Stock", accessor: r => r.current, align: "end", cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: T.crimson }}>{r.isJari ? formatBunsReels(r.current) : `${r.current} kg`}</span> },
+                { id: "minimum", header: "Minimum Required", accessor: r => r.minimum, align: "end", priority: 3, cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)" }}>{r.isJari ? formatBunsReels(r.minimum) : `${r.minimum} kg`}</span> },
+                { id: "shortage", header: "Shortage", accessor: r => r.shortage, align: "end", cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: T.crimson }}>{r.isJari ? formatBunsReels(r.shortage) : `${r.shortage} kg`}</span> },
                 { id: "lastOrder", header: "Last Ordered From", accessor: r => r.lastOrder, priority: 3, cell: (_v, r) => <span style={{ color: T.taupe }}>{r.lastOrder}</span> },
                 { id: "action", header: "Action", accessor: () => null, type: "actions", align: "center", cell: () => <Button variant="primary" size="sm" iconLeft={Package}>Create Purchase Order</Button> },
               ]}
@@ -210,12 +217,12 @@ export function OverdueAlertsReport() {
           <DataTable<(typeof lateWeavers)[number]>
             columns={[
               { id: "name", header: "Weaver Name", accessor: r => r.name, priority: 1, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.name}</span> },
-              { id: "code", header: "Code", accessor: r => r.code, priority: 3, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.code}</span> },
-              { id: "batch", header: "Batch No.", accessor: r => r.batch, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.batch}</span> },
+              { id: "code", header: "Code", accessor: r => r.code, priority: 3, cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy }}>{r.code}</span> },
+              { id: "batch", header: "Batch No.", accessor: r => r.batch, cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{r.batch}</span> },
               { id: "expected", header: "Expected End Date", accessor: r => r.expected, cell: (_v, r) => <span style={{ color: T.crimson, fontWeight: 600 }}>{r.expected}</span> },
-              { id: "days", header: "Days Overdue", accessor: r => r.days, align: "center", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.crimson }}>{r.days}d late</span> },
-              { id: "done", header: "Sarees Done", accessor: r => r.done, align: "center", priority: 3, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.green }}>{r.done}</span> },
-              { id: "remaining", header: "Sarees Remaining", accessor: r => r.remaining, align: "center", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.crimson }}>{r.remaining}</span> },
+              { id: "days", header: "Days Overdue", accessor: r => r.days, align: "center", cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.crimson }}>{r.days}d late</span> },
+              { id: "done", header: "Sarees Done", accessor: r => r.done, align: "center", priority: 3, cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: T.green }}>{r.done}</span> },
+              { id: "remaining", header: "Sarees Remaining", accessor: r => r.remaining, align: "center", cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: T.crimson }}>{r.remaining}</span> },
               { id: "action", header: "Action", accessor: () => null, type: "actions", align: "center", cell: () => <Button variant="primary" size="sm" iconLeft={MessageSquare}>Send Message</Button> },
             ]}
             data={lateWeavers}
@@ -233,12 +240,12 @@ export function OverdueAlertsReport() {
           <DataTable<(typeof atRiskOrders)[number]>
             columns={[
               { id: "customer", header: "Customer Name", accessor: r => r.customer, priority: 1, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontWeight: 600 }}>{r.customer}</span> },
-              { id: "order", header: "Order No.", accessor: r => r.order, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.order}</span> },
-              { id: "ordered", header: "Sarees Ordered", accessor: r => r.ordered, align: "center", priority: 3, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700 }}>{r.ordered}</span> },
-              { id: "produced", header: "Sarees Produced", accessor: r => r.produced, align: "center", priority: 3, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.green }}>{r.produced}</span> },
-              { id: "shortage", header: "Shortage", accessor: r => r.shortage, align: "center", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.crimson }}>{r.shortage}</span> },
-              { id: "deadline", header: "Deadline", accessor: r => r.deadline, priority: 3, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{r.deadline}</span> },
-              { id: "daysLeft", header: "Days Remaining", accessor: r => r.daysLeft, align: "center", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: r.daysLeft < 10 ? T.crimson : T.antiqueGold }}>{r.daysLeft} days</span> },
+              { id: "order", header: "Order No.", accessor: r => r.order, cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy }}>{r.order}</span> },
+              { id: "ordered", header: "Sarees Ordered", accessor: r => r.ordered, align: "center", priority: 3, cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700 }}>{r.ordered}</span> },
+              { id: "produced", header: "Sarees Produced", accessor: r => r.produced, align: "center", priority: 3, cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: T.green }}>{r.produced}</span> },
+              { id: "shortage", header: "Shortage", accessor: r => r.shortage, align: "center", cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: T.crimson }}>{r.shortage}</span> },
+              { id: "deadline", header: "Deadline", accessor: r => r.deadline, priority: 3, cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>{r.deadline}</span> },
+              { id: "daysLeft", header: "Days Remaining", accessor: r => r.daysLeft, align: "center", cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: r.daysLeft < 10 ? T.crimson : T.antiqueGold }}>{r.daysLeft} days</span> },
               { id: "status", header: "Status", accessor: r => r.status, type: "status", align: "center", cell: (_v, r) => <StatusPill label={r.status} type="bad" /> },
               { id: "action", header: "Action", accessor: () => null, type: "actions", align: "center", cell: () => <Button variant="secondary" size="sm" iconLeft={Eye}>View Order</Button> },
             ]}

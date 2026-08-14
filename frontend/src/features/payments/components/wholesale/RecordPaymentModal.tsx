@@ -8,7 +8,8 @@ import { Button, CurrencyInput, Field, IconButton, Input, Select, SelectItem, Te
 import { Modal } from "../../../../shared/ui/overlay";
 import { DatePicker, formatDate } from "../../../../shared/ui/date";
 import { rupees } from "@/lib/domain/money";
-import { Money } from "@/shared/ui/domain";
+import { EntityCode, Money } from "@/shared/ui/domain";
+import { toPaise, fromPaise } from "@/lib/gst";
 
 // ── Record Payment Modal ──────────────────────────────────────────────────────
 export function RecordPaymentModal({ inv, onClose, onSave }: { inv: Invoice; onClose: () => void; onSave: (amount: number, firmId: string, utr: string, date: string, method: string) => void }) {
@@ -26,16 +27,21 @@ export function RecordPaymentModal({ inv, onClose, onSave }: { inv: Invoice; onC
     if (!amount || !utr || !firmId) return;
     setSaving(true);
     setTimeout(() => {
-      onSave(parseFloat(amount), firmId, utr, date, method);
+      onSave(fromPaise(toPaise(Number(amount))), firmId, utr, date, method);
       setSaving(false);
-    }, 500);
+      onClose();
+    }, 400);
   };
 
   return (
-    <Modal open onOpenChange={o => !o && onClose()} size="sm">
-        <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "24px 28px", position: "relative", flexShrink: 0 }}>
+    <Modal open={true} onOpenChange={open => { if (!open) onClose(); }} size="lg">
+      <div style={{ background: T.silkCream, borderRadius: 20, overflow: "hidden", border: `1.5px solid ${T.borderGold}` }}>
+        <div style={{ background: "linear-gradient(135deg, #6E0F2D 0%, #4A061B 100%)", padding: "20px 28px", display: "flex", justifyContent: "space-between", alignItems: "center", position: "relative" }}>
           <Dialog.Title asChild>
-            <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: "#FFFDF9" }}>Record Payment — {inv.customer}</div>
+            <div>
+              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: "#FFFFFF" }}>Record Payment Received</div>
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(231,201,131,0.85)", marginTop: 2 }}>{inv.customer}</div>
+            </div>
           </Dialog.Title>
           <Dialog.Close asChild>
             <IconButton icon={X} label="Close" variant="ghost" size="sm"
@@ -45,7 +51,7 @@ export function RecordPaymentModal({ inv, onClose, onSave }: { inv: Invoice; onC
 
         <div style={{ padding: "24px 28px 8px", display: "flex", flexDirection: "column", gap: 16, overflowY: "auto" }}>
           <div style={{ background: "#FFFFFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, padding: "12px 16px", display: "flex", justifyContent: "space-between" }}>
-            <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700 }}>{inv.id}</span>
+            <EntityCode type="invoice" value={inv.id} size="sm" />
             <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Invoice Reference</span>
           </div>
 
@@ -71,8 +77,9 @@ export function RecordPaymentModal({ inv, onClose, onSave }: { inv: Invoice; onC
               </div>
             ) : (
               <div className="section-nav-scroll" style={{ display: "flex", flexDirection: "column", gap: 10, maxHeight: 180, overflowY: "auto", paddingRight: 4 }}>
-                {inv.payments.map((p, idx) => (
-                  <div key={idx} style={{
+                {inv.payments.map((p) => (
+                  // InvoicePayment has no id field; UTR + date + amount together are unique per transaction.
+                  <div key={`${p.utr}-${p.date}-${p.amount}`} style={{
                     display: "flex", flexDirection: "column", gap: 8,
                     padding: "12px 14px", background: T.warmIvory,
                     borderRadius: 10, border: "1px solid rgba(110,15,45,0.06)",
@@ -84,12 +91,12 @@ export function RecordPaymentModal({ inv, onClose, onSave }: { inv: Invoice; onC
                         <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 14, color: T.royalBurgundy }}>
                           <Money value={rupees(p.amount)} />
                         </div>
-                        <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 3 }}>
+                        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3 }}>
                           {p.utr} · {p.method}
                         </div>
                       </div>
                       <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
-                        <span style={{ fontSize: 12, fontFamily: F.mono, fontWeight: 700, background: "rgba(200,155,71,0.11)", color: T.antiqueGold, padding: "2px 6px", borderRadius: 4, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                        <span style={{ fontSize: 12, fontFamily: F.ui, fontWeight: 700, background: "rgba(200,155,71,0.11)", color: T.antiqueGold, padding: "2px 6px", borderRadius: 4, textTransform: "uppercase", letterSpacing: "0.5px" }}>
                           {p.firmName ?? "Beere Kesava & Brothers Silks"}
                         </span>
                         <div style={{ display: "flex", alignItems: "center", gap: 4, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
@@ -103,7 +110,7 @@ export function RecordPaymentModal({ inv, onClose, onSave }: { inv: Invoice; onC
             )}
           </div>
 
-          <Field label="Amount Received (₹)" required id="amount-received">
+          <Field label="Amount Received" required id="amount-received">
             <CurrencyInput value={amount === "" ? "" : Number(amount)} onValueChange={v => setAmount(v === "" ? "" : String(v))} />
           </Field>
           <Field label="Payment Date" required id="payment-date">
@@ -133,6 +140,7 @@ export function RecordPaymentModal({ inv, onClose, onSave }: { inv: Invoice; onC
             Save Payment
           </Button>
         </div>
+      </div>
     </Modal>
   );
 }

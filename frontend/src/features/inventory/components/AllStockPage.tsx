@@ -124,13 +124,13 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
 
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 32 }}>
             <div>
-              <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(200,155,71,0.80)", letterSpacing: "2.5px", textTransform: "uppercase", marginBottom: 10 }}>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(200,155,71,0.80)", letterSpacing: "2.5px", textTransform: "uppercase", marginBottom: 10 }}>
                 PRODUCTION · INVENTORY
               </div>
               <h1 style={{ fontFamily: F.display, fontWeight: 700, fontSize: 48, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>
                 Sarees In Stock
               </h1>
-              <p style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.65)", margin: "10px 0 0", lineHeight: 1.6, maxWidth: 560 }}>
+              <p className="max-w-[560px]" style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.65)", margin: "10px 0 0", lineHeight: 1.6 }}>
                 All sarees ready for sale or assignment to finishing staff — produced on our factory looms,
                 woven by our weavers, or bought in from external suppliers.
               </p>
@@ -212,7 +212,7 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: "auto", background: T.warmCream, borderRadius: 10, padding: "8px 14px" }}>
               <Package size={15} color={T.taupe} />
-              <span style={{ fontFamily: F.mono, fontSize: 13, color: T.taupe, fontWeight: 600 }}>{filtered.length} saree{filtered.length !== 1 ? "s" : ""}</span>
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.taupe, fontWeight: 600 }}>{filtered.length} saree{filtered.length !== 1 ? "s" : ""}</span>
             </div>
           </div>
         </FadeUp>

@@ -1,7 +1,7 @@
 import React from "react";
 import { CheckCircle2, AlertTriangle, TrendingUp } from "lucide-react";
 import { C, F, card } from "./tokens";
-import { POItem } from "../../../purchasing/contexts/POContext";
+import { POItem } from "@/features/purchasing";
 import { Button, Input, Checkbox, Textarea } from "../../../../shared/ui/primitives";
 
 const MAT_TAG: Record<string, { col: string; bg: string }> = {
@@ -125,12 +125,12 @@ export function GRNItemVerificationCard({
               <div style={{ fontFamily: F.u, fontSize: 12, color: matColor, fontWeight: 600 }}>
                 {m.materialType === "Jari" ? (
                   receivedUnit === "Reels"
-                    ? `= ${(parseFloat(receivedQty) / 4).toFixed(2)} Buns`
-                    : `= ${(parseFloat(receivedQty) * 4).toFixed(0)} Reels`
+                    ? `= ${(Number(receivedQty) / 4).toFixed(2)} Buns`
+                    : `= ${(Number(receivedQty) * 4).toFixed(0)} Reels`
                 ) : (
                   receivedUnit === "kg"
-                    ? `= ${(parseFloat(receivedQty) * 1000).toFixed(0)} g`
-                    : `= ${(parseFloat(receivedQty) / 1000).toFixed(3)} kg`
+                    ? `= ${(Number(receivedQty) * 1000).toFixed(0)} g`
+                    : `= ${(Number(receivedQty) / 1000).toFixed(3)} kg`
                 )}
               </div>
             )}
@@ -148,10 +148,10 @@ export function GRNItemVerificationCard({
             <>
               <AlertTriangle size={13} color={C.gold} />
               <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.gold }}>⚠ Short by {Math.abs(cmp.diff).toFixed(3)} {cmp.unit}</span>
-              <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", marginLeft: 8 }}>
+              <span style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", marginLeft: 8 }}>
                 <Checkbox checked={notifySuperadmin || false} onCheckedChange={checked => setNotifySuperadmin(prev => ({ ...prev, [i]: checked === true }))} />
                 <span style={{ fontFamily: F.u, fontSize: 12, color: C.text }}>Notify Superadmin</span>
-              </label>
+              </span>
             </>
           ) : (
             <>

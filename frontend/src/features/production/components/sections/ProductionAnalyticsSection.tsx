@@ -14,9 +14,9 @@ import { ANALYTICS_PERIODS } from "../data";
 import { analyticsApi } from "../../../../shared/api/analytics";
 import { weaversApi } from "../../../../shared/api/weavers";
 import { useBatches } from "../../contexts/BatchContext";
-import { useBulkOrders } from "../../../bulk-orders/contexts/BulkOrderContext";
-import { useFinishing } from "../../../finishing/contexts/FinishingContext";
-import { computeBulkOrderProducedSareeIds } from "../../../bulk-orders/utils/BulkOrderLinking";
+import { useBulkOrders } from "@/features/bulk-orders";
+import { useFinishing } from "@/features/finishing";
+import { computeBulkOrderProducedSareeIds } from "@/features/bulk-orders";
 import { rowComplete } from "./batches/ContextBatchCard";
 import { FadeUp, Pip, ProductionDialog } from "../common/primitives";
 import { Button, CheckboxField } from "../../../../shared/ui/primitives";
@@ -188,8 +188,8 @@ export function ProductionAnalyticsSection() {
               {monthlyProductionData.map(d => (
                 <div key={d.month} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
                   <div style={{ display: "flex", gap: 3, alignItems: "flex-end" }}>
-                    <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700 }}>{d.produced}</span>
-                    <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>/{d.passed}</span>
+                    <span style={{ fontFamily: F.ui, fontSize: 12, color: T.royalBurgundy, fontWeight: 700 }}>{d.produced}</span>
+                    <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>/{d.passed}</span>
                   </div>
                   <div style={{ display: "flex", alignItems: "flex-end", gap: 4, height: 130, width: "100%", justifyContent: "center" }}>
                     <motion.div
@@ -204,16 +204,16 @@ export function ProductionAnalyticsSection() {
                       whileInView={{ height: `${(d.passed / maxMonthly) * 100}%` }}
                       viewport={{ once: true }}
                       transition={{ duration: 0.7, delay: 0.08, ease: [0.25, 0.1, 0.25, 1] }}
-                      style={{ width: 22, background: `linear-gradient(180deg, ${T.antiqueGold} 0%, #B88730 100%)`, borderRadius: "5px 5px 0 0", minHeight: 6, opacity: 0.9 }}
+                      style={{ width: 22, background: "linear-gradient(180deg, #0F766E 0%, #0D5D57 100%)", borderRadius: "5px 5px 0 0", minHeight: 6, opacity: 0.9 }}
                     />
                   </div>
-                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.taupe }}>{d.label}</span>
+                  <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe }}>{d.label}</span>
                 </div>
               ))}
             </div>
 
             <div style={{ display: "flex", gap: 20, marginTop: 16, justifyContent: "center" }}>
-              {[{ color: T.royalBurgundy, label: "Produced" }, { color: T.antiqueGold, label: "QC Passed" }].map(l => (
+              {[{ color: T.royalBurgundy, label: "Produced" }, { color: "#0F766E", label: "QC Passed" }].map(l => (
                 <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 7 }}>
                   <div style={{ width: 12, height: 12, borderRadius: 3, background: l.color }} />
                   <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, fontWeight: 500 }}>{l.label}</span>
@@ -325,7 +325,7 @@ export function ProductionAnalyticsSection() {
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                       <span style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, fontWeight: 700 }}>{o.name}</span>
                       <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                        <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{o.done}/{o.total}</span>
+                        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{o.done}/{o.total}</span>
                         <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color, minWidth: 42, textAlign: "right" }}>{pct}%</span>
                       </div>
                     </div>
@@ -353,7 +353,7 @@ export function ProductionAnalyticsSection() {
                   <ChartBar size={18} color={T.royalBurgundy} />
                   <div>
                     <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>Reporting Period</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2 }}>{period}</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{period}</div>
                   </div>
                 </div>
                 <div>

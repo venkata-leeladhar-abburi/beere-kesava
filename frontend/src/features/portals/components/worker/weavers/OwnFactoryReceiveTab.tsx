@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Camera, UploadCloud, CheckCircle2, AlertTriangle, Plus, Printer } from "lucide-react";
 import { C, F, card } from "../tokens";
-import { useRatesPricing } from "../../../../pricing/contexts/RatesContext";
+import { useRatesPricing } from "@/features/pricing";
 import { FieldLabel } from "./shared";
 import { MaterialSplitPanel, type MatSplit } from "./MaterialSplitPanel";
 import { WeaverSigBlock } from "./WeaverSigBlock";
@@ -55,9 +55,9 @@ export function OwnFactoryReceiveTab() {
             </div>
             {ownWeight && (
               <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 4 }}>
-                {parseFloat(ownWeight) >= 600 ? <CheckCircle2 size={11} color={C.green} /> : <AlertTriangle size={11} color={C.crim} />}
-                <span style={{ fontFamily: F.u, fontSize: 12, color: parseFloat(ownWeight) >= 600 ? C.green : C.crim }}>
-                  {parseFloat(ownWeight) >= 600 ? "OK" : "Too low"}
+                {Number(ownWeight) >= 600 ? <CheckCircle2 size={11} color={C.green} /> : <AlertTriangle size={11} color={C.crim} />}
+                <span style={{ fontFamily: F.u, fontSize: 12, color: Number(ownWeight) >= 600 ? C.green : C.crim }}>
+                  {Number(ownWeight) >= 600 ? "OK" : "Too low"}
                 </span>
               </div>
             )}

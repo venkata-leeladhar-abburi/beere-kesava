@@ -84,7 +84,7 @@ export function CustomerProfileDialog({
                   <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>No purchase history recorded for this customer.</div>
                 ) : (
                   customerPurchases.map((p, i, arr) => (
-                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 0", borderBottom: i < arr.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none" }}>
+                    <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 0", borderBottom: i < arr.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none" }}>
                       <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(110,15,45,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                         <ShoppingBag size={18} color={C.burg} />
                       </div>

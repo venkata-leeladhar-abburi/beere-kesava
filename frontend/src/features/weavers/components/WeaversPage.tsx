@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useLocation } from "react-router";
 import { AnimatePresence } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
-import { useBatches } from "../../production/contexts/BatchContext";
+import { useBatches } from "@/features/production";
 
 import { T, F } from "./theme";
 import { WEAVERS } from "./data";
@@ -19,7 +19,7 @@ import { WeaverDirectory } from "./sections/WeaverTableAndDirectory";
 import { WeaverDrawer } from "./sections/WeaverDrawer";
 import { WeaverAnalytics } from "./sections/WeaverAnalytics";
 import { LeaderboardAndQC } from "./sections/LeaderboardAndQC";
-import { MaterialsFooter } from "../../materials/components/sections/MaterialsFooter";
+import { MaterialsFooter } from "@/features/materials";
 import { NewWeaverModal } from "./modals/NewWeaverModal";
 import { ImportWeaversModal } from "./modals/ImportWeaversModal";
 
@@ -42,7 +42,7 @@ import { ImportWeaversModal } from "./modals/ImportWeaversModal";
  * replaced, which requires the WV-XXX-id migration and production-stats
  * wiring called out as out of scope for this pass.
  */
-export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: any) => void } = {}) {
+export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: unknown) => void } = {}) {
   const location = useLocation();
   const navState = location.state as { weaverId?: string; mode?: "view" | "edit" } | null;
 

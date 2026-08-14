@@ -1,15 +1,15 @@
 import React from "react";
 import { motion } from "motion/react";
-import { T, F, G, NUM, EASE } from "../../../../dashboards/components/beere-dashboard/theme";
-import { AnimatedNumber, IcoFabricRoll, IcoQualityCheck, IcoInvoice, IcoResourceMgmt, IcoWarehouse } from "../../../../dashboards/components/beere-dashboard/ui";
+import { T, F, G, NUM, EASE } from "@/features/dashboards";
+import { AnimatedNumber, IcoFabricRoll, IcoQualityCheck, IcoInvoice, IcoResourceMgmt, IcoWarehouse } from "@/features/dashboards";
 import { useWeaverDashboardMetrics } from "./useWeaverDashboardMetrics";
 
 const ICONS = [
-  <IcoResourceMgmt sz={22} col={T.warmCream} />,
-  <IcoFabricRoll   sz={22} col={T.warmCream} />,
-  <IcoQualityCheck sz={22} col={T.warmCream} />,
-  <IcoWarehouse    sz={22} col={T.warmCream} />,
-  <IcoInvoice      sz={22} col={T.warmCream} />,
+  <IcoResourceMgmt key="resource-mgmt" sz={22} col={T.warmCream} />,
+  <IcoFabricRoll   key="fabric-roll"   sz={22} col={T.warmCream} />,
+  <IcoQualityCheck key="quality-check" sz={22} col={T.warmCream} />,
+  <IcoWarehouse    key="warehouse"     sz={22} col={T.warmCream} />,
+  <IcoInvoice      key="invoice"       sz={22} col={T.warmCream} />,
 ];
 
 /** Same floating card-strip treatment as the admin dashboard's MetricsBar, over this weaver's own real numbers. */

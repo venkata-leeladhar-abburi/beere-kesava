@@ -60,7 +60,7 @@ export function PaymentRemindersModal({ open, onClose, overdueInvoices }: { open
         <div style={{ padding: "24px 28px 28px", display: "flex", flexDirection: "column", gap: 20, overflowY: "auto" }}>
           {/* Overdue Invoices List Selection */}
           <div>
-            <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: T.luxuryBrown, marginBottom: 8, display: "block" }}>Select Customer Invoice to Preview</label>
+            <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: T.luxuryBrown, marginBottom: 8, display: "block" }}>Select Customer Invoice to Preview</span>
             <Select value={selectedInvoiceId} onValueChange={setSelectedInvoiceId} className="w-full">
               {overdueInvoices.map(i => (
                 <SelectItem key={i.id} value={i.id}>
@@ -74,7 +74,7 @@ export function PaymentRemindersModal({ open, onClose, overdueInvoices }: { open
           {currentInvoice && (
             <div>
               <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 8 }}>Reminder Message Preview</div>
-              <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "14px 16px", whiteSpace: "pre-wrap" as const, fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, lineHeight: 1.5, maxHeight: 180, overflowY: "auto" }}>
+              <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "14px 16px", whiteSpace: "pre-wrap" as const, fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, lineHeight: 1.5, maxHeight: 180, overflowY: "auto" }}>
                 {getPreviewText(currentInvoice)}
               </div>
             </div>

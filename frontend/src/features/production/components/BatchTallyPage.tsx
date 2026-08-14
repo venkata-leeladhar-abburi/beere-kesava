@@ -1,13 +1,14 @@
 import React, { useMemo, useState } from "react";
 import { ArrowLeft, ArrowRight, Scale } from "lucide-react";
-import { useDesignLibrary } from "../../design-library/contexts/DesignLibraryContext";
+import { useDesignLibrary } from "@/features/design-library";
 import { useBatches, type SareeRow } from "../contexts/BatchContext";
-import { useRatesPricing } from "../../pricing/contexts/RatesContext";
+import { useRatesPricing } from "@/features/pricing";
 import { useAuth } from "../../../contexts/AuthContext";
 import { T, F } from "./theme";
 import { rowComplete, weaverBreakdown, bulkOrderBreakdown } from "./sections/batches/ContextBatchCard";
 import { SareeWeightTallyList, type TallyRowItem, type TallyCorrection } from "./sections/batches/SareeWeightTallyList";
 import { Button, IconButton, SearchInput, Select, SelectItem } from "../../../shared/ui/primitives";
+import { EntityCode } from "@/shared/ui/domain";
 
 const imgSaree = "https://images.unsplash.com/photo-1588140686379-1b76a52103dc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
 
@@ -53,9 +54,13 @@ export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: s
       batchId,
       weaverName: r.weaverName,
       sareeTypeCode: r.sareeTypeCode,
+      // eslint-disable-next-line no-restricted-syntax -- saree weight in grams, not money
       actualWeight: r.receivedWeight ? parseFloat(r.receivedWeight) : null,
+      // eslint-disable-next-line no-restricted-syntax -- warp weight in grams, not money
       actualWarpG: r.receivedWarpG ? parseFloat(r.receivedWarpG) : null,
+      // eslint-disable-next-line no-restricted-syntax -- resham weight in grams, not money
       actualReshamG: r.receivedReshamG ? parseFloat(r.receivedReshamG) : null,
+      // eslint-disable-next-line no-restricted-syntax -- jari reel count, not money
       actualJariReels: r.receivedJariReels ? parseFloat(r.receivedJariReels) : null,
       tallied: r.tallied,
       talliedBy: r.talliedBy,
@@ -112,7 +117,9 @@ export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: s
 
         <div style={{ position: "absolute", bottom: 20, left: 32, right: 32, display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
           <div>
-            <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.goldLight, letterSpacing: "0.5px", marginBottom: 4 }}>{b.batchId}</div>
+            <div style={{ marginBottom: 4 }}>
+              <EntityCode type="batch" value={b.batchId} size="sm" />
+            </div>
             <div style={{ fontFamily: F.display, fontSize: 28, fontWeight: 800, color: "#FFFFFF" }}>
               {firstRow ? firstRow.sareeTypeName : "Batch"} Production
             </div>
@@ -123,7 +130,7 @@ export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: s
         </div>
       </div>
 
-      <div className="px-4 md:px-7 xl:px-8" style={{ maxWidth: 980, margin: "0 auto", paddingTop: 28, paddingBottom: 40, display: "flex", flexDirection: "column", gap: 22 }}>
+      <div className="px-4 md:px-7 xl:px-8 max-w-[980px] mx-auto" style={{ paddingTop: 28, paddingBottom: 40, display: "flex", flexDirection: "column", gap: 22 }}>
         <div style={{ background: "#FFFFFF", border: `1px solid ${T.borderDef}`, borderRadius: 16, padding: "18px 22px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
             <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>Production progress</span>
@@ -139,7 +146,7 @@ export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: s
         <div style={{ background: "#FFFFFF", border: `1px solid ${T.borderDef}`, borderRadius: 16, padding: "18px 22px", display: "flex", flexDirection: "column", gap: 16 }}>
           <div>
             <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>Due Date</div>
-            <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{b.dueDate || "Not Set"}</div>
+            <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{b.dueDate || "Not Set"}</div>
           </div>
 
           <div style={{ height: 1, background: "rgba(110,15,45,0.06)" }} />
@@ -158,21 +165,25 @@ export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: s
           </div>
 
           {orders.length > 0 && (
-            <div>
-              <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>
-                Linked Orders
+            <>
+              <div style={{ height: 1, background: "rgba(110,15,45,0.06)" }} />
+              <div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>
+                  Linked Bulk Orders
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  {orders.map(o => (
+                    <span key={o.label} style={{ background: "rgba(30,102,64,0.08)", border: "1px solid rgba(30,102,64,0.2)", borderRadius: 8, padding: "6px 12px", fontSize: 13, color: T.green, fontWeight: 600 }}>
+                      {o.label} ({o.count})
+                    </span>
+                  ))}
+                </div>
               </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {orders.map(o => (
-                  <span key={o.label} style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, background: o.label === "Not assigned" ? "rgba(139,112,96,0.06)" : "rgba(30,102,64,0.05)", color: o.label === "Not assigned" ? T.taupe : T.green, border: `1px solid ${o.label === "Not assigned" ? "rgba(139,112,96,0.15)" : "rgba(30,102,64,0.15)"}`, borderRadius: 8, padding: "5px 10px" }}>
-                    {o.count} × {o.label}
-                  </span>
-                ))}
-              </div>
-            </div>
+            </>
           )}
         </div>
 
+        {/* ── Saree Breakdown ── */}
         <div style={{ background: "#FFFFFF", border: `1px solid ${T.borderDef}`, borderRadius: 16, padding: "18px 22px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
             <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>
@@ -200,13 +211,11 @@ export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: s
               <div key={row.serial} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(110,15,45,0.02)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "12px 16px" }}>
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>
+                    <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>
                       Saree {row.serial}
                     </span>
                     {row.sareeId && (
-                      <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
-                        ({row.sareeId})
-                      </span>
+                      <EntityCode type="saree" value={row.sareeId} size="sm" />
                     )}
                   </div>
                   <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, marginTop: 4 }}>

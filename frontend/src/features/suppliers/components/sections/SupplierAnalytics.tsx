@@ -158,7 +158,7 @@ export function SupplierAnalytics() {
         title="Supplier Analytics"
         subtitle="Spend, top suppliers, outstanding dues, and settlement health across your raw-material suppliers."
         actions={
-          <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, letterSpacing: "1px", color: "#FFFDF9", background: "rgba(255,255,255,0.14)", padding: "6px 14px", borderRadius: 20, textTransform: "uppercase" }}>{periodLabel}</span>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "1px", color: "#FFFDF9", background: "rgba(255,255,255,0.14)", padding: "6px 14px", borderRadius: 20, textTransform: "uppercase" }}>{periodLabel}</span>
         }
       >
         {/* Timeline scope — drives every chart in this section */}

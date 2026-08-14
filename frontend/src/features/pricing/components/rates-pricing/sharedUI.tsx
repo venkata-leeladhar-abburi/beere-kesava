@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax -- jari reels/buns/grams conversion, not currency */
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Plus, type LucideIcon } from "lucide-react";
@@ -17,7 +18,7 @@ export function JariWeightField({ reels, onChange }: { reels: string; onChange: 
   return (
     <div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-        <label style={{ ...labelStyle, marginBottom: 3 }}>Jari ({unit})</label>
+        <span style={{ ...labelStyle, marginBottom: 3, display: "block" }}>Jari ({unit})</span>
         <div style={{ display: "flex", background: "rgba(110,15,45,0.06)", borderRadius: 999, padding: 2, marginBottom: 3 }}>
           {(["reels", "buns"] as JariUnit[]).map(u => (
             <Button key={u} type="button" variant="ghost" size="sm" onClick={() => setUnit(u)}
@@ -35,7 +36,7 @@ export function JariWeightField({ reels, onChange }: { reels: string; onChange: 
           onChange(v === "" ? "" : trimNum(jariToReels(parseFloat(v) || 0, unit)));
         }}
         className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
-      <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 4 }}>
+      <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 4 }}>
         {trimNum(reelsNum)} reels · {trimNum(jariFromReels(reelsNum, "buns"))} buns · {trimNum(jariGrams(reelsNum), 0)}g
       </div>
     </div>
@@ -86,6 +87,9 @@ export function GoldLink({ children, onClick }: { children: React.ReactNode; onC
   return (
     <span
       onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { onClick?.(); } }}
       style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 500, color: T.antiqueGold, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}
     >
       {children}

@@ -44,7 +44,7 @@ export function PODocPreview({
         <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 14, color: "#FFFDF9", marginBottom: 2 }}>
           🪷 Beere Kesava &amp; Brothers Silks
         </div>
-        <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, letterSpacing: "2px" }}>Est. 1999</div>
+        <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.antiqueGold, letterSpacing: "2px" }}>Est. 1999</div>
         <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.65)", marginTop: 3 }}>
           Guntur, Andhra Pradesh · India
         </div>
@@ -53,10 +53,10 @@ export function PODocPreview({
       <div style={{ padding: "14px 16px" }}>
         {/* Reference row */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, paddingBottom: 10, borderBottom: `1px solid ${T.borderDef}` }}>
-          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700 }}>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy, fontWeight: 700 }}>
             Purchase Order No: {poNumber || "PO-2026-—"}
           </span>
-          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>Date: {today}</span>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>Date: {today}</span>
         </div>
 
         {/* Purchasing Firm */}
@@ -83,9 +83,9 @@ export function PODocPreview({
         {/* Delivery */}
         <div style={{ marginBottom: 12 }}>
           <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 500 }}>Expected Delivery: </span>
-          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown }}>{deliveryDate || "—"}</span>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.luxuryBrown }}>{deliveryDate || "—"}</span>
           {urgency === "Urgent" && (
-            <span style={{ marginLeft: 8, fontFamily: F.mono, fontSize: 12, color: T.crimson, background: "rgba(192,57,43,0.10)", padding: "2px 7px", borderRadius: 4 }}>
+            <span style={{ marginLeft: 8, fontFamily: "var(--font-mono)", fontSize: 12, color: T.crimson, background: "rgba(192,57,43,0.10)", padding: "2px 7px", borderRadius: 4 }}>
               🔴 URGENT
             </span>
           )}
@@ -95,7 +95,7 @@ export function PODocPreview({
         <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 8, overflow: "hidden", marginBottom: 10 }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1.6fr 0.7fr 0.7fr", background: T.silkCream, padding: "7px 10px", gap: 6 }}>
             {["Material", "Description", "Qty / Unit", "Amount"].map(h => (
-              <span key={h} style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, fontWeight: 600, letterSpacing: "0.8px", textTransform: "uppercase" }}>{h}</span>
+              <span key={h} style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, fontWeight: 600, letterSpacing: "0.8px", textTransform: "uppercase" }}>{h}</span>
             ))}
           </div>
           {materials.length === 0 ? (
@@ -104,17 +104,17 @@ export function PODocPreview({
             <div key={m._key} style={{ display: "grid", gridTemplateColumns: "1fr 1.6fr 0.7fr 0.7fr", padding: "8px 10px", gap: 6, background: i % 2 === 0 ? "#FFFFFF" : T.warmIvory, borderTop: `1px solid ${T.borderDef}` }}>
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, fontWeight: 600 }}>{m.materialType}</span>
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, wordBreak: "break-word" }}>{m.description || "—"}</span>
-              <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{m.quantity || 0} {m.unit}</span>
-              <span style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, fontWeight: 600 }}>
-                {m.pricePerUnit > 0 ? `₹${((m.pricePerUnit || 0) * (m.quantity || 0)).toLocaleString("en-IN")}` : "—"}
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{m.quantity || 0} {m.unit}</span>
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.antiqueGold, fontWeight: 600 }}>
+                {m.pricePerUnit > 0 ? `INR ${((m.pricePerUnit || 0) * (m.quantity || 0)).toLocaleString("en-IN")}` : "—"}
               </span>
             </div>
           ))}
           {materials.length > 0 && (
             <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 10px", borderTop: `1px solid ${T.borderDef}`, background: T.silkCream }}>
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600 }}>Total</span>
-              <span style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, fontWeight: 700 }}>
-                ₹{materials.reduce((sum, m) => sum + (m.pricePerUnit || 0) * (m.quantity || 0), 0).toLocaleString("en-IN")}
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.royalBurgundy, fontWeight: 700 }}>
+                INR {materials.reduce((sum, m) => sum + (m.pricePerUnit || 0) * (m.quantity || 0), 0).toLocaleString("en-IN")}
               </span>
             </div>
           )}
@@ -142,7 +142,7 @@ export function PODocPreview({
         {/* Footer */}
         <div style={{ textAlign: "center", marginTop: 14, paddingTop: 10, borderTop: `1px solid ${T.borderDef}` }}>
           <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Beere Kesava &amp; Brothers Silks · Est. 1999</div>
-          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, marginTop: 2, letterSpacing: "1px" }}>Tradition · Trust · Timeless Quality</div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.antiqueGold, marginTop: 2, letterSpacing: "1px" }}>Tradition · Trust · Timeless Quality</div>
         </div>
       </div>
     </div>

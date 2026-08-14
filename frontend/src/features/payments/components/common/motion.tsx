@@ -27,6 +27,7 @@ export function AnimCount({ raw }: { raw: string }) {
     if (!inView) return;
     const m = raw.match(/[\d.]+/);
     if (!m) { setDisp(raw); return; }
+    // eslint-disable-next-line no-restricted-syntax -- animates a display string's numeric run (counts or already-formatted money text) purely for a visual count-up; not currency arithmetic, no precision requirement
     const target = parseFloat(m[0]);
     const isFloat = m[0].includes(".");
     const idx = raw.indexOf(m[0]);

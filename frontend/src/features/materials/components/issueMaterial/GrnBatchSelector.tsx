@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { ChevronDown, QrCode } from "lucide-react";
 import { F, GrnBatch, T } from "./theme";
 import { IconButton, SearchInput } from "../../../../shared/ui/primitives";
+import { EntityCode } from "@/shared/ui/domain";
 
 // ── GRN batch selector (searchable + scan simulation) ─────────────────────────
 export function GrnBatchSelector({ grnBatches, materialType, value, onChange }: {
@@ -20,7 +21,7 @@ export function GrnBatchSelector({ grnBatches, materialType, value, onChange }: 
 
   return (
     <div style={{ position: "relative" as const }}>
-      <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 6 }}>GRN Batch</label>
+      <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 6 }}>GRN Batch</span>
       <div style={{ display: "flex", gap: 8 }}>
         <div style={{ flex: 1, position: "relative" as const }}>
           {/* Custom searchable listbox trigger — not a plain Select (needs inline search + scan
@@ -28,14 +29,15 @@ export function GrnBatchSelector({ grnBatches, materialType, value, onChange }: 
           <button type="button" onClick={() => setOpen(o => !o)} style={{
             width: "100%", height: 44, borderRadius: 10, border: `1.5px solid ${open ? T.royalBurgundy : T.borderDef}`,
             background: "#FFF", padding: "0 14px", display: "flex", alignItems: "center", justifyContent: "space-between",
-            cursor: "pointer", fontFamily: selected ? F.mono : F.ui, fontSize: 13, color: selected ? T.royalBurgundy : T.taupe,
+            cursor: "pointer", fontFamily: F.ui, fontSize: 13, color: selected ? T.royalBurgundy : T.taupe,
           }}>
-            {selected ? selected.grnBatchId : "Select GRN batch…"}
+            {selected ? <EntityCode type="goodsReceipt" value={selected.grnBatchId} size="sm" /> : "Select GRN batch…"}
             <ChevronDown size={14} color={T.taupe} />
           </button>
           {open && (
             <div style={{ position: "absolute" as const, top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 50, background: "#FFF", border: `1px solid ${T.royalBurgundy}`, borderRadius: 12, boxShadow: "0 8px 28px rgba(74,6,27,0.16)", overflow: "hidden" }}>
               <div style={{ padding: 8, borderBottom: `1px solid ${T.borderDef}` }}>
+                {/* eslint-disable-next-line jsx-a11y/no-autofocus -- popover opens on user action; focusing the search box it contains is expected keyboard behavior */}
                 <SearchInput autoFocus value={q} onChange={e => setQ(e.target.value)} placeholder="Search batch ID or vendor…" size="sm" className="w-full" />
               </div>
               <div style={{ maxHeight: 220, overflowY: "auto" as const }}>
@@ -52,7 +54,7 @@ export function GrnBatchSelector({ grnBatches, materialType, value, onChange }: 
                       background: value === g.grnBatchId ? "rgba(110,15,45,0.05)" : "#FFF",
                     }}>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
-                      <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700 }}>{g.grnBatchId}</span>
+                      <EntityCode type="goodsReceipt" value={g.grnBatchId} size="sm" />
                       <span style={{ fontFamily: F.ui, fontSize: 12, color: T.green }}>{g.availableQty} {g.unit} left</span>
                     </div>
                     <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{g.vendor} · {g.dateReceived}</div>

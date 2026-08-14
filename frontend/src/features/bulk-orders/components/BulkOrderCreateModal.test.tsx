@@ -50,7 +50,11 @@ describe("BulkOrderCreateModal validation", () => {
     const { onSubmit } = setup();
 
     fireEvent.change(screen.getByLabelText("Quantity (sarees)"), { target: { value: "40" } });
-    fireEvent.change(screen.getByLabelText("Delivery Deadline"), { target: { value: "2027-01-01" } });
+    // DatePicker only commits typed text on blur/Enter, not on every change
+    // (see DatePicker.tsx's commitText) — mirror real typed-entry usage.
+    const deadlineInput = screen.getByLabelText("Delivery Deadline");
+    fireEvent.change(deadlineInput, { target: { value: "2027-01-01" } });
+    fireEvent.keyDown(deadlineInput, { key: "Enter" });
 
     const customerSelect = screen.getByLabelText("Select Wholesale Customer");
     fireEvent.keyDown(customerSelect, { key: "ArrowDown", code: "ArrowDown" });

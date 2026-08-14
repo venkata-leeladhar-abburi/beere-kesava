@@ -1,7 +1,7 @@
 import React from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Truck, X, AlertTriangle } from "lucide-react";
-import { DispatchRecord } from "../../finishing/contexts/FinishingContext";
+import { DispatchRecord } from "@/features/finishing";
 import { IconButton } from "../../../shared/ui/primitives";
 import { Drawer } from "../../../shared/ui/overlay";
 import { rupees, formatMoney } from "@/lib/domain/money";
@@ -68,14 +68,14 @@ export function DispatchDetailPanel({ dispatch, onClose }: DispatchDetailPanelPr
           {rows.map(([k, v]) => (
             <div key={k} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "10px 0", borderBottom: `1px solid ${T.borderDef}` }}>
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, flexShrink: 0 }}>{k}</span>
-              <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, textAlign: "right" as const, wordBreak: "break-word" as const }}>{v}</span>
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.luxuryBrown, textAlign: "right" as const, wordBreak: "break-word" as const }}>{v}</span>
             </div>
           ))}
           <div style={{ marginTop: 14 }}>
             <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: 8 }}>Sarees on this dispatch ({dispatch.sareeIds.length})</div>
             <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 6 }}>
               {dispatch.sareeIds.map(id => (
-                <span key={id} style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "3px 8px", borderRadius: 6 }}>{id}</span>
+                <span key={id} style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "3px 8px", borderRadius: 6 }}>{id}</span>
               ))}
             </div>
           </div>

@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
-import { ActiveStatus, DispatchType, InvoiceStatus, OrderPaymentStatus, QcResult, ReportFrequency } from "../generated/prisma/client";
+import { DispatchType, InvoiceStatus, OrderPaymentStatus, Prisma, QcResult, ReportFrequency } from "../generated/prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { AuditLogService } from "../audit-log/audit-log.service";
 
@@ -25,7 +25,7 @@ export interface RecordDownloadDto {
   fileType?: string;
   downloadUrl?: string;
   downloadedById?: string;
-  filtersUsed?: any;
+  filtersUsed?: Prisma.InputJsonValue;
 }
 
 @Injectable()

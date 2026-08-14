@@ -79,8 +79,10 @@ export function TableSkeleton({ rows = 6, columns = 5 }: { rows?: number; column
     <div aria-busy="true" aria-live="polite" style={{ padding: "var(--space-2) 0" }}>
       <span className="sr-only">Loading…</span>
       {Array.from({ length: rows }).map((_, r) => (
+        // Placeholder skeleton rows with no backing data — position is the only identity.
         <div
-          key={r}
+          // eslint-disable-next-line react/no-array-index-key
+          key={`skeleton-row-${r}`}
           style={{
             display: "flex", gap: "var(--space-4)", alignItems: "center",
             height: "var(--row-height-default, 48px)", padding: "0 var(--pad-cell-x, 16px)",
@@ -88,7 +90,9 @@ export function TableSkeleton({ rows = 6, columns = 5 }: { rows?: number; column
           }}
         >
           {Array.from({ length: columns }).map((_, c) => (
-            <Skeleton key={c} style={{ height: 14, flex: c === 0 ? 2 : 1, minWidth: 40 }} />
+            // Placeholder skeleton cells with no backing data — position is the only identity.
+            // eslint-disable-next-line react/no-array-index-key
+            <Skeleton key={`skeleton-cell-${c}`} style={{ height: 14, flex: c === 0 ? 2 : 1, minWidth: 40 }} />
           ))}
         </div>
       ))}

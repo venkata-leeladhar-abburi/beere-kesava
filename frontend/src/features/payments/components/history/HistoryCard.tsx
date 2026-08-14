@@ -1,12 +1,12 @@
 import React from "react";
-import { ArrowDownCircle, BadgeCheck, Eye, Package, Receipt, Scissors, UploadCloud } from "lucide-react";
+import { ArrowDownCircle, BadgeCheck, Eye, Package, Scissors, UploadCloud } from "lucide-react";
 import { motion } from "motion/react";
 
 import { F, T } from "../../theme";
-import { Invoice, PayHistRecord, PayHistStatus, PayHistType } from "../../types";
+import { PayHistRecord, PayHistStatus, PayHistType } from "../../types";
 import { Button } from "../../../../shared/ui/primitives";
 import { rupees } from "@/lib/domain/money";
-import { Money } from "@/shared/ui/domain";
+import { Money, EntityCode } from "@/shared/ui/domain";
 
 export const HIST_TYPE_CFG: Record<PayHistType, { bg: string; color: string; border: string }> = {
   "Vendor Payment":   { bg: "rgba(200,155,71,0.12)",  color: "#8B6018",       border: "#C89B47" },
@@ -18,7 +18,7 @@ export const HIST_TYPE_CFG: Record<PayHistType, { bg: string; color: string; bor
 export const HIST_STATUS_CFG: Record<PayHistStatus, { bg: string; color: string }> = {
   Paid:    { bg: "rgba(30,102,64,0.10)",   color: "#1E6640" },
   Partial: { bg: "rgba(200,155,71,0.13)",  color: "#8B6018" },
-  Pending: { bg: "rgba(74,107,138,0.10)",  color: "#2E5A8A" },
+  Pending: { bg: "rgba(192,57,43,0.10)",   color: "#C0392B" },
 };
 
 export function getHistTypeIcon(type: PayHistType) {
@@ -30,30 +30,36 @@ export function getHistTypeIcon(type: PayHistType) {
 
 export function HistoryCard({ r, onView }: { r: PayHistRecord; onView?: () => void }) {
   const typeCfg = HIST_TYPE_CFG[r.type];
-  const stsCfg  = HIST_STATUS_CFG[r.status];
-  const { Icon, color: iconColor, iconBg, iconBorder } = getHistTypeIcon(r.type);
+  const stsCfg = HIST_STATUS_CFG[r.status];
+  const { Icon, color: iconColor } = getHistTypeIcon(r.type);
   const isReceipt = r.type === "Customer Receipt";
   const isPaid    = r.status === "Paid";
 
   return (
     <motion.div
-      whileHover={{ y: -6, boxShadow: "0 12px 28px rgba(59,35,20,0.12)" }}
-      transition={{ type: "spring", stiffness: 280, damping: 24 }}
-      style={{ display: "flex", flexDirection: "column", width: "100%", borderRadius: 20, background: T.warmIvory, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="card-hover"
+      style={{
+        background: T.warmIvory,
+        border: `1px solid ${T.borderDef}`,
+        borderRadius: 16,
+        boxShadow: "0 2px 10px rgba(74,6,27,0.06)",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+      }}
     >
-      {/* Top accent bar */}
-      <div style={{ height: 4, background: typeCfg.border, flexShrink: 0 }} />
-
       {/* Header */}
-      <div style={{ padding: "20px 20px 14px", display: "flex", alignItems: "flex-start", gap: 12, borderBottom: `1px solid rgba(110,15,45,0.06)`, flexShrink: 0 }}>
-        <div style={{ width: 44, height: 44, borderRadius: 12, background: iconBg, border: `1px solid ${iconBorder}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <div style={{ padding: "18px 20px 14px", borderBottom: `1px solid rgba(110,15,45,0.06)`, display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
+        <div style={{ width: 42, height: 42, borderRadius: 12, background: typeCfg.bg, border: `1px solid ${typeCfg.border}33`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
           <Icon size={20} color={iconColor} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontFamily: F.display, fontSize: 15.5, fontWeight: 700, color: T.luxuryBrown, marginBottom: 5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{r.party}</div>
           <span style={{ display: "inline-block", padding: "2px 8px", borderRadius: 6, fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: typeCfg.bg, color: typeCfg.color }}>{r.type}</span>
         </div>
-        <span style={{ display: "inline-block", padding: "4px 10px", borderRadius: 20, fontFamily: F.mono, fontSize: 12, fontWeight: 700, background: stsCfg.bg, color: stsCfg.color, flexShrink: 0 }}>
+        <span style={{ display: "inline-block", padding: "4px 10px", borderRadius: 20, fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: stsCfg.bg, color: stsCfg.color, flexShrink: 0 }}>
           {r.status === "Paid" ? "✓ Paid" : r.status === "Partial" ? "◑ Partial" : "⏱ Pending"}
         </span>
       </div>
@@ -70,7 +76,7 @@ export function HistoryCard({ r, onView }: { r: PayHistRecord; onView?: () => vo
         </div>
         <div style={{ textAlign: "right" as const }}>
           <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 3 }}>Date</div>
-          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, fontWeight: 700 }}>{r.date}</div>
+          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, fontWeight: 700 }}>{r.date}</div>
         </div>
       </div>
 
@@ -78,11 +84,11 @@ export function HistoryCard({ r, onView }: { r: PayHistRecord; onView?: () => vo
       <div style={{ padding: "16px 20px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px 14px", flexShrink: 0, borderBottom: `1px solid rgba(110,15,45,0.06)` }}>
         <div>
           <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 2 }}>Reference</div>
-          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700 }}>{r.refNo}</span>
+          <EntityCode type="payment" value={r.refNo} size="sm" />
         </div>
         <div>
           <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 2 }}>Invoice / PO</div>
-          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, fontWeight: 600 }}>{r.invoicePO ?? "—"}</span>
+          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, fontWeight: 600 }}>{r.invoicePO ?? "—"}</span>
         </div>
         <div>
           <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 2 }}>Payment Mode</div>
@@ -103,7 +109,7 @@ export function HistoryCard({ r, onView }: { r: PayHistRecord; onView?: () => vo
         {r.utr && (
           <div style={{ borderTop: `1px dashed rgba(110,15,45,0.08)`, paddingTop: 8, marginTop: 4 }}>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 3 }}>UTR / Reference ID</div>
-            <span style={{ fontFamily: F.mono, fontSize: 12, color: T.green, fontWeight: 700 }}>{r.utr}</span>
+            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.green, fontWeight: 700 }}>{r.utr}</span>
           </div>
         )}
       </div>

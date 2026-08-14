@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Package, ArrowDownToLine, Clock, Sparkles, CheckCircle2 } from "lucide-react";
 import { C, F } from "./tokens";
 import { PageHero, StatsStrip, SectionCard, SectionHeading, GUTTER_X, GUTTER_X_TABLET, type WorkerStat } from "./primitives";
-import { useFinishing } from "../../../finishing/contexts/FinishingContext";
+import { useFinishing } from "@/features/finishing";
 import { EASE } from "./finishing/shared";
 import { SectionA } from "./finishing/SectionA";
 import { SectionBFiltered } from "./finishing/SectionBFiltered";

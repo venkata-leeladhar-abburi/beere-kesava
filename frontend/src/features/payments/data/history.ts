@@ -1,6 +1,4 @@
-import { Receipt } from "lucide-react";
-
-import { Invoice, PayHistRecord } from "../types";
+import { PayHistRecord } from "../types";
 
 // MOCK — unused by PaymentHistorySection.tsx. It now builds all rows live
 // from GET /payments/weavers, /payments/vendors, /payments/suppliers, and

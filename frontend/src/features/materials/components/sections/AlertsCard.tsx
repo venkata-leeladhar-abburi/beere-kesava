@@ -7,6 +7,7 @@ import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
 import { FadeUp, AnimatedBar } from "../common/primitives";
 import { ThresholdsModal } from "../modals/ReportModals";
 import { Button } from "../../../../shared/ui/primitives";
+import { jariToReels } from "../../../../shared/lib/weightUnits";
 
 export function AlertsCard({ onCreatePO }: { onCreatePO?: () => void }) {
   const { px } = useContext(MobileCtx);
@@ -25,12 +26,18 @@ export function AlertsCard({ onCreatePO }: { onCreatePO?: () => void }) {
     // If no items, we don't alert (or maybe we do if reorder > 0, but here we'll skip)
     if (items.length === 0) return null;
     
-    const current = items.reduce((s, i) => s + Number(i.currentStock), 0);
-    const reorder = Math.max(...items.map(i => Number(i.reorderLevel)), 0); // use max reorder level found for this type
-    
+    // Jari is always tallied in Reels — never sum raw quantities of
+    // mismatched units (a stock row might be recorded in KG or Buns).
+    const current = type === "JARI"
+      ? items.reduce((s, i) => s + jariToReels(Number(i.currentStock), i.unit || "Reels"), 0)
+      : items.reduce((s, i) => s + Number(i.currentStock), 0);
+    const reorder = type === "JARI"
+      ? Math.max(...items.map(i => jariToReels(Number(i.reorderLevel), i.unit || "Reels")), 0)
+      : Math.max(...items.map(i => Number(i.reorderLevel)), 0); // use max reorder level found for this type
+
     if (current >= reorder) return null;
-    
-    const unit = items[0].unit || (type === "JARI" ? "Reels" : "KG");
+
+    const unit = type === "JARI" ? "Reels" : (items[0].unit || "KG");
     const pct = Math.min(100, Math.round((current / Math.max(1, reorder)) * 100));
     const displayName = type.charAt(0) + type.slice(1).toLowerCase() + " (Total)";
     
@@ -42,7 +49,7 @@ export function AlertsCard({ onCreatePO }: { onCreatePO?: () => void }) {
       minLabel: `${reorder} ${unit}`,
       pct,
     };
-  }).filter(Boolean) as any[];
+  }).filter((a): a is NonNullable<typeof a> => a !== null);
 
   return (
     <FadeUp id="mat-alerts" style={{ padding: `28px ${px}px 0` }}>
@@ -83,7 +90,7 @@ export function AlertsCard({ onCreatePO }: { onCreatePO?: () => void }) {
                 transition={{ duration: 0.5, delay: i * 0.1, ease: EASE }}
                 style={{ background: "#FFFFFF", border: "1px solid rgba(192,57,43,0.14)", borderLeft: `3px solid ${T.crimson}`, borderRadius: 10, padding: "18px 20px", minWidth: 240, flex: "1 1 240px", maxWidth: 300, boxShadow: "0 2px 10px rgba(192,57,43,0.05)" }}
               >
-                <div style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 600, color: T.taupe, letterSpacing: "1px", textTransform: "uppercase", marginBottom: 6 }}>{a.type}</div>
+                <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.taupe, letterSpacing: "1px", textTransform: "uppercase", marginBottom: 6 }}>{a.type}</div>
                 <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, marginBottom: 12, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={a.displayName}>{a.displayName}</div>
                 <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 30, color: T.crimson, lineHeight: 1, marginBottom: 6 }}>{a.current}</div>
                 <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13, color: T.taupe, marginBottom: 14 }}>

@@ -3,7 +3,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import {
   ShoppingBag, X, CheckCircle2, Upload, ArrowRight, Package, Zap,
 } from "lucide-react";
-import { FinishingReturn } from "../../../finishing/contexts/FinishingContext";
+import { FinishingReturn } from "@/features/finishing";
 import { T, F } from "../theme";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { TransportData } from "../types";
@@ -57,7 +57,7 @@ export function DispatchShopModal({ sarees, available, onConfirm, onClose }: {
               <div key={s} style={{ flex: 1, display: "flex", alignItems: "center" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, flex: 1 }}>
                   <div style={{ width: 22, height: 22, borderRadius: "50%", background: step > i + 1 ? T.antiqueGold : step === i + 1 ? "#FFF" : "rgba(255,255,255,0.20)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    {step > i + 1 ? <CheckCircle2 size={12} color={T.deepWine} /> : <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: step === i + 1 ? T.royalBurgundy : "rgba(255,255,255,0.50)" }}>{i + 1}</span>}
+                    {step > i + 1 ? <CheckCircle2 size={12} color={T.deepWine} /> : <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: step === i + 1 ? T.royalBurgundy : "rgba(255,255,255,0.50)" }}>{i + 1}</span>}
                   </div>
                   <span style={{ fontFamily: F.ui, fontSize: 12, color: step === i + 1 ? "#FFF" : "rgba(255,255,255,0.45)", fontWeight: step === i + 1 ? 600 : 400 }}>{s}</span>
                 </div>
@@ -86,7 +86,7 @@ export function DispatchShopModal({ sarees, available, onConfirm, onClose }: {
                       <div key={s.sareeId || s.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "11px 16px", borderBottom: i < picked.length - 1 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 0 ? "#FFF" : T.silkCream }}>
                         <Package size={15} color={T.taupe} style={{ flexShrink: 0 }} />
                         <div style={{ flex: 1 }}>
-                          <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.royalBurgundy }}>{s.sareeId}</div>
+                          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, color: T.royalBurgundy }}>{s.sareeId}</div>
                           <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>{s.sareeTypeCode || s.designCode} · {s.sareeType} · {s.weaverName}</div>
                         </div>
                         <StatusBadge status={s.inventoryStatus} />
@@ -127,7 +127,7 @@ export function DispatchShopModal({ sarees, available, onConfirm, onClose }: {
                 ].map(([k, v]) => (
                   <div key={k}>
                     <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: 3 }}>{k}</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, wordBreak: "break-all" as const }}>{v}</div>
+                    <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.luxuryBrown, wordBreak: "break-all" as const }}>{v}</div>
                   </div>
                 ))}
               </div>

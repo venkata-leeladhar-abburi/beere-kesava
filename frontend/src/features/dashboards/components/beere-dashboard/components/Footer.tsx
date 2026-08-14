@@ -73,9 +73,9 @@ export function Footer() {
             ))}
           </div>
           <div style={{ display: "flex", gap: 10 }}>
-            {([Facebook, Instagram, Youtube, Linkedin] as const).map((Icon, i) => (
+            {([Facebook, Instagram, Youtube, Linkedin] as const).map((Icon) => (
               <motion.div
-                key={i}
+                key={Icon.displayName ?? Icon.name}
                 whileHover={{ scale: 1.14, y: -3, boxShadow: "0px 6px 20px rgba(74,6,27,0.14)" }}
                 whileTap={{ scale: 0.93 }}
                 style={{ width: 38, height: 38, borderRadius: 12, border: `1px solid ${T.borderDef}`, background: T.warmIvory, boxShadow: "0px 0px 0px rgba(0,0,0,0)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}

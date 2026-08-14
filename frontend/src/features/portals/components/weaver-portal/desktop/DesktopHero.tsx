@@ -35,13 +35,13 @@ export function DesktopHero({ breadcrumb, titleMain, titleSub, description, pill
         </div>
 
         {/* Description */}
-        <div style={{ fontFamily: F.u, fontSize: 18, color: "rgba(255,253,249,0.70)", lineHeight: 1.6, maxWidth: 640, marginBottom: 22 }}>{description}</div>
+        <div style={{ fontFamily: F.u, fontSize: 18, color: "rgba(255,253,249,0.70)", lineHeight: 1.6, maxWidth: "640px", marginBottom: 22 }}>{description}</div>
 
         {/* Pills */}
         {pills && pills.length > 0 && (
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 32 }}>
-            {pills.map((p, i) => (
-              <div key={i} style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 999, padding: "6px 16px" }}>
+            {pills.map((p) => (
+              <div key={p.text} style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 999, padding: "6px 16px" }}>
                 <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: p.color || "#FFF" }}>{p.text}</span>
               </div>
             ))}
@@ -57,7 +57,7 @@ export function DesktopHero({ breadcrumb, titleMain, titleSub, description, pill
           margin: isTablet ? "0 28px" : "0 48px", borderRadius: 0, borderTop: "1px solid rgba(255,255,255,0.08)",
         }}>
           {stats.map((s, i) => (
-            <div key={i} style={{
+            <div key={s.label} style={{
               padding: isTablet ? "18px 20px" : "24px 28px",
               borderRight: isTablet ? (i % 2 === 0 ? "1px solid rgba(255,255,255,0.10)" : "none") : (i < stats.length - 1 ? "1px solid rgba(255,255,255,0.10)" : "none"),
               borderBottom: isTablet && i < stats.length - 2 ? "1px solid rgba(255,255,255,0.10)" : "none",

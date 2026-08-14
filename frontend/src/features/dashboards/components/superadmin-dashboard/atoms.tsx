@@ -56,7 +56,7 @@ export function AnimatedNumber({ raw }: { raw: string }) {
     const match = raw.match(/(\d+(?:\.\d+)?)/);
     if (!match) { setDisplayed(raw); return; }
     const numStr = match[1];
-    const target = parseFloat(numStr);
+    const target = Number(numStr);
     const isFloat = numStr.includes(".");
     const idx = raw.indexOf(numStr);
     const pre = raw.slice(0, idx);

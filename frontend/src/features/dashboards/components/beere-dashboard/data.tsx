@@ -1,6 +1,5 @@
 import React from 'react';
-import { T, F } from './theme';
-import { IcoWarehouse, IcoYarnInventory, IcoResourceMgmt, IcoQualityCheck, IcoInvoice, IcoHandshake } from './ui';
+import { T } from './theme';
 import { imgWarp as imgWarp, imgResham as imgResham, imgJari as imgJari } from "../../../../shared/constants/imageData";
 
 // NOTE: the METRICS, WEAVERS, and WEAVER_RATES exports that used to live here

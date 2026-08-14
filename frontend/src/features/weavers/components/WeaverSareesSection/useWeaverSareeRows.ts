@@ -1,9 +1,9 @@
 import { useMemo } from "react";
-import { useBatches } from "../../../production/contexts/BatchContext";
-import { useQc } from "../../../qc/contexts/QcContext";
-import { useFinishing } from "../../../finishing/contexts/FinishingContext";
-import { useSales } from "../../../customers/contexts/SalesContext";
-import { useDesignLibrary } from "../../../design-library/contexts/DesignLibraryContext";
+import { useBatches } from "@/features/production";
+import { useQc } from "@/features/qc";
+import { useFinishing } from "@/features/finishing";
+import { useSales } from "@/features/customers";
+import { useDesignLibrary } from "@/features/design-library";
 import { WeaverSareeRow } from "./types";
 
 interface UseWeaverSareeRowsOptions {

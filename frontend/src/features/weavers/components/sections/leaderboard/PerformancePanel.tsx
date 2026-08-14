@@ -117,7 +117,7 @@ export function PerformancePanel({ onNavigate }: { onNavigate?: (tab: string) =>
                     {/* Name + ID */}
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 18, color: T.luxuryBrown, lineHeight: 1.2, marginBottom: 3 }}>{l.name}</div>
-                      <div style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, letterSpacing: "0.4px" }}>{l.village || "—"}</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 13, color: T.royalBurgundy, letterSpacing: "0.4px" }}>{l.village || "—"}</div>
                     </div>
 
                     {/* Stats */}
@@ -144,11 +144,11 @@ export function PerformancePanel({ onNavigate }: { onNavigate?: (tab: string) =>
                     </div>
                     <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.luxuryBrown }}>Quality Check Results</div>
                   </div>
-                  <span onClick={() => onNavigate?.("QcHistory")} style={{ fontFamily: F.ui, fontSize: 13, color: T.antiqueGold, cursor: "pointer", fontWeight: 600, display: "flex", alignItems: "center", gap: 4 }}
+                  <button type="button" onClick={() => onNavigate?.("QcHistory")} style={{ background: "none", border: "none", padding: 0, fontFamily: F.ui, fontSize: 13, color: T.antiqueGold, cursor: "pointer", fontWeight: 600, display: "flex", alignItems: "center", gap: 4 }}
                     onMouseEnter={e => e.currentTarget.style.color = T.royalBurgundy}
                     onMouseLeave={e => e.currentTarget.style.color = T.antiqueGold}>
                     View Details →
-                  </span>
+                  </button>
                 </div>
                 <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginBottom: 28, paddingLeft: 48 }}>All sarees submitted for quality inspection</div>
 
@@ -157,7 +157,7 @@ export function PerformancePanel({ onNavigate }: { onNavigate?: (tab: string) =>
                   <div style={{ position: "relative", width: 210, height: 210, flexShrink: 0 }}>
                     <PieChart width={210} height={210}>
                       <Pie data={qcDonutData.filter(d => d.value > 0)} cx={105} cy={105} innerRadius={76} outerRadius={100} paddingAngle={3} dataKey="value" stroke="none">
-                        {qcDonutData.filter(d => d.value > 0).map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
+                        {qcDonutData.filter(d => d.value > 0).map((entry) => <Cell key={entry.name} fill={entry.color} />)}
                       </Pie>
                     </PieChart>
                     <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
@@ -217,7 +217,7 @@ export function PerformancePanel({ onNavigate }: { onNavigate?: (tab: string) =>
                   <div key={s.label} style={{ background: s.bg, border: `1px solid ${s.border}`, borderRadius: 16, padding: "20px 22px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 12 }}>
                       <s.PhIcon size={18} color={s.color} />
-                      <div style={{ fontFamily: F.mono, fontSize: 12, color: s.color, textTransform: "uppercase", letterSpacing: "1.2px", fontWeight: 600 }}>{s.label}</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: s.color, textTransform: "uppercase", letterSpacing: "1.2px", fontWeight: 600 }}>{s.label}</div>
                     </div>
                     <div style={{ fontFamily: F.display, fontSize: 38, fontWeight: 700, color: s.color, lineHeight: 1 }}>{s.value}</div>
                   </div>

@@ -1,6 +1,6 @@
 import React from "react";
 import { ShoppingCart, Tag, FileText, Calendar } from "lucide-react";
-import { Purchase } from "../../../../suppliers/contexts/SupplierContext";
+import { Purchase } from "@/features/suppliers";
 import { T, F } from "../theme";
 
 /** Floating stat strip — total purchases, sarees tagged, pending payments, this month. */
@@ -55,7 +55,7 @@ export function SummaryCards({ purchases, totalSarees }: { purchases: Purchase[]
           },
         ].map((m, i) => (
           <div
-            key={i}
+            key={m.label}
             style={{
               flex: 1, padding: "28px 22px",
               backgroundImage: m.hi ? "linear-gradient(135deg, rgba(200,155,71,0.20) 0%, rgba(200,155,71,0.07) 100%)" : "none",

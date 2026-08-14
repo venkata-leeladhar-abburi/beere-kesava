@@ -50,8 +50,11 @@ export function ActivitiesPanel({ onActivities }: { onActivities: () => void }) 
               const cfg = ACTIVITY_ICONS[a.icon] ?? { PhIcon: ChartBar, bg: "rgba(110,15,45,0.07)", color: T.taupe };
               const PhIcon = cfg.PhIcon as React.ElementType;
               return (
+                // WeaverActivity has no id field; timestamp/date + action can still repeat
+                // (multiple events logged in the same instant), so the index is kept too.
                 <motion.div
-                  key={i}
+                  // eslint-disable-next-line react/no-array-index-key
+                  key={`${a.date ?? a.timestamp}-${a.action}-${i}`}
                   initial={{ opacity: 0, x: -12 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
@@ -72,7 +75,7 @@ export function ActivitiesPanel({ onActivities }: { onActivities: () => void }) 
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" as const, marginBottom: 4 }}>
                       <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>{a.action}</span>
-                      <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, letterSpacing: "0.5px", textTransform: "uppercase" as const, color: T.taupe, background: T.silkCream, borderRadius: 999, padding: "2px 8px" }}>{a.category}</span>
+                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "0.5px", textTransform: "uppercase" as const, color: T.taupe, background: T.silkCream, borderRadius: 999, padding: "2px 8px" }}>{a.category}</span>
                       {a.needsAction && (
                         <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "#8B6018", background: "rgba(200,155,71,0.18)", borderRadius: 999, padding: "2px 9px" }}>Needs action</span>
                       )}
@@ -81,7 +84,7 @@ export function ActivitiesPanel({ onActivities }: { onActivities: () => void }) 
                   </div>
 
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8, flexShrink: 0 }}>
-                    <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" as const }}>{a.time}</span>
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, whiteSpace: "nowrap" as const }}>{a.time}</span>
                     {a.needsAction && (
                       <Button onClick={onActivities} variant="primary" size="sm" className="whitespace-nowrap">
                         Review →

@@ -1,12 +1,11 @@
 import React, { useState } from "react";
 import { PackageCheck } from "lucide-react";
-import { C, F, G } from "./tokens";
-import { useMaterialIssue } from "../../../materials/contexts/MaterialIssueContext";
+import { F, G } from "./tokens";
+import { useMaterialIssue } from "@/features/materials";
 import { DesignPlanningPage } from "./weavers/DesignPlanningPage";
 import { ReceiveSareesPage } from "./weavers/ReceiveSareesPage";
 import { HistorySection } from "./weavers/HistorySection";
 import { type WeaversPage, type ReceivedSareeLog } from "./weavers/shared";
-import { Button } from "../../../../shared/ui/primitives";
 
 // Re-exported for consumers that reach into this module directly.
 export { MaterialSplitPanel, type MatSplit } from "./weavers/MaterialSplitPanel";
@@ -27,6 +26,7 @@ export function WorkerWeavers({ subPage, onSubPageChange }: WorkerWeaversProps) 
   const handleSareeReceived = (rec: ReceivedSareeLog) => {
     setLiveRecords(prev => [rec, ...prev]);
     // Feed into the material ledger so outstanding material at the weaver updates.
+    // eslint-disable-next-line no-restricted-syntax -- saree weight in grams, not money
     const weightGrams = parseFloat(rec.weight.replace(/[^\d.]/g, "")) || 0;
     if (rec.wcode && weightGrams > 0) {
       addReceivedSaree({

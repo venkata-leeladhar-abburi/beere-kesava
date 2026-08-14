@@ -4,7 +4,7 @@ import { imgBKLogo } from "../../../../../shared/constants/weaverImages";
 import { C, F, Tab5 } from "../theme";
 import { Button, IconButton, SearchInput } from "../../../../../shared/ui/primitives";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "../../../../../shared/ui/overlay";
-import { useAuth } from "../../../../../contexts/AuthContext";
+import { useAuth, type Role } from "../../../../../contexts/AuthContext";
 
 import { useCurrentWeaver } from "../useCurrentWeaver";
 
@@ -14,7 +14,7 @@ function initialsOf(name: string): string {
 
 export function TopNav({
   isTablet, NAV, active, showNotifs, setActive, setShowNotifs,
-  search, setSearch, showProfile, setShowProfile, onProfile, onBack,
+  search, setSearch, showProfile, setShowProfile, onProfile,
   selectRole, navigate,
 }: {
   isTablet: boolean;
@@ -29,7 +29,7 @@ export function TopNav({
   setShowProfile: React.Dispatch<React.SetStateAction<boolean>>;
   onProfile?: () => void;
   onBack?: () => void;
-  selectRole: (role: any) => void;
+  selectRole: (role: Role | null) => void;
   navigate: (path: string) => void;
 }) {
   const { user, logout } = useAuth();
@@ -44,7 +44,7 @@ export function TopNav({
     // portal — this bar used to be white, which was the most visible split
     // between the weaver portal and the rest of the product.
     <div style={{ background: "#3D0E1A", borderBottom: "1px solid rgba(200,155,71,0.14)", position: "sticky" as const, top: 0, zIndex: "var(--z-nav)", boxShadow: "0 4px 40px rgba(0,0,0,0.28)" }}>
-      <div style={{ maxWidth: 1600, margin: "0 auto", padding: isTablet ? "0 24px" : "0 56px", display: "flex", alignItems: "center", height: 72, gap: isTablet ? 16 : 20 }}>
+      <div className="max-w-[1600px] mx-auto" style={{ padding: isTablet ? "0 24px" : "0 56px", display: "flex", alignItems: "center", height: 72, gap: isTablet ? 16 : 20 }}>
         <div style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 14 }}>
           <div style={{ width: isTablet ? 40 : 52, height: isTablet ? 40 : 52, borderRadius: 14, overflow: "hidden", border: "1.5px solid rgba(200,155,71,0.30)", boxShadow: "0 4px 16px rgba(0,0,0,0.30)", flexShrink: 0 }}>
             <img src={imgBKLogo} alt="BK Logo" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -74,7 +74,7 @@ export function TopNav({
                     : "bg-transparent font-medium !text-[rgba(245,232,208,0.80)] hover:!bg-[rgba(245,232,208,0.10)] hover:!text-[#E7C983]")
                 }
               >
-                {React.cloneElement(tab.icon as React.ReactElement<any>, { color: isActive ? "#E7C983" : "rgba(245,232,208,0.80)" })}
+                {React.cloneElement(tab.icon as React.ReactElement<{ color?: string }>, { color: isActive ? "#E7C983" : "rgba(245,232,208,0.80)" })}
                 {tab.label}
               </Button>
             );
@@ -137,7 +137,7 @@ export function TopNav({
                     const origAdminRole = localStorage.getItem("bk_original_admin_role");
                     if (origAdminRole) {
                       localStorage.removeItem("bk_original_admin_role");
-                      selectRole(origAdminRole as any);
+                      selectRole(origAdminRole as Role);
                       navigate(origAdminRole === "superadmin" ? "/superadmin" : "/admin");
                     }
                   }} className="!h-auto !py-2.5 !px-[18px] !text-sm !text-[#3B2314]">

@@ -1,36 +1,22 @@
 
-import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { useLocation, useNavigate } from "react-router";
-import { createPortal } from "react-dom";
+import { useState, useMemo, useCallback } from "react";
 import { useResponsive } from "../../../../hooks/useResponsive";
-import { useBatches, SareeRow } from "../../../production/contexts/BatchContext";
-import { useDesignLibrary, DesignEntry } from "../../../design-library/contexts/DesignLibraryContext";
-import { DesignCodeCard } from "../../../design-library/components/DesignLibraryPage";
-import { useMaterialIssue, MaterialIssueRecord, JARI_REEL_GRAMS } from "../../../materials/contexts/MaterialIssueContext";
-import { useWeaverPayments } from "../../../weavers/contexts/WeaverPaymentsContext";
-import { useAuth } from "../../../../contexts/AuthContext";
+import { useBatches } from "@/features/production";
 import { useCurrentWeaver } from "./useCurrentWeaver";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { warpRequestsApi, BackendWarpRequest } from "../../../../shared/api/warpRequests";
-import { motion, AnimatePresence, useInView } from "motion/react";
 import {
-  Bell, ClipboardList, CheckSquare, Palette, ArrowUpRight,
-  Wallet, Shield, Send, ChevronRight, X, ChevronLeft,
-  Package, Check, Eye, LogOut, Search, RotateCcw,
-  AlertCircle, Clock, Flower2, Layers, Info, Pencil,
-  Scissors, LayoutGrid, CreditCard, ClipboardCheck,
-  TrendingUp, ArrowRight, Sparkles, UserRound,
-  CheckCircle2, History, ListChecks,
-  AlertTriangle, Inbox, Zap,
+  Shield, Send,
+  Package, Check,
+  AlertTriangle,
 } from "lucide-react";
-import { imgBKLogo } from "../../../../shared/constants/weaverImages";
 
 // ─── Design Tokens ─────────────────────────────────────────────────────────
 import {
-  C, F, SAREE_TYPE_RATES, DesignDetailCard, SareeTypeDetailCard, SectionTitle, Card, ProgressBar, StatusBadge, SignatureCanvas, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid, MobileBatchCard, CompletedBatchCard, BATCH_QUICK_FILTERS, BatchQuickFilterPills, WN_T, WN_G, WN_EASE, WN_NUM, WN_DATA, WN_PRIORITY, WN_CATEGORY, WN_FILTERS, WNFadeUp, BatchCard, FadeUpBatch, BG_IMAGE, FABRIC_BG
+  C, F, SectionTitle, Card, ProgressBar, StatusBadge, HeroHeader,
 } from './theme';
-import { Button, Input, Textarea, Field } from '../../../../shared/ui/primitives';
+import { Button, Input, Textarea } from '../../../../shared/ui/primitives';
 import { DataTable, type ColumnDef } from '../../../../shared/ui/data';
 
 const MATERIAL_TO_WARP_TYPE: Record<"warp" | "resham" | "jari", string> = {
@@ -43,17 +29,17 @@ export function WarpRequestPage() {
   const { weaver, weaverId, isLoading: weaverLoading, isError: weaverError } = useCurrentWeaver();
   const queryClient = useQueryClient();
 
-  const isMyRow = (r: { weaverId?: string | null }) => {
+  const isMyRow = useCallback((r: { weaverId?: string | null }) => {
     if (!r.weaverId) return false;
     return r.weaverId === weaverId || (weaver && (r.weaverId === weaver.id || r.weaverId === weaver.code));
-  };
+  }, [weaverId, weaver]);
 
   const myBatches = useMemo(() => {
     return batches
       .filter(b => b.status !== "draft")
       .map(b => ({ ...b, myRows: b.rows.filter(isMyRow) }))
       .filter(b => b.myRows.length > 0 && b.status !== "completed");
-  }, [batches, weaverId, weaver]);
+  }, [batches, isMyRow]);
 
   const [selectedBatch, setSelectedBatch] = useState<string | null>(null);
   const activeBatchId = selectedBatch ?? myBatches[0]?.batchId ?? null;
@@ -93,6 +79,7 @@ export function WarpRequestPage() {
         warpRequestsApi.create({
           weaverId,
           warpType: MATERIAL_TO_WARP_TYPE[mat],
+          // eslint-disable-next-line no-restricted-syntax -- length in meters, not money
           lengthMeters: parseFloat(amounts[mat]) || 0,
           notes: reason || undefined,
         }),
@@ -103,7 +90,7 @@ export function WarpRequestPage() {
       setSubmitted(true);
     },
     onError: (err) => {
-      // eslint-disable-next-line no-console -- surface submit failures instead of failing silently
+       
       console.error("Failed to submit warp request:", err);
       toast.error(err instanceof Error ? err.message : "Failed to submit warp request. Please try again.");
     },
@@ -224,7 +211,7 @@ export function WarpRequestPage() {
 
           {/* Request Form */}
           <SectionTitle title="Request Materials" />
-          <div style={{ margin: isMobile ? "0 20px 16px" : "0 auto 16px", maxWidth: isMobile ? undefined : isTablet ? "80%" : 560, padding: isMobile ? undefined : "0 20px" }}>
+          <div style={{ margin: isMobile ? "0 20px 16px" : "0 auto 16px", maxWidth: isMobile ? undefined : isTablet ? "80%" : "560px", padding: isMobile ? undefined : "0 20px" }}>
             <Card style={{ padding: 20 }}>
               {/* Batch Reference */}
               <div style={{ marginBottom: 18 }}>
@@ -270,8 +257,9 @@ export function WarpRequestPage() {
 
               {/* Reason */}
               <div style={{ marginBottom: 4 }}>
-                <label style={{ display: "block", fontFamily: F.u, fontWeight: 500, fontSize: 14, color: C.text, marginBottom: 6 }}>Why do you need more material?</label>
+                <label htmlFor="warp-request-reason" style={{ display: "block", fontFamily: F.u, fontWeight: 500, fontSize: 14, color: C.text, marginBottom: 6 }}>Why do you need more material?</label>
                 <Textarea
+                  id="warp-request-reason"
                   value={reason} onChange={e => setReason(e.target.value)}
                   placeholder="Example: Extra sarees needed for a big order"
                   rows={3}
@@ -281,7 +269,7 @@ export function WarpRequestPage() {
             </Card>
           </div>
 
-          <div style={{ margin: isMobile ? "0 20px" : "0 auto", maxWidth: isMobile ? undefined : isTablet ? "80%" : 560, padding: isMobile ? undefined : "0 20px", display: "flex", justifyContent: isMobile ? undefined : "flex-end" }}>
+          <div style={{ margin: isMobile ? "0 20px" : "0 auto", maxWidth: isMobile ? undefined : isTablet ? "80%" : "560px", padding: isMobile ? undefined : "0 20px", display: "flex", justifyContent: isMobile ? undefined : "flex-end" }}>
             <Button
               onClick={() => (materials.warp || materials.resham || materials.jari) ? createRequestMutation.mutate() : undefined}
               disabled={createRequestMutation.isPending || !(materials.warp || materials.resham || materials.jari)}
@@ -315,8 +303,8 @@ export function WarpRequestPage() {
         }
 
         if (isMobile) {
-          return rows.map((r, i) => (
-            <div key={i} style={{ margin: "0 20px 8px", background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          return rows.map((r) => (
+            <div key={r.id} style={{ margin: "0 20px 8px", background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <div>
                 <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{r.date}</div>
                 <div style={{ fontFamily: F.u, fontSize: 14, color: C.text, marginTop: 2 }}>{r.material}</div>
@@ -334,7 +322,7 @@ export function WarpRequestPage() {
         ];
         return (
           <div style={{ margin: "0 20px 8px", background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, overflowX: isTablet ? "auto" : "hidden" }}>
-            <div style={{ minWidth: isTablet ? 640 : undefined }}>
+            <div style={{ minWidth: isTablet ? "640px" : undefined }}>
               <DataTable columns={warpColumns} data={rows} getRowId={r => r.id} />
             </div>
           </div>

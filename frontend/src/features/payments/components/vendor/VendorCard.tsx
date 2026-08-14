@@ -2,13 +2,13 @@ import React from "react";
 import { FileText, Pencil } from "lucide-react";
 import { motion } from "motion/react";
 
-import { PurchaseOrder } from "../../../purchasing/contexts/POContext";
+import { PurchaseOrder } from "@/features/purchasing";
 import { F, T } from "../../theme";
-import { Invoice, VendorPayment } from "../../types";
+import { VendorPayment } from "../../types";
 import { VENDOR_STATUS_CFG, VendorBadge } from "./VendorBadge";
 import { Button } from "../../../../shared/ui/primitives";
 import { rupees } from "@/lib/domain/money";
-import { Money } from "@/shared/ui/domain";
+import { EntityCode, Money } from "@/shared/ui/domain";
 
 export function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoice, selected }: { vp: VendorPayment; matchedPO?: PurchaseOrder; onPay: (id: string) => void; onView?: () => void; onViewPO?: () => void; onAddInvoice?: () => void; selected: boolean }) {
   const balance = vp.invoiceAmt - vp.paidAmt;
@@ -44,10 +44,10 @@ export function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoic
       <div style={{ padding: "20px 22px 22px", display: "flex", flexDirection: "column", flex: 1 }}>
         {/* Top row: PO number + Date */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-          <span onClick={onViewPO} style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "4px 10px", borderRadius: 8, cursor: onViewPO ? "pointer" : "default" }}>
-            {vp.poNumber}
-          </span>
-          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, background: "#F7F2EA", padding: "4px 10px", borderRadius: 8 }}>
+          <button type="button" onClick={onViewPO} disabled={!onViewPO} style={{ background: "rgba(110,15,45,0.06)", padding: "4px 10px", borderRadius: 8, cursor: onViewPO ? "pointer" : "default", border: "none" }}>
+            <EntityCode type="purchaseOrder" value={vp.poNumber} size="sm" />
+          </button>
+          <span style={{ fontSize: 12, color: T.taupe, background: "#F7F2EA", padding: "4px 10px", borderRadius: 8, fontVariantNumeric: "tabular-nums" }}>
             {vp.dueDate}
           </span>
         </div>
@@ -71,11 +71,15 @@ export function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoic
         {/* Materials Grid */}
         {matchedPO && (
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 18, background: "rgba(110,15,45,0.015)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: 12 }}>
-            <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 4 }}>Materials Requested</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 4 }}>Materials Requested</div>
             {matchedPO.materials.map((m, mi) => {
               const mt = MAT_TAG_PO[m.materialType] || MAT_TAG_PO.Warp;
+              // PO line items have no id and can repeat the same
+              // materialType/subtype combo (e.g. two Warp lines at
+              // different rates), so pair the type with the index.
+              const materialKey = `${m.materialType}-${m.subtype ?? "none"}-${mi}`;
               return (
-                <div key={mi} style={{ display: "flex", flexDirection: "column", gap: 6, borderBottom: mi < matchedPO.materials.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", paddingBottom: mi < matchedPO.materials.length - 1 ? 12 : 0, paddingTop: mi > 0 ? 8 : 0 }}>
+                <div key={materialKey} style={{ display: "flex", flexDirection: "column", gap: 6, borderBottom: mi < matchedPO.materials.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", paddingBottom: mi < matchedPO.materials.length - 1 ? 12 : 0, paddingTop: mi > 0 ? 8 : 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                     <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: mt.col, background: mt.bg, borderRadius: 6, padding: "2px 8px", minWidth: 50, textAlign: "center", flexShrink: 0 }}>
                       {m.materialType}
@@ -84,14 +88,14 @@ export function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoic
                       <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.subtype}</span>
                     )}
                     <div style={{ flex: 1, minWidth: 0 }} />
-                    <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700, flexShrink: 0, background: "rgba(110,15,45,0.06)", padding: "2px 7px", borderRadius: 5, whiteSpace: "nowrap" as const }}>
+                    <span style={{ fontSize: 12, color: T.royalBurgundy, fontWeight: 700, flexShrink: 0, background: "rgba(110,15,45,0.06)", padding: "2px 7px", borderRadius: 5, whiteSpace: "nowrap" as const, fontVariantNumeric: "tabular-nums" }}>
                       {m.quantity} {m.unit}
                       {m.pricePerUnit > 0 && <> · <Money value={rupees(m.pricePerUnit)} />/{m.unit}</>}
                     </span>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#FDFBF7", padding: "6px 10px", borderRadius: 6, border: `1px solid ${T.borderGold}40` }}>
                     <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Invoice Amount</span>
-                    <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: m.invoiceAmount ? "#8B6018" : T.taupe }}>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: m.invoiceAmount ? "#8B6018" : T.taupe }}>
                       {m.invoiceAmount ? <Money value={rupees(m.invoiceAmount)} /> : "Not yet invoiced"}
                     </span>
                   </div>
@@ -105,15 +109,15 @@ export function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoic
         <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: 8 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
             <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Invoice Amount</span>
-            <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}><Money value={rupees(vp.invoiceAmt)} /></span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}><Money value={rupees(vp.invoiceAmt)} /></span>
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
             <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Paid</span>
-            <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 600, color: T.green }}><Money value={rupees(vp.paidAmt)} /></span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: T.green }}><Money value={rupees(vp.paidAmt)} /></span>
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", borderTop: `1px dashed ${T.borderDef}`, paddingTop: 8, marginTop: 4 }}>
             <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>Balance</span>
-            <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: isPaid ? T.green : vp.status === "Overdue" ? T.crimson : T.antiqueGold }}>
+            <span style={{ fontSize: 14, fontWeight: 700, color: isPaid ? T.green : vp.status === "Overdue" ? T.crimson : T.antiqueGold }}>
               {isPaid ? "Fully Paid ✓" : <Money value={rupees(balance)} />}
             </span>
           </div>

@@ -23,7 +23,7 @@ describe("PageShell", () => {
           <div>Metric A</div>
         </PageShell.Stats>
         <PageShell.Toolbar>
-          <input placeholder="Search" />
+          <input placeholder="Search" aria-label="Search" />
         </PageShell.Toolbar>
         <PageShell.Content>
           <PageShell.Section id="stock" title="Stock">

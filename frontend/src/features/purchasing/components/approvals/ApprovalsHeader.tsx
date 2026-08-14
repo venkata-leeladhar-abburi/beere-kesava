@@ -24,13 +24,15 @@ export function ApprovalsHeader({
       minHeight: 160,
     }}>
       {/* Decorative rings */}
-      <div style={{
-        position: "absolute", right: -60, bottom: -80,
-        width: 320, height: 320,
-        borderRadius: "50%",
-        border: "2px solid rgba(200,155,71,0.18)",
-        pointerEvents: "none",
-      }} />
+      <div
+        className="w-[320px] h-[320px]"
+        style={{
+          position: "absolute", right: -60, bottom: -80,
+          borderRadius: "50%",
+          border: "2px solid rgba(200,155,71,0.18)",
+          pointerEvents: "none",
+        }}
+      />
       <div style={{
         position: "absolute", right: -20, bottom: -40,
         width: 220, height: 220,
@@ -42,7 +44,7 @@ export function ApprovalsHeader({
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", position: "relative", zIndex: 2 }}>
         {/* Left copy */}
         <div>
-          <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,255,255,0.45)", letterSpacing: 2, marginBottom: 10 }}>
+          <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.45)", letterSpacing: 2, marginBottom: 10 }}>
             SINCE 1999 · SUPERADMIN · APPROVALS
           </div>
           <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: "clamp(28px, 7vw, 42px)", color: "#FFF", lineHeight: 1.1, marginBottom: 4 }}>
@@ -51,7 +53,7 @@ export function ApprovalsHeader({
           <div style={{ fontFamily: F.display, fontStyle: "italic", fontSize: "clamp(20px, 5vw, 30px)", color: T.antiqueGold, marginBottom: 12 }}>
             &amp; Pending Actions
           </div>
-          <div style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,255,255,0.60)", maxWidth: 520, lineHeight: 1.6 }}>
+          <div className="max-w-[520px]" style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,255,255,0.60)", lineHeight: 1.6 }}>
             Review and action purchase orders, external purchase requests, warp material requests, and rate change proposals from your admin team.
           </div>
         </div>

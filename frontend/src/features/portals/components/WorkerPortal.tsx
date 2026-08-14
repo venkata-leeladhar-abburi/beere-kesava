@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router";
-import { useAuth } from "../../../contexts/AuthContext";
+import { useAuth, type Role } from "../../../contexts/AuthContext";
 import { motion, AnimatePresence } from "motion/react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Home, Users, Bell, ChevronLeft, Menu, Search, X, UserRound, Sparkles, UserCheck, Truck } from "lucide-react";
@@ -71,7 +71,7 @@ function MobileProfile() {
           { val: "Morning", label: "Shift" },
           { val: "Active", label: "Status" },
         ].map((s, i) => (
-          <div key={i} style={{ padding: "14px 8px", textAlign: "center", borderRight: i < 2 ? `1px solid ${C.bdr}` : "none" }}>
+          <div key={s.label} style={{ padding: "14px 8px", textAlign: "center", borderRight: i < 2 ? `1px solid ${C.bdr}` : "none" }}>
             <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: C.burg, marginBottom: 3 }}>{s.val}</div>
             <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{s.label}</div>
           </div>
@@ -91,7 +91,7 @@ function MobileProfile() {
           ].map((item, i, arr) => (
             <div key={item.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderBottom: i < arr.length - 1 ? `1px solid ${C.bdr}` : "none" }}>
               <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{item.label}</span>
-              <span style={{ fontFamily: item.mono ? F.m : F.u, fontSize: 13, fontWeight: 500, color: item.mono ? C.burg : C.text }}>{item.value}</span>
+              <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 500, color: item.mono ? C.burg : C.text }}>{item.value}</span>
             </div>
           ))}
         </div>
@@ -158,7 +158,7 @@ function HamburgerMenu({ open, onOpenChange, onProfile, onBack }: { open: boolea
                 const origAdminRole = localStorage.getItem("bk_original_admin_role");
                 if (origAdminRole) {
                   localStorage.removeItem("bk_original_admin_role");
-                  selectRole(origAdminRole as any);
+                  selectRole(origAdminRole as Role);
                   navigate(origAdminRole === "superadmin" ? "/superadmin" : "/admin");
                 }
               }} className="justify-start rounded-[10px] border-none bg-transparent px-3.5 py-2.5 text-[13px] text-white/50">

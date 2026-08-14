@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
-  Download, Eye, UserPlus, Plus,
+  Download, UserPlus, Plus,
   LayoutGrid, AlignJustify, MapPin,
   Phone, Calendar, Star, IndianRupee, AlertTriangle, Users, ShoppingBag,
 } from "lucide-react";
@@ -85,14 +85,14 @@ export function RetailCustomersSection({
       });
       setShowAddRetail(false);
       setForm(EMPTY_RETAIL_FORM);
-    } catch (err: any) {
-      setError(err?.message || "Failed to save retail customer.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save retail customer.");
     } finally {
       setSubmitting(false);
     }
   };
 
-  const now = new Date();
+  const now = useMemo(() => new Date(), []);
   const newThisMonthCount = useMemo(() => {
     return retailCustomers.filter(c => {
       const d = new Date(c.createdAt);
@@ -123,7 +123,7 @@ export function RetailCustomersSection({
       cell: (_v, r) => (
         <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>
           {r.name}
-          {r.regular && <Star size={12} color={T.antiqueGold} fill={T.antiqueGold} />}
+          {r.regular && <Star size={12} color="#C89B47" fill="#C89B47" />}
         </div>
       ),
     },
@@ -133,15 +133,15 @@ export function RetailCustomersSection({
     },
     {
       id: "phone", header: "Phone", accessor: r => r.phone, priority: 3,
-      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 14, color: T.taupe }}>{r.phone}</span>,
+      cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, color: T.taupe }}>{r.phone}</span>,
     },
     {
       id: "totalSpend", header: "Total Spend", accessor: r => r.totalSpend ?? 0, type: "number", sortable: true,
-      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}><Money value={rupees(r.totalSpend ?? 0)} /></span>,
+      cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}><Money value={rupees(r.totalSpend ?? 0)} /></span>,
     },
     {
       id: "purchases", header: "Purchases", accessor: r => r.totalPurchases, type: "number", sortable: true,
-      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 14, color: T.luxuryBrown }}>{r.totalPurchases} sarees</span>,
+      cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, color: T.luxuryBrown }}>{r.totalPurchases} sarees</span>,
     },
     {
       id: "lastVisit", header: "Last Visit", accessor: r => r.lastVisit, priority: 3,
@@ -216,8 +216,8 @@ export function RetailCustomersSection({
           { ico: <UserPlus size={24} color={T.antiqueGold} />, bg: "rgba(200,155,71,0.09)", l: "New Customers This Month", v: String(newThisMonthCount), c: T.antiqueGold, sub: "Added via new sale entries" },
           { ico: <IndianRupee size={24} color={T.greenMid} />, bg: T.greenBg, l: "Retail Revenue This Month", v: formatMoney(rupees(totalRetailRevenueMonth)), c: T.greenMid, sub: "Total from all retail sales" },
           { ico: <AlertTriangle size={24} color={T.taupe} />, bg: "rgba(139,112,96,0.08)", l: "Inactive — No Visit in 6M", v: String(inactiveCount), c: T.taupe, sub: "Consider reaching out" },
-        ].map((st, i) => (
-          <div key={i} style={{ background: "#FFF", padding: "22px 22px 20px", borderRadius: 14, border: `1px solid ${T.borderDef}`, display: "flex", flexDirection: "column", gap: 14, boxShadow: "0 2px 10px rgba(74,6,27,0.04)" }}>
+        ].map((st) => (
+          <div key={st.l} style={{ background: "#FFF", padding: "22px 22px 20px", borderRadius: 14, border: `1px solid ${T.borderDef}`, display: "flex", flexDirection: "column", gap: 14, boxShadow: "0 2px 10px rgba(74,6,27,0.04)" }}>
             <div style={{ width: 52, height: 52, borderRadius: 13, background: st.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
               {st.ico}
             </div>
@@ -255,7 +255,7 @@ export function RetailCustomersSection({
             </Select>
           </div>
           <div style={{ width: 200 }}>
-            <Select value={retailSort} onValueChange={v => setRetailSort(v as any)} size="sm">
+            <Select value={retailSort} onValueChange={v => setRetailSort(v as "spend" | "purchases" | "recent")} size="sm">
               <SelectItem value="spend">Sort: Total Spend</SelectItem>
               <SelectItem value="purchases">Sort: Total Purchases</SelectItem>
               <SelectItem value="recent">Sort: Most Recent Visit</SelectItem>
@@ -297,7 +297,7 @@ export function RetailCustomersSection({
                   <div>
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       <span style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{r.name}</span>
-                      {r.regular && <Star size={14} color={T.antiqueGold} fill={T.antiqueGold} />}
+                      {r.regular && <Star size={14} color="#C89B47" fill="#C89B47" />}
                     </div>
                     <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 2, display: "flex", alignItems: "center", gap: 4 }}>
                       <MapPin size={12} color={T.taupe} /> {r.city}
@@ -312,11 +312,11 @@ export function RetailCustomersSection({
               <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 10, background: T.silkCream, padding: 12, borderRadius: 10, border: `1px solid ${T.borderDef}` }}>
                 <div>
                   <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const }}>Total Spend</div>
-                  <div style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: T.royalBurgundy, marginTop: 2 }}><Money value={rupees(r.totalSpend ?? 0)} /></div>
+                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 15, fontWeight: 700, color: T.royalBurgundy, marginTop: 2 }}><Money value={rupees(r.totalSpend ?? 0)} /></div>
                 </div>
                 <div>
                   <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const }}>Purchases</div>
-                  <div style={{ fontFamily: F.mono, fontSize: 15, fontWeight: 700, color: T.luxuryBrown, marginTop: 2 }}>{r.totalPurchases} sarees</div>
+                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 15, fontWeight: 700, color: T.luxuryBrown, marginTop: 2 }}>{r.totalPurchases} sarees</div>
                 </div>
               </div>
 

@@ -3,13 +3,13 @@ import * as Dialog from "@radix-ui/react-dialog";
 import {
   Factory, ShoppingBag, AlertCircle as WarningCircle, Package, X,
 } from "lucide-react";
-import { useBulkOrders } from "../../../bulk-orders/contexts/BulkOrderContext";
-import { useDesignLibrary, DesignEntry } from "../../../design-library/contexts/DesignLibraryContext";
-import { T, F, fld, lbl } from "./constants";
+import { useBulkOrders } from "@/features/bulk-orders";
+import { useDesignLibrary, DesignEntry } from "@/features/design-library";
+import { T, F, lbl } from "./constants";
 import { Pip } from "./constants";
 import type { WeaverOption, LoomOption } from "../useBatchFormHandlers";
 import { rupees } from "@/lib/domain/money";
-import { Money } from "@/shared/ui/domain";
+import { Money, EntityCode } from "@/shared/ui/domain";
 import { Button, IconButton, Input, SearchInput, Textarea } from "../../../../shared/ui/primitives";
 import { Modal, type ModalSize } from "../../../../shared/ui/overlay";
 
@@ -33,6 +33,7 @@ function sizeForWidth(width: number): ModalSize {
   return "lg";
 }
 
+// eslint-disable-next-line no-restricted-syntax -- `width` here is a bucketing input to sizeForWidth(), never applied as CSS; Modal's own size enum handles responsive sizing
 export function PickerShell({ title, onClose, children, width = 480 }: { title: string; onClose: () => void; children: React.ReactNode; width?: number }) {
   return (
     <Modal open onOpenChange={o => !o && onClose()} size={sizeForWidth(width)}>
@@ -61,7 +62,7 @@ export function WeaverPickerModal({ weavers, onClose, onSelect }: { weavers: Wea
             <Pip initials={w.initials} bg={pipColor(w.id)} size={34} />
             <div>
               <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{w.name}</div>
-              <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{w.looms} loom{w.looms !== 1 ? "s" : ""}</div>
+              <div style={{ fontFamily: F.ui, fontVariantNumeric: "tabular-nums", fontSize: 12, color: T.taupe }}>{w.looms} loom{w.looms !== 1 ? "s" : ""}</div>
             </div>
           </Button>
         ))}
@@ -103,7 +104,7 @@ export function BulkOrderPickerModal({ onClose, onSelect }: { onClose: () => voi
               <ShoppingBag size={16} color={T.royalBurgundy} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{o.ref}</div>
+              <EntityCode type="order" value={o.ref} size="sm" />
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{o.customer} · {o.sareeType}</div>
             </div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, flexShrink: 0 }}>{o.done}/{o.total}</div>
@@ -164,13 +165,13 @@ export function DesignCodePickerModal({ onClose, onSelect }: { onClose: () => vo
       {mode === "search" ? (
         <>
           <div style={{ padding: "0 24px 12px" }}>
-            <SearchInput value={q} onChange={e => setQ(e.target.value)} placeholder="Search design code or name…" autoFocus />
+            <SearchInput value={q} onChange={e => setQ(e.target.value)} placeholder="Search design code or name…" />
           </div>
           <div style={{ padding: "0 24px", maxHeight: 280, overflowY: "auto", display: "flex", flexDirection: "column", gap: 6 }}>
             {filtered.map(d => (
               <Button key={d.code} onClick={() => setSel(d.code)} variant="ghost" fullWidth
                 className={`h-auto justify-start gap-3 p-[11px_14px] rounded-[11px] border-2 ${sel === d.code ? "border-[#6E0F2D] bg-[rgba(110,15,45,0.05)]" : "border-[rgba(110,15,45,0.10)] bg-[#FFFDF9]"} hover:bg-[rgba(110,15,45,0.05)]`}>
-                <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", borderRadius: 6, padding: "3px 10px", flexShrink: 0 }}>{d.code}</span>
+                <span style={{ flexShrink: 0 }}><EntityCode type="design" value={d.code} /></span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   {d.name && <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.name}</div>}
                   {d.weaverName && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Weaver: {d.weaverName}</div>}
@@ -202,16 +203,16 @@ export function DesignCodePickerModal({ onClose, onSelect }: { onClose: () => vo
       ) : (
         <div style={{ padding: "0 24px 24px", display: "flex", flexDirection: "column", gap: 14 }}>
           <div>
-            <label style={lbl}>Design Code <span style={{ color: T.royalBurgundy }}>*</span></label>
-            <Input value={newCode} onChange={e => setNewCode(e.target.value)} placeholder="e.g. BKB-099" autoFocus />
+            <label htmlFor="new-design-code" style={lbl}>Design Code <span style={{ color: T.royalBurgundy }}>*</span></label>
+            <Input id="new-design-code" value={newCode} onChange={e => setNewCode(e.target.value)} placeholder="e.g. BKB-099" />
           </div>
           <div>
-            <label style={lbl}>Weaver Name <span style={{ fontWeight: 400, color: T.taupe }}>(optional)</span></label>
-            <Input value={newWeaver} onChange={e => setNewWeaver(e.target.value)} placeholder="Assign a weaver later if needed" />
+            <label htmlFor="new-design-weaver" style={lbl}>Weaver Name <span style={{ fontWeight: 400, color: T.taupe }}>(optional)</span></label>
+            <Input id="new-design-weaver" value={newWeaver} onChange={e => setNewWeaver(e.target.value)} placeholder="Assign a weaver later if needed" />
           </div>
           <div>
-            <label style={lbl}>Notes for Weaver <span style={{ fontWeight: 400, color: T.taupe }}>(optional)</span></label>
-            <Textarea value={newNotes} onChange={e => setNewNotes(e.target.value)} rows={2} placeholder="Instructions to appear in the Design Library…" />
+            <label htmlFor="new-design-notes" style={lbl}>Notes for Weaver <span style={{ fontWeight: 400, color: T.taupe }}>(optional)</span></label>
+            <Textarea id="new-design-notes" value={newNotes} onChange={e => setNewNotes(e.target.value)} rows={2} placeholder="Instructions to appear in the Design Library…" />
           </div>
           <div style={{ background: "rgba(200,155,71,0.09)", border: "1px solid rgba(200,155,71,0.28)", borderRadius: 10, padding: "11px 14px", display: "flex", alignItems: "flex-start", gap: 8 }}>
             <WarningCircle size={15} color={T.antiqueGold} style={{ flexShrink: 0, marginTop: 1 }} />
@@ -252,13 +253,13 @@ export function SareeTypePickerModal({ sareeTypes, onClose, onSelect }: {
           <Button key={t.code} onClick={() => setSel(t.code)} variant="ghost" fullWidth
             className={`h-auto justify-start gap-3.5 p-[13px_16px] rounded-xl border-2 ${sel === t.code ? "border-[#6E0F2D] bg-[rgba(110,15,45,0.05)]" : "border-[rgba(110,15,45,0.10)] bg-[#FFFDF9]"} hover:bg-[rgba(110,15,45,0.05)]`}>
             <div style={{ width: 42, height: 42, borderRadius: 11, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{t.code}</span>
+              <span style={{ fontFamily: F.ui, fontVariantNumeric: "tabular-nums", fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{t.code}</span>
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{t.name}</div>
-              <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{t.code}</div>
+              <div style={{ fontFamily: F.ui, fontVariantNumeric: "tabular-nums", fontSize: 12, color: T.taupe }}>{t.code}</div>
             </div>
-            <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.green }}><Money value={rupees(t.charge)} /></div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: T.green }}><Money value={rupees(t.charge)} /></div>
           </Button>
         ))}
       </div>
@@ -287,7 +288,7 @@ export function WeaverLoomPickerModal({ weaver, current, onClose, onSelect }: {
         {LOOMS.map(loom => (
           <Button key={loom} onClick={() => setSel(loom)} variant="ghost"
             className={`h-auto flex-col gap-1.5 p-[16px_12px] rounded-xl border-2 ${sel === loom ? "border-[#6E0F2D] bg-[rgba(110,15,45,0.05)]" : "border-[rgba(110,15,45,0.10)] bg-[#FFFDF9]"} hover:bg-[rgba(110,15,45,0.05)]`}>
-            <div style={{ fontFamily: F.mono, fontSize: 18, fontWeight: 800, color: sel === loom ? T.royalBurgundy : T.luxuryBrown }}>
+            <div style={{ fontFamily: F.ui, fontVariantNumeric: "tabular-nums", fontSize: 18, fontWeight: 800, color: sel === loom ? T.royalBurgundy : T.luxuryBrown }}>
               L{loom}
             </div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 500 }}>
@@ -321,7 +322,7 @@ export function FactoryLoomPickerModal({ looms, onClose, onSelect }: { looms: Lo
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{l.loomNumber}</div>
-              <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{l.location}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{l.location}</div>
             </div>
             <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: statusColor(l.status), textTransform: "capitalize" }}>{l.status.toLowerCase()}</span>
           </Button>

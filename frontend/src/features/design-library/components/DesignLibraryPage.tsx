@@ -1,21 +1,19 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { motion, useInView, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import {
-  Hash, Image as ImageSquare, Palette as Swatches, Layers as Stack, Workflow as Graph, CheckCircle2 as CheckCircle,
-  Eye as PhEye, Upload as UploadSimple, Plus as PhPlus, Save as FloppyDisk,
-  Search as MagnifyingGlass, AlertCircle as WarningCircle, Package, X as PhX,
+  Image as ImageSquare, Workflow as Graph,
   Send as PaperPlaneTilt, CalendarCheck, User, Building2 as Buildings, FileText, SlidersHorizontal,
 } from "lucide-react";
 
-import { useDesignLibrary, DesignEntry, DispatchRecord } from "../contexts/DesignLibraryContext";
+import { useDesignLibrary, DesignEntry } from "../contexts/DesignLibraryContext";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
 import { weaversApi } from "../../../shared/api/weavers";
 
-import { T, F, G } from "./theme";
+import { T, F } from "./theme";
 import {
-  FadeUp, SectionCard, WeaverCombobox, UploadZone, fieldStyle, labelStyle,
-  DesignCodeCard, DesignCard, AddDesignModal, SlipModal,
+  FadeUp, SectionCard, UploadZone, labelStyle,
+  DesignCodeCard, AddDesignModal, SlipModal,
 } from "./DesignLibraryComponents";
 import { Button, SearchInput, Textarea, Select, SelectItem } from "../../../shared/ui/primitives";
 
@@ -23,8 +21,8 @@ export { DesignCodeCard };
 
 export function DesignLibraryPage() {
   const { designs, addDesign, updateDesign, dispatches: dispatchHistory, addDispatch } = useDesignLibrary();
-  const [search, setSearch]   = useState("");
-  const [filter, setFilter]   = useState("All Designs");
+  const [search] = useState("");
+  const [filter] = useState("All Designs");
   const [showAdd, setShowAdd] = useState(false);
   const [viewDesign, setViewDesign] = useState<DesignEntry | null>(null);
   const [slipDesign, setSlipDesign] = useState<DesignEntry | null>(null);
@@ -92,7 +90,7 @@ export function DesignLibraryPage() {
     setUploadedGraph(null);
   };
 
-  const visible = designs.filter(d => {
+  const _visible = designs.filter(d => {
     if (filter === "Currently in Production" && d.batches === 0) return false;
     if (filter === "Completed Designs"       && d.batches  > 0) return false;
     if (filter === "Has Design Graph"        && !d.hasGraph)    return false;
@@ -110,7 +108,7 @@ export function DesignLibraryPage() {
       {/* ── Page header ── */}
       <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", minHeight: 380, display: "flex", alignItems: "center" }}>
         <div style={{ position: "relative", zIndex: 2, padding: "48px 0 110px 48px", flex: "0 0 100%", maxWidth: "100%" }}>
-          <div style={{ fontFamily: F.mono, fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase", marginBottom: 14 }}>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase", marginBottom: 14 }}>
             Since 1999 · Production
           </div>
           <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
@@ -118,7 +116,7 @@ export function DesignLibraryPage() {
               Weaver Dispatcher
             </h1>
           </div>
-          <p style={{ fontFamily: F.ui, fontSize: 18, color: "rgba(255,253,249,0.70)", maxWidth: 600, margin: 0, lineHeight: 1.6 }}>
+          <p className="max-w-[600px]" style={{ fontFamily: F.ui, fontSize: 18, color: "rgba(255,253,249,0.70)", margin: 0, lineHeight: 1.6 }}>
             Dispatch design sheets, color slip photos, design graphs, and specific weaver instructions directly to active looms.
           </p>
         </div>
@@ -148,7 +146,7 @@ export function DesignLibraryPage() {
                   <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                     {/* Recipient Type Toggle */}
                     <div>
-                      <label style={labelStyle}>Recipient Type</label>
+                      <div style={labelStyle}>Recipient Type</div>
                       <div style={{ display: "flex", background: "rgba(110,15,45,0.05)", borderRadius: 12, padding: 4, border: `1px solid ${T.borderDef}`, width: "fit-content" }}>
                         <Button type="button" onClick={() => setDispRecipientType("weaver")}
                           variant={dispRecipientType === "weaver" ? "secondary" : "ghost"} size="sm" iconLeft={User}>
@@ -173,7 +171,10 @@ export function DesignLibraryPage() {
                             <label style={labelStyle} htmlFor="assign-loom">Assign Loom</label>
                             <Select value={String(dispLoomNum)} onValueChange={v => setDispLoomNum(parseInt(v, 10))}>
                               {Array.from({ length: selectedWeaver.looms || 1 }).map((_, i) => (
-                                <SelectItem key={i + 1} value={String(i + 1)}>Loom {i + 1}</SelectItem>
+                                // `i + 1` here is the actual 1-based loom number (the domain
+                                // identifier), not a positional index — looms are numbered
+                                // sequentially with no other stable field to key off.
+                                <SelectItem key={`loom-${i + 1}`} value={String(i + 1)}>Loom {i + 1}</SelectItem>
                               ))}
                             </Select>
                           </div>
@@ -192,13 +193,13 @@ export function DesignLibraryPage() {
 
                     {/* Instruction field */}
                     <div>
-                      <label style={labelStyle}>Description / Dispatch Instructions <span style={{ color: T.royalBurgundy }}>*</span></label>
-                      <Textarea value={dispInstructions} onChange={e => setDispInstructions(e.target.value)} rows={3} placeholder="Provide precise guidelines for weaving style, tension, spacing, or borders…" />
+                      <label style={labelStyle} htmlFor="dispatch-instructions">Description / Dispatch Instructions <span style={{ color: T.royalBurgundy }}>*</span></label>
+                      <Textarea id="dispatch-instructions" value={dispInstructions} onChange={e => setDispInstructions(e.target.value)} rows={3} placeholder="Provide precise guidelines for weaving style, tension, spacing, or borders…" />
                     </div>
 
                     {/* Attachments section (Images) */}
                     <div>
-                      <label style={labelStyle}>Attachments (Optional)</label>
+                      <div style={labelStyle}>Attachments (Optional)</div>
                       <div style={{ marginBottom: 10 }}>
                         <UploadZone label="Upload Color Slip" hint="Upload custom slip image" icon={ImageSquare} preview={uploadedSlip} onFile={setUploadedSlip} />
                       </div>
@@ -271,23 +272,35 @@ export function DesignLibraryPage() {
                             {h.colorSlipImage && (
                               <div style={{ display: "flex", flexDirection: "column" as const, gap: 4 }}>
                                 <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.4px" }}>Color Slip</span>
-                                <img
-                                  src={h.colorSlipImage}
-                                  alt="Color slip"
+                                <button
+                                  type="button"
                                   onClick={() => setZoomImage({ url: h.colorSlipImage!, label: `Color Slip — Dispatch to ${h.recipientName}` })}
-                                  style={{ width: 72, height: 72, borderRadius: 10, objectFit: "cover", border: `1px solid ${T.borderDef}`, cursor: "pointer" }}
-                                />
+                                  style={{ padding: 0, border: "none", background: "transparent", cursor: "pointer", lineHeight: 0 }}
+                                  aria-label={`Zoom color slip — dispatch to ${h.recipientName}`}
+                                >
+                                  <img
+                                    src={h.colorSlipImage}
+                                    alt="Color slip"
+                                    style={{ width: 72, height: 72, borderRadius: 10, objectFit: "cover", border: `1px solid ${T.borderDef}` }}
+                                  />
+                                </button>
                               </div>
                             )}
                             {h.designGraphImage && (
                               <div style={{ display: "flex", flexDirection: "column" as const, gap: 4 }}>
                                 <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.4px" }}>Design Graph</span>
-                                <img
-                                  src={h.designGraphImage}
-                                  alt="Design graph"
+                                <button
+                                  type="button"
                                   onClick={() => setZoomImage({ url: h.designGraphImage!, label: `Design Graph — Dispatch to ${h.recipientName}` })}
-                                  style={{ width: 72, height: 72, borderRadius: 10, objectFit: "cover", border: `1px solid ${T.borderDef}`, cursor: "pointer" }}
-                                />
+                                  style={{ padding: 0, border: "none", background: "transparent", cursor: "pointer", lineHeight: 0 }}
+                                  aria-label={`Zoom design graph — dispatch to ${h.recipientName}`}
+                                >
+                                  <img
+                                    src={h.designGraphImage}
+                                    alt="Design graph"
+                                    style={{ width: 72, height: 72, borderRadius: 10, objectFit: "cover", border: `1px solid ${T.borderDef}` }}
+                                  />
+                                </button>
                               </div>
                             )}
                             {!h.colorSlipImage && !h.designGraphImage && (

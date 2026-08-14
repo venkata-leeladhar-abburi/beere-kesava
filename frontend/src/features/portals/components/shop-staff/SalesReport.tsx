@@ -7,18 +7,14 @@ import { FileText, Check } from "lucide-react";
 import { semantic } from "../../../../design-system/tokens";
 
 
-import React, { useState, useEffect, useMemo, useRef, createContext, useContext } from 'react';
+import React, { useState, useMemo } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { Modal } from "../../../../shared/ui/overlay";
 import {
-  Menu, X, Search, Bell, LogOut, Package, IndianRupee, RotateCcw, 
-  Users, BarChart3, ChevronRight, UserRound, ArrowLeft, Plus, MapPin, 
-  Phone, Eye, Download, Printer, Filter, Calendar, Activity,
-  ShoppingCart, Store, ArrowRight, Tag, Wallet, CreditCard, ChevronDown, CheckCircle2,
-  TrendingUp, ArrowDownRight, ArrowUpRight, TrendingDown
+  X,
 } from 'lucide-react';
 
-import { C, F, TEAL, Card, Btn, Chip, useCanSeePrices } from './theme';
+import { C, F, Card, Chip, useCanSeePrices } from './theme';
 import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { useQuery } from "@tanstack/react-query";
 import { salesApi } from "../../../../shared/api/sales";
@@ -60,11 +56,12 @@ function SalesReport() {
     queryFn: () => customersApi.list(100),
   });
 
-  const salesList = salesRes?.items ?? [];
+  const salesList = useMemo(() => salesRes?.items ?? [], [salesRes]);
   const returnsList = returnsRes?.items ?? [];
-  const customerMap = new Map((customersRes?.items ?? []).map(c => [c.id, c.name]));
+  const customerMap = useMemo(() => new Map((customersRes?.items ?? []).map(c => [c.id, c.name])), [customersRes]);
 
   const dailySales = salesList.map(s => ({
+    saleId: s.saleRef,
     time: timeLabel(s.saleDate),
     id: s.sareeId,
     design: s.channel === "WHOLESALE" ? "Wholesale" : "Retail",
@@ -101,11 +98,11 @@ function SalesReport() {
   });
 
   const topCustomers = useMemo(() => {
-    const map = new Map<string, { name: string; purchases: number; total: number }>();
+    const map = new Map<string, { custId: string; name: string; purchases: number; total: number }>();
     for (const s of salesList) {
       const custId = s.customerId ?? "walkin";
       const name = s.customerId ? (customerMap.get(s.customerId) ?? `Customer ${s.customerId.slice(0, 6)}`) : "Walk-in Counter Customer";
-      const existing = map.get(custId) ?? { name, purchases: 0, total: 0 };
+      const existing = map.get(custId) ?? { custId, name, purchases: 0, total: 0 };
       existing.purchases += 1;
       existing.total += Number(s.amount);
       map.set(custId, existing);
@@ -113,12 +110,14 @@ function SalesReport() {
     const sorted = Array.from(map.values()).sort((a, b) => b.total - a.total).slice(0, 5);
     if (sorted.length === 0 && customersRes?.items) {
       return customersRes.items.slice(0, 5).map(c => ({
+        custId: c.id,
         name: c.name,
         purchases: 0,
         amt: formatMoney(rupees(0)),
       }));
     }
     return sorted.map(c => ({
+      custId: c.custId,
       name: c.name,
       purchases: c.purchases,
       amt: formatMoney(rupees(c.total)),
@@ -126,6 +125,7 @@ function SalesReport() {
   }, [salesList, customerMap, customersRes]);
 
   const returns = returnsList.map(r => ({
+    returnId: r.returnRef,
     date: dateLabel(r.returnDate),
     id: r.sareeId,
     customer: "Returned Item",
@@ -210,7 +210,7 @@ function SalesReport() {
       </div>
       <Card style={{ margin: "0 20px", overflow: "hidden", padding: 0 }}>
         {dailySales.map((s, i) => (
-          <div key={i} style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, padding: "16px", borderBottom: i < dailySales.length - 1 ? `1px solid ${C.bdr}` : "none" }}>
+          <div key={s.saleId} style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, padding: "16px", borderBottom: i < dailySales.length - 1 ? `1px solid ${C.bdr}` : "none" }}>
             <div style={{ minWidth: 0, flex: 1 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" as const, marginBottom: 4 }}>
                 <span style={{ fontFamily: F.m, fontSize: 13, color: C.burg }}>{s.id}</span>
@@ -244,7 +244,7 @@ function SalesReport() {
           ...(canSeePrices ? [{ label: "Net Revenue", val: fmtINR(monthRevenue - monthReturnsAmount) }] : []),
           { label: "Most sold", val: topDesign },
         ].map((s, i) => (
-          <Card key={i} style={{ flex: "1 1 calc(50% - 5px)", padding: "14px 16px" }}>
+          <Card key={s.label} style={{ flex: "1 1 calc(50% - 5px)", padding: "14px 16px" }}>
             <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginBottom: 5 }}>{s.label}</div>
             <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: i < 3 ? C.text : C.crim }}>{s.val}</div>
           </Card>
@@ -255,7 +255,7 @@ function SalesReport() {
       <SectionTitle id="shoprep-top-customers" title="Top 5 Customers This Month" />
       <Card style={{ margin: "0 20px", padding: 0, overflow: "hidden" }}>
         {topCustomers.map((c, i) => (
-          <div key={i} style={{ display: "flex", alignItems: "center", gap: 14, padding: "16px 18px", borderBottom: i < topCustomers.length - 1 ? `1px solid ${C.bdr}` : "none" }}>
+          <div key={c.custId} style={{ display: "flex", alignItems: "center", gap: 14, padding: "16px 18px", borderBottom: i < topCustomers.length - 1 ? `1px solid ${C.bdr}` : "none" }}>
             <div style={{ fontFamily: F.d, fontWeight: i === 0 ? 700 : 600, fontSize: i === 0 ? 26 : 21, color: i === 0 ? C.gold : C.text, width: 30, flexShrink: 0 }}>{i + 1}</div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>{c.name}</div>
@@ -288,8 +288,8 @@ function SalesReport() {
 
       {/* Returns Summary */}
       <SectionTitle id="shoprep-returns" title="Returns This Month" />
-      {returns.map((r, i) => (
-        <div key={i} style={{ margin: "0 20px 10px", background: C.white, border: `1px solid ${C.bdr}`, borderLeft: `3px solid ${C.crim}`, borderRadius: 14, padding: "14px 16px", display: "flex", alignItems: "center", flexWrap: "wrap" as const, gap: 8 }}>
+      {returns.map((r) => (
+        <div key={r.returnId} style={{ margin: "0 20px 10px", background: C.white, border: `1px solid ${C.bdr}`, borderLeft: `3px solid ${C.crim}`, borderRadius: 14, padding: "14px 16px", display: "flex", alignItems: "center", flexWrap: "wrap" as const, gap: 8 }}>
           <div style={{ flex: 1, minWidth: 180 }}>
             <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" as const }}>
               <span style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{r.date}</span>
@@ -364,7 +364,7 @@ function SalesReport() {
                     <div style={{ background: "#F8F4F0", borderRadius: 14, padding: "14px 16px", marginBottom: 22 }}>
                       <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text, marginBottom: 10 }}>Includes</div>
                       {["Sale ID, customer name, design code", "Payment method and amount", "Timestamp and date", "Running totals and subtotals"].map((item, i) => (
-                        <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: i < 3 ? 8 : 0 }}>
+                        <div key={item} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: i < 3 ? 8 : 0 }}>
                           <Check size={14} color={C.green} />
                           <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{item}</span>
                         </div>
@@ -383,10 +383,5 @@ function SalesReport() {
     </div>
   );
 }
-
-// ─── SHELL WRAPPER ────────────────────────────────────────────────────────────
-interface ShopStaffPortalProps { onBack?: () => void }
-
-type ShopCustomer = { name: string; phone: string; purchases: number; total: string; last: string; regular: boolean; initials: string };
 
 export { SalesReport };

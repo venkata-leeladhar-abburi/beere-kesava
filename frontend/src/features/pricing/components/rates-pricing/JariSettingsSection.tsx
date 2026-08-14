@@ -16,7 +16,7 @@ export function JariSettingsSection() {
             <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 38, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1, marginBottom: 8 }}>
               1 Bun = 4 Reels
             </div>
-            <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, maxWidth: 480, margin: "0 auto", lineHeight: 1.7 }}>
+            <p className="max-w-[480px]" style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, margin: "0 auto", lineHeight: 1.7 }}>
               The current conversion is set to 4 Reels per Bun. This is used when calculating Jari deductions and stock tracking across all weaver accounts.
             </p>
           </div>
@@ -25,26 +25,27 @@ export function JariSettingsSection() {
 
           <div style={{ display: "flex", gap: 24, justifyContent: "center", marginBottom: 24, flexWrap: "wrap" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <label style={{ ...labelStyle, marginBottom: 0, whiteSpace: "nowrap" }}>1 Bun equals:</label>
+              <label htmlFor="jari-bun-conversion" style={{ ...labelStyle, marginBottom: 0, whiteSpace: "nowrap" }}>1 Bun equals:</label>
               <NumberInput
+                id="jari-bun-conversion"
                 defaultValue={4}
                 className="w-[90px] bg-[#FFF8F0] border-[rgba(110,15,45,0.18)] text-center text-[20px] font-bold font-[var(--font-mono)]"
               />
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <label style={{ ...labelStyle, marginBottom: 0, whiteSpace: "nowrap" }}>Unit name (singular):</label>
-              <Input defaultValue="Reel" className="w-[110px] bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
+              <label htmlFor="jari-unit-singular" style={{ ...labelStyle, marginBottom: 0, whiteSpace: "nowrap" }}>Unit name (singular):</label>
+              <Input id="jari-unit-singular" defaultValue="Reel" className="w-[110px] bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <label style={{ ...labelStyle, marginBottom: 0, whiteSpace: "nowrap" }}>Unit name (plural):</label>
-              <Input defaultValue="Reels" className="w-[110px] bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
+              <label htmlFor="jari-unit-plural" style={{ ...labelStyle, marginBottom: 0, whiteSpace: "nowrap" }}>Unit name (plural):</label>
+              <Input id="jari-unit-plural" defaultValue="Reels" className="w-[110px] bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
             </div>
           </div>
 
-          <div style={{
+          <div className="max-w-[600px]" style={{
             background: "rgba(192,57,43,0.08)", border: `1px solid rgba(192,57,43,0.22)`,
             borderRadius: 8, padding: "12px 18px", display: "flex", alignItems: "center",
-            gap: 10, marginBottom: 24, maxWidth: 600, margin: "0 auto 24px",
+            gap: 10, marginBottom: 24, margin: "0 auto 24px",
           }}>
             <AlertTriangle size={16} color={T.crimson} style={{ flexShrink: 0 }} />
             <span style={{ fontFamily: F.ui, fontSize: 12, color: T.crimson, lineHeight: 1.6 }}>
@@ -65,3 +66,4 @@ export function JariSettingsSection() {
     </div>
   );
 }
+

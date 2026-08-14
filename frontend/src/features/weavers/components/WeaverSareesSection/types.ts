@@ -1,5 +1,5 @@
-import type { QcResult } from "../../../qc/contexts/QcContext";
-import type { UnifiedSaree } from "../../../customers/contexts/SalesContext";
+import type { QcResult } from "@/features/qc";
+import type { UnifiedSaree } from "@/features/customers";
 
 export type FinishingStatus = "completed" | "in-finishing" | "pending" | "none" | "rejected";
 

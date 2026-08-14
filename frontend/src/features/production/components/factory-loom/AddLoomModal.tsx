@@ -24,14 +24,18 @@ function FS({ label, value, onChange, options, required }: { label: string; valu
   );
 }
 
+// A stable, module-level constant — reused as-is so the effect below can
+// safely depend on it without triggering on every render.
+const blank = { loomNumber: "", location: "", operatorName: "", operatorPhone: "", status: "active" as "active" | "idle" | "maintenance", installedYear: "", notes: "" };
+type LoomForm = typeof blank & Partial<Omit<FactoryLoom, "id">>;
+
 // ── Add / Edit Modal ──────────────────────────────────────────────────────────
 export function AddLoomModal({ open, onClose, onAdd, editLoom }: {
   open: boolean; onClose: () => void; onAdd: (l: FactoryLoom) => void; editLoom?: FactoryLoom | null;
 }) {
-  const blank = { loomNumber: "", location: "", operatorName: "", operatorPhone: "", status: "active", installedYear: "", notes: "" };
-  const [form, setForm] = useState<any>(blank);
-  useEffect(() => { if (editLoom) { const { id, ...r } = editLoom; setForm(r); } else setForm(blank); }, [editLoom, open]);
-  const patch = (p: any) => setForm((prev: any) => ({ ...prev, ...p }));
+  const [form, setForm] = useState<LoomForm>(blank);
+  useEffect(() => { if (editLoom) { const { id: _id, ...r } = editLoom; setForm(r as LoomForm); } else setForm(blank); }, [editLoom, open]);
+  const patch = (p: Partial<LoomForm>) => setForm((prev) => ({ ...prev, ...p }));
   const valid = form.loomNumber.trim() && form.operatorName.trim() && form.location.trim();
   return (
     <Modal open={open} onOpenChange={o => !o && onClose()} size="sm">
@@ -56,7 +60,7 @@ export function AddLoomModal({ open, onClose, onAdd, editLoom }: {
             <FI label="Operator Phone" value={form.operatorPhone} onChange={v => patch({ operatorPhone: v })} placeholder="98765 00000" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 14 }}>
-            <FS label="Status" value={form.status} onChange={v => patch({ status: v })} options={["active", "idle", "maintenance"]} />
+            <FS label="Status" value={form.status} onChange={v => patch({ status: v as "active" | "idle" | "maintenance" })} options={["active", "idle", "maintenance"]} />
             <FI label="Installed Year" value={form.installedYear} onChange={v => patch({ installedYear: v })} placeholder="2020" />
           </div>
           <Field label="Notes">

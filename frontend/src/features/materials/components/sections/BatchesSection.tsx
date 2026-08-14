@@ -14,12 +14,13 @@ import { Button, SearchInput } from "../../../../shared/ui/primitives";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "../../../../shared/ui/overlay";
 import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { EntityCode } from "@/shared/ui/domain";
 
 export function BatchTableView({ rows, onViewDetails, onPrintBarcode }: { rows: BatchRow[]; onViewDetails: (b: BatchRow) => void; onPrintBarcode: (b: BatchRow) => void }) {
   const columns: ColumnDef<BatchRow>[] = [
     {
       id: "id", header: "Batch ID", accessor: r => r.id, priority: 1,
-      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, letterSpacing: "0.2px", background: "rgba(110,15,45,0.05)", padding: "4px 8px", borderRadius: 6, display: "inline-block" }}>{r.id}</span>,
+      cell: (_v, r) => <EntityCode type="batch" value={r.id} size="sm" />,
     },
     {
       id: "material", header: "Material", accessor: r => r.type,
@@ -38,7 +39,7 @@ export function BatchTableView({ rows, onViewDetails, onPrintBarcode }: { rows: 
     },
     {
       id: "date", header: "Received On", accessor: r => r.date, priority: 3,
-      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.date}</span>,
+      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{r.date}</span>,
     },
     {
       id: "received", header: "Received", accessor: r => r.received, type: "number", sortable: true,
@@ -134,7 +135,7 @@ export function BatchCardView({ rows, onViewDetails, onPrintBarcode }: { rows: B
               </div>
               <div style={{ padding: "16px 18px", flex: 1, display: "flex", flexDirection: "column" }}>
                 <div style={{ marginBottom: 14 }}>
-                  <div style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, background: "rgba(110,15,45,0.05)", display: "inline-block", padding: "3px 8px", borderRadius: 6, marginBottom: 8, letterSpacing: "0.3px" }}>{r.id}</div>
+                  <div style={{ marginBottom: 8 }}><EntityCode type="batch" value={r.id} size="sm" /></div>
                   <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{r.vendor}</div>
                   <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 4 }}>
                     <Calendar size={12} color={T.taupe} />
@@ -168,7 +169,7 @@ export function BatchCardView({ rows, onViewDetails, onPrintBarcode }: { rows: B
                 <div style={{ marginBottom: 16, flex: 1 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
                     <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Stock remaining</span>
-                    <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: sc.color }}>{remPct}%</span>
+                    <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: sc.color }}>{remPct}%</span>
                   </div>
                   <div style={{ height: 6, background: "rgba(110,15,45,0.08)", borderRadius: 3 }}>
                     <div style={{ width: `${remPct}%`, height: "100%", background: sc.dot, borderRadius: 3 }} />

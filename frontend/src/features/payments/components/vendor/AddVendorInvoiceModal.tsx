@@ -5,11 +5,12 @@ import { toast } from "sonner";
 
 import { F, T } from "../../theme";
 import { VendorPayment } from "../../types";
-import type { PurchaseOrder } from "../../../purchasing/contexts/POContext";
+import type { PurchaseOrder } from "@/features/purchasing";
 import { Button, CurrencyInput, Field, IconButton, Input } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
 import { DatePicker, formatDate } from "../../../../shared/ui/date";
 import { vendorBillsApi } from "../../../../shared/api/vendor-bills";
+import { toPaise, fromPaise } from "@/lib/gst";
 
 const MAT_TAG: Record<string, { col: string; bg: string }> = {
   Warp: { col: "#B85C38", bg: "rgba(184,92,56,0.12)" },
@@ -48,18 +49,19 @@ export function AddVendorInvoiceModal({ vp, matchedPO, onClose, onSaved }: { vp:
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const materialsSum = Object.values(materialAmounts).reduce((sum, v) => sum + (parseFloat(v) || 0), 0);
+  const materialsSum = fromPaise(Object.values(materialAmounts).reduce((sumPaise, v) => sumPaise + (toPaise(Number(v)) || 0), 0));
 
   const setMaterialAmount = (index: number, value: string) => {
     const next = { ...materialAmounts, [index]: value };
     setMaterialAmounts(next);
     if (!totalOverridden) {
-      const sum = Object.values(next).reduce((s, v) => s + (parseFloat(v) || 0), 0);
+      const sumPaise = Object.values(next).reduce((s, v) => s + (toPaise(Number(v)) || 0), 0);
+      const sum = fromPaise(sumPaise);
       setAmount(sum > 0 ? String(sum) : "");
     }
   };
 
-  const numericAmount = parseFloat(amount);
+  const numericAmount = amount === "" || isNaN(Number(amount)) ? NaN : fromPaise(toPaise(Number(amount)));
   const canSave = !!vp.vendorId && numericAmount > 0;
 
   const handleSave = async () => {
@@ -69,7 +71,7 @@ export function AddVendorInvoiceModal({ vp, matchedPO, onClose, onSaved }: { vp:
     try {
       const materialAmountsPayload = matchedPO
         ? matchedPO.materials
-            .map((m, mi) => ({ itemId: m.id, amount: parseFloat(materialAmounts[mi] || "") }))
+            .map((m, mi) => ({ itemId: m.id, amount: fromPaise(toPaise(Number(materialAmounts[mi] || 0))) }))
             .filter((m): m is { itemId: string; amount: number } => !!m.itemId && m.amount > 0)
         : undefined;
 
@@ -141,22 +143,23 @@ export function AddVendorInvoiceModal({ vp, matchedPO, onClose, onSaved }: { vp:
 
           {matchedPO && matchedPO.materials.length > 0 && (
             <div style={{ display: "flex", flexDirection: "column", gap: 10, background: "rgba(110,15,45,0.015)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: 12 }}>
-              <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "1px" }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "1px" }}>
                 Amount by Material
               </div>
               {matchedPO.materials.map((m, mi) => {
                 const mt = MAT_TAG[m.materialType] || MAT_TAG.Warp;
                 return (
-                  <div key={mi} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div key={`${m.materialType}-${m.unit}`} style={{ display: "flex", alignItems: "center", gap: 10 }}>
                     <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 800, textTransform: "uppercase" as const, color: mt.col, background: mt.bg, borderRadius: 6, padding: "3px 8px", minWidth: 58, textAlign: "center" as const, flexShrink: 0 }}>
                       {m.materialType}
                     </span>
-                    <span style={{ fontFamily: F.mono, fontSize: 11, color: T.taupe, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
+                    <span style={{ fontSize: 11, color: T.taupe, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
                       {m.quantity} {m.unit}
                     </span>
                     <CurrencyInput
                       value={materialAmounts[mi] ? Number(materialAmounts[mi]) : ""}
                       onValueChange={v => setMaterialAmount(mi, v === "" ? "" : String(v))}
+                      // eslint-disable-next-line no-restricted-syntax -- input placeholder text, not a rendered money value
                       placeholder="₹0"
                       size="sm"
                       className="w-[120px] flex-shrink-0"
@@ -172,6 +175,7 @@ export function AddVendorInvoiceModal({ vp, matchedPO, onClose, onSaved }: { vp:
             </div>
           )}
 
+          {/* eslint-disable-next-line no-restricted-syntax -- form field label text, not a money value display */}
           <Field label="Total Invoice Amount (₹)" required id="invoice-amount">
             <CurrencyInput
               value={amount === "" ? "" : Number(amount)}

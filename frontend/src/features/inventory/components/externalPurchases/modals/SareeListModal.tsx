@@ -4,7 +4,7 @@ import { X, Printer, Undo2 } from "lucide-react";
 import {
   Purchase, SareeTag,
   lineProfit, purchaseTotals, expandSareePieces, useSuppliers,
-} from "../../../../suppliers/contexts/SupplierContext";
+} from "@/features/suppliers";
 import { formatMoney, rupees } from "@/lib/domain/money";
 import { T, F } from "../theme";
 import { Button, IconButton } from "../../../../../shared/ui/primitives";
@@ -48,11 +48,11 @@ export function SareeListModal({
   const columns: ColumnDef<Piece>[] = [
     {
       id: "sno", header: "S.No", accessor: (_s) => pieces.indexOf(_s) + 1, priority: 3,
-      cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{pieces.indexOf(s) + 1}</span>,
+      cell: (_v, s) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{pieces.indexOf(s) + 1}</span>,
     },
     {
       id: "sareeCode", header: "Saree Code", accessor: s => s.id, priority: 1,
-      cell: (_v, s) => <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 12, color: T.royalBurgundy, whiteSpace: "nowrap" as const }}>{s.id}</span>,
+      cell: (_v, s) => <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 12, color: T.royalBurgundy, whiteSpace: "nowrap" as const }}>{s.id}</span>,
     },
     {
       id: "status", header: "Status", accessor: s => s.returned, type: "status",
@@ -64,8 +64,8 @@ export function SareeListModal({
       id: "lineSerial", header: "Line Serial", accessor: s => s.lineCode, priority: 3,
       cell: (_v, s) => (
         <span style={{ whiteSpace: "nowrap" as const }}>
-          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{s.lineCode}</span>
-          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginLeft: 6 }}>pc {s.pieceNo}/{s.lineQuantity}</span>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{s.lineCode}</span>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginLeft: 6 }}>pc {s.pieceNo}/{s.lineQuantity}</span>
         </span>
       ),
     },
@@ -83,19 +83,19 @@ export function SareeListModal({
     },
     {
       id: "buying", header: "Buying Price", accessor: s => s.price,
-      cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>{formatMoney(rupees(s.price))}</span>,
+      cell: (_v, s) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>{formatMoney(rupees(s.price))}</span>,
     },
     {
       id: "sellPct", header: "Sell %", accessor: s => s.sellPercent, priority: 3,
-      cell: (_v, s) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" as const }}>{s.sellPercent}%</span>,
+      cell: (_v, s) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, whiteSpace: "nowrap" as const }}>{s.sellPercent}%</span>,
     },
     {
       id: "selling", header: "Selling Price", accessor: s => s.finalAmount,
-      cell: (_v, s) => <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 12, color: T.antiqueGold, whiteSpace: "nowrap" as const }}>{formatMoney(rupees(s.finalAmount))}</span>,
+      cell: (_v, s) => <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 12, color: T.antiqueGold, whiteSpace: "nowrap" as const }}>{formatMoney(rupees(s.finalAmount))}</span>,
     },
     {
       id: "profit", header: "Profit", accessor: s => lineProfit(s),
-      cell: (_v, s) => <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 12, color: T.green, whiteSpace: "nowrap" as const }}>{formatMoney(rupees(lineProfit(s)))}</span>,
+      cell: (_v, s) => <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 12, color: T.green, whiteSpace: "nowrap" as const }}>{formatMoney(rupees(lineProfit(s)))}</span>,
     },
     {
       id: "notes", header: "Notes", accessor: s => s.notes, priority: 3,
@@ -124,10 +124,12 @@ export function SareeListModal({
         </div>
         <div style={{ fontFamily: "var(--font-code)", fontSize: "var(--doc-code)", color: "var(--doc-muted)" }}>{purchase.supplier}</div>
       </div>
+      {/* eslint-disable-next-line no-restricted-syntax -- printable document template */}
       <table className="bk-doc__table">
         <thead>
           <tr>
             {["S.No", "Saree Code", "Line Serial", "Saree Type", "Colour", "Weight", "Buying Price", "Sell %", "Selling Price", "Profit", "Notes"].map(h => (
+              // eslint-disable-next-line no-restricted-syntax -- printable document template
               <th key={h} style={{ textAlign: /Price|Profit|%/.test(h) ? "end" : "start" }}>{h}</th>
             ))}
           </tr>
@@ -153,10 +155,10 @@ export function SareeListModal({
           <tr style={{ fontWeight: 700 }}>
             <td colSpan={6}>Totals — {totals.pieces} piece{totals.pieces !== 1 ? "s" : ""}</td>
             <td data-num>{formatMoney(rupees(totals.buying))}</td>
-            <td></td>
+            <td aria-label="Not applicable">—</td>
             <td data-num>{formatMoney(rupees(totals.selling))}</td>
             <td data-num>{formatMoney(rupees(totals.profit))}</td>
-            <td></td>
+            <td aria-label="Not applicable">—</td>
           </tr>
         </tfoot>
       </table>
@@ -190,7 +192,7 @@ export function SareeListModal({
               <Dialog.Title style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: "#FFF", margin: 0 }}>
                 {purchase.id} — Saree Details
               </Dialog.Title>
-              <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(200,155,71,0.8)" }}>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(200,155,71,0.8)" }}>
                 {purchase.supplier}
               </div>
             </div>
@@ -229,9 +231,9 @@ export function SareeListModal({
               <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>
                 Totals — {totals.pieces} piece{totals.pieces !== 1 ? "s" : ""}
               </span>
-              <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>Buying {formatMoney(rupees(totals.buying))}</span>
-              <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.antiqueGold, whiteSpace: "nowrap" as const }}>Selling {formatMoney(rupees(totals.selling))}</span>
-              <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.green, whiteSpace: "nowrap" as const }}>Profit {formatMoney(rupees(totals.profit))}</span>
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>Buying {formatMoney(rupees(totals.buying))}</span>
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.antiqueGold, whiteSpace: "nowrap" as const }}>Selling {formatMoney(rupees(totals.selling))}</span>
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.green, whiteSpace: "nowrap" as const }}>Profit {formatMoney(rupees(totals.profit))}</span>
             </div>
           </div>
 

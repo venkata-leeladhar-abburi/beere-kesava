@@ -18,6 +18,7 @@ import { SectionCard } from "./SharedBits";
 import { purchaseOrdersApi } from "../../../../shared/api/purchase-orders";
 import { ChartFigure } from "../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
+import { toPaise, fromPaise } from "@/lib/gst";
 
 // Material type is not carried on the backend PurchaseOrder (see
 // shared/api/purchase-orders.ts — line items live client-side only, no
@@ -30,7 +31,9 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
   const [analyticsFilter, setAnalyticsFilter] = React.useState<DateFilterState>(DEFAULT_DATE_FILTER);
 
   // ---- Derived analytics -------------------------------------------------
-  const num = (s: string) => parseFloat(s.replace(/,/g, "")) || 0;
+  // Outstanding is money — parse to integer paise so the sum below never
+  // drifts, then convert back to rupees once for existing display/sort logic.
+  const numPaise = (s: string) => toPaise(Number(s.replace(/,/g, "")) || 0);
 
   const { data: poRes, isLoading: posLoading, isError: posError } = useQuery({
     queryKey: ["all-vendor-pos"],
@@ -127,12 +130,12 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
 
   const outstandingList = React.useMemo(
     () => vendors
-      .filter(v => num(v.outstanding) > 0)
-      .map(v => ({ ...v, out: num(v.outstanding) }))
+      .filter(v => numPaise(v.outstanding) > 0)
+      .map(v => ({ ...v, out: fromPaise(numPaise(v.outstanding)) }))
       .sort((a, b) => b.out - a.out),
     [vendors]
   );
-  const totalOutstanding = outstandingList.reduce((a, v) => a + v.out, 0);
+  const totalOutstanding = fromPaise(outstandingList.reduce((a, v) => a + toPaise(v.out), 0));
 
   const spendByState = React.useMemo(() => {
     const m = new Map<string, number>();
@@ -187,7 +190,7 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
         title="Vendor Analytics"
         subtitle="Spend, top vendors, delivery reliability, and procurement health across your vendor base."
         actions={
-          <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, letterSpacing: "1px", color: "#FFFDF9", background: "rgba(255,255,255,0.14)", padding: "6px 14px", borderRadius: 20, textTransform: "uppercase" as const }}>{periodLabel}</span>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "1px", color: "#FFFDF9", background: "rgba(255,255,255,0.14)", padding: "6px 14px", borderRadius: 20, textTransform: "uppercase" as const }}>{periodLabel}</span>
         }
       >
         {/* Timeline scope — drives every chart in this section */}
@@ -251,7 +254,7 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
                   <YAxis yAxisId="l" hide />
                   <YAxis yAxisId="r" orientation="right" hide />
                   <RechartsTooltip contentStyle={tipStyle}
-                    formatter={(v: any, n: any) => n === "Spend" ? [L(v), "Spend"] : [`${v} POs`, "Orders"]} />
+                    formatter={(v: number | string, n: React.ReactNode) => n === "Spend" ? [L(Number(v)), "Spend"] : [`${v} POs`, "Orders"]} />
                   <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, paddingTop: 8 }} />
                   <Bar yAxisId="l" name="Spend" dataKey="spend" fill={T.royalBurgundy} radius={[6, 6, 0, 0]} />
                   <Line yAxisId="r" name="Orders" dataKey="orders" stroke={semantic.chart.series[1]} strokeWidth={2.5}
@@ -266,9 +269,9 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
               <ResponsiveContainer width="100%" height={160}>
                 <PieChart>
                   <Pie data={spendByType} dataKey="value" cx="50%" cy="50%" outerRadius={60} innerRadius={32}>
-                    {spendByType.map((e, i) => <Cell key={i} fill={e.fill} />)}
+                    {spendByType.map((e) => <Cell key={e.name} fill={e.fill} />)}
                   </Pie>
-                  <RechartsTooltip formatter={(v: any) => [L(v)]} contentStyle={tipStyle} />
+                  <RechartsTooltip formatter={(v: number | string) => [L(Number(v))]} contentStyle={tipStyle} />
                 </PieChart>
               </ResponsiveContainer>
             </ChartFigure>
@@ -279,7 +282,7 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
                     <div style={{ width: 10, height: 10, borderRadius: 3, background: s.fill }} />
                     <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{s.name}</span>
                   </div>
-                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{L(s.value)}</span>
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{L(s.value)}</span>
                 </div>
               ))}
             </div>
@@ -298,7 +301,7 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
                 </div>
               </div>
               <div style={{ textAlign: "right" }}>
-                <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, letterSpacing: "1px", color: T.taupe }}>TOP 5 SHARE</div>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "1px", color: T.taupe }}>TOP 5 SHARE</div>
                 <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: top5Share > 80 ? T.crimson : T.royalBurgundy }}>{top5Share}%</div>
               </div>
             </div>
@@ -309,8 +312,8 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
                   <XAxis type="number" hide />
                   <YAxis type="category" dataKey="short" width={132} tick={{ fontFamily: F.ui, fontSize: 12, fill: T.luxuryBrown }} axisLine={false} tickLine={false} />
                   <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tipStyle}
-                    formatter={(v: any, _n: any, p: any) => [`${L(v)} · ${p.payload.orders} orders`, p.payload.name]} />
-                  <Bar dataKey="spend" radius={[0, 6, 6, 0]} label={{ position: "right", formatter: (v: any) => L(v), fontFamily: F.mono, fontSize: 12, fontWeight: 700, fill: T.luxuryBrown }}>
+                    formatter={(v: number | string, _n: React.ReactNode, p: { payload: { orders: number; name: string } }) => [`${L(Number(v))} · ${p.payload.orders} orders`, p.payload.name]} />
+                  <Bar dataKey="spend" radius={[0, 6, 6, 0]} label={{ position: "right", formatter: (v: number | string) => L(Number(v)), fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, fill: T.luxuryBrown }}>
                     {topVendors.map((v, i) => (
                       <Cell key={v.id} fill={semantic.chart.series[i % semantic.chart.series.length]} />
                     ))}
@@ -321,10 +324,10 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
             <div style={{ display: "flex", gap: 8, marginTop: 14, borderTop: `1px solid ${T.borderDef}`, paddingTop: 14 }}>
               {topVendors.map((v, i) => (
                 <div key={v.id} style={{ flex: 1, display: "flex", alignItems: "center", gap: 8 }}>
-                  <div style={{ width: 26, height: 26, borderRadius: 8, flexShrink: 0, background: i === 0 ? `linear-gradient(135deg,${T.antiqueGold},${T.goldLight})` : T.silkCream, border: `1px solid ${T.borderGold}`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.mono, fontSize: 12, fontWeight: 800, color: i === 0 ? T.darkBurgundy : T.taupe }}>{i + 1}</div>
+                  <div style={{ width: 26, height: 26, borderRadius: 8, flexShrink: 0, background: i === 0 ? `linear-gradient(135deg,${T.antiqueGold},${T.goldLight})` : T.silkCream, border: `1px solid ${T.borderGold}`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 800, color: i === 0 ? T.darkBurgundy : T.taupe }}>{i + 1}</div>
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{v.initials}</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{totalSpendRaw ? Math.round((v.spend / totalSpendRaw) * 100) : 0}% share</div>
+                    <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{totalSpendRaw ? Math.round((v.spend / totalSpendRaw) * 100) : 0}% share</div>
                   </div>
                 </div>
               ))}
@@ -338,7 +341,7 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
             </div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 18 }}>Unsettled dues by vendor · current balance, not period-scoped</div>
             <div style={{ background: totalOutstanding > 0 ? T.crimsonBg : T.greenBg, borderRadius: 14, padding: "16px 18px", marginBottom: 16 }}>
-              <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, letterSpacing: "1.1px", color: T.taupe, marginBottom: 6 }}>TOTAL PAYABLE</div>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "1.1px", color: T.taupe, marginBottom: 6 }}>TOTAL PAYABLE</div>
               <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: totalOutstanding > 0 ? T.crimson : T.green, lineHeight: 1 }}>{L(totalOutstanding)}</div>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 6 }}>
                 {outstandingList.length} of {vendors.length} vendors pending settlement
@@ -354,7 +357,7 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
                   <div key={v.id}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 5 }}>
                       <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{v.name}</span>
-                      <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.crimson }}>{formatMoney(rupees(v.out))}</span>
+                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.crimson }}>{formatMoney(rupees(v.out))}</span>
                     </div>
                     <div style={{ height: 7, borderRadius: 4, background: T.silkCream, overflow: "hidden" }}>
                       <div style={{ width: `${(v.out / (outstandingList[0].out || 1)) * 100}%`, height: "100%", borderRadius: 4, background: `linear-gradient(90deg,#C0392B,#E74C3C)` }} />
@@ -398,7 +401,7 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
                   <XAxis dataKey="short" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
                   <YAxis hide />
                   <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tipStyle}
-                    formatter={(v: any, _n: any, p: any) => [L(v), p.payload.state]} />
+                    formatter={(v: number | string, _n: React.ReactNode, p: { payload: { state: string } }) => [L(Number(v)), p.payload.state]} />
                   <Bar dataKey="spend" fill={T.royalBurgundy} radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
@@ -434,7 +437,7 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
               ].map(k => (
                 <div key={k.label} style={{ background: T.silkCream, borderRadius: 10, padding: "10px 12px", border: `1px solid ${T.borderDef}` }}>
                   <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, letterSpacing: "0.5px", color: T.taupe, marginBottom: 4 }}>{k.label.toUpperCase()}</div>
-                  <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{k.value}</div>
+                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{k.value}</div>
                 </div>
               ))}
             </div>

@@ -111,7 +111,7 @@ export function ActionLogSection({
   const actionColumns: ColumnDef<ActionEntry>[] = [
     {
       id: "time", header: "Timestamp", accessor: e => e.time,
-      cell: (_v, e) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>{e.time}</span>,
+      cell: (_v, e) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>{e.time}</span>,
     },
     {
       id: "role", header: "Role", accessor: e => e.role,
@@ -119,7 +119,7 @@ export function ActionLogSection({
         <span style={{
           background: ROLE_COLORS[e.role]?.badge,
           color: ROLE_COLORS[e.role]?.text,
-          fontFamily: F.mono,
+          fontFamily: "var(--font-mono)",
           fontSize: 12,
           fontWeight: 600,
           padding: "2px 7px",
@@ -142,7 +142,7 @@ export function ActionLogSection({
           border: `1px solid ${T.borderDef}`,
           borderRadius: 6,
           padding: "2px 7px",
-          fontFamily: F.mono,
+          fontFamily: "var(--font-mono)",
           fontSize: 12,
           color: T.royalBurgundy,
           whiteSpace: "nowrap",
@@ -157,7 +157,7 @@ export function ActionLogSection({
     },
     {
       id: "record", header: "Record", accessor: e => e.record, priority: 1,
-      cell: (_v, e) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, whiteSpace: "nowrap" }}>{e.record}</span>,
+      cell: (_v, e) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy, whiteSpace: "nowrap" }}>{e.record}</span>,
     },
     {
       id: "oldVal", header: "Old Value", accessor: e => e.oldVal, priority: 3,
@@ -255,7 +255,7 @@ export function ActionLogSection({
                   flexShrink: 0,
                   zIndex: 1,
                 }}>
-                  <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: "#fff" }}>
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: "#fff" }}>
                     {ROLE_COLORS[entry.role]?.initial ?? "??"}
                   </span>
                 </div>
@@ -275,7 +275,7 @@ export function ActionLogSection({
                       <span style={{
                         background: ROLE_COLORS[entry.role]?.badge,
                         color: ROLE_COLORS[entry.role]?.text,
-                        fontFamily: F.mono,
+                        fontFamily: "var(--font-mono)",
                         fontSize: 12,
                         fontWeight: 600,
                         padding: "2px 8px",
@@ -288,7 +288,7 @@ export function ActionLogSection({
                         {entry.user}
                       </span>
                     </div>
-                    <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>
                       {entry.time}
                     </span>
                   </div>
@@ -316,13 +316,13 @@ export function ActionLogSection({
                       border: `1px solid ${T.borderDef}`,
                       borderRadius: 6,
                       padding: "2px 8px",
-                      fontFamily: F.mono,
+                      fontFamily: "var(--font-mono)",
                       fontSize: 12,
                       color: T.royalBurgundy,
                     }}>
                       {entry.module}
                     </span>
-                    <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy }}>
                       {entry.record}
                     </span>
                   </div>
@@ -370,7 +370,7 @@ export function ActionLogSection({
                 padding: "16px 18px",
                 borderTop: `1px solid ${T.borderDef}`,
               }}>
-                <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>
                   Showing {entries.length} of {total} entr{total === 1 ? "y" : "ies"}
                 </span>
                 <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
@@ -378,7 +378,7 @@ export function ActionLogSection({
                   {[1, 2, 3].map(n => (
                     <PaginationBtn key={n} active={n === 1}>{n}</PaginationBtn>
                   ))}
-                  <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, padding: "0 4px" }}>...</span>
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, padding: "0 4px" }}>...</span>
                   <PaginationBtn>60</PaginationBtn>
                   <PaginationBtn><ChevronRight size={13} /></PaginationBtn>
                 </div>

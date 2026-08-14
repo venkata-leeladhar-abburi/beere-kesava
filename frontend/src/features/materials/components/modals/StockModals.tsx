@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { motion } from "motion/react";
 import { Check, Plus, Printer, Package, ArrowRight, CheckCircle2 } from "lucide-react";
 import { T, F } from "../theme";
 import { STATUS_CFG, MAT_TAG } from "../materialConfig";
@@ -10,6 +9,7 @@ import { DatePicker, formatDate } from "../../../../shared/ui/date";
 import { useDocument } from "../../../../shared/ui/document";
 import { rupees } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
+import { fromPaise, lineAmountPaise } from "@/lib/gst";
 
 // ─── ADD NEW STOCK MODAL ──────────────────────────────────────────────────────
 export function AddNewStockModal({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -55,7 +55,7 @@ export function AddNewStockModal({ open, onClose }: { open: boolean; onClose: ()
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
             <div>
-              <label style={labelStyle}>Material Type *</label>
+              <span style={labelStyle}>Material Type *</span>
               <div style={{ display: "flex", gap: 10 }}>
                 {["Warp", "Resham", "Jari"].map(t => (
                   <Button
@@ -128,7 +128,7 @@ export function AddNewStockModal({ open, onClose }: { open: boolean; onClose: ()
               <Input type="number" value={form.pricePerKg} onChange={e => set("pricePerKg", e.target.value)} placeholder="e.g. 280" />
               {form.quantity && form.pricePerKg && (
                 <div style={{ marginTop: 8, fontFamily: F.ui, fontSize: 13, color: T.antiqueGold, fontWeight: 600 }}>
-                  Total value: <Money value={rupees(parseFloat(form.quantity) * parseFloat(form.pricePerKg))} />
+                  Total value: <Money value={rupees(fromPaise(lineAmountPaise(Number(form.pricePerKg), Number(form.quantity))))} />
                 </div>
               )}
             </Field>
@@ -260,8 +260,12 @@ export function PrintBarcodeModal({ batch, onClose }: { batch: BatchRow | null; 
         <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 18 }}>{batch.vendor} · {batch.date}</div>
 
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 2, height: 60, marginBottom: 10 }}>
+          {/* bars are purely decorative (derived char codes with no unique
+              value of their own), so pair index with the batch id to keep
+              the key stable per-batch without implying bar identity */}
           {barPattern.slice(0, 32).map((v, i) => (
-            <div key={i} style={{ width: i % 3 === 0 ? 3 : 1.5, height: `${40 + (v % 20)}%`, background: T.darkBurgundy, borderRadius: 1 }} />
+            // eslint-disable-next-line react/no-array-index-key -- decorative bars have no unique value of their own; composite with batch.id keeps this stable per batch.
+            <div key={`${batch.id}-bar-${i}`} style={{ width: i % 3 === 0 ? 3 : 1.5, height: `${40 + (v % 20)}%`, background: T.darkBurgundy, borderRadius: 1 }} />
           ))}
         </div>
 
@@ -286,8 +290,12 @@ export function PrintBarcodeModal({ batch, onClose }: { batch: BatchRow | null; 
           <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 18 }}>{batch.vendor} · {batch.date}</div>
 
           <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 2, height: 60, marginBottom: 10 }}>
+            {/* bars are purely decorative (derived char codes with no unique
+                value of their own), so pair index with the batch id to keep
+                the key stable per-batch without implying bar identity */}
             {barPattern.slice(0, 32).map((v, i) => (
-              <div key={i} style={{ width: i % 3 === 0 ? 3 : 1.5, height: `${40 + (v % 20)}%`, background: T.darkBurgundy, borderRadius: 1 }} />
+              // eslint-disable-next-line react/no-array-index-key -- decorative bars have no unique value of their own; composite with batch.id keeps this stable per batch.
+              <div key={`${batch.id}-bar-${i}`} style={{ width: i % 3 === 0 ? 3 : 1.5, height: `${40 + (v % 20)}%`, background: T.darkBurgundy, borderRadius: 1 }} />
             ))}
           </div>
 

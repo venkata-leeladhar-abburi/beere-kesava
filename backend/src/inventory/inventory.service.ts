@@ -60,7 +60,7 @@ export class InventoryService {
     if (rows.length === 0) {
       return [];
     }
-    const sareeIds = rows.map((r) => r.sareeId!) as string[];
+    const sareeIds = rows.map((r) => r.sareeId!);
 
     const [dispatched, sold, inventoryRecords] = await Promise.all([
       this.prisma.dispatchSaree.findMany({
@@ -94,7 +94,7 @@ export class InventoryService {
         return {
           sareeId: row.sareeId!,
           source,
-          status: "available" as StockStatus,
+          status: "available",
           weaverName: row.weaver
             ? `${row.weaver.firstName} ${row.weaver.lastName}`.trim()
             : null,

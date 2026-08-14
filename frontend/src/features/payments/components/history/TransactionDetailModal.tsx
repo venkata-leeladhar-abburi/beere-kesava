@@ -6,9 +6,8 @@ import { F, T } from "../../theme";
 import { PayHistRecord } from "../../types";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
-import { StatusPill } from "@/shared/ui/domain";
+import { StatusPill, EntityCode, Money } from "@/shared/ui/domain";
 import { rupees } from "@/lib/domain/money";
-import { Money } from "@/shared/ui/domain";
 import { HIST_TYPE_CFG, getHistTypeIcon } from "./HistoryCard";
 import type { PaymentStatus } from "@/lib/domain/status";
 
@@ -25,12 +24,12 @@ export function TransactionDetailModal({ record, onClose }: { record: PayHistRec
   const isReceipt = record.type === "Customer Receipt";
 
   const rows: [string, React.ReactNode][] = [
-    ["Reference", <span key="ref" style={{ fontFamily: F.mono, color: T.royalBurgundy, fontWeight: 700 }}>{record.refNo}</span>],
+    ["Reference", <EntityCode key="ref" type="payment" value={record.refNo} size="sm" />],
     ["Invoice / PO", record.invoicePO ?? "—"],
     ["Payment Mode", record.mode],
     ["Recorded By", record.recordedBy],
     ["Date", record.date],
-    ...(record.utr ? [["UTR / Reference ID", <span key="utr" style={{ fontFamily: F.mono, color: T.green, fontWeight: 700 }}>{record.utr}</span>] as [string, React.ReactNode]] : []),
+    ...(record.utr ? [["UTR / Reference ID", <span key="utr" style={{ fontFamily: F.ui, color: T.green, fontWeight: 700 }}>{record.utr}</span>] as [string, React.ReactNode]] : []),
   ];
 
   return (

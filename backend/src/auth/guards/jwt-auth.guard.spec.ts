@@ -40,7 +40,7 @@ describe("JwtAuthGuard", () => {
   it("delegates to the passport JWT strategy when the route is not public", () => {
     jest.spyOn(reflector, "getAllAndOverride").mockReturnValue(false);
 
-    guard.canActivate(buildContext());
+    void guard.canActivate(buildContext());
 
     expect(superCanActivate).toHaveBeenCalledTimes(1);
   });
@@ -48,7 +48,7 @@ describe("JwtAuthGuard", () => {
   it("delegates to the passport JWT strategy when no @Public metadata is set at all", () => {
     jest.spyOn(reflector, "getAllAndOverride").mockReturnValue(undefined);
 
-    guard.canActivate(buildContext());
+    void guard.canActivate(buildContext());
 
     expect(superCanActivate).toHaveBeenCalledTimes(1);
   });

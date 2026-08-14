@@ -133,7 +133,7 @@ export function MobileScanView({ saree }: { saree?: SareeData }) {
         fontFamily: "Inter, sans-serif",
       }}
     >
-      <div style={{ maxWidth: 375, margin: "0 auto" }}>
+      <div className="max-w-[375px]" style={{ margin: "0 auto" }}>
 
         {/* ── Top bar ── */}
         <div
@@ -190,7 +190,7 @@ export function MobileScanView({ saree }: { saree?: SareeData }) {
         >
           <span
             style={{
-              fontFamily: F.mono,
+              fontFamily: "var(--font-mono)",
               fontWeight: 700,
               fontSize: 18,
               color: T.royalBurgundy,

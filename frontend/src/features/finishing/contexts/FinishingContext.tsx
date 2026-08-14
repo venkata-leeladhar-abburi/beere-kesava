@@ -2,8 +2,8 @@ import React, { createContext, useContext, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 export * from "./finishing-types";
 import { ReadySaree, FinishingAssignment, FinishingReturn, DispatchRecord, Quotation, QuotationSaree, FinishingContextValue } from "./finishing-types";
-import { useRatesPricing } from "../../pricing/contexts/RatesContext";
-import { type SareeTypeRecord } from "../../pricing/components/RatesPricingPage";
+import { useRatesPricing } from "@/features/pricing";
+import { type SareeTypeRecord } from "@/features/pricing";
 import {
   BackendFinishingAssignment,
   BackendFinishingCondition,

@@ -1,6 +1,6 @@
 import React from "react";
 import { AlertCircle, CheckCircle2, ShieldAlert } from "lucide-react";
-import { T, F } from "./WorkerQCTypes";
+import { T } from "./WorkerQCTypes";
 import { StatsStrip, type WorkerStat } from "./primitives";
 import { Button } from "../../../../shared/ui/primitives";
 import { DateFilterBar, type DateFilterState } from "../../../../shared/ui/DateFilterBar";

@@ -6,7 +6,7 @@ import { BackendBatch, batchesApi, ReceiveBatchRowPayload } from "../../../share
 import type { BackendQcResult } from "../../../shared/api/qc";
 // Type-only: QcContext imports from this module's sibling API layer, so a
 // value import here would close a cycle at runtime.
-import type { QcResult } from "../../qc/contexts/QcContext";
+import type { QcResult } from "@/features/qc";
 import { weaversApi } from "../../../shared/api/weavers";
 import { factoryLoomsApi } from "../../../shared/api/factory-looms";
 import { ratesApi } from "../../../shared/api/rates";
@@ -287,7 +287,7 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
       toast.success("Batch saved");
     },
     onError: (err) => {
-      // eslint-disable-next-line no-console -- surface save failures instead of failing silently
+       
       console.error("Failed to save batch draft:", err);
       toast.error(err instanceof Error ? err.message : "Failed to save batch draft");
     },
@@ -315,7 +315,7 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
       void queryClient.invalidateQueries({ queryKey: ["bulkOrders"] });
     },
     onError: (err) => {
-      // eslint-disable-next-line no-console -- surface tally failures instead of failing silently
+       
       console.error("Failed to tally saree:", err);
       toast.error(err instanceof Error ? err.message : "Failed to tally saree");
     },
@@ -328,7 +328,7 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
     },
     onError: (err) => {
-      // eslint-disable-next-line no-console -- surface receive failures instead of failing silently
+       
       console.error("Failed to receive batch row:", err);
     },
   });
@@ -340,7 +340,7 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
       toast.success("Batch finalized");
     },
     onError: (err) => {
-      // eslint-disable-next-line no-console -- surface finalize failures instead of failing silently
+       
       console.error("Failed to finalize batch:", err);
       toast.error(err instanceof Error ? err.message : "Failed to finalize batch");
     },

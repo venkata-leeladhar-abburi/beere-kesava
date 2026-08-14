@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { C, F } from "./worker/tokens";
 import { useAuth } from "../../../contexts/AuthContext";
-import { useBatches } from "../../production/contexts/BatchContext";
+import { useBatches } from "@/features/production";
 import { WorkerHomeDesktop } from "./worker/WorkerHomeDesktop";
 import { WorkerWeavers } from "./worker/WorkerWeavers";
 import { WorkerQC } from "./worker/WorkerQC";
@@ -62,7 +62,7 @@ function DesktopProfile() {
         ].map((item, i, arr) => (
           <div key={item.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "13px 20px", borderBottom: i < arr.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none" }}>
             <span style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>{item.label}</span>
-            <span style={{ fontFamily: item.mono ? F.m : F.u, fontSize: 14, fontWeight: 500, color: item.mono ? C.burg : C.dark }}>{item.value}</span>
+            <span style={{ fontFamily: F.u, fontSize: 14, fontWeight: 500, color: item.mono ? C.burg : C.dark }}>{item.value}</span>
           </div>
         ))}
       </div>

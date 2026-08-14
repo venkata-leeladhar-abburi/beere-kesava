@@ -28,7 +28,7 @@ export function StatsStrip({
     }} className="grid grid-cols-1 md:grid-cols-5 mx-4 md:mx-7 xl:mx-14 px-4 md:px-7 xl:px-12 -mt-6 md:-mt-8 xl:-mt-[40px]">
       {/* Col 1 */}
       <div style={{ padding: "28px 0", borderRight: "1px solid rgba(255,255,255,0.08)" }}>
-        <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,255,255,0.45)", letterSpacing: 2, marginBottom: 8 }}>
+        <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(255,255,255,0.45)", letterSpacing: 2, marginBottom: 8 }}>
           TOTAL PENDING
         </div>
         <div style={{ fontFamily: F.display, fontSize: 38, fontWeight: 700, color: "#FFF", lineHeight: 1 }}>
@@ -41,7 +41,7 @@ export function StatsStrip({
 
       {/* Col 2 */}
       <div style={{ padding: "28px 0 28px 32px", borderRight: "1px solid rgba(255,255,255,0.08)" }}>
-        <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,255,255,0.45)", letterSpacing: 2, marginBottom: 8 }}>
+        <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(255,255,255,0.45)", letterSpacing: 2, marginBottom: 8 }}>
           PURCHASE ORDERS
         </div>
         <div style={{ fontFamily: F.display, fontSize: 38, fontWeight: 700, color: "#FFF", lineHeight: 1 }}>{poCount}</div>
@@ -52,7 +52,7 @@ export function StatsStrip({
 
       {/* Col — external purchase requests */}
       <div style={{ padding: "28px 0 28px 32px", borderRight: "1px solid rgba(255,255,255,0.08)" }}>
-        <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,255,255,0.45)", letterSpacing: 2, marginBottom: 8 }}>
+        <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(255,255,255,0.45)", letterSpacing: 2, marginBottom: 8 }}>
           EXTERNAL PURCHASES
         </div>
         <div style={{ fontFamily: F.display, fontSize: 38, fontWeight: 700, color: "#FFF", lineHeight: 1 }}>{externalCount}</div>
@@ -69,7 +69,7 @@ export function StatsStrip({
         borderTop: "3px solid " + T.antiqueGold,
         position: "relative",
       }}>
-        <div style={{ fontFamily: F.mono, fontSize: 12, color: T.goldLight, letterSpacing: 2, marginBottom: 8 }}>
+        <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.goldLight, letterSpacing: 2, marginBottom: 8 }}>
           WARP REQUESTS
         </div>
         <div style={{ fontFamily: F.display, fontSize: 38, fontWeight: 700, color: T.antiqueGold, lineHeight: 1 }}>{warpCount}</div>
@@ -80,7 +80,7 @@ export function StatsStrip({
 
       {/* Col 4 */}
       <div style={{ padding: "28px 0 28px 32px" }}>
-        <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,255,255,0.45)", letterSpacing: 2, marginBottom: 8 }}>
+        <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(255,255,255,0.45)", letterSpacing: 2, marginBottom: 8 }}>
           RATE CHANGES
         </div>
         <div style={{ fontFamily: F.display, fontSize: 38, fontWeight: 700, color: T.crimson, lineHeight: 1 }}>{rateCount}</div>

@@ -1,7 +1,10 @@
 import React from "react";
 import { AlertTriangle } from "lucide-react";
 import { BulkOrder } from "../contexts/BulkOrderContext";
+import type { OrderMoney } from "../utils/BulkOrderLinking";
 import { DataTable, type ColumnDef } from "../../../shared/ui/data";
+
+type BulkOrderPayment = OrderMoney["payments"][number];
 
 const T = {
   silkCream: "#F7F2EA",
@@ -46,21 +49,21 @@ export function BulkOrderOverviewTab({
     <div>
       <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 16, marginBottom: 24 }}>
         {[
-          { label: "Total Sarees", value: String(live.total) },
+          { label: "Total Sarees", value: String(live.total), color: undefined as string | undefined },
           { label: "Completed", value: String(producedCount), color: T.green },
           { label: "Dispatched", value: String(dispatchedCount), color: T.royalBurgundy },
           { label: "Damaged / Review", value: String(damagedCount), color: damagedCount ? T.crimson : T.green },
         ].map(s => (
           <div key={s.label} style={card}>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 8 }}>{s.label}</div>
-            <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: (s as any).color || T.luxuryBrown }}>{s.value}</div>
+            <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: s.color || T.luxuryBrown }}>{s.value}</div>
           </div>
         ))}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16, marginBottom: 16 }}>
         <div style={card}>
-          <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, letterSpacing: "1.2px", color: T.taupe, marginBottom: 14 }}>ORDER DETAILS</div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "1.2px", color: T.taupe, marginBottom: 14 }}>ORDER DETAILS</div>
           {[
             ["Saree Type", live.sareeType],
             ["Created", live.createdDate || "—"],
@@ -75,7 +78,7 @@ export function BulkOrderOverviewTab({
           ))}
         </div>
         <div style={card}>
-          <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, letterSpacing: "1.2px", color: T.taupe, marginBottom: 14 }}>DISPATCH & PAYMENT STATUS</div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "1.2px", color: T.taupe, marginBottom: 14 }}>DISPATCH & PAYMENT STATUS</div>
           {[
             ["Dispatch Status", live.dispatchStatus ?? "pending"],
             ["Dispatch Date", live.dispatchDate || "—"],
@@ -94,7 +97,7 @@ export function BulkOrderOverviewTab({
 
       {(live.notes || live.instructions) && (
         <div style={{ ...card, marginBottom: 16 }}>
-          <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, letterSpacing: "1.2px", color: T.taupe, marginBottom: 10 }}>NOTES / INSTRUCTIONS</div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "1.2px", color: T.taupe, marginBottom: 10 }}>NOTES / INSTRUCTIONS</div>
           <p style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, lineHeight: 1.65, margin: 0 }}>{live.notes || live.instructions}</p>
         </div>
       )}
@@ -113,7 +116,7 @@ interface PaymentsTabProps {
   amountDue: number;
   amountPaid: number;
   balance: number;
-  payments: any[];
+  payments: BulkOrderPayment[];
   matchedInvoice: { id: string } | null;
   inr: (n: number) => string;
 }
@@ -128,13 +131,13 @@ export function BulkOrderPaymentsTab({
 }: PaymentsTabProps) {
   const card: React.CSSProperties = { background: "#FFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, padding: "20px 22px" };
 
-  type PayRow = any & { __idx: number };
+  type PayRow = BulkOrderPayment & { __idx: number };
   const rows: PayRow[] = payments.map((p, i) => ({ ...p, __idx: i }));
 
   const columns: ColumnDef<PayRow>[] = [
     {
       id: "amount", header: "Amount", accessor: p => p.amount,
-      cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.greenMid }}>{inr(p.amount)}</span>,
+      cell: (_v, p) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, color: T.greenMid }}>{inr(p.amount)}</span>,
     },
     {
       id: "date", header: "Date", accessor: p => p.date,
@@ -146,7 +149,7 @@ export function BulkOrderPaymentsTab({
     },
     {
       id: "utr", header: "UTR / Reference", accessor: p => p.utr, priority: 1,
-      cell: (_v, p) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{p.utr}</span>,
+      cell: (_v, p) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{p.utr}</span>,
     },
     {
       id: "firm", header: "Firm", accessor: p => p.firmName, priority: 3,

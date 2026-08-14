@@ -5,7 +5,7 @@
 // pulled out here — used by both InventoryPage and the bulk order detail page —
 // to keep them from silently drifting apart.
 import type { BulkOrder } from "../contexts/BulkOrderContext";
-import type { ReadySaree, FinishingReturn, Quotation } from "../../finishing/contexts/finishing-types";
+import type { ReadySaree, FinishingReturn, Quotation } from "@/features/finishing";
 
 /** Invoice shape this module needs — kept structural so PaymentsPage stays uncoupled. */
 interface InvoiceLike {

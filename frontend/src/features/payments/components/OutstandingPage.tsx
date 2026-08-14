@@ -3,10 +3,9 @@ import { motion } from "motion/react";
 import {
   AlertTriangle, Factory, Layers, Truck, TrendingUp, Users, Package, ShoppingBag,
 } from "lucide-react";
-import { useSales, isOutstanding } from "../../customers/contexts/SalesContext";
+import { useSales, isOutstanding } from "@/features/customers";
 import type { IconComponent } from "../../../lib/icon";
 import { T, F } from "../theme";
-import { Button } from "../../../shared/ui/primitives";
 import type { AgeKey } from "./outstanding/primitives";
 import { FilterBar } from "./outstanding/FilterBar";
 import { InHouseOutstanding } from "./outstanding/InHouseOutstanding";

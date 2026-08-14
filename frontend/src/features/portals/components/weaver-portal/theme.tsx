@@ -1,31 +1,14 @@
 
+import React, { useState } from "react";
+import { motion } from "motion/react";
 import { brand, fonts, semantic } from '@/design-system/tokens';
-import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { useLocation, useNavigate } from "react-router";
-import { createPortal } from "react-dom";
-import * as Dialog from "@radix-ui/react-dialog";
-import { useResponsive } from "../../../../hooks/useResponsive";
+import { Palette, X, Layers, Flower2 } from "lucide-react";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
+import * as Dialog from "@radix-ui/react-dialog";
 import { Modal } from "../../../../shared/ui/overlay";
-import { useBatches, SareeRow } from "../../../production/contexts/BatchContext";
-import { useDesignLibrary, DesignEntry } from "../../../design-library/contexts/DesignLibraryContext";
-import { DesignCodeCard } from "../../../design-library/components/DesignLibraryPage";
-import { useMaterialIssue, MaterialIssueRecord, JARI_REEL_GRAMS } from "../../../materials/contexts/MaterialIssueContext";
-import { useWeaverPayments } from "../../../weavers/contexts/WeaverPaymentsContext";
-import { useAuth } from "../../../../contexts/AuthContext";
-import { rupees } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
-import { motion, AnimatePresence, useInView } from "motion/react";
-import {
-  Bell, ClipboardList, CheckSquare, Palette, ArrowUpRight,
-  Wallet, Shield, Send, ChevronRight, X, ChevronLeft,
-  Package, Check, Eye, LogOut, Search, RotateCcw,
-  AlertCircle, Clock, Flower2, Layers, Info, Pencil,
-  Scissors, LayoutGrid, CreditCard, ClipboardCheck,
-  TrendingUp, ArrowRight, Sparkles, UserRound,
-  CheckCircle2, History, ListChecks,
-  AlertTriangle, Inbox, Zap,
-} from "lucide-react";
+import { rupees } from "@/lib/domain/money";
+import { useDesignLibrary } from "@/features/design-library";
 import { MaterialHistoryCard, SignatureCanvas } from "./WeaverMaterialHistoryCard";
 import {
   MobileBatchCard, CompletedBatchCard, BATCH_QUICK_FILTERS, BatchQuickFilterPills
@@ -35,7 +18,6 @@ import {
   WN_T, WN_G, WN_EASE, WN_NUM, WN_DATA, WN_PRIORITY, WN_CATEGORY, WN_FILTERS, WNFadeUp,
   BatchCard, FadeUpBatch, BG_IMAGE, FABRIC_BG,
 } from "./WeaverBatchNotifData";
-import type { WeaverBatch } from "./WeaverBatchNotifData";
 export type { WNPriority, WNCategory, WNFilter, WeaverNotif, WeaverBatch } from "./WeaverBatchNotifData";
 export { SignatureCanvas };
 
@@ -128,8 +110,9 @@ function DesignDetailCard({ designCode, onClose }: { designCode: string; onClose
 
         {d?.designGraph && (
           <div style={{ background: "#FAFAF8", border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "10px 12px", marginBottom: 10 }}>
-            <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 6 }}>DESIGN GRAPH DRAWING</div>
-            <img src={d.designGraph} alt="Design Graph Drawing" style={{ width: "100%", maxHeight: 120, objectFit: "cover", borderRadius: 8, cursor: "pointer", border: `1px solid ${C.bdr}` }} onClick={() => setShowGraphModal(true)} />
+            <button type="button" onClick={() => setShowGraphModal(true)} style={{ display: "block", width: "100%", padding: 0, border: "none", background: "transparent", cursor: "pointer", borderRadius: 8 }}>
+              <img src={d.designGraph} alt="Design Graph Drawing" style={{ width: "100%", maxHeight: 120, objectFit: "cover", borderRadius: 8, border: `1px solid ${C.bdr}` }} />
+            </button>
           </div>
         )}
 

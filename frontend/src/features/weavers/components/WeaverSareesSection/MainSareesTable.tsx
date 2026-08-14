@@ -1,6 +1,6 @@
 import React from "react";
 import { Pagination, UsePaginationReturn } from "../../../../shared/ui/DataPagination";
-import { ageBucket } from "../../../customers/contexts/SalesContext";
+import { ageBucket } from "@/features/customers";
 import { T, F } from "./theme";
 import { WeaverSareeRow, TabKey, tabDate } from "./types";
 import { inr, fmtDate, AGE_COLOR, QC_CFG, FIN_CFG } from "./utils";
@@ -50,7 +50,7 @@ export function MainSareesTable({
   pageRows, visible, selectable, requireFinishingComplete = true, selectedIds, onToggleAll, onToggleRow,
   isAll, isLoom, tab, dateHeader, showQcMoney, showMoney, pag
 }: MainSareesTableProps) {
-  const mono = (color: string, extra?: React.CSSProperties): React.CSSProperties => ({ fontFamily: F.mono, fontSize: 12, color, ...extra });
+  const mono = (color: string, extra?: React.CSSProperties): React.CSSProperties => ({ fontFamily: "var(--font-mono)", fontSize: 12, color, ...extra });
   const isPickable = (r: WeaverSareeRow) =>
     (requireFinishingComplete ? r.finishingStatus === "completed" : r.finishingStatus === "completed" || r.qcStatus === "passed")
     && !r.dispatched;

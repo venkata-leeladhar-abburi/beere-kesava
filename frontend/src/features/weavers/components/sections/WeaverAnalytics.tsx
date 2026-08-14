@@ -217,9 +217,9 @@ export function WeaverAnalytics() {
                   <ResponsiveContainer width="100%" height={172}>
                     <PieChart>
                       <Pie data={statusMix} dataKey="value" cx="50%" cy="50%" innerRadius={54} outerRadius={78} paddingAngle={3} stroke="none">
-                        {statusMix.map((d, i) => <Cell key={i} fill={d.color} />)}
+                        {statusMix.map((d) => <Cell key={d.name} fill={d.color} />)}
                       </Pie>
-                      <RechartsTooltip contentStyle={tip} formatter={(v: any) => [`${v} weavers`]} />
+                      <RechartsTooltip contentStyle={tip} formatter={(v: number) => [`${v} weavers`]} />
                     </PieChart>
                   </ResponsiveContainer>
                   <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
@@ -234,13 +234,13 @@ export function WeaverAnalytics() {
                         <div style={{ width: 10, height: 10, borderRadius: 3, background: d.color }} />
                         <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{d.name}</span>
                       </div>
-                      <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{d.value}</span>
+                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{d.value}</span>
                     </div>
                   ))}
                 </div>
                 <div style={{ borderTop: `1px solid ${T.borderDef}`, marginTop: 14, paddingTop: 14, display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
                   <span>Looms engaged</span>
-                  <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.luxuryBrown }}>{totalLooms}</span>
+                  <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: T.luxuryBrown }}>{totalLooms}</span>
                 </div>
               </div>
             </div>
@@ -273,7 +273,7 @@ export function WeaverAnalytics() {
                       <div key={w.id}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
                           <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis", maxWidth: 130 }}>{w.name}</span>
-                          <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: tier.color, flexShrink: 0 }}>{w.produced} sarees · {w.periodPassRate}%</span>
+                          <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: tier.color, flexShrink: 0 }}>{w.produced} sarees · {w.periodPassRate}%</span>
                         </div>
                         <div style={{ height: 9, borderRadius: 5, background: "rgba(110,15,45,0.06)", overflow: "hidden" }}>
                           <div style={{ width: `${pct}%`, height: "100%", borderRadius: 5, background: tier.color }} />
@@ -309,10 +309,10 @@ export function WeaverAnalytics() {
                   <ResponsiveContainer width="100%" height={210}>
                     <BarChart data={loomProductivity} barSize={20} margin={{ top: 14, left: -18, right: 6 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="rgba(110,15,45,0.06)" vertical={false} />
-                      <XAxis dataKey="short" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
+                      <XAxis dataKey="short" tick={{ fontFamily: "var(--font-mono)", fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
                       <YAxis tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={34} />
                       <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
-                        formatter={(v: any, _n: any, p: any) => [`${v} per loom · ${p.payload.looms} looms`, p.payload.name]} />
+                        formatter={(v: number, _n: string, p: { payload: (typeof loomProductivity)[number] }) => [`${v} per loom · ${p.payload.looms} looms`, p.payload.name]} />
                       <Bar dataKey="perLoomR" radius={[5, 5, 0, 0]}>
                         {loomProductivity.map(w => <Cell key={w.id} fill={w.perLoom >= avgPerLoom ? semantic.chart.series[0] : semantic.chart.series[1]} />)}
                       </Bar>
@@ -350,7 +350,7 @@ export function WeaverAnalytics() {
                   ].map(k => (
                     <div key={k.label} style={{ background: T.silkCream, borderRadius: 10, padding: "10px 12px", border: `1px solid ${T.borderDef}` }}>
                       <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, letterSpacing: "0.5px", color: T.taupe, marginBottom: 4, textTransform: "uppercase" as const }}>{k.label}</div>
-                      <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{k.value}</div>
+                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{k.value}</div>
                     </div>
                   ))}
                 </div>

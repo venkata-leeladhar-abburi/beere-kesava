@@ -1,10 +1,10 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { Check, Info, Send, Shield, Package } from "lucide-react";
 import { C, F, BG_IMAGE } from "../theme";
 import { SectionHeading } from "@/shared/ui/portal/PortalChrome";
 import { DesktopHero } from "./DesktopHero";
 import { Button, Input, Textarea } from "../../../../../shared/ui/primitives";
-import { useBatches } from "../../../../production/contexts/BatchContext";
+import { useBatches } from "@/features/production";
 import { useCurrentWeaver } from "../useCurrentWeaver";
 import { useAuth } from "../../../../../contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -39,17 +39,17 @@ export function WarpSection({
 
   const identityBadge = user?.name ? (weaverCode ? `${user.name} · ${weaverCode}` : user.name) : "—";
 
-  const isMyRow = (r: { weaverId?: string | null }) => {
+  const isMyRow = useCallback((r: { weaverId?: string | null }) => {
     if (!r.weaverId) return false;
     return r.weaverId === weaverId || (weaver && (r.weaverId === weaver.id || r.weaverId === weaver.code));
-  };
+  }, [weaverId, weaver]);
 
   const myBatches = useMemo(() => {
     return batches
       .filter(b => b.status !== "draft")
       .map(b => ({ ...b, myRows: b.rows.filter(isMyRow) }))
       .filter(b => b.myRows.length > 0 && b.status !== "completed");
-  }, [batches, weaverId, weaver]);
+  }, [batches, isMyRow]);
 
   const [selectedBatchId, setSelectedBatchId] = useState<string | null>(null);
   const activeBatchId = selectedBatchId ?? myBatches[0]?.batchId ?? null;
@@ -94,6 +94,7 @@ export function WarpSection({
         warpRequestsApi.create({
           weaverId,
           warpType: MATERIAL_TO_WARP_TYPE[mat],
+          // eslint-disable-next-line no-restricted-syntax -- length in meters, not money
           lengthMeters: parseFloat(amounts[mat]) || 0,
           notes: reason || undefined,
         }),
@@ -163,7 +164,7 @@ export function WarpSection({
         )}
 
         {warpSubmitted ? (
-          <div style={{ maxWidth: 600, margin: "0 auto", textAlign: "center" as const, padding: "60px 48px", background: "#FFF", borderRadius: 24, border: `1px solid ${C.bdr}`, boxShadow: "0 4px 32px rgba(44,24,16,0.10)" }}>
+          <div style={{ maxWidth: "600px", margin: "0 auto", textAlign: "center" as const, padding: "60px 48px", background: "#FFF", borderRadius: 24, border: `1px solid ${C.bdr}`, boxShadow: "0 4px 32px rgba(44,24,16,0.10)" }}>
             <div style={{ width: 96, height: 96, borderRadius: "50%", background: "rgba(30,102,64,0.12)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 28px" }}>
               <Check size={52} color={C.green} />
             </div>
@@ -224,16 +225,16 @@ export function WarpSection({
 
                 {(["warp", "resham", "jari"] as const).filter(m => materials[m]).map(mat => (
                   <div key={mat} style={{ marginBottom: 20 }}>
-                    <label style={{ display: "block", fontFamily: F.u, fontWeight: 600, fontSize: 16, color: C.text, marginBottom: 10 }}>
+                    <span style={{ display: "block", fontFamily: F.u, fontWeight: 600, fontSize: 16, color: C.text, marginBottom: 10 }}>
                       {mat === "warp" ? "Warp amount (kg):" : mat === "resham" ? "Resham amount and color:" : "Jari amount (reels):"}
-                    </label>
+                    </span>
                     <Input value={amounts[mat]} onChange={e => setAmounts(a => ({ ...a, [mat]: e.target.value }))} placeholder={mat === "warp" ? "e.g. 3 kg" : mat === "resham" ? "e.g. 500g Red" : "e.g. 4 reels"}
                       size="lg" className="font-mono" containerClassName="rounded-xl h-14" />
                   </div>
                 ))}
 
                 <div>
-                  <label style={{ display: "block", fontFamily: F.u, fontWeight: 600, fontSize: 16, color: C.text, marginBottom: 10 }}>Why do you need more material?</label>
+                  <span style={{ display: "block", fontFamily: F.u, fontWeight: 600, fontSize: 16, color: C.text, marginBottom: 10 }}>Why do you need more material?</span>
                   <Textarea value={reason} onChange={e => setReason(e.target.value)} placeholder="Example: Extra sarees needed for a large order" rows={3}
                     className="rounded-[14px] min-h-[110px] resize-none text-base" />
                 </div>

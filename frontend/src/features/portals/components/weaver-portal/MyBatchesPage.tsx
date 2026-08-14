@@ -1,34 +1,22 @@
 
-import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { useLocation, useNavigate } from "react-router";
-import { createPortal } from "react-dom";
+import React, { useState, useMemo } from "react";
 import { useResponsive } from "../../../../hooks/useResponsive";
-import { useBatches, SareeRow } from "../../../production/contexts/BatchContext";
-import { useDesignLibrary, DesignEntry } from "../../../design-library/contexts/DesignLibraryContext";
-import { DesignCodeCard } from "../../../design-library/components/DesignLibraryPage";
-import { useMaterialIssue, MaterialIssueRecord, JARI_REEL_GRAMS } from "../../../materials/contexts/MaterialIssueContext";
-import { useWeaverPayments } from "../../../weavers/contexts/WeaverPaymentsContext";
-import { useAuth } from "../../../../contexts/AuthContext";
+import { useBatches } from "@/features/production";
+import { useWeaverPayments } from "@/features/weavers";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
 import { useCurrentWeaver } from "./useCurrentWeaver";
 import { GeneralDispatchInstructionsBlock } from "./desktop/batchCardHelpers";
-import { motion, AnimatePresence, useInView } from "motion/react";
 import {
-  Bell, ClipboardList, CheckSquare, Palette, ArrowUpRight,
-  Wallet, Shield, Send, ChevronRight, X, ChevronLeft,
-  Package, Check, Eye, LogOut, Search, RotateCcw,
-  AlertCircle, Clock, Flower2, Layers, Info, Pencil,
-  Scissors, LayoutGrid, CreditCard, ClipboardCheck,
-  TrendingUp, ArrowRight, Sparkles, UserRound,
-  CheckCircle2, History, ListChecks,
-  AlertTriangle, Inbox, Zap,
+  Package, RotateCcw,
+  Layers,
+  CheckCircle2,
+  AlertTriangle,
 } from "lucide-react";
-import { imgBKLogo } from "../../../../shared/constants/weaverImages";
 
 // ─── Design Tokens ─────────────────────────────────────────────────────────
 import {
-  C, F, SAREE_TYPE_RATES, DesignDetailCard, SareeTypeDetailCard, SectionTitle, Card, ProgressBar, StatusBadge, SignatureCanvas, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid, MobileBatchCard, CompletedBatchCard, BATCH_QUICK_FILTERS, BatchQuickFilterPills, WN_T, WN_G, WN_EASE, WN_NUM, WN_DATA, WN_PRIORITY, WN_CATEGORY, WN_FILTERS, WNFadeUp, BatchCard, FadeUpBatch, BG_IMAGE, FABRIC_BG, BatchQuickFilter, MyBatchEntry
+  C, F, SectionTitle, HeroHeader, MobileBatchCard, CompletedBatchCard, BatchQuickFilterPills, BatchQuickFilter, MyBatchEntry
 } from './theme';
 
 
@@ -86,7 +74,7 @@ export function MyBatchesPage() {
           deduction: 450,
         }))
     );
-  }, [batches]);
+  }, [batches, weaverId]);
 
   // Semi-approved at QC and sent back — not produced, and waiting to be
   // reworked and handed in again so it can be received a second time.
@@ -197,7 +185,7 @@ export function MyBatchesPage() {
         return (
       <div style={{ background: C.dark, borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex" }}>
         {statsData.map((s, i) => (
-          <div key={i} style={{
+          <div key={s.label} style={{
             flex: 1, padding: "16px 10px", textAlign: "center" as const,
             borderRight: i < 2 ? "1px solid rgba(255,255,255,0.08)" : "none",
           }}>

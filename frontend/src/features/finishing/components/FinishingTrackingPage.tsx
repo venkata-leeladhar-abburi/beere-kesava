@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Users, ClipboardList, Clock, CheckCircle2, AlertTriangle, FileText } from "lucide-react";
-import { useFinishing, FinishingAssignment, FinishingReturn } from "../contexts/FinishingContext";
+import { useFinishing, FinishingAssignment } from "../contexts/FinishingContext";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
 import { Button, SearchInput } from "../../../shared/ui/primitives";
 import { FinishingQuotationsSection } from "./FinishingQuotationsSection";
@@ -20,19 +20,6 @@ const F = {
   ui:      "'Inter', sans-serif",
   mono:    "'JetBrains Mono', monospace",
 };
-const G = { card: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)" };
-
-function StatChip({ label, value, tone = "plain" }: { label: string; value: string; tone?: "plain" | "gold" | "green" | "red" }) {
-  const c = tone === "gold" ? T.antiqueGold : tone === "green" ? "#6DCE9A" : tone === "red" ? "#F0857D" : "#FFFDF9";
-  const bg = tone === "gold" ? "rgba(200,155,71,0.18)" : tone === "green" ? "rgba(30,102,64,0.20)" : tone === "red" ? "rgba(224,82,82,0.18)" : "rgba(255,253,249,0.10)";
-  const bd = tone === "gold" ? "rgba(200,155,71,0.38)" : tone === "green" ? "rgba(30,102,64,0.35)" : tone === "red" ? "rgba(224,82,82,0.35)" : "rgba(255,253,249,0.15)";
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: 10, background: bg, border: `1px solid ${bd}`, borderRadius: 99, padding: "9px 18px" }}>
-      <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: c }}>{value}</span>
-      <span style={{ fontFamily: F.ui, fontSize: 12, color: tone === "plain" ? "rgba(255,253,249,0.68)" : c }}>{label}</span>
-    </div>
-  );
-}
 
 function parseDMY(s: string): number {
   const t = Date.parse(s);
@@ -113,7 +100,7 @@ export function FinishingTrackingPage() {
       {/* HERO */}
       <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", minHeight: 380, display: "flex", alignItems: "center" }}>
         <div className="pl-4 md:pl-7 xl:pl-12 w-full xl:w-auto" style={{ position: "relative", zIndex: 2, paddingTop: 48, paddingBottom: 110, flex: "0 0 100%", maxWidth: "100%" }}>
-          <div style={{ fontFamily: F.mono, fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase", marginBottom: 12 }}>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase", marginBottom: 12 }}>
             PRODUCTION · FINISHING
           </div>
           <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
@@ -121,7 +108,7 @@ export function FinishingTrackingPage() {
               Finishing Assignment &amp; Receiving
             </h1>
           </div>
-          <p style={{ fontFamily: F.ui, fontSize: "clamp(15px, 3.5vw, 18px)", color: "rgba(255,253,249,0.70)", margin: 0, lineHeight: 1.6, maxWidth: 600 }}>
+          <p className="max-w-[600px]" style={{ fontFamily: F.ui, fontSize: "clamp(15px, 3.5vw, 18px)", color: "rgba(255,253,249,0.70)", margin: 0, lineHeight: 1.6 }}>
             Every saree sent to finishing staff, who assigned it, and what came back — plus every bulk-order
             quotation routed through finishing. The same tracking Worker Staff sees, visible here for admin and superadmin.
           </p>
@@ -196,7 +183,7 @@ export function FinishingTrackingPage() {
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: "auto", background: T.warmCream, borderRadius: 10, padding: "8px 14px" }}>
               <Users size={15} color={T.taupe} />
-              <span style={{ fontFamily: F.mono, fontSize: 13, color: T.taupe, fontWeight: 600 }}>{filteredRows.length} finishing staff</span>
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.taupe, fontWeight: 600 }}>{filteredRows.length} finishing staff</span>
             </div>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import { T } from "./theme";
-import type { QcResult } from "../../../qc/contexts/QcContext";
+import type { QcResult } from "@/features/qc";
 import { FinishingStatus } from "./types";
 import { formatMoney, rupees } from "../../../../lib/domain/money";
 

@@ -4,7 +4,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { X as LucideX } from "lucide-react";
 import { BulkOrder } from "../contexts/BulkOrderContext";
 import { WholesaleCustomerSelectSection, useAllWholesaleCustomers } from "./WholesaleCustomerSelectSection";
-import { Button, IconButton, Field, Input, NumberInput, Textarea } from "../../../shared/ui/primitives";
+import { Button, IconButton, Field, Input, Textarea } from "../../../shared/ui/primitives";
 import { Modal } from "../../../shared/ui/overlay";
 import { DatePicker, formatDate } from "../../../shared/ui/date";
 
@@ -122,14 +122,13 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
   };
 
   const today = new Date();
-  const minDate = today.toISOString().split("T")[0];
 
   const labelStyle: React.CSSProperties = {
     fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, marginBottom: 6, display: "block",
   };
 
   const sectionLabel: React.CSSProperties = {
-    fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.taupe,
+    fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.taupe,
     textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: 16,
     paddingBottom: 8, borderBottom: `1px solid ${T.borderDef}`,
   };
@@ -149,7 +148,7 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
                     Create Bulk Order
                   </div>
                 </Dialog.Title>
-                <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, marginTop: 4 }}>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.antiqueGold, marginTop: 4 }}>
                   New wholesale customer order · {nextRef}
                 </div>
               </div>
@@ -184,7 +183,7 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
                 <div style={sectionLabel}>2 · Order Details</div>
                 <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
                   <div style={{ gridColumn: "1 / -1" }}>
-                    <label style={labelStyle}>Order Photos (Multiple allowed)</label>
+                    <label style={labelStyle} htmlFor="bulk-order-photos-upload">Order Photos (Multiple allowed)</label>
                     <div style={{ border: `1.5px dashed ${T.borderDef}`, borderRadius: 12, padding: "14px 16px", background: T.warmIvory, display: "flex", flexDirection: "column", gap: 12 }}>
                       <Input
                         type="file"
@@ -199,8 +198,8 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
                       />
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
                         {photos.map((file, idx) => (
-                          <div key={idx} style={{ position: "relative", width: 72, height: 72, borderRadius: 10, overflow: "hidden", border: `1px solid ${T.borderDef}` }}>
-                            <img src={URL.createObjectURL(file)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          <div key={`${file.name}-${file.size}-${file.lastModified}`} style={{ position: "relative", width: 72, height: 72, borderRadius: 10, overflow: "hidden", border: `1px solid ${T.borderDef}` }}>
+                            <img src={URL.createObjectURL(file)} alt={file.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                             <span style={{ position: "absolute", top: 4, right: 4, width: 18, height: 18, borderRadius: "50%", background: "rgba(61,14,26,0.8)", color: "#FFF", display: "inline-flex" }}>
                               <IconButton
                                 type="button"
@@ -242,7 +241,7 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
                   </Field>
 
                   <div style={{ gridColumn: "1 / -1" }}>
-                    <Field label="Estimated Value (₹)" id="estimated-value">
+                    <Field label="Estimated Value (INR)" id="estimated-value">
                       <Input id="estimated-value"
                         type="number"
                         min="0"
@@ -268,8 +267,8 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
                     />
                   </Field>
                   <div>
-                    <label style={labelStyle}>Priority</label>
-                    <div style={{ display: "flex", gap: 16 }}>
+                    <div style={labelStyle}>Priority</div>
+                    <div role="group" aria-label="Priority" style={{ display: "flex", gap: 16 }}>
                       {(["Normal", "Urgent"] as const).map(p => (
                         <Button
                           key={p}

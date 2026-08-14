@@ -1,47 +1,34 @@
 
-import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { useLocation, useNavigate } from "react-router";
-import { createPortal } from "react-dom";
+import React, { useMemo } from "react";
 import { useResponsive } from "../../../../hooks/useResponsive";
-import { useBatches, SareeRow } from "../../../production/contexts/BatchContext";
-import { useDesignLibrary, DesignEntry } from "../../../design-library/contexts/DesignLibraryContext";
-import { DesignCodeCard } from "../../../design-library/components/DesignLibraryPage";
-import { useMaterialIssue, MaterialIssueRecord, JARI_REEL_GRAMS } from "../../../materials/contexts/MaterialIssueContext";
-import { useWeaverPayments } from "../../../weavers/contexts/WeaverPaymentsContext";
-import { useAuth } from "../../../../contexts/AuthContext";
+import { useBatches } from "@/features/production";
+import { useWeaverPayments } from "@/features/weavers";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
 import { useCurrentWeaver } from "./useCurrentWeaver";
-import { motion, AnimatePresence, useInView } from "motion/react";
 import {
-  Bell, ClipboardList, CheckSquare, Palette, ArrowUpRight,
-  Wallet, Shield, Send, ChevronRight, X, ChevronLeft,
-  Package, Check, Eye, LogOut, Search, RotateCcw,
-  AlertCircle, Clock, Flower2, Layers, Info, Pencil,
-  Scissors, LayoutGrid, CreditCard, ClipboardCheck,
-  TrendingUp, ArrowRight, Sparkles, UserRound,
-  CheckCircle2, History, ListChecks,
-  AlertTriangle, Inbox, Zap,
+  Check,
+  AlertTriangle,
+  Clock,
 } from "lucide-react";
-import { imgBKLogo } from "../../../../shared/constants/weaverImages";
 
 // ─── Design Tokens ─────────────────────────────────────────────────────────
 import {
-  C, F, SAREE_TYPE_RATES, DesignDetailCard, SareeTypeDetailCard, SectionTitle, Card, ProgressBar, StatusBadge, SignatureCanvas, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid, MobileBatchCard, CompletedBatchCard, BATCH_QUICK_FILTERS, BatchQuickFilterPills, WN_T, WN_G, WN_EASE, WN_NUM, WN_DATA, WN_PRIORITY, WN_CATEGORY, WN_FILTERS, WNFadeUp, BatchCard, FadeUpBatch, BG_IMAGE, FABRIC_BG
+  C, F, SectionTitle, Card, HeroHeader
 } from './theme';
 
 
-import { useQc } from "../../../qc/contexts/QcContext";
+import { useQc } from "@/features/qc";
 
 export function PaymentLedgerPage() {
   const { isMobile } = useResponsive();
   const { getPaymentsForWeaver } = useWeaverPayments();
   const { getQcForWeaver } = useQc();
-  const { batches } = useBatches();
-  const { weaver, weaverId, isLoading: weaverLoading, isError: weaverError } = useCurrentWeaver();
+  useBatches();
+  const { weaverId, isLoading: weaverLoading, isError: weaverError } = useCurrentWeaver();
 
-  const myPayments = weaverId ? getPaymentsForWeaver(weaverId) : [];
-  const weaverQcRecords = weaverId ? getQcForWeaver(weaverId) : [];
+  const myPayments = useMemo(() => (weaverId ? getPaymentsForWeaver(weaverId) : []), [weaverId, getPaymentsForWeaver]);
+  const weaverQcRecords = useMemo(() => (weaverId ? getQcForWeaver(weaverId) : []), [weaverId, getQcForWeaver]);
 
   const now = useMemo(() => new Date(), []);
   const currentMonthLabel = now.toLocaleDateString("en-IN", { month: "long", year: "numeric" });
@@ -137,7 +124,7 @@ export function PaymentLedgerPage() {
             { label: "Gross Making Charges:", value: fmtAmt(grossChargesVal), color: C.gold, size: 26, fw: 700 },
             { label: "Total Deductions:", value: fmtAmt(deductionsVal), color: C.crim, size: 18, fw: 600 },
           ].map((row, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, marginBottom: 14, paddingBottom: i < 2 ? 14 : 0, borderBottom: i < 2 ? `1px solid ${C.bdr}` : "none" }}>
+            <div key={row.label} style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, marginBottom: 14, paddingBottom: i < 2 ? 14 : 0, borderBottom: i < 2 ? `1px solid ${C.bdr}` : "none" }}>
               <span style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>{row.label}</span>
               <span style={{ fontFamily: F.d, fontWeight: row.fw, fontSize: row.size, color: row.color, textAlign: "right" as const }}>{row.value}</span>
             </div>
@@ -166,20 +153,20 @@ export function PaymentLedgerPage() {
               <div style={{ fontFamily: F.m, fontSize: 12, color: C.green, letterSpacing: "1.5px", textTransform: "uppercase" as const, marginBottom: 12 }}>Payment Details</div>
               <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: "14px 16px" }}>
                 {[
-                  { label: "Amount Credited", value: fmtAmt(currentPayment.amountPaid), mono: true },
-                  { label: "Payment Date",    value: currentPayment.paymentDate,          mono: false },
-                  { label: "UTR Number",      value: currentPayment.utrNumber,            mono: true },
-                  { label: "Paid By",         value: currentPayment.firmName,             mono: false },
+                  { label: "Amount Credited", value: fmtAmt(currentPayment.amountPaid) },
+                  { label: "Payment Date",    value: currentPayment.paymentDate },
+                  { label: "UTR Number",      value: currentPayment.utrNumber },
+                  { label: "Paid By",         value: currentPayment.firmName },
                   ...(currentPayment.batchNo ? [
-                    { label: "Batch No",      value: currentPayment.batchNo,              mono: true },
-                    { label: "Loom Number",   value: `Loom ${currentPayment.loomNumber}`,  mono: false },
-                    { label: "No of Sarees",  value: `${currentPayment.noOfSarees} sarees`, mono: true },
-                    { label: "Deduction",     value: fmtAmt(currentPayment.deduction ?? 0),mono: true },
+                    { label: "Batch No",      value: currentPayment.batchNo },
+                    { label: "Loom Number",   value: `Loom ${currentPayment.loomNumber}` },
+                    { label: "No of Sarees",  value: `${currentPayment.noOfSarees} sarees` },
+                    { label: "Deduction",     value: fmtAmt(currentPayment.deduction ?? 0) },
                   ] : [])
                 ].map(f => (
                   <div key={f.label}>
                     <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 4 }}>{f.label}</div>
-                    <div style={{ fontFamily: f.mono ? F.m : F.u, fontSize: 14, fontWeight: 600, color: C.text, wordBreak: "break-all" as const }}>{f.value}</div>
+                    <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: C.text, wordBreak: "break-all" as const }}>{f.value}</div>
                   </div>
                 ))}
               </div>
@@ -193,7 +180,7 @@ export function PaymentLedgerPage() {
         <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.45)", letterSpacing: 1.2, textTransform: "uppercase" as const, marginBottom: 10 }}>This Month's Payout</div>
         <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 38, color: C.gold, lineHeight: 1, marginBottom: 8 }}>{fmtAmt(netAmountVal)}</div>
         <div style={{ fontFamily: F.u, fontSize: 14, color: "rgba(255,255,255,0.60)", marginBottom: 16 }}>Net amount after deductions</div>
-        <div style={{ display: "inline-block", background: "rgba(200,155,71,0.22)", border: `1px solid ${C.gold}`, borderRadius: 999, padding: "7px 16px", fontFamily: F.m, fontSize: 12, color: C.gold }}>
+        <div style={{ display: "inline-block", background: "rgba(200,155,71,0.22)", border: `1px solid ${C.gold}`, borderRadius: 999, padding: "7px 16px", fontFamily: F.u, fontSize: 12, color: C.gold }}>
           Payment by end of {currentMonthLabel}
         </div>
       </div>
@@ -202,8 +189,8 @@ export function PaymentLedgerPage() {
       <SectionTitle title="Deductions Applied This Month" />
       <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, margin: "-4px 20px 12px", lineHeight: 1.5 }}>These are the amounts deducted from your gross making charges.</div>
 
-      {failedSarees.map((ds, idx) => (
-        <div key={idx} style={{ margin: "0 20px 12px", background: C.white, border: `1px solid ${C.bdr}`, borderLeft: `3px solid ${C.crim}`, borderRadius: 14, padding: "16px 18px" }}>
+      {failedSarees.map((ds) => (
+        <div key={ds.sareeId} style={{ margin: "0 20px 12px", background: C.white, border: `1px solid ${C.bdr}`, borderLeft: `3px solid ${C.crim}`, borderRadius: 14, padding: "16px 18px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 10 }}>
             <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.crim }}>Defective Saree Deduction</span>
             <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 18, color: C.crim, flexShrink: 0 }}><Money value={rupees(ds.deduction)} /></span>
@@ -245,13 +232,13 @@ export function PaymentLedgerPage() {
           <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>No payments recorded yet.</div>
         </Card>
       ) : isMobile ? (
-        myPayments.map((rec, i) => {
+        myPayments.map((rec, _i) => {
           const p = {
             month: new Date(rec.paymentDate || rec.uploadedAt).toLocaleDateString("en-IN", { month: "short", year: "numeric" }),
             sarees: `${rec.noOfSarees ?? 0} sarees`,
           };
           return (
-            <div key={i} style={{ margin: "0 20px 10px", background: C.white, border: `1px solid ${C.bdr}`, borderLeft: `3px solid ${C.green}`, borderRadius: 14, padding: "16px 18px" }}>
+            <div key={rec.id} style={{ margin: "0 20px 10px", background: C.white, border: `1px solid ${C.bdr}`, borderLeft: `3px solid ${C.green}`, borderRadius: 14, padding: "16px 18px" }}>
               <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
                 <div>
                   <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 16, color: C.text }}>{p.month}</div>
@@ -304,7 +291,7 @@ export function PaymentLedgerPage() {
         })
       ) : (
         <div style={{ margin: "0 20px 8px", background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, overflowX: "auto" }}>
-          <div role="table" aria-label="Payment Ledger" style={{ minWidth: 640 }}>
+          <div role="table" aria-label="Payment Ledger" className="min-w-[640px]">
             <div role="rowgroup">
               <div role="row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1.4fr 1.2fr 1fr 0.8fr", padding: "10px 16px", borderBottom: `1px solid ${C.bdr}`, background: C.cream }}>
                 {["Month", "Amount Paid", "UTR", "Firm", "Date", "Status"].map(h => (
@@ -316,7 +303,7 @@ export function PaymentLedgerPage() {
             {myPayments.map((rec, i) => {
               const monthLabel = new Date(rec.paymentDate || rec.uploadedAt).toLocaleDateString("en-IN", { month: "short", year: "numeric" });
               return (
-                <React.Fragment key={i}>
+                <React.Fragment key={rec.id}>
                   <div role="row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1.4fr 1.2fr 1fr 0.8fr", padding: "12px 16px", borderBottom: !rec.batchNo && i < myPayments.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", alignItems: "center" }}>
                     <div role="cell" style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, color: C.text }}>{monthLabel}</div>
                     <div role="cell" style={{ fontFamily: F.m, fontWeight: 600, fontSize: 13, color: C.gold }}>{fmtAmt(rec.amountPaid)}</div>

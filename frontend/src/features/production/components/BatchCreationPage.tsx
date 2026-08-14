@@ -2,18 +2,17 @@ import React, { useState, useEffect, useCallback } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Save as FloppyDisk, CheckCircle2 as CheckCircle } from "lucide-react";
 import { useBatches, SareeRow, BatchRecord } from "../contexts/BatchContext";
-import { useBulkOrders } from "../../bulk-orders/contexts/BulkOrderContext";
-import { SareeTypeCard, SareeTypeRecord } from "../../pricing/components/RatesPricingPage";
-import { useRatesPricing } from "../../pricing/contexts/RatesContext";
-import { useMaterialIssue } from "../../materials/contexts/MaterialIssueContext";
+import { useBulkOrders, BulkOrder } from "@/features/bulk-orders";
+import { SareeTypeCard, SareeTypeRecord } from "@/features/pricing";
+import { useRatesPricing } from "@/features/pricing";
+import { useMaterialIssue } from "@/features/materials";
 import { DateFilterState, DEFAULT_DATE_FILTER } from "../../../shared/ui/DateFilterBar";
 import { weaversApi } from "../../../shared/api/weavers";
 import { factoryLoomsApi } from "../../../shared/api/factory-looms";
-import { ratesApi, backendRateToDisplayRecord, type BackendRate } from "../../../shared/api/rates";
 import { Button, NumberInput } from "../../../shared/ui/primitives";
 import { Modal } from "../../../shared/ui/overlay";
 
-import { T, F, G, rowComplete, lbl } from "./batch-creation/constants";
+import { T, F, rowComplete, lbl } from "./batch-creation/constants";
 import {
   WeaverPickerModal, BulkOrderPickerModal,
   SareeTypePickerModal, WeaverLoomPickerModal, FactoryLoomPickerModal,
@@ -28,7 +27,7 @@ import { BatchSetupStep } from "./BatchSetupStep";
 import { useBatchFormHandlers, WeaverOption, LoomOption } from "./useBatchFormHandlers";
 
 export function BatchCreationPage() {
-  const { rates, getSareeTypeByName, getSareeTypeByCode } = useRatesPricing();
+  const { rates } = useRatesPricing();
   const { batches, saveDraft, isSaving, finalizeBatch, isFinalizing, nextBatchId, pendingOpenBatchId, setPendingOpenBatchId } = useBatches();
   const { bulkOrders } = useBulkOrders();
   const { issueRecords } = useMaterialIssue();
@@ -101,7 +100,7 @@ export function BatchCreationPage() {
   const [viewSareeType, setViewSareeType] = useState<SareeTypeRecord | null>(null);
   const [viewWeaver, setViewWeaver] = useState<WeaverOption | null>(null);
   const [viewFactoryLoom, setViewFactoryLoom] = useState<LoomOption | null>(null);
-  const [viewBulkOrder, setViewBulkOrder] = useState<any | null>(null);
+  const [viewBulkOrder, setViewBulkOrder] = useState<BulkOrder | null>(null);
   const [viewSareeRow, setViewSareeRow] = useState<SareeRow | null>(null);
 
   // ── Sort control
@@ -292,8 +291,8 @@ export function BatchCreationPage() {
           {generated && rows.length > 0 && (
             <div style={{ display: "flex", alignItems: "flex-end", gap: 10, marginBottom: 16 }}>
               <div style={{ width: 140 }}>
-                <label style={lbl}>Add No. of Sarees</label>
-                <NumberInput min={1} max={500} value={addSareesCount === "" ? "" : Number(addSareesCount)}
+                <label htmlFor="add-sarees-count" style={lbl}>Add No. of Sarees</label>
+                <NumberInput id="add-sarees-count" min={1} max={500} value={addSareesCount === "" ? "" : Number(addSareesCount)}
                   onValueChange={v => setAddSareesCount(v === "" ? "" : String(v))}
                   placeholder="e.g. 5" />
               </div>

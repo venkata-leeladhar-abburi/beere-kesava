@@ -18,7 +18,7 @@ export function MobileTabBar({
     // element (shared with DesktopTopNav), so wrap it in a component that
     // clones it with whatever size/color props MobileNav passes down —
     // preserves the exact same lucide icon TABS was built with.
-    icon: (props: React.ComponentProps<"svg">) => React.cloneElement(tab.icon as React.ReactElement<any>, props),
+    icon: (props: React.ComponentProps<"svg">) => React.cloneElement(tab.icon as React.ReactElement<React.ComponentProps<"svg">>, props),
     onClick: () => setActive(tab.id),
     badge: tab.id === "sale" ? true : undefined,
     style: { fontWeight: tab.id === active ? 600 : 500 },

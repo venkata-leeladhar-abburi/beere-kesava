@@ -40,7 +40,7 @@ export function NotificationDetailPanel({ selected, setSelected, markRead }: Not
         <div style={{ height: 4, background: `linear-gradient(90deg, ${cfg.color}, ${cfg.color}55)` }} />
 
         <div style={{ padding: "20px 24px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: 999, padding: "4px 12px" }}>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: 999, padding: "4px 12px" }}>
             <PriorityIcon size={12} /> {cfg.label}
           </span>
           <IconButton icon={X} label="Close" variant="secondary" size="sm" className="rounded-full" onClick={() => setSelected(null)} />
@@ -52,7 +52,7 @@ export function NotificationDetailPanel({ selected, setSelected, markRead }: Not
               <CatIcon size={24} color={catCfg.color} />
             </div>
             <div>
-              <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, letterSpacing: "2px", color: catCfg.color, textTransform: "uppercase", marginBottom: 4 }}>{catCfg.label}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, letterSpacing: "2px", color: catCfg.color, textTransform: "uppercase", marginBottom: 4 }}>{catCfg.label}</div>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{selected.time}</div>
             </div>
           </div>
@@ -74,7 +74,7 @@ export function NotificationDetailPanel({ selected, setSelected, markRead }: Not
               { label: "Received",  value: selected.time, color: T.luxuryBrown },
             ].map(({ label, value, color }) => (
               <div key={label} style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "12px 14px" }}>
-                <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "1.5px", textTransform: "uppercase", color: T.taupe, marginBottom: 5 }}>{label}</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, letterSpacing: "1.5px", textTransform: "uppercase", color: T.taupe, marginBottom: 5 }}>{label}</div>
                 <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color }}>{value}</div>
               </div>
             ))}

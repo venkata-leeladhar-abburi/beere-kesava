@@ -33,6 +33,7 @@ export function MobileActivity({ onNavigate }: { onNavigate: (tab: string) => vo
       const isMaterial = a.module?.toLowerCase().includes("material") || a.module?.toLowerCase().includes("yarn");
       const isPayment = a.module?.toLowerCase().includes("payment") || a.module?.toLowerCase().includes("invoice");
       return {
+        id: a.id,
         bg: isWeaver ? G.gold : isMaterial ? G.button : isPayment ? G.gold : G.hero,
         glow: isWeaver ? "rgba(200,155,71,0.25)" : isMaterial ? "rgba(110,15,45,0.25)" : isPayment ? "rgba(30,102,64,0.25)" : "rgba(74,6,27,0.25)",
         icon: isWeaver ? <Users size={18} color="#FFF" /> : isMaterial ? <Package size={18} color="#FFF" /> : isPayment ? <IndianRupee size={18} color="#FFF" /> : <Scissors size={18} color="#FFF" />,
@@ -59,8 +60,10 @@ export function MobileActivity({ onNavigate }: { onNavigate: (tab: string) => vo
       </motion.div>
       <div style={{ background: G.card, borderRadius: 20, overflow: "hidden", boxShadow: "0 10px 32px rgba(74,6,27,0.16)", border: "1px solid rgba(200,155,71,0.12)" }}>
         {liveActions.map((a, i) => (
+          // Live audit-log actions carry a real `id`; the static ACT fallback (no backend
+          // data yet) doesn't, so the index is kept as a last-resort tiebreaker.
           <motion.div
-            key={i}
+            key={'id' in a && a.id ? a.id : `activity-${i}`}
             initial={{ opacity: 0, x: -16 }}
             animate={inView ? { opacity: 1, x: 0 } : undefined}
             whileHover={{ backgroundColor: "rgba(255,255,255,0.05)" }}
@@ -77,7 +80,7 @@ export function MobileActivity({ onNavigate }: { onNavigate: (tab: string) => vo
               <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 14, color: "rgba(245,232,208,0.97)", lineHeight: 1.6, marginBottom: 6, letterSpacing: "0.05px" }}>{a.text}</div>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <div style={{ width: 5, height: 5, borderRadius: "50%", background: a.bg, boxShadow: `0 0 6px ${a.glow}` }} />
-                <span style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(245,232,208,0.78)", letterSpacing: "0.3px" }}>{a.time}</span>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(245,232,208,0.78)", letterSpacing: "0.3px" }}>{a.time}</span>
               </div>
             </div>
           </motion.div>

@@ -9,6 +9,8 @@ import type { WeaverOption, LoomOption } from "../useBatchFormHandlers";
 import { pipColor } from "./PickerModals";
 import { Button, Checkbox, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { SectionCard } from "../common/primitives";
+import type { MaterialIssueRecord, IssuedMaterialItem } from "@/features/materials";
+import type { BulkOrder } from "@/features/bulk-orders";
 
 // ── Status dot per row ────────────────────────────────────────────────────────
 function StatusDot({ row }: { row: SareeRow }) {
@@ -55,12 +57,12 @@ export function BatchTable({
   setPicker: (p: ActivePicker) => void;
   removeSelected: () => void;
   batchId: string;
-  issueRecords: any[];
-  bulkOrders: any[];
+  issueRecords: MaterialIssueRecord[];
+  bulkOrders: BulkOrder[];
   setViewSareeRow: (r: SareeRow) => void;
   setViewFactoryLoom: (l: LoomOption) => void;
   setViewWeaver: (w: WeaverOption) => void;
-  setViewBulkOrder: (o: any) => void;
+  setViewBulkOrder: (o: BulkOrder) => void;
   setLoomPickerRow: (r: SareeRow) => void;
   openSareeTypeCard: (code: string) => void;
 }) {
@@ -140,14 +142,22 @@ export function BatchTable({
       </div>
 
       {/* Table */}
+      {/* Raw <table> intentionally kept — documented Phase 4 exclusion (row
+          selection + modal pickers + rowSpan), see design-system/09-RESPONSIVE.md
+          §3 "Known exclusions". minWidth:800 on the table inside this
+          overflowX:auto wrapper is the standard horizontal-scroll pattern for
+          a raw table, not a page-overflow risk. */}
       <div style={{ overflowX: "auto", margin: "0 -28px -28px" }}>
+        {/* eslint-disable-next-line no-restricted-syntax -- raw table, documented Phase 4 exclusion; minWidth:800 is the intentional horizontal-scroll pattern inside the overflowX:auto wrapper above */}
         <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 800 }}>
           <thead>
             <tr style={{ background: T.warmCream }}>
+              {/* eslint-disable-next-line no-restricted-syntax -- raw <th>, documented Phase 4 exclusion (see comment above table) */}
               <th style={th}>
                 <Checkbox checked={allSelected} onCheckedChange={() => toggleAll()} aria-label="Select all rows" />
               </th>
               {["#", "Saree ID", "Weaver / Factory Loom", "Loom No.", "Saree Type", "Bulk Order", "Materials Given", ""].map(h => (
+                // eslint-disable-next-line no-restricted-syntax -- raw <th>, documented Phase 4 exclusion (see comment above table)
                 <th key={h} style={th}>{h}</th>
               ))}
             </tr>
@@ -164,14 +174,14 @@ export function BatchTable({
                         : r.factoryLoomId === row.factoryLoomId
                     ))
                     .flatMap(r => r.materials)
-                    .reduce((acc: Record<string, { qty: number; unit: string }>, m: any) => {
+                    .reduce((acc: Record<string, { qty: number; unit: string }>, m: IssuedMaterialItem) => {
                       if (!acc[m.materialType]) acc[m.materialType] = { qty: 0, unit: m.unit };
                       acc[m.materialType].qty += m.quantity;
                       return acc;
                     }, {})
                 : null;
               const materialsText = materialsSummary && Object.keys(materialsSummary).length > 0
-                ? Object.entries(materialsSummary).map(([type, v]: [string, any]) => `${type}: ${v.qty}${v.unit}`).join(", ")
+                ? Object.entries(materialsSummary).map(([type, v]) => `${type}: ${v.qty}${v.unit}`).join(", ")
                 : null;
               return (
                 <tr key={row.serial}
@@ -179,7 +189,7 @@ export function BatchTable({
                   <td style={td}>
                     <Checkbox checked={isSelected} onCheckedChange={() => toggleRow(row.serial)} aria-label={`Select row ${row.serial}`} />
                   </td>
-                  <td style={{ ...td, fontFamily: F.mono, fontSize: 12, color: T.taupe, width: 40 }}>{row.serial}</td>
+                  <td style={{ ...td, fontFamily: F.ui, fontVariantNumeric: "tabular-nums", fontSize: 12, color: T.taupe, width: 40 }}>{row.serial}</td>
                   <td style={{ ...td, minWidth: 120 }}>
                     {row.sareeId ? (
                       <Button onClick={() => setViewSareeRow(row)} variant="link"

@@ -22,8 +22,9 @@ export function DeductionBlock({ amount, setAmount, reason, setReason }: {
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 14 }}>
         <div>
-          <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 6 }}>Deduction Amount (₹)</label>
+          <label htmlFor="deduction-amount" style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 6 }}>Deduction Amount (₹)</label>
           <NumberInput
+            id="deduction-amount"
             value={amount === "" ? "" : Number(amount)}
             onValueChange={v => setAmount(v === "" ? "" : String(v))}
             placeholder="0"
@@ -31,8 +32,9 @@ export function DeductionBlock({ amount, setAmount, reason, setReason }: {
           />
         </div>
         <div>
-          <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 6 }}>Reason</label>
+          <label htmlFor="deduction-reason" style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 6 }}>Reason</label>
           <Input
+            id="deduction-reason"
             value={reason}
             onChange={e => setReason(e.target.value)}
             placeholder="e.g. 400g Warp short-returned"

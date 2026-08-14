@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRatesPricing } from "../../pricing/contexts/RatesContext";
-import { type SareeTypeRecord } from "../../pricing/components/RatesPricingPage";
+import { useRatesPricing } from "@/features/pricing";
+import { type SareeTypeRecord } from "@/features/pricing";
 import { BackendQcRecord, BackendQcResult, qcApi } from "../../../shared/api/qc";
 import { weaversApi, BackendWeaver } from "../../../shared/api/weavers";
 import { factoryLoomsApi, BackendFactoryLoom } from "../../../shared/api/factory-looms";

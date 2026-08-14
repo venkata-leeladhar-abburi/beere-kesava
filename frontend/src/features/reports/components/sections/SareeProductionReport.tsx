@@ -61,11 +61,11 @@ export function ExternalPurchasesSection() {
       id: "location", header: "Location", accessor: r => [r.supplier.city, r.supplier.state].filter(Boolean).join(", "),
       cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{[r.supplier.city, r.supplier.state].filter(Boolean).join(", ") || "—"}</span>,
     },
-    { id: "gst", header: "GST Number", accessor: r => r.gstNumber || r.supplier.gstCode, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{r.gstNumber || r.supplier.gstCode || "—"}</span> },
-    { id: "invoice", header: "Invoice Number", accessor: r => r.invoiceNumber, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.invoiceNumber || "—"}</span> },
-    { id: "billAmount", header: "Bill Amount", accessor: r => r.billAmount, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700 }}><Money value={rupees(Number(r.billAmount))} /></span> },
-    { id: "sarees", header: "Sarees", accessor: r => r.sareeCount, align: "center", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700 }}>{r.sareeCount}</span> },
-    { id: "date", header: "Date", accessor: r => r.date, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{fmtDate(r.date)}</span> },
+    { id: "gst", header: "GST Number", accessor: r => r.gstNumber || r.supplier.gstCode, cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>{r.gstNumber || r.supplier.gstCode || "—"}</span> },
+    { id: "invoice", header: "Invoice Number", accessor: r => r.invoiceNumber, cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy }}>{r.invoiceNumber || "—"}</span> },
+    { id: "billAmount", header: "Bill Amount", accessor: r => r.billAmount, align: "end", cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700 }}><Money value={rupees(Number(r.billAmount))} /></span> },
+    { id: "sarees", header: "Sarees", accessor: r => r.sareeCount, align: "center", cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700 }}>{r.sareeCount}</span> },
+    { id: "date", header: "Date", accessor: r => r.date, cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>{fmtDate(r.date)}</span> },
     {
       id: "status", header: "Status", accessor: r => r.status, type: "status",
       cell: (_v, r) => <DomainStatusPill taxonomy="payment" status={PURCHASE_STATUS_KEY[r.status] ?? "unpaid"} />,
@@ -84,7 +84,7 @@ export function ExternalPurchasesSection() {
         </div>
 
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
-          <div style={{ overflowX: "auto", minWidth: 900 }}>
+          <div className="min-w-[900px]" style={{ overflowX: "auto" }}>
             <DataTable
               columns={purchaseColumns}
               data={rows}
@@ -217,24 +217,23 @@ export function SareeProductionReport() {
   }
 
   const prodColumns: ColumnDef<ProdTableRow>[] = [
-    { id: "code", header: "Weaver Code", accessor: r => r.code, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy }}>{r.code}</span> },
+    { id: "code", header: "Weaver Code", accessor: r => r.code, cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.royalBurgundy }}>{r.code}</span> },
     { id: "name", header: "Weaver Name", accessor: r => r.name, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{r.name}</span> },
     { id: "batches", header: "Batches", accessor: r => r.batches, align: "center" },
-    { id: "produced", header: "Sarees Produced", accessor: r => r.produced, align: "center", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700 }}>{r.produced}</span> },
-    { id: "passed", header: "QC Passed", accessor: r => r.passed, align: "center", cell: (_v, r) => <span style={{ color: T.green, fontFamily: F.mono, fontWeight: 700 }}>{r.passed}</span> },
-    { id: "rejected", header: "QC Rejected", accessor: r => r.rejected, align: "center", cell: (_v, r) => <span style={{ color: r.rejected > 0 ? T.crimson : T.taupe, fontFamily: F.mono, fontWeight: 700 }}>{r.rejected > 0 ? r.rejected : "—"}</span> },
+    { id: "produced", header: "Sarees Produced", accessor: r => r.produced, align: "center", cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700 }}>{r.produced}</span> },
+    { id: "passed", header: "QC Passed", accessor: r => r.passed, align: "center", cell: (_v, r) => <span style={{ color: T.green, fontFamily: "var(--font-mono)", fontWeight: 700 }}>{r.passed}</span> },
+    { id: "rejected", header: "QC Rejected", accessor: r => r.rejected, align: "center", cell: (_v, r) => <span style={{ color: r.rejected > 0 ? T.crimson : T.taupe, fontFamily: "var(--font-mono)", fontWeight: 700 }}>{r.rejected > 0 ? r.rejected : "—"}</span> },
     {
       id: "passRate", header: "Pass Rate", accessor: r => r.passRate, align: "center",
       cell: (_v, r) => <StatusPill label={`${r.passRate}%`} type={r.passRate >= 95 ? "ok" : r.passRate >= 85 ? "warn" : "bad"} />,
     },
-    { id: "designs", header: "Designs Worked On", accessor: r => r.designs, cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.designs}</span> },
-    { id: "charges", header: "Making Charges", accessor: r => r.charges, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.royalBurgundy }}><Money value={rupees(r.charges)} /></span> },
+    { id: "designs", header: "Designs Worked On", accessor: r => r.designs, cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{r.designs}</span> },
+    { id: "charges", header: "Making Charges", accessor: r => r.charges, align: "end", cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: T.royalBurgundy }}><Money value={rupees(r.charges)} /></span> },
   ];
 
   // Compute weekly production trend from batch createdAt (last 4 weeks vs prior 4 weeks)
   const prodWeeklyData = useMemo(() => {
     const batches = batchesRes?.items ?? [];
-    const now = new Date();
 
     // Build map of ISO week -> count of saree rows assigned
     const weekMap = new Map<string, number>();
@@ -260,9 +259,6 @@ export function SareeProductionReport() {
     }));
   }, [batchesRes]);
 
-  const currentYear = new Date().getFullYear();
-  const priorYear = currentYear - 0; // same year, prior period
-
   // QC donut from production summary (live)
   const qcDonutData = [
     { name: "Passed",   value: production?.qcByResult.PASSED ?? 0,    color: T.green },
@@ -284,7 +280,7 @@ export function SareeProductionReport() {
 
       <div style={{ display: "flex", gap: 6, marginBottom: 24 }}>
         {["All Sources", "Own Factory Only", "Outsourced Only"].map((f, i) => (
-          <div key={i} style={{ padding: "5px 14px", borderRadius: 20, cursor: "pointer", fontFamily: F.ui, fontSize: 12, fontWeight: 500, background: i === 0 ? T.royalBurgundy : "transparent", color: i === 0 ? "#FFF" : T.taupe, border: `1px solid ${i === 0 ? T.royalBurgundy : T.borderDef}` }}>{f}</div>
+          <div key={f} style={{ padding: "5px 14px", borderRadius: 20, cursor: "pointer", fontFamily: F.ui, fontSize: 12, fontWeight: 500, background: i === 0 ? T.royalBurgundy : "transparent", color: i === 0 ? "#FFF" : T.taupe, border: `1px solid ${i === 0 ? T.royalBurgundy : T.borderDef}` }}>{f}</div>
         ))}
       </div>
 
@@ -299,8 +295,8 @@ export function SareeProductionReport() {
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={prodWeeklyData}>
                 <CartesianGrid key="prod-wk-grid" strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
-                <XAxis key="prod-wk-x" dataKey="week" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
-                <YAxis key="prod-wk-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={30} />
+                <XAxis key="prod-wk-x" dataKey="week" tick={{ fontFamily: "var(--font-mono)", fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
+                <YAxis key="prod-wk-y" tick={{ fontFamily: "var(--font-mono)", fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} width={30} />
                 <Tooltip key="prod-wk-tip" content={<ChartTip suffix=" sarees" />} />
                 <Line key="prod-wk-cur" type="monotone" dataKey="current" name="Current" stroke={T.royalBurgundy} strokeWidth={2.5} dot={{ fill: T.royalBurgundy, r: 4 }} />
                 <Line key="prod-wk-pri" type="monotone" dataKey="prior" name="Prior" stroke={semantic.chart.series[1]} strokeWidth={2} strokeDasharray="5 4" dot={{ fill: semantic.chart.series[1], r: 3 }} />
@@ -327,7 +323,7 @@ export function SareeProductionReport() {
                 <div key={s.stage}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
                     <span style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown }}>{s.stage}</span>
-                    <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: s.color }}>{s.count}</span>
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color: s.color }}>{s.count}</span>
                   </div>
                   <AnimBar pct={Math.round((s.count / totalPipelineCount) * 100)} color={s.color} height={7} delay={prodStageData.indexOf(s) * 0.06} />
                 </div>
@@ -349,13 +345,13 @@ export function SareeProductionReport() {
                   dataKey="value" stroke="none" paddingAngle={3}>
                   {qcDonutData.filter(d => d.value > 0).map(e => <Cell key={`qc-cell-${e.name}`} fill={e.color} />)}
                 </Pie>
-                <Tooltip key="qc-tip" formatter={(v: any, n: any) => [`${v} sarees`, n]}
+                <Tooltip key="qc-tip" formatter={(v: number | string, n: React.ReactNode) => [`${v} sarees`, n]}
                   contentStyle={{ fontFamily: F.ui, fontSize: 12, borderRadius: 8 }} />
               </PieChart>
             </ResponsiveContainer>
             <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", textAlign: "center", pointerEvents: "none" }}>
               <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.green }}>{totalQc > 0 ? `${passRatePct}%` : "—"}</div>
-              <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>Pass Rate</div>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>Pass Rate</div>
             </div>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6, padding: "0 8px" }}>
@@ -365,7 +361,7 @@ export function SareeProductionReport() {
                   <div style={{ width: 9, height: 9, borderRadius: "50%", background: d.color }} />
                   <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{d.name}</span>
                 </div>
-                <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: d.color }}>{d.value}</span>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, color: d.color }}>{d.value}</span>
               </div>
             ))}
             {totalQc === 0 && (
@@ -397,8 +393,8 @@ export function SareeProductionReport() {
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie data={productionSourceData.filter(d => d.value > 0)} innerRadius={60} outerRadius={90} paddingAngle={3} dataKey="value" stroke="none">
-                      {productionSourceData.filter(d => d.value > 0).map((entry, index) => (
-                        <Cell key={`src-${index}`} fill={entry.fill} />
+                      {productionSourceData.filter(d => d.value > 0).map((entry) => (
+                        <Cell key={entry.name} fill={entry.fill} />
                       ))}
                     </Pie>
                   </PieChart>
@@ -409,11 +405,11 @@ export function SareeProductionReport() {
                 </div>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 16 }}>
-                {productionSourceData.map((s, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                {productionSourceData.map((s) => (
+                  <div key={s.name} style={{ display: "flex", alignItems: "center", gap: 10 }}>
                     <div style={{ width: 10, height: 10, borderRadius: "50%", background: s.fill, flexShrink: 0 }} />
                     <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, flex: 1 }}>{s.name}</span>
-                    <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{s.value}</span>
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{s.value}</span>
                     <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>({totalSourceSarees > 0 ? Math.round(s.value / totalSourceSarees * 100) : 0}%)</span>
                   </div>
                 ))}
@@ -434,7 +430,7 @@ export function SareeProductionReport() {
       {/* Production table — per-weaver, computed from live batch + QC data */}
       <FadeUp>
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
-          <div style={{ overflowX: "auto", minWidth: 960 }}>
+          <div className="min-w-[960px]" style={{ overflowX: "auto" }}>
             <DataTable
               columns={prodColumns}
               data={prodTableRows}
@@ -447,10 +443,10 @@ export function SareeProductionReport() {
           {prodTableRows.length > 0 && (
             <div style={{ background: T.warmCream, borderTop: `2px solid ${T.borderDef}`, display: "flex", alignItems: "center", padding: "13px 14px", gap: 14 }}>
               <span style={{ fontFamily: F.ui, fontWeight: 700, color: T.luxuryBrown, flex: 1 }}>Totals ({prodTableRows.length} weavers)</span>
-              <span style={{ fontFamily: F.mono, fontWeight: 700 }}>{prodTableRows.reduce((s, r) => s + r.produced, 0)}</span>
-              <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.green }}>{prodTableRows.reduce((s, r) => s + r.passed, 0)}</span>
-              <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.crimson }}>{prodTableRows.reduce((s, r) => s + r.rejected, 0)}</span>
-              <span style={{ fontFamily: F.mono, fontWeight: 700, color: T.royalBurgundy }}>{formatMoney(rupees(prodTableRows.reduce((s, r) => s + r.charges, 0)))}</span>
+              <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700 }}>{prodTableRows.reduce((s, r) => s + r.produced, 0)}</span>
+              <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: T.green }}>{prodTableRows.reduce((s, r) => s + r.passed, 0)}</span>
+              <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: T.crimson }}>{prodTableRows.reduce((s, r) => s + r.rejected, 0)}</span>
+              <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: T.royalBurgundy }}>{formatMoney(rupees(prodTableRows.reduce((s, r) => s + r.charges, 0)))}</span>
             </div>
           )}
           <TablePager total={prodTableRows.length} showing={prodTableRows.length} />

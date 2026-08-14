@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { AnimatePresence } from "motion/react";
 import { Flower2, Clock, Layers, Package, RotateCcw } from "lucide-react";
-import { SareeRow } from "../../../production/contexts/BatchContext";
+import { SareeRow } from "@/features/production";
 import { Card, ProgressBar, StatusBadge, SareeTypeDetailCard } from "./theme";
 import { Button } from "../../../../shared/ui/primitives";
 import { DispatchInstructionsBlock } from "./desktop/batchCardHelpers";

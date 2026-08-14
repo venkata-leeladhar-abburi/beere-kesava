@@ -6,7 +6,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ArrowLeft, MapPin, Package, Send, Trash2, Wallet } from "lucide-react";
 import { toast } from "sonner";
-import { SupplierPayNowModal } from "../../../../payments/components/supplier/SupplierPayNowModal";
+import { SupplierPayNowModal } from "@/features/payments";
 import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../../shared/ui/DateFilterBar";
 import { T, F } from "../../theme";
 import {

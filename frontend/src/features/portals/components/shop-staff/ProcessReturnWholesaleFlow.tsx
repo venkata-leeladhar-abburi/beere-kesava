@@ -1,7 +1,7 @@
 import React from "react";
 import { motion } from "motion/react";
-import { Camera, Package, QrCode, Check, ImagePlus } from "lucide-react";
-import { C, F, Card, Btn } from "./theme";
+import { Camera, QrCode, Check, ImagePlus } from "lucide-react";
+import { C, F } from "./theme";
 import { Button, Input, Select, SelectItem } from "../../../../shared/ui/primitives";
 import {
   Stepper, StepHeader, StepBody, FlowActions, SummaryPanel,
@@ -9,9 +9,12 @@ import {
 } from "./flow-kit";
 import { rupees, formatMoney } from "@/lib/domain/money";
 
+type ReturnStep = "type" | 1 | 2 | 3 | "success";
+type MyReturnType = "retail" | "wholesale" | "damage" | null;
+
 interface ProcessReturnWholesaleFlowProps {
   step: 1 | 2;
-  setStep: (s: any) => void;
+  setStep: (s: ReturnStep) => void;
   wsVendor: string;
   setWsVendor: (v: string) => void;
   wsDesign: string;
@@ -33,7 +36,7 @@ interface ProcessReturnWholesaleFlowProps {
   setWsBarcodeGenerated: (v: boolean) => void;
   canSeePrices: boolean;
   canProceedWsStep1: boolean;
-  setReturnType: (t: any) => void;
+  setReturnType: (t: MyReturnType) => void;
   onConfirm: () => void;
 }
 
@@ -86,7 +89,7 @@ export function ProcessReturnWholesaleFlow({
         steps={steps}
         current={step as number}
         accent={ACCENT_WHOLESALE}
-        onJump={n => setStep(n)}
+        onJump={n => setStep(n as ReturnStep)}
       />
 
       {/* ── Step 1 — Saree details ── */}
@@ -208,7 +211,7 @@ export function ProcessReturnWholesaleFlow({
                 <div style={{ border: `1.5px dashed ${ACCENT_WHOLESALE.softBorder}`, background: ACCENT_WHOLESALE.soft, borderRadius: 16, padding: "28px 24px", textAlign: "center" }}>
                   <QrCode size={30} color={ACCENT_WHOLESALE.base} style={{ margin: "0 auto 12px" }} />
                   <div style={{ fontFamily: F.u, fontSize: 15, fontWeight: 600, color: C.wine, marginBottom: 5 }}>No barcode yet</div>
-                  <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginBottom: 18, maxWidth: 420, marginLeft: "auto", marginRight: "auto", lineHeight: 1.55 }}>
+                  <div className="max-w-[420px] mx-auto" style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginBottom: 18, lineHeight: 1.55 }}>
                     This saree needs a new tag before it can be tracked. Generating one reserves the ID — it is only committed when you confirm.
                   </div>
                   <Button
@@ -228,6 +231,9 @@ export function ProcessReturnWholesaleFlow({
                   <div style={{ background: "#14100C", borderRadius: 16, padding: "26px 20px", textAlign: "center" }}>
                     <div aria-hidden style={{ display: "flex", gap: 2, alignItems: "flex-end", height: 56, justifyContent: "center", marginBottom: 12 }}>
                       {[3, 1, 4, 1, 2, 3, 1, 2, 4, 1, 3, 2, 1, 4, 2, 1, 3, 1, 2, 3, 2, 1, 4].map((w, i) => (
+                        // Decorative barcode bars — values repeat, so array index is the only
+                        // way to distinguish otherwise-identical bar entries.
+                        // eslint-disable-next-line react/no-array-index-key
                         <div key={i} style={{ width: w * 2, background: "#FFFDF9", height: i % 3 === 0 ? 56 : i % 2 === 0 ? 44 : 50, borderRadius: 1 }} />
                       ))}
                     </div>

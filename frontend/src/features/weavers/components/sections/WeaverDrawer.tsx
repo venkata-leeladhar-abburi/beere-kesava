@@ -12,24 +12,33 @@ import { WEAVERS } from "../data";
 import { Avatar, SectionPill } from "../common/primitives";
 import { WeaverSareesSection } from "../WeaverSareesSection";
 import { useWeaverPayments } from "../../contexts/WeaverPaymentsContext";
-import { useMaterialIssue } from "../../../materials/contexts/MaterialIssueContext";
+import { useMaterialIssue } from "@/features/materials";
 import { rupees, formatMoney } from "@/lib/domain/money";
-import { useBatches } from "../../../production/contexts/BatchContext";
-import { useBulkOrders } from "../../../bulk-orders/contexts/BulkOrderContext";
+import { useBatches } from "@/features/production";
 import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
-import { useDesignLibrary, DispatchRecord } from "../../../design-library/contexts/DesignLibraryContext";
-import { DispatchDetailsModal } from "../../../production/components/DispatchDetailsModal";
+import { useDesignLibrary, DispatchRecord } from "@/features/design-library";
+import { DispatchDetailsModal } from "@/features/production";
 import { BatchesTab, DispatchesTab, PaymentsTab, MaterialsTab } from "./weaverDrawer/WeaverDrawerTabs";
 import { EntityCode } from "../../../../shared/ui/domain";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { weaversApi } from "../../../../shared/api/weavers";
+import { weaversApi, type UpdateWeaverPayload } from "../../../../shared/api/weavers";
 import { toast } from "sonner";
 import { Button, Field, Input, NumberInput } from "../../../../shared/ui/primitives";
 import { Breadcrumbs } from "../../../../shared/ui/nav/Breadcrumbs";
 import { recordView, useConfirm } from "../../../../shared/ui/overlay";
 
-export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { weaver: typeof WEAVERS[0] | null; onClose: () => void; initialMode?: "view" | "edit"; onNavigate?: (tab: string) => void }) {
+// The runtime weaver object (built in WeaversPage.tsx from the real backend
+// BackendWeaver) carries a few extra bank/contact fields that WeaverCardEntry
+// (the mock-data shape) doesn't declare — extend locally instead of `any`.
+type DrawerWeaver = typeof WEAVERS[0] & {
+  email?: string;
+  bankName?: string;
+  accountNo?: string;
+  ifsc?: string;
+};
+
+export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate }: { weaver: DrawerWeaver | null; onClose: () => void; initialMode?: "view" | "edit"; onNavigate?: (tab: string) => void }) {
   const [tab, setTab] = useState("overview");
   const [mode, setMode] = useState<"view" | "edit">(initialMode);
   const queryClient = useQueryClient();
@@ -39,17 +48,17 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
   const [editForm, setEditForm] = useState({
     firstName: nameParts[0] || "",
     lastName: nameParts.slice(1).join(" ") || "",
-    email: (weaver as any)?.email || "",
+    email: weaver?.email || "",
     phone: weaver?.mobile || "",
     village: weaver?.village || "",
     looms: String(weaver?.looms || 0),
-    bankName: (weaver as any)?.bankName || "",
-    accountNo: (weaver as any)?.accountNo || "",
-    ifsc: (weaver as any)?.ifsc || "",
+    bankName: weaver?.bankName || "",
+    accountNo: weaver?.accountNo || "",
+    ifsc: weaver?.ifsc || "",
   });
 
   const updateWeaver = useMutation({
-    mutationFn: (data: any) => weaversApi.update(weaver!.id, data),
+    mutationFn: (data: UpdateWeaverPayload) => weaversApi.update(weaver!.id, data),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["weavers-directory"] });
       void queryClient.invalidateQueries({ queryKey: ["weavers-table-roster"] });
@@ -111,7 +120,6 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
   const { getPaymentsForWeaver } = useWeaverPayments();
   const { getRecordsForWeaver, getMaterialSummaryByBatch } = useMaterialIssue();
   const { batches } = useBatches();
-  const { bulkOrders } = useBulkOrders();
   const { dispatches } = useDesignLibrary();
   const [viewDispatches, setViewDispatches] = useState<{ weaverName: string; records: DispatchRecord[] } | null>(null);
 
@@ -122,7 +130,7 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
   useEffect(() => {
     if (!weaver) return;
     recordView({ key: `weaver:${weaver.id}`, label: weaver.name, path: "/admin/weavers", kind: "Weaver" });
-  }, [weaver?.id, weaver?.name]);
+  }, [weaver]);
 
   if (!weaver) return null;
   const weaverPayments = getPaymentsForWeaver(weaver.id);
@@ -130,31 +138,10 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
   const materialByBatch = getMaterialSummaryByBatch(weaver.id);
   const cfg = STATUS_CFG[weaver.status];
 
-  // Active batches the weaver is working on
-  const workingBatches = batches.filter(b => 
-    b.status === "active" && 
-    b.rows.some(r => r.weaverId === weaver.id)
-  );
-
-  // 3. Draft batches the weaver is assigned to
-  const draftBatches = batches.filter(b => 
-    b.status === "draft" && 
-    b.rows.some(r => r.weaverId === weaver.id)
-  );
-
-  // 4. Completed batches (previous batches) the weaver worked on
-  const completedBatches = batches.filter(b => 
-    b.status === "completed" && 
-    b.rows.some(r => r.weaverId === weaver.id)
-  );
-
-  // Sort completed batches by Batch ID number descending to get the latest one
   const getBatchNum = (id: string) => {
     const match = id.match(/BATCH-(\d+)/);
     return match ? parseInt(match[1], 10) : 0;
   };
-  const sortedCompletedBatches = [...completedBatches].sort((a, b) => getBatchNum(b.batchId) - getBatchNum(a.batchId));
-  const previousBatch = sortedCompletedBatches[0] || null;
 
   // All batches (active, draft, completed) assigned to this weaver
   const allWeaverBatches = batches.filter(b => 
@@ -189,7 +176,7 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
             <ChevronLeftIcon size={20} /> Back to Weavers
           </Button>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <span style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "1px", textTransform: "uppercase", color: T.taupe }}>Weaver Profile</span>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, letterSpacing: "1px", textTransform: "uppercase", color: T.taupe }}>Weaver Profile</span>
             <Button
               onClick={async () => {
                 const ok = await confirm({
@@ -334,7 +321,7 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
                         {r.icon}
                         <span>{r.label}</span>
                       </div>
-                      <div style={{ fontFamily: weaver.id === "b5f9178c-b1b9-4871-a7c3-0d68a462d57a" && r.label === "IFSC Code" ? F.mono : F.ui, fontSize: 14, color: T.luxuryBrown, fontWeight: 600 }}>{r.value}</div>
+                      <div style={{ fontFamily: weaver.id === "b5f9178c-b1b9-4871-a7c3-0d68a462d57a" && r.label === "IFSC Code" ? "var(--font-mono)" : F.ui, fontSize: 14, color: T.luxuryBrown, fontWeight: 600 }}>{r.value}</div>
                     </div>
                   ))}
                 </div>
@@ -349,12 +336,15 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
                       <div key={r.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", paddingBottom: i < materialRecords.length - 1 ? 12 : 0, borderBottom: i < materialRecords.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none" }}>
                         <div>
                           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <span style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", borderRadius: 6, padding: "2px 8px", fontWeight: 700 }}>{r.id}</span>
+                            <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", borderRadius: 6, padding: "2px 8px", fontWeight: 700 }}>{r.id}</span>
                             <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{new Date(r.issuedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>
                           </div>
                           <div style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 8 }}>
-                            {r.materials.map((m: any, idx: number) => (
-                              <div key={idx} style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>
+                            {r.materials.map((m, idx: number) => (
+                              // Material line items carry no unique id — materialType + subtype +
+                              // index distinguishes rows within this record.
+                              // eslint-disable-next-line react/no-array-index-key
+                              <div key={`${m.materialType}-${m.warpSubtype ?? m.jariType ?? ""}-${idx}`} style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>
                                 • {m.materialType}: <b>{m.quantity} {m.unit}</b> {m.warpSubtype || m.jariType || ""}
                               </div>
                             ))}
@@ -385,7 +375,7 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
                       <div key={p.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: i < weaverPayments.length - 1 ? 12 : 0, borderBottom: i < weaverPayments.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none" }}>
                         <div>
                           <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{p.firmName}</div>
-                          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 3 }}>UTR: {p.utrNumber}</div>
+                          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 3 }}>UTR: {p.utrNumber}</div>
                         </div>
                         <div style={{ textAlign: "right" }}>
                           <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: T.green }}>{formatMoney(rupees(p.amountPaid))}</div>

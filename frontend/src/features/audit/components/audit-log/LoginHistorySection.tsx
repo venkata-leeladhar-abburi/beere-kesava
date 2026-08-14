@@ -52,7 +52,7 @@ export function LoginHistorySection() {
   const columns: ColumnDef<LoginEvent>[] = [
     {
       id: "time", header: "Timestamp", accessor: e => e.time,
-      cell: (_v, e) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>{e.time}</span>,
+      cell: (_v, e) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>{e.time}</span>,
     },
     {
       id: "user", header: "User", accessor: e => e.user, priority: 1,
@@ -60,7 +60,7 @@ export function LoginHistorySection() {
     },
     {
       id: "role", header: "Role", accessor: e => e.role, priority: 3,
-      cell: (_v, e) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{e.role}</span>,
+      cell: (_v, e) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{e.role}</span>,
     },
     {
       id: "event", header: "Event", accessor: e => e.event,
@@ -86,11 +86,11 @@ export function LoginHistorySection() {
     {
       id: "duration", header: "Session Duration", accessor: e => e.duration,
       cell: (_v, e) => e.duration ? (
-        <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>{e.duration}</span>
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>{e.duration}</span>
       ) : e.event === "login" ? (
-        <span style={{ color: T.antiqueGold, fontFamily: F.mono, fontSize: 12 }}>Ongoing</span>
+        <span style={{ color: T.antiqueGold, fontFamily: "var(--font-mono)", fontSize: 12 }}>Ongoing</span>
       ) : (
-        <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>—</span>
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>—</span>
       ),
     },
     {
@@ -189,7 +189,7 @@ export function LoginHistorySection() {
                     flexShrink: 0,
                     zIndex: 1,
                   }}>
-                    <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: "#fff" }}>
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: "#fff" }}>
                       {circleInitial}
                     </span>
                   </div>
@@ -225,11 +225,11 @@ export function LoginHistorySection() {
                         <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: T.luxuryBrown }}>
                           {entry.user}
                         </span>
-                        <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
+                        <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>
                           {entry.role}
                         </span>
                       </div>
-                      <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
+                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>
                         {entry.time}
                       </span>
                     </div>
@@ -242,7 +242,7 @@ export function LoginHistorySection() {
                         <>
                           <span>·</span>
                           <span>Session:</span>
-                          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{entry.duration}</span>
+                          <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{entry.duration}</span>
                         </>
                       )}
                     </div>
@@ -289,7 +289,7 @@ export function LoginHistorySection() {
                 padding: "16px 18px",
                 borderTop: `1px solid ${T.borderDef}`,
               }}>
-                <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>
                   Showing {entries.length} of {total} session{total !== 1 ? "s" : ""}
                 </span>
                 <div style={{ display: "flex", alignItems: "center", gap: 4 }}>

@@ -5,3 +5,5 @@
 // warning while existing cross-feature imports are migrated over.
 
 export * from "./components/RatesPricingPage";
+export * from "./contexts/RatesContext";
+export * from "./components/rates-pricing/jariUtils";

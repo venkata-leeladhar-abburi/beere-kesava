@@ -35,7 +35,7 @@ export function downloadCustomerCSV(customerName: string, fields: [string, strin
   URL.revokeObjectURL(url);
 }
 
-export function downloadDataAsCSV(filename: string, headers: string[], rows: any[][]) {
+export function downloadDataAsCSV(filename: string, headers: string[], rows: (string | number | null | undefined)[][]) {
   const csvContent = [
     headers.map(h => `"${h.replace(/"/g, '""')}"`).join(","),
     ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(","))

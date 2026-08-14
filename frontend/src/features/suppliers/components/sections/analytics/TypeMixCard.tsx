@@ -33,9 +33,9 @@ export function TypeMixCard({
           <ResponsiveContainer width="100%" height={168}>
             <PieChart>
               <Pie data={byType} dataKey="cost" nameKey="type" cx="50%" cy="50%" innerRadius={48} outerRadius={74} paddingAngle={3} stroke="none">
-                {byType.map((d, i) => <Cell key={i} fill={d.fill} />)}
+                {byType.map((d) => <Cell key={d.type} fill={d.fill} />)}
               </Pie>
-              <RechartsTooltip contentStyle={tip} formatter={(v: any, _n: any, p: any) => [`${formatMoney(rupees(v))} · ${p.payload.qty} pcs`, p.payload.type]} />
+              <RechartsTooltip contentStyle={tip} formatter={(v: number | string, _n: string, p: { payload: ByTypeEntry }) => [`${formatMoney(rupees(Number(v)))} · ${p.payload.qty} pcs`, p.payload.type]} />
             </PieChart>
           </ResponsiveContainer>
           <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
@@ -51,7 +51,7 @@ export function TypeMixCard({
               <div style={{ width: 10, height: 10, borderRadius: 3, background: d.fill, flexShrink: 0 }} />
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{d.type}</span>
             </div>
-            <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, flexShrink: 0 }}>{d.qty} pcs</span>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, color: T.luxuryBrown, flexShrink: 0 }}>{d.qty} pcs</span>
           </div>
         ))}
       </div>

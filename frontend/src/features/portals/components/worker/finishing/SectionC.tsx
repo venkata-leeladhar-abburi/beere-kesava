@@ -1,7 +1,7 @@
 import { useState, useMemo, type CSSProperties } from "react";
 import { Users, ChevronDown, Camera } from "lucide-react";
-import { C, F, card } from "../tokens";
-import { useFinishing, FinishingAssignment } from "../../../../finishing/contexts/FinishingContext";
+import { C, F } from "../tokens";
+import { useFinishing, FinishingAssignment } from "@/features/finishing";
 import { SectionCard } from "../primitives";
 import { Button } from "../../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";

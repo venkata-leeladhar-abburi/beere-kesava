@@ -1,6 +1,6 @@
 import React from "react";
-import { BulkOrder } from "../../../../bulk-orders/contexts/BulkOrderContext";
-import { OrderMoney } from "../../../../bulk-orders/utils/BulkOrderLinking";
+import { BulkOrder } from "@/features/bulk-orders";
+import { OrderMoney } from "@/features/bulk-orders";
 import { T, F } from "../../theme";
 import { WholesaleCustomer, WholesaleTab } from "../../types";
 import { Button } from "../../../../../shared/ui/primitives";
@@ -36,13 +36,13 @@ export function OverviewTab({
   const orderColumns: ColumnDef<BulkOrder>[] = [
     {
       id: "ref", header: "Order Ref", accessor: o => o.ref, priority: 1,
-      cell: (_v, o) => <span style={{ fontFamily: F.mono, fontSize: 13, color: T.royalBurgundy, fontWeight: 700 }}>{o.ref}</span>,
+      cell: (_v, o) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.royalBurgundy, fontWeight: 700 }}>{o.ref}</span>,
     },
     {
       id: "invoice", header: "Invoice No", accessor: o => o.invoiceId, priority: 3,
       cell: (_v, o) => {
         const m = custOrderMoney.get(o.ref)!;
-        return <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{o.invoiceId || m.invoiceId || "—"}</span>;
+        return <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{o.invoiceId || m.invoiceId || "—"}</span>;
       },
     },
     {
@@ -77,10 +77,10 @@ export function OverviewTab({
           { label: "Sarees Ordered", value: `${custSareesDone}/${custSareesOrdered}`, color: T.antiqueGold },
           { label: "Outstanding Balance", value: inr(custOutstanding), color: custOutstanding === 0 ? T.greenMid : T.crimson },
           { label: "Payment Terms", value: customer.terms, color: T.luxuryBrown, isMono: true },
-        ].map((s, idx) => (
-          <div key={idx} style={{ background: T.silkCream, padding: 24, borderRadius: 14 }}>
+        ].map((s) => (
+          <div key={s.label} style={{ background: T.silkCream, padding: 24, borderRadius: 14 }}>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 6, fontWeight: 500 }}>{s.label}</div>
-            <div style={{ fontFamily: s.isMono ? F.mono : F.display, fontSize: 24, fontWeight: 700, color: s.color }}>{s.value}</div>
+            <div style={{ fontFamily: s.isMono ? "var(--font-mono)" : F.display, fontSize: 24, fontWeight: 700, color: s.color }}>{s.value}</div>
           </div>
         ))}
       </div>
@@ -96,10 +96,10 @@ export function OverviewTab({
               const pct = o.total ? Math.round((o.done / o.total) * 100) : 0;
               const meta = ORDER_STATUS_META[o.status] ?? ORDER_STATUS_META["on-track"];
               return (
-                <div key={o.ref} style={{ cursor: "pointer" }} onClick={() => onViewBulkOrder(o, "overview")} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => onViewBulkOrder(o, "overview"))?.(); } }}>
+                <div key={o.ref} style={{ cursor: "pointer" }} onClick={() => onViewBulkOrder(o, "overview")} role="button" tabIndex={0} aria-label={`View details for order ${o.ref}`} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => onViewBulkOrder(o, "overview"))?.(); } }}>
                   <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 8 }}>
                     <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
-                      <span style={{ fontFamily: F.mono, fontSize: 16, color: T.goldLight, fontWeight: 700 }}>{o.ref}</span>
+                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, color: T.goldLight, fontWeight: 700 }}>{o.ref}</span>
                       <span style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.65)" }}>{o.done} of {o.total} sarees · {o.sareeType}</span>
                       <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: meta.bg, color: meta.color, padding: "2px 9px", borderRadius: 20 }}>{meta.label}</span>
                     </div>

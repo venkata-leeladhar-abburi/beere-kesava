@@ -280,6 +280,18 @@ export function DataTable<T>({
                 <Fragment key={id}>
                 <tr
                   onClick={onRowClick ? () => onRowClick(row) : undefined}
+                  onKeyDown={
+                    onRowClick
+                      ? e => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            onRowClick(row);
+                          }
+                        }
+                      : undefined
+                  }
+                  role={onRowClick ? "button" : undefined}
+                  tabIndex={onRowClick ? 0 : undefined}
                   className={cn(
                     "transition-colors duration-[var(--duration-fast)]",
                     onRowClick && "cursor-pointer hover:bg-[var(--surface-raised-hover)]",
@@ -405,18 +417,61 @@ function CardList<T>({
     <div className={cn("md:hidden flex flex-col gap-3", className)}>
       {data.map(row => {
           const id = getRowId(row);
-          return (
+          const cardClassName = cn("rounded-[var(--radius-md,8px)] border border-[var(--border-default)] bg-[var(--surface-raised)] p-4", onRowClick && "cursor-pointer");
+          return onRowClick ? (
             <div
               key={id}
-              onClick={onRowClick ? () => onRowClick(row) : undefined}
-              className={cn("rounded-[var(--radius-md,8px)] border border-[var(--border-default)] bg-[var(--surface-raised)] p-4", onRowClick && "cursor-pointer")}
+              onClick={() => onRowClick(row)}
+              onKeyDown={e => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onRowClick(row);
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              className={cardClassName}
             >
               <div className="flex items-start justify-between gap-3">
                 {selectCol ? (
+                  // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events -- this span only stops click bubbling to the row; it wraps an already-interactive cell/checkbox that has its own keyboard handling.
                   <span onClick={e => e.stopPropagation()}>
                     {selectCol.cell ? selectCol.cell(selectCol.accessor(row), row) : defaultCell(selectCol, selectCol.accessor(row))}
                   </span>
                 ) : selectable && (
+                  // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events -- this span only stops click bubbling to the row; the nested Checkbox is the real interactive control.
+                  <span onClick={e => e.stopPropagation()}>
+                    <Checkbox checked={!!selectedIds?.has(id)} onCheckedChange={() => onToggleRow(id)} aria-label="Select row" />
+                  </span>
+                )}
+                {titleCol && (
+                  <div className="flex-1 min-w-0" style={{ fontWeight: 600, color: "var(--text-primary)" }}>
+                    {titleCol.cell ? titleCol.cell(titleCol.accessor(row), row) : defaultCell(titleCol, titleCol.accessor(row))}
+                  </div>
+                )}
+              </div>
+              <div className="mt-2 flex flex-col gap-1.5">
+                {bodyCols.map(col => (
+                  <div key={col.id} className="flex items-center justify-between gap-3" style={{ fontSize: "var(--text-body-sm, 13px)" }}>
+                    <span style={{ color: "var(--text-tertiary)" }}>{col.header}</span>
+                    <span style={{ color: "var(--text-primary)" }}>{col.cell ? col.cell(col.accessor(row), row) : defaultCell(col, col.accessor(row))}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div
+              key={id}
+              className={cardClassName}
+            >
+              <div className="flex items-start justify-between gap-3">
+                {selectCol ? (
+                  // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events -- this span only stops click bubbling to the row; it wraps an already-interactive cell/checkbox that has its own keyboard handling.
+                  <span onClick={e => e.stopPropagation()}>
+                    {selectCol.cell ? selectCol.cell(selectCol.accessor(row), row) : defaultCell(selectCol, selectCol.accessor(row))}
+                  </span>
+                ) : selectable && (
+                  // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events -- this span only stops click bubbling to the row; the nested Checkbox is the real interactive control.
                   <span onClick={e => e.stopPropagation()}>
                     <Checkbox checked={!!selectedIds?.has(id)} onCheckedChange={() => onToggleRow(id)} aria-label="Select row" />
                   </span>

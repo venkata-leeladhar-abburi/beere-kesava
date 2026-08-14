@@ -1,4 +1,3 @@
-import { T } from "../theme";
 import { WeaverRecord } from "../types";
 
 // MOCK: WeaverMakingChargesSection.tsx no longer imports WEAVERS — it builds
@@ -6,4 +5,4 @@ import { WeaverRecord } from "../types";
 // Kept here only as a reference for the WeaverRecord shape / any other
 // still-mock consumer.
 export const WEAVERS: WeaverRecord[] = [];
-export const RATE_ROWS: any[] = [];
+export const RATE_ROWS: unknown[] = [];

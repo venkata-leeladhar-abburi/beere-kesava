@@ -3,13 +3,13 @@ import * as Dialog from "@radix-ui/react-dialog";
 import {
   CheckCircle2, X, Building2, FileText, ArrowRight, Send,
 } from "lucide-react";
-import { FinishingReturn } from "../../../finishing/contexts/FinishingContext";
-import { useBulkOrders } from "../../../bulk-orders/contexts/BulkOrderContext";
-import { useFirms } from "../../../firms/contexts/FirmsContext";
-import { useBatches } from "../../../production/contexts/BatchContext";
+import { FinishingReturn } from "@/features/finishing";
+import { useBulkOrders } from "@/features/bulk-orders";
+import { useFirms } from "@/features/firms";
+import { useBatches } from "@/features/production";
 import { T, F } from "../theme";
 import { Button, IconButton, SearchInput } from "../../../../shared/ui/primitives";
-import { useAllWholesaleCustomers } from "../../../bulk-orders/components/WholesaleCustomerSelectSection";
+import { useAllWholesaleCustomers } from "@/features/bulk-orders";
 import { InvoiceData } from "../types";
 import { SareePicker } from "./shared/SareePicker";
 import { NoSareesNotice } from "./shared/NoSareesNotice";
@@ -81,7 +81,7 @@ export function RaiseQuotationModal({ sarees, available, onConfirm, onClose, ini
               <div key={s} style={{ flex: 1, display: "flex", alignItems: "center" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 4, flex: 1 }}>
                   <div style={{ width: 20, height: 20, borderRadius: "50%", flexShrink: 0, background: step > i + 1 ? T.antiqueGold : step === i + 1 ? "#FFF" : "rgba(255,255,255,0.20)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    {step > i + 1 ? <CheckCircle2 size={10} color={T.deepWine} /> : <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: step === i + 1 ? T.royalBurgundy : "rgba(255,255,255,0.45)" }}>{i + 1}</span>}
+                    {step > i + 1 ? <CheckCircle2 size={10} color={T.deepWine} /> : <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: step === i + 1 ? T.royalBurgundy : "rgba(255,255,255,0.45)" }}>{i + 1}</span>}
                   </div>
                   <span style={{ fontFamily: F.ui, fontSize: 12, color: step === i + 1 ? "#FFF" : "rgba(255,255,255,0.40)", fontWeight: step === i + 1 ? 600 : 400 }}>{s}</span>
                 </div>

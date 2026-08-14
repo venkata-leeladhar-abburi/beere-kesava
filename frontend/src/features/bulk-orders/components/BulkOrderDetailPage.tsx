@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import * as Dialog from "@radix-ui/react-dialog";
 import {
@@ -8,14 +8,14 @@ import {
 } from "lucide-react";
 import type { BulkOrder } from "../contexts/BulkOrderContext";
 import { useBulkOrders } from "../contexts/BulkOrderContext";
-import { useFinishing, DispatchRecord, Quotation } from "../../finishing/contexts/FinishingContext";
-import { useBatches } from "../../production/contexts/BatchContext";
-import { SareeWeightTallyList, type TallyRowItem, type TallyCorrection } from "../../production/components/sections/batches/SareeWeightTallyList";
-import { useRatesPricing } from "../../pricing/contexts/RatesContext";
+import { useFinishing, DispatchRecord, Quotation } from "@/features/finishing";
+import { useBatches } from "@/features/production";
+import { SareeWeightTallyList, type TallyRowItem, type TallyCorrection } from "@/features/production";
+import { useRatesPricing } from "@/features/pricing";
 import { useAuth } from "../../../contexts/AuthContext";
-import { autoMaterialSplit } from "../../portals/components/worker/weavers/MaterialSplitPanel";
-import { trimNum } from "../../pricing/components/rates-pricing/jariUtils";
-import { INVOICES } from "../../payments/data/invoices";
+import { autoMaterialSplit } from "@/features/portals";
+import { trimNum } from "@/features/pricing";
+import { INVOICES } from "@/features/payments";
 import { resolveBulkOrderRef, resolveOrderMoney } from "../utils/BulkOrderLinking";
 import { DispatchDetailPanel } from "./DispatchDetailPanel";
 import { BulkOrderSareesTab, LinkedSaree } from "./BulkOrderSareesTab";
@@ -84,7 +84,7 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
     [quotations, live.ref]
   );
 
-  const findDispatchFor = (sareeId: string) => dispatches.find(d => d.sareeIds.includes(sareeId));
+  const findDispatchFor = useCallback((sareeId: string) => dispatches.find(d => d.sareeIds.includes(sareeId)), [dispatches]);
 
   // Every saree tied to this order
   const linkedSarees = useMemo<LinkedSaree[]>(() => {
@@ -93,7 +93,7 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
     linkedQuotations.forEach(q => q.sarees.forEach(s => quotationRefBySaree.set(s.sareeId, q.quotationNumber)));
 
     readySarees.forEach(s => {
-      const boRef = resolveBulkOrderRef((s as any).bulkOrderRef, s.designCode, s.sareeType, bulkOrders);
+      const boRef = resolveBulkOrderRef(s.bulkOrderRef, s.designCode, s.sareeType, bulkOrders);
       if (boRef !== live.ref && !quotationRefBySaree.has(s.id)) return;
       const bRow = batches.flatMap(b => b.rows.map(row => ({ b, row }))).find(({ row }) => row.sareeId === s.id);
       byId.set(s.id, {
@@ -127,7 +127,7 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
     }));
 
     return [...byId.values()];
-  }, [readySarees, returns, bulkOrders, live.ref, batches, linkedQuotations, dispatches]);
+  }, [readySarees, returns, bulkOrders, live.ref, batches, linkedQuotations, findDispatchFor]);
 
   const batchOptions = useMemo(() => ["All", ...Array.from(new Set(linkedSarees.map(s => s.batchId).filter(Boolean) as string[]))], [linkedSarees]);
   const weaverOptions = useMemo(() => ["All", ...Array.from(new Set(linkedSarees.map(s => s.weaverName).filter(Boolean)))].sort(), [linkedSarees]);
@@ -167,10 +167,10 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
     batches.forEach(b => b.rows.forEach(r => {
       if (r.sareeId && r.receivedWeight) {
         m.set(r.sareeId, {
-          weight: parseFloat(r.receivedWeight),
-          warpG: r.receivedWarpG ? parseFloat(r.receivedWarpG) : undefined,
-          reshamG: r.receivedReshamG ? parseFloat(r.receivedReshamG) : undefined,
-          jariReels: r.receivedJariReels ? parseFloat(r.receivedJariReels) : undefined,
+          weight: Number(r.receivedWeight) || 0,
+          warpG: r.receivedWarpG ? Number(r.receivedWarpG) : undefined,
+          reshamG: r.receivedReshamG ? Number(r.receivedReshamG) : undefined,
+          jariReels: r.receivedJariReels ? Number(r.receivedJariReels) : undefined,
         });
       }
     }));
@@ -196,10 +196,10 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
           batchId: s.batchId as string,
           weaverName: s.weaverName,
           sareeTypeCode: s.sareeTypeCode ?? null,
-          actualWeight: row?.receivedWeight ? parseFloat(row.receivedWeight) : null,
-          actualWarpG: row?.receivedWarpG ? parseFloat(row.receivedWarpG) : null,
-          actualReshamG: row?.receivedReshamG ? parseFloat(row.receivedReshamG) : null,
-          actualJariReels: row?.receivedJariReels ? parseFloat(row.receivedJariReels) : null,
+          actualWeight: row?.receivedWeight ? Number(row.receivedWeight) : null,
+          actualWarpG: row?.receivedWarpG ? Number(row.receivedWarpG) : null,
+          actualReshamG: row?.receivedReshamG ? Number(row.receivedReshamG) : null,
+          actualJariReels: row?.receivedJariReels ? Number(row.receivedJariReels) : null,
           tallied: row?.tallied ?? false,
           talliedBy: row?.talliedBy ?? null,
           talliedAt: row?.talliedAt ?? null,
@@ -247,9 +247,9 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
       } else {
         const split = autoMaterialSplit(s.sareeTypeCode, String(receipt.weight), getSareeTypeByCode);
         if (split) {
-          warpG += parseFloat(split.warp) || 0;
-          reshamG += parseFloat(split.resham) || 0;
-          jariReels += parseFloat(split.jari) || 0;
+          warpG += Number(split.warp) || 0;
+          reshamG += Number(split.resham) || 0;
+          jariReels += Number(split.jari) || 0;
         }
       }
     });
@@ -259,11 +259,11 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
     // saree type, so one rate card covers the whole thing.
     const orderTypeCode = live.sareeType?.split(" · ").pop()?.trim();
     const rate = orderTypeCode ? getSareeTypeByCode(orderTypeCode) : undefined;
-    const std = rate ? parseFloat(rate.stdWeight) || 0 : 0;
+    const std = rate ? Number(rate.stdWeight) || 0 : 0;
     const expectedWeight = std * live.total;
-    const expectedWarpG = rate ? (parseFloat(rate.warpWeight) || 0) * live.total : 0;
-    const expectedReshamG = rate ? (parseFloat(rate.reshamWeight) || 0) * live.total : 0;
-    const expectedJariReels = rate ? (parseFloat(rate.jariWeight) || 0) * live.total : 0;
+    const expectedWarpG = rate ? (Number(rate.warpWeight) || 0) * live.total : 0;
+    const expectedReshamG = rate ? (Number(rate.reshamWeight) || 0) * live.total : 0;
+    const expectedJariReels = rate ? (Number(rate.jariWeight) || 0) * live.total : 0;
 
     return {
       weighedCount, actualWeight, warpG, reshamG, jariReels,
@@ -303,7 +303,7 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
           </Button>
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
             <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: cfg.bg, color: cfg.color, padding: "5px 13px", borderRadius: 20 }}>{cfg.label}</span>
-            <span style={{ fontFamily: F.mono, fontSize: 13, background: T.silkCream, border: `1px solid ${T.borderDef}`, padding: "5px 12px", borderRadius: 6, color: T.luxuryBrown, fontWeight: 600 }}>{live.ref}</span>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, background: T.silkCream, border: `1px solid ${T.borderDef}`, padding: "5px 12px", borderRadius: 6, color: T.luxuryBrown, fontWeight: 600 }}>{live.ref}</span>
             <Button onClick={() => setDeletePrompt(true)} variant="tertiary" size="md" iconLeft={Trash2}>
               Delete Order
             </Button>
@@ -492,7 +492,7 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14, flexWrap: "wrap" as const, gap: 10 }}>
                             <div>
                               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                                <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}>{q.quotationNumber}</span>
+                                <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}>{q.quotationNumber}</span>
                                 <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, textTransform: "capitalize" as const, background: qCfg.bg, color: qCfg.color, padding: "3px 9px", borderRadius: 20 }}>{q.status.replace(/-/g, " ")}</span>
                               </div>
                               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>{q.quotationDate} · {q.sarees.length} saree{q.sarees.length === 1 ? "" : "s"} · {q.firmName || "—"}</div>
@@ -505,7 +505,7 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
 
                           <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 6, marginBottom: qDispatch ? 14 : 0 }}>
                             {q.sarees.map(s => (
-                              <span key={s.sareeId} style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "3px 8px", borderRadius: 6 }}>{s.sareeId}</span>
+                              <span key={s.sareeId} style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "3px 8px", borderRadius: 6 }}>{s.sareeId}</span>
                             ))}
                           </div>
 

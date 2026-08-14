@@ -7,6 +7,7 @@ import { SectionCard } from "./primitives";
 import { renderIssuedMaterials } from "./materialFormatters";
 import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { EntityCode } from "@/shared/ui/domain";
 
 const STATUS_BADGE: Record<string, { label: string; color: string; bg: string }> = {
   signed: { label: "Signed", color: T.green, bg: "rgba(30,102,64,0.10)" },
@@ -31,7 +32,7 @@ export function IssuanceHistorySection({
   const columns: ColumnDef<MaterialIssueRecord>[] = [
     {
       id: "id", header: "MIR ID", accessor: r => r.id, priority: 1,
-      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", borderRadius: 6, padding: "3px 8px" }}>{r.id}</span>,
+      cell: (_v, r) => <EntityCode type="goodsReceipt" value={r.id} size="sm" />,
     },
     {
       id: "date", header: "Date", accessor: r => r.issuedAt,
@@ -42,13 +43,13 @@ export function IssuanceHistorySection({
       cell: (_v, r) => (
         <div style={{ whiteSpace: "nowrap" }}>
           <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: T.luxuryBrown }}>{r.weaverName ?? r.factoryLoomNumber}</div>
-          {r.loomNumber && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, fontWeight: 700, marginTop: 2 }}>Loom {r.loomNumber}</div>}
+          {r.loomNumber && <div style={{ fontFamily: F.ui, fontVariantNumeric: "tabular-nums", fontSize: 12, color: T.antiqueGold, fontWeight: 700, marginTop: 2 }}>Loom {r.loomNumber}</div>}
         </div>
       ),
     },
     {
       id: "weaverId", header: "Weaver ID", accessor: r => r.weaverId, priority: 3,
-      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.weaverId}</span>,
+      cell: (_v, r) => r.weaverId ? <EntityCode type="weaver" value={r.weaverId} size="sm" /> : <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>—</span>,
     },
     {
       id: "materials", header: "Materials Summary", accessor: r => r.materials,
@@ -60,7 +61,7 @@ export function IssuanceHistorySection({
         const grnIds = Array.from(new Set(r.materials.map(m => m.grnBatchId)));
         return (
           <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-            {grnIds.map(g => <span key={g} style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", borderRadius: 5, padding: "2px 7px" }}>{g}</span>)}
+            {grnIds.map(g => <EntityCode key={g} type="goodsReceipt" value={g} size="sm" />)}
           </div>
         );
       },

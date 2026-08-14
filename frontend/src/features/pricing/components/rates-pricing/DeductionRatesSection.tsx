@@ -34,7 +34,7 @@ export function DeductionRatesSection() {
             <p style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, margin: "0 0 12px 0", lineHeight: 1.6 }}>
               Applied when returned warp weight is less than the standard issued weight for the saree type.
             </p>
-            <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginBottom: 14 }}>Last changed: 2 weeks ago</div>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginBottom: 14 }}>Last changed: 2 weeks ago</div>
             <Button
               variant="secondary" iconLeft={Edit2}
               className="w-full rounded-[8px] h-auto py-2 text-[12px] text-[#6E0F2D]"
@@ -57,8 +57,8 @@ export function DeductionRatesSection() {
                 <div style={{ background: "#fff", border: `1px solid ${T.borderDef}`, borderTop: "none", borderRadius: "0 0 16px 16px", padding: 20 }}>
                   <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 14 }}>
                     <div>
-                      <label style={labelStyle} htmlFor="deduction-rate-per-gram">Deduction Rate (₹ per gram) *</label>
-                      <NumberInput id="deduction-rate-per-gram" addonLeft="₹" step={0.01} defaultValue={5.2} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
+                      <label style={labelStyle} htmlFor="deduction-rate-per-gram">Deduction Rate (INR per gram) *</label>
+                      <NumberInput id="deduction-rate-per-gram" addonLeft="INR" step={0.01} defaultValue={5.2} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
                     </div>
                     <div>
                       <label style={labelStyle} htmlFor="applies-after-variance-grams">Applies After Variance (grams) *</label>
@@ -109,7 +109,7 @@ export function DeductionRatesSection() {
           <p style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, margin: "0 0 12px 0", lineHeight: 1.6 }}>
             Applied when returned resham (silk thread) weight is less than the standard issued quantity for the design.
           </p>
-          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginBottom: 14 }}>Last changed: 1 month ago</div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginBottom: 14 }}>Last changed: 1 month ago</div>
           <Button
             variant="secondary" iconLeft={Edit2}
             className="w-full rounded-[8px] h-auto py-2 text-[12px] text-[#6E0F2D]"
@@ -128,8 +128,8 @@ export function DeductionRatesSection() {
               >
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                   <div>
-                    <label style={labelStyle} htmlFor="deduction-rate-per-gram-2">Deduction Rate (₹ per gram) *</label>
-                    <NumberInput id="deduction-rate-per-gram-2" addonLeft="₹" step={0.01} defaultValue={15} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
+                    <label style={labelStyle} htmlFor="deduction-rate-per-gram-2">Deduction Rate (INR per gram) *</label>
+                    <NumberInput id="deduction-rate-per-gram-2" addonLeft="INR" step={0.01} defaultValue={15} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
                   </div>
                   <div>
                     <label style={labelStyle} htmlFor="applies-after-variance-grams-2">Applies After Variance (grams) *</label>
@@ -175,13 +175,13 @@ export function DeductionRatesSection() {
             display: "inline-block", background: "rgba(200,155,71,0.12)", border: `1px solid rgba(200,155,71,0.25)`,
             borderRadius: 999, padding: "3px 10px", marginBottom: 14,
           }}>
-            <span style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold }}>Jari is measured in Reels · 1 Bun = 4 Reels</span>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.antiqueGold }}>Jari is measured in Reels · 1 Bun = 4 Reels</span>
           </div>
           <div style={{ borderTop: `1px solid ${T.borderDef}`, margin: "0 0 12px 0" }} />
           <p style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, margin: "0 0 12px 0", lineHeight: 1.6 }}>
             Applied when returned jari is less than the standard issued quantity. Measured in reels, not grams.
           </p>
-          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginBottom: 14 }}>Last changed: 3 weeks ago</div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginBottom: 14 }}>Last changed: 3 weeks ago</div>
           <Button
             variant="secondary" iconLeft={Edit2}
             className="w-full rounded-[8px] h-auto py-2 text-[12px] text-[#6E0F2D]"
@@ -200,8 +200,8 @@ export function DeductionRatesSection() {
               >
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                   <div>
-                    <label style={labelStyle} htmlFor="deduction-rate-per-reel">Deduction Rate (₹ per reel) *</label>
-                    <NumberInput id="deduction-rate-per-reel" addonLeft="₹" step={0.01} defaultValue={42} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
+                    <label style={labelStyle} htmlFor="deduction-rate-per-reel">Deduction Rate (INR per reel) *</label>
+                    <NumberInput id="deduction-rate-per-reel" addonLeft="INR" step={0.01} defaultValue={42} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
                   </div>
                   <div>
                     <label style={labelStyle} htmlFor="applies-after-variance-reels">Applies After Variance (reels) *</label>
@@ -239,7 +239,7 @@ export function DeductionRatesSection() {
         padding: "16px 22px", display: "flex", alignItems: "center", justifyContent: "space-between",
       }}>
         <div>
-          <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "0.10em", color: T.taupe, textTransform: "uppercase", marginBottom: 5 }}>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, letterSpacing: "0.10em", color: T.taupe, textTransform: "uppercase", marginBottom: 5 }}>
             Current Variance Rule
           </div>
           <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 500, color: T.luxuryBrown }}>

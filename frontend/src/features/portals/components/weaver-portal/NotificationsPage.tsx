@@ -1,32 +1,20 @@
 
-import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { useLocation, useNavigate } from "react-router";
-import { createPortal } from "react-dom";
+import React, { useState, useMemo } from "react";
 import { useResponsive } from "../../../../hooks/useResponsive";
-import { useBatches, SareeRow } from "../../../production/contexts/BatchContext";
-import { useDesignLibrary, DesignEntry } from "../../../design-library/contexts/DesignLibraryContext";
-import { DesignCodeCard } from "../../../design-library/components/DesignLibraryPage";
-import { useMaterialIssue, MaterialIssueRecord, JARI_REEL_GRAMS } from "../../../materials/contexts/MaterialIssueContext";
-import { useWeaverPayments } from "../../../weavers/contexts/WeaverPaymentsContext";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { notificationsApi, BackendNotification } from "../../../../shared/api/notifications";
-import { motion, AnimatePresence, useInView } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import {
-  Bell, ClipboardList, CheckSquare, Palette, ArrowUpRight,
-  Wallet, Shield, Send, ChevronRight, X, ChevronLeft,
-  Package, Check, Eye, LogOut, Search, RotateCcw,
-  AlertCircle, Clock, Flower2, Layers, Info, Pencil,
-  Scissors, LayoutGrid, CreditCard, ClipboardCheck,
-  TrendingUp, ArrowRight, Sparkles, UserRound,
-  CheckCircle2, History, ListChecks,
-  AlertTriangle, Inbox, Zap,
+  Bell, X,
+  Check,
+  CheckCircle2,
+  AlertTriangle, Inbox, Zap, ArrowRight,
 } from "lucide-react";
-import { imgBKLogo } from "../../../../shared/constants/weaverImages";
 
 // ─── Design Tokens ─────────────────────────────────────────────────────────
 import {
-  C, F, SAREE_TYPE_RATES, DesignDetailCard, SareeTypeDetailCard, SectionTitle, Card, ProgressBar, StatusBadge, SignatureCanvas, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid, MobileBatchCard, CompletedBatchCard, BATCH_QUICK_FILTERS, BatchQuickFilterPills, WN_T, WN_G, WN_EASE, WN_NUM, WN_PRIORITY, WN_CATEGORY, WN_FILTERS, WNFadeUp, BatchCard, FadeUpBatch, BG_IMAGE, FABRIC_BG, WNFilter, WeaverNotif, WNPriority, WNCategory
+  F, WN_T, WN_G, WN_EASE, WN_NUM, WN_PRIORITY, WN_CATEGORY, WN_FILTERS, WNFadeUp, WNFilter, WeaverNotif, WNPriority, WNCategory
 } from './theme';
 import { Button, IconButton } from '../../../../shared/ui/primitives';
 
@@ -251,7 +239,7 @@ export function NotificationsPage() {
                                   <PIcon size={10} /> {pcfg.label}
                                 </span>
                               </div>
-                              <p style={{ fontFamily: F.u, fontWeight: 400, fontSize: 13, color: WN_T.taupe, lineHeight: 1.75, margin: "0 0 14px", display: selected ? "block" : "-webkit-box" as any, WebkitLineClamp: selected ? undefined : 2, WebkitBoxOrient: "vertical" as any, overflow: selected ? "visible" : "hidden" }}>
+                              <p style={{ fontFamily: F.u, fontWeight: 400, fontSize: 13, color: WN_T.taupe, lineHeight: 1.75, margin: "0 0 14px", display: (selected ? "block" : "-webkit-box") as React.CSSProperties["display"], WebkitLineClamp: selected ? undefined : 2, WebkitBoxOrient: "vertical" as React.CSSProperties["WebkitBoxOrient"], overflow: selected ? "visible" : "hidden" }}>
                                 {n.body}
                               </p>
                               <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" as const }}>
@@ -425,5 +413,3 @@ export function NotificationsPage() {
 }
 
 // ─── MOBILE SHELL ──────────────────────────────────────────────────────────
-type Tab5 = "batches" | "confirm" | "warp" | "payments";
-

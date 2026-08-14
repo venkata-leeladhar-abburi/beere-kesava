@@ -82,7 +82,6 @@ const AccountantHomePage      = lazy(() => import("./pages/accountant/HomePage")
 // Other views
 const MobileScanView = lazy(() => import("../features/scanning/components/MobileScanView").then(m => ({ default: m.MobileScanView })));
 
-// @ts-ignore
 import "../styles/mobile.css";
 
 export default function App() {

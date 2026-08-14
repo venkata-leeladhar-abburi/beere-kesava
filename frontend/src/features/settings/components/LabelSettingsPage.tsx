@@ -87,7 +87,7 @@ export function LabelSettingsPage() {
     setPrinter(local.printer);
     setConnectionType(local.connectionType);
     setScanFields(local.scanFields);
-    setLastSavedLabel(`Last saved: ${new Date(settings.updatedAt).toLocaleString()}`);
+    setLastSavedLabel(`Last saved: ${new Date(settings.updatedAt).toLocaleString("en-IN")}`);
   }, [settings]);
 
   const saveMutation = useMutation({
@@ -112,7 +112,7 @@ export function LabelSettingsPage() {
       }),
     onSuccess: (updated) => {
       queryClient.setQueryData(["label-settings"], updated);
-      setLastSavedLabel(`Last saved: ${new Date(updated.updatedAt).toLocaleString()}`);
+      setLastSavedLabel(`Last saved: ${new Date(updated.updatedAt).toLocaleString("en-IN")}`);
       toast.success("Label settings saved");
     },
     onError: (err: unknown) => {
@@ -150,7 +150,7 @@ export function LabelSettingsPage() {
         {/* Eyebrow */}
         <div
           style={{
-            fontFamily: F.mono,
+            fontFamily: "var(--font-mono)",
             fontSize: 12,
             color: T.antiqueGold,
             opacity: 0.5,
@@ -190,11 +190,11 @@ export function LabelSettingsPage() {
         </div>
         {/* Description */}
         <p
+          className="max-w-[480px]"
           style={{
             fontFamily: F.ui,
             fontSize: 14,
             color: "rgba(255,255,255,0.60)",
-            maxWidth: 480,
             margin: 0,
             lineHeight: 1.7,
           }}

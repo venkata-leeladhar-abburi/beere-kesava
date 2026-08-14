@@ -83,14 +83,14 @@ export function InactiveCustomersSection({
     },
     {
       id: "spend", header: "Total Spend Ever", accessor: row => row.spend,
-      cell: (_v, row) => <span style={{ color: T.luxuryBrown, fontFamily: F.mono }}>{formatMoney(rupees(Number(String(row.spend).replace(/,/g, "")) || 0))}</span>,
+      cell: (_v, row) => <span style={{ color: T.luxuryBrown, fontFamily: "var(--font-mono)" }}>{formatMoney(rupees(Number(String(row.spend).replace(/,/g, "")) || 0))}</span>,
     },
     {
       id: "action", header: "Action", accessor: () => null, type: "actions",
       cell: () => (
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <Button variant="link">Mark as Inactive</Button>
-          <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" as const }}>🔒 Superadmin only</span>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, whiteSpace: "nowrap" as const }}>🔒 Superadmin only</span>
         </div>
       ),
     },

@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { useNavigate } from "react-router";
 import { motion } from "motion/react";
-import { ChevronRight, Menu, UserRound, ShoppingCart, Package, ChevronLeft, LogOut, X } from "lucide-react";
-import { useAuth } from "../../../../contexts/AuthContext";
+import { ChevronRight, Menu, UserRound, ChevronLeft, LogOut, X } from "lucide-react";
 import { imgBKLogo } from "../../../../shared/constants/weaverImages";
 import { T, F, G, EASE } from "./theme";
 import { NAV_GROUPS, findNavGroup } from "./data";
@@ -105,15 +103,13 @@ export function SAMobileMenuDrawer({ open, onClose, activeTab, setTab }: {
 }
 
 export function SAMobileTopNav({ onMenuOpen, onBack, onProfile }: { onMenuOpen: () => void; onBack?: () => void; onProfile?: () => void }) {
-  const navigate = useNavigate();
-  const { selectRole } = useAuth();
   const [showProfile, setShowProfile] = useState(false);
   return (
     <motion.nav
       initial={{ y: -60, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: EASE }}
-      style={{ position: "sticky", top: 0, zIndex: 100, height: 60, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 18px", background: "rgba(255,253,249,0.96)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)" as any, borderBottom: `2px solid ${T.antiqueGold}`, boxShadow: "0 2px 20px rgba(74,6,27,0.05)" }}
+      style={{ position: "sticky", top: 0, zIndex: 100, height: 60, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 18px", background: "rgba(255,253,249,0.96)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", borderBottom: `2px solid ${T.antiqueGold}`, boxShadow: "0 2px 20px rgba(74,6,27,0.05)" }}
     >
       <IconButton
         icon={Menu}
@@ -145,7 +141,7 @@ export function SAMobileTopNav({ onMenuOpen, onBack, onProfile }: { onMenuOpen: 
           <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: "var(--z-tooltip)", background: "#FFFDF9", borderRadius: 14, border: `1px solid ${T.borderDef}`, boxShadow: "0 8px 32px rgba(44,24,16,0.14)", minWidth: 210, overflow: "hidden" }}>
             <div style={{ padding: "14px 16px", background: "rgba(196,146,58,0.06)", borderBottom: `1px solid ${T.borderDef}` }}>
               <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>Superadmin</div>
-              <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2 }}>Full Access · All Portals</div>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 2 }}>Full Access · All Portals</div>
             </div>
             <div style={{ padding: "6px 0" }}>
               <Button onClick={() => { setShowProfile(false); onProfile?.(); }} variant="tertiary" fullWidth

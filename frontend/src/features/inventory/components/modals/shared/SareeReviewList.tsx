@@ -1,12 +1,12 @@
 import React from "react";
 import { Package } from "lucide-react";
-import { FinishingReturn } from "../../../../finishing/contexts/FinishingContext";
-import { useBatches } from "../../../../production/contexts/BatchContext";
+import { FinishingReturn } from "@/features/finishing";
+import { useBatches } from "@/features/production";
 import { T, F } from "../../theme";
 import { StatusBadge } from "../../common/primitives";
 import { toPaise, fromPaise } from "../../../../../lib/gst";
 import { rupees } from "@/lib/domain/money";
-import { Money } from "@/shared/ui/domain";
+import { Money, EntityCode } from "@/shared/ui/domain";
 import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
 
 // ── Saree review list (shared by the quotation / invoice review steps) ────────
@@ -34,7 +34,7 @@ export function SareeReviewList({ sarees, prices, applyGst, gstPct, docLabel }: 
   const rows: ReviewRow[] = sarees.map(s => {
     const sId = s.sareeId || s.id;
     const bId = batches.find(b => b.rows.some(r => r.sareeId === sId))?.batchId;
-    const p = parseFloat(prices[sId]) || 0;
+    const p = fromPaise(toPaise(Number(prices[sId]) || 0));
     return { sId, bId, p, s };
   });
 
@@ -46,8 +46,8 @@ export function SareeReviewList({ sarees, prices, applyGst, gstPct, docLabel }: 
           <Package size={15} color={T.taupe} style={{ flexShrink: 0 }} />
           <div style={{ minWidth: 0 }}>
             <div style={{ display: "flex", alignItems: "baseline", gap: 7, flexWrap: "wrap" as const }}>
-              <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{r.sId}</span>
-              {r.bId && <span style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, background: "rgba(200,155,71,0.08)", border: "1px solid rgba(200,155,71,0.18)", padding: "1px 5px", borderRadius: 4 }}>{r.bId}</span>}
+              <EntityCode type="saree" value={r.sId} />
+              {r.bId && <EntityCode type="batch" value={r.bId} />}
               <StatusBadge status={r.s.inventoryStatus} />
             </div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3 }}>
@@ -58,9 +58,10 @@ export function SareeReviewList({ sarees, prices, applyGst, gstPct, docLabel }: 
       ),
     },
     {
+      // eslint-disable-next-line no-restricted-syntax -- column header label (unit annotation), not a rendered money value; the amount itself renders via <Money> below
       id: "amount", header: "Amount (₹)", accessor: r => r.p, type: "number", align: "end", width: 130,
       cell: (_v, r) => (
-        <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: r.p ? T.luxuryBrown : T.crimson }}>
+        <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: r.p ? T.luxuryBrown : T.crimson }}>
           {r.p ? <Money value={rupees(r.p)} /> : "not priced"}
         </span>
       ),
@@ -78,17 +79,17 @@ export function SareeReviewList({ sarees, prices, applyGst, gstPct, docLabel }: 
       <div style={{ marginTop: 14, background: T.bgGold, border: `1px solid ${T.borderGold}`, borderRadius: 12, padding: "14px 18px", display: "flex", flexDirection: "column", gap: 6 }}>
         <div style={{ display: "flex", justifyContent: "space-between" }}>
           <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Subtotal ({sarees.length} sarees)</span>
-          <span style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown }}><Money value={rupees(subtotal)} /></span>
+          <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}><Money value={rupees(subtotal)} /></span>
         </div>
         {applyGst && (
           <div style={{ display: "flex", justifyContent: "space-between" }}>
             <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>GST ({gstPct}%)</span>
-            <span style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown }}><Money value={rupees(gstAmount)} /></span>
+            <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}><Money value={rupees(gstAmount)} /></span>
           </div>
         )}
         <div style={{ display: "flex", justifyContent: "space-between", borderTop: `1px solid ${T.borderGold}`, paddingTop: 8, marginTop: 2 }}>
           <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>Grand Total</span>
-          <span style={{ fontFamily: F.mono, fontSize: 18, fontWeight: 700, color: T.royalBurgundy }}><Money value={rupees(subtotal + gstAmount)} /></span>
+          <span style={{ fontFamily: F.ui, fontSize: 18, fontWeight: 700, color: T.royalBurgundy }}><Money value={rupees(subtotal + gstAmount)} /></span>
         </div>
       </div>
     </div>

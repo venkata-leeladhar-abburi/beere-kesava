@@ -41,8 +41,8 @@ export function TaxSummary({ rows, totalRow, interState }: TaxSummaryProps) {
         </tr>
       </thead>
       <tbody>
-        {rows.map((r, i) => (
-          <tr key={i}>
+        {rows.map((r) => (
+          <tr key={r.hsn}>
             <td style={{ fontFamily: "var(--font-code)" }}>{r.hsn}</td>
             <td data-num>{r.taxableLabel}</td>
             {interState ? <td data-num>{r.igstLabel}</td> : (
@@ -57,7 +57,7 @@ export function TaxSummary({ rows, totalRow, interState }: TaxSummaryProps) {
       </tbody>
       <tfoot>
         <tr style={{ fontWeight: 600 }}>
-          <td></td>
+          <td>Total</td>
           <td data-num>{totalRow.taxableLabel}</td>
           {interState ? <td data-num>{totalRow.igstLabel}</td> : (
             <>

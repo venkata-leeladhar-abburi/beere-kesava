@@ -5,7 +5,7 @@ import { SignatureCanvas, SignatureCanvasHandle } from "./SignatureCanvas";
 import { Button } from "../../../../shared/ui/primitives";
 
 // ── Signature capture block (mirrors WorkerWeavers WeaverSigBlock, T/F tokens) ─
-export function SignatureBlock({ weaverName, weaverPhone, sigMethod, setSigMethod, signed, setSigned, remoteSent, setRemoteSent, remoteConfirmed, setRemoteConfirmed, canvasRef }: {
+export function SignatureBlock({ weaverName, weaverPhone, sigMethod, setSigMethod, setSigned, remoteSent, setRemoteSent, remoteConfirmed, setRemoteConfirmed, canvasRef }: {
   weaverName: string; weaverPhone: string;
   sigMethod: "none" | "here" | "remote"; setSigMethod: (m: "none" | "here" | "remote") => void;
   signed: boolean; setSigned: (v: boolean) => void;
@@ -58,7 +58,7 @@ export function SignatureBlock({ weaverName, weaverPhone, sigMethod, setSigMetho
             <div style={{ background: "rgba(30,102,64,0.10)", border: `1px solid ${T.green}`, borderRadius: 12, padding: 18, textAlign: "center" as const }}>
               <CheckCircle2 size={26} color={T.green} style={{ margin: "0 auto 8px" }} />
               <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.green, marginBottom: 4 }}>Signature Received!</div>
-              <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>Signed by {weaverName} · Just now</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Signed by {weaverName} · Just now</div>
             </div>
           ) : remoteSent ? (
             <div style={{ background: "rgba(196,146,58,0.12)", border: `1px solid ${T.antiqueGold}`, borderRadius: 12, padding: 18, textAlign: "center" as const }}>
@@ -71,7 +71,7 @@ export function SignatureBlock({ weaverName, weaverPhone, sigMethod, setSigMetho
             <>
               <div style={{ marginBottom: 14 }}>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 3 }}>Sending to</div>
-                <div style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>+91 {weaverPhone}</div>
+                <div style={{ fontFamily: F.ui, fontVariantNumeric: "tabular-nums", fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>+91 {weaverPhone}</div>
               </div>
               <Button variant="primary" size="lg" onClick={() => setRemoteSent(true)} iconLeft={Send} className="w-full">
                 Send Signature Request

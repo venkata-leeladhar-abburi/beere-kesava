@@ -11,7 +11,7 @@ const JARI_REEL_GRAMS = 230;
 const REELS_PER_BUN = 4;
 
 function rowToGrams(row: ReturnRowState): number {
-  const qty = parseFloat(row.quantity) || 0;
+  const qty = Number(row.quantity) || 0;
   if (row.materialType === "Jari") {
     return row.jariUnit === "Buns" ? qty * REELS_PER_BUN * JARI_REEL_GRAMS : qty * JARI_REEL_GRAMS;
   }
@@ -39,7 +39,7 @@ export function ReturnMaterialRowEditor({ row, outstandingLines, onChange, onRem
   showRemove: boolean;
 }) {
   const patch = (p: Partial<ReturnRowState>) => onChange({ ...row, ...p });
-  const qtyNum = parseFloat(row.quantity) || 0;
+  const qtyNum = Number(row.quantity) || 0;
   const outstanding = findOutstandingForRow(row, outstandingLines);
   const rowGrams = rowToGrams(row);
   const overOutstanding = outstanding && rowGrams > outstanding.outstandingGrams;
@@ -60,33 +60,33 @@ export function ReturnMaterialRowEditor({ row, outstandingLines, onChange, onRem
 
       {/* Material Type */}
       <div style={{ marginBottom: 16 }}>
-        <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 8 }}>Material Type</label>
-        <PillTab options={["Warp", "Resham", "Jari"]} value={row.materialType} onChange={v => patch({ materialType: v as any, description: "", quantity: "" })} />
+        <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 8 }}>Material Type</span>
+        <PillTab options={["Warp", "Resham", "Jari"]} value={row.materialType} onChange={v => patch({ materialType: v as ReturnRowState["materialType"], description: "", quantity: "" })} />
       </div>
 
       {row.materialType === "Warp" && (
         <div style={{ marginBottom: 16 }}>
-          <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 8 }}>Warp Subtype</label>
-          <PillTab options={["Resham Warp", "Jari Warp"]} value={row.warpSubtype} onChange={v => patch({ warpSubtype: v as any })} />
+          <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 8 }}>Warp Subtype</span>
+          <PillTab options={["Resham Warp", "Jari Warp"]} value={row.warpSubtype} onChange={v => patch({ warpSubtype: v as ReturnRowState["warpSubtype"] })} />
         </div>
       )}
 
       {row.materialType === "Jari" && (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 16 }}>
           <div>
-            <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 8 }}>Jari Type</label>
-            <PillTab options={["Polyester", "Silk Fast"]} value={row.jariType} onChange={v => patch({ jariType: v as any })} />
+            <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 8 }}>Jari Type</span>
+            <PillTab options={["Polyester", "Silk Fast"]} value={row.jariType} onChange={v => patch({ jariType: v as ReturnRowState["jariType"] })} />
           </div>
           <div>
-            <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 8 }}>Jari Grade</label>
-            <PillTab options={["1G", "2G", "3G", "4G", "5G"]} value={row.jariGrade} onChange={v => patch({ jariGrade: v as any })} />
+            <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 8 }}>Jari Grade</span>
+            <PillTab options={["1G", "2G", "3G", "4G", "5G"]} value={row.jariGrade} onChange={v => patch({ jariGrade: v as ReturnRowState["jariGrade"] })} />
           </div>
         </div>
       )}
 
       {(row.materialType === "Resham" || row.materialType === "Jari") && (
         <div style={{ marginBottom: 16 }}>
-          <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 8 }}>Color</label>
+          <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 8 }}>Color</span>
           <ColorSwatchPicker colors={row.materialType === "Jari" ? JARI_COLORS : RESHAM_COLORS} value={row.jariColor} onChange={v => patch({ jariColor: v })} />
         </div>
       )}
@@ -94,10 +94,11 @@ export function ReturnMaterialRowEditor({ row, outstandingLines, onChange, onRem
       {/* Description + Quantity */}
       <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 14 }}>
         <div>
-          <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 6 }}>
+          <label htmlFor="return-row-description" style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 6 }}>
             Description (Optional)
           </label>
           <Input
+            id="return-row-description"
             value={row.description}
             onChange={e => patch({ description: e.target.value })}
             placeholder={
@@ -109,9 +110,9 @@ export function ReturnMaterialRowEditor({ row, outstandingLines, onChange, onRem
           />
         </div>
         <div>
-          <label style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 6 }}>
+          <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 6 }}>
             Quantity {row.materialType === "Jari" ? "(Reels / Buns)" : `(${row.warpReshamUnit || "kg"})`}
-          </label>
+          </span>
           {row.materialType === "Jari" ? (
             <>
               <div style={{ display: "flex", gap: 6, marginBottom: 6 }}>
@@ -120,7 +121,7 @@ export function ReturnMaterialRowEditor({ row, outstandingLines, onChange, onRem
                     key={u}
                     variant={row.jariUnit === u ? "primary" : "secondary"}
                     size="sm"
-                    onClick={() => patch({ jariUnit: u as any })}
+                    onClick={() => patch({ jariUnit: u as ReturnRowState["jariUnit"] })}
                     className="flex-1"
                   >{u}</Button>
                 ))}
@@ -135,7 +136,7 @@ export function ReturnMaterialRowEditor({ row, outstandingLines, onChange, onRem
                 <span style={{ position: "absolute" as const, right: 10, top: "50%", transform: "translateY(-50%)", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{row.jariUnit}</span>
               </div>
               {row.quantity && (
-                <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, marginTop: 4 }}>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.antiqueGold, marginTop: 4 }}>
                   = {reelsToBuns.toFixed(reelsToBuns % 1 === 0 ? 0 : 1)} {row.jariUnit === "Reels" ? "Buns" : "Reels"} <span style={{ color: T.taupe }}>(1 Bun = 4 Reels)</span>
                 </div>
               )}
@@ -148,7 +149,7 @@ export function ReturnMaterialRowEditor({ row, outstandingLines, onChange, onRem
                     key={u}
                     variant={(row.warpReshamUnit || "kg") === u ? "primary" : "secondary"}
                     size="sm"
-                    onClick={() => patch({ warpReshamUnit: u as any })}
+                    onClick={() => patch({ warpReshamUnit: u as ReturnRowState["warpReshamUnit"] })}
                     className="flex-1"
                   >{u}</Button>
                 ))}

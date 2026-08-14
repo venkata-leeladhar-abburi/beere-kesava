@@ -4,7 +4,7 @@ import { screen, waitFor, fireEvent } from "@testing-library/react";
 import { renderWithQueryClient } from "../../../test/render";
 import { BulkOrderProvider, useBulkOrders, type BulkOrder } from "./BulkOrderContext";
 import { bulkOrdersApi, type BackendBulkOrder } from "../../../shared/api/bulk-orders";
-import { customersApi } from "../../../shared/api/customers";
+import { customersApi, type BackendCustomer } from "../../../shared/api/customers";
 
 vi.mock("../../../shared/api/bulk-orders", async (importOriginal) => {
   const mod = await importOriginal<typeof import("../../../shared/api/bulk-orders")>();
@@ -132,7 +132,7 @@ describe("BulkOrderContext", () => {
       pageSize: 100,
     });
     vi.mocked(customersApi.list).mockResolvedValue({
-      items: [{ id: "CUST-001", name: "Test Customer" } as any],
+      items: [{ id: "CUST-001", name: "Test Customer" } as BackendCustomer],
       total: 1,
       page: 1,
       pageSize: 100,

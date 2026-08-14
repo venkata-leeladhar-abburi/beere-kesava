@@ -14,7 +14,7 @@ import { formatMoney, rupees } from "@/lib/domain/money";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { Modal } from "../../../../shared/ui/overlay";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
-import { SariTagPrintModal } from "../../../production/components/SariTagPrintModal";
+import { SariTagPrintModal } from "@/features/production";
 import { useDocument } from "../../../../shared/ui/document";
 
 type SareeRow = SareeTag & { purchaseId: string; invoiceNumber: string; supplier: string };
@@ -30,7 +30,7 @@ export function SareeInventoryTable({ rows }: { rows: SareeRow[] }) {
   }
 
   const mono = (color: string, extra?: React.CSSProperties): React.CSSProperties => ({
-    fontFamily: F.mono, fontSize: 12, color, ...extra,
+    fontFamily: "var(--font-mono)", fontSize: 12, color, ...extra,
   });
 
   const rowId = (s: SareeRow) => `${s.purchaseId}-${s.id}`;
@@ -51,9 +51,11 @@ export function SareeInventoryTable({ rows }: { rows: SareeRow[] }) {
           </div>
           <div style={{ fontFamily: "var(--font-code)", fontSize: "var(--doc-code)", color: "var(--doc-muted)" }}>{s.supplier}</div>
         </div>
+        {/* eslint-disable-next-line no-restricted-syntax -- printable document template */}
         <table className="bk-doc__table">
           <thead>
             <tr>
+              {/* eslint-disable-next-line no-restricted-syntax -- printable document template */}
               {["Saree Code", "Type", "Colour", "Weight"].map(h => <th key={h}>{h}</th>)}
             </tr>
           </thead>
@@ -88,8 +90,10 @@ export function SareeInventoryTable({ rows }: { rows: SareeRow[] }) {
     {
       id: "photo", header: "Photo", accessor: s => s.imageUrl,
       cell: (_v, s) => s.imageUrl ? (
-        <img src={s.imageUrl} alt={s.id} onClick={() => setPreview(s.imageUrl!)}
-          style={{ width: 40, height: 40, borderRadius: 8, objectFit: "cover", cursor: "pointer", border: `1px solid ${T.borderDef}` }} />
+        <button type="button" onClick={() => setPreview(s.imageUrl!)} className="p-0 border-0 bg-transparent cursor-pointer">
+          <img src={s.imageUrl} alt={s.id}
+            style={{ width: 40, height: 40, borderRadius: 8, objectFit: "cover", border: `1px solid ${T.borderDef}` }} />
+        </button>
       ) : (
         <div style={{ width: 40, height: 40, borderRadius: 8, background: T.silkCream, border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <ImageIcon size={14} color={T.taupe} />

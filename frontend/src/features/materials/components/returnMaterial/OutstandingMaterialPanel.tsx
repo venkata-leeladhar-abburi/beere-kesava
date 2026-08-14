@@ -31,20 +31,24 @@ export function OutstandingMaterialPanel({ loading, lines, recipientLabel }: {
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column" as const, gap: 8 }}>
-          {lines.map((line, idx) => {
+          {lines.map((line) => {
             const detail = line.materialType === "Warp"
               ? line.warpSubtype
               : line.materialType === "Jari"
                 ? `${line.jariType ?? ""} ${line.jariGrade ?? ""} ${line.jariColor ?? ""}`.replace(/\s+/g, " ").trim()
                 : line.jariColor;
+            // WeaverOutstandingLine has no id — each line is already a unique
+            // material variant (type + subtype/grade/color), so that
+            // combination is a stable natural key.
+            const lineKey = `${line.materialType}-${line.warpSubtype ?? ""}-${line.jariType ?? ""}-${line.jariGrade ?? ""}-${line.jariColor ?? ""}`;
             return (
-              <div key={idx} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "8px 12px" }}>
+              <div key={lineKey} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "8px 12px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   {materialIcon(line.materialType)}
                   <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: T.luxuryBrown }}>{line.materialType}</span>
                   {detail && <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{detail}</span>}
                 </div>
-                <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>
+                <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>
                   {formatOutstandingGrams(line.materialType, line.outstandingGrams)}
                 </span>
               </div>

@@ -35,7 +35,7 @@ describe("RateRequestsService.approve", () => {
     prisma.rateChangeRequest.findUnique.mockResolvedValue(existing);
 
     let capturedTx: any;
-    prisma.$transaction.mockImplementation(async (fn: any) => {
+    prisma.$transaction.mockImplementation((fn: any) => {
       const tx = {
         rateChangeRequest: {
           update: jest.fn().mockResolvedValue({ ...existing, status: "APPROVED" }),
@@ -86,7 +86,7 @@ describe("RateRequestsService.approve", () => {
     prisma.rateChangeRequest.findUnique.mockResolvedValue(existing);
 
     let capturedTx: any;
-    prisma.$transaction.mockImplementation(async (fn: any) => {
+    prisma.$transaction.mockImplementation((fn: any) => {
       capturedTx = {
         rateChangeRequest: { update: jest.fn().mockResolvedValue(existing) },
         sareeTypeRate: { update: jest.fn().mockResolvedValue({}) },

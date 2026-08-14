@@ -15,6 +15,7 @@ import { Alert } from "../../../../shared/ui/feedback";
 import { useDashboardMetrics } from "../beere-dashboard/hooks/useDashboardMetrics";
 import { useDashboardAnalytics } from "../beere-dashboard/hooks/useDashboardAnalytics";
 import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
+import { jariToReels, formatBunsReels } from "../../../../shared/lib/weightUnits";
 import {
   Users, Layers, IndianRupee as IcoIndianRupee, Truck, Clock,
 } from "lucide-react";
@@ -62,14 +63,15 @@ function SAHero() {
           ))}
         </div>
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 1.0 }}
-          style={{ fontFamily: F.ui, fontWeight: 400, fontSize: "clamp(15px, 3.5vw, 18px)", color: "rgba(245,232,208,0.90)", lineHeight: 1.85, margin: 0, maxWidth: 440, letterSpacing: "0.05px" }}
+          className="max-w-[440px]"
+          style={{ fontFamily: F.ui, fontWeight: 400, fontSize: "clamp(15px, 3.5vw, 18px)", color: "rgba(245,232,208,0.90)", lineHeight: 1.85, margin: 0, letterSpacing: "0.05px" }}
         >
           Full visibility and control over all operations — rates, approvals, audit logs, and more.
         </motion.p>
       </div>
 
       {[180, 280, 380].map((sz, i) => (
-        <motion.div key={i}
+        <motion.div key={sz}
           initial={{ opacity: 0, scale: 0.7 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1.2, delay: 0.8 + i * 0.18, ease: EASE }}
@@ -82,11 +84,11 @@ function SAHero() {
 
 /** Icon set in the same order as the metrics array from useDashboardMetrics, plus a superadmin-only "Pending Approvals" tile. */
 const SA_ICONS = [
-  <Users size={22} color={T.warmCream} />,
-  <Layers size={22} color={T.warmCream} />,
-  <IcoIndianRupee size={22} color={T.warmCream} />,
-  <CheckCircle2 size={22} color={T.warmCream} />,
-  <Truck size={22} color={T.warmCream} />,
+  <Users key="users" size={22} color={T.warmCream} />,
+  <Layers key="layers" size={22} color={T.warmCream} />,
+  <IcoIndianRupee key="rupee" size={22} color={T.warmCream} />,
+  <CheckCircle2 key="check-circle" size={22} color={T.warmCream} />,
+  <Truck key="truck" size={22} color={T.warmCream} />,
 ];
 
 function SAMetricsBar() {
@@ -96,6 +98,7 @@ function SAMetricsBar() {
   const saMetrics = [
     ...metrics.map((m, i) => ({
       ...m,
+      crimsonHi: false,
       ico: SA_ICONS[i],
       val: metricsError ? "Error" : metricsLoading ? "—" : m.val,
       sub: metricsError ? "Failed to load" : m.sub,
@@ -119,8 +122,8 @@ function SAMetricsBar() {
       style={{ position: "relative", zIndex: 20 }}
     >
       <div className="grid grid-cols-2 xl:flex" style={{ background: G.card, borderRadius: 28, alignItems: "stretch", boxShadow: "0 30px 80px rgba(0,0,0,0.32), 0 0 0 1px rgba(200,155,71,0.16)", overflow: "hidden", minHeight: 140 }}>
-        {saMetrics.map((m: any, i) => (
-          <motion.div key={i}
+        {saMetrics.map((m, i) => (
+          <motion.div key={m.label}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.6 + i * 0.09, ease: EASE }}
@@ -227,12 +230,13 @@ function SARawMaterial() {
 
   const warpStock = stockItems.filter(i => i.materialType === "WARP").reduce((s, i) => s + Number(i.currentStock), 0);
   const reshamStock = stockItems.filter(i => i.materialType === "RESHAM").reduce((s, i) => s + Number(i.currentStock), 0);
-  const jariStock = stockItems.filter(i => i.materialType === "JARI").reduce((s, i) => s + Number(i.currentStock), 0);
+  const jariReels = stockItems.filter(i => i.materialType === "JARI").reduce((s, i) => s + jariToReels(Number(i.currentStock), i.unit || "REEL"), 0);
+  const jariBuns = Math.floor(jariReels / 4);
 
   const mats = MATS.map(m => {
     if (m.name === "Warp") return { ...m, stock: `${warpStock} kg` };
     if (m.name === "Resham") return { ...m, stock: `${reshamStock} kg` };
-    if (m.name === "Jari") return { ...m, stock: `${jariStock} Buns` };
+    if (m.name === "Jari") return { ...m, stock: `${jariBuns} Buns`, stockLabel: formatBunsReels(jariReels) };
     return m;
   });
 

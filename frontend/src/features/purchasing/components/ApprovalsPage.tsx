@@ -1,24 +1,22 @@
 import React, { useState } from "react";
 import { usePO } from "../contexts/POContext";
-import { useSuppliers } from "../../suppliers/contexts/SupplierContext";
+import { useSuppliers } from "@/features/suppliers";
 import { PODocumentModal } from "./PODocumentModal";
 import { toast } from "sonner";
 
 import { T, F } from "./approvals/tokens";
-import { WARP_DATA, RATE_DATA } from "./approvals/data";
 import { ApprovalsHeader } from "./approvals/ApprovalsHeader";
 import { StatsStrip } from "./approvals/StatsStrip";
 import { TabsNav, TabContent } from "./approvals/TabContent";
 import { HistorySection } from "./approvals/HistorySection";
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { warpRequestsApi } from "../../../shared/api/warpRequests";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { rateRequestsApi } from "../../../shared/api/rateRequests";
 
 // ─── Main component ───────────────────────────────────────────────────────────
 export function ApprovalsPage() {
-  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<"po" | "ext" | "warp" | "rate">("po");
   const [histFilter, setHistFilter] = useState("All History");
   const [histPeriod, setHistPeriod] = useState("This Month");

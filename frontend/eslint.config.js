@@ -32,6 +32,7 @@ export default tseslint.config(
     ignores: [
       "dist/**",
       "node_modules/**",
+      "*.cjs",
       // BK Loom design-system Phase 3 (design-system/03-PRIMITIVES.md, Step 1 /
       // design-system/08-GOVERNANCE.md, Part D.1): only the retired, unreachable
       // shadcn/radix files are excluded now. Everything else under shared/ui/
@@ -82,8 +83,15 @@ export default tseslint.config(
       // violation visible (and counted) without blocking the Phase-1 gate;
       // the fix is scoped as its own phase in the roadmap, not swept under.
       ...Object.fromEntries(
-        Object.entries(jsxA11y.configs.recommended.rules).map(([rule]) => [rule, "warn"])
+        Object.entries(jsxA11y.configs.recommended.rules || {}).map(([rule]) => [rule, "warn"])
       ),
+      // `label-has-for` is deprecated and superseded by `label-has-associated-control`
+      // (which we do enforce above). Unlike its replacement, its default options
+      // require a label to satisfy BOTH `nesting` and `id` simultaneously, which
+      // is stricter than WCAG requires and not achievable with this codebase's
+      // <Field> composition pattern (control rendered as a sibling, associated via
+      // htmlFor). Turned off to avoid enforcing two conflicting label rules.
+      "jsx-a11y/label-has-for": "off",
 
       // ── Imports ──────────────────────────────────────────────────────────
       "import/no-restricted-paths": [
@@ -509,5 +517,5 @@ export default tseslint.config(
     },
   },
 
-  prettierConfig
+  /** @type {any} */ (prettierConfig)
 );

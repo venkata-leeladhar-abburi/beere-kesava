@@ -26,7 +26,7 @@ describe("WarpRequestsService.list (weaver self-scoping)", () => {
   });
 
   it("combines status and weaverId filters when both are supplied", async () => {
-    await service.list("PENDING" as any, "weaver-7");
+    await service.list("PENDING", "weaver-7");
 
     expect(prisma.warpRequest.findMany).toHaveBeenCalledWith(
       expect.objectContaining({ where: { status: "PENDING", weaverId: "weaver-7" } }),

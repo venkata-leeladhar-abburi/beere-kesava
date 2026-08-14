@@ -2,7 +2,7 @@ export interface Vendor {
   id: string; name: string; initials: string; contactName: string;
   phone: string; whatsapp?: string; city: string; state: string;
   address: string; gstCode: string; type: string; terms: string;
-  bankName?: string; accountNo?: string; notes?: string;
+  bankName?: string; accountNo?: string; notes?: string; visitingCard?: string;
   // The overloaded-field pattern design-system/06-DOMAIN.md's audit calls out
   // (Part A.3/D.1) — mixes PERSON_STATUS ("active"/"inactive") with a payment
   // concept ("overdue"). Left as one union rather than split into two typed

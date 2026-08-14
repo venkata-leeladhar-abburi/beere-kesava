@@ -6,13 +6,13 @@ import { Home, ShoppingBag, Package, Users, BarChart2 } from "lucide-react";
 import { SECTION_NAV_GLOBAL_STYLE } from "../../../shared/ui/SectionNavigator";
 import { useResponsive } from "../../../hooks/useResponsive";
 import { Button } from "../../../shared/ui/primitives";
-import { InventoryPage as AdminInventoryPage } from "../../inventory/components/InventoryPage";
+import { InventoryPage as AdminInventoryPage } from "@/features/inventory";
 
 // ─── Price Visibility Context ────────────────────────────────────────────────
 // Shop staff (role="shop") cannot see monetary values.
 // Admins and superadmins who access the shop portal CAN see prices.
 import { DataAccessProvider } from "@/shared/ui/domain";
-import { ShopPriceContext, F, TEAL } from "./shop-staff/theme";
+import { ShopPriceContext, F } from "./shop-staff/theme";
 import { ShopHome } from "./shop-staff/ShopHome";
 import { NewSaleFlow } from "./shop-staff/NewSaleFlow";
 import { ProcessReturn } from "./shop-staff/ProcessReturn";
@@ -81,7 +81,6 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
       routerNavigate("/shop/home");
     }
   };
-  const [notifOpen, setNotifOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [showProfile, setShowProfile] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);

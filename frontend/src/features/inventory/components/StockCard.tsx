@@ -70,7 +70,7 @@ export function StockCard({ s, onView }: { s: StockSaree; onView: (s: StockSaree
             <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: "#FFFDF9" }}>{s.initials}</span>
           </div>
           <div>
-            <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.royalBurgundy, marginBottom: 3 }}>{s.id}</div>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, color: T.royalBurgundy, marginBottom: 3 }}>{s.id}</div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
               {s.source === "factory"  ? `🏭 Factory · Loom ${s.loom}`
              : s.source === "external" ? `🚚 ${s.supplier} · ${s.invoiceNumber}`
@@ -95,7 +95,7 @@ export function StockCard({ s, onView }: { s: StockSaree; onView: (s: StockSaree
         {[
           { label: "Weight",   val: s.weight,   icon: <Scales size={13} color={T.taupe} /> },
           { label: s.source === "external" ? "Received" : "QC Date", val: s.qcDate, icon: <CalendarBlank size={13} color={T.taupe} /> },
-          { label: "Design",   val: s.design,   icon: <Palette size={13} color={T.taupe} />, mono: true },
+          { label: "Design",   val: s.design,   icon: <Palette size={13} color={T.taupe} /> },
           { label: "Type",     val: s.sareeType, icon: <Tag size={13} color={T.taupe} /> },
         ].map(r => (
           <div key={r.label}>
@@ -103,7 +103,7 @@ export function StockCard({ s, onView }: { s: StockSaree; onView: (s: StockSaree
               {r.icon}
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px" }}>{r.label}</span>
             </div>
-            <div style={{ fontFamily: r.mono ? F.mono : F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{r.val}</div>
+            <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, fontVariantNumeric: "tabular-nums" }}>{r.val}</div>
           </div>
         ))}
       </div>
@@ -114,7 +114,7 @@ export function StockCard({ s, onView }: { s: StockSaree; onView: (s: StockSaree
             {s.status === "sold" ? "Sold To" : "Wholesale Order"}
           </div>
           <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{s.customer}</div>
-          {s.saleRef && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, marginTop: 2 }}>{s.saleRef}</div>}
+          {s.saleRef && <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy, marginTop: 2 }}>{s.saleRef}</div>}
           {s.assignedAt && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>Assigned: {s.assignedAt}</div>}
         </div>
       )}

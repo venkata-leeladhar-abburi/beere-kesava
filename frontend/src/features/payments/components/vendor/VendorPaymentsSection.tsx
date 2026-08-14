@@ -5,8 +5,8 @@ import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
-import { PurchaseOrder, usePO } from "../../../purchasing/contexts/POContext";
-import { PODocumentModal } from "../../../purchasing/components/PODocumentModal";
+import { PurchaseOrder, usePO } from "@/features/purchasing";
+import { PODocumentModal } from "@/features/purchasing";
 import { vendorPaymentsApi } from "../../../../shared/api/payments";
 import { vendorBillsApi } from "../../../../shared/api/vendor-bills";
 import { EASE, F, T, useFirms, DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../theme";
@@ -24,7 +24,8 @@ import { RecordVendorPaymentSidebar } from "./RecordVendorPaymentSidebar";
 import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
-import { Money } from "@/shared/ui/domain";
+import { EntityCode, Money } from "@/shared/ui/domain";
+import { toPaise, fromPaise } from "@/lib/gst";
 
 const SHOW_OVERDUE_ALERT = false;
 
@@ -184,7 +185,7 @@ export function VendorPaymentsSection() {
 
   const selVP = vendorPayments.find(v => v.id === selVendor) ?? vendorPayments[0];
   const selBalance = selVP ? selVP.invoiceAmt - selVP.paidAmt : 0;
-  const afterPay = selBalance - (parseFloat(payAmount) || 0);
+  const afterPay = fromPaise(toPaise(selBalance) - (toPaise(Number(payAmount)) || 0));
 
   // Real vendor names from the actual PO/vendor-bill data — was previously a
   // hardcoded list of five made-up names that never matched a real vendor,
@@ -227,22 +228,22 @@ export function VendorPaymentsSection() {
     },
     {
       id: "po", header: "PO Number", accessor: vp => vp.poNumber,
-      cell: (_v, vp) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 600 }}>{vp.poNumber}</span>,
+      cell: (_v, vp) => <EntityCode type="purchaseOrder" value={vp.poNumber} size="sm" />,
     },
     {
       id: "invoiceAmt", header: "Invoice Amt", accessor: vp => vp.invoiceAmt, type: "number",
-      cell: (_v, vp) => <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14 }}><Money value={rupees(vp.invoiceAmt)} /></span>,
+      cell: (_v, vp) => <span style={{ fontWeight: 700, fontSize: 14 }}><Money value={rupees(vp.invoiceAmt)} /></span>,
     },
     {
       id: "paidAmt", header: "Paid Amt", priority: 3, accessor: vp => vp.paidAmt, type: "number",
-      cell: (_v, vp) => <span style={{ fontFamily: F.mono, color: T.green, fontWeight: 600 }}><Money value={rupees(vp.paidAmt)} /></span>,
+      cell: (_v, vp) => <span style={{ color: T.green, fontWeight: 600 }}><Money value={rupees(vp.paidAmt)} /></span>,
     },
     {
       id: "balance", header: "Balance Due", accessor: vp => vp.invoiceAmt - vp.paidAmt, type: "number",
       cell: (_v, vp) => {
         const balance = vp.invoiceAmt - vp.paidAmt;
         return (
-          <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: balance === 0 ? T.green : vp.status === "Overdue" ? T.crimson : T.antiqueGold }}>
+          <span style={{ fontWeight: 700, fontSize: 14, color: balance === 0 ? T.green : vp.status === "Overdue" ? T.crimson : T.antiqueGold }}>
             {balance === 0 ? "Paid ✓" : <Money value={rupees(balance)} />}
           </span>
         );
@@ -253,7 +254,7 @@ export function VendorPaymentsSection() {
       cell: (_v, vp) => (
         <span style={{ color: vp.status === "Overdue" ? T.crimson : T.taupe, fontWeight: vp.status === "Overdue" ? 600 : 400 }}>
           {vp.dueDate}
-          {vp.daysOverdue && <span style={{ fontFamily: F.mono, fontSize: 12, marginLeft: 6, background: "rgba(192,57,43,0.10)", color: T.crimson, padding: "1px 6px", borderRadius: 4 }}>{vp.daysOverdue}d late</span>}
+          {vp.daysOverdue && <span style={{ fontSize: 12, marginLeft: 6, background: "rgba(192,57,43,0.10)", color: T.crimson, padding: "1px 6px", borderRadius: 4, fontVariantNumeric: "tabular-nums" }}>{vp.daysOverdue}d late</span>}
         </span>
       ),
     },
@@ -264,7 +265,7 @@ export function VendorPaymentsSection() {
     {
       id: "utr", header: "UTR", priority: 3, accessor: vp => vp.utr,
       cell: (_v, vp) => vp.utr
-        ? <span style={{ fontFamily: F.mono, fontSize: 12, color: T.green }}>{vp.utr}</span>
+        ? <span style={{ fontSize: 12, color: T.green, fontVariantNumeric: "tabular-nums" }}>{vp.utr}</span>
         : <span style={{ color: T.taupe }}>—</span>,
     },
     {
@@ -343,8 +344,8 @@ export function VendorPaymentsSection() {
               sub: "Days since oldest overdue bill",
               hi: true, crimson: false, green: false,
             },
-          ].map((s, i) => (
-            <div key={i} style={{ background: s.hi ? "linear-gradient(135deg,rgba(200,155,71,0.14),rgba(200,155,71,0.04))" : "#FFFFFF", borderRadius: 14, border: `1px solid ${s.hi ? T.borderGold : T.borderDef}`, padding: "20px 20px 18px", boxShadow: "0 2px 14px rgba(74,6,27,0.07)", position: "relative", overflow: "hidden", display: "flex", flexDirection: "column", gap: 10 }}>
+          ].map((s) => (
+            <div key={s.label} style={{ background: s.hi ? "linear-gradient(135deg,rgba(200,155,71,0.14),rgba(200,155,71,0.04))" : "#FFFFFF", borderRadius: 14, border: `1px solid ${s.hi ? T.borderGold : T.borderDef}`, padding: "20px 20px 18px", boxShadow: "0 2px 14px rgba(74,6,27,0.07)", position: "relative", overflow: "hidden", display: "flex", flexDirection: "column", gap: 10 }}>
               {s.hi && <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg,${T.antiqueGold},${T.goldLight})` }} />}
               <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
                 <div style={{ width: 44, height: 44, borderRadius: 12, background: s.iconBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -366,7 +367,7 @@ export function VendorPaymentsSection() {
               <CircleAlert size={18} style={{ color: T.crimson, flexShrink: 0 }} />
               <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.crimson }}>
                 {overdueVendors.length} vendor bill{overdueVendors.length > 1 ? "s are" : " is"} overdue — Total pending:{" "}
-                <span style={{ fontFamily: F.mono }}><Money value={rupees(overdueVendors.reduce((s, v) => s + v.invoiceAmt - v.paidAmt, 0))} /></span>
+                <span><Money value={rupees(overdueVendors.reduce((s, v) => s + v.invoiceAmt - v.paidAmt, 0))} /></span>
               </span>
             </div>
             <Button variant="danger" size="md" onClick={() => setContactModal(true)} className="flex-shrink-0 rounded-[8px]">
@@ -381,7 +382,7 @@ export function VendorPaymentsSection() {
           <div style={{ display: "flex", border: `1px solid ${T.borderDef}`, borderRadius: 9, overflow: "hidden", background: "#fff" }}>
             {viewOptions.map(({ key, Icon, label }) => (
               <Button key={key} variant={view === key ? "primary" : "tertiary"} size="sm" iconLeft={Icon}
-                onClick={() => setView(key as any)}
+                onClick={() => setView(key)}
                 className={view === key ? "rounded-none bg-[#6E0F2D] text-[#FFFDF9]" : "rounded-none bg-white text-[var(--text-tertiary)]"}>
                 {label}
               </Button>
@@ -420,15 +421,15 @@ export function VendorPaymentsSection() {
                   </div>
                   <div style={{ flex: "0 0 200px" }}>
                     <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{vp.vendor}</div>
-                    <div style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, marginTop: 2 }}>{vp.poNumber}</div>
+                    <div style={{ marginTop: 2 }}><EntityCode type="purchaseOrder" value={vp.poNumber} size="sm" /></div>
                   </div>
-                  <div style={{ flex: 1, fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}><Money value={rupees(vp.invoiceAmt)} /></div>
-                  <div style={{ flex: 1, fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: balance === 0 ? T.green : vp.status === "Overdue" ? T.crimson : T.antiqueGold }}>
+                  <div style={{ flex: 1, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}><Money value={rupees(vp.invoiceAmt)} /></div>
+                  <div style={{ flex: 1, fontSize: 13, fontWeight: 700, color: balance === 0 ? T.green : vp.status === "Overdue" ? T.crimson : T.antiqueGold }}>
                     {balance === 0 ? "Paid ✓" : <Money value={rupees(balance)} />}
                   </div>
                   <div style={{ flex: "0 0 120px", fontFamily: F.ui, fontSize: 13, color: vp.status === "Overdue" ? T.crimson : T.taupe, fontWeight: vp.status === "Overdue" ? 600 : 400 }}>
                     {vp.dueDate}
-                    {vp.daysOverdue && <span style={{ fontFamily: F.mono, fontSize: 12, marginLeft: 5, background: "rgba(192,57,43,0.10)", color: T.crimson, padding: "1px 5px", borderRadius: 4 }}>{vp.daysOverdue}d</span>}
+                    {vp.daysOverdue && <span style={{ fontSize: 12, marginLeft: 5, background: "rgba(192,57,43,0.10)", color: T.crimson, padding: "1px 5px", borderRadius: 4, fontVariantNumeric: "tabular-nums" }}>{vp.daysOverdue}d</span>}
                   </div>
                   <VendorBadge status={vp.status} />
                   <Button variant="secondary" size="sm" onClick={() => setViewDetailsId(vp.id)} className="rounded-[7px] text-[#6E0F2D]">View</Button>

@@ -1,7 +1,6 @@
 import React, { useState, useRef } from "react";
-import type { MaterialIssueRecord } from "../../../materials/contexts/MaterialIssueContext";
-import { useMaterialIssue } from "../../../materials/contexts/MaterialIssueContext";
-import { motion } from "motion/react";
+import type { MaterialIssueRecord } from "@/features/materials";
+import { useMaterialIssue } from "@/features/materials";
 import { Check, Clock, Pencil, Send } from "lucide-react";
 import { Button } from "../../../../shared/ui/primitives";
 
@@ -52,12 +51,15 @@ export function SignatureCanvas({ onSigned }: { onSigned?: (hasData: boolean) =>
   return (
     <div style={{ margin: "0 20px" }}>
       <div style={{ position: "relative", border: `1px solid rgba(139,26,42,0.25)`, borderRadius: 14, overflow: "hidden", background: "#FFF" }}>
+        {/* eslint-disable jsx-a11y/no-interactive-element-to-noninteractive-role -- signature pad requires pointer event handling on canvas element */}
         <canvas
           ref={canvasRef} width={350} height={160}
+          role="img" aria-label="Signature pad — draw your signature with mouse or finger"
           style={{ display: "block", width: "100%", height: 160, touchAction: "none", cursor: "crosshair" }}
           onMouseDown={startDraw} onMouseMove={draw} onMouseUp={endDraw} onMouseLeave={endDraw}
           onTouchStart={startDraw} onTouchMove={draw} onTouchEnd={endDraw}
         />
+        {/* eslint-enable jsx-a11y/no-interactive-element-to-noninteractive-role */}
         {!hasSig && (
           <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", pointerEvents: "none", gap: 8 }}>
             <Pencil size={28} color={C.muted} style={{ opacity: 0.5 }} />
@@ -112,7 +114,10 @@ export function MaterialHistoryCard({ r, isTablet }: { r: MaterialIssueRecord; i
 
       <div style={{ display: "grid", gridTemplateColumns: isTablet ? "1fr" : `repeat(${Math.min(r.materials.length, 3)}, 1fr)`, gap: 10, marginBottom: 14 }}>
         {r.materials.map((m, i) => (
-          <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, background: "#FAFAF8", border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "10px 14px" }}>
+          // Material line items carry no unique id — grnBatchId + materialType + index
+          // distinguishes rows within this record (multiple lines can share a GRN batch).
+          // eslint-disable-next-line react/no-array-index-key
+          <div key={`${m.grnBatchId}-${m.materialType}-${i}`} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, background: "#FAFAF8", border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "10px 14px" }}>
             <div>
               <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 13, color: C.text }}>{m.materialType}{m.materialType === "Warp" && m.warpSubtype ? ` — ${m.warpSubtype}` : ""}</div>
               <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{m.materialType === "Jari" ? `${m.jariType} · ${m.jariGrade} · ${m.jariColor}` : (m.description || "")}</div>

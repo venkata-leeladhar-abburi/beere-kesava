@@ -9,7 +9,7 @@ import { Breadcrumbs } from "../../../../shared/ui/nav/Breadcrumbs";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
 import { salesApi } from "../../../../shared/api/sales";
-import { useRatesPricing } from "../../../pricing/contexts/RatesContext";
+import { useRatesPricing } from "@/features/pricing";
 
 interface RetailPurchaseRow {
   date: string;
@@ -40,9 +40,9 @@ export function RetailDetailSection({
       id: "items", header: "Sarees (ID & Type)", accessor: r => r.items, priority: 1,
       cell: (_v, r) => (
         <>
-          {r.items.map((item, idx) => (
-            <div key={idx} style={{ marginBottom: 4, display: "flex", gap: 8, alignItems: "center" }}>
-              <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{item.id}</span>
+          {r.items.map((item) => (
+            <div key={item.id} style={{ marginBottom: 4, display: "flex", gap: 8, alignItems: "center" }}>
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy }}>{item.id}</span>
               <span style={{ color: T.luxuryBrown, fontSize: 12 }}>{item.type}</span>
             </div>
           ))}
@@ -178,7 +178,7 @@ export function RetailDetailSection({
           <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
             <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>Phone Number</div>
-              <div style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{customer.phone && customer.phone !== "—" ? `+91 ${customer.phone}` : "—"}</div>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{customer.phone && customer.phone !== "—" ? `+91 ${customer.phone}` : "—"}</div>
             </div>
             <div style={{ background: T.silkCream, padding: 20, borderRadius: 12 }}>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4 }}>City / Location</div>
@@ -192,6 +192,7 @@ export function RetailDetailSection({
             </div>
             {/* No backend field for CRM notes yet — left blank rather than a fabricated default. */}
             <textarea
+              aria-label="Relationship Manager Notes"
               placeholder="Add notes about this customer's preferences..."
               style={{ width: "100%", minHeight: 80, padding: 12, borderRadius: 8, border: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: "#FFF", resize: "vertical", outline: "none" }}
             />

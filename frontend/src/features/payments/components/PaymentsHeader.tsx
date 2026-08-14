@@ -6,7 +6,7 @@ export function PaymentsHeader() {
     <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", minHeight: 340, display: "flex", alignItems: "center" }}>
       {/* Left content */}
       <div className="pl-4 md:pl-7 xl:pl-12 w-full xl:w-auto xl:basis-[64%] xl:max-w-[64%]" style={{ position: "relative", zIndex: 2, paddingTop: 48, paddingBottom: 110 }}>
-        <div style={{ fontFamily: F.mono, fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase", marginBottom: 12 }}>
+        <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase", marginBottom: 12 }}>
           SINCE 1999 · PAYMENT MANAGEMENT
         </div>
         <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
@@ -17,7 +17,7 @@ export function PaymentsHeader() {
             &amp; Financial Overview
           </span>
         </div>
-        <p style={{ fontFamily: F.ui, fontSize: "clamp(15px, 3.5vw, 18px)", color: "rgba(255,253,249,0.70)", margin: 0, maxWidth: 580, lineHeight: 1.6 }}>
+        <p className="max-w-[580px]" style={{ fontFamily: F.ui, fontSize: "clamp(15px, 3.5vw, 18px)", color: "rgba(255,253,249,0.70)", margin: 0, lineHeight: 1.6 }}>
           Track all payments — weaver making charges, customer collections, vendor bills, and net income — all in one place.
         </p>
       </div>

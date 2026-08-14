@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "motion/react";
-import { Rows3 as Rows, Clock as PhClock } from "lucide-react";
+import { Rows3 as Rows } from "lucide-react";
 import { ChevronRight, Edit3, Layers3, Eye, Activity, MapPin, Phone, AlertTriangle } from "lucide-react";
 import { T, F } from "./theme";
 import { SectionHeader } from "./atoms";
@@ -8,7 +8,7 @@ import { useDashboardWeavers } from "../beere-dashboard/hooks/useDashboardWeaver
 import { Button } from "../../../../shared/ui/primitives";
 
 interface SAWeaverSectionProps {
-  onNavigate: (tab: string, ctx?: any) => void;
+  onNavigate: (tab: string, ctx?: unknown) => void;
 }
 
 export function SAWeaverSection({ onNavigate }: SAWeaverSectionProps) {
@@ -19,8 +19,8 @@ export function SAWeaverSection({ onNavigate }: SAWeaverSectionProps) {
       <section className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 48, paddingBottom: 40, background: T.silkCream }}>
         <SectionHeader title="Active Weavers" actionText="View All Weavers →" onAction={() => onNavigate("AllWeavers")} />
         <div style={{ display: "flex", gap: 18 }}>
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} style={{ flex: 1, height: 360, borderRadius: 24, background: "rgba(110,15,45,0.05)", border: `1px solid rgba(110,15,45,0.10)` }} />
+          {["sa-w-sk1", "sa-w-sk2", "sa-w-sk3", "sa-w-sk4"].map((skKey) => (
+            <div key={skKey} style={{ flex: 1, height: 360, borderRadius: 24, background: "rgba(110,15,45,0.05)", border: `1px solid rgba(110,15,45,0.10)` }} />
           ))}
         </div>
       </section>
@@ -70,7 +70,7 @@ export function SAWeaverSection({ onNavigate }: SAWeaverSectionProps) {
 
               <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.4) 100%)", pointerEvents: "none" }} />
 
-              <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(26,10,15,0.65)", backdropFilter: "blur(6px)", color: "#FFFDF9", fontFamily: F.mono, fontSize: 12, fontWeight: 600, letterSpacing: "0.5px", padding: "4px 10px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.15)" }}>
+              <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(26,10,15,0.65)", backdropFilter: "blur(6px)", color: "#FFFDF9", fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, letterSpacing: "0.5px", padding: "4px 10px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.15)" }}>
                 {w.id}
               </div>
 
@@ -139,7 +139,7 @@ export function SAWeaverSection({ onNavigate }: SAWeaverSectionProps) {
                   </div>
                   <div style={{ display: "flex", flexDirection: "column" }}>
                     <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, letterSpacing: "0.5px", textTransform: "uppercase" }}>Status</span>
-                    <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>
                       {w.status === "active" ? "Active" : "Idle"}
                     </span>
                   </div>

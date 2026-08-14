@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 import { StockSaree, STATUS_CFG } from "./StockCard";
 import { Button, IconButton } from "../../../shared/ui/primitives";
 import { Modal } from "../../../shared/ui/overlay";
+import { EntityCode } from "@/shared/ui/domain";
 
 const T = {
   royalBurgundy: "#6E0F2D",
@@ -27,7 +28,7 @@ export function ViewStockDialog({ saree, onClose }: { saree: StockSaree; onClose
       <div style={{ display: "flex", flexDirection: "column", overflow: "hidden", borderTopLeftRadius: "var(--radius-xl)", borderTopRightRadius: "var(--radius-xl)" }}>
         <div style={{ background: `linear-gradient(100deg, ${T.deepWine}, ${T.royalBurgundy})`, padding: "20px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <div style={{ fontFamily: F.mono, fontSize: 12, color: "rgba(255,253,249,0.55)", letterSpacing: "1px", marginBottom: 4 }}>SAREE DETAILS</div>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(255,253,249,0.55)", letterSpacing: "1px", marginBottom: 4 }}>SAREE DETAILS</div>
             <Dialog.Title style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#FFFDF9", margin: 0 }}>{saree.id}</Dialog.Title>
           </div>
           <Dialog.Close asChild>
@@ -47,23 +48,27 @@ export function ViewStockDialog({ saree, onClose }: { saree: StockSaree; onClose
             </div>
             <div>
               <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: cfg.color }}>{cfg.label}</div>
-              {saree.assignedAt && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2 }}>Since: {saree.assignedAt}</div>}
+              {saree.assignedAt && <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 2 }}>Since: {saree.assignedAt}</div>}
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 12, marginBottom: 18 }}>
             {[
-              { label: "Saree ID",   val: saree.id,       mono: true  },
-              { label: "Design",     val: saree.design,   mono: true  },
-              { label: "Saree Type", val: saree.sareeType, mono: false },
-              { label: "Weight",     val: saree.weight,   mono: true  },
-              { label: "QC Date",    val: saree.qcDate,   mono: false },
+              { label: "Saree ID",   val: saree.id,       entityType: "saree" as const },
+              { label: "Design",     val: saree.design },
+              { label: "Saree Type", val: saree.sareeType },
+              { label: "Weight",     val: saree.weight },
+              { label: "QC Date",    val: saree.qcDate },
               saree.source === "external"
-                ? { label: "Invoice No.", val: saree.invoiceNumber || "—", mono: true }
-                : { label: "Loom No.",    val: `Loom ${saree.loom}`,       mono: true },
+                ? { label: "Invoice No.", val: saree.invoiceNumber || "—" }
+                : { label: "Loom No.",    val: `Loom ${saree.loom}` },
             ].map(r => (
               <div key={r.label} style={{ background: T.warmCream, borderRadius: 10, padding: "11px 14px" }}>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.8px" }}>{r.label}</div>
-                <div style={{ fontFamily: r.mono ? F.mono : F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{r.val}</div>
+                {"entityType" in r && r.entityType ? (
+                  <EntityCode type={r.entityType} value={r.val} />
+                ) : (
+                  <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, fontVariantNumeric: "tabular-nums" }}>{r.val}</div>
+                )}
               </div>
             ))}
           </div>
@@ -81,7 +86,7 @@ export function ViewStockDialog({ saree, onClose }: { saree: StockSaree; onClose
                 {saree.status === "sold" ? "Sold To" : "Assigned Wholesale Order"}
               </div>
               <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{saree.customer}</div>
-              {saree.saleRef && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, marginTop: 3 }}>{saree.saleRef}</div>}
+              {saree.saleRef && <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy, marginTop: 3 }}>{saree.saleRef}</div>}
             </div>
           )}
           <Button

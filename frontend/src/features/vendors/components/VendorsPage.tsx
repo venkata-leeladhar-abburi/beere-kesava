@@ -4,7 +4,7 @@ import { AnimatePresence } from "motion/react";
 import { toast } from "sonner";
 import { T } from "./vendors-page/theme";
 import { Vendor } from "./vendors-page/types";
-import { MaterialsFooter } from "../../materials/components/sections/MaterialsFooter";
+import { MaterialsFooter } from "@/features/materials";
 import { VendorsHeroStats } from "./vendors-page/VendorsHeroStats";
 import { AddVendorModal } from "./vendors-page/AddVendorModal";
 import { VendorAnalyticsSection } from "./vendors-page/VendorAnalyticsSection";

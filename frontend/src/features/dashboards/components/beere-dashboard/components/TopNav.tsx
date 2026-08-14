@@ -1,12 +1,9 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import {
-  ChevronLeft, ChevronRight, ChevronDown, Bell, Search,
-  LogOut, UserRound, AlertTriangle, CheckCircle2, AlertCircle,
-  Package, ShoppingCart
+  ChevronLeft, ChevronDown, Bell, Search,
+  LogOut, UserRound
 } from 'lucide-react';
-import { useNavigate } from 'react-router';
-import { useAuth } from '../../../../../contexts/AuthContext';
 import { useResponsive } from "../../../../../hooks/useResponsive";
 import { imgBKLogo } from '../../../../../shared/constants/weaverImages';
 import { SectionNavigator, MAIN_NAV_H, SUB_NAV_H } from '../../../../../shared/ui/SectionNavigator';
@@ -43,8 +40,6 @@ export function TopNav({
   sections?: import("../../../../../shared/ui/SectionNavigator").SectionNavItem[];
   onProfile?: () => void;
 }) {
-  const navigate = useNavigate();
-  const { selectRole } = useAuth();
   const { w } = useResponsive();
   const compact = w < 1320;
   const [showNotif, setShowNotif] = React.useState(false);
@@ -261,7 +256,7 @@ export function TopNav({
               <div style={{ padding: "16px 20px", borderBottom: `1px solid rgba(110,15,45,0.08)`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>Notifications</span>
-                  <span style={{ background: T.royalBurgundy, color: "#FFFDF9", fontFamily: F.mono, fontSize: 12, fontWeight: 700, borderRadius: 999, padding: "2px 7px" }}>{unreadCount}</span>
+                  <span style={{ background: T.royalBurgundy, color: "#FFFDF9", fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, borderRadius: 999, padding: "2px 7px" }}>{unreadCount}</span>
                 </div>
                 <span style={{ fontFamily: F.ui, fontSize: 12, color: T.antiqueGold, cursor: "pointer" }}>Mark all read</span>
               </div>
@@ -292,7 +287,7 @@ export function TopNav({
                 </div>
                 <div>
                   <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>Admin User</div>
-                  <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, marginTop: 2 }}>Admin · Beere Kesava Silks</div>
+                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 2 }}>Admin · Beere Kesava Silks</div>
                 </div>
               </div>
               <div style={{ padding: "6px 0" }}>

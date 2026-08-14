@@ -44,12 +44,12 @@ export function RawMaterialReport() {
     queryFn: () => rawMaterialsApi.listGrns(),
   });
 
-  const { data: issuesRes, isLoading: issuesLoading, isError: issuesError } = useQuery({
+  const { data: issuesRes, isLoading: issuesLoading, isError: _issuesError } = useQuery({
     queryKey: ["reports", "material-issues"],
     queryFn: () => materialIssuesApi.list(200),
   });
 
-  const { data: stockRes, isLoading: stockLoading, isError: stockError } = useQuery({
+  const { data: stockRes, isLoading: stockLoading, isError: _stockError } = useQuery({
     queryKey: ["reports", "raw-materials-stock"],
     queryFn: () => rawMaterialsApi.listStock(),
   });
@@ -88,7 +88,9 @@ export function RawMaterialReport() {
       for (const grn of rawGrns.items) {
         for (const item of grn.items) {
           const type = item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari";
-          totals[type].current += Number(item.quantity || 0);
+          // Jari is always tallied in Reels — never sum raw quantities of
+          // mismatched units (a GRN row might store it as KG).
+          totals[type].current += type === "Jari" ? jariToReels(item.quantity, item.unit ?? "KG") : Number(item.quantity || 0);
         }
       }
     }
@@ -112,7 +114,7 @@ export function RawMaterialReport() {
       for (const issue of issuesRes.items) {
         for (const item of issue.items) {
           const type = item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari";
-          totals[type].current += Number(item.quantity || 0);
+          totals[type].current += type === "Jari" ? jariToReels(item.quantity, item.unit ?? "REEL") : Number(item.quantity || 0);
         }
       }
     }
@@ -125,7 +127,7 @@ export function RawMaterialReport() {
   }, [issuesRes]);
 
   // Dynamic calculation for Stock Items & Mini Donut cards
-  const stockItems = stockRes?.items ?? [];
+  const stockItems = useMemo(() => stockRes?.items ?? [], [stockRes]);
   const stockByType = useMemo(() => {
     const map: Record<string, { stock: number; outOfStockCount: number; totalCount: number; unit: string }> = {
       WARP: { stock: 0, outOfStockCount: 0, totalCount: 0, unit: "kg" },
@@ -184,7 +186,7 @@ export function RawMaterialReport() {
   const stockColumns: ColumnDef<RawMaterialStockRow>[] = [
     {
       id: "type", header: "Material Type", accessor: r => r.type,
-      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 7px", borderRadius: 5 }}>{r.type}</span>,
+      cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", padding: "2px 7px", borderRadius: 5 }}>{r.type}</span>,
     },
     { id: "sub", header: "Sub-type / Color / Grade", accessor: r => r.sub },
     {
@@ -192,24 +194,24 @@ export function RawMaterialReport() {
       cell: (_v, r) => (
         <div>
           <div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: r.close === 0 ? T.crimson : T.luxuryBrown }}>{r.close} {r.unit}</div>
-          {r.unit === "reels" && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{bunsAndReels(r.close)}</div>}
+          {r.unit === "reels" && <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{bunsAndReels(r.close)}</div>}
         </div>
       ),
     },
     {
       id: "change", header: "Status", accessor: r => r.change, align: "center",
-      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: r.oos ? T.crimson : T.green }}>{r.change}</span>,
+      cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: r.oos ? T.crimson : T.green }}>{r.change}</span>,
     },
   ];
 
   const receiptColumns: ColumnDef<RawMaterialReceiptRow>[] = [
     {
       id: "batchId", header: "Batch ID", accessor: r => r.batchId,
-      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{r.batchId}</span>,
+      cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{r.batchId}</span>,
     },
     {
       id: "dateReceived", header: "Date Received", accessor: r => r.dateReceived,
-      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12 }}>{r.dateReceived}</span>,
+      cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>{r.dateReceived}</span>,
     },
     { id: "vendor", header: "Vendor", accessor: r => r.vendor },
     { id: "firmName", header: "Firm Name", accessor: r => r.firmName },
@@ -220,15 +222,15 @@ export function RawMaterialReport() {
     { id: "description", header: "Description", accessor: r => r.description },
     {
       id: "quantity", header: "Quantity", accessor: r => r.quantity, align: "end",
-      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontWeight: 600 }}>{r.quantity}</span>,
+      cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontWeight: 600 }}>{r.quantity}</span>,
     },
     {
       id: "unit", header: "Unit", accessor: r => r.unit,
-      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.unit}</span>,
+      cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{r.unit}</span>,
     },
     {
       id: "poReference", header: "PO Reference", accessor: r => r.poReference,
-      cell: (_v, r) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy }}>{r.poReference}</span>,
+      cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy }}>{r.poReference}</span>,
     },
     {
       id: "notes", header: "Notes", accessor: r => r.notes,
@@ -251,10 +253,10 @@ export function RawMaterialReport() {
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={rawReceivedData} barGap={4}>
               <CartesianGrid key="rm-recv-grid" strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
-              <XAxis key="rm-recv-x" dataKey="material" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
-              <YAxis key="rm-recv-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} unit=" kg" width={44} />
+              <XAxis key="rm-recv-x" dataKey="material" tick={{ fontFamily: "var(--font-mono)", fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
+              <YAxis key="rm-recv-y" tick={{ fontFamily: "var(--font-mono)", fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} unit=" kg" width={44} />
               <Tooltip key="rm-recv-tip" content={<ChartTip suffix=" kg" />} cursor={{ fill: "rgba(110,15,45,0.04)" }} />
-              <Bar key="rm-recv-cur" dataKey="current" name="Received" fill={T.royalBurgundy} radius={[4,4,0,0] as any} />
+              <Bar key="rm-recv-cur" dataKey="current" name="Received" fill={T.royalBurgundy} radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
           <div style={{ display: "flex", justifyContent: "center", gap: 16, marginTop: 4 }}>
@@ -269,10 +271,10 @@ export function RawMaterialReport() {
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={rawGivenData} barGap={4}>
               <CartesianGrid key="rm-gvn-grid" strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
-              <XAxis key="rm-gvn-x" dataKey="material" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
-              <YAxis key="rm-gvn-y" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} unit=" kg" width={44} />
+              <XAxis key="rm-gvn-x" dataKey="material" tick={{ fontFamily: "var(--font-mono)", fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
+              <YAxis key="rm-gvn-y" tick={{ fontFamily: "var(--font-mono)", fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} unit=" kg" width={44} />
               <Tooltip key="rm-gvn-tip" content={<ChartTip suffix=" kg" />} cursor={{ fill: "rgba(110,15,45,0.04)" }} />
-              <Bar key="rm-gvn-cur" dataKey="current" name="Given to Weavers" fill={T.green} radius={[4,4,0,0] as any} />
+              <Bar key="rm-gvn-cur" dataKey="current" name="Given to Weavers" fill={T.green} radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
           <div style={{ display: "flex", justifyContent: "center", gap: 16, marginTop: 4 }}>

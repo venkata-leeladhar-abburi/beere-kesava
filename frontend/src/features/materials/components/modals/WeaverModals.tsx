@@ -1,5 +1,4 @@
 import React from "react";
-import { motion } from "motion/react";
 import { Layers, Tag, Sparkles, Palette, Printer } from "lucide-react";
 import { T, F } from "../theme";
 import { W_STATUS } from "../materialConfig";
@@ -7,6 +6,7 @@ import type { WeaverMat } from "../types";
 import { ModalOverlay, ModalHeader } from "../common/primitives";
 import { Button } from "../../../../shared/ui/primitives";
 import { useDocument } from "../../../../shared/ui/document";
+import { EntityCode } from "@/shared/ui/domain";
 
 // ─── WEAVER VIEW DETAILS MODAL ────────────────────────────────────────────────
 export function WeaverViewDetailsModal({ weaver, onClose }: { weaver: WeaverMat | null; onClose: () => void }) {
@@ -28,9 +28,9 @@ export function WeaverViewDetailsModal({ weaver, onClose }: { weaver: WeaverMat 
           }
           <div style={{ flex: 1 }}>
             <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: T.luxuryBrown, marginBottom: 6 }}>{weaver.name}</div>
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-              <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, background: "rgba(110,15,45,0.08)", padding: "3px 10px", borderRadius: 6 }}>{weaver.id}</span>
-              <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, background: "#FFFFFF", padding: "3px 10px", borderRadius: 6, border: `1px solid ${T.borderDef}` }}>{weaver.batch}</span>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+              <EntityCode type="weaver" value={weaver.id} size="sm" />
+              <EntityCode type="batch" value={weaver.batch} size="sm" />
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Issued {weaver.daysAgo} days ago</span>
             </div>
           </div>
@@ -41,7 +41,7 @@ export function WeaverViewDetailsModal({ weaver, onClose }: { weaver: WeaverMat 
         </div>
 
         <div style={{ marginBottom: 18 }}>
-          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, letterSpacing: "1.8px", textTransform: "uppercase", marginBottom: 12 }}>Materials Issued</div>
+          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, letterSpacing: "1.8px", textTransform: "uppercase", marginBottom: 12 }}>Materials Issued</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {[
               { icon: <Layers size={16} color={T.royalBurgundy} />, label: "Warp", value: weaver.warp, bg: "rgba(110,15,45,0.06)" },
@@ -62,7 +62,7 @@ export function WeaverViewDetailsModal({ weaver, onClose }: { weaver: WeaverMat 
         <div style={{ background: T.silkCream, borderRadius: 12, padding: "16px 18px", marginBottom: 18 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
             <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 14, color: T.luxuryBrown }}>Sarees Progress</div>
-            <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: barColor }}>{weaver.done} / {weaver.expected} done</span>
+            <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: barColor }}>{weaver.done} / {weaver.expected} done</span>
           </div>
           <div style={{ height: 10, background: "rgba(110,15,45,0.10)", borderRadius: 5, marginBottom: 8 }}>
             <div style={{ width: `${pct}%`, height: "100%", background: barColor, borderRadius: 5 }} />
@@ -100,9 +100,9 @@ export function IssueSlipModal({ weaver, onClose }: { weaver: WeaverMat | null; 
     <div style={{ background: "#FFFFFF", border: `1.5px solid rgba(110,15,45,0.15)`, borderRadius: 16, padding: "24px 26px" }}>
           <div style={{ textAlign: "center", borderBottom: `1.5px solid rgba(110,15,45,0.12)`, paddingBottom: 18, marginBottom: 18 }}>
             <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: T.luxuryBrown, marginBottom: 2 }}>Beere Kesava & Brothers Silks</div>
-            <div style={{ fontFamily: F.mono, fontSize: 12, letterSpacing: "2.5px", textTransform: "uppercase", color: T.taupe, marginBottom: 10 }}>Material Issue Slip</div>
+            <div style={{ fontFamily: F.ui, fontSize: 12, letterSpacing: "2.5px", textTransform: "uppercase", color: T.taupe, marginBottom: 10 }}>Material Issue Slip</div>
             <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 6 }}>
-              <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "3px 10px", borderRadius: 6 }}>{slipNo}</span>
+              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "3px 10px", borderRadius: 6 }}>{slipNo}</span>
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Date: {today}</span>
             </div>
           </div>
@@ -115,7 +115,7 @@ export function IssueSlipModal({ weaver, onClose }: { weaver: WeaverMat | null; 
               { label: "Design Code", value: weaver.design },
             ].map(row => (
               <div key={row.label}>
-                <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe, letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 3 }}>{row.label}</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 3 }}>{row.label}</div>
                 <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>{row.value}</div>
               </div>
             ))}
@@ -124,7 +124,7 @@ export function IssueSlipModal({ weaver, onClose }: { weaver: WeaverMat | null; 
           <div style={{ borderRadius: 10, overflow: "hidden", border: `1px solid rgba(110,15,45,0.10)`, marginBottom: 16 }}>
             <div style={{ background: T.silkCream, padding: "10px 16px", display: "grid", gridTemplateColumns: "1fr 2fr 1fr", gap: 8 }}>
               {["Material", "Specification", "Quantity"].map(h => (
-                <span key={h} style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.taupe, letterSpacing: "1.5px", textTransform: "uppercase" }}>{h}</span>
+                <span key={h} style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe, letterSpacing: "1.5px", textTransform: "uppercase" }}>{h}</span>
               ))}
             </div>
             {[
@@ -135,7 +135,7 @@ export function IssueSlipModal({ weaver, onClose }: { weaver: WeaverMat | null; 
               <div key={row.mat} style={{ padding: "11px 16px", display: "grid", gridTemplateColumns: "1fr 2fr 1fr", gap: 8, background: i % 2 === 0 ? "#FFFFFF" : T.warmIvory, borderTop: `1px solid rgba(110,15,45,0.06)` }}>
                 <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown }}>{row.mat}</span>
                 <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{row.spec}</span>
-                <span style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 600, color: T.royalBurgundy }}>{row.qty}</span>
+                <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.royalBurgundy }}>{row.qty}</span>
               </div>
             ))}
           </div>

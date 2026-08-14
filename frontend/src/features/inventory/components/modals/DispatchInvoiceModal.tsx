@@ -1,8 +1,8 @@
 import { X } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
 
-import { DispatchRecord, useFinishing } from "../../../finishing/contexts/FinishingContext";
-import { useFirms } from "../../../firms/contexts/FirmsContext";
+import { DispatchRecord, useFinishing } from "@/features/finishing";
+import { useFirms } from "@/features/firms";
 import { IconButton } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
 import { DocumentViewer, InvoiceDocument, DEFAULT_LETTERHEAD_FIRM, type InvoiceLineItem } from "../../../../shared/ui/document";

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { useAuth } from "../../../../contexts/AuthContext";
+import { useAuth, type Role } from "../../../../contexts/AuthContext";
 import { motion } from "motion/react";
 import {
   User, Bell, ChevronDown, LogOut,
@@ -157,7 +157,7 @@ export function WorkerTopNav({ active, onSelect, onBack, bp, pendingQcCount = 0 
             {notifications.length === 0 ? (
               <div style={{ padding: "20px 16px", textAlign: "center" as const, fontFamily: F.u, fontSize: 13, color: C.muted }}>No notifications.</div>
             ) : notifications.map((n, i) => (
-              <div key={n.id} style={{ padding: "10px 16px", borderBottom: i < notifications.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", display: "flex", gap: 10, alignItems: "flex-start", cursor: "pointer" }}
+              <div key={n.id} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); } }} style={{ padding: "10px 16px", borderBottom: i < notifications.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", display: "flex", gap: 10, alignItems: "flex-start", cursor: "pointer" }}
                 onMouseEnter={e => e.currentTarget.style.background = "rgba(110,15,45,0.03)"}
                 onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                 <span style={{ fontSize: 14, flexShrink: 0 }}>{notifEmoji(n.type)}</span>
@@ -201,7 +201,7 @@ export function WorkerTopNav({ active, onSelect, onBack, bp, pendingQcCount = 0 
                 const origAdminRole = localStorage.getItem("bk_original_admin_role");
                 if (origAdminRole) {
                   localStorage.removeItem("bk_original_admin_role");
-                  selectRole(origAdminRole as any);
+                  selectRole(origAdminRole as Role);
                   navigate(origAdminRole === "superadmin" ? "/superadmin" : "/admin");
                 }
               }} className="!h-auto !rounded-none !py-2.5 !px-4 !text-[13px] !text-[#69635E]">

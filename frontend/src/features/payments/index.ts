@@ -7,3 +7,4 @@
 export * from "./components/OutstandingPage";
 export * from "./components/PaymentsPage";
 export * from "./data/invoices";
+export * from "./components/supplier/SupplierPayNowModal";

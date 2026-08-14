@@ -1,18 +1,18 @@
 import React from "react";
 import { ChevronRight, Package } from "lucide-react";
-import { T, F, initials } from "./WorkerQCTypes";
+import { T, F, initials, type SareeItem } from "./WorkerQCTypes";
 import { Button } from "../../../../shared/ui/primitives";
 
 interface WeaverGroup {
   name: string;
   code: string;
   source: string;
-  sarees: any[];
+  sarees: SareeItem[];
 }
 
 interface BatchGroup {
   id: string;
-  sarees: any[];
+  sarees: SareeItem[];
 }
 
 interface WorkerQCWeaverGridProps {

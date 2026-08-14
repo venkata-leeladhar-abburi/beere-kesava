@@ -1,46 +1,73 @@
 
-import React, { useState, useEffect, useRef, lazy, Suspense } from "react";
-import { useLocation, useNavigate, useParams, Outlet } from "react-router";
-import { imgHero, imgWarp as _imgWarpLocal, imgResham as _imgReshamLocal, imgJari as _imgJariLocal } from "../../../shared/constants/imageData";
+import React, { useState, useEffect, lazy, Suspense } from "react";
+import { useLocation, useNavigate, useParams } from "react-router";
+import { imgWarp as _imgWarpLocal, imgResham as _imgReshamLocal, imgJari as _imgJariLocal } from "../../../shared/constants/imageData";
 import { useAuth } from "../../../contexts/AuthContext";
 import { useResponsive } from "../../../hooks/useResponsive";
-import { WorkerGRN, INITIAL_HISTORY as GRN_INITIAL_HISTORY } from "../../portals/components/worker/WorkerGRN";
+import { WorkerGRN, INITIAL_HISTORY as GRN_INITIAL_HISTORY } from "@/features/portals";
+import type { ReceiptRecord } from "@/features/portals";
 import { useQuery } from "@tanstack/react-query";
 import { rawMaterialsApi } from "../../../shared/api/rawMaterials";
 
 // Lazily loaded so the initial dashboard bundle doesn't pay for every tab's
 // page — only the active tab's chunk is fetched, on first navigation to it.
+// eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 const MaterialsPage = lazy(() => import("../../materials/components/MaterialsPage").then(m => ({ default: m.MaterialsPage })));
+// eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 const WeaversPage = lazy(() => import("../../weavers/components/WeaversPage").then(m => ({ default: m.WeaversPage })));
+// eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 const ProductionPage = lazy(() => import("../../production/components/ProductionPage").then(m => ({ default: m.ProductionPage })));
+// eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 const PaymentsPage = lazy(() => import("../../payments/components/PaymentsPage").then(m => ({ default: m.PaymentsPage })));
+// eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 const ReportsPage = lazy(() => import("../../reports/components/ReportsPage").then(m => ({ default: m.ReportsPage })));
+// eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 const CustomersPage = lazy(() => import("../../customers/components/CustomersPage").then(m => ({ default: m.CustomersPage })));
+// eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 const ProductionHistoryPage = lazy(() => import("../../production/components/ProductionHistoryPage").then(m => ({ default: m.ProductionHistoryPage })));
+// eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 const FinishingTrackingPage = lazy(() => import("../../finishing/components/FinishingTrackingPage").then(m => ({ default: m.FinishingTrackingPage })));
+// eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 const NotificationsPage = lazy(() => import("../../notifications/components/NotificationsPage").then(m => ({ default: m.NotificationsPage })));
+// eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 const AuditLogPage = lazy(() => import("../../audit/components/AuditLogPage").then(m => ({ default: m.AuditLogPage })));
+// eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 const AllWeaversPage = lazy(() => import("../../weavers/components/AllWeaversPage").then(m => ({ default: m.AllWeaversPage })));
+// eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 const AllStockPage = lazy(() => import("../../inventory/components/AllStockPage").then(m => ({ default: m.AllStockPage })));
+// eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 const AllOrdersPage = lazy(() => import("../../bulk-orders/components/AllOrdersPage").then(m => ({ default: m.AllOrdersPage })));
+// eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 const QcHistoryPage = lazy(() => import("../../qc/components/QcHistoryPage").then(m => ({ default: m.QcHistoryPage })));
+// eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 const ExternalPurchasesPage = lazy(() => import("../../inventory/components/ExternalPurchasesPage").then(m => ({ default: m.ExternalPurchasesPage })));
+// eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 const AddUserPage = lazy(() => import("../../users/components/AddUserPage").then(m => ({ default: m.AddUserPage })));
+// eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 const FirmsPage = lazy(() => import("../../firms/components/FirmsPage").then(m => ({ default: m.FirmsPage })));
+// eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 const RatesPricingPage = lazy(() => import("../../pricing/components/RatesPricingPage").then(m => ({ default: m.RatesPricingPage })));
+// eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 const DesignLibraryPage = lazy(() => import("../../design-library/components/DesignLibraryPage").then(m => ({ default: m.DesignLibraryPage })));
+// eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 const BatchCreationPage = lazy(() => import("../../production/components/BatchCreationPage").then(m => ({ default: m.BatchCreationPage })));
+// eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 const IssueMaterialPage = lazy(() => import("../../materials/components/IssueMaterialPage").then(m => ({ default: m.IssueMaterialPage })));
+// eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 const ReturnMaterialPage = lazy(() => import("../../materials/components/ReturnMaterialPage").then(m => ({ default: m.ReturnMaterialPage })));
+// eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 const InventoryPage = lazy(() => import("../../inventory/components/InventoryPage").then(m => ({ default: m.InventoryPage })));
+// eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 const VendorsPage = lazy(() => import("../../vendors/components/VendorsPage").then(m => ({ default: m.VendorsPage })));
+// eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 const SuppliersPage = lazy(() => import("../../suppliers/components/SuppliersPage").then(m => ({ default: m.SuppliersPage })));
+// eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 const FactoryLoomPage = lazy(() => import("../../production/components/FactoryLoomPage").then(m => ({ default: m.FactoryLoomPage })));
 
 import { TabLoadingFallback } from './TabLoadingFallback';
 import {
   SectionNavigator, PAGE_SECTIONS, SECTION_NAV_GLOBAL_STYLE,
-  MAIN_NAV_H, SUB_NAV_H, MOBILE_NAV_H, SectionNavItem,
+  MOBILE_NAV_H,
 } from "../../../shared/ui/SectionNavigator";
 import { AnimatePresence } from "motion/react";
 import { UserProfileModal } from "../../../shared/ui/UserProfileModal";
@@ -48,27 +75,23 @@ import { UserProfileModal } from "../../../shared/ui/UserProfileModal";
 // ═══════════════════════════════════════════════════════════════════════════════
 // DESIGN TOKENS
 // ═══════════════════════════════════════════════════════════════════════════════
-import { T, F, G, GLOBAL_STYLE, EASE } from './beere-dashboard/theme';
-import { FadeUp, FadeIn, Lotus } from './beere-dashboard/ui';
+import { T, F, GLOBAL_STYLE } from './beere-dashboard/theme';
 import { SectionCard } from './beere-dashboard/primitives';
 import { PackageCheck, History } from 'lucide-react';
-import { TopNav, Hero, MetricsBar, ProductionProgress, SareesProduced, FeaturedProduct, ThreeCol, ActivityStrip, WeaverSection, RawMaterial, Footer } from './beere-dashboard/desktop';
+import { TopNav, Hero, MetricsBar, ThreeCol, ActivityStrip, WeaverSection, RawMaterial, Footer } from './beere-dashboard/desktop';
 import { MobileMenuDrawer, MobileTopNav, MobileHero, MobileMetrics, MobilePerformance, MobileFeaturedProduct, MobileActivity, MobileWeavers, MobileRawMaterial, MobileFooter } from './beere-dashboard/mobile';
-
-import { SplashScreen } from './SplashScreen';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // ROOT
 // ═══════════════════════════════════════════════════════════════════════════════
 export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
-  const [splashVisible, setSplashVisible] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
-  const [grnHistory, setGrnHistory] = useState<any[]>(() => GRN_INITIAL_HISTORY);
+  const [grnHistory, setGrnHistory] = useState<ReceiptRecord[]>(() => GRN_INITIAL_HISTORY);
   const { data: rawMaterialStock } = useQuery({
     queryKey: ["raw-material-stock"],
     queryFn: () => rawMaterialsApi.listStock(),
   });
-  const { pathname, state } = useLocation();
+  const { state } = useLocation();
   const { tab } = useParams();
   const routerNavigate = useNavigate();
   const { logout } = useAuth();
@@ -122,7 +145,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
     }
   }, [nav, mobileTab]);
 
-  const navigate = (tab: string, ctx?: any) => {
+  const navigate = (tab: string, ctx?: unknown) => {
     const routeMap: Record<string, string> = {
       Overview: "/admin/overview",
       Materials: "/admin/materials",
@@ -282,7 +305,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
             <div className="px-4 md:px-7 xl:px-14" style={{ flex: 1, paddingTop: 44, paddingBottom: 48, zIndex: 10, position: "relative" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
                 <div style={{ width: 28, height: 1, background: T.antiqueGold }} />
-                <span style={{ fontFamily: F.mono, fontSize: 12, color: `${T.antiqueGold}80`, letterSpacing: "1.5px", textTransform: "uppercase" as const }}>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: `${T.antiqueGold}80`, letterSpacing: "1.5px", textTransform: "uppercase" as const }}>
                   SINCE 1999 · ADMIN · MATERIALS
                 </span>
               </div>
@@ -292,7 +315,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
               <div style={{ fontFamily: F.display, fontWeight: 500, fontStyle: "italic", fontSize: 30, color: T.antiqueGold, marginBottom: 16, lineHeight: 1.2 }}>
                 &amp; Goods Receipt Note
               </div>
-              <p style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,255,255,0.60)", maxWidth: 520, margin: 0, lineHeight: 1.65 }}>
+              <p style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,255,255,0.60)", maxWidth: "min(520px, 100%)", margin: 0, lineHeight: 1.65 }}>
                 Record incoming raw materials from vendors against purchase orders and generate GRN numbers.
               </p>
             </div>
@@ -301,14 +324,14 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
                 { label: "Warp · 142 kg in stock" },
                 { label: "Resham · 18 kg in stock" },
                 { label: "Jari · 24 Reels in stock" },
-              ].map((chip, i) => (
-                <div key={i} style={{ padding: "10px 18px", backdropFilter: "blur(8px)", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 12, fontFamily: F.ui, fontSize: 13, color: "#fff", whiteSpace: "nowrap" as const }}>
+              ].map((chip) => (
+                <div key={chip.label} style={{ padding: "10px 18px", backdropFilter: "blur(8px)", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 12, fontFamily: F.ui, fontSize: 13, color: "#fff", whiteSpace: "nowrap" as const }}>
                   {chip.label}
                 </div>
               ))}
             </div>
             {[300, 440].map((sz, i) => (
-              <div key={i} style={{ position: "absolute", right: -sz * 0.3, bottom: -sz * 0.4, width: sz, height: sz, borderRadius: "50%", border: `1px solid rgba(200,155,71,${0.10 - i * 0.025})`, pointerEvents: "none" }} />
+              <div key={sz} style={{ position: "absolute", right: -sz * 0.3, bottom: -sz * 0.4, width: sz, height: sz, borderRadius: "50%", border: `1px solid rgba(200,155,71,${0.10 - i * 0.025})`, pointerEvents: "none" }} />
             ))}
           </div>
           {/* Content */}
@@ -316,7 +339,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
             <div className="grid grid-cols-1 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]" style={{ gap: 24, alignItems: "start" }}>
               <SectionCard icon={PackageCheck} title="Receive Stock" subtitle="Record incoming raw materials from vendors and generate a GRN number.">
                 <div style={{ margin: "-24px -28px" }}>
-                  <WorkerGRN mode="form" history={grnHistory} setHistory={setGrnHistory} initialPOId={(state as any)?.poId} />
+                  <WorkerGRN mode="form" history={grnHistory} setHistory={setGrnHistory} initialPOId={(state as { poId?: string } | null)?.poId} />
                 </div>
               </SectionCard>
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>

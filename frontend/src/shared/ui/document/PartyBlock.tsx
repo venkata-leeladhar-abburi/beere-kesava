@@ -33,8 +33,8 @@ export function PartyBlock({ parties, meta }: PartyBlockProps) {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1.15fr 1fr", gap: "5mm", marginTop: "5mm", alignItems: "start" }}>
       <div style={{ display: "flex", flexDirection: "column", gap: "3mm" }}>
-        {parties.map((p, i) => (
-          <div key={i} className="bk-doc__card bk-doc__card--accent">
+        {parties.map((p) => (
+          <div key={p.label} className="bk-doc__card bk-doc__card--accent">
             <div className="bk-doc__eyebrow">{p.label}</div>
             <div style={{ fontSize: "var(--doc-heading)", fontWeight: 700, color: "var(--doc-ink)", marginTop: "1.5mm" }}>{p.name}</div>
             {p.address && (
@@ -61,7 +61,7 @@ export function PartyBlock({ parties, meta }: PartyBlockProps) {
         <div style={{ display: "flex", flexDirection: "column", gap: "2mm" }}>
           {meta.map((m, i) => (
             <div
-              key={i}
+              key={m.label}
               style={{
                 display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "5mm",
                 paddingBottom: i < meta.length - 1 ? "2mm" : 0,

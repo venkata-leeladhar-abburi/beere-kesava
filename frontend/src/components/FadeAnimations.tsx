@@ -1,7 +1,6 @@
 import React from "react";
 import { motion } from "motion/react";
 import { useInViewFade } from "../hooks/useInViewFade";
-import { EASE } from "../lib/tokens";
 
 interface Props {
   children: React.ReactNode;

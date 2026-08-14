@@ -2,10 +2,10 @@ import { materialTypeIcon } from "./MyBatchesPage";
 
 import React, { useState, useMemo } from "react";
 import { useResponsive } from "../../../../hooks/useResponsive";
-import { useBatches } from "../../../production/contexts/BatchContext";
-import { useDesignLibrary, DesignEntry } from "../../../design-library/contexts/DesignLibraryContext";
-import { DesignCodeCard } from "../../../design-library/components/DesignLibraryPage";
-import { useMaterialIssue, MaterialIssueRecord, JARI_REEL_GRAMS, materialItemToGrams, REELS_PER_BUN } from "../../../materials/contexts/MaterialIssueContext";
+import { useBatches } from "@/features/production";
+import { useDesignLibrary, DesignEntry } from "@/features/design-library";
+import { DesignCodeCard } from "@/features/design-library";
+import { useMaterialIssue, MaterialIssueRecord, JARI_REEL_GRAMS, materialItemToGrams, REELS_PER_BUN } from "@/features/materials";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Bell, Check,
@@ -162,7 +162,8 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
           <SectionTitle title="Materials You Are Receiving" />
           <div style={{ display: "grid", gridTemplateColumns: cols(1, 2, 2), gap: 10, margin: "0 20px 10px" }}>
             {pending.materials.map((m, i) => (
-              <div key={i} style={{ background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "16px 18px" }}>
+              // eslint-disable-next-line react/no-array-index-key -- material lines have no stable id and materialType can repeat, so pair it with index.
+              <div key={`${m.materialType}-${i}`} style={{ background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "16px 18px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, justifyContent: "center" }}>
                   {materialTypeIcon(m.materialType)}
                   <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 16, color: C.text }}>
@@ -263,7 +264,7 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
           <AnimatePresence>
             {sigMethod === "here" && (
               <motion.div key="sigbox" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} style={{ overflow: "hidden" }}>
-                <div style={{ padding: "0 0 16px 0", margin: isMobile ? "0" : "0 auto", maxWidth: isMobile ? undefined : isTablet ? "100%" : 560, ...(isMobile ? {} : { paddingLeft: 20, paddingRight: 20 }) }}>
+                <div style={{ padding: "0 0 16px 0", margin: isMobile ? "0" : "0 auto", maxWidth: isMobile ? undefined : isTablet ? "100%" : "560px", ...(isMobile ? {} : { paddingLeft: 20, paddingRight: 20 }) }}>
                   <SignatureCanvas onSigned={setHasSig} />
                 </div>
               </motion.div>
@@ -380,16 +381,17 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
                           <div style={{ fontFamily: F.u, fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.4px" }}>Outstanding by Material</div>
                           {materialBreakdown.map(m => {
                             const mOutColor = m.outstandingGrams > 0 ? C.crim : C.green;
+                            const isJari = m.label === "Jari";
+                            const outstandingReels = Math.round(m.outstandingGrams / JARI_REEL_GRAMS);
                             return (
                               <div key={m.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, background: C.cream, border: `1px solid ${C.bdr}`, borderRadius: 8, padding: "8px 12px", flexWrap: "wrap" as const }}>
                                 <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 12, color: C.text }}>{m.label}</span>
                                 <div style={{ display: "flex", alignItems: "baseline", gap: 12 }}>
                                   <span style={{ fontFamily: F.u, fontSize: 11, color: C.muted }}>
-                                    Issued: <span style={{ fontFamily: F.m, fontWeight: 700, color: C.text }}>{fmtKg(m.issuedGrams)}</span>
-                                    {m.reels > 0 && ` (${m.reels} reels)`}
+                                    Issued: <span style={{ fontFamily: F.m, fontWeight: 700, color: C.text }}>{isJari ? `${m.reels} reels` : fmtKg(m.issuedGrams)}</span>
                                   </span>
                                   <span style={{ fontFamily: F.u, fontSize: 11, color: C.muted }}>
-                                    Outstanding: <span style={{ fontFamily: F.m, fontWeight: 700, color: mOutColor }}>{fmtKg(m.outstandingGrams)}</span>
+                                    Outstanding: <span style={{ fontFamily: F.m, fontWeight: 700, color: mOutColor }}>{isJari ? `${outstandingReels} reels` : fmtKg(m.outstandingGrams)}</span>
                                   </span>
                                 </div>
                               </div>

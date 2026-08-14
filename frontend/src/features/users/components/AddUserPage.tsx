@@ -1,20 +1,18 @@
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  Search, ChevronDown, UserPlus, CheckCircle2, Edit2,
-  ShieldOff, Users, Shield, X, ChevronLeft, ChevronRight, Phone, Mail,
-  Briefcase, Lock, FileText, Eye, Sparkles, Layers, ShoppingBag,
-  ShieldCheck, ShieldHalf, XCircle, Hash, Calculator,
+  CheckCircle2,
+  Users, Shield,
+  Briefcase, Sparkles, Layers, ShoppingBag,
+  XCircle, Calculator,
 } from "lucide-react";
-import { useFinishingStaff, FinishingStaffMember } from "../../finishing/contexts/FinishingStaffContext";
-import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
+import { useFinishingStaff, FinishingStaffMember } from "@/features/finishing";
+import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
 import {
-  T, F, EASE, cardStyle, inputStyle, labelStyle,
-  ROLE_TO_PORTAL, ROLE_COLORS, ROLES, ACCESS_LEVELS, AccessLevel, ACCESS_LEVEL_META,
-  FieldFocus, FieldBlur,
+  T, F, EASE, cardStyle, inputStyle,
+  ROLE_TO_PORTAL, ROLE_COLORS, ROLES, AccessLevel,
 } from "./theme";
 import { formatBackendDate, TableRow } from "./utils";
-import { RoleBadge, AccessBadge, StatusBadge } from "./UserBadges";
 import { ViewProfileModal } from "./ViewProfileModal";
 import { EditModal } from "./EditModal";
 import { ConfirmDialog } from "../../../shared/ui/ConfirmDialog";
@@ -340,7 +338,7 @@ export function AddUserPage() {
         <div className="pl-4 md:pl-7 xl:pl-14 w-full xl:flex-1" style={{ paddingTop: 48, paddingBottom: 24, zIndex: 10, position: "relative", maxWidth: "100%" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
             <div style={{ width: 28, height: 1, background: T.antiqueGold }} />
-            <span style={{ fontFamily: F.mono, fontSize: 13, color: `${T.antiqueGold}80`, letterSpacing: "1.5px", textTransform: "uppercase" as const }}>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: `${T.antiqueGold}80`, letterSpacing: "1.5px", textTransform: "uppercase" as const }}>
               SINCE 1999 · USER MANAGEMENT
             </span>
           </div>
@@ -352,7 +350,7 @@ export function AddUserPage() {
               &amp; User Management
             </div>
           </div>
-          <p style={{ fontFamily: F.ui, fontSize: "clamp(15px, 3.5vw, 18px)", fontWeight: 400, color: "rgba(255,255,255,0.70)", maxWidth: 600, margin: 0, lineHeight: 1.65 }}>
+          <p className="max-w-[600px]" style={{ fontFamily: F.ui, fontSize: "clamp(15px, 3.5vw, 18px)", fontWeight: 400, color: "rgba(255,255,255,0.70)", margin: 0, lineHeight: 1.65 }}>
             Create login accounts for staff across all portals. Each user logs in using their mobile number and a one-time OTP sent via WhatsApp.
           </p>
         </div>
@@ -361,8 +359,8 @@ export function AddUserPage() {
             { label: `${totalAll} Total Users`, dot: T.antiqueGold },
             { label: "5 Portals Covered", dot: "#E7C983" },
             { label: "OTP Login via WhatsApp", dot: T.green },
-          ].map((chip, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 18px", backdropFilter: "blur(8px)", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 12, fontFamily: F.ui, fontSize: 13, color: "#fff", whiteSpace: "nowrap" as const }}>
+          ].map((chip) => (
+            <div key={chip.label} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 18px", backdropFilter: "blur(8px)", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 12, fontFamily: F.ui, fontSize: 13, color: "#fff", whiteSpace: "nowrap" as const }}>
               <div style={{ width: 8, height: 8, borderRadius: "50%", background: chip.dot, flexShrink: 0 }} />
               {chip.label}
             </div>
@@ -384,8 +382,8 @@ export function AddUserPage() {
             { icon: <Users size={20} color={T.royalBurgundy} />,  val: String(totalAll),      label: "Total Users",    sub: "Across all portals",     accent: T.royalBurgundy, bg: "rgba(110,15,45,0.05)", border: T.borderDef },
             { icon: <CheckCircle2 size={20} color={T.green} />,   val: String(totalActive),   label: "Active Users",   sub: "Currently able to log in", accent: T.green,        bg: T.greenBg,               border: "rgba(30,102,64,0.16)" },
             { icon: <XCircle size={20} color={T.crimson} />,      val: String(totalInactive), label: "Inactive Users", sub: "Deactivated accounts",    accent: T.crimson,       bg: T.crimsonBg,             border: "rgba(192,57,43,0.16)" },
-          ].map((s, i) => (
-            <div key={i} style={{ background: "#fff", border: `1px solid ${s.border}`, borderRadius: 16, padding: "22px 24px", boxShadow: "0 2px 12px rgba(44,24,16,0.06)", display: "flex", alignItems: "center", gap: 16 }}>
+          ].map((s) => (
+            <div key={s.label} style={{ background: "#fff", border: `1px solid ${s.border}`, borderRadius: 16, padding: "22px 24px", boxShadow: "0 2px 12px rgba(44,24,16,0.06)", display: "flex", alignItems: "center", gap: 16 }}>
               <div style={{ width: 48, height: 48, borderRadius: 14, background: s.bg, border: `1px solid ${s.border}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 {s.icon}
               </div>
@@ -406,7 +404,7 @@ export function AddUserPage() {
           className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-6"
           style={{ gap: 16, marginBottom: 40 }}
         >
-          {roleStats.map((s, i) => {
+          {roleStats.map((s, _i) => {
             const c = ROLE_COLORS[s.role] ?? { bg: "rgba(139,112,96,0.10)", text: T.taupe, border: "rgba(139,112,96,0.15)" };
             const Icon = ROLE_ICONS[s.role] ?? Users;
             return (

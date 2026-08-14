@@ -8,7 +8,7 @@ import { calcCharges, calcCompletedSarees, calcDeduction, calcNet, calcPaid } fr
 import { Pip, StatusBadge } from "../common/primitives";
 import { Button, Checkbox } from "../../../../shared/ui/primitives";
 import { rupees } from "@/lib/domain/money";
-import { Money } from "@/shared/ui/domain";
+import { EntityCode, Money } from "@/shared/ui/domain";
 
 // Weaver card (card view)
 export function WeaverCard({ w, onViewDetails, selected, onToggleSelect }: { w: WeaverRecord, onViewDetails?: () => void, selected: boolean, onToggleSelect: () => void }) {
@@ -57,7 +57,7 @@ export function WeaverCard({ w, onViewDetails, selected, onToggleSelect }: { w: 
           <div>
             <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.25 }}>{w.name}</div>
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
-              <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "1px 5px", borderRadius: 4 }}>{w.id}</span>
+              <EntityCode type="weaver" value={w.id} size="sm" />
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>📍 {w.village}</span>
             </div>
           </div>
@@ -68,10 +68,11 @@ export function WeaverCard({ w, onViewDetails, selected, onToggleSelect }: { w: 
       {/* Body */}
       <div style={{ padding: "0 20px 18px", flex: 1, display: "flex", flexDirection: "column", gap: 10 }}>
         <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, borderBottom: `1px solid rgba(110,15,45,0.06)`, paddingBottom: 8 }}>
-          Sarees completed: <span style={{ fontFamily: F.mono, color: T.luxuryBrown, fontWeight: 700 }}>{completedSarees}</span>
+          Sarees completed: <span style={{ color: T.luxuryBrown, fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{completedSarees}</span>
           {w.uploadedBatchNo ? (
-            <span style={{ color: T.royalBurgundy, display: "block", marginTop: 2, fontSize: 12, fontFamily: F.mono, fontWeight: 600 }}>
-              Batch: {w.uploadedBatchNo} · Loom: {w.uploadedLoomNumber}
+            <span style={{ color: T.royalBurgundy, display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap", marginTop: 2, fontSize: 12, fontFamily: F.ui, fontWeight: 600 }}>
+              Batch: <EntityCode type="batch" value={w.uploadedBatchNo} size="sm" />
+              {w.uploadedLoomNumber ? <>· Loom: <EntityCode type="loom" value={w.uploadedLoomNumber} size="sm" /></> : null}
             </span>
           ) : (
             breakdown && <span style={{ color: T.taupe, display: "block", marginTop: 2, fontSize: 12 }}>({breakdown})</span>
@@ -82,15 +83,15 @@ export function WeaverCard({ w, onViewDetails, selected, onToggleSelect }: { w: 
         <div style={{ background: "linear-gradient(135deg, #FFFDF9 0%, #FDFBF7 100%)", border: `1.5px solid ${T.borderDef}`, borderRadius: 12, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontFamily: F.ui, color: T.taupe }}>
             <span>Gross Charges</span>
-            <span style={{ fontFamily: F.mono, fontWeight: 600, color: T.luxuryBrown }}><Money value={rupees(charges)} /></span>
+            <span style={{ fontWeight: 600, color: T.luxuryBrown }}><Money value={rupees(charges)} /></span>
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontFamily: F.ui, color: T.crimson }}>
             <span>Deductions</span>
-            <span style={{ fontFamily: F.mono, fontWeight: 600 }}>−<Money value={rupees(deduction)} /></span>
+            <span style={{ fontWeight: 600 }}>−<Money value={rupees(deduction)} /></span>
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontFamily: F.ui, color: T.green }}>
             <span>Amount Paid</span>
-            <span style={{ fontFamily: F.mono, fontWeight: 600 }}>−<Money value={rupees(amountPaid)} /></span>
+            <span style={{ fontWeight: 600 }}>−<Money value={rupees(amountPaid)} /></span>
           </div>
           <div style={{ borderTop: `1.5px dashed ${T.borderDef}`, paddingTop: 6, display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
             <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>Balance Due</span>

@@ -6,7 +6,7 @@ import { INV_STATUS_CFG, InvBadge } from "./InvBadge";
 import { Button } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees } from "@/lib/domain/money";
-import { Money } from "@/shared/ui/domain";
+import { EntityCode, Money } from "@/shared/ui/domain";
 
 interface WholesaleTableViewProps {
   view: "list" | "table";
@@ -16,9 +16,6 @@ interface WholesaleTableViewProps {
 }
 
 export function WholesaleTableView({ view, filtered, setViewInvoice, setRecordPayment }: WholesaleTableViewProps) {
-  const TH: React.CSSProperties = { fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.7px", padding: "12px 16px", textAlign: "left" as const, background: T.warmCream, borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" as const };
-  const TD: React.CSSProperties = { fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, padding: "14px 16px", verticalAlign: "middle" as const, borderBottom: `1px solid ${T.borderDef}`, whiteSpace: "nowrap" as const };
-
   if (view === "list") {
     return (
       <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden", marginBottom: 32, boxShadow: "0 4px 20px rgba(74,6,27,0.05)" }}>
@@ -28,15 +25,14 @@ export function WholesaleTableView({ view, filtered, setViewInvoice, setRecordPa
             <div
               key={inv.id}
               style={{
-                display: "flex", alignItems: "center", gap: 16, padding: "14px 20px",
-                background: i % 2 === 0 ? "#FFFDF9" : T.silkCream,
+                display: "flex", alignItems: "center", gap: 16, padding: "16px 20px",
                 borderBottom: i < filtered.length - 1 ? `1px solid ${T.borderDef}` : "none",
                 borderLeft: `4px solid ${INV_STATUS_CFG[inv.status].color}`,
                 transition: "background-color 0.15s ease",
               }}
             >
               <div style={{ flex: "0 0 130px" }}>
-                <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "2px 6px", borderRadius: 4, fontWeight: 700 }}>{inv.id}</span>
+                <EntityCode type="invoice" value={inv.id} size="sm" />
               </div>
               <div style={{ flex: "0 0 230px" }}>
                 <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{inv.customer}</div>
@@ -46,11 +42,11 @@ export function WholesaleTableView({ view, filtered, setViewInvoice, setRecordPa
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Invoice Total</div>
-                <div style={{ fontFamily: F.mono, fontSize: 14, color: T.luxuryBrown, fontWeight: 700 }}><Money value={rupees(inv.total)} /></div>
+                <div style={{ fontSize: 14, color: T.luxuryBrown, fontWeight: 700 }}><Money value={rupees(inv.total)} /></div>
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Remaining Due</div>
-                <div style={{ fontFamily: F.mono, fontSize: 13, color: rem === 0 ? T.green : T.crimson, fontWeight: 700 }}>
+                <div style={{ fontSize: 13, color: rem === 0 ? T.green : T.crimson, fontWeight: 700 }}>
                   {rem === 0 ? "Paid ✓" : <Money value={rupees(rem)} />}
                 </div>
               </div>
@@ -75,7 +71,7 @@ export function WholesaleTableView({ view, filtered, setViewInvoice, setRecordPa
   const columns: ColumnDef<Invoice>[] = [
     {
       id: "id", header: "Invoice ID", accessor: inv => inv.id,
-      cell: (_v, inv) => <span style={{ fontFamily: F.mono, fontSize: 12, color: T.royalBurgundy, fontWeight: 700 }}>{inv.id}</span>,
+      cell: (_v, inv) => <EntityCode type="invoice" value={inv.id} size="sm" />,
     },
     {
       id: "customer", header: "Customer", accessor: inv => inv.customer, priority: 1,
@@ -98,24 +94,24 @@ export function WholesaleTableView({ view, filtered, setViewInvoice, setRecordPa
       cell: (_v, inv) => (
         <span style={{ fontFamily: F.ui, fontSize: 13, color: inv.status === "Overdue" ? T.crimson : T.luxuryBrown, fontWeight: inv.status === "Overdue" ? 700 : 400 }}>
           {inv.dueDate}
-          {inv.daysOverdue && <span style={{ fontFamily: F.mono, fontSize: 12, marginLeft: 6, background: "rgba(192,57,43,0.10)", color: T.crimson, padding: "1px 6px", borderRadius: 5 }}>{inv.daysOverdue}d late</span>}
+          {inv.daysOverdue && <span style={{ fontFamily: F.ui, fontSize: 12, marginLeft: 6, background: "rgba(192,57,43,0.10)", color: T.crimson, padding: "1px 6px", borderRadius: 5 }}>{inv.daysOverdue}d late</span>}
         </span>
       ),
     },
     {
       id: "total", header: "Total Amount", accessor: inv => inv.total, align: "end",
-      cell: (_v, inv) => <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}><Money value={rupees(inv.total)} /></span>,
+      cell: (_v, inv) => <span style={{ fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}><Money value={rupees(inv.total)} /></span>,
     },
     {
       id: "paid", header: "Paid Amount", accessor: inv => inv.paid, align: "end", priority: 3,
-      cell: (_v, inv) => <span style={{ fontFamily: F.mono, fontWeight: 600, fontSize: 13, color: T.green }}><Money value={rupees(inv.paid)} /></span>,
+      cell: (_v, inv) => <span style={{ fontWeight: 600, fontSize: 13, color: T.green }}><Money value={rupees(inv.paid)} /></span>,
     },
     {
       id: "remaining", header: "Remaining Due", accessor: inv => inv.total - inv.paid, align: "end",
       cell: (_v, inv) => {
         const rem = inv.total - inv.paid;
         return (
-          <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: rem === 0 ? T.green : inv.status === "Overdue" ? T.crimson : T.antiqueGold }}>
+          <span style={{ fontWeight: 700, fontSize: 14, color: rem === 0 ? T.green : inv.status === "Overdue" ? T.crimson : T.antiqueGold }}>
             {rem === 0 ? "Paid ✓" : <Money value={rupees(rem)} />}
           </span>
         );
@@ -146,7 +142,7 @@ export function WholesaleTableView({ view, filtered, setViewInvoice, setRecordPa
 
   return (
     <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)", marginBottom: 32 }}>
-      <div style={{ overflowX: "auto", minWidth: 860 }}>
+      <div style={{ overflowX: "auto" }}>
         <DataTable
           responsive
           columns={columns}
@@ -160,13 +156,13 @@ export function WholesaleTableView({ view, filtered, setViewInvoice, setRecordPa
           Totals — {filtered.length} invoice{filtered.length !== 1 ? "s" : ""}
         </span>
         <div style={{ display: "flex", gap: 20 }}>
-          <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>
+          <span style={{ fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>
             <Money value={rupees(filtered.reduce((s, inv) => s + inv.total, 0))} />
           </span>
-          <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 13, color: T.green }}>
+          <span style={{ fontWeight: 700, fontSize: 13, color: T.green }}>
             <Money value={rupees(filtered.reduce((s, inv) => s + inv.paid, 0))} />
           </span>
-          <span style={{ fontFamily: F.mono, fontWeight: 700, fontSize: 14, color: T.crimson }}>
+          <span style={{ fontWeight: 700, fontSize: 14, color: T.crimson }}>
             <Money value={rupees(filtered.reduce((s, inv) => s + (inv.total - inv.paid), 0))} />
           </span>
         </div>

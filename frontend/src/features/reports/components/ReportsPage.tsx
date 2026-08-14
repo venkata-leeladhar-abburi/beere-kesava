@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { OutstandingPage } from "../../payments/components/OutstandingPage";
+import { OutstandingPage } from "@/features/payments";
 
 import { T, F } from "./theme";
 import type { ReportTabKey } from "./types";

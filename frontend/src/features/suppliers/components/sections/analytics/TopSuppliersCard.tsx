@@ -2,6 +2,7 @@
 
 import React from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell } from "recharts";
+import type { ValueType, NameType, Payload } from "recharts/types/component/DefaultTooltipContent";
 import { Trophy } from "lucide-react";
 import { T, F } from "../../theme";
 import { semantic } from "../../../../../design-system/tokens";
@@ -36,7 +37,7 @@ export function TopSuppliersCard({
           </div>
         </div>
         <div style={{ textAlign: "right" }}>
-          <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, letterSpacing: "1px", color: T.taupe }}>TOP 5 SHARE</div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "1px", color: T.taupe }}>TOP 5 SHARE</div>
           <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: top5Share > 80 ? T.crimson : T.royalBurgundy }}>{top5Share}%</div>
         </div>
       </div>
@@ -47,9 +48,12 @@ export function TopSuppliersCard({
             <XAxis type="number" hide />
             <YAxis type="category" dataKey="short" width={132} tick={{ fontFamily: F.ui, fontSize: 12, fill: T.luxuryBrown }} axisLine={false} tickLine={false} />
             <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
-              formatter={(v: any, _n: any, p: any) => [`${formatMoney(rupees(v))} · ${p.payload.pieces} sarees · ${formatMoney(rupees(p.payload.avgPiece))}/pc`, p.payload.name]} />
+              formatter={(v: ValueType, _n: NameType, p: Payload<ValueType, NameType>) => {
+                const entry = p.payload as PerSupplierEntry;
+                return [`${formatMoney(rupees(v as number))} · ${entry.pieces} sarees · ${formatMoney(rupees(entry.avgPiece))}/pc`, entry.name];
+              }} />
             <Bar dataKey="billed" radius={[0, 6, 6, 0]}
-              label={{ position: "right", formatter: (v: any) => formatMoney(rupees(v)), fontFamily: F.mono, fontSize: 12, fontWeight: 700, fill: T.luxuryBrown }}>
+              label={{ position: "right", formatter: (v: number) => formatMoney(rupees(v)), fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, fill: T.luxuryBrown }}>
               {topSuppliers.map((s, i) => (
                 <Cell key={s.id} fill={semantic.chart.series[i % semantic.chart.series.length]} />
               ))}
@@ -60,10 +64,10 @@ export function TopSuppliersCard({
       <div style={{ display: "flex", gap: 8, marginTop: 14, borderTop: `1px solid ${T.borderDef}`, paddingTop: 14 }}>
         {topSuppliers.map((s, i) => (
           <div key={s.id} style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-            <div style={{ width: 26, height: 26, borderRadius: 8, flexShrink: 0, background: i === 0 ? `linear-gradient(135deg,${T.antiqueGold},${T.goldLight})` : T.silkCream, border: `1px solid ${T.borderGold}`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.mono, fontSize: 12, fontWeight: 800, color: i === 0 ? T.darkBurgundy : T.taupe }}>{i + 1}</div>
+            <div style={{ width: 26, height: 26, borderRadius: 8, flexShrink: 0, background: i === 0 ? `linear-gradient(135deg,${T.antiqueGold},${T.goldLight})` : T.silkCream, border: `1px solid ${T.borderGold}`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 800, color: i === 0 ? T.darkBurgundy : T.taupe }}>{i + 1}</div>
             <div style={{ minWidth: 0 }}>
               <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{s.initials}</div>
-              <div style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{billed ? Math.round((s.billed / billed) * 100) : 0}% share</div>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{billed ? Math.round((s.billed / billed) * 100) : 0}% share</div>
             </div>
           </div>
         ))}

@@ -36,7 +36,7 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
     queryKey: ["sales-list-processreturn"],
     queryFn: () => salesApi.list(200),
   });
-  const allSales = salesRes?.items ?? [];
+  const allSales = useMemo(() => salesRes?.items ?? [], [salesRes]);
   const saleBySareeId = useMemo(() => new Map(allSales.map(s => [s.sareeId, s])), [allSales]);
 
   const returnedSareeIds = useMemo(

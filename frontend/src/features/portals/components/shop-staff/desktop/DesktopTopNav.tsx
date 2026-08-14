@@ -6,6 +6,7 @@ import { C, F, TEAL } from "../theme";
 const TEAL_LIGHT = "#5EEAD4";
 import { Button, IconButton, SearchInput } from "../../../../../shared/ui/primitives";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "../../../../../shared/ui/overlay";
+import type { Role } from "../../../../../contexts/AuthContext";
 
 type TabId = "home" | "sale" | "inventory" | "customers" | "reports";
 
@@ -27,7 +28,7 @@ export function DesktopTopNav({
   setShowProfileModal: (v: boolean) => void;
   onBack?: () => void;
   handleLogout: () => void;
-  selectRole: (role: any) => void;
+  selectRole: (role: Role) => void;
   routerNavigate: (path: string) => void;
 }) {
   return (
@@ -40,7 +41,7 @@ export function DesktopTopNav({
           whatever space the siblings happen to leave. The old flex row let a
           wide brand block push the nav until its first and last tabs were
           clipped ("ome", "Process R"). */}
-      <div style={{ maxWidth: 1600, margin: "0 auto", padding: isTablet ? "0 24px" : "0 56px", display: "grid", gridTemplateColumns: "auto minmax(0, 1fr) auto", alignItems: "center", height: 72, gap: isTablet ? 16 : 24 }}>
+      <div className="max-w-[1600px] mx-auto" style={{ padding: isTablet ? "0 24px" : "0 56px", display: "grid", gridTemplateColumns: "auto minmax(0, 1fr) auto", alignItems: "center", height: 72, gap: isTablet ? 16 : 24 }}>
         <div style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: isTablet ? 10 : 14 }}>
           <div style={{ width: isTablet ? 40 : 52, height: isTablet ? 40 : 52, borderRadius: 14, overflow: "hidden", border: "1.5px solid rgba(200,155,71,0.30)", boxShadow: "0 4px 16px rgba(0,0,0,0.30)", flexShrink: 0 }}>
             <img src={imgBKLogo} alt="BK Logo" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -71,7 +72,7 @@ export function DesktopTopNav({
                     : "bg-transparent font-medium !text-[rgba(245,232,208,0.80)] hover:!bg-[rgba(245,232,208,0.10)] hover:!text-[#5EEAD4]")
                 }
               >
-                {React.cloneElement(tab.icon as React.ReactElement<any>, { size: 16, color: isActive ? "#5EEAD4" : "rgba(245,232,208,0.80)" })}
+                {React.cloneElement(tab.icon as React.ReactElement<{ size?: number; color?: string }>, { size: 16, color: isActive ? "#5EEAD4" : "rgba(245,232,208,0.80)" })}
                 {isTablet ? (tab.id === "inventory" ? "Stock" : tab.id === "sale" ? "Sale" : tab.label) : tab.label}
               </Button>
             );
@@ -141,7 +142,7 @@ export function DesktopTopNav({
                     const origAdminRole = localStorage.getItem("bk_original_admin_role");
                     if (origAdminRole) {
                       localStorage.removeItem("bk_original_admin_role");
-                      selectRole(origAdminRole as any);
+                      selectRole(origAdminRole as Role);
                       routerNavigate(origAdminRole === "superadmin" ? "/superadmin" : "/admin");
                     }
                   }} className="!h-auto !py-2.5 !px-[18px] !text-sm !text-[#1A0A0F]">

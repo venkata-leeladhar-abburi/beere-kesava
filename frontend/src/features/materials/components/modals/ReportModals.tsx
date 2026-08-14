@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "motion/react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Package, BarChart2, FileText, AlertTriangle, Download, Check, X } from "lucide-react";
-import type { PurchaseOrder } from "../../../purchasing/contexts/POContext";
+import type { PurchaseOrder } from "@/features/purchasing";
 import { T, F } from "../theme";
 import { PO_STATUS_CFG } from "../materialConfig";
 import { ModalOverlay, ModalHeader } from "../common/primitives";
@@ -18,6 +18,8 @@ import type { StatusValueOf } from "@/lib/domain/status";
 // PurchaseOrder["status"] doesn't have its own "pending approval" key in the
 // shared document taxonomy — a PO awaiting approval is the same lifecycle
 // point as a "raised" document, so it normalizes onto that.
+const THRESHOLD_MATERIAL_TYPES = ["WARP", "RESHAM", "JARI"] as const;
+
 const PO_STATUS_TO_DOCUMENT: Record<PurchaseOrder["status"], StatusValueOf<"document">> = {
   draft: "draft",
   pending: "raised",
@@ -42,9 +44,9 @@ export function FullReportsModal({ open, onClose }: { open: boolean; onClose: ()
             { icon: <BarChart2 size={20} color={T.antiqueGold} />, title: "Stock Movement Report", desc: "All inward and outward movement of materials over the selected period", bg: "rgba(200,155,71,0.07)" },
             { icon: <FileText size={20} color={T.green} />, title: "Vendor Purchase Report", desc: "Total purchases from each vendor with cost breakdown and order history", bg: "rgba(30,102,64,0.06)" },
             { icon: <AlertTriangle size={20} color={T.crimson} />, title: "Low Stock Alert Report", desc: "All materials that have gone below minimum stock levels requiring reorder", bg: "rgba(192,57,43,0.06)" },
-          ].map((r, i) => (
+          ].map((r) => (
             <motion.div
-              key={i}
+              key={r.title}
               whileHover={{ scale: 1.01, boxShadow: "0 6px 20px rgba(74,6,27,0.10)" }}
               style={{ display: "flex", alignItems: "flex-start", gap: 16, background: r.bg, borderRadius: 14, padding: "18px 20px", cursor: "pointer", border: `1px solid rgba(110,15,45,0.09)` }}
             >
@@ -151,8 +153,8 @@ export function DownloadReportModal({ open, onClose, title }: { open: boolean; o
                 { fmt: "PDF Report", icon: <FileText size={20} color={T.royalBurgundy} />, desc: "Formatted document with charts and tables", bg: "rgba(110,15,45,0.05)" },
                 { fmt: "Excel Spreadsheet", icon: <BarChart2 size={20} color={T.green} />, desc: "Raw data in .xlsx format for analysis", bg: "rgba(30,102,64,0.05)" },
                 { fmt: "CSV File", icon: <Download size={20} color={T.antiqueGold} />, desc: "Simple comma-separated values file", bg: "rgba(200,155,71,0.07)" },
-              ].map((f, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: 14, background: f.bg, borderRadius: 12, padding: "14px 16px", cursor: "pointer", border: `1px solid rgba(110,15,45,0.08)` }}>
+              ].map((f) => (
+                <div key={f.fmt} style={{ display: "flex", alignItems: "center", gap: 14, background: f.bg, borderRadius: 12, padding: "14px 16px", cursor: "pointer", border: `1px solid rgba(110,15,45,0.08)` }}>
                   <div style={{ width: 42, height: 42, borderRadius: 11, background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{f.icon}</div>
                   <div>
                     <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>{f.fmt}</div>
@@ -192,13 +194,12 @@ export function ThresholdsModal({ open, onClose, stockItems, onSave }: {
 }) {
   const queryClient = useQueryClient();
   const [levels, setLevels] = useState<Record<string, number>>({});
-  const types = ["WARP", "RESHAM", "JARI"] as const;
-  const aggregatedItems = types.map(type => {
+  const aggregatedItems = useMemo(() => THRESHOLD_MATERIAL_TYPES.map(type => {
     const items = stockItems.filter(i => i.materialType === type);
     const currentStock = items.reduce((s, i) => s + Number(i.currentStock), 0);
     const unit = items.length > 0 ? items[0].unit : (type === "JARI" ? "Reels" : "KG");
     return { type, currentStock, unit, items };
-  });
+  }), [stockItems]);
 
   React.useEffect(() => {
     if (open) {
@@ -210,7 +211,7 @@ export function ThresholdsModal({ open, onClose, stockItems, onSave }: {
       });
       setLevels(initial);
     }
-  }, [open, stockItems]);
+  }, [open, aggregatedItems]);
 
   const saveMutation = useMutation({
     mutationFn: (payload: { thresholds: { id: string; reorderLevel: number }[] }) =>
@@ -367,10 +368,11 @@ export function POVendorDetailModal({ po, onClose }: { po: PurchaseOrder | null;
                 <div style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.2px", color: T.taupe }}>Materials Ordered</div>
               </div>
               <div style={{ padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
-                {po.materials.map((m, mi) => {
+                {po.materials.map((m) => {
                   const mt = MT[m.materialType] || MT.Warp;
                   return (
-                    <div key={mi} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 12px", background: T.silkCream, borderRadius: 10 }}>
+                    // POItem has no stable id field; combine all per-line fields (including quantity/price) for a stable, collision-resistant key.
+                    <div key={`${m.materialType}-${m.subtype || m.description || "item"}-${m.quantity}-${m.unit}-${m.pricePerUnit}`} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 12px", background: T.silkCream, borderRadius: 10 }}>
                       <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 800, textTransform: "uppercase" as const, color: mt.col, background: mt.bg, padding: "3px 9px", borderRadius: 6, flexShrink: 0, marginTop: 1 }}>{m.materialType}</span>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{m.subtype || m.description || "—"}</div>
@@ -427,7 +429,18 @@ export function POVendorDetailModal({ po, onClose }: { po: PurchaseOrder | null;
 }
 
 // ─── RECENT RECEIVED DETAIL MODAL ─────────────────────────────────────────────
-export function RecentReceivedDetailModal({ item, onClose }: { item: any | null; onClose: () => void }) {
+interface ReceivedMaterialItem {
+  po?: string;
+  vendor?: string;
+  vendorCity?: string;
+  firmName?: string;
+  type?: string;
+  description?: string;
+  quantity?: string | number;
+  date?: string;
+}
+
+export function RecentReceivedDetailModal({ item, onClose }: { item: ReceivedMaterialItem | null; onClose: () => void }) {
   if (!item) return null;
   return (
     <ModalOverlay open={!!item} onClose={onClose}>

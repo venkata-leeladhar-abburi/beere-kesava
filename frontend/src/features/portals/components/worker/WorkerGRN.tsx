@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import { ChevronDown, CheckCircle2 } from "lucide-react";
+import React, { useState, useCallback } from "react";
+import { CheckCircle2 } from "lucide-react";
 import { C, F } from "./tokens";
-import { usePO, PurchaseOrder, POItem } from "../../../purchasing/contexts/POContext";
+import { usePO, PurchaseOrder, POItem } from "@/features/purchasing";
 import { ReceiptHistoryTable, ReceiptRecord } from "./ReceiptHistoryTable";
 import { GRNSuccessView, GRNPrintView } from "./GRNSuccessPrint";
 import { GRNItemVerificationCard } from "./GRNItemVerificationCard";
@@ -67,8 +67,7 @@ function SectionLabel({ step, title }: { step: number; title: string }) {
 
 export function WorkerGRN({ 
   mode = "all", 
-  history: externalHistory, 
-  setHistory: setExternalHistory,
+  history: externalHistory,
   initialPOId
 }: { 
   mode?: "form" | "history" | "all"; 
@@ -83,7 +82,7 @@ export function WorkerGRN({
   const [step, setStep] = useState<GRNStep>("form");
   const [selectedPO, setSelectedPO] = useState<PurchaseOrder | null>(null);
   const [showPODrop, setShowPODrop] = useState(false);
-  const [localHistory, setLocalHistory] = useState<ReceiptRecord[]>(INITIAL_HISTORY);
+  const [localHistory, _setLocalHistory] = useState<ReceiptRecord[]>(INITIAL_HISTORY);
 
   const queryClient = useQueryClient();
 
@@ -118,7 +117,6 @@ export function WorkerGRN({
   });
 
   const receiptHistory = externalHistory ?? localHistory;
-  const setReceiptHistory = setExternalHistory ?? setLocalHistory;
 
   const [grnBatchId, setGrnBatchId] = useState(() => generateGrnId(receiptHistory.length + 1));
   const [receivedQty, setReceivedQty] = useState<Record<number, string>>({});
@@ -128,7 +126,7 @@ export function WorkerGRN({
   const [notifySuperadmin, setNotifySuperadmin] = useState<Record<number, boolean>>({});
   const [confirmedReceived, setConfirmedReceived] = useState(false);
 
-  const handleSelectPO = (po: PurchaseOrder) => {
+  const handleSelectPO = useCallback((po: PurchaseOrder) => {
     setSelectedPO(po);
     setShowPODrop(false);
     setReceivedQty({});
@@ -147,7 +145,7 @@ export function WorkerGRN({
     });
     setReceivedUnit(initialUnits);
     setGrnBatchId(generateGrnId(receiptHistory.length + 1));
-  };
+  }, [receiptHistory.length]);
 
   React.useEffect(() => {
     if (initialPOId) {
@@ -156,11 +154,12 @@ export function WorkerGRN({
         handleSelectPO(po);
       }
     }
-  }, [initialPOId]);
+  }, [initialPOId, approvedPOs, handleSelectPO, selectedPO?.id]);
 
   const getQtyInOrderedUnit = (idx: number, m: POItem) => {
     const qtyStr = receivedQty[idx] || "";
     if (!qtyStr) return 0;
+    // eslint-disable-next-line no-restricted-syntax -- quantity calculation, not money
     const qtyVal = parseFloat(qtyStr) || 0;
     const unitSel = receivedUnit[idx];
 
@@ -179,7 +178,7 @@ export function WorkerGRN({
     }
   };
 
-  const getHasQty = (idx: number, m: POItem) => {
+  const getHasQty = (idx: number, _m: POItem) => {
     return !!receivedQty[idx];
   };
 
@@ -196,25 +195,7 @@ export function WorkerGRN({
     itemApproval[i] === "approved" || (itemApproval[i] === "rejected" && !!itemRejectReason[i]?.trim())
   ) : false;
 
-  const overallStatus: "Match" | "Short" | "Excess" = (() => {
-    const diffs = comparisons.filter(Boolean) as { diff: number }[];
-    if (diffs.some(d => d.diff < 0)) return "Short";
-    if (diffs.some(d => d.diff > 0)) return "Excess";
-    return "Match";
-  })();
-
   const currentFormStep = !selectedPO ? 0 : !grnBatchId ? 1 : 2;
-
-  const getMaterialsSummary = () => {
-    if (!selectedPO) return "";
-    return selectedPO.materials.map((m, i) => {
-      const qty = receivedQty[i] || "0";
-      const unit = receivedUnit[i] || m.unit;
-      const desc = m.subtype || m.description || "General";
-      const rejection = itemApproval[i] === "rejected" ? ` [Not Approved: ${itemRejectReason[i]}]` : "";
-      return `${m.materialType} - ${desc} (${qty} ${unit})${rejection}`;
-    }).join(", ");
-  };
 
   const handleConfirm = () => {
     if (!selectedPO) return;
@@ -225,6 +206,7 @@ export function WorkerGRN({
       supplierName: selectedPO.vendor,
       invoiceNo: selectedPO.poNumber,
       items: selectedPO.materials.map((m, i) => {
+        // eslint-disable-next-line no-restricted-syntax -- quantity, not money
         const inputtedQty = parseFloat(receivedQty[i] || "0");
         const inputtedUnit = receivedUnit[i] || m.unit;
         const isRejected = itemApproval[i] === "rejected";
@@ -299,7 +281,9 @@ export function WorkerGRN({
           <div style={{ margin: "0 20px", display: "flex", flexDirection: "column", gap: 10 }}>
             {selectedPO.materials.map((m, i) => (
               <GRNItemVerificationCard
-                key={i}
+                // POItem.id is only populated when loaded from the backend; fall back to
+                // materialType+index for locally-constructed items with no persisted id.
+                key={m.id ?? `${m.materialType}-${i}`}
                 material={m}
                 index={i}
                 comparison={comparisons[i]}

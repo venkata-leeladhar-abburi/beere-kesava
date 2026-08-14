@@ -3,17 +3,10 @@ import { useResponsive } from "../../../../hooks/useResponsive";
 import { Send } from "lucide-react";
 
 
-import React, { useState, useEffect, useMemo, useRef, createContext, useContext } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { inventoryApi } from '../../../../shared/api/inventory';
-import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Menu, X, Search, Bell, LogOut, Package, IndianRupee, RotateCcw, 
-  Users, BarChart3, ChevronRight, UserRound, ArrowLeft, Plus, MapPin, 
-  Phone, Eye, Download, Printer, Filter, Calendar, Activity,
-  ShoppingCart, Store, ArrowRight, Tag, Wallet, CreditCard, ChevronDown, CheckCircle2,
-  TrendingUp, ArrowDownRight, ArrowUpRight, TrendingDown
-} from 'lucide-react';
+import { Search } from 'lucide-react';
 
 import { C, F, TEAL, Card, Btn, Chip } from './theme';
 import { Button, Input } from "../../../../shared/ui/primitives";
@@ -23,7 +16,7 @@ import { rupees } from "@/lib/domain/money";
 
 function ShopInventory() {
   const canSeePrices = useCanSeePrices();
-  const { isMobile } = useResponsive();
+  useResponsive();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All Sarees");
   const [loomFilter, setLoomFilter] = useState<string[]>([]);
@@ -94,13 +87,6 @@ function ShopInventory() {
     const matchWeaver = weaverFilter.length === 0 || (s.weaver && weaverFilter.includes(s.weaver));
     return matchSearch && matchFilter && matchLoom && matchWeaver;
   });
-
-  const dropStyle: React.CSSProperties = {
-    height: 42, padding: "0 14px", borderRadius: 12, border: `1px solid ${C.bdr}`, background: C.inp,
-    fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.text, cursor: "pointer", outline: "none",
-    appearance: "none", WebkitAppearance: "none", backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238B7060' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
-    backgroundRepeat: "no-repeat", backgroundPosition: "right 12px center", paddingRight: 32,
-  };
 
   return (
     <div style={{ paddingBottom: 32 }}>
@@ -219,8 +205,8 @@ function ShopInventory() {
           No sarees in stock.
         </div>
       )}
-      {!inventoryLoading && !inventoryError && filtered.map((s, i) => (
-        <div key={i} style={{ margin: "0 20px 12px", background: C.white, borderRadius: 16, border: `1px solid ${C.bdr}`, boxShadow: "0 2px 12px rgba(44,24,16,0.07)", padding: 18, display: "flex", gap: 14 }}>
+      {!inventoryLoading && !inventoryError && filtered.map((s) => (
+        <div key={s.id} style={{ margin: "0 20px 12px", background: C.white, borderRadius: 16, border: `1px solid ${C.bdr}`, boxShadow: "0 2px 12px rgba(44,24,16,0.07)", padding: 18, display: "flex", gap: 14 }}>
           <div style={{ width: 6, borderRadius: 3, background: s.color, flexShrink: 0, alignSelf: "stretch" }} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8, flexWrap: "wrap" as const }}>
@@ -259,26 +245,5 @@ function ShopInventory() {
     </div>
   );
 }
-
-// ─── PAGE 04 — PROCESS RETURN ────────────────────────────────────────────────
-interface ReturnRecord {
-  id: string;
-  type: "retail" | "wholesale";
-  date: string;
-  customer?: string;
-  originalSaleId?: string;
-  reason?: string;
-  amount?: string;
-  newSareeId?: string;
-  vendor?: string;
-  design?: string;
-  color?: string;
-  weight?: string;
-  price?: string;
-  wsReason?: string;
-}
-
-type ReturnStep = "type" | 1 | 2 | 3 | "success";
-type ReturnType = "retail" | "wholesale" | null;
 
 export { ShopInventory };
