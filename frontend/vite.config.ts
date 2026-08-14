@@ -41,8 +41,12 @@ export default defineConfig({
         // app-code deploy doesn't force users to re-download React/Radix/etc.
         manualChunks(id) {
           if (!id.includes('node_modules')) return
-          if (/react-router|\/react\/|\/react-dom\//.test(id)) return 'vendor-react'
-          if (id.includes('@radix-ui')) return 'vendor-radix'
+          // Radix calls React.forwardRef at module-load time, so it must be
+          // bundled with React rather than split into its own chunk — Rollup
+          // doesn't guarantee vendor-react finishes evaluating before a
+          // separate vendor-radix chunk runs, which crashes with
+          // "Cannot read properties of undefined (reading 'forwardRef')".
+          if (/react-router|\/react\/|\/react-dom\/|@radix-ui/.test(id)) return 'vendor-react'
           if (id.includes('recharts') || id.includes('d3-')) return 'vendor-charts'
           if (id.includes('xlsx')) return 'vendor-xlsx'
           if (id.includes('lucide-react') || id.includes('@phosphor-icons')) return 'vendor-icons'
