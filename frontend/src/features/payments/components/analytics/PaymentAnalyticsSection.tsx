@@ -251,8 +251,8 @@ export function PaymentAnalyticsSection() {
                 <ResponsiveContainer width="100%" height={210}>
                   <BarChart data={cashFlowData} barGap={4} barCategoryGap="28%">
                     <CartesianGrid key="cf-grid"     strokeDasharray="3 3" stroke="rgba(110,15,45,0.07)" vertical={false} />
-                    <XAxis         key="cf-xaxis"    dataKey="month" tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
-                    <YAxis         key="cf-yaxis"    tick={{ fontFamily: F.mono, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => formatMoney(rupees(v), { compact: true })} width={46} />
+                    <XAxis         key="cf-xaxis"    dataKey="month" tick={{ fontVariantNumeric: "tabular-nums", fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
+                    <YAxis         key="cf-yaxis"    tick={{ fontVariantNumeric: "tabular-nums", fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => formatMoney(rupees(v), { compact: true })} width={46} />
                     <Tooltip       key="cf-tooltip"  content={<CashFlowTooltip />} cursor={{ fill: "rgba(110,15,45,0.04)" }} />
                     <Bar           key="cf-income"   dataKey="income"   name="Income"   fill={T.green}  radius={[5,5,0,0] as any} />
                     <Bar           key="cf-expenses" dataKey="expenses" name="Expenses" fill={T.crimson} radius={[5,5,0,0] as any} opacity={0.80} />
@@ -318,7 +318,7 @@ export function PaymentAnalyticsSection() {
                       <div style={{ flex: 2, height: 6, background: "rgba(110,15,45,0.07)", borderRadius: 99, overflow: "hidden" }}>
                         <div style={{ height: "100%", width: `${pct}%`, background: d.color, borderRadius: 99 }} />
                       </div>
-                      <span style={{ fontFamily: F.mono, fontSize: 13, color: T.luxuryBrown, fontWeight: 700, width: 34, textAlign: "right" }}>{pct}%</span>
+                      <span style={{ fontVariantNumeric: "tabular-nums", fontSize: 13, color: T.luxuryBrown, fontWeight: 700, width: 34, textAlign: "right" }}>{pct}%</span>
                     </div>
                   );
                 })}
@@ -358,7 +358,7 @@ export function PaymentAnalyticsSection() {
                       </div>
                       <span style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, fontWeight: 600 }}>{d.name}</span>
                     </div>
-                    <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}><Money value={rupees(d.amount)} /></span>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}><Money value={rupees(d.amount)} /></span>
                   </div>
                   <div style={{ height: 7, background: "rgba(110,15,45,0.08)", borderRadius: 99, overflow: "hidden" }}>
                     <motion.div

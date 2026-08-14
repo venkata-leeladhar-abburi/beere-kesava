@@ -21,7 +21,7 @@ export function PaymentsFooter() {
               <div style={{ fontFamily: F.display, fontSize: 14, fontStyle: "italic", color: T.antiqueGold, lineHeight: 1.2 }}>&amp; Brothers Silks</div>
             </div>
           </div>
-          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, letterSpacing: "2.5px", textTransform: "uppercase", marginBottom: 12 }}>SINCE 1999</div>
+          <div style={{ fontVariantNumeric: "tabular-nums", fontSize: 12, color: T.antiqueGold, letterSpacing: "2.5px", textTransform: "uppercase", marginBottom: 12 }}>SINCE 1999</div>
           <p style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.52)", lineHeight: 1.7, marginBottom: 20, maxWidth: 280 }}>
             Preserving the art of pure silk weaving. Banarasi heritage crafted with trust, transparency, and timeless quality.
           </p>
@@ -36,7 +36,7 @@ export function PaymentsFooter() {
 
         {/* ── Quick Links ───────────────────────────────────── */}
         <div>
-          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 16 }}>QUICK LINKS</div>
+          <div style={{ fontVariantNumeric: "tabular-nums", fontSize: 12, color: T.antiqueGold, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 16 }}>QUICK LINKS</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {FOOTER_QUICK_LINKS.map(l => (
               <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
@@ -51,7 +51,7 @@ export function PaymentsFooter() {
 
         {/* ── Payment Shortcuts ─────────────────────────────── */}
         <div>
-          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 16 }}>PAYMENT SHORTCUTS</div>
+          <div style={{ fontVariantNumeric: "tabular-nums", fontSize: 12, color: T.antiqueGold, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 16 }}>PAYMENT SHORTCUTS</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {FOOTER_PAYMENT_LINKS.map(l => (
               <span key={l} style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.60)", cursor: "pointer" }}
@@ -63,7 +63,7 @@ export function PaymentsFooter() {
 
         {/* ── Need Help ─────────────────────────────────────── */}
         <div>
-          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 16 }}>NEED HELP</div>
+          <div style={{ fontVariantNumeric: "tabular-nums", fontSize: 12, color: T.antiqueGold, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 16 }}>NEED HELP</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {FOOTER_HELP_LINKS.map(l => (
               <span key={l} style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.60)", cursor: "pointer" }}
@@ -75,7 +75,7 @@ export function PaymentsFooter() {
 
         {/* ── Our Commitment ────────────────────────────────── */}
         <div>
-          <div style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 16 }}>OUR COMMITMENT</div>
+          <div style={{ fontVariantNumeric: "tabular-nums", fontSize: 12, color: T.antiqueGold, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 16 }}>OUR COMMITMENT</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {FOOTER_COMMITMENTS.map(c => (
               <div key={c} style={{ display: "flex", alignItems: "center", gap: 9 }}>

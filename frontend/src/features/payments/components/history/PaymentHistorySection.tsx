@@ -173,6 +173,7 @@ export function PaymentHistorySection() {
       cell: (_v, r) => r.invoicePO ? <span style={{ fontFamily: F.mono, fontSize: 12, color: T.taupe }}>{r.invoicePO}</span> : <span style={{ color: T.borderDef }}>—</span>,
     },
     {
+      // eslint-disable-next-line no-restricted-syntax -- column header label (unit annotation), not a rendered money value; the amount itself renders via <Money> below
       id: "amount", header: "Amount (₹)", accessor: r => r.amount, align: "end",
       cell: (_v, r) => (
         <span style={{ fontFamily: F.mono, fontSize: 14, fontWeight: 700, color: r.type === "Customer Receipt" ? T.green : T.crimson }}>
@@ -409,6 +410,7 @@ export function PaymentHistorySection() {
         {/* ── TABLE VIEW ──────────────────────────────────────── */}
         {view === "table" && (
           <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
+            {/* eslint-disable-next-line no-restricted-syntax -- table scroll container: overflowX auto already contains overflow within its own box, minWidth just keeps table columns legible, no page-level overflow risk */}
             <div style={{ overflowX: "auto", minWidth: 1200 }}>
               <DataTable responsive columns={tableColumns} data={filtered} getRowId={r => r.id} emptyTitle="No transactions match your filters" />
             </div>
