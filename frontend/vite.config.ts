@@ -37,22 +37,17 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        // Split rarely-changing vendor code into its own cacheable chunks so an
-        // app-code deploy doesn't force users to re-download React/Radix/etc.
-        manualChunks(id) {
-          if (!id.includes('node_modules')) return
-          // Radix calls React.forwardRef at module-load time, so it must be
-          // bundled with React rather than split into its own chunk — Rollup
-          // doesn't guarantee vendor-react finishes evaluating before a
-          // separate vendor-radix chunk runs, which crashes with
-          // "Cannot read properties of undefined (reading 'forwardRef')".
-          if (/react-router|\/react\/|\/react-dom\/|@radix-ui/.test(id)) return 'vendor-react'
-          if (id.includes('recharts') || id.includes('d3-')) return 'vendor-charts'
-          if (id.includes('xlsx')) return 'vendor-xlsx'
-          if (id.includes('lucide-react') || id.includes('@phosphor-icons')) return 'vendor-icons'
-          if (id.includes('motion')) return 'vendor-motion'
-          return 'vendor'
-        },
+        // No manual vendor chunk splitting: many UI libraries here (Radix,
+        // react-hook-form, cmdk, sonner, vaul, recharts, ...) call
+        // React.forwardRef/createContext at module-load time. Grouping them
+        // into hand-picked chunks by id pattern breaks Rollup's guarantee
+        // that a chunk's dependencies finish evaluating before it runs,
+        // causing "Cannot read properties of undefined (reading
+        // 'forwardRef'/'createContext')" crashes whenever a split-off chunk
+        // happens to execute before vendor-react. Letting Rollup's default
+        // chunking control the full dependency graph keeps load order
+        // correct; it still splits vendor code, just without hand-drawn
+        // boundaries that can sever a load-order-critical edge.
       },
     },
   },
