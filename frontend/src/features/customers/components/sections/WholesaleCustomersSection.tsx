@@ -122,6 +122,10 @@ export function WholesaleCustomersSection({
         bankName: form.bankName.trim() || undefined,
         accountNumber: form.accountNumber.trim() || undefined,
         ifscCode: form.ifscCode.trim() || undefined,
+        whatsapp: form.whatsapp.trim() || undefined,
+        state: form.state || undefined,
+        paymentTerms: form.paymentTerms || undefined,
+        notes: form.notes.trim() || undefined,
       });
       closeAddWholesale();
     } catch (err) {

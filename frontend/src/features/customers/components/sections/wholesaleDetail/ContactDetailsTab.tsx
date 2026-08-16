@@ -21,14 +21,20 @@ export function ContactDetailsTab({ customer, onViewCard }: {
             <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 600, color: T.royalBurgundy, marginTop: 4 }}>{customer.gstNumber || "Unregistered"}</div>
           </div>
         </div>
-        <div>
-          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Phone Number</div>
-          <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, color: T.luxuryBrown, marginTop: 4 }}>{customer.phone || "—"}</div>
+        <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
+          <div>
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Phone Number</div>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, color: T.luxuryBrown, marginTop: 4 }}>{customer.phone || "—"}</div>
+          </div>
+          <div>
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>WhatsApp Number</div>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, color: T.luxuryBrown, marginTop: 4 }}>{customer.whatsapp || "—"}</div>
+          </div>
         </div>
         <div>
           <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Billing Address</div>
           <div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, marginTop: 4, lineHeight: 1.5 }}>
-            {customer.address || "—"}
+            {customer.address || "—"}{customer.state ? `, ${customer.state}` : ""}
           </div>
         </div>
         <div>
@@ -40,6 +46,12 @@ export function ContactDetailsTab({ customer, onViewCard }: {
           ) : (
             <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, fontStyle: "italic", marginTop: 4 }}>No bank details on file.</div>
           )}
+        </div>
+        <div>
+          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Special Instructions / Notes</div>
+          <div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, marginTop: 4, lineHeight: 1.5 }}>
+            {customer.notes || "—"}
+          </div>
         </div>
       </div>
 

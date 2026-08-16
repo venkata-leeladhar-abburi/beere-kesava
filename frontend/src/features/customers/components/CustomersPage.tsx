@@ -62,7 +62,7 @@ export function CustomersPage() {
         orders: custOrders.length,
         spend: String(paid),
         out: String(outstanding),
-        terms: "30 days",
+        terms: c.paymentTerms || "30 days",
         // createdDate is the raw ISO createdAt (unlike `due`, which is
         // already formatted for display and not safely sortable as a
         // string), so it's what picks out the most recent order.
@@ -79,6 +79,9 @@ export function CustomersPage() {
         bankName: c.bankName || "",
         accountNumber: c.accountNumber || "",
         ifscCode: c.ifscCode || "",
+        whatsapp: c.whatsapp || "",
+        state: c.state || "Andhra Pradesh",
+        notes: c.notes || "",
       };
     });
     return [...mapped, ...wholesaleData];
@@ -213,7 +216,7 @@ export function CustomersPage() {
           setWholesaleTab={setWholesaleTab}
           onBack={() => setSelectedWholesaleCust(null)}
           onSave={updated => {
-            if (updateCustomer && selectedWholesaleCust.id) {
+            if (selectedWholesaleCust.id) {
               updateCustomer(selectedWholesaleCust.id, {
                 name: updated.name,
                 contactName: updated.contactName || undefined,
@@ -224,6 +227,10 @@ export function CustomersPage() {
                 bankName: updated.bankName || undefined,
                 accountNumber: updated.accountNumber || undefined,
                 ifscCode: updated.ifscCode || undefined,
+                whatsapp: updated.whatsapp || undefined,
+                state: updated.state || undefined,
+                paymentTerms: updated.terms || undefined,
+                notes: updated.notes || undefined,
               });
             }
             setSelectedWholesaleCust(updated);

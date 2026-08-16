@@ -84,7 +84,7 @@ export const ROLE_COLORS: Record<string, { bg: string; text: string; border: str
   "Accountant":      { bg: "rgba(30,102,64,0.11)",    text: "#0F5C3F",   border: "rgba(30,102,64,0.20)"   },
 };
 
-export const ROLES = ["Admin", "Worker Staff", "Finishing Staff", "Weaver", "Shop Staff", "Accountant"];
+export const ROLES = ["Admin", "Worker Staff", "Finishing Staff", "Shop Staff", "Accountant"];
 
 export const ACCESS_LEVELS = ["Full Access", "Semi Access"] as const;
 export type AccessLevel = typeof ACCESS_LEVELS[number];

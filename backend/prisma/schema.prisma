@@ -1279,6 +1279,10 @@ model Customer {
   ifscCode        String?
   type            CustomerType @default(RETAIL)
   visitingCardUrl String?
+  whatsapp        String?
+  state           String?
+  paymentTerms    String?
+  notes           String?
   createdAt       DateTime     @default(now())
 
   bulkOrders      BulkOrder[]
