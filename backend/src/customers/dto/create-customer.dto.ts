@@ -51,4 +51,20 @@ export class CreateCustomerDto {
   @IsOptional()
   @IsString()
   visitingCardUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  whatsapp?: string;
+
+  @IsOptional()
+  @IsString()
+  state?: string;
+
+  @IsOptional()
+  @IsString()
+  paymentTerms?: string;
+
+  @IsOptional()
+  @IsString()
+  notes?: string;
 }

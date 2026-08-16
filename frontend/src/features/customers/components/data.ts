@@ -28,6 +28,9 @@ export interface WholesaleCustomerRow {
   bankName: string;
   accountNumber: string;
   ifscCode: string;
+  whatsapp: string;
+  state: string;
+  notes: string;
 }
 
 // Shape mirrors the objects CustomersPage.tsx builds for its `retailList`

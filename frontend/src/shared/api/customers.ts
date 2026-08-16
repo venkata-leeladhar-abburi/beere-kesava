@@ -16,6 +16,10 @@ export interface BackendCustomer {
   ifscCode: string | null;
   type: BackendCustomerType;
   visitingCardUrl: string | null;
+  whatsapp: string | null;
+  state: string | null;
+  paymentTerms: string | null;
+  notes: string | null;
   createdAt: string;
   // Real purchase count/lifetime spend/last-visit computed off SaleRecord
   // (CustomersService.findAll) — always present on list responses.
@@ -43,6 +47,10 @@ export interface CreateCustomerPayload {
   accountNumber?: string;
   ifscCode?: string;
   visitingCardUrl?: string;
+  whatsapp?: string;
+  state?: string;
+  paymentTerms?: string;
+  notes?: string;
 }
 
 export interface UpdateCustomerPayload {
@@ -56,6 +64,10 @@ export interface UpdateCustomerPayload {
   accountNumber?: string;
   ifscCode?: string;
   visitingCardUrl?: string;
+  whatsapp?: string;
+  state?: string;
+  paymentTerms?: string;
+  notes?: string;
 }
 
 export const customersApi = {
