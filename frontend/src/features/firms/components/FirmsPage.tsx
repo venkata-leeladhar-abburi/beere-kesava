@@ -120,27 +120,42 @@ function BusinessOverview({ onGoToFirm }: { onGoToFirm?: (firmId: string) => voi
   return (
     <div className="mx-4 md:mx-7 xl:mx-14" style={{ marginTop: 28, borderRadius: 22, overflow: "hidden", background: "#FFF", boxShadow: "0 4px 28px rgba(44,24,16,0.10)", border: `1px solid ${T.borderDef}` }}>
       {/* Header */}
-      <div style={{ background: `linear-gradient(135deg, ${T.darkBurgundy} 0%, ${T.royalBurgundy} 100%)`, padding: "18px 28px", display: "flex", alignItems: "center", gap: 14, cursor: "pointer" }} onClick={() => setOpen(o => !o)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => setOpen(o => !o))?.(); } }}>
-        <div style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(200,155,71,0.18)", border: "1px solid rgba(200,155,71,0.30)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          <TrendingUp size={20} color={T.antiqueGold} />
-        </div>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: "#FFF" }}>Business Overview</div>
-          <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.55)", marginTop: 2 }}>Live P&amp;L across all {firms.length} firms · entries manually tracked</div>
-        </div>
-        <div style={{ display: "flex", gap: 10 }}>
-          {[
-            { label: "Total Income",   val: totInc, color: "#4CAF82", bg: "rgba(76,175,130,0.15)" },
-            { label: "Total Expenses", val: totExp, color: "#E57373", bg: "rgba(229,115,115,0.15)" },
-            { label: "Net Balance",    val: totNet, color: totNet >= 0 ? "#4CAF82" : "#E57373", bg: totNet >= 0 ? "rgba(76,175,130,0.15)" : "rgba(229,115,115,0.15)" },
-          ].map((c) => (
-            <div key={c.label} style={{ textAlign: "right", background: c.bg, border: "1px solid rgba(255,255,255,0.10)", borderRadius: 12, padding: "10px 16px" }}>
-              <div style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 16, color: c.color, letterSpacing: "-0.5px" }}>{fmtAmt(c.val)}</div>
-              <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.55)", marginTop: 2, letterSpacing: "0.3px" }}>{c.label}</div>
+      <div
+        className="p-4 sm:p-6 cursor-pointer"
+        style={{ background: `linear-gradient(135deg, ${T.darkBurgundy} 0%, ${T.royalBurgundy} 100%)` }}
+        onClick={() => setOpen(o => !o)} role="button" tabIndex={0}
+        onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => setOpen(o => !o))?.(); } }}
+      >
+        <div className="flex items-start gap-3.5 sm:gap-4 w-full">
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(200,155,71,0.18)", border: "1px solid rgba(200,155,71,0.30)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
+            <TrendingUp size={22} color={T.antiqueGold} />
+          </div>
+          <div className="flex flex-col gap-3 flex-1 min-w-0">
+            <div className="flex items-center justify-between gap-2 w-full">
+              <div>
+                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: "#FFF", lineHeight: 1.2 }}>Business Overview</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.65)", marginTop: 4, lineHeight: 1.4 }}>
+                  Live P&amp;L across all {firms.length} firms · entries manually tracked
+                </div>
+              </div>
+              <div className="shrink-0 p-1">
+                {open ? <ChevronUp size={20} color="rgba(255,255,255,0.70)" /> : <ChevronDown size={20} color="rgba(255,255,255,0.70)" />}
+              </div>
             </div>
-          ))}
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full pt-1">
+              {[
+                { label: "Total Income",   val: totInc, color: "#4CAF82", bg: "rgba(76,175,130,0.15)" },
+                { label: "Total Expenses", val: totExp, color: "#E57373", bg: "rgba(229,115,115,0.15)" },
+                { label: "Net Balance",    val: totNet, color: totNet >= 0 ? "#4CAF82" : "#E57373", bg: totNet >= 0 ? "rgba(76,175,130,0.15)" : "rgba(229,115,115,0.15)" },
+              ].map((c) => (
+                <div key={c.label} className="flex-1 min-w-[110px] text-right bg-[rgba(255,255,255,0.06)] border border-white/10 rounded-xl p-2.5 sm:px-3.5 sm:py-2.5">
+                  <div style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 15, color: c.color, letterSpacing: "-0.5px" }}>{fmtAmt(c.val)}</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 11, color: "rgba(255,255,255,0.65)", marginTop: 2, letterSpacing: "0.2px" }}>{c.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-        {open ? <ChevronUp size={18} color="rgba(255,255,255,0.60)" /> : <ChevronDown size={18} color="rgba(255,255,255,0.60)" />}
       </div>
 
       <AnimatePresence>

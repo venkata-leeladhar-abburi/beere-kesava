@@ -29,7 +29,7 @@ export function ReportTabNav({ activeTab, setActiveTab, activePeriod, setActiveP
   const activeReportTab = REPORT_TABS.find(t => t.key === activeTab) ?? REPORT_TABS[0];
 
   return (
-    <div style={{ position: "sticky", top: 0, zIndex: 40, boxShadow: "0 6px 28px rgba(0,0,0,0.22)" }}>
+    <div style={{ position: "relative", zIndex: 10, boxShadow: "0 4px 20px rgba(0,0,0,0.10)" }}>
 
       {/* ── Mobile: current-report picker — replaces the tab strip below `md` ── */}
       <div className="xl:hidden" style={{

@@ -129,25 +129,29 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
     <FadeUp>
       <section id="prod-defective" className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 36, paddingBottom: 48 }}>
         <div style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`, boxShadow: "0 6px 32px rgba(74,6,27,0.08)", overflow: "hidden" }}>
-          <div style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`, padding: "22px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-              <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <div className="p-4 sm:p-7" style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)` }}>
+            <div className="flex items-start gap-3.5 sm:gap-4 w-full">
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
                 <SealWarning size={26} color="#FFFDF9" />
               </div>
-              <div>
-                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9", letterSpacing: "-0.2px" }}>Defective Sarees — Failed Quality Check</div>
-                <div style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.65)", marginTop: 3 }}>These sarees failed quality check by worker staff. They are stored separately. View only — no action can be taken from this page.</div>
+              <div className="flex flex-col items-start gap-3 flex-1 min-w-0">
+                <div>
+                  <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9", letterSpacing: "-0.2px", lineHeight: 1.2 }}>Defective Sarees — Failed Quality Check</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.70)", marginTop: 4, lineHeight: 1.5 }}>These sarees failed quality check by worker staff. They are stored separately. View only — no action can be taken from this page.</div>
+                </div>
+                <Button
+                  onClick={() => setShowDownloadDialog(true)}
+                  variant="secondary"
+                  size="sm"
+                  className="shrink-0"
+                >
+                  <DownloadSimple size={15} color={T.antiqueGold} /> Download Defective Report
+                </Button>
               </div>
             </div>
-            <Button
-              onClick={() => setShowDownloadDialog(true)}
-              variant="secondary"
-            >
-              <DownloadSimple size={16} color={T.antiqueGold} /> Download Defective Report
-            </Button>
           </div>
 
-        <div style={{ padding: "24px 28px 28px" }}>
+        <div className="p-3.5 sm:p-6 md:p-7">
         <div style={{ background: "rgba(192,57,43,0.05)", border: `1px solid rgba(192,57,43,0.18)`, borderRadius: 10, padding: "10px 18px", marginBottom: 18, display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontSize: 14 }}>🔒</span>
           <span style={{ fontFamily: F.ui, fontSize: 12, color: T.crimson }}>This is a view-only section. Defective sarees are managed by the system automatically. Deductions have already been applied to the relevant weavers.</span>

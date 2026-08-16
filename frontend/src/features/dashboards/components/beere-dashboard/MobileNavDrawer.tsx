@@ -130,12 +130,52 @@ export function MobileMenuDrawer({ open, onClose, activeTab, setTab }: {
 
 export function MobileTopNav({ onMenuOpen, onBack, onLogout, onProfile }: { onMenuOpen: () => void; onBack?: () => void; onLogout?: () => void; onProfile?: () => void }) {
   const [showProfile, setShowProfile] = React.useState(false);
+  const [scrollDirection, setScrollDirection] = React.useState<"up" | "down">("up");
+  const lastScrollYRef = React.useRef(0);
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY || document.documentElement.scrollTop;
+      const diff = currentScrollY - lastScrollYRef.current;
+
+      if (currentScrollY < 30) {
+        setScrollDirection("up");
+      } else if (diff > 8) {
+        setScrollDirection("down");
+      } else if (diff < -8) {
+        setScrollDirection("up");
+      }
+      lastScrollYRef.current = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const isHidden = scrollDirection === "down";
+
   return (
     <motion.nav
       initial={{ y: -60, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: EASE }}
-      style={{ position: "sticky", top: 0, zIndex: 100, height: 60, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 18px", background: "rgba(255,253,249,0.96)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", borderBottom: `1px solid rgba(110,15,45,0.08)`, boxShadow: "0 2px 20px rgba(74,6,27,0.05)" }}
+      style={{
+        position: "sticky",
+        top: 0,
+        zIndex: 100,
+        height: 60,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "0 18px",
+        background: "rgba(255,253,249,0.96)",
+        backdropFilter: "blur(24px)",
+        WebkitBackdropFilter: "blur(24px)",
+        borderBottom: `1px solid rgba(110,15,45,0.08)`,
+        boxShadow: "0 2px 20px rgba(74,6,27,0.05)",
+        transform: isHidden ? "translateY(-100%)" : "translateY(0%)",
+        transition: "transform 0.3s ease",
+      }}
     >
       <IconButton
         icon={Menu}

@@ -125,29 +125,29 @@ export function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoic
       </div>
 
       {/* Footer / Actions */}
-      <div style={{ background: "rgba(110,15,45,0.02)", borderTop: `1px solid ${T.borderDef}`, padding: "14px 22px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+      <div className="bg-[rgba(110,15,45,0.02)] border-t border-[rgba(110,15,45,0.08)] p-2.5 sm:px-4 sm:py-3 flex items-center justify-between gap-2 flex-shrink-0 w-full flex-nowrap min-w-0">
         <VendorBadge status={vp.status} />
         
-                <div style={{ display: "flex", gap: 8 }}>
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-nowrap shrink-0 min-w-0">
           {matchedPO && onViewPO && (
             <Button variant="secondary" size="sm" onClick={onViewPO}
-              className="rounded-[8px] border-[1.5px] border-[rgba(200,155,71,0.22)] bg-[#F5E8D0] text-[#C89B47]">
+              className="rounded-[8px] border-[1.5px] border-[rgba(200,155,71,0.22)] bg-[#F5E8D0] text-[#C89B47] px-2 text-[12px] whitespace-nowrap">
               View PO
             </Button>
           )}
           <Button variant="secondary" size="sm" onClick={onView}
-            className="rounded-[8px] border-[1.5px] border-[rgba(110,15,45,0.12)] text-[#6E0F2D]">
+            className="rounded-[8px] border-[1.5px] border-[rgba(110,15,45,0.12)] text-[#6E0F2D] px-2 text-[12px] whitespace-nowrap">
             Statement
           </Button>
           {onAddInvoice && (
             <Button variant="secondary" size="sm" iconLeft={vp.billId ? Pencil : FileText} onClick={onAddInvoice}
-              className="rounded-[8px] border-[1.5px] border-[rgba(110,15,45,0.12)] text-[#6E0F2D]">
+              className="rounded-[8px] border-[1.5px] border-[rgba(110,15,45,0.12)] text-[#6E0F2D] px-2 text-[12px] whitespace-nowrap">
               {vp.billId ? "Edit Invoice" : "Add Invoice"}
             </Button>
           )}
           {!isPaid && (
             <Button variant="primary" size="sm" onClick={() => onPay(vp.id)}
-              className={`rounded-[8px] ${selected ? "bg-[#4A0A1D]" : "bg-[#6E0F2D]"}`}>
+              className={`rounded-[8px] px-2 text-[12px] whitespace-nowrap ${selected ? "bg-[#4A0A1D]" : "bg-[#6E0F2D]"}`}>
               Pay Now
             </Button>
           )}

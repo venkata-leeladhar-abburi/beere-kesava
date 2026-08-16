@@ -236,36 +236,35 @@ export function MovementHistorySection({ onDownloadMovementReport }: { onDownloa
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.3, delay: i * 0.03, ease: EASE }}
-                style={{
-                  display: "flex", alignItems: "center", gap: 16, padding: "12px 16px",
-                  borderBottom: i < stats.entries.length - 1 ? `1px solid ${T.borderDef}` : "none",
-                  background: i % 2 === 0 ? "transparent" : T.silkCream,
-                }}
+                className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 sm:px-4 sm:py-3 border-b border-[rgba(110,15,45,0.08)] w-full"
+                style={{ background: i % 2 === 0 ? "transparent" : T.silkCream }}
               >
-                <div style={{ width: 8, height: 8, borderRadius: "50%", background: entry.type === "in" ? T.green : T.crimson, flexShrink: 0 }} />
-
-                <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 4 }}>
-                  <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 14, color: T.luxuryBrown }}>{entry.desc}</div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <span style={{ fontFamily: F.ui, fontSize: 12, color: entry.type === "in" ? T.green : T.crimson, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                      {entry.type === "in" ? "Received" : "Given"}
-                    </span>
-                    <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{entry.time}</span>
+                <div className="flex items-start gap-3 w-full sm:flex-1">
+                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: entry.type === "in" ? T.green : T.crimson, flexShrink: 0, marginTop: 6 }} />
+                  <div className="flex flex-col gap-1 w-full">
+                    <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 14, color: T.luxuryBrown, lineHeight: 1.4 }}>{entry.desc}</div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      <span style={{ fontFamily: F.ui, fontSize: 12, color: entry.type === "in" ? T.green : T.crimson, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                        {entry.type === "in" ? "Received" : "Given"}
+                      </span>
+                      <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{entry.time}</span>
+                    </div>
                   </div>
                 </div>
 
-                <EntityCode type="goodsReceipt" value={entry.ref} size="sm" />
-
-                {entry.type === "out" && (
-                  <IconButton
-                    onClick={() => setDeletingRef(entry.ref)}
-                    icon={Trash2}
-                    label="Delete material issue"
-                    variant="ghost"
-                    size="sm"
-                    className="w-8 h-8 shrink-0 text-[#C0392B] bg-[#C0392B]/10 hover:bg-[#C0392B]/20"
-                  />
-                )}
+                <div className="flex items-center justify-between sm:justify-end gap-2.5 w-full sm:w-auto shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[rgba(110,15,45,0.06)]">
+                  <EntityCode type="goodsReceipt" value={entry.ref} size="sm" />
+                  {entry.type === "out" && (
+                    <IconButton
+                      onClick={() => setDeletingRef(entry.ref)}
+                      icon={Trash2}
+                      label="Delete material issue"
+                      variant="ghost"
+                      size="sm"
+                      className="w-8 h-8 shrink-0 text-[#C0392B] bg-[#C0392B]/10 hover:bg-[#C0392B]/20"
+                    />
+                  )}
+                </div>
               </motion.div>
             ))}
           </div>

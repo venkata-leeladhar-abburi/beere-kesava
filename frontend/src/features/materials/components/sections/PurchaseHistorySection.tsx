@@ -329,7 +329,7 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
         </div>
       </FadeUp>
 
-      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(6, 1fr)", gap: isMobile ? 12 : 18, marginBottom: 26, alignItems: "stretch" }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3.5 sm:gap-4 mb-6 items-stretch">
         {[
           { Icon: Layers,      label: "Total Warp Purchased",   amount: `${stats.warpKg.toLocaleString("en-IN")} kg`, cost: formatCurrency(stats.warpSpend), sub: `From ${stats.warpVendorsCount} vendor${stats.warpVendorsCount === 1 ? "" : "s"}`, dark: false },
           { Icon: Tag,         label: "Total Resham Purchased", amount: `${stats.reshamKg.toLocaleString("en-IN")} kg`, cost: formatCurrency(stats.reshamSpend), sub: `From ${stats.reshamVendorsCount} vendor${stats.reshamVendorsCount === 1 ? "" : "s"}`, dark: false },
@@ -385,15 +385,15 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
           <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: "24px 26px 22px", boxShadow: "0 2px 16px rgba(74,6,27,0.06)", height: "100%" }}>
             <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 20, color: T.luxuryBrown, marginBottom: 6 }}>Total Spend Split</div>
             <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginBottom: 22, lineHeight: 1.5 }}>How much of your total spend goes to each material type</div>
-            <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-              <div style={{ flexShrink: 0 }}>
+            <div className="flex flex-col sm:flex-row items-center sm:items-center gap-5 sm:gap-6 w-full">
+              <div style={{ flexShrink: 0, margin: "0 auto" }}>
                 <PieChart width={160} height={160}>
                   <Pie data={stats.spendData} cx={80} cy={80} innerRadius={48} outerRadius={72} dataKey="pct" paddingAngle={3}>
                     {stats.spendData.map((entry) => <Cell key={`spend-cell-${entry.name}`} fill={entry.color} />)}
                   </Pie>
                 </PieChart>
               </div>
-              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 14 }}>
+              <div className="flex-1 w-full flex flex-col gap-3">
                 {stats.spendData.map(s => (
                   <div key={s.name}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>

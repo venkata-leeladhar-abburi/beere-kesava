@@ -248,7 +248,7 @@ export function POTrackerSection({
                     {cfg.badge}
                   </div>
 
-                  <div style={{ display: "flex", gap: 10 }}>
+                  <div className="flex items-center gap-1.5 sm:gap-2 w-full flex-nowrap min-w-0">
                     {po.status === "approved" && (
                       <Button
                         onClick={(e) => {
@@ -257,14 +257,14 @@ export function POTrackerSection({
                         }}
                         variant="primary"
                         size="sm"
-                        className="flex-[1.8] bg-[var(--bk-green-700,#1E6640)] hover:bg-[#154d30]"
+                        className="flex-[1.4] min-w-0 px-2 sm:px-3 text-[12px] whitespace-nowrap justify-center bg-[var(--bk-green-700,#1E6640)] hover:bg-[#154d30]"
                       >
-                        📦 Receive Materials
+                        📦 Receive
                       </Button>
                     )}
                     {po.status === "received" && po.grnId && (
-                      <div style={{ flex: 1.8, height: 38, borderRadius: 10, background: "rgba(30,102,64,0.06)", border: `1.5px solid rgba(30,102,64,0.18)`, fontFamily: F.ui, fontSize: 12, color: T.green, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        ✓ {po.grnId} Created
+                      <div className="flex-[1.4] min-w-0 h-[34px] px-2 rounded-lg bg-[rgba(30,102,64,0.06)] border border-[rgba(30,102,64,0.18)] text-[11px] font-bold text-[#1E6640] flex items-center justify-center whitespace-nowrap">
+                        ✓ {po.grnId}
                       </div>
                     )}
                     {po.status === "rejected" && (
@@ -272,16 +272,16 @@ export function POTrackerSection({
                         onClick={(e) => { e.stopPropagation(); onCreatePO(); }}
                         variant="secondary"
                         size="sm"
-                        className="flex-[1.8]"
+                        className="flex-[1.4] min-w-0 px-2 text-[12px] whitespace-nowrap justify-center"
                       >
-                        📋 Recreate PO
+                        📋 Recreate
                       </Button>
                     )}
                     <Button
                       onClick={(e) => { e.stopPropagation(); onViewPO(po); }}
                       variant="secondary"
                       size="sm"
-                      className={po.status === "pending" ? "flex-1" : "flex-[0.8]"}
+                      className="flex-1 min-w-0 px-2 sm:px-3 text-[12px] whitespace-nowrap justify-center"
                     >
                       📄 View PO
                     </Button>
@@ -291,7 +291,7 @@ export function POTrackerSection({
                         icon={Trash2}
                         label="Delete purchase order"
                         variant="ghost"
-                        className="w-[38px] h-[38px] shrink-0 text-[#C0392B] bg-[#C0392B]/10 hover:bg-[#C0392B]/20"
+                        className="w-8 h-8 shrink-0 text-[#C0392B] bg-[#C0392B]/10 hover:bg-[#C0392B]/20"
                       />
                     )}
                   </div>

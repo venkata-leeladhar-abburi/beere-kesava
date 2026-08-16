@@ -187,7 +187,7 @@ export function SectionCard({
   actions,
   children,
   id,
-  bodyPadding = "24px 28px 28px",
+  bodyPadding,
 }: {
   icon: LucideIcon;
   title: string;
@@ -199,19 +199,21 @@ export function SectionCard({
 }) {
   return (
     <div id={id} style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${C.bdr}`, boxShadow: "0 6px 32px rgba(74,6,27,0.08)", overflow: "hidden" }}>
-      <div style={{ background: G.header, padding: "22px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <Icon size={26} color="#FFFDF9" />
+      <div className="p-4 sm:p-7" style={{ background: G.header }}>
+        <div className="flex items-start gap-3.5 sm:gap-4 w-full">
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
+            <Icon size={24} color="#FFFDF9" />
           </div>
-          <div>
-            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: "#FFFDF9", letterSpacing: "-0.2px" }}>{title}</div>
-            {subtitle && <div style={{ fontFamily: F.u, fontSize: 14, color: "rgba(255,253,249,0.65)", marginTop: 3 }}>{subtitle}</div>}
+          <div className="flex flex-col items-start gap-3 flex-1 min-w-0">
+            <div>
+              <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: "#FFFDF9", letterSpacing: "-0.2px", lineHeight: 1.2 }}>{title}</div>
+              {subtitle && <div style={{ fontFamily: F.u, fontSize: 14, color: "rgba(255,253,249,0.70)", marginTop: 4, lineHeight: 1.5 }}>{subtitle}</div>}
+            </div>
+            {actions && <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2.5 w-full sm:w-auto pt-1">{actions}</div>}
           </div>
         </div>
-        {actions && <div style={{ display: "flex", gap: 10, alignItems: "center", flexShrink: 0 }}>{actions}</div>}
       </div>
-      <div style={{ padding: bodyPadding }}>{children}</div>
+      <div className={bodyPadding ? undefined : "p-2.5 sm:p-5 md:p-6 pb-2.5 sm:pb-4"} style={bodyPadding ? { padding: bodyPadding } : undefined}>{children}</div>
     </div>
   );
 }

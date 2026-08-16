@@ -216,9 +216,9 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
   return (
     <div id="prod-history" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 40 }}>
       <FadeUp>
-        <div className="p-4 sm:px-7 sm:py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-[0_6px_32px_rgba(74,6,27,0.08)] rounded-t-2xl" style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)` }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <svg width="34" height="34" viewBox="0 0 34 34" fill="none" style={{ flexShrink: 0 }}>
+        <div className="p-4 sm:p-6 shadow-[0_6px_32px_rgba(74,6,27,0.08)] rounded-t-2xl" style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)` }}>
+          <div className="flex items-start gap-3.5 sm:gap-4 w-full">
+            <svg width="34" height="34" viewBox="0 0 34 34" fill="none" style={{ flexShrink: 0, marginTop: 2 }}>
               <rect width="34" height="34" rx="7" fill="rgba(200,155,71,0.18)" />
               <rect x="7" y="9"  width="20" height="3" rx="1.5" fill="#C89B47" />
               <rect x="7" y="22" width="20" height="3" rx="1.5" fill="#C89B47" />
@@ -227,14 +227,16 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
               <rect x="18"  y="12" width="1.5" height="10" rx="0.75" fill="#E7C983" />
               <rect x="21.5" y="12" width="1.5" height="10" rx="0.75" fill="#E7C983" />
             </svg>
-            <div>
-              <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.45)", letterSpacing: "2px", textTransform: "uppercase", marginBottom: 2 }}>COMPLETED BATCHES · RECORDS</div>
-              <h2 style={{ fontFamily: F.display, fontSize: 22, fontWeight: 700, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Production History</h2>
+            <div className="flex flex-col items-start gap-3 flex-1 min-w-0">
+              <div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.45)", letterSpacing: "2px", textTransform: "uppercase", marginBottom: 2 }}>COMPLETED BATCHES · RECORDS</div>
+                <h2 style={{ fontFamily: F.display, fontSize: 22, fontWeight: 700, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Production History</h2>
+              </div>
+              <Button onClick={() => setShowReportDialog(true)} variant="secondary" size="sm" className="shrink-0">
+                <Download size={14} /> Generate Production Report
+              </Button>
             </div>
           </div>
-          <Button onClick={() => setShowReportDialog(true)} variant="secondary" size="sm" className="w-full sm:w-auto shrink-0">
-            <Download size={14} /> Generate Production Report
-          </Button>
         </div>
 
         <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2.5 p-3.5 sm:px-6 bg-white border-x border-[rgba(110,15,45,0.10)] w-full">

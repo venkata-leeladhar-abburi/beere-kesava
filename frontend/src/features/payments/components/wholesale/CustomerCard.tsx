@@ -109,28 +109,28 @@ export function CustomerCard({ inv, onViewInvoice, onRecordPayment, bulkOrderRef
       </div>
 
       {/* Action buttons */}
-      <div style={{ padding: "16px 20px 20px", display: "flex", gap: 10, flexShrink: 0 }}>
+      <div className="flex items-center gap-1.5 sm:gap-2 p-3 sm:p-4 w-full flex-nowrap min-w-0">
         <Button
           variant="secondary"
-          size="md"
+          size="sm"
           iconLeft={Eye}
           onClick={onViewInvoice}
-          className="flex-1 rounded-[10px] border-[1.5px] border-[rgba(110,15,45,0.12)] text-[#6E0F2D]"
+          className="flex-1 min-w-0 px-2 text-[12px] whitespace-nowrap justify-center rounded-[10px] border-[1.5px] border-[rgba(110,15,45,0.12)] text-[#6E0F2D]"
         >
           View Invoice
         </Button>
         {isPaid ? (
-          <Button variant="secondary" size="md" iconLeft={CheckCircle2} disabled
-            className="flex-1 rounded-[10px] border-[1.5px] border-[rgba(30,102,64,0.18)] bg-[rgba(30,102,64,0.07)] text-[#1E6640] disabled:bg-[rgba(30,102,64,0.07)] disabled:text-[#1E6640] disabled:opacity-100">
+          <Button variant="secondary" size="sm" iconLeft={CheckCircle2} disabled
+            className="flex-1 min-w-0 px-2 text-[12px] whitespace-nowrap justify-center rounded-[10px] border-[1.5px] border-[rgba(30,102,64,0.18)] bg-[rgba(30,102,64,0.07)] text-[#1E6640] disabled:bg-[rgba(30,102,64,0.07)] disabled:text-[#1E6640] disabled:opacity-100">
             Fully Paid
           </Button>
         ) : (
           <Button
             variant="primary"
-            size="md"
+            size="sm"
             iconLeft={IndianRupee}
             onClick={onRecordPayment}
-            className="flex-1 rounded-[10px] bg-[#6E0F2D] hover:bg-[#4A0A1D]"
+            className="flex-1 min-w-0 px-2 text-[12px] whitespace-nowrap justify-center rounded-[10px] bg-[#6E0F2D] hover:bg-[#4A0A1D]"
           >
             Record Pay
           </Button>

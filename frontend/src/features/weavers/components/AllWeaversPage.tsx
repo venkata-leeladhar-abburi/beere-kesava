@@ -231,8 +231,8 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
       </section>
 
       {/* ── FILTER + SEARCH BAR ── */}
-      <div className="px-4 md:px-7 xl:px-14" style={{ background: T.warmIvory, borderBottom: `1px solid ${T.borderDef}`, position: "sticky", top: 90, zIndex: 50, boxShadow: "0 4px 24px rgba(74,6,27,0.05)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, height: 60 }}>
+      <div className="px-4 md:px-7 xl:px-14" style={{ background: T.warmIvory, borderBottom: `1px solid ${T.borderDef}`, position: "relative", zIndex: 10, overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, height: 60, minWidth: "max-content" }}>
           {/* Status filters */}
           {([
             { key: "all",    label: "All Weavers",       count: ALL_WEAVERS.length },

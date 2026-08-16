@@ -86,22 +86,29 @@ export function QuotationsSection(_props: { isMobile?: boolean }) {
             return (
               <div key={q.id} style={{ border: `1px solid rgba(110,15,45,0.12)`, borderRadius: 14, overflow: "hidden", background: "#FFF" }}>
                 {/* Header */}
-                <div style={{ padding: "12px 14px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid rgba(110,15,45,0.08)`, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" as const }}>
-                  <div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <span style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{q.quotationNumber}</span>
-                      <QuotationStatusBadge status={q.status} />
+                <div className="flex items-start gap-3 p-2.5 sm:p-3.5 bg-[rgba(110,15,45,0.03)] border-b border-[rgba(110,15,45,0.08)] w-full">
+                  <div style={{ width: 38, height: 38, borderRadius: 10, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
+                    <FileText size={20} color={C.burg} />
+                  </div>
+                  <div className="flex flex-col gap-1 flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2 w-full flex-wrap">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{q.quotationNumber}</span>
+                        <QuotationStatusBadge status={q.status} />
+                      </div>
+                      <div style={{ fontFamily: F.d, fontWeight: 800, fontSize: 16, color: C.text }} className="shrink-0">
+                        {received}/{q.sarees.length} <span style={{ fontFamily: F.u, fontSize: 11, fontWeight: 400, color: C.muted }}>received</span>
+                      </div>
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4, fontFamily: F.u, fontSize: 12, color: C.muted }}>
-                      <Building2 size={12} color={C.muted} /> {q.customerName}{q.customerCity ? ` · ${q.customerCity}` : ""} · {q.quotationDate}
+                    <div className="flex items-center gap-1.5 text-xs text-[var(--text-tertiary)] flex-wrap">
+                      <Building2 size={12} className="shrink-0" />
+                      <span className="font-medium text-[var(--text-primary)]">{q.customerName}</span>
+                      {q.customerCity && <span>· {q.customerCity}</span>}
+                      <span>· {q.quotationDate}</span>
                     </div>
                     {q.finishingStaffName && (
-                      <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>Finishing: <strong style={{ color: C.text }}>{q.finishingStaffName}</strong></div>
+                      <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Finishing: <strong style={{ color: C.text }}>{q.finishingStaffName}</strong></div>
                     )}
-                  </div>
-                  <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, textAlign: "right" as const }}>
-                    <div style={{ fontFamily: F.d, fontWeight: 800, fontSize: 18, color: C.text, lineHeight: 1 }}>{received}/{q.sarees.length}</div>
-                    received
                   </div>
                 </div>
 
@@ -110,10 +117,10 @@ export function QuotationsSection(_props: { isMobile?: boolean }) {
                   {q.sarees.map((s, i) => {
                     return (
                       <div key={s.sareeId}
-                        style={{ display: "flex", alignItems: "center", gap: 12, padding: "9px 14px", borderBottom: i < q.sarees.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none" }}
+                        style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 12px", borderBottom: i < q.sarees.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none" }}
                       >
                         <Package size={14} color={C.muted} style={{ flexShrink: 0 }} />
-                        <div style={{ flex: 1 }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, color: C.burg }}>{s.sareeId}</div>
                           <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{s.sareeTypeCode || s.designCode} · {s.sareeType}</div>
                         </div>
@@ -132,16 +139,17 @@ export function QuotationsSection(_props: { isMobile?: boolean }) {
 
                 {/* Actions */}
                 {(canAssign || canReceive) && (
-                  <div style={{ padding: "12px 14px", borderTop: `1px solid rgba(110,15,45,0.08)`, display: "flex", gap: 8 }}>
+                  <div className="flex items-center gap-1.5 sm:gap-2 p-3 sm:p-4 border-t border-[rgba(110,15,45,0.08)] w-full flex-nowrap min-w-0">
                     {canAssign && (
-                      <Button variant="primary" fullWidth iconLeft={Users} onClick={() => setPickerFor(q.id)} className="h-[42px] rounded-xl bg-[#6E0F2D] hover:bg-[#6E0F2D]">
-                        Assign {pendingSarees.length} Saree{pendingSarees.length > 1 ? "s" : ""} for Finishing
+                      <Button variant="primary" iconLeft={Users} onClick={() => setPickerFor(q.id)}
+                        className="flex-1 min-w-0 px-2 text-[12px] whitespace-nowrap justify-center h-[38px] rounded-xl bg-[#6E0F2D] hover:bg-[#6E0F2D]">
+                        Assign ({pendingSarees.length})
                       </Button>
                     )}
                     {canReceive && (
-                      <Button variant="primary" fullWidth iconLeft={ArrowDownToLine} onClick={() => handleReceive(q)}
-                        className="h-[42px] rounded-xl bg-gradient-to-br from-[#1E5A3A] to-[#1E6640] text-sm font-bold hover:from-[#1E5A3A] hover:to-[#1E6640]">
-                        Receive {inFinishingSarees.length} Saree{inFinishingSarees.length > 1 ? "s" : ""} from Finishing
+                      <Button variant="primary" iconLeft={ArrowDownToLine} onClick={() => handleReceive(q)}
+                        className="flex-1 min-w-0 px-2 text-[12px] whitespace-nowrap justify-center h-[38px] rounded-xl bg-gradient-to-br from-[#1E5A3A] to-[#1E6640] text-xs font-bold">
+                        Receive ({inFinishingSarees.length})
                       </Button>
                     )}
                   </div>

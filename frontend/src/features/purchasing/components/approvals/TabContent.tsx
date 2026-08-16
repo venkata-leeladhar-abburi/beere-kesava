@@ -25,13 +25,14 @@ export function TabsNav({
 }) {
   return (
     <div className="px-4 md:px-7 xl:px-14" style={{
-      position: "sticky", top: 90, zIndex: 50,
+      position: "relative", zIndex: 10,
       background: "#FFF",
       borderBottom: "1px solid " + T.borderDef,
       marginTop: 32,
       display: "flex", alignItems: "center",
-      boxShadow: "0 2px 8px rgba(44,24,16,0.05)",
+      overflowX: "auto", WebkitOverflowScrolling: "touch",
     }}>
+      <div style={{ display: "flex", alignItems: "center", minWidth: "max-content" }}>
       {tabs.map(tab => (
         <Button
           key={tab.key}
@@ -49,6 +50,7 @@ export function TabsNav({
           </span>
         </Button>
       ))}
+      </div>
     </div>
   );
 }

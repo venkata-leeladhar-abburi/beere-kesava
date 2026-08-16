@@ -28,7 +28,7 @@ export function GRNPODropdown({
             <div style={{ color: selectedPO ? C.text : C.muted, fontFamily: F.u, fontSize: 13, textAlign: "left", flex: 1 }}>
               {selectedPO ? (
                 <div>
-                  <div style={{ fontWeight: 700, color: C.burg, marginBottom: 2 }}>{selectedPO.id} — {selectedPO.vendor}</div>
+                  <div style={{ fontWeight: 700, color: C.burg, marginBottom: 2, wordBreak: "break-all", overflowWrap: "anywhere" }}>{selectedPO.id} — {selectedPO.vendor}</div>
                   <div style={{ fontSize: 12, color: C.muted, marginBottom: 4 }}>
                     Firm: {selectedPO.firmName ?? "—"} · City: {selectedPO.vendorCity}
                   </div>
@@ -65,7 +65,7 @@ export function GRNPODropdown({
               className="!h-auto !flex-col !items-start !rounded-none !border-b !border-[rgba(110,15,45,0.12)] !px-4 !py-3.5 !text-left"
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3, width: "100%" }}>
-                <span style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{po.id}</span>
+                <span style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg, wordBreak: "break-all" }}>{po.id}</span>
                 {po.urgency === "Urgent" && (
                   <span style={{ fontFamily: F.u, fontSize: 12, background: "rgba(183,28,28,0.08)", color: "#B71C1C", padding: "1px 5px", borderRadius: 3, fontWeight: 700 }}>
                     URGENT
@@ -91,7 +91,7 @@ export function GRNPODropdown({
           <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 14, marginBottom: 10 }}>
             <div>
               <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>PO Number</div>
-              <div style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{selectedPO.poNumber}</div>
+              <div style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg, wordBreak: "break-all" }}>{selectedPO.poNumber}</div>
             </div>
             <div>
               <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Vendor</div>

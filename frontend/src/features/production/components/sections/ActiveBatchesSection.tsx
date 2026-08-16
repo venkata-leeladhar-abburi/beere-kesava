@@ -145,23 +145,25 @@ export function ActiveBatchesSection({ onNavigate, onOpenTally }: { onNavigate?:
     <div id="prod-active-batches" className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 40 }}>
       <FadeUp>
         <div style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`, boxShadow: "0 6px 32px rgba(74,6,27,0.08)", overflow: "hidden" }}>
-          <div style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`, padding: "22px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-              <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <div className="p-4 sm:p-7" style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)` }}>
+            <div className="flex items-start gap-3.5 sm:gap-4 w-full">
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
                 <Layers size={26} color="#FFFDF9" />
               </div>
-              <div>
-                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9", letterSpacing: "-0.2px" }}>All Active Production Batches</div>
-                <div style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.65)", marginTop: 3 }}>Every active batch currently being worked on by weavers. Each batch is one set of materials given to one or more weavers for a specific design.</div>
+              <div className="flex flex-col items-start gap-3 flex-1 min-w-0">
+                <div>
+                  <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9", letterSpacing: "-0.2px", lineHeight: 1.2 }}>All Active Production Batches</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.70)", marginTop: 4, lineHeight: 1.5 }}>Every active batch currently being worked on by weavers. Each batch is one set of materials given to one or more weavers for a specific design.</div>
+                </div>
+                <Button onClick={() => onNavigate?.("Batches")} variant="primary" size="sm" iconLeft={PhPlus}
+                  className="bg-[#1E6640] hover:bg-[#145230] shadow-[0_4px_12px_rgba(30,102,64,0.2)]">
+                  Create New Batch
+                </Button>
               </div>
             </div>
-            <Button onClick={() => onNavigate?.("Batches")} variant="primary" size="md" iconLeft={PhPlus}
-              className="bg-[#1E6640] hover:bg-[#145230] shadow-[0_4px_12px_rgba(30,102,64,0.2)]">
-              Create New Batch
-            </Button>
           </div>
 
-        <div className="p-4 sm:p-7">
+        <div className="p-3.5 sm:p-6 md:p-7">
         <div className="flex items-center gap-2 mb-4 overflow-x-auto max-w-full pb-1 scrollbar-none whitespace-nowrap">
           {FILTER_PILLS.map(f => (
             <Button key={f.label} onClick={() => setFilter(f.stage)} variant={filter === f.stage ? "primary" : "tertiary"} size="sm"

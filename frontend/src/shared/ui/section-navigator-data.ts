@@ -14,7 +14,7 @@
 export const MAIN_NAV_H = 72;      // was 90  — --shell-topbar-h
 export const SUB_NAV_H = 52;       // was 66  — --shell-groupbar-h
 export const SECTION_NAV_H = 48;   // was 56  — --shell-sectionbar-h
-export const MOBILE_NAV_H = 64;    // was 60  — --shell-mobilenav-h
+export const MOBILE_NAV_H = 60;    // 60px exact match for MobileTopNav height
 
 // Worker portal — previously its own independent heights; now the same
 // shell geometry as everything else, aliased under its existing names.

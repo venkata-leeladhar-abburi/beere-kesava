@@ -273,8 +273,33 @@ export function SectionNavigator({
     smoothScrollTo(container, Math.max(0, target));
   };
 
+  const [scrollDirection, setScrollDirection] = useState<"up" | "down">("up");
+  const lastScrollYRef = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY || document.documentElement.scrollTop;
+      const diff = currentScrollY - lastScrollYRef.current;
+
+      if (currentScrollY < 30) {
+        setScrollDirection("up");
+      } else if (diff > 8) {
+        setScrollDirection("down");
+      } else if (diff < -8) {
+        setScrollDirection("up");
+      }
+      lastScrollYRef.current = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   // Cancel any in-flight RAF scroll on unmount.
   useEffect(() => () => { if (scrollRafRef.current) cancelAnimationFrame(scrollRafRef.current); }, []);
+
+  const isMobile = typeof window !== "undefined" && window.innerWidth <= 1024;
+  const currentStickyTop = (!inline && isMobile && scrollDirection === "down") ? 0 : stickyTop;
 
   return (
     <div
@@ -283,7 +308,7 @@ export function SectionNavigator({
         overflowX: "hidden",
         flex: 1, minWidth: 0,
       } : {
-        position: "sticky", top: stickyTop, zIndex: 90,
+        position: "sticky", top: currentStickyTop, zIndex: 90,
         height,
         background: "#FFFFFF",
         borderBottom: `1px solid ${borderColor}`,
@@ -291,6 +316,7 @@ export function SectionNavigator({
         padding,
         overflowX: "hidden",
         maxWidth: "100%",
+        transition: "top 0.3s ease",
       }}
     >
       <span style={{ flexShrink: 0, fontFamily, fontWeight: 600, fontSize: 12, color: mutedColor, letterSpacing: "1.3px", textTransform: "uppercase" as const }}>

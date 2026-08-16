@@ -30,15 +30,15 @@ const STAGE_TO_PRODUCTION: Record<BatchStage, StatusValueOf<"production">> = {
 export function SwipeToTally({ tallied, onOpen }: { tallied?: boolean; onOpen?: () => void }) {
   if (tallied) {
     return (
-      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(30,102,64,0.1)", color: T.green, border: `1.5px solid rgba(30,102,64,0.2)`, borderRadius: 10, padding: "10px 0", fontFamily: F.ui, fontSize: 13, fontWeight: 700 }}>
-        <CheckCircle size={16} /> Tallied
+      <div className="flex-1 min-w-0 flex items-center justify-center gap-1.5 bg-[rgba(30,102,64,0.1)] text-[#1E6640] border border-[rgba(30,102,64,0.2)] rounded-lg py-2 px-2 text-[12px] font-bold whitespace-nowrap">
+        <CheckCircle size={15} /> Tallied
       </div>
     );
   }
 
   return (
-    <Button onClick={(e) => { e.stopPropagation(); onOpen?.(); }} variant="secondary" fullWidth>
-      <CheckCircle size={16} /> Tally
+    <Button onClick={(e) => { e.stopPropagation(); onOpen?.(); }} variant="secondary" className="flex-1 min-w-0 px-2 text-[12px] whitespace-nowrap justify-center">
+      <CheckCircle size={15} /> Tally
     </Button>
   );
 }
@@ -149,9 +149,9 @@ export function BatchCard({ b, onView }: { b: Batch; expandedId: string | null; 
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: 10, padding: "0 20px 20px" }}>
-          <Button onClick={(e) => { e.stopPropagation(); onView?.(b); }} variant="secondary" fullWidth>
-            <PhEye size={16} /> Open Batch
+        <div className="flex items-center gap-1.5 sm:gap-2 p-4 sm:p-5 pt-0 w-full flex-nowrap min-w-0">
+          <Button onClick={(e) => { e.stopPropagation(); onView?.(b); }} variant="secondary" className="flex-1 min-w-0 px-2 text-[12px] whitespace-nowrap justify-center">
+            <PhEye size={15} /> Open Batch
           </Button>
           <SwipeToTally tallied={isTallied} onOpen={() => onView?.(b)} />
         </div>

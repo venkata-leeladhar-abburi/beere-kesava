@@ -205,11 +205,11 @@ export function ExternalPurchaseCard({
         </div>
       )}
 
-      <div style={{ display: "flex", gap: 10, marginTop: 2 }}>
-        <GreenBtn className="flex-1" onClick={() => onApprove(req.id)}>
-          <Check size={14} /> Approve &amp; Create Purchase
+      <div className="flex items-center gap-1.5 sm:gap-2 mt-2 w-full flex-nowrap min-w-0">
+        <GreenBtn className="flex-[1.4] min-w-0 px-2 text-[12px] whitespace-nowrap justify-center" onClick={() => onApprove(req.id)}>
+          <Check size={14} /> Approve
         </GreenBtn>
-        <CrimsonBtn className="flex-1" onClick={() => onReject(req.id)}>
+        <CrimsonBtn className="flex-1 min-w-0 px-2 text-[12px] whitespace-nowrap justify-center" onClick={() => onReject(req.id)}>
           <X size={14} /> Reject
         </CrimsonBtn>
       </div>

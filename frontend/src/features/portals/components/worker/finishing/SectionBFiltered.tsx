@@ -155,11 +155,15 @@ export function SectionBFiltered({ isMobile }: { isMobile?: boolean }) {
             <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 10, textAlign: "center" as const }}>
               {selected.size} saree{selected.size > 1 ? "s" : ""} selected
             </div>
-            <div style={{ display: "flex", flexDirection: "column" as const, gap: 8 }}>
-              <Button variant="primary" fullWidth iconLeft={CheckCircle2} onClick={() => setShowVerif(true)} className="h-[50px] rounded-full bg-[#1E6640] hover:bg-[#1E6640] text-sm">
-                Mark as Received
+            <div className="flex items-center gap-1.5 sm:gap-2 w-full flex-nowrap min-w-0">
+              <Button variant="primary" iconLeft={CheckCircle2} onClick={() => setShowVerif(true)}
+                className="flex-1 min-w-0 px-2 text-[12px] whitespace-nowrap justify-center h-[44px] rounded-full bg-[#1E6640] hover:bg-[#1E6640]">
+                Mark Received ({selected.size})
               </Button>
-              <Button variant="secondary" fullWidth onClick={() => setSelected(new Set())} className="h-[46px] rounded-full border-[rgba(110,15,45,0.30)] text-[#6E0F2D] text-[13px]">Cancel</Button>
+              <Button variant="secondary" onClick={() => setSelected(new Set())}
+                className="flex-1 min-w-0 px-2 text-[12px] whitespace-nowrap justify-center h-[44px] rounded-full border-[rgba(30,102,64,0.30)] text-[#1E6640]">
+                Cancel
+              </Button>
             </div>
           </motion.div>
         ) : (

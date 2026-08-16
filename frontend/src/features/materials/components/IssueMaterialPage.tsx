@@ -289,18 +289,25 @@ export function IssueMaterialPage() {
             <SectionCard icon={Scissors} title="Approved Warp Requests" subtitle="A weaver raised these and superadmin approved them — issue the material to close them out.">
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {approvedWarpRequests.map(r => (
-                  <div key={r.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "14px 16px", flexWrap: "wrap" }}>
-                    <div>
-                      <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>
-                        {r.weaver.name} {r.loomNumber ? <span style={{ color: T.royalBurgundy }}>· Loom {r.loomNumber}</span> : ""}
-                      </div>
-                      <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 2 }}>
-                        {r.warpType} · {r.lengthMeters}m{r.color ? ` · ${r.color}` : ""}
+                  <div key={r.id} className="flex items-start gap-3 bg-[var(--bk-silk-cream,#FFFDF9)] border border-[rgba(110,15,45,0.12)] rounded-xl p-3 sm:p-3.5 w-full">
+                    <div style={{ width: 38, height: 38, borderRadius: 10, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
+                      <Scissors size={20} color={T.royalBurgundy} />
+                    </div>
+                    <div className="flex flex-col gap-2 flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2 flex-wrap w-full">
+                        <div>
+                          <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>
+                            {r.weaver.name} {r.loomNumber ? <span style={{ color: T.royalBurgundy }}>· Loom {r.loomNumber}</span> : ""}
+                          </div>
+                          <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 2 }}>
+                            {r.warpType} · {r.lengthMeters}m{r.color ? ` · ${r.color}` : ""}
+                          </div>
+                        </div>
+                        <Button onClick={() => issueForWarpRequest(r.id, r.weaverId, r.loomNumber)} variant="primary" size="sm" iconLeft={Send} className="shrink-0 whitespace-nowrap px-3 text-[12px]">
+                          Issue Material
+                        </Button>
                       </div>
                     </div>
-                    <Button onClick={() => issueForWarpRequest(r.id, r.weaverId, r.loomNumber)} variant="primary" size="sm" iconLeft={Send}>
-                      Issue Material
-                    </Button>
                   </div>
                 ))}
               </div>

@@ -2,12 +2,27 @@
 
 @media (max-width: 1279px) {
   /* 1. Page and Root Vertical Scrolling */
-  html, body, #root, #main-content {
+  html, body {
     min-height: 100dvh;
-    overflow-x: hidden !important;
+    overflow-x: clip !important;
     max-width: 100vw !important;
-    overflow-y: auto;
   }
+
+  #root, #main-content {
+    overflow: visible !important;
+  }
+
+  /* Reduce section top padding on mobile screens */
+  [id^="prod-"], [id^="mat-"], [id^="pay-"], [id^="rep-"], [id^="weav-"], [id^="wqc-"], [id^="shoprep-"] {
+    padding-top: 18px !important;
+  }
+@media (max-width: 767px) {
+  /* Compact outer padding for cards on mobile */
+  .px-4, .px-7, .px-10, .px-12, .px-14 {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+}
 
   /* 2. Table Container Horizontal Scrolling */
   table {

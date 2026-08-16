@@ -270,8 +270,8 @@ export function NotificationsPage() {
       </div>
 
       {/* PRIORITY FILTER BAR */}
-      <div className="px-4 md:px-7 xl:px-14" style={{ background: T.warmIvory, borderBottom: `1px solid ${T.borderDef}`, position: "sticky", top: 90, zIndex: 50, boxShadow: "0 4px 24px rgba(74,6,27,0.05)", marginTop: 24 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 0, height: 58 }}>
+      <div className="px-4 md:px-7 xl:px-14" style={{ background: T.warmIvory, borderBottom: `1px solid ${T.borderDef}`, position: "relative", zIndex: 10, marginTop: 24, overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 0, height: 58, minWidth: "max-content" }}>
           {FILTERS.map(f => {
             const active = filter === f.key;
             const count = f.key === "all" ? categoryFiltered.length : categoryFiltered.filter(n => n.priority === f.key).length;

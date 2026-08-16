@@ -151,21 +151,19 @@ export function POCard({
       </div>
 
       {/* Action buttons */}
-      <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
-        <GreenBtn className="flex-1" onClick={handleApprove}>
-          <Check size={14} /> Approve — Send PO to Vendor
+      <div className="flex items-center gap-1.5 sm:gap-2 mt-2 w-full flex-nowrap min-w-0">
+        <GreenBtn className="flex-[1.4] min-w-0 px-2 text-[12px] whitespace-nowrap justify-center" onClick={handleApprove}>
+          <Check size={14} /> Approve
         </GreenBtn>
-        <CrimsonBtn className="flex-1" onClick={handleReject}>
+        <CrimsonBtn className="flex-1 min-w-0 px-2 text-[12px] whitespace-nowrap justify-center" onClick={handleReject}>
           <X size={14} /> Reject
         </CrimsonBtn>
+        {onViewDoc && (
+          <Button onClick={() => onViewDoc(item.id)} variant="secondary" size="sm" className="flex-1 min-w-0 px-2 text-[12px] whitespace-nowrap justify-center">
+            📄 View PO
+          </Button>
+        )}
       </div>
-
-      {/* View PO Document button */}
-      {onViewDoc && (
-        <Button onClick={() => onViewDoc(item.id)} variant="secondary" size="lg" fullWidth>
-          📄 View PO Document
-        </Button>
-      )}
     </motion.div>
   );
 }
