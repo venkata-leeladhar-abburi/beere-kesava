@@ -114,7 +114,7 @@ export function RawMaterialReport() {
       for (const issue of issuesRes.items) {
         for (const item of issue.items) {
           const type = item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari";
-          totals[type].current += type === "Jari" ? jariToReels(item.quantity, item.unit ?? "REEL") : Number(item.quantity || 0);
+          totals[type].current += type === "Jari" ? jariToReels(Number(item.quantity || 0), item.unit ?? "REEL") : Number(item.quantity || 0);
         }
       }
     }

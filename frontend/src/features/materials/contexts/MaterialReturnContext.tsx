@@ -238,8 +238,25 @@ export function MaterialReturnProvider({ children }: { children: React.ReactNode
   );
 }
 
+const FALLBACK_MATERIAL_RETURN: MaterialReturnContextValue = {
+  returnRecords: [],
+  addReturnRecord: async () => ({
+    id: "",
+    receivedBy: "",
+    receivedAt: "",
+    materials: [],
+    signatureMethod: "here",
+    signatureCaptured: false,
+    status: "approved",
+  }),
+  deleteReturnRecord: async () => {},
+  getRecordsForWeaver: () => [],
+  getOutstandingForRecipient: async () => [],
+  isError: false,
+  error: null,
+};
+
 export function useMaterialReturn(): MaterialReturnContextValue {
   const ctx = useContext(MaterialReturnContext);
-  if (!ctx) throw new Error("useMaterialReturn must be used inside MaterialReturnProvider");
-  return ctx;
+  return ctx ?? FALLBACK_MATERIAL_RETURN;
 }

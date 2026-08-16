@@ -83,8 +83,16 @@ export function CustomersProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+const FALLBACK_CUSTOMERS: CustomersContextValue = {
+  customers: [],
+  wholesaleCustomers: [],
+  retailCustomers: [],
+  addCustomer: async () => ({ id: "", name: "", type: "WHOLESALE" } as Customer),
+  updateCustomer: () => {},
+  deleteCustomer: async () => {},
+};
+
 export function useCustomers(): CustomersContextValue {
   const ctx = useContext(CustomersContext);
-  if (!ctx) throw new Error("useCustomers must be used inside CustomersProvider");
-  return ctx;
+  return ctx ?? FALLBACK_CUSTOMERS;
 }

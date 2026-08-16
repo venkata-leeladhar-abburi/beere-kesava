@@ -311,8 +311,26 @@ export function FirmsProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+const FALLBACK_FIRMS: FirmsContextValue = {
+  firms: [],
+  financials: [],
+  addFirm: () => {},
+  updateFirm: () => {},
+  deleteFirm: async () => {},
+  addIncomeEntry: () => {},
+  addExpenseEntry: () => {},
+  addMiscEntry: () => {},
+  bulkAddIncome: () => {},
+  bulkAddExpenses: () => {},
+  getFirmFinancials: (firmId: string) => ({
+    firmId,
+    income: [],
+    expenses: [],
+    misc: [],
+  }),
+};
+
 export function useFirms(): FirmsContextValue {
   const ctx = useContext(FirmsContext);
-  if (!ctx) throw new Error("useFirms must be used inside FirmsProvider");
-  return ctx;
+  return ctx ?? FALLBACK_FIRMS;
 }

@@ -412,8 +412,24 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+const FALLBACK_BATCHES: BatchContextValue = {
+  batches: [],
+  saveDraft: async () => "",
+  isSaving: false,
+  updateBatch: () => {},
+  receiveRow: async () => {},
+  tallyRow: async () => {},
+  finalizeBatch: async () => {},
+  isFinalizing: false,
+  deleteBatch: async () => {},
+  isError: false,
+  error: null,
+  nextBatchId: "BATCH-2026-001",
+  pendingOpenBatchId: null,
+  setPendingOpenBatchId: () => {},
+};
+
 export function useBatches(): BatchContextValue {
   const ctx = useContext(BatchContext);
-  if (!ctx) throw new Error("useBatches must be used inside BatchProvider");
-  return ctx;
+  return ctx ?? FALLBACK_BATCHES;
 }

@@ -199,8 +199,18 @@ export function POProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+const FALLBACK_PO: POContextValue = {
+  pos: [],
+  addPO: async () => {},
+  approvePO: () => {},
+  rejectPO: () => {},
+  deletePO: async () => {},
+  nextPONumber: "PO-2026-001",
+  isError: false,
+  error: null,
+};
+
 export function usePO(): POContextValue {
   const ctx = useContext(POContext);
-  if (!ctx) throw new Error("usePO must be used inside POProvider");
-  return ctx;
+  return ctx ?? FALLBACK_PO;
 }

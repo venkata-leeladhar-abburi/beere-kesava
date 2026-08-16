@@ -390,7 +390,7 @@ export function AllOrdersAnalyticsSection({ filteredOrders, dateFilter }: AllOrd
             <div style={card}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <Percent size={16} color={T.royalBurgundy} />
-                <div style={{ cardTitle }}>Order Book Health</div>
+                <div style={cardTitle}>Order Book Health</div>
               </div>
               <div style={cardSub}>Delivery and value snapshot</div>
               <ChartFigure title="Order Book Health" summary={`${completionPct}% completed, ${atRisk} at risk, ${totalShortage} sarees short.`}>

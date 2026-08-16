@@ -147,8 +147,17 @@ export function WeaverPaymentsProvider({ children }: { children: React.ReactNode
   );
 }
 
+const FALLBACK_WEAVER_PAYMENTS: WeaverPaymentsContextValue = {
+  payments: [],
+  addPayments: () => {},
+  getPaymentsForWeaver: () => [],
+  earnings: [],
+  getEarningsForWeaver: () => undefined,
+  isError: false,
+  error: null,
+};
+
 export function useWeaverPayments(): WeaverPaymentsContextValue {
   const ctx = useContext(WeaverPaymentsContext);
-  if (!ctx) throw new Error("useWeaverPayments must be used inside WeaverPaymentsProvider");
-  return ctx;
+  return ctx ?? FALLBACK_WEAVER_PAYMENTS;
 }

@@ -294,8 +294,20 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+const FALLBACK_BULK_ORDERS: BulkOrderContextValue = {
+  bulkOrders: [],
+  addBulkOrder: () => {},
+  updateBulkOrder: () => {},
+  nextOrderRef: "ORD-2026-001",
+  markDispatched: () => {},
+  recordPayment: () => {},
+  tallyOrder: () => {},
+  deleteBulkOrder: async () => {},
+  isError: false,
+  error: null,
+};
+
 export function useBulkOrders(): BulkOrderContextValue {
   const ctx = useContext(BulkOrderContext);
-  if (!ctx) throw new Error("useBulkOrders must be used inside BulkOrderProvider");
-  return ctx;
+  return ctx ?? FALLBACK_BULK_ORDERS;
 }

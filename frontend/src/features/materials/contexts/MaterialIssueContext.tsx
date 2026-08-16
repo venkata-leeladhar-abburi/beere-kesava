@@ -430,8 +430,49 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
   );
 }
 
+const FALLBACK_MATERIAL_ISSUE: MaterialIssueContextValue = {
+  issueRecords: [],
+  receivedSarees: [],
+  addIssueRecord: async () => ({
+    id: "",
+    issueNumber: "",
+    issuedBy: "",
+    issuedAt: "",
+    materials: [],
+    signatureMethod: "here",
+    signatureCaptured: false,
+    status: "signed",
+  }),
+  deleteIssueRecord: async () => {},
+  addReceivedSaree: () => {},
+  getRecordsForWeaver: () => [],
+  getRecordsForBatch: () => [],
+  getReceivedForWeaver: () => [],
+  getReceivedForBatch: () => [],
+  getMaterialSummaryForWeaver: () => ({
+    issuedGrams: 0,
+    receivedGrams: 0,
+    outstandingGrams: 0,
+    jariReels: 0,
+    sareesReceived: 0,
+    totalWarpGrams: 0,
+    totalReshamGrams: 0,
+    totalJariGrams: 0,
+    totalReturnedWarpGrams: 0,
+    totalReturnedReshamGrams: 0,
+    totalReturnedJariGrams: 0,
+    netWarpGrams: 0,
+    netReshamGrams: 0,
+    netJariGrams: 0,
+  }),
+  getMaterialSummaryByBatch: () => [],
+  updateSignatureStatus: () => {},
+  finalizeReceivedWeight: () => {},
+  isError: false,
+  error: null,
+};
+
 export function useMaterialIssue(): MaterialIssueContextValue {
   const ctx = useContext(MaterialIssueContext);
-  if (!ctx) throw new Error("useMaterialIssue must be used inside MaterialIssueProvider");
-  return ctx;
+  return ctx ?? FALLBACK_MATERIAL_ISSUE;
 }

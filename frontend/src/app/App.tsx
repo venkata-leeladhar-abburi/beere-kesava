@@ -5,16 +5,40 @@ import { queryClient } from "../lib/queryClient";
 import { composeProviders } from "../lib/composeProviders";
 import { AuthProvider, useAuth } from "../contexts/AuthContext";
 import { RatesProvider } from "../features/pricing/contexts/RatesContext";
-import { FinishingProvider, FinishingStaffProvider, QcProvider, SupplierProvider } from "../contexts";
+import {
+  FinishingProvider,
+  FinishingStaffProvider,
+  QcProvider,
+  SupplierProvider,
+  BulkOrderProvider,
+  CustomersProvider,
+  SalesProvider,
+  FirmsProvider,
+  POProvider,
+  DesignLibraryProvider,
+  BatchProvider,
+  MaterialIssueProvider,
+  MaterialReturnProvider,
+  WeaverPaymentsProvider,
+} from "../contexts";
 
-// Shared across every portal (worker, admin, superadmin, accountant) so finishing
-// assignments/returns/quotations raised in one show up identically in the others.
+// Shared across every portal (worker, admin, superadmin, accountant, shop, weaver)
 const SharedContexts = composeProviders([
   RatesProvider,
   FinishingStaffProvider,
   FinishingProvider,
   QcProvider,
   SupplierProvider,
+  CustomersProvider,
+  BulkOrderProvider,
+  SalesProvider,
+  FirmsProvider,
+  POProvider,
+  DesignLibraryProvider,
+  BatchProvider,
+  MaterialIssueProvider,
+  MaterialReturnProvider,
+  WeaverPaymentsProvider,
 ]);
 import { ErrorBoundary } from "../components/ErrorBoundary";
 import { Toaster } from "../shared/ui/sonner";

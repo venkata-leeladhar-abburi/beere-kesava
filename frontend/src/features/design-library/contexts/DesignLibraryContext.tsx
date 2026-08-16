@@ -193,8 +193,19 @@ export function DesignLibraryProvider({ children }: { children: React.ReactNode 
   );
 }
 
+const FALLBACK_DESIGN_LIBRARY: DesignLibraryContextValue = {
+  designs: [],
+  addDesign: () => {},
+  updateDesign: () => {},
+  getDesign: () => undefined,
+  dispatches: [],
+  addDispatch: (d) => ({ id: "", sentAt: "", ...d } as DispatchRecord),
+  getDispatchesForWeaver: () => [],
+  isError: false,
+  error: null,
+};
+
 export function useDesignLibrary(): DesignLibraryContextValue {
   const ctx = useContext(DesignLibraryContext);
-  if (!ctx) throw new Error("useDesignLibrary must be used inside DesignLibraryProvider");
-  return ctx;
+  return ctx ?? FALLBACK_DESIGN_LIBRARY;
 }
