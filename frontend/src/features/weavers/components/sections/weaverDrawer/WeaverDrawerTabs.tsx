@@ -8,7 +8,7 @@ import { DateFilterBar } from "../../../../../shared/ui/DateFilterBar";
 import { Button } from "../../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
-import { materialItemToGrams, REELS_PER_BUN, MaterialIssueRecord, BatchMaterialSummary } from "@/features/materials";
+import { materialItemToGrams, BUNS_PER_REEL, MaterialIssueRecord, BatchMaterialSummary } from "@/features/materials";
 import { formatBunsReels } from "@/shared/lib/weightUnits";
 import { BatchRecord, SareeRow } from "@/features/production";
 import { DispatchRecord } from "@/features/design-library";
@@ -295,7 +295,7 @@ export function MaterialsTab({ materialRecords, materialByBatch }: {
                         entry.issuedGrams += materialItemToGrams(m);
                         if (m.materialType === "Jari") {
                           entry.reels += (m.unit || "").toLowerCase().startsWith("bun")
-                            ? (m.quantity || 0) * REELS_PER_BUN
+                            ? (m.quantity || 0) / BUNS_PER_REEL
                             : (m.quantity || 0);
                         }
                       }));

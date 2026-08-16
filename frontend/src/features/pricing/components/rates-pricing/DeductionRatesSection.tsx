@@ -175,7 +175,7 @@ export function DeductionRatesSection() {
             display: "inline-block", background: "rgba(200,155,71,0.12)", border: `1px solid rgba(200,155,71,0.25)`,
             borderRadius: 999, padding: "3px 10px", marginBottom: 14,
           }}>
-            <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.antiqueGold }}>Jari is measured in Reels · 1 Bun = 4 Reels</span>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.antiqueGold }}>Jari is measured in Reels · 1 Reel = 4 Buns</span>
           </div>
           <div style={{ borderTop: `1px solid ${T.borderDef}`, margin: "0 0 12px 0" }} />
           <p style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, margin: "0 0 12px 0", lineHeight: 1.6 }}>

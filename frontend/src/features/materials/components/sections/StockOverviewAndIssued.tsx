@@ -26,13 +26,13 @@ export function StockOverview({ onSeeFullReports }: { onSeeFullReports: () => vo
   const reshamStock = stockItems.filter(i => i.materialType === "RESHAM").reduce((s, i) => s + Number(i.currentStock), 0);
 
   // Jari is always shown in Reels — never grams/kg, regardless of what unit
-  // any individual stock row happens to be in (1 Bun = 4 Reels).
+  // any individual stock row happens to be in (1 Reel = 4 Buns).
   const jariStock = stockItems
     .filter(i => i.materialType === "JARI")
     .reduce((s, i) => {
       const qty = Number(i.currentStock);
       const unit = (i.unit || "").trim().toUpperCase();
-      return s + (unit.startsWith("BUN") ? qty * 4 : qty);
+      return s + (unit.startsWith("BUN") ? qty / 4 : qty);
     }, 0);
 
   const warpUnit = stockItems.find(i => i.materialType === "WARP")?.unit ?? "kg";
@@ -143,10 +143,10 @@ export function IssuedThisMonthCard({ onNavigate }: { onNavigate?: (tab: string)
     } else if (m.materialType === "Jari") {
       if (unit.startsWith("bun")) {
         jariBuns += qty;
-        jariReels += qty * 4;
+        jariReels += qty / 4;
       } else {
         jariReels += qty;
-        jariBuns += qty / 4;
+        jariBuns += qty * 4;
       }
     }
   }));
@@ -258,10 +258,10 @@ export function ReturnedThisMonthCard({ onNavigate }: { onNavigate?: (tab: strin
     } else if (m.materialType === "Jari") {
       if (unit.startsWith("bun")) {
         jariBuns += qty;
-        jariReels += qty * 4;
+        jariReels += qty / 4;
       } else {
         jariReels += qty;
-        jariBuns += qty / 4;
+        jariBuns += qty * 4;
       }
     }
   }));

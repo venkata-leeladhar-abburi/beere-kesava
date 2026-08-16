@@ -272,8 +272,8 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
               </div>
               {jariQty && (
                 <div style={{ marginTop: 4, fontFamily: F.u, fontSize: 12, color: C.gold }}>
-                  = {jariUnit === "Reels" ? `${Math.round(parseFloat(jariQty) / 4)} Buns` : `${Math.round(parseFloat(jariQty) * 4)} Reels`}
-                  <span style={{ color: C.muted }}> (1 Bun = 4 Reels)</span>
+                  = {jariUnit === "Reels" ? `${Math.round(parseFloat(jariQty) * 4)} Buns` : `${Math.round(parseFloat(jariQty) / 4)} Reels`}
+                  <span style={{ color: C.muted }}> (1 Reel = 4 Buns)</span>
                 </div>
               )}
             </div>

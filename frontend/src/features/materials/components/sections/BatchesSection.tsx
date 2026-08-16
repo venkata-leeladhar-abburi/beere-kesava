@@ -45,7 +45,7 @@ export function BatchTableView({ rows, onViewDetails, onPrintBarcode }: { rows: 
       id: "received", header: "Received", accessor: r => r.received, type: "number", sortable: true,
       cell: (_v, r) => (
         <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>
-          {r.received} <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 400, color: T.taupe }}>{r.type === "Jari" ? `Buns (${r.received * 4} Reels)` : "kg"}</span>
+          {r.received} <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 400, color: T.taupe }}>{r.type === "Jari" ? `Buns (${r.received / 4} Reels)` : "kg"}</span>
         </span>
       ),
     },
@@ -53,7 +53,7 @@ export function BatchTableView({ rows, onViewDetails, onPrintBarcode }: { rows: 
       id: "given", header: "Given", accessor: r => r.given, type: "number", sortable: true,
       cell: (_v, r) => (
         <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.taupe }}>
-          {r.given} <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 400 }}>{r.type === "Jari" ? `Buns (${r.given * 4} Reels)` : "kg"}</span>
+          {r.given} <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 400 }}>{r.type === "Jari" ? `Buns (${r.given / 4} Reels)` : "kg"}</span>
         </span>
       ),
     },
@@ -65,7 +65,7 @@ export function BatchTableView({ rows, onViewDetails, onPrintBarcode }: { rows: 
         return (
           <div>
             <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: sc.color }}>
-              {r.remaining} <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 400 }}>{r.type === "Jari" ? `Buns (${r.remaining * 4} Reels)` : "kg"}</span>
+              {r.remaining} <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 400 }}>{r.type === "Jari" ? `Buns (${r.remaining / 4} Reels)` : "kg"}</span>
             </span>
             <div style={{ width: 64, height: 4, background: "rgba(110,15,45,0.08)", borderRadius: 2, marginTop: 5 }}>
               <div style={{ width: `${remPct}%`, height: "100%", background: sc.dot, borderRadius: 2 }} />
@@ -154,7 +154,7 @@ export function BatchCardView({ rows, onViewDetails, onPrintBarcode }: { rows: B
                         {r.type === "Jari" ? (
                           <>
                             <div>{s.val} Buns</div>
-                            <div style={{ fontSize: 12, fontWeight: 500, color: T.taupe, marginTop: 2 }}>{s.val * 4} Reels</div>
+                            <div style={{ fontSize: 12, fontWeight: 500, color: T.taupe, marginTop: 2 }}>{s.val / 4} Reels</div>
                           </>
                         ) : (
                           s.val

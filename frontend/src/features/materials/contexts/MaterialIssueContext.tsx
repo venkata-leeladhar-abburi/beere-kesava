@@ -130,16 +130,16 @@ function frontendItemToPayload(m: IssuedMaterialItem): CreateMaterialIssuePayloa
 }
 
 // ─── Material weight conversion ───────────────────────────────────────────────
-// One reel of Jari weighs 230 grams; a Bun is 4 reels (see IssueMaterialPage).
+// One reel of Jari weighs 230 grams; a Reel is 4 Buns (see IssueMaterialPage).
 export const JARI_REEL_GRAMS = 230;
-export const REELS_PER_BUN = 4;
+export const BUNS_PER_REEL = 4;
 
 /** Convert a single issued material line into grams. */
 export function materialItemToGrams(m: IssuedMaterialItem): number {
   const qty = m.quantity || 0;
   if (m.materialType === "Jari") {
     const unit = (m.unit || "").toLowerCase();
-    if (unit.startsWith("bun")) return qty * REELS_PER_BUN * JARI_REEL_GRAMS;
+    if (unit.startsWith("bun")) return qty * (JARI_REEL_GRAMS / BUNS_PER_REEL);
     // default: Reels
     return qty * JARI_REEL_GRAMS;
   }
@@ -196,7 +196,7 @@ function summarize(records: MaterialIssueRecord[], received: ReceivedSareeRecord
     issuedGrams += materialItemToGrams(m);
     if (m.materialType === "Jari") {
       jariReels += (m.unit || "").toLowerCase().startsWith("bun")
-        ? (m.quantity || 0) * REELS_PER_BUN
+        ? (m.quantity || 0) / BUNS_PER_REEL
         : (m.quantity || 0);
     }
   }));
