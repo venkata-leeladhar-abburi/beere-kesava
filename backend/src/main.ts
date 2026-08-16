@@ -1,3 +1,10 @@
+// Must run before any other import: AuthModule's JwtModule.register() reads
+// process.env.JWT_SECRET synchronously at import time, which happens before
+// ConfigModule.forRoot() (called later, from within AppModule's own body)
+// gets a chance to load .env. Without this, tokens get signed with the
+// hardcoded fallback secret while JwtStrategy verifies against the real one
+// from .env — a permanent sign/verify mismatch that 401s every request.
+import "dotenv/config";
 import "reflect-metadata";
 import * as express from "express";
 import { ValidationPipe } from "@nestjs/common";
