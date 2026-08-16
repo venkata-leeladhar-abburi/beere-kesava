@@ -90,12 +90,7 @@ export function ApprovalsPage() {
   return (
     <div style={{ minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui }}>
 
-      <ApprovalsHeader
-        poCount={combinedPOList.length}
-        externalCount={pendingRequests.length}
-        warpCount={warpList.length}
-        rateCount={rateList.length}
-      />
+      <ApprovalsHeader />
 
       <StatsStrip
         totalPending={combinedPOList.length + pendingRequests.length + warpList.length + rateList.length}

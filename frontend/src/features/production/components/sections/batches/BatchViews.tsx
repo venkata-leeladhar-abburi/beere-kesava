@@ -163,7 +163,7 @@ export function BatchCard({ b, onView }: { b: Batch; expandedId: string | null; 
 export function BatchCardGrid({ batches, onView, onSlip, onEdit }: { batches: Batch[]; onView?: (b: Batch) => void; onSlip?: (b: Batch) => void; onEdit?: (b: Batch) => void }) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20, alignItems: "stretch" }}>
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 items-stretch">
       {batches.map((b, i) => (
         <FadeUp key={b.id} delay={i * 0.04} style={{ height: "100%" }}>
           <BatchCard b={b} expandedId={expandedId} setExpandedId={setExpandedId} onView={onView} onSlip={onSlip} onEdit={onEdit} />

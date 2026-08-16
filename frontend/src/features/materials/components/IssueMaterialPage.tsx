@@ -247,15 +247,15 @@ export function IssueMaterialPage() {
   return (
     <div style={{ fontFamily: F.ui, background: T.silkCream, minHeight: "100dvh" }}>
       {/* Header */}
-      <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", display: "flex", alignItems: "center" }}>
-        <div className="pl-4 md:pl-7 xl:pl-14" style={{ position: "relative", zIndex: 2, paddingTop: 48, paddingBottom: 110, flex: "0 0 100%", maxWidth: "100%" }}>
-          <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase", marginBottom: 12 }}>
+      <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", minHeight: 340, display: "flex", alignItems: "center" }}>
+        <div className="px-4 md:px-7 xl:px-12 w-full" style={{ position: "relative", zIndex: 2, paddingTop: 48, paddingBottom: 110 }}>
+          <div style={{ fontFamily: F.ui, fontSize: "clamp(11px, 1.4vw, 13px)", color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase", marginBottom: 10 }}>
             Since 1999 · Material Issuance
           </div>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
-            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 56, fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Issue Raw Materials to Weaver</h1>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 8 }}>
+            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(32px, 6vw, 56px)", fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Issue Raw Materials to Weaver</h1>
           </div>
-          <p style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 18, color: "rgba(255,253,249,0.70)", lineHeight: 1.6, maxWidth: "min(600px, 100%)", margin: "0 0 20px" }}>
+          <p style={{ fontFamily: F.ui, fontWeight: 400, fontSize: "clamp(14px, 2.2vw, 16px)", color: "rgba(255,253,249,0.70)", lineHeight: 1.6, maxWidth: 600, margin: 0 }}>
             Record material handover, link GRN batch, and collect weaver's digital signature
           </p>
         </div>

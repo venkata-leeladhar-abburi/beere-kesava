@@ -43,7 +43,7 @@ export function WeaverSection({ onNavigate }: { onNavigate: (tab: string, ctx?: 
   return (
     <section className="px-4 md:px-7 xl:px-12" style={{ paddingBottom: 64, background: T.silkCream }}>
       <SectionHeader title="Active Weavers" actionText="View All Weavers →" onAction={() => onNavigate("AllWeavers")} />
-      <div style={{ display: "flex", gap: 18, alignItems: "stretch", position: "relative" }}>
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-5 xl:gap-6" style={{ position: "relative" }}>
         {weavers.map((w, i) => (
           <motion.div
             key={w.id}

@@ -32,8 +32,8 @@ function HistoryBatchSquares({ size }: { size: number }) {
 
 function HistoryDropBtn({ label, icon }: { label: string; icon?: React.ReactNode }) {
   return (
-    <Button variant="secondary" size="sm" className="whitespace-nowrap">
-      {icon}{label}<ChevronDown size={14} style={{ color: T.taupe }} />
+    <Button variant="secondary" size="sm" className="w-full sm:w-auto justify-between sm:justify-start">
+      <span className="flex items-center gap-1.5">{icon}{label}</span><ChevronDown size={14} style={{ color: T.taupe }} />
     </Button>
   );
 }
@@ -216,9 +216,9 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
   return (
     <div id="prod-history" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 40 }}>
       <FadeUp>
-        <div style={{ background: T.darkBurgundy, borderRadius: "12px 12px 0 0", padding: "18px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div className="p-4 sm:px-7 sm:py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-[0_6px_32px_rgba(74,6,27,0.08)] rounded-t-2xl" style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)` }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
+            <svg width="34" height="34" viewBox="0 0 34 34" fill="none" style={{ flexShrink: 0 }}>
               <rect width="34" height="34" rx="7" fill="rgba(200,155,71,0.18)" />
               <rect x="7" y="9"  width="20" height="3" rx="1.5" fill="#C89B47" />
               <rect x="7" y="22" width="20" height="3" rx="1.5" fill="#C89B47" />
@@ -229,34 +229,36 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
             </svg>
             <div>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.45)", letterSpacing: "2px", textTransform: "uppercase", marginBottom: 2 }}>COMPLETED BATCHES · RECORDS</div>
-              <h2 style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Production History</h2>
+              <h2 style={{ fontFamily: F.display, fontSize: 22, fontWeight: 700, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Production History</h2>
             </div>
           </div>
-          <Button onClick={() => setShowReportDialog(true)} variant="secondary" size="sm">
-            <Download size={14} />Generate Production Report
+          <Button onClick={() => setShowReportDialog(true)} variant="secondary" size="sm" className="w-full sm:w-auto shrink-0">
+            <Download size={14} /> Generate Production Report
           </Button>
         </div>
 
-        <div style={{ background: "#fff", padding: "12px 24px", borderLeft: `1px solid ${T.borderDef}`, borderRight: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" as const }}>
-          <HistoryDropBtn label="30 Apr 2026 – 30 Apr 2026" icon={<Calendar size={14} style={{ color: T.royalBurgundy }} />} />
-          <HistoryDropBtn label="All Saree Types" />
-          <HistoryDropBtn label="All Weavers" icon={<Users size={14} style={{ color: T.royalBurgundy }} />} />
-          <HistoryDropBtn label="All Orders" />
-          <div style={{ flex: 1, minWidth: 180 }}>
+        <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2.5 p-3.5 sm:px-6 bg-white border-x border-[rgba(110,15,45,0.10)] w-full">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
+            <HistoryDropBtn label="30 Apr 2026 – 30 Apr 2026" icon={<Calendar size={14} style={{ color: T.royalBurgundy }} />} />
+            <HistoryDropBtn label="All Saree Types" />
+            <HistoryDropBtn label="All Weavers" icon={<Users size={14} style={{ color: T.royalBurgundy }} />} />
+            <HistoryDropBtn label="All Orders" />
+          </div>
+          <div className="w-full sm:flex-1 sm:min-w-[180px]">
             <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search batches..." />
           </div>
         </div>
 
-        <div style={{ background: T.silkCream, padding: "10px 24px", borderLeft: `1px solid ${T.borderDef}`, borderRight: `1px solid ${T.borderDef}`, borderBottom: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-3 sm:px-6 bg-[#F7F2EA] border-x border-b border-[rgba(110,15,45,0.10)]">
           <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, fontWeight: 500 }}>
             Showing <strong style={{ color: T.luxuryBrown }}>{HISTORY_BATCHES.length}</strong> of <strong style={{ color: T.luxuryBrown }}>{HISTORY_BATCHES.length}</strong> completed batches
           </span>
-          <div style={{ display: "flex", gap: 28 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+          <div className="flex items-center gap-4 flex-wrap text-xs">
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Total Completed:</span>
               <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}>{HISTORY_BATCHES.length}</span>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Total Making Charges:</span>
               <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.green }}>
                 {formatMoney(totalMakingCharges)}
@@ -274,9 +276,11 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
             loading={qcLoading}
             emptyTitle="No completed batches yet."
           />
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 24px", borderTop: `1px solid ${T.borderDef}` }}>
-            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Showing {HISTORY_BATCHES.length} of {HISTORY_BATCHES.length} entries</span>
-            <div style={{ display: "flex", gap: 4 }}>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 sm:px-6 border-t border-[rgba(110,15,45,0.10)]">
+            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }} className="w-full sm:w-auto text-center sm:text-left">
+              Showing {HISTORY_BATCHES.length} of {HISTORY_BATCHES.length} entries
+            </span>
+            <div className="flex items-center justify-center gap-1 w-full sm:w-auto">
               {["Prev", "1", "2", "3", "Next"].map(p => (
                 <Button key={p} onClick={() => typeof p === "string" && !isNaN(Number(p)) && setCurrentPage(Number(p))}
                   variant={p === String(currentPage) ? "primary" : "secondary"} size="sm">
@@ -284,7 +288,7 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
                 </Button>
               ))}
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div className="flex items-center justify-center gap-2 w-full sm:w-auto shrink-0">
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Rows per page</span>
               <HistoryDropBtn label="10" />
             </div>

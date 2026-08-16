@@ -179,24 +179,26 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
           </div>
         )}
 
-        <div style={{ display: "flex", gap: 10, marginBottom: 18, flexWrap: "wrap" as const, alignItems: "center" }}>
-          <div style={{ display: "flex", gap: 6 }}>
+        <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 mb-4 w-full max-w-full">
+          <div className="flex items-center gap-1.5 overflow-x-auto max-w-full pb-1 scrollbar-none whitespace-nowrap shrink-0" style={{ WebkitOverflowScrolling: "touch" }}>
             {["All Time", "This Month", "This Week", "Today"].map(f => (
-              <Button key={f} onClick={() => setTimeFilter(f)} variant={timeFiler === f ? "primary" : "secondary"} size="sm">{f}</Button>
+              <Button key={f} onClick={() => setTimeFilter(f)} variant={timeFiler === f ? "primary" : "secondary"} size="sm" className="shrink-0 whitespace-nowrap text-[12px]">{f}</Button>
             ))}
           </div>
-          <Select value={weaverFilter} onValueChange={setWeaverFilter} size="sm">
-            <SelectItem value="All Weavers">All Weavers</SelectItem>
-            {uniqueWeavers.map(w => (
-              <SelectItem key={w} value={w}>{w}</SelectItem>
-            ))}
-          </Select>
-          <Select value={defectFilter} onValueChange={setDefectFilter} size="sm">
-            <SelectItem value="All Defect Types">All Defect Types</SelectItem>
-            {uniqueDefects.map(d => (
-              <SelectItem key={d} value={d}>{d}</SelectItem>
-            ))}
-          </Select>
+          <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
+            <Select value={weaverFilter} onValueChange={setWeaverFilter} size="sm">
+              <SelectItem value="All Weavers">All Weavers</SelectItem>
+              {uniqueWeavers.map(w => (
+                <SelectItem key={w} value={w}>{w}</SelectItem>
+              ))}
+            </Select>
+            <Select value={defectFilter} onValueChange={setDefectFilter} size="sm">
+              <SelectItem value="All Defect Types">All Defect Types</SelectItem>
+              {uniqueDefects.map(d => (
+                <SelectItem key={d} value={d}>{d}</SelectItem>
+              ))}
+            </Select>
+          </div>
         </div>
 
         <div style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 24px rgba(74,6,27,0.07)", overflow: "hidden" }}>

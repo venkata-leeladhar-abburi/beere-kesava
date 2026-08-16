@@ -56,21 +56,28 @@ export function Pagination({ page, pageCount, total, pageSize, start, onPageChan
   const btnDisabled: React.CSSProperties = { ...btn, opacity: 0.35, cursor: "not-allowed", color: T.taupe };
 
   return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" as const, gap: 12, padding: "12px 4px" }}>
-      <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }}>
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 sm:gap-4 w-full max-w-full py-3 px-2">
+      {/* Heading Line */}
+      <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe }} className="w-full sm:w-auto text-center sm:text-left">
         Showing <strong style={{ color: T.luxuryBrown }}>{start + 1}–{end}</strong> of <strong style={{ color: T.luxuryBrown }}>{total}</strong> {itemLabel}
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+
+      {/* Controls & Buttons Lines */}
+      <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-end gap-2.5 w-full sm:w-auto">
         {onPageSizeChange && (
-          <select value={pageSize} onChange={e => onPageSizeChange(Number(e.target.value))}
-            style={{ height: 32, padding: "0 8px", borderRadius: 8, border: `1px solid ${T.borderDef}`, background: T.silkCream, fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, cursor: "pointer" }}>
-            {PAGE_SIZE_OPTIONS.map(n => <option key={n} value={n}>{n} / page</option>)}
-          </select>
+          <div className="flex items-center justify-center w-full sm:w-auto">
+            <select value={pageSize} onChange={e => onPageSizeChange(Number(e.target.value))}
+              style={{ height: 32, padding: "0 10px", borderRadius: 8, border: `1px solid ${T.borderDef}`, background: T.silkCream, fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, cursor: "pointer" }}
+              className="w-auto">
+              {PAGE_SIZE_OPTIONS.map(n => <option key={n} value={n}>{n} / page</option>)}
+            </select>
+          </div>
         )}
-        <div style={{ display: "flex", gap: 4 }}>
+
+        <div className="flex items-center justify-center gap-1 w-full sm:w-auto shrink-0">
           <button onClick={() => onPageChange(1)} disabled={page === 1} style={page === 1 ? btnDisabled : btn} title="First page"><ChevronsLeft size={14} /></button>
           <button onClick={() => onPageChange(page - 1)} disabled={page === 1} style={page === 1 ? btnDisabled : btn} title="Previous page"><ChevronLeft size={14} /></button>
-          <div style={{ display: "flex", alignItems: "center", padding: "0 10px", fontFamily: F.mono, fontSize: 12.5, color: T.luxuryBrown, fontWeight: 700 }}>
+          <div style={{ display: "flex", alignItems: "center", padding: "0 8px", fontFamily: F.mono, fontSize: 12, color: T.luxuryBrown, fontWeight: 700 }}>
             {page} / {pageCount}
           </div>
           <button onClick={() => onPageChange(page + 1)} disabled={page === pageCount} style={page === pageCount ? btnDisabled : btn} title="Next page"><ChevronRight size={14} /></button>

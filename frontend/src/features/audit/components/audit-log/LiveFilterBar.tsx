@@ -22,16 +22,7 @@ export function LiveFilterBar({
   return (
     <>
       {/* ── 3. LIVE UPDATE INDICATOR STRIP ── */}
-      <div style={{
-        background: "rgba(30,102,64,0.08)",
-        border: "1px solid rgba(30,102,64,0.20)",
-        borderRadius: 10,
-        padding: "12px 20px",
-        marginBottom: 24,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-      }}>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 sm:px-5 sm:py-3 mb-6 bg-[rgba(30,102,64,0.08)] border border-[rgba(30,102,64,0.20)] rounded-xl">
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <motion.div
             animate={{ scale: [1, 1.5, 1] }}
@@ -48,7 +39,7 @@ export function LiveFilterBar({
             Live — New entries appear automatically as actions happen across the system.
           </span>
         </div>
-        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+        <div className="flex items-center justify-between w-full sm:w-auto gap-3">
           <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>
             Last refreshed: just now
           </span>

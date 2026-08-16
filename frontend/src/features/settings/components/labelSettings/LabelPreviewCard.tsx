@@ -7,14 +7,14 @@ export function LabelPreviewCard({ fields }: {
   fields: { barcode: boolean; code: boolean; weaver: boolean; date: boolean; branding: boolean };
 }) {
   return (
-    <div style={{ flex: "0 0 52%" }}>
+    <div className="w-full xl:w-[48%] xl:max-w-[480px] xl:flex-shrink-0">
       <div
+        className="p-4 sm:p-6 md:p-7"
         style={{
           background: "white",
           borderRadius: 16,
           border: `1px solid ${T.borderDef}`,
           boxShadow: "0 2px 16px rgba(44,24,16,0.08)",
-          padding: 28,
         }}
       >
         {/* Section heading */}
@@ -25,7 +25,7 @@ export function LabelPreviewCard({ fields }: {
             fontSize: 13,
             color: T.antiqueGold,
             letterSpacing: 2,
-            marginBottom: 20,
+            marginBottom: 16,
             textTransform: "uppercase",
           }}
         >
@@ -34,14 +34,14 @@ export function LabelPreviewCard({ fields }: {
 
         {/* Label preview box */}
         <div
-          className="w-[360px] max-w-full"
+          className="w-full max-w-[360px]"
           style={{
-            height: 180,
+            minHeight: 180,
             background: "white",
             border: "1.5px solid #6E0F2D",
-            borderRadius: 6,
-            padding: "12px 14px",
-            boxShadow: "0 4px 20px rgba(0,0,0,0.12)",
+            borderRadius: 8,
+            padding: "14px 16px",
+            boxShadow: "0 4px 20px rgba(0,0,0,0.10)",
             margin: "0 auto 20px",
             boxSizing: "border-box",
             display: "flex",

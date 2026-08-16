@@ -7,6 +7,8 @@ import { T, F } from "../theme";
 import { useBatches } from "../../contexts/BatchContext";
 import { qcApi } from "../../../../shared/api/qc";
 
+import { LuxuryStatsCard } from "../../../../shared/ui/LuxuryStatsCard";
+
 function isSameMonth(iso: string, ref: Date): boolean {
   const d = new Date(iso);
   return d.getFullYear() === ref.getFullYear() && d.getMonth() === ref.getMonth();
@@ -42,20 +44,10 @@ export function StatsStrip() {
 
   const now = new Date();
   const activeBatches = batches.filter(b => b.status === "active" || b.status === "draft");
-  // "Sarees being produced" = every assigned saree, across every batch, that
-  // hasn't finished the pipeline yet — not QC-passed and not finished
-  // (finishing complete via either the Worker Staff receive-back flow or the
-  // Raise Quotation receive flow). Covers the whole in-progress lifecycle,
-  // not just rows Worker Staff has already received.
   const sareesInProduction = batches.reduce(
     (sum, b) => sum + b.rows.filter(r => r.sareeId && !r.qcPassed && !r.finished).length,
     0,
   );
-  // "Completed this month" credits a saree either for passing QC this month
-  // or for finishing this month (via the Worker Staff receive-back flow or
-  // the Raise Quotation receive flow) — a saree whose QC pass fell in an
-  // earlier month still counts once it's actually finished this month.
-  // Deduplicated by saree ID so one saree can't be counted twice.
   const completedThisMonthIds = new Set<string>();
   qcRecords.forEach(r => {
     if (r.result === "PASSED" && isSameMonth(r.qcDate, now)) completedThisMonthIds.add(r.sareeId);
@@ -68,25 +60,16 @@ export function StatsStrip() {
     });
   });
   const sareesCompletedThisMonth = completedThisMonthIds.size;
-  // Only rows Worker Staff has actually received count as "waiting for QC" —
-  // matches WorkerQC's own pending-queue definition (see WorkerQC.tsx).
   const sareesWaitingQc = batches.reduce(
     (sum, b) => sum + b.rows.filter(r => r.sareeId && r.receivedAt && !r.qcPassed && b.status !== "draft").length,
     0,
   );
 
-  const STATS = [
-    { label: "TOTAL BATCHES ACTIVE RIGHT NOW",   value: String(activeBatches.length),          sub: "Across all weavers currently",  highlight: false, crimson: false, goldVal: false },
-    { label: "SAREES BEING PRODUCED",            value: String(sareesInProduction),            sub: "In progress across all batches", highlight: false, crimson: false, goldVal: false },
-    { label: "SAREES COMPLETED THIS MONTH",      value: String(sareesCompletedThisMonth),       sub: "QC-passed so far this month",   highlight: true,  crimson: false, goldVal: true  },
-    { label: "SAREES WAITING FOR QUALITY CHECK", value: String(sareesWaitingQc),                sub: sareesWaitingQc > 0 ? "⚠ Need quality check" : "All caught up", highlight: false, crimson: sareesWaitingQc > 0, goldVal: false },
-  ];
-
-  const ICONS = [
-    <Layers key="layers" size={22} color={T.warmCream} />,
-    <Factory key="factory" size={22} color={T.warmCream} />,
-    <CheckCircle2 key="check-circle" size={22} color={T.warmCream} />,
-    <AlertCircle key="alert-circle" size={22} color={T.warmCream} />,
+  const statItems = [
+    { label: "TOTAL BATCHES ACTIVE RIGHT NOW", value: String(activeBatches.length), sub: "Across all weavers currently", icon: <Layers size={22} color={T.warmCream} />, highlight: false },
+    { label: "SAREES BEING PRODUCED", value: String(sareesInProduction), sub: "In progress across all batches", icon: <Factory size={22} color={T.warmCream} />, highlight: false },
+    { label: "SAREES COMPLETED THIS MONTH", value: String(sareesCompletedThisMonth), sub: "QC-passed so far this month", icon: <CheckCircle2 size={22} color={T.warmCream} />, highlight: true, goldVal: true },
+    { label: "SAREES WAITING FOR QUALITY CHECK", value: String(sareesWaitingQc), sub: sareesWaitingQc > 0 ? "⚠ Need quality check" : "All caught up", icon: <AlertCircle size={22} color={T.warmCream} />, crimson: sareesWaitingQc > 0 },
   ];
 
   return (
@@ -96,46 +79,7 @@ export function StatsStrip() {
       className="px-4 md:px-7 xl:px-12 -mt-8 md:-mt-12 xl:-mt-[72px]"
       style={{ position: "relative", zIndex: 20 }}
     >
-      <div className="grid grid-cols-2 xl:flex" style={{ background: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)", borderRadius: 28, alignItems: "stretch", boxShadow: "0 30px 80px rgba(0,0,0,0.32), 0 0 0 1px rgba(200,155,71,0.16)", overflow: "hidden", minHeight: 140 }}>
-        {STATS.map((m, i) => (
-          <motion.div
-            key={m.label}
-            initial={{ opacity: 0, y: 20, backgroundColor: "rgba(0,0,0,0)" }}
-            animate={{ opacity: 1, y: 0, backgroundColor: "rgba(0,0,0,0)" }}
-            transition={{ duration: 0.6, delay: 0.4 + i * 0.09 }}
-            whileHover={{ backgroundColor: m.highlight ? "rgba(200,155,71,0.26)" : "rgba(245,232,208,0.04)" }}
-            style={{
-              flex: 1, padding: "28px 22px",
-              backgroundImage: m.highlight ? "linear-gradient(135deg, rgba(200,155,71,0.20) 0%, rgba(200,155,71,0.07) 100%)" : "none",
-              borderRight: i < STATS.length - 1 ? "1px solid rgba(245,232,208,0.07)" : "none",
-              display: "flex", alignItems: "center", gap: 14, position: "relative",
-              cursor: "pointer",
-            }}
-          >
-            <motion.div
-              whileHover={{ scale: 1.08, rotate: 3 }}
-              transition={{ duration: 0.25 }}
-              style={{ width: 50, height: 50, borderRadius: 15, flexShrink: 0, background: m.highlight ? "rgba(200,155,71,0.16)" : "rgba(245,232,208,0.07)", border: `1px solid ${m.highlight ? "rgba(200,155,71,0.38)" : "rgba(245,232,208,0.09)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}
-            >
-              {ICONS[i]}
-            </motion.div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 8, color: m.highlight ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.90)" }}>
-                {m.label}
-              </div>
-              <div style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontSize: "clamp(28px, 8vw, 48px)", letterSpacing: "-0.01em", color: m.crimson ? "#F47B72" : m.goldVal ? T.goldLight : T.warmIvory, lineHeight: 1.1, marginBottom: 8, fontVariantNumeric: "tabular-nums" }}>
-                {m.value}
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: m.highlight ? "rgba(231,201,131,0.95)" : "rgba(245,232,208,0.85)", letterSpacing: "0.1px" }}>
-                  {m.sub}
-                </span>
-              </div>
-            </div>
-            {m.highlight && <div className="gold-bar-shimmer" style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(135deg,#C89B47,#E7C983)" }} />}
-          </motion.div>
-        ))}
-      </div>
+      <LuxuryStatsCard stats={statItems} />
     </motion.div>
   );
 }

@@ -13,13 +13,15 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     const connectionString = configService.getOrThrow<string>("DATABASE_URL");
     const pool = new Pool({
       connectionString,
-      max: 50, // Increased to handle high concurrent requests from frontend
+      ssl: { rejectUnauthorized: false },
+      max: 15,
       // Supabase's pooler (pgbouncer) can silently drop idle connections on
-      // its own schedule; proactively recycling them here means the pg Pool
-      // never hands out a connection the far side already closed, which is
-      // what surfaced as "Server has closed the connection" mid-query.
-      idleTimeoutMillis: 30_000,
-      connectionTimeoutMillis: 20_000,
+      // its own schedule (~10-15s). Proactively recycling them after 5s ensures
+      // pg.Pool discards idle clients before Supabase drops the remote socket.
+      idleTimeoutMillis: 5_000,
+      connectionTimeoutMillis: 10_000,
+      keepAlive: true,
+      keepAliveInitialDelayMillis: 10_000,
     });
     super({
       adapter: new PrismaPg(pool),

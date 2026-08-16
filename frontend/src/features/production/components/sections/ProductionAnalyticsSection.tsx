@@ -137,7 +137,7 @@ export function ProductionAnalyticsSection() {
     <div id="prod-analytics" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 32 }}>
       <FadeUp>
 
-        <div style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`, borderRadius: 20, padding: "22px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12, marginBottom: 24, boxShadow: "0 6px 32px rgba(74,6,27,0.08)" }}>
+        <div className="p-4 sm:p-6 mb-6 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-[0_6px_32px_rgba(74,6,27,0.08)]" style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)` }}>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               <LineChart size={26} color="#FFFDF9" />
@@ -149,19 +149,21 @@ export function ProductionAnalyticsSection() {
               </div>
             </div>
           </div>
-          <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
-            {ANALYTICS_PERIODS.map(p => (
-              <Button key={p} onClick={() => setPeriod(p)} variant={period === p ? "primary" : "secondary"} size="sm">
-                {p}
-              </Button>
-            ))}
-            <Button onClick={() => setShowExportDialog(true)} variant="secondary" size="sm">
+          <div className="flex items-center gap-2 flex-wrap max-w-full w-full sm:w-auto">
+            <div className="flex items-center gap-1.5 overflow-x-auto max-w-full pb-1 scrollbar-none whitespace-nowrap shrink-0" style={{ WebkitOverflowScrolling: "touch" }}>
+              {ANALYTICS_PERIODS.map(p => (
+                <Button key={p} onClick={() => setPeriod(p)} variant={period === p ? "primary" : "secondary"} size="sm" className="shrink-0 whitespace-nowrap text-[12px]">
+                  {p}
+                </Button>
+              ))}
+            </div>
+            <Button onClick={() => setShowExportDialog(true)} variant="secondary" size="sm" className="shrink-0">
               <DownloadSimple size={16} color={T.antiqueGold} /> Export Report
             </Button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 20, marginBottom: 20, alignItems: "stretch" }}>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5 items-stretch">
 
           <div style={{ ...CARD_STYLE }}>
             <ChartCardHeader
@@ -184,32 +186,34 @@ export function ProductionAnalyticsSection() {
               </div>
             ) : (
             <>
-            <div style={{ display: "flex", alignItems: "flex-end", gap: 10, flex: 1, minHeight: 180 }}>
-              {monthlyProductionData.map(d => (
-                <div key={d.month} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-                  <div style={{ display: "flex", gap: 3, alignItems: "flex-end" }}>
-                    <span style={{ fontFamily: F.ui, fontSize: 12, color: T.royalBurgundy, fontWeight: 700 }}>{d.produced}</span>
-                    <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>/{d.passed}</span>
+            <div className="overflow-x-auto w-full pb-2">
+              <div style={{ display: "flex", alignItems: "flex-end", gap: 10, flex: 1, minWidth: 260, minHeight: 180 }}>
+                {monthlyProductionData.map(d => (
+                  <div key={d.month} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+                    <div style={{ display: "flex", gap: 3, alignItems: "flex-end" }}>
+                      <span style={{ fontFamily: F.ui, fontSize: 12, color: T.royalBurgundy, fontWeight: 700 }}>{d.produced}</span>
+                      <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>/{d.passed}</span>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "flex-end", gap: 4, height: 130, width: "100%", justifyContent: "center" }}>
+                      <motion.div
+                        initial={{ height: 0 }}
+                        whileInView={{ height: `${(d.produced / maxMonthly) * 100}%` }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
+                        style={{ width: 22, background: `linear-gradient(180deg, ${T.royalBurgundy} 0%, #9A1A40 100%)`, borderRadius: "5px 5px 0 0", minHeight: 6 }}
+                      />
+                      <motion.div
+                        initial={{ height: 0 }}
+                        whileInView={{ height: `${(d.passed / maxMonthly) * 100}%` }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.7, delay: 0.08, ease: [0.25, 0.1, 0.25, 1] }}
+                        style={{ width: 22, background: "linear-gradient(180deg, #0F766E 0%, #0D5D57 100%)", borderRadius: "5px 5px 0 0", minHeight: 6, opacity: 0.9 }}
+                      />
+                    </div>
+                    <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe }}>{d.label}</span>
                   </div>
-                  <div style={{ display: "flex", alignItems: "flex-end", gap: 4, height: 130, width: "100%", justifyContent: "center" }}>
-                    <motion.div
-                      initial={{ height: 0 }}
-                      whileInView={{ height: `${(d.produced / maxMonthly) * 100}%` }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
-                      style={{ width: 22, background: `linear-gradient(180deg, ${T.royalBurgundy} 0%, #9A1A40 100%)`, borderRadius: "5px 5px 0 0", minHeight: 6 }}
-                    />
-                    <motion.div
-                      initial={{ height: 0 }}
-                      whileInView={{ height: `${(d.passed / maxMonthly) * 100}%` }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.7, delay: 0.08, ease: [0.25, 0.1, 0.25, 1] }}
-                      style={{ width: 22, background: "linear-gradient(180deg, #0F766E 0%, #0D5D57 100%)", borderRadius: "5px 5px 0 0", minHeight: 6, opacity: 0.9 }}
-                    />
-                  </div>
-                  <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe }}>{d.label}</span>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
             <div style={{ display: "flex", gap: 20, marginTop: 16, justifyContent: "center" }}>

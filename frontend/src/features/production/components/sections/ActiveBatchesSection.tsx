@@ -161,45 +161,50 @@ export function ActiveBatchesSection({ onNavigate, onOpenTally }: { onNavigate?:
             </Button>
           </div>
 
-        <div style={{ padding: "24px 28px 28px" }}>
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 16 }}>
+        <div className="p-4 sm:p-7">
+        <div className="flex items-center gap-2 mb-4 overflow-x-auto max-w-full pb-1 scrollbar-none whitespace-nowrap">
           {FILTER_PILLS.map(f => (
             <Button key={f.label} onClick={() => setFilter(f.stage)} variant={filter === f.stage ? "primary" : "tertiary"} size="sm"
-              className={`rounded-full ${filter === f.stage ? "" : "border border-[rgba(110,15,45,0.18)] text-[var(--text-tertiary)]"}`}>
+              className={`rounded-full shrink-0 whitespace-nowrap text-[12px] ${filter === f.stage ? "" : "border border-[rgba(110,15,45,0.18)] text-[var(--text-tertiary)]"}`}>
               {f.label}
             </Button>
           ))}
         </div>
 
-        <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 24, flexWrap: "wrap" }}>
-          <div style={{ flex: 1, minWidth: 280 }}>
-            <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by batch number, weaver name, or design code..." className="h-[46px] w-full" />
+        <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 mb-6 w-full max-w-full">
+          <div className="w-full sm:flex-1 sm:min-w-[220px]">
+            <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by batch number, weaver name, or design code..." className="h-[44px] w-full" />
           </div>
-          <div style={{ display: "flex", border: `1.5px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden", background: "#FFFFFF" }}>
-            {VIEW_OPTIONS.map(({ key, label, Icon }) => (
-              <Button key={key} onClick={() => setView(key)} variant="ghost"
-                className={`h-auto rounded-none gap-1.5 py-2.5 px-4 text-[13px] font-bold ${view === key ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]" : "bg-white text-[var(--text-tertiary)]"}`}>
-                <Icon size={16} /> {label}
-              </Button>
-            ))}
-          </div>
-          <DropdownMenu open={sortOpen} onOpenChange={setSortOpen}>
-            <DropdownMenuTrigger asChild>
-              <Button variant="secondary" size="md" iconRight={PhCaretDown} className="text-[var(--text-tertiary)]">
-                Sort By: {sortBy}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="!min-w-[190px] !p-0 !rounded-xl !overflow-hidden" style={{ background: "#fff", border: `1px solid ${T.borderDef}` }}>
-              {["Most Recent First", "Most Complete", "Least Complete"].map(v => (
-                <DropdownMenuItem key={v} onClick={() => setSortBy(v)} className={`!rounded-none !py-[11px] !px-3.5 !text-sm !font-normal !text-[#3B2314] ${v === sortBy ? "!bg-[#F5E8D0]" : ""}`}>
-                  {v}
-                </DropdownMenuItem>
+          
+          <div className="flex items-center justify-between sm:justify-start gap-2 flex-wrap w-full sm:w-auto">
+            <div className="flex items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0">
+              {VIEW_OPTIONS.map(({ key, label, Icon }) => (
+                <Button key={key} onClick={() => setView(key)} variant="ghost"
+                  className={`h-auto rounded-none gap-1 py-2 px-2.5 sm:px-3.5 text-[12px] sm:text-[13px] font-bold ${view === key ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]" : "bg-white text-[var(--text-tertiary)]"}`}>
+                  <Icon size={15} /> {label}
+                </Button>
               ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+            </div>
+
+            <DropdownMenu open={sortOpen} onOpenChange={setSortOpen}>
+              <DropdownMenuTrigger asChild>
+                <Button variant="secondary" size="md" iconRight={PhCaretDown} className="text-[var(--text-tertiary)] text-[12px] sm:text-[13px] shrink-0">
+                  Sort: {sortBy}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="!min-w-[190px] !p-0 !rounded-xl !overflow-hidden" style={{ background: "#fff", border: `1px solid ${T.borderDef}` }}>
+                {["Most Recent First", "Most Complete", "Least Complete"].map(v => (
+                  <DropdownMenuItem key={v} onClick={() => setSortBy(v)} className={`!rounded-none !py-[11px] !px-3.5 !text-sm !font-normal !text-[#3B2314] ${v === sortBy ? "!bg-[#F5E8D0]" : ""}`}>
+                    {v}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          <div className="flex items-center gap-2.5 flex-wrap max-w-full w-full sm:w-auto">
             <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
-            <label htmlFor="active-only-filter" style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, background: T.silkCream, border: `1px solid ${T.borderDef}`, padding: "9px 12px", borderRadius: 10 }}>
+            <label htmlFor="active-only-filter" className="flex items-center gap-1.5 cursor-pointer font-ui text-[12px] sm:text-[13px] text-[#2C0913] bg-[#F7F2EA] border border-[#E8DCC4] px-3 py-2 rounded-xl shrink-0">
               <Checkbox id="active-only-filter" checked={activeOnly} onCheckedChange={c => setActiveOnly(c === true)} />
               Active Only
             </label>

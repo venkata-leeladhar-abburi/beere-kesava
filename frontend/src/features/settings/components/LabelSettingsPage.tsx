@@ -134,101 +134,75 @@ export function LabelSettingsPage() {
   };
 
   return (
-    <div style={{ background: T.silkCream, minHeight: "100dvh", paddingBottom: 80 }}>
+    <div style={{ background: T.silkCream, minHeight: "100dvh", paddingBottom: 110 }}>
       {/* PAGE HEADER */}
-      <div
-        className="px-4 md:px-7 xl:px-14"
+      <header
         style={{
-          background: T.darkBurgundy,
-          paddingTop: 44,
-          paddingBottom: 90,
+          background: "#0D0207",
           position: "relative",
           overflow: "hidden",
-          minHeight: 180,
+          minHeight: 340,
+          display: "flex",
+          alignItems: "center",
         }}
       >
-        {/* Eyebrow */}
-        <div
-          style={{
-            fontFamily: "var(--font-mono)",
-            fontSize: 12,
-            color: T.antiqueGold,
-            opacity: 0.5,
-            letterSpacing: 2,
-            marginBottom: 10,
-            textTransform: "uppercase",
-          }}
-        >
-          SINCE 1999 · SUPERADMIN · LABEL SETTINGS
+        <div className="px-4 md:px-7 xl:px-12 w-full" style={{ position: "relative", zIndex: 2, paddingTop: 48, paddingBottom: 110 }}>
+          {/* Eyebrow */}
+          <div
+            style={{
+              fontFamily: F.ui,
+              fontSize: "clamp(11px, 1.4vw, 13px)",
+              color: "rgba(255,253,249,0.50)",
+              letterSpacing: "1.8px",
+              textTransform: "uppercase",
+              marginBottom: 10,
+            }}
+          >
+            SINCE 1999 · SUPERADMIN · LABEL SETTINGS
+          </div>
+          {/* H1 & Subtitle */}
+          <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 8 }}>
+            <h1
+              style={{
+                fontFamily: "'DM Serif Display', serif",
+                fontSize: "clamp(32px, 6vw, 56px)",
+                fontWeight: 400,
+                color: "#FFFDF9",
+                margin: 0,
+                lineHeight: 1.1,
+              }}
+            >
+              Label Settings
+            </h1>
+            <span
+              style={{
+                fontFamily: "'DM Serif Display', serif",
+                fontSize: "clamp(22px, 5vw, 36px)",
+                fontStyle: "italic",
+                color: T.antiqueGold,
+                fontWeight: 400,
+              }}
+            >
+              &amp; Tag Print Configuration
+            </span>
+          </div>
+          {/* Description */}
+          <p
+            className="max-w-[600px]"
+            style={{
+              fontFamily: F.ui,
+              fontSize: "clamp(14px, 2.2vw, 16px)",
+              color: "rgba(255,253,249,0.70)",
+              margin: 0,
+              lineHeight: 1.6,
+            }}
+          >
+            Configure the physical saree tag label — fields shown, barcode
+            format, printer connection, and what customers see when they scan a
+            saree QR code.
+          </p>
         </div>
-        {/* H1 */}
-        <h1
-          style={{
-            fontFamily: F.display,
-            fontWeight: 700,
-            fontSize: 42,
-            color: "white",
-            margin: 0,
-            lineHeight: 1.1,
-          }}
-        >
-          Label Settings
-        </h1>
-        {/* Sub */}
-        <div
-          style={{
-            fontFamily: F.display,
-            fontWeight: 500,
-            fontStyle: "italic",
-            fontSize: 30,
-            color: T.antiqueGold,
-            marginTop: 2,
-            marginBottom: 14,
-          }}
-        >
-          &amp; Tag Print Configuration
-        </div>
-        {/* Description */}
-        <p
-          className="max-w-[480px]"
-          style={{
-            fontFamily: F.ui,
-            fontSize: 14,
-            color: "rgba(255,255,255,0.60)",
-            margin: 0,
-            lineHeight: 1.7,
-          }}
-        >
-          Configure the physical saree tag label — fields shown, barcode
-          format, printer connection, and what customers see when they scan a
-          saree QR code.
-        </p>
-        {/* Decorative rings */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: -60,
-            right: 40,
-            width: 220,
-            height: 220,
-            borderRadius: "50%",
-            border: "2px solid rgba(200,155,71,0.13)",
-            pointerEvents: "none",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            bottom: -20,
-            right: 100,
-            width: 140,
-            height: 140,
-            borderRadius: "50%",
-            border: "2px solid rgba(200,155,71,0.09)",
-            pointerEvents: "none",
-          }}
-        />
-      </div>
+      </header>
 
       {isLoading ? (
         <div
@@ -288,17 +262,11 @@ export function LabelSettingsPage() {
             }}
           >
           <SectionCard icon={Tag} title="Label & Barcode Settings" subtitle="Configure what prints on every saree label, and how it connects to your printer.">
-            <div
-              style={{
-                display: "flex",
-                gap: 32,
-                alignItems: "flex-start",
-              }}
-            >
+            <div className="flex flex-col xl:flex-row gap-6 xl:gap-8 items-start w-full">
               <LabelPreviewCard fields={fields} />
 
               {/* RIGHT COLUMN */}
-              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 20 }}>
+              <div className="w-full flex-1 flex flex-col gap-5">
                 <LabelDimensionsCard labelSize={labelSize} setLabelSize={setLabelSize} />
                 <VisibleFieldsCard fields={fields} toggleField={toggleField} />
                 <BarcodeSettingsCard />

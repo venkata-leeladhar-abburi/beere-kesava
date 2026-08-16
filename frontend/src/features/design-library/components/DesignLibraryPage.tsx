@@ -106,17 +106,17 @@ export function DesignLibraryPage() {
     <div style={{ background: T.silkCream, minHeight: "100dvh", fontFamily: F.ui }}>
 
       {/* ── Page header ── */}
-      <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", minHeight: 380, display: "flex", alignItems: "center" }}>
-        <div style={{ position: "relative", zIndex: 2, padding: "48px 0 110px 48px", flex: "0 0 100%", maxWidth: "100%" }}>
-          <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase", marginBottom: 14 }}>
+      <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", minHeight: 340, display: "flex", alignItems: "center" }}>
+        <div className="px-4 md:px-7 xl:px-12 w-full" style={{ position: "relative", zIndex: 2, paddingTop: 48, paddingBottom: 110 }}>
+          <div style={{ fontFamily: F.ui, fontSize: "clamp(11px, 1.4vw, 13px)", color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase", marginBottom: 10 }}>
             Since 1999 · Production
           </div>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
-            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 56, fontWeight: 400, color: "#FFFDF9", margin: "0 0 6px 0", lineHeight: 1.1 }}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 8 }}>
+            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(32px, 6vw, 56px)", fontWeight: 400, color: "#FFFDF9", margin: "0 0 6px 0", lineHeight: 1.1 }}>
               Weaver Dispatcher
             </h1>
           </div>
-          <p className="max-w-[600px]" style={{ fontFamily: F.ui, fontSize: 18, color: "rgba(255,253,249,0.70)", margin: 0, lineHeight: 1.6 }}>
+          <p className="max-w-[600px]" style={{ fontFamily: F.ui, fontSize: "clamp(14px, 2.2vw, 16px)", color: "rgba(255,253,249,0.70)", margin: 0, lineHeight: 1.6 }}>
             Dispatch design sheets, color slip photos, design graphs, and specific weaver instructions directly to active looms.
           </p>
         </div>
@@ -131,7 +131,7 @@ export function DesignLibraryPage() {
             <div className="grid grid-cols-1 md:grid-cols-[1.2fr_1.8fr]" style={{ gap: 32, alignItems: "start" }}>
               {/* Form Side */}
               <div>
-                <div style={{ background: "#FFFFFF", borderRadius: 20, border: `1.5px solid ${T.borderDef}`, padding: "28px 32px", boxShadow: "0 4px 20px rgba(74,6,27,0.05)" }}>
+                <div className="p-4 sm:p-7 bg-white rounded-2xl border-[1.5px] border-[#E8DCC4] shadow-[0_4px_20px_rgba(74,6,27,0.05)]">
                   <h3 style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown, marginBottom: 20, display: "flex", alignItems: "center", gap: 10 }}>
                     <SlidersHorizontal size={20} color={T.royalBurgundy} /> Dispatch Settings
                   </h3>
@@ -147,13 +147,13 @@ export function DesignLibraryPage() {
                     {/* Recipient Type Toggle */}
                     <div>
                       <div style={labelStyle}>Recipient Type</div>
-                      <div style={{ display: "flex", background: "rgba(110,15,45,0.05)", borderRadius: 12, padding: 4, border: `1px solid ${T.borderDef}`, width: "fit-content" }}>
+                      <div className="flex w-full sm:w-auto bg-[rgba(110,15,45,0.05)] rounded-xl p-1 border border-[#E8DCC4]">
                         <Button type="button" onClick={() => setDispRecipientType("weaver")}
-                          variant={dispRecipientType === "weaver" ? "secondary" : "ghost"} size="sm" iconLeft={User}>
+                          variant={dispRecipientType === "weaver" ? "secondary" : "ghost"} size="sm" iconLeft={User} className="flex-1 sm:flex-initial">
                           Weaver
                         </Button>
                         <Button type="button" onClick={() => setDispRecipientType("loom")}
-                          variant={dispRecipientType === "loom" ? "secondary" : "ghost"} size="sm" iconLeft={Buildings}>
+                          variant={dispRecipientType === "loom" ? "secondary" : "ghost"} size="sm" iconLeft={Buildings} className="flex-1 sm:flex-initial">
                           Factory Loom
                         </Button>
                       </div>

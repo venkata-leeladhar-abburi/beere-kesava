@@ -80,52 +80,60 @@ export function StatCol({
       )}
       <div style={{
         flex: 1,
-        padding: "28px 24px",
+        padding: "24px 18px",
         display: "flex",
         flexDirection: "column",
+        alignItems: "flex-start",
         gap: 6,
+        minWidth: 0,
       }}>
-        {/* Icon box */}
+        {/* 1. Icon (Top) */}
         <div style={{
-          width: 32,
-          height: 32,
-          borderRadius: 8,
+          width: 40,
+          height: 40,
+          borderRadius: 12,
           background: highlight ? "rgba(200,155,71,0.18)" : "rgba(255,255,255,0.08)",
+          border: `1px solid ${highlight ? "rgba(200,155,71,0.38)" : "rgba(255,255,255,0.10)"}`,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontSize: 16,
+          fontSize: 18,
           marginBottom: 4,
         }}>
           {icon}
         </div>
-        {/* Label */}
+
+        {/* 2. Number / Value (Below Icon) */}
+        <div style={{
+          fontFamily: "'DM Serif Display', serif",
+          fontWeight: 400,
+          fontSize: typeof valueFontSize === "number" ? `clamp(32px, 3.5vw, ${valueFontSize}px)` : valueFontSize,
+          color: valueColor,
+          lineHeight: 1.0,
+          fontVariantNumeric: "tabular-nums",
+        }}>
+          {value}
+        </div>
+
+        {/* 3. Heading / Label (Below Number) */}
         <div style={{
           fontFamily: "'JetBrains Mono', monospace",
-          fontSize: 12,
+          fontSize: "clamp(10px, 1.8vw, 12px)",
           textTransform: "uppercase" as const,
-          color: "rgba(255,255,255,0.50)",
-          letterSpacing: "0.8px",
+          color: highlight ? "rgba(200,155,71,1)" : "rgba(255,255,255,0.90)",
+          letterSpacing: "1.5px",
           fontWeight: 600,
         }}>
           {label}
         </div>
-        {/* Value */}
-        <div style={{
-          fontFamily: "'Plus Jakarta Sans', sans-serif",
-          fontWeight: 700,
-          fontSize: valueFontSize,
-          color: valueColor,
-          lineHeight: 1.1,
-        }}>
-          {value}
-        </div>
-        {/* Sub */}
+
+        {/* 4. Subtitle / Description (Below Heading) */}
         <div style={{
           fontFamily: "'Inter', sans-serif",
-          fontSize: 12,
-          color: "rgba(255,255,255,0.45)",
+          fontSize: "clamp(11px, 1.6vw, 12px)",
+          color: highlight ? "rgba(231,201,131,0.85)" : "rgba(255,255,255,0.60)",
           lineHeight: 1.4,
+          marginTop: 1,
         }}>
           {sub}
         </div>

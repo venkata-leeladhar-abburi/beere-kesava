@@ -46,50 +46,66 @@ export function MobileMenuDrawer({ open, onClose, activeTab, setTab }: {
                 const GroupIcon = group.icon;
                 const isGroupActive = findNavGroup(activeTab).key === group.key;
                 return (
-                  <div key={group.key} style={{ marginBottom: 10 }}>
+                  <div key={group.key} style={{ marginBottom: 14 }}>
                     <div style={{
                       display: "flex", alignItems: "center", gap: 10,
-                      padding: "10px 10px 8px",
+                      padding: "10px 10px 6px",
                     }}>
                       <GroupIcon size={16} color={isGroupActive ? T.royalBurgundy : T.taupe} />
                       <span style={{
                         fontFamily: F.ui, fontWeight: 700, fontSize: 13,
                         color: isGroupActive ? T.royalBurgundy : T.luxuryBrown,
-                        letterSpacing: "0.3px", textTransform: "uppercase" as const,
+                        letterSpacing: "0.4px", textTransform: "uppercase" as const,
                       }}>
                         {group.label}
                       </span>
                     </div>
-                    {group.pages.map((page, i) => {
-                      const isActive = activeTab === page.key;
-                      return (
-                        <motion.div
-                          key={page.key}
-                          initial={{ opacity: 0, x: -18 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.32, delay: 0.04 + (gi * 3 + i) * 0.03, ease: EASE }}
-                          style={{
-                            borderRadius: 12, marginBottom: 3,
-                            border: isActive ? `1px solid ${T.borderMed}` : "1px solid transparent",
-                            background: isActive ? `linear-gradient(135deg, rgba(110,15,45,0.08) 0%, rgba(200,155,71,0.06) 100%)` : "transparent",
-                          }}
-                        >
-                          <Button
-                            variant="tertiary"
-                            fullWidth
-                            onClick={() => { setTab(page.key); onClose(); }}
-                            className="!justify-start !gap-3 !py-[11px] !pl-[36px] !pr-3.5 !bg-transparent !border-none"
+
+                    {/* Sub-items tree container with left indentation & guide line */}
+                    <div style={{
+                      marginLeft: 18,
+                      paddingLeft: 14,
+                      borderLeft: `2px solid ${isGroupActive ? "rgba(110,15,45,0.18)" : "rgba(110,15,45,0.08)"}`,
+                      marginTop: 3,
+                    }}>
+                      {group.pages.map((page, i) => {
+                        const isActive = activeTab === page.key;
+                        return (
+                          <motion.div
+                            key={page.key}
+                            initial={{ opacity: 0, x: -18 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.32, delay: 0.04 + (gi * 3 + i) * 0.03, ease: EASE }}
+                            style={{
+                              borderRadius: 10, marginBottom: 3,
+                              border: isActive ? `1px solid ${T.borderMed}` : "1px solid transparent",
+                              background: isActive ? `linear-gradient(135deg, rgba(110,15,45,0.08) 0%, rgba(200,155,71,0.06) 100%)` : "transparent",
+                            }}
                           >
-                            <div style={{ flex: 1, textAlign: "left" }}>
-                              <div style={{ fontFamily: F.ui, fontWeight: isActive ? 600 : 400, fontSize: 14, color: isActive ? T.royalBurgundy : T.luxuryBrown, letterSpacing: "0.05px" }}>
-                                {page.label}
+                            <Button
+                              variant="tertiary"
+                              fullWidth
+                              onClick={() => { setTab(page.key); onClose(); }}
+                              className="!justify-start !gap-2.5 !py-[9px] !px-3 !bg-transparent !border-none"
+                            >
+                              <div style={{ flex: 1, textAlign: "left", display: "flex", alignItems: "center", gap: 8 }}>
+                                <span style={{
+                                  width: 5,
+                                  height: 5,
+                                  borderRadius: "50%",
+                                  background: isActive ? T.royalBurgundy : "rgba(105,99,94,0.40)",
+                                  flexShrink: 0,
+                                }} />
+                                <div style={{ fontFamily: F.ui, fontWeight: isActive ? 600 : 400, fontSize: 13.5, color: isActive ? T.royalBurgundy : T.luxuryBrown, letterSpacing: "0.05px" }}>
+                                  {page.label}
+                                </div>
                               </div>
-                            </div>
-                            {isActive && <ChevronRight size={13} color={T.royalBurgundy} />}
-                          </Button>
-                        </motion.div>
-                      );
-                    })}
+                              {isActive && <ChevronRight size={13} color={T.royalBurgundy} />}
+                            </Button>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
                   </div>
                 );
               })}

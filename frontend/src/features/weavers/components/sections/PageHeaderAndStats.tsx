@@ -33,6 +33,8 @@ export function PageHeader() {
   );
 }
 
+import { LuxuryStatsCard } from "../../../../shared/ui/LuxuryStatsCard";
+
 export function StatsStrip({ stats }: { stats: WeaverStatTile[] }) {
   const ICONS = [
     <Users key="users" size={22} color={T.warmCream} />,
@@ -42,6 +44,16 @@ export function StatsStrip({ stats }: { stats: WeaverStatTile[] }) {
     <IndianRupee key="indian-rupee" size={22} color={T.warmCream} />,
   ];
 
+  const statItems = stats.map((m, i) => ({
+    label: m.label,
+    value: m.value,
+    sub: m.sub,
+    icon: ICONS[i],
+    highlight: m.gold,
+    crimson: m.crimson,
+    goldVal: m.gold,
+  }));
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 50 }}
@@ -50,46 +62,7 @@ export function StatsStrip({ stats }: { stats: WeaverStatTile[] }) {
       className="px-4 md:px-7 xl:px-12 -mt-8 md:-mt-12 xl:-mt-[72px]"
       style={{ position: "relative", zIndex: 20 }}
     >
-      <div className="grid grid-cols-2 xl:flex" style={{ background: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)", borderRadius: 28, alignItems: "stretch", boxShadow: "0 30px 80px rgba(0,0,0,0.32), 0 0 0 1px rgba(200,155,71,0.16)", overflow: "hidden", minHeight: 140 }}>
-        {stats.map((m, i) => (
-          <motion.div
-            key={m.label}
-            initial={{ opacity: 0, y: 20, backgroundColor: "rgba(0,0,0,0)" }}
-            animate={{ opacity: 1, y: 0, backgroundColor: "rgba(0,0,0,0)" }}
-            transition={{ duration: 0.6, delay: 0.4 + i * 0.09 }}
-            whileHover={{ backgroundColor: m.gold ? "rgba(200,155,71,0.26)" : "rgba(245,232,208,0.04)" }}
-            style={{
-              flex: 1, padding: "28px 22px",
-              backgroundImage: m.gold ? "linear-gradient(135deg, rgba(200,155,71,0.20) 0%, rgba(200,155,71,0.07) 100%)" : "none",
-              borderRight: i < stats.length - 1 ? "1px solid rgba(245,232,208,0.07)" : "none",
-              display: "flex", alignItems: "center", gap: 14, position: "relative",
-              cursor: "pointer",
-            }}
-          >
-            <motion.div
-              whileHover={{ scale: 1.08, rotate: 3 }}
-              transition={{ duration: 0.25 }}
-              style={{ width: 50, height: 50, borderRadius: 15, flexShrink: 0, background: m.gold ? "rgba(200,155,71,0.16)" : "rgba(245,232,208,0.07)", border: `1px solid ${m.gold ? "rgba(200,155,71,0.38)" : "rgba(245,232,208,0.09)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}
-            >
-              {ICONS[i]}
-            </motion.div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 8, color: m.gold ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.90)" }}>
-                {m.label}
-              </div>
-              <div style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontSize: "clamp(28px, 8vw, 48px)", letterSpacing: "-0.01em", color: m.crimson ? "#F47B72" : m.gold ? T.goldLight : T.warmIvory, lineHeight: 1.1, marginBottom: 8, fontVariantNumeric: "tabular-nums" }}>
-                {m.value}
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: m.gold ? "rgba(231,201,131,0.95)" : "rgba(245,232,208,0.85)", letterSpacing: "0.1px" }}>
-                  {m.sub}
-                </span>
-              </div>
-            </div>
-            {m.gold && <div className="gold-bar-shimmer" style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(135deg,#C89B47,#E7C983)" }} />}
-          </motion.div>
-        ))}
-      </div>
+      <LuxuryStatsCard stats={statItems} />
     </motion.div>
   );
 }

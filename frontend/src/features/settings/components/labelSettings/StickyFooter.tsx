@@ -16,31 +16,19 @@ export function StickyFooter({
 }) {
   return (
     <div
-      className="px-4 md:px-7 xl:px-14"
-      style={{
-        position: "fixed",
-        bottom: 0,
-        left: 0,
-        right: 0,
-        zIndex: 50,
-        background: "white",
-        borderTop: "1px solid rgba(110,15,45,0.10)",
-        boxShadow: "0 -4px 20px rgba(44,24,16,0.07)",
-        paddingTop: 14,
-        paddingBottom: 14,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-      }}
+      className="px-4 sm:px-6 md:px-7 xl:px-14 flex flex-col sm:flex-row items-center justify-between gap-2.5 sm:gap-4 py-3 fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[rgba(110,15,45,0.10)] shadow-[0_-4px_20px_rgba(44,24,16,0.07)]"
     >
-      <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
+      <span
+        className="text-[11px] sm:text-12 truncate max-w-full text-center sm:text-left"
+        style={{ fontFamily: F.ui, color: T.taupe }}
+      >
         {lastSavedLabel}
       </span>
-      <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-        <Button variant="tertiary" size="sm" iconLeft={RotateCcw} onClick={onReset} disabled={isSaving}>
-          Reset to Default
+      <div className="flex items-center justify-end gap-2 sm:gap-3 w-full sm:w-auto">
+        <Button variant="tertiary" size="sm" iconLeft={RotateCcw} onClick={onReset} disabled={isSaving} className="flex-1 sm:flex-initial">
+          Reset
         </Button>
-        <Button variant="primary" size="md" iconLeft={Save} onClick={onSave} disabled={isSaving}>
+        <Button variant="primary" size="md" iconLeft={Save} onClick={onSave} disabled={isSaving} className="flex-1 sm:flex-initial">
           {isSaving ? "Saving…" : "Save Settings"}
         </Button>
       </div>

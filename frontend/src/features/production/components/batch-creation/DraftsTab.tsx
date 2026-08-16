@@ -79,21 +79,20 @@ export function DraftsTab({
             const assignmentText = assignedWeavers.length > 0
               ? `👤 Weaver: ${assignedWeavers.join(", ")}`
               : assignedLooms.length > 0
-              ? `🏭 Loom: ${assignedLooms.join(", ")}`
-              : "⚠️ Unassigned";
+              ? `🏭 Loom ${assignedLooms.join(", ")}`
+              : "Unassigned";
 
             return (
-              <div key={b.batchId} style={{ background: "#fff", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, borderLeft: `5px solid ${accentColor}`, padding: "20px 24px", boxShadow: "0 2px 10px rgba(74,6,27,0.05)", display: "flex", alignItems: "center", gap: 20 }}>
-                <div style={{ flex: 1 }}>
+              <div key={b.batchId}
+                className="p-4 sm:p-5 bg-white rounded-2xl border-[1.5px] border-[#E8DCC4] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full"
+                style={{ boxShadow: "0 2px 10px rgba(44,24,16,0.04)" }}>
+                <div className="w-full sm:flex-1">
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8, flexWrap: "wrap" }}>
-                    <EntityCode type="batch" value={b.batchId} />
-                    <span style={{ fontFamily: F.ui, fontSize: 12, background: chipBg, color: accentColor, borderRadius: 6, padding: "2px 9px", fontWeight: 600 }}>{chipLabel}</span>
-                    <span style={{ fontFamily: F.ui, fontSize: 12, background: "rgba(110,15,45,0.04)", color: T.darkBurgundy, border: `1px solid ${T.borderDef}`, borderRadius: 6, padding: "2px 9px", fontWeight: 600 }}>
-                      {assignmentText}
-                    </span>
-                    {b.dueDate && <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Due: {new Date(b.dueDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>}
+                    <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 16, color: T.luxuryBrown }}>{b.batchId}</span>
+                    <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: accentColor, background: chipBg, borderRadius: 6, padding: "2px 8px", letterSpacing: "0.5px" }}>{chipLabel}</span>
+                    <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{assignmentText}</span>
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 10 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 10, flexWrap: "wrap" }}>
                     <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{b.totalCount} saree{b.totalCount === 1 ? "" : "s"} total</span>
                     <span style={{ fontFamily: F.ui, fontSize: 13, color: T.green, fontWeight: 600 }}>{done} complete</span>
                     {b.totalCount - done > 0 && <span style={{ fontFamily: F.ui, fontSize: 13, color: T.amber, fontWeight: 600 }}>{b.totalCount - done} incomplete</span>}
@@ -103,13 +102,13 @@ export function DraftsTab({
                   </div>
                   <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>{pct}% complete · Updated {new Date(b.updatedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</div>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+                <div className="flex items-center gap-2.5 w-full sm:w-auto shrink-0 justify-end">
                   {isCompleted ? (
-                    <Button onClick={() => openDraft(b)} variant="secondary" size="md" className="shrink-0">
+                    <Button onClick={() => openDraft(b)} variant="secondary" size="md" className="flex-1 sm:flex-initial justify-center">
                       View <ArrowRight size={14} />
                     </Button>
                   ) : (
-                    <Button onClick={() => openDraft(b)} variant="primary" size="md" className="shrink-0 bg-[linear-gradient(135deg,#6E0F2D_0%,#4A061B_100%)] hover:opacity-90">
+                    <Button onClick={() => openDraft(b)} variant="primary" size="md" className="flex-1 sm:flex-initial justify-center bg-[linear-gradient(135deg,#6E0F2D_0%,#4A061B_100%)] hover:opacity-90">
                       {isDraft ? "Continue Editing" : "Open & Edit"} <ArrowRight size={14} />
                     </Button>
                   )}

@@ -13,6 +13,7 @@ import {
 
 import { T, F, EASE } from "./theme";
 import { SectionCard } from "./primitives";
+import { LuxuryStatsCard } from "../../../shared/ui/LuxuryStatsCard";
 import { fmtAmt, fmtFull, initials, cardColor } from "./utils";
 import { Button, IconButton, SearchInput } from "../../../shared/ui/primitives";
 import { Money } from "../../../shared/ui/domain";
@@ -353,14 +354,14 @@ export function FirmsPage() {
     <div style={{ minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui }}>
 
       {/* ── PAGE HEADER ───────────────────────────────────────────────────── */}
-      <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", display: "flex", alignItems: "center" }}>
-        <div className="pl-4 md:pl-7 xl:pl-12 w-full xl:w-auto" style={{ position: "relative", zIndex: 2, paddingTop: 48, paddingBottom: 110, flex: "0 0 100%", maxWidth: "100%" }}>
-          <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase" as const, marginBottom: 12 }}>SINCE 1999 · FIRMS &amp; VENDORS</div>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" as const, marginBottom: 10 }}>
-            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(32px, 8vw, 56px)", fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Firms</h1>
-            <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(22px, 6vw, 36px)", fontStyle: "italic", color: T.antiqueGold, fontWeight: 400 }}>&amp; Vendor Management</span>
+      <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", minHeight: 340, display: "flex", alignItems: "center" }}>
+        <div className="px-4 md:px-7 xl:px-12 w-full" style={{ position: "relative", zIndex: 2, paddingTop: 48, paddingBottom: 110 }}>
+          <div style={{ fontFamily: F.ui, fontSize: "clamp(11px, 1.4vw, 13px)", color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase" as const, marginBottom: 10 }}>SINCE 1999 · FIRMS &amp; VENDORS</div>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" as const, marginBottom: 8 }}>
+            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(32px, 6vw, 56px)", fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Firms</h1>
+            <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(22px, 5vw, 36px)", fontStyle: "italic", color: T.antiqueGold, fontWeight: 400 }}>&amp; Vendor Management</span>
           </div>
-          <p className="max-w-[600px]" style={{ fontFamily: F.ui, fontSize: "clamp(15px, 3.5vw, 18px)", fontWeight: 400, color: "rgba(255,253,249,0.70)", margin: "0 0 20px", lineHeight: 1.6 }}>
+          <p className="max-w-[600px]" style={{ fontFamily: F.ui, fontSize: "clamp(14px, 2.2vw, 16px)", fontWeight: 400, color: "rgba(255,253,249,0.70)", margin: 0, lineHeight: 1.6 }}>
             Manage all firms used for material purchases, weaver payments, and customer invoicing. Track income, expenses, and net balance per firm.
           </p>
         </div>
@@ -370,64 +371,16 @@ export function FirmsPage() {
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.2 }}
-        className="px-4 md:px-7 xl:px-12 -mt-8 md:-mt-12 xl:-mt-[72px]"
+        transition={{ duration: 0.8, delay: 0.2, ease: EASE }}
+        className="px-4 md:px-7 xl:px-14 -mt-8 md:-mt-12 xl:-mt-[72px]"
         style={{ position: "relative", zIndex: 20 }}
       >
-        <div className="grid grid-cols-2 xl:flex" style={{ background: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)", borderRadius: 28, alignItems: "stretch", boxShadow: "0 30px 80px rgba(0,0,0,0.32), 0 0 0 1px rgba(200,155,71,0.16)", overflow: "hidden", minHeight: 140 }}>
-          {[
-            { label: "REGISTERED FIRMS",   val: String(firms.length),    sub: "Active vendor accounts",         hi: false, Icon: Building2 },
-            { label: "TOTAL PURCHASES",    val: fmtAmt(totalPurchase),   sub: "Across all registered firms",    hi: true,  Icon: IndianRupee },
-            { label: "FIRMS WITH BALANCE", val: String(firmsWithBalanceCount), sub: "Active purchase records", hi: false, Icon: CreditCard },
-            { label: "AVG PURCHASE",       val: firms.length ? fmtAmt(totalPurchase / firms.length) : <Money value={rupees(0)} />, sub: "Per registered firm", hi: false, Icon: TrendingUp },
-          ].map((m, i) => (
-            <motion.div
-              key={m.label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.6 + i * 0.09, ease: EASE }}
-              whileHover={{ backgroundColor: m.hi ? "rgba(200,155,71,0.26)" : "rgba(245,232,208,0.04)" }}
-              style={{
-                flex: 1, padding: "28px 22px",
-                backgroundImage: m.hi ? "linear-gradient(135deg, rgba(200,155,71,0.20) 0%, rgba(200,155,71,0.07) 100%)" : "none",
-                backgroundColor: "rgba(0,0,0,0)",
-                borderRight: i < 3 ? "1px solid rgba(245,232,208,0.07)" : "none",
-                display: "flex", alignItems: "center", gap: 14, position: "relative",
-                cursor: "pointer",
-              }}
-            >
-              <motion.div
-                whileHover={{ scale: 1.08, rotate: 3 }}
-                transition={{ duration: 0.25 }}
-                style={{ width: 50, height: 50, borderRadius: 15, flexShrink: 0, background: m.hi ? "rgba(200,155,71,0.16)" : "rgba(245,232,208,0.07)", border: `1px solid ${m.hi ? "rgba(200,155,71,0.38)" : "rgba(245,232,208,0.09)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}
-              >
-                <m.Icon size={22} color={m.hi ? "rgba(231,201,131,0.95)" : "rgba(245,232,208,0.90)"} />
-              </motion.div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 8, color: m.hi ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.90)" }}>
-                  {m.label}
-                </div>
-                <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: "clamp(28px, 8vw, 48px)", color: m.hi ? T.goldLight : "#FFFDF9", lineHeight: 1.0, marginBottom: 8, fontVariantNumeric: "tabular-nums" as const }}>
-                  {m.val}
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: m.hi ? "rgba(231,201,131,0.95)" : "rgba(245,232,208,0.85)", letterSpacing: "0.1px" }}>
-                    {m.sub}
-                  </span>
-                  {m.hi && (
-                    <motion.div
-                      whileHover={{ scale: 1.15 }}
-                      style={{ width: 20, height: 20, borderRadius: "50%", border: "1px solid rgba(200,155,71,0.38)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", background: "rgba(200,155,71,0.10)" }}
-                    >
-                      <ChevronRight size={10} color={T.goldLight} />
-                    </motion.div>
-                  )}
-                </div>
-              </div>
-              {m.hi && <div className="gold-bar-shimmer" style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2 }} />}
-            </motion.div>
-          ))}
-        </div>
+        <LuxuryStatsCard stats={[
+          { label: "REGISTERED FIRMS", value: String(firms.length), sub: "Active vendor accounts", icon: <Building2 size={20} color="rgba(245,232,208,0.90)" />, highlight: false },
+          { label: "TOTAL PURCHASES", value: fmtAmt(totalPurchase), sub: "Across all registered firms", icon: <IndianRupee size={20} color="rgba(231,201,131,0.95)" />, highlight: true },
+          { label: "FIRMS WITH BALANCE", value: String(firmsWithBalanceCount), sub: "Active purchase records", icon: <CreditCard size={20} color="rgba(245,232,208,0.90)" />, highlight: false },
+          { label: "AVG PURCHASE", value: firms.length ? fmtAmt(totalPurchase / firms.length) : <Money value={rupees(0)} />, sub: "Per registered firm", icon: <TrendingUp size={20} color="rgba(245,232,208,0.90)" />, highlight: false },
+        ]} />
       </motion.div>
 
       {/* Business Overview */}

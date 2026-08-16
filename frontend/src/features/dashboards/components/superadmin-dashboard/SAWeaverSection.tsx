@@ -18,9 +18,9 @@ export function SAWeaverSection({ onNavigate }: SAWeaverSectionProps) {
     return (
       <section className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 48, paddingBottom: 40, background: T.silkCream }}>
         <SectionHeader title="Active Weavers" actionText="View All Weavers →" onAction={() => onNavigate("AllWeavers")} />
-        <div style={{ display: "flex", gap: 18 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-5 xl:gap-6">
           {["sa-w-sk1", "sa-w-sk2", "sa-w-sk3", "sa-w-sk4"].map((skKey) => (
-            <div key={skKey} style={{ flex: 1, height: 360, borderRadius: 24, background: "rgba(110,15,45,0.05)", border: `1px solid rgba(110,15,45,0.10)` }} />
+            <div key={skKey} style={{ height: 360, borderRadius: 24, background: "rgba(110,15,45,0.05)", border: `1px solid rgba(110,15,45,0.10)` }} />
           ))}
         </div>
       </section>
@@ -41,7 +41,7 @@ export function SAWeaverSection({ onNavigate }: SAWeaverSectionProps) {
   return (
     <section className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 48, paddingBottom: 40, background: T.silkCream }}>
       <SectionHeader title="Active Weavers" actionText="View All Weavers →" onAction={() => onNavigate("AllWeavers")} />
-      <div style={{ display: "flex", gap: 18, alignItems: "stretch" }}>
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-5 xl:gap-6">
         {weavers.map((w, i) => (
           <motion.div
             key={w.id}

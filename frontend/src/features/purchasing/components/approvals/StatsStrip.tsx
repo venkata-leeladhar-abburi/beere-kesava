@@ -2,6 +2,9 @@ import React from "react";
 import { T, F } from "./tokens";
 import { formatMoney, rupees } from "@/lib/domain/money";
 
+import { LuxuryStatsCard } from "../../../../shared/ui/LuxuryStatsCard";
+import { CheckCircle2, ShoppingBag, Send, ShieldAlert, TrendingUp } from "lucide-react";
+
 // ─── 2. STATS STRIP ─────────────────────────────────────────────────────────
 export function StatsStrip({
   totalPending,
@@ -18,76 +21,17 @@ export function StatsStrip({
   warpCount: number;
   rateCount: number;
 }) {
+  const statItems = [
+    { icon: <CheckCircle2 size={22} color="rgba(245,232,208,0.90)" />, label: "TOTAL PENDING", value: String(totalPending), sub: "Require your action today", highlight: false },
+    { icon: <ShoppingBag size={22} color="rgba(245,232,208,0.90)" />, label: "PURCHASE ORDERS", value: String(poCount), sub: "From admin · Awaiting approval", highlight: false },
+    { icon: <Send size={22} color={T.goldLight} />, label: "EXTERNAL PURCHASES", value: String(externalCount), sub: `${formatMoney(rupees(externalTotal))} to approve`, highlight: true, goldVal: true },
+    { icon: <ShieldAlert size={22} color="rgba(245,232,208,0.90)" />, label: "WARP REQUESTS", value: String(warpCount), sub: "Pending review", highlight: false },
+    { icon: <TrendingUp size={22} color="#F47B72" />, label: "RATE CHANGES", value: String(rateCount), sub: "⚠ From admin · Pending", highlight: false, crimson: rateCount > 0 },
+  ];
+
   return (
-    <div style={{
-      background: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)",
-      borderRadius: 24,
-      zIndex: 20,
-      position: "relative",
-      boxShadow: "0 8px 32px rgba(44,9,19,0.32)",
-    }} className="grid grid-cols-1 md:grid-cols-5 mx-4 md:mx-7 xl:mx-14 px-4 md:px-7 xl:px-12 -mt-6 md:-mt-8 xl:-mt-[40px]">
-      {/* Col 1 */}
-      <div style={{ padding: "28px 0", borderRight: "1px solid rgba(255,255,255,0.08)" }}>
-        <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(255,255,255,0.45)", letterSpacing: 2, marginBottom: 8 }}>
-          TOTAL PENDING
-        </div>
-        <div style={{ fontFamily: F.display, fontSize: 38, fontWeight: 700, color: "#FFF", lineHeight: 1 }}>
-          {totalPending}
-        </div>
-        <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.50)", marginTop: 6 }}>
-          Require your action today
-        </div>
-      </div>
-
-      {/* Col 2 */}
-      <div style={{ padding: "28px 0 28px 32px", borderRight: "1px solid rgba(255,255,255,0.08)" }}>
-        <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(255,255,255,0.45)", letterSpacing: 2, marginBottom: 8 }}>
-          PURCHASE ORDERS
-        </div>
-        <div style={{ fontFamily: F.display, fontSize: 38, fontWeight: 700, color: "#FFF", lineHeight: 1 }}>{poCount}</div>
-        <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.50)", marginTop: 6 }}>
-          From admin · Awaiting approval
-        </div>
-      </div>
-
-      {/* Col — external purchase requests */}
-      <div style={{ padding: "28px 0 28px 32px", borderRight: "1px solid rgba(255,255,255,0.08)" }}>
-        <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(255,255,255,0.45)", letterSpacing: 2, marginBottom: 8 }}>
-          EXTERNAL PURCHASES
-        </div>
-        <div style={{ fontFamily: F.display, fontSize: 38, fontWeight: 700, color: "#FFF", lineHeight: 1 }}>{externalCount}</div>
-        <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.50)", marginTop: 6 }}>
-          {formatMoney(rupees(externalTotal))} to approve
-        </div>
-      </div>
-
-      {/* Col 3 — GOLD highlight */}
-      <div style={{
-        padding: "28px 0 28px 32px",
-        borderRight: "1px solid rgba(255,255,255,0.08)",
-        background: "rgba(200,155,71,0.12)",
-        borderTop: "3px solid " + T.antiqueGold,
-        position: "relative",
-      }}>
-        <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.goldLight, letterSpacing: 2, marginBottom: 8 }}>
-          WARP REQUESTS
-        </div>
-        <div style={{ fontFamily: F.display, fontSize: 38, fontWeight: 700, color: T.antiqueGold, lineHeight: 1 }}>{warpCount}</div>
-        <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(231,201,131,0.70)", marginTop: 6 }}>
-          Pending review
-        </div>
-      </div>
-
-      {/* Col 4 */}
-      <div style={{ padding: "28px 0 28px 32px" }}>
-        <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(255,255,255,0.45)", letterSpacing: 2, marginBottom: 8 }}>
-          RATE CHANGES
-        </div>
-        <div style={{ fontFamily: F.display, fontSize: 38, fontWeight: 700, color: T.crimson, lineHeight: 1 }}>{rateCount}</div>
-        <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.50)", marginTop: 6 }}>
-          ⚠ From admin · Pending
-        </div>
-      </div>
+    <div className="mx-4 md:mx-7 xl:mx-14 -mt-6 md:-mt-8 xl:-mt-[40px]" style={{ zIndex: 20, position: "relative" }}>
+      <LuxuryStatsCard stats={statItems} />
     </div>
   );
 }

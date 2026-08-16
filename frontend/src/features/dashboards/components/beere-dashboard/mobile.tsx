@@ -16,6 +16,7 @@ import { useDashboardMetrics } from './hooks/useDashboardMetrics';
 import { useDashboardAnalytics } from './hooks/useDashboardAnalytics';
 
 import { SareesProduced, FeaturedProduct } from './components/ThreeCol';
+import { LuxuryStatsCard, StatItem } from '@/shared/ui/LuxuryStatsCard';
 
 /** Icon set in the same order as the metrics array from useDashboardMetrics. */
 const METRIC_ICONS = [
@@ -142,44 +143,20 @@ function MobileHero() {
 // ═══════════════════════════════════════════════════════════════════════════════
 function MobileMetrics() {
   const { metrics, isLoading, isError } = useDashboardMetrics();
-  const displayMetrics = metrics.map((m, i) => ({ ...m, val: isError ? "Error" : isLoading ? "—" : m.val, sub: isError ? "Failed to load" : m.sub, ico: METRIC_ICONS[i] }));
-  // Feature the flagged metric, else the last one. Selecting by INDEX and
-  // excluding that same index is what keeps the featured band distinct — the
-  // previous `find(hi) ?? [0]` fell back to tile #1 whenever nothing was
-  // flagged, rendering "Active Weavers" twice and dropping "Dispatched"
-  // entirely.
-  const hiIdx = displayMetrics.findIndex(m => m.hi) >= 0
-    ? displayMetrics.findIndex(m => m.hi)
-    : displayMetrics.length - 1;
-  const highlighted = displayMetrics[hiIdx];
-  const normal = displayMetrics.filter((_, i) => i !== hiIdx);
-  const top2 = normal.slice(0, 2);
-  const bot2 = normal.slice(2, 4);
 
-  const SmallCard = ({ m, delay = 0 }: { m: typeof displayMetrics[0]; delay?: number }) => {
-    const ref = useRef<HTMLDivElement>(null);
-    const inView = useInView(ref, { once: true });
-    return (
-      <motion.div
-        ref={ref}
-        initial={{ opacity: 0, y: 18 }}
-        animate={inView ? { opacity: 1, y: 0 } : undefined}
-        transition={{ duration: 0.55, delay, ease: EASE }}
-        style={{ flex: 1, minWidth: 0, padding: "20px 16px", display: "flex", flexDirection: "column", gap: 8 }}
-      >
-        <div style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(245,232,208,0.10)", border: "1px solid rgba(245,232,208,0.14)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          {m.ico}
-        </div>
-        {/* Numeral goes fluid so a 4-figure value can't push the tile wider
-            than its half of the card at 320px. */}
-        <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: "clamp(30px, 9vw, 38px)", color: T.warmCream, lineHeight: 1.0, ...NUM }}>
-          <AnimatedNumber raw={m.val} />
-        </div>
-        <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 11, color: "rgba(245,232,208,0.92)", letterSpacing: "1.2px", textTransform: "uppercase", lineHeight: 1.35 }}>{m.label}</div>
-        <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: "rgba(245,232,208,0.72)", letterSpacing: "0.05px", lineHeight: 1.4 }}>{m.sub}</div>
-      </motion.div>
-    );
-  };
+  const statItems: StatItem[] = metrics.map((m, i) => ({
+    label: m.label,
+    value: isError ? (
+      <span style={{ fontSize: 22, opacity: 0.85, color: "#e57373" }}>Error</span>
+    ) : isLoading ? (
+      <span style={{ fontSize: 28, opacity: 0.45 }}>—</span>
+    ) : (
+      <AnimatedNumber raw={m.val} />
+    ),
+    sub: isError ? "Failed to load" : m.sub,
+    icon: METRIC_ICONS[i],
+    highlight: m.hi,
+  }));
 
   return (
     <motion.div
@@ -188,53 +165,7 @@ function MobileMetrics() {
       transition={{ duration: 0.7, delay: 0.35, ease: EASE }}
       style={{ padding: "0 16px 16px", marginTop: -28, position: "relative", zIndex: 20 }}
     >
-      <div style={{ background: G.card, borderRadius: 22, overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.32), 0 0 0 1px rgba(200,155,71,0.13)" }}>
-        <div style={{ display: "flex", borderBottom: "1px solid rgba(245,232,208,0.12)" }}>
-          <SmallCard m={top2[0]} delay={0.5} />
-          <div style={{ width: 1, background: "rgba(245,232,208,0.12)" }} />
-          <SmallCard m={top2[1]} delay={0.6} />
-        </div>
-        {/* Highlighted Payments */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.7 }}
-          style={{ padding: "20px 18px 18px", background: "linear-gradient(135deg, rgba(200,155,71,0.20) 0%, rgba(200,155,71,0.08) 100%)", borderBottom: "1px solid rgba(245,232,208,0.10)", position: "relative" }}
-        >
-          <div className="gold-bar-shimmer" style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2 }} />
-          {/* Two rows (icon+label / value+sub) rather than three cramped
-              columns — the value and its sub-label now share a baseline and
-              the chevron has a fixed home on the right. */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{ width: 44, height: 44, borderRadius: 13, background: "rgba(200,155,71,0.18)", border: "1px solid rgba(200,155,71,0.42)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                {highlighted.ico}
-              </div>
-              <div style={{ flex: 1, minWidth: 0, fontFamily: F.ui, fontWeight: 700, fontSize: 11, color: "rgba(200,155,71,1)", letterSpacing: "1.4px", textTransform: "uppercase", lineHeight: 1.35 }}>
-                {highlighted.label}
-              </div>
-              <motion.div
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.94 }}
-                style={{ width: 32, height: 32, borderRadius: "50%", border: "1px solid rgba(200,155,71,0.38)", background: "rgba(200,155,71,0.10)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}
-              >
-                <ChevronRight size={14} color={T.goldLight} />
-              </motion.div>
-            </div>
-            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-              <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: "clamp(34px, 11vw, 44px)", color: T.goldLight, lineHeight: 1.0, ...NUM }}>
-                <AnimatedNumber raw={highlighted.val} />
-              </div>
-              <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: "rgba(231,201,131,0.95)", letterSpacing: "0.05px" }}>{highlighted.sub}</div>
-            </div>
-          </div>
-        </motion.div>
-        <div style={{ display: "flex", borderTop: "1px solid rgba(245,232,208,0.12)" }}>
-          <SmallCard m={bot2[0]} delay={0.8} />
-          <div style={{ width: 1, background: "rgba(245,232,208,0.12)" }} />
-          <SmallCard m={bot2[1]} delay={0.9} />
-        </div>
-      </div>
+      <LuxuryStatsCard stats={statItems} />
     </motion.div>
   );
 }
