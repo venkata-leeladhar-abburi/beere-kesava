@@ -7,7 +7,10 @@ import type { InactiveCustomerRow } from "./sections/InactiveCustomersSection";
 export interface WholesaleCustomerRow {
   id: string;
   name: string;
+  // 2-letter avatar initials (e.g. "SR") — NOT a human-facing id. See
+  // `displayCode` for the real backend-generated sequential id (WHL-001).
   code: string;
+  displayCode: string;
   city: string;
   status: string;
   orders: number;

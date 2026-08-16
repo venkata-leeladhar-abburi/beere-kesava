@@ -222,7 +222,7 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
         </motion.div>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
           <StatusPill status={vendor.status} />
-          <EntityCode type="vendor" value={vendor.id} />
+          <EntityCode type="vendor" value={vendor.code || vendor.id} />
           {onDelete && (
             <Button
               onClick={async () => {

@@ -5,6 +5,7 @@ import { ListPartyQueryDto } from "../common/dto/list-party-query.dto";
 import { UpdatePartyDto } from "../common/dto/update-party.dto";
 import { PaginatedResult } from "../common/pagination";
 import { Prisma } from "../generated/prisma/client";
+import { IdGeneratorService } from "../id-generator/id-generator.service";
 import { PrismaService } from "../prisma/prisma.service";
 
 @Injectable()
@@ -12,10 +13,12 @@ export class SuppliersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditLog: AuditLogService,
+    private readonly idGenerator: IdGeneratorService,
   ) {}
 
-  create(dto: CreatePartyDto) {
-    return this.prisma.supplier.create({ data: dto });
+  async create(dto: CreatePartyDto) {
+    const code = await this.idGenerator.nextFormatted("SUPPLIER");
+    return this.prisma.supplier.create({ data: { ...dto, code } });
   }
 
   async findAll(

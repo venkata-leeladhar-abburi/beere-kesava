@@ -34,7 +34,7 @@ export function VendorDirectorySection({ vendors, onSelectVendor, onAddClick }: 
 
   const filtered = vendors.filter(v => {
     const q = search.toLowerCase();
-    const mSearch = !q || v.name.toLowerCase().includes(q) || v.city.toLowerCase().includes(q) || v.id.toLowerCase().includes(q) || v.contactName.toLowerCase().includes(q);
+    const mSearch = !q || v.name.toLowerCase().includes(q) || v.city.toLowerCase().includes(q) || (v.code || v.id).toLowerCase().includes(q) || v.contactName.toLowerCase().includes(q);
     const mType = typeFilter === "All Types" || v.type.includes(typeFilter);
     const mStatus = statusFilter === "All" || v.status === statusFilter.toLowerCase();
     const vendorRating = v.rating || 3;
@@ -107,7 +107,7 @@ export function VendorDirectorySection({ vendors, onSelectVendor, onAddClick }: 
           {pag.pageItems.map((v, i) => (
             <FadeUp key={v.id} delay={i * 0.06}>
               <VendorCard
-                code={v.id}
+                code={v.code || v.id}
                 name={v.name}
                 service={v.type}
                 jobs={v.totalOrders}

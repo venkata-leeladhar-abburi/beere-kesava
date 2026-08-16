@@ -90,6 +90,7 @@ export interface PurchaseRequest {
 
 export interface Supplier {
   id: string;
+  code?: string;
   name: string;
   initials: string;
   contactName: string;

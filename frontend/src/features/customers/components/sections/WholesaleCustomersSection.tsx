@@ -66,7 +66,7 @@ export function WholesaleCustomersSection({
   const [error, setError] = useState<string | null>(null);
 
   const listColumns: ColumnDef<WholesaleCustomer>[] = [
-    { id: "code", header: "Code", accessor: w => w.id, priority: 3, cell: (_v, w) => <span style={{ fontFamily: "var(--font-mono)", color: T.royalBurgundy, fontSize: 13 }}>{w.id}</span> },
+    { id: "code", header: "Code", accessor: w => w.displayCode || w.id, priority: 3, cell: (_v, w) => <span style={{ fontFamily: "var(--font-mono)", color: T.royalBurgundy, fontSize: 13 }}>{w.displayCode || w.id}</span> },
     { id: "name", header: "Business Name", accessor: w => w.name, priority: 1, cell: (_v, w) => <span style={{ fontWeight: 600, color: T.luxuryBrown }}>{w.name}</span> },
     { id: "city", header: "City", accessor: w => w.city, priority: 3, cell: (_v, w) => <span style={{ color: T.taupe }}>{w.city}</span> },
     { id: "orders", header: "Orders", accessor: w => w.orders, cell: (_v, w) => <span style={{ color: T.luxuryBrown }}>{w.orders}</span> },
@@ -79,7 +79,7 @@ export function WholesaleCustomersSection({
   ];
 
   const tableColumns: ColumnDef<WholesaleCustomer>[] = [
-    { id: "code", header: "Code", accessor: w => w.id, priority: 3, cell: (_v, w) => <span style={{ fontFamily: "var(--font-mono)", color: T.royalBurgundy, fontSize: 13 }}>{w.id}</span> },
+    { id: "code", header: "Code", accessor: w => w.displayCode || w.id, priority: 3, cell: (_v, w) => <span style={{ fontFamily: "var(--font-mono)", color: T.royalBurgundy, fontSize: 13 }}>{w.displayCode || w.id}</span> },
     { id: "name", header: "Business Name", accessor: w => w.name, priority: 1, cell: (_v, w) => <span style={{ fontWeight: 600, color: T.luxuryBrown }}>{w.name}</span> },
     { id: "city", header: "City", accessor: w => w.city, priority: 3, cell: (_v, w) => <span style={{ color: T.taupe }}>{w.city}</span> },
     { id: "totalOrders", header: "Total Orders", accessor: w => w.orders, cell: (_v, w) => <span style={{ color: T.luxuryBrown }}>{w.orders}</span> },
@@ -151,7 +151,7 @@ export function WholesaleCustomersSection({
                 <h3 style={{ fontFamily: F.display, fontSize: 20, color: T.luxuryBrown, margin: "0 0 6px 0" }}>Add a New Wholesale Customer</h3>
                 <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, margin: 0 }}>Fill in the business and contact details. Payment terms can be set here and changed later.</p>
               </div>
-              <div style={{ padding: "4px 12px", background: T.silkCream, borderRadius: 20, fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>WHL-049 will be assigned</div>
+              <div style={{ padding: "4px 12px", background: T.silkCream, borderRadius: 20, fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>A WHL-### id will be assigned</div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 32 }}>
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -283,7 +283,7 @@ export function WholesaleCustomersSection({
                       {w.code}
                     </div>
                     <div>
-                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy, fontWeight: 700, letterSpacing: "1px" }}>{w.id}</div>
+                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy, fontWeight: 700, letterSpacing: "1px" }}>{w.displayCode || w.id}</div>
                       <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>EST. {2020 + (i % 5)}</div>
                     </div>
                   </div>

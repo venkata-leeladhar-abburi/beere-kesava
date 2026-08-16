@@ -1,7 +1,8 @@
 import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
-import { Prisma } from "../generated/prisma/client";
+import { CustomerType, Prisma } from "../generated/prisma/client";
+import { IdGeneratorService } from "../id-generator/id-generator.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateCustomerDto } from "./dto/create-customer.dto";
 import { ListCustomersQueryDto } from "./dto/list-customers-query.dto";
@@ -12,11 +13,13 @@ export class CustomersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditLog: AuditLogService,
+    private readonly idGenerator: IdGeneratorService,
   ) {}
 
   async create(dto: CreateCustomerDto) {
     const { actorId, ...data } = dto;
-    const customer = await this.prisma.customer.create({ data });
+    const code = await this.idGenerator.nextFormatted(data.type === CustomerType.WHOLESALE ? "WHL" : "CUST");
+    const customer = await this.prisma.customer.create({ data: { ...data, code } });
 
     await this.auditLog.recordAction({
       actorId,

@@ -4,6 +4,7 @@ export type BackendCustomerType = "WHOLESALE" | "RETAIL";
 
 export interface BackendCustomer {
   id: string;
+  code: string | null;
   name: string;
   contactName: string | null;
   city: string | null;

@@ -66,4 +66,8 @@ export class UpdatePartyDto {
   @IsOptional()
   @IsEnum(PartyStatus)
   status?: PartyStatus;
+
+  @IsOptional()
+  @IsString()
+  notes?: string;
 }

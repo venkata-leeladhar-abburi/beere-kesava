@@ -927,6 +927,10 @@ model ReturnRecord {
 
 model Supplier {
   id          String      @id @default(uuid())
+  // Human-facing sequential id (e.g. "SUPPLIER-001") — generated via
+  // IdGeneratorService.nextFormatted("SUPPLIER"), distinct from `id` (UUID),
+  // which stays the real FK target everywhere else.
+  code        String?     @unique
   name        String
   initials    String?
   contactName String?
@@ -940,6 +944,7 @@ model Supplier {
   terms       String?
   bankName    String?
   accountNo   String?
+  notes       String?
   status      PartyStatus @default(ACTIVE)
   rating      Int?
   createdAt   DateTime    @default(now())
@@ -965,6 +970,10 @@ model SupplierPayment {
 
 model Vendor {
   id          String      @id @default(uuid())
+  // Human-facing sequential id (e.g. "VENDOR-001") — generated via
+  // IdGeneratorService.nextFormatted("VENDOR"), distinct from `id` (UUID),
+  // which stays the real FK target everywhere else.
+  code        String?     @unique
   name        String
   initials    String?
   contactName String?
@@ -978,6 +987,7 @@ model Vendor {
   terms       String?
   bankName    String?
   accountNo   String?
+  notes       String?
   status      PartyStatus @default(ACTIVE)
   rating      Int?
   createdAt   DateTime    @default(now())
@@ -1254,6 +1264,10 @@ model InvoicePayment {
 
 model Customer {
   id              String       @id @default(uuid())
+  // Human-facing sequential id (e.g. "CUST-001" retail, "WHL-001" wholesale)
+  // — generated via IdGeneratorService.nextFormatted, distinct from `id`
+  // (UUID), which stays the real FK target everywhere else.
+  code            String?      @unique
   name            String
   contactName     String?
   city            String?

@@ -187,7 +187,7 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
             Raise Purchase Request
           </Button>
           <StatusPill status={supplier.status} />
-          <EntityCode type="supplier" value={supplier.id} />
+          <EntityCode type="supplier" value={supplier.code || supplier.id} />
           <Button
             variant="tertiary" size="md" iconLeft={Trash2}
             onClick={async () => {

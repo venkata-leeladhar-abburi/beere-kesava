@@ -78,7 +78,7 @@ export function SupplierDirectorySection({
             return (
               <FadeUp key={s.id} delay={i * 0.06}>
                 <SupplierCard
-                  code={s.id}
+                  code={s.code || s.id}
                   name={s.name}
                   city={s.city}
                   purchaseOrders={stats.purchases.length}

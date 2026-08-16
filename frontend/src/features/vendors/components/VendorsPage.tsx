@@ -19,6 +19,7 @@ import { ApiError } from "../../../shared/api/client";
 function toVendor(v: BackendVendor): Vendor {
   return {
     id: v.id,
+    code: v.code ?? undefined,
     name: v.name,
     initials: v.initials ?? v.name.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase(),
     contactName: v.contactName ?? "",
@@ -32,6 +33,7 @@ function toVendor(v: BackendVendor): Vendor {
     terms: v.terms ?? "",
     bankName: v.bankName ?? undefined,
     accountNo: v.accountNo ?? undefined,
+    notes: v.notes ?? undefined,
     status: v.status === "ACTIVE" ? "active" : v.status === "INACTIVE" ? "inactive" : "overdue",
     totalOrders: 0,
     totalSpend: "0",
@@ -60,7 +62,7 @@ export function VendorsPage() {
       name: v.name, contactName: v.contactName, phone: v.phone, whatsapp: v.whatsapp,
       city: v.city, state: v.state, address: v.address, gstCode: v.gstCode,
       specialty: v.type, terms: v.terms, bankName: v.bankName, accountNo: v.accountNo,
-      rating: v.rating,
+      notes: v.notes, rating: v.rating,
     });
     setVendors(p => [toVendor(created), ...p]);
     setShowAddForm(false);
@@ -71,7 +73,7 @@ export function VendorsPage() {
       name: v.name, contactName: v.contactName, phone: v.phone, whatsapp: v.whatsapp,
       city: v.city, state: v.state, address: v.address, gstCode: v.gstCode,
       specialty: v.type, terms: v.terms, bankName: v.bankName, accountNo: v.accountNo,
-      rating: v.rating, status: v.status.toUpperCase(),
+      notes: v.notes, rating: v.rating, status: v.status.toUpperCase(),
     });
     const merged = { ...toVendor(updated), totalOrders: v.totalOrders, totalSpend: v.totalSpend, outstanding: v.outstanding, lastOrder: v.lastOrder };
     setVendors(prev => prev.map(old => old.id === merged.id ? merged : old));

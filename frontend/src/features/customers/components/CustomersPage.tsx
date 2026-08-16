@@ -32,9 +32,8 @@ export function CustomersPage() {
   const location = useLocation();
   const [wholesaleView, setWholesaleView] = useState<"card"|"list"|"table">("card");
   const [retailView, setRetailView] = useState<"card"|"list">("card");
-  // Command palette "New Customer" action deep-links here with ?new=1 to open
-  // the add-wholesale-customer form straight away.
-  const [showAddWholesale, setShowAddWholesale] = useState(() => new URLSearchParams(location.search).get("new") === "1");  const { customers = [], updateCustomer } = useCustomers() ?? {};
+  const [showAddWholesale, setShowAddWholesale] = useState(() => new URLSearchParams(location.search).get("new") === "1");
+  const { customers = [], updateCustomer } = useCustomers();
   const { bulkOrders } = useBulkOrders();
 
   const wholesaleList = React.useMemo(() => {
@@ -57,6 +56,7 @@ export function CustomersPage() {
         id: c.id,
         name: c.name,
         code: c.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase(),
+        displayCode: c.code || "",
         city: c.city || "—",
         status: (outstanding > 0 ? "overdue" : "clear") as "overdue" | "clear",
         orders: custOrders.length,

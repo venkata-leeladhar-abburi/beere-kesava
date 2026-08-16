@@ -26,6 +26,7 @@ import { rupees, formatMoney } from "@/lib/domain/money";
 function toSupplier(s: BackendSupplier): Supplier {
   return {
     id: s.id,
+    code: s.code ?? undefined,
     name: s.name,
     initials: s.initials ?? initialsOf(s.name),
     contactName: s.contactName ?? "",
@@ -39,6 +40,7 @@ function toSupplier(s: BackendSupplier): Supplier {
     terms: s.terms ?? "",
     bankName: s.bankName ?? undefined,
     accountNo: s.accountNo ?? undefined,
+    notes: s.notes ?? undefined,
     status: s.status === "ACTIVE" ? "active" : s.status === "INACTIVE" ? "inactive" : "overdue",
     rating: s.rating ?? 0,
   };
@@ -279,7 +281,7 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
         name: s.name, contactName: s.contactName, phone: s.phone, whatsapp: s.whatsapp,
         city: s.city, state: s.state, address: s.address, gstCode: s.gstCode,
         specialty: s.specialty, terms: s.terms, bankName: s.bankName, accountNo: s.accountNo,
-        rating: s.rating,
+        notes: s.notes, rating: s.rating,
       }),
     onSuccess: (created) => {
       setSuppliers(prev => [toSupplier(created), ...prev]);
@@ -297,7 +299,7 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
         whatsapp: args.patch.whatsapp, city: args.patch.city, state: args.patch.state,
         address: args.patch.address, gstCode: args.patch.gstCode, specialty: args.patch.specialty,
         terms: args.patch.terms, bankName: args.patch.bankName, accountNo: args.patch.accountNo,
-        rating: args.patch.rating,
+        notes: args.patch.notes, rating: args.patch.rating,
         status: args.patch.status ? args.patch.status.toUpperCase() : undefined,
       }),
     onSuccess: (updated) => {

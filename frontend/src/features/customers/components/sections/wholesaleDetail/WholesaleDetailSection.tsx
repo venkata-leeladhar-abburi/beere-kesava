@@ -76,7 +76,7 @@ export function WholesaleDetailSection({
             {customer.status.toUpperCase()}
           </span>
           <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, background: T.silkCream, border: `1px solid ${T.borderDef}`, padding: "5px 12px", borderRadius: 6, color: T.luxuryBrown, fontWeight: 600 }}>
-            {customer.id}
+            {customer.displayCode || customer.id}
           </span>
         </div>
       </div>

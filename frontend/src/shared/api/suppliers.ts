@@ -2,6 +2,7 @@ import { apiClient } from "./client";
 
 export interface BackendSupplier {
   id: string;
+  code: string | null;
   name: string;
   initials: string | null;
   contactName: string | null;
@@ -15,6 +16,7 @@ export interface BackendSupplier {
   terms: string | null;
   bankName: string | null;
   accountNo: string | null;
+  notes: string | null;
   status: "ACTIVE" | "INACTIVE" | "OVERDUE";
   rating: number | null;
   createdAt: string;
@@ -34,6 +36,7 @@ export interface CreateSupplierPayload {
   terms?: string;
   bankName?: string;
   accountNo?: string;
+  notes?: string;
   rating?: number;
 }
 

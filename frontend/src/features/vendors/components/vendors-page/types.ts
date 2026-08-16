@@ -1,5 +1,5 @@
 export interface Vendor {
-  id: string; name: string; initials: string; contactName: string;
+  id: string; code?: string; name: string; initials: string; contactName: string;
   phone: string; whatsapp?: string; city: string; state: string;
   address: string; gstCode: string; type: string; terms: string;
   bankName?: string; accountNo?: string; notes?: string; visitingCard?: string;
