@@ -68,12 +68,7 @@ export function EditProfileTab({ customer, setWholesaleTab, onSave }: {
               <Input type="text" value={city} onChange={e => setCity(e.target.value)} placeholder="City" />
             </Field>
             <Field label="State *">
-              <Select value={state} onValueChange={setState}>
-                <SelectItem value="Andhra Pradesh">Andhra Pradesh</SelectItem>
-                <SelectItem value="Telangana">Telangana</SelectItem>
-                <SelectItem value="Tamil Nadu">Tamil Nadu</SelectItem>
-                <SelectItem value="Karnataka">Karnataka</SelectItem>
-              </Select>
+              <Input type="text" value={state} onChange={e => setState(e.target.value)} placeholder="State" />
             </Field>
           </div>
         </div>
@@ -84,13 +79,7 @@ export function EditProfileTab({ customer, setWholesaleTab, onSave }: {
             <Textarea placeholder="Full address for delivery and billing" rows={2} value={address} onChange={e => setAddress(e.target.value)} />
           </Field>
           <Field label="Payment Terms *">
-            <Select value={terms} onValueChange={setTerms}>
-              <SelectItem value="30 days">30 days</SelectItem>
-              <SelectItem value="45 days">45 days</SelectItem>
-              <SelectItem value="60 days">60 days</SelectItem>
-              <SelectItem value="90 days">90 days</SelectItem>
-              <SelectItem value="Custom">Custom</SelectItem>
-            </Select>
+            <Input type="text" value={terms} onChange={e => setTerms(e.target.value)} placeholder="e.g. 30 days" />
           </Field>
           <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
             <Field label="Bank Name">

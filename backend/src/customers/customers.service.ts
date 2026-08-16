@@ -8,6 +8,12 @@ import { CreateCustomerDto } from "./dto/create-customer.dto";
 import { ListCustomersQueryDto } from "./dto/list-customers-query.dto";
 import { UpdateCustomerDto } from "./dto/update-customer.dto";
 
+// Wholesale customer codes are "<FirstName>-<globalSerial>", e.g. "Sree-1", "Shiva-2" —
+// the serial is a single counter shared across all wholesale customers, not per-name.
+function firstNameOf(name: string): string {
+  return name.trim().split(/\s+/)[0] || "Customer";
+}
+
 @Injectable()
 export class CustomersService {
   constructor(
@@ -18,7 +24,10 @@ export class CustomersService {
 
   async create(dto: CreateCustomerDto) {
     const { actorId, ...data } = dto;
-    const code = await this.idGenerator.nextFormatted(data.type === CustomerType.WHOLESALE ? "WHL" : "CUST");
+    const code =
+      data.type === CustomerType.WHOLESALE
+        ? `${firstNameOf(data.name)}-${await this.idGenerator.next("WHL")}`
+        : await this.idGenerator.nextFormatted("CUST");
     const customer = await this.prisma.customer.create({ data: { ...data, code } });
 
     await this.auditLog.recordAction({

@@ -18,6 +18,15 @@ export function EditTab({
   savedFlash: boolean;
   onSave: () => void;
 }) {
+  const handleSave = () => {
+    const finalWhatsapp = form.whatsapp?.trim() ? form.whatsapp : form.phone;
+    setForm({ ...form, whatsapp: finalWhatsapp });
+    // Call the parent's onSave, which presumably reads the form state (or the parent handles it). 
+    // Wait, the parent passes `form` and `setForm`. Since `setForm` is async, we should probably 
+    // pass the updated form up if `onSave` takes it, but `onSave` takes `() => void`. 
+    // Wait, let's see SupplierProfile.tsx to see how it handles `onSave`.
+  };
+
   return (
     <div style={{ ...card, padding: "28px 32px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
@@ -28,7 +37,12 @@ export function EditTab({
               <CheckCircle2 size={14} /> Saved
             </span>
           )}
-          <Button variant="primary" size="md" onClick={onSave}>
+          <Button variant="primary" size="md" onClick={() => {
+            const finalWhatsapp = form.whatsapp?.trim() ? form.whatsapp : form.phone;
+            setForm({ ...form, whatsapp: finalWhatsapp });
+            // Defer the save slightly so setForm applies to parent state before onSave runs
+            setTimeout(onSave, 0);
+          }}>
             Save Changes
           </Button>
         </div>

@@ -72,9 +72,8 @@ export function FirmFormModal({ initial, onSave, onClose, title }: { initial: Fo
             <div style={{ gridColumn: "1 / -1" }}>
               <Field label="Firm Name" value={form.firmName} onChange={v => set("firmName", v)} placeholder="e.g. Surat Zari Works" required icon={Building2} />
             </div>
-            <Field label="GST Number" value={form.gstNumber ?? ""} onChange={v => set("gstNumber", v)} placeholder="29ABCDE1234F1Z5" icon={Hash} />
-            <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
-              <Field label="Total Purchase Amount (INR)" value={form.purchaseAmount?.toString() ?? ""} onChange={v => set("purchaseAmount", v)} type="number" placeholder="e.g. 1500000" icon={IndianRupee} />
+            <div style={{ gridColumn: "1 / -1" }}>
+              <Field label="GST Number" value={form.gstNumber ?? ""} onChange={v => set("gstNumber", v)} placeholder="29ABCDE1234F1Z5" icon={Hash} />
             </div>
             <div style={{ gridColumn: "1 / -1" }}>
               <Field label="Address" value={form.address ?? ""} onChange={v => set("address", v)} placeholder="Street, City, State, PIN" textarea icon={MapPin} />
@@ -151,12 +150,6 @@ export function FirmDetailModal({ firm, onClose, onEdit }: { firm: Firm; onClose
         <div style={{ flex: 1, overflowY: "auto", padding: "22px 24px 28px" }}>
           {tab === "info" && (
             <div>
-              {firm.purchaseAmount && (
-                <div style={{ background: T.bgGold, border: `1px solid ${T.borderGold}`, borderRadius: 12, padding: "14px 18px", display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
-                  <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Total Purchase Amount</span>
-                  <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 20, color: T.antiqueGold }}>{fmtAmt(firm.purchaseAmount)}</span>
-                </div>
-              )}
               <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, letterSpacing: "2px", color: T.taupe, textTransform: "uppercase", marginBottom: 4 }}>Firm Details</div>
               <Row label="GST Number" value={firm.gstNumber} mono />
               <Row label="Address" value={firm.address} />

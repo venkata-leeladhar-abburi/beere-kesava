@@ -42,7 +42,7 @@ export function CustomerModals({
                 </Dialog.Title>
                 <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                   <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.antiqueGold, background: "rgba(200,155,71,0.18)", padding: "3px 10px", borderRadius: 999, border: "1px solid rgba(200,155,71,0.30)" }}>Wholesale Customer</span>
-                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(255,255,255,0.50)" }}>{modalWholesale.id}</span>
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(255,255,255,0.50)" }}>{modalWholesale.displayCode || modalWholesale.id}</span>
                 </div>
               </div>
               <Dialog.Close asChild>

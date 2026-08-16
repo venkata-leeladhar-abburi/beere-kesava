@@ -12,7 +12,7 @@ export function AddVendorModal({ onSave, onCancel, nextId }: { onSave: (v: Vendo
     name: "", contactName: "", phone: "", whatsapp: "",
     city: "", state: "Andhra Pradesh", address: "",
     gstCode: "", types: ["Warp"], terms: "30 days",
-    bankName: "", accountNo: "", notes: "", visitingCard: "",
+    bankName: "", accountNo: "", ifscCode: "", notes: "", visitingCard: "",
     rating: 3,
   });
   const [cardPreview, setCardPreview] = useState<string | null>(null);
@@ -38,7 +38,7 @@ export function AddVendorModal({ onSave, onCancel, nextId }: { onSave: (v: Vendo
       contactName: form.contactName, phone: form.phone,
       whatsapp: form.whatsapp, city: form.city, state: form.state,
       address: form.address, gstCode: form.gstCode, type: form.types.join(" / "),
-      terms: form.terms, bankName: form.bankName, accountNo: form.accountNo,
+      terms: form.terms, bankName: form.bankName, accountNo: form.accountNo, ifscCode: form.ifscCode,
       notes: form.notes, visitingCard: cardPreview || undefined,
       status: "active", totalOrders: 0, totalSpend: "0",
       outstanding: "0", lastOrder: "—", rating: form.rating,
@@ -137,9 +137,14 @@ export function AddVendorModal({ onSave, onCancel, nextId }: { onSave: (v: Vendo
               </Field>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
-              <Field label="GST Number" id="gst-number">
-                <Input value={form.gstCode} onChange={e => set("gstCode", e.target.value)} placeholder="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" />
+              <Field label="IFSC Code" id="ifsc-code">
+                <Input value={form.ifscCode} onChange={e => set("ifscCode", e.target.value)} placeholder="IFSC Code" />
               </Field>
+              <Field label="GST Number" id="gst-number">
+                <Input value={form.gstCode} onChange={e => set("gstCode", e.target.value)} placeholder="15-digit GSTIN" />
+              </Field>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
               <Field label="Visiting Card Photo" id="visiting-card-photo">
                 <Input type="file" accept="image/*" onChange={e => {
                   const file = e.target.files?.[0];

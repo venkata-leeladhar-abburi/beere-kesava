@@ -26,7 +26,8 @@ export function AddSupplierModal({ onSave, onCancel, nextId }: {
     if (!form.phone.trim())       errs.phone = "Required";
     if (!form.city.trim())        errs.city = "Required";
     if (Object.keys(errs).length) { setErrors(errs); return; }
-    onSave(form, cardPreview);
+    const finalWhatsapp = form.whatsapp?.trim() ? form.whatsapp : form.phone;
+    onSave({ ...form, whatsapp: finalWhatsapp }, cardPreview);
   };
 
   return (
