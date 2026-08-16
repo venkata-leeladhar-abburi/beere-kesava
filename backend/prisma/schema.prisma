@@ -1255,10 +1255,14 @@ model InvoicePayment {
 model Customer {
   id              String       @id @default(uuid())
   name            String
+  contactName     String?
   city            String?
   phone           String?
   address         String?
   gstCode         String?
+  bankName        String?
+  accountNumber   String?
+  ifscCode        String?
   type            CustomerType @default(RETAIL)
   visitingCardUrl String?
   createdAt       DateTime     @default(now())

@@ -1,67 +1,83 @@
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import { DateFilterBar, DateFilterState, matchesDateFilter } from "../../../../../shared/ui/DateFilterBar";
 import { T, F } from "../../theme";
 import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
 import { Money } from "../../../../../shared/ui/domain/Money";
 import { StatusPill } from "../../../../../shared/ui/domain";
 import { rupees } from "../../../../../lib/domain/money";
-import type { StatusValueOf } from "../../../../../lib/domain/status";
+import { invoicesApi } from "../../../../../shared/api/invoices";
 
 interface PaymentRow {
-  rec: string;
+  id: string;
   date: string;
   utr: string;
   amt: number;
-  ded: number;
-  status: StatusValueOf<"payment">;
+  invoiceId: string;
 }
-
-const PAYMENTS: PaymentRow[] = [
-  { rec: "REC-90821", date: "02 May 2026", utr: "UTR9832104523", amt: 180000, ded: 0, status: "settled" },
-  { rec: "REC-90145", date: "15 Apr 2026", utr: "UTR8293108420", amt: 260000, ded: 20000, status: "settled" },
-  { rec: "REC-89234", date: "18 Dec 2025", utr: "UTR7489312048", amt: 100000, ded: 5000, status: "settled" },
-];
 
 const columns: ColumnDef<PaymentRow>[] = [
   {
-    id: "rec", header: "Receipt No", accessor: p => p.rec, priority: 1,
-    cell: (_v, p) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.royalBurgundy }}>{p.rec}</span>,
+    id: "invoice", header: "Invoice", accessor: p => p.invoiceId, priority: 3,
+    cell: (_v, p) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.royalBurgundy }}>INV-{p.invoiceId.slice(0, 8).toUpperCase()}</span>,
   },
   {
     id: "date", header: "Payment Date", accessor: p => p.date,
-    cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{p.date}</span>,
+    cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{new Date(p.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>,
   },
   {
     id: "utr", header: "UTR Number", accessor: p => p.utr, priority: 3,
-    cell: (_v, p) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.taupe }}>{p.utr}</span>,
+    cell: (_v, p) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.taupe }}>{p.utr || "—"}</span>,
   },
   {
     id: "amt", header: "Amount Paid", accessor: p => p.amt,
     cell: (_v, p) => <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.green }}><Money value={rupees(p.amt)} /></span>,
   },
   {
-    id: "ded", header: "Deductions", accessor: p => p.ded,
-    cell: (_v, p) => <span style={{ fontFamily: F.display, fontSize: 14, color: T.crimson }}><Money value={rupees(p.ded)} /></span>,
-  },
-  {
-    id: "status", header: "Status", accessor: p => p.status, type: "status",
-    cell: (_v, p) => <StatusPill taxonomy="payment" status={p.status} />,
+    // Every row here is a real InvoicePayment record — money that has
+    // actually been recorded as received — so "Settled" is never a guess;
+    // a customer with no payments simply has no rows, not a fake "cleared".
+    id: "status", header: "Status", accessor: () => "settled" as const, type: "status",
+    cell: () => <StatusPill taxonomy="payment" status="settled" />,
   },
 ];
 
 export function PaymentHistoryTab({
-  wholesalePaymentDateFilter, setWholesalePaymentDateFilter,
+  customerId, wholesalePaymentDateFilter, setWholesalePaymentDateFilter,
 }: {
+  customerId: string;
   wholesalePaymentDateFilter: DateFilterState;
   setWholesalePaymentDateFilter: (f: DateFilterState) => void;
 }) {
-  const filtered = PAYMENTS.filter(p => matchesDateFilter(p.date, wholesalePaymentDateFilter));
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["invoices", "by-customer", customerId],
+    queryFn: () => invoicesApi.list({ customerId, pageSize: 200 }),
+    enabled: !!customerId,
+  });
+
+  const payments: PaymentRow[] = (data?.items ?? []).flatMap(inv =>
+    inv.payments.map(p => ({ id: p.id, date: p.date, utr: p.utr ?? "", amt: Number(p.amount), invoiceId: inv.id }))
+  ).sort((a, b) => (a.date > b.date ? -1 : 1));
+
+  const filtered = payments.filter(p => matchesDateFilter(p.date, wholesalePaymentDateFilter));
+
   return (
     <div>
       <h3 style={{ fontFamily: F.display, fontSize: 18, color: T.luxuryBrown, marginBottom: 16 }}>Ledger Payments Received</h3>
       <DateFilterBar filter={wholesalePaymentDateFilter} onChange={setWholesalePaymentDateFilter} />
+      {isError && (
+        <div style={{ background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)", borderRadius: 10, padding: "10px 14px", fontFamily: F.ui, fontSize: 12, color: "#C0392B", fontWeight: 600, marginBottom: 12 }}>
+          Failed to load payment history. Please try again.
+        </div>
+      )}
       <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden" }}>
-        <DataTable responsive columns={columns} data={filtered} getRowId={p => p.rec} />
+        <DataTable
+          responsive
+          columns={columns}
+          data={filtered}
+          getRowId={p => p.id}
+          emptyTitle={isLoading ? "Loading…" : "No payments received from this customer yet."}
+        />
       </div>
     </div>
   );

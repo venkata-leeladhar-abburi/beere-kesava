@@ -13,6 +13,10 @@ export class CreateCustomerDto {
   name!: string;
 
   @IsOptional()
+  @IsString()
+  contactName?: string;
+
+  @IsOptional()
   @IsEnum(CustomerType)
   type?: CustomerType;
 
@@ -31,6 +35,18 @@ export class CreateCustomerDto {
   @IsOptional()
   @IsString()
   gstCode?: string;
+
+  @IsOptional()
+  @IsString()
+  bankName?: string;
+
+  @IsOptional()
+  @IsString()
+  accountNumber?: string;
+
+  @IsOptional()
+  @IsString()
+  ifscCode?: string;
 
   @IsOptional()
   @IsString()

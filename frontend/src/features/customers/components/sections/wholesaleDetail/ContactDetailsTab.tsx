@@ -6,6 +6,7 @@ export function ContactDetailsTab({ customer, onViewCard }: {
   customer: WholesaleCustomer;
   onViewCard: (url: string) => void;
 }) {
+  const hasBankDetails = customer.bankName || customer.accountNumber || customer.ifscCode;
   return (
     <div style={{ display: "flex", gap: 48, flexWrap: "wrap" }}>
       <div style={{ flex: 1, minWidth: 280, display: "flex", flexDirection: "column", gap: 20 }}>
@@ -13,35 +14,32 @@ export function ContactDetailsTab({ customer, onViewCard }: {
         <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
           <div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Owner / Main Contact</div>
-            <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown, marginTop: 4 }}>Ramesh Rao</div>
+            <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown, marginTop: 4 }}>{customer.contactName || "—"}</div>
           </div>
           <div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>GSTIN Registration</div>
             <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 600, color: T.royalBurgundy, marginTop: 4 }}>{customer.gstNumber || "Unregistered"}</div>
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
-          <div>
-            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Phone Number</div>
-            <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, color: T.luxuryBrown, marginTop: 4 }}>+91 98480 12345</div>
-          </div>
-          <div>
-            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>WhatsApp Contact</div>
-            <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, color: T.luxuryBrown, marginTop: 4 }}>+91 98480 12345</div>
-          </div>
+        <div>
+          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Phone Number</div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, color: T.luxuryBrown, marginTop: 4 }}>{customer.phone || "—"}</div>
         </div>
         <div>
           <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Billing Address</div>
           <div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, marginTop: 4, lineHeight: 1.5 }}>
-            Shop No. 4, Silk Bazar, Main Road, {customer.city}
+            {customer.address || "—"}
           </div>
         </div>
         <div>
           <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Bank Wire Account</div>
-          <div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, marginTop: 4 }}>
-            HDFC Bank · Account No. 4872 1938 8901 · IFSC: HDFC0001842
-          </div>
-          <span style={{ fontSize: 12, fontFamily: "var(--font-mono)", color: T.taupe, marginTop: 6, display: "block" }}>🔒 Superadmin access encryption active</span>
+          {hasBankDetails ? (
+            <div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, marginTop: 4 }}>
+              {customer.bankName || "Bank not set"} · Account No. {customer.accountNumber || "—"} · IFSC: {customer.ifscCode || "—"}
+            </div>
+          ) : (
+            <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, fontStyle: "italic", marginTop: 4 }}>No bank details on file.</div>
+          )}
         </div>
       </div>
 

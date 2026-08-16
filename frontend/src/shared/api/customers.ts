@@ -5,10 +5,14 @@ export type BackendCustomerType = "WHOLESALE" | "RETAIL";
 export interface BackendCustomer {
   id: string;
   name: string;
+  contactName: string | null;
   city: string | null;
   phone: string | null;
   address: string | null;
   gstCode: string | null;
+  bankName: string | null;
+  accountNumber: string | null;
+  ifscCode: string | null;
   type: BackendCustomerType;
   visitingCardUrl: string | null;
   createdAt: string;
@@ -28,20 +32,28 @@ interface PaginatedResponse<T> {
 
 export interface CreateCustomerPayload {
   name: string;
+  contactName?: string;
   type?: BackendCustomerType;
   city?: string;
   phone?: string;
   address?: string;
   gstCode?: string;
+  bankName?: string;
+  accountNumber?: string;
+  ifscCode?: string;
   visitingCardUrl?: string;
 }
 
 export interface UpdateCustomerPayload {
   name?: string;
+  contactName?: string;
   city?: string;
   phone?: string;
   address?: string;
   gstCode?: string;
+  bankName?: string;
+  accountNumber?: string;
+  ifscCode?: string;
   visitingCardUrl?: string;
 }
 

@@ -1,7 +1,7 @@
 import React from "react";
 import { T, F } from "../../theme";
 import { WholesaleCustomer, WholesaleTab } from "../../types";
-import { Button, Field, Input, Select, SelectItem } from "../../../../../shared/ui/primitives";
+import { Button, Field, Input, Select, SelectItem, Textarea } from "../../../../../shared/ui/primitives";
 
 export function EditProfileTab({ customer, setWholesaleTab, onSave }: {
   customer: WholesaleCustomer;
@@ -18,11 +18,17 @@ export function EditProfileTab({ customer, setWholesaleTab, onSave }: {
           <Field label="Business Name">
             <Input type="text" defaultValue={customer.name} id="edit-biz-name" />
           </Field>
-          <Field label="Owner Name">
-            <Input type="text" defaultValue="Ramesh Rao" id="edit-owner-name" />
+          <Field label="Owner / Contact Name">
+            <Input type="text" defaultValue={customer.contactName} id="edit-owner-name" />
+          </Field>
+          <Field label="Phone Number">
+            <Input type="text" defaultValue={customer.phone} id="edit-phone" />
           </Field>
           <Field label="GST Number">
             <Input type="text" defaultValue={customer.gstNumber || ""} id="edit-gst-number" />
+          </Field>
+          <Field label="Business Address">
+            <Textarea rows={2} defaultValue={customer.address} id="edit-address" />
           </Field>
         </div>
 
@@ -38,8 +44,14 @@ export function EditProfileTab({ customer, setWholesaleTab, onSave }: {
               <SelectItem value="90 days">90 days</SelectItem>
             </Select>
           </Field>
-          <Field label="Outstanding Amount (INR)">
-            <Input type="text" defaultValue={customer.out} id="edit-out" />
+          <Field label="Bank Name">
+            <Input type="text" defaultValue={customer.bankName} id="edit-bank-name" />
+          </Field>
+          <Field label="Account Number">
+            <Input type="text" defaultValue={customer.accountNumber} id="edit-account-number" />
+          </Field>
+          <Field label="IFSC Code">
+            <Input type="text" defaultValue={customer.ifscCode} id="edit-ifsc-code" />
           </Field>
         </div>
       </div>
@@ -49,14 +61,19 @@ export function EditProfileTab({ customer, setWholesaleTab, onSave }: {
         <Button
           onClick={() => {
             const name = (document.getElementById("edit-biz-name") as HTMLInputElement)?.value;
+            const contactName = (document.getElementById("edit-owner-name") as HTMLInputElement)?.value;
+            const phone = (document.getElementById("edit-phone") as HTMLInputElement)?.value;
             const city = (document.getElementById("edit-city") as HTMLInputElement)?.value;
             const gst = (document.getElementById("edit-gst-number") as HTMLInputElement)?.value;
-            const out = (document.getElementById("edit-out") as HTMLInputElement)?.value;
+            const address = (document.getElementById("edit-address") as HTMLTextAreaElement)?.value;
+            const bankName = (document.getElementById("edit-bank-name") as HTMLInputElement)?.value;
+            const accountNumber = (document.getElementById("edit-account-number") as HTMLInputElement)?.value;
+            const ifscCode = (document.getElementById("edit-ifsc-code") as HTMLInputElement)?.value;
 
             const updated = {
               ...customer,
-              name, city, gstNumber: gst, terms, out,
-              status: out === "0" ? "clear" : customer.status
+              name, contactName, phone, city, gstNumber: gst, address, terms,
+              bankName, accountNumber, ifscCode,
             };
 
             onSave(updated);

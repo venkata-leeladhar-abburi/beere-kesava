@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router";
-import { BulkOrder } from "@/features/bulk-orders";
+import { BulkOrder, useBulkOrders, resolveOrderMoney } from "@/features/bulk-orders";
+import { INVOICES } from "@/features/payments";
+import { rupees, formatMoney } from "@/lib/domain/money";
 import { DateFilterState, DEFAULT_DATE_FILTER } from "../../../shared/ui/DateFilterBar";
 import { BulkOrderDetailPage } from "@/features/bulk-orders";
 import { MaterialsFooter } from "@/features/materials";
@@ -33,37 +35,54 @@ export function CustomersPage() {
   // Command palette "New Customer" action deep-links here with ?new=1 to open
   // the add-wholesale-customer form straight away.
   const [showAddWholesale, setShowAddWholesale] = useState(() => new URLSearchParams(location.search).get("new") === "1");  const { customers = [], updateCustomer } = useCustomers() ?? {};
+  const { bulkOrders } = useBulkOrders();
 
   const wholesaleList = React.useMemo(() => {
     const backendWholesale = customers.filter(c => c.type === "WHOLESALE");
-    const mapped = backendWholesale.map(c => ({
-      id: c.id,
-      name: c.name,
-      code: c.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase(),
-      city: c.city || "—",
-      // NOT a filter-UI sentinel — verified by reading WholesaleCustomersSection.tsx
-      // and WholesaleDetailSection.tsx, which render this as a colored dues-status
-      // pill and compare it against "overdue"/"clear". It's a genuine
-      // PAYMENT_STATUS-shaped field, but WholesaleCustomer is `typeof
-      // wholesaleData[number]` off a retired empty mock array (effectively
-      // `any`), and its real consumers (WholesaleCustomersSection.tsx,
-      // WholesaleDetailSection.tsx, wholesaleDetail/EditProfileTab.tsx) are
-      // outside this pass's assigned files — WholesaleCustomersSection.tsx is
-      // already being edited by another concurrent agent per git status.
-      // Left as a documented exception rather than a partial retype.
-      status: "clear" as const,
-      orders: 0,
-      spend: "0",
-      out: "0",
-      terms: "30 days",
-      lastOrder: c.createdAt ? new Date(c.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—",
-      activeOrder: null,
-      duesMsg: "✓ All Payments Clear",
-      gstNumber: c.gstCode || "—",
-      visitingCard: c.visitingCardUrl || "https://images.unsplash.com/photo-1589758438368-0ad531db3366?w=400&fit=crop&q=80",
-    }));
+    const mapped = backendWholesale.map(c => {
+      // Real per-customer aggregates off their actual bulk orders — matched
+      // the same way WholesaleDetailSection matches an individual customer's
+      // orders (customerId FK, else business-name fallback for older rows
+      // created before bulk orders carried a customerId).
+      const custOrders = bulkOrders.filter(o =>
+        (o.customerId && o.customerId === c.id) || o.customer.toLowerCase() === c.name.toLowerCase()
+      );
+      const money = custOrders.map(o => resolveOrderMoney(o, INVOICES));
+      const billed = money.reduce((a, m) => a + m.amountDue, 0);
+      const paid = money.reduce((a, m) => a + m.amountPaid, 0);
+      const outstanding = Math.max(0, billed - paid);
+      const activeOrder = custOrders.find(o => o.done < o.total) ?? null;
+
+      return {
+        id: c.id,
+        name: c.name,
+        code: c.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase(),
+        city: c.city || "—",
+        status: (outstanding > 0 ? "overdue" : "clear") as "overdue" | "clear",
+        orders: custOrders.length,
+        spend: String(paid),
+        out: String(outstanding),
+        terms: "30 days",
+        // createdDate is the raw ISO createdAt (unlike `due`, which is
+        // already formatted for display and not safely sortable as a
+        // string), so it's what picks out the most recent order.
+        lastOrder: custOrders.length
+          ? [...custOrders].sort((a, b) => (b.createdDate ?? "").localeCompare(a.createdDate ?? ""))[0].due
+          : (c.createdAt ? new Date(c.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—"),
+        activeOrder,
+        duesMsg: outstanding > 0 ? `${formatMoney(rupees(outstanding))} outstanding` : "✓ All Payments Clear",
+        gstNumber: c.gstCode || "—",
+        visitingCard: c.visitingCardUrl || "https://images.unsplash.com/photo-1589758438368-0ad531db3366?w=400&fit=crop&q=80",
+        contactName: c.contactName || "",
+        phone: c.phone || "",
+        address: c.address || "",
+        bankName: c.bankName || "",
+        accountNumber: c.accountNumber || "",
+        ifscCode: c.ifscCode || "",
+      };
+    });
     return [...mapped, ...wholesaleData];
-  }, [customers]);
+  }, [customers, bulkOrders]);
 
   useEffect(() => {
     if (localStorage.getItem("bk_open_add_wholesale") === "true") {
@@ -197,8 +216,14 @@ export function CustomersPage() {
             if (updateCustomer && selectedWholesaleCust.id) {
               updateCustomer(selectedWholesaleCust.id, {
                 name: updated.name,
+                contactName: updated.contactName || undefined,
                 city: updated.city,
+                phone: updated.phone || undefined,
+                address: updated.address || undefined,
                 gstCode: updated.gstNumber,
+                bankName: updated.bankName || undefined,
+                accountNumber: updated.accountNumber || undefined,
+                ifscCode: updated.ifscCode || undefined,
               });
             }
             setSelectedWholesaleCust(updated);

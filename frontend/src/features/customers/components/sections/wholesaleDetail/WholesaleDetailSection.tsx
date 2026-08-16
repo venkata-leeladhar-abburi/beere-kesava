@@ -157,6 +157,7 @@ export function WholesaleDetailSection({
 
         {wholesaleTab === "Payment History" && (
           <PaymentHistoryTab
+            customerId={customer.id}
             wholesalePaymentDateFilter={wholesalePaymentDateFilter}
             setWholesalePaymentDateFilter={setWholesalePaymentDateFilter}
           />

@@ -47,8 +47,11 @@ export interface CreateInvoicePaymentPayload {
 }
 
 export const invoicesApi = {
-  list: (pageSize = 100) =>
-    apiClient.get<PaginatedResponse<BackendInvoice>>(`/invoices?pageSize=${pageSize}`),
+  list: (opts?: { pageSize?: number; customerId?: string }) => {
+    const params = new URLSearchParams({ pageSize: String(opts?.pageSize ?? 100) });
+    if (opts?.customerId) params.set("customerId", opts.customerId);
+    return apiClient.get<PaginatedResponse<BackendInvoice>>(`/invoices?${params.toString()}`);
+  },
 
   findOne: (id: string) => apiClient.get<BackendInvoice>(`/invoices/${id}`),
 

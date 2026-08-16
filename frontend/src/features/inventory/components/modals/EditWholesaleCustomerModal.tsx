@@ -18,10 +18,14 @@ export function EditWholesaleCustomerModal({ customer, onClose }: { customer: Cu
   const { updateCustomer } = useCustomers();
   const [form, setForm] = useState({
     name: customer.name,
+    contactName: customer.contactName ?? "",
     phone: customer.phone ?? "",
     city: customer.city ?? "",
     address: customer.address ?? "",
     gstCode: customer.gstCode ?? "",
+    bankName: customer.bankName ?? "",
+    accountNumber: customer.accountNumber ?? "",
+    ifscCode: customer.ifscCode ?? "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -33,10 +37,14 @@ export function EditWholesaleCustomerModal({ customer, onClose }: { customer: Cu
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
     updateCustomer(customer.id, {
       name: form.name.trim(),
+      contactName: form.contactName.trim() || undefined,
       phone: form.phone.trim() || undefined,
       city: form.city.trim() || undefined,
       address: form.address.trim() || undefined,
       gstCode: form.gstCode.trim() || undefined,
+      bankName: form.bankName.trim() || undefined,
+      accountNumber: form.accountNumber.trim() || undefined,
+      ifscCode: form.ifscCode.trim() || undefined,
     });
     onClose();
   };
@@ -67,6 +75,9 @@ export function EditWholesaleCustomerModal({ customer, onClose }: { customer: Cu
           <Field label="Customer / Firm Name" required error={errors.name} id="edit-customer-name">
             <Input value={form.name} onChange={e => set("name", e.target.value)} placeholder="Name of the business" />
           </Field>
+          <Field label="Owner / Contact Name" id="edit-customer-contact-name">
+            <Input value={form.contactName} onChange={e => set("contactName", e.target.value)} placeholder="Who to speak to at this business" />
+          </Field>
           <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
             <Field label="Phone Number" id="edit-customer-phone">
               <Input value={form.phone} onChange={e => set("phone", e.target.value)} placeholder="10-digit mobile" />
@@ -80,6 +91,17 @@ export function EditWholesaleCustomerModal({ customer, onClose }: { customer: Cu
           </Field>
           <Field label="GST Number" id="edit-customer-gst">
             <Input value={form.gstCode} onChange={e => set("gstCode", e.target.value)} placeholder="GSTIN, if registered" />
+          </Field>
+          <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
+            <Field label="Bank Name" id="edit-customer-bank-name">
+              <Input value={form.bankName} onChange={e => set("bankName", e.target.value)} placeholder="For any refunds" />
+            </Field>
+            <Field label="Account Number" id="edit-customer-account-number">
+              <Input value={form.accountNumber} onChange={e => set("accountNumber", e.target.value)} placeholder="Account No." />
+            </Field>
+          </div>
+          <Field label="IFSC Code" id="edit-customer-ifsc">
+            <Input value={form.ifscCode} onChange={e => set("ifscCode", e.target.value)} placeholder="e.g. HDFC0001842" />
           </Field>
         </div>
 

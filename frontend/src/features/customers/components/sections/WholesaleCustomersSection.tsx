@@ -25,6 +25,7 @@ interface WholesaleFormState {
   paymentTerms: string;
   bankName: string;
   accountNumber: string;
+  ifscCode: string;
   gstNumber: string;
   notes: string;
 }
@@ -40,6 +41,7 @@ const EMPTY_WHOLESALE_FORM: WholesaleFormState = {
   paymentTerms: "30 days",
   bankName: "",
   accountNumber: "",
+  ifscCode: "",
   gstNumber: "",
   notes: "",
 };
@@ -112,10 +114,14 @@ export function WholesaleCustomersSection({
       await addCustomer({
         name: form.name.trim(),
         type: "WHOLESALE",
+        contactName: form.contactName.trim() || undefined,
         phone: form.phone.trim(),
         city: form.city.trim() || undefined,
         address: form.address.trim() || undefined,
         gstCode: form.gstNumber.trim() || undefined,
+        bankName: form.bankName.trim() || undefined,
+        accountNumber: form.accountNumber.trim() || undefined,
+        ifscCode: form.ifscCode.trim() || undefined,
       });
       closeAddWholesale();
     } catch (err) {
@@ -180,10 +186,13 @@ export function WholesaleCustomersSection({
                 </Field>
                 <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
                   <Field label="Bank Name"><Input aria-label="For any refunds" type="text" placeholder="For any refunds" value={form.bankName} onChange={e => updateField("bankName", e.target.value)} /></Field>
-                  <Field label="Account Number"><Input aria-label="Account No." type="password" placeholder="Account No." value={form.accountNumber} onChange={e => updateField("accountNumber", e.target.value)} /></Field>
+                  <Field label="Account Number"><Input aria-label="Account No." type="text" placeholder="Account No." value={form.accountNumber} onChange={e => updateField("accountNumber", e.target.value)} /></Field>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
+                  <Field label="IFSC Code"><Input aria-label="Bank IFSC code" type="text" placeholder="e.g. HDFC0001842" value={form.ifscCode} onChange={e => updateField("ifscCode", e.target.value)} /></Field>
                   <Field label="GST Number"><Input aria-label="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" type="text" placeholder="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" value={form.gstNumber} onChange={e => updateField("gstNumber", e.target.value)} /></Field>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
                   <Field label="Visiting Card Photo"><Input type="file" accept="image/*" /></Field>
                 </div>
                 <Field label="Notes"><Input aria-label="Any special instructions..." type="text" placeholder="Any special instructions..." value={form.notes} onChange={e => updateField("notes", e.target.value)} /></Field>

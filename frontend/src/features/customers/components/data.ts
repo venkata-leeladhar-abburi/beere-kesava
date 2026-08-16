@@ -19,6 +19,12 @@ export interface WholesaleCustomerRow {
   duesMsg: string;
   gstNumber: string;
   visitingCard: string;
+  contactName: string;
+  phone: string;
+  address: string;
+  bankName: string;
+  accountNumber: string;
+  ifscCode: string;
 }
 
 // Shape mirrors the objects CustomersPage.tsx builds for its `retailList`

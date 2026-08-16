@@ -13,6 +13,10 @@ export class UpdateCustomerDto {
 
   @IsOptional()
   @IsString()
+  contactName?: string;
+
+  @IsOptional()
+  @IsString()
   city?: string;
 
   @IsOptional()
@@ -26,6 +30,18 @@ export class UpdateCustomerDto {
   @IsOptional()
   @IsString()
   gstCode?: string;
+
+  @IsOptional()
+  @IsString()
+  bankName?: string;
+
+  @IsOptional()
+  @IsString()
+  accountNumber?: string;
+
+  @IsOptional()
+  @IsString()
+  ifscCode?: string;
 
   @IsOptional()
   @IsString()
