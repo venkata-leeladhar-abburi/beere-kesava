@@ -137,8 +137,12 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
   // selected saree — multi-select still supports these incidentally.
   const sareeId = selectedSarees[0]?.sareeId ?? "—";
 
-  const pickWeaver = (name: string) => {
-    const w = WEAVERS.find(w => w.name === name) || null;
+  const pickWeaver = (code: string) => {
+    // Matched on the weaver's unique id (aliased `code` here), never `name`
+    // -- two weavers can share a display name, and matching by name would
+    // silently resolve to whichever one happens to come first, showing the
+    // wrong weaver's looms/batches/details regardless of which was clicked.
+    const w = WEAVERS.find(w => w.code === code) || null;
     setSelectedWeaver(w);
     setSelectedBatchId(w ? (batches[w.code]?.[0]?.id ?? null) : null);
     setSelectedSareeNos(new Set());
@@ -256,8 +260,8 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
           <>
             <div style={{ margin: "10px 16px 0" }}>
               <FieldLabel>Select Weaver</FieldLabel>
-              <Select value={selectedWeaver?.name ?? ""} onValueChange={pickWeaver} size="lg">
-                {WEAVERS.map(w => <SelectItem key={w.code} value={w.name}>{w.name}</SelectItem>)}
+              <Select value={selectedWeaver?.code ?? ""} onValueChange={pickWeaver} size="lg">
+                {WEAVERS.map(w => <SelectItem key={w.code} value={w.code}>{w.name}</SelectItem>)}
               </Select>
             </div>
 
@@ -276,6 +280,9 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                       <div>
                         <div style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, color: C.burg }}>{currentBatch.id}</div>
+                        <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 1 }}>
+                          {currentBatch.sareeTypeCode}{currentBatch.bulkOrderLabel ? ` · ${currentBatch.bulkOrderLabel}` : ""}
+                        </div>
                         <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 1 }}>{doneCount} of {currentBatch.total} sarees done</div>
                       </div>
                       <span style={{ fontFamily: F.u, fontSize: 12, color: allDone ? C.gold : C.green, background: allDone ? "rgba(196,146,58,0.12)" : "rgba(30,102,64,0.10)", padding: "2px 7px", borderRadius: 999 }}>
