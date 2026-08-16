@@ -1,12 +1,14 @@
 import React, { useState, useMemo } from "react";
-import { Truck, Users, ShoppingBag, Clock, CheckCircle2, Trash2, FileText } from "lucide-react";
+import { Truck, Users, ShoppingBag, Clock, CheckCircle2, Trash2, FileText, Pencil } from "lucide-react";
 import { DispatchRecord } from "@/features/finishing";
+import { useCustomers } from "@/features/customers";
 import { T, F } from "../theme";
 import { Button } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { SectionCard } from "../common/primitives";
 import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 import { EntityCode } from "@/shared/ui/domain";
+import { EditWholesaleCustomerModal } from "../modals/EditWholesaleCustomerModal";
 
 // ── Dispatch History section ──────────────────────────────────────────────────
 // Exported for the Worker Staff portal — same component, same markup, so the two
@@ -53,6 +55,9 @@ export function DispatchHistorySection({ dispatches, firms, onResume, onDelete, 
 
 function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { rows: DispatchRecord[]; firms: { id: string; firmName: string }[]; onResume: (d: DispatchRecord) => void; onDelete?: (d: DispatchRecord) => void; onViewInvoice?: (d: DispatchRecord) => void; }) {
   const pag = usePagination(rows, 25);
+  const { customers } = useCustomers();
+  const [editingCustomerId, setEditingCustomerId] = useState<string | null>(null);
+  const editingCustomer = editingCustomerId ? customers.find(c => c.id === editingCustomerId) ?? null : null;
   const columns: ColumnDef<DispatchRecord>[] = [
     {
       id: "date", header: "Date", accessor: d => d.dispatchDate, width: 110,
@@ -118,9 +123,18 @@ function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { row
       },
     },
     {
-      id: "actions", header: "Actions", accessor: () => null, type: "actions", width: 100, exportable: false,
+      id: "actions", header: "Actions", accessor: () => null, type: "actions", width: 130, exportable: false,
       cell: (_v, d) => (
         <div style={{ display: "flex", gap: 8 }}>
+          {d.type === "wholesale" && d.customerId && (
+            <button
+              onClick={() => setEditingCustomerId(d.customerId!)}
+              style={{ background: "none", border: "none", padding: 4, cursor: "pointer", color: T.luxuryBrown }}
+              title="Edit Customer Details"
+            >
+              <Pencil size={16} />
+            </button>
+          )}
           {onViewInvoice && (
             <button
               onClick={() => onViewInvoice(d)}
@@ -150,6 +164,9 @@ function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { row
 
   return (
     <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, background: "#FFFFFF", boxShadow: "0 2px 8px rgba(74,6,27,0.04)", overflow: "hidden" }}>
+      {editingCustomer && (
+        <EditWholesaleCustomerModal customer={editingCustomer} onClose={() => setEditingCustomerId(null)} />
+      )}
       <DataTable
         responsive
         columns={columns}
