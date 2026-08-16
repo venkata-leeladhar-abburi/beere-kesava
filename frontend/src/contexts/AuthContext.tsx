@@ -41,6 +41,31 @@ interface AuthContextValue extends AuthState {
 export const AuthContext = createContext<AuthContextValue | null>(null);
 
 const STORAGE_KEY = "bk_auth_state";
+/**
+ * Timestamp (ms) of the last recorded user activity, refreshed on
+ * mount/interaction while the tab is visible. Used to distinguish "reopened
+ * the app a few seconds later — resume where I was" from "came back after 5+
+ * idle minutes — treat the stored session as stale and require login again",
+ * per product decision: a stale `isAuthenticated: true` in localStorage
+ * shouldn't let a navigation land straight on an authenticated page after a
+ * real gap away.
+ */
+const LAST_ACTIVITY_KEY = "bk_last_activity";
+const IDLE_TIMEOUT_MS = 5 * 60 * 1000;
+
+function touchActivity() {
+  try { localStorage.setItem(LAST_ACTIVITY_KEY, String(Date.now())); } catch { /* ignore */ }
+}
+
+function isSessionStale(): boolean {
+  try {
+    const raw = localStorage.getItem(LAST_ACTIVITY_KEY);
+    if (!raw) return false; // no recorded activity yet (e.g. first-ever login) — don't punish that
+    return Date.now() - Number(raw) > IDLE_TIMEOUT_MS;
+  } catch {
+    return false;
+  }
+}
 /** Written by the admin/superadmin dashboards just before entering a staff portal. */
 export const ADMIN_VIEW_KEY = "bk_original_admin_role";
 /**
@@ -67,6 +92,17 @@ function loadState(): AuthState {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw) as AuthState;
+      // A session that's been idle for 5+ minutes doesn't get to resume just
+      // because the browser still has it in storage — this is what makes
+      // "opened this link again after a while" bounce to /login instead of
+      // landing straight on whatever page was linked.
+      if (parsed.isAuthenticated && isSessionStale()) {
+        try {
+          localStorage.removeItem(STORAGE_KEY);
+          localStorage.removeItem("token");
+        } catch { /* ignore */ }
+        return { isAuthenticated: false, role: null, phone: null, token: null, user: null };
+      }
       return parsed;
     }
   } catch {
@@ -95,6 +131,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     saveState(state);
   }, [state]);
+
+  // Idle-timeout: keep the activity clock moving while the user is actually
+  // doing something, and check it periodically + whenever the tab regains
+  // focus/visibility (the common "switched away, came back later" case a
+  // page-load-only check would miss since this is a long-lived SPA session,
+  // not a fresh mount per navigation).
+  useEffect(() => {
+    if (!state.isAuthenticated) return;
+
+    touchActivity();
+    const onActivity = () => touchActivity();
+    const events: (keyof DocumentEventMap)[] = ["click", "keydown", "mousemove", "touchstart"];
+    events.forEach(e => document.addEventListener(e, onActivity, { passive: true }));
+
+    const checkIdle = () => {
+      if (isSessionStale()) logout();
+    };
+    const onVisibility = () => { if (document.visibilityState === "visible") checkIdle(); };
+    document.addEventListener("visibilitychange", onVisibility);
+    const interval = setInterval(checkIdle, 30_000);
+
+    return () => {
+      events.forEach(e => document.removeEventListener(e, onActivity));
+      document.removeEventListener("visibilitychange", onVisibility);
+      clearInterval(interval);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- logout is stable (useCallback, no deps)
+  }, [state.isAuthenticated]);
 
   const clearAdminView = useCallback(() => {
     try { localStorage.removeItem(ADMIN_VIEW_KEY); } catch { /* ignore */ }
