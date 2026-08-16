@@ -33,24 +33,6 @@ const F = {
 import { authApi } from "../../../shared/api/auth";
 import { useAuth, type AuthState } from "../../../contexts/AuthContext";
 
-/** Lotus mark in its gold-ruled tile — the card's identity anchor across all three steps. */
-function CardMark({ children }: { children?: React.ReactNode }) {
-  return (
-    <div
-      style={{
-        width: "clamp(58px, 7.8vh, 84px)", height: "clamp(58px, 7.8vh, 84px)", borderRadius: 18,
-        background: `radial-gradient(120% 120% at 50% 20%, ${C.burgundy} 0%, ${C.burgundyDeep} 70%, #2A0208 100%)`,
-        border: `1px solid ${C.gold}`,
-        boxShadow: "0 6px 20px rgba(74,10,22,0.22), inset 0 0 0 1px rgba(227,184,92,0.28)",
-        display: "inline-flex", alignItems: "center", justifyContent: "center",
-        marginBottom: "clamp(12px, 2.2vh, 20px)",
-      }}
-    >
-      {children ?? <img src={crest} alt="Sree Beere Kesava & Brothers Silks" style={{ width: "78%", height: "78%", objectFit: "contain" }} />}
-    </div>
-  );
-}
-
 /** Keep the field readable as it fills: 10 digits, grouped 5 + 5 like the placeholder. */
 function formatPhone(raw: string) {
   const d = raw.replace(/\D/g, "").slice(0, 10);
@@ -71,9 +53,8 @@ function StepPhone({ onSend }: { onSend: (phone: string) => void }) {
     try {
       await authApi.requestOtp(targetPhone);
       onSend(targetPhone);
-    } catch {
-      // Even if endpoint fails or network error, proceed with flow
-      onSend(targetPhone);
+    } catch (err: any) {
+      setErrorMsg(err?.message || "Could not send OTP. Please check your connection and try again.");
     } finally {
       setLoading(false);
     }
@@ -88,7 +69,6 @@ function StepPhone({ onSend }: { onSend: (phone: string) => void }) {
       transition={{ duration: 0.4 }}
     >
       <div style={{ textAlign: "center" as const, marginBottom: "clamp(14px, 2.4vh, 26px)" }}>
-        <CardMark />
         <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: "clamp(30px, 4.4vh, 40px)", color: C.burgundyDeep, lineHeight: 1.1, marginBottom: 8 }}>Welcome Back</div>
         <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 16, color: C.textMuted }}>&amp; Brothers Silks ERP</div>
         <div style={{ display: "flex", justifyContent: "center", marginTop: "clamp(10px,2vh,18px)" }}>
@@ -100,7 +80,7 @@ function StepPhone({ onSend }: { onSend: (phone: string) => void }) {
         Enter Your Mobile Number
       </div>
       <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 14, color: C.textMuted, lineHeight: 1.6, marginBottom: "clamp(10px, 1.8vh, 16px)" }}>
-        We will send a 6-digit code to this number. Use the number registered with the system.
+        We will send a 6-digit code to your WhatsApp.
       </div>
 
       <Input
@@ -122,9 +102,6 @@ function StepPhone({ onSend }: { onSend: (phone: string) => void }) {
           </span>
         }
       />
-      <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13, color: C.textMuted, fontStyle: "italic", marginTop: 8 }}>
-        Example: The number your admin registered for you
-      </div>
 
       <Button
         variant="primary"
@@ -135,7 +112,7 @@ function StepPhone({ onSend }: { onSend: (phone: string) => void }) {
         iconLeft={Phone}
         className="mt-[clamp(14px,2.6vh,24px)] !h-[58px] !rounded-[14px] !text-[16px] !font-semibold shadow-[0_8px_22px_rgba(74,10,22,0.28)] ring-1 ring-[rgba(196,146,58,0.65)]"
       >
-        {loading ? "Sending OTP..." : "Send OTP to My Number"}
+        {loading ? "Sending OTP..." : "Send OTP via WhatsApp"}
       </Button>
 
       {errorMsg && (
@@ -145,7 +122,7 @@ function StepPhone({ onSend }: { onSend: (phone: string) => void }) {
       <div style={{ marginTop: "clamp(10px, 1.8vh, 18px)", background: "rgba(196,146,58,0.10)", border: "1px solid rgba(196,146,58,0.28)", borderRadius: 14, padding: "clamp(10px,1.8vh,14px) 16px", display: "flex", gap: 12, alignItems: "flex-start" }}>
         <Bell size={16} color={C.gold} style={{ flexShrink: 0, marginTop: 2 }} />
         <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13, color: C.textMuted, lineHeight: 1.65 }}>
-          Your OTP will be sent via SMS. If SMS does not arrive within 2 minutes, a WhatsApp message will be sent instead.
+          Your OTP will be sent via WhatsApp to this number.
         </div>
       </div>
     </motion.div>
@@ -241,9 +218,22 @@ export function LoginPage({ onLogin }: { onLogin: () => void }) {
 
         {isMobile && (
           <div style={{ textAlign: "center" as const, marginBottom: 28, position: "relative", zIndex: 1 }}>
-            <img src={crest} alt="Sree Beere Kesava & Brothers Silks" style={{ width: 128, height: "auto", margin: "0 auto 10px", display: "block" }} />
-            <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 22, letterSpacing: "1.5px", color: C.burgundyDeep }}>BEERE KESAVA</div>
-            <div style={{ fontFamily: F.display, fontWeight: 500, fontSize: 14, letterSpacing: "2px", color: C.gold }}>&amp; BROTHERS SILKS</div>
+            <div
+              style={{
+                width: 132, height: 132, margin: "0 auto", borderRadius: 24,
+                background: `radial-gradient(120% 90% at 50% 18%, ${C.burgundyDeep} 0%, #36030B 62%, #2A0208 100%)`,
+                border: "1px solid rgba(196,146,58,0.40)",
+                boxShadow: "0 10px 30px rgba(74,10,22,0.30)",
+                display: "flex", flexDirection: "column" as const, alignItems: "center", justifyContent: "center",
+              }}
+            >
+              <img src={crest} alt="Sree Beere Kesava & Brothers Silks" style={{ width: 62, height: "auto", marginBottom: 8 }} />
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <Flourish width={22} />
+                <span style={{ fontFamily: F.display, fontWeight: 600, fontSize: 12, letterSpacing: "5px", color: C.goldBright, paddingLeft: 5 }}>SREE</span>
+                <Flourish width={22} />
+              </div>
+            </div>
           </div>
         )}
 

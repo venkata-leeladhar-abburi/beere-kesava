@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "motion/react";
-import { ShieldCheck, User, HardHat, Frame, ShoppingBag } from "lucide-react";
+import { ShieldCheck, User, HardHat, Frame, ShoppingBag, Calculator } from "lucide-react";
 import { imgSareeFooter } from "../../../shared/constants/weaverImages";
 import crest from "../../../assets/bk-crest.png";
 import ribbon from "../../../assets/saree-ribbon.webp";
@@ -25,6 +25,7 @@ const PORTALS = [
   { label: "Worker Staff", Icon: HardHat },
   { label: "Weaver",       Icon: Frame },
   { label: "Shop Staff",   Icon: ShoppingBag },
+  { label: "Accountant",   Icon: Calculator },
 ];
 
 /** Gold flourish rule — the ornamental divider that separates the lockup lines. */

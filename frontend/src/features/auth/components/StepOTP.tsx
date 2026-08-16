@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "motion/react";
 import { Clock, Check, X, MessageSquare } from "lucide-react";
 import { Button, CodeInput } from "../../../shared/ui/primitives";
 import { cn } from "../../../shared/ui/utils";
-import crest from "../../../assets/bk-crest.png";
 import { Flourish } from "./LoginBrandPanel";
 
 const C = {
@@ -133,16 +132,6 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
       transition={{ duration: 0.4 }}
     >
       <div style={{ textAlign: "center" as const, marginBottom: 28 }}>
-        <div style={{
-          width: "clamp(58px, 7.8vh, 84px)", height: "clamp(58px, 7.8vh, 84px)", borderRadius: 18,
-          background: `radial-gradient(120% 120% at 50% 20%, ${C.burgundy} 0%, ${C.burgundyDeep} 70%, #2A0208 100%)`,
-          border: `1px solid ${C.gold}`,
-          boxShadow: "0 6px 20px rgba(74,10,22,0.22), inset 0 0 0 1px rgba(227,184,92,0.28)",
-          display: "inline-flex", alignItems: "center", justifyContent: "center",
-          marginBottom: "clamp(12px, 2.2vh, 20px)",
-        }}>
-          <img src={crest} alt="Sree Beere Kesava & Brothers Silks" style={{ width: "78%", height: "78%", objectFit: "contain" }} />
-        </div>
         <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: "clamp(30px, 4.4vh, 38px)", color: C.burgundyDeep, lineHeight: 1.1, marginBottom: 8 }}>Check Your Phone</div>
         <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 14, color: C.textMuted, marginBottom: 6 }}>We sent a 6-digit code to</div>
         <div style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 16, color: C.burgundy, marginBottom: 6 }}>{formatted}</div>
