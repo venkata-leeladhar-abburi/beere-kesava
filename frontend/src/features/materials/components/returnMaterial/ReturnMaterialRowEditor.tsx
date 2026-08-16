@@ -8,12 +8,12 @@ import { ReturnRowState } from "./theme";
 import { formatOutstandingGrams } from "./materialFormatters";
 
 const JARI_REEL_GRAMS = 230;
-const REELS_PER_BUN = 4;
+const BUNS_PER_REEL = 4;
 
 function rowToGrams(row: ReturnRowState): number {
   const qty = Number(row.quantity) || 0;
   if (row.materialType === "Jari") {
-    return row.jariUnit === "Buns" ? qty * REELS_PER_BUN * JARI_REEL_GRAMS : qty * JARI_REEL_GRAMS;
+    return row.jariUnit === "Buns" ? qty * (JARI_REEL_GRAMS / BUNS_PER_REEL) : qty * JARI_REEL_GRAMS;
   }
   return row.warpReshamUnit === "g" ? qty : qty * 1000;
 }
@@ -43,7 +43,7 @@ export function ReturnMaterialRowEditor({ row, outstandingLines, onChange, onRem
   const outstanding = findOutstandingForRow(row, outstandingLines);
   const rowGrams = rowToGrams(row);
   const overOutstanding = outstanding && rowGrams > outstanding.outstandingGrams;
-  const reelsToBuns = row.jariUnit === "Reels" ? (qtyNum / 4) : (qtyNum * 4);
+  const reelsToBuns = row.jariUnit === "Reels" ? (qtyNum * 4) : (qtyNum / 4);
 
   return (
     <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 16, padding: 20, marginBottom: 16, position: "relative" as const }}>
@@ -137,7 +137,7 @@ export function ReturnMaterialRowEditor({ row, outstandingLines, onChange, onRem
               </div>
               {row.quantity && (
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.antiqueGold, marginTop: 4 }}>
-                  = {reelsToBuns.toFixed(reelsToBuns % 1 === 0 ? 0 : 1)} {row.jariUnit === "Reels" ? "Buns" : "Reels"} <span style={{ color: T.taupe }}>(1 Bun = 4 Reels)</span>
+                  = {reelsToBuns.toFixed(reelsToBuns % 1 === 0 ? 0 : 1)} {row.jariUnit === "Reels" ? "Buns" : "Reels"} <span style={{ color: T.taupe }}>(1 Reel = 4 Buns)</span>
                 </div>
               )}
             </>

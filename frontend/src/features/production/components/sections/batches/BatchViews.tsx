@@ -4,7 +4,7 @@ import {
   Calendar as CalendarBlank, AlertCircle as WarningCircle, CheckCircle2 as CheckCircle,
   Eye as PhEye,
 } from "lucide-react";
-import { useMaterialIssue, materialItemToGrams, REELS_PER_BUN } from "@/features/materials";
+import { useMaterialIssue, materialItemToGrams, BUNS_PER_REEL } from "@/features/materials";
 import { formatBunsReels } from "@/shared/lib/weightUnits";
 import { T, F, EASE } from "../../theme";
 import { STAGE_CFG } from "../../data";
@@ -261,7 +261,7 @@ function BatchMaterialsCell({ batchId }: { batchId: string }) {
       t.grams += materialItemToGrams(m);
       if (m.materialType === "Jari") {
         t.reels += (m.unit || "").toLowerCase().startsWith("bun")
-          ? (m.quantity || 0) * REELS_PER_BUN
+          ? (m.quantity || 0) / BUNS_PER_REEL
           : (m.quantity || 0);
       }
     });

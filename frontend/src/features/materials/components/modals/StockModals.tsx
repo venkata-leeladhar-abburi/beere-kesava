@@ -99,7 +99,7 @@ export function AddNewStockModal({ open, onClose }: { open: boolean; onClose: ()
                     </div>
                     {form.quantity && (
                       <div style={{ fontFamily: F.ui, fontSize: 12, color: T.antiqueGold }}>
-                        = {form.jariUnit === "Reels" ? `${Math.round(Number(form.quantity) / 4)} Buns` : `${Math.round(Number(form.quantity) * 4)} Reels`} <span style={{ color: T.taupe }}>(1 Bun = 4 Reels)</span>
+                        = {form.jariUnit === "Reels" ? `${Math.round(Number(form.quantity) * 4)} Buns` : `${Math.round(Number(form.quantity) / 4)} Reels`} <span style={{ color: T.taupe }}>(1 Reel = 4 Buns)</span>
                       </div>
                     )}
                   </div>
@@ -198,7 +198,7 @@ export function BatchViewDetailsModal({ batch, onClose }: { batch: BatchRow | nu
                 {batch.type === "Jari" ? (
                   <>
                     <div>{row.value} Buns</div>
-                    <div style={{ fontSize: 13, fontWeight: 500, color: T.taupe, marginTop: 3 }}>({row.value * 4} Reels)</div>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: T.taupe, marginTop: 3 }}>({row.value / 4} Reels)</div>
                   </>
                 ) : (
                   row.value

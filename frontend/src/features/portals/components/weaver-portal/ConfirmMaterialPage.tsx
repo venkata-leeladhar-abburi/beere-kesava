@@ -5,7 +5,7 @@ import { useResponsive } from "../../../../hooks/useResponsive";
 import { useBatches } from "@/features/production";
 import { useDesignLibrary, DesignEntry } from "@/features/design-library";
 import { DesignCodeCard } from "@/features/design-library";
-import { useMaterialIssue, MaterialIssueRecord, JARI_REEL_GRAMS, materialItemToGrams, REELS_PER_BUN } from "@/features/materials";
+import { useMaterialIssue, MaterialIssueRecord, JARI_REEL_GRAMS, materialItemToGrams, BUNS_PER_REEL } from "@/features/materials";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Bell, Check,
@@ -348,7 +348,7 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
                     entry.issuedGrams += materialItemToGrams(m);
                     if (m.materialType === "Jari") {
                       entry.reels += (m.unit || "").toLowerCase().startsWith("bun")
-                        ? (m.quantity || 0) * REELS_PER_BUN
+                        ? (m.quantity || 0) / BUNS_PER_REEL
                         : (m.quantity || 0);
                     }
                   }));

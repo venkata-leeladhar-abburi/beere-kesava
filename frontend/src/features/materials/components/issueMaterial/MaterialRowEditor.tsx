@@ -14,7 +14,7 @@ export function MaterialRowEditor({ row, grnBatches, onChange, onRemove, showRem
   // eslint-disable-next-line no-restricted-syntax -- material quantity (kg/g/reels/buns), not currency
   const qtyNum = parseFloat(row.quantity) || 0;
   const overAvailable = selectedGrn && qtyNum > selectedGrn.availableQty;
-  const reelsToBuns = row.jariUnit === "Reels" ? (qtyNum / 4) : (qtyNum * 4);
+  const reelsToBuns = row.jariUnit === "Reels" ? (qtyNum * 4) : (qtyNum / 4);
 
   return (
     <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 16, padding: 20, marginBottom: 16, position: "relative" as const }}>
@@ -81,7 +81,7 @@ export function MaterialRowEditor({ row, grnBatches, onChange, onRemove, showRem
               </div>
               {row.quantity && (
                 <div style={{ fontFamily: F.ui, fontVariantNumeric: "tabular-nums", fontSize: 12, color: T.antiqueGold, marginTop: 4 }}>
-                  = {reelsToBuns.toFixed(reelsToBuns % 1 === 0 ? 0 : 1)} {row.jariUnit === "Reels" ? "Buns" : "Reels"} <span style={{ color: T.taupe }}>(1 Bun = 4 Reels)</span>
+                  = {reelsToBuns.toFixed(reelsToBuns % 1 === 0 ? 0 : 1)} {row.jariUnit === "Reels" ? "Buns" : "Reels"} <span style={{ color: T.taupe }}>(1 Reel = 4 Buns)</span>
                 </div>
               )}
             </>

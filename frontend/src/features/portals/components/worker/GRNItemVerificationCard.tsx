@@ -66,7 +66,7 @@ export function GRNItemVerificationCard({
           <div style={{ fontFamily: F.m, fontSize: 14, fontWeight: 700, color: C.text }}>
             {m.quantity} {m.unit}
             {isKg && <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted, fontWeight: 400 }}> ({(m.quantity * 1000)} g)</span>}
-            {m.materialType === "Jari" && m.unit === "Buns" && <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted, fontWeight: 400 }}> ({(m.quantity * 4)} Reels)</span>}
+            {m.materialType === "Jari" && m.unit === "Buns" && <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted, fontWeight: 400 }}> ({(m.quantity / 4)} Reels)</span>}
           </div>
         </div>
         {/* Received — editable */}

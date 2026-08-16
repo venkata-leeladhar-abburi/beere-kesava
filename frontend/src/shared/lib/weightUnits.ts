@@ -1,9 +1,9 @@
 // Mirrors backend/src/common/weight-units.util.ts — keep both in sync.
 // Jari is always displayed in Reels/Buns, never KG/G, regardless of which
 // unit it was originally recorded in (a GRN or stock row might store it as
-// KG). 1 Reel = 230g, 1 Bun = 4 Reels = 920g.
+// KG). 1 Reel = 230g, 1 Reel = 4 Buns = 57.5g each.
 const GRAMS_PER_REEL = 230;
-const REELS_PER_BUN = 4;
+const BUNS_PER_REEL = 4;
 
 export function toGrams(quantity: number, unit: string): number {
   switch (unit.trim().toUpperCase()) {
@@ -18,7 +18,7 @@ export function toGrams(quantity: number, unit: string): number {
       return quantity * GRAMS_PER_REEL;
     case "BUN":
     case "BUNS":
-      return quantity * REELS_PER_BUN * GRAMS_PER_REEL;
+      return quantity * (GRAMS_PER_REEL / BUNS_PER_REEL);
     default:
       return quantity;
   }
@@ -33,9 +33,7 @@ export function jariToReels(quantity: number, unit: string): number {
   return Math.round(gramsToReels(toGrams(quantity, unit)));
 }
 
-/** "3 Buns 2 Reels" style label from a whole-reels count. */
+/** "N Reels" label from a whole-reels count (no sub-reel Bun remainder — reels are already whole here). */
 export function formatBunsReels(reels: number): string {
-  const buns = Math.floor(reels / REELS_PER_BUN);
-  const rem = reels % REELS_PER_BUN;
-  return rem > 0 ? `${buns} Bun${buns !== 1 ? "s" : ""} ${rem} Reel${rem !== 1 ? "s" : ""}` : `${buns} Bun${buns !== 1 ? "s" : ""}`;
+  return `${reels} Reel${reels !== 1 ? "s" : ""}`;
 }

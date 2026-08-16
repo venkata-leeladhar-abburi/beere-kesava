@@ -96,8 +96,8 @@ export function POMaterialRow({
               </div>
               {item.quantity > 0 && (
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.antiqueGold }}>
-                  = {item.unit === "Reels" ? `${Math.round(item.quantity / 4)} Buns` : `${Math.round(item.quantity * 4)} Reels`}
-                  <span style={{ color: T.taupe }}> (1 Bun = 4 Reels)</span>
+                  = {item.unit === "Reels" ? `${Math.round(item.quantity * 4)} Buns` : `${Math.round(item.quantity / 4)} Reels`}
+                  <span style={{ color: T.taupe }}> (1 Reel = 4 Buns)</span>
                 </div>
               )}
             </div>

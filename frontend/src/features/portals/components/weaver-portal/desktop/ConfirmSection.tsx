@@ -1,6 +1,6 @@
 import React from "react";
 import { Check, CheckCircle2, Clock } from "lucide-react";
-import { JARI_REEL_GRAMS, MaterialIssueRecord, BatchMaterialSummary, WeaverMaterialSummary, materialItemToGrams, REELS_PER_BUN } from "@/features/materials";
+import { JARI_REEL_GRAMS, MaterialIssueRecord, BatchMaterialSummary, WeaverMaterialSummary, materialItemToGrams, BUNS_PER_REEL } from "@/features/materials";
 import { C, F, FABRIC_BG, MaterialHistoryCard, Tab5 } from "../theme";
 import { SectionHeading } from "@/shared/ui/portal/PortalChrome";
 import { DesktopHero } from "./DesktopHero";
@@ -160,7 +160,7 @@ export function ConfirmSection({
                       entry.issuedGrams += materialItemToGrams(m);
                       if (m.materialType === "Jari") {
                         entry.reels += (m.unit || "").toLowerCase().startsWith("bun")
-                          ? (m.quantity || 0) * REELS_PER_BUN
+                          ? (m.quantity || 0) / BUNS_PER_REEL
                           : (m.quantity || 0);
                       }
                     }));
