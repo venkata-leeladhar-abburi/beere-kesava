@@ -53,8 +53,8 @@ function StepPhone({ onSend }: { onSend: (phone: string) => void }) {
     try {
       await authApi.requestOtp(targetPhone);
       onSend(targetPhone);
-    } catch (err: any) {
-      setErrorMsg(err?.message || "Could not send OTP. Please check your connection and try again.");
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : "Could not send OTP. Please check your connection and try again.");
     } finally {
       setLoading(false);
     }
