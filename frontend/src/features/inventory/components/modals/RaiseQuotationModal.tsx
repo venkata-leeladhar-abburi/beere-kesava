@@ -139,12 +139,6 @@ export function RaiseQuotationModal({ sarees, available, onConfirm, onClose, ini
                 picked={picked}
                 onChange={setPicked}
                 label="Sarees on this quotation"
-                // A saree only needs to have passed QC, not finished
-                // finishing, to be quoted (the backend enforces the QC-pass
-                // requirement on create — see QuotationsService.create).
-                // The eventual dispatch on this quotation still enforces
-                // finishing-complete server-side, so nothing here weakens that.
-                requireFinishingComplete={false}
               />
               {noSarees ? (
                 <NoSareesNotice what="quote for" />

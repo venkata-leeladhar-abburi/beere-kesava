@@ -23,17 +23,6 @@ interface MainSareesTableProps {
   pageRows: WeaverSareeRow[];
   visible: WeaverSareeRow[];
   selectable: boolean;
-  // True (default) for any *physical dispatch* context (Shop/Wholesale
-  // dispatch, and the Inventory page's own table, since a checked row there
-  // could be routed to either) — the backend's /dispatch endpoint 404s on
-  // anything whose InventoryRecord isn't FINISHING_COMPLETE, so the checkbox
-  // must match that. Raising a quotation has no such backend requirement
-  // (QuotationsService.create never checks saree eligibility — only the
-  // later assign/receive/dispatch steps do), so RaiseQuotationModal passes
-  // false to let an in-progress (QC-passed but not yet finished) saree be
-  // quoted early; the eventual dispatch on that quotation still enforces the
-  // finishing-complete rule server-side regardless.
-  requireFinishingComplete?: boolean;
   selectedIds?: Set<string>;
   onToggleAll?: (visibleIds: string[]) => void;
   onToggleRow?: (sareeId: string) => void;
@@ -47,13 +36,18 @@ interface MainSareesTableProps {
 }
 
 export function MainSareesTable({
-  pageRows, visible, selectable, requireFinishingComplete = true, selectedIds, onToggleAll, onToggleRow,
+  pageRows, visible, selectable, selectedIds, onToggleAll, onToggleRow,
   isAll, isLoom, tab, dateHeader, showQcMoney, showMoney, pag
 }: MainSareesTableProps) {
   const mono = (color: string, extra?: React.CSSProperties): React.CSSProperties => ({ fontFamily: "var(--font-mono)", fontSize: 12, color, ...extra });
+  // Selectable for any purpose (dispatch or quotation) except sarees that are
+  // semi-defective, defective, or already dispatched. Note actual *dispatch*
+  // (not selection) still 404s server-side on anything short of
+  // FINISHING_COMPLETE — Raise Quotation has no such restriction, so this
+  // matters only for the Shop/Wholesale dispatch actions, which will surface
+  // that as a clear error at dispatch time rather than blocking selection.
   const isPickable = (r: WeaverSareeRow) =>
-    (requireFinishingComplete ? r.finishingStatus === "completed" : r.finishingStatus === "completed" || r.qcStatus === "passed")
-    && !r.dispatched;
+    r.qcStatus !== "defective" && r.qcStatus !== "semi" && !r.dispatched;
 
   const columns: ColumnDef<WeaverSareeRow>[] = [
     ...(selectable ? [{
@@ -69,12 +63,6 @@ export function MainSareesTable({
       })(),
       accessor: () => null,
       cell: (_v: unknown, r: WeaverSareeRow) => {
-        // Only sarees that finished the finishing step have an InventoryRecord
-        // with status FINISHING_COMPLETE — dispatch 404s on anything else.
-        // Already-dispatched sarees (including via a raised quotation)
-        // shouldn't be offered for dispatch again. See requireFinishingComplete
-        // above for the one context (raising a quotation) where an
-        // in-progress saree is intentionally still pickable.
         const dispatchable = isPickable(r);
         return (
           <Checkbox

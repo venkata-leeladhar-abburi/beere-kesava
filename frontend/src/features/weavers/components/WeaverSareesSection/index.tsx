@@ -17,7 +17,7 @@ import { useWeaverSareeRows } from "./useWeaverSareeRows";
 
 
 // ── Main section ─────────────────────────────────────────────────────────────
-export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver", selectable = false, requireFinishingComplete = true, selectedIds, onToggleRow, onToggleAll, onVisibleChange }: {
+export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver", selectable = false, selectedIds, onToggleRow, onToggleAll, onVisibleChange }: {
   /** Weaver id (WV-00X) or factory loom id (FL-00X), depending on ownerType. Unused when ownerType is "all". */
   weaverId?: string;
   weaverName?: string;
@@ -25,9 +25,6 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
   ownerType?: "weaver" | "loom" | "all";
   /** When true, renders a checkbox column (main table only) driven by the props below. */
   selectable?: boolean;
-  /** Passed straight through to MainSareesTable — see its doc comment. Only
-   * RaiseQuotationModal's picker sets this false. */
-  requireFinishingComplete?: boolean;
   selectedIds?: Set<string>;
   onToggleRow?: (sareeId: string) => void;
   onToggleAll?: (visibleIds: string[]) => void;
@@ -320,7 +317,6 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
           pageRows={pageRows}
           visible={visible}
           selectable={selectable}
-          requireFinishingComplete={requireFinishingComplete}
           selectedIds={selectedIds}
           onToggleAll={onToggleAll}
           onToggleRow={onToggleRow}
