@@ -89,7 +89,13 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
         if (!result[r.weaverId]) result[r.weaverId] = [];
         let wb = result[r.weaverId].find(x => x.id === b.batchId);
         if (!wb) {
-          wb = { id: b.batchId, total: 0, sareeTypeCode: r.sareeTypeCode ?? "—", bulkOrderLabel: r.bulkOrderLabel ?? undefined, sarees: [] };
+          wb = {
+            id: b.batchId, total: 0, sareeTypeCode: r.sareeTypeCode ?? "—", bulkOrderLabel: r.bulkOrderLabel ?? undefined,
+            // Which of the weaver's own looms this batch was actually
+            // assigned to at creation — not the weaver's total loom count.
+            loomNumber: r.weaverLoom ?? undefined,
+            sarees: [],
+          };
           result[r.weaverId].push(wb);
         }
         wb.sarees.push({ no: r.serial, sareeId: r.sareeId, serial: r.serial, status: "pending", isRework: r.awaitingRework === true });

@@ -87,8 +87,12 @@ export function SareeSelectionTable({
       ),
     },
     {
-      id: "loomNo", header: "Loom No.", accessor: () => selectedWeaver.looms, priority: 3,
-      cell: () => <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#845E04", background: "rgba(200,155,71,0.12)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 8, padding: "4px 9px" }}>Loom {selectedWeaver.looms}</span>,
+      id: "loomNo", header: "Loom No.", accessor: () => currentBatch.loomNumber ?? "—", priority: 3,
+      cell: () => currentBatch.loomNumber != null ? (
+        <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#845E04", background: "rgba(200,155,71,0.12)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 8, padding: "4px 9px" }}>Loom {currentBatch.loomNumber}</span>
+      ) : (
+        <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>—</span>
+      ),
     },
     {
       id: "sareeType", header: "Saree Type", accessor: () => currentBatch.sareeTypeCode, priority: 3,
