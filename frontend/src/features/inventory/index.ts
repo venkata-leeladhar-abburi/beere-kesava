@@ -8,3 +8,4 @@ export * from "./components/AllPurchasesPage";
 export * from "./components/AllStockPage";
 export * from "./components/ExternalPurchasesPage";
 export * from "./components/InventoryPage";
+export * from "./components/SupplierReturnsPage";

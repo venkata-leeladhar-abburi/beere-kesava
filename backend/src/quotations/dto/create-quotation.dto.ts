@@ -22,9 +22,8 @@ export class QuotationSareeInputDto {
 }
 
 export class CreateQuotationDto {
-  @IsOptional()
   @IsUUID()
-  customerId?: string;
+  customerId!: string;
 
   @IsOptional()
   @IsString()

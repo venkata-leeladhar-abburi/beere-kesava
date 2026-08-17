@@ -18,7 +18,7 @@ export interface PurchaseTxn { vendorId: string; date: string; amount: number; m
 
 // PAYMENT_STATUS values (lib/domain/status.ts), left untyped: VendorProfile.tsx
 // (out of scope for this pass) keys its own status config off these exact
-// literals — see data.ts's `buildVendorLedger` for where they're produced.
+// literals, produced by the vendor bill/payment API mappers.
 export interface VendorBill {
   id: string; invoiceNo: string; date: string; dueDate: string;
   amount: number; paid: number; balance: number;

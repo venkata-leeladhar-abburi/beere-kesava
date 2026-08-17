@@ -58,7 +58,10 @@ export interface CreateDispatchPayload {
   quotationRef?: string;
   // Wholesale only
   customerId?: string;
-  invoiceNumber?: string;
+  // Asks the backend to raise a tax invoice for this dispatch. The invoice
+  // number itself is allocated server-side and returned on the created record —
+  // it is never sent from here.
+  raiseInvoice?: boolean;
   pricePerSaree?: number;
   gstPct?: number;
   firmId?: string;

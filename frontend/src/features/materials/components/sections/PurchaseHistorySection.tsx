@@ -10,7 +10,7 @@ import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
 import { purchaseOrdersApi } from "../../../../shared/api/purchase-orders";
 import { vendorsApi } from "../../../../shared/api/vendors";
 import { vendorPaymentsApi } from "../../../../shared/api/payments";
-import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { DataTable, exportTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Button } from "../../../../shared/ui/primitives";
 import { jariToReels } from "../../../../shared/lib/weightUnits";
@@ -29,7 +29,7 @@ function formatCurrency(n: number | string) {
   return formatMoney(rupees(val));
 }
 
-export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport: () => void }) {
+export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport: (exporter: (format: "xlsx" | "csv") => Promise<void>) => void }) {
   const { isMobile, px } = useContext(MobileCtx);
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
 
@@ -318,7 +318,17 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
       title="Purchase History From All Vendors"
       subtitle="Everything ever purchased and received — from the day this system was started until today. Filter by a specific date range below."
       actions={
-        <Button onClick={onDownloadReport} variant="secondary" size="sm" iconLeft={Download}>
+        <Button
+          onClick={() => onDownloadReport(format => exportTable({
+            columns: vendorColumns,
+            rows: stats.vendorRows,
+            filename: "purchase-history",
+            format,
+          }))}
+          variant="secondary"
+          size="sm"
+          iconLeft={Download}
+        >
           Download Report
         </Button>
       }

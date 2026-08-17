@@ -148,14 +148,17 @@ export interface FinishingContextValue {
     receivedBy: string;
     receivedDate: string;
   }) => void;
-  dispatchSarees: (sareeIds: string[], record: Omit<DispatchRecord, "id">) => string;
+  // Resolves once the backend has created the record, so callers can read the
+  // server-assigned id and invoice number rather than inventing their own.
+  dispatchSarees: (sareeIds: string[], record: Omit<DispatchRecord, "id">) => Promise<{ id: string; invoiceNumber?: string }>;
   updateDispatch: (id: string, patch: Partial<DispatchRecord>) => void;
   deleteDispatch: (id: string, actorId: string) => void;
   quotations: Quotation[];
-  raiseQuotation: (q: Omit<Quotation, "id" | "createdAt">) => string;
+  // Resolves with the backend-assigned quotation number.
+  raiseQuotation: (q: Omit<Quotation, "id" | "createdAt">) => Promise<{ id: string; quotationNumber: string }>;
   assignQuotationFinishing: (quotationId: string, sareeIds: string[], staff: { id: string; name: string }, assignedBy: string) => void;
   receiveQuotationSarees: (quotationId: string, sareeIds: string[], receivedBy: string) => void;
-  markQuotationDispatched: (quotationId: string, dispatchId: string) => void;
+  markQuotationDispatched: (quotationId: string) => void;
   isError: boolean;
   error: unknown;
 }

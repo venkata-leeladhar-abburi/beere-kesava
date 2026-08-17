@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
 import { Prisma } from "../generated/prisma/client";
-import { IdGeneratorService } from "../id-generator/id-generator.service";
+import { IdGeneratorService, businessSegment } from "../id-generator/id-generator.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { ActorOnlyDto } from "./dto/actor-only.dto";
 import { CreateBulkOrderDto } from "./dto/create-bulk-order.dto";
@@ -25,8 +25,10 @@ export class BulkOrdersService {
       throw new NotFoundException(`Customer ${dto.customerId} not found`);
     }
 
-    const year = new Date().getFullYear();
-    const ref = await this.idGenerator.nextFormatted(`${ORDER_ID_PREFIX_BASE}-${year}`);
+    const ref = await this.idGenerator.nextScoped(
+      ORDER_ID_PREFIX_BASE,
+      customer.code ?? businessSegment(customer.name, "Customer"),
+    );
 
     const order = await this.prisma.bulkOrder.create({
       data: {

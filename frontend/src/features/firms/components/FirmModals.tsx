@@ -2,14 +2,14 @@ import React from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import {
   Edit, X, Building2, CreditCard, User, Phone,
-  MapPin, Hash, IndianRupee, Check,
+  MapPin, Hash, Check,
   TrendingUp, TrendingDown, AlertTriangle,
 } from "lucide-react";
 import {
   useFirms, Firm, FinancialEntry,
 } from "../contexts/FirmsContext";
 import { T, F } from "./theme";
-import { fmtAmt, initials, cardColor } from "./utils";
+import { initials, cardColor } from "./utils";
 import {
   FinSummaryStrip, FinSection, MiscSection
 } from "./FirmFinanceSections";

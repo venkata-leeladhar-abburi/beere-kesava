@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { CheckSquare, Square, Users, X } from "lucide-react";
 import { C, F } from "../tokens";
 import { useFinishing } from "@/features/finishing";
-import { EASE, WORKER_NAME, ScanBarBtn, useScanSim, Toast } from "./shared";
+import { EASE, WORKER_NAME, ScanBar, useScan, Toast } from "./shared";
 import { StaffPickerModal } from "./StaffPickerModal";
 import { Button, IconButton } from "../../../../../shared/ui/primitives";
 
@@ -16,7 +16,7 @@ export function SectionA({ isMobile }: { isMobile?: boolean }) {
   const [toast, setToast] = useState("");
 
   const unselectedIds = readySarees.filter(s => !selected.has(s.id)).map(s => s.id);
-  const { scanning, scanMsg, startScan } = useScanSim(unselectedIds, id => {
+  const { scanMsg, scanValue, setScanValue, submitScan } = useScan(unselectedIds, id => {
     setSelected(prev => { const next = new Set(prev); next.add(id); return next; });
   });
 
@@ -50,7 +50,7 @@ export function SectionA({ isMobile }: { isMobile?: boolean }) {
     <div>
       {/* Sub-header: scan + select-all */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, gap: 8 }}>
-        <ScanBarBtn label={scanning ? "Scanning…" : "Scan Barcode"} onClick={startScan} />
+        <ScanBar value={scanValue} onChange={setScanValue} onSubmit={submitScan} />
         {readySarees.length > 0 && (
           <Button variant="link" onClick={toggleAll} className="gap-1.5 p-0 px-1.5 py-1 text-xs text-[#69635E]">
             {allChecked ? <CheckSquare size={15} color={C.burg} /> : <Square size={15} color={C.muted} />}

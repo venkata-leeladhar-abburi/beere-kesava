@@ -135,7 +135,7 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
           <div style={{ flex: "1 1 320px" }}>
             <StatusPill taxonomy="condition" status={LOOM_STATUS_TO_CONDITION[loom.status]} />
             <div style={{ fontFamily: F.display, fontSize: 30, color: "#1A0A0F", lineHeight: 1.2, fontWeight: 600 }}>{loom.loomNumber}</div>
-            <div style={{ marginTop: 6 }}><EntityCode type="loom" value={loom.id} size="md" /></div>
+            <div style={{ marginTop: 6 }}><EntityCode type="loom" value={loom.displayCode || loom.id} size="md" /></div>
           </div>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap" as const }}>
             {[

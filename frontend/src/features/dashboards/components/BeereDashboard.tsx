@@ -42,6 +42,8 @@ const QcHistoryPage = lazy(() => import("../../qc/components/QcHistoryPage").the
 // eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 const ExternalPurchasesPage = lazy(() => import("../../inventory/components/ExternalPurchasesPage").then(m => ({ default: m.ExternalPurchasesPage })));
 // eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
+const SupplierReturnsPage = lazy(() => import("../../inventory/components/SupplierReturnsPage").then(m => ({ default: m.SupplierReturnsPage })));
+// eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 const AddUserPage = lazy(() => import("../../users/components/AddUserPage").then(m => ({ default: m.AddUserPage })));
 // eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 const FirmsPage = lazy(() => import("../../firms/components/FirmsPage").then(m => ({ default: m.FirmsPage })));
@@ -124,6 +126,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
   else if (tab === "receive-stock") nav = "ReceiveStock";
   else if (tab === "add-user") nav = "AddUser";
   else if (tab === "external-purchases") nav = "ExternalPurchases";
+  else if (tab === "supplier-returns") nav = "SupplierReturns";
   else if (tab === "batches") nav = "Batches";
   else if (tab === "designs") nav = "Designs";
   else if (tab === "finishing") nav = "Finishing";
@@ -168,6 +171,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
       ReceiveStock: "/admin/receive-stock",
       AddUser: "/admin/add-user",
       ExternalPurchases: "/admin/external-purchases",
+      SupplierReturns: "/admin/supplier-returns",
       Batches: "/admin/batches",
       Designs: "/admin/designs",
       Finishing: "/admin/finishing",
@@ -237,6 +241,8 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
         <AddUserPage />
       ) : mobileTab === "ExternalPurchases" ? (
         <ExternalPurchasesPage />
+      ) : mobileTab === "SupplierReturns" ? (
+        <SupplierReturnsPage />
       ) : mobileTab === "ReceiveStock" ? (
         <WorkerGRN />
       ) : mobileTab === "Batches" ? (
@@ -383,6 +389,8 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
         <AddUserPage />
       ) : nav === "ExternalPurchases" ? (
         <ExternalPurchasesPage />
+      ) : nav === "SupplierReturns" ? (
+        <SupplierReturnsPage />
       ) : nav === "Batches" ? (
         <BatchCreationPage />
       ) : nav === "Designs" ? (

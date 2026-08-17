@@ -1,7 +1,7 @@
 import React from "react";
 import { T, F } from "../../theme";
 import { WholesaleCustomer, WholesaleTab } from "../../types";
-import { Button, Field, Input, Select, SelectItem, Textarea } from "../../../../../shared/ui/primitives";
+import { Button, Field, Input, Textarea } from "../../../../../shared/ui/primitives";
 
 export function EditProfileTab({ customer, setWholesaleTab, onSave }: {
   customer: WholesaleCustomer;

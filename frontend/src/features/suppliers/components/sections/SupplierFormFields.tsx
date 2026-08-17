@@ -6,9 +6,8 @@ import React from "react";
 import { Star, X } from "lucide-react";
 import { T } from "../theme";
 import { inp, lbl } from "../common/primitives";
-import { STATES, PAYMENT_TERMS } from "../data";
 import { SupplierFormValues } from "../types";
-import { Field, Input, Select, SelectItem, IconButton } from "../../../../shared/ui/primitives";
+import { Field, Input, IconButton } from "../../../../shared/ui/primitives";
 
 export function SupplierFormFields({
   form, setForm, errors, cardPreview, onCardChange,

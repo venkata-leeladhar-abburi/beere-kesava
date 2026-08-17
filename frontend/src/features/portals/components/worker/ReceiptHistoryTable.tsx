@@ -100,7 +100,7 @@ export function ReceiptHistoryTable({ receiptHistory: propReceiptHistory, compac
             const unit = isJari ? "Reels" : "kg";
             return `${i.materialType === "WARP" ? "Warp" : i.materialType === "RESHAM" ? "Resham" : "Jari"} - ${i.name} (${qty} ${unit})`;
           }).join(", "),
-          receivedBy: "—",
+          receivedBy: g.receivedBy ? `${g.receivedBy.firstName} ${g.receivedBy.lastName}` : "—",
           status: (anyRejected ? "short" : "match") as ReconResult,
         };
       });

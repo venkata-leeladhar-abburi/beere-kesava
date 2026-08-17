@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
-import { IdGeneratorService } from "../id-generator/id-generator.service";
+import { IdGeneratorService, nameSegment } from "../id-generator/id-generator.service";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { WarpRequestStatus } from "../generated/prisma/client";
 
@@ -34,7 +34,11 @@ export class WarpRequestsService {
   }
 
   async create(dto: CreateWarpRequestDto) {
-    const id = await this.idGenerator.nextFormatted("WR-2026");
+    const weaver = await this.prisma.weaver.findUnique({ where: { id: dto.weaverId } });
+    if (!weaver) {
+      throw new NotFoundException(`Weaver ${dto.weaverId} not found`);
+    }
+    const id = await this.idGenerator.nextScoped("WR", weaver.code ?? nameSegment(weaver.firstName, "Weaver"));
     const item = await this.prisma.warpRequest.create({
       data: {
         id,

@@ -83,6 +83,22 @@ export interface CreateReturnPayload {
   restocked?: boolean;
 }
 
+/**
+ * A wholesale return whose piece was never tracked: it arrives with no barcode,
+ * so it is registered from the operator's description under the tag id being
+ * attached to it. Use createReturn instead when the saree was sold by us.
+ */
+export interface RegisterReturnedSareePayload {
+  sareeId: string;
+  sourceName: string;
+  reason: string;
+  weightG: number;
+  costPrice?: number;
+  designCode?: string;
+  sareeType?: string;
+  color?: string;
+}
+
 export const salesApi = {
   /** POST /sales — record a completed retail or wholesale sale */
   create: async (payload: CreateSalePayload) =>
@@ -101,6 +117,10 @@ export const salesApi = {
   /** POST /sales/returns — record a returned saree */
   createReturn: async (payload: CreateReturnPayload) =>
     normalizeReturn(await apiClient.post<RawReturnRecord>("/sales/returns", payload)),
+
+  /** POST /sales/returns/untracked — register a barcode-less wholesale return */
+  registerReturnedSaree: async (payload: RegisterReturnedSareePayload) =>
+    normalizeReturn(await apiClient.post<RawReturnRecord>("/sales/returns/untracked", payload)),
 
   /** GET /sales/returns/all */
   listReturns: async (pageSize = 100): Promise<PaginatedResponse<BackendSaleReturn>> => {

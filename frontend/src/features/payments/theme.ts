@@ -30,7 +30,6 @@ export const F = {
 
 export const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
-export const imgHeaderBg = "https://images.unsplash.com/photo-1588140686379-1b76a52103dc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
 import { imgBKLogo, imgSareeFooter } from "../../shared/constants/weaverImages";
 export { imgBKLogo, imgSareeFooter };
 import { useBulkOrders } from "@/features/bulk-orders";

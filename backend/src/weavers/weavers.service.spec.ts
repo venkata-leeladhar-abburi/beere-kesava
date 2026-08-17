@@ -15,7 +15,7 @@ describe("WeaversService", () => {
       materialIssueRecord: { count: jest.fn() },
     };
     auditLog = { recordAction: jest.fn() };
-    service = new WeaversService(prisma, auditLog);
+    service = new WeaversService(prisma, auditLog, { nextNamed: jest.fn() } as any);
   });
 
   describe("getWeaverStats", () => {

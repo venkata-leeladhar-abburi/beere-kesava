@@ -15,9 +15,8 @@ import { EntityCode, Money } from "@/shared/ui/domain";
 // ── Contact Vendor Modal ──────────────────────────────────────────────────────
 export function ContactVendorModal({ vendors, onClose }: { vendors: VendorPayment[]; onClose: () => void }) {
   const [selected, setSelected] = useState(vendors[0]?.id ?? "");
-  const [msgType]   = useState<"whatsapp"|"email"|"call">("whatsapp");
-  const [sending, setSending]   = useState(false);
-  const [sent, setSent]         = useState(false);
+  const [msgType, setMsgType]   = useState<"whatsapp"|"email"|"call">("whatsapp");
+  const [handedOff, setHandedOff] = useState(false);
 
   // Real vendor master data (phone, city, contact person) from GET
   // /vendors. BackendVendor has no email field, so email always falls
@@ -43,9 +42,28 @@ export function ContactVendorModal({ vendors, onClose }: { vendors: VendorPaymen
   const contact = liveContactsByName.get(vp?.vendor ?? "") ?? VENDOR_CONTACTS[vp?.vendor ?? ""] ?? { phone: "—", email: "—", city: "—", contactPerson: "—" };
   const balance = vp ? vp.invoiceAmt - vp.paidAmt : 0;
 
+  // Hands the reminder to the user's own WhatsApp / mail / phone app with the
+  // message prefilled — the app itself has no outbound messaging backend, so
+  // this used to just run a timer and claim the reminder had been sent.
+  const phoneDigits = (contact.phone || "").replace(/\D/g, "");
+  // Indian mobile numbers are stored as 10 digits; wa.me needs a country code.
+  const waNumber = phoneDigits.length === 10 ? `91${phoneDigits}` : phoneDigits;
+  const hasPhone = phoneDigits.length > 0;
+  const hasEmail = !!contact.email && contact.email !== "—";
+  const canSend  = msgType === "email" ? hasEmail : hasPhone;
+
   const handleSend = () => {
-    setSending(true);
-    setTimeout(() => { setSending(false); setSent(true); setTimeout(() => setSent(false), 2200); }, 900);
+    if (!canSend) return;
+    if (msgType === "whatsapp") {
+      window.open(`https://wa.me/${waNumber}?text=${encodeURIComponent(MESSAGE_PREVIEW)}`, "_blank", "noopener,noreferrer");
+    } else if (msgType === "email") {
+      const subject = `Payment reminder — PO ${vp?.poNumber ?? ""}`;
+      window.location.href = `mailto:${contact.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(MESSAGE_PREVIEW)}`;
+    } else {
+      window.location.href = `tel:${contact.phone}`;
+    }
+    setHandedOff(true);
+    setTimeout(() => setHandedOff(false), 2600);
   };
 
   const CHANNELS = [
@@ -161,6 +179,35 @@ Thank you.`;
 
 
 
+          {/* Channel picker */}
+          <div>
+            <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 8 }}>Send via</div>
+            <div style={{ display: "flex", gap: 10 }}>
+              {CHANNELS.map(c => {
+                const active = msgType === c.key;
+                const disabled = c.key === "email" ? !hasEmail : !hasPhone;
+                return (
+                  <button
+                    key={c.key}
+                    type="button"
+                    disabled={disabled}
+                    onClick={() => setMsgType(c.key)}
+                    title={disabled ? `No ${c.key === "email" ? "email address" : "phone number"} on file for this vendor` : c.desc}
+                    style={{
+                      flex: 1, padding: "10px 8px", borderRadius: 10, cursor: disabled ? "not-allowed" : "pointer",
+                      border: `2px solid ${active ? T.royalBurgundy : T.borderDef}`,
+                      background: active ? "rgba(110,15,45,0.05)" : "#FFFFFF",
+                      opacity: disabled ? 0.45 : 1,
+                      fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown,
+                    }}
+                  >
+                    <span style={{ marginRight: 6 }}>{c.icon}</span>{c.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Message preview */}
           <div>
             <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 8 }}>Message Preview</div>
@@ -174,12 +221,15 @@ Thank you.`;
             variant="primary"
             fullWidth
             onClick={handleSend}
-            disabled={sending || sent}
-            loading={sending}
-            iconLeft={sent ? CheckCircle2 : Mail}
-            className={`h-12 rounded-[12px] ${sent ? "bg-[#1E6640]" : "bg-gradient-to-br from-[#6E0F2D] to-[#4A0A1D]"}`}
+            disabled={!canSend}
+            iconLeft={handedOff ? CheckCircle2 : Mail}
+            className={`h-12 rounded-[12px] ${handedOff ? "bg-[#1E6640]" : "bg-gradient-to-br from-[#6E0F2D] to-[#4A0A1D]"}`}
           >
-            {sent ? "Reminder Sent Successfully!" : `Send Reminder via ${CHANNELS.find(c => c.key === msgType)?.label}`}
+            {handedOff
+              ? (msgType === "call" ? "Dialler opened" : `${CHANNELS.find(c => c.key === msgType)?.label} opened — send it there`)
+              : canSend
+                ? `Open ${CHANNELS.find(c => c.key === msgType)?.label} with this message`
+                : `No ${msgType === "email" ? "email address" : "phone number"} on file`}
           </Button>
         </div>
       </div>

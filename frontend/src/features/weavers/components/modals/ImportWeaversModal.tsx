@@ -4,13 +4,12 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { Upload as UploadSimple, X } from "lucide-react";
 import { T, F } from "../theme";
 import { Status, ParsedWeaverRow } from "../types";
-import type { ImportedWeaver } from "../data";
 import { Button, IconButton, Input } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
-import { rupees, formatMoney } from "@/lib/domain/money";
+import { weaversApi } from "../../../../shared/api/weavers";
 
-export function ImportWeaversModal({ open, onClose, onImport, nextIdStart }: {
-  open: boolean; onClose: () => void; onImport: (rows: ImportedWeaver[]) => void; nextIdStart: number;
+export function ImportWeaversModal({ open, onClose, onImported }: {
+  open: boolean; onClose: () => void; onImported: () => void;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [fileName, setFileName] = useState<string | null>(null);
@@ -18,6 +17,7 @@ export function ImportWeaversModal({ open, onClose, onImport, nextIdStart }: {
   const [valid, setValid] = useState<ParsedWeaverRow[]>([]);
   const [invalid, setInvalid] = useState<{ row: number; reason: string }[]>([]);
   const [parsing, setParsing] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const normalize = (s: unknown) => String(s ?? "").trim().toLowerCase().replace(/[\s_-]+/g, "");
   const HEADER_MAP: Record<string, keyof ParsedWeaverRow> = {
@@ -97,18 +97,43 @@ export function ImportWeaversModal({ open, onClose, onImport, nextIdStart }: {
     reader.readAsArrayBuffer(file);
   };
 
-  const handleConfirm = () => {
+  // Creates each imported weaver through the real API. This previously only
+  // pushed rows (with client-invented crypto.randomUUID() ids) into local page
+  // state, so an imported roster looked fine until the next refresh and was
+  // never actually saved.
+  const handleConfirm = async () => {
     const initialsOf = (name: string) => name.split(" ").filter(Boolean).slice(0, 2).map(s => s[0]?.toUpperCase() ?? "").join("") || "WV";
-    const palette = ["#5A3E6B", "#2D6B6B", "#4A6B4A", "#9B6B8A", "#2D7D6B", "#4A5E7A", "#7A2040", "#6B4A2A"];
-    const rows: ImportedWeaver[] = valid.map((v, i) => ({
-      id: crypto.randomUUID(),
-      name: v.name, village: v.village, cluster: v.village, photo: null,
-      initials: initialsOf(v.name), bg: palette[(nextIdStart + i) % palette.length],
-      status: v.status, thisMonth: 0, passRate: 0, totalEver: 0,
-      looms: v.looms, batch: null, design: null, mobile: v.mobile,
-      totalPaid: formatMoney(rupees(0)), lastActive: "Just imported",
-    }));
-    onImport(rows);
+    setSaving(true);
+    setError(null);
+
+    const failures: string[] = [];
+    for (const v of valid) {
+      const [firstName, ...rest] = v.name.trim().split(/\s+/);
+      try {
+        await weaversApi.create({
+          firstName,
+          lastName: rest.join(" ") || firstName,
+          initials: initialsOf(v.name),
+          village: v.village || undefined,
+          cluster: v.village || undefined,
+          looms: v.looms,
+          photoUrl: "",
+          email: "",
+          phone: v.mobile,
+        });
+      } catch {
+        failures.push(v.name);
+      }
+    }
+
+    setSaving(false);
+    if (failures.length) {
+      setError(`Could not import ${failures.length} of ${valid.length} weavers: ${failures.join(", ")}. The rest were saved.`);
+      setValid(valid.filter(v => failures.includes(v.name)));
+      onImported();
+      return;
+    }
+    onImported();
     reset();
     onClose();
   };
@@ -184,11 +209,11 @@ export function ImportWeaversModal({ open, onClose, onImport, nextIdStart }: {
         <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", marginTop: 28, borderTop: `1px solid ${T.borderDef}`, paddingTop: 20 }}>
           <Button onClick={() => { reset(); onClose(); }} variant="secondary" className="rounded-[10px]">Cancel</Button>
           <Button
-            disabled={valid.length === 0} onClick={handleConfirm}
+            disabled={valid.length === 0 || saving} onClick={handleConfirm}
             variant="primary"
             className="rounded-[10px] bg-[#6E0F2D]"
           >
-            Import {valid.length > 0 ? valid.length : ""} Weaver{valid.length !== 1 ? "s" : ""}
+            {saving ? "Importing…" : <>Import {valid.length > 0 ? valid.length : ""} Weaver{valid.length !== 1 ? "s" : ""}</>}
           </Button>
         </div>
       </div>

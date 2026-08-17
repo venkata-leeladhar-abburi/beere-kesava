@@ -12,7 +12,7 @@ import { Button } from "../../../../shared/ui/primitives";
 import { resolveAssetUrl } from "../../../../shared/api/uploads";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
-export function useRealWeavers(extraWeavers: typeof WEAVERS = []) {
+export function useRealWeavers() {
   const { data: weaversRes, isLoading: rosterLoading, isError: rosterError } = useQuery({
     queryKey: ["weavers-card-roster"],
     queryFn: () => weaversApi.list(),
@@ -52,16 +52,16 @@ export function useRealWeavers(extraWeavers: typeof WEAVERS = []) {
 
 
 
-  const combined = [...realWeavers, ...extraWeavers];
+  const combined = realWeavers;
   return Object.assign(combined, {
     isLoading: rosterLoading || (roster.length > 0 && statsLoading),
     isError: rosterError || statsError,
   });
 }
 
-export function WeaverCardGrid({ onSelect, onEdit, onBatches, extraWeavers = [] }: { onSelect: (w: typeof WEAVERS[0]) => void; onEdit: (w: typeof WEAVERS[0]) => void; onBatches: (w: typeof WEAVERS[0]) => void; extraWeavers?: typeof WEAVERS }) {
+export function WeaverCardGrid({ onSelect, onEdit, onBatches }: { onSelect: (w: typeof WEAVERS[0]) => void; onEdit: (w: typeof WEAVERS[0]) => void; onBatches: (w: typeof WEAVERS[0]) => void }) {
   const [showAll, setShowAll] = useState(true);
-  const allWeavers = useRealWeavers(extraWeavers);
+  const allWeavers = useRealWeavers();
   const visible = showAll ? allWeavers : allWeavers.slice(0, 4);
 
   if (allWeavers.isLoading) {
@@ -240,9 +240,9 @@ export function WeaverCardGrid({ onSelect, onEdit, onBatches, extraWeavers = [] 
     </div>
   );
 }
-export function WeaverListView({ onSelect, extraWeavers = [] }: { onSelect: (w: typeof WEAVERS[0]) => void; extraWeavers?: typeof WEAVERS }) {
+export function WeaverListView({ onSelect }: { onSelect: (w: typeof WEAVERS[0]) => void }) {
   const [showAll, setShowAll] = useState(false);
-  const allWeavers = useRealWeavers(extraWeavers);
+  const allWeavers = useRealWeavers();
   const visible = showAll ? allWeavers : allWeavers.slice(0, 5);
 
   if (allWeavers.isLoading) {

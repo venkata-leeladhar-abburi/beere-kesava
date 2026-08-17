@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 import {
   MapPin, Phone, Building2, FileText, MessageSquare, Landmark, StickyNote,
-  IndianRupee, AlertTriangle, Package, Trash2,
+  AlertTriangle, Package, Trash2,
 } from "lucide-react";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { T, F } from "./theme";

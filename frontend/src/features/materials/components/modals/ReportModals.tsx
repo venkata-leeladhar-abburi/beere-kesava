@@ -124,15 +124,42 @@ export function FullIssueHistoryModal({ open, onClose }: { open: boolean; onClos
 }
 
 // ─── DOWNLOAD REPORT MODAL ────────────────────────────────────────────────────
-export function DownloadReportModal({ open, onClose, title }: { open: boolean; onClose: () => void; title: string }) {
+// Formats are limited to the two the app can actually produce. A "PDF Report"
+// option used to be offered alongside them, and none of the three did anything:
+// the download handler was two timers and a checkmark, so no file was ever
+// written.
+export type ReportFormat = "xlsx" | "csv";
+
+export function DownloadReportModal({ open, onClose, title, onExport }: {
+  open: boolean;
+  onClose: () => void;
+  title: string;
+  /** Writes the file. Receives the format the user picked. */
+  onExport: (format: ReportFormat) => void | Promise<void>;
+}) {
+  const [format, setFormat] = useState<ReportFormat>("xlsx");
   const [downloading, setDownloading] = useState(false);
   const [done, setDone] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     setDownloading(true);
-    setTimeout(() => { setDownloading(false); setDone(true); }, 1500);
-    setTimeout(() => { setDone(false); onClose(); }, 3000);
+    setError("");
+    try {
+      await onExport(format);
+      setDone(true);
+      setTimeout(() => { setDone(false); onClose(); }, 1600);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not generate the report. Please try again.");
+    } finally {
+      setDownloading(false);
+    }
   };
+
+  const FORMATS: { key: ReportFormat; fmt: string; icon: React.ReactNode; desc: string; bg: string }[] = [
+    { key: "xlsx", fmt: "Excel Spreadsheet", icon: <BarChart2 size={20} color={T.green} />, desc: "Raw data in .xlsx format for analysis", bg: "rgba(30,102,64,0.05)" },
+    { key: "csv", fmt: "CSV File", icon: <Download size={20} color={T.antiqueGold} />, desc: "Simple comma-separated values file", bg: "rgba(200,155,71,0.07)" },
+  ];
 
   return (
     <ModalOverlay open={open} onClose={onClose}>
@@ -144,27 +171,40 @@ export function DownloadReportModal({ open, onClose, title }: { open: boolean; o
               <Check size={32} color={T.green} />
             </div>
             <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: T.green, marginBottom: 8 }}>Report Downloaded!</div>
-            <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Your report has been saved successfully.</div>
+            <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Check your browser&rsquo;s downloads for the file.</div>
           </div>
         ) : (
           <>
             <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 22 }}>
-              {[
-                { fmt: "PDF Report", icon: <FileText size={20} color={T.royalBurgundy} />, desc: "Formatted document with charts and tables", bg: "rgba(110,15,45,0.05)" },
-                { fmt: "Excel Spreadsheet", icon: <BarChart2 size={20} color={T.green} />, desc: "Raw data in .xlsx format for analysis", bg: "rgba(30,102,64,0.05)" },
-                { fmt: "CSV File", icon: <Download size={20} color={T.antiqueGold} />, desc: "Simple comma-separated values file", bg: "rgba(200,155,71,0.07)" },
-              ].map((f) => (
-                <div key={f.fmt} style={{ display: "flex", alignItems: "center", gap: 14, background: f.bg, borderRadius: 12, padding: "14px 16px", cursor: "pointer", border: `1px solid rgba(110,15,45,0.08)` }}>
-                  <div style={{ width: 42, height: 42, borderRadius: 11, background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{f.icon}</div>
-                  <div>
-                    <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>{f.fmt}</div>
-                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{f.desc}</div>
-                  </div>
-                </div>
-              ))}
+              {FORMATS.map((f) => {
+                const active = format === f.key;
+                return (
+                  <button
+                    key={f.key}
+                    type="button"
+                    onClick={() => setFormat(f.key)}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 14, background: f.bg, borderRadius: 12,
+                      padding: "14px 16px", cursor: "pointer", width: "100%", textAlign: "left",
+                      border: `${active ? 2 : 1}px solid ${active ? T.royalBurgundy : "rgba(110,15,45,0.08)"}`,
+                    }}
+                  >
+                    <div style={{ width: 42, height: 42, borderRadius: 11, background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{f.icon}</div>
+                    <div>
+                      <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>{f.fmt}</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{f.desc}</div>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
+            {error && (
+              <div style={{ marginBottom: 14, fontFamily: F.ui, fontSize: 13, color: T.crimson, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.20)", borderRadius: 8, padding: "9px 12px" }}>
+                {error}
+              </div>
+            )}
             <div style={{ display: "flex", gap: 12 }}>
-              <Button onClick={onClose} variant="secondary" size="md" className="flex-1">
+              <Button onClick={onClose} variant="secondary" size="md" className="flex-1" disabled={downloading}>
                 Cancel
               </Button>
               <Button

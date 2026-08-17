@@ -126,7 +126,7 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
     name: supplier.name, contactName: supplier.contactName, phone: supplier.phone,
     whatsapp: supplier.whatsapp || "", city: supplier.city, state: supplier.state,
     address: supplier.address, terms: supplier.terms, bankName: supplier.bankName || "",
-    accountNo: supplier.accountNo || "", gstCode: supplier.gstCode,
+    accountNo: supplier.accountNo || "", ifscCode: supplier.ifscCode || "", gstCode: supplier.gstCode,
     rating: supplier.rating || 3, notes: supplier.notes || "",
   });
   const [cardPreview, setCardPreview] = useState<string | null>(supplier.visitingCard || null);
@@ -137,14 +137,14 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
       name: supplier.name, contactName: supplier.contactName, phone: supplier.phone,
       whatsapp: supplier.whatsapp || "", city: supplier.city, state: supplier.state,
       address: supplier.address, terms: supplier.terms, bankName: supplier.bankName || "",
-      accountNo: supplier.accountNo || "", gstCode: supplier.gstCode,
+      accountNo: supplier.accountNo || "", ifscCode: supplier.ifscCode || "", gstCode: supplier.gstCode,
       rating: supplier.rating || 3, notes: supplier.notes || "",
     });
     setCardPreview(supplier.visitingCard || null);
   }, [supplier]);
 
-  const saveProfile = () => {
-    updateSupplier(supplier.id, { ...form, visitingCard: cardPreview || undefined });
+  const saveProfile = (values: SupplierFormValues = form) => {
+    updateSupplier(supplier.id, { ...values, visitingCard: cardPreview || undefined });
     setSavedFlash(true);
     setTimeout(() => setSavedFlash(false), 2200);
   };
@@ -300,7 +300,7 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
             />
           )}
 
-          {tab === "contact" && <ContactTab card={card} supplier={supplier} />}
+          {tab === "contact" && <ContactTab supplier={supplier} />}
 
           {tab === "edit" && (
             <EditTab

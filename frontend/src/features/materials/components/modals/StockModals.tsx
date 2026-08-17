@@ -10,6 +10,7 @@ import { useDocument } from "../../../../shared/ui/document";
 import { rupees } from "@/lib/domain/money";
 import { Money, EntityCode } from "@/shared/ui/domain";
 import { fromPaise, lineAmountPaise } from "@/lib/gst";
+import { rawMaterialsApi } from "@/shared/api/rawMaterials";
 
 // ─── ADD NEW STOCK MODAL ──────────────────────────────────────────────────────
 export function AddNewStockModal({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -26,13 +27,45 @@ export function AddNewStockModal({ open, onClose }: { open: boolean; onClose: ()
     notes: "",
   });
   const [submitted, setSubmitted] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const [createdGrnId, setCreatedGrnId] = useState("");
 
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
 
-  const handleSubmit = () => {
+  // Posts a real goods-receipt note. This previously only ran a timer and
+  // claimed success, so nothing was ever recorded and stock never moved.
+  const handleSubmit = async () => {
     if (!form.details || !form.vendor || !form.receivedDate || !form.quantity) return;
-    setSubmitted(true);
-    setTimeout(() => { setSubmitted(false); onClose(); setForm({ materialType: "Warp", details: "", vendor: "", receivedDate: "", quantity: "", quantityGm: "", jariUnit: "Reels", warpReshamUnit: "kg", pricePerKg: "", notes: "" }); }, 1800);
+    setSaving(true);
+    setSaveError("");
+    try {
+      const unit = form.materialType === "Jari" ? form.jariUnit : (form.warpReshamUnit || "kg");
+      const created = await rawMaterialsApi.createGrn({
+        supplierName: form.vendor,
+        invoiceDate: form.receivedDate,
+        notes: form.notes || undefined,
+        items: [{
+          materialType: form.materialType.toUpperCase() as "WARP" | "RESHAM" | "JARI",
+          name: form.details,
+          quantity: Number(form.quantity),
+          unit: unit.toUpperCase(),
+          unitPrice: Number(form.pricePerKg) || 0,
+        }],
+      });
+      setCreatedGrnId(created.id);
+      setSubmitted(true);
+      setTimeout(() => {
+        setSubmitted(false);
+        setCreatedGrnId("");
+        onClose();
+        setForm({ materialType: "Warp", details: "", vendor: "", receivedDate: "", quantity: "", quantityGm: "", jariUnit: "Reels", warpReshamUnit: "kg", pricePerKg: "", notes: "" });
+      }, 1800);
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : "Could not save this stock. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const labelStyle: React.CSSProperties = {
@@ -50,7 +83,7 @@ export function AddNewStockModal({ open, onClose }: { open: boolean; onClose: ()
               <Check size={32} color={T.green} />
             </div>
             <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: T.green, marginBottom: 8 }}>Stock Added Successfully!</div>
-            <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>The new batch has been recorded and is now in the system.</div>
+            <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Recorded as {createdGrnId} — stock has been updated.</div>
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
@@ -137,12 +170,18 @@ export function AddNewStockModal({ open, onClose }: { open: boolean; onClose: ()
               <Textarea value={form.notes} onChange={e => set("notes", e.target.value)} placeholder="Any additional notes about this batch..." rows={3} />
             </Field>
 
+            {saveError && (
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.crimson, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.20)", borderRadius: 8, padding: "9px 12px" }}>
+                {saveError}
+              </div>
+            )}
+
             <div style={{ display: "flex", gap: 12, paddingTop: 8 }}>
-              <Button onClick={onClose} variant="secondary" size="md" className="flex-1">
+              <Button onClick={onClose} variant="secondary" size="md" className="flex-1" disabled={saving}>
                 Cancel
               </Button>
-              <Button onClick={handleSubmit} variant="primary" size="md" iconLeft={Plus} className="flex-[2]">
-                Add to Stock
+              <Button onClick={handleSubmit} variant="primary" size="md" iconLeft={Plus} className="flex-[2]" disabled={saving}>
+                {saving ? "Saving…" : "Add to Stock"}
               </Button>
             </div>
           </div>

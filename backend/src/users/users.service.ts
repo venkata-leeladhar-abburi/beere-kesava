@@ -2,8 +2,8 @@ import { ConflictException, Injectable, NotFoundException } from "@nestjs/common
 import { PaginatedResult } from "../common/pagination";
 import { nextSequenceId } from "../common/sequence-id.util";
 import { AccessLevel, Prisma, UserRole } from "../generated/prisma/client";
+import { IdGeneratorService, nameSegment } from "../id-generator/id-generator.service";
 import { PrismaService } from "../prisma/prisma.service";
-import { nextWeaverCode } from "../weavers/weavers.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { ListUsersQueryDto } from "./dto/list-users-query.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
@@ -25,9 +25,16 @@ const ROLE_ID_PREFIX: Partial<Record<UserRole, string>> = {
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly idGenerator: IdGeneratorService,
+  ) {}
 
   async create(dto: CreateUserDto) {
+    // Allocated before the transaction: the id counter is its own atomic
+    // statement, so it must not run on the transaction's connection.
+    const weaverCode =
+      dto.role === "WEAVER" ? await this.idGenerator.nextNamed("WEAVER", nameSegment(dto.firstName)) : null;
     try {
       return await this.prisma.$transaction(async (tx) => {
         // Some roles are backed by their own domain table (currently just
@@ -42,7 +49,7 @@ export class UsersService {
           dto.role === "WEAVER"
             ? await tx.weaver.create({
                 data: {
-                  code: await nextWeaverCode(tx, dto.firstName),
+                  code: weaverCode!,
                   name: `${dto.firstName} ${dto.lastName}`.trim(),
                   firstName: dto.firstName,
                   lastName: dto.lastName,

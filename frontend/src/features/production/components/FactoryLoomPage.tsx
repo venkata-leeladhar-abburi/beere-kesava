@@ -29,6 +29,7 @@ import { MaterialsFooter } from "@/features/materials";
 function backendLoomToFrontend(l: BackendFactoryLoom): FactoryLoom {
   return {
     id: l.id,
+    displayCode: l.code ?? undefined,
     loomNumber: l.loomNumber,
     location: l.location ?? "",
     operatorName: l.operatorName ?? "",

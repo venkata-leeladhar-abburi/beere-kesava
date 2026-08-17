@@ -243,8 +243,9 @@ export class AnalyticsService {
       this.prisma.invoice.findMany({
         select: { customerId: true, invoiceDate: true },
       }),
+      // customerId is required on SaleRecord, so no filter is needed here —
+      // every row already has one.
       this.prisma.saleRecord.findMany({
-        where: { customerId: { not: null } },
         select: { customerId: true, date: true },
       }),
     ]);

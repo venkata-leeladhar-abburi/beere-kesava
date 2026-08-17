@@ -5,7 +5,7 @@ import { ListPartyQueryDto } from "../common/dto/list-party-query.dto";
 import { UpdatePartyDto } from "../common/dto/update-party.dto";
 import { PaginatedResult } from "../common/pagination";
 import { Prisma } from "../generated/prisma/client";
-import { IdGeneratorService } from "../id-generator/id-generator.service";
+import { IdGeneratorService, businessSegment } from "../id-generator/id-generator.service";
 import { PrismaService } from "../prisma/prisma.service";
 
 @Injectable()
@@ -17,7 +17,9 @@ export class VendorsService {
   ) {}
 
   async create(dto: CreatePartyDto) {
-    const code = await this.idGenerator.nextFormatted("VENDOR");
+    // "<BusinessName>-NNN", e.g. "ShivaTraders-001" — the sequence is a single
+    // counter shared across all vendors, not per name.
+    const code = await this.idGenerator.nextNamed("VENDOR", businessSegment(dto.name));
     return this.prisma.vendor.create({ data: { ...dto, code } });
   }
 

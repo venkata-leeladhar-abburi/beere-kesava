@@ -1,3 +1,4 @@
+import { NotFoundException } from "@nestjs/common";
 import { RawMaterialsService } from "./raw-materials.service";
 import { MaterialType } from "../generated/prisma/client";
 
@@ -9,7 +10,7 @@ describe("RawMaterialsService.createGrn", () => {
   let tx: any;
 
   beforeEach(() => {
-    idGenerator = { nextFormatted: jest.fn().mockResolvedValue("GRN-2026-0001") };
+    idGenerator = { nextScoped: jest.fn().mockResolvedValue("GRN-RaviTextiles-001") };
     auditLog = { recordAction: jest.fn() };
 
     tx = {
@@ -22,6 +23,7 @@ describe("RawMaterialsService.createGrn", () => {
     };
 
     prisma = {
+      vendor: { findUnique: jest.fn().mockResolvedValue({ id: "vendor-1", name: "Ravi Textiles", code: "RaviTextiles-001" }) },
       $transaction: jest.fn().mockImplementation((fn: any) => fn(tx)),
     };
 
@@ -37,6 +39,7 @@ describe("RawMaterialsService.createGrn", () => {
 
     await service.createGrn({
       supplierName: "Acme Yarns",
+      vendorId: "vendor-1",
       items: [
         {
           materialType: MaterialType.WARP,
@@ -61,6 +64,7 @@ describe("RawMaterialsService.createGrn", () => {
 
     await service.createGrn({
       supplierName: "Acme Yarns",
+      vendorId: "vendor-1",
       items: [{ materialType: MaterialType.WARP, name: "Silk Yarn", quantity: 50, unitPrice: 80 }],
     });
 
@@ -108,6 +112,7 @@ describe("RawMaterialsService.createGrn", () => {
 
     await service.createGrn({
       supplierName: "Acme Yarns",
+      vendorId: "vendor-1",
       actorId: "user-1",
       items: [{ materialType: MaterialType.WARP, name: "Cotton", quantity: 10, unitPrice: 25 }],
     });
@@ -124,5 +129,19 @@ describe("RawMaterialsService.createGrn", () => {
     expect(auditLog.recordAction).toHaveBeenCalledWith(
       expect.objectContaining({ actorId: "user-1", module: "MATERIALS" }),
     );
+  });
+
+  it("rejects an unknown vendorId before touching stock, since vendor is now mandatory on a GRN", async () => {
+    prisma.vendor.findUnique.mockResolvedValue(null);
+
+    await expect(
+      service.createGrn({
+        supplierName: "Acme Yarns",
+        vendorId: "missing-vendor",
+        items: [{ materialType: MaterialType.WARP, name: "Cotton", quantity: 10, unitPrice: 25 }],
+      }),
+    ).rejects.toThrow(NotFoundException);
+
+    expect(prisma.$transaction).not.toHaveBeenCalled();
   });
 });

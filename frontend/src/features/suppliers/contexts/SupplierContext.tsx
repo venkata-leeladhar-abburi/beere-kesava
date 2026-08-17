@@ -40,6 +40,7 @@ function toSupplier(s: BackendSupplier): Supplier {
     terms: s.terms ?? "",
     bankName: s.bankName ?? undefined,
     accountNo: s.accountNo ?? undefined,
+    ifscCode: s.ifscCode ?? undefined,
     notes: s.notes ?? undefined,
     status: s.status === "ACTIVE" ? "active" : s.status === "INACTIVE" ? "inactive" : "overdue",
     rating: s.rating ?? 0,
@@ -48,6 +49,7 @@ function toSupplier(s: BackendSupplier): Supplier {
 function toSareeTag(l: BackendPurchaseSareeLine): SareeTag {
   return {
     id: l.code,
+    lineId: l.id,
     weight: l.weight ?? "",
     date: l.sareeDate ? l.sareeDate.split("T")[0] : "",
     sareeType: l.sareeType ?? "",
@@ -151,17 +153,14 @@ interface SupplierContextValue {
   payments: SupplierPayment[];
   requests: PurchaseRequest[];
 
-  addSupplier: (s: Omit<Supplier, "id" | "initials">) => string;
+  addSupplier: (s: Omit<Supplier, "id" | "initials">) => void;
   updateSupplier: (id: string, patch: Partial<Supplier>) => void;
   deleteSupplier: (id: string) => Promise<void>;
   getSupplier: (id: string) => Supplier | undefined;
-  nextSupplierId: () => string;
 
-  addPurchase: (p: Omit<Purchase, "id">) => string;
+  addPurchase: (p: Omit<Purchase, "id">) => void;
   updatePurchase: (id: string, patch: Partial<Purchase>) => void;
   deletePurchase: (id: string) => void;
-  /** Marks the given number of pieces on one saree line as returned to the supplier. */
-  returnSareePieces: (purchaseId: string, lineCode: string, count: number) => void;
 
   addPayment: (p: Omit<SupplierPayment, "id">) => void;
   raiseRequest: (r: Omit<PurchaseRequest, "id" | "status">) => void;
@@ -270,17 +269,12 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
   const setRawRequests = (updater: (prev: BackendPurchaseRequest[]) => BackendPurchaseRequest[]) =>
     qc.setQueryData<BackendPurchaseRequest[]>(REQUESTS_KEY, prev => updater(prev ?? []));
 
-  const nextSupplierId = useCallback(
-    () => `SUP-${String(suppliers.length + 1).padStart(3, "0")}`,
-    [suppliers.length]
-  );
-
   const addSupplierMutation = useMutation({
     mutationFn: (s: Omit<Supplier, "id" | "initials">) =>
       suppliersApi.create({
         name: s.name, contactName: s.contactName, phone: s.phone, whatsapp: s.whatsapp,
         city: s.city, state: s.state, address: s.address, gstCode: s.gstCode,
-        specialty: s.specialty, terms: s.terms, bankName: s.bankName, accountNo: s.accountNo,
+        specialty: s.specialty, terms: s.terms, bankName: s.bankName, accountNo: s.accountNo, ifscCode: s.ifscCode,
         notes: s.notes, rating: s.rating,
       }),
     onSuccess: (created) => {
@@ -298,7 +292,7 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
         name: args.patch.name, contactName: args.patch.contactName, phone: args.patch.phone,
         whatsapp: args.patch.whatsapp, city: args.patch.city, state: args.patch.state,
         address: args.patch.address, gstCode: args.patch.gstCode, specialty: args.patch.specialty,
-        terms: args.patch.terms, bankName: args.patch.bankName, accountNo: args.patch.accountNo,
+        terms: args.patch.terms, bankName: args.patch.bankName, accountNo: args.patch.accountNo, ifscCode: args.patch.ifscCode,
         notes: args.patch.notes, rating: args.patch.rating,
         status: args.patch.status ? args.patch.status.toUpperCase() : undefined,
       }),
@@ -440,33 +434,13 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
-  const addSupplier = (s: Omit<Supplier, "id" | "initials">): string => {
-    const id = `SUP-${String(Date.now()).slice(-6)}`;
-    addSupplierMutation.mutate(s);
-    return id;
-  };
+  const addSupplier = (s: Omit<Supplier, "id" | "initials">) => addSupplierMutation.mutate(s);
   const updateSupplier = (id: string, patch: Partial<Supplier>) => updateSupplierMutation.mutate({ id, patch });
   const deleteSupplier = (id: string) => deleteSupplierMutation.mutateAsync(id).then(() => undefined);
 
-  const addPurchase = (p: Omit<Purchase, "id">): string => {
-    const id = `EXT-2026-${String(Date.now()).slice(-4)}`;
-    addPurchaseMutation.mutate(p);
-    return id;
-  };
+  const addPurchase = (p: Omit<Purchase, "id">) => addPurchaseMutation.mutate(p);
   const updatePurchase = (id: string, patch: Partial<Purchase>) => updatePurchaseMutation.mutate({ id, patch });
   const deletePurchase = (id: string) => deletePurchaseMutation.mutate(id);
-
-  const returnSareePieces = (purchaseId: string, lineCode: string, count: number) => {
-    const purchase = purchases.find(p => p.id === purchaseId);
-    if (!purchase) return;
-    const sarees = purchase.sarees.map(s => {
-      if (s.id !== lineCode) return s;
-      const qty = Number(s.quantity) || 1;
-      const nextReturned = Math.min(qty, (Number(s.returnedQuantity) || 0) + count);
-      return { ...s, returnedQuantity: nextReturned };
-    });
-    updatePurchase(purchaseId, { sarees });
-  };
 
   const addPayment = (p: Omit<SupplierPayment, "id">) => addPaymentMutation.mutate(p);
   const raiseRequest = (r: Omit<PurchaseRequest, "id" | "status">) => raiseRequestMutation.mutate(r);
@@ -493,8 +467,8 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
 
   const value: SupplierContextValue = {
     suppliers, purchases, payments, requests,
-    addSupplier, updateSupplier, deleteSupplier, getSupplier, nextSupplierId,
-    addPurchase, updatePurchase, deletePurchase, returnSareePieces,
+    addSupplier, updateSupplier, deleteSupplier, getSupplier,
+    addPurchase, updatePurchase, deletePurchase,
     addPayment, raiseRequest, decideRequest, statsFor,
     isError, error,
   };

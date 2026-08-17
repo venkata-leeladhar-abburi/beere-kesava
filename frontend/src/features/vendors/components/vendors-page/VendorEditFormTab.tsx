@@ -2,8 +2,7 @@ import React from "react";
 import { Star } from "lucide-react";
 import { T, F } from "./theme";
 import { Vendor } from "./types";
-import { PAYMENT_TERMS, STATES } from "./data";
-import { Button, Field, Input, Textarea, Select, SelectItem, CheckboxField } from "../../../../shared/ui/primitives";
+import { Button, Field, Input, Textarea, CheckboxField } from "../../../../shared/ui/primitives";
 
 export function VendorEditFormTab({ vendor, onUpdate }: { vendor: Vendor; onUpdate?: (v: Vendor) => void }) {
   const [form, setForm] = React.useState(vendor);

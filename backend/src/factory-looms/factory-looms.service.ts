@@ -1,6 +1,7 @@
 import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { PaginatedResult } from "../common/pagination";
 import { Prisma } from "../generated/prisma/client";
+import { IdGeneratorService } from "../id-generator/id-generator.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateFactoryLoomDto } from "./dto/create-factory-loom.dto";
 import { ListFactoryLoomsQueryDto } from "./dto/list-factory-looms-query.dto";
@@ -8,7 +9,10 @@ import { UpdateFactoryLoomDto } from "./dto/update-factory-loom.dto";
 
 @Injectable()
 export class FactoryLoomsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly idGenerator: IdGeneratorService,
+  ) {}
 
   async create(dto: CreateFactoryLoomDto) {
     const existing = await this.prisma.factoryLoom.findUnique({
@@ -17,7 +21,11 @@ export class FactoryLoomsService {
     if (existing) {
       throw new ConflictException(`A factory loom with number ${dto.loomNumber} already exists`);
     }
-    return this.prisma.factoryLoom.create({ data: dto });
+    // "Loom-NNN" — the operator-entered loomNumber ("BKB-F-06") stays a
+    // separate field; this is the sequential id shown wherever the loom is
+    // referenced elsewhere (material issue/return, design dispatch).
+    const code = await this.idGenerator.nextNamed("LOOM", "Loom");
+    return this.prisma.factoryLoom.create({ data: { ...dto, code } });
   }
 
   async findAll(

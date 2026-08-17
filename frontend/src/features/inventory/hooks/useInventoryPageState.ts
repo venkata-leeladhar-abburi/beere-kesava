@@ -163,16 +163,22 @@ export function useInventoryPageState() {
     });
   }, []);
 
-  const handleScan = useCallback(() => {
-    const unselected = mirroredRows.filter(r => !selected.has(r.sareeId));
-    if (!unselected.length) { setScanMsg("No more sarees to scan."); setTimeout(() => setScanMsg(""), 2000); return; }
-    setScanMsg("Scanning…");
-    setTimeout(() => {
-      const r = unselected[Math.floor(Math.random() * unselected.length)];
-      setSelected(prev => { const next = new Set(prev); next.add(r.sareeId); return next; });
-      setScanMsg(`Scanned: ${r.sareeId}`);
-      setTimeout(() => setScanMsg(""), 2500);
-    }, 800);
+  // Selects the saree whose id was actually scanned. Barcode scanners behave as
+  // keyboards (they type the code and press Enter), so the scanned value comes
+  // in as text and is matched against the rows on screen. This previously
+  // ignored its input entirely and selected a *random* unselected saree, which
+  // silently mis-assigned physical goods.
+  const handleScan = useCallback((rawId: string) => {
+    const id = rawId.trim();
+    const show = (msg: string) => { setScanMsg(msg); setTimeout(() => setScanMsg(""), 2500); };
+    if (!id) return show("Scan a barcode or type a saree ID.");
+
+    const match = mirroredRows.find(r => r.sareeId.toLowerCase() === id.toLowerCase());
+    if (!match) return show(`No saree "${id}" in this list.`);
+    if (selected.has(match.sareeId)) return show(`${match.sareeId} is already selected.`);
+
+    setSelected(prev => new Set(prev).add(match.sareeId));
+    show(`Selected ${match.sareeId}`);
   }, [mirroredRows, selected]);
 
   const handleShopConfirm = (transport: TransportData, opts?: { skipped?: boolean; picked?: FinishingReturn[] }) => {
@@ -197,19 +203,19 @@ export function useInventoryPageState() {
     return returns.filter(r => r.quotationRef === quotationDispatch.quotationNumber && r.inventoryStatus === "Ready for Dispatch");
   }, [quotationDispatch, returns]);
 
-  const handleWholesaleConfirm = (transport: TransportData, inv: InvoiceData, customerId: string, bulkOrderRef?: string, opts?: { skipped?: boolean; picked?: FinishingReturn[]; quotationRef?: string }) => {
+  const handleWholesaleConfirm = async (transport: TransportData, inv: InvoiceData, customerId: string, bulkOrderRef?: string, opts?: { skipped?: boolean; picked?: FinishingReturn[]; quotationRef?: string }) => {
     const sareeIds = opts?.picked?.length
       ? opts.picked.map(s => s.sareeId || s.id)
       : quotationDispatch ? quotationDispatchSarees.map(r => r.sareeId) : dispatchableSelected.map(r => r.id);
     const customer = wholesaleCustomers.find(c => c.id === customerId);
     const subtotal = sareeIds.reduce((sum, id) => sum + (parseFloat(inv.prices[id]) || 0), 0);
     const gstAmount = inv.applyGst ? subtotal * (parseFloat(inv.gstPct) || 0) / 100 : 0;
-    const dispatchId = dispatchSarees(sareeIds, {
+    const created = await dispatchSarees(sareeIds, {
       type: "wholesale", sareeIds, dispatchDate: transport.dispatchDate || new Date().toISOString().slice(0, 10),
       lrNumber: transport.lrNumber, transportCompany: transport.transportCompany, vehicleNumber: transport.vehicleNumber, driverName: transport.driverName, notes: transport.notes,
       customerId, customerName: customer?.name, customerPhone: customer?.phone,
       expectedDelivery: transport.expectedDelivery, specialInstructions: transport.specialInstructions,
-      invoiceNumber: inv.invoiceNumber, invoiceDate: inv.invoiceDate,
+      invoiceDate: inv.invoiceDate,
       pricePerSaree: sareeIds.length ? Math.round(subtotal / sareeIds.length) : 0,
       totalAmount: subtotal,
       gstPct: inv.applyGst ? parseFloat(inv.gstPct) || 0 : 0,
@@ -221,20 +227,21 @@ export function useInventoryPageState() {
       pendingReceipt: !!opts?.skipped,
     });
     if (bulkOrderRef) {
-      markDispatched(bulkOrderRef, inv.invoiceNumber);
+      markDispatched(bulkOrderRef, created.invoiceNumber ?? "");
     }
     if (quotationDispatch) {
-      markQuotationDispatched(quotationDispatch.id, dispatchId);
+      markQuotationDispatched(quotationDispatch.id);
     }
     setModal(null);
     setQuotationDispatch(null);
     setSelected(new Set());
+    const invoiceLabel = created.invoiceNumber ? ` ${created.invoiceNumber}` : "";
     setToast(opts?.skipped
-      ? `Invoice raised — ${sareeIds.length} saree${sareeIds.length > 1 ? "s" : ""} dispatched to ${customer?.name}, complete transport & receipt later`
-      : `Invoice sent — ${sareeIds.length} saree${sareeIds.length > 1 ? "s" : ""} dispatched to ${customer?.name}`);
+      ? `Invoice${invoiceLabel} raised — ${sareeIds.length} saree${sareeIds.length > 1 ? "s" : ""} dispatched to ${customer?.name}, complete transport & receipt later`
+      : `Invoice${invoiceLabel} sent — ${sareeIds.length} saree${sareeIds.length > 1 ? "s" : ""} dispatched to ${customer?.name}`);
   };
 
-  const handleRaiseQuotation = (inv: InvoiceData, customerId: string, bulkOrderRef?: string, picked?: FinishingReturn[]) => {
+  const handleRaiseQuotation = async (inv: InvoiceData, customerId: string, bulkOrderRef?: string, picked?: FinishingReturn[]) => {
     const customer = wholesaleCustomers.find(c => c.id === customerId);
     const quoteSarees = (picked?.length ? picked : selectedSarees).map(s => ({
       id: s.sareeId || s.id,
@@ -246,8 +253,10 @@ export function useInventoryPageState() {
     const subtotal = quoteSarees.reduce((sum, r) => sum + (parseFloat(inv.prices[r.id]) || 0), 0);
     const gstAmount = inv.applyGst ? subtotal * (parseFloat(inv.gstPct) || 0) / 100 : 0;
     const firm = firms.find(f => f.id === inv.firmId);
-    raiseQuotation({
-      quotationNumber: inv.invoiceNumber,
+    const createdQuotation = await raiseQuotation({
+      // Placeholder only — QuotationsService assigns the real number, which is
+      // read back from the response below for the confirmation toast.
+      quotationNumber: "",
       quotationDate: inv.invoiceDate,
       customerId,
       customerName: customer?.name ?? "—",
@@ -277,7 +286,7 @@ export function useInventoryPageState() {
     });
     setModal(null);
     setSelected(new Set());
-    setToast(`Quotation ${inv.invoiceNumber} raised for ${customer?.name} — sent to finishing`);
+    setToast(`Quotation ${createdQuotation.quotationNumber} raised for ${customer?.name} — sent to finishing`);
   };
 
   return {

@@ -4,6 +4,8 @@ export type BackendLoomStatus = "ACTIVE" | "IDLE" | "MAINTENANCE";
 
 export interface BackendFactoryLoom {
   id: string;
+  /** Human-facing sequential id, e.g. "Loom-001" — assigned server-side. */
+  code: string | null;
   loomNumber: string;
   location: string | null;
   operatorName: string | null;

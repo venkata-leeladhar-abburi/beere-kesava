@@ -1,10 +1,10 @@
 import React from "react";
-import { Building2, Phone, FileText, IndianRupee, Clock, Package, MapPin, Landmark, MessageSquare, StickyNote } from "lucide-react";
+import { Building2, Phone, FileText, Clock, Package, MapPin, Landmark, MessageSquare, StickyNote } from "lucide-react";
 import { T, F } from "../../theme";
 import { Supplier } from "../../../contexts/SupplierContext";
 
-export function ContactTab({ card, supplier }: { card: React.CSSProperties; supplier: Supplier }) {
-  const hasBankDetails = supplier.bankName || supplier.accountNo || (supplier as any).ifscCode;
+export function ContactTab({ supplier }: { supplier: Supplier }) {
+  const hasBankDetails = supplier.bankName || supplier.accountNo || supplier.ifscCode;
   
   return (
     <div style={{ display: "flex", gap: 32, flexWrap: "wrap", alignItems: "flex-start" }}>
@@ -79,7 +79,7 @@ export function ContactTab({ card, supplier }: { card: React.CSSProperties; supp
                 </div>
                 <div>
                   <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>IFSC:</span>
-                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, color: T.luxuryBrown }}>{(supplier as any).ifscCode || "—"}</div>
+                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, color: T.luxuryBrown }}>{supplier.ifscCode || "—"}</div>
                 </div>
               </div>
             ) : (

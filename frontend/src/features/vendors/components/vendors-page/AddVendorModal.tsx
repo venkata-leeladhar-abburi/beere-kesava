@@ -7,7 +7,7 @@ import { PAYMENT_TERMS, STATES } from "./data";
 import { Button, Field, Input, Textarea, Select, SelectItem, CheckboxField } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
 
-export function AddVendorModal({ onSave, onCancel, nextId }: { onSave: (v: Vendor) => void; onCancel: () => void; nextId: string }) {
+export function AddVendorModal({ onSave, onCancel }: { onSave: (v: Vendor) => void; onCancel: () => void }) {
   const [form, setForm] = useState({
     name: "", contactName: "", phone: "", whatsapp: "",
     city: "", state: "Andhra Pradesh", address: "",
@@ -34,7 +34,9 @@ export function AddVendorModal({ onSave, onCancel, nextId }: { onSave: (v: Vendo
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
     const initials = form.name.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase();
     onSave({
-      id: nextId, name: form.name, initials,
+      // Placeholder — VendorsPage.handleSave discards this and keeps the id the
+      // backend assigns on create.
+      id: "", name: form.name, initials,
       contactName: form.contactName, phone: form.phone,
       whatsapp: form.whatsapp, city: form.city, state: form.state,
       address: form.address, gstCode: form.gstCode, type: form.types.join(" / "),
@@ -56,7 +58,7 @@ export function AddVendorModal({ onSave, onCancel, nextId }: { onSave: (v: Vendo
             </Dialog.Title>
             <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, margin: 0 }}>Fill in the business and contact details. Payment terms can be set here and changed later.</p>
           </div>
-          <div style={{ padding: "4px 12px", background: T.silkCream, borderRadius: 20, fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, flexShrink: 0 }}>{nextId} will be assigned</div>
+          <div style={{ padding: "4px 12px", background: T.silkCream, borderRadius: 20, fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, flexShrink: 0 }}>ID assigned on save</div>
         </div>
 
         {/* Form Grid */}

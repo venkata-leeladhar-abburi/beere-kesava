@@ -2,17 +2,11 @@ import { ConflictException, Injectable, NotFoundException } from "@nestjs/common
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
 import { CustomerType, Prisma } from "../generated/prisma/client";
-import { IdGeneratorService } from "../id-generator/id-generator.service";
+import { IdGeneratorService, businessSegment, nameSegment } from "../id-generator/id-generator.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateCustomerDto } from "./dto/create-customer.dto";
 import { ListCustomersQueryDto } from "./dto/list-customers-query.dto";
 import { UpdateCustomerDto } from "./dto/update-customer.dto";
-
-// Wholesale customer codes are "<FirstName>-<globalSerial>", e.g. "Sree-1", "Shiva-2" —
-// the serial is a single counter shared across all wholesale customers, not per-name.
-function firstNameOf(name: string): string {
-  return name.trim().split(/\s+/)[0] || "Customer";
-}
 
 @Injectable()
 export class CustomersService {
@@ -24,10 +18,14 @@ export class CustomersService {
 
   async create(dto: CreateCustomerDto) {
     const { actorId, ...data } = dto;
+    // Wholesale trades as a business, so its code carries the whole business
+    // name ("SreeGaneshSilks-001"); retail is a person, so it carries a first
+    // name ("Padma-001"). Each type has its own counter, so the two sequences
+    // advance independently.
     const code =
       data.type === CustomerType.WHOLESALE
-        ? `${firstNameOf(data.name)}-${await this.idGenerator.next("WHL")}`
-        : await this.idGenerator.nextFormatted("CUST");
+        ? await this.idGenerator.nextNamed("WHL", businessSegment(data.name, "Customer"))
+        : await this.idGenerator.nextNamed("CUST", nameSegment(data.name, "Customer"));
     const customer = await this.prisma.customer.create({ data: { ...data, code } });
 
     await this.auditLog.recordAction({
@@ -93,7 +91,7 @@ export class CustomersService {
           _max: { date: true },
         })
       : [];
-    const salesByCustomer = new Map(sales.map((s) => [s.customerId as string, s]));
+    const salesByCustomer = new Map(sales.map((s) => [s.customerId, s]));
 
     const enriched = items.map((c) => {
       const agg = salesByCustomer.get(c.id);

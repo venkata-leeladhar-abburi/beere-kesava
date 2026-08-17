@@ -69,6 +69,8 @@ export interface InvoicePayment {
 
 export interface Invoice {
   id: string; customer: string; city: string;
+  /** Customer's phone, used to open a WhatsApp reminder. */
+  customerPhone?: string;
   invoiceDate: string; dueDate: string;
   total: number; paid: number; status: InvoiceStatus;
   daysOverdue?: number;

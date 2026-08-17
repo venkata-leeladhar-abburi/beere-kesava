@@ -36,7 +36,10 @@ export function AddLoomModal({ open, onClose, onAdd, editLoom }: {
   const [form, setForm] = useState<LoomForm>(blank);
   useEffect(() => { if (editLoom) { const { id: _id, ...r } = editLoom; setForm(r as LoomForm); } else setForm(blank); }, [editLoom, open]);
   const patch = (p: Partial<LoomForm>) => setForm((prev) => ({ ...prev, ...p }));
-  const valid = form.loomNumber.trim() && form.operatorName.trim() && form.location.trim();
+  // Location is no longer collected on add — the backend field stays for
+  // existing looms and is still editable from Edit, since data already
+  // recorded there shouldn't be thrown away.
+  const valid = form.loomNumber.trim();
   return (
     <Modal open={open} onOpenChange={o => !o && onClose()} size="sm">
         <div style={{ background: `linear-gradient(110deg, ${T.darkBurgundy} 0%, #5A1A30 100%)`, padding: "22px 26px", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
@@ -44,7 +47,9 @@ export function AddLoomModal({ open, onClose, onAdd, editLoom }: {
             <Dialog.Title asChild>
               <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFF" }}>{editLoom ? "Edit Factory Loom" : "Add Factory Loom"}</div>
             </Dialog.Title>
-            <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.6)", marginTop: 4 }}>Enter details for this loom</div>
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.6)", marginTop: 4 }}>
+              {editLoom ? "Update details for this loom" : "Enter the loom number — its ID is assigned automatically"}
+            </div>
           </div>
           <Dialog.Close asChild>
             <IconButton icon={X} label="Close" variant="ghost" size="sm" className="bg-white/12 text-white hover:bg-white/20" />
@@ -54,9 +59,11 @@ export function AddLoomModal({ open, onClose, onAdd, editLoom }: {
           <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 14 }}>
             <FI label="Loom Number / Name" value={form.loomNumber} onChange={v => patch({ loomNumber: v })} placeholder="e.g. Loom F-06" required />
           </div>
-          <FI label="Location (Floor / Section)" value={form.location} onChange={v => patch({ location: v })} placeholder="e.g. Factory Floor A" required />
+          {editLoom && (
+            <FI label="Location (Floor / Section)" value={form.location} onChange={v => patch({ location: v })} placeholder="e.g. Factory Floor A" />
+          )}
           <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 14 }}>
-            <FI label="Operator Name" value={form.operatorName} onChange={v => patch({ operatorName: v })} placeholder="Full name" required />
+            <FI label="Operator Name" value={form.operatorName} onChange={v => patch({ operatorName: v })} placeholder="Full name" />
             <FI label="Operator Phone" value={form.operatorPhone} onChange={v => patch({ operatorPhone: v })} placeholder="98765 00000" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 14 }}>
@@ -68,7 +75,10 @@ export function AddLoomModal({ open, onClose, onAdd, editLoom }: {
           </Field>
           <div style={{ display: "flex", gap: 10 }}>
             <Button onClick={onClose} variant="secondary" size="lg" className="flex-1 h-[46px]">Cancel</Button>
-            <Button disabled={!valid} onClick={() => { onAdd({ id: editLoom?.id || `FL-${Date.now()}`, ...form } as FactoryLoom); onClose(); }}
+            {/* On create the id is left blank — FactoryLoomPage posts to the API
+                and keeps the id the backend assigns. It used to send
+                `FL-${Date.now()}`, a client-invented id that was thrown away. */}
+            <Button disabled={!valid} onClick={() => { onAdd({ id: editLoom?.id || "", ...form } as FactoryLoom); onClose(); }}
               variant="primary" size="lg" className="flex-[2] h-[46px]">
               {editLoom ? "Save Changes" : "Add Loom"}
             </Button>

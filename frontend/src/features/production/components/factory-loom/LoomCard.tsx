@@ -23,7 +23,7 @@ export function LoomCard({ loom, batches, sarees, onView }: { loom: FactoryLoom;
             <div style={{ width: 48, height: 48, borderRadius: 14, background: tc, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Factory size={22} color="#FFF" /></div>
             <div>
               <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: T.luxuryBrown }}>{loom.loomNumber}</div>
-              <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 2 }}>{loom.id}</div>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 2 }}>{loom.displayCode || loom.id}</div>
             </div>
           </div>
           <StatusPill taxonomy="condition" status={LOOM_STATUS_TO_CONDITION[loom.status]} />

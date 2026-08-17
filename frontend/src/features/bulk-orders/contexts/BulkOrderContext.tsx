@@ -283,7 +283,10 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
         return m ? parseInt(m[1] ?? "0", 10) : 0;
       })
       .filter(n => n > 0);
-    const maxNum = allNums.length > 0 ? Math.max(...allNums) : 41;
+    // Preview only — BulkOrdersService assigns the authoritative ref on create.
+    // Starts from 0 on an empty database; it previously seeded from 41, which
+    // invented "ORD-2026-042" as the very first order number.
+    const maxNum = allNums.length > 0 ? Math.max(...allNums) : 0;
     return `ORD-2026-${String(maxNum + 1).padStart(3, "0")}`;
   }, [bulkOrders]);
 

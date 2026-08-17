@@ -1,15 +1,15 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "motion/react";
 import { Scan, X, ShoppingBag, Users, FileText } from "lucide-react";
 import { T, F, EASE, card } from "../theme";
-import { Button, IconButton } from "../../../../shared/ui/primitives";
+import { Button, IconButton, Input } from "../../../../shared/ui/primitives";
 
 interface ActionBarProps {
   hasAnyDispatchAction: boolean;
   selectedCount: number;
   dispatchableSelectedCount: number;
   scanMsg: string;
-  onScan: () => void;
+  onScan: (sareeId: string) => void;
   canDispatchShop: boolean;
   canDispatchWholesale: boolean;
   canRaiseQuotation: boolean;
@@ -29,19 +29,32 @@ export function ActionBar({
   onOpenModal,
   onClearSelection,
 }: ActionBarProps) {
+  const [scanValue, setScanValue] = useState("");
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       {/* Toolbar */}
       <div style={{ ...card, padding: "16px 20px", display: "flex", flexDirection: "column", gap: 10 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" as const }}>
-          {/* Scan */}
-          <Button variant="primary" size="sm" iconLeft={Scan} onClick={onScan} className="shrink-0">
+        {/* Barcode scanners type the code and press Enter, so the same input
+            serves both a physical scanner and manual entry. */}
+        <form
+          onSubmit={e => { e.preventDefault(); onScan(scanValue); setScanValue(""); }}
+          style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" as const }}
+        >
+          <Input
+            value={scanValue}
+            onChange={e => setScanValue(e.target.value)}
+            placeholder="Scan barcode or type saree ID"
+            aria-label="Saree ID to scan"
+            className="w-[260px] font-mono"
+          />
+          <Button type="submit" variant="primary" size="sm" iconLeft={Scan} className="shrink-0">
             Scan
           </Button>
           <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-            Scans a random unselected saree from the table below and selects it.
+            Selects the scanned saree in the table below.
           </span>
-        </div>
+        </form>
 
         {/* Scan feedback */}
         {scanMsg && (
