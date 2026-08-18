@@ -3,9 +3,10 @@ import { IsInt, IsOptional, IsString, Length, Max, Min } from "class-validator";
 export class CreateFactoryLoomDto {
   // Real loom numbers in use are free-form (e.g. "Loom F-01"), not a fixed
   // pattern — just require a non-empty unique string.
+  @IsOptional()
   @IsString()
   @Length(1, 50)
-  loomNumber!: string;
+  loomNumber?: string;
 
   @IsOptional()
   @IsString()

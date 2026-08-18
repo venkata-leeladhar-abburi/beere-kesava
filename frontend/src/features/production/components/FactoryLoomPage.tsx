@@ -7,7 +7,7 @@ import {
   Factory, CheckCircle2, AlertTriangle, Settings2
 } from "lucide-react";
 import factoryLoomsHero from "../../../assets/inline/factoryLoomsHero.jpg";
-import { FactoryLoom } from "../data/factoryLooms";
+import { FactoryLoom, loomLabel } from "../data/factoryLooms";
 import { T, F } from "./factory-loom/theme";
 import { LoomBatch, LoomMaterial, LoomSaree, LOOM_STATUS_TO_CONDITION } from "./factory-loom/types";
 import { StatusPill } from "../../../shared/ui/domain";
@@ -51,7 +51,8 @@ export function FactoryLoomPage() {
   const [looms, setLooms] = useState<FactoryLoom[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [_saveError, setSaveError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
   const [view, setView] = useState<"card"|"table">("card");
   const [search, setSearch] = useState("");
   const [sf, setSf] = useState<"all"|"active"|"idle"|"maintenance">("all");
@@ -149,12 +150,14 @@ export function FactoryLoomPage() {
   useEffect(() => { void loadLooms(); }, [loadLooms]);
 
   const filtered = looms.filter(l => {
-    const ms = !search || l.loomNumber.toLowerCase().includes(search.toLowerCase()) || l.operatorName.toLowerCase().includes(search.toLowerCase()) || l.id.toLowerCase().includes(search.toLowerCase());
+    const q = search.toLowerCase();
+    const ms = !q || [loomLabel(l), l.loomNumber, l.operatorName, l.id].some(v => (v || "").toLowerCase().includes(q));
     return ms && (sf === "all" || l.status === sf);
   });
 
   const handleAddOrEdit = async (l: FactoryLoom) => {
     setSaveError(null);
+    setSaving(true);
     try {
       if (editLoom) {
         const updated = await factoryLoomsApi.update(l.id, {
@@ -167,13 +170,18 @@ export function FactoryLoomPage() {
         });
         setLooms(prev => prev.map(x => (x.id === l.id ? backendLoomToFrontend(updated) : x)));
       } else {
+        // Blank fields must be omitted, not sent as "": the API validates
+        // optional strings by length, so an empty loomNumber/location was
+        // rejected with a 400 and no loom was ever created. The loom number
+        // itself is no longer collected — the backend assigns it along with
+        // the display code.
+        const trimmed = (v: string | undefined) => (v && v.trim() !== "" ? v.trim() : undefined);
         const created = await factoryLoomsApi.create({
-          loomNumber: l.loomNumber,
-          location: l.location,
-          operatorName: l.operatorName,
-          operatorPhone: l.operatorPhone,
+          location: trimmed(l.location),
+          operatorName: trimmed(l.operatorName),
+          operatorPhone: trimmed(l.operatorPhone),
           installedYear: l.installedYear ? Number(l.installedYear) : undefined,
-          notes: l.notes,
+          notes: trimmed(l.notes),
         });
         const final =
           l.status !== "active"
@@ -185,6 +193,8 @@ export function FactoryLoomPage() {
       setEditLoom(null);
     } catch (err) {
       setSaveError(err instanceof ApiError ? err.message : "Could not save the loom.");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -320,8 +330,8 @@ export function FactoryLoomPage() {
                     responsive
                     columns={[
                       {
-                        id: "loomNumber", header: "Loom #", accessor: l => l.loomNumber, priority: 1,
-                        cell: (_v, l) => <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{l.loomNumber}</span>,
+                        id: "loomCode", header: "Loom Code", accessor: l => loomLabel(l), priority: 1,
+                        cell: (_v, l) => <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{loomLabel(l)}</span>,
                       },
                       {
                         id: "operator", header: "Operator", accessor: l => l.operatorName,
@@ -340,7 +350,7 @@ export function FactoryLoomPage() {
                         cell: (_v, l) => (
                           <>
                             <Button onClick={() => setSelected(l)} variant="link" size="sm" className="mr-3">View Details</Button>
-                            <IconButton onClick={() => { setEditLoom(l); setShowModal(true); }} icon={Edit2} label={`Edit loom ${l.loomNumber}`} variant="ghost" size="sm" />
+                            <IconButton onClick={() => { setEditLoom(l); setShowModal(true); }} icon={Edit2} label={`Edit loom ${loomLabel(l)}`} variant="ghost" size="sm" />
                           </>
                         ),
                       },
@@ -362,6 +372,8 @@ export function FactoryLoomPage() {
         onClose={() => { setShowModal(false); setEditLoom(null); setSaveError(null); }}
         onAdd={handleAddOrEdit}
         editLoom={editLoom}
+        saving={saving}
+        saveError={saveError}
       />
       <MaterialsFooter />
     </div>

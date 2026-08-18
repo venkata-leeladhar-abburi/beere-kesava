@@ -15,17 +15,33 @@ export class FactoryLoomsService {
   ) {}
 
   async create(dto: CreateFactoryLoomDto) {
-    const existing = await this.prisma.factoryLoom.findUnique({
-      where: { loomNumber: dto.loomNumber },
-    });
-    if (existing) {
-      throw new ConflictException(`A factory loom with number ${dto.loomNumber} already exists`);
+    if (dto.loomNumber) {
+      const existing = await this.prisma.factoryLoom.findUnique({
+        where: { loomNumber: dto.loomNumber },
+      });
+      if (existing) {
+        throw new ConflictException(`A factory loom with number ${dto.loomNumber} already exists`);
+      }
     }
-    // "Loom-NNN" — the operator-entered loomNumber ("BKB-F-06") stays a
-    // separate field; this is the sequential id shown wherever the loom is
-    // referenced elsewhere (material issue/return, design dispatch).
+
+    // The display code continues the LOOM sequence — the loom after Loom-002
+    // is Loom-003. Nobody types a loom number any more, so when one isn't
+    // supplied the (unique) loomNumber column just carries the same code
+    // rather than a second, differently-shaped identifier.
     const code = await this.idGenerator.nextNamed("LOOM", "Loom");
-    return this.prisma.factoryLoom.create({ data: { ...dto, code } });
+    let finalLoomNumber = dto.loomNumber ?? code;
+    // Guard the unique column against a legacy row that already typed this
+    // exact label in by hand — take the next free code instead of failing.
+    while (
+      !dto.loomNumber &&
+      (await this.prisma.factoryLoom.findUnique({ where: { loomNumber: finalLoomNumber } }))
+    ) {
+      finalLoomNumber = await this.idGenerator.nextNamed("LOOM", "Loom");
+    }
+
+    return this.prisma.factoryLoom.create({
+      data: { ...dto, loomNumber: finalLoomNumber, code: dto.loomNumber ? code : finalLoomNumber },
+    });
   }
 
   async findAll(
