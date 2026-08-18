@@ -162,11 +162,11 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
           ]}
         />
       </div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28 }}>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <Button variant="tertiary" size="md" iconLeft={ArrowLeft} onClick={onBack}>
           Back to Suppliers
         </Button>
-        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+        <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto justify-start sm:justify-end">
           <Button
             variant="primary"
             size="md"
@@ -205,29 +205,28 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
         </div>
       </div>
 
-      {/* Hero */}
       <FadeUp>
-        <div style={{ background: `linear-gradient(135deg,${T.darkBurgundy},#1A040B)`, borderRadius: 20, border: "1.5px solid rgba(200,155,71,0.25)", padding: 32, color: "#FFF", marginBottom: 8, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 24 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-            <div style={{ width: 64, height: 64, borderRadius: "50%", background: `linear-gradient(135deg,${T.antiqueGold},${T.goldLight})`, color: T.darkBurgundy, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 20, fontWeight: 800, flexShrink: 0, boxShadow: "0 6px 20px rgba(200,155,71,0.35)" }}>{supplier.initials}</div>
+        <div style={{ background: `linear-gradient(135deg,${T.darkBurgundy},#1A040B)`, borderRadius: 20, border: "1.5px solid rgba(200,155,71,0.25)", color: "#FFF", marginBottom: 8, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 20 }} className="p-5 sm:p-8">
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <div style={{ width: 56, height: 56, borderRadius: "50%", background: `linear-gradient(135deg,${T.antiqueGold},${T.goldLight})`, color: T.darkBurgundy, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 18, fontWeight: 800, flexShrink: 0, boxShadow: "0 6px 20px rgba(200,155,71,0.35)" }}>{supplier.initials}</div>
             <div>
-              <h2 style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, margin: "0 0 6px" }}>{supplier.name}</h2>
-              <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+              <h2 style={{ fontFamily: F.display, fontSize: 26, fontWeight: 700, margin: "0 0 6px" }}>{supplier.name}</h2>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
                 <span style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.65)", display: "flex", alignItems: "center", gap: 6 }}><MapPin size={13} color={T.antiqueGold} />{supplier.city}, {supplier.state}</span>
                 <span style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.65)", display: "flex", alignItems: "center", gap: 6 }}><Package size={13} color={T.antiqueGold} />{supplier.specialty}</span>
                 <StarRating rating={supplier.rating} />
               </div>
             </div>
           </div>
-          <div style={{ display: "flex", gap: 44, alignItems: "center" }}>
+          <div className="flex flex-wrap gap-5 sm:gap-10 items-center justify-between sm:justify-end w-full sm:w-auto pt-2 sm:pt-0">
             {[
               { label: "TOTAL PURCHASED", value: formatMoney(rupees(stats.totalPurchased)), color: T.goldLight },
               { label: "TOTAL PAID",      value: formatMoney(rupees(stats.totalPaid)),      color: "#7EE2A8" },
               { label: "OUTSTANDING",     value: formatMoney(rupees(stats.outstanding)),    color: stats.outstanding > 0 ? "#F87171" : T.goldLight },
             ].map(m => (
-              <div key={m.label} style={{ textAlign: "right" }}>
-                <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.55)", marginBottom: 4 }}>{m.label}</div>
-                <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: m.color }}>{m.value}</div>
+              <div key={m.label} className="text-left sm:text-right">
+                <div style={{ fontFamily: F.ui, fontSize: 11, color: "rgba(255,255,255,0.55)", marginBottom: 3 }}>{m.label}</div>
+                <div className="text-lg sm:text-2xl font-bold" style={{ fontFamily: F.display, color: m.color }}>{m.value}</div>
               </div>
             ))}
           </div>
@@ -235,23 +234,25 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
       </FadeUp>
 
       {/* Tabs */}
-      <div style={{ display: "flex", gap: 0, borderBottom: `2px solid ${T.borderDef}`, marginBottom: 28 }}>
-        {tabs.map(t => (
-          <Button
-            key={t.key}
-            variant="link"
-            size="md"
-            onClick={() => setTab(t.key)}
-            className={
-              "rounded-none px-[22px] py-[14px] -mb-0.5 border-0 border-b-2 no-underline hover:no-underline " +
-              (tab === t.key
-                ? "border-b-[var(--surface-brand)] font-bold text-[color:var(--text-brand)]"
-                : "border-b-transparent font-normal text-[color:var(--text-tertiary)]")
-            }
-          >
-            {t.label}
-          </Button>
-        ))}
+      <div className="w-full overflow-x-auto section-nav-scroll pb-1 mb-6 border-b-2 border-[var(--border-default)]">
+        <div className="flex items-center gap-1 min-w-max">
+          {tabs.map(t => (
+            <Button
+              key={t.key}
+              variant="link"
+              size="md"
+              onClick={() => setTab(t.key)}
+              className={
+                "rounded-none px-4 sm:px-6 py-3 mb-[-6px] shrink-0 border-0 border-b-2 no-underline hover:no-underline text-sm sm:text-base " +
+                (tab === t.key
+                  ? "border-b-[var(--surface-brand)] font-bold text-[color:var(--text-brand)]"
+                  : "border-b-transparent font-normal text-[color:var(--text-tertiary)]")
+              }
+            >
+              {t.label}
+            </Button>
+          ))}
+        </div>
       </div>
 
       <AnimatePresence mode="wait">

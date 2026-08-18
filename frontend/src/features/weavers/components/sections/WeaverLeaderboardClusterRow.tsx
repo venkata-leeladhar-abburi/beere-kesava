@@ -84,7 +84,7 @@ export function WeaverLeaderboardClusterRow({
             </BarChart>
           </ResponsiveContainer>
         </ChartFigure>
-        <div style={{ display: "flex", gap: 10, borderTop: `1px solid ${T.borderDef}`, paddingTop: 16, marginTop: 6 }}>
+        <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 border-t border-[var(--border-default)] pt-4 mt-1.5">
           {top10.slice(0, 3).map((w, i) => (
             <div key={w.id} style={{ flex: 1, display: "flex", alignItems: "center", gap: 12, background: i === 0 ? "rgba(200,155,71,0.08)" : T.silkCream, border: `1px solid ${i === 0 ? T.borderGold : T.borderDef}`, borderRadius: 14, padding: "12px 14px" }}>
               <div style={{ width: 30, height: 30, borderRadius: 10, flexShrink: 0, background: i === 0 ? "linear-gradient(135deg,#C89B47,#E7C983)" : "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 14, fontWeight: 700, color: i === 0 ? "#FFF" : T.taupe }}>{i + 1}</div>

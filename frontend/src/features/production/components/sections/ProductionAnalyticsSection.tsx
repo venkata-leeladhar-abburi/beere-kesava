@@ -35,7 +35,7 @@ const CARD_STYLE: React.CSSProperties = {
 function ChartCardHeader({ icon, title, sub }: { icon: React.ReactNode; title: string; sub: string }) {
   return (
     <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 22 }}>
-      <div style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(110,15,45,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <div style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(110,15,45,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
         {icon}
       </div>
       <div>
@@ -137,9 +137,9 @@ export function ProductionAnalyticsSection() {
     <div id="prod-analytics" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 32 }}>
       <FadeUp>
 
-        <div className="p-4 sm:p-6 mb-6 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-[0_6px_32px_rgba(74,6,27,0.08)]" style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)` }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <div className="p-4 sm:p-6 mb-6 rounded-2xl flex flex-col sm:flex-row items-start justify-between gap-4 shadow-[0_6px_32px_rgba(74,6,27,0.08)]" style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)` }}>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
               <LineChart size={26} color="#FFFDF9" />
             </div>
             <div>

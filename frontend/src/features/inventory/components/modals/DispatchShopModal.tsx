@@ -34,12 +34,12 @@ export function DispatchShopModal({ sarees, available, onConfirm, onClose }: {
   return (
     <Modal open onOpenChange={o => !o && onClose()} size="xl">
         {/* Header */}
-        <div style={{ background: T.deepWine, padding: "20px 28px 16px", flexShrink: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <ShoppingBag size={20} color={T.antiqueGold} />
+        <div style={{ background: T.deepWine, padding: "20px 20px 14px", flexShrink: 0, overflow: "hidden" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, width: "100%" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+              <ShoppingBag size={20} color={T.antiqueGold} className="shrink-0" />
               <Dialog.Title asChild>
-                <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: "#FFF" }}>Dispatch to Shop</span>
+                <span className="truncate" style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: "#FFF" }}>Dispatch to Shop</span>
               </Dialog.Title>
             </div>
             <Dialog.Close asChild>
@@ -47,23 +47,24 @@ export function DispatchShopModal({ sarees, available, onConfirm, onClose }: {
                 icon={X}
                 label="Close"
                 size="sm"
-                className="bg-white/12 text-white hover:bg-white/20 active:bg-white/25"
+                className="bg-white/12 text-white hover:bg-white/20 active:bg-white/25 shrink-0"
               />
             </Dialog.Close>
           </div>
-          {/* Step progress */}
-          <div style={{ display: "flex", gap: 0 }}>
-            {STEPS.map((s, i) => (
-              <div key={s} style={{ flex: 1, display: "flex", alignItems: "center" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, flex: 1 }}>
-                  <div style={{ width: 22, height: 22, borderRadius: "50%", background: step > i + 1 ? T.antiqueGold : step === i + 1 ? "#FFF" : "rgba(255,255,255,0.20)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    {step > i + 1 ? <CheckCircle2 size={12} color={T.deepWine} /> : <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: step === i + 1 ? T.royalBurgundy : "rgba(255,255,255,0.50)" }}>{i + 1}</span>}
+          <div className="w-full overflow-x-auto section-nav-scroll pb-1">
+            <div className="flex items-center gap-0 min-w-[500px]">
+              {STEPS.map((s, i) => (
+                <div key={s} style={{ flex: 1, display: "flex", alignItems: "center" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, flex: 1 }}>
+                    <div style={{ width: 22, height: 22, borderRadius: "50%", background: step > i + 1 ? T.antiqueGold : step === i + 1 ? "#FFF" : "rgba(255,255,255,0.20)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      {step > i + 1 ? <CheckCircle2 size={12} color={T.deepWine} /> : <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: step === i + 1 ? T.royalBurgundy : "rgba(255,255,255,0.50)" }}>{i + 1}</span>}
+                    </div>
+                    <span style={{ fontFamily: F.ui, fontSize: 12, color: step === i + 1 ? "#FFF" : "rgba(255,255,255,0.45)", fontWeight: step === i + 1 ? 600 : 400, whiteSpace: "nowrap" }}>{s}</span>
                   </div>
-                  <span style={{ fontFamily: F.ui, fontSize: 12, color: step === i + 1 ? "#FFF" : "rgba(255,255,255,0.45)", fontWeight: step === i + 1 ? 600 : 400 }}>{s}</span>
+                  {i < STEPS.length - 1 && <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.20)", margin: "0 6px" }} />}
                 </div>
-                {i < STEPS.length - 1 && <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.20)", margin: "0 6px" }} />}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
 

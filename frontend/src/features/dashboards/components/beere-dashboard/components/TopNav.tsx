@@ -345,7 +345,7 @@ export function TopNav({
             })}
           </div>
 
-          {sections && (
+          {sections && sections.length > 0 && (
             <>
               <div style={{ width: 1, height: 24, background: T.borderDef, flexShrink: 0 }} />
               <SectionNavigator inline sections={sections} />

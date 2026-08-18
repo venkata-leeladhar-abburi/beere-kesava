@@ -9,9 +9,10 @@ interface ExternalSareesTableProps {
   pageRows: WeaverSareeRow[];
   canSeeMoney: boolean;
   pag: UsePaginationReturn;
+  responsive?: boolean;
 }
 
-export function ExternalSareesTable({ pageRows, canSeeMoney, pag }: ExternalSareesTableProps) {
+export function ExternalSareesTable({ pageRows, canSeeMoney, pag, responsive = false }: ExternalSareesTableProps) {
   const columns: ColumnDef<WeaverSareeRow>[] = [
     {
       id: "sareeId", header: "Saree ID", accessor: r => r.sareeId, type: "code", priority: 1,
@@ -58,8 +59,10 @@ export function ExternalSareesTable({ pageRows, canSeeMoney, pag }: ExternalSare
 
   return (
     <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, background: "#FFFFFF", boxShadow: "0 2px 8px rgba(74,6,27,0.04)", overflow: "hidden" }}>
-      <div style={{ overflowX: "auto" }}>
-        <DataTable responsive columns={columns} data={pageRows} getRowId={r => r.sareeId} />
+      <div className="w-full overflow-x-auto section-nav-scroll p-2">
+        <div className="min-w-[850px]">
+          <DataTable responsive={responsive} columns={columns} data={pageRows} getRowId={r => r.sareeId} />
+        </div>
       </div>
       <div style={{ padding: "0 14px" }}>
         <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start}

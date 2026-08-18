@@ -290,15 +290,17 @@ export function RetailSalesReport() {
 
       <FadeUp>
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
-          <div className="min-w-[700px]" style={{ overflowX: "auto" }}>
-            <DataTable
-              columns={retailColumns}
-              data={retailRows}
-              getRowId={r => r.id + r.sarId}
-              loading={salesLoading}
-              error={!!isError}
-              emptyTitle="No retail sales recorded yet."
-            />
+          <div className="w-full overflow-x-auto section-nav-scroll p-2">
+            <div className="min-w-[850px]">
+              <DataTable
+                columns={retailColumns}
+                data={retailRows}
+                getRowId={r => r.id + r.sarId}
+                loading={salesLoading}
+                error={!!isError}
+                emptyTitle="No retail sales recorded yet."
+              />
+            </div>
           </div>
           <TablePager total={retailRows.length} showing={retailRows.length} />
         </div>

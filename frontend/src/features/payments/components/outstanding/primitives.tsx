@@ -110,9 +110,9 @@ export const tdMono: React.CSSProperties = { ...td, fontFamily: F.ui, fontSize: 
 
 export function Empty({ msg }: { msg: string }) {
   return (
-    <div style={{ padding: "48px 24px", textAlign: "center" }}>
-      <Package size={40} color={T.taupe} style={{ opacity: 0.45, marginBottom: 12 }} />
-      <div style={{ fontFamily: F.display, fontSize: 16, color: T.taupe }}>{msg}</div>
+    <div style={{ padding: "48px 24px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+      <Package size={44} color={T.taupe} style={{ opacity: 0.45, marginBottom: 12 }} />
+      <div style={{ fontFamily: F.display, fontSize: 16, color: T.taupe, maxWidth: 360, margin: "0 auto" }}>{msg}</div>
     </div>
   );
 }
@@ -130,7 +130,13 @@ export function ExportBtn({ onClick }: { onClick: () => void }) {
   // Single choke point for every CSV export on this page.
   if (!useDownloadsAllowed()) return null;
   return (
-    <Button variant="tertiary" size="sm" iconLeft={Download} onClick={onClick}>
+    <Button
+      variant="ghost"
+      size="sm"
+      iconLeft={Download}
+      onClick={onClick}
+      className="bg-[rgba(255,255,255,0.14)] hover:bg-[rgba(255,255,255,0.25)] text-[#FFFDF9] border border-[rgba(255,255,255,0.25)] rounded-xl font-bold shadow-sm transition-all"
+    >
       Export CSV
     </Button>
   );

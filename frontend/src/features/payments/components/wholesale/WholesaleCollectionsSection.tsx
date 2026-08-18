@@ -269,7 +269,7 @@ export function WholesaleCollectionsSection() {
         )}
 
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, flexWrap: "wrap" as const }}>
-          <div style={{ display: "flex", border: `1px solid ${T.borderDef}`, borderRadius: 9, overflow: "hidden", background: "#fff" }}>
+          <div className="hidden md:flex" style={{ border: `1px solid ${T.borderDef}`, borderRadius: 9, overflow: "hidden", background: "#fff" }}>
             {viewOptions.map(({ key, Icon, label }) => (
               <Button key={key} variant={view === key ? "primary" : "tertiary"} size="sm" iconLeft={Icon}
                 onClick={() => setView(key)}
@@ -286,10 +286,39 @@ export function WholesaleCollectionsSection() {
           </div>
         </div>
 
-        <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+        <div style={{ marginBottom: 14 }}>
+          <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+        </div>
+
+        <div className="flex md:hidden items-center justify-between gap-3 mb-4 flex-wrap">
+          <div className="flex items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0">
+            <Button
+              onClick={() => setView("card")}
+              variant="ghost"
+              className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
+                view === "card"
+                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+              }`}
+            >
+              <LayoutGrid size={14} /> Card View
+            </Button>
+            <Button
+              onClick={() => setView("table")}
+              variant="ghost"
+              className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
+                view === "table"
+                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+              }`}
+            >
+              <AlignJustify size={14} /> Table View
+            </Button>
+          </div>
+        </div>
 
         {view === "card" && (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20, marginBottom: 32, alignItems: "stretch" }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8 items-stretch">
             {filtered.map((inv, i) => {
               const matchingOrder = matchBulkOrder(inv.id);
               return (

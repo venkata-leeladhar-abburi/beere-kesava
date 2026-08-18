@@ -57,7 +57,7 @@ export function VendorDirectorySection({ vendors, onSelectVendor, onAddClick }: 
               onClick={onAddClick}
               variant="secondary"
               iconLeft="add"
-              className="rounded-[10px] bg-white/10 text-[#FFFDF9] border-white/20"
+              className="rounded-[10px] bg-white/10 text-[#FFFDF9] border-white/20 hover:bg-white/20 hover:text-white"
             >
               Add New Vendor
             </Button>
@@ -103,7 +103,7 @@ export function VendorDirectorySection({ vendors, onSelectVendor, onAddClick }: 
           </Select>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 22 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {pag.pageItems.map((v, i) => (
             <FadeUp key={v.id} delay={i * 0.06}>
               <VendorCard

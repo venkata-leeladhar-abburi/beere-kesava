@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { AlertTriangle, BadgeCheck, Download, Eye, HandCoins, LayoutGrid, LayoutList, MinusCircle, UserCheck, Wallet } from "lucide-react";
+import { AlertTriangle, AlignJustify, BadgeCheck, Download, Eye, HandCoins, LayoutGrid, LayoutList, MinusCircle, UserCheck, Wallet } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
@@ -146,7 +146,7 @@ export function WeaverMakingChargesSection() {
   const isError = weaversError || paymentsError || productionRowsError;
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [view, setView] = useState<"card" | "list">("card");
+  const [view, setView] = useState<"card" | "list" | "table">("card");
   const [search, setSearch] = useState("");
   const [selWeaver, setSelWeaver] = useState<WeaverRecord | null>(null);
 
@@ -181,6 +181,14 @@ export function WeaverMakingChargesSection() {
       else next.add(id);
       return next;
     });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filtered.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filtered.map(w => w.id)));
+    }
   };
 
   const downloadExcelTemplate = async () => {
@@ -397,7 +405,7 @@ export function WeaverMakingChargesSection() {
         {/* ── Filter + View toggle bar ─────────────────────────── */}
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18, flexWrap: "wrap" as const }}>
           {/* View toggle */}
-          <div style={{ display: "flex", border: `1px solid ${T.borderDef}`, borderRadius: 9, overflow: "hidden", background: "#fff" }}>
+          <div className="hidden md:flex" style={{ border: `1px solid ${T.borderDef}`, borderRadius: 9, overflow: "hidden", background: "#fff" }}>
             {viewOptions.map(({ key, Icon, label }) => (
               <Button key={key} variant={view === key ? "primary" : "tertiary"} size="sm" iconLeft={Icon}
                 onClick={() => setView(key as "card" | "list")}
@@ -434,6 +442,33 @@ export function WeaverMakingChargesSection() {
           </div>
         </div>
 
+        <div className="flex md:hidden items-center justify-between gap-3 mb-4 flex-wrap">
+          <div className="flex items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0">
+            <Button
+              onClick={() => setView("card")}
+              variant="ghost"
+              className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
+                view === "card"
+                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+              }`}
+            >
+              <LayoutGrid size={14} /> Card View
+            </Button>
+            <Button
+              onClick={() => setView("table")}
+              variant="ghost"
+              className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
+                view === "list" || view === "table"
+                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+              }`}
+            >
+              <AlignJustify size={14} /> Table View
+            </Button>
+          </div>
+        </div>
+
         {/* ── Loading / error / empty states ──────────────────── */}
         {isLoading ? (
           <div style={{ textAlign: "center", padding: "60px 20px", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
@@ -455,7 +490,7 @@ export function WeaverMakingChargesSection() {
         <>
         {/* ── Card view grid ───────────────────────────────────── */}
         {view === "card" && (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 28 }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
             {filtered.map((w, i) => (
               <motion.div key={w.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.05, ease: EASE }}>
                 <WeaverCard
@@ -469,73 +504,91 @@ export function WeaverMakingChargesSection() {
           </div>
         )}
 
-        {/* ── List view ────────────────────────────────────────── */}
-        {view === "list" && (
-          <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden", marginBottom: 28, boxShadow: "0 4px 20px rgba(74,6,27,0.05)" }}>
-            {filtered.map((w, i) => {
-              const charges = calcCharges(w); const net = calcNet(w);
-              const completedSarees = calcCompletedSarees(w);
-              const deduction = calcDeduction(w);
-              const amountPaid = calcPaid(w);
-              return (
-                <div
-                  key={w.id}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 16, padding: "14px 20px",
-                    background: i % 2 === 0 ? "#FFFDF9" : T.silkCream,
-                    borderBottom: i < filtered.length - 1 ? `1px solid ${T.borderDef}` : "none",
-                    borderLeft: `4px solid ${w.status === "Paid" ? T.green : T.antiqueGold}`,
-                    transition: "background-color 0.15s ease",
-                  }}
-                >
-                  {/* Checkbox */}
-                  <Checkbox
-                    checked={selectedIds.has(w.id)}
-                    onCheckedChange={() => toggleSelection(w.id)}
-                    className="mr-1"
-                  />
-                  <Pip initials={w.initials} bg={w.bg} size={38} />
-                  <div style={{ flex: "0 0 180px" }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{w.name}</div>
-                    <div style={{ display: "flex", gap: 6, alignItems: "center", marginTop: 2 }}>
-                      <EntityCode type="weaver" value={w.id} size="sm" />
-                      <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>📍 {w.village}</span>
-                    </div>
-                  </div>
-                  <div style={{ flex: 1, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-                    <strong style={{ color: T.luxuryBrown, fontVariantNumeric: "tabular-nums" }}>{completedSarees}</strong> sarees completed
-                    {w.uploadedBatchNo && (
-                      <span style={{ color: T.royalBurgundy, display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap", marginTop: 2, fontSize: 12, fontFamily: F.ui, fontWeight: 600 }}>
-                        Batch: <EntityCode type="batch" value={w.uploadedBatchNo} size="sm" />
-                        {w.uploadedLoomNumber ? <>· Loom: <EntityCode type="loom" value={w.uploadedLoomNumber} size="sm" /></> : null}
-                      </span>
-                    )}
-                  </div>
-                  <div style={{ flex: "0 0 120px" }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Gross Charges</div>
-                    <div style={{ fontSize: 13, color: T.luxuryBrown, fontWeight: 600 }}><Money value={rupees(charges)} /></div>
-                  </div>
-                  <div style={{ flex: "0 0 120px" }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Deductions</div>
-                    <div style={{ fontSize: 13, color: T.crimson, fontWeight: 600 }}>−<Money value={rupees(deduction)} /></div>
-                  </div>
-                  <div style={{ flex: "0 0 120px" }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Amount Paid</div>
-                    <div style={{ fontSize: 13, color: T.green, fontWeight: 600 }}>{amountPaid > 0 ? <>−<Money value={rupees(amountPaid)} /></> : "—"}</div>
-                  </div>
-                  <div style={{ flex: "0 0 130px" }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>Balance Due</div>
-                    <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 800, color: w.status === "Paid" ? T.green : T.royalBurgundy }}><Money value={rupees(net)} /></div>
-                  </div>
-                  <div style={{ flex: "0 0 110px" }}>
-                    <StatusBadge status={w.status} />
-                  </div>
-                  <Button variant="secondary" size="sm" iconLeft={Eye} onClick={() => setSelWeaver(w)}>
-                    Details
-                  </Button>
-                </div>
-              );
-            })}
+        {/* ── Table / List view ────────────────────────────────── */}
+        {(view === "list" || view === "table") && (
+          <div className="overflow-x-auto w-full mb-8 rounded-xl border border-[#E8DCC4] bg-white shadow-sm">
+            <table className="w-full text-left border-collapse min-w-[1450px]">
+              <thead>
+                <tr className="bg-[#F7F2EA] border-b border-[#E8DCC4] text-[12px] font-bold text-[#3B2314] uppercase tracking-wider">
+                  <th className="py-3 px-4 w-10">
+                    <Checkbox
+                      checked={selectedIds.size > 0 && selectedIds.size === filtered.length}
+                      onCheckedChange={() => toggleSelectAll()}
+                    />
+                  </th>
+                  <th className="py-3 px-4 min-w-[420px]">Weaver</th>
+                  <th className="py-3 px-4 min-w-[180px]">Completed Sarees</th>
+                  <th className="py-3 px-4 text-right min-w-[140px]">Gross Charges</th>
+                  <th className="py-3 px-4 text-right min-w-[140px]">Deductions</th>
+                  <th className="py-3 px-4 text-right min-w-[140px]">Amount Paid</th>
+                  <th className="py-3 px-4 text-right min-w-[150px]">Balance Due</th>
+                  <th className="py-3 px-4 text-center min-w-[120px]">Status</th>
+                  <th className="py-3 px-4 text-center min-w-[120px]">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#E8DCC4]">
+                {filtered.map((w, i) => {
+                  const charges = calcCharges(w);
+                  const net = calcNet(w);
+                  const completedSarees = calcCompletedSarees(w);
+                  const deduction = calcDeduction(w);
+                  const amountPaid = calcPaid(w);
+                  return (
+                    <tr key={w.id} className={i % 2 === 0 ? "bg-[#FFFDF9]" : "bg-white"}>
+                      <td className="py-3 px-4">
+                        <Checkbox
+                          checked={selectedIds.has(w.id)}
+                          onCheckedChange={() => toggleSelection(w.id)}
+                        />
+                      </td>
+                      <td className="py-3 px-4 min-w-[420px]">
+                        <div className="flex items-center gap-3">
+                          <Pip initials={w.initials || w.name} bg={w.bg} size={36} />
+                          <div>
+                            <div className="font-bold text-[14px] text-[#3B2314] whitespace-nowrap">{w.name}</div>
+                            <div className="flex items-center gap-2 mt-1 whitespace-nowrap">
+                              <div className="w-[300px] min-w-[300px]">
+                                <EntityCode type="weaver" value={w.id} size="sm" className="whitespace-nowrap" />
+                              </div>
+                              <span className="text-[12px] text-[var(--text-tertiary)] shrink-0">📍 {w.village}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 text-[13px] text-[#3B2314]">
+                        <strong className="font-bold">{completedSarees}</strong> sarees
+                        {w.uploadedBatchNo && (
+                          <div className="flex items-center gap-1.5 mt-0.5 text-[11px] text-[#6E0F2D] font-semibold flex-wrap">
+                            Batch: <EntityCode type="batch" value={w.uploadedBatchNo} size="sm" className="break-all whitespace-normal" />
+                            {w.uploadedLoomNumber ? <>· Loom: <EntityCode type="loom" value={w.uploadedLoomNumber} size="sm" className="break-all whitespace-normal" /></> : null}
+                          </div>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-right font-semibold text-[13px] text-[#3B2314] whitespace-nowrap">
+                        <Money value={rupees(charges)} />
+                      </td>
+                      <td className="py-3 px-4 text-right font-semibold text-[13px] text-[#C0392B] whitespace-nowrap">
+                        −<Money value={rupees(deduction)} />
+                      </td>
+                      <td className="py-3 px-4 text-right font-semibold text-[13px] text-[#27AE60] whitespace-nowrap">
+                        {amountPaid > 0 ? <>−<Money value={rupees(amountPaid)} /></> : "—"}
+                      </td>
+                      <td className="py-3 px-4 text-right font-extrabold text-[15px] whitespace-nowrap" style={{ color: w.status === "Paid" ? T.green : T.royalBurgundy }}>
+                        <Money value={rupees(net)} />
+                      </td>
+                      <td className="py-3 px-4 text-center whitespace-nowrap">
+                        <StatusBadge status={w.status} />
+                      </td>
+                      <td className="py-3 px-4 text-center whitespace-nowrap">
+                        <Button variant="secondary" size="sm" iconLeft={Eye} onClick={() => setSelWeaver(w)}>
+                          Details
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         )}
         </>

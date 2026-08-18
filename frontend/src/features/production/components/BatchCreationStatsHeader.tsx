@@ -73,7 +73,19 @@ export function BatchCreationStatsHeader({
 
       {/* ── Tab bar ── */}
       <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 32 }}>
-        <div style={{ display: "flex", gap: 4, background: "#fff", borderRadius: 12, padding: 4, width: "fit-content", border: `1px solid ${T.borderDef}` }}>
+        <div
+          className="max-w-full overflow-x-auto whitespace-nowrap scrollbar-none"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+            background: "#fff",
+            borderRadius: 12,
+            padding: 4,
+            width: "fit-content",
+            border: `1px solid ${T.borderDef}`,
+          }}
+        >
           <Button
             onClick={() => {
               if (editingBatchId) {
@@ -89,6 +101,7 @@ export function BatchCreationStatsHeader({
             }}
             variant={tab === "new" && !editingBatchId ? "primary" : "tertiary"}
             size="sm"
+            className="shrink-0"
           >
             Create New Batch
           </Button>
@@ -98,6 +111,7 @@ export function BatchCreationStatsHeader({
               onClick={() => setTab("new")}
               variant={tab === "new" ? "primary" : "tertiary"}
               size="sm"
+              className="shrink-0"
             >
               Edit {editingBatchId}
             </Button>
@@ -107,6 +121,7 @@ export function BatchCreationStatsHeader({
             onClick={() => setTab("drafts")}
             variant={tab === "drafts" ? "primary" : "tertiary"}
             size="sm"
+            className="shrink-0"
           >
             All Batches ({batches.length})
           </Button>

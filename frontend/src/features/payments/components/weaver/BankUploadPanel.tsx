@@ -58,52 +58,55 @@ export function BankUploadPanel({ onReset, onUploaded }: { onMatchUpdate?: (matc
   return (
     <div style={{ marginBottom: 22 }}>
       {/* ── Upload trigger panel ── */}
-      <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "18px 22px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24, flexWrap: "wrap", boxShadow: "0 2px 10px rgba(74,6,27,0.04)" }}>
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 10, background: "rgba(110,15,45,0.06)", border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <UploadCloud size={22} color={T.royalBurgundy} />
+      <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: "20px 22px", boxShadow: "0 2px 10px rgba(74,6,27,0.04)" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
+          <div style={{ width: 40, height: 40, borderRadius: 10, background: "rgba(110,15,45,0.06)", border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
+            <UploadCloud size={20} color={T.royalBurgundy} />
           </div>
-          <div>
-            <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown, marginBottom: 3 }}>Upload Bank Payment File</div>
-            <div className="sm:max-w-[620px]" style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, lineHeight: 1.55, maxWidth: "100%" }}>
-              Upload an Excel file (.xlsx) with a header row — same columns as the table above, in this order:
-              {" "}<span style={{ fontWeight: 600, color: T.luxuryBrown }}>weaverId, weaverName, batchNo, loomNumber, noOfSarees, makingCharges, deduction, amountPaid, utrNumber, firmId, paymentDate</span>.
-              {" "}Required: <span style={{ fontWeight: 600, color: T.luxuryBrown }}>weaverId, amountPaid</span>. Optional: <span style={{ fontWeight: 600, color: T.luxuryBrown }}>utrNumber, firmId, paymentDate, batchNo, loomNumber, noOfSarees, deduction</span>.
-              {" "}<span style={{ fontWeight: 600, color: T.luxuryBrown }}>weaverName</span> and <span style={{ fontWeight: 600, color: T.luxuryBrown }}>makingCharges</span> are reference-only — kept for readability but ignored on import.
-              {" "}Rows are matched against real weaver records and saved directly.
-            </div>
-            {result ? (
-              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.green, marginTop: 6, display: "flex", alignItems: "center", gap: 5 }}>
-                <CheckCircle2 size={12} />
-                {fileName} — {totalRows} rows processed
+          <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 12 }}>
+            <div>
+              <div style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 700, color: T.luxuryBrown, marginBottom: 4 }}>Upload Bank Payment File</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, lineHeight: 1.55 }}>
+                Upload an Excel file (.xlsx) with a header row — same columns as the table above, in this order:
+                {" "}<span style={{ fontWeight: 600, color: T.luxuryBrown }}>weaverId, weaverName, batchNo, loomNumber, noOfSarees, makingCharges, deduction, amountPaid, utrNumber, firmId, paymentDate</span>.
+                {" "}Required: <span style={{ fontWeight: 600, color: T.luxuryBrown }}>weaverId, amountPaid</span>. Optional: <span style={{ fontWeight: 600, color: T.luxuryBrown }}>utrNumber, firmId, paymentDate, batchNo, loomNumber, noOfSarees, deduction</span>.
+                {" "}<span style={{ fontWeight: 600, color: T.luxuryBrown }}>weaverName</span> and <span style={{ fontWeight: 600, color: T.luxuryBrown }}>makingCharges</span> are reference-only — kept for readability but ignored on import.
+                {" "}Rows are matched against real weaver records and saved directly.
               </div>
-            ) : uploading ? (
-              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 6 }}>Uploading and matching against real weaver records…</div>
-            ) : null}
+              {result ? (
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.green, marginTop: 6, display: "flex", alignItems: "center", gap: 5 }}>
+                  <CheckCircle2 size={12} />
+                  {fileName} — {totalRows} rows processed
+                </div>
+              ) : uploading ? (
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 6 }}>Uploading and matching against real weaver records…</div>
+              ) : null}
+            </div>
+
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              {result && (
+                <Button variant="secondary" size="md" iconLeft={X} onClick={handleReset}>
+                  Clear
+                </Button>
+              )}
+              <Input
+                ref={fileInputRef}
+                type="file"
+                accept=".xlsx,.xls"
+                onChange={handleFileChange}
+                containerClassName="hidden"
+              />
+              <Button
+                variant="primary"
+                size="md"
+                iconLeft={UploadCloud}
+                loading={uploading}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {uploading ? "Processing…" : result ? "Upload New File" : "Upload Bank Payment File"}
+              </Button>
+            </div>
           </div>
-        </div>
-        <div style={{ display: "flex", gap: 10, flexShrink: 0 }}>
-          {result && (
-            <Button variant="secondary" size="md" iconLeft={X} onClick={handleReset}>
-              Clear
-            </Button>
-          )}
-          <Input
-            ref={fileInputRef}
-            type="file"
-            accept=".xlsx,.xls"
-            onChange={handleFileChange}
-            containerClassName="hidden"
-          />
-          <Button
-            variant="primary"
-            size="md"
-            iconLeft={UploadCloud}
-            loading={uploading}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            {uploading ? "Processing…" : result ? "Upload New File" : "Upload Bank Payment File"}
-          </Button>
         </div>
       </div>
 

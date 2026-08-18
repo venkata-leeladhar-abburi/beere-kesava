@@ -54,7 +54,7 @@ export function RecordVendorPaymentSidebar({
 }: RecordVendorPaymentSidebarProps) {
   const canSave = !!selVP.billId && !!payAmount && Number(payAmount) > 0 && !!utrNumber.trim() && !!firmId && !saving;
   return (
-    <div style={{ flex: "0 0 272px", background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.07)" }}>
+    <div className="w-full lg:w-[272px] shrink-0" style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.07)" }}>
       <div style={{ background: T.darkBurgundy, padding: "16px 20px" }}>
         <div style={{ fontFamily: F.display, fontSize: 18, color: "#FFFDF9" }}>Record Vendor Payment</div>
         <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.55)", marginTop: 3 }}>Mark payment made to a vendor</div>

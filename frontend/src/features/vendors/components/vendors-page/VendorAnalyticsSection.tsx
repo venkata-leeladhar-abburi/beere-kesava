@@ -209,13 +209,13 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
         </div>
 
         {posLoading && (
-          <div style={{ ...cardStyle, textAlign: "center" as const, padding: "48px 24px" }}>
+          <div style={{ ...cardStyle, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "48px 24px" }}>
             <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loading vendor purchase orders…</div>
           </div>
         )}
 
         {!posLoading && posError && (
-          <div style={{ ...cardStyle, textAlign: "center" as const, padding: "48px 24px" }}>
+          <div style={{ ...cardStyle, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "48px 24px" }}>
             <AlertTriangle size={40} color={T.crimson} style={{ marginBottom: 12 }} />
             <div style={{ fontFamily: F.display, fontSize: 16, color: T.crimson }}>Failed to load vendor purchase orders.</div>
             <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 6 }}>Please retry or check your connection.</div>
@@ -223,7 +223,7 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
         )}
 
         {!posLoading && !posError && rows.length === 0 && (
-          <div style={{ ...cardStyle, textAlign: "center" as const, padding: "48px 24px" }}>
+          <div style={{ ...cardStyle, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "48px 24px" }}>
             <Building2 size={40} color={T.taupe} style={{ marginBottom: 12 }} />
             <div style={{ fontFamily: F.display, fontSize: 16, color: T.taupe }}>No vendor purchases recorded in this period.</div>
             <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 6 }}>Widen the date range to see analytics.</div>
@@ -321,9 +321,9 @@ export function VendorAnalyticsSection({ vendors }: { vendors: Vendor[] }) {
                 </BarChart>
               </ResponsiveContainer>
             </ChartFigure>
-            <div style={{ display: "flex", gap: 8, marginTop: 14, borderTop: `1px solid ${T.borderDef}`, paddingTop: 14 }}>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 border-t border-[var(--border-default)] pt-3.5 mt-3.5">
               {topVendors.map((v, i) => (
-                <div key={v.id} style={{ flex: 1, display: "flex", alignItems: "center", gap: 8 }}>
+                <div key={v.id} style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
                   <div style={{ width: 26, height: 26, borderRadius: 8, flexShrink: 0, background: i === 0 ? `linear-gradient(135deg,${T.antiqueGold},${T.goldLight})` : T.silkCream, border: `1px solid ${T.borderGold}`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 800, color: i === 0 ? T.darkBurgundy : T.taupe }}>{i + 1}</div>
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{v.initials}</div>

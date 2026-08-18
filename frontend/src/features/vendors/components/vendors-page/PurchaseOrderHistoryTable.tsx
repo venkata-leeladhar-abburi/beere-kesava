@@ -88,12 +88,16 @@ export function PurchaseOrderHistoryTable({ orders }: { orders: PurchaseOrderHis
   ];
 
   return (
-    <DataTable
-      responsive
-      columns={columns}
-      data={orders}
-      getRowId={o => o.id}
-      emptyTitle="No purchase orders yet"
-    />
+    <div className="w-full overflow-x-auto section-nav-scroll p-2">
+      <div className="min-w-[700px]">
+        <DataTable
+          responsive={false}
+          columns={columns}
+          data={orders}
+          getRowId={o => o.id}
+          emptyTitle="No purchase orders yet"
+        />
+      </div>
+    </div>
   );
 }

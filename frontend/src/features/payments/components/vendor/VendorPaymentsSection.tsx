@@ -218,7 +218,7 @@ export function VendorPaymentsSection() {
     {
       id: "vendor", header: "Vendor Name", priority: 1, accessor: vp => vp.vendor,
       cell: (_v, vp) => (
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div className="w-[220px] min-w-[220px] whitespace-nowrap flex items-center gap-2.5">
           <div style={{ width: 32, height: 32, borderRadius: 8, background: "rgba(110,15,45,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <FileText size={15} color={T.royalBurgundy} />
           </div>
@@ -228,34 +228,38 @@ export function VendorPaymentsSection() {
     },
     {
       id: "po", header: "PO Number", accessor: vp => vp.poNumber,
-      cell: (_v, vp) => <EntityCode type="purchaseOrder" value={vp.poNumber} size="sm" />,
+      cell: (_v, vp) => (
+        <div className="w-[300px] min-w-[300px] whitespace-nowrap">
+          <EntityCode type="purchaseOrder" value={vp.poNumber} size="sm" className="whitespace-nowrap" />
+        </div>
+      ),
     },
     {
       id: "invoiceAmt", header: "Invoice Amt", accessor: vp => vp.invoiceAmt, type: "number",
-      cell: (_v, vp) => <span style={{ fontWeight: 700, fontSize: 14 }}><Money value={rupees(vp.invoiceAmt)} /></span>,
+      cell: (_v, vp) => <div className="w-[140px] min-w-[140px] whitespace-nowrap font-bold text-[14px]"><Money value={rupees(vp.invoiceAmt)} /></div>,
     },
     {
       id: "paidAmt", header: "Paid Amt", priority: 3, accessor: vp => vp.paidAmt, type: "number",
-      cell: (_v, vp) => <span style={{ color: T.green, fontWeight: 600 }}><Money value={rupees(vp.paidAmt)} /></span>,
+      cell: (_v, vp) => <div className="w-[140px] min-w-[140px] whitespace-nowrap font-semibold text-[#27AE60]"><Money value={rupees(vp.paidAmt)} /></div>,
     },
     {
       id: "balance", header: "Balance Due", accessor: vp => vp.invoiceAmt - vp.paidAmt, type: "number",
       cell: (_v, vp) => {
         const balance = vp.invoiceAmt - vp.paidAmt;
         return (
-          <span style={{ fontWeight: 700, fontSize: 14, color: balance === 0 ? T.green : vp.status === "Overdue" ? T.crimson : T.antiqueGold }}>
+          <div className="w-[150px] min-w-[150px] whitespace-nowrap font-bold text-[14px]" style={{ color: balance === 0 ? T.green : vp.status === "Overdue" ? T.crimson : T.antiqueGold }}>
             {balance === 0 ? "Paid ✓" : <Money value={rupees(balance)} />}
-          </span>
+          </div>
         );
       },
     },
     {
       id: "dueDate", header: "Due Date", priority: 3, accessor: vp => vp.dueDate,
       cell: (_v, vp) => (
-        <span style={{ color: vp.status === "Overdue" ? T.crimson : T.taupe, fontWeight: vp.status === "Overdue" ? 600 : 400 }}>
+        <div className="w-[150px] min-w-[150px] whitespace-nowrap text-[13px]" style={{ color: vp.status === "Overdue" ? T.crimson : T.taupe, fontWeight: vp.status === "Overdue" ? 600 : 400 }}>
           {vp.dueDate}
           {vp.daysOverdue && <span style={{ fontSize: 12, marginLeft: 6, background: "rgba(192,57,43,0.10)", color: T.crimson, padding: "1px 6px", borderRadius: 4, fontVariantNumeric: "tabular-nums" }}>{vp.daysOverdue}d late</span>}
-        </span>
+        </div>
       ),
     },
     {
@@ -379,7 +383,7 @@ export function VendorPaymentsSection() {
         <VendorUploadPanel vendorPayments={vendorPayments} onMatched={handleExcelMatched} />
 
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, flexWrap: "wrap" as const }}>
-          <div style={{ display: "flex", border: `1px solid ${T.borderDef}`, borderRadius: 9, overflow: "hidden", background: "#fff" }}>
+          <div className="hidden md:flex" style={{ border: `1px solid ${T.borderDef}`, borderRadius: 9, overflow: "hidden", background: "#fff" }}>
             {viewOptions.map(({ key, Icon, label }) => (
               <Button key={key} variant={view === key ? "primary" : "tertiary"} size="sm" iconLeft={Icon}
                 onClick={() => setView(key)}
@@ -397,10 +401,39 @@ export function VendorPaymentsSection() {
           </div>
         </div>
 
-        <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+        <div style={{ marginBottom: 14 }}>
+          <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+        </div>
+
+        <div className="flex md:hidden items-center justify-between gap-3 mb-4 flex-wrap">
+          <div className="flex items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0">
+            <Button
+              onClick={() => setView("card")}
+              variant="ghost"
+              className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
+                view === "card"
+                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+              }`}
+            >
+              <LayoutGrid size={14} /> Card View
+            </Button>
+            <Button
+              onClick={() => setView("table")}
+              variant="ghost"
+              className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
+                view === "table"
+                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+              }`}
+            >
+              <AlignJustify size={14} /> Table View
+            </Button>
+          </div>
+        </div>
 
         {view === "card" && (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20, marginBottom: 32, alignItems: "stretch" }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8 items-stretch">
             {filtered.map((vp, i) => (
               <motion.div key={vp.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.07, ease: EASE }} style={{ display: "flex", flexDirection: "column" }}>
                 <VendorCard vp={vp} matchedPO={matchPO(vp.poNumber)} onPay={() => setPayNowId(vp.id)} onView={() => setViewDetailsId(vp.id)} onViewPO={() => setViewPO(matchPO(vp.poNumber) ?? null)} onAddInvoice={() => setAddInvoiceForId(vp.id)} selected={selVendor === vp.id} />
@@ -410,47 +443,51 @@ export function VendorPaymentsSection() {
         )}
 
         {view === "list" && (
-          <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", marginBottom: 32 }}>
-            {filtered.map((vp, i) => {
-              const balance = vp.invoiceAmt - vp.paidAmt;
-              const cfg = VENDOR_STATUS_CFG[vp.status];
-              return (
-                <div key={vp.id} style={{ display: "flex", alignItems: "center", gap: 16, padding: "16px 20px", background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderBottom: `1px solid ${T.borderDef}`, borderLeft: `4px solid ${cfg.color}` }}>
-                  <div style={{ width: 40, height: 40, borderRadius: 10, background: "rgba(110,15,45,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <FileText size={18} color={T.royalBurgundy} />
+          <div className="overflow-x-auto w-full mb-8">
+            <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", minWidth: 600 }}>
+              {filtered.map((vp, i) => {
+                const balance = vp.invoiceAmt - vp.paidAmt;
+                const cfg = VENDOR_STATUS_CFG[vp.status];
+                return (
+                  <div key={vp.id} style={{ display: "flex", alignItems: "center", gap: 16, padding: "16px 20px", background: i % 2 === 0 ? "#FFFDF9" : T.silkCream, borderBottom: `1px solid ${T.borderDef}`, borderLeft: `4px solid ${cfg.color}` }}>
+                    <div style={{ width: 40, height: 40, borderRadius: 10, background: "rgba(110,15,45,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <FileText size={18} color={T.royalBurgundy} />
+                    </div>
+                    <div style={{ flex: "0 0 200px" }}>
+                      <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{vp.vendor}</div>
+                      <div style={{ marginTop: 2 }}><EntityCode type="purchaseOrder" value={vp.poNumber} size="sm" /></div>
+                    </div>
+                    <div style={{ flex: 1, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}><Money value={rupees(vp.invoiceAmt)} /></div>
+                    <div style={{ flex: 1, fontSize: 13, fontWeight: 700, color: balance === 0 ? T.green : vp.status === "Overdue" ? T.crimson : T.antiqueGold }}>
+                      {balance === 0 ? "Paid ✓" : <Money value={rupees(balance)} />}
+                    </div>
+                    <div style={{ flex: "0 0 120px", fontFamily: F.ui, fontSize: 13, color: vp.status === "Overdue" ? T.crimson : T.taupe, fontWeight: vp.status === "Overdue" ? 600 : 400 }}>
+                      {vp.dueDate}
+                      {vp.daysOverdue && <span style={{ fontSize: 12, marginLeft: 5, background: "rgba(192,57,43,0.10)", color: T.crimson, padding: "1px 5px", borderRadius: 4, fontVariantNumeric: "tabular-nums" }}>{vp.daysOverdue}d</span>}
+                    </div>
+                    <VendorBadge status={vp.status} />
+                    <Button variant="secondary" size="sm" onClick={() => setViewDetailsId(vp.id)} className="rounded-[7px] text-[#6E0F2D]">View</Button>
                   </div>
-                  <div style={{ flex: "0 0 200px" }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{vp.vendor}</div>
-                    <div style={{ marginTop: 2 }}><EntityCode type="purchaseOrder" value={vp.poNumber} size="sm" /></div>
-                  </div>
-                  <div style={{ flex: 1, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}><Money value={rupees(vp.invoiceAmt)} /></div>
-                  <div style={{ flex: 1, fontSize: 13, fontWeight: 700, color: balance === 0 ? T.green : vp.status === "Overdue" ? T.crimson : T.antiqueGold }}>
-                    {balance === 0 ? "Paid ✓" : <Money value={rupees(balance)} />}
-                  </div>
-                  <div style={{ flex: "0 0 120px", fontFamily: F.ui, fontSize: 13, color: vp.status === "Overdue" ? T.crimson : T.taupe, fontWeight: vp.status === "Overdue" ? 600 : 400 }}>
-                    {vp.dueDate}
-                    {vp.daysOverdue && <span style={{ fontSize: 12, marginLeft: 5, background: "rgba(192,57,43,0.10)", color: T.crimson, padding: "1px 5px", borderRadius: 4, fontVariantNumeric: "tabular-nums" }}>{vp.daysOverdue}d</span>}
-                  </div>
-                  <VendorBadge status={vp.status} />
-                  <Button variant="secondary" size="sm" onClick={() => setViewDetailsId(vp.id)} className="rounded-[7px] text-[#6E0F2D]">View</Button>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         )}
 
         {view === "table" && (
-          <div style={{ display: "flex", gap: 20, alignItems: "flex-start" }}>
-            <div style={{ flex: 1, minWidth: 0 }}>
+          <div className="flex flex-col lg:flex-row gap-5 items-start w-full">
+            <div className="w-full lg:flex-1 min-w-0">
               <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
-                <div style={{ overflowX: "auto" }}>
-                  <DataTable
-                    responsive
-                    columns={vendorTableColumns}
-                    data={filtered}
-                    getRowId={vp => vp.id}
-                    emptyTitle="No vendor bills match your filters"
-                  />
+                <div style={{ overflowX: "auto" }} className="w-full">
+                  <div style={{ minWidth: 1350 }}>
+                    <DataTable
+                      responsive={false}
+                      columns={vendorTableColumns}
+                      data={filtered}
+                      getRowId={vp => vp.id}
+                      emptyTitle="No vendor bills match your filters"
+                    />
+                  </div>
                 </div>
                 <div style={{ padding: "12px 18px", borderTop: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Showing {filtered.length} of {vendorPayments.length} vendor bills</span>

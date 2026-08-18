@@ -35,22 +35,24 @@ export function CustomerCard({ inv, onViewInvoice, onRecordPayment, bulkOrderRef
       <div style={{ height: 4, background: cfg.color, flexShrink: 0 }} />
 
       {/* Header */}
-      <div style={{ padding: "20px 20px 14px", display: "flex", alignItems: "flex-start", gap: 12, flexShrink: 0 }}>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-            <EntityCode type="invoice" value={inv.id} size="sm" />
+      <div style={{ padding: "20px 20px 14px", display: "flex", flexDirection: "column", gap: 10, flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", minWidth: 0, maxWidth: "100%" }}>
+            <EntityCode type="invoice" value={inv.id} size="sm" className="break-all whitespace-normal max-w-full" />
             {bulkOrderRef && (
-              <EntityCode type="order" value={bulkOrderRef} size="sm" />
+              <EntityCode type="order" value={bulkOrderRef} size="sm" className="break-all whitespace-normal max-w-full" />
             )}
           </div>
+          <div style={{ flexShrink: 0 }}>
+            <InvBadge status={inv.status} />
+          </div>
+        </div>
+        <div>
           <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.3, marginBottom: 4 }}>{inv.customer}</div>
           <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
             <MapPin size={12} color={T.taupe} style={{ flexShrink: 0 }} />
             <span>{inv.city}</span>
           </div>
-        </div>
-        <div style={{ flexShrink: 0 }}>
-          <InvBadge status={inv.status} />
         </div>
       </div>
 
@@ -109,7 +111,7 @@ export function CustomerCard({ inv, onViewInvoice, onRecordPayment, bulkOrderRef
       </div>
 
       {/* Action buttons */}
-      <div className="flex items-center gap-1.5 sm:gap-2 p-3 sm:p-4 w-full flex-nowrap min-w-0">
+      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 p-3 sm:p-4 w-full">
         <Button
           variant="secondary"
           size="sm"

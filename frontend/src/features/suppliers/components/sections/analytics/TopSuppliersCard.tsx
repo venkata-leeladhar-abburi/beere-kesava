@@ -61,9 +61,9 @@ export function TopSuppliersCard({
           </BarChart>
         </ResponsiveContainer>
       </ChartFigure>
-      <div style={{ display: "flex", gap: 8, marginTop: 14, borderTop: `1px solid ${T.borderDef}`, paddingTop: 14 }}>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 border-t border-[var(--border-default)] pt-3.5 mt-3.5">
         {topSuppliers.map((s, i) => (
-          <div key={s.id} style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+          <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
             <div style={{ width: 26, height: 26, borderRadius: 8, flexShrink: 0, background: i === 0 ? `linear-gradient(135deg,${T.antiqueGold},${T.goldLight})` : T.silkCream, border: `1px solid ${T.borderGold}`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 800, color: i === 0 ? T.darkBurgundy : T.taupe }}>{i + 1}</div>
             <div style={{ minWidth: 0 }}>
               <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{s.initials}</div>

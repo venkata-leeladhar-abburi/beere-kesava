@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronDown, ChevronRight, RotateCcw, Truck, Building2 } from "lucide-react";
+import { ChevronDown, ChevronRight, RotateCcw, Truck, Building2, LayoutGrid, List } from "lucide-react";
 import { T, F } from "../../theme";
 import { UnifiedSaree, isSold, ageBucket, purchaseOutstanding } from "@/features/customers";
 import { Empty, ExportBtn, Pill, SectionCard, exportCsv, inr, tdMono } from "./primitives";
@@ -15,6 +15,7 @@ interface SupplierRollup { supplier: string; purchases: number; bought: number; 
 // ── External purchases outstanding — purchase-wise, per supplier ─────────────
 export function ExternalOutstanding({ sarees, search, ageFilter }: { sarees: UnifiedSaree[]; search: string; ageFilter: AgeKey }) {
   const [open, setOpen] = useState<string | null>(null);
+  const [supplierViewMode, setSupplierViewMode] = useState<"card" | "table">("card");
   const all = useMemo(() => purchaseOutstanding(sarees), [sarees]);
 
   const rows = useMemo(() => {
@@ -84,35 +85,56 @@ export function ExternalOutstanding({ sarees, search, ageFilter }: { sarees: Uni
                 ? { color: T.crimson, bg: "rgba(192,57,43,0.08)" }
                 : { color: T.orange, bg: "rgba(230,126,34,0.12)" };
               return (
-                <div key={p.id} style={{ border: `1px solid ${T.borderDef}`, borderRadius: 14, overflow: "hidden" }}>
-                  <Button variant="ghost" onClick={() => setOpen(isOpen ? null : p.id)}
-                    className={`h-auto w-full justify-start gap-[14px] rounded-none px-[18px] py-[14px] text-left ${isOpen ? "bg-[rgba(110,15,45,0.04)]" : "bg-white"}`}>
-                    {isOpen ? <ChevronDown size={17} color={T.royalBurgundy} /> : <ChevronRight size={17} color={T.taupe} />}
+              <div key={p.id} style={{ border: `1px solid ${T.borderDef}`, borderRadius: 18, background: "#FFFFFF", overflow: "hidden", boxShadow: "0 2px 10px rgba(0,0,0,0.03)" }}>
+                <button
+                  type="button"
+                  onClick={() => setOpen(isOpen ? null : p.id)}
+                  style={{
+                    width: "100%", padding: "16px 18px", background: isOpen ? "rgba(110,15,45,0.03)" : "#FFFFFF",
+                    border: "none", cursor: "pointer", textAlign: "left", display: "flex", flexDirection: "column", gap: 14,
+                  }}
+                >
+                  {/* Top Header Row: Supplier Name, Badges & Subtitle on left, Chevron on right */}
+                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, width: "100%" }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                        <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{p.supplier}</span>
+                        <span style={{ fontFamily: F.display, fontSize: 17, fontWeight: 700, color: T.luxuryBrown }}>{p.supplier}</span>
                         <Pill label={p.status} color={statusCfg.color} bg={statusCfg.bg} />
                         {p.returnedCount > 0 && <Pill label={`${p.returnedCount} returned`} color={T.crimson} bg="rgba(192,57,43,0.10)" />}
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginTop: 4 }}>
                         <EntityCode type="purchaseOrder" value={p.id} size="sm" />
-                        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>· {p.invoiceNumber} · {p.date} · {p.location}</span>
+                        <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, wordBreak: "break-all" }}>· {p.invoiceNumber} · {p.date} · {p.location}</span>
                       </div>
                     </div>
-                    <div style={{ display: "flex", gap: 22, alignItems: "center", flexWrap: "wrap", justifyContent: "flex-end" }}>
-                      {[
-                        { l: "Purchased", v: String(p.sareeCount), c: T.luxuryBrown },
-                        { l: "Sold", v: String(p.soldCount), c: T.green },
-                        { l: "Outstanding", v: String(p.unsoldCount), c: T.crimson },
-                        { l: "Bill Due", v: inr(p.dueAmount), c: p.dueAmount > 0 ? T.orange : T.green },
-                      ].map(k => (
-                        <div key={k.l} style={{ textAlign: "right", minWidth: 60 }}>
-                          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.7px" }}>{k.l}</div>
-                          <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: k.c }}>{k.v}</div>
-                        </div>
-                      ))}
+                    <div style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
+                      {isOpen ? <ChevronDown size={16} color={T.royalBurgundy} /> : <ChevronRight size={16} color={T.taupe} />}
                     </div>
-                  </Button>
+                  </div>
+
+                  {/* Horizontal Divider Line */}
+                  <div style={{ width: "100%", height: 1, background: "rgba(110,15,45,0.08)" }} />
+
+                  {/* Stat Badges Grid */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 w-full">
+                    <div style={{ background: "#F6F4EF", borderRadius: 12, padding: "10px 12px", textAlign: "center" }}>
+                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, color: T.taupe, letterSpacing: "0.8px", textTransform: "uppercase", marginBottom: 4 }}>PURCHASED</div>
+                      <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{p.sareeCount}</div>
+                    </div>
+                    <div style={{ background: "#F6F4EF", borderRadius: 12, padding: "10px 12px", textAlign: "center" }}>
+                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, color: T.taupe, letterSpacing: "0.8px", textTransform: "uppercase", marginBottom: 4 }}>SOLD</div>
+                      <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.green }}>{p.soldCount}</div>
+                    </div>
+                    <div style={{ background: "rgba(192,57,43,0.06)", borderRadius: 12, padding: "10px 12px", textAlign: "center" }}>
+                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, color: T.crimson, letterSpacing: "0.8px", textTransform: "uppercase", marginBottom: 4 }}>OUTSTANDING</div>
+                      <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.crimson }}>{p.unsoldCount}</div>
+                    </div>
+                    <div style={{ background: p.dueAmount > 0 ? "rgba(230,126,34,0.08)" : "rgba(30,102,64,0.08)", borderRadius: 12, padding: "10px 12px", textAlign: "center" }}>
+                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, color: p.dueAmount > 0 ? T.orange : T.green, letterSpacing: "0.8px", textTransform: "uppercase", marginBottom: 4 }}>BILL DUE</div>
+                      <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: p.dueAmount > 0 ? T.orange : T.green }}>{inr(p.dueAmount)}</div>
+                    </div>
+                  </div>
+                </button>
 
                   <AnimatePresence initial={false}>
                     {isOpen && (
@@ -167,14 +189,78 @@ export function ExternalOutstanding({ sarees, search, ageFilter }: { sarees: Uni
 
       {/* Supplier roll-up */}
       <SectionCard icon={Building2} title="Supplier Roll-up" subtitle="Same numbers grouped by supplier across all their purchases.">
-        <DataTable<SupplierRollup>
-          responsive
-          columns={supplierRollupColumns}
-          data={bySupplier}
-          getRowId={r => r.supplier}
-          caption="Supplier roll-up table"
-          emptyTitle="No supplier data yet"
-        />
+        {/* Mobile View Toggle */}
+        <div className="flex md:hidden justify-end mb-3">
+          <div className="flex items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0">
+            <Button
+              onClick={() => setSupplierViewMode("card")}
+              variant="ghost"
+              className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
+                supplierViewMode === "card"
+                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+              }`}
+            >
+              <LayoutGrid size={14} /> Card View
+            </Button>
+            <Button
+              onClick={() => setSupplierViewMode("table")}
+              variant="ghost"
+              className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
+                supplierViewMode === "table"
+                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+              }`}
+            >
+              <List size={14} /> Table View
+            </Button>
+          </div>
+        </div>
+
+        {/* Mobile Card View */}
+        <div className={`grid grid-cols-1 gap-3.5 ${supplierViewMode === "card" ? "block md:hidden" : "hidden"}`}>
+          {bySupplier.map(r => (
+            <div key={r.supplier} style={{ background: "#FFFFFF", border: "1px solid rgba(110,15,45,0.12)", borderRadius: 16, padding: "16px", display: "flex", flexDirection: "column", gap: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.02)" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{r.supplier}</span>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, background: "rgba(110,15,45,0.06)", padding: "3px 8px", borderRadius: 8 }}>{r.purchases} {r.purchases === 1 ? "purchase" : "purchases"}</span>
+              </div>
+              <div style={{ width: "100%", height: 1, background: "rgba(110,15,45,0.08)" }} />
+              <div className="grid grid-cols-2 gap-2.5">
+                <div style={{ background: "#F6F4EF", borderRadius: 12, padding: "8px 10px", textAlign: "center" }}>
+                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 700, color: T.taupe, letterSpacing: "0.7px", textTransform: "uppercase", marginBottom: 2 }}>PURCHASED</div>
+                  <div style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: T.luxuryBrown }}>{r.bought}</div>
+                </div>
+                <div style={{ background: "rgba(192,57,43,0.06)", borderRadius: 12, padding: "8px 10px", textAlign: "center" }}>
+                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 700, color: T.crimson, letterSpacing: "0.7px", textTransform: "uppercase", marginBottom: 2 }}>OUTSTANDING</div>
+                  <div style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: T.crimson }}>{r.unsold}</div>
+                </div>
+                <div style={{ background: "#F6F4EF", borderRadius: 12, padding: "8px 10px", textAlign: "center" }}>
+                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 700, color: T.taupe, letterSpacing: "0.7px", textTransform: "uppercase", marginBottom: 2 }}>UNSOLD VALUE</div>
+                  <div style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: T.luxuryBrown }}>{inr(r.unsoldValue)}</div>
+                </div>
+                <div style={{ background: r.due > 0 ? "rgba(230,126,34,0.08)" : "rgba(30,102,64,0.08)", borderRadius: 12, padding: "8px 10px", textAlign: "center" }}>
+                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 700, color: r.due > 0 ? T.orange : T.green, letterSpacing: "0.7px", textTransform: "uppercase", marginBottom: 2 }}>BILL DUE</div>
+                  <div style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: r.due > 0 ? T.orange : T.green }}>{inr(r.due)}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop Table View & Mobile Table Mode */}
+        <div className={`w-full overflow-x-auto section-nav-scroll border border-[#E8DCC4] rounded-xl bg-white p-2 ${supplierViewMode === "table" ? "block" : "hidden md:block"}`}>
+          <div className="min-w-[700px]">
+            <DataTable<SupplierRollup>
+              responsive={false}
+              columns={supplierRollupColumns}
+              data={bySupplier}
+              getRowId={r => r.supplier}
+              caption="Supplier roll-up table"
+              emptyTitle="No supplier data yet"
+            />
+          </div>
+        </div>
       </SectionCard>
     </div>
   );

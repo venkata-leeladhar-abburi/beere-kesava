@@ -170,8 +170,10 @@ export function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }
   }
   return (
     <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 4px 18px rgba(74,6,27,0.06)" }}>
-      <div style={{ overflowX: "auto" }}>
-        <DataTable responsive columns={columns} data={visible} getRowId={r => r.id} />
+      <div className="w-full overflow-x-auto section-nav-scroll p-2">
+        <div className="min-w-[850px]">
+          <DataTable responsive={false} columns={columns} data={visible} getRowId={r => r.id} />
+        </div>
       </div>
       {!showAll && (
         <div style={{ padding: "22px 26px", textAlign: "center", borderTop: `1px solid ${T.borderDef}` }}>

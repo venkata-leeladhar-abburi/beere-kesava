@@ -1,9 +1,9 @@
 import React from "react";
-import { ShoppingBag } from "lucide-react";
-import { DateFilterBar, DateFilterState } from "../../../../../shared/ui/DateFilterBar";
+import { ShoppingBag, LayoutGrid, List } from "lucide-react";
+import { DateFilterBar, DateFilterState } from "@/shared/ui/DateFilterBar";
 import { T } from "../theme";
 import { Select, SectionCard } from "../common/primitives";
-import { Button, SearchInput } from "../../../../../shared/ui/primitives";
+import { Button, SearchInput } from "@/shared/ui/primitives";
 
 export interface FilterOptions {
   supplier: string[];
@@ -17,6 +17,7 @@ export function FilterBar({
   search, setSearch,
   statusFilter, setStatusFilter,
   dateFilter, setDateFilter,
+  viewMode, setViewMode,
   fSupplier, setFSupplier,
   fPurchaseOrder, setFPurchaseOrder,
   fSerial, setFSerial,
@@ -31,6 +32,7 @@ export function FilterBar({
   search: string; setSearch: (v: string) => void;
   statusFilter: string; setStatusFilter: (v: string) => void;
   dateFilter: DateFilterState; setDateFilter: (v: DateFilterState) => void;
+  viewMode?: "card" | "table"; setViewMode?: (v: "card" | "table") => void;
   fSupplier: string; setFSupplier: (v: string) => void;
   fPurchaseOrder: string; setFPurchaseOrder: (v: string) => void;
   fSerial: string; setFSerial: (v: string) => void;
@@ -111,7 +113,34 @@ export function FilterBar({
         )}
       </div>
 
-      <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+      <div style={{ marginBottom: 16 }}>
+        <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+      </div>
+
+      <div className="flex md:hidden items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0 mb-4 w-fit">
+        <Button
+          onClick={() => setViewMode?.("card")}
+          variant="ghost"
+          className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
+            viewMode === "card"
+              ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+              : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+          }`}
+        >
+          <LayoutGrid size={14} /> Card View
+        </Button>
+        <Button
+          onClick={() => setViewMode?.("table")}
+          variant="ghost"
+          className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
+            viewMode === "table"
+              ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+              : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+          }`}
+        >
+          <List size={14} /> Table View
+        </Button>
+      </div>
 
       {children}
     </SectionCard>

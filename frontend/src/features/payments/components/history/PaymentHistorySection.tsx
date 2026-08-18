@@ -154,48 +154,61 @@ export function PaymentHistorySection() {
   const clearFilters = () => { setTypeFilter("All Payment Types"); setStatusFilter("All Statuses"); setSearch(""); setDateFilter(DEFAULT_DATE_FILTER); };
 
   const tableColumns: ColumnDef<PayHistRecord>[] = [
-    { id: "date", header: "Date", accessor: r => r.date, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, fontWeight: 600 }}>{r.date}</span> },
+    { id: "date", header: "Date", accessor: r => r.date, cell: (_v, r) => <div className="w-[120px] min-w-[120px] whitespace-nowrap font-semibold text-[#3B2314] text-[13px]">{r.date}</div> },
     {
       id: "type", header: "Payment Type", accessor: r => r.type,
       cell: (_v, r) => {
         const typeCfg = HIST_TYPE_CFG[r.type];
-        return <span style={{ display: "inline-block", padding: "4px 10px", borderRadius: 20, fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: typeCfg.bg, color: typeCfg.color, whiteSpace: "nowrap" as const }}>{r.type}</span>;
+        return (
+          <div className="w-[160px] min-w-[160px] whitespace-nowrap">
+            <span style={{ display: "inline-block", padding: "4px 10px", borderRadius: 20, fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: typeCfg.bg, color: typeCfg.color }}>{r.type}</span>
+          </div>
+        );
       },
     },
-    { id: "party", header: "Party Name", priority: 1, accessor: r => r.party, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{r.party}</span> },
-    { id: "refNo", header: "Reference No", priority: 3, accessor: r => r.refNo, cell: (_v, r) => <EntityCode type="payment" value={r.refNo} size="sm" /> },
+    { id: "party", header: "Party Name", priority: 1, accessor: r => r.party, cell: (_v, r) => <div className="w-[200px] min-w-[200px] whitespace-nowrap font-semibold text-[#3B2314] text-[14px]">{r.party}</div> },
+    {
+      id: "refNo", header: "Reference No", priority: 3, accessor: r => r.refNo,
+      cell: (_v, r) => (
+        <div className="w-[280px] min-w-[280px] whitespace-nowrap">
+          <EntityCode type="payment" value={r.refNo} size="sm" className="whitespace-nowrap" />
+        </div>
+      ),
+    },
     {
       id: "description", header: "Description", priority: 3, accessor: r => r.description,
-      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, overflow: "hidden", textOverflow: "ellipsis", display: "block", maxWidth: 200 }}>{r.description}</span>,
+      cell: (_v, r) => <div className="w-[220px] min-w-[220px] whitespace-nowrap text-[#8C7A6B] text-[13px] truncate">{r.description}</div>,
     },
     {
       id: "invoicePO", header: "Invoice / PO No", priority: 3, accessor: r => r.invoicePO,
-      cell: (_v, r) => r.invoicePO ? <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{r.invoicePO}</span> : <span style={{ color: T.borderDef }}>—</span>,
+      cell: (_v, r) => <div className="w-[180px] min-w-[180px] whitespace-nowrap text-[12px] text-[#8C7A6B]">{r.invoicePO ? r.invoicePO : "—"}</div>,
     },
     {
       id: "amount", header: "Amount", accessor: r => r.amount, align: "end",
       cell: (_v, r) => (
-        <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: r.type === "Customer Receipt" ? T.green : T.crimson }}>
+        <div className="w-[130px] min-w-[130px] whitespace-nowrap text-right font-bold text-[14px]" style={{ color: r.type === "Customer Receipt" ? T.green : T.crimson }}>
           {r.type !== "Customer Receipt" && "−"}<Money value={rupees(r.amount)} />
-        </span>
+        </div>
       ),
     },
     {
       id: "status", header: "Status", accessor: r => r.status, type: "status", align: "center",
-      cell: (_v, r) => <StatusPill taxonomy="payment" status={payHistStatusKey(r.status)} />,
+      cell: (_v, r) => <div className="w-[120px] min-w-[120px] whitespace-nowrap flex justify-center"><StatusPill taxonomy="payment" status={payHistStatusKey(r.status)} /></div>,
     },
-    { id: "mode", header: "Payment Mode", priority: 3, accessor: r => r.mode, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{r.mode}</span> },
+    { id: "mode", header: "Payment Mode", priority: 3, accessor: r => r.mode, cell: (_v, r) => <div className="w-[130px] min-w-[130px] whitespace-nowrap text-[#8C7A6B] text-[13px]">{r.mode}</div> },
     {
       id: "utr", header: "UTR / Ref No", priority: 3, accessor: r => r.utr,
-      cell: (_v, r) => r.utr ? <span style={{ fontFamily: F.ui, fontSize: 12, color: T.green }}>{r.utr}</span> : <span style={{ fontFamily: F.ui, fontSize: 13, color: T.borderDef }}>—</span>,
+      cell: (_v, r) => <div className="w-[160px] min-w-[160px] whitespace-nowrap text-[12px]">{r.utr ? <span style={{ color: T.green }}>{r.utr}</span> : <span style={{ color: T.borderDef }}>—</span>}</div>,
     },
-    { id: "recordedBy", header: "Recorded By", priority: 3, accessor: r => r.recordedBy, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{r.recordedBy}</span> },
+    { id: "recordedBy", header: "Recorded By", priority: 3, accessor: r => r.recordedBy, cell: (_v, r) => <div className="w-[140px] min-w-[140px] whitespace-nowrap text-[#8C7A6B] text-[13px]">{r.recordedBy}</div> },
     {
       id: "action", header: "Action", priority: 2, accessor: () => null, type: "actions", align: "center",
       cell: (_v, r) => (
-        <Button variant="secondary" size="sm" iconLeft={Eye} onClick={() => setViewRecord(r)} className="rounded-[8px] border-[1.5px] border-[rgba(110,15,45,0.12)] text-[#6E0F2D]">
-          View
-        </Button>
+        <div className="w-[100px] min-w-[100px] flex justify-center">
+          <Button variant="secondary" size="sm" iconLeft={Eye} onClick={() => setViewRecord(r)} className="rounded-[8px] border-[1.5px] border-[rgba(110,15,45,0.12)] text-[#6E0F2D]">
+            View
+          </Button>
+        </div>
       ),
     },
   ];
@@ -256,7 +269,7 @@ export function PaymentHistorySection() {
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" as const }}>
 
             {/* View toggle */}
-            <div style={{ display: "flex", alignItems: "center", gap: 3, background: T.warmCream, borderRadius: 9, padding: 3, border: `1px solid ${T.borderDef}`, flexShrink: 0 }}>
+            <div className="hidden md:flex" style={{ alignItems: "center", gap: 3, background: T.warmCream, borderRadius: 9, padding: 3, border: `1px solid ${T.borderDef}`, flexShrink: 0 }}>
               {viewOptions.map(({ key, Icon: Ico, label }) => (
                 <Button key={key} variant={view === key ? "primary" : "tertiary"} size="sm" iconLeft={Ico}
                   onClick={() => setView(key)}
@@ -288,7 +301,36 @@ export function PaymentHistorySection() {
             </Button>
           </div>
 
-          <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+          <div style={{ marginBottom: 14 }}>
+            <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+          </div>
+
+          <div className="flex md:hidden items-center justify-between gap-3 mb-4 flex-wrap">
+            <div className="flex items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0">
+              <Button
+                onClick={() => setView("card")}
+                variant="ghost"
+                className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
+                  view === "card"
+                    ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+                    : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+                }`}
+              >
+                <LayoutGrid size={14} /> Card View
+              </Button>
+              <Button
+                onClick={() => setView("table")}
+                variant="ghost"
+                className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
+                  view === "table"
+                    ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+                    : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+                }`}
+              >
+                <AlignJustify size={14} /> Table View
+              </Button>
+            </div>
+          </div>
         </div>
 
         {/* ── Loading / error states ──────────────────────────── */}
@@ -304,7 +346,7 @@ export function PaymentHistorySection() {
         <>
         {/* ── CARD VIEW ───────────────────────────────────────── */}
         {view === "card" && (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 18, alignItems: "stretch", marginBottom: 32 }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8 items-stretch">
             {filtered.map((r, i) => (
               <motion.div key={r.id} style={{ display: "flex", flexDirection: "column" }}
                 initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }}
@@ -410,7 +452,9 @@ export function PaymentHistorySection() {
         {view === "table" && (
           <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
             <div className="overflow-x-auto w-full">
-              <DataTable responsive columns={tableColumns} data={filtered} getRowId={r => r.id} emptyTitle="No transactions match your filters" />
+              <div style={{ minWidth: 1600 }}>
+                <DataTable responsive={false} columns={tableColumns} data={filtered} getRowId={r => r.id} emptyTitle="No transactions match your filters" />
+              </div>
             </div>
             {filtered.length > 0 && (
               <div style={{ background: T.darkBurgundy, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 14px" }}>

@@ -268,22 +268,25 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
         </div>
       </FadeUp>
 
-      <div style={{ display: "flex", borderBottom: `2px solid ${T.borderDef}`, marginBottom: 28 }}>
-        {tabs.map(t => (
-          <Button
-            key={t.key}
-            onClick={() => setTab(t.key)}
-            variant="tertiary"
-            className={
-              "rounded-none px-6 py-3.5 mb-[-2px] " +
-              (tab === t.key
-                ? "border-b-[3px] border-[#6E0F2D] text-[#6E0F2D] font-bold"
-                : "border-b-[3px] border-transparent text-[#9C8672] font-medium")
-            }
-          >
-            {t.label}
-          </Button>
-        ))}
+      {/* Tabs */}
+      <div className="w-full overflow-x-auto section-nav-scroll pb-1 mb-6 border-b-2 border-[var(--border-default)]">
+        <div className="flex items-center gap-1 min-w-max">
+          {tabs.map(t => (
+            <Button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              variant="tertiary"
+              className={
+                "rounded-none px-4 sm:px-6 py-3 mb-[-6px] shrink-0 text-sm sm:text-base " +
+                (tab === t.key
+                  ? "border-b-[3px] border-[#6E0F2D] text-[#6E0F2D] font-bold"
+                  : "border-b-[3px] border-transparent text-[#9C8672] font-medium")
+              }
+            >
+              {t.label}
+            </Button>
+          ))}
+        </div>
       </div>
 
       <AnimatePresence mode="wait">

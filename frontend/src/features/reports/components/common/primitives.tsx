@@ -148,10 +148,9 @@ export function SumCard({ icon, label, value, sub, hi = false, crimsonHi = false
   );
 }
 
-// ── Report Download Bar ───────────────────────────────────────────────────────
 export function ReportDLBar({ period = "May 2026", compared = "April 2026" }: { period?: string; compared?: string }) {
   return (
-    <div style={{ background: T.warmIvory, borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "14px 20px", marginBottom: 24, display: "flex", alignItems: "center", justifyContent: "space-between", boxShadow: "0 2px 8px rgba(74,6,27,0.04)" }}>
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0" style={{ background: T.warmIvory, borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "14px 20px", marginBottom: 24, boxShadow: "0 2px 8px rgba(74,6,27,0.04)" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <div style={{ width: 36, height: 36, borderRadius: 9, background: "rgba(200,155,71,0.12)", border: `1px solid ${T.borderGold}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <Calendar size={17} color={T.antiqueGold} />
@@ -162,7 +161,7 @@ export function ReportDLBar({ period = "May 2026", compared = "April 2026" }: { 
         </span>
       </div>
       <DownloadGate>
-        <div style={{ display: "flex", gap: 8 }}>
+        <div className="w-full sm:w-auto flex flex-wrap gap-2.5 pt-2 sm:pt-0 border-t sm:border-t-0 border-[rgba(110,15,45,0.08)] sm:border-transparent mt-1 sm:mt-0">
           <Button variant="secondary" size="sm" iconLeft={FileText}>
             Download PDF
           </Button>

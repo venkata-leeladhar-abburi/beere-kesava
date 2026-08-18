@@ -20,13 +20,23 @@ export function FadeUp({ children, delay = 0, style = {} }: { children: React.Re
   );
 }
 export function Avatar({ photo, initials, bg, size = 44 }: { photo: string | null; initials: string; bg: string; size?: number }) {
+  const [imgError, setImgError] = React.useState(false);
+  const showPhoto = photo && !imgError;
+
   return (
     <div style={{ width: size, height: size, borderRadius: "50%", overflow: "hidden", flexShrink: 0, border: `2px solid ${T.borderGold}` }}>
-      {photo
-        ? <img src={photo} alt={initials} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-        : <div style={{ width: "100%", height: "100%", background: bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <span style={{ fontFamily: F.display, fontSize: size * 0.4, color: "#FFFDF9" }}>{initials}</span>
-        </div>}
+      {showPhoto ? (
+        <img
+          src={photo}
+          alt={initials}
+          onError={() => setImgError(true)}
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+        />
+      ) : (
+        <div style={{ width: "100%", height: "100%", background: bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <span style={{ fontFamily: F.display, fontSize: size * 0.38, fontWeight: 700, color: "#FFFDF9" }}>{initials}</span>
+        </div>
+      )}
     </div>
   );
 }

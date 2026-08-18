@@ -102,7 +102,7 @@ export function BatchTableView({ rows, onViewDetails, onPrintBarcode }: { rows: 
 
   return (
     <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, boxShadow: "0 2px 14px rgba(74,6,27,0.05)", overflowX: "auto" }}>
-      <DataTable responsive columns={columns} data={rows} getRowId={r => r.rowKey} />
+      <DataTable columns={columns} data={rows} getRowId={r => r.rowKey} />
     </div>
   );
 }

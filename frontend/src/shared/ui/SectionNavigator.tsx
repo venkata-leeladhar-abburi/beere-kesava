@@ -300,6 +300,7 @@ export function SectionNavigator({
 
   const isMobile = typeof window !== "undefined" && window.innerWidth <= 1024;
   const currentStickyTop = (!inline && isMobile && scrollDirection === "down") ? 0 : stickyTop;
+  if (!sections || sections.length === 0) return null;
 
   return (
     <div

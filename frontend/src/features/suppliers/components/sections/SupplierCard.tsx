@@ -42,14 +42,14 @@ export function SupplierCard({ supplier, onView }: { supplier: Supplier; onView:
           <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 12, color: T.taupe }}><Package size={13} color={T.royalBurgundy} />{supplier.specialty}</div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: T.silkCream, borderRadius: 10, overflow: "hidden", border: `1px solid ${T.borderDef}` }}>
+        <div className="grid grid-cols-3" style={{ gap: 0, background: T.silkCream, borderRadius: 10, overflow: "hidden", border: `1px solid ${T.borderDef}` }}>
           {[
             { label: "Purchases", value: String(stats.purchases.length), alert: false },
             { label: "Sarees",    value: String(stats.sareeCount), alert: false },
             { label: "Outstanding", value: formatMoney(rupees(stats.outstanding)), alert: stats.outstanding > 0 },
           ].map((s, i) => (
-            <div key={s.label} style={{ padding: "10px 12px", borderRight: i < 2 ? `1px solid ${T.borderDef}` : "none", textAlign: "center" }}>
-              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, letterSpacing: "0.5px", marginBottom: 3 }}>{s.label}</div>
+            <div key={s.label} style={{ padding: "8px 6px", borderRight: i < 2 ? `1px solid ${T.borderDef}` : "none", textAlign: "center" }}>
+              <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, fontWeight: 600, letterSpacing: "0.4px", marginBottom: 2 }}>{s.label}</div>
               <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: s.alert ? T.crimson : T.luxuryBrown }}>{s.value}</div>
             </div>
           ))}

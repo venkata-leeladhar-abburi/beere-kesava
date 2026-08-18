@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { LayoutGrid, List } from "lucide-react";
 import { isSold, isOutstanding } from "@/features/customers";
 import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { usePagination } from "../../../../shared/ui/DataPagination";
@@ -36,6 +37,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
   const rows = useWeaverSareeRows({ weaverId, isLoom, isAll });
 
   const [tab, setTab] = useState<TabKey>("assigned");
+  const [viewMode, setViewMode] = useState<"card" | "table">("card");
   const [search, setSearch] = useState("");
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [fBatch, setFBatch] = useState("all");
@@ -302,6 +304,34 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
         )}
       </div>
 
+      {/* View mode toggle buttons (Card View / Table View) — mobile only */}
+      <div className="flex md:hidden items-center justify-between gap-3 mb-4 flex-wrap">
+        <div className="flex items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0">
+          <Button
+            onClick={() => setViewMode("card")}
+            variant="ghost"
+            className={`h-auto rounded-none gap-1.5 py-2 px-3 text-[12px] sm:text-[13px] font-bold ${
+              viewMode === "card"
+                ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+                : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+            }`}
+          >
+            <LayoutGrid size={15} /> Card View
+          </Button>
+          <Button
+            onClick={() => setViewMode("table")}
+            variant="ghost"
+            className={`h-auto rounded-none gap-1.5 py-2 px-3 text-[12px] sm:text-[13px] font-bold ${
+              viewMode === "table"
+                ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+                : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+            }`}
+          >
+            <List size={15} /> Table View
+          </Button>
+        </div>
+      </div>
+
       {/* Table */}
       {visible.length === 0 ? (
         <div style={{
@@ -311,7 +341,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
           No sarees match this view{filtersActive ? " with the current filters." : "."}
         </div>
       ) : isExternalTab ? (
-        <ExternalSareesTable pageRows={pageRows} canSeeMoney={canSeeMoney} pag={pag} />
+        <ExternalSareesTable pageRows={pageRows} canSeeMoney={canSeeMoney} pag={pag} responsive={viewMode === "card"} />
       ) : (
         <MainSareesTable
           pageRows={pageRows}
@@ -327,6 +357,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
           showQcMoney={showQcMoney}
           showMoney={showMoney}
           pag={pag}
+          responsive={viewMode === "card"}
         />
       )}
 

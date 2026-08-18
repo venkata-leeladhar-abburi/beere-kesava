@@ -43,6 +43,7 @@ export function ExternalPurchasesPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Status");
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const [viewMode, setViewMode] = useState<"card" | "table">("card");
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
 
   const [formModal, setFormModal] = useState<{ mode: "add" | "edit" | "request" | "request"; editId?: string } | null>(null);
@@ -210,6 +211,7 @@ export function ExternalPurchasesPage() {
         search={search} setSearch={setSearch}
         statusFilter={statusFilter} setStatusFilter={setStatusFilter}
         dateFilter={dateFilter} setDateFilter={setDateFilter}
+        viewMode={viewMode} setViewMode={setViewMode}
         fSupplier={fSupplier} setFSupplier={setFSupplier}
         fPurchaseOrder={fPurchaseOrder} setFPurchaseOrder={setFPurchaseOrder}
         fSerial={fSerial} setFSerial={setFSerial}
@@ -223,6 +225,7 @@ export function ExternalPurchasesPage() {
         <PurchasesTable
           filtered={filtered}
           totalCount={purchases.length}
+          viewMode={viewMode}
           hoveredRow={hoveredRow}
           setHoveredRow={setHoveredRow}
           onView={setDetailRow}

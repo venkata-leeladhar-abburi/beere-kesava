@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ClipboardList, Download } from "lucide-react";
+import { AlignJustify, ClipboardList, Download, LayoutGrid } from "lucide-react";
 import { toast } from "sonner";
 
 import { weaverPaymentsApi, BackendWeaverPayment } from "../../../../shared/api/payments";
@@ -9,9 +9,9 @@ import { firmsApi } from "../../../../shared/api/firms";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { DataTable, exportTable, type ColumnDef } from "../../../../shared/ui/data";
 import { Button } from "../../../../shared/ui/primitives";
-import { DropBtn } from "../common/primitives";
+import { DropBtn, Pip } from "../common/primitives";
 import { rupees } from "@/lib/domain/money";
-import { Money } from "@/shared/ui/domain";
+import { EntityCode, Money } from "@/shared/ui/domain";
 import { T, F } from "../../theme";
 
 interface GroupedRow {
@@ -146,6 +146,95 @@ const savedColumns: ColumnDef<BackendWeaverPayment & { weaverName: string }>[] =
 const ALL_WEAVERS = "All Weavers";
 const ALL_BATCHES = "All Batches";
 
+function WeaverProductionCard({ row }: { row: GroupedRow }) {
+  const netAmount = row.makingCharges - row.deduction;
+  const remaining = Math.max(0, netAmount - (row.amountPaid ?? 0));
+  const isPaid = row.amountPaid != null && remaining <= 0;
+
+  return (
+    <div className="bg-white rounded-2xl border-[1.5px] border-[#E8DCC4] shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col w-full">
+      {/* Top accent bar */}
+      <div className={`h-1.5 w-full ${isPaid ? "bg-[#27AE60]" : "bg-[#6E0F2D]"}`} />
+
+      <div className="p-4 flex flex-col gap-3 flex-1">
+        {/* Header: Weaver ID + Status Badge */}
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <EntityCode type="weaver" value={row.weaverId} size="sm" className="break-all whitespace-normal max-w-full" />
+          <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${isPaid ? "bg-[#27AE60]/10 text-[#27AE60]" : "bg-[#6E0F2D]/10 text-[#6E0F2D]"}`}>
+            {isPaid ? "Paid ✓" : "Pending"}
+          </span>
+        </div>
+
+        {/* Weaver Info */}
+        <div className="flex items-center gap-3">
+          <Pip initials={row.weaverName} bg="#6E0F2D" size={40} />
+          <div className="flex-1 min-w-0">
+            <div className="font-bold text-[15px] text-[#3B2314] truncate">{row.weaverName}</div>
+          </div>
+        </div>
+
+        {/* Loom & Batch Box */}
+        <div className="bg-[rgba(110,15,45,0.015)] border border-[#E8DCC4] rounded-xl p-3 flex flex-col gap-2">
+          <div className="flex items-center justify-between gap-2 flex-wrap text-[12px]">
+            <span className="text-[#8C7A6B] font-medium">Loom Number:</span>
+            <EntityCode type="loom" value={row.loomNumber.startsWith("Loom") ? row.loomNumber : `Loom-${row.loomNumber}`} size="sm" />
+          </div>
+          <div className="flex items-center justify-between gap-2 flex-wrap text-[12px]">
+            <span className="text-[#8C7A6B] font-medium">Batch:</span>
+            <EntityCode type="batch" value={row.batchId} size="sm" />
+          </div>
+          <div className="flex items-center justify-between gap-2 flex-wrap text-[12px] pt-1 border-t border-[#E8DCC4]/50">
+            <span className="text-[#8C7A6B] font-medium">No. of Sarees:</span>
+            <span className="font-bold text-[#6E0F2D] bg-[#6E0F2D]/10 px-2 py-0.5 rounded-md">{row.noOfSarees} sarees</span>
+          </div>
+        </div>
+
+        {/* Financial Breakdown */}
+        <div className="bg-gradient-to-br from-[#FFFDF9] to-[#FDFBF7] border-[1.5px] border-[#E8DCC4] rounded-xl p-3 flex flex-col gap-2">
+          <div className="flex justify-between text-[12px] text-[#8C7A6B]">
+            <span>Making Charges</span>
+            <span className="font-bold text-[#3B2314]"><Money value={rupees(row.makingCharges)} /></span>
+          </div>
+          <div className="flex justify-between text-[12px] text-[#C0392B]">
+            <span>Deduction</span>
+            <span className="font-semibold">−<Money value={rupees(row.deduction)} /></span>
+          </div>
+          <div className="flex justify-between text-[12px] text-[#6E0F2D]">
+            <span>Net Amount</span>
+            <span className="font-bold"><Money value={rupees(netAmount)} /></span>
+          </div>
+          <div className="flex justify-between text-[12px] text-[#27AE60]">
+            <span>Amount Paid</span>
+            <span className="font-semibold">{row.amountPaid != null ? <Money value={rupees(row.amountPaid)} /> : "—"}</span>
+          </div>
+          <div className="border-t border-dashed border-[#E8DCC4] pt-2 mt-1 flex justify-between items-baseline">
+            <span className="text-[13px] font-bold text-[#3B2314]">Remaining</span>
+            <span className={`text-[16px] font-extrabold ${isPaid ? "text-[#27AE60]" : "text-[#6E0F2D]"}`}>
+              {isPaid ? "Paid ✓" : <Money value={rupees(remaining)} />}
+            </span>
+          </div>
+        </div>
+
+        {/* Payment & Bank Metadata Box */}
+        <div className="bg-[#F7F2EA]/40 border border-[#E8DCC4] rounded-xl p-2.5 flex flex-col gap-1.5 mt-auto text-[11px] text-[#8C7A6B]">
+          <div className="flex justify-between items-center gap-2">
+            <span>Firm Name:</span>
+            <span className="font-semibold text-[#3B2314]">{row.firmName || "—"}</span>
+          </div>
+          <div className="flex justify-between items-center gap-2">
+            <span>UTR Number:</span>
+            {row.utrNumber ? <EntityCode type="payment" value={row.utrNumber} size="sm" /> : <span className="text-[#8C7A6B]">—</span>}
+          </div>
+          <div className="flex justify-between items-center gap-2">
+            <span>Payment Date:</span>
+            <span className="font-medium text-[#3B2314]">{row.paymentDate ? new Date(row.paymentDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—"}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function WeaverProductionSummaryPanel({ refreshKey }: { refreshKey: number }) {
   const [filter, setFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [weaverFilter, setWeaverFilter] = useState(ALL_WEAVERS);
@@ -176,10 +265,7 @@ export function WeaverProductionSummaryPanel({ refreshKey }: { refreshKey: numbe
     () => new Map((firmsRes?.items ?? []).map(f => [f.id, f.firmName])),
     [firmsRes],
   );
-  // Same (weaver, batch, loom) key as groupRows — a batch/loom can receive
-  // more than one payment over time (partial payments), so this sums every
-  // matching payment rather than keeping only the last one (which was
-  // silently discarding earlier payments and understating what was paid).
+
   const paymentByKey = useMemo(() => {
     const map = new Map<string, { total: number; latest: BackendWeaverPayment }>();
     for (const p of paymentsRes?.items ?? []) {
@@ -209,23 +295,15 @@ export function WeaverProductionSummaryPanel({ refreshKey }: { refreshKey: numbe
     });
   }, [rows, filter, paymentByKey, firmNameById]);
 
-  // The full weaver roster, always — not just weavers with rows in the
-  // current date window, so admin can pick any weaver and see "no data" for
-  // them rather than that weaver simply not being an option at all.
   const weaverOptions = useMemo(
     () => [ALL_WEAVERS, ...Array.from(new Set(weaversRes?.items.map(w => w.name) ?? [])).sort()],
     [weaversRes],
   );
-  // Batches aren't a fixed roster the same way weavers are, so this stays
-  // scoped to what's actually in the selected date window.
   const batchOptions = useMemo(
     () => [ALL_BATCHES, ...Array.from(new Set(groupedByDate.map(r => r.batchId))).sort()],
     [groupedByDate],
   );
 
-  // A weaver/batch picked before the date filter changed can fall out of
-  // the now-available options — reset back to "All" rather than silently
-  // filtering everything down to zero rows.
   useEffect(() => {
     if (weaverFilter !== ALL_WEAVERS && !weaverOptions.includes(weaverFilter)) setWeaverFilter(ALL_WEAVERS);
   }, [weaverOptions, weaverFilter]);
@@ -252,9 +330,6 @@ export function WeaverProductionSummaryPanel({ refreshKey }: { refreshKey: numbe
       );
   }, [paymentsRes, filter, weaverNameById, weaverFilter, batchFilter]);
 
-  // Only rows with no matching saved payment yet — an already-paid row has
-  // nothing left to fill in, and including it would invite a duplicate
-  // payment on re-upload.
   const unpaidRows = useMemo(() => grouped.filter(r => r.amountPaid == null), [grouped]);
 
   const handleDownloadTemplate = async () => {
@@ -280,37 +355,67 @@ export function WeaverProductionSummaryPanel({ refreshKey }: { refreshKey: numbe
 
   const totalSarees = grouped.reduce((s, r) => s + r.noOfSarees, 0);
 
+  const [prodViewMode, setProdViewMode] = useState<"card" | "table">("card");
+
   return (
     <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: "20px 22px", marginBottom: 28, boxShadow: "0 2px 10px rgba(74,6,27,0.04)" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" as const, gap: 12, marginBottom: 4 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ width: 40, height: 40, borderRadius: 10, background: "rgba(110,15,45,0.06)", border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <ClipboardList size={19} color={T.royalBurgundy} />
-          </div>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 16 }}>
+        <div style={{ width: 40, height: 40, borderRadius: 10, background: "rgba(110,15,45,0.06)", border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
+          <ClipboardList size={20} color={T.royalBurgundy} />
+        </div>
+        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 12 }}>
           <div>
-            <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>Production Summary for Payment</div>
-            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>
+            <div style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 700, color: T.luxuryBrown, marginBottom: 4 }}>Production Summary for Payment</div>
+            <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, lineHeight: 1.55 }}>
               Every active weaver's completed batches and QC-passed sarees, all time by default — narrow to a date range, download a payment template, fill it in, then upload it above.
             </div>
           </div>
-        </div>
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" as const }}>
-          <Button variant="secondary" size="md" iconLeft={Download} onClick={handleDownloadTemplate} disabled={unpaidRows.length === 0}>
-            Download Payment Template
-          </Button>
-          <Button variant="tertiary" size="md" iconLeft={Download} onClick={handleDownloadSaved} disabled={savedRows.length === 0}>
-            Download Confirmation Report
-          </Button>
+
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", flexDirection: "column" }} className="sm:flex-row">
+            <Button variant="secondary" size="md" iconLeft={Download} onClick={handleDownloadTemplate} disabled={unpaidRows.length === 0} className="w-full sm:w-auto">
+              Download Payment Template
+            </Button>
+            <Button variant="tertiary" size="md" iconLeft={Download} onClick={handleDownloadSaved} disabled={savedRows.length === 0} className="w-full sm:w-auto">
+              Download Confirmation Report
+            </Button>
+          </div>
         </div>
       </div>
 
-      <div style={{ marginTop: 16 }}>
+      <div style={{ marginBottom: 14 }}>
         <DateFilterBar filter={filter} onChange={setFilter} />
       </div>
 
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" as const, marginBottom: 14 }}>
         <DropBtn value={weaverFilter} options={weaverOptions} onChange={setWeaverFilter} />
         <DropBtn value={batchFilter} options={batchOptions} onChange={setBatchFilter} />
+      </div>
+
+      <div className="flex md:hidden items-center justify-between gap-3 mb-4 flex-wrap">
+        <div className="flex items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0">
+          <Button
+            onClick={() => setProdViewMode("card")}
+            variant="ghost"
+            className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
+              prodViewMode === "card"
+                ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+                : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+            }`}
+          >
+            <LayoutGrid size={14} /> Card View
+          </Button>
+          <Button
+            onClick={() => setProdViewMode("table")}
+            variant="ghost"
+            className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
+              prodViewMode === "table"
+                ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+                : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+            }`}
+          >
+            <AlignJustify size={14} /> Table View
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
@@ -322,9 +427,22 @@ export function WeaverProductionSummaryPanel({ refreshKey }: { refreshKey: numbe
           <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 10 }}>
             {grouped.length} row{grouped.length === 1 ? "" : "s"} · {totalSarees} saree{totalSarees === 1 ? "" : "s"} in this period
           </div>
-          <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden" }}>
-            <DataTable responsive columns={displayColumns} data={grouped} getRowId={r => `${r.weaverId}-${r.batchId}-${r.loomNumber}`} emptyTitle="No production in this period." />
-          </div>
+
+          {prodViewMode === "card" ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-4">
+              {grouped.map((row, idx) => (
+                <WeaverProductionCard key={`${row.weaverId}-${row.batchId}-${row.loomNumber}-${idx}`} row={row} />
+              ))}
+            </div>
+          ) : (
+            <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden" }} className="w-full">
+              <div style={{ overflowX: "auto" }} className="w-full">
+                <div style={{ minWidth: 1450 }}>
+                  <DataTable responsive={false} columns={displayColumns} data={grouped} getRowId={r => `${r.weaverId}-${r.batchId}-${r.loomNumber}`} emptyTitle="No production in this period." />
+                </div>
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>

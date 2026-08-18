@@ -84,7 +84,8 @@ export function ExternalPurchasesSection() {
         </div>
 
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
-          <div className="min-w-[900px]" style={{ overflowX: "auto" }}>
+          <div className="w-full overflow-x-auto">
+            <div className="min-w-[900px]">
             <DataTable
               columns={purchaseColumns}
               data={rows}
@@ -96,6 +97,7 @@ export function ExternalPurchasesSection() {
             />
           </div>
         </div>
+      </div>
       </div>
     </FadeUp>
   );
@@ -278,7 +280,7 @@ export function SareeProductionReport() {
     >
       <ReportDLBar />
 
-      <div style={{ display: "flex", gap: 6, marginBottom: 24 }}>
+      <div className="flex flex-wrap gap-2.5 mb-6">
         {["All Sources", "Own Factory Only", "Outsourced Only"].map((f, i) => (
           <div key={f} style={{ padding: "5px 14px", borderRadius: 20, cursor: "pointer", fontFamily: F.ui, fontSize: 12, fontWeight: 500, background: i === 0 ? T.royalBurgundy : "transparent", color: i === 0 ? "#FFF" : T.taupe, border: `1px solid ${i === 0 ? T.royalBurgundy : T.borderDef}` }}>{f}</div>
         ))}
@@ -430,7 +432,8 @@ export function SareeProductionReport() {
       {/* Production table — per-weaver, computed from live batch + QC data */}
       <FadeUp>
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
-          <div className="min-w-[960px]" style={{ overflowX: "auto" }}>
+          <div className="w-full overflow-x-auto">
+            <div className="min-w-[960px]">
             <DataTable
               columns={prodColumns}
               data={prodTableRows}
@@ -440,6 +443,7 @@ export function SareeProductionReport() {
               emptyTitle="No sarees assigned to weavers yet."
             />
           </div>
+        </div>
           {prodTableRows.length > 0 && (
             <div style={{ background: T.warmCream, borderTop: `2px solid ${T.borderDef}`, display: "flex", alignItems: "center", padding: "13px 14px", gap: 14 }}>
               <span style={{ fontFamily: F.ui, fontWeight: 700, color: T.luxuryBrown, flex: 1 }}>Totals ({prodTableRows.length} weavers)</span>

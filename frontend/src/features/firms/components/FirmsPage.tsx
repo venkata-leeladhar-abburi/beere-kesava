@@ -229,20 +229,6 @@ const FirmCard = React.forwardRef<HTMLDivElement, { firm: Firm; onEdit: () => vo
         </div>
       </div>
 
-      {/* Financial mini-strip */}
-      <div className="grid grid-cols-1 md:grid-cols-3" style={{ borderBottom: `1px solid ${T.borderDef}` }}>
-        {[
-          { label: "Income",   val: inc, color: T.green   },
-          { label: "Expenses", val: exp, color: T.crimson  },
-          { label: "Net",      val: net, color: net >= 0 ? T.green : T.crimson },
-        ].map((s, i) => (
-          <div key={s.label} style={{ padding: "9px 14px", borderRight: i < 2 ? `1px solid ${T.borderDef}` : "none", textAlign: i === 2 ? "right" : "left" }}>
-            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 2 }}>{s.label}</div>
-            <div style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 13, color: s.color }}>{fmtFull(s.val)}</div>
-          </div>
-        ))}
-      </div>
-
       {/* Content */}
       <div style={{ padding: 20, display: "flex", flexDirection: "column", flex: 1 }}>
         <div style={{ fontFamily: F.display, fontSize: 18, color: T.luxuryBrown, fontWeight: 800, lineHeight: 1.25, marginBottom: 10, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>

@@ -153,9 +153,9 @@ export function DomainCard({
       <div className="flex items-start gap-3">
         <Avatar name={avatarName} src={avatarSrc} size="lg" />
         <div className="min-w-0 flex-1">
-          <div className="flex items-center justify-between gap-2">
-            <span className="truncate text-[16px] font-semibold text-[var(--text-primary)]">{title}</span>
-            {status}
+          <div className="flex items-start justify-between gap-2">
+            <span className="font-semibold text-base text-[var(--text-primary)] leading-snug">{title}</span>
+            <div className="shrink-0">{status}</div>
           </div>
           {code && <div className="mt-0.5">{code}</div>}
           {meta && <div className="mt-0.5 truncate text-[13px] text-[var(--text-secondary)]">{meta}</div>}
@@ -163,11 +163,11 @@ export function DomainCard({
       </div>
 
       {stats && stats.length > 0 && (
-        <div className="mt-4 grid grid-cols-2 gap-3 border-t border-[var(--border-subtle)] pt-4">
+        <div className="mt-4 grid grid-cols-3 gap-2 border-t border-[var(--border-subtle)] pt-4">
           {stats.map((s) => (
-            <div key={s.label}>
-              <div className="text-[16px] font-semibold tabular-nums text-[var(--text-primary)]">{s.value}</div>
-              <div className="text-[12px] text-[var(--text-tertiary)]">{s.label}</div>
+            <div key={s.label} className="text-center">
+              <div className="text-[14px] font-semibold tabular-nums text-[var(--text-primary)]">{s.value}</div>
+              <div className="text-[11px] text-[var(--text-tertiary)]">{s.label}</div>
             </div>
           ))}
         </div>

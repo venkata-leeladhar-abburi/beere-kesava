@@ -291,13 +291,15 @@ export function WholesaleSalesReport() {
 
       <FadeUp>
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
-          <div style={{ overflowX: "auto" }}>
-            <DataTable
-              columns={bulkOrderColumns}
-              data={bulkOrders}
-              getRowId={o => o.ref}
-              emptyTitle="No bulk orders recorded yet"
-            />
+          <div className="w-full overflow-x-auto section-nav-scroll p-2">
+            <div className="min-w-[850px]">
+              <DataTable
+                columns={bulkOrderColumns}
+                data={bulkOrders}
+                getRowId={o => o.ref}
+                emptyTitle="No bulk orders recorded yet"
+              />
+            </div>
           </div>
           <TablePager total={bulkOrders.length} showing={bulkOrders.length} />
         </div>

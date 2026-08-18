@@ -84,7 +84,7 @@ export function HistoryCard({ r, onView }: { r: PayHistRecord; onView?: () => vo
       <div style={{ padding: "16px 20px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px 14px", flexShrink: 0, borderBottom: `1px solid rgba(110,15,45,0.06)` }}>
         <div>
           <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 2 }}>Reference</div>
-          <EntityCode type="payment" value={r.refNo} size="sm" />
+          <EntityCode type="payment" value={r.refNo} size="sm" className="break-all whitespace-normal max-w-full" />
         </div>
         <div>
           <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 2 }}>Invoice / PO</div>

@@ -1,16 +1,15 @@
-// Flat "External Purchase History" table shown at the bottom of the main
-// Suppliers page (all purchases, across all suppliers).
-
 import React, { useMemo, useState } from "react";
-import { History } from "lucide-react";
+import { History, LayoutGrid, List } from "lucide-react";
 import { T, F } from "../theme";
 import { FadeUp, SectionCard } from "../common/primitives";
+import { Button } from "../../../../shared/ui/primitives";
 import { Purchase } from "../../contexts/SupplierContext";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 
 export function ExternalPurchaseHistorySection({ purchases }: { purchases: Purchase[] }) {
   const [filter, setFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const [viewMode, setViewMode] = useState<"card" | "table">("card");
   const filtered = useMemo(() => purchases.filter(p => matchesDateFilter(p.date, filter)), [purchases, filter]);
 
   const columns: ColumnDef<Purchase>[] = [
@@ -58,12 +57,37 @@ export function ExternalPurchaseHistorySection({ purchases }: { purchases: Purch
         title="External Purchase History"
         subtitle="Every raw-material purchase recorded from every supplier, with bill status and invoice reference."
       >
-        <div style={{ marginBottom: 20 }}>
+        <div style={{ marginBottom: 16 }}>
           <DateFilterBar filter={filter} onChange={setFilter} />
+        </div>
+
+        <div className="flex md:hidden items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0 mb-4 w-fit">
+          <Button
+            onClick={() => setViewMode("card")}
+            variant="ghost"
+            className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
+              viewMode === "card"
+                ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+                : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+            }`}
+          >
+            <LayoutGrid size={14} /> Card View
+          </Button>
+          <Button
+            onClick={() => setViewMode("table")}
+            variant="ghost"
+            className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
+              viewMode === "table"
+                ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+                : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+            }`}
+          >
+            <List size={14} /> Table View
+          </Button>
         </div>
         <div style={{ background: "#FFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, overflow: "hidden" }}>
           <DataTable
-            responsive
+            responsive={viewMode === "card"}
             columns={columns}
             data={filtered}
             getRowId={p => p.id}
