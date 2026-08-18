@@ -76,7 +76,7 @@ export function ProductionPage({ superadmin = false, onNavigate }: { superadmin?
       <AllSareesSection />
       <div style={{ background: "#F7F2EA", paddingBottom: 0 }}>
         <BulkOrdersSection superadmin={superadmin} onNavigate={onNavigate} onOpenOrder={(order, tab) => setViewingOrder({ order, tab })} />
-        <ActiveBatchesSection onNavigate={onNavigate} onOpenTally={setTallyBatchId} onDesignClick={setOpenDesignCode} onSareeTypeClick={setOpenSareeTypeCode} />
+        <ActiveBatchesSection onNavigate={onNavigate} onOpenTally={id => { window.scrollTo(0, 0); setTallyBatchId(id); }} onDesignClick={setOpenDesignCode} onSareeTypeClick={setOpenSareeTypeCode} />
         <DefectiveSareesSection superadmin={superadmin} onNavigate={onNavigate} onDesignClick={setOpenDesignCode} onSareeTypeClick={setOpenSareeTypeCode} />
         <ProductionAnalyticsSection />
         <DesignLibraryLinkCard onNavigate={onNavigate} />

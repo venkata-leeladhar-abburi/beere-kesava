@@ -162,6 +162,11 @@ export function POTrackerSection({
                         Created by <span style={{ color: T.royalBurgundy, fontWeight: 600 }}>{po.raisedBy}</span>
                       </div>
                     )}
+                    {po.status === "received" && po.receivedBy && (
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>
+                        Received by <span style={{ color: T.royalBurgundy, fontWeight: 600 }}>{po.receivedBy.id.substring(0, 8)} - {po.receivedBy.firstName} {po.receivedBy.lastName}</span>
+                      </div>
+                    )}
                   </div>
 
                   <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 18, background: "rgba(110,15,45,0.015)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: 12 }}>

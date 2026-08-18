@@ -3,7 +3,7 @@ import { PaginatedResult } from "../common/pagination";
 import { signatureFileToUrl } from "../common/storage/upload.config";
 import { fromGrams, toGrams } from "../common/weight-units.util";
 import { MaterialIssueStatus, Prisma } from "../generated/prisma/client";
-import { IdGeneratorService } from "../id-generator/id-generator.service";
+import { IdGeneratorService, businessSegment, nameSegment } from "../id-generator/id-generator.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateMaterialIssueDto } from "./dto/create-material-issue.dto";
 import { ListMaterialIssuesQueryDto } from "./dto/list-material-issues-query.dto";
@@ -41,14 +41,16 @@ export class MaterialIssuesService {
     if (!issuer) {
       throw new NotFoundException(`User ${dto.issuedById} not found`);
     }
+    let weaver: { code: string | null; firstName: string } | null = null;
     if (dto.weaverId) {
-      const weaver = await this.prisma.weaver.findUnique({ where: { id: dto.weaverId } });
+      weaver = await this.prisma.weaver.findUnique({ where: { id: dto.weaverId } });
       if (!weaver) {
         throw new NotFoundException(`Weaver ${dto.weaverId} not found`);
       }
     }
+    let loom: { code: string | null; loomNumber: string } | null = null;
     if (dto.factoryLoomId) {
-      const loom = await this.prisma.factoryLoom.findUnique({ where: { id: dto.factoryLoomId } });
+      loom = await this.prisma.factoryLoom.findUnique({ where: { id: dto.factoryLoomId } });
       if (!loom) {
         throw new NotFoundException(`Factory loom ${dto.factoryLoomId} not found`);
       }
@@ -76,8 +78,10 @@ export class MaterialIssuesService {
       }
     }
 
-    const year = new Date().getFullYear();
-    const id = await this.idGenerator.nextFormatted(`${MIR_ID_PREFIX_BASE}-${year}`);
+    const parentCode = weaver
+      ? weaver.code ?? nameSegment(weaver.firstName, "Weaver")
+      : loom!.code ?? businessSegment(loom!.loomNumber, "Loom");
+    const id = await this.idGenerator.nextScoped(MIR_ID_PREFIX_BASE, parentCode);
 
     const record = await this.prisma.materialIssueRecord.create({
       data: {

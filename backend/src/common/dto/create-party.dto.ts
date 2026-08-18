@@ -56,6 +56,10 @@ export class CreatePartyDto {
   accountNo?: string;
 
   @IsOptional()
+  @IsString()
+  ifscCode?: string;
+
+  @IsOptional()
   @IsInt()
   @Min(1)
   @Max(5)

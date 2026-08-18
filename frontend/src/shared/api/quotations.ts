@@ -43,7 +43,7 @@ interface PaginatedResponse<T> {
 }
 
 export interface CreateQuotationPayload {
-  customerId?: string;
+  customerId: string;
   bulkOrderRef?: string;
   applyGst?: boolean;
   gstPct?: number;

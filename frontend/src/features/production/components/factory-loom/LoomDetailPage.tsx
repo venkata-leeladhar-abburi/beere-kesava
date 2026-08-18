@@ -10,7 +10,7 @@ import { useMaterialIssue } from "@/features/materials";
 import { useQc } from "@/features/qc";
 import { DispatchDetailsModal } from "../DispatchDetailsModal";
 import { WeaverSareesSection } from "@/features/weavers";
-import { FactoryLoom } from "../../data/factoryLooms";
+import { FactoryLoom, loomLabel } from "../../data/factoryLooms";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { T, F } from "./theme";
 import { LOOM_STATUS_TO_CONDITION } from "./types";
@@ -31,8 +31,10 @@ function SectionPill({ label }: { label: string }) {
 }
 
 function loomDispatchAliases(loom: FactoryLoom): string[] {
-  const digits = loom.loomNumber.replace(/[^0-9]/g, "").replace(/^0+/, "");
-  return [loom.id, loom.loomNumber, digits ? `Loom ${digits}` : ""].filter(Boolean);
+  // Dispatch/QC rows may reference the loom by id, display code or the legacy
+  // typed number, so match on all of them.
+  const digits = (loom.loomNumber || "").replace(/[^0-9]/g, "").replace(/^0+/, "");
+  return [loom.id, loom.displayCode ?? "", loom.loomNumber, digits ? `Loom ${digits}` : ""].filter(Boolean);
 }
 
 export function LoomDetailPage({ loom, onBack, onEdit }: {
@@ -58,8 +60,8 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
   // Command palette RECENT group (design-system/05-OVERLAYS.md Part H) —
   // record this profile as viewed once per mount.
   useEffect(() => {
-    recordView({ key: `loom:${loom.id}`, label: loom.loomNumber, path: "/admin/production", kind: "Loom" });
-  }, [loom.id, loom.loomNumber]);
+    recordView({ key: `loom:${loom.id}`, label: loomLabel(loom), path: "/admin/production", kind: "Loom" });
+  }, [loom]);
 
   const { batches } = useBatches();
   const { dispatches } = useDesignLibrary();
@@ -122,7 +124,7 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
           items={[
             { key: "people", label: "People", onClick: onBack },
             { key: "factory-looms", label: "Factory Looms", onClick: onBack },
-            { key: "loom", label: loom.loomNumber },
+            { key: "loom", label: loomLabel(loom) },
           ]}
         />
       </div>
@@ -134,8 +136,7 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
           </div>
           <div style={{ flex: "1 1 320px" }}>
             <StatusPill taxonomy="condition" status={LOOM_STATUS_TO_CONDITION[loom.status]} />
-            <div style={{ fontFamily: F.display, fontSize: 30, color: "#1A0A0F", lineHeight: 1.2, fontWeight: 600 }}>{loom.loomNumber}</div>
-            <div style={{ marginTop: 6 }}><EntityCode type="loom" value={loom.id} size="md" /></div>
+            <div style={{ fontFamily: F.display, fontSize: 30, color: "#1A0A0F", lineHeight: 1.2, fontWeight: 600 }}>{loomLabel(loom)}</div>
           </div>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap" as const }}>
             {[
@@ -189,7 +190,7 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
                 <SectionPill label="Loom Details" />
                 <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
                   {[
-                    { label: "Loom Number", value: loom.loomNumber },
+                    { label: "Loom Number", value: loomLabel(loom) },
                     { label: "Location", value: loom.location },
                     { label: "Operator Name", value: loom.operatorName },
                     { label: "Operator Phone", value: loom.operatorPhone },
@@ -231,7 +232,7 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
 
             <div>
               <SectionPill label="Sarees" />
-              <WeaverSareesSection ownerType="loom" weaverId={loom.id} weaverName={loom.loomNumber} />
+              <WeaverSareesSection ownerType="loom" weaverId={loom.id} weaverName={loomLabel(loom)} />
             </div>
           </div>
         )}
@@ -286,7 +287,7 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
                         {
                           id: "dispatch", header: "Design Dispatch", accessor: () => null,
                           cell: (_v, row) => (rowsInBatch.indexOf(row) === 0 && batchDispatches.length > 0)
-                            ? <Button onClick={() => setViewDispatches({ weaverName: loom.loomNumber, records: batchDispatches })} variant="link"
+                            ? <Button onClick={() => setViewDispatches({ weaverName: loomLabel(loom), records: batchDispatches })} variant="link"
                                 className="text-xs font-bold text-[#6E0F2D] bg-[rgba(110,15,45,0.08)] rounded-[6px] px-[9px] py-[3px] no-underline hover:no-underline">
                                 {batchDispatches.length} Dispatch{batchDispatches.length > 1 ? "es" : ""}
                               </Button>

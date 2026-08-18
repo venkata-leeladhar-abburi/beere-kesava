@@ -77,9 +77,12 @@ export class CreateDispatchDto {
   @IsUUID()
   customerId?: string;
 
+  // Whether this dispatch raises a tax invoice. The invoice *number* itself is
+  // never accepted from the client — DispatchService generates it via
+  // IdGeneratorService (see Backend_Architecture_Design.pdf §6.1).
   @IsOptional()
-  @IsString()
-  invoiceNumber?: string;
+  @IsBoolean()
+  raiseInvoice?: boolean;
 
   @IsOptional()
   @Type(() => Number)

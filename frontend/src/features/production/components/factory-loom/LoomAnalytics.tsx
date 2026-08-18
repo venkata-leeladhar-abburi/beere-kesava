@@ -6,7 +6,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
   ResponsiveContainer, Cell,
 } from "recharts";
-import { FactoryLoom } from "../../data/factoryLooms";
+import { FactoryLoom, loomLabel } from "../../data/factoryLooms";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { T, F, FadeUp } from "./theme";
 import { SectionCard } from "../common/primitives";
@@ -84,7 +84,8 @@ export function LoomAnalytics({ looms, batches, materials, sarees }: {
     const assigned = loomBatches.filter(b => b.status === "active").reduce((a, b) => a + b.sareeCount, 0);
     return {
       ...l,
-      short: l.loomNumber.replace("Loom ", ""),
+      label: loomLabel(l),
+      short: loomLabel(l).replace("Loom ", ""),
       produced: mine.length,
       passed: ok,
       rejects: mine.length - ok,
@@ -110,7 +111,7 @@ export function LoomAnalytics({ looms, batches, materials, sarees }: {
       const loom = looms.find(l => l.id === b.loomId);
       return {
         ...b,
-        loomName: loom?.loomNumber ?? b.loomId,
+        loomName: loom ? loomLabel(loom) : b.loomId,
         pct: b.sareeCount ? Math.round((b.completedCount / b.sareeCount) * 100) : 0,
         daysLeft,
         overdue: daysLeft !== null && daysLeft < 0,
@@ -225,7 +226,7 @@ export function LoomAnalytics({ looms, batches, materials, sarees }: {
                   <XAxis type="number" hide allowDecimals={false} />
                   <YAxis type="category" dataKey="short" width={68} tick={{ fontFamily: F.ui, fontSize: 12, fill: T.luxuryBrown }} axisLine={false} tickLine={false} />
                   <RechartsTooltip cursor={{ fill: "rgba(110,15,45,0.04)" }} contentStyle={tip}
-                    formatter={(v: number, _n: string, p: { payload: (typeof rankedLooms)[number] }) => [`${v} completed · ${p.payload.passRate}% pass · ${p.payload.wip} in progress`, `${p.payload.loomNumber} — ${p.payload.operatorName}`]} />
+                    formatter={(v: number, _n: string, p: { payload: (typeof rankedLooms)[number] }) => [`${v} completed · ${p.payload.passRate}% pass · ${p.payload.wip} in progress`, `${p.payload.label} — ${p.payload.operatorName}`]} />
                   <Bar dataKey="produced" radius={[0, 6, 6, 0]}
                     label={{ position: "right", formatter: (v: number) => `${v}`, fontFamily: F.ui, fontSize: 12, fontWeight: 700, fill: T.luxuryBrown }}>
                     {rankedLooms.map(l => <Cell key={l.id} fill={l.produced === 0 ? "#E3D2AC" : laQcColor(l.passRate)} />)}

@@ -46,7 +46,9 @@ export function DispatchWholesaleModal({ sarees, available, onConfirm, onClose, 
   const [picked, setPicked] = useState<FinishingReturn[]>(sarees);
   const [quotationId, setQuotationId] = useState<string>("");
   const [transport, setTransport] = useState<TransportData>({ lrNumber: "", transportCompany: "", vehicleNumber: "", driverName: "", dispatchDate: today, notes: "", expectedDelivery: "", specialInstructions: "" });
-  const [inv, setInv] = useState<InvoiceData>({ invoiceNumber: `INV-2026-${String(Date.now()).slice(-3)}`, invoiceDate: today, prices: {}, applyGst: false, gstPct: "18", firmId: "", paymentDueDate: "", invoiceNotes: "" });
+  // invoiceNumber stays empty here — the backend allocates the real sequential
+  // number when the dispatch is saved (see DispatchService.create).
+  const [inv, setInv] = useState<InvoiceData>({ invoiceNumber: "", invoiceDate: today, prices: {}, applyGst: false, gstPct: "18", firmId: "", paymentDueDate: "", invoiceNotes: "" });
 
   const wholesaleCustomersList = useAllWholesaleCustomers();
   const filteredCustomers = wholesaleCustomersList.filter(c => !customerSearch || c.name.toLowerCase().includes(customerSearch.toLowerCase()) || c.city.toLowerCase().includes(customerSearch.toLowerCase()));

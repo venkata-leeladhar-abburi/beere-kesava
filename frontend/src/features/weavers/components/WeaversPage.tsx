@@ -94,7 +94,6 @@ export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: u
   const [newWeaverExpanded, setNewWeaverExpanded] = useState(() => new URLSearchParams(location.search).get("new") === "1");
   const [drawerMode, setDrawerMode] = useState<"view" | "edit">(navState?.mode === "edit" ? "edit" : "view");
   const [batchDialog, setBatchDialog] = useState<typeof WEAVERS[0] | null>(null);
-  const [extraWeavers, setExtraWeavers] = useState<typeof WEAVERS>([]);
   const [importOpen, setImportOpen] = useState(false);
   const { batches } = useBatches();
 
@@ -105,7 +104,7 @@ export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: u
   // Real aggregate numbers for the hero stats strip. GET /weavers/leaderboard
   // only returns the top 10, so the roster + per-weaver GET /weavers/:id/stats
   // calls are used to compute true totals/averages across everyone.
-  const { data: weaversRes } = useQuery({
+  const { data: weaversRes, refetch: refetchWeavers } = useQuery({
     queryKey: ["weavers-page-roster"],
     queryFn: () => weaversApi.list(),
   });
@@ -152,7 +151,7 @@ export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: u
       <StatsStrip stats={realStats} />
       <WarpRequestsSection />
       <AllWeaversControls view={view} setView={setView} filter={filter} setFilter={setFilter} search={search} setSearch={setSearch} onAddWeaver={() => setNewWeaverExpanded(true)} onViewAll={() => onNavigate?.("AllWeavers")} onImport={() => setImportOpen(true)}>
-        <WeaverDirectory view={view} extraWeavers={extraWeavers} onSelect={(w) => { setDrawerMode("view"); setSelectedWeaver(w); }} onEdit={(w) => { setDrawerMode("edit"); setSelectedWeaver(w); }} onBatches={setBatchDialog} />
+        <WeaverDirectory view={view} onSelect={(w) => { setDrawerMode("view"); setSelectedWeaver(w); }} onEdit={(w) => { setDrawerMode("edit"); setSelectedWeaver(w); }} onBatches={setBatchDialog} />
       </AllWeaversControls>
       <WeaverAnalytics />
       <LeaderboardAndQC onActivities={() => onNavigate?.("Notifications")} onNavigate={onNavigate} />
@@ -160,8 +159,7 @@ export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: u
       <ImportWeaversModal
         open={importOpen}
         onClose={() => setImportOpen(false)}
-        nextIdStart={WEAVERS.length + extraWeavers.length + 1}
-        onImport={(rows) => setExtraWeavers(prev => [...prev, ...rows])}
+        onImported={() => { void refetchWeavers(); }}
       />
       <MaterialsFooter />
 

@@ -85,20 +85,10 @@ export interface PassedLogItem {
   isoDate: string;
 }
 
-export const QUEUE: SareeItem[] = [
-  { id: "PADMA-L1-004", batch: "BATCH-086", source: "outsourced", weaver: "Padma Veni",   wcode: "8937070a-ea63-43f3-9cb4-dcbcfd362ff7", design: "BKB-045 · Self Brocade",     weight: 842,  std: 850, submitted: "2 hrs ago" },
-  { id: "RAVI-L2-008",  batch: "BATCH-089", source: "outsourced", weaver: "Ravi Kumar",   wcode: "b5f9178c-b1b9-4871-a7c3-0d68a462d57a", design: "BKB-031 · Heavy Zari",       weight: 918,  std: 900, submitted: "4 hrs ago" },
-  { id: "BKB-L3-002",   batch: "BATCH-OWN", source: "own",        weaver: "Loom 3",       wcode: "",       design: "BKB-022 · Kanjivaram",       weight: 774,  std: 800, submitted: "Yesterday" },
-  { id: "SURESH-L2-003",batch: "BATCH-081", source: "outsourced", weaver: "Suresh Murti", wcode: "11278a51-a26d-4eaa-adbf-bedbfa7fdf46", design: "BKB-038 · Gadwal Cotton",    weight: 856,  std: 850, submitted: "Yesterday" },
-  { id: "PADMA-L1-005", batch: "BATCH-086", source: "outsourced", weaver: "Padma Veni",   wcode: "8937070a-ea63-43f3-9cb4-dcbcfd362ff7", design: "BKB-045 · Self Brocade",     weight: 848,  std: 850, submitted: "Yesterday" },
-  { id: "BKB-L1-004",   batch: "BATCH-OWN", source: "own",        weaver: "Loom 1",       wcode: "",       design: "BKB-019 · Mysore Crepe",     weight: 1048, std: 1000, submitted: "2 days ago" },
-];
+// NOTE: the QUEUE and DEFECTIVE_LOG fixtures that used to live here held
+// named weavers, real weaver UUIDs and invented QC deductions, and had no
+// importers — WorkerQC.tsx reads live rows from context instead.
 
-export const DEFECTIVE_LOG: DefectiveLogItem[] = [
-  { id: "RAVI-L2-005",  weaver: "Ravi Kumar",  defects: ["Thread Break", "Design Error"], date: "12 Jun", deduction: "₹450" },
-  { id: "BKB-L2-001",   weaver: "Loom 2",       defects: ["Weight Problem"],               date: "11 Jun", deduction: "₹220" },
-  { id: "PADMA-L1-002", weaver: "Padma Veni",   defects: ["Jari Issue"],                   date: "11 Jun", deduction: "₹380" },
-];
 
 export const DEFECT_TYPES: { label: string; Icon: React.ElementType }[] = [
   { label: "Thread Break",       Icon: Scissors   },

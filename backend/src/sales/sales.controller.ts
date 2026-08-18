@@ -5,6 +5,7 @@ import { CreateReturnDto } from "./dto/create-return.dto";
 import { CreateSaleDto } from "./dto/create-sale.dto";
 import { ListReturnQueryDto } from "./dto/list-return-query.dto";
 import { ListSaleQueryDto } from "./dto/list-sale-query.dto";
+import { RegisterReturnedSareeDto } from "./dto/register-returned-saree.dto";
 import { SalesService } from "./sales.service";
 
 // Retail/customer-facing module — SHOP access only.
@@ -31,6 +32,14 @@ export class SalesController {
   @Post("returns")
   createReturn(@Body() dto: CreateReturnDto) {
     return this.salesService.createReturn(dto);
+  }
+
+  // Untracked wholesale return — the piece has no barcode and no prior record,
+  // so it is registered from the operator's description. Declared before the
+  // ":returnRef" GET routes so "untracked" is never read as a return ref.
+  @Post("returns/untracked")
+  registerReturnedSaree(@Body() dto: RegisterReturnedSareeDto) {
+    return this.salesService.registerReturnedSaree(dto);
   }
 
   @Get("returns/all")

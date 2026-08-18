@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { CheckSquare, Square, X, CheckCircle2, Clock } from "lucide-react";
 import { C, F } from "../tokens";
 import { useFinishing } from "@/features/finishing";
-import { EASE, WORKER_NAME, ScanBarBtn, useScanSim, Toast } from "./shared";
+import { EASE, WORKER_NAME, ScanBar, useScan, Toast } from "./shared";
 import { VerificationModal, VerifData } from "./VerificationModal";
 import { Button, IconButton, Select, SelectItem } from "../../../../../shared/ui/primitives";
 
@@ -38,7 +38,7 @@ export function SectionBFiltered({ isMobile }: { isMobile?: boolean }) {
   }), [awaiting, filterStaff, filterBatch]);
 
   const unselectedIds = filteredAwaiting.filter(a => !selected.has(a.id)).map(a => a.sareeId);
-  const { scanning, scanMsg, startScan } = useScanSim(unselectedIds, sareeId => {
+  const { scanMsg, scanValue, setScanValue, submitScan } = useScan(unselectedIds, sareeId => {
     const match = filteredAwaiting.find(a => a.sareeId === sareeId);
     if (match) setSelected(prev => { const next = new Set(prev); next.add(match.id); return next; });
   });
@@ -83,7 +83,7 @@ export function SectionBFiltered({ isMobile }: { isMobile?: boolean }) {
     <div>
       {/* Filters */}
       <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" as const }}>
-        <ScanBarBtn label={scanning ? "Scanning…" : "Scan Barcode"} onClick={startScan} />
+        <ScanBar value={scanValue} onChange={setScanValue} onSubmit={submitScan} />
         <div style={{ flex: 1, minWidth: 120 }}>
           <Select value={filterStaff} onValueChange={setFilterStaff} size="sm">
             <SelectItem value="all">All Staff</SelectItem>

@@ -7,6 +7,8 @@ import type { DocumentStatus } from "../../../lib/domain/status";
 /** One saree line inside an external purchase. */
 export interface SareeTag {
   id: string;           // auto-generated: SUPPLIER-PREFIX + serial + invoice number
+  /** Real PurchaseSareeLine.id (UUID) — the FK a SupplierReturnRequest is created against. */
+  lineId?: string;
   weight: string;
   date: string;
   sareeType: string;
@@ -105,6 +107,7 @@ export interface Supplier {
   terms: string;
   bankName?: string;
   accountNo?: string;
+  ifscCode?: string;
   notes?: string;
   visitingCard?: string;
   status: "active" | "inactive" | "overdue";

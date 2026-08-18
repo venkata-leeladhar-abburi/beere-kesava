@@ -432,11 +432,13 @@ export function WeaverMakingChargesSection() {
             />
             Select All Filtered
           </label>
-          <DropBtn value="All Weavers" options={["All Weavers", "Master Weavers", "Junior Weavers"]} />
+          {/* Only filters that actually filter are shown. Two decorative
+              DropBtns used to sit here with no onChange at all: an "All Weavers"
+              seniority filter (Master/Junior — not a concept in the data model)
+              and a making-charge-rate filter whose ₹450/₹680/₹280 options were
+              invented figures backed by nothing. */}
           <DropBtn value={filterVillage} options={["All Villages", ...villageOptions]} onChange={setFilterVillage} />
           <DropBtn value={filterStatus} options={["All Payment Status", "Pending", "Paid"]} onChange={setFilterStatus} />
-          {/* eslint-disable-next-line no-restricted-syntax -- DropBtn's `options` is string[] (shared/ui primitive, out of scope here); these are static filter-label text, not a rendered money amount, so <Money> can't be embedded without changing that API */}
-          <DropBtn value="All Making Charge Rate" options={["All Making Charge Rate", "Self Brocade (₹450)", "Heavy Zari (₹680)", "Plain Silk (₹280)"]} />
           <div style={{ flex: 1, minWidth: 200 }}>
             <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search weaver name, ID, or village..." size="sm" />
           </div>

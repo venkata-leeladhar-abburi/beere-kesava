@@ -46,6 +46,7 @@ export interface GrnReceiptItem {
   invoiceNo?: string | null;
   invoiceDate?: string | null;
   receivedDate: string;
+  receivedBy?: { firstName: string; lastName: string } | null;
   notes?: string | null;
   items: {
     id: string;

@@ -13,10 +13,21 @@ export function GrnBatchSelector({ grnBatches, materialType, value, onChange }: 
   const filtered = grnBatches.filter(g => g.materialType === materialType && (q.length < 1 || g.grnBatchId.toLowerCase().includes(q.toLowerCase()) || g.vendor.toLowerCase().includes(q.toLowerCase())));
   const selected = grnBatches.find(g => g.grnBatchId === value);
 
-  const handleScan = () => {
-    // Simulated barcode scan — auto-select the first available batch of this material type
-    const first = grnBatches.find(g => g.materialType === materialType);
-    if (first) onChange(first.grnBatchId);
+  // Opens the searchable list with the search box focused. A barcode scanner
+  // acts as a keyboard, so scanning types the batch id straight into that box
+  // and `selectOnExactMatch` below picks the batch it actually matches. This
+  // previously ignored the scan entirely and selected the first batch of this
+  // material type, which could issue material from the wrong GRN.
+  const handleScan = () => setOpen(true);
+
+  const selectOnExactMatch = (typed: string) => {
+    const hit = grnBatches.find(
+      g => g.materialType === materialType && g.grnBatchId.toLowerCase() === typed.trim().toLowerCase(),
+    );
+    if (!hit) return;
+    onChange(hit.grnBatchId);
+    setOpen(false);
+    setQ("");
   };
 
   return (
@@ -37,8 +48,15 @@ export function GrnBatchSelector({ grnBatches, materialType, value, onChange }: 
           {open && (
             <div style={{ position: "absolute" as const, top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 50, background: "#FFF", border: `1px solid ${T.royalBurgundy}`, borderRadius: 12, boxShadow: "0 8px 28px rgba(74,6,27,0.16)", overflow: "hidden" }}>
               <div style={{ padding: 8, borderBottom: `1px solid ${T.borderDef}` }}>
-                {/* eslint-disable-next-line jsx-a11y/no-autofocus -- popover opens on user action; focusing the search box it contains is expected keyboard behavior */}
-                <SearchInput autoFocus value={q} onChange={e => setQ(e.target.value)} placeholder="Search batch ID or vendor…" size="sm" className="w-full" />
+                <SearchInput
+                  // eslint-disable-next-line jsx-a11y/no-autofocus -- popover opens on user action; focusing the search box it contains is expected keyboard behavior, and a barcode scan types straight into it
+                  autoFocus
+                  value={q}
+                  onChange={e => { setQ(e.target.value); selectOnExactMatch(e.target.value); }}
+                  placeholder="Scan barcode, or search batch ID / vendor…"
+                  size="sm"
+                  className="w-full"
+                />
               </div>
               <div style={{ maxHeight: 220, overflowY: "auto" as const }}>
                 {filtered.length === 0 ? (

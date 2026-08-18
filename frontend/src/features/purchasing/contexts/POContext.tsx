@@ -30,6 +30,7 @@ export interface PurchaseOrder {
   materials: POItem[];
   totalValue: number;
   poNumber: string;
+  firmId?: string;
   firmName?: string;
   notesVendor?: string;
   notesAdmin?: string;
@@ -40,6 +41,7 @@ export interface PurchaseOrder {
   rejectionReason?: string;
   grnId?: string;
   raisedBy: string;
+  receivedBy?: { id: string; firstName: string; lastName: string };
 }
 
 // materials[] line items are populated from backend `items` relation if present.
@@ -59,6 +61,12 @@ function toPurchaseOrder(po: BackendPurchaseOrder, materials: POItem[] = []): Pu
   return {
     id: po.id,
     poNumber: po.poNumber,
+    // NOTE(backend gap): PurchaseOrder has no firm relation in the schema, so
+    // there is nothing to read here yet — PODocPreview falls back accordingly.
+    // These were cast through `any`, which made two always-undefined reads look
+    // like real fields.
+    firmId: undefined,
+    firmName: undefined,
     vendorId: po.vendorId,
     vendor: po.vendor.name,
     vendorCity: po.vendor.city ?? "",
@@ -67,10 +75,13 @@ function toPurchaseOrder(po: BackendPurchaseOrder, materials: POItem[] = []): Pu
     materials: mappedMaterials,
     totalValue: Number(po.totalValue),
     urgency: (po.urgency as PurchaseOrder["urgency"]) ?? "Normal",
-    status: po.status === "PENDING" ? "pending" : po.status === "APPROVED" ? "approved" : po.status === "REJECTED" ? "rejected" : "received",
-    submittedDate: po.createdAt.split("T")[0],
+    status: (po.status === "PENDING" ? "pending" : po.status === "APPROVED" ? "approved" : po.status === "REJECTED" ? "rejected" : "received") as DocumentStatus,
+    submittedDate: po.createdAt,
+    approvedDate: undefined,
+    rejectionReason: po.rejectionReason ?? undefined,
     grnId: po.grnId ?? undefined,
-    raisedBy: po.createdBy ? `${po.createdBy.firstName} ${po.createdBy.lastName}`.trim() : "",
+    raisedBy: po.createdBy ? `${po.createdBy.firstName} ${po.createdBy.lastName}` : "Admin",
+    receivedBy: po.grnReceipt?.receivedBy ? po.grnReceipt.receivedBy : undefined,
   };
 }
 
@@ -188,7 +199,10 @@ export function POProvider({ children }: { children: React.ReactNode }) {
         return m ? parseInt(m[1] ?? "0", 10) : 0;
       })
       .filter(n => n > 0);
-    const maxNum = allNums.length > 0 ? Math.max(...allNums) : 22;
+    // Preview only — PurchaseOrdersService assigns the authoritative poNumber on
+    // create. Starts from 0 on an empty database; it previously seeded from 22,
+    // which invented "PO-2026-023" as the very first PO number.
+    const maxNum = allNums.length > 0 ? Math.max(...allNums) : 0;
     return `PO-2026-${String(maxNum + 1).padStart(3, "0")}`;
   }, [pos]);
 

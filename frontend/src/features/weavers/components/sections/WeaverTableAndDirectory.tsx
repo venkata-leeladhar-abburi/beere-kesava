@@ -183,16 +183,16 @@ export function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }
     </div>
   );
 }
-export function WeaverDirectory({ view, onSelect, onEdit, onBatches, extraWeavers = [] }: { view: string; onSelect: (w: typeof WEAVERS[0]) => void; onEdit: (w: typeof WEAVERS[0]) => void; onBatches: (w: typeof WEAVERS[0]) => void; extraWeavers?: typeof WEAVERS }) {
+export function WeaverDirectory({ view, onSelect, onEdit, onBatches }: { view: string; onSelect: (w: typeof WEAVERS[0]) => void; onEdit: (w: typeof WEAVERS[0]) => void; onBatches: (w: typeof WEAVERS[0]) => void }) {
   // Build a real-roster lookup map so the table-view "View" button can resolve
   // a clicked row id to a real weaver object (WEAVERS[] is empty mock).
-  const realWeavers = useRealWeavers(extraWeavers);
+  const realWeavers = useRealWeavers();
   const realById = new Map(realWeavers.map(w => [w.id, w]));
 
   return (
     <FadeUp>
-      {view === "card" && <WeaverCardGrid onSelect={onSelect} onEdit={onEdit} onBatches={onBatches} extraWeavers={extraWeavers} />}
-      {view === "list" && <WeaverListView onSelect={onSelect} extraWeavers={extraWeavers} />}
+      {view === "card" && <WeaverCardGrid onSelect={onSelect} onEdit={onEdit} onBatches={onBatches} />}
+      {view === "list" && <WeaverListView onSelect={onSelect} />}
       {view === "table" && (
         <WeaverTableView
           onSelect={id => {

@@ -3,7 +3,7 @@ import { Scan, Package, ChevronDown, ChevronUp } from "lucide-react";
 import { FinishingReturn } from "@/features/finishing";
 import { WeaverSareesSection, WeaverSareeRow } from "@/features/weavers";
 import { T, F } from "../../theme";
-import { Button, Chip } from "../../../../../shared/ui/primitives";
+import { Button, Chip, Input } from "../../../../../shared/ui/primitives";
 
 // ── Row → dispatch-saree mapper ───────────────────────────────────────────────
 // One definition shared by the page and the in-modal picker so a saree looks the
@@ -36,13 +36,13 @@ export function SareePicker({ available, picked, onChange, label, onBrowseChange
 }) {
   const [browse, setBrowse] = useState(false);
   const [scanMsg, setScanMsg] = useState("");
+  const [scanValue, setScanValue] = useState("");
   const [rows, setRows] = useState<WeaverSareeRow[]>([]);
 
   const pickedIds = useMemo(() => new Set(picked.map(s => s.sareeId || s.id)), [picked]);
   // Before the table has been opened it has reported no rows, so the page's
   // pool stands in for scanning.
   const pool = rows.length ? rows.map(rowToDispatchSaree) : available;
-  const unpicked = pool.filter(s => !pickedIds.has(s.sareeId || s.id));
 
   const toggleBrowse = () => setBrowse(b => { onBrowseChange?.(!b); return !b; });
 
@@ -66,16 +66,20 @@ export function SareePicker({ available, picked, onChange, label, onBrowseChange
     onChange([...picked, ...additions]);
   }, [pickedIds, picked, rows, available, onChange]);
 
-  // Mirrors the page's barcode simulation — grabs the next unpicked saree.
-  const scan = () => {
-    if (!unpicked.length) { setScanMsg("No more sarees available to scan."); setTimeout(() => setScanMsg(""), 2200); return; }
-    setScanMsg("Scanning…");
-    setTimeout(() => {
-      const s = unpicked[Math.floor(Math.random() * unpicked.length)];
-      onChange([...picked, s]);
-      setScanMsg(`Scanned: ${s.sareeId || s.id}`);
-      setTimeout(() => setScanMsg(""), 1800);
-    }, 450);
+  // Adds the saree whose id was actually scanned. Barcode scanners type the
+  // code and press Enter, so the same input covers scanning and manual entry.
+  // This previously picked a *random* unpicked saree regardless of input.
+  const scan = (rawId: string) => {
+    const id = rawId.trim();
+    const show = (msg: string) => { setScanMsg(msg); setTimeout(() => setScanMsg(""), 2200); };
+    if (!id) return show("Scan a barcode or type a saree ID.");
+
+    const match = pool.find(s => (s.sareeId || s.id).toLowerCase() === id.toLowerCase());
+    if (!match) return show(`No saree "${id}" available here.`);
+    if (pickedIds.has(match.sareeId || match.id)) return show(`${match.sareeId || match.id} is already added.`);
+
+    onChange([...picked, match]);
+    show(`Added ${match.sareeId || match.id}`);
   };
 
   return (
@@ -84,15 +88,27 @@ export function SareePicker({ available, picked, onChange, label, onBrowseChange
         <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown, textTransform: "uppercase" as const, letterSpacing: "0.05em", flex: 1 }}>
           {label} <span style={{ color: T.royalBurgundy }}>({picked.length})</span>
         </span>
-        <Button
-          onClick={scan}
-          variant="primary"
-          size="sm"
-          iconLeft={Scan}
-          className="rounded-[10px] bg-[linear-gradient(135deg,var(--bk-burgundy-900)_0%,var(--bk-burgundy-950)_100%)]"
+        <form
+          onSubmit={e => { e.preventDefault(); scan(scanValue); setScanValue(""); }}
+          style={{ display: "flex", alignItems: "center", gap: 8 }}
         >
-          Scan Saree
-        </Button>
+          <Input
+            value={scanValue}
+            onChange={e => setScanValue(e.target.value)}
+            placeholder="Scan or type saree ID"
+            aria-label="Saree ID to scan"
+            className="w-[210px] font-mono"
+          />
+          <Button
+            type="submit"
+            variant="primary"
+            size="sm"
+            iconLeft={Scan}
+            className="rounded-[10px] bg-[linear-gradient(135deg,var(--bk-burgundy-900)_0%,var(--bk-burgundy-950)_100%)]"
+          >
+            Scan Saree
+          </Button>
+        </form>
         <Button
           onClick={toggleBrowse}
           variant={browse ? "primary" : "secondary"}

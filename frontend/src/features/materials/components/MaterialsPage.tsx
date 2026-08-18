@@ -18,7 +18,9 @@ import { PurchaseHistorySection } from "./sections/PurchaseHistorySection";
 import { MovementHistorySection } from "./sections/MovementHistorySection";
 import { MaterialsFooter } from "./sections/MaterialsFooter";
 import { AddNewStockModal } from "./modals/StockModals";
-import { FullReportsModal, DownloadReportModal } from "./modals/ReportModals";
+import { FullReportsModal, DownloadReportModal, type ReportFormat } from "./modals/ReportModals";
+
+type ReportExporter = (format: ReportFormat) => void | Promise<void>;
 
 /**
  * Composition root for the Materials feature. Originally a single
@@ -34,8 +36,10 @@ export function MaterialsPage({ onNavigate }: { onNavigate?: (tab: string, ctx?:
 
   const [showAddStock, setShowAddStock] = useState(false);
   const [showFullReports, setShowFullReports] = useState(false);
-  const [showPurchaseDownload, setShowPurchaseDownload] = useState(false);
-  const [showMovementDownload, setShowMovementDownload] = useState(false);
+  // Each section owns the rows/columns for its own report, so it hands the
+  // exporter up when the user asks to download.
+  const [purchaseExport, setPurchaseExport] = useState<ReportExporter | null>(null);
+  const [movementExport, setMovementExport] = useState<ReportExporter | null>(null);
   const [showAllPurchases, setShowAllPurchases] = useState(false);
 
   const [showCreatePO, setShowCreatePO] = useState(false);
@@ -98,15 +102,15 @@ export function MaterialsPage({ onNavigate }: { onNavigate?: (tab: string, ctx?:
           <IssuedThisMonthCard onNavigate={onNavigate} />
           <ReturnedThisMonthCard onNavigate={onNavigate} />
           <BatchesSection onAddNewStock={() => onNavigate?.("ReceiveStock")} />
-          <PurchaseHistorySection onDownloadReport={() => setShowPurchaseDownload(true)} />
-          <MovementHistorySection onDownloadMovementReport={() => setShowMovementDownload(true)} />
+          <PurchaseHistorySection onDownloadReport={fn => setPurchaseExport(() => fn)} />
+          <MovementHistorySection onDownloadMovementReport={fn => setMovementExport(() => fn)} />
         </div>
         <MaterialsFooter />
 
         <AddNewStockModal open={showAddStock} onClose={() => setShowAddStock(false)} />
         <FullReportsModal open={showFullReports} onClose={() => setShowFullReports(false)} />
-        <DownloadReportModal open={showPurchaseDownload} onClose={() => setShowPurchaseDownload(false)} title="Purchase History Report" />
-        <DownloadReportModal open={showMovementDownload} onClose={() => setShowMovementDownload(false)} title="Movement History Report" />
+        {purchaseExport && <DownloadReportModal open onClose={() => setPurchaseExport(null)} title="Purchase History Report" onExport={purchaseExport} />}
+        {movementExport && <DownloadReportModal open onClose={() => setMovementExport(null)} title="Movement History Report" onExport={movementExport} />}
 
         <POCreateModal
           open={showCreatePO}

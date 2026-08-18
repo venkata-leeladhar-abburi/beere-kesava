@@ -1,6 +1,7 @@
 import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { PaginatedResult } from "../common/pagination";
 import { Prisma } from "../generated/prisma/client";
+import { IdGeneratorService } from "../id-generator/id-generator.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateFactoryLoomDto } from "./dto/create-factory-loom.dto";
 import { ListFactoryLoomsQueryDto } from "./dto/list-factory-looms-query.dto";
@@ -8,16 +9,39 @@ import { UpdateFactoryLoomDto } from "./dto/update-factory-loom.dto";
 
 @Injectable()
 export class FactoryLoomsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly idGenerator: IdGeneratorService,
+  ) {}
 
   async create(dto: CreateFactoryLoomDto) {
-    const existing = await this.prisma.factoryLoom.findUnique({
-      where: { loomNumber: dto.loomNumber },
-    });
-    if (existing) {
-      throw new ConflictException(`A factory loom with number ${dto.loomNumber} already exists`);
+    if (dto.loomNumber) {
+      const existing = await this.prisma.factoryLoom.findUnique({
+        where: { loomNumber: dto.loomNumber },
+      });
+      if (existing) {
+        throw new ConflictException(`A factory loom with number ${dto.loomNumber} already exists`);
+      }
     }
-    return this.prisma.factoryLoom.create({ data: dto });
+
+    // The display code continues the LOOM sequence — the loom after Loom-002
+    // is Loom-003. Nobody types a loom number any more, so when one isn't
+    // supplied the (unique) loomNumber column just carries the same code
+    // rather than a second, differently-shaped identifier.
+    const code = await this.idGenerator.nextNamed("LOOM", "Loom");
+    let finalLoomNumber = dto.loomNumber ?? code;
+    // Guard the unique column against a legacy row that already typed this
+    // exact label in by hand — take the next free code instead of failing.
+    while (
+      !dto.loomNumber &&
+      (await this.prisma.factoryLoom.findUnique({ where: { loomNumber: finalLoomNumber } }))
+    ) {
+      finalLoomNumber = await this.idGenerator.nextNamed("LOOM", "Loom");
+    }
+
+    return this.prisma.factoryLoom.create({
+      data: { ...dto, loomNumber: finalLoomNumber, code: dto.loomNumber ? code : finalLoomNumber },
+    });
   }
 
   async findAll(

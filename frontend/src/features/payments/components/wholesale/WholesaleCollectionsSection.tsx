@@ -34,6 +34,7 @@ function backendInvoiceToFrontend(inv: BackendInvoice): Invoice {
     id: inv.id,
     customer: inv.customer?.name ?? "Unknown Customer",
     city: inv.customer?.city ?? "—",
+    customerPhone: inv.customer?.phone ?? undefined,
     invoiceDate: new Date(inv.invoiceDate).toLocaleDateString("en-IN"),
     dueDate: inv.dueDate ? new Date(inv.dueDate).toLocaleDateString("en-IN") : "—",
     total: Number(inv.total),

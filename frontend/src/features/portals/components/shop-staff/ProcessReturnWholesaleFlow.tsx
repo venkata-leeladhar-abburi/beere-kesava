@@ -33,6 +33,7 @@ interface ProcessReturnWholesaleFlowProps {
   wsNewId: string;
   setWsNewId: (v: string) => void;
   wsBarcodeGenerated: boolean;
+  wsError?: string | null;
   setWsBarcodeGenerated: (v: boolean) => void;
   canSeePrices: boolean;
   canProceedWsStep1: boolean;
@@ -61,6 +62,7 @@ export function ProcessReturnWholesaleFlow({
   wsNewId,
   setWsNewId,
   wsBarcodeGenerated,
+  wsError,
   setWsBarcodeGenerated,
   canSeePrices,
   canProceedWsStep1,
@@ -212,19 +214,30 @@ export function ProcessReturnWholesaleFlow({
                   <QrCode size={30} color={ACCENT_WHOLESALE.base} style={{ margin: "0 auto 12px" }} />
                   <div style={{ fontFamily: F.u, fontSize: 15, fontWeight: 600, color: C.wine, marginBottom: 5 }}>No barcode yet</div>
                   <div className="max-w-[420px] mx-auto" style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginBottom: 18, lineHeight: 1.55 }}>
-                    This saree needs a new tag before it can be tracked. Generating one reserves the ID — it is only committed when you confirm.
+                    This saree needs a new tag before it can be tracked. Enter or scan the tag ID you are attaching to it.
                   </div>
-                  <Button
-                    variant="primary"
-                    iconLeft={QrCode}
-                    onClick={() => {
-                      setWsNewId(`RTN-WS-2026-${String(Date.now()).slice(-3)}`);
-                      setWsBarcodeGenerated(true);
-                    }}
-                    className="h-12 rounded-full bg-[#845E04] px-7 text-[15px] font-semibold text-white hover:bg-[#6B4B01]"
+                  <form
+                    onSubmit={e => { e.preventDefault(); if (wsNewId.trim()) setWsBarcodeGenerated(true); }}
+                    className="mx-auto flex max-w-[380px] items-center gap-8"
+                    style={{ gap: 8 }}
                   >
-                    Generate new barcode
-                  </Button>
+                    <Input
+                      value={wsNewId}
+                      onChange={e => setWsNewId(e.target.value)}
+                      placeholder="Scan or type tag ID"
+                      aria-label="Tag ID for this saree"
+                      className="h-12 flex-1 font-mono"
+                    />
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      iconLeft={QrCode}
+                      disabled={!wsNewId.trim()}
+                      className="h-12 shrink-0 rounded-full bg-[#845E04] px-6 text-[15px] font-semibold text-white hover:bg-[#6B4B01]"
+                    >
+                      Use tag
+                    </Button>
+                  </form>
                 </div>
               ) : (
                 <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
@@ -247,6 +260,11 @@ export function ProcessReturnWholesaleFlow({
             </div>
           </StepBody>
 
+          {wsError && (
+            <div style={{ margin: "0 0 14px", fontFamily: F.u, fontSize: 13, color: "#C0392B", background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.20)", borderRadius: 10, padding: "10px 14px", lineHeight: 1.5 }}>
+              {wsError}
+            </div>
+          )}
           <FlowActions
             accent={ACCENT_WHOLESALE}
             tone="confirm"
@@ -255,7 +273,7 @@ export function ProcessReturnWholesaleFlow({
             primaryLabel="Confirm — add to inventory"
             onPrimary={onConfirm}
             primaryDisabled={!wsBarcodeGenerated}
-            hint="Generate the barcode first"
+            hint="Enter the tag ID first"
           />
         </>
       )}

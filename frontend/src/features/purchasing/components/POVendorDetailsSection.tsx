@@ -139,11 +139,9 @@ export function POVendorDetailsSection({
         <DatePicker
           id="expected-delivery-date"
           value={deliveryDate ? new Date(deliveryDate) : null}
-          min={(() => { const d = new Date(); d.setDate(d.getDate() + 3); return d; })()}
           onChange={date => { setDeliveryDate(date ? formatDate(date, "iso") : ""); setErrors(prev => ({ ...prev, deliveryDate: "" })); }}
         />
         {errors.deliveryDate && <div style={{ color: T.crimson, fontSize: 12, marginTop: 4 }}>{errors.deliveryDate}</div>}
-        <div style={{ color: T.taupe, fontSize: 12, marginTop: 4 }}>Must be at least 3 days from today.</div>
       </div>
     </div>
   );

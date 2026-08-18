@@ -1,13 +1,17 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { X, Printer, Undo2 } from "lucide-react";
 import {
   Purchase, SareeTag,
-  lineProfit, purchaseTotals, expandSareePieces, useSuppliers,
+  lineProfit, purchaseTotals, expandSareePieces,
 } from "@/features/suppliers";
+import { useAuth } from "@/contexts/AuthContext";
+import { STOPGAP_ACTING_USER_ID } from "@/shared/api/purchase-requests";
+import { supplierReturnsApi } from "@/shared/api/supplier-returns";
 import { formatMoney, rupees } from "@/lib/domain/money";
 import { T, F } from "../theme";
-import { Button, IconButton } from "../../../../../shared/ui/primitives";
+import { Button, IconButton, Textarea } from "../../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
 import { Modal } from "../../../../../shared/ui/overlay";
 import { useDocument } from "../../../../../shared/ui/document";
@@ -23,26 +27,75 @@ export function SareeListModal({
   onPrint: (saree: SareeTag) => void;
 }) {
   const { print } = useDocument();
-  const { returnSareePieces } = useSuppliers();
-  // One row per physical saree — a line bought in bulk is tagged piece by piece.
-  const pieces = expandSareePieces(purchase.sarees);
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  const requestedById = user?.id ?? STOPGAP_ACTING_USER_ID;
+
+  // Pending return requests reserve pieces the same way an APPROVED one
+  // removes them — fetched here so "With Us" doesn't show a piece that's
+  // already been sent back and is just waiting on a decision.
+  const { data: pendingRes } = useQuery({
+    queryKey: ["supplier-returns", "pending", purchase.id],
+    queryFn: () => supplierReturnsApi.list({ status: "PENDING" }),
+  });
+  const pendingByLineId = useMemo(() => {
+    const map = new Map<string, number>();
+    (pendingRes?.items ?? [])
+      .filter(r => r.purchaseId === purchase.id)
+      .forEach(r => map.set(r.sareeLineId, (map.get(r.sareeLineId) ?? 0) + r.quantity));
+    return map;
+  }, [pendingRes, purchase.id]);
+
+  // One row per physical saree — a line bought in bulk is tagged piece by
+  // piece. Pending pieces are treated the same way expandSareePieces already
+  // treats returned ones: the first N (by position) of a line are pending,
+  // since the backend tracks a per-line count rather than a per-piece flag.
+  const pieces = useMemo(() => {
+    return expandSareePieces(purchase.sarees).map(s => {
+      const pendingQty = s.lineId ? pendingByLineId.get(s.lineId) ?? 0 : 0;
+      const returnedQty = Number(s.returnedQuantity) || 0;
+      return { ...s, pending: !s.returned && s.pieceNo <= returnedQty + pendingQty };
+    });
+  }, [purchase.sarees, pendingByLineId]);
   type Piece = (typeof pieces)[number];
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  // Only not-yet-returned pieces can be selected — a returned piece has
-  // nothing left to act on.
-  const selectablePieces = pieces.filter(s => !s.returned);
-  const selectedReturnablePieces = pieces.filter(s => selectedIds.has(s.id) && !s.returned);
+  const [reason, setReason] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  // Only pieces with nothing already in motion can be selected.
+  const selectablePieces = pieces.filter(s => !s.returned && !s.pending);
+  const selectedReturnablePieces = pieces.filter(s => selectedIds.has(s.id) && !s.returned && !s.pending);
 
-  const handleReturnSelected = () => {
+  // Raises one SupplierReturnRequest per affected line (PENDING — nothing
+  // leaves the purchase until an admin approves it in Supplier Returns).
+  // Previously this bumped PurchaseSareeLine.returnedQuantity immediately via
+  // a full purchase rewrite, with no approval step and no separate record.
+  const handleReturnSelected = async () => {
     if (selectedReturnablePieces.length === 0) return;
-    // Group by parent line — one API call per line, incrementing that
-    // line's returnedQuantity by however many of its pieces were selected.
-    const countByLine = new Map<string, number>();
+    const countByLineId = new Map<string, number>();
     selectedReturnablePieces.forEach(s => {
-      countByLine.set(s.lineCode, (countByLine.get(s.lineCode) ?? 0) + 1);
+      if (!s.lineId) return;
+      countByLineId.set(s.lineId, (countByLineId.get(s.lineId) ?? 0) + 1);
     });
-    countByLine.forEach((count, lineCode) => returnSareePieces(purchase.id, lineCode, count));
-    setSelectedIds(new Set());
+    setSubmitting(true);
+    setSubmitError("");
+    try {
+      await Promise.all(
+        [...countByLineId].map(([sareeLineId, quantity]) =>
+          supplierReturnsApi.create(
+            { purchaseId: purchase.id, sareeLineId, quantity, reason: reason.trim() || undefined },
+            requestedById,
+          ),
+        ),
+      );
+      setSelectedIds(new Set());
+      setReason("");
+      void qc.invalidateQueries({ queryKey: ["supplier-returns"] });
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "Could not request this return. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const columns: ColumnDef<Piece>[] = [
@@ -55,9 +108,11 @@ export function SareeListModal({
       cell: (_v, s) => <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 12, color: T.royalBurgundy, whiteSpace: "nowrap" as const }}>{s.id}</span>,
     },
     {
-      id: "status", header: "Status", accessor: s => s.returned, type: "status",
+      id: "status", header: "Status", accessor: s => s.returned ? "returned" : s.pending ? "pending" : "with-us", type: "status",
       cell: (_v, s) => s.returned
         ? <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.crimson, background: "rgba(192,57,43,0.08)", borderRadius: 6, padding: "2px 8px", whiteSpace: "nowrap" as const }}>Returned</span>
+        : s.pending
+        ? <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.antiqueGold, background: "rgba(200,155,71,0.10)", borderRadius: 6, padding: "2px 8px", whiteSpace: "nowrap" as const }}>Return Pending</span>
         : <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.green, background: "rgba(30,102,64,0.08)", borderRadius: 6, padding: "2px 8px", whiteSpace: "nowrap" as const }}>With Us</span>,
     },
     {
@@ -237,6 +292,22 @@ export function SareeListModal({
             </div>
           </div>
 
+          {selectedReturnablePieces.length > 0 && (
+            <div style={{ padding: "12px 24px 0", flexShrink: 0 }}>
+              <Textarea
+                value={reason}
+                onChange={e => setReason(e.target.value)}
+                placeholder="Reason for return (optional)"
+                rows={2}
+              />
+              {submitError && (
+                <div style={{ marginTop: 8, fontFamily: F.ui, fontSize: 12, color: T.crimson, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.20)", borderRadius: 8, padding: "8px 12px" }}>
+                  {submitError}
+                </div>
+              )}
+            </div>
+          )}
+
           <div
             style={{
               padding: "14px 24px",
@@ -251,10 +322,13 @@ export function SareeListModal({
                 variant="danger"
                 iconLeft={Undo2}
                 onClick={handleReturnSelected}
+                disabled={submitting}
                 fullWidth
                 className="rounded-full"
               >
-                Return {selectedReturnablePieces.length} Selected Saree{selectedReturnablePieces.length !== 1 ? "s" : ""}
+                {submitting
+                  ? "Requesting…"
+                  : `Request Return of ${selectedReturnablePieces.length} Selected Saree${selectedReturnablePieces.length !== 1 ? "s" : ""}`}
               </Button>
             )}
             <Button

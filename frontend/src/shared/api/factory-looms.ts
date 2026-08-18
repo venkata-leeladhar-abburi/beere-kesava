@@ -4,6 +4,8 @@ export type BackendLoomStatus = "ACTIVE" | "IDLE" | "MAINTENANCE";
 
 export interface BackendFactoryLoom {
   id: string;
+  /** Human-facing sequential id, e.g. "Loom-001" — assigned server-side. */
+  code: string | null;
   loomNumber: string;
   location: string | null;
   operatorName: string | null;
@@ -23,7 +25,9 @@ interface PaginatedResponse<T> {
 }
 
 export interface CreateFactoryLoomPayload {
-  loomNumber: string;
+  /** Optional — the server generates both the loom number and the display code
+   * ("Loom-002") when it isn't supplied, which is how the UI creates looms. */
+  loomNumber?: string;
   location?: string;
   operatorName?: string;
   operatorPhone?: string;

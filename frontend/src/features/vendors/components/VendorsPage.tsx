@@ -33,6 +33,7 @@ function toVendor(v: BackendVendor): Vendor {
     terms: v.terms ?? "",
     bankName: v.bankName ?? undefined,
     accountNo: v.accountNo ?? undefined,
+    ifscCode: v.ifscCode ?? undefined,
     notes: v.notes ?? undefined,
     status: v.status === "ACTIVE" ? "active" : v.status === "INACTIVE" ? "inactive" : "overdue",
     totalOrders: 0,
@@ -55,13 +56,12 @@ export function VendorsPage() {
     vendorsApi.list().then(res => setVendors(res.items.map(toVendor))).catch(() => setVendors([]));
   }, []);
 
-  const nextId = `VEN-${String(vendors.length + 1).padStart(3, "0")}`;
 
   const handleSave = async (v: Vendor) => {
     const created = await vendorsApi.create({
       name: v.name, contactName: v.contactName, phone: v.phone, whatsapp: v.whatsapp,
       city: v.city, state: v.state, address: v.address, gstCode: v.gstCode,
-      specialty: v.type, terms: v.terms, bankName: v.bankName, accountNo: v.accountNo,
+      specialty: v.type, terms: v.terms, bankName: v.bankName, accountNo: v.accountNo, ifscCode: v.ifscCode,
       notes: v.notes, rating: v.rating,
     });
     setVendors(p => [toVendor(created), ...p]);
@@ -72,7 +72,7 @@ export function VendorsPage() {
     const updated = await vendorsApi.update(v.id, {
       name: v.name, contactName: v.contactName, phone: v.phone, whatsapp: v.whatsapp,
       city: v.city, state: v.state, address: v.address, gstCode: v.gstCode,
-      specialty: v.type, terms: v.terms, bankName: v.bankName, accountNo: v.accountNo,
+      specialty: v.type, terms: v.terms, bankName: v.bankName, accountNo: v.accountNo, ifscCode: v.ifscCode,
       notes: v.notes, rating: v.rating, status: v.status.toUpperCase(),
     });
     const merged = { ...toVendor(updated), totalOrders: v.totalOrders, totalSpend: v.totalSpend, outstanding: v.outstanding, lastOrder: v.lastOrder };
@@ -101,7 +101,6 @@ export function VendorsPage() {
           <AnimatePresence>
             {showAddForm && (
               <AddVendorModal
-                nextId={nextId}
                 onCancel={() => setShowAddForm(false)}
                 onSave={v => { void handleSave(v); }}
               />

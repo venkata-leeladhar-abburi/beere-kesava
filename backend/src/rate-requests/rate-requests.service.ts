@@ -36,7 +36,10 @@ export class RateRequestsService {
     });
     if (!sareeType) throw new NotFoundException(`Saree type ${dto.sareeTypeCode} not found`);
 
-    const id = await this.idGenerator.nextFormatted("RCR-2026");
+    const requester = await this.prisma.user.findUnique({ where: { id: dto.requestedById } });
+    if (!requester) throw new NotFoundException(`User ${dto.requestedById} not found`);
+
+    const id = await this.idGenerator.nextScoped("RCR", requester.empId);
     const item = await this.prisma.rateChangeRequest.create({
       data: {
         id,

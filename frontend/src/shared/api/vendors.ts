@@ -16,6 +16,7 @@ export interface BackendVendor {
   terms: string | null;
   bankName: string | null;
   accountNo: string | null;
+  ifscCode: string | null;
   notes: string | null;
   status: "ACTIVE" | "INACTIVE" | "OVERDUE";
   rating: number | null;
@@ -36,6 +37,7 @@ export interface CreateVendorPayload {
   terms?: string;
   bankName?: string;
   accountNo?: string;
+  ifscCode?: string;
   notes?: string;
   rating?: number;
 }
