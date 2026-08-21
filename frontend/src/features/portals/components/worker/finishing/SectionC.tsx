@@ -1,10 +1,12 @@
 import { useState, useMemo, type CSSProperties } from "react";
-import { Users, ChevronDown, Camera } from "lucide-react";
+import { Users, ChevronDown, Camera, Search } from "lucide-react";
 import { C, F } from "../tokens";
-import { useFinishing, FinishingAssignment } from "@/features/finishing";
+import { useFinishing, FinishingAssignment, FinishingReturn } from "@/features/finishing";
 import { SectionCard } from "../primitives";
-import { Button } from "../../../../../shared/ui/primitives";
+import { Button, Input } from "../../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
+import { DateFilterBar, type DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../../shared/ui/DateFilterBar";
+import { Pagination, usePagination } from "../../../../../shared/ui/DataPagination";
 
 // ── Section C — Assignment History & Tracking ─────────────────────────────────
 
@@ -22,13 +24,74 @@ function parseDMYDate(s: string): number {
   return isNaN(t) ? 0 : t;
 }
 
+// A staff member's own assignment history can run long once they've been on
+// the floor a while — paginate it independently of the outer staff table
+// (usePagination is a hook, so this has to be its own component rather than
+// called inline inside renderExpandedRow/the mobile map).
+function StaffAssignmentsTable({ data, columns }: { data: FinishingAssignment[]; columns: ColumnDef<FinishingAssignment>[] }) {
+  const pag = usePagination(data, 10);
+  return (
+    <div>
+      <DataTable columns={columns} data={pag.pageItems} getRowId={a => a.id} />
+      <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start}
+        onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="sarees" />
+    </div>
+  );
+}
+
+function StaffAssignmentsMobileList({ data, returns }: { data: FinishingAssignment[]; returns: FinishingReturn[] }) {
+  const pag = usePagination(data, 10);
+  return (
+    <div style={{ borderTop: `1px solid rgba(110,15,45,0.08)`, background: "rgba(110,15,45,0.02)", padding: "10px 14px 14px" }}>
+      <div style={{ display: "flex", flexDirection: "column" as const, gap: 8 }}>
+        {pag.pageItems.map(a => {
+          const ret = returns.find(rt => rt.sareeId === a.sareeId);
+          return (
+            <div key={a.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, borderBottom: `1px solid rgba(110,15,45,0.06)`, paddingBottom: 8 }}>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ fontFamily: F.m, fontSize: 12, color: C.burg, fontWeight: 600 }}>{a.sareeId}</span>
+                  {a.quotationRef && (
+                    <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "#8B6018", background: "rgba(200,146,58,0.14)", borderRadius: 999, padding: "1px 6px" }}>{a.quotationRef}</span>
+                  )}
+                </div>
+                <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>{a.assignedDate}{ret?.receivedDate ? ` → ${ret.receivedDate}` : ""}</div>
+              </div>
+              {!ret ? (
+                <span style={{ fontFamily: F.u, fontSize: 12, color: "#B85C00", fontWeight: 600, flexShrink: 0 }}>Awaiting Return</span>
+              ) : ret.condition === "perfect" ? (
+                <span style={{ fontFamily: F.u, fontSize: 12, color: C.green, fontWeight: 600, flexShrink: 0 }}>Perfect ✓</span>
+              ) : (
+                <span style={{ fontFamily: F.u, fontSize: 12, color: C.crim, fontWeight: 600, flexShrink: 0 }}>Damaged ⚠</span>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start}
+        onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="sarees" />
+    </div>
+  );
+}
+
 export function SectionC({ isMobile }: { isMobile?: boolean }) {
   const { assignments, returns } = useFinishing();
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+
+  const filteredAssignments = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return assignments.filter(a => {
+      const searchOk = !q || a.sareeId.toLowerCase().includes(q) || a.finishingStaffName.toLowerCase().includes(q);
+      const dateOk = matchesDateFilter(a.assignedDate, dateFilter);
+      return searchOk && dateOk;
+    });
+  }, [assignments, search, dateFilter]);
 
   const rows = useMemo<StaffTrackingRow[]>(() => {
     const byStaff = new Map<string, FinishingAssignment[]>();
-    assignments.forEach(a => {
+    filteredAssignments.forEach(a => {
       const list = byStaff.get(a.finishingStaffName) ?? [];
       list.push(a);
       byStaff.set(a.finishingStaffName, list);
@@ -46,7 +109,7 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
 
       return { name, assignedSareeIds, returnedSareeIds, perfect, damaged, lastAssignmentDate };
     }).sort((a, b) => parseDMYDate(b.lastAssignmentDate) - parseDMYDate(a.lastAssignmentDate));
-  }, [assignments, returns]);
+  }, [filteredAssignments, returns]);
 
   const TD: CSSProperties = { fontFamily: F.u, fontSize: 12, color: C.text, padding: "10px 10px", verticalAlign: "middle" as const };
 
@@ -127,10 +190,23 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
         </span>
       }
     >
+      {assignments.length > 0 && (
+        <>
+          <div style={{ marginBottom: 12 }}>
+            <Input
+              value={search} onChange={e => setSearch(e.target.value)}
+              placeholder="Search staff or saree ID..."
+              iconLeft={Search}
+              className="w-full"
+            />
+          </div>
+          <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+        </>
+      )}
 
       {rows.length === 0 ? (
         <div style={{ padding: "24px 0", textAlign: "center", fontFamily: F.u, fontSize: 13, color: C.muted }}>
-          No finishing staff assignments yet.
+          {assignments.length === 0 ? "No finishing staff assignments yet." : "No results for selected filters."}
         </div>
       ) : isMobile ? (
         <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
@@ -160,31 +236,10 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
                   </div>
                 </div>
                 {isOpen && (
-                  <div style={{ borderTop: `1px solid rgba(110,15,45,0.08)`, background: "rgba(110,15,45,0.02)", padding: "10px 14px 14px", display: "flex", flexDirection: "column" as const, gap: 8 }}>
-                    {assignments.filter(a => a.finishingStaffName === r.name).map(a => {
-                      const ret = returns.find(rt => rt.sareeId === a.sareeId);
-                      return (
-                        <div key={a.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, borderBottom: `1px solid rgba(110,15,45,0.06)`, paddingBottom: 8 }}>
-                          <div>
-                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                              <span style={{ fontFamily: F.m, fontSize: 12, color: C.burg, fontWeight: 600 }}>{a.sareeId}</span>
-                              {a.quotationRef && (
-                                <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "#8B6018", background: "rgba(200,146,58,0.14)", borderRadius: 999, padding: "1px 6px" }}>{a.quotationRef}</span>
-                              )}
-                            </div>
-                            <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>{a.assignedDate}{ret?.receivedDate ? ` → ${ret.receivedDate}` : ""}</div>
-                          </div>
-                          {!ret ? (
-                            <span style={{ fontFamily: F.u, fontSize: 12, color: "#B85C00", fontWeight: 600, flexShrink: 0 }}>Awaiting Return</span>
-                          ) : ret.condition === "perfect" ? (
-                            <span style={{ fontFamily: F.u, fontSize: 12, color: C.green, fontWeight: 600, flexShrink: 0 }}>Perfect ✓</span>
-                          ) : (
-                            <span style={{ fontFamily: F.u, fontSize: 12, color: C.crim, fontWeight: 600, flexShrink: 0 }}>Damaged ⚠</span>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
+                  <StaffAssignmentsMobileList
+                    data={filteredAssignments.filter(a => a.finishingStaffName === r.name)}
+                    returns={returns}
+                  />
                 )}
               </div>
             );
@@ -199,10 +254,9 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
             expandedIds={expanded ? new Set([expanded]) : undefined}
             renderExpandedRow={r => (
               <div style={{ padding: "10px 14px 14px", background: "rgba(110,15,45,0.02)" }}>
-                <DataTable
+                <StaffAssignmentsTable
                   columns={assignmentColumns}
-                  data={assignments.filter(a => a.finishingStaffName === r.name)}
-                  getRowId={a => a.id}
+                  data={filteredAssignments.filter(a => a.finishingStaffName === r.name)}
                 />
               </div>
             )}

@@ -196,6 +196,7 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
         weaverName: r.batchSareeRow.weaver?.name ?? "Factory Loom",
         weaverId: r.weaverId ?? undefined,
         bulkOrderRef: r.batchSareeRow.bulkOrderRef ?? undefined,
+        batchId: r.batchId ?? undefined,
         qcPassDate: r.qcDate,
         status: "qc-passed-pending-finishing",
       }));

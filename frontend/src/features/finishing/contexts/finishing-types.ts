@@ -9,6 +9,7 @@ export interface ReadySaree {
   weaverId?: string;
   weight?: string;
   bulkOrderRef?: string;
+  batchId?: string;
   qcPassDate: string;
   status?: "qc-passed-pending-finishing";
 }

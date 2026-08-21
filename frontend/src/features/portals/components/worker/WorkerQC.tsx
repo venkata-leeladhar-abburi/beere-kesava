@@ -18,6 +18,7 @@ import { SectionCard } from "./primitives";
 import { WorkerQCInspectionScreen } from "./WorkerQCInspectionScreen";
 import { WorkerQCSareeCard } from "./WorkerQCSareeCard";
 import { WorkerQCDefectiveSection } from "./WorkerQCDefectiveSection";
+import { WorkerQCSemiDefectiveSection } from "./WorkerQCSemiDefectiveSection";
 import { WorkerQCCompletedTodaySection } from "./WorkerQCCompletedTodaySection";
 import { WorkerQCHistorySection } from "./WorkerQCHistorySection";
 import { WorkerQCQueueHeader } from "./WorkerQCQueueHeader";
@@ -52,13 +53,21 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
           // qcPassed stays null/undefined until a QC record exists for the
           // row — once set (pass or fail), it must drop out of the queue.
           // receivedAt gates entry: a saree only enters QC once Worker Staff
-          // has actually received it from the weaver/loom.
-          .filter(r => r.sareeId && r.weaverName && r.receivedAt && r.qcPassed == null && !dispatchedSareeIds.has(r.sareeId))
+          // has actually received it from the weaver/loom. A row belongs to
+          // either an outsourced weaver or one of the factory's own looms —
+          // either identity is enough to admit it into the queue, not just
+          // weaverName (which is null for factory-loom rows and previously
+          // hid them from Quality Check entirely).
+          .filter(r => r.sareeId && (r.weaverName || r.factoryLoomNumber) && r.receivedAt && r.qcPassed == null && !dispatchedSareeIds.has(r.sareeId))
           .map(r => ({
             id: r.sareeId!,
             batch: b.batchId,
-            source: "outsourced" as const,
-            weaver: r.weaverName!,
+            source: r.weaverName ? "outsourced" as const : "own" as const,
+            weaver: r.weaverName ?? r.factoryLoomNumber ?? "Factory Loom",
+            // factoryLoomId is a raw database id, not a human-readable code —
+            // factoryLoomNumber (e.g. "Loom F-02") already serves as this
+            // row's identity above, so leave the code badge blank rather than
+            // surface a UUID for factory-loom rows.
             wcode: r.weaverId ?? "",
             design: [r.designCode, r.sareeTypeName].filter(Boolean).join(" · "),
             weight: 0,
@@ -94,7 +103,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
   };
   // Derived straight from real QC records — recordQc's refetch keeps this
   // current, so there's no local mutation to make when a defect is logged.
-  const defLog = useMemo<DefectiveLogItem[]>(() => qcRecords
+  const qcLog = useMemo<DefectiveLogItem[]>(() => qcRecords
     .filter(r => r.result === "defective" || r.result === "semi")
     .map(r => ({
       id: r.sareeId,
@@ -114,6 +123,9 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
       receivedDate: new Date(r.receivedDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
     })),
   [qcRecords]);
+
+  const defLog = useMemo(() => qcLog.filter(d => d.result === "defective"), [qcLog]);
+  const semiLog = useMemo(() => qcLog.filter(d => d.result === "semi"), [qcLog]);
 
   const passedLog = useMemo<PassedLogItem[]>(() => qcRecords
     .filter(r => r.result === "passed")
@@ -135,6 +147,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
 
   const [qcDateFilter, setQcDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [defDateFilter, setDefDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const [semiDateFilter, setSemiDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [historyDateFilter, setHistoryDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
 
   const [qcTab, setQcTab] = useState<"weavers" | "batches">("weavers");
@@ -433,7 +446,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
         <SectionCard
           icon={ClipboardCheck}
           title="Pending Quality Check"
-          subtitle={qcTab === "weavers" ? "Grouped by weaver — pick a weaver to start inspecting." : "Grouped by batch — pick a batch to start inspecting."}
+          subtitle={qcTab === "weavers" ? "Grouped by weaver or factory loom — pick one to start inspecting." : "Grouped by batch — pick a batch to start inspecting."}
           actions={
             <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: "#FFFDF9", background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.20)", padding: "5px 12px", borderRadius: 999 }}>
               {pending.length} pending
@@ -451,7 +464,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
               <div style={{ paddingBottom: 16 }}>
                 <Input
                   value={weaverSearch} onChange={e => setWeaverSearch(e.target.value)}
-                  placeholder="Search weavers..."
+                  placeholder="Search weavers or looms..."
                   iconLeft={Search}
                   className="w-full"
                 />
@@ -478,6 +491,14 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
 
       <WorkerQCCompletedTodaySection
         items={completedTodayLog}
+        isDesktop={isDesktop}
+        isTablet={isTablet}
+      />
+
+      <WorkerQCSemiDefectiveSection
+        semiLog={semiLog}
+        semiFilter={semiDateFilter}
+        setSemiFilter={setSemiDateFilter}
         isDesktop={isDesktop}
         isTablet={isTablet}
       />

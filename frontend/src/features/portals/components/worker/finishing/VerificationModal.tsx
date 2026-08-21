@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { CheckCircle2, AlertTriangle, Camera, UploadCloud } from "lucide-react";
+import { CheckCircle2, Camera, UploadCloud, X } from "lucide-react";
 import { C, F } from "../tokens";
 import { FinishingAssignment } from "@/features/finishing";
 import { EASE } from "./shared";
-import { Button, Input, Textarea, Select, SelectItem } from "../../../../../shared/ui/primitives";
+import { Button, IconButton, Input, Textarea, Select, SelectItem } from "../../../../../shared/ui/primitives";
 import { Modal } from "../../../../../shared/ui/overlay";
 
 export interface VerifData {
@@ -15,39 +15,31 @@ export interface VerifData {
   damagePhotoUrl?: string;
 }
 
-function DamagePhotoPrompt({ onCapture, onCancel }: { onCapture: () => void; onCancel: () => void }) {
-  return (
-    <div
-      role="button"
-      aria-label="Close photo prompt"
-      tabIndex={0}
-      style={{ position: "fixed", inset: 0, zIndex: "var(--z-popover)", background: "var(--surface-scrim)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
-      onClick={onCancel}
-      onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { onCancel(); } }}
-    >
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label="Photo Required"
-        style={{ background: "#FFF", borderRadius: 16, padding: 20, width: "min(92vw, 340px)", boxShadow: "0 24px 60px rgba(27,12,8,0.30)" }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
-          <AlertTriangle size={18} color={C.crim} />
-          <span style={{ fontFamily: F.d, fontSize: 14, fontWeight: 700, color: C.text }}>Photo Required</span>
-        </div>
-        <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginBottom: 16, lineHeight: 1.5 }}>
-          Take a photo of the defect as proof. This is required to complete the rejection.
-        </div>
-        <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-          <Button variant="primary" fullWidth size="sm" iconLeft={Camera} onClick={onCapture} className="h-11 rounded-full bg-[#6E0F2D] hover:bg-[#6E0F2D]">
-            Take Photo
-          </Button>
-          <Button variant="secondary" fullWidth size="sm" iconLeft={UploadCloud} onClick={onCapture} className="h-11 rounded-full border-[#6E0F2D] text-[#6E0F2D]">
-            Upload from Gallery
-          </Button>
-        </div>
-        <Button variant="link" fullWidth onClick={onCancel} className="text-xs text-[#69635E] p-2">Cancel</Button>
+// Attached photo preview + retake/remove — shared look between bulk and
+// per-saree damage panels.
+function DamagePhotoField({ photoUrl, onCamera, onGallery, onRemove, compact }: {
+  photoUrl?: string; onCamera: () => void; onGallery: () => void; onRemove: () => void; compact?: boolean;
+}) {
+  if (photoUrl) {
+    return (
+      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", border: `1px solid rgba(30,102,64,0.20)`, borderRadius: 10, background: "rgba(30,102,64,0.05)" }}>
+        <div style={{ width: compact ? 32 : 36, height: compact ? 32 : 36, borderRadius: 7, overflow: "hidden", flexShrink: 0, backgroundImage: `url(${photoUrl})`, backgroundSize: "cover", backgroundPosition: "center" }} />
+        <span style={{ fontFamily: F.u, fontSize: 12, color: C.green, fontWeight: 600, flex: 1 }}>Photo attached</span>
+        <Button variant="link" onClick={onCamera} className="p-0 text-xs text-[#6E0F2D] underline">Retake</Button>
+        <IconButton icon={X} label="Remove photo" variant="ghost" onClick={onRemove} className="w-6 h-6 flex-shrink-0 text-[#69635E]" />
       </div>
+    );
+  }
+  return (
+    <div style={{ display: "flex", gap: 8 }}>
+      <Button variant="secondary" size={compact ? "sm" : "md"} fullWidth iconLeft={Camera} onClick={onCamera}
+        className={`${compact ? "h-[38px] text-xs" : "h-10 text-[13px]"} justify-center rounded-[10px] border-[1.5px] border-dashed border-[#C0392B] bg-[rgba(192,57,43,0.04)] text-[#C0392B] hover:bg-[rgba(192,57,43,0.04)]`}>
+        Camera
+      </Button>
+      <Button variant="secondary" size={compact ? "sm" : "md"} fullWidth iconLeft={UploadCloud} onClick={onGallery}
+        className={`${compact ? "h-[38px] text-xs" : "h-10 text-[13px]"} justify-center rounded-[10px] border-[1.5px] border-dashed border-[#C0392B] bg-[rgba(192,57,43,0.04)] text-[#C0392B] hover:bg-[rgba(192,57,43,0.04)]`}>
+        Gallery
+      </Button>
     </div>
   );
 }
@@ -70,7 +62,31 @@ export function VerificationModal({ assignments, onSave, onClose, isMobile }: {
   const [bulkDamageSev, setBulkDamageSev] = useState<"Minor" | "Moderate" | "Severe" | "">("");
   const [bulkDamageNotes, setBulkDamageNotes] = useState("");
   const [bulkDamagePhotoUrl, setBulkDamagePhotoUrl] = useState<string | undefined>(undefined);
-  const [photoPromptFor, setPhotoPromptFor] = useState<"bulk" | string | null>(null);
+
+  // A single pair of hidden file inputs, reused for whichever photo field
+  // ("bulk" or a specific assignment id) was last clicked.
+  const photoTargetRef = useRef<"bulk" | string | null>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+
+  const applyPhoto = (target: "bulk" | string, url: string | undefined) => {
+    if (target === "bulk") setBulkDamagePhotoUrl(url);
+    else setPerSaree(prev => ({ ...prev, [target]: { ...prev[target], damagePhotoUrl: url } }));
+  };
+
+  const openCamera = (target: "bulk" | string) => { photoTargetRef.current = target; cameraInputRef.current?.click(); };
+  const openGallery = (target: "bulk" | string) => { photoTargetRef.current = target; galleryInputRef.current?.click(); };
+  const removePhoto = (target: "bulk" | string) => applyPhoto(target, undefined);
+
+  const handlePhotoFile = (file: File | undefined) => {
+    const target = photoTargetRef.current;
+    if (!file || !target) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") applyPhoto(target, reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
 
   const isBulkReady = bulkCondition === "perfect" || (bulkCondition === "damaged" && bulkDamageType.trim() && !!bulkDamagePhotoUrl);
 
@@ -129,7 +145,7 @@ export function VerificationModal({ assignments, onSave, onClose, isMobile }: {
                 {([["perfect", "Perfect ✓", C.green, "rgba(30,102,64,0.09)"], ["damaged", "Damaged ⚠", C.crim, "rgba(192,57,43,0.08)"]] as const).map(([val, lbl, col, bg]) => (
                   <div key={val} style={{ flex: 1, ["--cond-col" as string]: col, ["--cond-bg" as string]: bg } as React.CSSProperties}>
                     <Button variant="tertiary" fullWidth
-                      onClick={() => { setBulkCondition(val); if (val === "damaged" && !bulkDamagePhotoUrl) setPhotoPromptFor("bulk"); }}
+                      onClick={() => setBulkCondition(val)}
                       className={bulkCondition === val
                         ? "h-12 w-full rounded-xl border-2 font-bold text-sm transition-all border-[var(--cond-col)] bg-[var(--cond-bg)] text-[var(--cond-col)]"
                         : "h-12 w-full rounded-xl border-2 border-[rgba(110,15,45,0.12)] bg-transparent font-bold text-sm text-[#69635E] transition-all"}>
@@ -162,20 +178,12 @@ export function VerificationModal({ assignments, onSave, onClose, isMobile }: {
                       </div>
                       <div>
                         <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>Photo <span style={{ color: C.crim, fontWeight: 400 }}>— Required</span></div>
-                        {bulkDamagePhotoUrl ? (
-                          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", border: `1px solid rgba(30,102,64,0.20)`, borderRadius: 10, background: "rgba(30,102,64,0.05)" }}>
-                            <div style={{ width: 36, height: 36, borderRadius: 8, background: "linear-gradient(135deg,#F0E8D0,#C0392B)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                              <Camera size={14} color="rgba(255,255,255,0.85)" />
-                            </div>
-                            <span style={{ fontFamily: F.u, fontSize: 12, color: C.green, fontWeight: 600, flex: 1 }}>Photo attached</span>
-                            <Button variant="link" onClick={() => setPhotoPromptFor("bulk")} className="p-0 text-xs text-[#6E0F2D] underline">Retake</Button>
-                          </div>
-                        ) : (
-                          <Button variant="secondary" iconLeft={Camera} onClick={() => setPhotoPromptFor("bulk")}
-                            className="h-10 rounded-[10px] border-[1.5px] border-dashed border-[#C0392B] bg-[rgba(192,57,43,0.04)] text-[13px] text-[#C0392B] hover:bg-[rgba(192,57,43,0.04)]">
-                            Take Photo of Defect
-                          </Button>
-                        )}
+                        <DamagePhotoField
+                          photoUrl={bulkDamagePhotoUrl}
+                          onCamera={() => openCamera("bulk")}
+                          onGallery={() => openGallery("bulk")}
+                          onRemove={() => removePhoto("bulk")}
+                        />
                       </div>
                     </div>
                   </motion.div>
@@ -196,7 +204,7 @@ export function VerificationModal({ assignments, onSave, onClose, isMobile }: {
                       {([["perfect", "Perfect ✓", C.green, "rgba(30,102,64,0.09)"], ["damaged", "Damaged ⚠", C.crim, "rgba(192,57,43,0.08)"]] as const).map(([val, lbl, col, bg]) => (
                         <div key={val} style={{ flex: 1, ["--cond-col" as string]: col, ["--cond-bg" as string]: bg } as React.CSSProperties}>
                           <Button variant="tertiary" fullWidth
-                            onClick={() => { update({ condition: val }); if (val === "damaged" && !d.damagePhotoUrl) setPhotoPromptFor(a.id); }}
+                            onClick={() => update({ condition: val })}
                             className={d.condition === val
                               ? "h-[38px] w-full rounded-[9px] border-[1.5px] font-semibold text-xs transition-all border-[var(--cond-col)] bg-[var(--cond-bg)] text-[var(--cond-col)]"
                               : "h-[38px] w-full rounded-[9px] border-[1.5px] border-[rgba(110,15,45,0.12)] bg-transparent font-semibold text-xs text-[#69635E] transition-all"}>
@@ -212,20 +220,13 @@ export function VerificationModal({ assignments, onSave, onClose, isMobile }: {
                           {["Minor", "Moderate", "Severe"].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                         </Select>
                         <Textarea value={d.damageNotes} onChange={e => update({ damageNotes: e.target.value })} placeholder="Notes…" rows={2} className="resize-none text-[13px] leading-relaxed" />
-                        {d.damagePhotoUrl ? (
-                          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", border: `1px solid rgba(30,102,64,0.20)`, borderRadius: 10, background: "rgba(30,102,64,0.05)" }}>
-                            <div style={{ width: 32, height: 32, borderRadius: 7, background: "linear-gradient(135deg,#F0E8D0,#C0392B)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                              <Camera size={12} color="rgba(255,255,255,0.85)" />
-                            </div>
-                            <span style={{ fontFamily: F.u, fontSize: 12, color: C.green, fontWeight: 600, flex: 1 }}>Photo attached</span>
-                            <Button variant="link" onClick={() => setPhotoPromptFor(a.id)} className="p-0 text-xs text-[#6E0F2D] underline">Retake</Button>
-                          </div>
-                        ) : (
-                          <Button variant="secondary" size="sm" iconLeft={Camera} onClick={() => setPhotoPromptFor(a.id)}
-                            className="h-[38px] justify-start rounded-[9px] border-[1.5px] border-dashed border-[#C0392B] bg-[rgba(192,57,43,0.04)] text-xs text-[#C0392B] hover:bg-[rgba(192,57,43,0.04)]">
-                            Take Photo of Defect <span className="text-[#C0392B]">*</span>
-                          </Button>
-                        )}
+                        <DamagePhotoField
+                          compact
+                          photoUrl={d.damagePhotoUrl}
+                          onCamera={() => openCamera(a.id)}
+                          onGallery={() => openGallery(a.id)}
+                          onRemove={() => removePhoto(a.id)}
+                        />
                       </div>
                     )}
                   </div>
@@ -248,20 +249,24 @@ export function VerificationModal({ assignments, onSave, onClose, isMobile }: {
         </Button>
       </Modal.Footer>
 
-      {photoPromptFor && (
-        <DamagePhotoPrompt
-          onCancel={() => {
-            if (photoPromptFor === "bulk") setBulkCondition(null);
-            else setPerSaree(prev => ({ ...prev, [photoPromptFor]: { ...prev[photoPromptFor], condition: null } }));
-            setPhotoPromptFor(null);
-          }}
-          onCapture={() => {
-            if (photoPromptFor === "bulk") setBulkDamagePhotoUrl("captured-defect-photo");
-            else setPerSaree(prev => ({ ...prev, [photoPromptFor]: { ...prev[photoPromptFor], damagePhotoUrl: "captured-defect-photo" } }));
-            setPhotoPromptFor(null);
-          }}
-        />
-      )}
+      {/* Single hidden pair of file inputs, reused for every photo field via photoTargetRef */}
+      <input
+        ref={cameraInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        style={{ display: "none" }}
+        onChange={e => { handlePhotoFile(e.target.files?.[0]); e.target.value = ""; }}
+        aria-label="Camera photo input"
+      />
+      <input
+        ref={galleryInputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: "none" }}
+        onChange={e => { handlePhotoFile(e.target.files?.[0]); e.target.value = ""; }}
+        aria-label="Gallery photo input"
+      />
     </Modal>
   );
 }

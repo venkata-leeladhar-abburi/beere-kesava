@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { AnimatePresence } from "motion/react";
-import { Users, Package, ArrowDownToLine, FileText, Building2 } from "lucide-react";
+import { Users, Package, ArrowDownToLine, FileText, Building2, ChevronDown } from "lucide-react";
 import { C, F } from "../tokens";
 import { useFinishing, Quotation } from "@/features/finishing";
 import { WORKER_NAME, Toast } from "./shared";
@@ -32,6 +32,16 @@ export function QuotationsSection(_props: { isMobile?: boolean }) {
   const actingUserId = user?.id ?? STOPGAP_ACTING_USER_ID;
   const [pickerFor, setPickerFor] = useState<string | null>(null);
   const [toast, setToast] = useState("");
+  const [expandedSarees, setExpandedSarees] = useState<Set<string>>(new Set());
+
+  const toggleSareesExpanded = (id: string) => {
+    setExpandedSarees(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   const active = useMemo(
     () => quotations.filter(q => q.status !== "dispatched").sort((a, b) => b.createdAt - a.createdAt),
@@ -112,30 +122,55 @@ export function QuotationsSection(_props: { isMobile?: boolean }) {
                   </div>
                 </div>
 
-                {/* Sarees */}
-                <div>
-                  {q.sarees.map((s, i) => {
-                    return (
-                      <div key={s.sareeId}
-                        style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 12px", borderBottom: i < q.sarees.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none" }}
+                {/* Sarees — collapsed by default so a big quotation doesn't eat the whole page */}
+                {(() => {
+                  const isOpen = expandedSarees.has(q.id);
+                  return (
+                    <div>
+                      <div
+                        onClick={() => toggleSareesExpanded(q.id)}
+                        role="button" tabIndex={0}
+                        onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleSareesExpanded(q.id); } }}
+                        style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "9px 12px", cursor: "pointer", background: isOpen ? "rgba(110,15,45,0.02)" : "transparent" }}
                       >
-                        <Package size={14} color={C.muted} style={{ flexShrink: 0 }} />
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, color: C.burg }}>{s.sareeId}</div>
-                          <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{s.sareeTypeCode || s.designCode} · {s.sareeType}</div>
-                        </div>
-                        <div style={{ textAlign: "right" as const, flexShrink: 0 }}>
-                          <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: s.finishingStatus === "received" ? C.green : s.finishingStatus === "in-finishing" ? "#B85C00" : C.muted }}>
-                            {s.finishingStatus === "received" ? "Received" : s.finishingStatus === "in-finishing" ? "In Finishing" : "Pending"}
+                        <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.text }}>
+                          {q.sarees.length} saree{q.sarees.length !== 1 ? "s" : ""}
+                        </span>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.burg }}>
+                            {isOpen ? "Hide" : "Show"}
                           </span>
-                          {s.finishingStaffName && (
-                            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>{s.finishingStaffName}</div>
-                          )}
+                          <ChevronDown size={14} color={C.muted} style={{ transform: isOpen ? "rotate(180deg)" : "none", transition: "transform 0.15s" }} />
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
+                      {isOpen && (
+                        <div style={{ borderTop: `1px solid rgba(110,15,45,0.06)` }}>
+                          {q.sarees.map((s, i) => {
+                            return (
+                              <div key={s.sareeId}
+                                style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 12px", borderBottom: i < q.sarees.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none" }}
+                              >
+                                <Package size={14} color={C.muted} style={{ flexShrink: 0 }} />
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <div style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, color: C.burg }}>{s.sareeId}</div>
+                                  <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{s.sareeTypeCode || s.designCode} · {s.sareeType}</div>
+                                </div>
+                                <div style={{ textAlign: "right" as const, flexShrink: 0 }}>
+                                  <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: s.finishingStatus === "received" ? C.green : s.finishingStatus === "in-finishing" ? "#B85C00" : C.muted }}>
+                                    {s.finishingStatus === "received" ? "Received" : s.finishingStatus === "in-finishing" ? "In Finishing" : "Pending"}
+                                  </span>
+                                  {s.finishingStaffName && (
+                                    <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>{s.finishingStaffName}</div>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
 
                 {/* Actions */}
                 {(canAssign || canReceive) && (

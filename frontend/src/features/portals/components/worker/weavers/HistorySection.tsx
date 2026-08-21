@@ -1,9 +1,10 @@
 import React, { useMemo, useState } from "react";
-import { Search, History } from "lucide-react";
+import { Search, History, CheckSquare, Square, Printer } from "lucide-react";
 import { C, F } from "../tokens";
 import { SectionCard } from "../primitives";
 import { type ReceivedSareeLog } from "./shared";
-import { Button, Input } from "../../../../../shared/ui/primitives";
+import { TagPreviewScreen } from "./TagPreviewScreen";
+import { Button, Input, Select, SelectItem } from "../../../../../shared/ui/primitives";
 import { useQc } from "@/features/qc";
 import { StatusPill } from "../../../../../shared/ui/domain";
 import type { StatusValueOf } from "@/lib/domain/status";
@@ -21,21 +22,31 @@ const HISTORY_STATUS_TO_PRODUCTION: Record<ReceivedSareeLog["status"], StatusVal
   "Defective": "qc-failed",
 };
 
+type HistoryRow = ReceivedSareeLog & { sareeType?: string; isoDate?: string };
+
 export function HistorySection({ liveRecords = [] }: { liveRecords?: ReceivedSareeLog[] }) {
   const [view, setView] = useState<"day" | "weaver">("day");
   const [search, setSearch] = useState("");
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const [filterEntity, setFilterEntity] = useState("all");
+  const [filterBatch, setFilterBatch] = useState("all");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [showTagPrint, setShowTagPrint] = useState(false);
   const { qcRecords } = useQc();
 
   // Real QC-inspection history — the closest genuine equivalent to a
-  // "received from weaver" log this schema actually has (weight/color/photo
-  // aren't recorded anywhere yet, so they're omitted rather than faked).
-  const qcHistory: (ReceivedSareeLog & { sareeType?: string; isoDate?: string })[] = useMemo(() => qcRecords
-    .filter(r => r.weaverId && r.weaverName)
+  // "received from weaver/loom" log this schema actually has (weight/color/
+  // photo aren't recorded anywhere yet, so they're omitted rather than
+  // faked). A row belongs to either an outsourced weaver or one of the
+  // factory's own looms — either identity is enough to admit it, not just
+  // weaverName (which is null for factory-loom rows and previously hid them
+  // from this history entirely).
+  const qcHistory: HistoryRow[] = useMemo(() => qcRecords
+    .filter(r => r.weaverName || r.factoryLoomNumber)
     .map(r => ({
       id: r.sareeId,
-      weaver: r.weaverName as string,
-      wcode: r.weaverId as string,
+      weaver: r.weaverName ?? r.factoryLoomNumber ?? "Factory Loom",
+      wcode: r.weaverId ?? "",
       batch: r.batchId ?? "—",
       weight: "—",
       color: "—",
@@ -46,13 +57,18 @@ export function HistorySection({ liveRecords = [] }: { liveRecords?: ReceivedSar
     })),
   [qcRecords]);
 
-  const allData: (ReceivedSareeLog & { sareeType?: string; isoDate?: string })[] = [
+  const allData: HistoryRow[] = [
     ...liveRecords.map(r => ({ ...r, sareeType: "—" })),
     ...qcHistory,
   ];
 
+  const uniqueEntities = useMemo(() => Array.from(new Set(allData.map(h => h.weaver))).sort(), [allData]);
+  const uniqueBatches = useMemo(() => Array.from(new Set(allData.map(h => h.batch))).filter(b => b !== "—").sort(), [allData]);
+
   const filtered = allData.filter(h =>
     matchesDateFilter(h.isoDate || h.date, dateFilter) &&
+    (filterEntity === "all" || h.weaver === filterEntity) &&
+    (filterBatch === "all" || h.batch === filterBatch) &&
     (!search ||
     h.id.toLowerCase().includes(search.toLowerCase()) ||
     h.weaver.toLowerCase().includes(search.toLowerCase()) ||
@@ -64,37 +80,71 @@ export function HistorySection({ liveRecords = [] }: { liveRecords?: ReceivedSar
   const byDay: Record<string, typeof filtered> = {};
   filtered.forEach(h => { if (!byDay[h.date]) byDay[h.date] = []; byDay[h.date].push(h); });
 
-  // Group by weaver
+  // Group by weaver/loom
   const byWeaver: Record<string, typeof filtered> = {};
   filtered.forEach(h => { if (!byWeaver[h.weaver]) byWeaver[h.weaver] = []; byWeaver[h.weaver].push(h); });
 
-  const SareeRow = ({ h, last }: { h: typeof filtered[0]; last: boolean }) => (
-    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderBottom: last ? "none" : `1px solid rgba(110,15,45,0.06)` }}>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
-          <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, color: C.burg }}>{h.id}</span>
-          <StatusPill taxonomy="production" status={HISTORY_STATUS_TO_PRODUCTION[h.status]} size="sm" />
+  const toggleRow = (id: string) => {
+    setSelected(prev => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
+  };
+
+  const allChecked = filtered.length > 0 && selected.size === filtered.length;
+  const toggleAll = () => {
+    if (allChecked) setSelected(new Set());
+    else setSelected(new Set(filtered.map(h => h.id)));
+  };
+
+  if (showTagPrint) {
+    const selectedRows = filtered.filter(h => selected.has(h.id));
+    const uniqueSelWeavers = Array.from(new Set(selectedRows.map(h => h.weaver)));
+    return (
+      <TagPreviewScreen
+        sareeIds={selectedRows.map(h => h.id)}
+        entityLabel={uniqueSelWeavers.length === 1 ? "Weaver/Loom" : "Sarees"}
+        entityValue={uniqueSelWeavers.length === 1 ? uniqueSelWeavers[0] : `${selectedRows.length} selected · ${uniqueSelWeavers.length} weavers/looms`}
+        onBack={() => setShowTagPrint(false)}
+        onPrint={() => { setSelected(new Set()); setShowTagPrint(false); }}
+      />
+    );
+  }
+
+  const SareeRow = ({ h, last }: { h: HistoryRow; last: boolean }) => {
+    const checked = selected.has(h.id);
+    return (
+      <div
+        onClick={() => toggleRow(h.id)} role="button" tabIndex={0}
+        onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleRow(h.id); } }}
+        style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderBottom: last ? "none" : `1px solid rgba(110,15,45,0.06)`, background: checked ? "rgba(110,15,45,0.05)" : "transparent", cursor: "pointer" }}
+      >
+        <div style={{ flexShrink: 0, display: "flex", alignItems: "center" }}>
+          {checked ? <CheckSquare size={17} color={C.burg} /> : <Square size={17} color={C.muted} />}
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.u, fontSize: 12, color: C.muted }}>
-          {h.sareeType && h.sareeType !== "—" && <>{h.sareeType} · </>}
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 3 }}>
-            <span style={{ width: 8, height: 8, borderRadius: "50%", background: h.color?.toLowerCase() || "#CCC", border: "1px solid rgba(0,0,0,0.15)" }} />
-            {h.color}
-          </span>
-          · {h.weight} · {h.batch}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
+            <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, color: C.burg }}>{h.id}</span>
+            <StatusPill taxonomy="production" status={HISTORY_STATUS_TO_PRODUCTION[h.status]} size="sm" />
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.u, fontSize: 12, color: C.muted }}>
+            {h.sareeType && h.sareeType !== "—" && <>{h.sareeType} · </>}
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 3 }}>
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: h.color?.toLowerCase() || "#CCC", border: "1px solid rgba(0,0,0,0.15)" }} />
+              {h.color}
+            </span>
+            · {h.weight} · {h.batch}
+          </div>
         </div>
+        {view === "day" && <div style={{ fontFamily: F.u, fontSize: 12, color: C.text, flexShrink: 0 }}>{h.weaver}</div>}
+        {view === "weaver" && <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, flexShrink: 0 }}>{h.date}</div>}
       </div>
-      {view === "day" && <div style={{ fontFamily: F.u, fontSize: 12, color: C.text, flexShrink: 0 }}>{h.weaver}</div>}
-      {view === "weaver" && <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, flexShrink: 0 }}>{h.date}</div>}
-    </div>
-  );
+    );
+  };
 
   return (
     <div style={{ margin: "24px 0 0" }}>
       <SectionCard
         icon={History}
         title="Received History"
-        subtitle="Every saree recorded from weavers, grouped by day or by weaver."
+        subtitle="Every saree recorded from weavers and factory looms, grouped by day or by weaver/loom."
         actions={
           <div style={{ display: "flex", background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 10, padding: 3 }}>
             {([["day", "Day Wise"], ["weaver", "Weaver Wise"]] as const).map(([key, label]) => (
@@ -113,10 +163,29 @@ export function HistorySection({ liveRecords = [] }: { liveRecords?: ReceivedSar
         <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
       </div>
 
-      {/* Search */}
-      <div style={{ marginBottom: 16, position: "relative" }}>
-        <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search saree ID, weaver, batch…"
-          iconLeft={Search} className="w-full" />
+      <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" as const }}>
+        <div style={{ flex: 1, minWidth: 160, position: "relative" }}>
+          <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search saree ID, weaver, batch…"
+            iconLeft={Search} className="w-full" />
+        </div>
+        <div style={{ flex: 1, minWidth: 140 }}>
+          <Select value={filterEntity} onValueChange={setFilterEntity} size="sm">
+            <SelectItem value="all">All Weavers / Looms</SelectItem>
+            {uniqueEntities.map(w => <SelectItem key={w} value={w}>{w}</SelectItem>)}
+          </Select>
+        </div>
+        <div style={{ flex: 1, minWidth: 140 }}>
+          <Select value={filterBatch} onValueChange={setFilterBatch} size="sm">
+            <SelectItem value="all">All Batches</SelectItem>
+            {uniqueBatches.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+          </Select>
+        </div>
+        {filtered.length > 0 && (
+          <Button variant="link" onClick={toggleAll} className="gap-1.5 p-0 px-1.5 py-1 text-xs text-[#69635E] whitespace-nowrap">
+            {allChecked ? <CheckSquare size={15} color={C.burg} /> : <Square size={15} color={C.muted} />}
+            {allChecked ? "Deselect All" : "Select All"}
+          </Button>
+        )}
       </div>
 
       {/* Grouped list */}
@@ -151,6 +220,21 @@ export function HistorySection({ liveRecords = [] }: { liveRecords?: ReceivedSar
             ))
         )}
       </div>
+
+      {/* Print-tag action bar */}
+      {selected.size > 0 && (
+        <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 14, padding: "10px 12px", background: "rgba(110,15,45,0.04)", border: `1px solid rgba(110,15,45,0.14)`, borderRadius: 12 }}>
+          <span style={{ fontFamily: F.u, fontSize: 13, color: C.text, flex: 1 }}>{selected.size} saree{selected.size > 1 ? "s" : ""} selected</span>
+          <Button variant="secondary" onClick={() => setSelected(new Set())}
+            className="h-10 rounded-full border-[rgba(110,15,45,0.30)] text-[#6E0F2D] text-xs">
+            Clear
+          </Button>
+          <Button variant="primary" iconLeft={Printer} onClick={() => setShowTagPrint(true)}
+            className="h-10 rounded-full bg-[#6E0F2D] hover:bg-[#4A061B] text-xs">
+            Print Tag{selected.size > 1 ? "s" : ""} ({selected.size})
+          </Button>
+        </div>
+      )}
       </SectionCard>
     </div>
   );

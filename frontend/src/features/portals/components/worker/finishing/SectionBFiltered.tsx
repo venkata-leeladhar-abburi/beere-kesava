@@ -1,21 +1,29 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { CheckSquare, Square, X, CheckCircle2, Clock } from "lucide-react";
+import { CheckSquare, Square, X, CheckCircle2, Clock, ChevronLeft, LayoutGrid, List, Users } from "lucide-react";
 import { C, F } from "../tokens";
 import { useFinishing } from "@/features/finishing";
 import { EASE, WORKER_NAME, ScanBar, useScan, Toast } from "./shared";
 import { VerificationModal, VerifData } from "./VerificationModal";
+import { ReceiveStaffGrid, ReceiveBatchGrid } from "./ReceiveSareeGridCards";
 import { Button, IconButton, Select, SelectItem } from "../../../../../shared/ui/primitives";
+import { DateFilterBar, type DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../../shared/ui/DateFilterBar";
 
 // ── Section B with filters — Receive returns ──────────────────────────────────
 
-export function SectionBFiltered({ isMobile }: { isMobile?: boolean }) {
+type GroupMode = "list" | "staff" | "batch";
+
+export function SectionBFiltered({ isMobile, isDesktop, isTablet }: { isMobile?: boolean; isDesktop?: boolean; isTablet?: boolean }) {
   const { assignments, receiveReturn } = useFinishing();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [showVerif, setShowVerif] = useState(false);
   const [toast, setToast] = useState("");
   const [filterStaff, setFilterStaff] = useState("all");
   const [filterBatch, setFilterBatch] = useState("all");
+  const [filterType, setFilterType] = useState("all");
+  const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const [groupMode, setGroupMode] = useState<GroupMode>("list");
+  const [drilldown, setDrilldown] = useState<string | null>(null);
 
   const awaiting = useMemo(() => assignments.filter(a => a.status === "awaiting-return"), [assignments]);
 
@@ -31,15 +39,54 @@ export function SectionBFiltered({ isMobile }: { isMobile?: boolean }) {
     return Array.from(sSet);
   }, [awaiting]);
 
+  // Get unique saree types from awaiting
+  const uniqueTypes = useMemo(() => {
+    const tSet = new Set(awaiting.map(a => a.sareeTypeCode || a.sareeType).filter(Boolean));
+    return Array.from(tSet);
+  }, [awaiting]);
+
   const filteredAwaiting = useMemo(() => awaiting.filter(a => {
     const staffOk = filterStaff === "all" || a.finishingStaffName === filterStaff;
     const batchOk = filterBatch === "all" || a.batchId === filterBatch;
-    return staffOk && batchOk;
-  }), [awaiting, filterStaff, filterBatch]);
+    const typeOk = filterType === "all" || (a.sareeTypeCode || a.sareeType) === filterType;
+    const dateOk = matchesDateFilter(a.assignedDate, dateFilter);
+    return staffOk && batchOk && typeOk && dateOk;
+  }), [awaiting, filterStaff, filterBatch, filterType, dateFilter]);
 
-  const unselectedIds = filteredAwaiting.filter(a => !selected.has(a.id)).map(a => a.sareeId);
+  const staffGroups = useMemo(() => {
+    const map = new Map<string, typeof filteredAwaiting>();
+    filteredAwaiting.forEach(a => {
+      const list = map.get(a.finishingStaffName) ?? [];
+      list.push(a);
+      map.set(a.finishingStaffName, list);
+    });
+    return Array.from(map.entries()).map(([name, list]) => ({ name, assignments: list }));
+  }, [filteredAwaiting]);
+
+  const batchGroups = useMemo(() => {
+    const map = new Map<string, typeof filteredAwaiting>();
+    filteredAwaiting.forEach(a => {
+      const key = a.batchId ?? "No Batch";
+      const list = map.get(key) ?? [];
+      list.push(a);
+      map.set(key, list);
+    });
+    return Array.from(map.entries()).map(([id, list]) => ({ id, assignments: list }));
+  }, [filteredAwaiting]);
+
+  // Switching grouping tabs drops any drilldown — the group's own list scopes
+  // the table below whenever one is picked.
+  useEffect(() => { setDrilldown(null); }, [groupMode]);
+
+  const displayAwaiting = groupMode === "list"
+    ? filteredAwaiting
+    : drilldown
+      ? (groupMode === "staff" ? staffGroups.find(g => g.name === drilldown)?.assignments : batchGroups.find(g => g.id === drilldown)?.assignments) ?? []
+      : null;
+
+  const unselectedIds = (displayAwaiting ?? []).filter(a => !selected.has(a.id)).map(a => a.sareeId);
   const { scanMsg, scanValue, setScanValue, submitScan } = useScan(unselectedIds, sareeId => {
-    const match = filteredAwaiting.find(a => a.sareeId === sareeId);
+    const match = (displayAwaiting ?? []).find(a => a.sareeId === sareeId);
     if (match) setSelected(prev => { const next = new Set(prev); next.add(match.id); return next; });
   });
 
@@ -48,13 +95,15 @@ export function SectionBFiltered({ isMobile }: { isMobile?: boolean }) {
   };
 
   const toggleAll = () => {
-    if (selected.size === filteredAwaiting.length) setSelected(new Set());
-    else setSelected(new Set(filteredAwaiting.map(a => a.id)));
+    const list = displayAwaiting ?? [];
+    if (selected.size === list.length) setSelected(new Set());
+    else setSelected(new Set(list.map(a => a.id)));
   };
 
-  const selectedAssignments = filteredAwaiting.filter(a => selected.has(a.id));
+  const selectedAssignments = (displayAwaiting ?? []).filter(a => selected.has(a.id));
   const today = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
-  const allChecked = filteredAwaiting.length > 0 && selected.size === filteredAwaiting.length;
+  const allChecked = (displayAwaiting?.length ?? 0) > 0 && selected.size === displayAwaiting?.length;
+  const groupLabel = groupMode === "staff" ? "Staff" : "Batch";
 
   const handleSave = (data: Record<string, VerifData>) => {
     selectedAssignments.forEach(a => {
@@ -81,6 +130,20 @@ export function SectionBFiltered({ isMobile }: { isMobile?: boolean }) {
 
   return (
     <div>
+      {/* Grouping tabs — List / By Staff / By Batch, same idea as Assign Sarees' grouping */}
+      {awaiting.length > 0 && (
+        <div style={{ display: "flex", margin: "0 0 10px", background: "#F5F0F2", borderRadius: 10, padding: 3 }}>
+          {([["list", "List", List], ["staff", "By Staff", Users], ["batch", "By Batch", LayoutGrid]] as const).map(([key, label, Icon]) => (
+            <Button key={key} variant={groupMode === key ? "primary" : "tertiary"} fullWidth size="sm"
+              iconLeft={Icon}
+              onClick={() => setGroupMode(key)}
+              className={groupMode === key ? "rounded-[9px] bg-[#1E6640] hover:bg-[#1E6640] text-xs" : "rounded-[9px] text-xs"}>
+              {label}
+            </Button>
+          ))}
+        </div>
+      )}
+
       {/* Filters */}
       <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" as const }}>
         <ScanBar value={scanValue} onChange={setScanValue} onSubmit={submitScan} />
@@ -96,13 +159,24 @@ export function SectionBFiltered({ isMobile }: { isMobile?: boolean }) {
             {uniqueBatches.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
           </Select>
         </div>
-        {filteredAwaiting.length > 0 && (
+        <div style={{ flex: 1, minWidth: 120 }}>
+          <Select value={filterType} onValueChange={setFilterType} size="sm">
+            <SelectItem value="all">All Saree Types</SelectItem>
+            {uniqueTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+          </Select>
+        </div>
+        {displayAwaiting !== null && displayAwaiting.length > 0 && (
           <Button variant="link" onClick={toggleAll} className="gap-1.5 p-0 px-1.5 py-1 text-xs text-[#69635E] whitespace-nowrap">
             {allChecked ? <CheckSquare size={15} color={C.burg} /> : <Square size={15} color={C.muted} />}
             {allChecked ? "Deselect All" : "Select All"}
           </Button>
         )}
       </div>
+
+      {/* Assigned-date filter */}
+      {awaiting.length > 0 && (
+        <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+      )}
 
       {/* Scan feedback */}
       {scanMsg && (
@@ -111,13 +185,36 @@ export function SectionBFiltered({ isMobile }: { isMobile?: boolean }) {
         </div>
       )}
 
-      {filteredAwaiting.length === 0 ? (
+      {/* Grouped card grid — shown when a grouping tab is active and nothing is drilled into yet */}
+      {displayAwaiting === null && groupMode === "staff" && (
+        staffGroups.length === 0 ? (
+          <div style={{ padding: "28px 0", textAlign: "center", fontFamily: F.u, fontSize: 13, color: C.muted }}>No results for selected filters.</div>
+        ) : (
+          <ReceiveStaffGrid groups={staffGroups} onSelect={setDrilldown} isDesktop={isDesktop} isTablet={isTablet} />
+        )
+      )}
+      {displayAwaiting === null && groupMode === "batch" && (
+        batchGroups.length === 0 ? (
+          <div style={{ padding: "28px 0", textAlign: "center", fontFamily: F.u, fontSize: 13, color: C.muted }}>No results for selected filters.</div>
+        ) : (
+          <ReceiveBatchGrid groups={batchGroups} onSelect={setDrilldown} isDesktop={isDesktop} isTablet={isTablet} />
+        )
+      )}
+
+      {displayAwaiting !== null && (
+      <>
+      {groupMode !== "list" && drilldown && (
+        <button onClick={() => setDrilldown(null)} style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", padding: "0 0 10px", cursor: "pointer", fontFamily: F.u, fontSize: 13, fontWeight: 600, color: "#1E6640" }}>
+          <ChevronLeft size={15} /> {groupLabel}: {drilldown}
+        </button>
+      )}
+      {displayAwaiting.length === 0 ? (
         <div style={{ padding: "28px 0", textAlign: "center", fontFamily: F.u, fontSize: 13, color: C.muted }}>
           {awaiting.length === 0 ? "No sarees currently awaiting return." : "No results for selected filters."}
         </div>
       ) : (
         <div style={{ border: `1px solid rgba(110,15,45,0.10)`, borderRadius: 14, overflow: "hidden" }}>
-          {filteredAwaiting.map((a, i) => {
+          {displayAwaiting.map((a, i) => {
             const checked = selected.has(a.id);
             return (
               <div key={a.id} onClick={() => toggleRow(a.id)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => toggleRow(a.id))?.(); } }}
@@ -145,6 +242,8 @@ export function SectionBFiltered({ isMobile }: { isMobile?: boolean }) {
             );
           })}
         </div>
+      )}
+      </>
       )}
 
       {/* Action bar */}

@@ -41,7 +41,7 @@ export function WorkerQCQueueHeader({
       </div>
 
       <div id="wqc-in-progress" style={{ display: "flex", margin: isDesktop ? "0 0 12px" : "0 16px 12px", background: T.bg, border: `1px solid ${T.bdr}`, borderRadius: 12, padding: 4 }}>
-        {([["weavers", "By Weaver"], ["batches", "By Batch"]] as const).map(([key, label]) => (
+        {([["weavers", "By Weaver / Loom"], ["batches", "By Batch"]] as const).map(([key, label]) => (
           <Button key={key} variant={qcTab === key ? "primary" : "tertiary"} fullWidth
             onClick={() => { setQcTab(key); setWeaverSearch(""); }}
             className={qcTab === key ? "rounded-[9px] bg-[#6E0F2D] hover:bg-[#6E0F2D]" : "rounded-[9px] bg-transparent"}>

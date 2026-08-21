@@ -107,7 +107,7 @@ export function WorkerFinishing({ isDesktop, isTablet }: { isDesktop?: boolean; 
                   </span>
                 }
               >
-                <SectionA isMobile={isMobile} />
+                <SectionA isMobile={isMobile} isDesktop={isDesktop} isTablet={isTablet} />
               </SectionCard>
             </div>
           </motion.div>
@@ -125,7 +125,7 @@ export function WorkerFinishing({ isDesktop, isTablet }: { isDesktop?: boolean; 
                   </span>
                 }
               >
-                <SectionBFiltered isMobile={isMobile} />
+                <SectionBFiltered isMobile={isMobile} isDesktop={isDesktop} isTablet={isTablet} />
               </SectionCard>
             </div>
           </motion.div>

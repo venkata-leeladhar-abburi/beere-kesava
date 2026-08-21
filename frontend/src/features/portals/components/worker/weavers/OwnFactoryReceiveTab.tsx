@@ -19,7 +19,6 @@ import { useFinishing } from "@/features/finishing";
 import { DefectPhotoPrompt } from "./DefectPhotoPrompt";
 import { SareeSelectionTable } from "./SareeSelectionTable";
 import { Button, Input, Select, SelectItem, Combobox } from "../../../../../shared/ui/primitives";
-import { toPaise, fromPaise } from "../../../../../lib/gst";
 
 interface RejectedSaree {
   id: string;
@@ -98,7 +97,6 @@ export function OwnFactoryReceiveTab({ onSareeReceived }: { onSareeReceived?: (r
 
   const [sareeColor, setSareeColor] = useState("");
   const [sareeWeight, setSareeWeight] = useState("");
-  const [sareePrice, setSareePrice] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const hasPhoto = photoUrl !== null;
   const setHasPhoto = (v: boolean) => { if (!v) setPhotoUrl(null); };
@@ -133,7 +131,7 @@ export function OwnFactoryReceiveTab({ onSareeReceived }: { onSareeReceived?: (r
   const loomLabel = selectedLoom ? `${selectedLoom.loomNumber}${selectedLoom.operatorName ? ` · ${selectedLoom.operatorName}` : ""}` : "—";
 
   const resetEntryFields = () => {
-    setSareeColor(""); setSareeWeight(""); setSareePrice(""); setHasPhoto(false); setMatEdits({});
+    setSareeColor(""); setSareeWeight(""); setHasPhoto(false); setMatEdits({});
   };
 
   const pickLoom = (loomId: string) => {
@@ -190,7 +188,6 @@ export function OwnFactoryReceiveTab({ onSareeReceived }: { onSareeReceived?: (r
           warpG: Number.isFinite(warpG) ? warpG : undefined,
           reshamG: Number.isFinite(reshamG) ? reshamG : undefined,
           jariReels: Number.isFinite(jariReels) ? jariReels : undefined,
-          sellingPrice: sareePrice ? fromPaise(toPaise(Number(sareePrice) || 0)) : undefined,
         });
         onSareeReceived?.({
           id: s.sareeId, weaver: loomLabel, wcode: "", batch: currentBatch.id,
@@ -318,13 +315,6 @@ export function OwnFactoryReceiveTab({ onSareeReceived }: { onSareeReceived?: (r
               className="h-12 text-sm" />
           </div>
 
-          <div style={{ marginBottom: 10 }}>
-            <FieldLabel>Selling Price (₹) — optional</FieldLabel>
-            <Input type="number" value={sareePrice} onChange={e => setSareePrice(e.target.value)}
-              placeholder="Leave blank to use the saree type's standard rate"
-              className="h-12 text-sm font-mono" />
-          </div>
-
           <div className="grid-cols-1 md:grid-cols-2" style={{ display: "grid", gap: 10, marginBottom: 10 }}>
             <div>
               <FieldLabel>Weight (grams)</FieldLabel>
@@ -399,7 +389,9 @@ export function OwnFactoryReceiveTab({ onSareeReceived }: { onSareeReceived?: (r
           )}
 
           <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-            <Button variant="secondary" fullWidth size="sm" iconLeft={Printer} onClick={() => setShowTagPrint(true)} className="h-11 rounded-full border-[rgba(200,155,71,0.55)] text-[#845E04]">
+            <Button variant="secondary" fullWidth size="sm" iconLeft={Printer} onClick={() => setShowTagPrint(true)}
+              disabled={!sareeColor || !sareeWeight || !hasPhoto}
+              className="h-11 rounded-full border-[rgba(200,155,71,0.55)] text-[#845E04]">
               Print Tag{selectedSareeNos.size > 1 ? "s" : ""}
             </Button>
             <Button variant="secondary" fullWidth size="sm" iconLeft={Plus} onClick={saveSaree} disabled={!canSaveSaree}
