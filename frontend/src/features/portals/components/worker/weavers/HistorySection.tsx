@@ -84,7 +84,6 @@ export function HistorySection({ liveRecords = [] }: { liveRecords?: ReceivedSar
   const byWeaver: Record<string, typeof filtered> = {};
   filtered.forEach(h => { if (!byWeaver[h.weaver]) byWeaver[h.weaver] = []; byWeaver[h.weaver].push(h); });
 
-<<<<<<< HEAD
   const toggleRow = (id: string) => {
     setSelected(prev => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
   };
