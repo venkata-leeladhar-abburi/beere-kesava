@@ -1,6 +1,6 @@
 // ── Cross-section mock data ────────────────────────────────────────────────
 // MOCK-BACKED (partial): WEAVERS, TABLE_ROWS, LEADERBOARD, ACTIVITIES,
-// BATCH_HISTORY, WARP_REQUESTS, HEADER_CHIPS, STATS, WEAVER_RATES remain
+// BATCH_HISTORY, WARP_REQUESTS, HEADER_CHIPS, STATS, remain
 // static/empty mock scaffolding. They mix WV-XXX-style ids with
 // production/QC/payments numbers that have no backend endpoint yet.
 // WeaverDirectory (WeaverTableAndDirectory.tsx), PerformancePanel
@@ -16,15 +16,9 @@ import { Package, CheckCircle2 as CheckCircle, AlertCircle as WarningCircle, Med
 import { T } from "./theme";
 import type { Status } from "./types";
 
-export const WEAVER_RATES: Record<string, { code: string; type: string; rate: string }> = {
-  "b5f9178c-b1b9-4871-a7c3-0d68a462d57a": { code: "SB-001", type: "Self Brocade", rate: "₹450/saree" },
-  "8937070a-ea63-43f3-9cb4-dcbcfd362ff7": { code: "HZ-003", type: "Heavy Zari", rate: "₹680/saree" },
-  "11278a51-a26d-4eaa-adbf-bedbfa7fdf46": { code: "SB-001", type: "Self Brocade", rate: "₹450/saree" },
-  "71413724-378d-4336-93dd-1db33cba3510": { code: "PS-002", type: "Plain Silk", rate: "₹280/saree" },
-  "95cc89ea-6cf3-418c-bf9b-299e59f47389": { code: "HZ-003", type: "Heavy Zari", rate: "₹680/saree" },
-  "d3fd5a81-7d3a-478d-9a0f-d65a5db6779a": { code: "SB-001", type: "Self Brocade", rate: "₹450/saree" },
-  "51490482-11cf-425b-8d54-7bd918f6db18": { code: "BS-004", type: "Bridal Special", rate: "₹820/saree" },
-};
+// NOTE: the WEAVER_RATES export that used to live here mapped real weaver
+// UUIDs to invented making-charge rates and had no importers — removed rather
+// than left as a plausible-looking source of payment figures.
 
 // Shape matches the object built in useRealWeavers() (WeaverCardAndListViews.tsx),
 // which is what these mock arrays are concatenated/typed against.
@@ -53,10 +47,6 @@ export const WEAVERS: WeaverCardEntry[] = [];
 export type ImportedWeaver = typeof WEAVERS[0];
 export const TABLE_ROWS: unknown[] = [];
 export const LEADERBOARD: unknown[] = [];
-export const QC_DATA = [
-  { name: "Passed", value: 238, color: T.green },
-  { name: "Rejected", value: 10, color: T.crimson },
-];
 // Each row is one thing that happened. `needsAction` marks the ones that sit
 // in your queue rather than just being FYI — that's the distinction that was
 // missing before: everything looked the same regardless of whether it wanted

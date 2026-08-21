@@ -24,6 +24,9 @@ export interface BackendPurchaseOrder {
     /** Set once the vendor's real bill splits an amount to this material line. */
     invoicedAmount: string | null;
   }[];
+  grnReceipt?: { 
+    receivedBy?: { id: string; firstName: string; lastName: string } | null;
+  } | null;
 }
 
 export interface CreatePurchaseOrderPayload {

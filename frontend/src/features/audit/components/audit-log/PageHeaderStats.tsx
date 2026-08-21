@@ -152,6 +152,8 @@ export function PageHeaderStats() {
               fontFamily: F.ui,
               fontSize: "clamp(11px, 1.2vw, 13px)",
               fontWeight: 600,
+              color: "#fff",
+              whiteSpace: "nowrap",
             }}>
               All Time · From System Start
             </div>

@@ -35,7 +35,7 @@ const CARD_STYLE: React.CSSProperties = {
 function ChartCardHeader({ icon, title, sub }: { icon: React.ReactNode; title: string; sub: string }) {
   return (
     <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 22 }}>
-      <div style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(110,15,45,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <div style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(110,15,45,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
         {icon}
       </div>
       <div>
@@ -103,10 +103,10 @@ export function ProductionAnalyticsSection() {
     const inStock = batches.filter(b => b.status === "completed").length;
     const max = Math.max(weaving, submitted, qcPassed, inStock, 1);
     return [
-      { label: "Weaving in Progress",       count: weaving,   color: "#845E04",   widthPct: Math.round((weaving / max) * 100) },
-      { label: "Submitted — Waiting QC",    count: submitted, color: T.blueGray,  widthPct: Math.round((submitted / max) * 100) },
-      { label: "Quality Check Passed",      count: qcPassed,  color: T.green,     widthPct: Math.round((qcPassed / max) * 100) },
-      { label: "In Stock — Ready for Sale", count: inStock,   color: T.green,     widthPct: Math.round((inStock / max) * 100) },
+      { label: "Weaving in Progress", count: weaving, color: "#845E04", widthPct: Math.round((weaving / max) * 100) },
+      { label: "Submitted — Waiting QC", count: submitted, color: T.blueGray, widthPct: Math.round((submitted / max) * 100) },
+      { label: "Quality Check Passed", count: qcPassed, color: T.green, widthPct: Math.round((qcPassed / max) * 100) },
+      { label: "In Stock — Ready for Sale", count: inStock, color: T.green, widthPct: Math.round((inStock / max) * 100) },
     ];
   }, [batches]);
   const totalActiveBatches = batches.filter(b => b.status === "active" || b.status === "draft").length;
@@ -137,9 +137,9 @@ export function ProductionAnalyticsSection() {
     <div id="prod-analytics" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 32 }}>
       <FadeUp>
 
-        <div className="p-4 sm:p-6 mb-6 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-[0_6px_32px_rgba(74,6,27,0.08)]" style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)` }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <div className="p-4 sm:p-6 mb-6 rounded-2xl flex flex-col items-start gap-4 shadow-[0_6px_32px_rgba(74,6,27,0.08)]" style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)` }}>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
               <LineChart size={26} color="#FFFDF9" />
             </div>
             <div>
@@ -149,7 +149,7 @@ export function ProductionAnalyticsSection() {
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2 flex-wrap max-w-full w-full sm:w-auto">
+          <div className="flex items-center gap-2 flex-wrap max-w-full">
             <div className="flex items-center gap-1.5 overflow-x-auto max-w-full pb-1 scrollbar-none whitespace-nowrap shrink-0" style={{ WebkitOverflowScrolling: "touch" }}>
               {ANALYTICS_PERIODS.map(p => (
                 <Button key={p} onClick={() => setPeriod(p)} variant={period === p ? "primary" : "secondary"} size="sm" className="shrink-0 whitespace-nowrap text-[12px]">
@@ -185,46 +185,46 @@ export function ProductionAnalyticsSection() {
                 No production data yet.
               </div>
             ) : (
-            <>
-            <div className="overflow-x-auto w-full pb-2">
-              <div style={{ display: "flex", alignItems: "flex-end", gap: 10, flex: 1, minWidth: 260, minHeight: 180 }}>
-                {monthlyProductionData.map(d => (
-                  <div key={d.month} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-                    <div style={{ display: "flex", gap: 3, alignItems: "flex-end" }}>
-                      <span style={{ fontFamily: F.ui, fontSize: 12, color: T.royalBurgundy, fontWeight: 700 }}>{d.produced}</span>
-                      <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>/{d.passed}</span>
-                    </div>
-                    <div style={{ display: "flex", alignItems: "flex-end", gap: 4, height: 130, width: "100%", justifyContent: "center" }}>
-                      <motion.div
-                        initial={{ height: 0 }}
-                        whileInView={{ height: `${(d.produced / maxMonthly) * 100}%` }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
-                        style={{ width: 22, background: `linear-gradient(180deg, ${T.royalBurgundy} 0%, #9A1A40 100%)`, borderRadius: "5px 5px 0 0", minHeight: 6 }}
-                      />
-                      <motion.div
-                        initial={{ height: 0 }}
-                        whileInView={{ height: `${(d.passed / maxMonthly) * 100}%` }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.7, delay: 0.08, ease: [0.25, 0.1, 0.25, 1] }}
-                        style={{ width: 22, background: "linear-gradient(180deg, #0F766E 0%, #0D5D57 100%)", borderRadius: "5px 5px 0 0", minHeight: 6, opacity: 0.9 }}
-                      />
-                    </div>
-                    <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe }}>{d.label}</span>
+              <>
+                <div className="overflow-x-auto w-full pb-2">
+                  <div style={{ display: "flex", alignItems: "flex-end", gap: 10, flex: 1, minWidth: 260, minHeight: 180 }}>
+                    {monthlyProductionData.map(d => (
+                      <div key={d.month} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+                        <div style={{ display: "flex", gap: 3, alignItems: "flex-end" }}>
+                          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.royalBurgundy, fontWeight: 700 }}>{d.produced}</span>
+                          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>/{d.passed}</span>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "flex-end", gap: 4, height: 130, width: "100%", justifyContent: "center" }}>
+                          <motion.div
+                            initial={{ height: 0 }}
+                            whileInView={{ height: `${(d.produced / maxMonthly) * 100}%` }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
+                            style={{ width: 22, background: `linear-gradient(180deg, ${T.royalBurgundy} 0%, #9A1A40 100%)`, borderRadius: "5px 5px 0 0", minHeight: 6 }}
+                          />
+                          <motion.div
+                            initial={{ height: 0 }}
+                            whileInView={{ height: `${(d.passed / maxMonthly) * 100}%` }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.7, delay: 0.08, ease: [0.25, 0.1, 0.25, 1] }}
+                            style={{ width: 22, background: "linear-gradient(180deg, #0F766E 0%, #0D5D57 100%)", borderRadius: "5px 5px 0 0", minHeight: 6, opacity: 0.9 }}
+                          />
+                        </div>
+                        <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe }}>{d.label}</span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
-
-            <div style={{ display: "flex", gap: 20, marginTop: 16, justifyContent: "center" }}>
-              {[{ color: T.royalBurgundy, label: "Produced" }, { color: "#0F766E", label: "QC Passed" }].map(l => (
-                <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                  <div style={{ width: 12, height: 12, borderRadius: 3, background: l.color }} />
-                  <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, fontWeight: 500 }}>{l.label}</span>
                 </div>
-              ))}
-            </div>
-            </>
+
+                <div style={{ display: "flex", gap: 20, marginTop: 16, justifyContent: "center" }}>
+                  {[{ color: T.royalBurgundy, label: "Produced" }, { color: "#0F766E", label: "QC Passed" }].map(l => (
+                    <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                      <div style={{ width: 12, height: 12, borderRadius: 3, background: l.color }} />
+                      <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, fontWeight: 500 }}>{l.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
           </div>
 
@@ -281,32 +281,32 @@ export function ProductionAnalyticsSection() {
                 No production data yet.
               </div>
             ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 16, flex: 1, justifyContent: "center" }}>
-              {topWeavers.map((w, i) => (
-                <div key={w.weaverId} style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <div style={{ width: 28, height: 28, borderRadius: 8, background: i === 0 ? "rgba(200,155,71,0.18)" : "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: i === 0 ? T.antiqueGold : T.taupe }}>{i + 1}</span>
-                  </div>
-                  <Pip initials={w.initials} bg={w.bg} size={34} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, fontWeight: 700, marginBottom: 5, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{w.name}</div>
-                    <div style={{ height: 9, background: "rgba(110,15,45,0.08)", borderRadius: 99, overflow: "hidden" }}>
-                      <motion.div
-                        initial={{ width: 0 }}
-                        whileInView={{ width: `${(w.sarees / maxWeaverSarees) * 100}%` }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.8, delay: i * 0.08, ease: [0.25, 0.1, 0.25, 1] }}
-                        style={{ height: "100%", background: `linear-gradient(90deg,${T.royalBurgundy},#A04060)`, borderRadius: 99 }}
-                      />
+              <div style={{ display: "flex", flexDirection: "column", gap: 16, flex: 1, justifyContent: "center" }}>
+                {topWeavers.map((w, i) => (
+                  <div key={w.weaverId} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <div style={{ width: 28, height: 28, borderRadius: 8, background: i === 0 ? "rgba(200,155,71,0.18)" : "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: i === 0 ? T.antiqueGold : T.taupe }}>{i + 1}</span>
+                    </div>
+                    <Pip initials={w.initials} bg={w.bg} size={34} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, fontWeight: 700, marginBottom: 5, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{w.name}</div>
+                      <div style={{ height: 9, background: "rgba(110,15,45,0.08)", borderRadius: 99, overflow: "hidden" }}>
+                        <motion.div
+                          initial={{ width: 0 }}
+                          whileInView={{ width: `${(w.sarees / maxWeaverSarees) * 100}%` }}
+                          viewport={{ once: true }}
+                          transition={{ duration: 0.8, delay: i * 0.08, ease: [0.25, 0.1, 0.25, 1] }}
+                          style={{ height: "100%", background: `linear-gradient(90deg,${T.royalBurgundy},#A04060)`, borderRadius: 99 }}
+                        />
+                      </div>
+                    </div>
+                    <div style={{ flexShrink: 0, textAlign: "right" }}>
+                      <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.luxuryBrown }}>{w.sarees}</span>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>sarees</div>
                     </div>
                   </div>
-                  <div style={{ flexShrink: 0, textAlign: "right" }}>
-                    <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.luxuryBrown }}>{w.sarees}</span>
-                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>sarees</div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
             )}
           </div>
         </div>

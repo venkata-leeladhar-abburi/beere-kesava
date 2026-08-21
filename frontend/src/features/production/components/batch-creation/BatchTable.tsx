@@ -207,15 +207,15 @@ export function BatchTable({
       }
     >
       {/* Filters */}
-      <div style={{ margin: "-24px -28px 0", padding: "16px 24px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", gap: 10, flexWrap: "wrap" }}>
-        <SearchInput value={searchFilter} onChange={e => setSearchFilter(e.target.value)} placeholder="Search Saree ID, Weaver..." className="flex-1 min-w-[200px]" />
-        <Select value={weaverFilter} onValueChange={setWeaverFilter} size="sm" className="w-auto min-w-[140px]">
+      <div className="-mx-2.5 sm:-mx-5 md:-mx-6 -mt-2.5 sm:-mt-5 md:-mt-6 px-3.5 sm:px-5 md:px-6 py-3.5 sm:py-4 flex flex-wrap gap-2.5 border-b border-[#E8DCC4]">
+        <SearchInput value={searchFilter} onChange={e => setSearchFilter(e.target.value)} placeholder="Search Saree ID, Weaver..." className="flex-1 min-w-[150px] sm:min-w-[200px]" />
+        <Select value={weaverFilter} onValueChange={setWeaverFilter} size="sm" className="w-auto min-w-[120px] sm:min-w-[140px]">
           {weaverOptions.map(w => <SelectItem key={w as string} value={w as string}>{w === "All" ? "All Weavers" : w as string}</SelectItem>)}
         </Select>
-        <Select value={sareeTypeFilter} onValueChange={setSareeTypeFilter} size="sm" className="w-auto min-w-[140px]">
+        <Select value={sareeTypeFilter} onValueChange={setSareeTypeFilter} size="sm" className="w-auto min-w-[120px] sm:min-w-[140px]">
           {sareeTypeOptions.map(w => <SelectItem key={w as string} value={w as string}>{w === "All" ? "All Saree Types" : w as string}</SelectItem>)}
         </Select>
-        <Select value={orderFilter} onValueChange={setOrderFilter} size="sm" className="w-auto min-w-[140px]">
+        <Select value={orderFilter} onValueChange={setOrderFilter} size="sm" className="w-auto min-w-[120px] sm:min-w-[140px]">
           {orderOptions.map(o => <SelectItem key={o as string} value={o as string}>{o === "All" ? "All Orders" : o as string}</SelectItem>)}
         </Select>
       </div>
@@ -226,7 +226,7 @@ export function BatchTable({
           §3 "Known exclusions". minWidth:800 on the table inside this
           overflowX:auto wrapper is the standard horizontal-scroll pattern for
           a raw table, not a page-overflow risk. */}
-      <div style={{ overflowX: "auto", margin: "0 -28px -28px" }}>
+      <div className="-mx-2.5 sm:-mx-5 md:-mx-6 -mb-2.5 sm:-mb-4 md:-mb-4 overflow-x-auto">
         {/* eslint-disable-next-line no-restricted-syntax -- raw table, documented Phase 4 exclusion; minWidth:800 is the intentional horizontal-scroll pattern inside the overflowX:auto wrapper above */}
         <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 800 }}>
           <thead>

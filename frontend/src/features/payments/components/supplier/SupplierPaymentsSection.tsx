@@ -220,7 +220,7 @@ export function SupplierPaymentsSection() {
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, flexWrap: "wrap" as const }}>
-          <div style={{ display: "flex", border: `1px solid ${T.borderDef}`, borderRadius: 9, overflow: "hidden", background: "#fff" }}>
+          <div className="hidden md:flex" style={{ border: `1px solid ${T.borderDef}`, borderRadius: 9, overflow: "hidden", background: "#fff" }}>
             {([{ key: "card", Icon: LayoutGrid, label: "Card View" }, { key: "table", Icon: AlignJustify, label: "Table View" }] as const).map(({ key, Icon, label }) => (
               <Button key={key} variant={view === key ? "primary" : "tertiary"} size="sm" iconLeft={Icon}
                 onClick={() => setView(key)}
@@ -238,10 +238,39 @@ export function SupplierPaymentsSection() {
           </div>
         </div>
 
-        <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+        <div style={{ marginBottom: 14 }}>
+          <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+        </div>
+
+        <div className="flex md:hidden items-center justify-between gap-3 mb-4 flex-wrap">
+          <div className="flex items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0">
+            <Button
+              onClick={() => setView("card")}
+              variant="ghost"
+              className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
+                view === "card"
+                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+              }`}
+            >
+              <LayoutGrid size={14} /> Card View
+            </Button>
+            <Button
+              onClick={() => setView("table")}
+              variant="ghost"
+              className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
+                view === "table"
+                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+              }`}
+            >
+              <AlignJustify size={14} /> Table View
+            </Button>
+          </div>
+        </div>
 
         {view === "card" && (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20, marginBottom: 32, alignItems: "stretch" }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8 items-stretch">
             {filtered.map((r, i) => (
               <motion.div key={r.supplier.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.07 }}
                 style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, padding: 20, display: "flex", flexDirection: "column", gap: 12, boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
@@ -281,13 +310,16 @@ export function SupplierPaymentsSection() {
 
         {view === "table" && (
           <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)", marginBottom: 32 }}>
-            <div style={{ overflowX: "auto" }}>
-              <DataTable
-                columns={supplierTableColumns}
-                data={filtered}
-                getRowId={r => r.supplier.id}
-                emptyTitle="No suppliers match your filters"
-              />
+            <div style={{ overflowX: "auto" }} className="w-full">
+              <div style={{ minWidth: 1100 }}>
+                <DataTable
+                  responsive={false}
+                  columns={supplierTableColumns}
+                  data={filtered}
+                  getRowId={r => r.supplier.id}
+                  emptyTitle="No suppliers match your filters"
+                />
+              </div>
             </div>
             <div style={{ padding: "12px 18px", borderTop: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Showing {filtered.length} of {rows.length} suppliers</span>

@@ -234,21 +234,26 @@ export function DeductionRatesSection() {
       </div>
 
       {/* Variance Rule Strip */}
-      <div style={{
-        background: T.cream, border: `1px solid ${T.borderGold}`, borderRadius: 12,
-        padding: "16px 22px", display: "flex", alignItems: "center", justifyContent: "space-between",
-      }}>
-        <div>
+      <div
+        className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+        style={{
+          background: T.cream, border: `1px solid ${T.borderGold}`, borderRadius: 12,
+          padding: "16px 22px",
+        }}
+      >
+        <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, letterSpacing: "0.10em", color: T.taupe, textTransform: "uppercase", marginBottom: 5 }}>
             Current Variance Rule
           </div>
-          <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 500, color: T.luxuryBrown }}>
+          <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 500, color: T.luxuryBrown, lineHeight: 1.5 }}>
             Deductions only apply when the returned material is more than <strong>5 grams</strong> (or <strong>1 reel</strong> for Jari) below the standard issued quantity.
           </div>
         </div>
-        <GoldLink>
-          <Edit2 size={12} /> Edit Variance Rule <ChevronRight size={14} />
-        </GoldLink>
+        <div className="shrink-0 whitespace-nowrap">
+          <GoldLink>
+            <Edit2 size={12} /> Edit Variance Rule <ChevronRight size={14} />
+          </GoldLink>
+        </div>
       </div>
     </SectionCard>
     </div>

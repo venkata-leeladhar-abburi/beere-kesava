@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, Scale } from "lucide-react";
 import { useDesignLibrary } from "@/features/design-library";
 import { useBatches, type SareeRow } from "../contexts/BatchContext";
@@ -33,6 +33,32 @@ export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: s
 
   const { getDesign } = useDesignLibrary();
 
+  // This page replaces the Production page in place (no route change), so the
+  // window keeps whatever scroll position Production had and the tally opens
+  // mid-page. Reset the window *and* every scrollable ancestor of this page —
+  // the dashboard shells differ in which element actually scrolls — and
+  // re-assert across the next few frames, because layout is still settling
+  // (hero image, lazy sections) right after mount and the browser's scroll
+  // anchoring can otherwise pull the position back down.
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  useLayoutEffect(() => {
+    const toTop = () => {
+      window.scrollTo(0, 0);
+      if (document.scrollingElement) document.scrollingElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      for (let el = rootRef.current?.parentElement; el; el = el.parentElement) {
+        if (el.scrollTop) el.scrollTop = 0;
+      }
+    };
+    toTop();
+    const raf = requestAnimationFrame(toTop);
+    const timers = [setTimeout(toTop, 60), setTimeout(toTop, 250)];
+    return () => {
+      cancelAnimationFrame(raf);
+      timers.forEach(clearTimeout);
+    };
+  }, [batchId]);
+
   const weaverOptions = useMemo(() => b ? ["All", ...Array.from(new Set(b.rows.map(r => r.weaverName).filter(Boolean)))].sort() : ["All"], [b]);
   const orderOptions = useMemo(() => b ? ["All", "General Stock", ...Array.from(new Set(b.rows.map(r => r.bulkOrderLabel).filter(Boolean)))].sort() : ["All"], [b]);
 
@@ -46,13 +72,17 @@ export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: s
     return mSearch && mWeaver && mOrder && mQc;
   });
 
+  // Every filtered row appears in the combined table — rows without a saree
+  // ID yet are listed by serial rather than dropped.
   const tallyItems: TallyRowItem[] = filteredRows
-    .filter((r): r is SareeRow & { sareeId: string } => !!r.sareeId)
-    .map(r => ({
-      sareeId: r.sareeId,
+    .map((r: SareeRow) => ({
+      sareeId: r.sareeId ?? null,
       serial: r.serial,
       batchId,
       weaverName: r.weaverName,
+      weaverLoom: r.weaverLoom,
+      bulkOrderLabel: r.bulkOrderLabel,
+      qcPassed: !!r.qcPassed,
       sareeTypeCode: r.sareeTypeCode,
       // eslint-disable-next-line no-restricted-syntax -- saree weight in grams, not money
       actualWeight: r.receivedWeight ? parseFloat(r.receivedWeight) : null,
@@ -107,7 +137,7 @@ export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: s
   const designImage = designObj?.colorSlipPhoto || designObj?.designGraph || imgSaree;
 
   return (
-    <div style={{ fontFamily: F.ui, minHeight: "100vh", background: T.silkCream }}>
+    <div ref={rootRef} style={{ fontFamily: F.ui, minHeight: "100vh", background: T.silkCream, overflowAnchor: "none" }}>
       <div style={{ height: 220, position: "relative", overflow: "hidden", background: T.silkCream }}>
         <img src={designImage} alt="Design" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.65) 100%)" }} />
@@ -183,12 +213,16 @@ export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: s
           )}
         </div>
 
-        {/* ── Saree Breakdown ── */}
+        {/* ── Sarees + Weight & Material Tally (one combined table) ── */}
         <div style={{ background: "#FFFFFF", border: `1px solid ${T.borderDef}`, borderRadius: 16, padding: "18px 22px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-            <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>
-              Saree Row Allocations ({filteredRows.length})
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+            <Scale size={16} color={T.royalBurgundy} />
+            <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>
+              Sarees &amp; Weight Tally ({filteredRows.length} sarees · {tallyItems.filter(i => i.tallied).length} / {tallyItems.length} tallied)
             </div>
+          </div>
+          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 12 }}>
+            Weight is what Worker Staff entered at receipt, shown against the SareeTypeRate standard for that saree's type. Tally each saree once you've physically verified it.
           </div>
 
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 16 }}>
@@ -206,48 +240,6 @@ export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: s
             </Select>
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {filteredRows.map(row => (
-              <div key={row.serial} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(110,15,45,0.02)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "12px 16px" }}>
-                <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>
-                      Saree {row.serial}
-                    </span>
-                    {row.sareeId && (
-                      <EntityCode type="saree" value={row.sareeId} size="sm" />
-                    )}
-                  </div>
-                  <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, marginTop: 4 }}>
-                    Loom {row.weaverLoom} · {row.weaverName || "Unassigned"}
-                  </div>
-                  {row.bulkOrderLabel && (
-                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.green, marginTop: 2, display: "flex", alignItems: "center", gap: 4 }}>
-                      <span>↳ Order: {row.bulkOrderLabel}</span>
-                    </div>
-                  )}
-                </div>
-                <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: row.qcPassed ? T.green : T.taupe, background: row.qcPassed ? "rgba(30,102,64,0.08)" : "rgba(139,112,96,0.08)", borderRadius: 6, padding: "4px 8px" }}>
-                  {row.qcPassed ? "QC Passed" : "In Progress"}
-                </span>
-              </div>
-            ))}
-            {filteredRows.length === 0 && (
-              <div style={{ textAlign: "center", padding: "20px", color: T.taupe, fontFamily: F.ui, fontSize: 13 }}>No sarees match these filters.</div>
-            )}
-          </div>
-        </div>
-
-        <div style={{ background: "#FFFFFF", border: `1px solid ${T.borderDef}`, borderRadius: 16, padding: "18px 22px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-            <Scale size={16} color={T.royalBurgundy} />
-            <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>
-              Weight &amp; Material Tally ({tallyItems.filter(i => i.tallied).length} / {tallyItems.length} tallied)
-            </div>
-          </div>
-          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 12 }}>
-            Actual is what Worker Staff entered at receipt; Standard is the SareeTypeRate rate card for that saree's assigned type. Tally each saree once you've physically verified it.
-          </div>
           <SareeWeightTallyList
             items={tallyItems}
             getSareeTypeByCode={getSareeTypeByCode}

@@ -307,7 +307,7 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
   // this UI's "skip finishing" shortcut and the backend's business rule,
   // not something to paper over here.
   const dispatchSareesMutation = useMutation({
-    mutationFn: (args: { sareeIds: string[]; record: Omit<DispatchRecord, "id">; id: string }) => {
+    mutationFn: (args: { sareeIds: string[]; record: Omit<DispatchRecord, "id">; optimisticId: string }) => {
       const type: BackendDispatchType = args.record.type === "wholesale" ? "WHOLESALE" : "SHOP";
       return dispatchApi.create({
         type,
@@ -324,7 +324,9 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
         pendingTransport: args.record.pendingTransport,
         pendingReceipt: args.record.pendingReceipt,
         customerId: args.record.customerId,
-        invoiceNumber: args.record.invoiceNumber,
+        // Wholesale dispatches always raise an invoice; the number comes back
+        // from the server rather than being sent up.
+        raiseInvoice: type === "WHOLESALE",
         pricePerSaree: args.record.pricePerSaree,
         gstPct: args.record.gstPct,
         firmId: args.record.firmId,
@@ -336,7 +338,7 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
       const previous = qc.getQueryData<DispatchRecord[]>(DISPATCHES_KEY);
       const newDispatch: DispatchRecord = {
         ...args.record,
-        id: args.id,
+        id: args.optimisticId,
         sareeIds: args.sareeIds,
       };
       qc.setQueryData<DispatchRecord[]>(DISPATCHES_KEY, old => [newDispatch, ...(old || [])]);
@@ -389,7 +391,7 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
   const raiseQuotationMutation = useMutation({
     mutationFn: (q: Omit<Quotation, "id" | "createdAt">) =>
       quotationsApi.create({
-        customerId: q.customerId || undefined,
+        customerId: q.customerId,
         bulkOrderRef: q.bulkOrderRef,
         applyGst: q.applyGst,
         gstPct: q.applyGst ? Number(q.gstPct) : undefined,
@@ -471,26 +473,28 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
   const addReadySaree = (saree: ReadySaree) => addReadySareeMutation.mutate(saree);
   const receiveReturn = (params: Parameters<FinishingContextValue["receiveReturn"]>[0]) => receiveReturnMutation.mutate(params);
 
-  // Kept synchronous (returns a locally-generated id) for existing callers
-  // that chain a follow-up local-only call (markQuotationDispatched) right
-  // after — the real dispatch record's own id isn't otherwise consumed.
-  const dispatchSarees = (sareeIds: string[], record: Omit<DispatchRecord, "id">): string => {
-    const id = `DISP-${Date.now()}`;
-    dispatchSareesMutation.mutate({ sareeIds, record, id });
-    return id;
+  // Awaits the real record so callers surface the backend's own id and invoice
+  // number. The optimistic cache entry uses a throwaway key (not a business id)
+  // that is replaced when the query is invalidated onSettled.
+  const dispatchSarees = async (sareeIds: string[], record: Omit<DispatchRecord, "id">) => {
+    const created = await dispatchSareesMutation.mutateAsync({
+      sareeIds,
+      record,
+      optimisticId: `pending-${crypto.randomUUID()}`,
+    });
+    return { id: created.id, invoiceNumber: created.invoiceNumber ?? undefined };
   };
   const updateDispatch = (id: string, patch: Partial<DispatchRecord>) => updateDispatchMutation.mutate({ id, patch });
 
-  const raiseQuotation = (q: Omit<Quotation, "id" | "createdAt">): string => {
-    const id = `QT-${Date.now()}`;
-    raiseQuotationMutation.mutate(q);
-    return id;
+  const raiseQuotation = async (q: Omit<Quotation, "id" | "createdAt">) => {
+    const created = await raiseQuotationMutation.mutateAsync(q);
+    return { id: created.id, quotationNumber: created.quotationNumber };
   };
   const assignQuotationFinishing = (quotationId: string, sareeIds: string[], staff: { id: string; name: string }, assignedBy: string) =>
     assignQuotationFinishingMutation.mutate({ quotationId, sareeIds, staff, assignedBy });
   const receiveQuotationSarees = (quotationId: string, sareeIds: string[], receivedBy: string) =>
     receiveQuotationSareesMutation.mutate({ quotationId, sareeIds, receivedBy });
-  const markQuotationDispatched = (quotationId: string, _dispatchId: string) => markQuotationDispatchedMutation.mutate(quotationId);
+  const markQuotationDispatched = (quotationId: string) => markQuotationDispatchedMutation.mutate(quotationId);
   const deleteDispatch = (id: string, actorId: string) => deleteDispatchMutation.mutate({ id, actorId });
 
   return (

@@ -21,7 +21,17 @@ interface PaginatedResponse<T> {
   pageSize: number;
 }
 
+export interface CreateNotificationPayload {
+  targetType: "USER" | "ROLE";
+  userId?: string;
+  role?: "ADMIN" | "SUPERADMIN" | "WORKER" | "WEAVER" | "SHOP" | "ACCOUNTANT";
+  type: string;
+  payload?: Record<string, unknown>;
+}
+
 export const notificationsApi = {
+  create: (payload: CreateNotificationPayload) =>
+    apiClient.post<BackendNotification>("/notifications", payload),
   list: (params: { role?: string; userId?: string; pageSize?: number } = {}) => {
     const query = new URLSearchParams();
     query.set("pageSize", String(params.pageSize ?? 100));

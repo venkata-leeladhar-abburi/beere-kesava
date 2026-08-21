@@ -287,25 +287,23 @@ export function AddUserForm({
 
               <div style={{ height: 1, background: T.borderDef, margin: "24px 0" }} />
 
-              <div className="max-md:hidden" style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                <Button size="lg" variant="primary" iconLeft={UserPlus} onClick={handleSubmit} disabled={!canSubmit}>
+              {!canSubmit && (
+                <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 12 }}>
+                  Fill in all required fields to continue
+                </div>
+              )}
+
+              <div className="flex flex-col-reverse sm:flex-row gap-3 items-stretch sm:items-center">
+                <Button size="lg" variant="primary" iconLeft={UserPlus} onClick={handleSubmit} disabled={!canSubmit} className="w-full sm:w-auto justify-center">
                   Create User Account
                 </Button>
-                <Button size="lg" variant="secondary" iconLeft={X} onClick={handleCancel}>
+                <Button size="lg" variant="secondary" iconLeft={X} onClick={handleCancel} className="w-full sm:w-auto justify-center">
                   Cancel
                 </Button>
-                {!canSubmit && <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginLeft: 4 }}>Fill in all required fields to continue</span>}
               </div>
-              {!canSubmit && <div className="md:hidden" style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Fill in all required fields to continue</div>}
             </motion.div>
           )}
         </AnimatePresence>
-        {!showSuccess && (
-          <MobileFormActionBar
-            primary={{ label: "Create User Account", onClick: handleSubmit, disabled: !canSubmit, icon: UserPlus }}
-            secondary={{ label: "Cancel", onClick: handleCancel, icon: X }}
-          />
-        )}
     </SectionCard>
   );
 }

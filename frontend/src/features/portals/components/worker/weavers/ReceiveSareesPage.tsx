@@ -334,12 +334,7 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
                     className="h-12 text-sm" />
                 </div>
 
-                <div style={{ marginBottom: 10 }}>
-                  <FieldLabel>Selling Price (₹) — optional</FieldLabel>
-                  <Input type="number" value={sareePrice} onChange={e => setSareePrice(e.target.value)}
-                    placeholder="Leave blank to use the saree type's standard rate"
-                    className="h-12 text-sm font-mono" />
-                </div>
+
 
                 <div className="grid-cols-1 md:grid-cols-2" style={{ display: "grid", gap: 10, marginBottom: 10 }}>
                   <div>

@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { IsEnum, IsNumber, IsOptional, IsString, IsUUID, Min, ValidateIf } from "class-validator";
+import { IsEnum, IsNumber, IsOptional, IsString, IsUUID, Min } from "class-validator";
 import { SalesChannel } from "../../generated/prisma/client";
 
 export class CreateSaleDto {
@@ -15,9 +15,8 @@ export class CreateSaleDto {
   @IsEnum(SalesChannel)
   channel!: SalesChannel;
 
-  @ValidateIf((o: CreateSaleDto) => o.channel === "WHOLESALE")
   @IsUUID()
-  customerId?: string;
+  customerId!: string;
 
   @Type(() => Number)
   @IsNumber()

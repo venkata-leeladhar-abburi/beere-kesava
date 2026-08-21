@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { LayoutGrid, List } from "lucide-react";
 import { T, F } from "../../theme";
 import { UnifiedSaree } from "@/features/customers";
 import { AgePill, Empty, Pill, inr } from "./primitives";
@@ -7,6 +8,7 @@ import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { useDataAccess } from "@/shared/ui/domain";
 
 export type TableMode = "outstanding" | "sold" | "produced";
+export type DisplayMode = "card" | "table";
 
 // ── Who made / supplied a saree, for tables that mix origins ─────────────────
 export function sareeOriginName(s: UnifiedSaree): string {
@@ -30,9 +32,95 @@ function StatusChip({ s }: { s: UnifiedSaree }) {
   return <Pill label={cfg.l} color={cfg.c} bg={`${cfg.c}1A`} />;
 }
 
+// ── Saree Card View Item ─────────────────────────────────────────────────────
+function SareeCardItem({ s, mode }: { s: UnifiedSaree; mode: TableMode }) {
+  const canSeeCost = useDataAccess("cost");
+
+  return (
+    <div style={{
+      background: "#FFFFFF",
+      border: "1px solid rgba(110,15,45,0.12)",
+      borderRadius: 16,
+      padding: "16px",
+      display: "flex",
+      flexDirection: "column",
+      gap: 10,
+      boxShadow: "0 2px 8px rgba(0,0,0,0.02)",
+    }}>
+      {/* Code & Batch */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+        <span style={{
+          fontFamily: "var(--font-mono)",
+          fontSize: 13,
+          fontWeight: 700,
+          background: "rgba(110,15,45,0.06)",
+          color: T.royalBurgundy,
+          padding: "4px 10px",
+          borderRadius: 8,
+          letterSpacing: "0.5px",
+        }}>
+          {s.sareeId}
+        </span>
+        {s.batchId && (
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: T.taupe }}>
+            Batch: {s.batchId}
+          </span>
+        )}
+      </div>
+
+      {/* Saree Type */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginTop: 2 }}>
+        <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, flexShrink: 0 }}>Saree Type</span>
+        <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, textAlign: "right" }}>
+          {(s.sareeTypeCode !== "EX-000" ? `${s.sareeTypeCode} · ` : "") + s.sareeTypeName}
+        </span>
+      </div>
+
+      {/* Days in stock / Status / Sold On */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+        <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+          {mode === "sold" ? "Sold Date" : mode === "produced" ? "Status" : "Days In Stock"}
+        </span>
+        {mode === "outstanding" ? (
+          <AgePill days={s.ageDays} />
+        ) : mode === "produced" ? (
+          <StatusChip s={s} />
+        ) : (
+          <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{s.sale?.date || "—"}</span>
+        )}
+      </div>
+
+      {/* QC Date */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+        <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>QC Date</span>
+        <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{s.qcDate || "—"}</span>
+      </div>
+
+      {/* Cost & Sell Price Footer */}
+      <div style={{
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+        borderTop: "1px solid rgba(110,15,45,0.08)", paddingTop: 10, marginTop: 4,
+      }}>
+        <div>
+          <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, textTransform: "uppercase" }}>Cost Price</div>
+          <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.taupe }}>{canSeeCost ? inr(s.costPrice) : "••••"}</div>
+        </div>
+        <div style={{ textAlign: "right" }}>
+          <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, textTransform: "uppercase" }}>
+            {mode === "sold" ? "Sold Amount" : "Sell Price"}
+          </div>
+          <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: mode === "sold" ? T.green : T.royalBurgundy }}>
+            {mode === "sold" ? inr(s.sale?.amount || 0) : inr(s.finalAmount)}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Saree detail rows (shared by weaver / loom / batch / purchase drilldowns) ──
-export function SareeDetailTable({ sarees, mode = "outstanding", showReturn = false, showBatch = false, showSource = false }: {
-  sarees: UnifiedSaree[]; mode?: TableMode; showReturn?: boolean; showBatch?: boolean; showSource?: boolean;
+export function SareeDetailTable({ sarees, mode = "outstanding", showReturn = false, showBatch = false, showSource = false, displayMode = "card" }: {
+  sarees: UnifiedSaree[]; mode?: TableMode; showReturn?: boolean; showBatch?: boolean; showSource?: boolean; displayMode?: DisplayMode;
 }) {
   const canSeeCost = useDataAccess("cost");
 
@@ -81,13 +169,27 @@ export function SareeDetailTable({ sarees, mode = "outstanding", showReturn = fa
   ];
 
   return (
-    <DataTable<UnifiedSaree>
-      responsive
-      columns={columns}
-      data={sarees}
-      getRowId={s => s.sareeId}
-      caption="Saree detail table"
-    />
+    <>
+      {/* Mobile Card View (shown when displayMode === 'card' on mobile screens) */}
+      <div className={`grid grid-cols-1 gap-3.5 ${displayMode === "card" ? "block md:hidden" : "hidden"}`}>
+        {sarees.map(s => (
+          <SareeCardItem key={s.sareeId} s={s} mode={mode} />
+        ))}
+      </div>
+
+      {/* Table View (always shown on desktop, and on mobile when displayMode === 'table') */}
+      <div className={`w-full overflow-x-auto section-nav-scroll border border-[#E8DCC4] rounded-xl bg-white p-2 ${displayMode === "table" ? "block" : "hidden md:block"}`}>
+        <div className="min-w-[800px]">
+          <DataTable<UnifiedSaree>
+            responsive={false}
+            columns={columns}
+            data={sarees}
+            getRowId={s => s.sareeId}
+            caption="Saree detail table"
+          />
+        </div>
+      </div>
+    </>
   );
 }
 
@@ -97,6 +199,8 @@ export function DrilldownTabs({ produced, sold, outstanding, showBatch = false, 
   showBatch?: boolean; showSource?: boolean; producedLabel?: string;
 }) {
   const [view, setView] = useState<TableMode>("outstanding");
+  const [displayMode, setDisplayMode] = useState<DisplayMode>("card");
+
   const tabs: { key: TableMode; label: string; rows: UnifiedSaree[]; color: string }[] = [
     { key: "produced",    label: producedLabel,  rows: produced,    color: T.luxuryBrown },
     { key: "sold",        label: "Sold",         rows: sold,        color: T.green },
@@ -106,27 +210,57 @@ export function DrilldownTabs({ produced, sold, outstanding, showBatch = false, 
 
   return (
     <div>
-      <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
-        {tabs.map(t => {
-          const on = view === t.key;
-          return (
-            <div key={t.key} style={{ "--tab-color": t.color } as React.CSSProperties}>
-              <Button variant={on ? "primary" : "secondary"} size="sm" onClick={() => setView(t.key)}
-                className={on
-                  ? "rounded-full border-none bg-[var(--tab-color)] text-[#FFFDF9]"
-                  : "rounded-full border-[1.5px] border-[var(--border-default)] bg-white text-[var(--text-tertiary)]"}>
-                {t.label}
-                <span style={{
-                  fontFamily: F.ui, fontSize: 12, fontWeight: 700, padding: "1px 7px", borderRadius: 99,
-                  background: on ? "rgba(255,255,255,0.22)" : "rgba(110,15,45,0.07)",
-                  color: on ? "#FFFDF9" : t.color,
-                }}>{t.rows.length}</span>
-              </Button>
-            </div>
-          );
-        })}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 14, flexWrap: "wrap" }}>
+        {/* Left Filter Pills */}
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {tabs.map(t => {
+            const on = view === t.key;
+            return (
+              <div key={t.key} style={{ "--tab-color": t.color } as React.CSSProperties}>
+                <Button variant={on ? "primary" : "secondary"} size="sm" onClick={() => setView(t.key)}
+                  className={on
+                    ? "rounded-full border-none bg-[var(--tab-color)] text-[#FFFDF9]"
+                    : "rounded-full border-[1.5px] border-[var(--border-default)] bg-white text-[var(--text-tertiary)]"}>
+                  {t.label}
+                  <span style={{
+                    fontFamily: F.ui, fontSize: 12, fontWeight: 700, padding: "1px 7px", borderRadius: 99,
+                    background: on ? "rgba(255,255,255,0.22)" : "rgba(110,15,45,0.07)",
+                    color: on ? "#FFFDF9" : t.color,
+                  }}>{t.rows.length}</span>
+                </Button>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Right View Toggle (Mobile only: flex md:hidden) */}
+        <div className="flex md:hidden items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0">
+          <Button
+            onClick={() => setDisplayMode("card")}
+            variant="ghost"
+            className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
+              displayMode === "card"
+                ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+                : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+            }`}
+          >
+            <LayoutGrid size={14} /> Card View
+          </Button>
+          <Button
+            onClick={() => setDisplayMode("table")}
+            variant="ghost"
+            className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
+              displayMode === "table"
+                ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+                : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+            }`}
+          >
+            <List size={14} /> Table View
+          </Button>
+        </div>
       </div>
-      <SareeDetailTable sarees={active.rows} mode={active.key} showBatch={showBatch} showSource={showSource} />
+
+      <SareeDetailTable sarees={active.rows} mode={active.key} showBatch={showBatch} showSource={showSource} displayMode={displayMode} />
     </div>
   );
 }

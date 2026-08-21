@@ -168,7 +168,7 @@ export function PrintPurchaseModal({ purchase, onClose }: { purchase: Purchase |
   const MatIcon = mc.Icon;
 
   // Same JSX rendered on screen and portaled to #document-print-root via
-  // useDocument() — see the Phase 7 print-isolation note on IssueSlipModal.
+  // useDocument() — see the Phase 7 print-isolation note in 07-DOCUMENTS.md Part C.3.
   const receipt = (
     <div style={{ background: "#FFFFFF", border: `1.5px solid rgba(110,15,45,0.15)`, borderRadius: 16, padding: "24px 26px" }}>
           <div style={{ textAlign: "center", borderBottom: `1.5px solid rgba(110,15,45,0.10)`, paddingBottom: 18, marginBottom: 18 }}>

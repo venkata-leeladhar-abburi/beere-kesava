@@ -38,7 +38,9 @@ export function RaiseQuotationModal({ sarees, available, onConfirm, onClose, ini
   const { firms } = useFirms();
   const { batches } = useBatches();
   const [picked, setPicked] = useState<FinishingReturn[]>(sarees);
-  const [inv, setInv] = useState<InvoiceData>({ invoiceNumber: `QT-2026-${String(Date.now()).slice(-3)}`, invoiceDate: today, prices: {}, applyGst: false, gstPct: "5", firmId: "", paymentDueDate: "", invoiceNotes: "" });
+  // invoiceNumber stays empty here — QuotationsService allocates the real
+  // sequential quotation number on save.
+  const [inv, setInv] = useState<InvoiceData>({ invoiceNumber: "", invoiceDate: today, prices: {}, applyGst: false, gstPct: "5", firmId: "", paymentDueDate: "", invoiceNotes: "" });
 
   const wholesaleCustomersList = useAllWholesaleCustomers();
   const filteredCustomers = wholesaleCustomersList.filter(c => !customerSearch || c.name.toLowerCase().includes(customerSearch.toLowerCase()) || c.city.toLowerCase().includes(customerSearch.toLowerCase()));

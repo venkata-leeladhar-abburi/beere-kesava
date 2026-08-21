@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from "@nestjs/comm
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
 import { DispatchType, Prisma } from "../generated/prisma/client";
+import { IdGeneratorService, businessSegment } from "../id-generator/id-generator.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateDispatchDto } from "./dto/create-dispatch.dto";
 import { ListDispatchQueryDto } from "./dto/list-dispatch-query.dto";
@@ -17,11 +18,13 @@ export class DispatchService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditLog: AuditLogService,
+    private readonly idGenerator: IdGeneratorService,
   ) {}
 
   async create(dto: CreateDispatchDto) {
+    let customer: { code: string | null; name: string } | null = null;
     if (dto.type === DispatchType.WHOLESALE && dto.customerId) {
-      const customer = await this.prisma.customer.findUnique({
+      customer = await this.prisma.customer.findUnique({
         where: { id: dto.customerId },
       });
       if (!customer) {
@@ -50,6 +53,20 @@ export class DispatchService {
     const gstPct = dto.gstPct ?? 0;
     const grandTotal = totalAmount + (totalAmount * gstPct) / 100;
 
+    // GST invoice numbers must be sequential and collision-free, so they are
+    // allocated here rather than accepted from the client (which previously
+    // sent `INV-2026-<last 3 digits of Date.now()>` — effectively random,
+    // non-monotonic, and colliding for invoices raised in the same second).
+    // Scoped per customer, matching the real Invoice.code format
+    // (InvoicesService.create) — raiseInvoice is a wholesale-only field (see
+    // CreateDispatchDto), so a customer is always resolved by this point.
+    if (dto.raiseInvoice && !customer) {
+      throw new BadRequestException("raiseInvoice requires a wholesale customerId");
+    }
+    const invoiceNumber = dto.raiseInvoice
+      ? await this.idGenerator.nextScoped("INV", customer!.code ?? businessSegment(customer!.name, "Customer"))
+      : undefined;
+
     const created = await this.prisma.dispatchRecord.create({
       data: {
         type: dto.type,
@@ -58,8 +75,8 @@ export class DispatchService {
         vehicleNumber: dto.vehicleNumber,
         driverName: dto.driverName,
         customerId: dto.customerId,
-        invoiceNumber: dto.invoiceNumber,
-        invoiceDate: dto.invoiceNumber ? new Date() : undefined,
+        invoiceNumber,
+        invoiceDate: invoiceNumber ? new Date() : undefined,
         pricePerSaree: dto.pricePerSaree,
         totalAmount,
         gstPct: dto.gstPct,
@@ -90,7 +107,7 @@ export class DispatchService {
       action: `Dispatched ${dto.sareeIds.length} saree(s) (${dto.type})`,
       entityType: "DispatchRecord",
       entityId: created.id,
-      recordLabel: dto.lrNumber ?? dto.invoiceNumber ?? created.id,
+      recordLabel: dto.lrNumber ?? invoiceNumber ?? created.id,
     });
 
     return this.findOne(created.id);

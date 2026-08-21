@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { CheckSquare, Square, CheckCircle2, ArrowDownToLine, Clock, X } from "lucide-react";
 import { C, F, card } from "../tokens";
 import { useFinishing } from "@/features/finishing";
-import { EASE, WORKER_NAME, SectionHeader, ScanBarBtn, useScanSim, Toast } from "./shared";
+import { EASE, WORKER_NAME, SectionHeader, ScanBar, useScan, Toast } from "./shared";
 import { VerificationModal, VerifData } from "./VerificationModal";
 import { Button, IconButton } from "../../../../../shared/ui/primitives";
 
@@ -20,7 +20,7 @@ export function SectionB({ isMobile }: { isMobile?: boolean }) {
   const awaiting = useMemo(() => assignments.filter(a => a.status === "awaiting-return"), [assignments]);
   const unselectedIds = awaiting.filter(a => !selected.has(a.id)).map(a => a.sareeId);
   // Scan by saree ID → find the assignment
-  const { scanning, scanMsg, startScan } = useScanSim(unselectedIds, sareeId => {
+  const { scanMsg, scanValue, setScanValue, submitScan } = useScan(unselectedIds, sareeId => {
     const match = awaiting.find(a => a.sareeId === sareeId);
     if (match) setSelected(prev => { const next = new Set(prev); next.add(match.id); return next; });
   });
@@ -80,7 +80,7 @@ export function SectionB({ isMobile }: { isMobile?: boolean }) {
 
       {/* Sub-header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, gap: 8 }}>
-        <ScanBarBtn label={scanning ? "Scanning…" : "Scan Barcode"} onClick={startScan} />
+        <ScanBar value={scanValue} onChange={setScanValue} onSubmit={submitScan} />
         {awaiting.length > 0 && (
           <Button variant="link" onClick={toggleAll} className="gap-1.5 p-0 px-1.5 py-1 text-xs text-[#69635E]">
             {allChecked ? <CheckSquare size={15} color={C.burg} /> : <Square size={15} color={C.muted} />}

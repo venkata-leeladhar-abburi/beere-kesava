@@ -2,7 +2,7 @@ export interface Vendor {
   id: string; code?: string; name: string; initials: string; contactName: string;
   phone: string; whatsapp?: string; city: string; state: string;
   address: string; gstCode: string; type: string; terms: string;
-  bankName?: string; accountNo?: string; notes?: string; visitingCard?: string;
+  bankName?: string; accountNo?: string; ifscCode?: string; notes?: string; visitingCard?: string;
   // The overloaded-field pattern design-system/06-DOMAIN.md's audit calls out
   // (Part A.3/D.1) — mixes PERSON_STATUS ("active"/"inactive") with a payment
   // concept ("overdue"). Left as one union rather than split into two typed
@@ -18,7 +18,7 @@ export interface PurchaseTxn { vendorId: string; date: string; amount: number; m
 
 // PAYMENT_STATUS values (lib/domain/status.ts), left untyped: VendorProfile.tsx
 // (out of scope for this pass) keys its own status config off these exact
-// literals — see data.ts's `buildVendorLedger` for where they're produced.
+// literals, produced by the vendor bill/payment API mappers.
 export interface VendorBill {
   id: string; invoiceNo: string; date: string; dueDate: string;
   amount: number; paid: number; balance: number;

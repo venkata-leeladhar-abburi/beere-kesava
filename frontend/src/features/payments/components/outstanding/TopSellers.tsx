@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { motion } from "motion/react";
-import { ChevronDown, ChevronUp, Factory, Truck, Users, type LucideIcon } from "lucide-react";
+import { ChevronDown, ChevronUp, Factory, Truck, Users, LayoutGrid, List, type LucideIcon } from "lucide-react";
 import { T, F } from "../../theme";
 import { UnifiedSaree, SellerRank, rankSellers } from "@/features/customers";
 import { Card, ExportBtn, SectionCard, exportCsv, inr } from "./primitives";
@@ -13,6 +13,8 @@ const RANK_PAGE = 5;
 function RankTable({ title, sub, ranks, unitLabel, icon }: { title: string; sub: string; ranks: SellerRank[]; unitLabel: string; icon: LucideIcon }) {
   const max = Math.max(1, ...ranks.map(r => r.sold));
   const [shown, setShown] = useState(RANK_PAGE);
+  const [viewMode, setViewMode] = useState<"card" | "table">("card");
+
   const visible = ranks.slice(0, shown);
   const remaining = ranks.length - visible.length;
 
@@ -60,18 +62,113 @@ function RankTable({ title, sub, ranks, unitLabel, icon }: { title: string; sub:
       icon={icon}
       title={title}
       subtitle={sub}
-      actions={<ExportBtn onClick={() => exportCsv(`${title.toLowerCase().replace(/[^a-z]+/g, "-")}.csv`,
-        [[unitLabel, "Reference", "Produced", "Sold", "Retail", "Wholesale", "Returned", "Outstanding", "Sell-through %", "Net Revenue"],
-         ...ranks.map(r => [r.name, r.sub, r.produced, r.sold, r.retail, r.wholesale, r.returned, r.outstanding, r.sellThroughPct, r.revenue])])} />}
+      actions={
+        <ExportBtn onClick={() => exportCsv(`${title.toLowerCase().replace(/[^a-z]+/g, "-")}.csv`,
+          [[unitLabel, "Reference", "Produced", "Sold", "Retail", "Wholesale", "Returned", "Outstanding", "Sell-through %", "Net Revenue"],
+           ...ranks.map(r => [r.name, r.sub, r.produced, r.sold, r.retail, r.wholesale, r.returned, r.outstanding, r.sellThroughPct, r.revenue])])} />
+      }
     >
-      <DataTable
-        responsive
-        columns={columns}
-        data={visible}
-        getRowId={r => r.key}
-        caption={`${title} table`}
-        emptyTitle={`No ${unitLabel.toLowerCase()} data yet`}
-      />
+      {/* Mobile View Toggle (placed just below the header section) */}
+      <div className="flex md:hidden justify-end mb-3">
+        <div className="flex items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0">
+          <Button
+            onClick={() => setViewMode("card")}
+            variant="ghost"
+            className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
+              viewMode === "card"
+                ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+                : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+            }`}
+          >
+            <LayoutGrid size={14} /> Card View
+          </Button>
+          <Button
+            onClick={() => setViewMode("table")}
+            variant="ghost"
+            className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
+              viewMode === "table"
+                ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+                : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+            }`}
+          >
+            <List size={14} /> Table View
+          </Button>
+        </div>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className={`grid grid-cols-1 gap-3.5 ${viewMode === "card" ? "block md:hidden" : "hidden"}`}>
+        {visible.map((r, idx) => (
+          <div key={r.key} style={{ background: "#FFFFFF", border: "1px solid rgba(110,15,45,0.12)", borderRadius: 16, padding: "16px", display: "flex", flexDirection: "column", gap: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.02)" }}>
+            {/* Header: Rank + Name + Reference */}
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+              <div style={{
+                width: 32, height: 32, borderRadius: "50%",
+                background: idx < 3 ? "rgba(200,155,71,0.15)" : "rgba(110,15,45,0.06)",
+                color: idx < 3 ? T.antiqueGold : T.taupe,
+                fontFamily: F.display, fontSize: 14, fontWeight: 700,
+                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+              }}>
+                #{idx + 1}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{r.name}</div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{r.sub}</div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, textTransform: "uppercase" }}>Net Revenue</div>
+                <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.royalBurgundy }}>{inr(r.revenue)}</div>
+              </div>
+            </div>
+
+            {/* Sold Progress Bar */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, textTransform: "uppercase", width: 36 }}>Sold</span>
+              <div style={{ flex: 1, height: 7, borderRadius: 99, background: "rgba(110,15,45,0.08)", overflow: "hidden" }}>
+                <motion.div initial={{ width: 0 }} animate={{ width: `${(r.sold / max) * 100}%` }} transition={{ duration: 0.6 }}
+                  style={{ height: "100%", borderRadius: 99, background: `linear-gradient(90deg, ${T.royalBurgundy}, ${T.antiqueGold})` }} />
+              </div>
+              <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.royalBurgundy, minWidth: 22 }}>{r.sold}</span>
+            </div>
+
+            <div style={{ width: "100%", height: 1, background: "rgba(110,15,45,0.08)" }} />
+
+            {/* Metrics Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              <div style={{ background: "#F6F4EF", borderRadius: 12, padding: "8px 10px", textAlign: "center" }}>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 700, color: T.taupe, letterSpacing: "0.7px", textTransform: "uppercase", marginBottom: 2 }}>PRODUCED</div>
+                <div style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: T.luxuryBrown }}>{r.produced}</div>
+              </div>
+              <div style={{ background: "rgba(30,102,64,0.08)", borderRadius: 12, padding: "8px 10px", textAlign: "center" }}>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 700, color: T.green, letterSpacing: "0.7px", textTransform: "uppercase", marginBottom: 2 }}>SOLD</div>
+                <div style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: T.green }}>{r.sold}</div>
+              </div>
+              <div style={{ background: "rgba(192,57,43,0.06)", borderRadius: 12, padding: "8px 10px", textAlign: "center" }}>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 700, color: T.crimson, letterSpacing: "0.7px", textTransform: "uppercase", marginBottom: 2 }}>OUTSTANDING</div>
+                <div style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: T.orange }}>{r.outstanding}</div>
+              </div>
+              <div style={{ background: "rgba(110,15,45,0.06)", borderRadius: 12, padding: "8px 10px", textAlign: "center" }}>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 700, color: T.royalBurgundy, letterSpacing: "0.7px", textTransform: "uppercase", marginBottom: 2 }}>SELL-THROUGH</div>
+                <div style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: r.sellThroughPct >= 60 ? T.green : r.sellThroughPct >= 35 ? T.antiqueGold : T.crimson }}>{r.sellThroughPct}%</div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop Table View & Mobile Table Mode */}
+      <div className={`w-full overflow-x-auto section-nav-scroll border border-[#E8DCC4] rounded-xl bg-white p-2 ${viewMode === "table" ? "block" : "hidden md:block"}`}>
+        <div className="min-w-[750px]">
+          <DataTable
+            responsive={false}
+            columns={columns}
+            data={visible}
+            getRowId={r => r.key}
+            caption={`${title} table`}
+            emptyTitle={`No ${unitLabel.toLowerCase()} data yet`}
+          />
+        </div>
+      </div>
 
       {/* Load more / show less */}
       {ranks.length > RANK_PAGE && (

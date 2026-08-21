@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { PaginatedResult } from "../common/pagination";
-import { Prisma, QuotationSareeStatus, QuotationStatus } from "../generated/prisma/client";
-import { IdGeneratorService } from "../id-generator/id-generator.service";
+import { CustomerType, Prisma, QuotationSareeStatus, QuotationStatus } from "../generated/prisma/client";
+import { IdGeneratorService, businessSegment } from "../id-generator/id-generator.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateQuotationDto } from "./dto/create-quotation.dto";
 import { ListQuotationsQueryDto } from "./dto/list-quotations-query.dto";
@@ -29,11 +29,12 @@ export class QuotationsService {
     if (!raisedBy) {
       throw new NotFoundException(`User ${dto.raisedById} not found`);
     }
-    if (dto.customerId) {
-      const customer = await this.prisma.customer.findUnique({ where: { id: dto.customerId } });
-      if (!customer) {
-        throw new NotFoundException(`Customer ${dto.customerId} not found`);
-      }
+    const customer = await this.prisma.customer.findUnique({ where: { id: dto.customerId } });
+    if (!customer) {
+      throw new NotFoundException(`Customer ${dto.customerId} not found`);
+    }
+    if (customer.type !== CustomerType.WHOLESALE) {
+      throw new BadRequestException(`Quotations can only be raised for wholesale customers (${customer.name} is retail)`);
     }
 
     // A quotation can only be raised for sarees that have actually passed
@@ -55,7 +56,10 @@ export class QuotationsService {
     const gstPct = dto.applyGst ? (dto.gstPct ?? 0) : 0;
     const grandTotal = subtotal + (subtotal * gstPct) / 100;
 
-    const quotationNumber = await this.idGenerator.nextFormatted(QUOTATION_ID_PREFIX);
+    const quotationNumber = await this.idGenerator.nextScoped(
+      QUOTATION_ID_PREFIX,
+      customer.code ?? businessSegment(customer.name, "Customer"),
+    );
 
     const quotation = await this.prisma.quotation.create({
       data: {

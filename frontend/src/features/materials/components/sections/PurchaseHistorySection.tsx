@@ -1,7 +1,7 @@
 import React, { useContext, useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PieChart, Pie, Cell } from "recharts";
-import { Layers, Tag, Sparkles, Calculator, Users, IndianRupee, Download, History } from "lucide-react";
+import { Layers, Tag, Sparkles, Calculator, Users, IndianRupee, Download, History, LayoutGrid, List } from "lucide-react";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER } from "../../../../shared/ui/DateFilterBar";
 import { T, F, MobileCtx } from "../theme";
 import { MAT_TAG } from "../materialConfig";
@@ -10,7 +10,7 @@ import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
 import { purchaseOrdersApi } from "../../../../shared/api/purchase-orders";
 import { vendorsApi } from "../../../../shared/api/vendors";
 import { vendorPaymentsApi } from "../../../../shared/api/payments";
-import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { DataTable, exportTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Button } from "../../../../shared/ui/primitives";
 import { jariToReels } from "../../../../shared/lib/weightUnits";
@@ -29,9 +29,10 @@ function formatCurrency(n: number | string) {
   return formatMoney(rupees(val));
 }
 
-export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport: () => void }) {
+export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport: (exporter: (format: "xlsx" | "csv") => Promise<void>) => void }) {
   const { isMobile, px } = useContext(MobileCtx);
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const [vendorViewMode, setVendorViewMode] = useState<"card" | "table">("card");
 
   const { data: rawGrns } = useQuery({
     queryKey: ["grn-receipts"],
@@ -318,13 +319,23 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
       title="Purchase History From All Vendors"
       subtitle="Everything ever purchased and received — from the day this system was started until today. Filter by a specific date range below."
       actions={
-        <Button onClick={onDownloadReport} variant="secondary" size="sm" iconLeft={Download}>
+        <Button
+          onClick={() => onDownloadReport(format => exportTable({
+            columns: vendorColumns,
+            rows: stats.vendorRows,
+            filename: "purchase-history",
+            format,
+          }))}
+          variant="secondary"
+          size="sm"
+          iconLeft={Download}
+        >
           Download Report
         </Button>
       }
     >
       <FadeUp>
-        <div style={{ marginBottom: 24 }}>
+        <div style={{ marginBottom: 16 }}>
           <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
         </div>
       </FadeUp>
@@ -360,13 +371,39 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
 
       <FadeUp>
         <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, boxShadow: "0 2px 16px rgba(74,6,27,0.06)", overflow: "hidden", marginBottom: 24 }}>
-          <div style={{ padding: "22px 26px 16px", borderBottom: `1px solid rgba(110,15,45,0.07)` }}>
-            <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 20, color: T.luxuryBrown, marginBottom: 6 }}>How Much Was Bought From Each Vendor</div>
-            <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, lineHeight: 1.55 }}>Each vendor listed separately — what material they supplied, how much, and what it cost in total.</div>
+          <div style={{ padding: "22px 26px 16px", borderBottom: `1px solid rgba(110,15,45,0.07)` }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 20, color: T.luxuryBrown, marginBottom: 6 }}>How Much Was Bought From Each Vendor</div>
+              <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, lineHeight: 1.55 }}>Each vendor listed separately — what material they supplied, how much, and what it cost in total.</div>
+            </div>
+            <div className="flex md:hidden items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0 self-start sm:self-auto">
+              <Button
+                onClick={() => setVendorViewMode("card")}
+                variant="ghost"
+                className={`h-auto rounded-none gap-1.5 py-1.5 px-2.5 text-[12px] font-bold ${
+                  vendorViewMode === "card"
+                    ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+                    : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+                }`}
+              >
+                <LayoutGrid size={14} /> Card View
+              </Button>
+              <Button
+                onClick={() => setVendorViewMode("table")}
+                variant="ghost"
+                className={`h-auto rounded-none gap-1.5 py-1.5 px-2.5 text-[12px] font-bold ${
+                  vendorViewMode === "table"
+                    ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+                    : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+                }`}
+              >
+                <List size={14} /> Table View
+              </Button>
+            </div>
           </div>
           <div className="overflow-x-auto w-full">
             <DataTable
-              responsive
+              responsive={vendorViewMode === "card"}
               columns={vendorColumns}
               data={stats.vendorRows}
               getRowId={v => v.name}

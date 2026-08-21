@@ -87,7 +87,13 @@ export function ScheduledReportsSection() {
         title="Scheduled Reports — Automatic Delivery"
         subtitle="These reports are automatically generated and sent to admin on WhatsApp at the scheduled time. No manual action needed."
         actions={
-          <Button variant="secondary" size="sm" iconLeft={Plus} onClick={() => setShowForm(!showForm)} className="bg-white/10 text-[#FFFDF9] border-white/20">
+          <Button
+            variant="ghost"
+            size="sm"
+            iconLeft={Plus}
+            onClick={() => setShowForm(!showForm)}
+            className="bg-[rgba(255,255,255,0.14)] hover:bg-[rgba(255,255,255,0.25)] text-[#FFFDF9] hover:text-[#FFFDF9] border border-[rgba(255,255,255,0.25)] rounded-xl font-bold shadow-sm transition-all"
+          >
             Add New Schedule
           </Button>
         }

@@ -170,8 +170,10 @@ export function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }
   }
   return (
     <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 4px 18px rgba(74,6,27,0.06)" }}>
-      <div style={{ overflowX: "auto" }}>
-        <DataTable responsive columns={columns} data={visible} getRowId={r => r.id} />
+      <div className="w-full overflow-x-auto section-nav-scroll p-2">
+        <div className="min-w-[850px]">
+          <DataTable responsive={false} columns={columns} data={visible} getRowId={r => r.id} />
+        </div>
       </div>
       {!showAll && (
         <div style={{ padding: "22px 26px", textAlign: "center", borderTop: `1px solid ${T.borderDef}` }}>
@@ -181,16 +183,16 @@ export function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }
     </div>
   );
 }
-export function WeaverDirectory({ view, onSelect, onEdit, onBatches, extraWeavers = [] }: { view: string; onSelect: (w: typeof WEAVERS[0]) => void; onEdit: (w: typeof WEAVERS[0]) => void; onBatches: (w: typeof WEAVERS[0]) => void; extraWeavers?: typeof WEAVERS }) {
+export function WeaverDirectory({ view, onSelect, onEdit, onBatches }: { view: string; onSelect: (w: typeof WEAVERS[0]) => void; onEdit: (w: typeof WEAVERS[0]) => void; onBatches: (w: typeof WEAVERS[0]) => void }) {
   // Build a real-roster lookup map so the table-view "View" button can resolve
   // a clicked row id to a real weaver object (WEAVERS[] is empty mock).
-  const realWeavers = useRealWeavers(extraWeavers);
+  const realWeavers = useRealWeavers();
   const realById = new Map(realWeavers.map(w => [w.id, w]));
 
   return (
     <FadeUp>
-      {view === "card" && <WeaverCardGrid onSelect={onSelect} onEdit={onEdit} onBatches={onBatches} extraWeavers={extraWeavers} />}
-      {view === "list" && <WeaverListView onSelect={onSelect} extraWeavers={extraWeavers} />}
+      {view === "card" && <WeaverCardGrid onSelect={onSelect} onEdit={onEdit} onBatches={onBatches} />}
+      {view === "list" && <WeaverListView onSelect={onSelect} />}
       {view === "table" && (
         <WeaverTableView
           onSelect={id => {

@@ -7,12 +7,12 @@ import { PAYMENT_TERMS, STATES } from "./data";
 import { Button, Field, Input, Textarea, Select, SelectItem, CheckboxField } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
 
-export function AddVendorModal({ onSave, onCancel, nextId }: { onSave: (v: Vendor) => void; onCancel: () => void; nextId: string }) {
+export function AddVendorModal({ onSave, onCancel }: { onSave: (v: Vendor) => void; onCancel: () => void }) {
   const [form, setForm] = useState({
     name: "", contactName: "", phone: "", whatsapp: "",
     city: "", state: "Andhra Pradesh", address: "",
     gstCode: "", types: ["Warp"], terms: "30 days",
-    bankName: "", accountNo: "", notes: "", visitingCard: "",
+    bankName: "", accountNo: "", ifscCode: "", notes: "", visitingCard: "",
     rating: 3,
   });
   const [cardPreview, setCardPreview] = useState<string | null>(null);
@@ -34,11 +34,13 @@ export function AddVendorModal({ onSave, onCancel, nextId }: { onSave: (v: Vendo
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
     const initials = form.name.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase();
     onSave({
-      id: nextId, name: form.name, initials,
+      // Placeholder — VendorsPage.handleSave discards this and keeps the id the
+      // backend assigns on create.
+      id: "", name: form.name, initials,
       contactName: form.contactName, phone: form.phone,
       whatsapp: form.whatsapp, city: form.city, state: form.state,
       address: form.address, gstCode: form.gstCode, type: form.types.join(" / "),
-      terms: form.terms, bankName: form.bankName, accountNo: form.accountNo,
+      terms: form.terms, bankName: form.bankName, accountNo: form.accountNo, ifscCode: form.ifscCode,
       notes: form.notes, visitingCard: cardPreview || undefined,
       status: "active", totalOrders: 0, totalSpend: "0",
       outstanding: "0", lastOrder: "—", rating: form.rating,
@@ -56,7 +58,7 @@ export function AddVendorModal({ onSave, onCancel, nextId }: { onSave: (v: Vendo
             </Dialog.Title>
             <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, margin: 0 }}>Fill in the business and contact details. Payment terms can be set here and changed later.</p>
           </div>
-          <div style={{ padding: "4px 12px", background: T.silkCream, borderRadius: 20, fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, flexShrink: 0 }}>{nextId} will be assigned</div>
+          <div style={{ padding: "4px 12px", background: T.silkCream, borderRadius: 20, fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, flexShrink: 0 }}>ID assigned on save</div>
         </div>
 
         {/* Form Grid */}
@@ -137,9 +139,14 @@ export function AddVendorModal({ onSave, onCancel, nextId }: { onSave: (v: Vendo
               </Field>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
-              <Field label="GST Number" id="gst-number">
-                <Input value={form.gstCode} onChange={e => set("gstCode", e.target.value)} placeholder="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" />
+              <Field label="IFSC Code" id="ifsc-code">
+                <Input value={form.ifscCode} onChange={e => set("ifscCode", e.target.value)} placeholder="IFSC Code" />
               </Field>
+              <Field label="GST Number" id="gst-number">
+                <Input value={form.gstCode} onChange={e => set("gstCode", e.target.value)} placeholder="15-digit GSTIN" />
+              </Field>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
               <Field label="Visiting Card Photo" id="visiting-card-photo">
                 <Input type="file" accept="image/*" onChange={e => {
                   const file = e.target.files?.[0];

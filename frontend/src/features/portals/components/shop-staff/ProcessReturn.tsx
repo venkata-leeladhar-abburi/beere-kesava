@@ -107,6 +107,7 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
   const [wsReason, setWsReason] = useState<string | null>(null);
   const [wsNewId, setWsNewId] = useState("");
   const [wsBarcodeGenerated, setWsBarcodeGenerated] = useState(false);
+  const [wsError, setWsError] = useState<string | null>(null);
 
   const returnReasons = [
     { id: "defective", label: "Defective", sub: "Damaged or faulty item", Icon: AlertTriangle, color: "#C0392B", bg: "rgba(192,57,43,0.08)" },
@@ -281,19 +282,33 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
         canSeePrices={canSeePrices}
         canProceedWsStep1={canProceedWsStep1}
         setReturnType={setReturnType}
+        wsError={wsError}
+        // The piece has no prior record, so this registers the saree from the
+        // details above under the tag id being attached, and books the return
+        // against it — POST /sales/returns/untracked. The plain /sales/returns
+        // endpoint cannot be used here: it requires a saree we already sold.
         onConfirm={async () => {
+          setWsError(null);
           try {
-            await salesApi.createReturn({
-              sareeId: wsNewId || "WS-RET-001",
+            await salesApi.registerReturnedSaree({
+              sareeId: wsNewId.trim(),
+              sourceName: wsVendor.trim(),
               reason: wsReason ?? "Wholesale Return",
-              refundAmount: Number(wsPrice) || 0,
-              restocked: true,
+              weightG: Number(wsWeight) || 0,
+              costPrice: wsPrice ? Number(wsPrice) : undefined,
+              designCode: wsDesign.trim() || undefined,
+              sareeType: wsType || undefined,
+              color: wsColor.trim() || undefined,
             });
             refetch();
+            setStep("success");
           } catch (err) {
-            console.error("Failed to record wholesale return", err);
+            setWsError(
+              err instanceof Error
+                ? `Could not record this return: ${err.message}`
+                : "Could not record this return.",
+            );
           }
-          setStep("success");
         }}
       />
     </div>

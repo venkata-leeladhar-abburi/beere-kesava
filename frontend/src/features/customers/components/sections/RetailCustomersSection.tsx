@@ -171,7 +171,7 @@ export function RetailCustomersSection({
       title="Retail Customers"
       subtitle="Browse all retail buyers from the point of sale, view their purchase history, and register new customers."
       actions={
-        <Button onClick={openAddRetail} variant="secondary" iconLeft={Plus} className="bg-white/10 text-[#FFFDF9] border-white/20">
+        <Button onClick={openAddRetail} variant="secondary" className="bg-white/10 text-[#FFFDF9] border-white/20 hover:bg-white/20 hover:text-white" iconLeft={Plus}>
           Add Retail Customer
         </Button>
       }
@@ -261,23 +261,41 @@ export function RetailCustomersSection({
               <SelectItem value="recent">Sort: Most Recent Visit</SelectItem>
             </Select>
           </div>
-          <div style={{ display: "flex", background: "#FFF", borderRadius: 8, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
-            <IconButton
-              icon={LayoutGrid}
-              label="Card view"
-              variant={retailView === "card" ? "secondary" : "ghost"}
-              size="sm"
+          <div style={{ display: "inline-flex", alignItems: "center", background: "#FFFFFF", border: `1.5px solid ${T.borderDef}`, borderRadius: 999, padding: 3, gap: 2 }}>
+            <button
+              type="button"
               onClick={() => setRetailView("card")}
-              className="rounded-none"
-            />
-            <IconButton
-              icon={AlignJustify}
-              label="List view"
-              variant={retailView === "list" ? "secondary" : "ghost"}
-              size="sm"
+              style={{
+                display: "flex", alignItems: "center", gap: 6, padding: "7px 16px", borderRadius: 999,
+                fontFamily: F.ui, fontSize: 13, fontWeight: 600,
+                background: retailView === "card" ? "#6E0F2D" : "transparent",
+                color: retailView === "card" ? "#FFFFFF" : T.taupe,
+                border: "none",
+                boxShadow: retailView === "card" ? "0 2px 8px rgba(110,15,45,0.25)" : "none",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+              }}
+            >
+              <LayoutGrid size={15} color={retailView === "card" ? "#FFFFFF" : T.taupe} />
+              Card View
+            </button>
+            <button
+              type="button"
               onClick={() => setRetailView("list")}
-              className="rounded-none"
-            />
+              style={{
+                display: "flex", alignItems: "center", gap: 6, padding: "7px 16px", borderRadius: 999,
+                fontFamily: F.ui, fontSize: 13, fontWeight: 600,
+                background: retailView === "list" ? "#6E0F2D" : "transparent",
+                color: retailView === "list" ? "#FFFFFF" : T.taupe,
+                border: "none",
+                boxShadow: retailView === "list" ? "0 2px 8px rgba(110,15,45,0.25)" : "none",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+              }}
+            >
+              <AlignJustify size={15} color={retailView === "list" ? "#FFFFFF" : T.taupe} />
+              Table View
+            </button>
           </div>
         </div>
       </div>
@@ -286,7 +304,7 @@ export function RetailCustomersSection({
       {filteredRetail.length === 0 ? (
         <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: "48px 20px", color: T.taupe, fontFamily: F.ui, fontSize: 14 }}>No retail customers match these filters.</div>
       ) : retailView === "card" ? (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {filteredRetail.map(r => (
             <div key={r.id} style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: 22, boxShadow: "0 2px 12px rgba(74,6,27,0.04)", display: "flex", flexDirection: "column", gap: 14 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -335,13 +353,15 @@ export function RetailCustomersSection({
           ))}
         </div>
       ) : (
-        <div style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
-          <DataTable
-            responsive
-            columns={retailColumns}
-            data={filteredRetail}
-            getRowId={r => r.id}
-          />
+        <div style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}` }} className="w-full overflow-x-auto section-nav-scroll p-2">
+          <div className="min-w-[750px]">
+            <DataTable
+              responsive={false}
+              columns={retailColumns}
+              data={filteredRetail}
+              getRowId={r => r.id}
+            />
+          </div>
         </div>
       )}
     </SectionCard>

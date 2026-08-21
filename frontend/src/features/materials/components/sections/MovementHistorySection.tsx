@@ -11,6 +11,7 @@ import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
 import { materialIssuesApi } from "../../../../shared/api/material-issues";
 import { IconButton, Button } from "../../../../shared/ui/primitives";
 import { EntityCode } from "@/shared/ui/domain";
+import { exportTable, type ColumnDef } from "../../../../shared/ui/data";
 
 function parseKg(quantity: number | string | null | undefined, unit?: string | null): number {
   const q = Number(quantity || 0);
@@ -20,7 +21,25 @@ function parseKg(quantity: number | string | null | undefined, unit?: string | n
   return q;
 }
 
-export function MovementHistorySection({ onDownloadMovementReport }: { onDownloadMovementReport: () => void }) {
+interface MovementEntry {
+  type: "in" | "out";
+  desc: string;
+  time: string;
+  ref: string;
+  qty: number;
+}
+
+// The movement history renders as a timeline rather than a DataTable, so the
+// downloadable report defines its own columns over the same entries.
+const MOVEMENT_EXPORT_COLUMNS: ColumnDef<MovementEntry>[] = [
+  { id: "time", header: "Date", accessor: e => e.time },
+  { id: "direction", header: "Direction", accessor: e => (e.type === "in" ? "Received from vendor" : "Issued out") },
+  { id: "ref", header: "Reference", accessor: e => e.ref, type: "code" },
+  { id: "desc", header: "Details", accessor: e => e.desc },
+  { id: "qty", header: "Quantity (kg)", accessor: e => e.qty },
+];
+
+export function MovementHistorySection({ onDownloadMovementReport }: { onDownloadMovementReport: (exporter: (format: "xlsx" | "csv") => Promise<void>) => void }) {
   const { isMobile, px } = useContext(MobileCtx);
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const queryClient = useQueryClient();
@@ -154,7 +173,17 @@ export function MovementHistorySection({ onDownloadMovementReport }: { onDownloa
       title="Full Movement History — Stock Coming In and Going Out"
       subtitle="Every time material came into the factory from a vendor, or was given out to a weaver — it is recorded here."
       actions={
-        <Button onClick={onDownloadMovementReport} variant="secondary" size="sm" iconLeft={Download}>
+        <Button
+          onClick={() => onDownloadMovementReport(format => exportTable({
+            columns: MOVEMENT_EXPORT_COLUMNS,
+            rows: stats.entries,
+            filename: "movement-history",
+            format,
+          }))}
+          variant="secondary"
+          size="sm"
+          iconLeft={Download}
+        >
           Download Report
         </Button>
       }

@@ -87,19 +87,19 @@ export function ProfitLossReport() {
     {
       id: "label", header: "", accessor: r => r.label,
       cell: (_v, r) => {
-        if (r.kind === "section") return <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: r.color, textTransform: "uppercase", letterSpacing: "1.5px" }}>{r.label}</span>;
-        if (r.kind === "subtotal") return <span style={{ fontFamily: F.ui, fontWeight: 700, color: r.color }}>{r.label}</span>;
-        if (r.kind === "net") return <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: r.color }}>{r.label}</span>;
-        return <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>{r.label}</span>;
+        if (r.kind === "section") return <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, color: r.color, textTransform: "uppercase", letterSpacing: "1px" }}>{r.label}</span>;
+        if (r.kind === "subtotal") return <span style={{ fontFamily: F.ui, fontSize: "clamp(13px, 3.5vw, 15px)", fontWeight: 700, color: r.color }}>{r.label}</span>;
+        if (r.kind === "net") return <span style={{ fontFamily: F.display, fontSize: "clamp(15px, 4vw, 18px)", fontWeight: 700, color: r.color }}>{r.label}</span>;
+        return <span style={{ fontFamily: F.ui, fontSize: "clamp(12px, 3.2vw, 14px)", color: T.taupe }}>{r.label}</span>;
       },
     },
     {
       id: "amount", header: "", type: "currency", align: "end", accessor: r => r.amount,
       cell: (_v, r) => {
         if (r.amount == null) return null;
-        if (r.kind === "subtotal") return <span style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: r.color }}>{inr(r.amount)}</span>;
-        if (r.kind === "net") return <span style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: r.color }}>{inr(r.amount)}</span>;
-        return <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color: r.color }}>{inr(r.amount)}</span>;
+        if (r.kind === "subtotal") return <span style={{ fontFamily: F.display, fontSize: "clamp(15px, 4vw, 20px)", fontWeight: 700, color: r.color }}>{inr(r.amount)}</span>;
+        if (r.kind === "net") return <span style={{ fontFamily: F.display, fontSize: "clamp(17px, 4.5vw, 24px)", fontWeight: 700, color: r.color }}>{inr(r.amount)}</span>;
+        return <span style={{ fontFamily: "var(--font-mono)", fontSize: "clamp(12px, 3.2vw, 14px)", fontWeight: 700, color: r.color }}>{inr(r.amount)}</span>;
       },
     },
   ];
@@ -260,13 +260,53 @@ export function ProfitLossReport() {
             </div>
           )}
 
-          <DataTable
-            columns={ledgerColumns}
-            data={ledgerRows}
-            getRowId={r => r.id}
-            caption="Profit & Loss Summary — All Firms"
-            rowClassName={ledgerRowClassName}
-          />
+          {/* Mobile View: Fitted 100% to screen width where numbers come immediately after text */}
+          <div className="block sm:hidden p-3.5 space-y-2">
+            {ledgerRows.map(r => {
+              if (r.kind === "section") {
+                return (
+                  <div key={r.id} style={{ background: r.bg }} className="px-3 py-1.5 rounded-lg mt-3 mb-1.5">
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: r.color, letterSpacing: "1px" }}>
+                      {r.label}
+                    </span>
+                  </div>
+                );
+              }
+              if (r.kind === "subtotal") {
+                return (
+                  <div key={r.id} style={{ background: r.bg }} className="flex items-center justify-between px-3 py-2.5 rounded-lg my-1">
+                    <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: r.color }}>{r.label}:</span>
+                    <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: r.color }}>{r.amount != null ? inr(r.amount) : "—"}</span>
+                  </div>
+                );
+              }
+              if (r.kind === "net") {
+                return (
+                  <div key={r.id} style={{ background: r.bg }} className="flex items-center justify-between px-3.5 py-3 rounded-xl my-2 border border-[#E8DCC4]">
+                    <span style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: r.color }}>{r.label}:</span>
+                    <span style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: r.color }}>{r.amount != null ? inr(r.amount) : "—"}</span>
+                  </div>
+                );
+              }
+              return (
+                <div key={r.id} className="flex items-center justify-between px-3 py-1.5 border-b border-stone-100/80">
+                  <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{r.label}:</span>
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, color: r.color }}>{r.amount != null ? inr(r.amount) : "—"}</span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Desktop Table View (sm:block hidden) */}
+          <div className="hidden sm:block w-full overflow-hidden">
+            <DataTable
+              columns={ledgerColumns}
+              data={ledgerRows}
+              getRowId={r => r.id}
+              caption="Profit & Loss Summary — All Firms"
+              rowClassName={ledgerRowClassName}
+            />
+          </div>
 
           <DownloadGate>
             <div style={{ padding: "12px 20px", background: "rgba(200,155,71,0.06)", borderTop: `1px solid ${T.borderGold}`, display: "flex", alignItems: "center", gap: 10 }}>
@@ -282,8 +322,10 @@ export function ProfitLossReport() {
       <FadeUp>
         <div style={{ marginTop: 24 }}>
           <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: T.luxuryBrown, marginBottom: 12 }}>Per-Firm Breakdown</div>
-          <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
-            <DataTable columns={perFirmColumns} data={perFirm} getRowId={f => f.name} />
+          <div className="w-full overflow-x-auto section-nav-scroll border border-[#E8DCC4] rounded-xl bg-white p-2">
+            <div className="min-w-[650px]">
+              <DataTable columns={perFirmColumns} data={perFirm} getRowId={f => f.name} />
+            </div>
           </div>
         </div>
       </FadeUp>

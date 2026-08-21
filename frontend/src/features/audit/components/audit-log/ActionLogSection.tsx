@@ -353,7 +353,6 @@ export function ActionLogSection({
               overflowX: "auto",
             }}>
               <DataTable
-                responsive
                 columns={actionColumns}
                 data={entries}
                 getRowId={e => e.id}

@@ -18,6 +18,7 @@ import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
 export function PurchasesTable({
   filtered,
   totalCount,
+  viewMode = "card",
   hoveredRow,
   onView,
   onViewSarees,
@@ -26,6 +27,7 @@ export function PurchasesTable({
 }: {
   filtered: Purchase[];
   totalCount: number;
+  viewMode?: "card" | "table";
   hoveredRow: string | null;
   setHoveredRow: (id: string | null) => void;
   onView: (row: Purchase) => void;
@@ -122,7 +124,7 @@ export function PurchasesTable({
         }}
       >
         <DataTable
-          responsive
+          responsive={viewMode === "card"}
           columns={columns}
           data={filtered}
           getRowId={row => row.id}

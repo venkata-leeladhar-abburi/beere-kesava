@@ -274,7 +274,6 @@ export function LoginHistorySection() {
               overflowX: "auto",
             }}>
               <DataTable
-                responsive
                 columns={columns}
                 data={entries}
                 getRowId={entry => String(entry.id)}

@@ -14,7 +14,7 @@ import { SAOverviewPage } from "./superadmin-dashboard/SAOverviewPage";
 import { UserProfileModal } from "../../../shared/ui/UserProfileModal";
 import {
   RatesPricingPage, DesignLibraryPage, BatchCreationPage, ApprovalsPage, AuditLogPage,
-  LabelSettingsPage, ExternalPurchasesPage, AddUserPage, IssueMaterialPage, ReturnMaterialPage, MaterialsPage,
+  LabelSettingsPage, ExternalPurchasesPage, SupplierReturnsPage, AddUserPage, IssueMaterialPage, ReturnMaterialPage, MaterialsPage,
   WeaversPage, ProductionPage, PaymentsPage, ReportsPage, CustomersPage, VendorsPage,
   SuppliersPage, FactoryLoomPage, FirmsPage, InventoryPage, QcHistoryPage, NotificationsPage,
   WorkerGRN, AllWeaversPage, AllStockPage, AllOrdersPage, ProductionHistoryPage,
@@ -53,6 +53,7 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
   else if (tab === "receive-stock") nav = "ReceiveStock";
   else if (tab === "add-user") nav = "AddUser";
   else if (tab === "external-purchases") nav = "ExternalPurchases";
+  else if (tab === "supplier-returns") nav = "SupplierReturns";
   else if (tab === "batches") nav = "Batches";
   else if (tab === "designs") nav = "Designs";
   else if (tab === "finishing") nav = "Finishing";
@@ -99,6 +100,7 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
       ReceiveStock: "/superadmin/receive-stock",
       AddUser: "/superadmin/add-user",
       ExternalPurchases: "/superadmin/external-purchases",
+      SupplierReturns: "/superadmin/supplier-returns",
       Batches: "/superadmin/batches",
       Designs: "/superadmin/designs",
       Finishing: "/superadmin/finishing",
@@ -141,6 +143,7 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
       case "AddUser": return <AddUserPage />;
       case "LabelSettings": return <LabelSettingsPage />;
       case "ExternalPurchases": return <ExternalPurchasesPage />;
+      case "SupplierReturns": return <SupplierReturnsPage />;
       case "IssueMaterial": return <IssueMaterialPage />;
       case "ReturnMaterial": return <ReturnMaterialPage />;
       case "ReceiveStock": return <WorkerGRN />;

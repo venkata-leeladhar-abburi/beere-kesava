@@ -1,12 +1,12 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
-import { IdGeneratorService } from "../id-generator/id-generator.service";
+import { IdGeneratorService, businessSegment } from "../id-generator/id-generator.service";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { MaterialType } from "../generated/prisma/client";
 import { fromGrams, toGrams } from "../common/weight-units.util";
 
 export interface CreateGrnDto {
-  vendorId?: string;
+  vendorId: string;
   // Which of the company's legal firms this purchase belongs to. Optional —
   // left null shows as unattributed rather than a fabricated firm name.
   firmId?: string;
@@ -45,13 +45,18 @@ export class RawMaterialsService {
 
   async listGrns() {
     const grns = await this.prisma.grnReceipt.findMany({
-      include: { vendor: true, firm: true, items: true },
+      include: { vendor: true, firm: true, items: true, receivedBy: true },
       orderBy: { createdAt: "desc" },
     });
     return { items: grns };
   }
 
   async createGrn(dto: CreateGrnDto) {
+    const vendor = await this.prisma.vendor.findUnique({ where: { id: dto.vendorId } });
+    if (!vendor) {
+      throw new NotFoundException(`Vendor ${dto.vendorId} not found`);
+    }
+
     // Jari is always counted in Reels/Buns, Warp/Resham always by weight —
     // mixing these up would silently corrupt stock totals (see
     // toGrams/fromGrams) and show a nonsense unit ("12 Reels remaining") on
@@ -68,18 +73,19 @@ export class RawMaterialsService {
       }
     }
 
-    const grnId = await this.idGenerator.nextFormatted("GRN-2026");
+    const grnId = await this.idGenerator.nextScoped("GRN", vendor.code ?? businessSegment(vendor.name, "Vendor"));
 
     const grn = await this.prisma.$transaction(async (tx) => {
       const createdGrn = await tx.grnReceipt.create({
         data: {
           id: grnId,
-          vendorId: dto.vendorId || null,
+          vendorId: dto.vendorId,
           firmId: dto.firmId || null,
           supplierName: dto.supplierName,
           invoiceNo: dto.invoiceNo || null,
           invoiceDate: dto.invoiceDate ? new Date(dto.invoiceDate) : null,
           notes: dto.notes || null,
+          receivedById: dto.actorId || null,
           items: {
             create: dto.items.map((item) => ({
               materialType: item.materialType,
@@ -133,7 +139,7 @@ export class RawMaterialsService {
               color: item.color || null,
               unit: item.unit || "KG",
               currentStock: acceptedQuantity,
-              vendorId: dto.vendorId || null,
+              vendorId: dto.vendorId,
             },
           });
         }

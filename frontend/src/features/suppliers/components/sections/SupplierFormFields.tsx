@@ -6,9 +6,8 @@ import React from "react";
 import { Star, X } from "lucide-react";
 import { T } from "../theme";
 import { inp, lbl } from "../common/primitives";
-import { STATES, PAYMENT_TERMS } from "../data";
 import { SupplierFormValues } from "../types";
-import { Field, Input, Select, SelectItem, IconButton } from "../../../../shared/ui/primitives";
+import { Field, Input, IconButton } from "../../../../shared/ui/primitives";
 
 export function SupplierFormFields({
   form, setForm, errors, cardPreview, onCardChange,
@@ -45,9 +44,7 @@ export function SupplierFormFields({
             <Input id="city" value={form.city} onChange={e => set("city", e.target.value)} placeholder="City" />
           </Field>
           <Field label="State" required>
-            <Select value={form.state} onValueChange={v => set("state", v)}>
-              {STATES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-            </Select>
+            <Input id="state" value={form.state} onChange={e => set("state", e.target.value)} placeholder="State" />
           </Field>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
@@ -63,9 +60,7 @@ export function SupplierFormFields({
             </div>
           </div>
           <Field label="Payment Terms" required>
-            <Select value={form.terms} onValueChange={v => set("terms", v)}>
-              {PAYMENT_TERMS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-            </Select>
+            <Input id="payment-terms" value={form.terms} onChange={e => set("terms", e.target.value)} placeholder="e.g. 30 days" />
           </Field>
         </div>
       </div>
@@ -86,10 +81,15 @@ export function SupplierFormFields({
           </Field>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
+          <Field label="IFSC Code">
+            <Input id="ifsc-code" value={form.ifscCode || ""} onChange={e => set("ifscCode", e.target.value)} placeholder="IFSC Code" />
+          </Field>
           <Field label="GST Number">
             <Input id="gst-number" value={form.gstCode} onChange={e => set("gstCode", e.target.value.toUpperCase())} placeholder="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)"
               className="font-mono text-[13px]" />
           </Field>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
           <Field label="Visiting Card Photo" id="visiting-card-photo">
             <Input type="file" accept="image/*" onChange={e => {
               const file = e.target.files?.[0];

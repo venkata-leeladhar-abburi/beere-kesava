@@ -50,13 +50,11 @@ export function LiveFilterBar({
       </div>
 
       {/* ── 4. SEARCH AND FILTER BAR ── */}
-      <div style={{
+      <div className="p-3.5 sm:p-5 md:p-6 mb-6" style={{
         background: "#fff",
         borderRadius: 14,
         border: `1px solid ${T.borderDef}`,
         boxShadow: "0 2px 12px rgba(44,24,16,0.06)",
-        padding: "18px 22px",
-        marginBottom: 24,
       }}>
         {/* Title row */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
@@ -70,7 +68,6 @@ export function LiveFilterBar({
 
         {/* Filter row */}
         <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr]" style={{
-          display: "grid",
           gap: 12,
           marginBottom: 14,
         }}>
@@ -114,15 +111,15 @@ export function LiveFilterBar({
         </div>
 
         {/* Date + period row */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           {/* Period pills */}
-          <div style={{ display: "flex", gap: 6 }}>
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
             {["Today", "This Week", "This Month", "Last 3 Months", "All Time"].map(p => (
               <Button
                 key={p}
                 variant={periodFilter === p ? "primary" : "secondary"}
                 size="sm"
-                className="rounded-full"
+                className="rounded-full text-xs px-2.5 sm:px-3"
                 onClick={() => setPeriodFilter(p)}
               >
                 {p}
@@ -130,11 +127,11 @@ export function LiveFilterBar({
             ))}
           </div>
           {/* Apply / Clear */}
-          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <Button variant="primary" size="sm" iconLeft={Search} className="rounded-full">
+          <div className="flex items-center gap-2.5 shrink-0 self-start sm:self-auto">
+            <Button variant="primary" size="sm" iconLeft={Search} className="rounded-full text-xs">
               Apply Filters
             </Button>
-            <Button variant="ghost" size="sm" iconLeft={X}>
+            <Button variant="ghost" size="sm" iconLeft={X} className="text-xs">
               Clear
             </Button>
           </div>

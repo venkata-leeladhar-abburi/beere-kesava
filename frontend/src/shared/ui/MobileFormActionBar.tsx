@@ -55,19 +55,20 @@ export function MobileFormActionBar({
         right: 0,
         zIndex: "var(--z-sticky)",
         display: "flex",
-        gap: 10,
-        padding: "12px 16px calc(12px + env(safe-area-inset-bottom, 0px))",
+        flexDirection: "column-reverse",
+        gap: 8,
+        padding: "10px 16px calc(10px + env(safe-area-inset-bottom, 0px))",
         background: "var(--surface-overlay, #FFFFFF)",
         borderTop: "1px solid var(--border-default, rgba(0,0,0,0.08))",
         boxShadow: "0 -4px 20px rgba(0,0,0,0.08)",
       }}
     >
       {secondary && (
-        <Button variant="secondary" size="lg" onClick={secondary.onClick} disabled={secondary.disabled} iconLeft={secondary.icon} className="flex-1">
+        <Button variant="secondary" size="md" onClick={secondary.onClick} disabled={secondary.disabled} iconLeft={secondary.icon} className="w-full justify-center">
           {secondary.label}
         </Button>
       )}
-      <Button variant="primary" size="lg" onClick={primary.onClick} disabled={primary.disabled} iconLeft={primary.icon} className="flex-1">
+      <Button variant="primary" size="md" onClick={primary.onClick} disabled={primary.disabled} iconLeft={primary.icon} className="w-full justify-center">
         {primary.label}
       </Button>
     </div>

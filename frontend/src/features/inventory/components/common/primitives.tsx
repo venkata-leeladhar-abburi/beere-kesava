@@ -48,7 +48,7 @@ export function SectionCard({
               <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9", letterSpacing: "-0.2px", lineHeight: 1.2 }}>{title}</div>
               {subtitle && <div style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.70)", marginTop: 4, lineHeight: 1.5 }}>{subtitle}</div>}
             </div>
-            {actions && <div className="flex items-center gap-1.5 sm:gap-2.5 w-full sm:w-auto flex-nowrap min-w-0 pt-0.5">{actions}</div>}
+            {actions && <div className="w-full overflow-x-auto section-nav-scroll pb-0.5 pt-1 flex items-center gap-2 flex-nowrap min-w-0">{actions}</div>}
           </div>
         </div>
       </div>

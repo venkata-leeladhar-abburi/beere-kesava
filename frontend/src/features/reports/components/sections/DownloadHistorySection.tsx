@@ -40,7 +40,11 @@ export function DownloadHistorySection() {
         title="Previously Downloaded Reports"
         subtitle="All reports that were generated and downloaded. Click Download Again to get any previous report without regenerating it."
         actions={
-          <Button variant="secondary" size="sm" className="bg-white/10 text-[#FFFDF9] border-white/20">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="bg-[rgba(255,255,255,0.14)] hover:bg-[rgba(255,255,255,0.25)] text-[#FFFDF9] hover:text-[#FFFDF9] border border-[rgba(255,255,255,0.25)] rounded-xl font-bold shadow-sm transition-all"
+          >
             Clear History
           </Button>
         }

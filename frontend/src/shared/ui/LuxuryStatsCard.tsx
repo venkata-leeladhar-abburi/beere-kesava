@@ -200,117 +200,128 @@ function FeaturedTile({ item }: { item: StatItem }) {
 function DesktopRow({ stats, className = "", style }: LuxuryStatsCardProps) {
   return (
     <div
-      className={`hidden xl:flex ${className}`}
+      className={`hidden xl:flex w-full ${className}`}
       style={{
         background: "linear-gradient(135deg, #4A061B 0%, #2C0913 100%)",
         borderRadius: 24,
         alignItems: "stretch",
         boxShadow: "0 24px 72px rgba(0,0,0,0.35), 0 0 0 1px rgba(200,155,71,0.16)",
-        overflow: "hidden",
         minHeight: 140,
+        overflow: "hidden",
         ...style,
       }}
     >
-      {stats.map((item, i) => (
-        <motion.div
-          key={item.label}
-          whileHover={item.onClick ? { backgroundColor: "rgba(245,232,208,0.06)" } : undefined}
-          onClick={item.onClick}
-          style={{
-            flex: 1,
-            minWidth: 0,
-            padding: "24px 20px",
-            background: item.highlight ? "linear-gradient(135deg, rgba(200,155,71,0.20) 0%, rgba(200,155,71,0.07) 100%)" : "none",
-            borderRight: i < stats.length - 1 ? "1px solid rgba(245,232,208,0.12)" : "none",
-            display: "flex",
-            alignItems: "center",
-            gap: 14,
-            position: "relative",
-            cursor: item.onClick ? "pointer" : "default",
-          }}
-        >
-          {item.highlight && (
-            <div className="gold-bar-shimmer" style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(90deg,#C89B47,#E7C983)" }} />
-          )}
-
-          {/* Left: Icon Box */}
-          <div style={{
-            width: 44,
-            height: 44,
-            borderRadius: 13,
-            background: item.highlight ? "rgba(200,155,71,0.18)" : "rgba(245,232,208,0.08)",
-            border: `1px solid ${item.highlight ? "rgba(200,155,71,0.42)" : "rgba(245,232,208,0.14)"}`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
-          }}>
-            {item.icon}
-          </div>
-
-          {/* Right Column: Heading -> Number -> Subtitle */}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            {/* 1. Heading (Top) */}
-            <div style={{
-              fontFamily: F.ui,
-              fontWeight: 600,
-              fontSize: "clamp(10px, 1.3vw, 12px)",
-              letterSpacing: "1.8px",
-              textTransform: "uppercase",
-              marginBottom: 4,
-              color: item.highlight ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.90)",
-            }}>
-              {item.label}
-            </div>
-
-            {/* 2. Number (Middle) */}
-            <div style={{
-              fontFamily: F.display,
-              fontWeight: 400,
-              fontSize: "clamp(32px, 3.5vw, 48px)",
-              color: item.crimson ? "#F47B72" : item.highlight || item.goldVal ? T.goldLight : "#FFFDF9",
-              lineHeight: 1.0,
-              marginBottom: 4,
-              fontVariantNumeric: "tabular-nums",
-            }}>
-              {item.value}
-            </div>
-
-            {/* 3. Subtitle (Bottom) */}
-            {item.sub && (
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{
-                  fontFamily: F.ui,
-                  fontWeight: 500,
-                  fontSize: "clamp(11px, 1.2vw, 12px)",
-                  color: item.highlight ? "rgba(231,201,131,0.95)" : "rgba(245,232,208,0.70)",
-                  letterSpacing: "0.1px",
-                }}>
-                  {item.sub}
-                </span>
-                {item.highlight && item.onClick && (
-                  <motion.div
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.94 }}
-                    style={{
-                      width: 18,
-                      height: 18,
-                      borderRadius: "50%",
-                      border: "1px solid rgba(200,155,71,0.38)",
-                      background: "rgba(200,155,71,0.10)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <ChevronRight size={10} color={T.goldLight} />
-                  </motion.div>
-                )}
-              </div>
+      {stats.map((item, i) => {
+        const isLongText = typeof item.value === "string" && item.value.length > 6;
+        return (
+          <motion.div
+            key={item.label}
+            whileHover={item.onClick ? { backgroundColor: "rgba(245,232,208,0.06)" } : undefined}
+            onClick={item.onClick}
+            style={{
+              flex: item.highlight || isLongText ? "1.3 1 0px" : "0.85 1 0px",
+              minWidth: 0,
+              padding: "20px 16px",
+              background: item.highlight ? "linear-gradient(135deg, rgba(200,155,71,0.20) 0%, rgba(200,155,71,0.07) 100%)" : "none",
+              borderRight: i < stats.length - 1 ? "1px solid rgba(245,232,208,0.12)" : "none",
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              position: "relative",
+              cursor: item.onClick ? "pointer" : "default",
+            }}
+          >
+            {item.highlight && (
+              <div className="gold-bar-shimmer" style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(90deg,#C89B47,#E7C983)" }} />
             )}
-          </div>
-        </motion.div>
-      ))}
+
+            {/* Left: Icon Box */}
+            <div style={{
+              width: 42,
+              height: 42,
+              borderRadius: 13,
+              background: item.highlight ? "rgba(200,155,71,0.18)" : "rgba(245,232,208,0.08)",
+              border: `1px solid ${item.highlight ? "rgba(200,155,71,0.42)" : "rgba(245,232,208,0.14)"}`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}>
+              {item.icon}
+            </div>
+
+            {/* Right Column: Heading -> Number -> Subtitle */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              {/* 1. Heading (Top) */}
+              <div style={{
+                fontFamily: F.ui,
+                fontWeight: 600,
+                fontSize: "clamp(10px, 1.3vw, 12px)",
+                letterSpacing: "1.4px",
+                textTransform: "uppercase",
+                marginBottom: 4,
+                whiteSpace: "normal",
+                wordBreak: "break-word",
+                lineHeight: 1.3,
+                color: item.highlight ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.90)",
+              }}>
+                {item.label}
+              </div>
+
+              {/* 2. Number (Middle) */}
+              <div style={{
+                fontFamily: F.display,
+                fontWeight: 400,
+                fontSize: "clamp(28px, 3.5vw, 44px)",
+                color: item.crimson ? "#F47B72" : item.highlight || item.goldVal ? T.goldLight : "#FFFDF9",
+                lineHeight: 1.05,
+                marginBottom: 4,
+                whiteSpace: typeof item.value === "string" && item.value.includes(" ") ? "normal" : "nowrap",
+                wordBreak: "break-word",
+                overflowWrap: "break-word",
+                fontVariantNumeric: "tabular-nums",
+              }}>
+                {item.value}
+              </div>
+
+              {/* 3. Subtitle (Bottom) */}
+              {item.sub && (
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{
+                    fontFamily: F.ui,
+                    fontWeight: 500,
+                    fontSize: "clamp(11px, 1.2vw, 12px)",
+                    color: item.highlight ? "rgba(231,201,131,0.95)" : "rgba(245,232,208,0.70)",
+                    letterSpacing: "0.1px",
+                    lineHeight: 1.3,
+                  }}>
+                    {item.sub}
+                  </span>
+                  {item.highlight && item.onClick && (
+                    <motion.div
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.94 }}
+                      style={{
+                        width: 18,
+                        height: 18,
+                        borderRadius: "50%",
+                        border: "1px solid rgba(200,155,71,0.38)",
+                        background: "rgba(200,155,71,0.10)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <ChevronRight size={10} color={T.goldLight} />
+                    </motion.div>
+                  )}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        );
+      })}
     </div>
   );
 }

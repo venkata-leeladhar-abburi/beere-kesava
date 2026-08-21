@@ -10,9 +10,10 @@ import type { PaymentStatus } from "@/lib/domain/status";
 
 // helper: initials avatar
 export function Pip({ initials, bg, size = 36 }: { initials: string; bg: string; size?: number }) {
+  const displayInitials = (initials || "").slice(0, 2);
   return (
     <div style={{ width: size, height: size, borderRadius: "50%", background: bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: "2px solid rgba(255,255,255,0.55)" }}>
-      <span style={{ fontFamily: F.ui, fontSize: size * 0.33, fontWeight: 700, color: "#FFFDF9", letterSpacing: "-0.3px" }}>{initials}</span>
+      <span style={{ fontFamily: F.ui, fontSize: size * 0.33, fontWeight: 700, color: "#FFFDF9", letterSpacing: "-0.3px" }}>{displayInitials}</span>
     </div>
   );
 }

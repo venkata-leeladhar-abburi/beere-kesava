@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search } from "lucide-react";
+import { Search, LayoutGrid, List, AlignJustify } from "lucide-react";
 import { C, F, card } from "./tokens";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { Button, Input } from "../../../../shared/ui/primitives";
@@ -33,33 +33,21 @@ function renderMaterialsSummary(summary: string) {
   if (!summary) return null;
   const parts = summary.split(", ");
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 5, minWidth: 260 }}>
       {parts.map((p, idx) => {
         const matchDesc = p.match(/^([^-]+)\s*-\s*([^(]+)\s*\(([^)]+)\)$/);
         if (matchDesc) {
           const type = matchDesc[1].trim();
-          const desc = matchDesc[2].trim();
+          const detail = matchDesc[2].trim();
           const qty = matchDesc[3].trim();
           return (
-            // Parsed from a comma-joined summary string with no per-item id; combine
-            // the raw text with its position since duplicate lines are possible.
-            // eslint-disable-next-line react/no-array-index-key
-            <div key={`${p}-${idx}`} style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-              <span style={{ 
-                fontFamily: F.u, fontSize: 12, fontWeight: 700,
-                color: type === "Warp" ? "#7A5010" : type === "Resham" ? "#7A5E1C" : C.burg, 
-                background: type === "Warp" ? "rgba(196,146,58,0.14)" : type === "Resham" ? "rgba(200,155,71,0.13)" : "rgba(110,15,45,0.08)",
-                padding: "2px 6px", borderRadius: 4 
-              }}>{type}</span>
-              <span style={{ fontFamily: F.u, fontSize: 12, color: C.text }}>{desc}</span>
-              <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 700, color: C.burg }}>{qty}</span>
+            <div key={idx} style={{ fontFamily: F.u, fontSize: 12, color: C.text, whiteSpace: "nowrap" }}>
+              <span style={{ fontWeight: 700, color: C.burg }}>{type}</span> - {detail} <span style={{ color: C.muted }}>({qty})</span>
             </div>
           );
         }
         return (
-          // Same fallback as above: raw text has no id, combine with index.
-          // eslint-disable-next-line react/no-array-index-key
-          <div key={`${p}-${idx}`} style={{ fontFamily: F.u, fontSize: 12, color: C.text }}>
+          <div key={idx} style={{ fontFamily: F.u, fontSize: 12, color: C.text, whiteSpace: "nowrap" }}>
             {p}
           </div>
         );
@@ -68,6 +56,8 @@ function renderMaterialsSummary(summary: string) {
   );
 }
 
+const PAGE_SIZE = 10;
+
 interface ReceiptHistoryTableProps {
   receiptHistory?: ReceiptRecord[];
   compact?: boolean;
@@ -75,9 +65,9 @@ interface ReceiptHistoryTableProps {
 
 export function ReceiptHistoryTable({ receiptHistory: propReceiptHistory, compact = false }: ReceiptHistoryTableProps) {
   const [historySearch, setHistorySearch] = useState("");
-  const [historyPage, setHistoryPage] = useState(1);
   const [historyDateFilter, setHistoryDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
-  const PAGE_SIZE = 10;
+  const [historyPage, setHistoryPage] = useState(1);
+  const [viewMode, setViewMode] = useState<"card" | "table">("card");
 
   const { data: rawGrns } = useQuery({
     queryKey: ["grn-receipts"],
@@ -85,37 +75,42 @@ export function ReceiptHistoryTable({ receiptHistory: propReceiptHistory, compac
   });
 
   const receiptHistory = useMemo<ReceiptRecord[]>(() => {
-    if (rawGrns?.items && rawGrns.items.length > 0) {
-      return rawGrns.items.map(g => {
-        const anyRejected = g.items.some(i => Number(i.rejectedQuantity ?? 0) > 0);
-        return {
-          grnId: g.id,
-          poRef: g.invoiceNo ?? `PO-${g.id.slice(-6)}`,
-          vendor: g.supplierName ?? "Vendor",
-          firmName: g.firm?.firmName ?? "—",
-          dateReceived: g.receivedDate ? new Date(g.receivedDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "Recent",
-          materialsSummary: g.items.map(i => {
-            const isJari = i.materialType === "JARI";
-            const qty = isJari ? jariToReels(i.quantity, i.unit ?? "KG") : i.quantity;
-            const unit = isJari ? "Reels" : "kg";
-            return `${i.materialType === "WARP" ? "Warp" : i.materialType === "RESHAM" ? "Resham" : "Jari"} - ${i.name} (${qty} ${unit})`;
-          }).join(", "),
-          receivedBy: "—",
-          status: (anyRejected ? "short" : "match") as ReconResult,
-        };
-      });
+    const dbReceipts: ReceiptRecord[] = (rawGrns?.items ?? []).map(g => {
+      const anyRejected = g.items.some(i => Number(i.rejectedQuantity ?? 0) > 0);
+      return {
+        grnId: g.id,
+        poRef: g.invoiceNo ?? `PO-${g.id.slice(-6)}`,
+        vendor: g.supplierName ?? "Vendor",
+        firmName: g.firm?.firmName ?? "—",
+        dateReceived: g.receivedDate ? new Date(g.receivedDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "Recent",
+        materialsSummary: g.items.map(i => {
+          const isJari = i.materialType === "JARI";
+          const qty = isJari ? jariToReels(i.quantity, i.unit ?? "KG") : i.quantity;
+          const unit = isJari ? "Reels" : "kg";
+          return `${i.materialType === "WARP" ? "Warp" : i.materialType === "RESHAM" ? "Resham" : "Jari"} - ${i.name} (${qty} ${unit})`;
+        }).join(", "),
+        receivedBy: "—",
+        status: (anyRejected ? "short" : "match") as ReconResult,
+      };
+    });
+
+    const localReceipts = propReceiptHistory ?? [];
+
+    const combined = [...localReceipts];
+    for (const r of dbReceipts) {
+      if (!combined.some(c => c.grnId === r.grnId)) {
+        combined.push(r);
+      }
     }
-    return propReceiptHistory ?? [];
+    return combined;
   }, [rawGrns, propReceiptHistory]);
 
-  const filteredHistory = receiptHistory
-    .slice(0, 20)
-    .filter(r => {
-      if (!matchesDateFilter(r.dateReceived, historyDateFilter)) return false;
-      if (!historySearch) return true;
-      const q = historySearch.toLowerCase();
-      return r.grnId.toLowerCase().includes(q) || r.poRef.toLowerCase().includes(q) || r.vendor.toLowerCase().includes(q);
-    });
+  const filteredHistory = receiptHistory.filter(r => {
+    if (!matchesDateFilter(r.dateReceived, historyDateFilter)) return false;
+    if (!historySearch) return true;
+    const q = historySearch.toLowerCase();
+    return r.grnId.toLowerCase().includes(q) || r.poRef.toLowerCase().includes(q) || r.vendor.toLowerCase().includes(q);
+  });
 
   const totalPages = Math.max(1, Math.ceil(filteredHistory.length / PAGE_SIZE));
   const pagedHistory = filteredHistory.slice((historyPage - 1) * PAGE_SIZE, historyPage * PAGE_SIZE);
@@ -126,7 +121,14 @@ export function ReceiptHistoryTable({ receiptHistory: propReceiptHistory, compac
     { id: "vendor", header: "Vendor", accessor: r => r.vendor, cell: (_v, r) => <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{r.vendor}</span> },
     { id: "firmName", header: "Firm Name", accessor: r => r.firmName, priority: 3, cell: (_v, r) => <span style={{ fontFamily: F.u, fontSize: compact ? 12 : 12.5, color: C.muted }}>{r.firmName}</span> },
     { id: "dateReceived", header: "Date Received", accessor: r => r.dateReceived, priority: 3, cell: (_v, r) => <span style={{ fontFamily: F.u, fontSize: compact ? 12 : 12.5, color: C.muted, whiteSpace: "nowrap" }}>{r.dateReceived}</span> },
-    { id: "materials", header: "Materials", accessor: r => r.materialsSummary, cell: (_v, r) => renderMaterialsSummary(r.materialsSummary) },
+    {
+      id: "materials", header: "Materials", accessor: r => r.materialsSummary,
+      cell: (_v, r) => (
+        <div style={{ minWidth: 260, maxWidth: 420 }}>
+          {renderMaterialsSummary(r.materialsSummary)}
+        </div>
+      ),
+    },
     { id: "receivedBy", header: "Received By", accessor: r => r.receivedBy, priority: 3, cell: (_v, r) => <span style={{ fontFamily: F.u, fontSize: compact ? 12 : 12.5, color: C.muted, whiteSpace: "nowrap" }}>{r.receivedBy}</span> },
     {
       id: "status", header: "Status", accessor: r => r.status, type: "status",
@@ -149,12 +151,39 @@ export function ReceiptHistoryTable({ receiptHistory: propReceiptHistory, compac
         />
       </div>
 
-      <DateFilterBar filter={historyDateFilter} onChange={f => { setHistoryDateFilter(f); setHistoryPage(1); }} />
+      <div style={{ marginBottom: 12 }}>
+        <DateFilterBar filter={historyDateFilter} onChange={f => { setHistoryDateFilter(f); setHistoryPage(1); }} />
+      </div>
+
+      <div className="flex md:hidden items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0 mb-3 w-fit">
+        <Button
+          onClick={() => setViewMode("card")}
+          variant="ghost"
+          className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
+            viewMode === "card"
+              ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+              : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+          }`}
+        >
+          <LayoutGrid size={14} /> Card View
+        </Button>
+        <Button
+          onClick={() => setViewMode("table")}
+          variant="ghost"
+          className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
+            viewMode === "table"
+              ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+              : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+          }`}
+        >
+          <AlignJustify size={14} /> Table View
+        </Button>
+      </div>
 
       <div style={{ ...card, overflow: "hidden", border: `1.5px solid ${C.bdr}` }}>
-        <div className="min-w-[760px]" style={{ overflowX: "auto" }}>
+        <div className={viewMode === "table" ? "w-full overflow-x-auto" : ""}>
           <DataTable
-            responsive
+            responsive={viewMode === "card"}
             columns={columns}
             data={pagedHistory}
             getRowId={r => r.grnId}

@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { salesApi } from "../../../../shared/api/sales";
 import { inventoryApi } from "../../../../shared/api/inventory";
 import { customersApi } from "../../../../shared/api/customers";
+import { notificationsApi } from "../../../../shared/api/notifications";
 import { C, F, Card, Btn, Chip, SectionTitle } from './theme';
 import { Button, IconButton, Textarea } from "../../../../shared/ui/primitives";
 import { rupees, formatMoney } from "@/lib/domain/money";
@@ -27,6 +28,29 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
   const [lowStockMsg, setLowStockMsg] = useState("");
   const [lowStockPriority, setLowStockPriority] = useState<"urgent" | "normal">("urgent");
   const [lowStockSending, setLowStockSending] = useState(false);
+  const [lowStockError, setLowStockError] = useState("");
+
+  // Raises a real notification for admins. This previously only ran a timer and
+  // flipped the button to "alert sent" without telling anyone anything.
+  const sendLowStockAlert = async () => {
+    setLowStockSending(true);
+    setLowStockError("");
+    try {
+      await notificationsApi.create({
+        targetType: "ROLE",
+        role: "ADMIN",
+        type: "shop_low_stock",
+        payload: { priority: lowStockPriority, note: lowStockMsg || undefined },
+      });
+      setShowLowStockDialog(false);
+      setAlerted(true);
+      setLowStockMsg("");
+    } catch (err) {
+      setLowStockError(err instanceof Error ? err.message : "Could not send the alert. Please try again.");
+    } finally {
+      setLowStockSending(false);
+    }
+  };
 
   const { data: salesRes, isError: salesError } = useQuery({
     queryKey: ["sales-list-shophome"],
@@ -241,10 +265,12 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
                   className="rounded-xl min-h-[90px] resize-none" />
               </div>
               {/* Confirm */}
-              <Button onClick={() => {
-                setLowStockSending(true);
-                setTimeout(() => { setLowStockSending(false); setShowLowStockDialog(false); setAlerted(true); }, 1200);
-              }} fullWidth className="h-[54px] bg-[#C0392B] border-none rounded-full font-bold text-base text-white gap-2">
+              {lowStockError && (
+                <div style={{ marginBottom: 12, fontFamily: F.u, fontSize: 13, color: "#C0392B", background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.20)", borderRadius: 8, padding: "9px 12px" }}>
+                  {lowStockError}
+                </div>
+              )}
+              <Button onClick={sendLowStockAlert} disabled={lowStockSending} fullWidth className="h-[54px] bg-[#C0392B] border-none rounded-full font-bold text-base text-white gap-2">
                 {lowStockSending ? "Sending…" : <><Send size={18} /> Send Report to Admin</>}
               </Button>
             </div>

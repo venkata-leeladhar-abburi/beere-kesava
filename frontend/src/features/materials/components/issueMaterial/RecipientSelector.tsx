@@ -34,13 +34,14 @@ export function RecipientSelector({
   return (
     <>
       {/* Recipient type toggle */}
-      <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
+      <div className="grid grid-cols-2 w-full gap-2.5 mb-4">
         {(["weaver", "factoryLoom"] as const).map(type => (
           <Button
             key={type}
             onClick={() => { setRecipientType(type); setSelectedWeaverId(null); setSelectedLoomId(null); setSelectedLoom(""); setSelectedBatchId(null); setShowWeaverList(false); }}
             variant={recipientType === type ? "primary" : "secondary"}
             size="md"
+            className="w-full justify-center"
             iconLeft={type === "factoryLoom" ? Factory : undefined}
           >
             {type === "weaver" ? "Weaver" : "Factory Loom"}

@@ -185,7 +185,7 @@ export function SupplierAnalytics() {
           <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 6 }}>Please retry or check your connection.</div>
         </div>
       ) : buys.length === 0 ? (
-        <div style={{ ...card, textAlign: "center", padding: "48px 24px" }}>
+        <div style={{ ...card, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "48px 24px" }}>
           <Building2 size={40} color={T.taupe} style={{ marginBottom: 12 }} />
           <div style={{ fontFamily: F.display, fontSize: 16, color: T.taupe }}>No supplier purchases recorded in this period.</div>
           <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 6 }}>Widen the date range to see analytics.</div>

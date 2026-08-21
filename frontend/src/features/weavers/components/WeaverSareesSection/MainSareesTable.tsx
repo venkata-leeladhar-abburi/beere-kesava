@@ -33,11 +33,12 @@ interface MainSareesTableProps {
   showQcMoney: boolean;
   showMoney: boolean;
   pag: UsePaginationReturn;
+  responsive?: boolean;
 }
 
 export function MainSareesTable({
   pageRows, visible, selectable, selectedIds, onToggleAll, onToggleRow,
-  isAll, isLoom, tab, dateHeader, showQcMoney, showMoney, pag
+  isAll, isLoom, tab, dateHeader, showQcMoney, showMoney, pag, responsive = false
 }: MainSareesTableProps) {
   const mono = (color: string, extra?: React.CSSProperties): React.CSSProperties => ({ fontFamily: "var(--font-mono)", fontSize: 12, color, ...extra });
   // Selectable for any purpose (dispatch or quotation) except sarees that are
@@ -179,7 +180,11 @@ export function MainSareesTable({
 
   return (
     <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, background: "#FFFFFF", boxShadow: "0 2px 8px rgba(74,6,27,0.04)", overflow: "hidden" }}>
-      <DataTable responsive columns={columns} data={pageRows} getRowId={r => r.sareeId} />
+      <div className="w-full overflow-x-auto section-nav-scroll p-2">
+        <div className="min-w-[850px]">
+          <DataTable responsive={responsive} columns={columns} data={pageRows} getRowId={r => r.sareeId} />
+        </div>
+      </div>
       <div style={{ padding: "0 14px" }}>
         <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start}
           onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="sarees" />

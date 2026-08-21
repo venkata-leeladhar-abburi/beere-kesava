@@ -124,9 +124,11 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
 
   const handleSubmit = async () => {
     if (!validate()) return;
+    // Both ids are placeholders: PurchaseOrdersService assigns the real id and
+    // poNumber on create and the values sent from here are discarded.
     const po: PurchaseOrder = {
-      id: "temp-" + Date.now().toString(),
-      poNumber: nextPONumber || `PO-${new Date().getFullYear()}-XXX`,
+      id: "",
+      poNumber: nextPONumber || "",
       vendorId: vendor!.id,
       vendor: vendor!.name,
       vendorCity: vendor!.city || "",

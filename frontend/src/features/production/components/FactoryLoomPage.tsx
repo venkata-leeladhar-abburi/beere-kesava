@@ -251,7 +251,7 @@ export function FactoryLoomPage() {
                   onClick={() => { setEditLoom(null); setShowModal(true); }}
                   variant="secondary"
                   iconLeft={Plus}
-                  className="bg-white/10 text-[#FFFDF9] border-white/20"
+                  className="bg-white/10 text-[#FFFDF9] border-white/20 hover:bg-white/20 hover:text-white"
                 >
                   Register New Loom
                 </Button>
@@ -282,13 +282,41 @@ export function FactoryLoomPage() {
                   ))}
                 </div>
 
-                <div style={{ display: "flex", background: "#FFFFFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, padding: 3 }}>
-                  <Button onClick={() => setView("card")} variant={view === "card" ? "secondary" : "ghost"} size="sm" iconLeft={LayoutGrid}>
+                <div style={{ display: "inline-flex", alignItems: "center", background: "#FFFFFF", border: `1.5px solid ${T.borderDef}`, borderRadius: 999, padding: 3, gap: 2 }}>
+                  <button
+                    type="button"
+                    onClick={() => setView("card")}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 6, padding: "7px 16px", borderRadius: 999,
+                      fontFamily: F.ui, fontSize: 13, fontWeight: 600,
+                      background: view === "card" ? "#6E0F2D" : "transparent",
+                      color: view === "card" ? "#FFFFFF" : T.taupe,
+                      border: "none",
+                      boxShadow: view === "card" ? "0 2px 8px rgba(110,15,45,0.25)" : "none",
+                      cursor: "pointer",
+                      transition: "all 0.2s ease",
+                    }}
+                  >
+                    <LayoutGrid size={15} color={view === "card" ? "#FFFFFF" : T.taupe} />
                     Card View
-                  </Button>
-                  <Button onClick={() => setView("table")} variant={view === "table" ? "secondary" : "ghost"} size="sm" iconLeft={LayoutList}>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setView("table")}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 6, padding: "7px 16px", borderRadius: 999,
+                      fontFamily: F.ui, fontSize: 13, fontWeight: 600,
+                      background: view === "table" ? "#6E0F2D" : "transparent",
+                      color: view === "table" ? "#FFFFFF" : T.taupe,
+                      border: "none",
+                      boxShadow: view === "table" ? "0 2px 8px rgba(110,15,45,0.25)" : "none",
+                      cursor: "pointer",
+                      transition: "all 0.2s ease",
+                    }}
+                  >
+                    <LayoutList size={15} color={view === "table" ? "#FFFFFF" : T.taupe} />
                     Table View
-                  </Button>
+                  </button>
                 </div>
               </div>
 
@@ -302,7 +330,7 @@ export function FactoryLoomPage() {
                     : "No power looms match your search criteria."}
                 </div>
               ) : view === "card" ? (
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 20 }}>
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                   {filtered.map(l => (
                     <LoomCard
                       key={l.id}
@@ -314,39 +342,41 @@ export function FactoryLoomPage() {
                   ))}
                 </div>
               ) : (
-                <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
-                  <DataTable
-                    responsive
-                    columns={[
-                      {
-                        id: "loomNumber", header: "Loom #", accessor: l => l.loomNumber, priority: 1,
-                        cell: (_v, l) => <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{l.loomNumber}</span>,
-                      },
-                      {
-                        id: "operator", header: "Operator", accessor: l => l.operatorName,
-                        cell: (_v, l) => <span style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown }}>{l.operatorName || "—"}</span>,
-                      },
-                      {
-                        id: "location", header: "Location", accessor: l => l.location, priority: 3,
-                        cell: (_v, l) => <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>{l.location || "—"}</span>,
-                      },
-                      {
-                        id: "status", header: "Status", accessor: l => l.status, type: "status",
-                        cell: (_v, l) => <StatusPill taxonomy="condition" status={LOOM_STATUS_TO_CONDITION[l.status]} />,
-                      },
-                      {
-                        id: "actions", header: "Actions", accessor: () => null, type: "actions",
-                        cell: (_v, l) => (
-                          <>
-                            <Button onClick={() => setSelected(l)} variant="link" size="sm" className="mr-3">View Details</Button>
-                            <IconButton onClick={() => { setEditLoom(l); setShowModal(true); }} icon={Edit2} label={`Edit loom ${l.loomNumber}`} variant="ghost" size="sm" />
-                          </>
-                        ),
-                      },
-                    ] as ColumnDef<FactoryLoom>[]}
-                    data={filtered}
-                    getRowId={l => l.id}
-                  />
+                <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}` }} className="w-full overflow-x-auto section-nav-scroll p-2">
+                  <div className="min-w-[700px]">
+                    <DataTable
+                      responsive={false}
+                      columns={[
+                        {
+                          id: "loomNumber", header: "Loom #", accessor: l => l.loomNumber, priority: 1,
+                          cell: (_v, l) => <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{l.loomNumber}</span>,
+                        },
+                        {
+                          id: "operator", header: "Operator", accessor: l => l.operatorName,
+                          cell: (_v, l) => <span style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown }}>{l.operatorName || "—"}</span>,
+                        },
+                        {
+                          id: "location", header: "Location", accessor: l => l.location, priority: 3,
+                          cell: (_v, l) => <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>{l.location || "—"}</span>,
+                        },
+                        {
+                          id: "status", header: "Status", accessor: l => l.status, type: "status",
+                          cell: (_v, l) => <StatusPill taxonomy="condition" status={LOOM_STATUS_TO_CONDITION[l.status]} />,
+                        },
+                        {
+                          id: "actions", header: "Actions", accessor: () => null, type: "actions",
+                          cell: (_v, l) => (
+                            <>
+                              <Button onClick={() => setSelected(l)} variant="link" size="sm" className="mr-3">View Details</Button>
+                              <IconButton onClick={() => { setEditLoom(l); setShowModal(true); }} icon={Edit2} label={`Edit loom ${l.loomNumber}`} variant="ghost" size="sm" />
+                            </>
+                          ),
+                        },
+                      ] as ColumnDef<FactoryLoom>[]}
+                      data={filtered}
+                      getRowId={l => l.id}
+                    />
+                  </div>
                 </div>
               )}
             </SectionCard>

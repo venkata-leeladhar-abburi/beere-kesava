@@ -506,16 +506,16 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
 
       {/* Charts Row 3 — Geographic (grouped by city — the Customer model has
           no separate state field, see backend/prisma/schema.prisma) */}
-      <div className="flex-col xl:flex-row" style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 18, padding: "28px 36px", display: "flex", gap: 48, boxShadow: "0 2px 14px rgba(74,6,27,0.05)" }}>
-        <div style={{ flex: 1 }}>
-          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 26 }}>
-            <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
-              <div style={{ width: 52, height: 52, minWidth: 52, borderRadius: 14, background: "rgba(45,145,88,0.09)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(30,102,64,0.10)" }}>
-                <MapPin size={24} color={T.greenMid} />
+      <div className="flex flex-col xl:flex-row gap-6 xl:gap-12 p-4 sm:p-7 md:p-9" style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 18, boxShadow: "0 2px 14px rgba(74,6,27,0.05)" }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20 }}>
+            <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+              <div style={{ width: 44, height: 44, minWidth: 44, borderRadius: 12, background: "rgba(45,145,88,0.09)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(30,102,64,0.10)" }}>
+                <MapPin size={22} color={T.greenMid} />
               </div>
               <div>
                 <h3 style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 4px 0", lineHeight: 1.3 }}>Customer Locations — City-wise Distribution</h3>
-                <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: 0 }}>Which cities your wholesale and retail customers are from</p>
+                <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, margin: 0 }}>Which cities your wholesale and retail customers are from</p>
               </div>
             </div>
             <DownloadGate><IconButton
@@ -530,7 +530,7 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
             /></DownloadGate>
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             {custDataLoading ? (
               <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loading customer locations…</div>
             ) : custDataError ? (
@@ -539,16 +539,16 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
               <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No customers on record yet.</div>
             ) : null}
             {!custDataLoading && !custDataError && locationData.map((loc) => (
-              <div key={loc.state} style={{ display: "flex", alignItems: "center", gap: 18 }}>
-                <div style={{ width: 28, display: "flex", justifyContent: "center" }}>
+              <div key={loc.state} className="flex items-center gap-2.5 sm:gap-4 w-full">
+                <div style={{ width: 24, display: "flex", justifyContent: "center", flexShrink: 0 }}>
                   <div style={{ width: loc.size, height: loc.size, borderRadius: "50%", background: loc.color }} />
                 </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{loc.state}</div>
-                  <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 2 }}>{loc.count} customers</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{loc.state}</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>{loc.count} customers</div>
                 </div>
-                <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: T.luxuryBrown, minWidth: 52, textAlign: "right" }}>{loc.pct}%</div>
-                <div style={{ width: "clamp(60px, 22vw, 130px)", flexShrink: 0, height: 8, background: T.silkCream, borderRadius: 4 }}>
+                <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown, textAlign: "right", flexShrink: 0 }}>{loc.pct}%</div>
+                <div className="w-14 sm:w-28 flex-shrink-0 h-2 bg-stone-200/60 rounded-full overflow-hidden">
                   <div style={{ width: `${loc.pct}%`, height: "100%", background: loc.color, borderRadius: 4 }} />
                 </div>
               </div>

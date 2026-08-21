@@ -142,7 +142,7 @@ export function WholesaleCustomersSection({
       title="Wholesale Customers"
       subtitle="These are the businesses that buy sarees in bulk. Manage their profiles, track their orders, and monitor outstanding payments."
       actions={
-        <Button onClick={() => (showAddWholesale ? closeAddWholesale() : setShowAddWholesale(true))} variant="secondary" iconLeft={Plus} className="bg-white/10 text-[#FFFDF9] border-white/20">
+        <Button onClick={() => (showAddWholesale ? closeAddWholesale() : setShowAddWholesale(true))} variant="secondary" iconLeft={Plus} className="bg-white/10 text-[#FFFDF9] border-white/20 hover:bg-white/20 hover:text-white">
           Add New Wholesale Customer
         </Button>
       }
@@ -235,22 +235,55 @@ export function WholesaleCustomersSection({
       </div>
 
       {/* Toolbar */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-        <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
-          <div style={{ width: 300 }}>
+      <div className="flex flex-col md:flex-row gap-4 justify-between items-stretch md:items-center mb-6">
+        <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center w-full md:w-auto">
+          <div className="w-full sm:w-[280px]">
             <SearchInput aria-label="Search by business name, city..." placeholder="Search by business name, city..." />
           </div>
-          <Pill active={true}>All Wholesale ({wholesaleList.length})</Pill>
-          <Pill active={false}>Active ({wholesaleList.length})</Pill>
-          <Pill active={false}>Has Dues (0)</Pill>
-          <Pill active={false}>Inactive (0)</Pill>
+          <div className="flex flex-wrap gap-2">
+            <Pill active={true}>All Wholesale ({wholesaleList.length})</Pill>
+            <Pill active={false}>Active ({wholesaleList.length})</Pill>
+            <Pill active={false}>Has Dues (0)</Pill>
+            <Pill active={false}>Inactive (0)</Pill>
+          </div>
         </div>
-        <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
+        <div className="flex flex-wrap items-center justify-between sm:justify-end gap-3 w-full md:w-auto">
           <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, display: "flex", alignItems: "center", gap: 4 }}>Sort By: Outstanding <ChevronDown size={14} /></span>
-          <div style={{ display: "flex", background: "#FFF", borderRadius: 8, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
-            <IconButton icon={LayoutGrid} label="Card view" variant={wholesaleView === "card" ? "secondary" : "ghost"} size="sm" onClick={() => setWholesaleView("card")} className="rounded-none" />
-            <IconButton icon={AlignJustify} label="List view" variant={wholesaleView === "list" ? "secondary" : "ghost"} size="sm" onClick={() => setWholesaleView("list")} className="rounded-none border-l" />
-            <IconButton icon={TableIcon} label="Table view" variant={wholesaleView === "table" ? "secondary" : "ghost"} size="sm" onClick={() => setWholesaleView("table")} className="rounded-none border-l" />
+          <div style={{ display: "inline-flex", alignItems: "center", background: "#FFFFFF", border: `1.5px solid ${T.borderDef}`, borderRadius: 999, padding: 3, gap: 2 }}>
+            <button
+              type="button"
+              onClick={() => setWholesaleView("card")}
+              style={{
+                display: "flex", alignItems: "center", gap: 6, padding: "7px 16px", borderRadius: 999,
+                fontFamily: F.ui, fontSize: 13, fontWeight: 600,
+                background: wholesaleView === "card" ? "#6E0F2D" : "transparent",
+                color: wholesaleView === "card" ? "#FFFFFF" : T.taupe,
+                border: "none",
+                boxShadow: wholesaleView === "card" ? "0 2px 8px rgba(110,15,45,0.25)" : "none",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+              }}
+            >
+              <LayoutGrid size={15} color={wholesaleView === "card" ? "#FFFFFF" : T.taupe} />
+              Card View
+            </button>
+            <button
+              type="button"
+              onClick={() => setWholesaleView("table")}
+              style={{
+                display: "flex", alignItems: "center", gap: 6, padding: "7px 16px", borderRadius: 999,
+                fontFamily: F.ui, fontSize: 13, fontWeight: 600,
+                background: wholesaleView === "table" || wholesaleView === "list" ? "#6E0F2D" : "transparent",
+                color: wholesaleView === "table" || wholesaleView === "list" ? "#FFFFFF" : T.taupe,
+                border: "none",
+                boxShadow: wholesaleView === "table" || wholesaleView === "list" ? "0 2px 8px rgba(110,15,45,0.25)" : "none",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+              }}
+            >
+              <TableIcon size={15} color={wholesaleView === "table" || wholesaleView === "list" ? "#FFFFFF" : T.taupe} />
+              Table View
+            </button>
           </div>
           <DownloadGate>
             <Button variant="tertiary" size="sm" iconLeft={Download}>Download</Button>
@@ -260,7 +293,7 @@ export function WholesaleCustomersSection({
 
       {/* Wholesale Cards View */}
       {wholesaleView === "card" && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 22, alignItems: "stretch" }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 items-stretch">
           {wholesaleList.map((w, i) => {
             return (
               <div key={w.id} style={{
@@ -358,8 +391,10 @@ export function WholesaleCustomersSection({
 
       {/* Wholesale Table View */}
       {wholesaleView === "table" && (
-        <div style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflowX: "auto" }}>
-          <DataTable columns={tableColumns} data={wholesaleList} getRowId={w => w.id} emptyTitle="No wholesale customers yet" />
+        <div style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}` }} className="w-full overflow-x-auto section-nav-scroll p-2">
+          <div className="min-w-[850px]">
+            <DataTable columns={tableColumns} data={wholesaleList} getRowId={w => w.id} emptyTitle="No wholesale customers yet" />
+          </div>
         </div>
       )}
     </SectionCard>

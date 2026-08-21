@@ -32,6 +32,19 @@ export function GrnBatchSelector({ grnBatches, materialType, value, onChange }: 
     toast.success(`Selected ${match.grnBatchId}`);
   }, [grnBatches, materialType, onChange]);
 
+  // Opens the searchable list with the search box focused. A barcode scanner
+  // acts as a keyboard, so scanning types the batch id straight into that box
+  // and `selectOnExactMatch` below picks the batch it actually matches.
+  const selectOnExactMatch = (typed: string) => {
+    const hit = grnBatches.find(
+      g => g.materialType === materialType && g.grnBatchId.toLowerCase() === typed.trim().toLowerCase(),
+    );
+    if (!hit) return;
+    onChange(hit.grnBatchId);
+    setOpen(false);
+    setQ("");
+  };
+
   return (
     <div style={{ position: "relative" as const }}>
       <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 6 }}>GRN Batch</span>
@@ -50,8 +63,15 @@ export function GrnBatchSelector({ grnBatches, materialType, value, onChange }: 
           {open && (
             <div style={{ position: "absolute" as const, top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 50, background: "#FFF", border: `1px solid ${T.royalBurgundy}`, borderRadius: 12, boxShadow: "0 8px 28px rgba(74,6,27,0.16)", overflow: "hidden" }}>
               <div style={{ padding: 8, borderBottom: `1px solid ${T.borderDef}` }}>
-                {/* eslint-disable-next-line jsx-a11y/no-autofocus -- popover opens on user action; focusing the search box it contains is expected keyboard behavior */}
-                <SearchInput autoFocus value={q} onChange={e => setQ(e.target.value)} placeholder="Search batch ID or vendor…" size="sm" className="w-full" />
+                <SearchInput
+                  // eslint-disable-next-line jsx-a11y/no-autofocus -- popover opens on user action; focusing the search box it contains is expected keyboard behavior, and a barcode scan types straight into it
+                  autoFocus
+                  value={q}
+                  onChange={e => { setQ(e.target.value); selectOnExactMatch(e.target.value); }}
+                  placeholder="Scan barcode, or search batch ID / vendor…"
+                  size="sm"
+                  className="w-full"
+                />
               </div>
               <div style={{ maxHeight: 220, overflowY: "auto" as const }}>
                 {filtered.length === 0 ? (

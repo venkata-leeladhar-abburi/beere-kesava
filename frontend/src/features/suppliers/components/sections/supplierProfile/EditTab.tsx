@@ -16,8 +16,18 @@ export function EditTab({
   cardPreview: string | null;
   setCardPreview: (v: string | null) => void;
   savedFlash: boolean;
-  onSave: () => void;
+  onSave: (values: SupplierFormValues) => void;
 }) {
+  // WhatsApp defaults to the phone number when left blank. The values are
+  // passed straight to onSave rather than written back through setForm first —
+  // that older path saved whatever the parent had already rendered, so the
+  // defaulted number only landed if a deferred re-render happened to win.
+  const handleSave = () => {
+    const values = { ...form, whatsapp: form.whatsapp?.trim() ? form.whatsapp : form.phone };
+    setForm(values);
+    onSave(values);
+  };
+
   return (
     <div style={{ ...card, padding: "28px 32px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
@@ -28,7 +38,7 @@ export function EditTab({
               <CheckCircle2 size={14} /> Saved
             </span>
           )}
-          <Button variant="primary" size="md" onClick={onSave}>
+          <Button variant="primary" size="md" onClick={handleSave}>
             Save Changes
           </Button>
         </div>

@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronDown, ChevronRight, Package, Camera, Users } from "lucide-react";
+import { ChevronDown, ChevronRight, Package, Camera, Users, LayoutGrid, List } from "lucide-react";
 import { FinishingAssignment, FinishingReturn } from "../contexts/FinishingContext";
 import { Button } from "../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../shared/ui/data";
@@ -21,8 +21,38 @@ const F = {
   mono:    "'JetBrains Mono', monospace",
 };
 
-function Pill({ label, color, bg }: { label: string; color: string; bg: string }) {
-  return <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color, background: bg, borderRadius: 999, padding: "3px 10px", whiteSpace: "nowrap" }}>{label}</span>;
+function Pill({ label, color, bg, title, allowBreak }: { label: string; color: string; bg: string; title?: string; allowBreak?: boolean }) {
+  return (
+    <span
+      title={title ?? label}
+      style={{
+        fontFamily: F.ui,
+        fontWeight: 600,
+        fontSize: 11,
+        color,
+        background: bg,
+        borderRadius: 8,
+        padding: "3px 8px",
+        whiteSpace: allowBreak ? "normal" : "nowrap",
+        wordBreak: allowBreak ? "break-all" : "normal",
+        display: "inline-block",
+        maxWidth: "100%",
+        verticalAlign: "middle",
+        lineHeight: 1.3,
+      }}
+    >
+      {label}
+    </span>
+  );
+}
+
+function formatDisplayDate(d?: string | null): string {
+  if (!d) return "—";
+  const str = String(d).trim();
+  if (str.includes("T")) {
+    return str.split("T")[0] ?? str;
+  }
+  return str;
 }
 
 const td: React.CSSProperties = { fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, padding: "11px 12px", borderBottom: `1px solid rgba(110,15,45,0.06)`, verticalAlign: "middle" };
@@ -31,14 +61,21 @@ const tdMono: React.CSSProperties = { ...td, fontFamily: "var(--font-mono)", fon
 function buildAssignmentColumns(returns: FinishingReturn[]): ColumnDef<FinishingAssignment>[] {
   const findRet = (a: FinishingAssignment) => returns.find(rt => rt.sareeId === a.sareeId);
   return [
-    { id: "sareeCode", header: "Saree Code", accessor: a => a.sareeId, priority: 1, cell: (_v, a) => <span style={tdMono}>{a.sareeId}</span> },
+    { id: "sareeCode", header: "Saree Code", accessor: a => a.sareeId, priority: 1, cell: (_v, a) => <span style={{ ...tdMono, wordBreak: "break-all" }}>{a.sareeId}</span> },
     {
       id: "quotation", header: "Quotation", accessor: a => a.quotationRef,
-      cell: (_v, a) => a.quotationRef ? <Pill label={a.quotationRef} color="#8B6018" bg="rgba(200,146,58,0.14)" /> : <span style={{ color: T.taupe, fontSize: 12 }}>—</span>,
+      cell: (_v, a) => a.quotationRef ? (
+        <Pill
+          label={a.quotationRef}
+          color="#8B6018"
+          bg="rgba(200,146,58,0.14)"
+          allowBreak
+        />
+      ) : <span style={{ color: T.taupe, fontSize: 12 }}>—</span>,
     },
     { id: "sareeType", header: "Saree Type", accessor: a => a.sareeType, cell: (_v, a) => <span style={td}>{a.sareeTypeCode ? `${a.sareeTypeCode} · ` : ""}{a.sareeType}</span> },
     { id: "weaver", header: "Weaver", accessor: a => a.weaverName, cell: (_v, a) => <span style={td}>{a.weaverName}</span> },
-    { id: "assignedOn", header: "Assigned On", accessor: a => a.assignedDate, cell: (_v, a) => <span style={td}>{a.assignedDate}</span> },
+    { id: "assignedOn", header: "Assigned On", accessor: a => a.assignedDate, cell: (_v, a) => <span style={td}>{formatDisplayDate(a.assignedDate)}</span> },
     { id: "assignedBy", header: "Assigned By", accessor: a => a.assignedBy, priority: 3, cell: (_v, a) => <span style={td}>{a.assignedBy}</span> },
     {
       id: "returnStatus", header: "Return Status", accessor: a => findRet(a)?.condition,
@@ -53,7 +90,7 @@ function buildAssignmentColumns(returns: FinishingReturn[]): ColumnDef<Finishing
               color={ret.condition === "perfect" ? T.green : T.crimson}
               bg={ret.condition === "perfect" ? "rgba(30,102,64,0.09)" : "rgba(192,57,43,0.10)"}
             />
-            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>{ret.receivedDate} · by {ret.receivedBy}</div>
+            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>{formatDisplayDate(ret.receivedDate)} · by {ret.receivedBy}</div>
             {ret.condition === "damaged" && ret.damageNotes && (
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.crimson, marginTop: 2 }}>{ret.damageType || "Damage"}: {ret.damageNotes}</div>
             )}
@@ -110,6 +147,8 @@ export function FinishingStaffSection({
   setOpen,
   returns,
 }: FinishingStaffSectionProps) {
+  const [viewMode, setViewMode] = useState<"card" | "table">("card");
+
   return (
     <SectionCard
       icon={Users}
@@ -128,34 +167,74 @@ export function FinishingStaffSection({
             return (
               <div key={r.name} style={{ border: `1px solid ${T.borderDef}`, borderRadius: 14, overflow: "hidden" }}>
                 <Button variant="ghost" onClick={() => setOpen(isOpen ? null : r.name)}
-                  className={`w-full h-auto justify-start text-left gap-3.5 py-3.5 px-[18px] rounded-none ${isOpen ? "bg-[rgba(110,15,45,0.04)]" : "bg-white"}`}>
-                  {isOpen ? <ChevronDown size={17} color={T.royalBurgundy} /> : <ChevronRight size={17} color={T.taupe} />}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{r.name}</div>
-                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Last assigned {r.lastAssignmentDate} · Assigned by {r.assignedByLabel}</div>
-                  </div>
-                  <div style={{ display: "flex", gap: 22, alignItems: "center", flexWrap: "wrap", justifyContent: "flex-end" }}>
-                    {[
-                      { l: "Assigned", v: String(r.assignments.length), c: T.luxuryBrown },
-                      { l: "Returned", v: String(r.returns.length), c: T.royalBurgundy },
-                      { l: "Pending", v: String(r.pending), c: r.pending > 0 ? T.orange : T.green },
-                      { l: "Perfect", v: String(r.perfect), c: T.green },
-                      { l: "Damaged", v: String(r.damaged), c: r.damaged > 0 ? T.crimson : T.taupe },
-                    ].map(k => (
-                      <div key={k.l} style={{ textAlign: "right", minWidth: 58 }}>
-                        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.7px" }}>{k.l}</div>
-                        <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color: k.c }}>{k.v}</div>
+                  className={`w-full h-auto justify-start text-left p-4 sm:p-4.5 rounded-none ${isOpen ? "bg-[rgba(110,15,45,0.04)]" : "bg-white"}`}>
+                  <div className="w-full flex flex-col gap-3 min-w-0">
+                    <div className="flex items-start justify-between gap-2.5 w-full">
+                      <div className="flex flex-col gap-1 min-w-0 flex-1">
+                        <div className="truncate" style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: T.luxuryBrown }}>{r.name}</div>
+                        <div className="flex items-center gap-1.5 flex-wrap text-[12px]" style={{ fontFamily: F.ui, color: T.taupe }}>
+                          <span>Last assigned {formatDisplayDate(r.lastAssignmentDate)}</span>
+                          <span className="truncate">· By {r.assignedByLabel}</span>
+                        </div>
                       </div>
-                    ))}
+                      <div className="mt-0.5 shrink-0">
+                        {isOpen ? <ChevronDown size={18} color={T.royalBurgundy} /> : <ChevronRight size={18} color={T.taupe} />}
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-3 pt-2.5 border-t border-[rgba(110,15,45,0.06)] w-full">
+                      {[
+                        { l: "Assigned", v: String(r.assignments.length), c: T.luxuryBrown, bg: "rgba(59,35,20,0.05)" },
+                        { l: "Returned", v: String(r.returns.length), c: T.royalBurgundy, bg: "rgba(110,15,45,0.05)" },
+                        { l: "Pending", v: String(r.pending), c: r.pending > 0 ? T.orange : T.green, bg: r.pending > 0 ? "rgba(230,126,34,0.08)" : "rgba(30,102,64,0.07)" },
+                        { l: "Perfect", v: String(r.perfect), c: T.green, bg: "rgba(30,102,64,0.07)" },
+                        { l: "Damaged", v: String(r.damaged), c: r.damaged > 0 ? T.crimson : T.taupe, bg: r.damaged > 0 ? "rgba(192,57,43,0.08)" : "rgba(105,99,94,0.05)" },
+                      ].map(k => (
+                        <div key={k.l} className="flex flex-col items-center justify-center p-2 rounded-lg text-center" style={{ background: k.bg }}>
+                          <span style={{ fontFamily: F.ui, fontSize: 10, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", fontWeight: 600 }}>{k.l}</span>
+                          <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, color: k.c, marginTop: 2 }}>{k.v}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </Button>
                 <AnimatePresence initial={false}>
                   {isOpen && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ overflow: "hidden", background: "#FFFDF9" }}>
-                      <div style={{ padding: "6px 18px 16px" }}>
-                        <div className="min-w-[680px]" style={{ overflowX: "auto" }}>
+                      <div className="p-3 sm:p-4 border-t border-[rgba(110,15,45,0.08)] flex flex-col gap-3">
+                        <div className="flex items-center justify-between gap-2 flex-wrap pb-1">
+                          <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe }}>
+                            Assignments ({r.visibleAssignments.length})
+                          </span>
+                          <div className="flex md:hidden items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0">
+                            <Button
+                              onClick={() => setViewMode("card")}
+                              variant="ghost"
+                              className={`h-auto rounded-none gap-1.5 py-1.5 px-2.5 text-[12px] font-bold ${
+                                viewMode === "card"
+                                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+                                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+                              }`}
+                            >
+                              <LayoutGrid size={14} /> Card View
+                            </Button>
+                            <Button
+                              onClick={() => setViewMode("table")}
+                              variant="ghost"
+                              className={`h-auto rounded-none gap-1.5 py-1.5 px-2.5 text-[12px] font-bold ${
+                                viewMode === "table"
+                                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+                                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+                              }`}
+                            >
+                              <List size={14} /> Table View
+                            </Button>
+                          </div>
+                        </div>
+
+                        <div className="w-full overflow-x-auto">
                           <DataTable
-                            responsive
+                            responsive={viewMode === "card"}
                             columns={buildAssignmentColumns(returns)}
                             data={r.visibleAssignments}
                             getRowId={a => a.id}

@@ -7,36 +7,39 @@ export function NoticeFooter() {
   return (
     <>
       {/* ── 8. IMMUTABILITY NOTICE ── */}
-      <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 48, paddingBottom: 48 }}>
-        <div style={{
-          background: "rgba(44,24,16,0.04)",
-          border: "1px solid rgba(44,24,16,0.10)",
-          borderRadius: 12,
-          padding: "18px 24px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-        }}>
-          <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
-            <Lock size={20} color={T.royalBurgundy} style={{ flexShrink: 0, marginTop: 2 }} />
-            <div>
-              <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: T.luxuryBrown, marginBottom: 6 }}>
+      <div className="px-3 sm:px-4 md:px-7 xl:px-14 py-8 md:py-12">
+        <div className="p-4 sm:p-6 bg-[rgba(44,24,16,0.04)] border border-[rgba(44,24,16,0.10)] rounded-xl flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
+            <Lock size={20} color={T.royalBurgundy} className="shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: "clamp(13px, 2vw, 15px)", color: T.luxuryBrown, marginBottom: 6 }}>
                 🔒 This audit log is permanent and immutable.
               </div>
-              <p className="max-w-[600px]" style={{
+              <p className="max-w-[650px]" style={{
                 fontFamily: F.ui,
                 fontWeight: 400,
-                fontSize: 12,
+                fontSize: "clamp(12px, 1.8vw, 13px)",
                 color: T.taupe,
                 lineHeight: 1.65,
                 margin: 0,
               }}>
                 No one — including the Superadmin — can edit, delete, or modify any entry in this log. Every action recorded here is final and permanent. This log is your legal and operational record.
               </p>
+
+              {/* Mobile button placed below description aligned with text margin */}
+              <div className="flex flex-col items-start gap-1.5 mt-4 sm:hidden">
+                <Button variant="secondary" size="md" iconLeft={Download}>
+                  Export Full Log
+                </Button>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>
+                  PDF · Excel
+                </span>
+              </div>
             </div>
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, flexShrink: 0, marginLeft: 24 }}>
+          {/* Desktop button placed on right */}
+          <div className="hidden sm:flex flex-col items-end gap-1.5 shrink-0 ml-4">
             <Button variant="secondary" size="md" iconLeft={Download}>
               Export Full Log
             </Button>

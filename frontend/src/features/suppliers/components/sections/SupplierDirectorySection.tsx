@@ -43,7 +43,7 @@ export function SupplierDirectorySection({
         title="Supplier Directory"
         subtitle="Browse all raw-material suppliers, track their orders, ratings, and outstanding balances."
         actions={
-          <Button variant="secondary" size="md" iconLeft={Plus} onClick={onAddSupplier} className="bg-white/10 text-[#FFFDF9] border-white/20">
+          <Button variant="secondary" size="md" iconLeft={Plus} onClick={onAddSupplier} className="bg-white/10 text-[#FFFDF9] border-white/20 hover:bg-white/20 hover:text-white">
             Add New Supplier
           </Button>
         }
@@ -72,7 +72,7 @@ export function SupplierDirectorySection({
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 22 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {filtered.map((s, i) => {
             const stats = statsFor(s.id);
             return (
@@ -91,7 +91,7 @@ export function SupplierDirectorySection({
             );
           })}
           {filtered.length === 0 && (
-            <div style={{ gridColumn: "1 / -1", background: "#FFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, padding: "60px 24px", textAlign: "center" }}>
+            <div style={{ gridColumn: "1 / -1", background: "#FFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, padding: "60px 24px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
               <Building2 size={44} color={T.taupe} style={{ marginBottom: 12 }} />
               <div style={{ fontFamily: F.display, fontSize: 18, color: T.taupe }}>No suppliers match your search or filter.</div>
             </div>

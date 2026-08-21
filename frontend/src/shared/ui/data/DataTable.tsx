@@ -325,6 +325,7 @@ export function DataTable<T>({
                           color: "var(--text-primary)",
                           verticalAlign: "middle",
                           whiteSpace: col.type === "code" ? "nowrap" : undefined,
+                          width: col.width === "auto" ? undefined : col.width,
                         }}
                       >
                         {col.cell ? col.cell(value, row) : defaultCell(col, value)}

@@ -1,9 +1,6 @@
 import React from "react";
 import { BarChart2, Clock, Calendar, Download, FileText } from "lucide-react";
 
-// Unused legacy hero background — kept from the pre-split file for parity.
-export const imgHeaderBg = "https://images.unsplash.com/photo-1588140686379-1b76a52103dc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
-
 // ── SECTION 1 — PAGE HEADER (HERO) ──────────────────────────────────────────
 export const REPORTS_CHIPS = [
   { value: "8",        label: "Report Categories"      },

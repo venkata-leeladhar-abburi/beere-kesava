@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronDown, Calendar, Users, Download, Eye } from "lucide-react";
+import { ChevronDown, Calendar, Users, Download, Eye, LayoutGrid, List } from "lucide-react";
 import { useRatesPricing } from "@/features/pricing";
 import { T, F } from "../theme";
 import type { CodeCallbacks } from "../types";
@@ -40,6 +40,7 @@ function HistoryDropBtn({ label, icon }: { label: string; icon?: React.ReactNode
 
 export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
   const { getSareeTypeByName } = useRatesPricing();
+  const [viewMode, setViewMode] = useState<"card" | "table">("card");
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const { batches } = useBatches();
@@ -251,6 +252,34 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
           </div>
         </div>
 
+        {/* View mode toggle buttons — placed just below search bar */}
+        <div className="p-3 sm:px-6 bg-white border-x border-[rgba(110,15,45,0.10)] border-t border-t-[rgba(110,15,45,0.06)] flex items-center justify-start">
+          <div className="flex items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0">
+            <Button
+              onClick={() => setViewMode("card")}
+              variant="ghost"
+              className={`h-auto rounded-none gap-1.5 py-2 px-3 text-[12px] sm:text-[13px] font-bold ${
+                viewMode === "card"
+                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+              }`}
+            >
+              <LayoutGrid size={15} /> Card View
+            </Button>
+            <Button
+              onClick={() => setViewMode("table")}
+              variant="ghost"
+              className={`h-auto rounded-none gap-1.5 py-2 px-3 text-[12px] sm:text-[13px] font-bold ${
+                viewMode === "table"
+                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+              }`}
+            >
+              <List size={15} /> Table View
+            </Button>
+          </div>
+        </div>
+
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-3 sm:px-6 bg-[#F7F2EA] border-x border-b border-[rgba(110,15,45,0.10)]">
           <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, fontWeight: 500 }}>
             Showing <strong style={{ color: T.luxuryBrown }}>{HISTORY_BATCHES.length}</strong> of <strong style={{ color: T.luxuryBrown }}>{HISTORY_BATCHES.length}</strong> completed batches
@@ -271,7 +300,7 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
 
         <div style={{ overflowX: "auto", border: `1px solid ${T.borderDef}`, borderTop: "none", borderRadius: "0 0 12px 12px", boxShadow: "0 4px 16px rgba(74,6,27,0.07)", background: T.warmIvory }}>
           <DataTable
-            responsive
+            responsive={viewMode === "card"}
             columns={columns}
             data={filteredBatches}
             getRowId={b => b.id}

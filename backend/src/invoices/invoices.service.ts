@@ -1,7 +1,8 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
-import { InvoiceStatus, Prisma } from "../generated/prisma/client";
+import { CustomerType, InvoiceStatus, Prisma } from "../generated/prisma/client";
+import { IdGeneratorService, businessSegment } from "../id-generator/id-generator.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateInvoiceDto } from "./dto/create-invoice.dto";
 import { CreatePaymentDto } from "./dto/create-payment.dto";
@@ -16,6 +17,7 @@ const include = {
 export class InvoicesService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly idGenerator: IdGeneratorService,
     private readonly auditLog: AuditLogService,
   ) {}
 
@@ -23,6 +25,9 @@ export class InvoicesService {
     const customer = await this.prisma.customer.findUnique({ where: { id: dto.customerId } });
     if (!customer) {
       throw new NotFoundException(`Customer ${dto.customerId} not found`);
+    }
+    if (customer.type !== CustomerType.WHOLESALE) {
+      throw new BadRequestException(`Invoices can only be raised for wholesale customers (${customer.name} is retail)`);
     }
     if (dto.dispatchId) {
       const existing = await this.prisma.invoice.findUnique({
@@ -33,8 +38,11 @@ export class InvoicesService {
       }
     }
 
+    const code = await this.idGenerator.nextScoped("INV", customer.code ?? businessSegment(customer.name, "Customer"));
+
     const created = await this.prisma.invoice.create({
       data: {
+        code,
         customerId: dto.customerId,
         dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
         dispatchId: dto.dispatchId,
@@ -48,7 +56,7 @@ export class InvoicesService {
       action: `Created invoice for ${customer.name}`,
       entityType: "Invoice",
       entityId: created.id,
-      recordLabel: `INV-${created.id.slice(0, 8).toUpperCase()}`,
+      recordLabel: code,
       newValue: String(dto.total),
     });
 
@@ -125,7 +133,7 @@ export class InvoicesService {
       action: `Recorded payment of ${dto.amount} on invoice`,
       entityType: "Invoice",
       entityId: invoiceId,
-      recordLabel: `INV-${invoiceId.slice(0, 8).toUpperCase()}`,
+      recordLabel: invoice.code ?? invoiceId,
       oldValue: String(invoice.paid),
       newValue: String(newPaid),
     });

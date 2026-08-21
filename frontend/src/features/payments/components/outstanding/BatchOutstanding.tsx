@@ -77,28 +77,49 @@ export function BatchOutstanding({ sarees, search, ageFilter }: { sarees: Unifie
               g.looms.size ? `${g.looms.size} factory loom${g.looms.size > 1 ? "s" : ""}` : "",
             ].filter(Boolean).join(" · ");
             return (
-              <div key={g.key} style={{ border: `1px solid ${T.borderDef}`, borderRadius: 14, overflow: "hidden" }}>
-                <Button variant="ghost" onClick={() => setOpen(isOpen ? null : g.key)}
-                  className={`h-auto w-full justify-start gap-[14px] rounded-none px-[18px] py-[14px] text-left ${isOpen ? "bg-[rgba(110,15,45,0.04)]" : "bg-white"}`}>
-                  {isOpen ? <ChevronDown size={17} color={T.royalBurgundy} /> : <ChevronRight size={17} color={T.taupe} />}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div><EntityCode type="batch" value={g.key} size="sm" /></div>
-                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{parts || "—"}</div>
+              <div key={g.key} style={{ border: `1px solid ${T.borderDef}`, borderRadius: 18, background: "#FFFFFF", overflow: "hidden", boxShadow: "0 2px 10px rgba(0,0,0,0.03)" }}>
+                <button
+                  type="button"
+                  onClick={() => setOpen(isOpen ? null : g.key)}
+                  style={{
+                    width: "100%", padding: "16px 18px", background: isOpen ? "rgba(110,15,45,0.03)" : "#FFFFFF",
+                    border: "none", cursor: "pointer", textAlign: "left", display: "flex", flexDirection: "column", gap: 14,
+                  }}
+                >
+                  {/* Top Header Row: EntityCode & Subtitle on left, Chevron on right */}
+                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, width: "100%" }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div><EntityCode type="batch" value={g.key} size="sm" /></div>
+                      <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 4 }}>{parts || "—"}</div>
+                    </div>
+                    <div style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
+                      {isOpen ? <ChevronDown size={16} color={T.royalBurgundy} /> : <ChevronRight size={16} color={T.taupe} />}
+                    </div>
                   </div>
-                  <div style={{ display: "flex", gap: 22, alignItems: "center", flexWrap: "wrap", justifyContent: "flex-end" }}>
-                    {[
-                      { l: "Produced", v: String(g.all.length), c: T.luxuryBrown },
-                      { l: "Sold", v: String(g.soldRows.length), c: T.green },
-                      { l: "Outstanding", v: String(g.rows.length), c: T.crimson },
-                      { l: "Value", v: inr(val), c: T.royalBurgundy },
-                    ].map(k => (
-                      <div key={k.l} style={{ textAlign: "right", minWidth: 62 }}>
-                        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.7px" }}>{k.l}</div>
-                        <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: k.c }}>{k.v}</div>
-                      </div>
-                    ))}
+
+                  {/* Horizontal Divider Line */}
+                  <div style={{ width: "100%", height: 1, background: "rgba(110,15,45,0.08)" }} />
+
+                  {/* Stat Badges Grid */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 w-full">
+                    <div style={{ background: "#F6F4EF", borderRadius: 12, padding: "10px 12px", textAlign: "center" }}>
+                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, color: T.taupe, letterSpacing: "0.8px", textTransform: "uppercase", marginBottom: 4 }}>PRODUCED</div>
+                      <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{g.all.length}</div>
+                    </div>
+                    <div style={{ background: "#F6F4EF", borderRadius: 12, padding: "10px 12px", textAlign: "center" }}>
+                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, color: T.taupe, letterSpacing: "0.8px", textTransform: "uppercase", marginBottom: 4 }}>SOLD</div>
+                      <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.green }}>{g.soldRows.length}</div>
+                    </div>
+                    <div style={{ background: "rgba(192,57,43,0.06)", borderRadius: 12, padding: "10px 12px", textAlign: "center" }}>
+                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, color: T.crimson, letterSpacing: "0.8px", textTransform: "uppercase", marginBottom: 4 }}>OUTSTANDING</div>
+                      <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.crimson }}>{g.rows.length}</div>
+                    </div>
+                    <div style={{ background: "rgba(110,15,45,0.06)", borderRadius: 12, padding: "10px 12px", textAlign: "center" }}>
+                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, color: T.royalBurgundy, letterSpacing: "0.8px", textTransform: "uppercase", marginBottom: 4 }}>VALUE</div>
+                      <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.royalBurgundy }}>{inr(val)}</div>
+                    </div>
                   </div>
-                </Button>
+                </button>
                 <AnimatePresence initial={false}>
                   {isOpen && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ overflow: "hidden", background: "#FFFDF9" }}>

@@ -204,6 +204,12 @@ enum PurchaseRequestStatus {
   REJECTED
 }
 
+enum SupplierReturnStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 enum FinancialEntryKind {
   INCOME
   EXPENSE
@@ -340,6 +346,9 @@ model User {
   decidedRateChanges   RateChangeRequest[]     @relation("DecidedRateChanges")
   reportDownloads      ReportDownloadHistory[]
   createdPurchaseOrders PurchaseOrder[]
+  receivedGrnReceipts  GrnReceipt[]
+  requestedSupplierReturns SupplierReturnRequest[] @relation("RequestedSupplierReturns")
+  decidedSupplierReturns   SupplierReturnRequest[] @relation("DecidedSupplierReturns")
 
   @@index([role])
 }
@@ -399,7 +408,13 @@ model Weaver {
 
 model FactoryLoom {
   id            String     @id @default(uuid())
+  // Human-facing sequential id (e.g. "Loom-001") — generated via
+  // IdGeneratorService, distinct from `id` (UUID), which stays the real FK
+  // target everywhere else. `loomNumber` is the operator's own label for the
+  // machine ("Loom F-06") and is separate from this code.
+  code          String?    @unique
   loomNumber    String     @unique // BKB-F-0X
+  // Retained for existing rows; no longer collected when adding a loom.
   location      String?
   operatorName  String?
   operatorPhone String?
@@ -736,8 +751,8 @@ model Quotation {
   id              String          @id @default(uuid())
   quotationNumber String          @unique
   quotationDate   DateTime        @default(now())
-  customerId      String?
-  customer        Customer?       @relation(fields: [customerId], references: [id])
+  customerId      String
+  customer        Customer        @relation(fields: [customerId], references: [id])
   bulkOrderRef    String?
   bulkOrder       BulkOrder?      @relation(fields: [bulkOrderRef], references: [ref])
   applyGst        Boolean         @default(false)
@@ -884,6 +899,14 @@ model Saree {
   sareeType     SareeTypeRate? @relation(fields: [sareeTypeCode], references: [code])
   weightG       Decimal?       @db.Decimal(10, 2)
   costPrice     Decimal?       @db.Decimal(12, 2)
+  // Free-text descriptors, set only for pieces registered by hand rather than
+  // produced through the batch pipeline — a wholesale return arrives with no
+  // barcode, so the operator's description is the only record of it. Same
+  // pattern (and spelling) as PurchaseSareeLine.color/sareeType.
+  color         String?
+  // Where a hand-registered piece came from, when it is not a Vendor/Supplier
+  // record — e.g. the wholesale customer named on a return.
+  sourceName    String?
   qcDate        DateTime?
   status        SareeStatus    @default(UNSOLD)
   createdAt     DateTime       @default(now())
@@ -902,8 +925,8 @@ model SaleRecord {
   saree      Saree        @relation(fields: [sareeId], references: [id])
   channel    SalesChannel
   date       DateTime     @default(now())
-  customerId String?
-  customer   Customer?    @relation(fields: [customerId], references: [id])
+  customerId String
+  customer   Customer     @relation(fields: [customerId], references: [id])
   amount     Decimal      @db.Decimal(12, 2)
 
   @@index([sareeId])
@@ -944,6 +967,7 @@ model Supplier {
   terms       String?
   bankName    String?
   accountNo   String?
+  ifscCode    String?
   notes       String?
   status      PartyStatus @default(ACTIVE)
   rating      Int?
@@ -952,6 +976,7 @@ model Supplier {
   purchases        Purchase[]
   purchaseRequests PurchaseRequest[]
   payments         SupplierPayment[]
+  returnRequests   SupplierReturnRequest[]
 }
 
 model SupplierPayment {
@@ -987,6 +1012,7 @@ model Vendor {
   terms       String?
   bankName    String?
   accountNo   String?
+  ifscCode    String?
   notes       String?
   status      PartyStatus @default(ACTIVE)
   rating      Int?
@@ -1023,6 +1049,7 @@ model Purchase {
 
   sarees     Saree[]
   sareeLines PurchaseSareeLine[]
+  supplierReturnRequests SupplierReturnRequest[]
 
   @@index([supplierId])
 }
@@ -1059,7 +1086,39 @@ model PurchaseSareeLine {
   // the first `returnedQuantity` expanded pieces of the line as returned.
   returnedQuantity Int @default(0)
 
+  supplierReturnRequests SupplierReturnRequest[]
+
   @@index([purchaseId])
+}
+
+// A request to send purchased sarees back to the supplier. Approval is a
+// separate step from the request itself (mirrors PurchaseRequest): the pieces
+// stay counted as on-hand stock until an admin approves, at which point
+// PurchaseSareeLine.returnedQuantity is incremented — which is what already
+// drives "Returned" in the External Purchases saree list — and the request
+// becomes the permanent record in the Supplier Returns section.
+model SupplierReturnRequest {
+  id            String               @id // RR-<SupplierCode>-NNN
+  purchaseId    String
+  purchase      Purchase             @relation(fields: [purchaseId], references: [id])
+  supplierId    String
+  supplier      Supplier             @relation(fields: [supplierId], references: [id])
+  sareeLineId   String
+  sareeLine     PurchaseSareeLine    @relation(fields: [sareeLineId], references: [id])
+  quantity      Int
+  reason        String?
+  status        SupplierReturnStatus @default(PENDING)
+  requestedById String
+  requestedBy   User                 @relation("RequestedSupplierReturns", fields: [requestedById], references: [id])
+  decidedById   String?
+  decidedBy     User?                @relation("DecidedSupplierReturns", fields: [decidedById], references: [id])
+  decidedAt     DateTime?
+  decisionNote  String?
+  createdAt     DateTime             @default(now())
+
+  @@index([status])
+  @@index([purchaseId])
+  @@index([supplierId])
 }
 
 model PurchaseOrder {
@@ -1232,6 +1291,10 @@ model VendorPayment {
 
 model Invoice {
   id          String         @id @default(uuid())
+  // Human-facing id (INV-<WholesaleCustomerCode>-NNN), distinct from `id`
+  // (UUID) which stays the real FK target everywhere else — mirrors
+  // Customer.code/FactoryLoom.code.
+  code        String?        @unique
   customerId  String
   customer    Customer       @relation(fields: [customerId], references: [id])
   invoiceDate DateTime       @default(now())
@@ -1395,8 +1458,8 @@ model RawMaterialStock {
 
 model GrnReceipt {
   id           String    @id // GRN-2026-NNN
-  vendorId     String?
-  vendor       Vendor?   @relation(fields: [vendorId], references: [id])
+  vendorId     String
+  vendor       Vendor    @relation(fields: [vendorId], references: [id])
   // Which of the company's legal firms this material was purchased for/by —
   // was previously always displayed as a hardcoded "Beere Kesava Silks
   // (Head Firm)" placeholder on the frontend with no real backing data.
@@ -1408,6 +1471,8 @@ model GrnReceipt {
   receivedDate DateTime  @default(now())
   notes        String?
   createdAt    DateTime  @default(now())
+  receivedById String?
+  receivedBy   User?     @relation(fields: [receivedById], references: [id])
 
   items          GrnItem[]
   purchaseOrders PurchaseOrder[]

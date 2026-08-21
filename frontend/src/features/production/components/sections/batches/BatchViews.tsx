@@ -358,7 +358,7 @@ export function BatchTableView({ batches, onView, onEdit }: { batches: Batch[]; 
   return (
     <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 6px 24px rgba(74,6,27,0.05)" }}>
       <div style={{ overflowX: "auto" }}>
-        <DataTable responsive columns={columns} data={batches} getRowId={b => b.id} />
+        <DataTable columns={columns} data={batches} getRowId={b => b.id} />
       </div>
       <div style={{ padding: "14px 20px", borderTop: `1px solid ${T.borderDef}`, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Showing {batches.length} of {batches.length} batches</div>
     </div>

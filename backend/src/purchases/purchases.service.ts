@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { PaginatedResult } from "../common/pagination";
 import { Prisma } from "../generated/prisma/client";
-import { IdGeneratorService } from "../id-generator/id-generator.service";
+import { IdGeneratorService, businessSegment } from "../id-generator/id-generator.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreatePurchaseDto } from "./dto/create-purchase.dto";
 import { CreatePurchaseSareeLineDto } from "./dto/create-purchase-saree-line.dto";
@@ -40,8 +40,9 @@ export class PurchasesService {
   ) {}
 
   async create(dto: CreatePurchaseDto) {
+    let supplier: { code: string | null; name: string } | null = null;
     if (dto.supplierId) {
-      const supplier = await this.prisma.supplier.findUnique({ where: { id: dto.supplierId } });
+      supplier = await this.prisma.supplier.findUnique({ where: { id: dto.supplierId } });
       if (!supplier) {
         throw new NotFoundException(`Supplier ${dto.supplierId} not found`);
       }
@@ -50,8 +51,13 @@ export class PurchasesService {
     }
 
     const sareeCount = dto.sareeCount ?? dto.sarees.reduce((sum, l) => sum + (l.quantity ?? 1), 0);
-    const year = new Date().getFullYear();
-    const id = await this.idGenerator.nextFormatted(`${EXT_PURCHASE_ID_PREFIX}-${year}`);
+    // Scoped per supplier (registered or not) — an unregistered ("Other,
+    // enter manually") supplier still gets its own independent sequence,
+    // keyed off its free-text name rather than a real Tier-1 code.
+    const supplierSegment = supplier
+      ? supplier.code ?? businessSegment(supplier.name, "Supplier")
+      : businessSegment(dto.supplierName!, "Supplier");
+    const id = await this.idGenerator.nextScoped(EXT_PURCHASE_ID_PREFIX, supplierSegment);
 
     return this.prisma.purchase.create({
       data: {

@@ -1,13 +1,14 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
-import { Prisma, SalesChannel } from "../generated/prisma/client";
-import { IdGeneratorService } from "../id-generator/id-generator.service";
+import { Prisma, SalesChannel, SareeOrigin, SareeStatus } from "../generated/prisma/client";
+import { IdGeneratorService, businessSegment, nameSegment } from "../id-generator/id-generator.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateReturnDto } from "./dto/create-return.dto";
 import { CreateSaleDto } from "./dto/create-sale.dto";
 import { ListReturnQueryDto } from "./dto/list-return-query.dto";
 import { ListSaleQueryDto } from "./dto/list-sale-query.dto";
+import { RegisterReturnedSareeDto } from "./dto/register-returned-saree.dto";
 
 const saleInclude = {
   saree: true,
@@ -54,14 +55,26 @@ export class SalesService {
     if (inventory?.status === "DAMAGED_REVIEW_NEEDED") {
       throw new BadRequestException(`Saree ${dto.sareeId} is flagged for damage review`);
     }
-    if (dto.channel === SalesChannel.WHOLESALE && dto.customerId) {
-      const customer = await this.prisma.customer.findUnique({ where: { id: dto.customerId } });
-      if (!customer) {
-        throw new NotFoundException(`Customer ${dto.customerId} not found`);
-      }
+    const customer = await this.prisma.customer.findUnique({ where: { id: dto.customerId } });
+    if (!customer) {
+      throw new NotFoundException(`Customer ${dto.customerId} not found`);
+    }
+    const expectedType = dto.channel === SalesChannel.WHOLESALE ? "WHOLESALE" : "RETAIL";
+    if (customer.type !== expectedType) {
+      throw new BadRequestException(
+        `${dto.channel === SalesChannel.WHOLESALE ? "Wholesale" : "Retail"} sales require a ${expectedType.toLowerCase()} customer (${customer.name} is ${customer.type.toLowerCase()})`,
+      );
     }
 
-    const saleRef = await this.idGenerator.nextFormatted("SALE");
+    // "RETAIL-<Customer>-NNN", scoped per customer; wholesale sales mirror the
+    // same shape ("WHOLESALE-<Customer>-NNN") since no separate format was
+    // ever specified for that channel.
+    const salePrefix = dto.channel === SalesChannel.WHOLESALE ? "WHOLESALE" : "RETAIL";
+    const saleSegment =
+      dto.channel === SalesChannel.WHOLESALE
+        ? customer.code ?? businessSegment(customer.name, "Customer")
+        : customer.code ?? nameSegment(customer.name, "Customer");
+    const saleRef = await this.idGenerator.nextScoped(salePrefix, saleSegment);
     const sareeStatus = dto.channel === SalesChannel.WHOLESALE ? "WHOLESALE" : "RETAIL";
 
     await this.prisma.$transaction([
@@ -145,6 +158,95 @@ export class SalesService {
     return record;
   }
 
+  /**
+   * Registers a wholesale return whose piece was never in the system: creates the
+   * Saree from the operator's description under the tag id they attached, records
+   * the return against it, and puts it into shop stock — all in one transaction so
+   * a half-registered piece can never exist. createReturn() below handles the
+   * normal case, where the saree was sold by us and already has a record.
+   */
+  async registerReturnedSaree(dto: RegisterReturnedSareeDto) {
+    const existing = await this.prisma.saree.findUnique({ where: { id: dto.sareeId } });
+    if (existing) {
+      throw new ConflictException(
+        `Saree ${dto.sareeId} already exists — use a tag id that is not already in use.`,
+      );
+    }
+
+    // Master-data links are resolved up front and rejected when unknown, rather
+    // than silently dropped: the operator's description is the only record of
+    // this piece, so quietly discarding part of it would lose real information.
+    let designCode: string | undefined;
+    if (dto.designCode?.trim()) {
+      const design = await this.prisma.designLibrary.findUnique({
+        where: { code: dto.designCode.trim() },
+      });
+      if (!design) {
+        throw new BadRequestException(`Design code ${dto.designCode} is not in the design library.`);
+      }
+      designCode = design.code;
+    }
+
+    let sareeTypeCode: string | undefined;
+    if (dto.sareeType?.trim()) {
+      const sareeType = await this.prisma.sareeTypeRate.findFirst({
+        where: { type: { equals: dto.sareeType.trim(), mode: "insensitive" } },
+      });
+      if (!sareeType) {
+        throw new BadRequestException(`Saree type "${dto.sareeType}" is not a configured saree type.`);
+      }
+      sareeTypeCode = sareeType.code;
+    }
+
+    // "RR-<Customer>-NNN" — this untracked path has no registered Customer to
+    // read a type from (sourceName is free text, whoever handed the piece
+    // back), so it always reads as a business name, matching the wholesale
+    // flow this registration form is built for.
+    const returnRef = await this.idGenerator.nextNamed("RET", businessSegment(dto.sourceName, "Return"));
+
+    await this.prisma.$transaction([
+      this.prisma.saree.create({
+        data: {
+          id: dto.sareeId,
+          origin: SareeOrigin.EXTERNAL,
+          designCode,
+          sareeTypeCode,
+          weightG: dto.weightG,
+          costPrice: dto.costPrice,
+          color: dto.color?.trim() || undefined,
+          sourceName: dto.sourceName.trim(),
+          // Restocked on arrival, so it is immediately sellable.
+          status: SareeStatus.UNSOLD,
+        },
+      }),
+      this.prisma.returnRecord.create({
+        data: {
+          returnRef,
+          sareeId: dto.sareeId,
+          reason: dto.reason,
+          refundAmount: dto.costPrice,
+          restocked: true,
+        },
+      }),
+      // FINISHING_COMPLETE is what InventoryService.findAll() treats as
+      // available stock; rawType RETURN marks how it entered.
+      this.prisma.inventoryRecord.create({
+        data: { sareeId: dto.sareeId, status: "FINISHING_COMPLETE", rawType: "RETURN" },
+      }),
+    ]);
+
+    await this.auditLog.recordAction({
+      actorId: dto.actorId,
+      module: "SALES",
+      action: `Registered wholesale return ${returnRef} as new saree ${dto.sareeId} from ${dto.sourceName}`,
+      entityType: "ReturnRecord",
+      entityId: returnRef,
+      recordLabel: returnRef,
+    });
+
+    return this.findOneReturn(returnRef);
+  }
+
   async createReturn(dto: CreateReturnDto) {
     const saree = await this.prisma.saree.findUnique({ where: { id: dto.sareeId } });
     if (!saree) {
@@ -154,7 +256,23 @@ export class SalesService {
       throw new BadRequestException(`Saree ${dto.sareeId} was not sold (status: ${saree.status})`);
     }
 
-    const returnRef = await this.idGenerator.nextFormatted("RET");
+    // "RR-<Customer>-NNN" — the customer is whoever this saree's most recent
+    // sale was to; SaleRecord.customerId is required, so a sold saree always
+    // has one. Wholesale reads as the business name, retail as a first name,
+    // mirroring how Quotation/Invoice/SaleRecord segments are chosen.
+    const sale = await this.prisma.saleRecord.findFirst({
+      where: { sareeId: dto.sareeId },
+      orderBy: { date: "desc" },
+      include: { customer: true },
+    });
+    if (!sale) {
+      throw new NotFoundException(`No sale record found for saree ${dto.sareeId} — cannot determine the returning customer`);
+    }
+    const segment =
+      sale.customer.type === "WHOLESALE"
+        ? businessSegment(sale.customer.name, "Return")
+        : nameSegment(sale.customer.name, "Return");
+    const returnRef = await this.idGenerator.nextNamed("RET", segment);
     const restocked = dto.restocked ?? false;
 
     await this.prisma.$transaction([

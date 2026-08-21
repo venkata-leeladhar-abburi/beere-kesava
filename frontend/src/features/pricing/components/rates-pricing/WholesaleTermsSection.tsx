@@ -97,14 +97,16 @@ export function WholesaleTermsSection() {
       subtitle="Configure payment terms and overdue alert thresholds for each wholesale customer. Alert start day is a global setting applied to all customers."
     >
       {/* Global Alert Setting Strip */}
-      <div style={{
-        background: "rgba(200,155,71,0.08)", border: `1px solid rgba(200,155,71,0.28)`,
-        borderRadius: 12, padding: "14px 20px", display: "flex", alignItems: "center",
-        justifyContent: "space-between", marginBottom: 20,
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <Clock size={16} color={T.antiqueGold} />
-          <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>
+      <div
+        className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+        style={{
+          background: "rgba(200,155,71,0.08)", border: `1px solid rgba(200,155,71,0.28)`,
+          borderRadius: 12, padding: "14px 20px", marginBottom: 20,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 0 }}>
+          <Clock size={16} color={T.antiqueGold} className="shrink-0" />
+          <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, lineHeight: 1.5 }}>
             Payment alerts start from:{" "}
             <strong style={{ color: T.antiqueGold, fontSize: 14 }}>Day {globalAlertDay}</strong>{" "}
             for all customers
@@ -113,15 +115,18 @@ export function WholesaleTermsSection() {
 
         <AnimatePresence mode="wait">
           {!editAlertDay ? (
-            <GoldLink onClick={() => { setTempAlertDay(globalAlertDay); setEditAlertDay(true); }}>
-              <Edit2 size={12} /> Edit Alert Day
-            </GoldLink>
+            <div className="shrink-0 whitespace-nowrap">
+              <GoldLink onClick={() => { setTempAlertDay(globalAlertDay); setEditAlertDay(true); }}>
+                <Edit2 size={12} /> Edit Alert Day
+              </GoldLink>
+            </div>
           ) : (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              style={{ display: "flex", alignItems: "center", gap: 8 }}
+              style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}
+              className="shrink-0"
             >
               <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>Alert starts from Day:</span>
               <NumberInput value={tempAlertDay} onValueChange={v => setTempAlertDay(Number(v))} className="w-[70px] bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />

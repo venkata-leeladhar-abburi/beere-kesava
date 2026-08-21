@@ -7,7 +7,7 @@ import { useBatches } from "@/features/production";
 import { T, F, inp } from "../../theme";
 import { WholesaleCustomer } from "@/features/bulk-orders";
 import { TransportData, InvoiceData } from "../../types";
-import { Field, TextInput, SelectInput } from "../../common/primitives";
+import { Field, SelectInput } from "../../common/primitives";
 import { Button, CurrencyInput, NumberInput, CheckboxField, Textarea } from "../../../../../shared/ui/primitives";
 import { DatePicker, formatDate } from "../../../../../shared/ui/date";
 import { toPaise, fromPaise } from "../../../../../lib/gst";
@@ -88,8 +88,14 @@ export function InvoiceGenerator({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: "12px 16px" }}>
-          <Field label={`${docLabel} Number`} req>
-            <TextInput value={data.invoiceNumber} onChange={set("invoiceNumber") as (v: string) => void} placeholder={isQuotation ? "QT-2026-001" : "INV-2026-001"} mono />
+          {/* Server-assigned: the number is allocated by the backend's sequential
+              id generator when the document is saved, so it is shown read-only
+              rather than typed. It was previously an editable field pre-filled
+              from Date.now(), which produced random, colliding numbers. */}
+          <Field label={`${docLabel} Number`}>
+            <div style={{ ...inp, display: "flex", alignItems: "center", color: T.taupe, fontFamily: "var(--font-mono)", fontSize: 13 }}>
+              {data.invoiceNumber || "Auto-generated on save"}
+            </div>
           </Field>
           <Field label={`${docLabel} Date`} req>
             <DatePicker value={data.invoiceDate ? new Date(data.invoiceDate) : null} onChange={d => set("invoiceDate")(d ? formatDate(d, "iso") : "")} />
@@ -203,7 +209,7 @@ export function InvoiceGenerator({
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14, paddingBottom: 14, borderBottom: `1px solid ${T.borderDef}` }}>
             <div>
               <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: T.royalBurgundy }}>{isQuotation ? "QUOTATION" : "TAX INVOICE"}</div>
-              <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 2 }}>{data.invoiceNumber || (isQuotation ? "QT-XXXX" : "INV-XXXX")}</div>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 2 }}>{data.invoiceNumber || "Auto-generated"}</div>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>Date: {data.invoiceDate || todayStr}</div>
               {bulkOrderRef && (
                 <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 3 }}>

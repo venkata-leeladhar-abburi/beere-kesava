@@ -1,35 +1,12 @@
 import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
-import { formatSequenceId, nextAvailableSequenceNumber } from "../common/sequence-id.util";
 import { Prisma } from "../generated/prisma/client";
+import { IdGeneratorService, nameSegment } from "../id-generator/id-generator.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateWeaverDto } from "./dto/create-weaver.dto";
 import { ListWeaversQueryDto } from "./dto/list-weavers-query.dto";
 import { UpdateWeaverDto } from "./dto/update-weaver.dto";
-
-/**
- * Gap-filled weaver code (e.g. "RAVI-001") — prefixed with the weaver's own
- * first name instead of a fixed "WEA" prefix, so each weaver's id reads like
- * the saree-id initials convention used elsewhere (e.g. "RAVI-L2-004"). The
- * numeric suffix is still a single sequence gap-filled across *all* weavers
- * regardless of name, scoped to however many Weaver rows currently exist —
- * deleting a weaver frees its number for reuse by the next weaver created
- * (of any name). Exported standalone so UsersService can call it from inside
- * its own transaction when auto-creating a linked Weaver for a WEAVER-role User.
- */
-export async function nextWeaverCode(
-  client: Pick<Prisma.TransactionClient, "weaver">,
-  firstName: string,
-): Promise<string> {
-  const existing = await client.weaver.findMany({ select: { code: true } });
-  const usedNumbers = existing
-    .map((w) => /-(\d+)$/.exec(w.code)?.[1])
-    .filter((v): v is string => !!v)
-    .map(Number);
-  const n = nextAvailableSequenceNumber(usedNumbers);
-  return formatSequenceId(firstName.trim().toUpperCase().slice(0, 10), n);
-}
 
 export interface WeaverStats {
   weaverId: string;
@@ -64,12 +41,16 @@ export class WeaversService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditLog: AuditLogService,
+    private readonly idGenerator: IdGeneratorService,
   ) {}
 
   async create(dto: CreateWeaverDto) {
     const name = `${dto.firstName} ${dto.lastName}`.trim();
     const initials = (dto.initials ?? dto.firstName).toUpperCase().slice(0, 10);
-    const code = await nextWeaverCode(this.prisma, dto.firstName);
+    // "<FirstName>-NNN", e.g. "Padma-001" — one counter shared across all
+    // weavers, allocated DB-side so concurrent creates can't collide. `initials`
+    // (used in saree ids like "RAVI-L2-004") stays a separate field.
+    const code = await this.idGenerator.nextNamed("WEAVER", nameSegment(dto.firstName));
 
     let weaver;
     try {

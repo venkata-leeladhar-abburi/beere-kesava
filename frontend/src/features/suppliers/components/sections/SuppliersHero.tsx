@@ -46,13 +46,13 @@ export function SuppliersHero({
           <p className="max-w-[600px]" style={{ fontFamily: F.ui, fontSize: "clamp(15px, 3.5vw, 18px)", color: "rgba(255,253,249,0.70)", margin: "0 0 20px", lineHeight: 1.6 }}>
             Manage every saree supplier. Track external purchase inventory, payment history, and raise purchase requests for approval.
           </p>
-          <div style={{ display: "flex", gap: 12, alignSelf: "flex-start", flexShrink: 0 }}>
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
             <Button
               variant="secondary"
               size="lg"
               iconLeft={Send}
               onClick={onAddExternalPurchase}
-              className="bg-white/10 border-[rgba(200,155,71,0.4)] text-[#E7C983] hover:bg-white/15"
+              className="w-full sm:w-auto bg-white/10 border-[rgba(200,155,71,0.4)] text-[#E7C983] hover:bg-white/15 justify-center"
             >
               Add External Purchase
             </Button>
@@ -61,7 +61,7 @@ export function SuppliersHero({
               size="lg"
               iconLeft={Plus}
               onClick={onAddSupplier}
-              className="border-none shadow-[0_4px_20px_rgba(200,155,71,0.35)] bg-[linear-gradient(135deg,#C89B47,#E7C983)] text-[#2C0913] hover:bg-[linear-gradient(135deg,#C89B47,#E7C983)]"
+              className="w-full sm:w-auto border-none shadow-[0_4px_20px_rgba(200,155,71,0.35)] bg-[linear-gradient(135deg,#C89B47,#E7C983)] text-[#2C0913] hover:bg-[linear-gradient(135deg,#C89B47,#E7C983)] justify-center"
             >
               Add New Supplier
             </Button>

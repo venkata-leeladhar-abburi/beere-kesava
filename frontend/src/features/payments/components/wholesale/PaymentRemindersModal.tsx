@@ -5,16 +5,13 @@ import { toast } from "sonner";
 
 import { F, T } from "../../theme";
 import { Invoice } from "../../types";
-import { Button, Checkbox, IconButton, Select, SelectItem } from "../../../../shared/ui/primitives";
+import { Button, IconButton, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
 import { rupees, formatMoney } from "@/lib/domain/money";
 
 // ── Payment Reminders Modal ───────────────────────────────────────────────────
 export function PaymentRemindersModal({ open, onClose, overdueInvoices }: { open: boolean; onClose: () => void; overdueInvoices: Invoice[] }) {
-  const [sending, setSending] = useState(false);
-  const [channels, setChannels] = useState({ whatsapp: true });
   const [selectedInvoiceId, setSelectedInvoiceId] = useState(overdueInvoices[0]?.id || "");
-  const [scheduleType, setScheduleType] = useState("immediate");
 
   useEffect(() => {
     if (overdueInvoices.length > 0 && !selectedInvoiceId) {
@@ -24,13 +21,26 @@ export function PaymentRemindersModal({ open, onClose, overdueInvoices }: { open
 
   const currentInvoice = overdueInvoices.find(i => i.id === selectedInvoiceId) || overdueInvoices[0];
 
+  // Opens WhatsApp for the selected customer with the reminder prefilled. There
+  // is no outbound-messaging backend, so this previously ran a timer and
+  // reported that reminders had been sent to every overdue customer when
+  // nothing had been sent at all.
+  const phoneDigits = (currentInvoice?.customerPhone || "").replace(/\D/g, "");
+  // Indian mobile numbers are stored as 10 digits; wa.me needs a country code.
+  const waNumber = phoneDigits.length === 10 ? `91${phoneDigits}` : phoneDigits;
+
   const handleSend = () => {
-    setSending(true);
-    setTimeout(() => {
-      setSending(false);
-      toast.success(`Successfully sent payment reminders to ${overdueInvoices.length} customers!`);
-      onClose();
-    }, 1200);
+    if (!currentInvoice) return;
+    if (!phoneDigits) {
+      toast.error(`No phone number on file for ${currentInvoice.customer}.`);
+      return;
+    }
+    window.open(
+      `https://wa.me/${waNumber}?text=${encodeURIComponent(getPreviewText(currentInvoice))}`,
+      "_blank",
+      "noopener,noreferrer",
+    );
+    toast.success(`WhatsApp opened for ${currentInvoice.customer} — send the message there.`);
   };
 
   const getPreviewText = (inv: Invoice) => {
@@ -49,7 +59,7 @@ export function PaymentRemindersModal({ open, onClose, overdueInvoices }: { open
             </div>
           </Dialog.Title>
           <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.70)", marginTop: 4 }}>
-            Configure and schedule alerts for {overdueInvoices.length} overdue invoices
+            Send a WhatsApp reminder for any of {overdueInvoices.length} overdue invoices
           </div>
           <Dialog.Close asChild>
             <IconButton icon={X} label="Close" variant="ghost" size="sm"
@@ -80,54 +90,22 @@ export function PaymentRemindersModal({ open, onClose, overdueInvoices }: { open
             </div>
           )}
 
-          {/* Channels Choice */}
-          <div>
-            <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 10 }}>Notification Channels</div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 14 }}>
-              {[
-                { key: "whatsapp", label: "WhatsApp Chat", sub: "Auto-send message" }
-              ].map(ch => (
-                <label key={ch.key} style={{ display: "flex", flexDirection: "column", gap: 4, padding: "12px 14px", background: "#FFFFFF", border: `1.5px solid ${channels[ch.key as keyof typeof channels] ? T.royalBurgundy : T.borderDef}`, borderRadius: 12, cursor: "pointer", position: "relative" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <Checkbox
-                      checked={channels[ch.key as keyof typeof channels]}
-                      onCheckedChange={() => setChannels(prev => ({ ...prev, [ch.key]: !prev[ch.key as keyof typeof channels] }))}
-                    />
-                    <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{ch.label}</span>
-                  </div>
-                  <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginLeft: 22 }}>{ch.sub}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* Alert Schedule options */}
-          <div>
-            <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 10 }}>Reminder Schedule</div>
-            <div style={{ display: "flex", gap: 10 }}>
-              {[
-                { key: "immediate", label: "Send Immediately", desc: "One-time broadcast" },
-                { key: "daily", label: "Daily (Until Paid)", desc: "Gentle nudge daily" },
-                { key: "weekly", label: "Weekly (Every Mon)", desc: "Structured reminder" }
-              ].map(s => (
-                <Button
-                  key={s.key}
-                  variant="secondary"
-                  onClick={() => setScheduleType(s.key)}
-                  className={`h-auto flex-1 flex-col rounded-[10px] py-3 text-center ${scheduleType === s.key ? "border-[1.5px] border-[#6E0F2D] bg-[rgba(110,15,45,0.05)]" : "border-[1.5px] bg-white"}`}
-                >
-                  <div style={{ fontSize: 13, fontWeight: 700, color: scheduleType === s.key ? T.royalBurgundy : T.luxuryBrown }}>{s.label}</div>
-                  <div style={{ fontSize: 12, color: T.taupe, marginTop: 4 }}>{s.desc}</div>
-                </Button>
-              ))}
-            </div>
+          {/* Reminders are sent one customer at a time through WhatsApp. Scheduled
+              / recurring reminders would need an outbound messaging service the
+              backend does not have, so they are not offered here rather than
+              being shown as options that silently do nothing. */}
+          <div style={{ background: "rgba(200,155,71,0.08)", border: `1px solid rgba(200,155,71,0.28)`, borderRadius: 12, padding: "12px 14px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, lineHeight: 1.6 }}>
+            Opens WhatsApp with this message ready to send to{" "}
+            <strong>{currentInvoice?.customer ?? "the customer"}</strong>
+            {phoneDigits ? <> on <strong>{currentInvoice?.customerPhone}</strong></> : <> — no phone number on file</>}.
+            Pick another invoice above to remind a different customer.
           </div>
         </div>
 
         <div style={{ padding: "18px 28px 24px", borderTop: `1px solid ${T.borderDef}`, display: "flex", gap: 10, justifyContent: "flex-end", flexShrink: 0 }}>
           <Button variant="tertiary" onClick={onClose} className="rounded-full text-[var(--text-tertiary)]">Cancel</Button>
-          <Button variant="primary" onClick={handleSend} loading={sending} className="rounded-full bg-[#6E0F2D]">
-            Confirm & Send
+          <Button variant="primary" onClick={handleSend} disabled={!currentInvoice || !phoneDigits} className="rounded-full bg-[#6E0F2D]">
+            Open WhatsApp
           </Button>
         </div>
     </Modal>

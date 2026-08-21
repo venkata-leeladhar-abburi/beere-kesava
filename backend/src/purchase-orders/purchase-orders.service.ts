@@ -1,8 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { AuditLogService } from "../audit-log/audit-log.service";
-import { PaginatedResult } from "../common/pagination";
 import { NotificationTargetType, Prisma, PurchaseOrderStatus, UserRole } from "../generated/prisma/client";
-import { IdGeneratorService } from "../id-generator/id-generator.service";
+import { IdGeneratorService, businessSegment } from "../id-generator/id-generator.service";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { ActorOnlyDto } from "./dto/actor-only.dto";
@@ -26,8 +25,7 @@ export class PurchaseOrdersService {
       throw new NotFoundException(`Vendor ${dto.vendorId} not found`);
     }
 
-    const year = new Date().getFullYear();
-    const poNumber = await this.idGenerator.nextFormatted(`PO-${year}`);
+    const poNumber = await this.idGenerator.nextScoped("PO", vendor.code ?? businessSegment(vendor.name, "Vendor"));
 
     const po = await this.prisma.purchaseOrder.create({
       data: {
@@ -68,11 +66,7 @@ export class PurchaseOrdersService {
 
   async findAll(
     query: ListPurchaseOrdersQueryDto,
-  ): Promise<
-    PaginatedResult<
-      Prisma.PurchaseOrderGetPayload<{ include: { vendor: true; items: true; createdBy: { select: { firstName: true; lastName: true } } } }>
-    >
-  > {
+  ) {
     const where: Prisma.PurchaseOrderWhereInput = {
       status: query.status,
       vendorId: query.vendorId,
@@ -81,7 +75,12 @@ export class PurchaseOrdersService {
     const [items, total] = await Promise.all([
       this.prisma.purchaseOrder.findMany({
         where,
-        include: { vendor: true, items: true, createdBy: { select: { firstName: true, lastName: true } } },
+        include: { 
+          vendor: true, 
+          items: true, 
+          createdBy: { select: { firstName: true, lastName: true } },
+          grnReceipt: { include: { receivedBy: { select: { id: true, firstName: true, lastName: true } } } }
+        },
         skip: (query.page - 1) * query.pageSize,
         take: query.pageSize,
         orderBy: { createdAt: "desc" },
@@ -164,8 +163,9 @@ export class PurchaseOrdersService {
       }
     }
 
-    const year = new Date().getFullYear();
-    const grnId = grnReceipt?.id ?? (await this.idGenerator.nextFormatted(`GRN-${year}`));
+    const grnId =
+      grnReceipt?.id ??
+      (await this.idGenerator.nextScoped("GRN", po.vendor.code ?? businessSegment(po.vendor.name, "Vendor")));
     const actualReceivedDate = dto.actualReceivedDate ? new Date(dto.actualReceivedDate) : new Date();
 
     const updated = await this.prisma.purchaseOrder.update({

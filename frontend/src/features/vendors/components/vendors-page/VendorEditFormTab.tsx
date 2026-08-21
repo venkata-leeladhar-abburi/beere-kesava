@@ -2,14 +2,23 @@ import React from "react";
 import { Star } from "lucide-react";
 import { T, F } from "./theme";
 import { Vendor } from "./types";
-import { PAYMENT_TERMS, STATES } from "./data";
-import { Button, Field, Input, Textarea, Select, SelectItem, CheckboxField } from "../../../../shared/ui/primitives";
+import { Button, Field, Input, Textarea, CheckboxField } from "../../../../shared/ui/primitives";
 
 export function VendorEditFormTab({ vendor, onUpdate }: { vendor: Vendor; onUpdate?: (v: Vendor) => void }) {
   const [form, setForm] = React.useState(vendor);
   const set = <K extends keyof Vendor>(k: K, v: Vendor[K]) => setForm(p => ({ ...p, [k]: v }));
 
-  React.useEffect(() => { setForm(vendor); }, [vendor]);
+  const [cardPreview, setCardPreview] = React.useState<string | null>(vendor.visitingCard || null);
+
+  React.useEffect(() => { 
+    setForm(vendor); 
+    setCardPreview(vendor.visitingCard || null);
+  }, [vendor]);
+
+  const handleSave = () => {
+    const finalWhatsapp = form.whatsapp?.trim() ? form.whatsapp : form.phone;
+    onUpdate?.({ ...form, whatsapp: finalWhatsapp, visitingCard: cardPreview || undefined });
+  };
 
   const lbl: React.CSSProperties = {
     fontFamily: F.ui, fontSize: 12, fontWeight: 600,
@@ -20,7 +29,7 @@ export function VendorEditFormTab({ vendor, onUpdate }: { vendor: Vendor; onUpda
     <div style={{ background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, padding: "28px 32px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
         <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 600, color: T.luxuryBrown }}>Edit Profile</div>
-        <Button onClick={() => onUpdate?.(form)} variant="primary" size="sm" className="rounded-lg bg-[#6E0F2D]">Save Changes</Button>
+        <Button onClick={handleSave} variant="primary" size="sm" className="rounded-lg bg-[#6E0F2D]">Save Changes</Button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 32 }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -43,9 +52,7 @@ export function VendorEditFormTab({ vendor, onUpdate }: { vendor: Vendor; onUpda
               <Input value={form.city} onChange={e => set("city", e.target.value)} placeholder="City" />
             </Field>
             <Field label="State" required id="state">
-              <Select value={form.state} onValueChange={v => set("state", v)}>
-                {STATES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-              </Select>
+              <Input value={form.state} onChange={e => set("state", e.target.value)} placeholder="State" />
             </Field>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
@@ -70,9 +77,7 @@ export function VendorEditFormTab({ vendor, onUpdate }: { vendor: Vendor; onUpda
             </div>
             <div>
               <Field label="Payment Terms" required id="payment-terms" className="mb-4">
-                <Select value={form.terms} onValueChange={v => set("terms", v)}>
-                  {PAYMENT_TERMS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                </Select>
+                <Input value={form.terms} onChange={e => set("terms", e.target.value)} placeholder="e.g. 30 days" />
               </Field>
               <span style={{ ...lbl, display: "block" }}>Vendor Rating</span>
               <div style={{ display: "flex", gap: 6, cursor: "pointer", marginTop: 8 }}>
@@ -102,9 +107,29 @@ export function VendorEditFormTab({ vendor, onUpdate }: { vendor: Vendor; onUpda
               <Input value={form.accountNo || ""} onChange={e => set("accountNo", e.target.value)} placeholder="Account No." />
             </Field>
           </div>
-          <Field label="GST Number" id="gst-number">
-            <Input value={form.gstCode} onChange={e => set("gstCode", e.target.value)} placeholder="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" />
+          <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
+            <Field label="IFSC Code" id="ifsc-code">
+              <Input value={form.ifscCode || ""} onChange={e => set("ifscCode", e.target.value)} placeholder="IFSC Code" />
+            </Field>
+            <Field label="GST Number" id="gst-number">
+              <Input value={form.gstCode} onChange={e => set("gstCode", e.target.value)} placeholder="15-digit GSTIN" />
+            </Field>
+          </div>
+          <Field label="Visiting Card Photo" id="visiting-card-photo">
+            <Input type="file" accept="image/*" onChange={e => {
+              const file = e.target.files?.[0];
+              if (file) {
+                const reader = new FileReader();
+                reader.onload = ev => setCardPreview(ev.target?.result as string);
+                reader.readAsDataURL(file);
+              }
+            }} />
           </Field>
+          {cardPreview && (
+            <div style={{ borderRadius: 10, overflow: "hidden", border: `1px solid rgba(110,15,45,0.12)`, maxHeight: 120 }}>
+              <img src={cardPreview} alt="Visiting Card" style={{ width: "100%", height: 120, objectFit: "cover" }} />
+            </div>
+          )}
           <Field label="Notes" id="notes">
             <Textarea value={form.notes || ""} onChange={e => set("notes", e.target.value)} placeholder="Any special instructions or supplier notes..." rows={3} className="resize-none" />
           </Field>
