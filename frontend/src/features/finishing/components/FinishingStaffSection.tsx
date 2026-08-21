@@ -5,6 +5,7 @@ import { FinishingAssignment, FinishingReturn } from "../contexts/FinishingConte
 import { Button } from "../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../shared/ui/data";
 import { SectionCard } from "./common/primitives";
+import { ImageZoomModal, type ZoomImage } from "../../../shared/ui/ImageZoomModal";
 
 const T = {
   royalBurgundy: "#6E0F2D",
@@ -58,7 +59,7 @@ function formatDisplayDate(d?: string | null): string {
 const td: React.CSSProperties = { fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, padding: "11px 12px", borderBottom: `1px solid rgba(110,15,45,0.06)`, verticalAlign: "middle" };
 const tdMono: React.CSSProperties = { ...td, fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, color: T.royalBurgundy };
 
-function buildAssignmentColumns(returns: FinishingReturn[]): ColumnDef<FinishingAssignment>[] {
+function buildAssignmentColumns(returns: FinishingReturn[], onViewPhoto: (image: ZoomImage) => void): ColumnDef<FinishingAssignment>[] {
   const findRet = (a: FinishingAssignment) => returns.find(rt => rt.sareeId === a.sareeId);
   return [
     { id: "sareeCode", header: "Saree Code", accessor: a => a.sareeId, priority: 1, cell: (_v, a) => <span style={{ ...tdMono, wordBreak: "break-all" }}>{a.sareeId}</span> },
@@ -103,9 +104,14 @@ function buildAssignmentColumns(returns: FinishingReturn[]): ColumnDef<Finishing
       cell: (_v, a) => {
         const ret = findRet(a);
         return ret?.damagePhotoUrl ? (
-          <div style={{ width: 26, height: 26, borderRadius: 6, background: "linear-gradient(135deg,#F0E8D0,#C0392B)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <button
+            type="button"
+            onClick={() => onViewPhoto({ url: ret.damagePhotoUrl!, label: `Damage photo — ${a.sareeId}` })}
+            style={{ width: 26, height: 26, borderRadius: 6, background: "linear-gradient(135deg,#F0E8D0,#C0392B)", display: "flex", alignItems: "center", justifyContent: "center", border: "none", cursor: "pointer", padding: 0 }}
+            title="View damage photo"
+          >
             <Camera size={12} color="rgba(255,255,255,0.85)" />
-          </div>
+          </button>
         ) : <span style={{ color: T.taupe, fontSize: 12 }}>—</span>;
       },
     },
@@ -148,6 +154,7 @@ export function FinishingStaffSection({
   returns,
 }: FinishingStaffSectionProps) {
   const [viewMode, setViewMode] = useState<"card" | "table">("card");
+  const [zoomImage, setZoomImage] = useState<ZoomImage | null>(null);
 
   return (
     <SectionCard
@@ -235,7 +242,7 @@ export function FinishingStaffSection({
                         <div className="w-full overflow-x-auto">
                           <DataTable
                             responsive={viewMode === "card"}
-                            columns={buildAssignmentColumns(returns)}
+                            columns={buildAssignmentColumns(returns, setZoomImage)}
                             data={r.visibleAssignments}
                             getRowId={a => a.id}
                           />
@@ -249,6 +256,7 @@ export function FinishingStaffSection({
           })}
         </div>
       )}
+      <ImageZoomModal image={zoomImage} onClose={() => setZoomImage(null)} />
     </SectionCard>
   );
 }

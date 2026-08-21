@@ -10,11 +10,12 @@ import { AssignQuotationFinishingDto } from "./dto/assign-quotation-finishing.dt
 
 const QUOTATION_ID_PREFIX = "QUO";
 
-const include = { 
-  sarees: true, 
-  customer: true, 
+const include = {
+  sarees: true,
+  customer: true,
   bulkOrder: true,
-  finishingAssignments: { include: { finishingStaff: true } } 
+  raisedBy: { select: { id: true, firstName: true, lastName: true } },
+  finishingAssignments: { include: { finishingStaff: true } }
 } satisfies Prisma.QuotationInclude;
 
 @Injectable()

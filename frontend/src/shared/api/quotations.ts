@@ -28,6 +28,7 @@ export interface BackendQuotation {
   firmId: string | null;
   status: BackendQuotationStatus;
   raisedById: string;
+  raisedBy?: { id: string; firstName: string; lastName: string } | null;
   createdAt: string;
   sarees: BackendQuotationSaree[];
   customer: { id: string; name: string; city: string | null; phone: string | null; address: string | null; gstCode: string | null } | null;

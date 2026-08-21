@@ -16,6 +16,7 @@ const include = {
     include: { design: true, weaver: true, qcRecords: { ...latestQc, select: { result: true } } },
   },
   finishingStaff: true,
+  assignedBy: { select: { id: true, firstName: true, lastName: true } },
 } satisfies Prisma.FinishingAssignmentInclude;
 
 @Injectable()

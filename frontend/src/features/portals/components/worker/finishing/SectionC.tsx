@@ -7,6 +7,7 @@ import { Button, Input } from "../../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
 import { DateFilterBar, type DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../../shared/ui/DateFilterBar";
 import { Pagination, usePagination } from "../../../../../shared/ui/DataPagination";
+import { ImageZoomModal, type ZoomImage } from "../../../../../shared/ui/ImageZoomModal";
 
 // ── Section C — Assignment History & Tracking ─────────────────────────────────
 
@@ -39,7 +40,7 @@ function StaffAssignmentsTable({ data, columns }: { data: FinishingAssignment[];
   );
 }
 
-function StaffAssignmentsMobileList({ data, returns }: { data: FinishingAssignment[]; returns: FinishingReturn[] }) {
+function StaffAssignmentsMobileList({ data, returns, onViewPhoto }: { data: FinishingAssignment[]; returns: FinishingReturn[]; onViewPhoto: (image: ZoomImage) => void }) {
   const pag = usePagination(data, 10);
   return (
     <div style={{ borderTop: `1px solid rgba(110,15,45,0.08)`, background: "rgba(110,15,45,0.02)", padding: "10px 14px 14px" }}>
@@ -48,14 +49,26 @@ function StaffAssignmentsMobileList({ data, returns }: { data: FinishingAssignme
           const ret = returns.find(rt => rt.sareeId === a.sareeId);
           return (
             <div key={a.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, borderBottom: `1px solid rgba(110,15,45,0.06)`, paddingBottom: 8 }}>
-              <div>
-                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <span style={{ fontFamily: F.m, fontSize: 12, color: C.burg, fontWeight: 600 }}>{a.sareeId}</span>
-                  {a.quotationRef && (
-                    <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "#8B6018", background: "rgba(200,146,58,0.14)", borderRadius: 999, padding: "1px 6px" }}>{a.quotationRef}</span>
-                  )}
+              <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+                {ret?.damagePhotoUrl && (
+                  <button
+                    type="button"
+                    onClick={() => onViewPhoto({ url: ret.damagePhotoUrl!, label: `Damage photo — ${a.sareeId}` })}
+                    style={{ width: 26, height: 26, flexShrink: 0, borderRadius: 6, background: "linear-gradient(135deg,#F0E8D0,#C0392B)", display: "flex", alignItems: "center", justifyContent: "center", border: "none", cursor: "pointer", padding: 0 }}
+                    title="View damage photo"
+                  >
+                    <Camera size={12} color="rgba(255,255,255,0.85)" />
+                  </button>
+                )}
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <span style={{ fontFamily: F.m, fontSize: 12, color: C.burg, fontWeight: 600 }}>{a.sareeId}</span>
+                    {a.quotationRef && (
+                      <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "#8B6018", background: "rgba(200,146,58,0.14)", borderRadius: 999, padding: "1px 6px" }}>{a.quotationRef}</span>
+                    )}
+                  </div>
+                  <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>{a.assignedDate}{ret?.receivedDate ? ` → ${ret.receivedDate}` : ""}</div>
                 </div>
-                <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>{a.assignedDate}{ret?.receivedDate ? ` → ${ret.receivedDate}` : ""}</div>
               </div>
               {!ret ? (
                 <span style={{ fontFamily: F.u, fontSize: 12, color: "#B85C00", fontWeight: 600, flexShrink: 0 }}>Awaiting Return</span>
@@ -79,6 +92,7 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const [zoomImage, setZoomImage] = useState<ZoomImage | null>(null);
 
   const filteredAssignments = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -169,10 +183,15 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
     },
     {
       id: "photo", header: "Photo", accessor: a => returns.find(rt => rt.sareeId === a.sareeId)?.damagePhotoUrl,
-      cell: v => v ? (
-        <div style={{ width: 28, height: 28, borderRadius: 6, background: "linear-gradient(135deg,#F0E8D0,#C0392B)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      cell: (v, a) => v ? (
+        <button
+          type="button"
+          onClick={() => setZoomImage({ url: v as string, label: `Damage photo — ${a.sareeId}` })}
+          style={{ width: 28, height: 28, borderRadius: 6, background: "linear-gradient(135deg,#F0E8D0,#C0392B)", display: "flex", alignItems: "center", justifyContent: "center", border: "none", cursor: "pointer", padding: 0 }}
+          title="View damage photo"
+        >
           <Camera size={12} color="rgba(255,255,255,0.85)" />
-        </div>
+        </button>
       ) : (
         <span style={{ color: C.muted, fontSize: 12 }}>—</span>
       ),
@@ -239,6 +258,7 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
                   <StaffAssignmentsMobileList
                     data={filteredAssignments.filter(a => a.finishingStaffName === r.name)}
                     returns={returns}
+                    onViewPhoto={setZoomImage}
                   />
                 )}
               </div>
@@ -263,6 +283,7 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
           />
         </div>
       )}
+      <ImageZoomModal image={zoomImage} onClose={() => setZoomImage(null)} />
     </SectionCard>
   );
 }

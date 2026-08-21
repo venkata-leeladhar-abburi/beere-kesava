@@ -6,6 +6,7 @@ import { Button, SearchInput } from "../../../shared/ui/primitives";
 import { FinishingQuotationsSection } from "./FinishingQuotationsSection";
 import { FinishingStaffSection, StaffRow } from "./FinishingStaffSection";
 import { LuxuryStatsCard } from "../../../shared/ui/LuxuryStatsCard";
+import { TableError } from "../../../shared/ui/data/TableStates";
 
 const T = {
   silkCream:     "#F7F2EA",
@@ -35,7 +36,7 @@ function summarizeAssignedBy(list: FinishingAssignment[]): string {
 }
 
 export function FinishingTrackingPage() {
-  const { assignments, returns, quotations } = useFinishing();
+  const { assignments, returns, quotations, isError } = useFinishing();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "awaiting" | "perfect" | "damaged">("all");
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
@@ -128,50 +129,58 @@ export function FinishingTrackingPage() {
       </div>
 
       <div className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 22, paddingBottom: 48, display: "flex", flexDirection: "column", gap: 20 }}>
-        {/* Filters */}
-        <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 20px rgba(74,6,27,0.06)", padding: 16 }}>
-          <div style={{ marginBottom: 14 }}>
-            <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+        {isError ? (
+          <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 20px rgba(74,6,27,0.06)" }}>
+            <TableError onRetry={() => window.location.reload()} />
           </div>
-          <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-            <div style={{ flex: "1 1 260px" }}>
-              <SearchInput value={search} onChange={e => setSearch(e.target.value)}
-                placeholder="Search saree code, weaver, saree type, finishing staff…" />
+        ) : (
+          <>
+            {/* Filters */}
+            <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 20px rgba(74,6,27,0.06)", padding: 16 }}>
+              <div style={{ marginBottom: 14 }}>
+                <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+              </div>
+              <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+                <div style={{ flex: "1 1 260px" }}>
+                  <SearchInput value={search} onChange={e => setSearch(e.target.value)}
+                    placeholder="Search saree code, weaver, saree type, finishing staff…" />
+                </div>
+                <div style={{ display: "flex", gap: 7, alignItems: "center", flexWrap: "wrap" }}>
+                  {[
+                    { key: "all", label: "All" },
+                    { key: "awaiting", label: "Awaiting Return" },
+                    { key: "perfect", label: "Received · Perfect" },
+                    { key: "damaged", label: "Received · Damaged" },
+                  ].map(f => (
+                    <Button key={f.key} variant={statusFilter === f.key ? "primary" : "secondary"} size="sm"
+                      onClick={() => setStatusFilter(f.key as typeof statusFilter)}>
+                      {f.label}
+                    </Button>
+                  ))}
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: "auto", background: T.warmCream, borderRadius: 10, padding: "8px 14px" }}>
+                  <Users size={15} color={T.taupe} />
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.taupe, fontWeight: 600 }}>{filteredRows.length} finishing staff</span>
+                </div>
+              </div>
             </div>
-            <div style={{ display: "flex", gap: 7, alignItems: "center", flexWrap: "wrap" }}>
-              {[
-                { key: "all", label: "All" },
-                { key: "awaiting", label: "Awaiting Return" },
-                { key: "perfect", label: "Received · Perfect" },
-                { key: "damaged", label: "Received · Damaged" },
-              ].map(f => (
-                <Button key={f.key} variant={statusFilter === f.key ? "primary" : "secondary"} size="sm"
-                  onClick={() => setStatusFilter(f.key as typeof statusFilter)}>
-                  {f.label}
-                </Button>
-              ))}
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: "auto", background: T.warmCream, borderRadius: 10, padding: "8px 14px" }}>
-              <Users size={15} color={T.taupe} />
-              <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.taupe, fontWeight: 600 }}>{filteredRows.length} finishing staff</span>
-            </div>
-          </div>
-        </div>
 
-        {/* Quotations for Finishing */}
-        <FinishingQuotationsSection
-          filteredQuotations={filteredQuotations}
-          openQuotation={openQuotation}
-          setOpenQuotation={setOpenQuotation}
-        />
+            {/* Quotations for Finishing */}
+            <FinishingQuotationsSection
+              filteredQuotations={filteredQuotations}
+              openQuotation={openQuotation}
+              setOpenQuotation={setOpenQuotation}
+            />
 
-        {/* Staff-wise tracking */}
-        <FinishingStaffSection
-          filteredRows={filteredRows}
-          open={open}
-          setOpen={setOpen}
-          returns={returns}
-        />
+            {/* Staff-wise tracking */}
+            <FinishingStaffSection
+              filteredRows={filteredRows}
+              open={open}
+              setOpen={setOpen}
+              returns={returns}
+            />
+          </>
+        )}
       </div>
     </div>
   );

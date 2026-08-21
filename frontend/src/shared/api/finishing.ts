@@ -61,6 +61,7 @@ export interface BackendFinishingAssignment {
   sareeType: string | null;
   finishingStaffId: string;
   assignedById: string;
+  assignedBy?: { id: string; firstName: string; lastName: string } | null;
   assignedDate: string;
   status: BackendFinishingAssignmentStatus;
   condition: BackendFinishingCondition | null;
