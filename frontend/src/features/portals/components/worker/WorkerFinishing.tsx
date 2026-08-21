@@ -26,31 +26,22 @@ export function WorkerFinishing({ isDesktop, isTablet }: { isDesktop?: boolean; 
   ];
 
   return (
-    <div style={{ background: C.bg, minHeight: "100%" }}>
+    <div style={{ background: C.bg, minHeight: "100vh" }}>
 
-      {/* Hero + metric strip — same anatomy as the admin page headers */}
-      {isDesktop && (
-        <PageHero
-          eyebrow="Worker Staff · Finishing Floor"
-          title="Finishing"
-          titleAccent="& Handover"
-          description="Assign sarees to finishing staff, track what is out on the floor, and receive them back once the work is done."
-          minHeight={300}
-        />
-      )}
+      {/* Hero + metric strip — rich full length PageHero and overlapping StatsStrip */}
+      <PageHero
+        eyebrow="Worker Staff · Finishing Floor"
+        title="Finishing"
+        titleAccent="& Handover"
+        description="Assign sarees to finishing staff, track what is out on the floor, and receive them back once the work is done."
+        minHeight={isMobile ? 260 : 300}
+      />
 
-      <div style={{ padding: isDesktop ? `0 0 40px` : isTablet ? `24px ${GUTTER_X_TABLET}px 32px` : "16px 14px 24px" }}>
-        {isDesktop ? (
-          <StatsStrip stats={stats} />
-        ) : (
-          <div style={{ marginBottom: 24 }}>
-            <SectionHeading title="Finishing" subtitle="Assign sarees to finishing staff and receive them back after finishing." />
-            <StatsStrip stats={stats} overlap={false} gutter={0} />
-          </div>
-        )}
+      <div className="mb-6">
+        <StatsStrip stats={stats} overlap={true} />
       </div>
 
-      <div style={{ padding: isDesktop ? `0 ${GUTTER_X}px 40px` : isTablet ? `0 ${GUTTER_X_TABLET}px 32px` : "0 14px 24px" }}>
+      <div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 24, paddingBottom: 64 }}>
 
       {/* Quotations flowing in from Inventory */}
       <div style={{ marginBottom: 24 }}>

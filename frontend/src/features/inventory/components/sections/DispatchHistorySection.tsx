@@ -10,6 +10,17 @@ import { Pagination, usePagination } from "../../../../shared/ui/DataPagination"
 import { EntityCode } from "@/shared/ui/domain";
 import { EditWholesaleCustomerModal } from "../modals/EditWholesaleCustomerModal";
 
+function formatDateStr(s?: string): string {
+  if (!s) return "—";
+  if (s.includes("T")) {
+    const parsed = new Date(s);
+    if (!isNaN(parsed.getTime())) {
+      return parsed.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+    }
+  }
+  return s;
+}
+
 // ── Dispatch History section ──────────────────────────────────────────────────
 // Exported for the Worker Staff portal — same component, same markup, so the two
 // screens cannot fall out of step.
@@ -61,8 +72,8 @@ function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { row
   const editingCustomer = editingCustomerId ? customers.find(c => c.id === editingCustomerId) ?? null : null;
   const columns: ColumnDef<DispatchRecord>[] = [
     {
-      id: "date", header: "Date", accessor: d => d.dispatchDate, width: 110,
-      cell: (_v, d) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontVariantNumeric: "tabular-nums" }}>{d.dispatchDate}</span>,
+      id: "date", header: "Date", accessor: d => formatDateStr(d.dispatchDate), width: 110,
+      cell: (_v, d) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontVariantNumeric: "tabular-nums" }}>{formatDateStr(d.dispatchDate)}</span>,
     },
     {
       id: "type", header: "Type", accessor: d => d.type, width: 90,
@@ -170,7 +181,7 @@ function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { row
       )}
 
       {/* Mobile View Switcher */}
-      <div className="md:hidden flex justify-end p-3 bg-[#FAFAF8] border-b border-[#E8E2D9]">
+      <div className="md:hidden flex justify-between items-center p-3 bg-[#FAFAF8] border-b border-[#E8E2D9]">
         <div style={{ display: "inline-flex", alignItems: "center", background: "#FFFFFF", border: `1.5px solid ${T.borderDef}`, borderRadius: 999, padding: 3, gap: 2 }}>
           <button
             type="button"
@@ -215,96 +226,89 @@ function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { row
           {pag.pageItems.map(d => {
             const incomplete = d.pendingTransport || d.pendingReceipt;
             const firm = firms.find(f => f.id === d.firmId);
+            const displayDate = formatDateStr(d.dispatchDate);
             return (
-              <div key={d.id} style={{ background: "#FFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, padding: "18px 20px", display: "flex", flexDirection: "column", gap: 14, boxShadow: "0 2px 10px rgba(74,6,27,0.05)" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <div key={d.id} style={{ background: "#FFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, padding: "16px", display: "flex", flexDirection: "column", gap: 12, boxShadow: "0 2px 10px rgba(74,6,27,0.05)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
                   <div>
                     <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 15, color: T.luxuryBrown }}>
                       {d.type === "wholesale" ? (d.customerName ?? "Wholesale Customer") : "Shop / Showroom"}
                     </div>
-                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{d.dispatchDate}</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{displayDate}</div>
                   </div>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: d.type === "wholesale" ? "rgba(110,15,45,0.08)" : "rgba(200,155,71,0.14)", color: d.type === "wholesale" ? T.royalBurgundy : "#8B6018", border: `1px solid ${d.type === "wholesale" ? "rgba(110,15,45,0.18)" : "rgba(200,155,71,0.32)"}`, borderRadius: 999, padding: "2px 9px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, textTransform: "capitalize" as const }}>
-                    {d.type === "wholesale" ? <Users size={10} /> : <ShoppingBag size={10} />}{d.type}
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: d.type === "wholesale" ? "rgba(110,15,45,0.08)" : "rgba(200,146,58,0.14)", color: d.type === "wholesale" ? T.royalBurgundy : "#8B6018", border: `1px solid ${d.type === "wholesale" ? "rgba(110,15,45,0.18)" : "rgba(200,146,58,0.32)"}`, borderRadius: 999, padding: "3px 10px", fontFamily: F.ui, fontSize: 11, fontWeight: 700, textTransform: "capitalize" as const }}>
+                    {d.type === "wholesale" ? <Users size={12} /> : <ShoppingBag size={12} />}{d.type}
                   </span>
                 </div>
 
-                <div style={{ display: "flex", flexDirection: "column", gap: 8, fontSize: 13, fontFamily: F.ui }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ color: T.taupe }}>LR / Transport</span>
-                    <div style={{ textAlign: "right" }}>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.royalBurgundy }}>{d.lrNumber || "—"}</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>{d.transportCompany || "—"}</div>
-                    </div>
+                {/* 2-Column Info Grid */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, padding: "10px 12px", background: "rgba(110,15,45,0.03)", borderRadius: 10, border: `1px solid ${T.borderDef}` }}>
+                  <div>
+                    <div style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 600, color: T.taupe, textTransform: "uppercase" }}>LR / Transport</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.royalBurgundy, marginTop: 2 }}>{d.lrNumber || "—"}</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>{d.transportCompany || "—"}</div>
                   </div>
-                  {d.invoiceNumber && (
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ color: T.taupe }}>Invoice</span>
-                      <EntityCode type="invoice" value={d.invoiceNumber} />
-                    </div>
-                  )}
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ color: T.taupe }}>Sarees</span>
-                    <span style={{ fontWeight: 600, color: T.luxuryBrown }}>{d.sareeIds.length} sarees</span>
+
+                  <div>
+                    <div style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 600, color: T.taupe, textTransform: "uppercase" }}>Sarees & Firm</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, marginTop: 2 }}>{d.sareeIds.length} sarees</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>{d.firmName || firm?.firmName || "—"}</div>
                   </div>
-                  {(d.firmName || firm?.firmName) && (
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ color: T.taupe }}>Firm</span>
-                      <span style={{ color: T.taupe }}>{d.firmName || firm?.firmName}</span>
-                    </div>
-                  )}
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ color: T.taupe }}>Status</span>
+                </div>
+
+                {/* Action Footer */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, borderTop: `1px solid ${T.borderDef}`, paddingTop: 10 }}>
+                  <div>
                     {incomplete ? (
                       <Button
                         onClick={() => onResume(d)}
                         variant="secondary"
                         size="sm"
                         iconLeft={Clock}
-                        className="rounded-full bg-[rgba(200,155,71,0.14)] border-[rgba(200,155,71,0.32)] text-[#8B6018] hover:bg-[rgba(200,155,71,0.22)] whitespace-nowrap"
+                        className="rounded-full bg-[rgba(200,155,71,0.14)] border-[rgba(200,155,71,0.32)] text-[#8B6018] hover:bg-[rgba(200,155,71,0.22)] text-xs"
                       >
                         Complete Details
                       </Button>
                     ) : (
                       <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.green }}>
-                        <CheckCircle2 size={12} /> Complete
+                        <CheckCircle2 size={13} /> Complete
                       </span>
                     )}
                   </div>
-                </div>
 
-                <div style={{ borderTop: `1px solid ${T.borderDef}`, paddingTop: 12, display: "flex", justifyContent: "flex-end", gap: 12 }}>
-                  {d.type === "wholesale" && d.customerId && (
-                    <button
-                      onClick={() => setEditingCustomerId(d.customerId!)}
-                      style={{ background: "none", border: "none", padding: 4, cursor: "pointer", color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 4, fontSize: 12, fontFamily: F.ui }}
-                      title="Edit Customer Details"
-                    >
-                      <Pencil size={15} /> Edit Customer
-                    </button>
-                  )}
-                  {onViewInvoice && (
-                    <button
-                      onClick={() => onViewInvoice(d)}
-                      style={{ background: "none", border: "none", padding: 4, cursor: "pointer", color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 4, fontSize: 12, fontFamily: F.ui }}
-                      title="Invoice"
-                    >
-                      <FileText size={15} /> Invoice
-                    </button>
-                  )}
-                  {onDelete && (
-                    <button
-                      onClick={() => {
-                        if (confirm("Are you sure you want to delete this dispatch? The sarees will be returned to 'Ready for Dispatch'.")) {
-                          onDelete(d);
-                        }
-                      }}
-                      style={{ background: "none", border: "none", padding: 4, cursor: "pointer", color: T.royalBurgundy, display: "flex", alignItems: "center", gap: 4, fontSize: 12, fontFamily: F.ui }}
-                      title="Delete Dispatch"
-                    >
-                      <Trash2 size={15} /> Delete
-                    </button>
-                  )}
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    {d.type === "wholesale" && d.customerId && (
+                      <button
+                        onClick={() => setEditingCustomerId(d.customerId!)}
+                        style={{ background: "none", border: "none", padding: 4, cursor: "pointer", color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 4, fontSize: 12, fontFamily: F.ui }}
+                        title="Edit Customer Details"
+                      >
+                        <Pencil size={15} />
+                      </button>
+                    )}
+                    {onViewInvoice && (
+                      <button
+                        onClick={() => onViewInvoice(d)}
+                        style={{ background: "none", border: "none", padding: 4, cursor: "pointer", color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 4, fontSize: 12, fontFamily: F.ui }}
+                        title="Invoice"
+                      >
+                        <FileText size={15} />
+                      </button>
+                    )}
+                    {onDelete && (
+                      <button
+                        onClick={() => {
+                          if (confirm("Are you sure you want to delete this dispatch? The sarees will be returned to 'Ready for Dispatch'.")) {
+                            onDelete(d);
+                          }
+                        }}
+                        style={{ background: "none", border: "none", padding: 4, cursor: "pointer", color: T.royalBurgundy, display: "flex", alignItems: "center", gap: 4, fontSize: 12, fontFamily: F.ui }}
+                        title="Delete Dispatch"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             );

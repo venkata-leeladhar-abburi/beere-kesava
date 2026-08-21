@@ -145,32 +145,35 @@ export function SectionBFiltered({ isMobile, isDesktop, isTablet }: { isMobile?:
       )}
 
       {/* Filters */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" as const }}>
+      <div className="flex flex-col gap-2.5 mb-3">
+        {/* Scan Bar */}
         <ScanBar value={scanValue} onChange={setScanValue} onSubmit={submitScan} />
-        <div style={{ flex: 1, minWidth: 120 }}>
-          <Select value={filterStaff} onValueChange={setFilterStaff} size="sm">
-            <SelectItem value="all">All Staff</SelectItem>
-            {uniqueStaff.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-          </Select>
+
+        {/* Filter dropdowns + Select all */}
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-2">
+            <div className="w-[140px] shrink-0">
+              <Select value={filterStaff} onValueChange={setFilterStaff} size="sm">
+                <SelectItem value="all">All Staff</SelectItem>
+                {uniqueStaff.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+              </Select>
+            </div>
+
+            <div className="w-[140px] shrink-0">
+              <Select value={filterBatch} onValueChange={setFilterBatch} size="sm">
+                <SelectItem value="all">All Batches</SelectItem>
+                {uniqueBatches.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+              </Select>
+            </div>
+          </div>
+
+          {filteredAwaiting.length > 0 && (
+            <Button variant="link" onClick={toggleAll} className="gap-1.5 p-0 px-1.5 py-1 text-xs text-[#69635E] whitespace-nowrap shrink-0">
+              {allChecked ? <CheckSquare size={15} color={C.burg} /> : <Square size={15} color={C.muted} />}
+              {allChecked ? "Deselect All" : "Select All"}
+            </Button>
+          )}
         </div>
-        <div style={{ flex: 1, minWidth: 120 }}>
-          <Select value={filterBatch} onValueChange={setFilterBatch} size="sm">
-            <SelectItem value="all">All Batches</SelectItem>
-            {uniqueBatches.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
-          </Select>
-        </div>
-        <div style={{ flex: 1, minWidth: 120 }}>
-          <Select value={filterType} onValueChange={setFilterType} size="sm">
-            <SelectItem value="all">All Saree Types</SelectItem>
-            {uniqueTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-          </Select>
-        </div>
-        {displayAwaiting !== null && displayAwaiting.length > 0 && (
-          <Button variant="link" onClick={toggleAll} className="gap-1.5 p-0 px-1.5 py-1 text-xs text-[#69635E] whitespace-nowrap">
-            {allChecked ? <CheckSquare size={15} color={C.burg} /> : <Square size={15} color={C.muted} />}
-            {allChecked ? "Deselect All" : "Select All"}
-          </Button>
-        )}
       </div>
 
       {/* Assigned-date filter */}

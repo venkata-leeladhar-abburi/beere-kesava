@@ -181,7 +181,11 @@ function EntryTable({ entries, type }: { entries: (FinancialEntry | MiscEntry)[]
   const columns: ColumnDef<FinancialEntry | MiscEntry>[] = [
     {
       id: "description", header: "Description", accessor: e => e.description, priority: 1,
-      cell: (_v, e) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.description}</span>,
+      cell: (_v, e) => (
+        <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, wordBreak: "break-word", lineHeight: 1.45, display: "block" }}>
+          {e.description}
+        </span>
+      ),
     },
     {
       id: "amount", header: "Amount", accessor: e => e.amount,
@@ -206,13 +210,12 @@ function EntryTable({ entries, type }: { entries: (FinancialEntry | MiscEntry)[]
         const catChipBg = isIncome ? T.greenBg : cat === "Factory Maintenance" || cat === "Shop Maintenance" ? "rgba(200,155,71,0.10)" : cat === "Salaries" ? "rgba(74,107,138,0.10)" : T.crimsonBg;
         const catChipColor = isIncome ? T.green : cat === "Factory Maintenance" || cat === "Shop Maintenance" ? "#8B6018" : cat === "Salaries" ? "#2E5A8A" : T.crimson;
         return (
-          <span style={{ display: "inline-block", background: catChipBg, border: `1px solid ${catChipColor}22`, borderRadius: 999, padding: "3px 9px", fontFamily: F.ui, fontSize: 12, color: catChipColor, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", maxWidth: 150, textOverflow: "ellipsis" }}>
+          <span style={{ display: "inline-block", background: catChipBg, border: `1px solid ${catChipColor}22`, borderRadius: 999, padding: "3px 9px", fontFamily: F.ui, fontSize: 12, color: catChipColor, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", maxWidth: 180, textOverflow: "ellipsis" }}>
             {cat}
           </span>
         );
       },
     },
-    { id: "spacer", header: "", accessor: () => null, width: 30 },
   ];
 
   return (
@@ -251,7 +254,7 @@ export function FinSection({ title, icon, entries, color, bg, onAdd, onBulkImpor
       <AnimatePresence>
         {open && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2, ease: EASE }} style={{ overflow: "hidden" }}>
-            <div style={{ padding: "10px 14px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", gap: 8, alignItems: "center", background: "#FFF" }}>
+            <div style={{ padding: "12px 16px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", background: "#FFF" }}>
               <div style={{ ["--fin-color" as string]: color } as React.CSSProperties}>
                 <Button onClick={() => setAdding(a => !a)} variant="secondary" size="sm" iconLeft={PlusCircle}
                   className="border-[1.5px] border-[var(--fin-color)] bg-[var(--fin-color)]/[0.07] text-[var(--fin-color)] hover:bg-[var(--fin-color)]/[0.14]">

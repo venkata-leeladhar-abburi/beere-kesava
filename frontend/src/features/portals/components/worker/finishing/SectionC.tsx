@@ -1,5 +1,5 @@
 import { useState, useMemo, type CSSProperties } from "react";
-import { Users, ChevronDown, Camera, Search } from "lucide-react";
+import { Users, ChevronDown, Camera, Search, LayoutGrid, List } from "lucide-react";
 import { C, F } from "../tokens";
 import { useFinishing, FinishingAssignment, FinishingReturn } from "@/features/finishing";
 import { SectionCard } from "../primitives";
@@ -24,10 +24,17 @@ function parseDMYDate(s: string): number {
   return isNaN(t) ? 0 : t;
 }
 
-// A staff member's own assignment history can run long once they've been on
-// the floor a while — paginate it independently of the outer staff table
-// (usePagination is a hook, so this has to be its own component rather than
-// called inline inside renderExpandedRow/the mobile map).
+function formatDateStr(s?: string): string {
+  if (!s) return "—";
+  if (s.includes("T")) {
+    const parsed = new Date(s);
+    if (!isNaN(parsed.getTime())) {
+      return parsed.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+    }
+  }
+  return s;
+}
+
 function StaffAssignmentsTable({ data, columns }: { data: FinishingAssignment[]; columns: ColumnDef<FinishingAssignment>[] }) {
   const pag = usePagination(data, 10);
   return (
@@ -55,7 +62,7 @@ function StaffAssignmentsMobileList({ data, returns }: { data: FinishingAssignme
                     <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "#8B6018", background: "rgba(200,146,58,0.14)", borderRadius: 999, padding: "1px 6px" }}>{a.quotationRef}</span>
                   )}
                 </div>
-                <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>{a.assignedDate}{ret?.receivedDate ? ` → ${ret.receivedDate}` : ""}</div>
+                <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>{formatDateStr(a.assignedDate)}{ret?.receivedDate ? ` → ${formatDateStr(ret.receivedDate)}` : ""}</div>
               </div>
               {!ret ? (
                 <span style={{ fontFamily: F.u, fontSize: 12, color: "#B85C00", fontWeight: 600, flexShrink: 0 }}>Awaiting Return</span>
@@ -79,6 +86,7 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
+  const [viewMode, setViewMode] = useState<"card" | "table">("card");
 
   const filteredAssignments = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -129,7 +137,7 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
       id: "damaged", header: "Damaged", accessor: r => r.damaged,
       cell: (v, r) => <span style={{ color: r.damaged > 0 ? C.crim : C.text, fontWeight: r.damaged > 0 ? 700 : 400 }}>{v as number}</span>,
     },
-    { id: "last", header: "Last Assignment", accessor: r => r.lastAssignmentDate, cell: v => <span style={{ fontFamily: F.m, fontSize: 12 }}>{v as string}</span> },
+    { id: "last", header: "Last Assignment", accessor: r => formatDateStr(r.lastAssignmentDate), cell: v => <span style={{ fontFamily: F.m, fontSize: 12 }}>{v as string}</span> },
     {
       id: "expand", header: "", align: "end", accessor: () => null,
       cell: (_v, r) => (
@@ -146,13 +154,13 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
     {
       id: "quotation", header: "Quotation", accessor: a => a.quotationRef,
       cell: v => v ? (
-        <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "#8B6018", background: "rgba(200,146,58,0.14)", borderRadius: 999, padding: "2px 8px" }}>{v as string}</span>
+        <span style={{ fontFamily: F.u, fontSize: 11, fontWeight: 700, color: "#8B6018", background: "rgba(200,146,58,0.14)", borderRadius: 999, padding: "2px 8px", display: "inline-block", wordBreak: "break-all" }}>{v as string}</span>
       ) : <span style={{ color: C.muted, fontSize: 12 }}>—</span>,
     },
-    { id: "assignedDate", header: "Assigned Date", accessor: a => a.assignedDate, cell: v => <span style={{ fontFamily: F.m, fontSize: 12 }}>{v as string}</span> },
+    { id: "assignedDate", header: "Assigned Date", accessor: a => formatDateStr(a.assignedDate), cell: v => <span style={{ fontFamily: F.m, fontSize: 12 }}>{v as string}</span> },
     {
       id: "returnedDate", header: "Returned Date", accessor: a => returns.find(rt => rt.sareeId === a.sareeId)?.receivedDate,
-      cell: v => <span style={{ fontFamily: F.m, fontSize: 12 }}>{(v as string) ?? "—"}</span>,
+      cell: v => <span style={{ fontFamily: F.m, fontSize: 12 }}>{formatDateStr(v as string)}</span>,
     },
     {
       id: "condition", header: "Condition", accessor: a => returns.find(rt => rt.sareeId === a.sareeId)?.condition,
@@ -185,9 +193,11 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
       title="Assignment History & Tracking"
       subtitle="Every finishing staff member, what they hold and what they have returned."
       actions={
-        <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: "#FFFDF9", background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.20)", padding: "5px 12px", borderRadius: 999 }}>
-          {rows.length} staff
-        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: "#FFFDF9", background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.20)", padding: "5px 12px", borderRadius: 999 }}>
+            {rows.length} staff
+          </span>
+        </div>
       }
     >
       {assignments.length > 0 && (
@@ -204,34 +214,88 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
         </>
       )}
 
+      {isMobile && (
+        <div className="flex items-center justify-between gap-3 mb-4 mt-3">
+          <div className="flex items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0">
+            <Button
+              onClick={() => setViewMode("card")}
+              variant="ghost"
+              className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${viewMode === "card"
+                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+                }`}
+            >
+              <LayoutGrid size={14} /> Card View
+            </Button>
+            <Button
+              onClick={() => setViewMode("table")}
+              variant="ghost"
+              className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${viewMode === "table"
+                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+                }`}
+            >
+              <List size={14} /> Table View
+            </Button>
+          </div>
+        </div>
+      )}
+
       {rows.length === 0 ? (
         <div style={{ padding: "24px 0", textAlign: "center", fontFamily: F.u, fontSize: 13, color: C.muted }}>
           {assignments.length === 0 ? "No finishing staff assignments yet." : "No results for selected filters."}
         </div>
-      ) : isMobile ? (
+      ) : isMobile && viewMode === "card" ? (
         <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
           {rows.map(r => {
             const pending = r.assignedSareeIds.length - r.returnedSareeIds.length;
             const isOpen = expanded === r.name;
             return (
-              <div key={r.name} style={{ border: `1px solid rgba(110,15,45,0.10)`, borderRadius: 12, overflow: "hidden", background: "#FFF" }}>
-                <div onClick={() => setExpanded(isOpen ? null : r.name)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => setExpanded(isOpen ? null : r.name))?.(); } }} style={{ padding: "12px 14px", cursor: "pointer" }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                    <span style={{ fontFamily: F.u, fontSize: 14, fontWeight: 700, color: C.text }}>{r.name}</span>
-                    <ChevronDown size={14} color={C.muted} style={{ transform: isOpen ? "rotate(180deg)" : "none", transition: "transform 0.15s" }} />
+              <div key={r.name} style={{ border: `1.5px solid rgba(110,15,45,0.12)`, borderRadius: 16, overflow: "hidden", background: "#FFF", boxShadow: "0 2px 10px rgba(74,6,27,0.05)" }}>
+                <div onClick={() => setExpanded(isOpen ? null : r.name)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setExpanded(isOpen ? null : r.name); } }} style={{ padding: "14px 16px", cursor: "pointer", background: isOpen ? "rgba(110,15,45,0.03)" : "#FFF" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                    <div>
+                      <span style={{ fontFamily: F.u, fontSize: 15, fontWeight: 700, color: C.wine }}>{r.name}</span>
+                      <div style={{ fontFamily: F.m, fontSize: 11, color: C.muted, marginTop: 2 }}>
+                        Last active: {formatDateStr(r.lastAssignmentDate)}
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <span style={{ fontFamily: F.u, fontSize: 11, fontWeight: 600, color: C.burg, background: "rgba(110,15,45,0.08)", borderRadius: 999, padding: "2px 8px" }}>
+                        {r.assignedSareeIds.length} sarees
+                      </span>
+                      <ChevronDown size={16} color={C.muted} style={{ transform: isOpen ? "rotate(180deg)" : "none", transition: "transform 0.15s" }} />
+                    </div>
                   </div>
-                  <div style={{ display: "flex", gap: 14 }}>
-                    <div>
-                      <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Assigned</div>
-                      <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 14, color: C.text }}>{r.assignedSareeIds.length}</div>
+
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 8 }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6, background: C.bg, padding: "8px 10px", borderRadius: 10, border: `1px solid ${C.bdr}` }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                        <span style={{ fontFamily: F.u, fontSize: 11, color: C.muted, fontWeight: 600 }}>Assigned:</span>
+                        <span style={{ fontFamily: F.d, fontSize: 13, fontWeight: 700, color: C.text }}>{r.assignedSareeIds.length}</span>
+                      </div>
+                      <div style={{ width: 1, height: 12, background: "rgba(110,15,45,0.15)" }} />
+                      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                        <span style={{ fontFamily: F.u, fontSize: 11, color: C.muted, fontWeight: 600 }}>Returned:</span>
+                        <span style={{ fontFamily: F.d, fontSize: 13, fontWeight: 700, color: C.text }}>{r.returnedSareeIds.length}</span>
+                      </div>
+                      <div style={{ width: 1, height: 12, background: "rgba(110,15,45,0.15)" }} />
+                      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                        <span style={{ fontFamily: F.u, fontSize: 11, color: C.muted, fontWeight: 600 }}>Pending:</span>
+                        <span style={{ fontFamily: F.d, fontSize: 13, fontWeight: 700, color: pending > 0 ? "#B85C00" : C.text }}>{pending}</span>
+                      </div>
                     </div>
-                    <div>
-                      <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Returned</div>
-                      <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 14, color: C.text }}>{r.returnedSareeIds.length}</div>
-                    </div>
-                    <div>
-                      <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Pending</div>
-                      <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 14, color: pending > 0 ? "#B85C00" : C.text, background: pending > 0 ? "rgba(184,92,0,0.10)" : "transparent", borderRadius: 999, padding: pending > 0 ? "1px 8px" : 0 }}>{pending}</span>
+
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-around", gap: 6, background: C.bg, padding: "8px 10px", borderRadius: 10, border: `1px solid ${C.bdr}` }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <span style={{ fontFamily: F.u, fontSize: 11, color: C.muted, fontWeight: 600 }}>Perfect:</span>
+                        <span style={{ fontFamily: F.d, fontSize: 13, fontWeight: 700, color: C.green }}>{r.perfect}</span>
+                      </div>
+                      <div style={{ width: 1, height: 12, background: "rgba(110,15,45,0.15)" }} />
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <span style={{ fontFamily: F.u, fontSize: 11, color: C.muted, fontWeight: 600 }}>Damaged:</span>
+                        <span style={{ fontFamily: F.d, fontSize: 13, fontWeight: 700, color: r.damaged > 0 ? C.crim : C.text }}>{r.damaged}</span>
+                      </div>
                     </div>
                   </div>
                 </div>

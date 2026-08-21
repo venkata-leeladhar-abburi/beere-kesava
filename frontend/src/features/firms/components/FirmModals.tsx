@@ -119,22 +119,35 @@ export function FirmDetailModal({ firm, onClose, onEdit }: { firm: Firm; onClose
   }
   return (
     <Modal open onOpenChange={o => !o && onClose()} size="lg">
-        <div style={{ background: color, borderRadius: "var(--radius-xl) var(--radius-xl) 0 0", padding: "20px 24px", display: "flex", alignItems: "center", gap: 14, flexShrink: 0 }}>
-          <div style={{ width: 52, height: 52, borderRadius: 14, background: "rgba(255,255,255,0.18)", border: "1.5px solid rgba(255,255,255,0.30)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: "#FFF" }}>{initials(firm.firmName)}</span>
+        <div style={{ background: color, borderRadius: "var(--radius-xl) var(--radius-xl) 0 0", padding: "20px 24px", flexShrink: 0 }}>
+          {/* Top Row: Avatar + Title + Close button */}
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 14, flex: 1, minWidth: 0 }}>
+              <div style={{ width: 48, height: 48, borderRadius: 14, background: "rgba(255,255,255,0.18)", border: "1.5px solid rgba(255,255,255,0.30)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: "#FFF" }}>{initials(firm.firmName)}</span>
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <Dialog.Title asChild>
+                  <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFF", lineHeight: 1.2 }}>{firm.firmName}</div>
+                </Dialog.Title>
+              </div>
+            </div>
+            <Dialog.Close asChild>
+              <IconButton icon={X} label="Close" variant="secondary" size="sm" className="text-white border-white/20 bg-white/10 hover:bg-white/20 shrink-0" />
+            </Dialog.Close>
           </div>
-          <div style={{ flex: 1 }}>
-            <Dialog.Title asChild>
-              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFF", lineHeight: 1.2 }}>{firm.firmName}</div>
-            </Dialog.Title>
-            <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(255,255,255,0.60)", letterSpacing: "1px", marginTop: 3 }}>{firm.id} · Added {firm.createdAt}</div>
+
+          {/* Full Firm ID & Creation Date */}
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(255,255,255,0.85)", marginTop: 12, wordBreak: "break-all", lineHeight: 1.5 }}>
+            ID: {firm.id} {firm.createdAt ? `· Added ${firm.createdAt.includes("T") ? firm.createdAt.split("T")[0] : firm.createdAt}` : ""}
           </div>
-          <Button variant="secondary" size="sm" iconLeft={Edit} className="text-white border-white/25 bg-white/10 hover:bg-white/20" onClick={() => { onClose(); onEdit(); }}>
-            Edit
-          </Button>
-          <Dialog.Close asChild>
-            <IconButton icon={X} label="Close" variant="secondary" size="sm" className="text-white border-white/20 bg-white/10 hover:bg-white/20" />
-          </Dialog.Close>
+
+          {/* Edit Button below full ID */}
+          <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 8 }}>
+            <Button variant="secondary" size="sm" iconLeft={Edit} className="text-white border-white/25 bg-white/10 hover:bg-white/20" onClick={() => { onClose(); onEdit(); }}>
+              Edit Firm
+            </Button>
+          </div>
         </div>
         <div style={{ display: "flex", borderBottom: `1px solid ${T.borderDef}`, flexShrink: 0, background: "#FFF" }}>
           {[{ key: "finance", label: "Financial Tracking" }, { key: "info", label: "Firm Info" }].map(t => (

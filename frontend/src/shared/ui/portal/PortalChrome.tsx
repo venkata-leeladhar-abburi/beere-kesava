@@ -58,24 +58,24 @@ export function PageHero({
 }) {
   return (
     <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", minHeight, display: "flex", alignItems: "center" }}>
-      {/* Loom-grid texture + gold glow, matching the admin hero ground */}
+      {/* Loom-grid texture + gold glow */}
       <div style={{ position: "absolute", inset: 0, pointerEvents: "none", backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(200,155,71,0.022) 60px, rgba(200,155,71,0.022) 61px), repeating-linear-gradient(90deg, transparent, transparent 80px, rgba(200,155,71,0.015) 80px, rgba(200,155,71,0.015) 81px)" }} />
       {!image && (
         <div style={{ position: "absolute", right: -120, top: "50%", transform: "translateY(-50%)", width: 520, height: 520, borderRadius: "50%", background: "radial-gradient(circle, rgba(200,155,71,0.12) 0%, transparent 70%)", pointerEvents: "none" }} />
       )}
 
-      <div style={{ position: "relative", zIndex: 2, padding: `48px 0 90px ${GUTTER_X}px`, flex: image ? "0 0 65%" : "1", maxWidth: image ? "65%" : "100%" }}>
+      <div className="px-4 md:px-7 xl:px-12 w-full xl:w-auto xl:basis-[65%] xl:max-w-[65%]" style={{ position: "relative", zIndex: 2, paddingTop: 48, paddingBottom: 90 }}>
         <div style={{ fontFamily: F.m, fontSize: 13, color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase", marginBottom: 12 }}>
           {eyebrow}
         </div>
         <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
-          <h1 style={{ fontFamily: HERO_SERIF, fontSize: 56, fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>{title}</h1>
+          <h1 style={{ fontFamily: HERO_SERIF, fontSize: "clamp(32px, 8vw, 56px)", fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>{title}</h1>
           {titleAccent && (
-            <span style={{ fontFamily: HERO_SERIF, fontSize: 36, fontStyle: "italic", color: C.gold, fontWeight: 400 }}>{titleAccent}</span>
+            <span style={{ fontFamily: HERO_SERIF, fontSize: "clamp(22px, 6vw, 36px)", fontStyle: "italic", color: C.gold, fontWeight: 400 }}>{titleAccent}</span>
           )}
         </div>
         {description && (
-          <p style={{ fontFamily: F.u, fontSize: 18, color: "rgba(255,253,249,0.70)", margin: "0 0 20px", maxWidth: 620, lineHeight: 1.6 }}>
+          <p className="max-w-[620px]" style={{ fontFamily: F.u, fontSize: "clamp(14px, 3.5vw, 18px)", color: "rgba(255,253,249,0.70)", margin: "0 0 20px", lineHeight: 1.6 }}>
             {description}
           </p>
         )}
@@ -83,7 +83,7 @@ export function PageHero({
       </div>
 
       {image && (
-        <div style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "50%", zIndex: 1 }}>
+        <div className="hidden xl:block" style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "50%", zIndex: 1 }}>
           <div style={{ position: "absolute", inset: 0, zIndex: 2, background: "linear-gradient(to right, #0D0207 0%, rgba(13,2,7,0.7) 38%, rgba(13,2,7,0.1) 100%)" }} />
           <img src={image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", filter: "brightness(0.75) saturate(0.90)" }} />
         </div>
@@ -103,6 +103,8 @@ export type WorkerStat = {
   alert?: boolean;
 };
 
+import { LuxuryStatsCard, type StatItem } from "@/shared/ui/LuxuryStatsCard";
+
 /**
  * The dark burgundy metric strip. Pass `overlap` when it sits directly under a
  * PageHero so it lifts into the hero the way admin's does.
@@ -110,71 +112,33 @@ export type WorkerStat = {
 export function StatsStrip({
   stats,
   overlap = true,
-  gutter = GUTTER_X,
 }: {
   stats: WorkerStat[];
   overlap?: boolean;
   gutter?: number;
 }) {
+  const statItems: StatItem[] = stats.map(s => {
+    const Icon = s.icon;
+    return {
+      label: s.label.toUpperCase(),
+      value: String(s.value),
+      sub: s.sub,
+      icon: <Icon size={22} color="#F5E8D0" />,
+      highlight: !!s.highlight,
+      crimson: !!s.alert,
+      goldVal: !!s.highlight,
+    };
+  });
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, delay: 0.2 }}
-      style={{ padding: `0 ${gutter}px`, marginTop: overlap ? -72 : 0, position: "relative", zIndex: 20 }}
+      className={`px-4 md:px-7 xl:px-12 ${overlap ? "-mt-8 md:-mt-12 xl:-mt-[72px]" : ""}`}
+      style={{ position: "relative", zIndex: 20 }}
     >
-      {/* The admin shell injects these keyframes via its own GLOBAL_STYLE; the
-          worker portal never mounts that, so carry them with the component. */}
-      <style>{`
-        @keyframes bk-gold-shimmer { 0% { background-position: -300% center; } 100% { background-position: 300% center; } }
-        .gold-bar-shimmer {
-          background: linear-gradient(90deg,#C89B47 0%,#E7C983 30%,#FFFDF9 50%,#E7C983 70%,#C89B47 100%);
-          background-size: 300%; animation: bk-gold-shimmer 3s linear infinite; opacity: 0.72;
-        }
-        @media (prefers-reduced-motion: reduce) { .gold-bar-shimmer { animation: none; } }
-      `}</style>
-      <div style={{ background: G.card, borderRadius: 28, display: "flex", alignItems: "stretch", flexWrap: "wrap", boxShadow: "0 30px 80px rgba(0,0,0,0.32), 0 0 0 1px rgba(200,155,71,0.16)", overflow: "hidden", minHeight: 140 }}>
-        {stats.map((m, i) => {
-          const Icon = m.icon;
-          return (
-            <motion.div
-              key={m.label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 + i * 0.09 }}
-              whileHover={{ backgroundColor: m.highlight ? "rgba(200,155,71,0.26)" : "rgba(245,232,208,0.04)" }}
-              style={{
-                flex: "1 1 200px", padding: "28px 22px",
-                backgroundImage: m.highlight ? "linear-gradient(135deg, rgba(200,155,71,0.20) 0%, rgba(200,155,71,0.07) 100%)" : "none",
-                borderRight: i < stats.length - 1 ? "1px solid rgba(245,232,208,0.07)" : "none",
-                display: "flex", alignItems: "center", gap: 14, position: "relative",
-              }}
-            >
-              <motion.div
-                whileHover={{ scale: 1.08, rotate: 3 }}
-                transition={{ duration: 0.25 }}
-                style={{ width: 50, height: 50, borderRadius: 15, flexShrink: 0, background: m.highlight ? "rgba(200,155,71,0.16)" : "rgba(245,232,208,0.07)", border: `1px solid ${m.highlight ? "rgba(200,155,71,0.38)" : "rgba(245,232,208,0.09)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}
-              >
-                <Icon size={22} color={C.cream} />
-              </motion.div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 8, color: m.highlight ? "rgba(200,155,71,1)" : "rgba(245,232,208,0.90)" }}>
-                  {m.label}
-                </div>
-                <div style={{ fontFamily: HERO_SERIF, fontWeight: 400, fontSize: "clamp(28px, 8vw, 48px)", letterSpacing: "-0.01em", color: m.alert ? "#F47B72" : m.highlight ? C.goldL : "#FFFFFF", lineHeight: 1.1, marginBottom: 8, fontVariantNumeric: "tabular-nums" }}>
-                  {m.value}
-                </div>
-                {m.sub && (
-                  <span style={{ fontFamily: F.u, fontWeight: 500, fontSize: 12, color: m.highlight ? "rgba(231,201,131,0.95)" : "rgba(245,232,208,0.85)" }}>
-                    {m.sub}
-                  </span>
-                )}
-              </div>
-              {m.highlight && <div className="gold-bar-shimmer" style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: G.gold }} />}
-            </motion.div>
-          );
-        })}
-      </div>
+      <LuxuryStatsCard stats={statItems} />
     </motion.div>
   );
 }

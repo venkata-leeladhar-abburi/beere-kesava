@@ -31,28 +31,17 @@ export function WorkerDispatch({ isDesktop = false }: { isDesktop?: boolean }) {
   ];
 
   return (
-    <div style={{ background: C.bg, minHeight: "100%" }}>
-      {isDesktop ? (
-        <>
-          <PageHero
-            eyebrow="Worker Staff · Outbound"
-            title="Dispatch"
-            titleAccent="Details"
-            description="Fill in LR, transport and receipt details for dispatches raised by admin, and track every consignment on its way out."
-            minHeight={300}
-          />
-          <StatsStrip stats={stats} />
-          <div style={{ height: 40 }} />
-        </>
-      ) : (
-        <div style={{ padding: "16px 14px 0" }}>
-          <SectionHeading title="Dispatch Details" subtitle="Fill in LR, transport and receipt details for dispatches raised by admin." />
-          <StatsStrip stats={stats} overlap={false} gutter={0} />
-          <div style={{ height: 24 }} />
-        </div>
-      )}
+    <div style={{ background: C.bg, minHeight: "100vh" }}>
+      {/* Full-width PageHero & Overlapping StatsStrip matching all other portal pages */}
+      <PageHero
+        eyebrow="Worker Staff · Outbound"
+        title="Dispatch"
+        titleAccent="Details"
+        description="Fill in LR, transport and receipt details for dispatches raised by admin, and track every consignment on its way out."
+      />
+      <StatsStrip stats={stats} overlap={true} />
 
-      <div style={{ padding: isDesktop ? `0 ${GUTTER_X}px 48px` : "0 14px 40px" }}>
+      <div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 32, paddingBottom: 64 }}>
 
       {pending.length > 0 && (
         <div style={{ background: "rgba(200,155,71,0.10)", border: "1px solid rgba(200,155,71,0.32)", borderRadius: 12, padding: "12px 14px", marginBottom: 16, display: "flex", gap: 10, alignItems: "flex-start" }}>
@@ -82,19 +71,14 @@ export function WorkerDispatch({ isDesktop = false }: { isDesktop?: boolean }) {
         </div>
       )}
 
-      {/* The admin Dispatch History section, unchanged. Horizontal scroll keeps
-          its fixed column grid intact on narrow screens. */}
-      <div style={{ overflowX: "auto" }}>
-        <div className="min-w-[900px]">
-          <DispatchHistorySection 
-            dispatches={dispatches} 
-            firms={firms} 
-            onResume={setResume} 
-            onDelete={(d) => deleteDispatch(d.id, "worker-staff")}
-            onViewInvoice={(_d) => alert("Invoice viewing coming soon")}
-          />
-        </div>
-      </div>
+      {/* Dispatch History Section */}
+      <DispatchHistorySection 
+        dispatches={dispatches} 
+        firms={firms} 
+        onResume={setResume} 
+        onDelete={(d) => deleteDispatch(d.id, "worker-staff")}
+        onViewInvoice={(_d) => alert("Invoice viewing coming soon")}
+      />
 
       </div>
 
