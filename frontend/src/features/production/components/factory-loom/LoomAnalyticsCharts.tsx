@@ -61,13 +61,13 @@ export function LoomThroughputAndAvailability({
 }: LoomThroughputAndAvailabilityProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr]" style={{ gap: 22, marginBottom: 22 }}>
-      <div style={card}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+      <div className="bg-white rounded-[20px] border border-[#EBE3D5] p-4 sm:p-6 shadow-[0_2px_12px_rgba(74,6,27,0.05)]">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-2">
           <div>
             <div style={cardTitle}>Factory Throughput</div>
             <div style={cardSub}>Sarees completed against quality-check outcomes</div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, background: passRate >= 90 ? "rgba(30,102,64,0.09)" : "rgba(192,57,43,0.08)", padding: "4px 10px", borderRadius: 20 }}>
+          <div className="self-start shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full whitespace-nowrap" style={{ background: passRate >= 90 ? "rgba(30,102,64,0.09)" : "rgba(192,57,43,0.08)" }}>
             <TrendingUp size={13} color={passRate >= 90 ? T.green : T.crimson} />
             <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: passRate >= 90 ? T.green : T.crimson }}>{failed} rejected</span>
           </div>
@@ -95,7 +95,7 @@ export function LoomThroughputAndAvailability({
         )}
       </div>
 
-      <div style={card}>
+      <div className="bg-white rounded-[20px] border border-[#EBE3D5] p-4 sm:p-6 shadow-[0_2px_12px_rgba(74,6,27,0.05)]">
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <Factory size={16} color={T.royalBurgundy} />
           <div style={cardTitle}>Loom Availability</div>
@@ -177,7 +177,7 @@ export function LoomMaterialDesignRow({
 }: LoomMaterialDesignRowProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 22, paddingBottom: 8 }}>
-      <div style={card}>
+      <div className="bg-white rounded-[20px] border border-[#EBE3D5] p-4 sm:p-6 shadow-[0_2px_12px_rgba(74,6,27,0.05)]">
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <Layers size={16} color={T.royalBurgundy} />
           <div style={cardTitle}>Material Consumption</div>
@@ -211,7 +211,7 @@ export function LoomMaterialDesignRow({
         )}
       </div>
 
-      <div style={card}>
+      <div className="bg-white rounded-[20px] border border-[#EBE3D5] p-4 sm:p-6 shadow-[0_2px_12px_rgba(74,6,27,0.05)]">
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <Package size={16} color={T.royalBurgundy} />
           <div style={cardTitle}>Output by Design</div>
@@ -237,7 +237,7 @@ export function LoomMaterialDesignRow({
         </div>
       </div>
 
-      <div style={card}>
+      <div className="bg-white rounded-[20px] border border-[#EBE3D5] p-4 sm:p-6 shadow-[0_2px_12px_rgba(74,6,27,0.05)]">
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <Percent size={16} color={T.royalBurgundy} />
           <div style={cardTitle}>Factory Health</div>
@@ -253,16 +253,16 @@ export function LoomMaterialDesignRow({
             </RadialBarChart>
           </ResponsiveContainer>
         </ChartFigure>
-        <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 10, marginTop: 4 }}>
+        <div className="grid grid-cols-2 gap-2 mt-2 sm:gap-2.5">
           {[
             { label: "Rejected", value: `${failed} pcs` },
             { label: "Avg / Loom", value: `${activeLooms ? Math.round(produced / activeLooms) : 0} pcs` },
             { label: "Open Pipeline", value: `${pipeline} pcs` },
             { label: "Looms Down", value: String(looms.filter(l => l.status === "maintenance").length) },
           ].map(k => (
-            <div key={k.label} style={{ background: T.silkCream, borderRadius: 10, padding: "10px 12px", border: `1px solid ${T.borderDef}` }}>
-              <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, letterSpacing: "0.5px", color: T.taupe, marginBottom: 4, textTransform: "uppercase" as const }}>{k.label}</div>
-              <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{k.value}</div>
+            <div key={k.label} style={{ background: T.silkCream, borderRadius: 10, padding: "8px 10px", border: `1px solid ${T.borderDef}` }}>
+              <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 600, letterSpacing: "0.5px", color: T.taupe, marginBottom: 2, textTransform: "uppercase" as const, whiteSpace: "nowrap" as const }}>{k.label}</div>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{k.value}</div>
             </div>
           ))}
         </div>

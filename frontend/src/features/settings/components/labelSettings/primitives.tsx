@@ -101,20 +101,40 @@ export function SectionCard({
   id?: string;
 }) {
   return (
-    <div id={id} style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`, boxShadow: "0 6px 32px rgba(74,6,27,0.08)", overflow: "hidden" }}>
-      <div style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`, padding: "22px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <Icon size={26} color="#FFFDF9" />
+    <div id={id} className="bg-white rounded-2xl md:rounded-[20px] border border-[#EBE3D5] shadow-[0_6px_32px_rgba(74,6,27,0.08)] overflow-hidden">
+      <div
+        className="p-4 sm:p-6 md:p-7"
+        style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)` }}
+      >
+        <div className="flex items-start gap-3 sm:gap-4">
+          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-white/12 flex items-center justify-center shrink-0 mt-0.5">
+            <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-[#FFFDF9]" />
           </div>
-          <div>
-            <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9", letterSpacing: "-0.2px" }}>{title}</div>
-            {subtitle && <div style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.65)", marginTop: 3 }}>{subtitle}</div>}
+          <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
+            <div>
+              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: "clamp(16px, 2.5vw, 20px)", color: "#FFFDF9", letterSpacing: "-0.2px", lineHeight: 1.25 }}>
+                {title}
+              </div>
+              {subtitle && (
+                <div style={{ fontFamily: F.ui, fontSize: "clamp(12px, 1.8vw, 14px)", color: "rgba(255,253,249,0.70)", marginTop: 4, lineHeight: 1.4 }}>
+                  {subtitle}
+                </div>
+              )}
+              {actions && (
+                <div className="flex items-center gap-2.5 flex-wrap shrink-0 mt-3 sm:hidden">
+                  {actions}
+                </div>
+              )}
+            </div>
+            {actions && (
+              <div className="hidden sm:flex items-center gap-2.5 flex-wrap shrink-0 self-start">
+                {actions}
+              </div>
+            )}
           </div>
         </div>
-        {actions && <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>{actions}</div>}
       </div>
-      <div style={{ padding: "24px 28px 28px" }}>
+      <div className="p-3.5 sm:p-5 md:p-6">
         {children}
       </div>
     </div>

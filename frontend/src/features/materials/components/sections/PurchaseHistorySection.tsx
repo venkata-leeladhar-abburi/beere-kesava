@@ -338,31 +338,6 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
         <div style={{ marginBottom: 16 }}>
           <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
         </div>
-
-        <div className="flex md:hidden items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0 mb-4 w-fit">
-          <Button
-            onClick={() => setVendorViewMode("card")}
-            variant="ghost"
-            className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
-              vendorViewMode === "card"
-                ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
-                : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
-            }`}
-          >
-            <LayoutGrid size={14} /> Card View
-          </Button>
-          <Button
-            onClick={() => setVendorViewMode("table")}
-            variant="ghost"
-            className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
-              vendorViewMode === "table"
-                ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
-                : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
-            }`}
-          >
-            <List size={14} /> Table View
-          </Button>
-        </div>
       </FadeUp>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3.5 sm:gap-4 mb-6 items-stretch">

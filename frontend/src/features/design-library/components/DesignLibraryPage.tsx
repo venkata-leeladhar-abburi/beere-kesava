@@ -147,13 +147,13 @@ export function DesignLibraryPage() {
                     {/* Recipient Type Toggle */}
                     <div>
                       <div style={labelStyle}>Recipient Type</div>
-                      <div className="flex w-full sm:w-auto bg-[rgba(110,15,45,0.05)] rounded-xl p-1 border border-[#E8DCC4]">
+                      <div className="grid grid-cols-2 w-full bg-[rgba(110,15,45,0.05)] rounded-xl p-1 border border-[#E8DCC4]">
                         <Button type="button" onClick={() => setDispRecipientType("weaver")}
-                          variant={dispRecipientType === "weaver" ? "secondary" : "ghost"} size="sm" iconLeft={User} className="flex-1 sm:flex-initial">
+                          variant={dispRecipientType === "weaver" ? "secondary" : "ghost"} size="sm" iconLeft={User} className="w-full justify-center">
                           Weaver
                         </Button>
                         <Button type="button" onClick={() => setDispRecipientType("loom")}
-                          variant={dispRecipientType === "loom" ? "secondary" : "ghost"} size="sm" iconLeft={Buildings} className="flex-1 sm:flex-initial">
+                          variant={dispRecipientType === "loom" ? "secondary" : "ghost"} size="sm" iconLeft={Buildings} className="w-full justify-center">
                           Factory Loom
                         </Button>
                       </div>

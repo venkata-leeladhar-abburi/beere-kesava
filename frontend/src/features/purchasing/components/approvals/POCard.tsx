@@ -159,7 +159,7 @@ export function POCard({
           <X size={14} /> Reject
         </CrimsonBtn>
         {onViewDoc && (
-          <Button onClick={() => onViewDoc(item.id)} variant="secondary" size="sm" className="flex-1 min-w-0 px-2 text-[12px] whitespace-nowrap justify-center">
+          <Button onClick={() => onViewDoc(item.id)} variant="secondary" size="sm" className="shrink-0 px-3 text-[12px] whitespace-nowrap justify-center">
             📄 View PO
           </Button>
         )}

@@ -204,26 +204,28 @@ export function NotificationsPage() {
     <div style={{ minHeight: "calc(100dvh - 90px)", background: T.silkCream, fontFamily: F.ui }}>
 
       {/* HEADER */}
-      <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", minHeight: 340, display: "flex", alignItems: "center" }}>
-        <div className="px-4 md:px-7 xl:px-12 w-full" style={{ position: "relative", zIndex: 2, paddingTop: 48, paddingBottom: 110 }}>
-          <div style={{ fontFamily: F.ui, fontSize: "clamp(11px, 1.4vw, 13px)", color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase" as const, marginBottom: 10 }}>SINCE 1999 · NOTIFICATIONS</div>
+      <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", minHeight: 280, display: "flex", alignItems: "center" }}>
+        <div className="px-3 sm:px-4 md:px-7 xl:px-12 w-full" style={{ position: "relative", zIndex: 2, paddingTop: 36, paddingBottom: 90 }}>
+          <div style={{ fontFamily: F.ui, fontSize: "clamp(11px, 1.4vw, 13px)", color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase" as const, marginBottom: 8 }}>SINCE 1999 · NOTIFICATIONS</div>
           <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" as const, marginBottom: 8 }}>
-            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(32px, 6vw, 56px)", fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>
+            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(28px, 6vw, 56px)", fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>
               Notifications
             </h1>
             {unread > 0 && (
-              <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", background: T.antiqueGold, color: T.deepWine, fontFamily: F.ui, fontWeight: 700, fontSize: 13, borderRadius: 999, padding: "3px 12px" }}>
+              <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", background: T.antiqueGold, color: T.deepWine, fontFamily: F.ui, fontWeight: 700, fontSize: 12, borderRadius: 999, padding: "2px 10px" }}>
                 {unread} new
               </span>
             )}
           </div>
-          <p style={{ fontFamily: F.ui, fontSize: "clamp(14px, 2.2vw, 16px)", color: "rgba(255,253,249,0.70)", margin: 0, maxWidth: 600, lineHeight: 1.6 }}>
+          <p style={{ fontFamily: F.ui, fontSize: "clamp(13px, 2vw, 16px)", color: "rgba(255,253,249,0.70)", margin: 0, maxWidth: 600, lineHeight: 1.5, wordBreak: "break-word" }}>
             Live operational alerts, stock updates, payment reminders, and production activity.
           </p>
           {unread > 0 && (
-            <Button variant="secondary" size="md" iconLeft={Check} onClick={markAllRead}>
-              Mark all read
-            </Button>
+            <div className="mt-3">
+              <Button variant="secondary" size="md" iconLeft={Check} onClick={markAllRead}>
+                Mark all read
+              </Button>
+            </div>
           )}
         </div>
       </header>
@@ -232,8 +234,8 @@ export function NotificationsPage() {
       <NotificationStatStrip notifications={notifications} unread={unread} countByPriority={countByPriority} />
 
       {/* CATEGORIES TAB BUTTONS */}
-      <div className="px-4 md:px-7 xl:px-14" style={{ marginTop: 36 }}>
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+      <div className="px-3 sm:px-4 md:px-7 xl:px-14" style={{ marginTop: 28 }}>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {CATEGORIES.map(c => {
             const active = activeCategory === c.key;
             const count = c.key === "all" ? notifications.length : notifications.filter(n => n.category === c.key).length;
@@ -270,36 +272,36 @@ export function NotificationsPage() {
       </div>
 
       {/* PRIORITY FILTER BAR */}
-      <div className="px-4 md:px-7 xl:px-14" style={{ background: T.warmIvory, borderBottom: `1px solid ${T.borderDef}`, position: "relative", zIndex: 10, marginTop: 24, overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 0, height: 58, minWidth: "max-content" }}>
+      <div className="px-3 sm:px-4 md:px-7 xl:px-14" style={{ background: T.warmIvory, borderBottom: `1px solid ${T.borderDef}`, position: "relative", zIndex: 10, marginTop: 20, overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 0, height: 52, minWidth: "max-content" }}>
           {FILTERS.map(f => {
             const active = filter === f.key;
             const count = f.key === "all" ? categoryFiltered.length : categoryFiltered.filter(n => n.priority === f.key).length;
             const cfg = f.key !== "all" ? PRIORITY[f.key] : null;
             return (
               <div key={f.key} style={{ height: "100%", borderBottom: active ? `2px solid ${T.royalBurgundy}` : "2px solid transparent" }}>
-                <Button variant="tertiary" size="md" className="h-full rounded-none" onClick={() => setFilter(f.key)}>
+                <Button variant="tertiary" size="md" className="h-full rounded-none px-2.5 sm:px-4" onClick={() => setFilter(f.key)}>
                   {cfg && <cfg.Icon size={14} color={active ? T.royalBurgundy : cfg.color} />}
-                  <span style={{ fontFamily: F.ui, fontWeight: active ? 600 : 400, fontSize: 13, color: active ? T.royalBurgundy : T.taupe, whiteSpace: "nowrap" }}>
+                  <span style={{ fontFamily: F.ui, fontWeight: active ? 600 : 400, fontSize: 12, color: active ? T.royalBurgundy : T.taupe, whiteSpace: "nowrap" }}>
                     {f.label}
                   </span>
-                  <span style={{ fontFamily: F.ui, fontVariantNumeric: "tabular-nums", fontSize: 12, fontWeight: 600, padding: "2px 7px", borderRadius: 999, background: active ? `rgba(110,15,45,0.08)` : "rgba(139,112,96,0.08)", color: active ? T.royalBurgundy : T.taupe }}>
+                  <span style={{ fontFamily: F.ui, fontVariantNumeric: "tabular-nums", fontSize: 11, fontWeight: 600, padding: "1px 6px", borderRadius: 999, background: active ? `rgba(110,15,45,0.08)` : "rgba(139,112,96,0.08)", color: active ? T.royalBurgundy : T.taupe }}>
                     {count}
                   </span>
                 </Button>
               </div>
             );
           })}
-          <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{filtered.length} notification{filtered.length !== 1 ? "s" : ""}</span>
+          <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8, paddingLeft: 12 }}>
+            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>{filtered.length} item{filtered.length !== 1 ? "s" : ""}</span>
           </div>
         </div>
       </div>
 
       {/* MAIN CONTENT GRID */}
-      <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40, paddingBottom: 80, display: "flex", gap: 28, alignItems: "flex-start" }}>
+      <div className="px-3 sm:px-4 md:px-7 xl:px-14 flex flex-col lg:flex-row gap-6 md:gap-7 items-start" style={{ paddingTop: 28, paddingBottom: 80 }}>
         {/* Left list */}
-        <div style={{ flex: selected ? "0 0 520px" : 1, minWidth: 0 }}>
+        <div className="w-full flex-1 min-w-0">
         <SectionCard
           icon={Inbox}
           title="Notification Feed"
@@ -313,17 +315,17 @@ export function NotificationsPage() {
             if (items.length === 0) return null;
 
             return (
-              <div key={dateGroup} style={{ marginBottom: 40 }}>
+              <div key={dateGroup} style={{ marginBottom: 32 }}>
                 <FadeUp>
-                  <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-                    <div style={{ width: 3, height: 18, borderRadius: 2, background: G.gold, flexShrink: 0 }} />
-                    <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: 20, color: T.luxuryBrown, letterSpacing: "-0.2px" }}>{dateGroup}</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                    <div style={{ width: 3, height: 16, borderRadius: 2, background: G.gold, flexShrink: 0 }} />
+                    <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: 18, color: T.luxuryBrown, letterSpacing: "-0.2px" }}>{dateGroup}</span>
                     <div style={{ flex: 1, height: 1, background: T.borderDef, marginLeft: 4 }} />
-                    <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{items.length} item{items.length !== 1 ? "s" : ""}</span>
+                    <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>{items.length} item{items.length !== 1 ? "s" : ""}</span>
                   </div>
                 </FadeUp>
 
-                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   {items.map((n, i) => {
                     const cfg = PRIORITY[n.priority];
                     const isRead = n.read;
@@ -336,11 +338,11 @@ export function NotificationsPage() {
                       <FadeUp key={n.id} delay={i * 0.05}>
                         <motion.div
                           onClick={() => { setSelected(isSelected ? null : n); markRead(n.id); }}
-                          whileHover={{ y: -3, boxShadow: isSelected ? "0 12px 40px rgba(110,15,45,0.14)" : "0 8px 32px rgba(110,15,45,0.10)" }}
+                          whileHover={{ y: -2, boxShadow: isSelected ? "0 12px 40px rgba(110,15,45,0.14)" : "0 8px 32px rgba(110,15,45,0.10)" }}
                           transition={{ type: "spring", stiffness: 300, damping: 24 }}
                           style={{
                             background: isSelected ? "#FFFDF9" : T.warmIvory,
-                            borderRadius: 20,
+                            borderRadius: 16,
                             border: isSelected ? `1.5px solid ${T.royalBurgundy}` : `1.5px solid ${isRead ? T.borderDef : cfg.border}`,
                             boxShadow: isSelected ? "0 12px 40px rgba(110,15,45,0.12)" : "0 2px 14px rgba(110,15,45,0.05)",
                             cursor: "pointer",
@@ -349,42 +351,50 @@ export function NotificationsPage() {
                           }}>
                           <div style={{ height: 3, background: `linear-gradient(90deg, ${cfg.color}, ${cfg.color}88)`, opacity: isRead ? 0.4 : 1 }} />
 
-                          <div style={{ padding: "22px 24px" }}>
-                            <div style={{ display: "flex", alignItems: "flex-start", gap: 18 }}>
-                              <div style={{ width: 52, height: 52, borderRadius: 16, flexShrink: 0, background: cfg.bg, border: `1px solid ${cfg.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                <PriorityIcon size={22} color={cfg.color} />
+                          <div className="p-3 sm:p-5 md:p-6">
+                            <div className="flex items-start gap-2.5 sm:gap-4.5">
+                              <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-xl shrink-0 flex items-center justify-center" style={{ background: cfg.bg, border: `1px solid ${cfg.border}` }}>
+                                <PriorityIcon size={18} color={cfg.color} className="sm:w-5 sm:h-5" />
                               </div>
 
                               <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8, flexWrap: "wrap" }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
                                   {!isRead && (
                                     <div style={{ width: 8, height: 8, borderRadius: "50%", background: cfg.color, flexShrink: 0 }} />
                                   )}
-                                  <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: T.luxuryBrown, lineHeight: 1.3, flex: 1, opacity: isRead ? 0.8 : 1 }}>
+                                  <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 15, color: T.luxuryBrown, lineHeight: 1.3, flex: 1, opacity: isRead ? 0.8 : 1, minWidth: 0, wordBreak: "break-word" }}>
                                     {n.title}
                                   </span>
-                                  <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: 999, padding: "3px 10px", flexShrink: 0 }}>
+                                  <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: 999, padding: "2px 8px", flexShrink: 0 }}>
                                     <PriorityIcon size={10} /> {cfg.label}
                                   </span>
                                 </div>
 
-                                <p style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13, color: T.taupe, lineHeight: 1.75, margin: "0 0 14px", display: selected ? "block" : "-webkit-box", WebkitLineClamp: selected ? undefined : 2, WebkitBoxOrient: selected ? undefined : "vertical" as const, overflow: selected ? "visible" : "hidden" }}>
+                                <p style={{
+                                  fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: T.taupe, lineHeight: 1.6, margin: "0 0 10px",
+                                  display: selected ? "block" : "-webkit-box",
+                                  WebkitLineClamp: selected ? undefined : 2,
+                                  WebkitBoxOrient: selected ? undefined : "vertical" as const,
+                                  overflow: selected ? "visible" : "hidden",
+                                  wordBreak: "break-word",
+                                  overflowWrap: "anywhere",
+                                }}>
                                   {n.body}
                                 </p>
 
-                                <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-                                  <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: F.ui, fontSize: 12, fontWeight: 500, color: catCfg.color, background: `${catCfg.color}14`, border: `1px solid ${catCfg.color}2A`, borderRadius: 999, padding: "3px 10px" }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                                  <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: F.ui, fontSize: 11, fontWeight: 500, color: catCfg.color, background: `${catCfg.color}14`, border: `1px solid ${catCfg.color}2A`, borderRadius: 999, padding: "2px 8px" }}>
                                     <CatIcon size={10} /> {catCfg.label}
                                   </span>
 
-                                  <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{n.time}</span>
+                                  <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>{n.time}</span>
 
                                   {n.action && (
                                     <Button
                                       variant="secondary"
                                       size="sm"
                                       iconRight={ArrowRight}
-                                      className="ml-auto"
+                                      className="ml-auto text-xs"
                                       onClick={e => { e.stopPropagation(); markRead(n.id); }}>
                                       {n.action}
                                     </Button>
@@ -397,7 +407,7 @@ export function NotificationsPage() {
                                 label={isRead ? "Mark unread" : "Mark read"}
                                 variant="secondary"
                                 size="sm"
-                                className="rounded-full mt-0.5"
+                                className="rounded-full mt-0.5 shrink-0"
                                 onClick={e => { e.stopPropagation(); toggleRead(n.id); }}
                               />
                             </div>

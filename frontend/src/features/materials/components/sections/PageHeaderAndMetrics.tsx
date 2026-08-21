@@ -82,6 +82,7 @@ export function MetricsBar() {
     <Package key="package" size={22} color={T.warmCream} />,
     <Layers key="layers" size={22} color={T.warmCream} />,
     <Palette key="palette" size={22} color={T.warmCream} />,
+    <Bell key="bell" size={22} color={T.warmCream} />,
   ];
 
   const statItems = materialMetrics.map((m, i) => ({

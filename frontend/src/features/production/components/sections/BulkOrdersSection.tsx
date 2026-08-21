@@ -173,11 +173,11 @@ export function BulkOrdersSection({ onNavigate, superadmin = false, onOpenOrder 
                   <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9", letterSpacing: "-0.2px", lineHeight: 1.2 }}>Bulk Orders — Production Progress</div>
                   <div style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.70)", marginTop: 4, lineHeight: 1.5 }}>Track wholesale customer orders and delivery deadlines</div>
                 </div>
-                <div className="flex items-center gap-1.5 sm:gap-2.5 w-full flex-nowrap min-w-0 pt-0.5">
-                  <Button onClick={() => setShowCreate(true)} variant="primary" size="sm" className="flex-1 min-w-0 px-2 sm:px-3 text-[12px] whitespace-nowrap justify-center">
+                <div className="flex items-center gap-2 flex-wrap pt-0.5">
+                  <Button onClick={() => setShowCreate(true)} variant="primary" size="sm" className="shrink-0 text-[12px] whitespace-nowrap">
                     <PhPlus size={14} /> Add Bulk Order
                   </Button>
-                  <Button onClick={() => onNavigate?.("AllOrders")} variant="secondary" size="sm" className="flex-1 min-w-0 px-2 sm:px-3 text-[12px] whitespace-nowrap justify-center">
+                  <Button onClick={() => onNavigate?.("AllOrders")} variant="secondary" size="sm" className="shrink-0 text-[12px] whitespace-nowrap">
                     View All Orders <ArrowRight size={14} />
                   </Button>
                 </div>

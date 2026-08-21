@@ -310,18 +310,29 @@ export function BatchesSection({ onAddNewStock }: { onAddNewStock: () => void })
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <div style={{ display: "flex", gap: 6 }}>
-            {([["table", LayoutList, "Table"], ["card", LayoutGrid, "Card"]] as const).map(([v, Icon, label]) => (
-              <Button
-                key={v}
-                onClick={() => setView(v as "table" | "card")}
-                variant={view === v ? "primary" : "secondary"}
-                size="sm"
-                iconLeft={Icon}
-              >
-                {label}
-              </Button>
-            ))}
+          <div className="flex items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0">
+            <Button
+              onClick={() => setView("card")}
+              variant="ghost"
+              className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
+                view === "card"
+                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+              }`}
+            >
+              <LayoutGrid size={14} /> Card View
+            </Button>
+            <Button
+              onClick={() => setView("table")}
+              variant="ghost"
+              className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
+                view === "table"
+                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+              }`}
+            >
+              <LayoutList size={14} /> Table View
+            </Button>
           </div>
         </div>
       </div>

@@ -158,7 +158,7 @@ export function LoomAnalytics({ looms, batches, materials, sarees }: {
   const tip = { fontFamily: F.ui, fontSize: 12, borderRadius: 10, border: `1px solid ${T.borderDef}`, boxShadow: "0 8px 24px rgba(74,6,27,0.12)" };
 
   return (
-    <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 34 }}>
+    <div className="px-3 sm:px-4 md:px-7 xl:px-14" style={{ paddingTop: 24 }}>
       <FadeUp>
       <SectionCard
         icon={ChartBar}
@@ -170,14 +170,14 @@ export function LoomAnalytics({ looms, batches, materials, sarees }: {
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" as const }}>
           <DateFilterBar filter={filter} onChange={setFilter} />
-          <div style={{ display: "flex", gap: 24, marginBottom: 16 }}>
+          <div style={{ display: "flex", gap: 20, flexWrap: "wrap" as const, marginBottom: 16 }}>
             {[
               { label: "SAREES WOVEN", value: String(produced), color: T.royalBurgundy },
               { label: "QC PASS RATE", value: `${passRate}%`, color: laQcColor(passRate) },
               { label: "LOOM UTILISATION", value: `${utilRate}%`, color: utilRate >= 70 ? T.green : T.crimson },
             ].map(k => (
-              <div key={k.label}>
-                <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, letterSpacing: "1px", color: T.taupe }}>{k.label}</div>
+              <div key={k.label} style={{ minWidth: 90 }}>
+                <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 600, letterSpacing: "0.5px", color: T.taupe, whiteSpace: "nowrap" as const }}>{k.label}</div>
                 <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: k.color }}>{k.value}</div>
               </div>
             ))}
@@ -201,8 +201,8 @@ export function LoomAnalytics({ looms, batches, materials, sarees }: {
       {/* Row 2: Output by Loom + Batch Delivery Risk */}
       <FadeUp delay={0.08}>
         <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr]" style={{ gap: 22, marginBottom: 22 }}>
-          <div style={card}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+          <div className="bg-white rounded-[20px] border border-[#EBE3D5] p-4 sm:p-6 shadow-[0_2px_12px_rgba(74,6,27,0.05)]">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <Trophy size={17} color={T.antiqueGold} />
                 <div>
@@ -210,11 +210,11 @@ export function LoomAnalytics({ looms, batches, materials, sarees }: {
                   <div style={cardSub}>Sarees completed · bar colour shows QC pass rate</div>
                 </div>
               </div>
-              <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+              <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" as const }}>
                 {[{ c: T.green, t: "≥95%" }, { c: "#8B6018", t: "85–94%" }, { c: T.crimson, t: "<85%" }].map(g => (
-                  <div key={g.t} style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                    <div style={{ width: 9, height: 9, borderRadius: 3, background: g.c }} />
-                    <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{g.t}</span>
+                  <div key={g.t} style={{ display: "flex", alignItems: "center", gap: 5, whiteSpace: "nowrap" as const }}>
+                    <div style={{ width: 9, height: 9, borderRadius: 3, background: g.c, flexShrink: 0 }} />
+                    <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" as const }}>{g.t}</span>
                   </div>
                 ))}
               </div>
@@ -234,18 +234,18 @@ export function LoomAnalytics({ looms, batches, materials, sarees }: {
                 </BarChart>
               </ResponsiveContainer>
             </ChartFigure>
-            <div style={{ display: "flex", gap: 8, borderTop: `1px solid ${T.borderDef}`, paddingTop: 14, marginTop: 6 }}>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 border-t border-[#EBE3D5] pt-3.5 mt-1.5">
               {rankedLooms.slice(0, 4).map((l, i) => (
-                <div key={l.id} style={{ flex: 1, minWidth: 0, background: i === 0 && l.produced > 0 ? "rgba(200,155,71,0.08)" : T.silkCream, border: `1px solid ${i === 0 && l.produced > 0 ? T.borderGold : T.borderDef}`, borderRadius: 12, padding: "10px 12px" }}>
+                <div key={l.id} style={{ background: i === 0 && l.produced > 0 ? "rgba(200,155,71,0.08)" : T.silkCream, border: `1px solid ${i === 0 && l.produced > 0 ? T.borderGold : T.borderDef}`, borderRadius: 12, padding: "8px 10px", minWidth: 0 }}>
                   <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis" }}>{l.short}</div>
-                  <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis", marginTop: 2 }}>{l.operatorName}</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis", marginTop: 2 }}>{l.operatorName}</div>
                   <div style={{ marginTop: 4 }}><StatusPill taxonomy="condition" status={LOOM_STATUS_TO_CONDITION[l.status]} size="sm" /></div>
                 </div>
               ))}
             </div>
           </div>
 
-          <div style={card}>
+          <div className="bg-white rounded-[20px] border border-[#EBE3D5] p-4 sm:p-6 shadow-[0_2px_12px_rgba(74,6,27,0.05)]">
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <Timer size={16} color={overdueCount ? T.crimson : T.royalBurgundy} />
               <div style={cardTitle}>Batch Delivery Risk</div>

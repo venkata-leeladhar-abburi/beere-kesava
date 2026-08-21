@@ -253,7 +253,7 @@ export function POTrackerSection({
                     {cfg.badge}
                   </div>
 
-                  <div className="flex items-center gap-1.5 sm:gap-2 w-full flex-nowrap min-w-0">
+                  <div className="flex flex-col gap-2 w-full">
                     {po.status === "approved" && (
                       <Button
                         onClick={(e) => {
@@ -262,13 +262,13 @@ export function POTrackerSection({
                         }}
                         variant="primary"
                         size="sm"
-                        className="flex-[1.4] min-w-0 px-2 sm:px-3 text-[12px] whitespace-nowrap justify-center bg-[var(--bk-green-700,#1E6640)] hover:bg-[#154d30]"
+                        className="w-full px-3 text-[12px] whitespace-nowrap justify-center bg-[var(--bk-green-700,#1E6640)] hover:bg-[#154d30]"
                       >
                         📦 Receive
                       </Button>
                     )}
                     {po.status === "received" && po.grnId && (
-                      <div className="flex-[1.4] min-w-0 h-[34px] px-2 rounded-lg bg-[rgba(30,102,64,0.06)] border border-[rgba(30,102,64,0.18)] text-[11px] font-bold text-[#1E6640] flex items-center justify-center whitespace-nowrap">
+                      <div className="w-full h-[36px] px-2.5 rounded-lg bg-[rgba(30,102,64,0.06)] border border-[rgba(30,102,64,0.18)] text-[11px] font-bold text-[#1E6640] flex items-center justify-center text-center whitespace-nowrap overflow-hidden text-ellipsis">
                         ✓ {po.grnId}
                       </div>
                     )}
@@ -277,28 +277,30 @@ export function POTrackerSection({
                         onClick={(e) => { e.stopPropagation(); onCreatePO(); }}
                         variant="secondary"
                         size="sm"
-                        className="flex-[1.4] min-w-0 px-2 text-[12px] whitespace-nowrap justify-center"
+                        className="w-full px-3 text-[12px] whitespace-nowrap justify-center"
                       >
                         📋 Recreate
                       </Button>
                     )}
-                    <Button
-                      onClick={(e) => { e.stopPropagation(); onViewPO(po); }}
-                      variant="secondary"
-                      size="sm"
-                      className="flex-1 min-w-0 px-2 sm:px-3 text-[12px] whitespace-nowrap justify-center"
-                    >
-                      📄 View PO
-                    </Button>
-                    {po.status !== "received" && (
-                      <IconButton
-                        onClick={(e) => { e.stopPropagation(); setDeletingPO(po); }}
-                        icon={Trash2}
-                        label="Delete purchase order"
-                        variant="ghost"
-                        className="w-8 h-8 shrink-0 text-[#C0392B] bg-[#C0392B]/10 hover:bg-[#C0392B]/20"
-                      />
-                    )}
+                    <div className="flex items-center gap-2 w-full">
+                      <Button
+                        onClick={(e) => { e.stopPropagation(); onViewPO(po); }}
+                        variant="secondary"
+                        size="sm"
+                        className="flex-1 px-3 text-[12px] whitespace-nowrap justify-center"
+                      >
+                        📄 View PO
+                      </Button>
+                      {po.status !== "received" && (
+                        <IconButton
+                          onClick={(e) => { e.stopPropagation(); setDeletingPO(po); }}
+                          icon={Trash2}
+                          label="Delete purchase order"
+                          variant="ghost"
+                          className="w-8 h-8 shrink-0 text-[#C0392B] bg-[#C0392B]/10 hover:bg-[#C0392B]/20"
+                        />
+                      )}
+                    </div>
                   </div>
                 </div>
               </motion.div>
