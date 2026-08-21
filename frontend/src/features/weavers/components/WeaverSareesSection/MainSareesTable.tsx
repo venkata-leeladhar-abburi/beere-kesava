@@ -36,17 +36,169 @@ interface MainSareesTableProps {
   responsive?: boolean;
 }
 
+function MainSareeCard({
+  r,
+  selectable,
+  selectedIds,
+  onToggleRow,
+  isAll,
+  isLoom,
+  tab,
+  dateHeader,
+  showQcMoney,
+  showMoney,
+}: {
+  r: WeaverSareeRow;
+  selectable: boolean;
+  selectedIds?: Set<string>;
+  onToggleRow?: (sareeId: string) => void;
+  isAll: boolean;
+  isLoom: boolean;
+  tab: TabKey;
+  dateHeader: string;
+  showQcMoney: boolean;
+  showMoney: boolean;
+}) {
+  const isPickable = r.qcStatus !== "defective" && r.qcStatus !== "semi" && !r.dispatched;
+  const qc = QC_CFG[r.qcStatus];
+  const fin = FIN_CFG[r.finishingStatus];
+
+  return (
+    <div className="bg-white rounded-2xl border border-[#EBE3D5] shadow-[0_4px_20px_rgba(74,6,27,0.06)] overflow-hidden transition-all hover:shadow-[0_8px_30px_rgba(74,6,27,0.12)]">
+      <div className="h-1" style={{ background: qc.color }} />
+
+      <div className="p-4 sm:p-5 flex flex-col gap-3.5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            {selectable && (
+              <Checkbox
+                checked={!!selectedIds?.has(r.sareeId)}
+                onCheckedChange={() => isPickable && onToggleRow?.(r.sareeId)}
+                disabled={!isPickable}
+              />
+            )}
+            <div>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 15, fontWeight: 700, color: T.royalBurgundy }}>
+                {r.sareeId}
+              </div>
+              {r.batchId && (
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 1 }}>
+                  Batch: {r.batchId}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 flex-wrap justify-end shrink-0">
+            <Chip label={qc.label} color={qc.color} />
+            {r.finishingStatus !== "none" && <Chip label={fin.label} color={fin.color} />}
+          </div>
+        </div>
+
+        <div className="h-px bg-[rgba(110,15,45,0.07)]" />
+
+        <div className="grid grid-cols-2 gap-3 text-[13px]">
+          {isAll && r.ownerLabel && (
+            <div>
+              <div className="text-[11px] font-bold uppercase tracking-wider text-[#69635E] mb-0.5">
+                Weaver / Loom
+              </div>
+              <div className="font-semibold text-[#6E0F2D]">
+                {r.ownerLabel}
+              </div>
+            </div>
+          )}
+
+          {!isLoom && r.loomNumber != null && (
+            <div>
+              <div className="text-[11px] font-bold uppercase tracking-wider text-[#69635E] mb-0.5">
+                Loom
+              </div>
+              <div className="font-semibold text-[#C89B47]">
+                Loom {r.loomNumber}
+              </div>
+            </div>
+          )}
+
+          <div>
+            <div className="text-[11px] font-bold uppercase tracking-wider text-[#69635E] mb-0.5">
+              Saree Type
+            </div>
+            <div className="font-semibold text-[#3B2314]">
+              {r.sareeTypeCode ? `${r.sareeTypeCode}${r.sareeTypeName ? ` · ${r.sareeTypeName}` : ""}` : "—"}
+            </div>
+          </div>
+
+          <div>
+            <div className="text-[11px] font-bold uppercase tracking-wider text-[#69635E] mb-0.5">
+              Colour
+            </div>
+            <div className="font-semibold text-[#3B2314]">
+              {r.color || "—"}
+            </div>
+          </div>
+
+          <div>
+            <div className="text-[11px] font-bold uppercase tracking-wider text-[#69635E] mb-0.5">
+              Bulk Order
+            </div>
+            <div className="font-semibold text-[#6E0F2D]">
+              {r.bulkOrderLabel || "General Stock"}
+            </div>
+          </div>
+
+          <div>
+            <div className="text-[11px] font-bold uppercase tracking-wider text-[#69635E] mb-0.5">
+              {dateHeader}
+            </div>
+            <div className="font-semibold text-[#3B2314]">
+              {fmtDate(tabDate(r, tab))}
+            </div>
+          </div>
+
+          {showQcMoney && r.payable != null && (
+            <div>
+              <div className="text-[11px] font-bold uppercase tracking-wider text-[#69635E] mb-0.5">
+                Weaver Earns
+              </div>
+              <div className="font-bold text-[#1E6640] font-mono">
+                {inr(r.payable)}
+              </div>
+            </div>
+          )}
+
+          {showMoney && r.stock && (
+            <div>
+              <div className="text-[11px] font-bold uppercase tracking-wider text-[#69635E] mb-0.5">
+                {tab === "sold" ? "Sold For" : "Sell Price"}
+              </div>
+              <div className="font-bold text-[#6E0F2D] font-mono">
+                {inr(tab === "sold" ? (r.stock.sale?.amount || 0) : r.stock.finalAmount)}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {r.defects && r.defects.length > 0 && (
+          <div className="mt-1 pt-2 border-t border-dashed border-red-200 flex items-center gap-1.5 flex-wrap">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-red-700">Defects:</span>
+            {r.defects.map(d => (
+              <span key={d} className="text-[11px] font-semibold text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded-md">
+                {d}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function MainSareesTable({
   pageRows, visible, selectable, selectedIds, onToggleAll, onToggleRow,
   isAll, isLoom, tab, dateHeader, showQcMoney, showMoney, pag, responsive = false
 }: MainSareesTableProps) {
   const mono = (color: string, extra?: React.CSSProperties): React.CSSProperties => ({ fontFamily: "var(--font-mono)", fontSize: 12, color, ...extra });
-  // Selectable for any purpose (dispatch or quotation) except sarees that are
-  // semi-defective, defective, or already dispatched. Note actual *dispatch*
-  // (not selection) still 404s server-side on anything short of
-  // FINISHING_COMPLETE — Raise Quotation has no such restriction, so this
-  // matters only for the Shop/Wholesale dispatch actions, which will surface
-  // that as a clear error at dispatch time rather than blocking selection.
   const isPickable = (r: WeaverSareeRow) =>
     r.qcStatus !== "defective" && r.qcStatus !== "semi" && !r.dispatched;
 
@@ -179,16 +331,60 @@ export function MainSareesTable({
   ];
 
   return (
-    <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, background: "#FFFFFF", boxShadow: "0 2px 8px rgba(74,6,27,0.04)", overflow: "hidden" }}>
-      <div className="w-full overflow-x-auto section-nav-scroll p-2">
-        <div className="min-w-[850px]">
-          <DataTable responsive={responsive} columns={columns} data={pageRows} getRowId={r => r.sareeId} />
+    <>
+      {/* Desktop view (md and up): ALWAYS show full table */}
+      <div className="hidden md:block" style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, background: "#FFFFFF", boxShadow: "0 2px 8px rgba(74,6,27,0.04)", overflow: "hidden" }}>
+        <div className="w-full overflow-x-auto section-nav-scroll p-2">
+          <div className="min-w-[850px]">
+            <DataTable columns={columns} data={pageRows} getRowId={r => r.sareeId} />
+          </div>
+        </div>
+        <div style={{ padding: "0 14px" }}>
+          <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start}
+            onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="sarees" />
         </div>
       </div>
-      <div style={{ padding: "0 14px" }}>
-        <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start}
-          onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="sarees" />
+
+      {/* Mobile view (< md): Card View when responsive is true, scrollable table when false */}
+      <div className="block md:hidden">
+        {responsive ? (
+          <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              {pageRows.map(r => (
+                <MainSareeCard
+                  key={r.sareeId}
+                  r={r}
+                  selectable={selectable}
+                  selectedIds={selectedIds}
+                  onToggleRow={onToggleRow}
+                  isAll={isAll}
+                  isLoom={isLoom}
+                  tab={tab}
+                  dateHeader={dateHeader}
+                  showQcMoney={showQcMoney}
+                  showMoney={showMoney}
+                />
+              ))}
+            </div>
+            <div style={{ padding: "0 14px" }}>
+              <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start}
+                onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="sarees" />
+            </div>
+          </div>
+        ) : (
+          <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, background: "#FFFFFF", boxShadow: "0 2px 8px rgba(74,6,27,0.04)", overflow: "hidden" }}>
+            <div className="w-full overflow-x-auto section-nav-scroll p-2">
+              <div className="min-w-[850px]">
+                <DataTable columns={columns} data={pageRows} getRowId={r => r.sareeId} />
+              </div>
+            </div>
+            <div style={{ padding: "0 14px" }}>
+              <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start}
+                onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="sarees" />
+            </div>
+          </div>
+        )}
       </div>
-    </div>
+    </>
   );
 }

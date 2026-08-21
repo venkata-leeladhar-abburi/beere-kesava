@@ -106,10 +106,10 @@ export function SectionA({ isMobile, isDesktop, isTablet }: { isMobile?: boolean
   const groupLabel = groupMode === "weaver" ? "Weaver / Loom" : "Batch";
 
   return (
-    <div>
-      {/* Grouping tabs — List / By Weaver / By Batch, same idea as Quality Check's grouping */}
+    <div className="flex flex-col gap-3">
+      {/* Grouping tabs — List / By Weaver / By Batch */}
       {readySarees.length > 0 && (
-        <div style={{ display: "flex", margin: "0 0 10px", background: "#F5F0F2", borderRadius: 10, padding: 3 }}>
+        <div style={{ display: "flex", margin: "0 0 4px", background: "#F5F0F2", borderRadius: 10, padding: 3 }}>
           {([["list", "List", List], ["weaver", "By Weaver / Loom", Users], ["batch", "By Batch", LayoutGrid]] as const).map(([key, label, Icon]) => (
             <Button key={key} variant={groupMode === key ? "primary" : "tertiary"} fullWidth size="sm"
               iconLeft={Icon}
@@ -121,26 +121,18 @@ export function SectionA({ isMobile, isDesktop, isTablet }: { isMobile?: boolean
         </div>
       )}
 
-      {/* Sub-header: scan + filters + select-all */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, flexWrap: "wrap" as const }}>
-        <ScanBar value={scanValue} onChange={setScanValue} onSubmit={submitScan} />
-        <div style={{ flex: 1, minWidth: 120 }}>
-          <Select value={filterWeaver} onValueChange={setFilterWeaver} size="sm">
-            <SelectItem value="all">All Weavers</SelectItem>
-            {uniqueWeavers.map(w => <SelectItem key={w} value={w}>{w}</SelectItem>)}
-          </Select>
+      {/* Sub-header: scan + select-all */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 w-full mb-1">
+        <div className="flex-1 min-w-0">
+          <ScanBar value={scanValue} onChange={setScanValue} onSubmit={submitScan} />
         </div>
-        <div style={{ flex: 1, minWidth: 120 }}>
-          <Select value={filterType} onValueChange={setFilterType} size="sm">
-            <SelectItem value="all">All Saree Types</SelectItem>
-            {uniqueTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-          </Select>
-        </div>
-        {displaySarees !== null && displaySarees.length > 0 && (
-          <Button variant="link" onClick={toggleAll} className="gap-1.5 p-0 px-1.5 py-1 text-xs text-[#69635E] whitespace-nowrap">
-            {allChecked ? <CheckSquare size={15} color={C.burg} /> : <Square size={15} color={C.muted} />}
-            {allChecked ? "Deselect All" : "Select All"}
-          </Button>
+        {readySarees.length > 0 && (
+          <div className="flex justify-end shrink-0">
+            <Button variant="link" onClick={toggleAll} className="gap-1.5 p-0 px-1.5 py-1 text-xs text-[#69635E] whitespace-nowrap">
+              {allChecked ? <CheckSquare size={15} color={C.burg} /> : <Square size={15} color={C.muted} />}
+              {allChecked ? "Deselect All" : "Select All"}
+            </Button>
+          </div>
         )}
       </div>
 

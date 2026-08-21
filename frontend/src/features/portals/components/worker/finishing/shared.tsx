@@ -37,23 +37,23 @@ export function ScanBar({ value, onChange, onSubmit, label = "Scan Barcode" }: {
   return (
     <form
       onSubmit={e => { e.preventDefault(); onSubmit(); }}
-      style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 0 }}
+      className="flex items-center gap-2 w-full min-w-0"
     >
       <Input
         value={value}
         onChange={e => onChange(e.target.value)}
-        placeholder="Scan or type saree ID"
+        placeholder="Scan or type saree ID…"
         aria-label="Saree ID to scan"
-        className="h-[38px] min-w-0 flex-1 font-mono"
+        className="h-[38px] min-w-0 flex-1 font-mono text-xs"
       />
       <Button
         type="submit"
         variant="primary"
         size="sm"
         iconLeft={Scan}
-        className="h-[38px] flex-shrink-0 rounded-[10px] bg-[#3D0E1A] hover:bg-[#6E0F2D]"
+        className="h-[38px] flex-shrink-0 rounded-[10px] bg-[#3D0E1A] hover:bg-[#6E0F2D] text-xs px-3 whitespace-nowrap"
       >
-        {label}
+        <span>{label}</span>
       </Button>
     </form>
   );

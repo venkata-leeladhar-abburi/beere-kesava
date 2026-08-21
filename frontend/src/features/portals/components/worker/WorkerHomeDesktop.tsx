@@ -113,12 +113,12 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
       />
 
       {/* Date chip, pinned to the hero like admin's */}
-      <div style={{ position: "relative" }}>
+      <div className="relative hidden md:block">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
-          style={{ position: "absolute", top: -308, right: GUTTER_X, fontFamily: F.m, fontSize: 12, color: "rgba(255,253,249,0.45)", background: "rgba(255,253,249,0.08)", border: "1px solid rgba(255,253,249,0.12)", padding: "6px 14px", borderRadius: 8, zIndex: 21 }}
+          style={{ position: "absolute", top: -308, right: 48, fontFamily: F.m, fontSize: 12, color: "rgba(255,253,249,0.45)", background: "rgba(255,253,249,0.08)", border: "1px solid rgba(255,253,249,0.12)", padding: "6px 14px", borderRadius: 8, zIndex: 21 }}
         >
           {today}
         </motion.div>
@@ -128,83 +128,29 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
 
       {/* ── MAIN CONTENT ─────────────────────────────────────────────────── */}
       <div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 40, paddingBottom: 64 }}>
-        <div className="grid-cols-1 md:grid-cols-[minmax(0,1fr)_400px]" style={{ display: "grid", gap: 40, alignItems: "start" }}>
-
-          {/* ── Today's Tasks ─────────────────────────────────────────── */}
-          <div>
-            <FadeUp>
-              <SectionHeading
-                title="Today's Tasks"
-                size="lg"
-                right={<span style={{ fontFamily: F.u, fontSize: 14, color: C.gold, fontWeight: 600 }}>{totalTasks} pending →</span>}
-              />
-            </FadeUp>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-              {tasks.map((task, i) => {
-                const Icon = task.icon;
-                return (
-                  <FadeUp key={task.title} delay={i * 0.07}>
-                    <motion.div
-                      whileHover={{ y: -3, boxShadow: "0 16px 48px rgba(110,15,45,0.14)" }}
-                      whileTap={{ scale: 0.99 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 24 }}
-                      style={{ borderRadius: 20, ["--accent-color" as string]: task.accentColor } as React.CSSProperties}
-                    >
-                      <Button
-                        variant="tertiary"
-                        fullWidth
-                        onClick={() => onNavigate(task.tab, task.sub2)}
-                        className="h-auto justify-start gap-5 rounded-[20px] border border-[rgba(110,15,45,0.10)] border-l-4 border-l-[var(--accent-color)] bg-white px-6 py-[22px] text-left shadow-[0_6px_32px_rgba(74,6,27,0.08)]"
-                      >
-                        <div style={{ width: 56, height: 56, borderRadius: 16, background: task.iconBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: `0 6px 18px ${task.iconBg}55` }}>
-                          <Icon size={26} color="#FFF" />
-                        </div>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
-                            <span style={{ fontFamily: F.u, fontSize: 18, fontWeight: 600, color: C.wine, letterSpacing: "-0.01em" }}>{task.title}</span>
-                            <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "#FFF", background: task.badgeColor, padding: "3px 10px", borderRadius: 999 }}>{task.badge}</span>
-                          </div>
-                          <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, lineHeight: 1.5 }}>{task.sub}</div>
-                        </div>
-                        <div style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                          <ChevronRight size={18} color={C.muted} />
-                        </div>
-                      </Button>
-                    </motion.div>
-                  </FadeUp>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* ── Right column: Activity + Quick Actions ─────────────────── */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-
-            {/* Recent Activity */}
-            <FadeUp delay={0.2}>
-              <SectionHeading
-                title="Recent Activity"
-                right={<span style={{ fontFamily: F.u, fontSize: 13, color: C.gold, fontWeight: 600 }}>View All →</span>}
-              />
-              <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 20, overflow: "hidden", boxShadow: "0 6px 32px rgba(74,6,27,0.08)" }}>
-                {activities.map((a, i) => (
-                  <div
-                    key={a.id}
-                    style={{ display: "flex", alignItems: "flex-start", gap: 14, padding: "16px 20px", borderBottom: i < activities.length - 1 ? `1px solid rgba(110,15,45,0.07)` : "none" }}
-                  >
-                    <div style={{ width: 10, height: 10, borderRadius: "50%", background: a.dot, marginTop: 5, flexShrink: 0, boxShadow: `0 0 8px ${a.dot}60` }} />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontFamily: F.u, fontSize: 14, color: C.dark, lineHeight: 1.5, marginBottom: 3 }}>{a.desc}</div>
-                      <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{a.time}</div>
-                    </div>
-                    <div style={{ fontFamily: F.m, fontSize: 12, color: C.burg, flexShrink: 0, background: "rgba(110,15,45,0.06)", padding: "2px 8px", borderRadius: 6 }}>{a.id}</div>
+        <div style={{ maxWidth: 800 }}>
+          {/* Recent Activity */}
+          <FadeUp delay={0.2}>
+            <SectionHeading
+              title="Recent Activity"
+              right={<span style={{ fontFamily: F.u, fontSize: 13, color: C.gold, fontWeight: 600 }}>View All →</span>}
+            />
+            <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 20, overflow: "hidden", boxShadow: "0 6px 32px rgba(74,6,27,0.08)" }}>
+              {activities.map((a, i) => (
+                <div
+                  key={a.id}
+                  style={{ display: "flex", alignItems: "flex-start", gap: 14, padding: "16px 20px", borderBottom: i < activities.length - 1 ? `1px solid rgba(110,15,45,0.07)` : "none" }}
+                >
+                  <div style={{ width: 10, height: 10, borderRadius: "50%", background: a.dot, marginTop: 5, flexShrink: 0, boxShadow: `0 0 8px ${a.dot}60` }} />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontFamily: F.u, fontSize: 14, color: C.dark, lineHeight: 1.5, marginBottom: 3 }}>{a.desc}</div>
+                    <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{a.time}</div>
                   </div>
-                ))}
-              </div>
-            </FadeUp>
-
-          </div>
+                  <div style={{ fontFamily: F.m, fontSize: 12, color: C.burg, flexShrink: 0, background: "rgba(110,15,45,0.06)", padding: "2px 8px", borderRadius: 6 }}>{a.id}</div>
+                </div>
+              ))}
+            </div>
+          </FadeUp>
         </div>
       </div>
 

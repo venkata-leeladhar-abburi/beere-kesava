@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router";
 import { useAuth, type Role } from "../../../contexts/AuthContext";
 import { motion, AnimatePresence } from "motion/react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Home, Users, Bell, ChevronLeft, Menu, Search, X, UserRound, Sparkles, UserCheck, Truck } from "lucide-react";
+import { Home, Users, Bell, ChevronLeft, Menu, Search, X, UserRound, Sparkles, UserCheck, Truck, LogOut } from "lucide-react";
 import { C, F } from "./worker/tokens";
 import { Drawer } from "../../../shared/ui/overlay";
 import { WorkerHome } from "./worker/WorkerHome";
@@ -18,6 +18,8 @@ import {
 import { useResponsive } from "../../../hooks/useResponsive";
 import type { IconComponent } from "../../../lib/icon";
 import { Button, IconButton } from "../../../shared/ui/primitives";
+
+import { imgBKLogo } from "../../../shared/constants/weaverImages";
 
 type Tab = "home" | "qc" | "weavers" | "finishing" | "dispatch" | "profile";
 
@@ -40,138 +42,249 @@ const PAGE_TITLES: Record<Tab, string> = {
 
 interface WorkerPortalProps { onBack?: () => void }
 
-function MobileProfile() {
-  const { user, phone } = useAuth();
+function WorkerMobileTopNav({ onMenuOpen, onProfile }: { onMenuOpen: () => void; onProfile: () => void }) {
+  const { user, logout } = useAuth();
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+
   const userName = user?.name || "Ravi Kumar";
-  const initials = userName.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase() || "RK";
-  const userPhone = user?.mobile || phone || "WK-042";
+  const initials = userName.split(" ").filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase() || "RK";
+  const subtitleText = user?.empId ? `Worker Staff · ${user.empId}` : "Worker Staff · Est. 1999";
 
   return (
-    <div style={{ paddingBottom: 32 }}>
-      {/* Hero banner */}
-      <div style={{ background: `linear-gradient(135deg, ${C.dark} 0%, ${C.burg} 60%, #8B1A30 100%)`, padding: "28px 20px 24px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <div style={{ width: 72, height: 72, borderRadius: "50%", background: "rgba(255,255,255,0.15)", border: "2px solid rgba(255,255,255,0.35)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+    <nav
+      style={{
+        position: "sticky",
+        top: 0,
+        zIndex: 100,
+        height: 60,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "0 16px",
+        background: "rgba(255,253,249,0.96)",
+        backdropFilter: "blur(24px)",
+        WebkitBackdropFilter: "blur(24px)",
+        borderBottom: `2px solid rgba(200,155,71,0.40)`,
+        boxShadow: "0 2px 20px rgba(74,6,27,0.05)",
+        flexShrink: 0,
+      }}
+    >
+      <IconButton
+        icon={Menu}
+        label="Open menu"
+        onClick={onMenuOpen}
+        variant="ghost"
+        className="!size-9 !rounded-[10px] border border-[rgba(110,15,45,0.12)] bg-transparent hover:bg-[rgba(0,0,0,0.04)] text-[#1A0A0F]"
+      />
+
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ width: 32, height: 32, borderRadius: 9, overflow: "hidden", flexShrink: 0, border: `1px solid rgba(200,155,71,0.30)` }}>
+          <img src={imgBKLogo} alt="BK" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        </div>
+        <div>
+          <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 14, color: C.dark, lineHeight: 1.1 }}>Beere Kesava</div>
+          <div style={{ fontFamily: F.u, fontWeight: 500, fontSize: 11, color: C.muted }}>Worker Staff · Est. 1999</div>
+        </div>
+      </div>
+
+      <div style={{ position: "relative" }}>
+        <div style={{ borderRadius: 10, border: `1px solid ${showProfileDropdown ? C.gold : "rgba(200,155,71,0.40)"}`, boxShadow: "0 3px 10px rgba(110,15,45,0.15)", display: "inline-block" }}>
+          <Button
+            onClick={() => setShowProfileDropdown(p => !p)}
+            variant="tertiary"
+            className="!size-9 !rounded-[10px] !p-0 !border-none !bg-[#6E0F2D] hover:!bg-[#6E0F2D]"
+          >
+            <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 12, color: "#FFFFFF" }}>{initials}</span>
+          </Button>
+        </div>
+
+        {showProfileDropdown && (
+          <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: 200, background: "#FFFDF9", borderRadius: 14, border: `1px solid rgba(110,15,45,0.14)`, boxShadow: "0 8px 32px rgba(44,24,16,0.14)", minWidth: 210, overflow: "hidden" }}>
+            <div style={{ padding: "14px 16px", background: "rgba(196,146,58,0.06)", borderBottom: `1px solid rgba(110,15,45,0.10)` }}>
+              <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.dark }}>{userName}</div>
+              <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>{subtitleText}</div>
+            </div>
+            <div style={{ padding: "6px 0" }}>
+              <Button onClick={() => { setShowProfileDropdown(false); onProfile(); }} variant="tertiary" fullWidth
+                className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]">
+                <UserRound size={14} color={C.muted} /> View Profile
+              </Button>
+              <div style={{ height: 1, background: "rgba(110,15,45,0.08)", margin: "4px 0" }} />
+              <Button onClick={() => { setShowProfileDropdown(false); logout(); }} variant="tertiary" fullWidth
+                className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#C0392B] hover:!text-[#C0392B]">
+                <LogOut size={14} color="#C0392B" /> Logout
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+    </nav>
+  );
+}
+
+function MobileProfile({ onClose }: { onClose?: () => void }) {
+  const { user, phone, logout } = useAuth();
+  const userName = user?.name || "Ravindra Kumar";
+  const initials = userName.split(" ").filter(Boolean).slice(0, 2).map(w => w[0]).join("").toUpperCase() || "RK";
+  const userPhone = user?.mobile || phone || "1234567890";
+  const workerId = user?.empId || "STAFF-001";
+
+  return (
+    <div style={{ paddingBottom: 48, background: "#FDFBF7", minHeight: "100vh" }}>
+      {/* Top Header Bar */}
+      <div style={{ height: 56, background: C.burg, display: "flex", alignItems: "center", padding: "0 16px" }}>
+        {onClose && (
+          <IconButton icon={ChevronLeft} label="Back" variant="ghost" onClick={onClose} className="text-white" />
+        )}
+        <span style={{ flex: 1, textAlign: "center", fontFamily: F.d, fontSize: 18, fontWeight: 600, color: "#FFF" }}>My Profile</span>
+        {onClose && <div style={{ width: 36 }} />}
+      </div>
+
+      {/* Hero User Banner Card */}
+      <div style={{ background: C.burg, padding: "20px 20px 28px", borderBottom: "1px solid rgba(255,255,255,0.10)" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
+          <div style={{ width: 68, height: 68, borderRadius: "50%", background: "rgba(255,255,255,0.15)", border: "2px solid rgba(255,255,255,0.30)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <span style={{ fontFamily: F.d, fontSize: 24, fontWeight: 700, color: "#FFF" }}>{initials}</span>
           </div>
-          <div>
-            <div style={{ fontFamily: F.d, fontSize: 20, fontWeight: 700, color: "#FFF", lineHeight: 1.2 }}>{userName}</div>
-            <div style={{ fontFamily: F.m, fontSize: 12, color: "rgba(255,255,255,0.65)", marginTop: 4 }}>+91 {userPhone}</div>
-            <div style={{ marginTop: 6, display: "inline-block", background: "rgba(196,146,58,0.30)", border: "1px solid rgba(196,146,58,0.50)", borderRadius: 999, padding: "3px 10px" }}>
-              <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#845E04" }}>Floor Supervisor</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontFamily: F.d, fontSize: 22, fontWeight: 700, color: "#FFF", lineHeight: 1.2 }}>{userName}</div>
+            <div style={{ fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.70)", marginTop: 3 }}>{userPhone}</div>
+            
+            {/* Single line with Worker Staff badge on left and Logout button on right */}
+            <div style={{ marginTop: 10, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+              <div style={{ background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.25)", borderRadius: 999, padding: "3px 12px" }}>
+                <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#FFF" }}>Worker Staff</span>
+              </div>
+
+              <Button
+                onClick={() => logout()}
+                variant="secondary"
+                className="rounded-full px-3.5 py-1 bg-white/10 hover:bg-red-500/20 text-white border border-white/20 text-xs gap-1.5 shrink-0"
+              >
+                <LogOut size={13} color="#FF8A8A" /> Logout
+              </Button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Stats strip */}
-      <div className="grid-cols-1 md:grid-cols-3" style={{ display: "grid", background: "#FFF", borderBottom: `1px solid ${C.bdr}`, boxShadow: "0 2px 10px rgba(110,15,45,0.06)" }}>
+      {/* 3 Metric Stats strip */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: "#FFF", borderBottom: `1px solid ${C.bdr}`, padding: "16px 0", boxShadow: "0 2px 10px rgba(110,15,45,0.04)" }}>
         {[
           { val: "8 yrs", label: "Tenure" },
           { val: "Morning", label: "Shift" },
           { val: "Active", label: "Status" },
         ].map((s, i) => (
-          <div key={s.label} style={{ padding: "14px 8px", textAlign: "center", borderRight: i < 2 ? `1px solid ${C.bdr}` : "none" }}>
-            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: C.burg, marginBottom: 3 }}>{s.val}</div>
+          <div key={s.label} style={{ padding: "0 8px", textAlign: "center", borderRight: i < 2 ? `1px solid ${C.bdr}` : "none" }}>
+            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: C.burg, marginBottom: 2 }}>{s.val}</div>
             <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{s.label}</div>
           </div>
         ))}
       </div>
 
-      {/* Info section */}
-      <div style={{ margin: "16px 16px 0" }}>
-        <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.muted, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>Work Details</div>
-        <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 14, overflow: "hidden" }}>
+      {/* Work Details Section */}
+      <div style={{ margin: "24px 16px 0" }}>
+        <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted, letterSpacing: "1px", textTransform: "uppercase", marginBottom: 10 }}>WORK DETAILS</div>
+        <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 16, overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.03)" }}>
           {[
-            { label: "Worker ID", value: "WK-042", mono: true },
-            { label: "Role", value: "Floor Supervisor", mono: false },
+            { label: "Worker ID", value: workerId, mono: true },
+            { label: "Role", value: "Worker Staff", mono: false },
             { label: "Shift", value: "Morning · 6:00 AM – 2:00 PM", mono: false },
             { label: "Factory", value: "Beere Kesava & Brothers Silks", mono: false },
             { label: "Joined", value: "March 2018", mono: false },
           ].map((item, i, arr) => (
-            <div key={item.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderBottom: i < arr.length - 1 ? `1px solid ${C.bdr}` : "none" }}>
+            <div key={item.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", borderBottom: i < arr.length - 1 ? `1px solid ${C.bdr}` : "none" }}>
               <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{item.label}</span>
-              <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 500, color: item.mono ? C.burg : C.text }}>{item.value}</span>
+              <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: item.mono ? C.burg : C.dark }}>{item.value}</span>
             </div>
           ))}
         </div>
-      </div>
-
-      {/* Permissions */}
-      <div style={{ margin: "16px 16px 0" }}>
-        <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.muted, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>Permissions</div>
-        <div className="grid-cols-1 md:grid-cols-2" style={{ display: "grid", gap: 8 }}>
-          {[
-            { label: "Quality Check", on: true },
-            { label: "Issue Material", on: false },
-            { label: "Warp Requests", on: false },
-            { label: "Receive Stock", on: false },
-            { label: "Reports", on: false },
-            { label: "Admin Panel", on: false },
-          ].map(p => (
-            <div key={p.label} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 10 }}>
-              <div style={{ width: 8, height: 8, borderRadius: "50%", background: p.on ? C.green : "#DDD", flexShrink: 0 }} />
-              <span style={{ fontFamily: F.u, fontSize: 12, color: p.on ? C.text : C.muted }}>{p.label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div style={{ margin: "20px 16px 0", textAlign: "center", fontFamily: F.u, fontSize: 12, color: C.muted }}>
-        Beere Kesava & Brothers Silks · Est. 1999
       </div>
     </div>
   );
 }
 
-function HamburgerMenu({ open, onOpenChange, onProfile, onBack }: { open: boolean; onOpenChange: (open: boolean) => void; onProfile: () => void; onBack?: () => void }) {
-  const { selectRole } = useAuth();
-  const navigate = useNavigate();
+function HamburgerMenu({ open, onOpenChange, onProfile, onBack, activeTab, onSelectTab }: { open: boolean; onOpenChange: (open: boolean) => void; onProfile: () => void; onBack?: () => void; activeTab?: Tab; onSelectTab?: (t: Tab) => void }) {
+  const { logout } = useAuth();
   const onClose = () => onOpenChange(false);
+
+  const NAV_ITEMS: { id: Tab; label: string; Icon: IconComponent }[] = [
+    { id: "home", label: "Home", Icon: Home },
+    { id: "qc", label: "Quality Check", Icon: Search },
+    { id: "weavers", label: "Receive Sarees", Icon: Users },
+    { id: "finishing", label: "Finishing", Icon: Sparkles },
+    { id: "dispatch", label: "Dispatch Details", Icon: Truck },
+    { id: "profile", label: "My Profile", Icon: UserRound },
+  ];
+
   return (
     <Drawer open={open} onOpenChange={onOpenChange} side="left" size="sm">
       <div style={{ display: "flex", flexDirection: "column", height: "100%", background: C.dark }}>
-        <div style={{ padding: "20px 20px 16px", borderBottom: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div>
-            <Dialog.Title asChild>
-              <div style={{ fontFamily: F.d, fontSize: 14, fontWeight: 700, color: C.gold }}>Worker Portal</div>
-            </Dialog.Title>
-            <div style={{ fontFamily: F.u, fontSize: 12, color: "rgba(255,255,255,0.45)", marginTop: 2 }}>Beere Kesava & Brothers Silks</div>
+        {/* Header matching Superadmin drawer header */}
+        <div style={{ padding: "20px 20px 16px", borderBottom: `2px solid rgba(200,155,71,0.60)`, display: "flex", alignItems: "center", justifyContent: "space-between", background: `linear-gradient(135deg, ${C.dark} 0%, #6E0F2D 100%)`, flexShrink: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 38, height: 38, borderRadius: 11, overflow: "hidden", border: "1.5px solid rgba(200,155,71,0.40)", flexShrink: 0 }}>
+              <img src={imgBKLogo} alt="BK" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            </div>
+            <div>
+              <Dialog.Title asChild>
+                <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 14, color: "#FFFDF9", lineHeight: 1.1 }}>Beere Kesava</div>
+              </Dialog.Title>
+              <div style={{ fontFamily: F.u, fontWeight: 500, fontSize: 11, color: "rgba(231,201,131,0.85)", letterSpacing: "2px", textTransform: "uppercase" }}>WORKER STAFF</div>
+            </div>
           </div>
           <Dialog.Close asChild>
-            <IconButton icon={X} label="Close" variant="ghost" className="text-white/60" />
+            <IconButton
+              icon={X}
+              label="Close menu"
+              onClick={onClose}
+              variant="ghost"
+              className="!size-8 !rounded-[9px] border border-[rgba(245,232,208,0.20)] bg-[rgba(245,232,208,0.10)] text-[rgba(245,232,208,0.85)] hover:bg-[rgba(245,232,208,0.16)]"
+            />
           </Dialog.Close>
         </div>
-        <div style={{ padding: "16px 12px 12px" }}>
-          <Button variant="tertiary" fullWidth iconLeft={UserRound} onClick={() => { onProfile(); onClose(); }}
-            className="justify-start gap-3 rounded-[10px] border-none bg-transparent px-3.5 py-3 text-left hover:bg-white/[0.07]">
-            <span style={{ fontFamily: F.u, fontSize: 14, color: "rgba(255,255,255,0.80)" }}>My Profile</span>
+
+        {/* Menu Navigation Items */}
+        <div style={{ flex: 1, padding: "16px 12px", overflowY: "auto" }}>
+          {NAV_ITEMS.map(item => {
+            const isActive = activeTab === item.id;
+            const ItemIcon = item.Icon;
+            return (
+              <Button
+                key={item.id}
+                variant="tertiary"
+                fullWidth
+                onClick={() => {
+                  if (item.id === "profile") {
+                    onProfile();
+                  } else if (onSelectTab) {
+                    onSelectTab(item.id);
+                  }
+                  onClose();
+                }}
+                className={`justify-between gap-3 rounded-[12px] border-none mb-1.5 px-3.5 py-3 text-left transition-all ${
+                  isActive
+                    ? "bg-[linear-gradient(135deg,rgba(200,155,71,0.20)_0%,rgba(110,15,45,0.25)_100%)] text-white font-semibold border border-[rgba(200,155,71,0.30)]"
+                    : "bg-transparent text-[rgba(255,255,255,0.75)] hover:bg-white/[0.08] hover:text-white"
+                }`}
+              >
+                <span style={{ display: "flex", alignItems: "center", gap: 10, fontFamily: F.u, fontSize: 14 }}>
+                  <ItemIcon size={18} color={isActive ? C.gold : "rgba(255,255,255,0.65)"} />
+                  {item.label}
+                </span>
+                {isActive && <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.gold }} />}
+              </Button>
+            );
+          })}
+        </div>
+
+        {/* Footer Logout Button */}
+        <div style={{ padding: "16px 16px 24px", borderTop: "1px solid rgba(255,255,255,0.08)", flexShrink: 0 }}>
+          <Button variant="tertiary" fullWidth onClick={() => { onClose(); logout(); }}
+            className="justify-start gap-2.5 rounded-[12px] border-none bg-red-500/10 px-3.5 py-3 text-[13px] text-red-400 hover:bg-red-500/20">
+            <LogOut size={16} color="#FF6B6B" /> Logout
           </Button>
         </div>
-        <div style={{ flex: 1 }} />
-        {onBack && (
-          <div style={{ padding: "12px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-            {localStorage.getItem("bk_original_admin_role") ? (
-              <Button variant="tertiary" fullWidth onClick={() => {
-                onClose();
-                const origAdminRole = localStorage.getItem("bk_original_admin_role");
-                if (origAdminRole) {
-                  localStorage.removeItem("bk_original_admin_role");
-                  selectRole(origAdminRole as Role);
-                  navigate(origAdminRole === "superadmin" ? "/superadmin" : "/admin");
-                }
-              }} className="justify-start rounded-[10px] border-none bg-transparent px-3.5 py-2.5 text-[13px] text-white/50">
-                My Portal
-              </Button>
-            ) : (
-              <Button variant="tertiary" fullWidth onClick={() => { onBack(); onClose(); }}
-                className="justify-start rounded-[10px] border-none bg-transparent px-3.5 py-2.5 text-[13px] text-white/50">
-                Switch Portal
-              </Button>
-            )}
-          </div>
-        )}
       </div>
     </Drawer>
   );
@@ -191,40 +304,20 @@ function MobilePortal({ onBack, activeTab, setActiveTab }: MobilePortalProps) {
   return (
     <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto", minHeight: "100dvh", background: "#FFFFFF", display: "flex", flexDirection: "column", fontFamily: F.u, position: "relative" }}>
       {/* Hamburger overlay */}
-      <HamburgerMenu open={showMenu} onOpenChange={setShowMenu} onProfile={() => setShowProfile(true)} onBack={onBack} />
+      <HamburgerMenu open={showMenu} onOpenChange={setShowMenu} onProfile={() => setShowProfile(true)} onBack={onBack} activeTab={activeTab} onSelectTab={setActiveTab} />
 
       {/* Profile slide */}
       <AnimatePresence>
         {showProfile && (
           <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ duration: 0.22 }}
-            style={{ position: "fixed", inset: 0, background: "#FFF", zIndex: "var(--z-tooltip)", overflowY: "auto" }}>
-            <div style={{ height: 56, background: C.burg, display: "flex", alignItems: "center", padding: "0 16px" }}>
-              <IconButton icon={ChevronLeft} label="Back" variant="ghost" onClick={() => setShowProfile(false)} className="text-white" />
-              <span style={{ flex: 1, textAlign: "center", fontFamily: F.d, fontSize: 18, fontWeight: 600, color: "#FFF" }}>My Profile</span>
-              <div style={{ width: 36 }} />
-            </div>
-            <MobileProfile />
+            style={{ position: "fixed", inset: 0, background: "#FDFBF7", zIndex: "var(--z-tooltip)", overflowY: "auto" }}>
+            <MobileProfile onClose={() => setShowProfile(false)} />
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Global Header */}
-      <div style={{ height: 56, background: C.burg, display: "flex", alignItems: "center", padding: "0 16px", flexShrink: 0, position: "sticky", top: 0, zIndex: 100, boxShadow: "0 2px 12px rgba(110,15,45,0.25)" }}>
-        <IconButton icon={Menu} label="Menu" variant="ghost" onClick={() => setShowMenu(true)} className="min-w-9 text-white/85" />
-        <span style={{ flex: 1, textAlign: "center", fontFamily: F.d, fontWeight: 600, fontSize: 18, color: "#FFF" }}>
-          {PAGE_TITLES[activeTab]}
-        </span>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <div style={{ position: "relative" }}>
-            <IconButton icon={Bell} label="Notifications" variant="ghost" className="min-w-8 text-white/85" />
-            <span style={{ position: "absolute", top: 0, right: 2, width: 16, height: 16, background: C.crim, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "#FFF", fontFamily: F.u, pointerEvents: "none" }}>3</span>
-          </div>
-          <Button variant="tertiary" onClick={() => setShowProfile(true)}
-            className="w-[30px] h-[30px] p-0 rounded-[9px] border border-white/30 bg-white/12 hover:bg-white/12">
-            <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 12, color: "#FFF" }}>RK</span>
-          </Button>
-        </div>
-      </div>
+      {/* Global Header matching Superadmin mobile header */}
+      <WorkerMobileTopNav onMenuOpen={() => setShowMenu(true)} onProfile={() => setShowProfile(true)} />
 
       {/* Content */}
       <div style={{ flex: 1, overflowY: "auto", paddingBottom: 68 }}>
@@ -248,6 +341,7 @@ function MobilePortal({ onBack, activeTab, setActiveTab }: MobilePortalProps) {
             {activeTab === "weavers"  && <WorkerWeavers />}
             {activeTab === "finishing"&& <WorkerFinishing />}
             {activeTab === "dispatch" && <WorkerDispatch />}
+            {activeTab === "profile"  && <MobileProfile />}
           </motion.div>
         </AnimatePresence>
       </div>

@@ -57,7 +57,7 @@ function initialsOf(name: string): string {
 }
 
 export function WorkerTopNav({ active, onSelect, onBack, bp, pendingQcCount = 0 }: WorkerTopNavProps) {
-  const { selectRole, user } = useAuth();
+  const { selectRole, user, logout } = useAuth();
   const navigate = useNavigate();
   const [showNotif, setShowNotif] = useState(false);
   const [showUser, setShowUser] = useState(false);
@@ -196,22 +196,9 @@ export function WorkerTopNav({ active, onSelect, onBack, bp, pendingQcCount = 0 
             <DropdownMenuItem onClick={() => onSelect("profile")} className="!h-auto !rounded-none !py-2.5 !px-4 !text-[13px] !text-[#1A0A0F]">
               <User size={14} color={C.muted} /> My Profile
             </DropdownMenuItem>
-            {localStorage.getItem("bk_original_admin_role") ? (
-              <DropdownMenuItem onClick={() => {
-                const origAdminRole = localStorage.getItem("bk_original_admin_role");
-                if (origAdminRole) {
-                  localStorage.removeItem("bk_original_admin_role");
-                  selectRole(origAdminRole as Role);
-                  navigate(origAdminRole === "superadmin" ? "/superadmin" : "/admin");
-                }
-              }} className="!h-auto !rounded-none !py-2.5 !px-4 !text-[13px] !text-[#69635E]">
-                <LogOut size={14} color={C.muted} /> My Portal
-              </DropdownMenuItem>
-            ) : (
-              <DropdownMenuItem onClick={() => onBack?.()} className="!h-auto !rounded-none !py-2.5 !px-4 !text-[13px] !text-[#69635E]">
-                <LogOut size={14} color={C.muted} /> Switch Portal
-              </DropdownMenuItem>
-            )}
+            <DropdownMenuItem onClick={() => logout()} destructive className="!h-auto !rounded-none !py-2.5 !px-4 !text-[13px]">
+              <LogOut size={14} color="#C0392B" /> Logout
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

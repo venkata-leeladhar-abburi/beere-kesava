@@ -442,7 +442,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
         isDesktop={isDesktop}
       />
 
-      <div style={{ margin: isDesktop ? "0" : "0 16px" }}>
+      <div className={isDesktop ? "" : "px-4"}>
         <SectionCard
           icon={ClipboardCheck}
           title="Pending Quality Check"

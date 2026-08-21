@@ -1,7 +1,7 @@
 import React from "react";
 import { AlertCircle, CheckCircle2, ShieldAlert } from "lucide-react";
 import { T } from "./WorkerQCTypes";
-import { StatsStrip, type WorkerStat } from "./primitives";
+import { PageHero, StatsStrip, type WorkerStat } from "./primitives";
 import { Button } from "../../../../shared/ui/primitives";
 import { DateFilterBar, type DateFilterState } from "../../../../shared/ui/DateFilterBar";
 
@@ -36,22 +36,33 @@ export function WorkerQCQueueHeader({
 
   return (
     <>
-      <div id="wqc-pending" style={{ marginBottom: 24 }}>
-        <StatsStrip stats={stats} overlap={false} gutter={isDesktop ? 0 : 16} />
+      {!isDesktop && (
+        <PageHero
+          eyebrow="Worker Staff Portal · Quality Check"
+          title="Quality Check"
+          titleAccent="& Inspection"
+          description="Inspect sarees received from weavers, verify weight and material quality, and approve or log defects before sarees move to stock."
+        />
+      )}
+
+      <div id="wqc-pending" className="mb-6">
+        <StatsStrip stats={stats} overlap={!isDesktop} gutter={isDesktop ? 0 : undefined} />
       </div>
 
-      <div id="wqc-in-progress" style={{ display: "flex", margin: isDesktop ? "0 0 12px" : "0 16px 12px", background: T.bg, border: `1px solid ${T.bdr}`, borderRadius: 12, padding: 4 }}>
-        {([["weavers", "By Weaver / Loom"], ["batches", "By Batch"]] as const).map(([key, label]) => (
-          <Button key={key} variant={qcTab === key ? "primary" : "tertiary"} fullWidth
-            onClick={() => { setQcTab(key); setWeaverSearch(""); }}
-            className={qcTab === key ? "rounded-[9px] bg-[#6E0F2D] hover:bg-[#6E0F2D]" : "rounded-[9px] bg-transparent"}>
-            {label}
-          </Button>
-        ))}
-      </div>
+      <div className={isDesktop ? "" : "px-4"}>
+        <div id="wqc-in-progress" style={{ display: "flex", marginBottom: 14, background: T.bg, border: `1px solid ${T.bdr}`, borderRadius: 12, padding: 4 }}>
+          {([["weavers", "By Weaver / Loom"], ["batches", "By Batch"]] as const).map(([key, label]) => (
+            <Button key={key} variant={qcTab === key ? "primary" : "tertiary"} fullWidth
+              onClick={() => { setQcTab(key); setWeaverSearch(""); }}
+              className={qcTab === key ? "rounded-[9px] bg-[#6E0F2D] hover:bg-[#6E0F2D]" : "rounded-[9px] bg-transparent"}>
+              {label}
+            </Button>
+          ))}
+        </div>
 
-      <div style={{ margin: isDesktop ? "0 0 12px" : "0 16px 12px" }}>
-        <DateFilterBar filter={qcDateFilter} onChange={setQcDateFilter} />
+        <div style={{ marginBottom: 16 }}>
+          <DateFilterBar filter={qcDateFilter} onChange={setQcDateFilter} />
+        </div>
       </div>
     </>
   );

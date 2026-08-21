@@ -1,7 +1,9 @@
 import React, { useState } from "react";
-import { PackageCheck } from "lucide-react";
-import { F, G } from "./tokens";
+import { PackageCheck, Package, ShieldAlert } from "lucide-react";
+import { C, F, G } from "./tokens";
 import { useMaterialIssue } from "@/features/materials";
+import { useBatches } from "@/features/production";
+import { PageHero, StatsStrip, type WorkerStat } from "./primitives";
 import { DesignPlanningPage } from "./weavers/DesignPlanningPage";
 import { ReceiveSareesPage } from "./weavers/ReceiveSareesPage";
 import { HistorySection } from "./weavers/HistorySection";
@@ -14,14 +16,32 @@ export { MaterialSplitPanel, type MatSplit } from "./weavers/MaterialSplitPanel"
 interface WorkerWeaversProps {
   subPage?: WeaversPage;
   onSubPageChange?: (page: WeaversPage) => void;
+  isDesktop?: boolean;
 }
 
 export function WorkerWeavers({ subPage, onSubPageChange }: WorkerWeaversProps) {
   const [localPage, setLocalPage] = useState<WeaversPage>("receive");
   const [liveRecords, setLiveRecords] = useState<ReceivedSareeLog[]>([]);
   const { addReceivedSaree } = useMaterialIssue();
+  const { batches } = useBatches();
   const page = subPage ?? localPage;
   const setPage = onSubPageChange ?? setLocalPage;
+
+  const pendingReceiptCount = batches
+    .filter(b => b.status === "active")
+    .flatMap(b => b.rows)
+    .filter(r => r.sareeId && !r.receivedAt).length;
+
+  const pendingQcCount = batches
+    .filter(b => b.status === "active")
+    .flatMap(b => b.rows)
+    .filter(r => r.sareeId && r.receivedAt && r.qcPassed == null).length;
+
+  const stats: WorkerStat[] = [
+    { label: "Awaiting Receipt", value: pendingReceiptCount, sub: "From active batches", icon: Package, highlight: true },
+    { label: "Received Today", value: liveRecords.length, sub: "Recorded today", icon: PackageCheck },
+    { label: "Pending QC", value: pendingQcCount, sub: "Waiting inspection", icon: ShieldAlert },
+  ];
 
   const handleSareeReceived = (rec: ReceivedSareeLog) => {
     setLiveRecords(prev => [rec, ...prev]);
@@ -44,26 +64,22 @@ export function WorkerWeavers({ subPage, onSubPageChange }: WorkerWeaversProps) 
   if (page === "design") return <DesignPlanningPage onBack={() => setPage("receive")} />;
 
   return (
-    <>
-      <div style={{ paddingBottom: 20 }}>
-        {/* Banner header — same anatomy as the admin SectionCard header
-            (icon tile + display title + subtitle over the wine gradient). */}
-        <div style={{ background: G.header, padding: "22px 32px", display: "flex", alignItems: "center", gap: 16 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <PackageCheck size={26} color="#FFFDF9" />
-          </div>
-          <div>
-            <div style={{ fontFamily: F.d, fontSize: 20, fontWeight: 700, color: "#FFFDF9", letterSpacing: "-0.2px" }}>Receive Sarees</div>
-            <div style={{ fontFamily: F.u, fontSize: 14, color: "rgba(255,253,249,0.65)", marginTop: 3 }}>Record completed sarees from weavers</div>
-          </div>
-        </div>
+    <div style={{ background: C.bg, minHeight: "100vh" }}>
+      <PageHero
+        eyebrow="Worker Staff Portal · Receive Sarees"
+        title="Receive Sarees"
+        titleAccent="& Record Weight"
+        description="Record completed sarees from weavers, enter saree weight, verify batch details, and track receipt history."
+      />
+      <StatsStrip stats={stats} overlap={true} />
 
+      <div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 32, paddingBottom: 64 }}>
         {/* Receive Sarees form area */}
         <ReceiveSareesPage onBack={() => {}} onSareeReceived={handleSareeReceived} />
 
         {/* History section */}
         <HistorySection liveRecords={liveRecords} />
       </div>
-    </>
+    </div>
   );
 }
