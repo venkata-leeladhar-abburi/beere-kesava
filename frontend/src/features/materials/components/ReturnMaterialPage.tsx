@@ -93,7 +93,6 @@ export function ReturnMaterialPage() {
   const [sigMethod, setSigMethod] = useState<"none" | "here" | "remote">("none");
   const [signed, setSigned] = useState(false);
   const [remoteSent, setRemoteSent] = useState(false);
-  const [remoteConfirmed, setRemoteConfirmed] = useState(false);
 
   const [successRecord, setSuccessRecord] = useState<MaterialReturnRecord | null>(null);
 
@@ -132,7 +131,7 @@ export function ReturnMaterialPage() {
     return () => { cancelled = true; };
   }, [selectedWeaverId, selectedLoomId, getOutstandingForRecipient]);
 
-  const isSigned = (sigMethod === "here" && signed) || (sigMethod === "remote" && remoteConfirmed);
+  const isSigned = (sigMethod === "here" && signed) || (sigMethod === "remote" && remoteSent);
 
   // eslint-disable-next-line no-restricted-syntax -- material quantity (kg/g/reels/buns), not currency
   const validRows = rows.filter(r => r.materialType && r.quantity && parseFloat(r.quantity) > 0);
@@ -158,7 +157,7 @@ export function ReturnMaterialPage() {
     setSelectedBatchId(null);
     setRows([emptyReturnRow()]); setNotes("");
     setDeductionAmount(""); setDeductionReason("");
-    setSigMethod("none"); setSigned(false); setRemoteSent(false); setRemoteConfirmed(false);
+    setSigMethod("none"); setSigned(false); setRemoteSent(false);
   }
 
   async function handleConfirm() {
@@ -311,7 +310,6 @@ export function ReturnMaterialPage() {
               sigMethod={sigMethod} setSigMethod={setSigMethod}
               signed={signed} setSigned={setSigned}
               remoteSent={remoteSent} setRemoteSent={setRemoteSent}
-              remoteConfirmed={remoteConfirmed} setRemoteConfirmed={setRemoteConfirmed}
               canvasRef={canvasRef}
             />
           </div>

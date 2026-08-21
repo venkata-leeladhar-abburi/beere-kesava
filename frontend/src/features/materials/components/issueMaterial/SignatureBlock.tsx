@@ -5,12 +5,11 @@ import { SignatureCanvas, SignatureCanvasHandle } from "./SignatureCanvas";
 import { Button } from "../../../../shared/ui/primitives";
 
 // ── Signature capture block (mirrors WorkerWeavers WeaverSigBlock, T/F tokens) ─
-export function SignatureBlock({ weaverName, weaverPhone, sigMethod, setSigMethod, setSigned, remoteSent, setRemoteSent, remoteConfirmed, setRemoteConfirmed, canvasRef }: {
+export function SignatureBlock({ weaverName, weaverPhone, sigMethod, setSigMethod, setSigned, remoteSent, setRemoteSent, canvasRef }: {
   weaverName: string; weaverPhone: string;
   sigMethod: "none" | "here" | "remote"; setSigMethod: (m: "none" | "here" | "remote") => void;
   signed: boolean; setSigned: (v: boolean) => void;
   remoteSent: boolean; setRemoteSent: (v: boolean) => void;
-  remoteConfirmed: boolean; setRemoteConfirmed: (v: boolean) => void;
   canvasRef: React.RefObject<SignatureCanvasHandle | null>;
 }) {
   return (
@@ -54,18 +53,13 @@ export function SignatureBlock({ weaverName, weaverPhone, sigMethod, setSigMetho
 
       {sigMethod === "remote" && (
         <div style={{ marginTop: 14, background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: 18 }}>
-          {remoteConfirmed ? (
-            <div style={{ background: "rgba(30,102,64,0.10)", border: `1px solid ${T.green}`, borderRadius: 12, padding: 18, textAlign: "center" as const }}>
-              <CheckCircle2 size={26} color={T.green} style={{ margin: "0 auto 8px" }} />
-              <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.green, marginBottom: 4 }}>Signature Received!</div>
-              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Signed by {weaverName} · Just now</div>
-            </div>
-          ) : remoteSent ? (
+          {remoteSent ? (
             <div style={{ background: "rgba(196,146,58,0.12)", border: `1px solid ${T.antiqueGold}`, borderRadius: 12, padding: 18, textAlign: "center" as const }}>
               <Clock size={24} color={T.antiqueGold} style={{ margin: "0 auto 8px" }} />
-              <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, marginBottom: 3 }}>Waiting for signature…</div>
-              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 12 }}>Request sent to {weaverName}'s mobile (+91 {weaverPhone})</div>
-              <Button variant="tertiary" size="sm" onClick={() => setRemoteConfirmed(true)} className="underline text-[var(--text-tertiary)]">Demo: Signed →</Button>
+              <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, marginBottom: 3 }}>Ready to confirm</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
+                {weaverName} will see this issuance on their dashboard's Confirm Materials page and can sign it there. It'll show as "Pending" here until they do.
+              </div>
             </div>
           ) : (
             <>

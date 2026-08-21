@@ -118,6 +118,17 @@ export function RecordDetailsModal({ record, onClose }: { record: MaterialIssueR
             </div>
           </div>
 
+          {!record.signatureCaptured && record.signatureMethod === "remote" && record.status === "pending-signature" && (
+            <div>
+              <SectionPill label="Signature" />
+              <div style={{ background: "rgba(200,155,71,0.10)", border: `1px solid ${T.borderGold}`, borderRadius: 10, padding: "10px 14px", display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>
+                  Awaiting {record.weaverName ?? "the weaver"}&apos;s signature — they can sign this from their dashboard&apos;s Confirm Materials page.
+                </span>
+              </div>
+            </div>
+          )}
+
           {record.signatureCaptured && record.signatureTimestamp && (
             <div>
               <SectionPill label="Signature" />

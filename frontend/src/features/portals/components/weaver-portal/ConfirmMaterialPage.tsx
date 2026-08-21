@@ -1,18 +1,18 @@
 import { materialTypeIcon } from "./MyBatchesPage";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useRef, useMemo } from "react";
 import { useResponsive } from "../../../../hooks/useResponsive";
 import { useBatches } from "@/features/production";
 import { useDesignLibrary, DesignEntry } from "@/features/design-library";
 import { DesignCodeCard } from "@/features/design-library";
 import { useMaterialIssue, MaterialIssueRecord, JARI_REEL_GRAMS, materialItemToGrams, BUNS_PER_REEL } from "@/features/materials";
-import { motion, AnimatePresence } from "motion/react";
+import { AnimatePresence } from "motion/react";
 import {
   Bell, Check,
 } from "lucide-react";
 
 import {
-  C, F, SectionTitle, Card, SignatureCanvas, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid
+  C, F, SectionTitle, Card, SignatureCanvas, SignatureCanvasHandle, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid
 } from './theme';
 import { useCurrentWeaver } from "./useCurrentWeaver";
 import { ReferenceHistorySection } from "./ReferenceHistorySection";
@@ -28,12 +28,12 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
   const matSummary = getMaterialSummaryForWeaver(weaverId ?? "");
   const matByBatch = weaverId ? getMaterialSummaryByBatch(weaverId) : [];
 
-  const [sigMethod, setSigMethod] = useState<"none" | "here" | "remote">("none");
   const [hasSig, setHasSig] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [confirmedRecord, setConfirmedRecord] = useState<MaterialIssueRecord | null>(null);
-  const [requestSent, setRequestSent] = useState(false);
   const [viewDesign, setViewDesign] = useState<DesignEntry | null>(null);
+  const canvasRef = useRef<SignatureCanvasHandle | null>(null);
 
   const weaverRecords = weaverId ? getRecordsForWeaver(weaverId) : [];
   const pendingRecords = weaverRecords.filter(r => r.status === "pending-signature");
@@ -83,18 +83,23 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
       .filter((c): c is string => Boolean(c))
   ));
 
-  const canConfirm = (sigMethod === "here" && hasSig) || (sigMethod === "remote" && requestSent);
-
-  const handleConfirm = () => {
-    if (!pending || !canConfirm) return;
-    updateSignatureStatus(pending.id, sigMethod === "remote" ? "remote" : "here");
-    setConfirmedRecord(pending);
-    setConfirmed(true);
+  const handleConfirm = async () => {
+    if (!pending || !hasSig || submitting) return;
+    const blob = await canvasRef.current?.toBlob();
+    if (!blob) return;
+    setSubmitting(true);
+    try {
+      await updateSignatureStatus(pending.id, blob);
+      setConfirmedRecord(pending);
+      setConfirmed(true);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const resetToPending = () => {
     setConfirmed(false); setConfirmedRecord(null);
-    setSigMethod("none"); setHasSig(false); setRequestSent(false);
+    setHasSig(false);
   };
 
   if (weaverLoading) {
@@ -203,87 +208,24 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
             Sign below to confirm you have received all materials listed above. This creates a permanent record.
           </div>
 
-          <div style={{ display: "flex", flexDirection: isMobile ? "column" as const : "row" as const, gap: 12, margin: "0 20px 10px" }}>
-            <div style={{ flex: 1 }}>
-              <Button
-                onClick={() => setSigMethod(sigMethod === "here" ? "none" : "here")}
-                variant="ghost"
-                fullWidth
-                className={
-                  "h-auto bg-white rounded-xl p-4 text-left justify-start block " +
-                  (sigMethod === "here" ? "border border-[#6E0F2D]" : "border border-[rgba(110,15,45,0.10)]")
-                }
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <span style={{ fontSize: 20 }}>📱</span>
-                  <div>
-                    <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text }}>Sign here on this phone</div>
-                    <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>If the worker is with you, sign directly below</div>
-                  </div>
-                </div>
-              </Button>
-            </div>
-
-            <div style={{ flex: 1 }}>
-              <Button
-                onClick={() => setSigMethod(sigMethod === "remote" ? "none" : "remote")}
-                variant="ghost"
-                fullWidth
-                className={
-                  "h-auto bg-white rounded-xl p-4 text-left justify-start block " +
-                  (sigMethod === "remote" ? "border border-[#6E0F2D] mb-2.5" : "border border-[rgba(110,15,45,0.10)]")
-                }
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <span style={{ fontSize: 20 }}>📲</span>
-                  <div>
-                    <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text }}>Sign on your own phone</div>
-                    <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>Worker will send you a notification to sign on your own device</div>
-                  </div>
-                </div>
-              </Button>
-              <AnimatePresence>
-                {sigMethod === "remote" && (
-                  <motion.div key="remote" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                    {requestSent ? (
-                      <div style={{ background: "rgba(30,102,64,0.08)", border: `1px solid ${C.green}`, borderRadius: 10, padding: "12px 16px", display: "flex", alignItems: "center", gap: 8 }}>
-                        <Check size={16} color={C.green} />
-                        <span style={{ fontFamily: F.u, fontSize: 14, color: C.green }}>Signature request sent to your phone!</span>
-                      </div>
-                    ) : (
-                      <Button onClick={() => setRequestSent(true)} fullWidth className="h-12 border border-[#C89B47] bg-transparent rounded-full font-semibold text-sm text-[#C89B47]">
-                        Send Signature Request
-                      </Button>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+          <div style={{ padding: "0 0 16px 0", margin: isMobile ? "0" : "0 auto", maxWidth: isMobile ? undefined : isTablet ? "100%" : "560px", ...(isMobile ? {} : { paddingLeft: 20, paddingRight: 20 }) }}>
+            <SignatureCanvas ref={canvasRef} onSigned={setHasSig} />
           </div>
-
-          <AnimatePresence>
-            {sigMethod === "here" && (
-              <motion.div key="sigbox" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} style={{ overflow: "hidden" }}>
-                <div style={{ padding: "0 0 16px 0", margin: isMobile ? "0" : "0 auto", maxWidth: isMobile ? undefined : isTablet ? "100%" : "560px", ...(isMobile ? {} : { paddingLeft: 20, paddingRight: 20 }) }}>
-                  <SignatureCanvas onSigned={setHasSig} />
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
 
           <div style={{ margin: "0 20px" }}>
             <div style={{ background: C.cream, borderRadius: 10, padding: "10px 14px", marginBottom: 12 }}>
               <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>By signing and confirming, you agree that you have received all the materials listed above. This record is permanent.</span>
             </div>
             <Button
-              onClick={handleConfirm}
+              onClick={() => void handleConfirm()}
+              disabled={!hasSig || submitting}
               fullWidth
               className={
                 "h-14 border-none rounded-full font-semibold text-base text-white " +
-                (canConfirm ? "bg-[#1E6640] hover:bg-[#1E6640]" : "bg-[#C0C0C0]")
+                (hasSig && !submitting ? "bg-[#1E6640] hover:bg-[#1E6640]" : "bg-[#C0C0C0]")
               }
             >
-              <Check size={20} /> Confirm Material Receipt
+              <Check size={20} /> {submitting ? "Confirming…" : "Confirm Material Receipt"}
             </Button>
           </div>
         </>

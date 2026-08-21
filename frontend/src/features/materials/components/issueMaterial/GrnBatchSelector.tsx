@@ -1,23 +1,36 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
+import { toast } from "sonner";
 import { ChevronDown, QrCode } from "lucide-react";
 import { F, GrnBatch, T } from "./theme";
 import { IconButton, SearchInput } from "../../../../shared/ui/primitives";
 import { EntityCode } from "@/shared/ui/domain";
+import { GrnBarcodeScannerModal } from "./GrnBarcodeScannerModal";
 
-// ── GRN batch selector (searchable + scan simulation) ─────────────────────────
+// ── GRN batch selector (searchable + live camera scan) ─────────────────────────
 export function GrnBatchSelector({ grnBatches, materialType, value, onChange }: {
   grnBatches: GrnBatch[]; materialType: "Warp" | "Resham" | "Jari"; value: string; onChange: (id: string) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
+  const [scanning, setScanning] = useState(false);
   const filtered = grnBatches.filter(g => g.materialType === materialType && (q.length < 1 || g.grnBatchId.toLowerCase().includes(q.toLowerCase()) || g.vendor.toLowerCase().includes(q.toLowerCase())));
   const selected = grnBatches.find(g => g.grnBatchId === value);
 
-  const handleScan = () => {
-    // Simulated barcode scan — auto-select the first available batch of this material type
-    const first = grnBatches.find(g => g.materialType === materialType);
-    if (first) onChange(first.grnBatchId);
-  };
+  const handleDetected = useCallback((text: string) => {
+    setScanning(false);
+    const code = text.trim().toUpperCase();
+    const match = grnBatches.find(g => g.grnBatchId.toUpperCase() === code);
+    if (!match) {
+      toast.error(`No GRN batch found for code "${text}"`);
+      return;
+    }
+    if (match.materialType !== materialType) {
+      toast.error(`${match.grnBatchId} is a ${match.materialType} batch, not ${materialType}`);
+      return;
+    }
+    onChange(match.grnBatchId);
+    toast.success(`Selected ${match.grnBatchId}`);
+  }, [grnBatches, materialType, onChange]);
 
   return (
     <div style={{ position: "relative" as const }}>
@@ -68,7 +81,7 @@ export function GrnBatchSelector({ grnBatches, materialType, value, onChange }: 
           icon={QrCode}
           label="Scan GRN Batch Barcode"
           variant="secondary"
-          onClick={handleScan}
+          onClick={() => setScanning(true)}
           className="h-11 w-11 shrink-0 border-[1.5px] border-[rgba(200,155,71,0.22)] bg-[#F5E8D0] text-[#6E0F2D] hover:bg-[#F5E8D0]"
         />
       </div>
@@ -77,6 +90,7 @@ export function GrnBatchSelector({ grnBatches, materialType, value, onChange }: 
           Available in {selected.grnBatchId}: <strong style={{ color: T.luxuryBrown }}>{selected.availableQty} {selected.unit} remaining</strong>
         </div>
       )}
+      <GrnBarcodeScannerModal open={scanning} onClose={() => setScanning(false)} onDetected={handleDetected} />
     </div>
   );
 }

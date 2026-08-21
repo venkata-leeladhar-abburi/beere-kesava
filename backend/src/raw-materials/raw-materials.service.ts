@@ -52,12 +52,19 @@ export class RawMaterialsService {
   }
 
   async createGrn(dto: CreateGrnDto) {
-    // Jari is always counted in Reels/Buns, never a weight unit — grams/kg
-    // would silently corrupt reel/bun stock totals (see toGrams/fromGrams).
+    // Jari is always counted in Reels/Buns, Warp/Resham always by weight —
+    // mixing these up would silently corrupt stock totals (see
+    // toGrams/fromGrams) and show a nonsense unit ("12 Reels remaining") on
+    // the Issue Material screen for a material that should read in kg.
     for (const item of dto.items) {
       const unit = (item.unit || "KG").trim().toUpperCase();
-      if (item.materialType === MaterialType.JARI && !["REEL", "REELS", "BUN", "BUNS"].includes(unit)) {
-        throw new BadRequestException(`Jari must be received in Reels or Buns, not "${item.unit}"`);
+      if (item.materialType === MaterialType.JARI) {
+        if (!["REEL", "REELS", "BUN", "BUNS"].includes(unit)) {
+          throw new BadRequestException(`Jari must be received in Reels or Buns, not "${item.unit}"`);
+        }
+      } else if (!["KG", "G", "GRAM", "GRAMS"].includes(unit)) {
+        const label = item.materialType === MaterialType.WARP ? "Warp" : "Resham";
+        throw new BadRequestException(`${label} must be received in KG or G, not "${item.unit}"`);
       }
     }
 

@@ -103,11 +103,10 @@ export function IssueMaterialPage() {
   // Step 4 — notes
   const [notes, setNotes] = useState("");
 
-  // Step 5 — signature
+  // Step 4 — signature
   const [sigMethod, setSigMethod] = useState<"none" | "here" | "remote">("none");
   const [signed, setSigned] = useState(false);
   const [remoteSent, setRemoteSent] = useState(false);
-  const [remoteConfirmed, setRemoteConfirmed] = useState(false);
 
   // Success state
   const [successRecord, setSuccessRecord] = useState<MaterialIssueRecord | null>(null);
@@ -152,7 +151,10 @@ export function IssueMaterialPage() {
     ? batches.filter(b => b.status !== "completed" && b.rows.some(r => r.factoryLoomId === selectedFactoryLoom.id))
     : [];
 
-  const isSigned = (sigMethod === "here" && signed) || (sigMethod === "remote" && remoteConfirmed);
+  // "remote" only needs the request to have been sent — the weaver signs it
+  // for real later, on their own dashboard's Confirm Materials page; this
+  // admin session has no way to know synchronously when that happens.
+  const isSigned = (sigMethod === "here" && signed) || (sigMethod === "remote" && remoteSent);
 
   // eslint-disable-next-line no-restricted-syntax -- material quantity (kg/g/reels/buns), not currency
   const validRows = rows.filter(r => r.materialType && r.quantity && parseFloat(r.quantity) > 0 && r.grnBatchId);
@@ -177,7 +179,7 @@ export function IssueMaterialPage() {
     setSelectedLoom("");
     setSelectedBatchId(null);
     setRows([emptyRow()]); setNotes("");
-    setSigMethod("none"); setSigned(false); setRemoteSent(false); setRemoteConfirmed(false);
+    setSigMethod("none"); setSigned(false); setRemoteSent(false);
     setWarpRequestId(null);
   }
 
@@ -352,14 +354,14 @@ export function IssueMaterialPage() {
             </Button>
           </div>
 
-          {/* STEP 4 — Notes */}
+          {/* STEP 3 — Notes */}
           <div style={{ marginTop: 32 }}>
             <SectionPill label="Step 3 · Notes (Optional)" />
             <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder="Any special instructions, batch references, or remarks" aria-label="Notes"
               style={{ width: "100%", borderRadius: 12, border: `1.5px solid ${T.borderDef}`, padding: "12px 14px", fontFamily: F.ui, fontSize: 13, outline: "none", resize: "vertical" as const, boxSizing: "border-box" as const }} />
           </div>
 
-          {/* STEP 5 — Signature */}
+          {/* STEP 4 — Signature */}
           <div style={{ marginTop: 32 }}>
             <SectionPill label="Step 4 · Collect Weaver Signature" />
             <SignatureBlock
@@ -367,7 +369,6 @@ export function IssueMaterialPage() {
               sigMethod={sigMethod} setSigMethod={setSigMethod}
               signed={signed} setSigned={setSigned}
               remoteSent={remoteSent} setRemoteSent={setRemoteSent}
-              remoteConfirmed={remoteConfirmed} setRemoteConfirmed={setRemoteConfirmed}
               canvasRef={canvasRef}
             />
           </div>

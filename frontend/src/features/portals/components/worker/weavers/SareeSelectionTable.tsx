@@ -1,13 +1,15 @@
 import React from "react";
 import { CheckCircle2, AlertTriangle, Square, CheckSquare } from "lucide-react";
 import { C, F } from "../tokens";
-import { type WeaverBatchData, type WEAVERS } from "./weaversData";
+import { type WeaverBatchData } from "./weaversData";
 import { Button, IconButton, Select, SelectItem } from "../../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
 
 interface SareeSelectionTableProps {
   currentBatch: WeaverBatchData;
-  selectedWeaver: typeof WEAVERS[0];
+  entityName: string;
+  entityAvatar: string;
+  columnHeader?: string;
   doneCount: number;
   sareeSort: "serial" | "status";
   setSareeSort: (sort: "serial" | "status") => void;
@@ -18,7 +20,9 @@ interface SareeSelectionTableProps {
 
 export function SareeSelectionTable({
   currentBatch,
-  selectedWeaver,
+  entityName,
+  entityAvatar,
+  columnHeader = "Weaver / Loom",
   doneCount,
   sareeSort,
   setSareeSort,
@@ -76,23 +80,26 @@ export function SareeSelectionTable({
       },
     },
     {
-      id: "weaverLoom", header: "Weaver / Loom", accessor: () => selectedWeaver.name, priority: 3,
+      id: "weaverLoom", header: columnHeader, accessor: () => entityName, priority: 3,
       cell: () => (
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <div style={{ width: 26, height: 26, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#FFF", lineHeight: 1 }}>{selectedWeaver.avatar}</span>
+            <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#FFF", lineHeight: 1 }}>{entityAvatar}</span>
           </div>
-          <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{selectedWeaver.name}</span>
+          <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{entityName}</span>
         </div>
       ),
     },
     {
-      id: "loomNo", header: "Loom No.", accessor: () => currentBatch.loomNumber ?? "—", priority: 3,
-      cell: () => currentBatch.loomNumber != null ? (
-        <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#845E04", background: "rgba(200,155,71,0.12)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 8, padding: "4px 9px" }}>Loom {currentBatch.loomNumber}</span>
-      ) : (
-        <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>—</span>
-      ),
+      id: "loomNo", header: "Loom No.", accessor: s => s.weaverLoom ?? currentBatch.loomNumber ?? "—", priority: 3,
+      cell: (_v, s) => {
+        const loom = s.weaverLoom ?? currentBatch.loomNumber;
+        return loom != null ? (
+          <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#845E04", background: "rgba(200,155,71,0.12)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 8, padding: "4px 9px" }}>Loom {loom}</span>
+        ) : (
+          <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>—</span>
+        );
+      },
     },
     {
       id: "sareeType", header: "Saree Type", accessor: () => currentBatch.sareeTypeCode, priority: 3,

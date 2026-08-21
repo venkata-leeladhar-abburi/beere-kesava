@@ -10,6 +10,7 @@ import { Money } from "@/shared/ui/domain";
 import { rupees } from "@/lib/domain/money";
 import { useDesignLibrary } from "@/features/design-library";
 import { MaterialHistoryCard, SignatureCanvas } from "./WeaverMaterialHistoryCard";
+export type { SignatureCanvasHandle } from "./WeaverMaterialHistoryCard";
 import {
   MobileBatchCard, CompletedBatchCard, BATCH_QUICK_FILTERS, BatchQuickFilterPills
 } from "./WeaverMobileBatchCard";

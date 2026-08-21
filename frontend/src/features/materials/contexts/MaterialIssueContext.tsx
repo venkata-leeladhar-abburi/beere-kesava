@@ -240,7 +240,8 @@ interface MaterialIssueContextValue {
   getReceivedForBatch: (batchId: string) => ReceivedSareeRecord[];
   getMaterialSummaryForWeaver: (weaverId: string) => WeaverMaterialSummary;
   getMaterialSummaryByBatch: (weaverId: string) => BatchMaterialSummary[];
-  updateSignatureStatus: (recordId: string, method: "here" | "remote") => void;
+  /** Weaver-side confirm: uploads the drawn signature and moves the record to SIGNED for real. */
+  updateSignatureStatus: (recordId: string, signatureBlob: Blob) => Promise<void>;
   finalizeReceivedWeight: (id: string, finalWeightGrams: number) => void;
   isError: boolean;
   error: unknown;
@@ -337,16 +338,14 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
   });
 
   const updateSignatureStatusMutation = useMutation({
-    mutationFn: (args: { recordId: string; method: "here" | "remote" }) => Promise.resolve(args),
-    onSuccess: ({ recordId, method }) => {
-      queryClient.setQueryData<MaterialIssueRecord[]>(ISSUE_RECORDS_KEY, prev =>
-        (prev ?? []).map(r =>
-          r.id === recordId
-            ? { ...r, signatureMethod: method, signatureCaptured: true, signatureTimestamp: new Date().toISOString(), status: "signed" as const }
-            : r
-        )
-      );
+    mutationFn: (args: { recordId: string; signatureBlob: Blob }) =>
+      materialIssuesApi.sign(args.recordId, args.signatureBlob),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ISSUE_RECORDS_KEY });
       toast.success("Signature captured");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to capture signature");
     },
   });
 
@@ -420,8 +419,8 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
       .sort((a, b) => b.outstandingGrams - a.outstandingGrams);
   }, [issueRecords, receivedSarees]);
 
-  const updateSignatureStatus = (recordId: string, method: "here" | "remote") =>
-    updateSignatureStatusMutation.mutate({ recordId, method });
+  const updateSignatureStatus = (recordId: string, signatureBlob: Blob) =>
+    updateSignatureStatusMutation.mutateAsync({ recordId, signatureBlob }).then(() => undefined);
 
   return (
     <MaterialIssueContext.Provider value={{ issueRecords, receivedSarees, addIssueRecord, deleteIssueRecord, addReceivedSaree, getRecordsForWeaver, getRecordsForBatch, getReceivedForWeaver, getReceivedForBatch, getMaterialSummaryForWeaver, getMaterialSummaryByBatch, updateSignatureStatus, finalizeReceivedWeight, isError, error }}>
@@ -466,7 +465,7 @@ const FALLBACK_MATERIAL_ISSUE: MaterialIssueContextValue = {
     netJariGrams: 0,
   }),
   getMaterialSummaryByBatch: () => [],
-  updateSignatureStatus: () => {},
+  updateSignatureStatus: async () => {},
   finalizeReceivedWeight: () => {},
   isError: false,
   error: null,

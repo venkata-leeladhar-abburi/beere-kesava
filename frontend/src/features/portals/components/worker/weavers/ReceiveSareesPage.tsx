@@ -1,16 +1,18 @@
 /* eslint-disable no-restricted-syntax */
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   Camera, UploadCloud, CheckCircle2, AlertTriangle,
   Plus, Printer, RotateCcw,
 } from "lucide-react";
 import { C, F, card } from "../tokens";
-import { FieldLabel, PageHeader, type ReceivedSareeLog } from "./shared";
+import { FieldLabel, type ReceivedSareeLog } from "./shared";
 import { MaterialSplitPanel, autoMaterialSplit, type MatSplit } from "./MaterialSplitPanel";
 import { type WeaverBatchData } from "./weaversData";
 import { weaversApi } from "../../../../../shared/api/weavers";
 import { WeaverSigBlock } from "./WeaverSigBlock";
+import { TagPreviewScreen } from "./TagPreviewScreen";
 import { useRatesPricing } from "@/features/pricing";
 import { useBatches } from "@/features/production";
 import { useFinishing } from "@/features/finishing";
@@ -98,7 +100,7 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
           };
           result[r.weaverId].push(wb);
         }
-        wb.sarees.push({ no: r.serial, sareeId: r.sareeId, serial: r.serial, status: "pending", isRework: r.awaitingRework === true });
+        wb.sarees.push({ no: r.serial, sareeId: r.sareeId, serial: r.serial, status: "pending", isRework: r.awaitingRework === true, weaverLoom: r.weaverLoom ?? undefined });
         wb.total += 1;
       }
     }
@@ -221,31 +223,13 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
 
   if (showTagPrint) {
     return (
-      <>
-        <PageHeader title="Tag Preview" onBack={() => setShowTagPrint(false)} />
-        <div style={{ paddingBottom: 28 }}>
-          <div style={{ margin: "14px 16px", border: `1px solid rgba(110,15,45,0.20)`, borderRadius: 12, padding: 16, background: "#FFF" }}>
-            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, textAlign: "center", marginBottom: 8 }}>Beere Kesava & Brothers Silks · Est. 1999</div>
-            <div style={{ background: "#000", height: 36, borderRadius: 4, marginBottom: 6, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ fontFamily: F.m, fontSize: 7, color: "#FFF", letterSpacing: 3 }}>||| | || ||| || |</span>
-            </div>
-            <div style={{ fontFamily: F.m, fontSize: 14, fontWeight: 700, textAlign: "center", color: C.text, marginBottom: 10 }}>{sareeId}</div>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <div><span style={{ fontFamily: F.u, fontSize: 12, color: C.gold }}>Weaver: </span><span style={{ fontFamily: F.u, fontSize: 12, color: C.text }}>{selectedWeaver?.name}</span></div>
-              <div><span style={{ fontFamily: F.u, fontSize: 12, color: C.gold }}>Date: </span><span style={{ fontFamily: F.u, fontSize: 12, color: C.text }}>13 Jun 2026</span></div>
-            </div>
-          </div>
-          <div style={{ padding: "0 16px" }}>
-            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 8 }}>Printer: TSC TE244 &nbsp;🔒</div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-              <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>Copies:</span>
-              <Input type="number" defaultValue={1} className="w-[65px] h-[38px] text-center font-mono" />
-            </div>
-            <Button variant="primary" fullWidth iconLeft={Printer} className="h-12 rounded-full bg-[#6E0F2D] hover:bg-[#4A061B] mb-3 text-[14px]">Print Now</Button>
-            <Button variant="link" fullWidth onClick={() => setShowTagPrint(false)} className="text-[13px] text-[#69635E] p-2.5">Skip Printing</Button>
-          </div>
-        </div>
-      </>
+      <TagPreviewScreen
+        sareeIds={selectedSarees.length > 0 ? selectedSarees.map(s => s.sareeId) : [sareeId]}
+        entityLabel="Weaver"
+        entityValue={selectedWeaver?.name ?? "—"}
+        onBack={() => setShowTagPrint(false)}
+        onPrint={() => { toast.success("Sent to printer"); setShowTagPrint(false); }}
+      />
     );
   }
 
@@ -320,7 +304,8 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
             {currentBatch && selectedWeaver && (
               <SareeSelectionTable
                 currentBatch={currentBatch}
-                selectedWeaver={selectedWeaver}
+                entityName={selectedWeaver.name}
+                entityAvatar={selectedWeaver.avatar}
                 doneCount={doneCount}
                 sareeSort={sareeSort}
                 setSareeSort={setSareeSort}
@@ -546,7 +531,7 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
           </>
         )}
 
-        {activeSection === "own" && <OwnFactoryReceiveTab />}
+        {activeSection === "own" && <OwnFactoryReceiveTab onSareeReceived={onSareeReceived} />}
       </div>
     </>
   );

@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   HttpCode,
   HttpStatus,
@@ -52,12 +53,26 @@ export class MaterialIssuesController {
     return this.materialIssuesService.findOne(id);
   }
 
+  // A WEAVER may sign their own pending issue (real "sign on my own
+  // dashboard" flow) — the remote-signature request the admin sends is
+  // exactly the record showing up here, PENDING_SIGNATURE, for that weaver.
   @Post(":id/sign")
   @HttpCode(HttpStatus.OK)
+  @RequireRoles(UserRole.WORKER, UserRole.WEAVER, UserRole.ADMIN, UserRole.SUPERADMIN)
   @UseInterceptors(FileInterceptor("signature", signatureUploadOptions()))
-  sign(@Param("id") id: string, @UploadedFile() signature?: Express.Multer.File) {
+  async sign(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("id") id: string,
+    @UploadedFile() signature?: Express.Multer.File,
+  ) {
     if (!signature) {
       throw new BadRequestException("A signature image file is required");
+    }
+    if (user.role === UserRole.WEAVER) {
+      const record = await this.materialIssuesService.findOne(id);
+      if (record.weaverId !== resolveWeaverScope(user)) {
+        throw new ForbiddenException("You can only sign your own material issue");
+      }
     }
     return this.materialIssuesService.sign(id, signature);
   }

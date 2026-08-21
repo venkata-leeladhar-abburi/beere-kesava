@@ -1,7 +1,7 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, forwardRef, useImperativeHandle } from "react";
 import type { MaterialIssueRecord } from "@/features/materials";
 import { useMaterialIssue } from "@/features/materials";
-import { Check, Clock, Pencil, Send } from "lucide-react";
+import { Check, Clock, Pencil } from "lucide-react";
 import { Button } from "../../../../shared/ui/primitives";
 
 const C = {
@@ -15,11 +15,26 @@ const F = {
   m: "'JetBrains Mono', monospace",
 };
 
-export function SignatureCanvas({ onSigned }: { onSigned?: (hasData: boolean) => void }) {
+export interface SignatureCanvasHandle {
+  /** Exports the drawn strokes as a PNG blob, or null if nothing was drawn. */
+  toBlob: () => Promise<Blob | null>;
+}
+
+export const SignatureCanvas = forwardRef<SignatureCanvasHandle, { onSigned?: (hasData: boolean) => void }>(
+  function SignatureCanvas({ onSigned }, ref) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [drawing, setDrawing] = useState(false);
   const [hasSig, setHasSig] = useState(false);
   const lastPos = useRef<{ x: number; y: number } | null>(null);
+
+  useImperativeHandle(ref, () => ({
+    toBlob: () =>
+      new Promise((resolve) => {
+        const canvas = canvasRef.current;
+        if (!canvas || !hasSig) { resolve(null); return; }
+        canvas.toBlob((blob) => resolve(blob), "image/png");
+      }),
+  }));
 
   const getPos = (e: React.MouseEvent | React.TouchEvent) => {
     const rect = canvasRef.current!.getBoundingClientRect();
@@ -74,19 +89,25 @@ export function SignatureCanvas({ onSigned }: { onSigned?: (hasData: boolean) =>
       </div>
     </div>
   );
-}
+});
 
 export function MaterialHistoryCard({ r, isTablet }: { r: MaterialIssueRecord; isTablet: boolean }) {
   const { updateSignatureStatus } = useMaterialIssue();
-  const [sigMethod, setSigMethod] = useState<"none" | "here" | "remote">("none");
   const [hasSig, setHasSig] = useState(false);
-  const [requestSent, setRequestSent] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const canvasRef = useRef<SignatureCanvasHandle | null>(null);
 
   const isPending = r.status === "pending-signature";
-  const canConfirm = (sigMethod === "here" && hasSig) || (sigMethod === "remote" && requestSent);
-  const handleConfirm = () => {
-    if (!canConfirm) return;
-    updateSignatureStatus(r.id, sigMethod === "remote" ? "remote" : "here");
+  const handleConfirm = async () => {
+    if (!hasSig || submitting) return;
+    const blob = await canvasRef.current?.toBlob();
+    if (!blob) return;
+    setSubmitting(true);
+    try {
+      await updateSignatureStatus(r.id, blob);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -135,70 +156,21 @@ export function MaterialHistoryCard({ r, isTablet }: { r: MaterialIssueRecord; i
       {isPending && (
         <div style={{ marginTop: 18, paddingTop: 18, borderTop: `1px dashed ${C.bdr}` }}>
           <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 10 }}>Collect Your Signature</div>
-          <div style={{ display: "flex", flexDirection: isTablet ? "column" as const : "row" as const, gap: 10, marginBottom: sigMethod !== "none" ? 12 : 0 }}>
-            <Button
-              onClick={() => setSigMethod(sigMethod === "here" ? "none" : "here")}
-              variant="ghost"
-              className={
-                "flex-1 h-auto flex items-center gap-3 bg-[#F8F4F0] rounded-xl px-4 py-3 text-left justify-start " +
-                (sigMethod === "here" ? "border-[1.5px] border-[#6E0F2D]" : "border-[1.5px] border-[rgba(110,15,45,0.10)]")
-              }
-            >
-              <div style={{ width: 34, height: 34, borderRadius: 9, background: sigMethod === "here" ? C.burg : "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <Pencil size={15} color={sigMethod === "here" ? "#FFF" : C.burg} />
-              </div>
-              <div>
-                <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, color: C.text }}>Sign here on this screen</div>
-                <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Draw your signature now</div>
-              </div>
-            </Button>
-            <Button
-              onClick={() => setSigMethod(sigMethod === "remote" ? "none" : "remote")}
-              variant="ghost"
-              className={
-                "flex-1 h-auto flex items-center gap-3 bg-[#F8F4F0] rounded-xl px-4 py-3 text-left justify-start " +
-                (sigMethod === "remote" ? "border-[1.5px] border-[#6E0F2D]" : "border-[1.5px] border-[rgba(110,15,45,0.10)]")
-              }
-            >
-              <div style={{ width: 34, height: 34, borderRadius: 9, background: sigMethod === "remote" ? C.burg : "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <Send size={15} color={sigMethod === "remote" ? "#FFF" : C.burg} />
-              </div>
-              <div>
-                <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, color: C.text }}>Send to my phone</div>
-                <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Sign remotely on your own device</div>
-              </div>
-            </Button>
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ border: `1.5px solid rgba(110,15,45,0.22)`, borderRadius: 14, overflow: "hidden", background: "#FFF" }}>
+              <SignatureCanvas ref={canvasRef} onSigned={setHasSig} />
+            </div>
           </div>
-          {sigMethod === "here" && (
-            <div style={{ marginBottom: 12 }}>
-              <div style={{ border: `1.5px solid rgba(110,15,45,0.22)`, borderRadius: 14, overflow: "hidden", background: "#FFF" }}>
-                <SignatureCanvas onSigned={setHasSig} />
-              </div>
-            </div>
-          )}
-          {sigMethod === "remote" && !requestSent && (
-            <Button onClick={() => setRequestSent(true)} fullWidth className="h-11 border-[1.5px] border-[#C89B47] bg-transparent rounded-full font-semibold text-[13px] text-[#C89B47] mb-3">
-              Send Signature Request to My Phone
-            </Button>
-          )}
-          {sigMethod === "remote" && requestSent && (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(30,102,64,0.08)", border: `1px solid ${C.green}`, borderRadius: 10, padding: "10px 14px", marginBottom: 12 }}>
-              <Check size={14} color={C.green} />
-              <span style={{ fontFamily: F.u, fontSize: 12, color: C.green, fontWeight: 600 }}>Request sent to your phone!</span>
-            </div>
-          )}
-          {sigMethod !== "none" && (
-            <Button
-              onClick={handleConfirm} disabled={!canConfirm}
-              fullWidth
-              className={
-                "h-[46px] border-none rounded-full font-bold text-sm text-white " +
-                (canConfirm ? "bg-[#1E6640] hover:bg-[#1E6640]" : "bg-[#C8C0B8]")
-              }
-            >
-              <Check size={16} /> Confirm Material Receipt
-            </Button>
-          )}
+          <Button
+            onClick={() => void handleConfirm()} disabled={!hasSig || submitting}
+            fullWidth
+            className={
+              "h-[46px] border-none rounded-full font-bold text-sm text-white " +
+              (hasSig && !submitting ? "bg-[#1E6640] hover:bg-[#1E6640]" : "bg-[#C8C0B8]")
+            }
+          >
+            <Check size={16} /> {submitting ? "Confirming…" : "Confirm Material Receipt"}
+          </Button>
         </div>
       )}
     </div>
