@@ -45,6 +45,17 @@ function totalsByType(records: MaterialIssueRecord[]) {
   return Array.from(acc.entries()).map(([key, v]) => ({ type: key.split("|")[0], ...v }));
 }
 
+/** Every distinct parent GRN batch this group's materials were received under. */
+function grnBatchesFor(records: MaterialIssueRecord[]): string[] {
+  const seen = new Set<string>();
+  for (const r of records) {
+    for (const m of r.materials) {
+      if (m.grnBatchId) seen.add(m.grnBatchId);
+    }
+  }
+  return Array.from(seen);
+}
+
 const STATUS_TINT: Record<MaterialIssueRecord["status"], { label: string; fg: string; bg: string }> = {
   "pending-signature": { label: "Pending signature", fg: T.amber, bg: "rgba(183,121,31,0.10)" },
   signed:              { label: "Signed",            fg: T.green, bg: "rgba(30,102,64,0.10)" },
@@ -59,6 +70,7 @@ function GroupCard({
   const weaverForRow = row.weaverId ? weavers.find(x => x.id === row.weaverId) : undefined;
   const totals = totalsByType(records);
   const lineCount = records.reduce((n, r) => n + r.materials.length, 0);
+  const grnBatches = grnBatchesFor(records);
 
   return (
     <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 14, overflow: "hidden" }}>
@@ -94,6 +106,16 @@ function GroupCard({
         )}
 
         <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
+          {grnBatches.length > 0 && (
+            <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" }}>
+              <span style={{ fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                {grnBatches.length === 1 ? "GRN" : "GRNs"}
+              </span>
+              {grnBatches.map(g => (
+                <EntityCode key={g} type="goodsReceipt" value={g} size="sm" copyable />
+              ))}
+            </div>
+          )}
           {totals.map(t => (
             <span key={`${t.type}-${t.unit}`} style={{
               fontFamily: F.ui, fontSize: 11.5, fontWeight: 700,
@@ -125,7 +147,7 @@ function GroupCard({
           <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 720 }}>
             <thead>
               <tr style={{ background: T.warmCream }}>
-                {["Issue ID", "Date", "Material", "Description", "Quantity", "GRN ID", "Issued By", "Status"].map(h => (
+                {["Issue ID", "Date", "Material", "Description", "Quantity", "GRN / Sub-GRN", "Issued By", "Status"].map(h => (
                   // eslint-disable-next-line no-restricted-syntax -- raw <th>, see table comment above
                   <th key={h} style={mth}>{h}</th>
                 ))}
@@ -159,12 +181,22 @@ function GroupCard({
                     <td style={{ ...mtd, fontWeight: 700, color: T.royalBurgundy, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>
                       {m.quantity} {m.unit}
                     </td>
-                    {/* Every issued line's source receipt — the per-line GRN code
-                        when the backend recorded one, else the receipt batch id. */}
+                    {/* The overall GRN this line was received under, plus the
+                        specific sub-GRN (batch label) it was issued from — the
+                        same "-1"/"-2"/"-3" codes printed on the barcode labels. */}
                     <td style={{ ...mtd, whiteSpace: "nowrap" }}>
-                      {m.grnItemCode || m.grnBatchId
-                        ? <EntityCode type="goodsReceipt" value={(m.grnItemCode || m.grnBatchId) as string} size="sm" copyable />
-                        : <span style={{ color: "rgba(139,112,96,0.45)" }}>—</span>}
+                      {m.grnBatchId || m.grnItemCode ? (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 3, alignItems: "flex-start" }}>
+                          {m.grnBatchId && <EntityCode type="goodsReceipt" value={m.grnBatchId} size="sm" copyable />}
+                          {m.grnItemCode && m.grnItemCode !== m.grnBatchId && (
+                            <span style={{ fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.antiqueGold, background: "rgba(200,155,71,0.12)", border: `1px solid ${T.borderGold}`, borderRadius: 4, padding: "1px 6px" }}>
+                              Sub-GRN {m.grnItemCode.slice(m.grnBatchId ? m.grnBatchId.length : 0) || m.grnItemCode}
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <span style={{ color: "rgba(139,112,96,0.45)" }}>—</span>
+                      )}
                     </td>
                     <td style={{ ...mtd, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>
                       {i === 0 ? rec.issuedBy : ""}

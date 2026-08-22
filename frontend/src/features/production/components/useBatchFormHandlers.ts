@@ -137,22 +137,25 @@ export function useBatchFormHandlers(
   // `allowed`; anything selected but not allowed is left untouched.
   function commitBulkOrder(ref: string | null, label: string, allowed: Set<number> | null) {
     const order = bulkOrders.find(o => o.ref === ref);
-    let sareeTypeCode: string | null = null;
-    let sareeTypeName: string | null = null;
-    let designCode: string | null = null;
+    // Only set when the order actually specifies one — a row's existing
+    // saree type / design (already picked via "Assign Saree Type"/"Assign
+    // Design Code") must survive linking an order that doesn't carry its
+    // own, instead of being nulled out. Wiping sareeTypeCode here used to
+    // drop the row out of the "assignable" filter in BatchContext's save
+    // payload entirely (it requires sareeTypeCode), so the bulk-order link
+    // itself silently never reached the backend on Save Changes.
+    let sareeTypeCode: string | null | undefined;
+    let sareeTypeName: string | null | undefined;
+    let designCode: string | null | undefined;
     if (order) {
       const match = order.sareeType.match(/(.*)\s+·\s+(.*)/) || order.sareeType.match(/(.*)·(.*)/);
       if (match) {
         sareeTypeName = match[1].trim();
         sareeTypeCode = match[2].trim();
-      } else {
+      } else if (order.sareeType) {
         sareeTypeName = order.sareeType;
       }
-      // designCode is a real FK on the backend (DesignLibrary.code) — an
-      // empty string isn't null/undefined, so it would survive to the save
-      // request and trip the foreign-key constraint on save. A bulk order
-      // without a design set must leave this null, not "".
-      designCode = order.design || null;
+      if (order.design) designCode = order.design;
     }
 
     setRows(prev => prev.map(r => {
@@ -162,7 +165,9 @@ export function useBatchFormHandlers(
         ...r,
         bulkOrderRef: ref,
         bulkOrderLabel: label,
-        ...(order ? { sareeTypeCode, sareeTypeName, designCode } : {}),
+        sareeTypeCode: sareeTypeCode ?? r.sareeTypeCode,
+        sareeTypeName: sareeTypeName ?? r.sareeTypeName,
+        designCode: designCode ?? r.designCode,
       };
     }));
     setPicker(null);
