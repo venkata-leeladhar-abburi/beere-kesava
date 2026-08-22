@@ -18,6 +18,8 @@ export interface RawMaterialStockItem {
 export interface GrnItemInput {
   materialType: "WARP" | "RESHAM" | "JARI";
   name: string;
+  /** Color/grade/quality notes — carried over from the PurchaseOrderItem this is received against, if any. */
+  description?: string;
   grade?: string;
   color?: string;
   quantity: number;
@@ -34,6 +36,8 @@ export interface CreateGrnPayload {
   invoiceNo?: string;
   invoiceDate?: string;
   notes?: string;
+  /** Who physically received this delivery — stored as GrnReceipt.receivedById so it shows up in Goods Receipt History instead of a blank "Received By". */
+  actorId?: string;
   items: GrnItemInput[];
 }
 
@@ -48,10 +52,15 @@ export interface GrnReceiptItem {
   receivedDate: string;
   receivedBy?: { firstName: string; lastName: string } | null;
   notes?: string | null;
+  /** Purchase order(s) this receipt was received against, if any — a GRN created ad hoc (not from a PO) has none. */
+  purchaseOrders: { id: string; poNumber: string }[];
   items: {
     id: string;
+    /** Structured per-line id (e.g. "GRN-SreeVignesh-004-002-1") — print this on barcode labels and show it in receipt history, not `id`. Null on rows received before this field existed. */
+    itemCode?: string | null;
     materialType: string;
     name: string;
+    description?: string | null;
     grade?: string | null;
     color?: string | null;
     quantity: number;
@@ -59,6 +68,10 @@ export interface GrnReceiptItem {
     unitPrice: number;
     totalPrice: number;
     rejectedQuantity: number;
+    /** Already issued against this (GRN, materialType) pair, converted back into `unit`. */
+    issuedQuantity: number;
+    /** `quantity - rejectedQuantity - issuedQuantity`, converted back into `unit`. This is the true remaining stock — use it, not `quantity`, wherever "available" is shown. */
+    availableQuantity: number;
   }[];
 }
 

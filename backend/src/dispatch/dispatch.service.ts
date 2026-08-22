@@ -40,8 +40,12 @@ export class DispatchService {
     if (missing.length > 0) {
       throw new NotFoundException(`Saree(s) not found in inventory: ${missing.join(", ")}`);
     }
+    // Finishing no longer gates dispatch (product decision — a saree can be
+    // sent to shop or wholesale before finishing wraps up); only sarees
+    // already dispatched, sold, or flagged for damage review are blocked.
+    const notDispatchable: string[] = ["DISPATCHED", "SOLD", "DAMAGED_REVIEW_NEEDED"];
     for (const record of records) {
-      if (record.status !== "FINISHING_COMPLETE") {
+      if (notDispatchable.includes(record.status)) {
         throw new BadRequestException(
           `Saree ${record.sareeId} is not ready for dispatch (status: ${record.status})`,
         );

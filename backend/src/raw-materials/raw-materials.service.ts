@@ -18,6 +18,7 @@ export interface CreateGrnDto {
   items: {
     materialType: MaterialType;
     name: string;
+    description?: string;
     grade?: string;
     color?: string;
     quantity: number;
@@ -45,10 +46,53 @@ export class RawMaterialsService {
 
   async listGrns() {
     const grns = await this.prisma.grnReceipt.findMany({
-      include: { vendor: true, firm: true, items: true, receivedBy: true },
+      include: {
+        vendor: true,
+        firm: true,
+        items: true,
+        receivedBy: true,
+        // Surfaces which purchase order(s) this receipt was received
+        // against, so a GRN's origin is traceable from the Issue Material
+        // screen instead of just showing a bare receipt id.
+        purchaseOrders: { select: { id: true, poNumber: true } },
+      },
       orderBy: { createdAt: "desc" },
     });
-    return { items: grns };
+
+    // The Issue Material screen picks a GRN batch by (grnId, materialType) —
+    // see MaterialIssueItem.grnBatchId, which is set to the GrnReceipt's id,
+    // not a specific GrnItem. Sum what's already been issued against each
+    // (grnId, materialType) pair so "available" reflects real remaining
+    // stock instead of always showing the as-received quantity.
+    const grnIds = grns.map((g) => g.id);
+    const issuedItems = grnIds.length
+      ? await this.prisma.materialIssueItem.findMany({
+          where: {
+            grnBatchId: { in: grnIds },
+            issue: { status: { not: "CANCELLED" } },
+          },
+          select: { grnBatchId: true, materialType: true, quantity: true, unit: true },
+        })
+      : [];
+    const issuedGramsByKey = new Map<string, number>();
+    for (const item of issuedItems) {
+      const key = `${item.grnBatchId}::${item.materialType}`;
+      const grams = toGrams(Number(item.quantity), item.unit);
+      issuedGramsByKey.set(key, (issuedGramsByKey.get(key) ?? 0) + grams);
+    }
+
+    const withAvailability = grns.map((grn) => ({
+      ...grn,
+      items: grn.items.map((item) => {
+        const key = `${grn.id}::${item.materialType}`;
+        const issuedGrams = issuedGramsByKey.get(key) ?? 0;
+        const receivedGrams = toGrams(Number(item.quantity) - Number(item.rejectedQuantity), item.unit);
+        const availableQuantity = Math.max(0, fromGrams(receivedGrams - issuedGrams, item.unit));
+        return { ...item, issuedQuantity: fromGrams(issuedGrams, item.unit), availableQuantity };
+      }),
+    }));
+
+    return { items: withAvailability };
   }
 
   async createGrn(dto: CreateGrnDto) {
@@ -87,9 +131,15 @@ export class RawMaterialsService {
           notes: dto.notes || null,
           receivedById: dto.actorId || null,
           items: {
-            create: dto.items.map((item) => ({
+            // Structured id per material line — "{GRN id}-{position}" mirrors
+            // the sequential-id convention used everywhere else (PO-xxx-NNN,
+            // GRN-xxx-NNN, EMP-NNN), instead of the frontend previously
+            // deriving a barcode label from a slice of the PO's raw uuid.
+            create: dto.items.map((item, index) => ({
+              itemCode: `${grnId}-${index + 1}`,
               materialType: item.materialType,
               name: item.name,
+              description: item.description || null,
               grade: item.grade || null,
               color: item.color || null,
               quantity: item.quantity,

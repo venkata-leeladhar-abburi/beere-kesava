@@ -34,6 +34,8 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
 
   const handleClear = () => {
     setInternalValue("");
+    onChange?.({ target: { value: "" } } as React.ChangeEvent<HTMLInputElement>);
+    clearTimeout(timerRef.current);
     onSearch?.("");
   };
 

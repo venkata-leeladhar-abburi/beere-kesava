@@ -7,8 +7,10 @@ import { EntityCode } from "@/shared/ui/domain";
 import { GrnBarcodeScannerModal } from "./GrnBarcodeScannerModal";
 
 // ── GRN batch selector (searchable + live camera scan) ─────────────────────────
-export function GrnBatchSelector({ grnBatches, materialType, value, onChange }: {
+export function GrnBatchSelector({ grnBatches, materialType, value, onChange, pendingQty = 0 }: {
   grnBatches: GrnBatch[]; materialType: "Warp" | "Resham" | "Jari"; value: string; onChange: (id: string) => void;
+  /** Quantity currently entered on this row, in the same unit as the batch — subtracted live from "remaining" so it reflects this issuance before it's confirmed. */
+  pendingQty?: number;
 }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
@@ -90,7 +92,15 @@ export function GrnBatchSelector({ grnBatches, materialType, value, onChange }: 
                       <EntityCode type="goodsReceipt" value={g.grnBatchId} size="sm" />
                       <span style={{ fontFamily: F.ui, fontSize: 12, color: T.green }}>{g.availableQty} {g.unit} left</span>
                     </div>
-                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{g.vendor} · {g.dateReceived}</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
+                      {g.vendor} · {g.dateReceived}
+                      {g.poNumber && <> · PO {g.poNumber}</>}
+                    </div>
+                    {g.siblingItems.length > 0 && (
+                      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.antiqueGold, marginTop: 2 }}>
+                        Also on this receipt: {g.siblingItems.map(s => `${s.materialType} (${s.quantity} ${s.unit})`).join(", ")}
+                      </div>
+                    )}
                   </button>
                 ))}
               </div>
@@ -107,7 +117,31 @@ export function GrnBatchSelector({ grnBatches, materialType, value, onChange }: 
       </div>
       {selected && (
         <div style={{ marginTop: 6, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-          Available in {selected.grnBatchId}: <strong style={{ color: T.luxuryBrown }}>{selected.availableQty} {selected.unit} remaining</strong>
+          <div>
+            Available in {selected.grnBatchId}: <strong style={{ color: T.luxuryBrown }}>{selected.availableQty} {selected.unit} remaining</strong>
+            {pendingQty > 0 && (
+              <>
+                {" · after this issuance: "}
+                <strong style={{ color: pendingQty > selected.availableQty ? T.crimson : T.green }}>
+                  {Math.max(0, selected.availableQty - pendingQty)} {selected.unit}
+                </strong>
+              </>
+            )}
+          </div>
+          {selected.poNumber && <div style={{ marginTop: 2 }}>Received against Purchase Order <strong style={{ color: T.luxuryBrown }}>{selected.poNumber}</strong></div>}
+          {selected.siblingItems.length > 0 && (
+            // Same delivery brought in other materials too — surfacing them
+            // here is what makes a split, multi-material purchase
+            // traceable from a single GRN batch, instead of only showing
+            // the one line item that matches the row's material type.
+            <div style={{ marginTop: 6, background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 8, padding: "8px 12px" }}>
+              <div style={{ fontWeight: 600, color: T.luxuryBrown, marginBottom: 4 }}>Also received on this GRN:</div>
+              {selected.siblingItems.map((s, i) => (
+                // eslint-disable-next-line react/no-array-index-key -- sibling lines have no stable id in this shape; order is fixed per batch, so index is safe
+                <div key={i}>{s.materialType} — {s.name}: <strong style={{ color: T.luxuryBrown }}>{s.quantity} {s.unit}</strong></div>
+              ))}
+            </div>
+          )}
         </div>
       )}
       <GrnBarcodeScannerModal open={scanning} onClose={() => setScanning(false)} onDetected={handleDetected} />

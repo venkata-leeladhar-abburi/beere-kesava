@@ -1176,6 +1176,11 @@ model PurchaseOrderItem {
   purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
   materialType    MaterialType
   name            String
+  // Color/grade/quality notes entered on the PO — distinct from `name`
+  // (the material's short label). Carried through to the received GrnItem
+  // (see GrnItem.description) so it stays visible on the receiving screen,
+  // receipt history, and printed batch labels.
+  description     String?
   quantity        Decimal       @db.Decimal(12, 3)
   unit            String        @default("KG")
   unitPrice       Decimal?      @db.Decimal(12, 2)
@@ -1480,10 +1485,21 @@ model GrnReceipt {
 
 model GrnItem {
   id               String       @id @default(uuid())
+  // Structured, human-facing id for this specific material line — printed on
+  // its barcode label and shown in Goods Receipt History (e.g.
+  // "GRN-SreeVignesh-004-002-1"), distinct from `id` (an internal uuid) and
+  // from `grnId` (the parent receipt, which can carry several material
+  // lines). Nullable because rows created before this field existed have
+  // none — those fall back to a computed display value.
+  itemCode         String?
   grnId            String
   grn              GrnReceipt   @relation(fields: [grnId], references: [id], onDelete: Cascade)
   materialType     MaterialType
   name             String
+  // Color/grade/quality notes — carried over from the PurchaseOrderItem this
+  // was received against (see PurchaseOrderItem.description), or entered
+  // directly for an ad-hoc receipt with no PO.
+  description      String?
   grade            String?
   color            String?
   quantity         Decimal      @db.Decimal(12, 3)

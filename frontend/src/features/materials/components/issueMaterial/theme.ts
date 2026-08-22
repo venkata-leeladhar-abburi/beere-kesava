@@ -42,14 +42,21 @@ export const STATUS_CFG: Record<string, { label: string; color: string; bg: stri
 };
 
 // ── Local GRN batch directory (mirrors WorkerGRN.tsx format GRN-YYYY-MMM-###) ─
-export interface GrnBatch { grnBatchId: string; vendor: string; dateReceived: string; materialType: "Warp" | "Resham" | "Jari"; availableQty: number; unit: string; }
+export interface GrnBatchSibling { materialType: "Warp" | "Resham" | "Jari"; name: string; quantity: number; unit: string; }
+export interface GrnBatch {
+  grnBatchId: string; vendor: string; dateReceived: string; materialType: "Warp" | "Resham" | "Jari"; availableQty: number; unit: string;
+  /** Purchase order this GRN was received against, if any — null for ad-hoc "Add New Stock" receipts. */
+  poNumber: string | null;
+  /** Other material lines received on this same GRN receipt (excludes the current material type's own line) — lets staff see the full delivery a batch came from, not just the one material they're issuing. */
+  siblingItems: GrnBatchSibling[];
+}
 export const INITIAL_GRN_BATCHES: GrnBatch[] = [
-  { grnBatchId: "GRN-2026-JUN-001", vendor: "Sri Venkateswara Textiles", dateReceived: "01 Jun 2026", materialType: "Warp",   availableQty: 48, unit: "kg" },
-  { grnBatchId: "GRN-2026-JUN-002", vendor: "Kanchipuram Silks",         dateReceived: "02 Jun 2026", materialType: "Resham", availableQty: 22, unit: "kg" },
-  { grnBatchId: "GRN-2026-JUN-003", vendor: "Surat Zari Works",          dateReceived: "03 Jun 2026", materialType: "Jari",   availableQty: 40, unit: "Reels" },
-  { grnBatchId: "GRN-2026-MAY-014", vendor: "Surat Zari Works",          dateReceived: "20 May 2026", materialType: "Jari",   availableQty: 12, unit: "Buns" },
-  { grnBatchId: "GRN-2026-MAY-011", vendor: "Kanchipuram Silks",         dateReceived: "17 May 2026", materialType: "Resham", availableQty: 14, unit: "kg" },
-  { grnBatchId: "GRN-2026-MAY-006", vendor: "Sri Venkateswara Textiles", dateReceived: "12 May 2026", materialType: "Warp",   availableQty: 30, unit: "kg" },
+  { grnBatchId: "GRN-2026-JUN-001", vendor: "Sri Venkateswara Textiles", dateReceived: "01 Jun 2026", materialType: "Warp",   availableQty: 48, unit: "kg",    poNumber: null, siblingItems: [] },
+  { grnBatchId: "GRN-2026-JUN-002", vendor: "Kanchipuram Silks",         dateReceived: "02 Jun 2026", materialType: "Resham", availableQty: 22, unit: "kg",    poNumber: null, siblingItems: [] },
+  { grnBatchId: "GRN-2026-JUN-003", vendor: "Surat Zari Works",          dateReceived: "03 Jun 2026", materialType: "Jari",   availableQty: 40, unit: "Reels", poNumber: null, siblingItems: [] },
+  { grnBatchId: "GRN-2026-MAY-014", vendor: "Surat Zari Works",          dateReceived: "20 May 2026", materialType: "Jari",   availableQty: 12, unit: "Buns",  poNumber: null, siblingItems: [] },
+  { grnBatchId: "GRN-2026-MAY-011", vendor: "Kanchipuram Silks",         dateReceived: "17 May 2026", materialType: "Resham", availableQty: 14, unit: "kg",    poNumber: null, siblingItems: [] },
+  { grnBatchId: "GRN-2026-MAY-006", vendor: "Sri Venkateswara Textiles", dateReceived: "12 May 2026", materialType: "Warp",   availableQty: 30, unit: "kg",    poNumber: null, siblingItems: [] },
 ];
 
 export const RESHAM_COLORS = [

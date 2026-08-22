@@ -99,7 +99,9 @@ export function DispatchWholesaleModal({ sarees, available, onConfirm, onClose, 
   // Every picked saree must carry a price — an empty map would pass a length
   // check on its own, so the count is guarded explicitly.
   const pricesComplete = picked.every(s => toPaise(Number(inv.prices[s.sareeId || s.id]) || 0) > 0);
-  const canInvoice = !noSarees && !!inv.invoiceNumber.trim() && !!inv.firmId && pricesComplete;
+  // invoiceNumber is intentionally blank until save (allocated server-side),
+  // so it can't gate Continue here.
+  const canInvoice = !noSarees && !!inv.firmId && pricesComplete;
   const canTransport = transport.lrNumber.trim() && transport.transportCompany.trim() && transport.vehicleNumber.trim() && transport.dispatchDate;
 
   const STEPS = ["Customer", "Quotation", "Tax Invoice", "Sarees", "Transport & LR", "Upload Receipt"];

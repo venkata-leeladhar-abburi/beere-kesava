@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { LayoutGrid, List } from "lucide-react";
+import { LayoutGrid, List, Printer } from "lucide-react";
 import { isSold, isOutstanding } from "@/features/customers";
 import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { usePagination } from "../../../../shared/ui/DataPagination";
@@ -12,6 +12,7 @@ import { Button, SearchInput } from "../../../../shared/ui/primitives";
 import { MainSareesTable } from "./MainSareesTable";
 import { Select, TabsBar } from "./WeaverSareesControls";
 import { useWeaverSareeRows } from "./useWeaverSareeRows";
+import { usePrintSareeTags } from "./SareeTagPrint";
 
 
 
@@ -35,6 +36,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
   const isLoom = ownerType === "loom";
   const isAll = ownerType === "all";
   const rows = useWeaverSareeRows({ weaverId, isLoom, isAll });
+  const printTags = usePrintSareeTags();
 
   const [tab, setTab] = useState<TabKey>("assigned");
   const [viewMode, setViewMode] = useState<"card" | "table">("card");
@@ -297,11 +299,23 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
           </>
         )}
 
-        {filtersActive && (
-          <Button onClick={resetFilters} variant="tertiary" size="sm" className="ml-auto">
-            Clear filters
-          </Button>
-        )}
+        <div className="ml-auto flex items-center gap-2">
+          {selectable && selectedIds && selectedIds.size > 0 && (
+            <Button
+              onClick={() => printTags(rows.filter(r => selectedIds.has(r.sareeId)))}
+              variant="secondary"
+              size="sm"
+              iconLeft={Printer}
+            >
+              Print Tags ({selectedIds.size})
+            </Button>
+          )}
+          {filtersActive && (
+            <Button onClick={resetFilters} variant="tertiary" size="sm">
+              Clear filters
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* View mode toggle buttons (Card View / Table View) — mobile only */}
@@ -358,6 +372,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
           showMoney={showMoney}
           pag={pag}
           responsive={viewMode === "card"}
+          onPrintTag={r => printTags([r])}
         />
       )}
 

@@ -50,7 +50,7 @@ function toPurchaseOrder(po: BackendPurchaseOrder, materials: POItem[] = []): Pu
     id: item.id,
     materialType: (item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari") as "Warp" | "Resham" | "Jari",
     subtype: item.name,
-    description: item.name,
+    description: item.description ?? undefined,
     quantity: Number(item.quantity),
     unit: item.unit,
     pricePerUnit: Number(item.unitPrice || 0),
@@ -134,6 +134,7 @@ export function POProvider({ children }: { children: React.ReactNode }) {
         items: po.materials.map(m => ({
           materialType: m.materialType.toUpperCase(),
           name: m.subtype,
+          description: m.description || undefined,
           quantity: m.quantity,
           unit: m.unit,
           unitPrice: m.pricePerUnit || 0,

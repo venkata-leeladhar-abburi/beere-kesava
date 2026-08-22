@@ -120,7 +120,7 @@ export function MaterialRowEditor({ row, grnBatches, onChange, onRemove, showRem
 
       {/* GRN Batch Selector */}
       <div>
-        <GrnBatchSelector grnBatches={grnBatches} materialType={row.materialType} value={row.grnBatchId} onChange={v => patch({ grnBatchId: v })} />
+        <GrnBatchSelector grnBatches={grnBatches} materialType={row.materialType} value={row.grnBatchId} onChange={v => patch({ grnBatchId: v })} pendingQty={qtyNum} />
         {overAvailable && (
           <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 7, background: "rgba(196,146,58,0.14)", border: `1px solid ${T.antiqueGold}`, borderRadius: 8, padding: "8px 12px" }}>
             <AlertTriangle size={14} color="#8B6018" />

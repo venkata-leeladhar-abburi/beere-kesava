@@ -39,3 +39,8 @@ export const FIN_CFG: Record<FinishingStatus, { label: string; color: string }> 
   none: { label: "—", color: T.taupe },
   rejected: { label: "Rejected", color: T.crimson },
 };
+
+export const DISPATCH_CFG: Record<"dispatched" | "inStock", { label: string; color: string }> = {
+  dispatched: { label: "Dispatched", color: T.taupe },
+  inStock: { label: "In Stock", color: T.green },
+};

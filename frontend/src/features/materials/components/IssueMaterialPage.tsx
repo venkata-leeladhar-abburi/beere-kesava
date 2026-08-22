@@ -75,8 +75,24 @@ export function IssueMaterialPage() {
             vendor: grn.supplierName,
             dateReceived: new Date(grn.receivedDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
             materialType: item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari",
-            availableQty: item.quantity,
-            unit: item.unit || "kg"
+            // Real remaining stock (received minus rejected minus already
+            // issued), computed server-side — not the as-received quantity.
+            availableQty: item.availableQuantity,
+            unit: item.unit || "kg",
+            poNumber: grn.purchaseOrders[0]?.poNumber ?? null,
+            // Every other material line on this same receipt — so picking a
+            // batch shows the full delivery it came from, not just this one
+            // material (this is what actually made a multi-material
+            // purchase traceable, instead of only the currently-filtered
+            // material type).
+            siblingItems: grn.items
+              .filter(other => other.id !== item.id)
+              .map(other => ({
+                materialType: other.materialType === "WARP" ? "Warp" : other.materialType === "RESHAM" ? "Resham" : "Jari",
+                name: other.name,
+                quantity: other.availableQuantity,
+                unit: other.unit || "kg",
+              })),
           });
         });
       });

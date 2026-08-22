@@ -17,6 +17,8 @@ export interface BackendPurchaseOrder {
     id: string;
     materialType: string;
     name: string;
+    /** Color/grade/quality notes entered when the PO was raised. */
+    description: string | null;
     quantity: number;
     unit: string;
     unitPrice: string | null;
@@ -38,6 +40,7 @@ export interface CreatePurchaseOrderPayload {
   items?: {
     materialType: string;
     name: string;
+    description?: string;
     quantity: number;
     unit?: string;
     unitPrice?: number;

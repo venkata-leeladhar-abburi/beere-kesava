@@ -40,6 +40,7 @@ export class PurchaseOrdersService {
               create: dto.items.map((item) => ({
                 materialType: item.materialType,
                 name: item.name,
+                description: item.description ?? null,
                 quantity: item.quantity,
                 unit: item.unit ?? "KG",
                 unitPrice: item.unitPrice ?? null,

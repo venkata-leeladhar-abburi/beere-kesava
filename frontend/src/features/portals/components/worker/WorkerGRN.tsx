@@ -9,7 +9,7 @@ import { GRNPODropdown } from "./GRNPODropdown";
 import { Button, Input, CheckboxField } from "../../../../shared/ui/primitives";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { rawMaterialsApi, CreateGrnPayload } from "../../../../shared/api/rawMaterials";
+import { rawMaterialsApi, CreateGrnPayload, GrnReceiptItem } from "../../../../shared/api/rawMaterials";
 import { purchaseOrdersApi } from "../../../../shared/api/purchase-orders";
 import { useAuth } from "../../../../contexts/AuthContext";
 
@@ -86,12 +86,18 @@ export function WorkerGRN({
 
   const queryClient = useQueryClient();
 
+  const [createdGrn, setCreatedGrn] = useState<GrnReceiptItem | null>(null);
+
   const createGrnMutation = useMutation({
     mutationFn: (payload: CreateGrnPayload) => rawMaterialsApi.createGrn(payload),
     onSuccess: async (data) => {
       queryClient.invalidateQueries({ queryKey: ["grn-receipts"] });
       // Update grnBatchId with the real one returned from backend
       setGrnBatchId(data.id);
+      // Keep the persisted receipt (with each item's real itemCode/description)
+      // so the print-labels step reads real data instead of re-deriving a
+      // fake batch id from the PO's raw uuid.
+      setCreatedGrn(data);
 
       // Link this GRN back to the PO it was received against — without this
       // the PO stays stuck at "approved" forever even after stock arrives,
@@ -205,6 +211,7 @@ export function WorkerGRN({
       firmId: undefined, // Add if you have firmId in PO
       supplierName: selectedPO.vendor,
       invoiceNo: selectedPO.poNumber,
+      actorId: user?.id,
       items: selectedPO.materials.map((m, i) => {
         // eslint-disable-next-line no-restricted-syntax -- quantity, not money
         const inputtedQty = parseFloat(receivedQty[i] || "0");
@@ -212,7 +219,8 @@ export function WorkerGRN({
         const isRejected = itemApproval[i] === "rejected";
         return {
           materialType: m.materialType === "Warp" ? "WARP" : m.materialType === "Resham" ? "RESHAM" : "JARI",
-          name: m.subtype || m.description || "General",
+          name: m.subtype || "General",
+          description: m.description || undefined,
           quantity: inputtedQty,
           unit: inputtedUnit,
           unitPrice: m.pricePerUnit,
@@ -232,6 +240,7 @@ export function WorkerGRN({
     setItemRejectReason({});
     setConfirmedReceived(false);
     setGrnBatchId(generateGrnId(receiptHistory.length + 1));
+    setCreatedGrn(null);
   };
 
   if (mode === "history") {
@@ -243,7 +252,7 @@ export function WorkerGRN({
   }
 
   if (step === "print") {
-    return <GRNPrintView selectedPO={selectedPO} receivedQty={receivedQty} receivedUnit={receivedUnit} grnBatchId={grnBatchId} onReset={resetForm} />;
+    return <GRNPrintView grn={createdGrn} grnBatchId={grnBatchId} onReset={resetForm} />;
   }
 
   return (

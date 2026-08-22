@@ -51,7 +51,9 @@ export function RaiseQuotationModal({ sarees, available, onConfirm, onClose, ini
   // Every picked saree must carry a price — an empty map would pass the length
   // check on its own, so the count is guarded explicitly.
   const pricesComplete = picked.every(s => (Number(inv.prices[s.sareeId || s.id]) || 0) > 0);
-  const canQuote = !noSarees && !!inv.invoiceNumber.trim() && !!inv.firmId && pricesComplete;
+  // invoiceNumber is intentionally blank until save (allocated server-side),
+  // so it can't gate Continue here.
+  const canQuote = !noSarees && !!inv.firmId && pricesComplete;
 
   const STEPS = ["Customer", "Quotation", "Sarees"];
   const QUOTE_STEP = 2;

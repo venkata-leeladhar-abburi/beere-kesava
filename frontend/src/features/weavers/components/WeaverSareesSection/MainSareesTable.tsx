@@ -1,10 +1,11 @@
 import React from "react";
+import { Printer } from "lucide-react";
 import { Pagination, UsePaginationReturn } from "../../../../shared/ui/DataPagination";
 import { ageBucket } from "@/features/customers";
 import { T, F } from "./theme";
 import { WeaverSareeRow, TabKey, tabDate } from "./types";
-import { inr, fmtDate, AGE_COLOR, QC_CFG, FIN_CFG } from "./utils";
-import { Checkbox } from "../../../../shared/ui/primitives";
+import { inr, fmtDate, AGE_COLOR, QC_CFG, FIN_CFG, DISPATCH_CFG } from "./utils";
+import { Checkbox, IconButton } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
 function Chip({ label, color }: { label: string; color: string }) {
@@ -34,6 +35,10 @@ interface MainSareesTableProps {
   showMoney: boolean;
   pag: UsePaginationReturn;
   responsive?: boolean;
+  /** Prints a physical tag for this one row — available regardless of QC,
+   *  finishing or dispatch status (a dispatched saree can still be re-tagged
+   *  even though it can no longer be picked for a new quotation/dispatch). */
+  onPrintTag?: (r: WeaverSareeRow) => void;
 }
 
 function MainSareeCard({
@@ -47,6 +52,7 @@ function MainSareeCard({
   dateHeader,
   showQcMoney,
   showMoney,
+  onPrintTag,
 }: {
   r: WeaverSareeRow;
   selectable: boolean;
@@ -58,6 +64,7 @@ function MainSareeCard({
   dateHeader: string;
   showQcMoney: boolean;
   showMoney: boolean;
+  onPrintTag?: (r: WeaverSareeRow) => void;
 }) {
   const isPickable = r.qcStatus !== "defective" && r.qcStatus !== "semi" && !r.dispatched;
   const qc = QC_CFG[r.qcStatus];
@@ -92,6 +99,10 @@ function MainSareeCard({
           <div className="flex items-center gap-1.5 flex-wrap justify-end shrink-0">
             <Chip label={qc.label} color={qc.color} />
             {r.finishingStatus !== "none" && <Chip label={fin.label} color={fin.color} />}
+            <Chip label={DISPATCH_CFG[r.dispatched ? "dispatched" : "inStock"].label} color={DISPATCH_CFG[r.dispatched ? "dispatched" : "inStock"].color} />
+            {onPrintTag && (
+              <IconButton icon={Printer} label={`Print tag for ${r.sareeId}`} variant="ghost" size="sm" onClick={() => onPrintTag(r)} />
+            )}
           </div>
         </div>
 
@@ -196,7 +207,7 @@ function MainSareeCard({
 
 export function MainSareesTable({
   pageRows, visible, selectable, selectedIds, onToggleAll, onToggleRow,
-  isAll, isLoom, tab, dateHeader, showQcMoney, showMoney, pag, responsive = false
+  isAll, isLoom, tab, dateHeader, showQcMoney, showMoney, pag, responsive = false, onPrintTag,
 }: MainSareesTableProps) {
   const mono = (color: string, extra?: React.CSSProperties): React.CSSProperties => ({ fontFamily: "var(--font-mono)", fontSize: 12, color, ...extra });
   const isPickable = (r: WeaverSareeRow) =>
@@ -305,6 +316,13 @@ export function MainSareesTable({
       id: "finishingCompleted", header: "Finishing Completed", accessor: r => r.finishingCompletedDate, priority: 3,
       cell: (_v, r) => <span>{fmtDate(r.finishingCompletedDate)}</span>,
     },
+    {
+      id: "dispatch", header: "Dispatch", accessor: r => r.dispatched,
+      cell: (_v, r) => {
+        const cfg = DISPATCH_CFG[r.dispatched ? "dispatched" : "inStock"];
+        return <Chip label={cfg.label} color={cfg.color} />;
+      },
+    },
     ...(showQcMoney ? [
       {
         id: "makingCharge", header: "Making Charge", type: "currency" as const, accessor: (r: WeaverSareeRow) => r.makingCharge,
@@ -326,6 +344,12 @@ export function MainSareesTable({
         <span style={mono(tab === "sold" ? T.green : T.royalBurgundy, { fontWeight: 700 })}>
           {r.stock ? inr(tab === "sold" ? (r.stock.sale?.amount || 0) : r.stock.finalAmount) : "—"}
         </span>
+      ),
+    } as ColumnDef<WeaverSareeRow>] : []),
+    ...(onPrintTag ? [{
+      id: "printTag", header: "Tag", accessor: () => null, type: "actions" as const,
+      cell: (_v: unknown, r: WeaverSareeRow) => (
+        <IconButton icon={Printer} label={`Print tag for ${r.sareeId}`} variant="ghost" size="sm" onClick={() => onPrintTag(r)} />
       ),
     } as ColumnDef<WeaverSareeRow>] : []),
   ];
@@ -363,6 +387,7 @@ export function MainSareesTable({
                   dateHeader={dateHeader}
                   showQcMoney={showQcMoney}
                   showMoney={showMoney}
+                  onPrintTag={onPrintTag}
                 />
               ))}
             </div>

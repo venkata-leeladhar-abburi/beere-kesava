@@ -1,12 +1,14 @@
 import React, { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, LayoutGrid, List, AlignJustify } from "lucide-react";
+import { Search, LayoutGrid, AlignJustify, Printer } from "lucide-react";
 import { C, F, card } from "./tokens";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { Button, Input } from "../../../../shared/ui/primitives";
-import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
+import { rawMaterialsApi, GrnReceiptItem } from "../../../../shared/api/rawMaterials";
 import { jariToReels } from "../../../../shared/lib/weightUnits";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { Modal } from "../../../../shared/ui/overlay";
+import { GRNPrintView } from "./GRNSuccessPrint";
 import type { ReconResult } from "@/lib/domain/status";
 
 export interface ReceiptRecord {
@@ -21,6 +23,8 @@ export interface ReceiptRecord {
   // `ReconResult` (Part D.1: found living inside `status` as "Match"/"Short"/
   // "Excess", not a lifecycle state, so it's its own typed column, not a StatusPill).
   status: ReconResult;
+  /** The full receipt, when this row came from the database — lets the row open a real print-tags view. Undefined for locally-tracked rows that never hit the backend. */
+  fullReceipt?: GrnReceiptItem;
 }
 
 const HIST_STATUS_CFG: Record<ReconResult, { label: string; color: string; bg: string }> = {
@@ -29,9 +33,14 @@ const HIST_STATUS_CFG: Record<ReconResult, { label: string; color: string; bg: s
   excess: { label: "Excess", color: "#1565C0", bg: "rgba(21,101,192,0.10)" },
 };
 
+// Joins/splits one material line per row — not ", " (a description can
+// legitimately contain commas, e.g. "Premium grade, off-white, 40s count",
+// which would otherwise get sliced into multiple fake lines).
+const SUMMARY_LINE_SEP = " ||| ";
+
 function renderMaterialsSummary(summary: string) {
   if (!summary) return null;
-  const parts = summary.split(", ");
+  const parts = summary.split(SUMMARY_LINE_SEP);
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 5, minWidth: 260 }}>
       {parts.map((p, idx) => {
@@ -68,6 +77,7 @@ export function ReceiptHistoryTable({ receiptHistory: propReceiptHistory, compac
   const [historyDateFilter, setHistoryDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [historyPage, setHistoryPage] = useState(1);
   const [viewMode, setViewMode] = useState<"card" | "table">("card");
+  const [tagsRecord, setTagsRecord] = useState<ReceiptRecord | null>(null);
 
   const { data: rawGrns } = useQuery({
     queryKey: ["grn-receipts"],
@@ -79,7 +89,10 @@ export function ReceiptHistoryTable({ receiptHistory: propReceiptHistory, compac
       const anyRejected = g.items.some(i => Number(i.rejectedQuantity ?? 0) > 0);
       return {
         grnId: g.id,
-        poRef: g.invoiceNo ?? `PO-${g.id.slice(-6)}`,
+        // Prefer the real linked purchase order over the invoice number
+        // (which is only a proxy — WorkerGRN.tsx sets invoiceNo to the PO
+        // number today, but that's incidental, not a guarantee).
+        poRef: g.purchaseOrders[0]?.poNumber ?? g.invoiceNo ?? `PO-${g.id.slice(-6)}`,
         vendor: g.supplierName ?? "Vendor",
         firmName: g.firm?.firmName ?? "—",
         dateReceived: g.receivedDate ? new Date(g.receivedDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "Recent",
@@ -87,10 +100,14 @@ export function ReceiptHistoryTable({ receiptHistory: propReceiptHistory, compac
           const isJari = i.materialType === "JARI";
           const qty = isJari ? jariToReels(i.quantity, i.unit ?? "KG") : i.quantity;
           const unit = isJari ? "Reels" : "kg";
-          return `${i.materialType === "WARP" ? "Warp" : i.materialType === "RESHAM" ? "Resham" : "Jari"} - ${i.name} (${qty} ${unit})`;
-        }).join(", "),
-        receivedBy: "—",
+          const type = i.materialType === "WARP" ? "Warp" : i.materialType === "RESHAM" ? "Resham" : "Jari";
+          const label = i.description ? `${i.name}: ${i.description}` : i.name;
+          const code = i.itemCode ? ` · ${i.itemCode}` : "";
+          return `${type} - ${label} (${qty} ${unit}${code})`;
+        }).join(SUMMARY_LINE_SEP),
+        receivedBy: g.receivedBy ? `${g.receivedBy.firstName} ${g.receivedBy.lastName}`.trim() : "—",
         status: (anyRejected ? "short" : "match") as ReconResult,
+        fullReceipt: g,
       };
     });
 
@@ -136,6 +153,18 @@ export function ReceiptHistoryTable({ receiptHistory: propReceiptHistory, compac
         const sc = HIST_STATUS_CFG[r.status];
         return <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: sc.color, background: sc.bg, padding: compact ? "3px 9px" : "4px 10px", borderRadius: 999, whiteSpace: "nowrap" }}>{sc.label}</span>;
       },
+    },
+    {
+      id: "tags", header: "Tags", accessor: () => "",
+      cell: (_v, r) => r.fullReceipt ? (
+        <Button
+          variant="secondary" size="sm" iconLeft={Printer}
+          onClick={() => setTagsRecord(r)}
+          className="h-auto rounded-md border-[rgba(110,15,45,0.12)] bg-white text-[#6E0F2D] px-2.5 py-1 text-[11px] whitespace-nowrap"
+        >
+          View Tags
+        </Button>
+      ) : null,
     },
   ];
 
@@ -210,6 +239,13 @@ export function ReceiptHistoryTable({ receiptHistory: propReceiptHistory, compac
           </div>
         )}
       </div>
+
+      <Modal open={!!tagsRecord} onOpenChange={open => { if (!open) setTagsRecord(null); }} size="md">
+        <Modal.Header title={tagsRecord ? `Barcode Labels — ${tagsRecord.grnId}` : "Barcode Labels"} onClose={() => setTagsRecord(null)} />
+        <Modal.Body>
+          {tagsRecord?.fullReceipt && <GRNPrintView grn={tagsRecord.fullReceipt} grnBatchId={tagsRecord.grnId} />}
+        </Modal.Body>
+      </Modal>
     </div>
   );
 }
