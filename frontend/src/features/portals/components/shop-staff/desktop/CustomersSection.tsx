@@ -1,8 +1,8 @@
 import React from "react";
 import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Search, Star } from "lucide-react";
-import { C, F, ShopDesktopHero, SILK_BG } from "../theme";
+import { ArrowRight, Search, Star, Users, ShoppingBag } from "lucide-react";
+import { C, F, PageHero, PortalStatsStrip, type PortalStat } from "../theme";
 import { Button, Input } from "../../../../../shared/ui/primitives";
 import { customersApi } from "../../../../../shared/api/customers";
 import { salesApi, type BackendSaleRecord } from "../../../../../shared/api/sales";
@@ -59,24 +59,27 @@ export function CustomersSection({
   const totalCustomers = customers.length;
   const regularCustomers = customers.filter(c => c.regular).length;
   const topCustomer = customers[0]?.name ?? "—";
+  const activeTodayCount = React.useMemo(() => {
+    const todayStr = new Date().toDateString();
+    return salesList.filter(s => new Date(s.saleDate).toDateString() === todayStr).length;
+  }, [salesList]);
+
+  const stats: PortalStat[] = [
+    { label: "Total customers", value: totalCustomers, sub: "Registered in system", icon: Users, highlight: true },
+    { label: "Regular customers", value: regularCustomers, sub: "Wholesale & repeat buyers", icon: Star },
+    { label: "Active today", value: activeTodayCount, sub: "Transactions today", icon: ShoppingBag },
+    ...(canSeePrices ? [{ label: "Recent signup", value: topCustomer, sub: "Latest customer record", icon: Users }] : []),
+  ];
 
   return (
     <>
-      <ShopDesktopHero
-        bp={bp}
-        breadcrumb="SINCE 1999 · SHOP STAFF PORTAL · CUSTOMERS"
-        titleMain="Customer Profiles"
-        titleSub="& Purchase History"
-        description="All retail customers — browse their history, spending patterns, and contact details. Regular customers are starred for easy identification."
-        pills={[{ text: `${totalCustomers} Total Customers` }, { text: `${regularCustomers} Regular Customers`, color: C.gold }]}
-        stats={[
-          { label: "TOTAL CUSTOMERS", val: String(totalCustomers), sub: "Registered in system" },
-          { label: "REGULAR CUSTOMERS", val: String(regularCustomers), sub: "Wholesale & repeat buyers", highlight: true },
-          ...(canSeePrices ? [{ label: "RECENT SIGNUP", val: topCustomer, sub: "Latest customer" }] : []),
-          { label: "PORTAL STATS", val: "Active", sub: "Live customer records", crimson: true },
-        ]}
-        bgUrl={SILK_BG}
+      <PageHero
+        eyebrow="Shop Staff Portal · Beere Kesava & Brothers Silks"
+        title="Customer Profiles"
+        titleAccent="& History"
+        description="All retail & wholesale customers — browse their purchase history, spending patterns, and contact details. Regular customers are starred for easy identification."
       />
+      <PortalStatsStrip stats={stats} />
       <div style={{ padding: isTablet ? "24px 28px 40px" : "40px 48px 56px" }}>
         {/* Search + filter */}
         <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 32 }}>
@@ -88,7 +91,7 @@ export function CustomersSection({
               key={f}
               className={
                 "px-5 py-2.5 h-auto rounded-full border border-[rgba(110,15,45,0.12)] whitespace-nowrap " +
-                (f === "All" ? "bg-[#6E0F2D] text-white font-semibold" : "bg-white text-[#69635E] font-normal")
+                (f === "All" ? "bg-[#6E0F2D] hover:bg-[#4A061B] text-[#FFFDF9] hover:text-[#FFFDF9] font-semibold" : "bg-white hover:bg-[rgba(110,15,45,0.06)] text-[#69635E] hover:text-[#6E0F2D] font-normal")
               }
             >{f}</Button>
           ))}
@@ -124,7 +127,7 @@ export function CustomersSection({
               </div>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "auto" }}>
                 <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>Last visit: <strong style={{ color: C.text }}>{c.last}</strong></div>
-                <Button onClick={() => setSelectedCustomer(c)} size="sm" className="rounded-full bg-[#6E0F2D] border-none font-semibold text-[13px] text-white shadow-[0_2px_10px_rgba(110,15,45,0.28)]">
+                <Button variant="primary" onClick={() => setSelectedCustomer(c)} size="sm" className="rounded-full bg-[#6E0F2D] hover:bg-[#4A061B] text-[#FFFDF9] hover:text-[#FFFDF9] border-none font-semibold text-[13px] shadow-[0_2px_10px_rgba(110,15,45,0.28)]">
                   View Profile <ArrowRight size={13} color="#FFF" />
                 </Button>
               </div>

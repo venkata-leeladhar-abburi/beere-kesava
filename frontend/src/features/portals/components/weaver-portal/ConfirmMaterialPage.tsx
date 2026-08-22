@@ -1,29 +1,33 @@
 import { materialTypeIcon } from "./MyBatchesPage";
 
 import React, { useState, useRef, useMemo } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { useResponsive } from "../../../../hooks/useResponsive";
 import { useBatches } from "@/features/production";
 import { useDesignLibrary, DesignEntry } from "@/features/design-library";
 import { DesignCodeCard } from "@/features/design-library";
 import { useMaterialIssue, MaterialIssueRecord, JARI_REEL_GRAMS, materialItemToGrams, BUNS_PER_REEL } from "@/features/materials";
-import { AnimatePresence } from "motion/react";
-import {
-  Bell, Check,
-} from "lucide-react";
+import { Bell, Check } from "lucide-react";
 
 import {
   C, F, SectionTitle, Card, SignatureCanvas, SignatureCanvasHandle, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid
 } from './theme';
 import { useCurrentWeaver } from "./useCurrentWeaver";
 import { ReferenceHistorySection } from "./ReferenceHistorySection";
+import { useAuth } from "../../../../contexts/AuthContext";
+import { BG_IMAGE } from "./WeaverBatchNotifData";
 import { Button } from "../../../../shared/ui/primitives";
 
 export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => void } = {}) {
   const { isMobile, isTablet, cols } = useResponsive();
+  const { user } = useAuth();
   const { getRecordsForWeaver, updateSignatureStatus, getMaterialSummaryForWeaver, getMaterialSummaryByBatch } = useMaterialIssue();
   const { batches } = useBatches();
   const { getDesign } = useDesignLibrary();
   const { weaverId, isLoading: weaverLoading, isError: weaverError } = useCurrentWeaver();
+
+  const weaverName = user?.name ?? "Weaver";
+  const weaverCode = user?.empId ?? (weaverId ? weaverId.slice(0, 10) : "Weaver");
 
   const matSummary = getMaterialSummaryForWeaver(weaverId ?? "");
   const matByBatch = weaverId ? getMaterialSummaryByBatch(weaverId) : [];
@@ -132,19 +136,92 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
         <div style={{ fontFamily: F.d, fontWeight: 600, fontSize: 20, color: C.text, marginBottom: 12 }}>Materials Confirmed!</div>
         <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, lineHeight: 1.6, marginBottom: 16 }}>You have confirmed receipt of all materials in {confirmedRecord.id}. Good luck with your weaving!</div>
         <div style={{ display: "inline-block", background: "rgba(110,15,45,0.08)", color: C.burg, borderRadius: 999, padding: "6px 16px", fontFamily: F.m, fontSize: 14, marginBottom: 28 }}>{confirmedRecord.id}</div>
-        <Button onClick={resetToPending} fullWidth className="block h-[52px] bg-[#6E0F2D] border-none rounded-full font-semibold text-base text-white mb-2.5">
+        <button
+          onClick={resetToPending}
+          style={{
+            width: "100%",
+            height: 52,
+            borderRadius: 999,
+            border: "none",
+            background: "#6E0F2D",
+            color: "#FFFFFF",
+            fontFamily: F.u,
+            fontWeight: 600,
+            fontSize: 15,
+            cursor: "pointer",
+            marginBottom: 10,
+            boxShadow: "0 4px 16px rgba(110,15,45,0.30)",
+            transition: "all 0.2s ease",
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = "#520920"; e.currentTarget.style.color = "#FFFFFF"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = "#6E0F2D"; e.currentTarget.style.color = "#FFFFFF"; }}
+        >
           View More Pending Receipts
-        </Button>
-        <Button onClick={onGoToBatches} fullWidth className="block h-12 bg-transparent border border-[rgba(110,15,45,0.10)] rounded-full font-semibold text-sm text-[#69635E]">
+        </button>
+        <button
+          onClick={onGoToBatches}
+          style={{
+            width: "100%",
+            height: 48,
+            borderRadius: 999,
+            border: `1px solid ${C.bdrMed}`,
+            background: "#FFFFFF",
+            color: "#6E0F2D",
+            fontFamily: F.u,
+            fontWeight: 600,
+            fontSize: 14,
+            cursor: "pointer",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+            transition: "all 0.2s ease",
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = "#6E0F2D"; e.currentTarget.style.color = "#FFFFFF"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = "#FFFFFF"; e.currentTarget.style.color = "#6E0F2D"; }}
+        >
           ← Go to My Batches
-        </Button>
+        </button>
       </div>
     );
   }
 
   return (
     <div style={{ paddingBottom: 32 }}>
-      <HeroHeader eyebrow="SINCE 1999 · MATERIAL RECEIPT" title="Confirm Materials" sub="Sign to confirm receipt" />
+      {/* ── HERO BANNER MATCHING DESKTOP CONFIRM MATERIALS HERO ── */}
+      <div style={{ position: "relative", overflow: "hidden", background: "#0D0207", padding: isTablet ? "36px 28px 32px" : "28px 20px 24px" }}>
+        <div style={{
+          position: "absolute", inset: 0,
+          backgroundImage: `url(${BG_IMAGE})`,
+          backgroundSize: "cover", backgroundPosition: "center",
+          opacity: 0.22, pointerEvents: "none"
+        }} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(13,2,7,0.75) 0%, #0D0207 100%)", pointerEvents: "none" }} />
+
+        <div style={{ position: "relative", zIndex: 2 }}>
+          <div style={{ fontFamily: F.m, fontSize: 11, letterSpacing: "1.8px", color: "rgba(255,253,249,0.50)", textTransform: "uppercase", marginBottom: 10 }}>
+            SINCE 1999 · WEAVER PORTAL · MATERIAL RECEIPT
+          </div>
+
+          <div style={{ fontFamily: F.d, fontWeight: 400, fontSize: isTablet ? 38 : 28, color: "#FFFDF9", lineHeight: 1.15, marginBottom: 8 }}>
+            Confirm Materials <span style={{ fontFamily: F.d, fontStyle: "italic", fontWeight: 400, fontSize: isTablet ? 30 : 22, color: C.gold }}>& Open Your Batch</span>
+          </div>
+
+          <div style={{ fontFamily: F.u, fontSize: 13.5, color: "rgba(255,253,249,0.75)", lineHeight: 1.6, maxWidth: "620px", marginBottom: 16 }}>
+            Review all materials issued to you, check the color slip, and sign to officially open your batch and start weaving.
+          </div>
+
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <div style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 999, padding: "6px 16px" }}>
+              <span style={{ fontFamily: F.u, fontSize: 12.5, fontWeight: 600, color: "#FFF" }}>
+                {weaverName} · {weaverCode}
+              </span>
+            </div>
+            <div style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 999, padding: "6px 16px" }}>
+              <span style={{ fontFamily: F.u, fontSize: 12.5, fontWeight: 600, color: "#FFF" }}>
+                {pendingRecords.length > 0 ? `${pendingRecords.length} Pending Material Handover` : "No pending materials"}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {pending ? (
         <>
@@ -216,17 +293,41 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
             <div style={{ background: C.cream, borderRadius: 10, padding: "10px 14px", marginBottom: 12 }}>
               <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>By signing and confirming, you agree that you have received all the materials listed above. This record is permanent.</span>
             </div>
-            <Button
+            <button
               onClick={() => void handleConfirm()}
               disabled={!hasSig || submitting}
-              fullWidth
-              className={
-                "h-14 border-none rounded-full font-semibold text-base text-white " +
-                (hasSig && !submitting ? "bg-[#1E6640] hover:bg-[#1E6640]" : "bg-[#C0C0C0]")
-              }
+              style={{
+                width: "100%",
+                height: 54,
+                borderRadius: 999,
+                border: "none",
+                background: hasSig && !submitting ? "#1E6640" : "#C0C0C0",
+                color: "#FFFFFF",
+                fontFamily: F.u,
+                fontWeight: 600,
+                fontSize: 16,
+                cursor: hasSig && !submitting ? "pointer" : "not-allowed",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                transition: "all 0.2s ease",
+              }}
+              onMouseEnter={(e) => {
+                if (hasSig && !submitting) {
+                  e.currentTarget.style.background = "#144D2F";
+                  e.currentTarget.style.color = "#FFFFFF";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (hasSig && !submitting) {
+                  e.currentTarget.style.background = "#1E6640";
+                  e.currentTarget.style.color = "#FFFFFF";
+                }
+              }}
             >
-              <Check size={20} /> {submitting ? "Confirming…" : "Confirm Material Receipt"}
-            </Button>
+              <Check size={20} color="#FFFFFF" /> {submitting ? "Confirming…" : "Confirm Material Receipt"}
+            </button>
           </div>
         </>
       ) : (
@@ -237,7 +338,27 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
             </div>
             <div style={{ fontFamily: F.d, fontWeight: 600, fontSize: 20, color: C.text, marginBottom: 10 }}>No pending material receipt</div>
             <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, lineHeight: 1.6, marginBottom: 20 }}>All material receipts are confirmed. Nothing pending.</div>
-            <Button onClick={onGoToBatches} fullWidth className="h-12 bg-[#6E0F2D] border-none rounded-full font-semibold text-sm text-white">Go to My Batches</Button>
+            <button
+              onClick={onGoToBatches}
+              style={{
+                width: "100%",
+                height: 48,
+                borderRadius: 999,
+                border: "none",
+                background: "#6E0F2D",
+                color: "#FFFFFF",
+                fontFamily: F.u,
+                fontWeight: 600,
+                fontSize: 14,
+                cursor: "pointer",
+                boxShadow: "0 4px 16px rgba(110,15,45,0.30)",
+                transition: "all 0.2s ease",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "#520920"; e.currentTarget.style.color = "#FFFFFF"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "#6E0F2D"; e.currentTarget.style.color = "#FFFFFF"; }}
+            >
+              ← Go to My Batches
+            </button>
           </Card>
         </div>
       )}
@@ -355,14 +476,6 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
         );
       })()}
 
-      {/* Complete Reference History */}
-      <ReferenceHistorySection
-        signedRecords={signedRecords}
-        myWeavingBatches={myWeavingBatches}
-        mySarees={mySarees}
-        isMobile={isMobile}
-        isTablet={isTablet}
-      />
     </div>
   );
 }

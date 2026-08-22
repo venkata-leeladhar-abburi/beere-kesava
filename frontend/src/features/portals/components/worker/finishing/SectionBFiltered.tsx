@@ -11,6 +11,17 @@ import { DateFilterBar, type DateFilterState, DEFAULT_DATE_FILTER, matchesDateFi
 
 // ── Section B with filters — Receive returns ──────────────────────────────────
 
+function formatDateShort(dateStr?: string) {
+  if (!dateStr || dateStr === "—") return "—";
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  } catch {
+    return dateStr;
+  }
+}
+
 type GroupMode = "list" | "staff" | "batch";
 
 export function SectionBFiltered({ isMobile, isDesktop, isTablet }: { isMobile?: boolean; isDesktop?: boolean; isTablet?: boolean }) {
@@ -219,26 +230,31 @@ export function SectionBFiltered({ isMobile, isDesktop, isTablet }: { isMobile?:
         <div style={{ border: `1px solid rgba(110,15,45,0.10)`, borderRadius: 14, overflow: "hidden" }}>
           {displayAwaiting.map((a, i) => {
             const checked = selected.has(a.id);
+            const typeText = [a.sareeTypeCode !== "—" && a.sareeTypeCode, a.sareeType !== "—" && a.sareeType].filter(Boolean).join(" · ") || a.sareeType || "Saree";
             return (
               <div key={a.id} onClick={() => toggleRow(a.id)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => toggleRow(a.id))?.(); } }}
-                style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 16px", minHeight: 64, borderTop: i > 0 ? `1px solid rgba(110,15,45,0.07)` : "none", borderLeft: `3px solid ${checked ? "#1F774E" : "transparent"}`, background: checked ? "rgba(31,119,78,0.06)" : "#FFF", cursor: "pointer", transition: "background 0.12s" }}>
+                style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", minHeight: 64, borderTop: i > 0 ? `1px solid rgba(110,15,45,0.07)` : "none", borderLeft: `3px solid ${checked ? "#1F774E" : "transparent"}`, background: checked ? "rgba(31,119,78,0.06)" : "#FFF", cursor: "pointer", transition: "background 0.12s" }}>
                 <div style={{ flexShrink: 0, display: "flex", alignItems: "center" }}>
-                  {checked ? <CheckSquare size={20} color="#1F774E" /> : <Square size={20} color={C.muted} />}
+                  {checked ? <CheckSquare size={18} color="#1F774E" /> : <Square size={18} color={C.muted} />}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontFamily: F.m, fontSize: 13, fontWeight: 500, color: C.burg }}>{a.sareeId}</div>
-                  {/* Show saree type code instead of design code */}
-                  <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, marginTop: 3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {a.sareeTypeCode || a.sareeType} · {a.finishingStaffName}
+                  <div style={{ fontFamily: F.m, fontSize: 13, fontWeight: 600, color: C.burg, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {a.sareeId}
                   </div>
-                  {a.batchId && <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>{a.batchId}</div>}
+                  <div style={{ fontFamily: F.u, fontSize: 12, color: C.text, marginTop: 2 }}>
+                    {typeText}
+                  </div>
+                  <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>
+                    {a.finishingStaffName}{a.batchId && a.batchId !== "—" ? ` · ${a.batchId}` : ""}
+                  </div>
                 </div>
-                <div style={{ flexShrink: 0, textAlign: "right" as const }}>
-                  <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.muted, letterSpacing: "0.06em", textTransform: "uppercase" }}>Assigned</div>
-                  <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, margin: "3px 0 6px", fontVariantNumeric: "tabular-nums" }}>{a.assignedDate}</div>
-                  <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(200,155,71,0.14)", border: "1px solid rgba(200,155,71,0.32)", borderRadius: 999, padding: "3px 9px" }}>
-                    <Clock size={11} color="#8D5802" />
-                    <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#8D5802" }}>Awaiting</span>
+                <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3 }}>
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "rgba(200,155,71,0.14)", border: "1px solid rgba(200,155,71,0.32)", borderRadius: 999, padding: "2px 7px" }}>
+                    <Clock size={10} color="#8D5802" />
+                    <span style={{ fontFamily: F.u, fontSize: 11, fontWeight: 600, color: "#8D5802" }}>Awaiting</span>
+                  </div>
+                  <div style={{ fontFamily: F.m, fontSize: 11, color: C.muted, fontVariantNumeric: "tabular-nums" }}>
+                    {formatDateShort(a.assignedDate)}
                   </div>
                 </div>
               </div>

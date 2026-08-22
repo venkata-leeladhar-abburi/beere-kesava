@@ -135,15 +135,17 @@ export function SectionNavigator({
           () => {
             // Ignore observer callbacks during tab transition to prevent stale layout scroll positions from setting incorrect active tab
             if (isTransitioningRef.current) {
-              setActive(sections[0]?.id ?? "");
               return;
             }
 
             // If we are at the very top of the page, force the active section to be the first one.
             const firstEl = document.getElementById(sections[0]?.id);
             const container = firstEl ? findScrollContainer(firstEl) : null;
-            const scrollTop = container ? container.scrollTop : 0;
-            if (scrollTop < 80) {
+            const isWin = !container || container === document.documentElement || container === document.body || container === document.scrollingElement;
+            const scrollTop = isWin
+              ? (window.scrollY || window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0)
+              : container.scrollTop;
+            if (scrollTop < 50) {
               setActive(sections[0]?.id ?? "");
               return;
             }
@@ -197,19 +199,30 @@ export function SectionNavigator({
   const scrollRafRef = useRef<number>(0);
 
   const smoothScrollTo = (container: HTMLElement, targetY: number) => {
-    // Cancel any in-flight scroll from a previous tap.
     if (scrollRafRef.current) cancelAnimationFrame(scrollRafRef.current);
+
+    const isWindow =
+      container === document.documentElement ||
+      container === document.body ||
+      container === document.scrollingElement;
+
+    if (isWindow) {
+      try {
+        window.scrollTo({ top: targetY, behavior: "smooth" });
+      } catch {
+        window.scrollTo(0, targetY);
+      }
+      document.documentElement.scrollTop = targetY;
+      document.body.scrollTop = targetY;
+      return;
+    }
 
     const startY = container.scrollTop;
     const delta = targetY - startY;
-    if (Math.abs(delta) < 1) return;                 // already there
+    if (Math.abs(delta) < 2) return;
 
-    // Shorter on desktop, longer on mobile/tablet for a luxurious glide feel.
-    const isMobileOrTablet = window.innerWidth <= 1024;
-    const duration = isMobileOrTablet ? 520 : 340;  // ms
+    const duration = 360;
     let startTime = -1;
-
-    // Quartic ease-out: snappy start, velvety deceleration — feels great on touch.
     const easeOutQuart = (t: number) => 1 - Math.pow(1 - t, 4);
 
     const step = (now: number) => {
@@ -223,7 +236,6 @@ export function SectionNavigator({
       if (progress < 1) {
         scrollRafRef.current = requestAnimationFrame(step);
       } else {
-        // Ensure exact final position — no floating-point drift.
         container.scrollTop = targetY;
         scrollRafRef.current = 0;
       }
@@ -232,45 +244,40 @@ export function SectionNavigator({
     scrollRafRef.current = requestAnimationFrame(step);
   };
 
-  // Scroll vertically only — element.scrollIntoView() would also nudge any
-  // ancestor with horizontal overflow (see note above), so we compute the
-  // target's position relative to whichever element actually scrolls and set
-  // its scrollTop directly instead.
   const scrollToSection = (id: string) => {
     setActive(id);
+    // Temporarily pause IntersectionObserver while programmatic scroll is in progress
+    isTransitioningRef.current = true;
+    setTimeout(() => {
+      isTransitioningRef.current = false;
+    }, 650);
+
     const el = document.getElementById(id);
     if (!el) return;
+
     const container = findScrollContainer(el);
-    if (!container) return;
+    const isWindow =
+      !container ||
+      container === document.documentElement ||
+      container === document.body ||
+      container === document.scrollingElement;
 
-    // Compute the sticky-offset directly from known JS constants instead of
-    // reading scroll-margin-top from CSS.  getComputedStyle returns "0px" for
-    // scroll-margin-top on some mobile browsers (especially older iOS Safari),
-    // making the formula land at the wrong position.
-    //
-    // Sticky stack heights:
-    //   Mobile/tablet  (≤ 1024px): MobileTopNav (60) + SectionNav (56) = 116px
-    //   Desktop        (> 1024px): MainNav (90) + SubNav (66) + SectionNav (56) = 212px
-    //
-    // +16px breathing room so the section title sits just below the tab bar
-    // with a comfortable gap rather than being flush against it.
-    const isMobileOrTablet = window.innerWidth <= 1024;
-    const stickyOffset = isMobileOrTablet
-      ? MOBILE_NAV_H + SECTION_NAV_H + 16
-      : (inline ? MAIN_NAV_H + SUB_NAV_H + 16 : MAIN_NAV_H + SUB_NAV_H + SECTION_NAV_H + 16);
+    let offset = 0;
+    if (isWindow) {
+      const topNavH = stickyTop > 0 ? stickyTop : (isMobile ? MOBILE_NAV_H : MAIN_NAV_H + SUB_NAV_H);
+      offset = topNavH + height + 16;
+    } else {
+      offset = height + 16;
+    }
 
-    // Freeze the element's position BEFORE starting the animation.
-    // FadeUp entrance animations (opacity/y transform) fire as soon as the
-    // section enters the viewport; reading getBoundingClientRect() after that
-    // gives a mid-animation value and corrupts the target.
-    const containerTop =
-      container === document.scrollingElement
-        ? 0
-        : container.getBoundingClientRect().top;
-    const target =
-      el.getBoundingClientRect().top - containerTop + container.scrollTop - stickyOffset;
+    const containerTop = isWindow ? 0 : container.getBoundingClientRect().top;
+    const currentScroll = isWindow
+      ? (window.scrollY || window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0)
+      : container.scrollTop;
 
-    smoothScrollTo(container, Math.max(0, target));
+    const targetY = el.getBoundingClientRect().top - containerTop + currentScroll - offset;
+
+    smoothScrollTo(isWindow ? document.documentElement : container, Math.max(0, targetY));
   };
 
   const [scrollDirection, setScrollDirection] = useState<"up" | "down">("up");

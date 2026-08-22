@@ -179,9 +179,28 @@ export function BatchesSection({
             title="Active Batches"
             subtitle={`You can have a maximum of ${MAX_ACTIVE_BATCHES} active batches at a time. Complete one before a new batch is assigned.`}
             right={
-              <Button onClick={() => setBatchesSubPage("history")} variant="ghost" className="flex items-center gap-1.5 h-auto bg-[rgba(110,15,45,0.06)] border border-[rgba(110,15,45,0.10)] rounded-full px-[18px] py-2 text-sm text-[#6E0F2D] font-semibold">
+              <button
+                onClick={() => setBatchesSubPage("history")}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "8px 18px",
+                  borderRadius: 999,
+                  border: "1px solid rgba(110,15,45,0.18)",
+                  background: "rgba(110,15,45,0.06)",
+                  color: "#6E0F2D",
+                  fontFamily: F.u,
+                  fontWeight: 600,
+                  fontSize: 14,
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(110,15,45,0.14)"; e.currentTarget.style.color = "#6E0F2D"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(110,15,45,0.06)"; e.currentTarget.style.color = "#6E0F2D"; }}
+              >
                 <History size={15} color={C.burg} /> View All History
-              </Button>
+              </button>
             }
           />
           <div style={{ height: 8 }} />
@@ -220,9 +239,28 @@ export function BatchesSection({
             subtitle="Recent completed batches — your track record of finished work."
             accent="#1F774E"
             right={
-              <Button onClick={() => setBatchesSubPage("completed")} variant="ghost" className="flex items-center gap-1.5 h-auto bg-[rgba(31,119,78,0.06)] border border-[rgba(31,119,78,0.22)] rounded-full px-[18px] py-2 text-sm text-[#1F774E] font-semibold">
+              <button
+                onClick={() => setBatchesSubPage("completed")}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "8px 18px",
+                  borderRadius: 999,
+                  border: "1px solid rgba(31,119,78,0.25)",
+                  background: "rgba(31,119,78,0.06)",
+                  color: "#1F774E",
+                  fontFamily: F.u,
+                  fontWeight: 600,
+                  fontSize: 14,
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(31,119,78,0.14)"; e.currentTarget.style.color = "#1F774E"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(31,119,78,0.06)"; e.currentTarget.style.color = "#1F774E"; }}
+              >
                 <ListChecks size={15} color="#1F774E" /> See All Completed
-              </Button>
+              </button>
             }
           />
           <div style={{ height: 8 }} />
@@ -237,39 +275,6 @@ export function BatchesSection({
               {completedBatches.slice(0, 4).map((b, idx) => <DesktopCompletedBatchCard key={b.batchId} b={b} idx={idx} bp={bp} />)}
             </div>
           )}
-        </div>
-
-        {/* Quick Actions */}
-        <div style={{ background: C.dark, borderRadius: 20, overflow: "hidden", boxShadow: "0 4px 24px rgba(61,14,26,0.22)" }}>
-          <div style={{ padding: "20px 26px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-            <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.40)", letterSpacing: 1.4, textTransform: "uppercase" as const, marginBottom: 4 }}>QUICK ACTIONS</div>
-            <div style={{ fontFamily: F.u, fontSize: 14, color: "rgba(255,255,255,0.75)" }}>Navigate to key tasks</div>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: isTablet ? "1fr" : "repeat(3, 1fr)" }}>
-            {[
-              { label: "Confirm Materials", sub: "New batch awaiting signature", tab: "confirm" as Tab5, icon: <ClipboardCheck size={18} color={C.gold} />, badge: "Pending" },
-              { label: "Raise Warp Request", sub: "Request additional material", tab: "warp" as Tab5, icon: <Package size={18} color={C.gold} />, badge: null },
-              { label: "Payment Ledger", sub: "View earnings & deductions", tab: "payments" as Tab5, icon: <CreditCard size={18} color={C.gold} />, badge: null },
-            ].map((a, i) => (
-              <Button
-                key={a.tab}
-                onClick={() => setActive(a.tab)}
-                variant="ghost"
-                className={
-                  "flex items-center gap-4 w-full h-auto px-[26px] py-[18px] border-none rounded-none bg-transparent justify-start text-left border-b border-white/[0.07] hover:bg-white/5 " +
-                  (!isTablet && i < 2 ? "border-r border-r-white/[0.07]" : "")
-                }
-              >
-                <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(200,155,71,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{a.icon}</div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: "#FFF", marginBottom: 3 }}>{a.label}</div>
-                  <div style={{ fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.45)" }}>{a.sub}</div>
-                </div>
-                {a.badge && <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.dark, background: C.gold, padding: "3px 10px", borderRadius: 999 }}>{a.badge}</span>}
-                <ArrowRight size={16} color="rgba(255,255,255,0.30)" />
-              </Button>
-            ))}
-          </div>
         </div>
       </div>
     </>

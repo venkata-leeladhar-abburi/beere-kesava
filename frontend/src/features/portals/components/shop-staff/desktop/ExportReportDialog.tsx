@@ -48,7 +48,7 @@ export function ExportReportDialog({
                   <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, lineHeight: 1.6, marginBottom: 24 }}>
                     Your <strong style={{ color: C.text }}>{dialog!.label}</strong> report has been exported as <strong style={{ color: C.text }}>{format.toUpperCase()}</strong>. Check your downloads folder.
                   </div>
-                  <Button onClick={onClose} fullWidth className="h-[52px] rounded-full border-none bg-[#6E0F2D] font-bold text-sm text-white">Done</Button>
+                  <Button variant="primary" onClick={onClose} fullWidth className="h-[52px] rounded-full border-none bg-[#6E0F2D] hover:bg-[#4A061B] text-[#FFFDF9] hover:text-[#FFFDF9] font-bold text-sm">Done</Button>
                 </div>
               ) : (
                 <>
@@ -67,7 +67,7 @@ export function ExportReportDialog({
                           variant="ghost"
                           className={
                             "flex-1 h-auto py-4 px-2.5 rounded-2xl border-2 text-center flex-col " +
-                            (format === f.key ? "border-[#6E0F2D] bg-[rgba(110,15,45,0.06)]" : "border-[rgba(110,15,45,0.12)] bg-white")
+                            (format === f.key ? "border-[#6E0F2D] bg-[rgba(110,15,45,0.06)]" : "border-[rgba(110,15,45,0.12)] bg-white hover:bg-[rgba(110,15,45,0.04)]")
                           }
                         >
                           <div style={{ fontSize: 20, marginBottom: 6 }}>{f.icon}</div>
@@ -89,8 +89,8 @@ export function ExportReportDialog({
                   </div>
                   {/* Actions */}
                   <div style={{ display: "flex", gap: 12 }}>
-                    <Button onClick={onClose} className="flex-1 h-[52px] rounded-full border-[1.5px] border-[rgba(110,15,45,0.12)] bg-white font-semibold text-sm text-[#69635E]">Cancel</Button>
-                    <Button onClick={() => setDone(true)} className="flex-[2] h-[52px] rounded-full border-none bg-[#6E0F2D] font-bold text-sm text-white gap-2 shadow-[0_4px_16px_rgba(110,15,45,0.30)]">
+                    <Button onClick={onClose} variant="ghost" className="flex-1 h-[52px] rounded-full border-[1.5px] border-[rgba(110,15,45,0.12)] bg-white hover:bg-[rgba(110,15,45,0.06)] font-semibold text-sm text-[#69635E] hover:text-[#1A0A0F]">Cancel</Button>
+                    <Button variant="primary" onClick={() => setDone(true)} className="flex-[2] h-[52px] rounded-full border-none bg-[#6E0F2D] hover:bg-[#4A061B] text-[#FFFDF9] hover:text-[#FFFDF9] font-bold text-sm gap-2 shadow-[0_4px_16px_rgba(110,15,45,0.30)]">
                       <FileText size={17} /> Export as {format.toUpperCase()}
                     </Button>
                   </div>

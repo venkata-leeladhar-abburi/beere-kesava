@@ -206,6 +206,12 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
           setDone={setExportDone}
         />
 
+        <AnimatePresence>
+          {showProfileModal && (
+            <UserProfileModal onClose={() => setShowProfileModal(false)} />
+          )}
+        </AnimatePresence>
+
       </div>
       </ShopPriceContext.Provider>
       </DataAccessProvider>
@@ -217,20 +223,20 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
     <DataAccessProvider scopes={{ cost: canSeePrices, sell: canSeePrices, margin: canSeePrices, payroll: canSeePrices, "customer-pii": true }}>
     <ShopPriceContext.Provider value={canSeePrices}>
     <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto", minHeight: "100dvh", background: "#FAFAFA", display: "flex", flexDirection: "column" as const, position: "relative" as const }}>
-      <style>{SECTION_NAV_GLOBAL_STYLE}</style>
-      {!showReturn && (
-        <MobileHeader
-          title={PAGE_TITLES[active]}
-          onBack={onBack}
-          showProfile={showProfile} setShowProfile={setShowProfile}
-          setShowProfileModal={setShowProfileModal}
-          handleLogout={handleLogout} selectRole={selectRole} routerNavigate={routerNavigate}
-        />
-      )}
+      <MobileHeader
+        title={showReturn ? "Process Return" : PAGE_TITLES[active]}
+        onBack={showReturn ? () => setShowReturn(false) : onBack}
+        activeTab={active}
+        setActive={(tab) => { setShowReturn(false); setActive(tab); }}
+        setShowReturn={setShowReturn}
+        showProfile={showProfile} setShowProfile={setShowProfile}
+        setShowProfileModal={setShowProfileModal}
+        handleLogout={handleLogout} selectRole={selectRole} routerNavigate={routerNavigate}
+      />
 
       {/* Content — extra bottom padding on Home/Inventory so the floating "New Sale"
           button never covers the last row of a list */}
-      <div style={{ flex: 1, overflowY: "auto" as const, paddingBottom: showReturn ? 0 : (active === "home" || active === "inventory") ? "calc(140px + env(safe-area-inset-bottom, 0px))" : "calc(66px + env(safe-area-inset-bottom, 0px))" }}>
+      <div style={{ flex: 1, overflowY: "auto" as const, paddingBottom: (showReturn || active === "home" || active === "inventory") ? "calc(140px + env(safe-area-inset-bottom, 0px))" : "calc(110px + env(safe-area-inset-bottom, 0px))" }}>
         <AnimatePresence mode="wait">
           <motion.div key={showReturn ? "return" : active} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>
             {renderPage()}
@@ -267,7 +273,7 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
       </div>
 
       {/* Bottom Tab Bar — full-width */}
-      {!showReturn && <MobileTabBar TABS={TABS} active={active} setActive={setActive} />}
+      <MobileTabBar active={active} showReturn={showReturn} setActive={setActive} setShowReturn={setShowReturn} />
 
       <AnimatePresence>
         {showProfileModal && (

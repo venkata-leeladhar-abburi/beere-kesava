@@ -13,6 +13,17 @@ import { DateFilterBar, type DateFilterState, DEFAULT_DATE_FILTER, matchesDateFi
 
 type GroupMode = "list" | "weaver" | "batch";
 
+function formatDateShort(dateStr?: string) {
+  if (!dateStr || dateStr === "—") return "—";
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  } catch {
+    return dateStr;
+  }
+}
+
 export function SectionA({ isMobile, isDesktop, isTablet }: { isMobile?: boolean; isDesktop?: boolean; isTablet?: boolean }) {
   const { readySarees, assignSarees } = useFinishing();
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -122,18 +133,34 @@ export function SectionA({ isMobile, isDesktop, isTablet }: { isMobile?: boolean
       )}
 
       {/* Sub-header: scan + select-all */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 w-full mb-1">
-        <div className="flex-1 min-w-0">
-          <ScanBar value={scanValue} onChange={setScanValue} onSubmit={submitScan} />
-        </div>
-        {readySarees.length > 0 && (
-          <div className="flex justify-end shrink-0">
-            <Button variant="link" onClick={toggleAll} className="gap-1.5 p-0 px-1.5 py-1 text-xs text-[#69635E] whitespace-nowrap">
-              {allChecked ? <CheckSquare size={15} color={C.burg} /> : <Square size={15} color={C.muted} />}
-              {allChecked ? "Deselect All" : "Select All"}
-            </Button>
+      <div className="flex flex-col gap-2.5 w-full mb-1">
+        <ScanBar value={scanValue} onChange={setScanValue} onSubmit={submitScan} />
+
+        <div className="flex flex-col md:flex-row md:items-center gap-2">
+          <div className="grid grid-cols-[3fr_2fr] md:flex items-center gap-2 w-full md:w-auto shrink-0">
+            <div className="w-full md:w-[180px]">
+              <Select value={filterWeaver} onValueChange={setFilterWeaver} size="sm" className="w-full">
+                <SelectItem value="all">All Weavers / Looms</SelectItem>
+                {uniqueWeavers.map(w => <SelectItem key={w} value={w}>{w}</SelectItem>)}
+              </Select>
+            </div>
+            <div className="w-full md:w-[150px]">
+              <Select value={filterType} onValueChange={setFilterType} size="sm" className="w-full">
+                <SelectItem value="all">All Saree Types</SelectItem>
+                {uniqueTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+              </Select>
+            </div>
           </div>
-        )}
+
+          {readySarees.length > 0 && (
+            <div className="flex justify-end md:justify-start shrink-0">
+              <Button variant="link" onClick={toggleAll} className="gap-1.5 p-0 px-1.5 py-1 text-xs text-[#69635E] whitespace-nowrap">
+                {allChecked ? <CheckSquare size={15} color={C.burg} /> : <Square size={15} color={C.muted} />}
+                {allChecked ? "Deselect All" : "Select All"}
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* QC-pass date filter */}
@@ -180,24 +207,33 @@ export function SectionA({ isMobile, isDesktop, isTablet }: { isMobile?: boolean
             <div style={{ border: `1px solid rgba(110,15,45,0.10)`, borderRadius: 14, overflow: "hidden" }}>
               {displaySarees.map((s, i) => {
                 const checked = selected.has(s.id);
+                const typeText = [s.designCode !== "—" && s.designCode, s.sareeType !== "—" && s.sareeType].filter(Boolean).join(" · ") || s.sareeType;
                 return (
                   <div key={s.id}
                     onClick={() => toggleRow(s.id)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => toggleRow(s.id))?.(); } }}
-                    style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 16px", minHeight: 64, borderTop: i > 0 ? `1px solid rgba(110,15,45,0.07)` : "none", borderLeft: `3px solid ${checked ? C.burg : "transparent"}`, background: checked ? "rgba(110,15,45,0.05)" : "#FFF", cursor: "pointer", transition: "background 0.12s" }}
+                    style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", minHeight: 64, borderTop: i > 0 ? `1px solid rgba(110,15,45,0.07)` : "none", borderLeft: `3px solid ${checked ? C.burg : "transparent"}`, background: checked ? "rgba(110,15,45,0.05)" : "#FFF", cursor: "pointer", transition: "background 0.12s" }}
                   >
                     <div style={{ flexShrink: 0, display: "flex", alignItems: "center" }}>
-                      {checked ? <CheckSquare size={20} color={C.burg} /> : <Square size={20} color={C.muted} />}
+                      {checked ? <CheckSquare size={18} color={C.burg} /> : <Square size={18} color={C.muted} />}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontFamily: F.m, fontSize: 13, fontWeight: 500, color: C.burg }}>{s.id}</div>
-                      <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, marginTop: 3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {s.designCode} · {s.sareeType}
+                      <div style={{ fontFamily: F.m, fontSize: 13, fontWeight: 600, color: C.burg, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {s.id}
                       </div>
-                      <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>{s.weaverName}{s.batchId ? ` · ${s.batchId}` : ""}</div>
+                      <div style={{ fontFamily: F.u, fontSize: 12, color: C.text, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {typeText}
+                      </div>
+                      <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {s.weaverName}{s.batchId && s.batchId !== "—" ? ` · ${s.batchId}` : ""}
+                      </div>
                     </div>
-                    <div style={{ flexShrink: 0, textAlign: "right" as const }}>
-                      <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.muted, letterSpacing: "0.06em", textTransform: "uppercase" }}>QC passed</div>
-                      <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, marginTop: 3, fontVariantNumeric: "tabular-nums" }}>{s.qcPassDate}</div>
+                    <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3 }}>
+                      <div style={{ fontFamily: F.u, fontSize: 11, fontWeight: 700, color: C.burg, background: "rgba(110,15,45,0.08)", padding: "2px 7px", borderRadius: 999, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                        QC Passed
+                      </div>
+                      <div style={{ fontFamily: F.m, fontSize: 11, color: C.muted, fontVariantNumeric: "tabular-nums" }}>
+                        {formatDateShort(s.qcPassDate)}
+                      </div>
                     </div>
                   </div>
                 );

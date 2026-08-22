@@ -8,9 +8,9 @@ import { ListSaleQueryDto } from "./dto/list-sale-query.dto";
 import { RegisterReturnedSareeDto } from "./dto/register-returned-saree.dto";
 import { SalesService } from "./sales.service";
 
-// Retail/customer-facing module — SHOP access only.
+// Retail/customer-facing module — SHOP, ACCOUNTANT, ADMIN, SUPERADMIN access.
 @Controller("sales")
-@RequireRoles(UserRole.SHOP)
+@RequireRoles(UserRole.SHOP, UserRole.ACCOUNTANT, UserRole.ADMIN, UserRole.SUPERADMIN)
 export class SalesController {
   constructor(private readonly salesService: SalesService) {}
 

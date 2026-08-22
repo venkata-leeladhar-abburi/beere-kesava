@@ -7,7 +7,12 @@ export function Select({ label, value, options, onChange }: {
   label: string; value: string; options: string[]; onChange: (v: string) => void;
 }) {
   return (
-    <SelectPrimitive value={value} onValueChange={onChange} size="sm">
+    <SelectPrimitive
+      value={value}
+      onValueChange={onChange}
+      size="sm"
+      containerClassName="w-full sm:w-auto sm:min-w-[140px] sm:max-w-[220px] sm:flex-initial"
+    >
       {options.map(o => (
         <SelectItem key={o} value={o}>
           {o === "all" ? (label === "Finishing" || label === "QC Status" ? `All ${label}` : `All ${label}s`) : o}

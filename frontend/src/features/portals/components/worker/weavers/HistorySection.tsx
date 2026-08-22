@@ -110,31 +110,65 @@ export function HistorySection({ liveRecords = [] }: { liveRecords?: ReceivedSar
 
   const SareeRow = ({ h, last }: { h: HistoryRow; last: boolean }) => {
     const checked = selected.has(h.id);
+
+    // Build clean details array without empty placeholders like "—"
+    const details: React.ReactNode[] = [];
+    if (h.sareeType && h.sareeType !== "—") {
+      details.push(<span key="type">{h.sareeType}</span>);
+    }
+    if (h.color && h.color !== "—") {
+      details.push(
+        <span key="color" style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+          <span style={{ width: 8, height: 8, borderRadius: "50%", background: h.color.toLowerCase() || "#CCC", border: "1px solid rgba(0,0,0,0.15)" }} />
+          {h.color}
+        </span>
+      );
+    }
+    if (h.weight && h.weight !== "—") {
+      details.push(<span key="weight">{h.weight}</span>);
+    }
+    if (h.batch && h.batch !== "—") {
+      details.push(<span key="batch">Batch: {h.batch}</span>);
+    }
+
     return (
       <div
         onClick={() => toggleRow(h.id)} role="button" tabIndex={0}
         onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleRow(h.id); } }}
-        style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderBottom: last ? "none" : `1px solid rgba(110,15,45,0.06)`, background: checked ? "rgba(110,15,45,0.05)" : "transparent", cursor: "pointer" }}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          padding: "12px 14px",
+          borderBottom: last ? "none" : `1px solid rgba(110,15,45,0.06)`,
+          background: checked ? "rgba(110,15,45,0.05)" : "transparent",
+          cursor: "pointer",
+          transition: "background 0.12s",
+        }}
       >
         <div style={{ flexShrink: 0, display: "flex", alignItems: "center" }}>
-          {checked ? <CheckSquare size={17} color={C.burg} /> : <Square size={17} color={C.muted} />}
+          {checked ? <CheckSquare size={18} color={C.burg} /> : <Square size={18} color={C.muted} />}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
-            <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, color: C.burg }}>{h.id}</span>
-            <StatusPill taxonomy="production" status={HISTORY_STATUS_TO_PRODUCTION[h.status]} size="sm" />
+          <div style={{ fontFamily: F.m, fontSize: 13, fontWeight: 600, color: C.burg, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {h.id}
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.u, fontSize: 12, color: C.muted }}>
-            {h.sareeType && h.sareeType !== "—" && <>{h.sareeType} · </>}
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 3 }}>
-              <span style={{ width: 8, height: 8, borderRadius: "50%", background: h.color?.toLowerCase() || "#CCC", border: "1px solid rgba(0,0,0,0.15)" }} />
-              {h.color}
-            </span>
-            · {h.weight} · {h.batch}
-          </div>
+          {details.length > 0 && (
+            <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 3, flexWrap: "wrap" }}>
+              {details.map((item, idx) => (
+                <React.Fragment key={idx}>
+                  {idx > 0 && <span style={{ opacity: 0.5 }}>·</span>}
+                  {item}
+                </React.Fragment>
+              ))}
+            </div>
+          )}
         </div>
-        {view === "day" && <div style={{ fontFamily: F.u, fontSize: 12, color: C.text, flexShrink: 0 }}>{h.weaver}</div>}
-        {view === "weaver" && <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, flexShrink: 0 }}>{h.date}</div>}
+        <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
+          <StatusPill taxonomy="production" status={HISTORY_STATUS_TO_PRODUCTION[h.status]} size="sm" />
+          {view === "day" && <div style={{ fontFamily: F.u, fontSize: 12, color: C.text, fontWeight: 500 }}>{h.weaver}</div>}
+          {view === "weaver" && <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{h.date}</div>}
+        </div>
       </div>
     );
   };
@@ -163,28 +197,39 @@ export function HistorySection({ liveRecords = [] }: { liveRecords?: ReceivedSar
         <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
       </div>
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" as const }}>
-        <div style={{ flex: 1, minWidth: 160, position: "relative" }}>
-          <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search saree ID, weaver, batch…"
-            iconLeft={Search} className="w-full" />
+      <div className="flex flex-col md:flex-row md:items-center gap-2 mb-3">
+        <div className="flex-1 min-w-0">
+          <Input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search saree ID, weaver, batch…"
+            iconLeft={Search}
+            className="w-full"
+          />
         </div>
-        <div style={{ flex: 1, minWidth: 140 }}>
-          <Select value={filterEntity} onValueChange={setFilterEntity} size="sm">
-            <SelectItem value="all">All Weavers / Looms</SelectItem>
-            {uniqueEntities.map(w => <SelectItem key={w} value={w}>{w}</SelectItem>)}
-          </Select>
+
+        <div className="grid grid-cols-[3fr_2fr] md:flex items-center gap-2 w-full md:w-auto shrink-0">
+          <div className="w-full md:w-[200px]">
+            <Select value={filterEntity} onValueChange={setFilterEntity} size="sm" className="w-full">
+              <SelectItem value="all">All Weavers / Looms</SelectItem>
+              {uniqueEntities.map(w => <SelectItem key={w} value={w}>{w}</SelectItem>)}
+            </Select>
+          </div>
+          <div className="w-full md:w-[150px]">
+            <Select value={filterBatch} onValueChange={setFilterBatch} size="sm" className="w-full">
+              <SelectItem value="all">All Batches</SelectItem>
+              {uniqueBatches.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+            </Select>
+          </div>
         </div>
-        <div style={{ flex: 1, minWidth: 140 }}>
-          <Select value={filterBatch} onValueChange={setFilterBatch} size="sm">
-            <SelectItem value="all">All Batches</SelectItem>
-            {uniqueBatches.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
-          </Select>
-        </div>
+
         {filtered.length > 0 && (
-          <Button variant="link" onClick={toggleAll} className="gap-1.5 p-0 px-1.5 py-1 text-xs text-[#69635E] whitespace-nowrap">
-            {allChecked ? <CheckSquare size={15} color={C.burg} /> : <Square size={15} color={C.muted} />}
-            {allChecked ? "Deselect All" : "Select All"}
-          </Button>
+          <div className="flex justify-end md:justify-start shrink-0">
+            <Button variant="link" onClick={toggleAll} className="gap-1.5 p-0 px-1.5 py-0.5 text-xs text-[#69635E] whitespace-nowrap">
+              {allChecked ? <CheckSquare size={15} color={C.burg} /> : <Square size={15} color={C.muted} />}
+              {allChecked ? "Deselect All" : "Select All"}
+            </Button>
+          </div>
         )}
       </div>
 

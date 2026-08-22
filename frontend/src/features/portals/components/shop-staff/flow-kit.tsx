@@ -80,8 +80,9 @@ export function Stepper({
   return (
     <ol
       style={{
-        display: "flex", alignItems: "flex-start", listStyle: "none",
-        margin: 0, padding: "24px 32px 22px",
+        display: "flex", alignItems: "flex-start", justifyContent: "space-between", listStyle: "none",
+        width: "100%", boxSizing: "border-box",
+        margin: 0, padding: "20px 20px 18px",
         borderBottom: `1px solid ${C.bdr}`, background: C.cream,
       }}
     >
@@ -90,6 +91,7 @@ export function Stepper({
         const done = n < current;
         const active = n === current;
         const clickable = done && !!onJump;
+        const isLast = i === steps.length - 1;
 
         const circle = (
           <span
@@ -110,8 +112,15 @@ export function Stepper({
         );
 
         return (
-          <li key={s.label} style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "flex-start", gap: 0 }}>
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 8, minWidth: 0, flexShrink: 0, maxWidth: "100%" }}>
+          <li
+            key={s.label}
+            style={{
+              flex: isLast ? undefined : 1,
+              display: "flex",
+              alignItems: "flex-start",
+            }}
+          >
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, flexShrink: 0 }}>
               {clickable ? (
                 <Button
                   variant="tertiary"
@@ -123,20 +132,20 @@ export function Stepper({
                 </Button>
               ) : circle}
 
-              <div style={{ minWidth: 0 }}>
+              <div style={{ textAlign: "center" }}>
                 <div
                   aria-current={active ? "step" : undefined}
                   style={{
-                    fontFamily: F.u, fontSize: 13,
-                    fontWeight: active ? 600 : 500,
+                    fontFamily: F.u, fontSize: 12,
+                    fontWeight: active ? 700 : 500,
                     color: active ? C.wine : done ? C.text : C.muted,
-                    whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
                   }}
                 >
                   {s.label}
                 </div>
                 {done && s.summary && (
-                  <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  <div style={{ fontFamily: F.u, fontSize: 11, color: C.muted, marginTop: 1, whiteSpace: "nowrap" }}>
                     {s.summary}
                   </div>
                 )}
@@ -144,11 +153,11 @@ export function Stepper({
             </div>
 
             {/* Connector — sits on the circle's centre line */}
-            {i < steps.length - 1 && (
+            {!isLast && (
               <span
                 aria-hidden
                 style={{
-                  flex: 1, height: 2, minWidth: 16, margin: "15px 12px 0",
+                  flex: 1, height: 2, margin: "15px 8px 0",
                   borderRadius: 999,
                   background: done ? accent.base : C.bdrMed,
                   transition: "background 0.18s",
@@ -221,38 +230,38 @@ export function FlowActions({
     <div
       style={{
         display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16,
-        marginTop: 28, padding: "20px 32px",
+        marginTop: 28, padding: "20px 20px",
         borderTop: `1px solid ${C.bdr}`, background: C.cream,
         flexWrap: "wrap",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", minWidth: 0, flex: "1 1 auto" }}>
         {onBack && (
           <Button
             variant="secondary"
             onClick={onBack}
             iconLeft={ChevronLeft}
-            className="h-11 rounded-full border-[rgba(110,15,45,0.20)] bg-white px-5 text-[14px] text-[#4F4A45]"
+            className="h-11 rounded-full border-[rgba(110,15,45,0.20)] bg-white px-5 text-[14px] text-[#4F4A45] shrink-0"
           >
             {backLabel}
           </Button>
         )}
         {hint && disabled && !primaryBusy && (
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontFamily: F.u, fontSize: 13, color: C.muted, minWidth: 0 }}>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontFamily: F.u, fontSize: 13, color: C.muted, minWidth: 0, flex: "1 1 100%" }}>
             <AlertCircle size={15} color={C.muted} style={{ flexShrink: 0 }} />
             {hint}
           </span>
         )}
       </div>
 
-      <div style={{ ["--cta-bg" as string]: bg, ["--cta-bg-hover" as string]: bgHover } as React.CSSProperties}>
+      <div style={{ ["--cta-bg" as string]: bg, ["--cta-bg-hover" as string]: bgHover } as React.CSSProperties} className="w-full sm:w-auto">
         <Button
           variant="primary"
           onClick={onPrimary}
           disabled={disabled}
           iconLeft={primaryIcon}
           iconRight={primaryIcon ? undefined : ChevronRight}
-          className="h-12 min-w-[200px] rounded-full bg-[var(--cta-bg)] px-7 text-[15px] font-semibold text-white hover:bg-[var(--cta-bg-hover)] disabled:cursor-not-allowed disabled:opacity-45"
+          className="h-12 w-full sm:w-auto sm:min-w-[200px] rounded-full bg-[var(--cta-bg)] px-7 text-[15px] font-semibold text-white hover:bg-[var(--cta-bg-hover)] disabled:cursor-not-allowed disabled:opacity-45"
         >
           {primaryBusy ? "Working…" : primaryLabel}
         </Button>

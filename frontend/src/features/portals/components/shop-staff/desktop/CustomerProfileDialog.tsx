@@ -99,8 +99,8 @@ export function CustomerProfileDialog({
               </div>
               {/* Actions */}
               <div style={{ display: "flex", gap: 12 }}>
-                <Button onClick={onClose} className="flex-1 h-[50px] rounded-full border-[1.5px] border-[rgba(110,15,45,0.12)] bg-white font-semibold text-sm text-[#69635E]">Close</Button>
-                <Button className="flex-[2] h-[50px] rounded-full border-none bg-[#6E0F2D] font-bold text-sm text-white gap-2 shadow-[0_4px_16px_rgba(110,15,45,0.30)]">
+                <Button onClick={onClose} variant="ghost" className="flex-1 h-[50px] rounded-full border-[1.5px] border-[rgba(110,15,45,0.12)] bg-white hover:bg-[rgba(110,15,45,0.06)] font-semibold text-sm text-[#69635E] hover:text-[#1A0A0F]">Close</Button>
+                <Button variant="primary" className="flex-[2] h-[50px] rounded-full border-none bg-[#6E0F2D] hover:bg-[#4A061B] text-[#FFFDF9] hover:text-[#FFFDF9] font-bold text-sm gap-2 shadow-[0_4px_16px_rgba(110,15,45,0.30)]">
                   <ShoppingBag size={16} /> Record New Sale for {customer!.name.split(" ")[1] || customer!.name.split(" ")[0]}
                 </Button>
               </div>

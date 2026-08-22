@@ -1,38 +1,53 @@
 import React from "react";
 import { C, F } from "./theme";
 import { MobileNav, type MobileNavItem } from "../../../../shared/ui/nav/MobileNav";
+import { Home, ShoppingBag, Package, Users, RotateCcw } from "lucide-react";
 
-type TabId = "home" | "sale" | "inventory" | "customers" | "reports";
+type TabId = "home" | "sale" | "inventory" | "customers" | "reports" | "return";
 
 export function MobileTabBar({
-  TABS, active, setActive,
+  active, showReturn, setActive, setShowReturn,
 }: {
-  TABS: { id: TabId; label: string; icon: React.ReactNode }[];
-  active: TabId;
-  setActive: (tab: TabId) => void;
+  active: string;
+  showReturn: boolean;
+  setActive: (tab: any) => void;
+  setShowReturn: (v: boolean) => void;
 }) {
-  const items: MobileNavItem[] = TABS.map(tab => ({
+  const MOBILE_TABS = [
+    { id: "home", label: "Home", icon: <Home size={20} /> },
+    { id: "sale", label: "New Sale", icon: <ShoppingBag size={20} /> },
+    { id: "inventory", label: "Inventory", icon: <Package size={20} /> },
+    { id: "customers", label: "Customers", icon: <Users size={20} /> },
+    { id: "return", label: "Return", icon: <RotateCcw size={20} /> },
+  ];
+
+  const activeKey = showReturn ? "return" : active;
+
+  const items: MobileNavItem[] = MOBILE_TABS.map(tab => ({
     key: tab.id,
     label: tab.label,
-    // MobileNav wants an icon *component*; TABS carries an already-built
-    // element (shared with DesktopTopNav), so wrap it in a component that
-    // clones it with whatever size/color props MobileNav passes down —
-    // preserves the exact same lucide icon TABS was built with.
     icon: (props: React.ComponentProps<"svg">) => React.cloneElement(tab.icon as React.ReactElement<React.ComponentProps<"svg">>, props),
-    onClick: () => setActive(tab.id),
+    onClick: () => {
+      if (tab.id === "return") {
+        setShowReturn(true);
+      } else {
+        setShowReturn(false);
+        setActive(tab.id);
+      }
+    },
     badge: tab.id === "sale" ? true : undefined,
-    style: { fontWeight: tab.id === active ? 600 : 500 },
+    style: { fontWeight: tab.id === activeKey ? 600 : 500 },
   }));
 
   return (
     <MobileNav
       items={items}
-      activeKey={active}
+      activeKey={activeKey}
       activeColor={C.burg}
       inactiveColor={C.muted}
       indicatorColor={C.burg}
       badgeColor={C.crim}
-      labelStyle={{ fontFamily: F.u, fontSize: 12 }}
+      labelStyle={{ fontFamily: F.u, fontSize: 11 }}
       baseHeight="66px"
       style={{
         background: C.white,

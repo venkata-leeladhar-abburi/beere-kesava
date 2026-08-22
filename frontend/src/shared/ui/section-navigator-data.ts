@@ -62,6 +62,7 @@ export const PAGE_SECTIONS: Record<string, SectionNavItem[]> = {
   WorkerQC: [
     { id: "wqc-pending", label: "Pending QC" },
     { id: "wqc-completed", label: "Completed Today" },
+    { id: "wqc-semi-defective", label: "Semi Defective" },
     { id: "wqc-defective", label: "Defective" },
     { id: "wqc-history", label: "QC History" },
   ],

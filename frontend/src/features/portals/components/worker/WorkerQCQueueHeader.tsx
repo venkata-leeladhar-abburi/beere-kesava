@@ -46,7 +46,7 @@ export function WorkerQCQueueHeader({
       )}
 
       <div id="wqc-pending" className="mb-6">
-        <StatsStrip stats={stats} overlap={!isDesktop} gutter={isDesktop ? 0 : undefined} />
+        <StatsStrip stats={stats} overlap={true} />
       </div>
 
       <div className={isDesktop ? "" : "px-4"}>

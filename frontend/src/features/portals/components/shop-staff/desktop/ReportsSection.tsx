@@ -1,10 +1,10 @@
 import React from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Cell, ResponsiveContainer } from "recharts";
-import { BarChart2, RotateCcw } from "lucide-react";
+import { BarChart2, RotateCcw, ShoppingBag } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { salesApi } from "../../../../../shared/api/sales";
 import { customersApi } from "../../../../../shared/api/customers";
-import { C, F, ShopDesktopHero, SHOP_BG } from "../theme";
+import { C, F, PageHero, PortalStatsStrip, type PortalStat } from "../theme";
 import { DSH } from "./DSH";
 import { Button } from "../../../../../shared/ui/primitives";
 import { semantic } from "../../../../../design-system/tokens";
@@ -90,23 +90,22 @@ export function ReportsSection({
     }));
   }, [salesList, customerMap, customersRes]);
 
+  const stats: PortalStat[] = [
+    { label: "Total sales", value: totalSalesCount, sub: "Sarees sold", icon: BarChart2, highlight: true },
+    ...(canSeePrices ? [{ label: "Total revenue", value: formatMoney(rupees(totalRevenue)), sub: "Gross sales", icon: ShoppingBag }] : []),
+    { label: "Returns", value: returnsList.length, sub: "Recorded returns", icon: RotateCcw },
+    ...(canSeePrices ? [{ label: "Average per sale", value: formatMoney(rupees(avgRevenue)), sub: "Per saree", icon: BarChart2 }] : []),
+  ];
+
   return (
     <>
-      <ShopDesktopHero
-        bp={bp}
-        breadcrumb="SINCE 1999 · SHOP STAFF PORTAL · REPORTS"
-        titleMain="Sales Report"
-        titleSub="& Analytics"
-        description="Review all sales, revenue, customer trends, and return patterns. Use the period selector to view different time ranges."
-        pills={[{ text: "Today's View" }, { text: `${totalSalesCount} Sarees Total` }, ...(canSeePrices ? [{ text: `${formatMoney(rupees(totalRevenue))} Revenue` }] : [])]}
-        stats={[
-          { label: "TOTAL SALES", val: String(totalSalesCount), sub: "Sarees sold" },
-          ...(canSeePrices ? [{ label: "TOTAL REVENUE", val: formatMoney(rupees(totalRevenue)), sub: "Gross sales", highlight: true }] : []),
-          { label: "RETURNS", val: String(returnsList.length), sub: "Recorded returns", crimson: true },
-          ...(canSeePrices ? [{ label: "AVERAGE PER SALE", val: formatMoney(rupees(avgRevenue)), sub: "Per saree" }] : []),
-        ]}
-        bgUrl={SHOP_BG}
+      <PageHero
+        eyebrow="Shop Staff Portal · Beere Kesava & Brothers Silks"
+        title="Sales Report"
+        titleAccent="& Analytics"
+        description="Review all sales, revenue, customer trends, and return patterns across retail and wholesale channels."
       />
+      <PortalStatsStrip stats={stats} />
       <div style={{ padding: isTablet ? "24px 28px 40px" : "40px 48px 56px" }}>
         {/* Period selector */}
         <div style={{ display: "flex", gap: 10, marginBottom: 32 }}>

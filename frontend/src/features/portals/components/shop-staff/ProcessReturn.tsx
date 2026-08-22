@@ -2,9 +2,9 @@ import React, { useMemo, useState } from 'react';
 import { useQuery } from "@tanstack/react-query";
 import { salesApi, BackendSaleRecord } from "../../../../shared/api/sales";
 import { 
-  AlertTriangle, Palette, ThumbsDown, Scale, FileText, Building2, ShoppingBag
+  AlertTriangle, Palette, ThumbsDown, Scale, FileText, Building2, ShoppingBag, RotateCcw
 } from 'lucide-react';
-import { C, F, useCanSeePrices } from './theme';
+import { C, F, useCanSeePrices, PageHero, PortalStatsStrip, type PortalStat } from './theme';
 import { ProcessReturnHeader, ReturnHistorySection, ReturnRecord } from './ProcessReturnHeaderHistory';
 import { RetailReturnSuccessView, WholesaleReturnSuccessView } from './ProcessReturnSuccessView';
 import { ProcessReturnRetailFlow } from './ProcessReturnRetailFlow';
@@ -129,11 +129,41 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
 
   const canProceedWsStep1 = wsVendor.trim() !== "" && wsWeight.trim() !== "" && wsReason !== null;
 
+  const todayStr = new Date().toDateString();
+  const todayReturnsCount = (returnsRes?.items ?? []).filter(r => new Date(r.returnDate).toDateString() === todayStr).length;
+  const monthReturnsCount = returnsRes?.items?.length ?? 0;
+  const monthRefundSum = (returnsRes?.items ?? []).reduce((sum, r) => sum + Number(r.refundAmount ?? 0), 0);
+
+  const stats: PortalStat[] = [
+    { label: "Returns today", value: todayReturnsCount, sub: "Processed today", icon: RotateCcw, highlight: true },
+    { label: "This month returns", value: monthReturnsCount, sub: "Recorded returns", icon: RotateCcw },
+    { label: "Eligible sarees", value: eligibleSales.length, sub: "Available for return", icon: ShoppingBag },
+    ...(canSeePrices ? [{ label: "Total refund value", value: formatMoney(rupees(monthRefundSum)), sub: "Month refunds", icon: RotateCcw }] : []),
+  ];
+
   // ── TYPE SELECTION ──
   if (step === "type") {
     return (
-      <div style={{ paddingBottom: 32 }}>
-        {isMobile && <ProcessReturnHeader step={step} onBack={onBack} setStep={setStep} setReturnType={setReturnType} />}
+      <div style={{ paddingBottom: isMobile ? 110 : 32 }}>
+        {isMobile ? (
+          <>
+            <PageHero
+              eyebrow="Shop Staff Portal · Beere Kesava & Brothers Silks"
+              title="Process Return"
+              titleAccent="& Handle Customer Returns"
+              description="Find the original sale by scanning the barcode, select the return reason, and confirm. Inventory is updated automatically."
+              pills={[
+                { text: "3-Step Process" },
+                { text: "Auto Inventory Update" },
+                { text: `${todayReturnsCount} Return Today Already` },
+              ]}
+            />
+            <PortalStatsStrip stats={stats} />
+          </>
+        ) : (
+          <ProcessReturnHeader step={step} onBack={onBack} setStep={setStep} setReturnType={setReturnType} />
+        )}
+
         <StepBody>
           <StepHeader
             title="What kind of return is this?"
@@ -176,6 +206,65 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
             ))}
           </div>
         </StepBody>
+
+        {/* Return Process Guide on Mobile */}
+        {isMobile && (
+          <>
+            <div style={{ margin: "24px 20px 0" }}>
+              <div style={{ background: C.dark, borderRadius: 18, padding: "20px 22px", boxShadow: "0 4px 24px rgba(61,14,26,0.18)" }}>
+                <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.40)", letterSpacing: 1.4, textTransform: "uppercase" as const, marginBottom: 14 }}>RETURN PROCESS</div>
+                {[
+                  { n: "1", title: "Find Original Sale", desc: "Scan the saree barcode or enter the Saree ID to find the original sale record" },
+                  { n: "2", title: "Select Reason", desc: "Choose why the customer is returning — defective, wrong design, changed mind, etc." },
+                  { n: "3", title: "Confirm Return", desc: "Review and confirm. Inventory +1, customer profile updated, admin notified" },
+                ].map((s, i) => (
+                  <div key={s.n} style={{ display: "flex", gap: 12, marginBottom: i < 2 ? 16 : 0, paddingBottom: i < 2 ? 16 : 0, borderBottom: i < 2 ? "1px solid rgba(255,255,255,0.08)" : "none" }}>
+                    <div style={{ width: 30, height: 30, borderRadius: "50%", background: C.crim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <span style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: "#FFF" }}>{s.n}</span>
+                    </div>
+                    <div>
+                      <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: "#FFF", marginBottom: 3 }}>{s.title}</div>
+                      <div style={{ fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.50)", lineHeight: 1.5 }}>{s.desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Today's Returns Box on Mobile */}
+            <div style={{ margin: "24px 20px 0" }}>
+              <div style={{ background: "rgba(192,57,43,0.06)", border: `1px solid rgba(192,57,43,0.25)`, borderRadius: 16, padding: "20px 22px" }}>
+                <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 700, color: C.crim, marginBottom: 10 }}>Today's Returns</div>
+                {todayReturnsCount > 0 && (returnsRes?.items ?? [])[0] ? (
+                  <>
+                    <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 0" }}>
+                      <div style={{ width: 44, height: 44, borderRadius: "50%", background: "rgba(192,57,43,0.10)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <RotateCcw size={20} color={C.crim} />
+                      </div>
+                      <div>
+                        <div style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg, marginBottom: 3 }}>{(returnsRes?.items ?? [])[0].sareeId}</div>
+                        <div style={{ fontFamily: F.u, fontSize: 14, color: C.text }}>
+                          Return Record{canSeePrices && (returnsRes?.items ?? [])[0].refundAmount ? ` · ${formatMoney(rupees(Number((returnsRes?.items ?? [])[0].refundAmount)))}` : ""}
+                        </div>
+                        <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>
+                          {(returnsRes?.items ?? [])[0].reason} · {new Date((returnsRes?.items ?? [])[0].returnDate).toLocaleDateString("en-IN", { month: "short", day: "numeric" })}
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginTop: 6, borderTop: `1px solid rgba(192,57,43,0.15)`, paddingTop: 12 }}>
+                      Return Reference: {(returnsRes?.items ?? [])[0].returnRef}
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, padding: "8px 0" }}>
+                    No returns recorded today yet.
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+
         <ReturnHistorySection returnLog={returnLog} canSeePrices={canSeePrices} />
       </div>
     );
@@ -216,6 +305,7 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
         <ProcessReturnRetailFlow
           step={step as 1 | 2 | 3}
           setStep={setStep}
+          onBackToType={() => { setStep("type" as any); setReturnType(null); }}
           saleFound={saleFound}
           setSaleFound={setSaleFound}
           foundSale={foundSale}

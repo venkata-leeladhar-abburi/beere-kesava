@@ -74,23 +74,23 @@ export function RateHistorySection() {
     },
     {
       id: "by", header: "Changed By", accessor: r => r.by, priority: 3,
-      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 500 }}>{r.by}</span>,
+      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 500, whiteSpace: "nowrap" }}>{r.by}</span>,
     },
     {
       id: "what", header: "What Was Changed", accessor: r => r.what, priority: 1,
-      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 500 }}>{r.what}</span>,
+      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 500, whiteSpace: "nowrap" }}>{r.what}</span>,
     },
     {
       id: "old", header: "Old Value", accessor: r => r.old,
-      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.crimson }}>{r.old}</span>,
+      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.crimson, whiteSpace: "nowrap" }}>{r.old}</span>,
     },
     {
       id: "next", header: "New Value", accessor: r => r.next,
-      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.green }}>{r.next}</span>,
+      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.green, whiteSpace: "nowrap" }}>{r.next}</span>,
     },
     {
       id: "reason", header: "Reason", accessor: r => r.reason, priority: 3,
-      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, fontStyle: "italic", color: T.taupe }}>{r.reason}</span>,
+      cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 12, fontStyle: "italic", color: T.taupe, whiteSpace: "nowrap" }}>{r.reason}</span>,
     },
   ];
 
@@ -122,13 +122,14 @@ export function RateHistorySection() {
         </div>
       ) : (
       <div style={cardStyle}>
-        <DataTable
-          responsive
-          columns={historyColumns}
-          data={filteredHistory}
-          getRowId={r => String(filteredHistory.indexOf(r))}
-          emptyTitle="No rate changes recorded yet."
-        />
+        <div className="w-full overflow-x-auto">
+          <DataTable
+            columns={historyColumns}
+            data={filteredHistory}
+            getRowId={r => String(filteredHistory.indexOf(r))}
+            emptyTitle="No rate changes recorded yet."
+          />
+        </div>
 
         {/* Table footer */}
         <div style={{

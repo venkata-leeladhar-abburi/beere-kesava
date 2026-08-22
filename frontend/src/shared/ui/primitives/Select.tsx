@@ -1,14 +1,10 @@
 /**
  * Select — design-system/03-PRIMITIVES.md Part H.
  * ═══════════════════════════════════════════════════════════════════════════
- * Replaces the 85 raw <select> elements across features/ — unstyleable, no
- * search, inconsistent across OSes. Built on @radix-ui/react-select.
- *
- * Hick's Law rule (H.3): ≤10 options → Select. >10 options → Combobox.
- * ≤2 options → RadioGroup or Switch, never a select.
+ * Built with clean native select for 100% reliable touch & mobile picker
+ * support without body-scroll locking or window scroll jump bugs.
  */
 import * as React from "react";
-import * as SelectPrimitive from "@radix-ui/react-select";
 import { cn } from "../utils";
 import { useFieldContext } from "./Field";
 import { Icon } from "./Icon";
@@ -19,32 +15,56 @@ const SIZE_CLASS = {
   lg: "h-12 text-[16px] px-4",
 } as const;
 
-export interface SelectProps
-  extends Omit<React.ComponentProps<typeof SelectPrimitive.Root>, "children"> {
+export interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "size" | "onChange"> {
   size?: "sm" | "md" | "lg";
   placeholder?: string;
   invalid?: boolean;
   className?: string;
+  containerClassName?: string;
+  value?: string;
+  onValueChange?: (value: string) => void;
+  onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   children: React.ReactNode;
 }
 
-export function Select({ size = "md", placeholder, invalid: invalidProp, className, children, ...props }: SelectProps) {
+export function Select({
+  size = "md",
+  placeholder,
+  invalid: invalidProp,
+  className,
+  containerClassName,
+  children,
+  value,
+  onValueChange,
+  defaultValue,
+  disabled,
+  onChange,
+  ...props
+}: SelectProps) {
   const field = useFieldContext();
   const invalid = invalidProp ?? field?.invalid ?? false;
   const describedBy = field ? (invalid ? field.errorId : field.hintId) : undefined;
 
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    onChange?.(e);
+    onValueChange?.(e.target.value);
+  };
+
   return (
-    <SelectPrimitive.Root {...props}>
-      <SelectPrimitive.Trigger
+    <div className={cn("relative inline-flex items-center", containerClassName || "w-full")}>
+      <select
         id={field?.inputId}
+        value={value}
+        defaultValue={defaultValue}
+        disabled={disabled}
+        onChange={handleChange}
         aria-invalid={invalid || undefined}
         aria-describedby={describedBy}
         aria-required={field?.required || undefined}
         className={cn(
-          "flex min-w-[120px] items-center justify-between gap-2 rounded-[var(--radius-md)] border transition-colors",
+          "w-full appearance-none flex items-center justify-between gap-2 rounded-[var(--radius-md)] border transition-colors pr-8 cursor-pointer truncate",
           "duration-[var(--duration-fast)] ease-[var(--ease-standard)]",
-          "bg-[var(--surface-raised)] text-[var(--text-primary)]",
-          "data-[placeholder]:text-[var(--text-placeholder)]",
+          "bg-[var(--surface-raised)] text-[var(--text-primary)] font-medium",
           invalid ? "border-[var(--border-danger)]" : "border-[var(--border-default)]",
           "hover:border-[var(--border-strong)]",
           "focus-visible:outline-none focus-visible:border-[var(--border-focus)] focus-visible:shadow-[var(--shadow-focus)]",
@@ -52,67 +72,53 @@ export function Select({ size = "md", placeholder, invalid: invalidProp, classNa
           SIZE_CLASS[size],
           className
         )}
+        {...props}
       >
-        <SelectPrimitive.Value placeholder={placeholder} />
-        <SelectPrimitive.Icon asChild>
-          <Icon name="expandDown" size="sm" className="shrink-0 transition-transform duration-[var(--duration-fast)] data-[state=open]:rotate-180" />
-        </SelectPrimitive.Icon>
-      </SelectPrimitive.Trigger>
-      <SelectPrimitive.Portal>
-        <SelectPrimitive.Content
-          position="popper"
-          sideOffset={4}
-          className={cn(
-            "z-[var(--z-popover)] min-w-[var(--radix-select-trigger-width)] max-h-[320px] overflow-y-auto",
-            "rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--surface-overlay)]",
-            "shadow-[var(--shadow-lg)] p-1"
-          )}
-        >
-          <SelectPrimitive.Viewport>{children}</SelectPrimitive.Viewport>
-        </SelectPrimitive.Content>
-      </SelectPrimitive.Portal>
-    </SelectPrimitive.Root>
+        {placeholder && <option value="" disabled hidden>{placeholder}</option>}
+        {children}
+      </select>
+      <div className="pointer-events-none absolute right-2.5 flex items-center justify-center">
+        <Icon name="expandDown" size="sm" className="text-[var(--text-tertiary)]" />
+      </div>
+    </div>
   );
 }
 
-export type SelectItemProps = React.ComponentProps<typeof SelectPrimitive.Item>;
+export interface SelectItemProps extends React.OptionHTMLAttributes<HTMLOptionElement> {
+  value: string;
+  children: React.ReactNode;
+}
 
-export const SelectItem = React.forwardRef<React.ElementRef<typeof SelectPrimitive.Item>, SelectItemProps>(
-  function SelectItem({ className, children, ...props }, ref) {
+export const SelectItem = React.forwardRef<HTMLOptionElement, SelectItemProps>(
+  function SelectItem({ className, children, value, disabled, ...props }, ref) {
     return (
-      <SelectPrimitive.Item
+      <option
         ref={ref}
-        className={cn(
-          "relative flex h-10 items-center gap-2 rounded-[var(--radius-sm)] px-3 pr-8 text-[14px] cursor-pointer select-none outline-none focus-visible:!outline-none",
-          "text-[var(--text-primary)]",
-          "data-[highlighted]:bg-[var(--bk-neutral-50)]",
-          "data-[state=checked]:bg-[var(--surface-brand-subtle)]",
-          "data-[disabled]:opacity-50 data-[disabled]:cursor-not-allowed",
-          className
-        )}
+        value={value}
+        disabled={disabled}
+        className={cn("bg-white text-[var(--text-primary)] py-1 px-2", className)}
         {...props}
       >
-        <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
-        <SelectPrimitive.ItemIndicator className="absolute right-2 flex items-center">
-          <Icon name="check" size="sm" />
-        </SelectPrimitive.ItemIndicator>
-      </SelectPrimitive.Item>
+        {children}
+      </option>
     );
   }
 );
 
-export const SelectGroup = SelectPrimitive.Group;
-
-export function SelectLabel({ className, ...props }: React.ComponentProps<typeof SelectPrimitive.Label>) {
+export function SelectGroup({ children, label, className }: { children: React.ReactNode; label?: string; className?: string }) {
   return (
-    <SelectPrimitive.Label
-      className={cn("bk-overline px-3 py-1.5", className)}
-      style={{ color: "var(--text-tertiary)" }}
-      {...props}
-    />
+    <optgroup label={label || ""} className={cn("font-semibold text-[var(--text-secondary)]", className)}>
+      {children}
+    </optgroup>
   );
 }
 
-export function SelectSeparator({ className, ...props }: React.ComponentProps<typeof SelectPrimitive.Separator>) {
-  return <SelectPrimitive.Separator className={cn("h-px my-1 bg-[var(--border-subtle)]", className)} {...props} />;
+export function SelectLabel({ children, className }: { children: React.ReactNode; className?: string }) {
+  return (
+    <optgroup label={typeof children === "string" ? children : ""} className={cn("font-semibold text-[var(--text-secondary)]", className)} />
+  );
+}
+
+export function SelectSeparator() {
+  return null;
 }

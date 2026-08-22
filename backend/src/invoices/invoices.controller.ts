@@ -6,9 +6,9 @@ import { CreatePaymentDto } from "./dto/create-payment.dto";
 import { ListInvoicesQueryDto } from "./dto/list-invoices-query.dto";
 import { InvoicesService } from "./invoices.service";
 
-// Financial module — ACCOUNTANT access only.
+// Financial module — ACCOUNTANT, SHOP, ADMIN, SUPERADMIN access.
 @Controller("invoices")
-@RequireRoles(UserRole.ACCOUNTANT)
+@RequireRoles(UserRole.ACCOUNTANT, UserRole.SHOP, UserRole.ADMIN, UserRole.SUPERADMIN)
 export class InvoicesController {
   constructor(private readonly invoicesService: InvoicesService) {}
 

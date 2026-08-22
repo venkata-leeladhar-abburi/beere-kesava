@@ -11,10 +11,10 @@ import React, { useState, useMemo } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { Modal } from "../../../../shared/ui/overlay";
 import {
-  X,
+  X, BarChart2, ShoppingBag, RotateCcw
 } from 'lucide-react';
 
-import { C, F, Card, Chip, useCanSeePrices } from './theme';
+import { C, F, Card, Chip, useCanSeePrices, PageHero, PortalStatsStrip, type PortalStat } from './theme';
 import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { useQuery } from "@tanstack/react-query";
 import { salesApi } from "../../../../shared/api/sales";
@@ -133,173 +133,138 @@ function SalesReport() {
     amt: r.refundAmount ? formatMoney(rupees(Number(r.refundAmount))) : formatMoney(rupees(0)),
   }));
 
-  return (
-    <div style={{ paddingBottom: 32 }}>
-      {/* Hero */}
-      <div style={{ background: C.dark, padding: "26px 20px 24px" }}>
-        <div style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 3, color: "rgba(255,255,255,0.55)", textTransform: "uppercase" as const, marginBottom: 8 }}>SINCE 1999 · SALES REPORT</div>
-        <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 38, color: "#FFF", lineHeight: 1.15, marginBottom: 5 }}>Sales Report</div>
-        <div style={{ fontFamily: F.d, fontStyle: "italic", fontWeight: 500, fontSize: 18, color: C.gold, marginBottom: 10 }}>Daily and monthly overview</div>
-        <div style={{ fontFamily: F.u, fontSize: 14, color: "rgba(255,255,255,0.60)", lineHeight: 1.5 }}>This report is also visible to Admin and Superadmin.</div>
-      </div>
+  const totalSalesCount = salesList.length;
+  const totalRevenue = useMemo(() => salesList.reduce((sum, s) => sum + Number(s.amount), 0), [salesList]);
+  const avgRevenue = totalSalesCount > 0 ? Math.round(totalRevenue / totalSalesCount) : 0;
 
-      <SectionNavigator
-        sections={PAGE_SECTIONS.ShopSalesReport}
-        stickyTop={SHOP_MOBILE_HEADER_H}
-        activeColor={C.burg}
-        mutedColor={C.muted}
-        borderColor={C.bdr}
-        fontFamily={F.u}
-        padding="8px 16px"
-        layoutId="shop-report-section-pill"
+  const stats: PortalStat[] = [
+    { label: "Total sales", value: totalSalesCount, sub: "Sarees sold", icon: BarChart2, highlight: true },
+    ...(canSeePrices ? [{ label: "Total revenue", value: formatMoney(rupees(totalRevenue)), sub: "Gross sales", icon: ShoppingBag }] : []),
+    { label: "Returns", value: returnsList.length, sub: "Recorded returns", icon: RotateCcw },
+    ...(canSeePrices ? [{ label: "Average per sale", value: formatMoney(rupees(avgRevenue)), sub: "Per saree", icon: BarChart2 }] : []),
+  ];
+
+  return (
+    <div style={{ paddingBottom: 110 }}>
+      <PageHero
+        eyebrow="Shop Staff Portal · Beere Kesava & Brothers Silks"
+        title="Sales Report"
+        titleAccent="& Analytics"
+        description="Review all sales, revenue, customer trends, and return patterns across retail and wholesale channels."
       />
 
-      {/* Stats — stacked cards, no wrapping/truncation */}
-      <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 10, padding: "16px 20px 4px" }}>
-        <div style={{ flex: "1 1 100%", background: C.dark, borderRadius: 16, padding: "18px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div>
-            <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, letterSpacing: 0.5, color: "rgba(255,255,255,0.60)", marginBottom: 6 }}>Sarees Sold Today</div>
-            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 30, color: "#FFF", lineHeight: 1 }}>{dailySales.length}</div>
-          </div>
-          <div style={{ fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.55)" }}>{new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</div>
-        </div>
-        {canSeePrices && (
-          <>
-            <div style={{ flex: "1 1 calc(50% - 5px)", background: C.gold, borderRadius: 16, padding: "16px 18px" }}>
-              <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12, color: "rgba(26,10,15,0.65)", marginBottom: 6 }}>Revenue Today</div>
-              <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.text, lineHeight: 1.2 }}>{fmtINR(totalToday)}</div>
-              <div style={{ fontFamily: F.u, fontSize: 12, color: "rgba(26,10,15,0.55)", marginTop: 4 }}>{dailySales.length} transactions</div>
-            </div>
-            <div style={{ flex: "1 1 calc(50% - 5px)", background: "rgba(200,155,71,0.12)", border: `1px solid rgba(200,155,71,0.30)`, borderRadius: 16, padding: "16px 18px" }}>
-              <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12, color: C.burg, marginBottom: 6 }}>This Month Revenue</div>
-              <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.burg, lineHeight: 1.2 }}>{fmtINR(monthRevenue)}</div>
-              <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 4 }}>{new Date().toLocaleDateString("en-IN", { month: "long", year: "numeric" })}</div>
-            </div>
-          </>
-        )}
-        <div style={{ flex: "1 1 100%", background: "rgba(192,57,43,0.08)", border: `1px solid rgba(192,57,43,0.25)`, borderRadius: 16, padding: "16px 18px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div>
-            <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12, color: C.crim, marginBottom: 6 }}>Returns This Month</div>
-            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.crim, lineHeight: 1.1 }}>{totalMonthReturns.length} returns</div>
-          </div>
-          {canSeePrices && <div style={{ fontFamily: F.u, fontSize: 13, color: C.crim, opacity: 0.85 }}>{fmtINR(monthReturnsAmount)}</div>}
-        </div>
-      </div>
+      <PortalStatsStrip stats={stats} />
 
-      {/* Period toggle */}
-      <div style={{ padding: "16px 20px 4px", display: "flex", gap: 8 }}>
+      {/* Period toggle — horizontally scrollable */}
+      <div style={{ margin: "24px 20px 0", display: "flex", gap: 10, overflowX: "auto", paddingBottom: 4 }}>
         {periods.map(p => (
           <Button
             key={p.id}
             onClick={() => setPeriod(p.id)}
+            size="sm"
             className={
-              "flex-1 py-2.5 h-auto rounded-full border whitespace-nowrap " +
-              (period === p.id ? "border-[#6E0F2D] bg-[#6E0F2D] text-white font-semibold" : "border-[rgba(110,15,45,0.12)] bg-white text-[#69635E] font-semibold")
+              "shrink-0 rounded-full px-5 py-2.5 h-auto whitespace-nowrap border " +
+              (period === p.id ? "border-[#6E0F2D] bg-[#6E0F2D] hover:bg-[#4A061B] text-[#FFFDF9] hover:text-[#FFFDF9] font-semibold" : "border-[rgba(110,15,45,0.12)] bg-white hover:bg-[rgba(110,15,45,0.06)] text-[#69635E] hover:text-[#6E0F2D] font-semibold")
             }
           >{p.label}</Button>
         ))}
       </div>
 
       {/* Daily Sales Table */}
-      <div id="shoprep-today-sales" style={{ display: "flex", alignItems: "center", margin: "20px 20px 12px", gap: 10 }}>
-        <div style={{ width: 4, height: 20, background: C.burg, borderRadius: 2, flexShrink: 0 }} />
-        <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 16, color: C.text, flex: 1 }}>Today's Sales — {new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
-        <Button onClick={() => { setExportDone(false); setShowExport(true); }} size="sm" className="gap-1.5 rounded-full bg-[#6E0F2D] border-none font-semibold text-[13px] text-white shadow-[0_2px_10px_rgba(110,15,45,0.28)] shrink-0">
-          <FileText size={14} color="#FFF" /> Export
-        </Button>
-      </div>
-      <Card style={{ margin: "0 20px", overflow: "hidden", padding: 0 }}>
-        {dailySales.map((s, i) => (
-          <div key={s.saleId} style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, padding: "16px", borderBottom: i < dailySales.length - 1 ? `1px solid ${C.bdr}` : "none" }}>
-            <div style={{ minWidth: 0, flex: 1 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" as const, marginBottom: 4 }}>
-                <span style={{ fontFamily: F.m, fontSize: 13, color: C.burg }}>{s.id}</span>
-                <Chip label={s.src === "factory" ? "Factory" : "External"} color={s.src === "factory" ? C.green : C.gold} bg={s.src === "factory" ? "rgba(30,102,64,0.10)" : "rgba(200,155,71,0.12)"} />
+      <div id="shoprep-today-sales" style={{ margin: "24px 20px 0" }}>
+        <SectionTitle title={`Today's Sales — ${new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`} link="Export →" onLink={() => { setExportDone(false); setShowExport(true); }} />
+        <Card style={{ margin: 0, overflow: "hidden", padding: 0 }}>
+          {dailySales.map((s, i) => (
+            <div key={s.saleId} style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, padding: "16px", borderBottom: i < dailySales.length - 1 ? `1px solid ${C.bdr}` : "none" }}>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" as const, marginBottom: 4 }}>
+                  <span style={{ fontFamily: F.m, fontSize: 13, color: C.burg }}>{s.id}</span>
+                  <Chip label={s.src === "factory" ? "Factory" : "External"} color={s.src === "factory" ? C.green : C.gold} bg={s.src === "factory" ? "rgba(30,102,64,0.10)" : "rgba(200,155,71,0.12)"} />
+                </div>
+                <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>{s.customer}</div>
+                <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 3 }}>{s.time} · {s.pay}</div>
               </div>
-              <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>{s.customer}</div>
-              <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 3 }}>{s.time} · {s.pay}</div>
+              {canSeePrices && <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 16, color: C.gold, flexShrink: 0, textAlign: "right" as const }}>{s.amt}</div>}
             </div>
-            {canSeePrices && <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 16, color: C.gold, flexShrink: 0, textAlign: "right" as const }}>{s.amt}</div>}
-          </div>
-        ))}
-        {/* Total row */}
-        {canSeePrices && (
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px", background: C.cream }}>
-            <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>Total (Today)</span>
-            <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.gold }}>{fmtINR(totalToday)}</span>
-          </div>
-        )}
-      </Card>
+          ))}
+          {/* Total row */}
+          {canSeePrices && (
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px", background: C.cream }}>
+              <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>Total (Today)</span>
+              <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.gold }}>{fmtINR(totalToday)}</span>
+            </div>
+          )}
+        </Card>
+      </div>
 
-      {/* Monthly Totals */}
-      <SectionTitle id="shoprep-monthly-totals" title={`This Month — ${new Date().toLocaleDateString("en-IN", { month: "short", year: "numeric" })}`} />
-      <div style={{ margin: "0 20px", display: "flex", flexWrap: "wrap" as const, gap: 10 }}>
-        {[
-          { label: "Total Sales", val: `${totalMonthSales.length} sarees` },
-          ...(canSeePrices ? [
-            { label: "Revenue", val: fmtINR(monthRevenue) },
-            { label: "Avg per sale", val: fmtINR(avgSale) },
-          ] : []),
-          { label: "Returns", val: `${totalMonthReturns.length} sarees` },
-          ...(canSeePrices ? [{ label: "Net Revenue", val: fmtINR(monthRevenue - monthReturnsAmount) }] : []),
-          { label: "Most sold", val: topDesign },
-        ].map((s, i) => (
-          <Card key={s.label} style={{ flex: "1 1 calc(50% - 5px)", padding: "14px 16px" }}>
-            <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginBottom: 5 }}>{s.label}</div>
-            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: i < 3 ? C.text : C.crim }}>{s.val}</div>
+
+      {/* Returns Summary */}
+      <div id="shoprep-returns" style={{ margin: "24px 20px 0" }}>
+        <SectionTitle title="Returns This Month" />
+        {returns.length === 0 ? (
+          <Card style={{ margin: 0, padding: "20px 16px", textAlign: "center" as const }}>
+            <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>No returns recorded this month.</div>
           </Card>
-        ))}
+        ) : (
+          returns.map((r) => (
+            <div key={r.returnId} style={{ marginBottom: 10, background: C.white, border: `1px solid ${C.bdr}`, borderLeft: `3px solid ${C.crim}`, borderRadius: 14, padding: "14px 16px", display: "flex", alignItems: "center", flexWrap: "wrap" as const, gap: 8 }}>
+              <div style={{ flex: 1, minWidth: 180 }}>
+                <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" as const }}>
+                  <span style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{r.date}</span>
+                  <span style={{ fontFamily: F.m, fontSize: 13, color: C.burg }}>{r.id}</span>
+                </div>
+                <div style={{ fontFamily: F.u, fontSize: 14, color: C.text, marginTop: 3 }}>{r.customer} · {r.reason}</div>
+              </div>
+              {canSeePrices && <div style={{ fontFamily: F.m, fontWeight: 600, fontSize: 14, color: C.crim }}>{r.amt}</div>}
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Design Sales Bar Chart */}
+      <div id="shoprep-by-design" style={{ margin: "24px 20px 0" }}>
+        <SectionTitle title="Sales by Design" />
+        <Card style={{ margin: 0, padding: "18px 12px" }}>
+          <ChartFigure title="Sales by Design" summary={designData.map(d => `${d.design} ${d.count}`).join(", ") + "."}>
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={designData} layout="vertical" margin={{ left: 4, right: 24, top: 0, bottom: 0 }}>
+                <XAxis type="number" tick={{ fontFamily: F.m, fontSize: 12, fill: C.muted }} axisLine={false} tickLine={false} />
+                <YAxis type="category" dataKey="design" tick={{ fontFamily: F.m, fontSize: 12, fill: C.burg }} axisLine={false} tickLine={false} width={68} />
+                <Tooltip
+                  contentStyle={{ fontFamily: F.u, fontSize: 13, border: `1px solid ${C.bdr}`, borderRadius: 8 }}
+                  formatter={(v: number) => [`${v} sarees`, "Sold"]}
+                />
+                <Bar dataKey="count" radius={[0, 4, 4, 0]}>
+                  {designData.map((entry, i) => <Cell key={`cell-${entry.design}`} fill={semantic.chart.series[i % semantic.chart.series.length]} />)}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartFigure>
+        </Card>
       </div>
 
       {/* Top Customers */}
-      <SectionTitle id="shoprep-top-customers" title="Top 5 Customers This Month" />
-      <Card style={{ margin: "0 20px", padding: 0, overflow: "hidden" }}>
-        {topCustomers.map((c, i) => (
-          <div key={c.custId} style={{ display: "flex", alignItems: "center", gap: 14, padding: "16px 18px", borderBottom: i < topCustomers.length - 1 ? `1px solid ${C.bdr}` : "none" }}>
-            <div style={{ fontFamily: F.d, fontWeight: i === 0 ? 700 : 600, fontSize: i === 0 ? 26 : 21, color: i === 0 ? C.gold : C.text, width: 30, flexShrink: 0 }}>{i + 1}</div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>{c.name}</div>
-              <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginTop: 2 }}>{c.purchases} purchases</div>
+      <div id="shoprep-top-customers" style={{ margin: "24px 20px 0" }}>
+        <SectionTitle title="Top Customers" />
+        <Card style={{ margin: 0, padding: 0, overflow: "hidden" }}>
+          {topCustomers.length === 0 ? (
+            <div style={{ padding: "20px 16px", textAlign: "center" as const, fontFamily: F.u, fontSize: 14, color: C.muted }}>
+              No customer sales recorded yet.
             </div>
-            {canSeePrices && <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 14, color: C.gold, flexShrink: 0 }}>{c.amt}</div>}
-          </div>
-        ))}
-      </Card>
-
-      {/* Design Sales Bar Chart */}
-      <SectionTitle id="shoprep-by-design" title="Sales by Design" />
-      <Card style={{ margin: "0 20px", padding: "18px 12px" }}>
-        <ChartFigure title="Sales by Design" summary={designData.map(d => `${d.design} ${d.count}`).join(", ") + "."}>
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={designData} layout="vertical" margin={{ left: 4, right: 24, top: 0, bottom: 0 }}>
-              <XAxis type="number" tick={{ fontFamily: F.m, fontSize: 12, fill: C.muted }} axisLine={false} tickLine={false} />
-              <YAxis type="category" dataKey="design" tick={{ fontFamily: F.m, fontSize: 12, fill: C.burg }} axisLine={false} tickLine={false} width={68} />
-              <Tooltip
-                contentStyle={{ fontFamily: F.u, fontSize: 13, border: `1px solid ${C.bdr}`, borderRadius: 8 }}
-                formatter={(v: number) => [`${v} sarees`, "Sold"]}
-              />
-              <Bar dataKey="count" radius={[0, 4, 4, 0]}>
-                {designData.map((entry, i) => <Cell key={`cell-${entry.design}`} fill={semantic.chart.series[i % semantic.chart.series.length]} />)}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartFigure>
-      </Card>
-
-      {/* Returns Summary */}
-      <SectionTitle id="shoprep-returns" title="Returns This Month" />
-      {returns.map((r) => (
-        <div key={r.returnId} style={{ margin: "0 20px 10px", background: C.white, border: `1px solid ${C.bdr}`, borderLeft: `3px solid ${C.crim}`, borderRadius: 14, padding: "14px 16px", display: "flex", alignItems: "center", flexWrap: "wrap" as const, gap: 8 }}>
-          <div style={{ flex: 1, minWidth: 180 }}>
-            <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" as const }}>
-              <span style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{r.date}</span>
-              <span style={{ fontFamily: F.m, fontSize: 13, color: C.burg }}>{r.id}</span>
-            </div>
-            <div style={{ fontFamily: F.u, fontSize: 14, color: C.text, marginTop: 3 }}>{r.customer} · {r.reason}</div>
-          </div>
-          {canSeePrices && <div style={{ fontFamily: F.m, fontWeight: 600, fontSize: 14, color: C.crim }}>{r.amt}</div>}
-        </div>
-      ))}
+          ) : (
+            topCustomers.map((c, i) => (
+              <div key={c.custId} style={{ display: "flex", alignItems: "center", gap: 14, padding: "16px 18px", borderBottom: i < topCustomers.length - 1 ? `1px solid ${C.bdr}` : "none" }}>
+                <div style={{ fontFamily: F.d, fontWeight: i === 0 ? 700 : 600, fontSize: i === 0 ? 26 : 21, color: i === 0 ? C.gold : C.text, width: 30, flexShrink: 0 }}>{i + 1}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>{c.name}</div>
+                  <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginTop: 2 }}>{c.purchases} purchases</div>
+                </div>
+                {canSeePrices && <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 14, color: C.gold, flexShrink: 0 }}>{c.amt}</div>}
+              </div>
+            ))
+          )}
+        </Card>
+      </div>
 
       {/* ══════ MODAL: EXPORT REPORT ══════ */}
       <Modal open={showExport} onOpenChange={o => { if (!o) { setShowExport(false); setExportDone(false); } }} size="sm">
@@ -333,7 +298,7 @@ function SalesReport() {
                     <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, lineHeight: 1.6, marginBottom: 22 }}>
                       Your <strong style={{ color: C.text }}>Today's Sales</strong> report has been exported as <strong style={{ color: C.text }}>{exportFormat.toUpperCase()}</strong>. Check your downloads folder.
                     </div>
-                    <Button onClick={() => { setShowExport(false); setExportDone(false); }} fullWidth className="h-[52px] rounded-full border-none bg-[#6E0F2D] font-bold text-sm text-white">Done</Button>
+                    <Button variant="primary" onClick={() => { setShowExport(false); setExportDone(false); }} fullWidth className="h-[52px] rounded-full border-none bg-[#6E0F2D] hover:bg-[#4A061B] text-[#FFFDF9] hover:text-[#FFFDF9] font-bold text-sm">Done</Button>
                   </div>
                 ) : (
                   <>
@@ -351,7 +316,7 @@ function SalesReport() {
                             variant="ghost"
                             className={
                               "flex-1 h-auto py-3.5 px-2 rounded-2xl border-2 text-center flex-col " +
-                              (exportFormat === f.key ? "border-[#6E0F2D] bg-[rgba(110,15,45,0.06)]" : "border-[rgba(110,15,45,0.12)] bg-white")
+                              (exportFormat === f.key ? "border-[#6E0F2D] bg-[rgba(110,15,45,0.06)]" : "border-[rgba(110,15,45,0.12)] bg-white hover:bg-[rgba(110,15,45,0.04)]")
                             }
                           >
                             <div style={{ fontSize: 20, marginBottom: 5 }}>{f.icon}</div>
@@ -371,10 +336,10 @@ function SalesReport() {
                       ))}
                     </div>
                     <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
-                      <Button onClick={() => setExportDone(true)} fullWidth className="h-[52px] rounded-full border-none bg-[#6E0F2D] font-bold text-sm text-white gap-2 shadow-[0_4px_16px_rgba(110,15,45,0.30)]">
+                      <Button variant="primary" onClick={() => setExportDone(true)} fullWidth className="h-[52px] rounded-full border-none bg-[#6E0F2D] hover:bg-[#4A061B] text-[#FFFDF9] hover:text-[#FFFDF9] font-bold text-sm gap-2 shadow-[0_4px_16px_rgba(110,15,45,0.30)]">
                         <FileText size={17} /> Export as {exportFormat.toUpperCase()}
                       </Button>
-                      <Button onClick={() => { setShowExport(false); setExportDone(false); }} fullWidth className="h-[50px] rounded-full border-[1.5px] border-[rgba(110,15,45,0.12)] bg-white font-semibold text-sm text-[#69635E]">Cancel</Button>
+                      <Button onClick={() => { setShowExport(false); setExportDone(false); }} variant="ghost" fullWidth className="h-[50px] rounded-full border-[1.5px] border-[rgba(110,15,45,0.12)] bg-white hover:bg-[rgba(110,15,45,0.06)] font-semibold text-sm text-[#69635E] hover:text-[#1A0A0F]">Cancel</Button>
                     </div>
                   </>
                 )}

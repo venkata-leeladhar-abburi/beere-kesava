@@ -46,6 +46,7 @@ export function PageHero({
   description,
   image,
   minHeight = 340,
+  pills,
   actions,
 }: {
   eyebrow: string;
@@ -54,6 +55,7 @@ export function PageHero({
   description?: string;
   image?: string;
   minHeight?: number;
+  pills?: { text: string; color?: string }[];
   actions?: React.ReactNode;
 }) {
   return (
@@ -75,9 +77,18 @@ export function PageHero({
           )}
         </div>
         {description && (
-          <p className="max-w-[620px]" style={{ fontFamily: F.u, fontSize: "clamp(14px, 3.5vw, 18px)", color: "rgba(255,253,249,0.70)", margin: "0 0 20px", lineHeight: 1.6 }}>
+          <p className="max-w-[620px]" style={{ fontFamily: F.u, fontSize: "clamp(14px, 3.5vw, 18px)", color: "rgba(255,253,249,0.70)", margin: "0 0 16px", lineHeight: 1.6 }}>
             {description}
           </p>
+        )}
+        {pills && pills.length > 0 && (
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: actions ? 16 : 0 }}>
+            {pills.map((p) => (
+              <div key={p.text} style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 999, padding: "4px 12px" }}>
+                <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: p.color || "#FFF" }}>{p.text}</span>
+              </div>
+            ))}
+          </div>
         )}
         {actions && <div style={{ display: "flex", gap: 12, alignItems: "center" }}>{actions}</div>}
       </div>

@@ -160,6 +160,31 @@ export function WorkerPortalDesktop({ onBack, bp = "desktop", activeTab, setActi
 
             {activeTab === "qc" && (
               <div>
+                {/* Sub-header navigation bar matching Superadmin Production Page */}
+                <div
+                  style={{
+                    height: 48,
+                    display: "flex",
+                    alignItems: "center",
+                    padding: isTablet ? "0 24px" : "0 56px",
+                    background: "#FFFDF9",
+                    borderBottom: `1px solid ${C.bdr}`,
+                    boxShadow: "0 2px 8px rgba(74,6,27,0.03)",
+                    position: "sticky",
+                    top: 72,
+                    zIndex: 80,
+                  }}
+                >
+                  <SectionNavigator
+                    inline
+                    sections={PAGE_SECTIONS.WorkerQC}
+                    activeColor={C.burg}
+                    mutedColor={C.muted}
+                    borderColor={C.bdr}
+                    fontFamily={F.u}
+                    layoutId="worker-qc-section-pill-desktop"
+                  />
+                </div>
                 <PageHero
                   eyebrow="Worker Staff · Quality Control"
                   title="Quality"
@@ -167,19 +192,7 @@ export function WorkerPortalDesktop({ onBack, bp = "desktop", activeTab, setActi
                   description="Inspect sarees submitted by weavers, mark each one Passed or Defective, and keep the defective log and QC history in one place."
                   minHeight={300}
                 />
-                <div style={{ height: 24 }} />
-                <SectionNavigator
-                  sections={PAGE_SECTIONS.WorkerQC}
-                  stickyTop={WORKER_TOPNAV_H}
-                  height={WORKER_SECTION_NAV_H}
-                  activeColor={C.burg}
-                  mutedColor={C.muted}
-                  borderColor={C.bdr}
-                  fontFamily={F.u}
-                  padding={isTablet ? `8px ${GUTTER_X_TABLET}px` : `8px ${GUTTER_X}px`}
-                  layoutId="worker-qc-section-pill-desktop"
-                />
-                <div style={{ padding: isTablet ? `20px ${GUTTER_X_TABLET}px 32px` : `24px ${GUTTER_X}px 40px` }}>
+                <div className="px-4 md:px-7 xl:px-12" style={{ paddingBottom: 64 }}>
                   <WorkerQC isDesktop={!isTablet} isTablet={isTablet} />
                 </div>
               </div>

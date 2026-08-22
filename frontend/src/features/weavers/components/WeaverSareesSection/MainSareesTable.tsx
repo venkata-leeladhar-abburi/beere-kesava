@@ -75,34 +75,37 @@ function MainSareeCard({
       <div className="h-1" style={{ background: qc.color }} />
 
       <div className="p-4 sm:p-5 flex flex-col gap-3.5">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-2.5 min-w-0">
-            {selectable && (
-              <Checkbox
-                checked={!!selectedIds?.has(r.sareeId)}
-                onCheckedChange={() => isPickable && onToggleRow?.(r.sareeId)}
-                disabled={!isPickable}
-              />
-            )}
-            <div>
-              <div style={{ fontFamily: "var(--font-mono)", fontSize: 15, fontWeight: 700, color: T.royalBurgundy }}>
-                {r.sareeId}
-              </div>
-              {r.batchId && (
-                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 1 }}>
-                  Batch: {r.batchId}
-                </div>
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5 min-w-0">
+              {selectable && (
+                <Checkbox
+                  checked={!!selectedIds?.has(r.sareeId)}
+                  onCheckedChange={() => isPickable && onToggleRow?.(r.sareeId)}
+                  disabled={!isPickable}
+                />
               )}
+              <div>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 15, fontWeight: 700, color: T.royalBurgundy, wordBreak: "break-word" }}>
+                  {r.sareeId}
+                </div>
+                {r.batchId && (
+                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 1 }}>
+                    Batch: {r.batchId}
+                  </div>
+                )}
+              </div>
             </div>
+
+            {onPrintTag && (
+              <IconButton icon={Printer} label={`Print tag for ${r.sareeId}`} variant="ghost" size="sm" onClick={() => onPrintTag(r)} className="shrink-0" />
+            )}
           </div>
 
-          <div className="flex items-center gap-1.5 flex-wrap justify-end shrink-0">
+          <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
             <Chip label={qc.label} color={qc.color} />
             {r.finishingStatus !== "none" && <Chip label={fin.label} color={fin.color} />}
             <Chip label={DISPATCH_CFG[r.dispatched ? "dispatched" : "inStock"].label} color={DISPATCH_CFG[r.dispatched ? "dispatched" : "inStock"].color} />
-            {onPrintTag && (
-              <IconButton icon={Printer} label={`Print tag for ${r.sareeId}`} variant="ghost" size="sm" onClick={() => onPrintTag(r)} />
-            )}
           </div>
         </div>
 

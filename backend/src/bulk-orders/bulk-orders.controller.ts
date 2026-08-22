@@ -7,10 +7,10 @@ import { CreateBulkOrderDto } from "./dto/create-bulk-order.dto";
 import { ListBulkOrdersQueryDto } from "./dto/list-bulk-orders-query.dto";
 import { UpdateBulkOrderDto } from "./dto/update-bulk-order.dto";
 
-// Wholesale orders — taken by retail (SHOP) and fulfilled by production
-// (WORKER, assigning rows against the order).
+// Wholesale orders — taken by retail (SHOP), fulfilled by production
+// (WORKER), and visible to ACCOUNTANT, ADMIN, SUPERADMIN.
 @Controller("bulk-orders")
-@RequireRoles(UserRole.SHOP, UserRole.WORKER)
+@RequireRoles(UserRole.SHOP, UserRole.WORKER, UserRole.ACCOUNTANT, UserRole.ADMIN, UserRole.SUPERADMIN)
 export class BulkOrdersController {
   constructor(private readonly bulkOrdersService: BulkOrdersService) {}
 

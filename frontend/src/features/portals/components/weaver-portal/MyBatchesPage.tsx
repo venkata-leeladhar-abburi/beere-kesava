@@ -14,18 +14,56 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
-// ─── Design Tokens ─────────────────────────────────────────────────────────
+import { useAuth } from "../../../../contexts/AuthContext";
+import { useQc } from "@/features/qc";
+import { MobileWeaverHeroSection } from "./MobileWeaverHeroSection";
+import { SectionHeading } from "@/shared/ui/portal/PortalChrome";
+import { Button } from "@/shared/ui/primitives";
+import { AlertCircle, History, ListChecks, ChevronRight, Wallet } from "lucide-react";
 import {
-  C, F, SectionTitle, HeroHeader, MobileBatchCard, CompletedBatchCard, BatchQuickFilterPills, BatchQuickFilter, MyBatchEntry
+  C, F, SectionTitle, HeroHeader, MobileBatchCard, CompletedBatchCard, BatchQuickFilterPills, BatchQuickFilter, MyBatchEntry, BG_IMAGE
 } from './theme';
-
 
 export function MyBatchesPage() {
   const { isMobile, cols } = useResponsive();
+  const { user } = useAuth();
   const { batches } = useBatches();
   const { weaver, weaverId, isLoading: weaverLoading, isError: weaverError } = useCurrentWeaver();
   const { getPaymentsForWeaver } = useWeaverPayments();
+  const { getQcForWeaver } = useQc();
   const [quickFilter, setQuickFilter] = useState<BatchQuickFilter>("all");
+
+  const weaverQcRecords = weaverId ? getQcForWeaver(weaverId) : [];
+  const now = new Date();
+  const thisMonthQc = weaverQcRecords.filter(q => {
+    const d = new Date(q.qcDate);
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  });
+  const myRows = weaverId ? batches.flatMap(b => b.rows.filter(r => r.weaverId === weaverId)) : [];
+  const isSameMonth = (iso: string) => {
+    const d = new Date(iso);
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  };
+  const qcPassDateBySaree = new Map(
+    weaverQcRecords.filter(q => q.result === "passed").map(q => [q.sareeId, q.qcDate]),
+  );
+  const producedThisMonth = myRows.filter(r => {
+    if (r.finished === true && r.finishedAt) return isSameMonth(r.finishedAt);
+    const passedAt = r.sareeId ? qcPassDateBySaree.get(r.sareeId) : undefined;
+    return passedAt ? isSameMonth(passedAt) : false;
+  });
+  const sareesThisMonth = producedThisMonth.length;
+  const passedCount = weaverQcRecords.filter(q => q.result === "passed").length;
+  const qcPassPct = weaverQcRecords.length > 0 ? Math.round((passedCount / weaverQcRecords.length) * 100) : 100;
+  const rejectedThisMonth = thisMonthQc.filter(q => q.result === "defective").length;
+  const qcPassSub = weaverQcRecords.length === 0 ? "No inspections yet" : `${rejectedThisMonth} rejected this month`;
+
+  const payments = weaverId ? getPaymentsForWeaver(weaverId) : [];
+  const thisMonthPayments = payments.filter(p => {
+    const d = new Date(p.paymentDate || p.uploadedAt);
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  });
+  const earnedThisMonth = thisMonthPayments.reduce((s, p) => s + p.amountPaid, 0);
 
   const isMyRow = (r: { weaverId?: string | null }) => {
     if (!r.weaverId) return false;
@@ -37,8 +75,6 @@ export function MyBatchesPage() {
     return rId === wId || rId === wCode;
   };
 
-  // A batch is visible to its assigned weaver even in draft status
-  // so they can see upcoming work, and so the "Draft" quick filter works.
   const myWeaverBatches: MyBatchEntry[] = batches
     .map(b => ({ ...b, myRows: b.rows.filter(isMyRow) }))
     .filter(b => b.myRows.length > 0);
@@ -49,19 +85,17 @@ export function MyBatchesPage() {
     return b.myRows.every(r => r.finished === true);
   };
 
-  // Completed: batch status is completed OR every saree row assigned to this weaver is finished (produced)
   const completedBatches: MyBatchEntry[] = myWeaverBatches.filter(isBatchDone);
-  // Active: anything not yet completed
   const myActiveBatches: MyBatchEntry[] = myWeaverBatches.filter(b => !isBatchDone(b));
-
   const totalMyActive = myActiveBatches.length;
+
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+  const weaverFirstName = user?.name ? user.name.split(" ")[0] : "Weaver";
 
   const myDefectiveSarees = useMemo(() => {
     return batches.flatMap(b =>
       b.rows
-        // qcPassed is false for BOTH defective and semi-approved sarees, and a
-        // semi-approved one is a rework, not a rejection — key off the verdict
-        // itself so reworks don't get reported as defects.
         .filter(r => r.weaverId === weaverId && r.qcResult === "defective")
         .map(r => ({
           sareeId: r.sareeId,
@@ -76,10 +110,6 @@ export function MyBatchesPage() {
     );
   }, [batches, weaverId]);
 
-  // Semi-approved at QC and sent back — not produced, and waiting to be
-  // reworked and handed in again so it can be received a second time.
-  // Defective sarees also go back for rework, but they already get their own
-  // alert above via myDefectiveSarees, so they're excluded here.
   const myReworkSarees = useMemo(() => {
     return batches.flatMap(b =>
       b.rows
@@ -88,7 +118,6 @@ export function MyBatchesPage() {
     );
   }, [batches, weaverId]);
 
-  // Quick filter — narrows which of the two sections below are shown, and which batches within them
   const showActiveSection = quickFilter === "all" || quickFilter === "active" || quickFilter === "qc-pending" || quickFilter === "draft";
   const showCompletedSection = quickFilter === "all" || quickFilter === "completed";
   const visibleActiveBatches = myActiveBatches.filter(b => {
@@ -122,141 +151,143 @@ export function MyBatchesPage() {
 
   return (
     <div style={{ paddingBottom: 32 }}>
-      <HeroHeader eyebrow="SINCE 1999 · MY WORK" title="My Batches" sub="Active and completed work" />
-      <BatchQuickFilterPills value={quickFilter} onChange={setQuickFilter} />
+      {/* Hero Header + 5 Metrics Card Strip */}
+      <MobileWeaverHeroSection
+        weaverName={user?.name ?? "Weaver"}
+        onExploreBatches={() => document.getElementById("weaver-mobile-active-batches")?.scrollIntoView({ behavior: "smooth" })}
+        onGoToPayments={() => {}}
+      />
 
-      {/* Defective Saree Warning Alerts */}
-      {myDefectiveSarees.map(ds => (
-        <div key={ds.sareeId} style={{ margin: "16px 20px 0 20px", background: "rgba(192,57,43,0.06)", border: `1.5px solid ${C.crim}`, borderRadius: 16, padding: "16px 20px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-            <AlertTriangle size={18} color={C.crim} />
-            <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.crim }}>QC Failed — Defective Saree Alert</span>
-          </div>
-          <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, lineHeight: 1.5 }}>
-            Saree <strong>{ds.sareeId}</strong> in batch <strong>{ds.batchId}</strong> ({ds.sareeTypeName || "Self Brocade"}) failed quality check due to a <strong>{ds.defect}</strong> defect. A deduction of <strong><Money value={rupees(ds.deduction)} /></strong> has been registered.
-          </div>
-          <div style={{ display: "flex", gap: 12, marginTop: 10, fontFamily: F.u, fontSize: 12, color: C.muted }}>
-            <span>QC Date: {ds.date}</span>
-            <span>•</span>
-            <span style={{ fontStyle: "italic" }}>Defect photo sent via WhatsApp</span>
-          </div>
-        </div>
-      ))}
-
-      {/* Semi-Approved — Rework Alerts. Separate from the defective alerts
-          above: the saree isn't rejected, it goes back to the weaver and has
-          to be handed in (and received) again before it counts as produced. */}
-      {myReworkSarees.map(rs => (
-        <div key={rs.sareeId} style={{ margin: "16px 20px 0 20px", background: "rgba(200,155,71,0.08)", border: `1.5px solid ${C.gold}`, borderRadius: 16, padding: "16px 20px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-            <RotateCcw size={18} color={C.gold} />
-            <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.gold }}>Semi-Approved — Rework Needed</span>
-          </div>
-          <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, lineHeight: 1.5 }}>
-            Saree <strong>{rs.sareeId}</strong> in batch <strong>{rs.batchId}</strong> ({rs.sareeTypeName || "Self Brocade"}) was semi-approved at quality check and sent back to you. It does <strong>not</strong> count as produced yet — rework it and hand it in again.
-          </div>
-        </div>
-      ))}
-
-      {/* Weaver Identity */}
-      <div style={{ background: C.dark, padding: "16px 20px 18px", display: "flex", alignItems: "center", gap: 14, marginTop: (myDefectiveSarees.length > 0 || myReworkSarees.length > 0) ? 16 : 0 }}>
-        <div style={{ width: 56, height: 56, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: "#FFF" }}>{weaver?.initials ?? "—"}</span>
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 18, color: "#FFF" }}>{weaver?.name ?? "Weaver"}</div>
-          <div style={{ fontFamily: F.m, fontSize: 12, color: "rgba(255,255,255,0.60)", marginTop: 3 }}>{weaver?.village ? `${weaver.village} · ` : ""}Handloom Weaver</div>
-        </div>
-        <div style={{ border: `1px solid ${C.gold}`, color: C.gold, borderRadius: 999, padding: "6px 14px", fontFamily: F.m, fontSize: 12, flexShrink: 0, whiteSpace: "nowrap" as const }}>{totalMyActive} Active {totalMyActive === 1 ? "Batch" : "Batches"}</div>
-      </div>
-
-      {/* Stats Strip — spacious, clearly readable */}
-      {(() => {
-        const allMyRows = myWeaverBatches.flatMap(b => b.myRows);
-        const producedCount = allMyRows.filter(r => r.qcPassed === true || r.finished === true).length;
-        const qcPassedCount = allMyRows.filter(r => r.qcPassed === true).length;
-        const qcPassPct = allMyRows.length > 0 ? Math.round((qcPassedCount / allMyRows.length) * 100) : 0;
-        const earnedTotal = weaverId ? getPaymentsForWeaver(weaverId).reduce((sum, p) => sum + p.amountPaid, 0) : 0;
-        const statsData = [
-          { label: "Produced", val: `${producedCount}` },
-          { label: "QC Pass", val: producedCount > 0 ? `${qcPassPct}%` : "—", highlight: true },
-          { label: "Earned", val: formatMoney(rupees(earnedTotal)) },
-        ];
-        return (
-      <div style={{ background: C.dark, borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex" }}>
-        {statsData.map((s, i) => (
-          <div key={s.label} style={{
-            flex: 1, padding: "16px 10px", textAlign: "center" as const,
-            borderRight: i < 2 ? "1px solid rgba(255,255,255,0.08)" : "none",
-          }}>
-            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: s.highlight ? C.gold : "#FFF", lineHeight: 1 }}>{s.val}</div>
-            <div style={{ fontFamily: F.u, fontSize: 12, color: "rgba(255,255,255,0.60)", marginTop: 5 }}>{s.label}</div>
+      <div style={{ padding: "0 16px", marginTop: 24 }} id="weaver-mobile-active-batches">
+        {/* Defective Saree Warning Alerts */}
+        {myDefectiveSarees.map(ds => (
+          <div key={ds.sareeId} style={{ marginBottom: 16, background: "rgba(192,57,43,0.06)", border: `1.5px solid ${C.crim}`, borderRadius: 16, padding: "16px 20px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+              <AlertTriangle size={18} color={C.crim} />
+              <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.crim }}>QC Failed — Defective Saree Alert</span>
+            </div>
+            <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, lineHeight: 1.5 }}>
+              Saree <strong>{ds.sareeId}</strong> in batch <strong>{ds.batchId}</strong> ({ds.sareeTypeName || "Self Brocade"}) failed quality check due to a <strong>{ds.defect}</strong> defect. A deduction of <strong><Money value={rupees(ds.deduction)} /></strong> has been registered.
+            </div>
+            <div style={{ display: "flex", gap: 12, marginTop: 10, fontFamily: F.u, fontSize: 12, color: C.muted }}>
+              <span>QC Date: {ds.date}</span>
+              <span>•</span>
+              <span style={{ fontStyle: "italic" }}>Defect photo sent via WhatsApp</span>
+            </div>
           </div>
         ))}
-      </div>
-        );
-      })()}
 
-      {/* General Dispatch Instructions */}
-      <div style={{ padding: "0 20px" }}>
+        {/* Semi-Approved — Rework Alerts */}
+        {myReworkSarees.map(rs => (
+          <div key={rs.sareeId} style={{ marginBottom: 16, background: "rgba(200,155,71,0.08)", border: `1.5px solid ${C.gold}`, borderRadius: 16, padding: "16px 20px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+              <RotateCcw size={18} color={C.gold} />
+              <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.gold }}>Semi-Approved — Rework Needed</span>
+            </div>
+            <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, lineHeight: 1.5 }}>
+              Saree <strong>{rs.sareeId}</strong> in batch <strong>{rs.batchId}</strong> ({rs.sareeTypeName || "Self Brocade"}) was semi-approved at quality check and sent back to you. It does <strong>not</strong> count as produced yet — rework it and hand it in again.
+            </div>
+          </div>
+        ))}
+
+        {/* General Dispatch Instructions */}
         <GeneralDispatchInstructionsBlock />
+
+        {/* Active Batches */}
+        <div style={{ marginTop: 24 }}>
+          <SectionHeading
+            title="Active Batches"
+            subtitle="You can have a maximum of 2 active batches at a time. Complete one before a new batch is assigned."
+            right={
+              <button
+                onClick={() => {}}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "6px 14px",
+                  borderRadius: 999,
+                  border: "1px solid rgba(110,15,45,0.18)",
+                  background: "rgba(110,15,45,0.06)",
+                  color: "#6E0F2D",
+                  fontFamily: F.u,
+                  fontWeight: 600,
+                  fontSize: 12,
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(110,15,45,0.14)"; e.currentTarget.style.color = "#6E0F2D"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(110,15,45,0.06)"; e.currentTarget.style.color = "#6E0F2D"; }}
+              >
+                <History size={14} color={C.burg} /> View All History
+              </button>
+            }
+          />
+          <div style={{ height: 12 }} />
+
+          {myActiveBatches.length === 0 ? (
+            <div style={{ background: C.cream, borderRadius: 14, padding: "28px 20px", textAlign: "center" as const }}>
+              <Package size={28} color={C.muted} style={{ margin: "0 auto 10px" }} />
+              <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>No active batches assigned to you yet.</div>
+            </div>
+          ) : (
+            myActiveBatches.map((b, idx) => <MobileBatchCard key={b.batchId} b={b} idx={idx} />)
+          )}
+
+          {totalMyActive >= 2 && (
+            <div style={{ marginTop: 16, background: "#FFF8E8", border: `1px solid rgba(200,155,71,0.30)`, borderRadius: 14, padding: "16px 20px", display: "flex", alignItems: "center", gap: 12 }}>
+              <AlertCircle size={20} color={C.gold} style={{ flexShrink: 0 }} />
+              <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted, lineHeight: 1.4 }}>Maximum 2 active batches reached. Complete one before a new batch can be assigned.</span>
+            </div>
+          )}
+        </div>
+
+        {/* Completed Batches */}
+        <div style={{ marginTop: 32 }}>
+          <SectionHeading
+            title="Completed Batches"
+            subtitle="Recent completed batches — your track record of finished work."
+            accent="#1F774E"
+            right={
+              <button
+                onClick={() => {}}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "6px 14px",
+                  borderRadius: 999,
+                  border: "1px solid rgba(31,119,78,0.25)",
+                  background: "rgba(31,119,78,0.06)",
+                  color: "#1F774E",
+                  fontFamily: F.u,
+                  fontWeight: 600,
+                  fontSize: 12,
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(31,119,78,0.14)"; e.currentTarget.style.color = "#1F774E"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(31,119,78,0.06)"; e.currentTarget.style.color = "#1F774E"; }}
+              >
+                <ListChecks size={14} color="#1F774E" /> See All Completed
+              </button>
+            }
+          />
+          <div style={{ height: 12 }} />
+
+          {completedBatches.length === 0 ? (
+            <div style={{ padding: "36px 20px", textAlign: "center" as const, background: C.cream, borderRadius: 20, border: `1px solid ${C.bdr}` }}>
+              <CheckCircle2 size={32} color={C.muted} style={{ margin: "0 auto 12px" }} />
+              <div style={{ fontFamily: F.u, fontSize: 15, color: C.muted, fontWeight: 600 }}>No completed batches yet.</div>
+              <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginTop: 4 }}>A batch moves here once QC has passed on every saree you wove.</div>
+            </div>
+          ) : (
+            completedBatches.slice(0, 3).map(b => (
+              <CompletedBatchCard key={b.batchId} b={b} />
+            ))
+          )}
+        </div>
       </div>
-
-      {/* Active Batches */}
-      {showActiveSection && (
-      <>
-      <SectionTitle title="Active Batches" link="View All History →" onLink={() => {}} />
-      <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, margin: "-4px 20px 12px" }}>
-        You can have a maximum of 2 active batches at a time.
-      </div>
-
-      {visibleActiveBatches.length === 0 ? (
-        <div style={{ margin: "0 20px 14px", background: C.cream, borderRadius: 14, padding: "28px 20px", textAlign: "center" as const }}>
-          <Package size={28} color={C.muted} style={{ margin: "0 auto 10px" }} />
-          <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>No active batches assigned to you yet.</div>
-          <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 4 }}>Check back once your supervisor assigns a batch.</div>
-        </div>
-      ) : isMobile ? (
-        visibleActiveBatches.map((b, idx) => <MobileBatchCard key={b.batchId} b={b} idx={idx} />)
-      ) : (
-        <div style={{ display: "grid", gridTemplateColumns: cols(1, 2, 2), gap: 4 }}>
-          {visibleActiveBatches.map((b, idx) => <MobileBatchCard key={b.batchId} b={b} idx={idx} />)}
-        </div>
-      )}
-
-      {totalMyActive >= 2 && (
-        <div style={{ margin: "0 20px 20px", background: C.cream, borderRadius: 12, padding: "12px 16px" }}>
-          <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>
-            ⚠ You have 2 active batches — the maximum allowed. Complete one before a new one can be assigned.
-          </span>
-        </div>
-      )}
-      </>
-      )}
-
-      {/* Completed Batches */}
-      {showCompletedSection && (
-      <>
-      <SectionTitle title="Completed Batches" link="See All →" onLink={() => {}} />
-      {completedBatches.length === 0 ? (
-        <div style={{ margin: "0 20px 14px", background: C.cream, borderRadius: 14, padding: "28px 20px", textAlign: "center" as const }}>
-          <CheckCircle2 size={28} color={C.muted} style={{ margin: "0 auto 10px" }} />
-          <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>No completed batches yet.</div>
-          <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 4 }}>A batch moves here once QC has passed on every saree you wove.</div>
-        </div>
-      ) : isMobile ? (
-        completedBatches.slice(0, 3).map(b => (
-          <CompletedBatchCard key={b.batchId} b={b} />
-        ))
-      ) : (
-        <div style={{ display: "grid", gridTemplateColumns: cols(1, 2, 2), gap: 4 }}>
-          {completedBatches.slice(0, 4).map(b => (
-            <CompletedBatchCard key={b.batchId} b={b} />
-          ))}
-        </div>
-      )}
-      </>
-      )}
     </div>
   );
 }

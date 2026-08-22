@@ -12,7 +12,7 @@ export function DSH({ label, link, onLink }: { label: string; link?: string; onL
         <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 20, color: C.text }}>{label}</span>
       </div>
       {link && (
-        <Button onClick={onLink} variant="primary" size="sm" iconLeft={FileText} className="rounded-full bg-[#6E0F2D] hover:bg-[#6E0F2D] shadow-[0_2px_10px_rgba(110,15,45,0.28)]">
+        <Button onClick={onLink} variant="primary" size="sm" iconLeft={FileText} className="rounded-full bg-[#6E0F2D] hover:bg-[#4A061B] text-[#FFFDF9] hover:text-[#FFFDF9] shadow-[0_2px_10px_rgba(110,15,45,0.28)]">
           {link}
         </Button>
       )}

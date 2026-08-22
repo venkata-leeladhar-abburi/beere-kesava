@@ -25,6 +25,7 @@ interface ReturnReasonOption {
 interface ProcessReturnRetailFlowProps {
   step: 1 | 2 | 3;
   setStep: (s: 1 | 2 | 3) => void;
+  onBackToType?: () => void;
   saleFound: boolean;
   setSaleFound: (v: boolean) => void;
   foundSale: BackendSaleRecord | null;
@@ -48,6 +49,7 @@ interface ProcessReturnRetailFlowProps {
 export function ProcessReturnRetailFlow({
   step,
   setStep,
+  onBackToType,
   saleFound,
   setSaleFound,
   foundSale,
@@ -162,6 +164,8 @@ export function ProcessReturnRetailFlow({
             </StepBody>
             <FlowActions
               accent={ACCENT_RETURN}
+              backLabel="Change return type"
+              onBack={onBackToType}
               primaryLabel="Next — Return Reason"
               onPrimary={() => setStep(2)}
               primaryDisabled
@@ -195,6 +199,8 @@ export function ProcessReturnRetailFlow({
             </StepBody>
             <FlowActions
               accent={ACCENT_RETURN}
+              backLabel="Change return type"
+              onBack={onBackToType}
               primaryLabel="Next — Return Reason"
               onPrimary={() => setStep(2)}
             />

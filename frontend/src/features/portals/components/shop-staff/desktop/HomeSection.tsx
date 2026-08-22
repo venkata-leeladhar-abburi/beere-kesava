@@ -1,11 +1,11 @@
 import React from "react";
-import { AlertTriangle, ArrowRight, ArrowUpRight, BarChart2, Check, Package, RotateCcw, Send, ShoppingBag, Users } from "lucide-react";
+import { AlertTriangle, ArrowRight, ArrowUpRight, BarChart2, Check, ChevronRight, Package, RotateCcw, Send, ShoppingBag, Users } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { salesApi } from "../../../../../shared/api/sales";
 import { inventoryApi } from "../../../../../shared/api/inventory";
 import { customersApi } from "../../../../../shared/api/customers";
 import { useAuth } from "../../../../../contexts/AuthContext";
-import { C, F, ShopDesktopHero, SHOP_BG } from "../theme";
+import { C, F, PageHero, PortalStatsStrip, SectionTitle, type PortalStat } from "../theme";
 import { DSH } from "./DSH";
 import { Button } from "../../../../../shared/ui/primitives";
 import { rupees, formatMoney } from "@/lib/domain/money";
@@ -71,26 +71,47 @@ export function HomeSection({
   }));
 
   const latestReturn = returnsList[0];
-  const staffName = user?.name || "Shop Staff";
+  const firstName = user?.name ? user.name.split(" ")[0] : "Staff";
+  const today = new Date().toLocaleDateString("en-IN", { weekday: "long", day: "2-digit", month: "long", year: "numeric" });
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+
+  const stats: PortalStat[] = [
+    { label: "Today's sales", value: todaySales.length, sub: "Recorded today", icon: ShoppingBag, highlight: true },
+    ...(canSeePrices ? [{ label: "Today's revenue", value: formatMoney(rupees(todayRevenue)), sub: `From ${todaySales.length} sales`, icon: BarChart2 }] : []),
+    { label: "Shop inventory", value: inventoryList.length, sub: "Sarees currently in stock", icon: Package },
+    { label: "Returns today", value: todayReturns.length, sub: "Processed and recorded", icon: RotateCcw, alert: todayReturns.length > 0 },
+  ];
 
   return (
     <>
-      <ShopDesktopHero
-        bp={bp}
-        breadcrumb="SINCE 1999 · SHOP STAFF PORTAL · OVERVIEW"
-        titleMain="Shop Home"
-        titleSub="& Today's Overview"
-        description="Today's sales, current inventory, and quick actions for the shop counter. Track every transaction and customer in real time."
-        pills={[{ text: `${todaySales.length} Sales Today`, color: C.gold }, ...(canSeePrices ? [{ text: `${formatMoney(rupees(todayRevenue))} Revenue` }] : []), { text: `${inventoryList.length} Sarees in Stock` }, { text: `${todayReturns.length} Return${todayReturns.length !== 1 ? "s" : ""} Processed` }]}
-        alertBadge={`${staffName} · Shop Staff`}
-        stats={[
-          { label: "TODAY'S SALES", val: String(todaySales.length), sub: "Recorded today" },
-          ...(canSeePrices ? [{ label: "TODAY'S REVENUE", val: formatMoney(rupees(todayRevenue)), sub: `From ${todaySales.length} sales`, highlight: true }] : []),
-          { label: "SHOP INVENTORY", val: String(inventoryList.length), sub: "Sarees currently in stock" },
-          { label: "RETURNS TODAY", val: String(todayReturns.length), sub: "Processed and recorded", crimson: true },
-        ]}
-        bgUrl={SHOP_BG}
+      <PageHero
+        eyebrow="Shop Staff Portal · Beere Kesava & Brothers Silks"
+        title={greeting + ","}
+        titleAccent={firstName}
+        description={`Here's what needs your attention today. You have ${todaySales.length} sale${todaySales.length === 1 ? "" : "s"} recorded today.`}
+        actions={
+          <Button
+            variant="primary"
+            iconRight={ChevronRight}
+            onClick={() => setActive("sale")}
+            className="rounded-[14px] bg-gradient-to-br from-[#6E0F2D] to-[#4A061B] px-6 py-[13px] text-[#FFFDF9] shadow-[0_8px_28px_rgba(110,15,45,0.45)] hover:from-[#6E0F2D] hover:to-[#4A061B]"
+          >
+            Start Today's Work
+          </Button>
+        }
       />
+
+      {/* Date chip pinned to hero */}
+      <div className="relative hidden md:block">
+        <div
+          style={{ position: "absolute", top: -308, right: 48, fontFamily: F.m, fontSize: 12, color: "rgba(255,253,249,0.45)", background: "rgba(255,253,249,0.08)", border: "1px solid rgba(255,253,249,0.12)", padding: "6px 14px", borderRadius: 8, zIndex: 21 }}
+        >
+          {today}
+        </div>
+      </div>
+
+      <PortalStatsStrip stats={stats} />
       <div style={{ padding: isTablet ? "24px 28px 40px" : "40px 48px 56px" }}>
         <div style={{ display: "grid", gridTemplateColumns: isTablet ? "1fr" : "1fr 380px", gap: isTablet ? 24 : 36, alignItems: "start" }}>
           {/* Left */}
@@ -104,7 +125,7 @@ export function HomeSection({
                 <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 30, color: C.text, marginBottom: 6 }}>New Retail Sale</div>
                 <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>Record a sale at the counter — scan saree barcode, select payment, generate bill</div>
               </div>
-              <Button onClick={() => setActive("sale")} className="h-14 px-7 rounded-full bg-[#6E0F2D] border-none font-bold text-base text-white gap-2 shrink-0 shadow-[0_4px_16px_rgba(110,15,45,0.30)]">
+              <Button variant="primary" onClick={() => setActive("sale")} className="h-14 px-7 rounded-full bg-[#6E0F2D] hover:bg-[#4A061B] text-[#FFFDF9] hover:text-[#FFFDF9] border-none font-bold text-base gap-2 shrink-0 shadow-[0_4px_16px_rgba(110,15,45,0.30)]">
                 <ArrowUpRight size={18} /> Start New Sale
               </Button>
             </div>
@@ -188,53 +209,10 @@ export function HomeSection({
                   <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.green }}>Admin & Superadmin have been notified</span>
                 </div>
               ) : (
-                <Button onClick={() => setShowInvLowStockDialog(true)} fullWidth className="h-12 bg-[#6E0F2D] border-none rounded-full font-bold text-sm text-white gap-2">
+                <Button variant="primary" onClick={() => setShowInvLowStockDialog(true)} fullWidth className="h-12 bg-[#6E0F2D] hover:bg-[#4A061B] text-[#FFFDF9] hover:text-[#FFFDF9] border-none rounded-full font-bold text-sm gap-2">
                   <Send size={16} /> Report Low Stock to Admin
                 </Button>
               )}
-            </div>
-
-            {/* Quick Actions */}
-            <div style={{ background: C.dark, borderRadius: 18, overflow: "hidden", boxShadow: "0 4px 24px rgba(61,14,26,0.20)" }}>
-              <div style={{ padding: "20px 24px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-                <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.40)", letterSpacing: 1.4, textTransform: "uppercase" as const, marginBottom: 4 }}>QUICK ACTIONS</div>
-                <div style={{ fontFamily: F.u, fontSize: 14, color: "rgba(255,255,255,0.70)" }}>Navigate to key operations</div>
-              </div>
-              {[
-                { label: "New Retail Sale", sub: "Record a sale at counter", tab: "sale" as TabId, icon: <ShoppingBag size={18} color={C.gold} /> },
-                { label: "Shop Inventory", sub: "View all sarees in stock", tab: "inventory" as TabId, icon: <Package size={18} color={C.gold} /> },
-                { label: "Customer Profiles", sub: "Browse customer records", tab: "customers" as TabId, icon: <Users size={18} color={C.gold} /> },
-                { label: "Sales Reports", sub: "Analytics and trends", tab: "reports" as TabId, icon: <BarChart2 size={18} color={C.gold} /> },
-              ].map((a, i) => (
-                <Button
-                  key={a.tab}
-                  onClick={() => setActive(a.tab)}
-                  variant="ghost"
-                  className={
-                    "flex items-center gap-3.5 w-full h-auto px-6 py-[17px] border-none rounded-none bg-transparent justify-start text-left hover:bg-white/5 " +
-                    (i < 3 ? "border-b border-white/[0.07]" : "")
-                  }
-                >
-                  <div style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(200,155,71,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{a.icon}</div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: "#FFF", marginBottom: 2 }}>{a.label}</div>
-                    <div style={{ fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.45)" }}>{a.sub}</div>
-                  </div>
-                  <ArrowRight size={15} color="rgba(255,255,255,0.30)" />
-                </Button>
-              ))}
-              <div style={{ padding: "16px 24px", borderTop: "1px solid rgba(255,255,255,0.07)" }}>
-                <Button onClick={() => setShowReturn(true)} variant="ghost" className="flex items-center gap-3.5 w-full h-auto border-none bg-transparent justify-start text-left p-0 hover:opacity-70 hover:bg-transparent">
-                  <div style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(192,57,43,0.20)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <RotateCcw size={18} color={C.crim} />
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: "#FFF", marginBottom: 2 }}>Process Return</div>
-                    <div style={{ fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.45)" }}>Handle customer returns</div>
-                  </div>
-                  <ArrowRight size={15} color="rgba(255,255,255,0.30)" />
-                </Button>
-              </div>
             </div>
           </div>
         </div>

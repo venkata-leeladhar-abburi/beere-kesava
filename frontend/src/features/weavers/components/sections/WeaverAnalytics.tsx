@@ -81,7 +81,7 @@ export function WeaverAnalytics() {
   const totalPassed = perWeaver.reduce((a, w) => a + w.passed, 0);
   const totalPayout = perWeaver.reduce((a, w) => a + w.payout, 0);
   const totalLooms = perWeaver.reduce((a, w) => a + w.looms, 0);
-  const overallPassRate = totalProduced ? Math.round((totalPassed / totalProduced) * 100) : 0;
+  const overallPassRate = totalProduced ? Math.min(100, Math.round((totalPassed / totalProduced) * 100)) : 0;
 
   const top10 = React.useMemo(
     () => [...perWeaver].sort((a, b) => b.produced - a.produced).slice(0, 10)
@@ -159,16 +159,20 @@ export function WeaverAnalytics() {
           </div>
         }
       >
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 16, flexWrap: "wrap" as const }}>
-          <div style={{ display: "flex", gap: 24, marginBottom: 16 }}>
+        <div style={{ width: "100%", marginBottom: 20 }}>
+          <div className="grid grid-cols-3 gap-2 sm:gap-6 w-full items-stretch">
             {[
               { label: "SAREES WOVEN", value: totalProduced.toLocaleString("en-IN"), color: T.royalBurgundy },
               { label: "QC PASS RATE", value: `${overallPassRate}%`, color: qcColor(overallPassRate) },
               { label: "MAKING CHARGES", value: formatMoney(rupees(totalPayout)), color: T.luxuryBrown },
             ].map(k => (
-              <div key={k.label}>
-                <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, letterSpacing: "1px", color: T.taupe }}>{k.label}</div>
-                <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: k.color }}>{k.value}</div>
+              <div key={k.label} className="flex flex-col justify-between p-2 sm:p-4 rounded-xl bg-[#FFFDF9] border border-[rgba(110,15,45,0.08)]">
+                <div style={{ fontFamily: F.ui, fontSize: "clamp(10px, 2.8vw, 12px)", fontWeight: 600, letterSpacing: "0.5px", color: T.taupe, textTransform: "uppercase", lineHeight: 1.2, minHeight: 28, display: "flex", alignItems: "center" }}>
+                  {k.label}
+                </div>
+                <div style={{ fontFamily: F.display, fontSize: "clamp(14px, 4vw, 22px)", fontWeight: 700, color: k.color, marginTop: 4, whiteSpace: "nowrap" }}>
+                  {k.value}
+                </div>
               </div>
             ))}
           </div>

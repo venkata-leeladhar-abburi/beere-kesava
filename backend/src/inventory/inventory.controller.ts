@@ -3,10 +3,9 @@ import { RequireRoles } from "../auth/decorators/require-roles.decorator";
 import { UserRole } from "../generated/prisma/client";
 import { InventoryService } from "./inventory.service";
 
-// Finished-saree stock — needed by retail (SHOP) and production (WORKER,
-// tracking what's ready to dispatch).
+// Finished-saree stock — needed by retail (SHOP), production (WORKER), ACCOUNTANT, ADMIN, SUPERADMIN.
 @Controller("inventory")
-@RequireRoles(UserRole.SHOP, UserRole.WORKER)
+@RequireRoles(UserRole.SHOP, UserRole.WORKER, UserRole.ACCOUNTANT, UserRole.ADMIN, UserRole.SUPERADMIN)
 export class InventoryController {
   constructor(private readonly inventoryService: InventoryService) {}
 

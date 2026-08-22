@@ -32,30 +32,31 @@ interface ShopDesktopHeroProps {
   pills?: ShopHeroPill[]; alertBadge?: string; stats?: ShopHeroStat[]; bgUrl?: string; bp?: "tablet" | "desktop";
 }
 function ShopDesktopHero({ breadcrumb, titleMain, titleSub, description, pills, alertBadge, stats, bgUrl, bp = "desktop" }: ShopDesktopHeroProps) {
-  const isTablet = bp === "tablet";
+  const { isMobile, isTablet: responsiveIsTablet } = useResponsive();
+  const isTablet = bp === "tablet" || responsiveIsTablet;
   return (
     <div style={{ position: "relative", overflow: "hidden", background: "#0D0207" }}>
       <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${bgUrl || SHOP_BG})`, backgroundSize: "cover", backgroundPosition: "center", opacity: 0.20 }} />
       <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg, rgba(13,2,7,0.96) 0%, rgba(13,2,7,0.79) 60%, rgba(13,2,7,0.53) 100%)" }} />
-      <div style={{ position: "relative", zIndex: 1, padding: isTablet ? "28px 24px 0" : "48px 48px 0" }}>
-        <div style={{ fontFamily: F.m, fontSize: 13, letterSpacing: "1.8px", color: "rgba(255,253,249,0.50)", textTransform: "uppercase" as const, marginBottom: 12 }}>{breadcrumb}</div>
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16 }}>
-          <div style={{ fontFamily: F.d, fontWeight: 400, fontSize: isTablet ? 40 : 56, color: "#FFFDF9", lineHeight: 1.1 }}>
-            {titleMain} <span style={{ fontFamily: F.d, fontStyle: "italic", fontWeight: 400, fontSize: isTablet ? 26 : 36, color: C.gold }}>{titleSub}</span>
+      <div style={{ position: "relative", zIndex: 1, padding: isMobile ? "24px 20px 0" : isTablet ? "28px 24px 0" : "48px 48px 0" }}>
+        <div style={{ fontFamily: F.m, fontSize: isMobile ? 11 : 13, letterSpacing: isMobile ? "1.2px" : "1.8px", color: "rgba(255,253,249,0.50)", textTransform: "uppercase" as const, marginBottom: 10 }}>{breadcrumb}</div>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 14 }}>
+          <div style={{ fontFamily: F.d, fontWeight: 400, fontSize: isMobile ? 28 : isTablet ? 40 : 56, color: "#FFFDF9", lineHeight: 1.1 }}>
+            {titleMain} <span style={{ fontFamily: F.d, fontStyle: "italic", fontWeight: 400, fontSize: isMobile ? 20 : isTablet ? 26 : 36, color: C.gold }}>{titleSub}</span>
           </div>
           {alertBadge && (
-            <div style={{ background: "rgba(200,155,71,0.22)", border: `1px solid ${C.gold}`, borderRadius: 999, padding: "8px 18px", display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-              <div style={{ width: 8, height: 8, borderRadius: "50%", background: C.gold }} />
-              <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: "#E7C983" }}>{alertBadge}</span>
+            <div style={{ background: "rgba(200,155,71,0.22)", border: `1px solid ${C.gold}`, borderRadius: 999, padding: isMobile ? "4px 12px" : "8px 18px", display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+              <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.gold }} />
+              <span style={{ fontFamily: F.u, fontSize: isMobile ? 12 : 13, fontWeight: 600, color: "#E7C983" }}>{alertBadge}</span>
             </div>
           )}
         </div>
-        <div className="max-w-[640px]" style={{ fontFamily: F.u, fontSize: 18, color: "rgba(255,253,249,0.70)", lineHeight: 1.6, marginBottom: 22 }}>{description}</div>
+        <div className="max-w-[640px]" style={{ fontFamily: F.u, fontSize: isMobile ? 14 : isTablet ? 16 : 18, color: "rgba(255,253,249,0.70)", lineHeight: 1.6, marginBottom: isMobile ? 16 : 22 }}>{description}</div>
         {pills && pills.length > 0 && (
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" as const, marginBottom: 32 }}>
+          <div style={{ display: "flex", gap: isMobile ? 8 : 10, flexWrap: "wrap" as const, marginBottom: isMobile ? 20 : 32 }}>
             {pills.map((p) => (
-              <div key={p.text} style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 999, padding: "6px 16px" }}>
-                <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: p.color || "#FFF" }}>{p.text}</span>
+              <div key={p.text} style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 999, padding: isMobile ? "4px 12px" : "6px 16px" }}>
+                <span style={{ fontFamily: F.u, fontSize: isMobile ? 12 : 13, fontWeight: 600, color: p.color || "#FFF" }}>{p.text}</span>
               </div>
             ))}
           </div>
@@ -81,7 +82,7 @@ function ShopDesktopHero({ breadcrumb, titleMain, titleSub, description, pills, 
           ))}
         </div>
       )}
-      <div style={{ position: "relative", zIndex: 1, height: 32 }} />
+      <div style={{ position: "relative", zIndex: 1, height: (stats && stats.length > 0) ? 32 : 64 }} />
     </div>
   );
 }
@@ -142,11 +143,11 @@ function Card({ children, style }: { children: React.ReactNode; style?: React.CS
 
 function Btn({ label, icon, onClick, variant = "burg", style }: { label: string; icon?: React.ReactNode; onClick?: () => void; variant?: "burg" | "green" | "gold" | "ghost" | "crim"; style?: React.CSSProperties }) {
   const classByVariant: Record<string, string> = {
-    burg: "bg-[#6E0F2D] text-white border-none hover:bg-[#6E0F2D]",
-    green: "bg-[#1E6640] text-white border-none hover:bg-[#1E6640]",
-    gold: "bg-[#C89B47] text-[#1A0A0F] border-none hover:bg-[#C89B47]",
-    ghost: "bg-transparent text-[#6E0F2D] border border-[#6E0F2D] hover:bg-transparent",
-    crim: "bg-[#C0392B] text-white border-none hover:bg-[#C0392B]",
+    burg: "bg-[#6E0F2D] hover:bg-[#4A061B] text-[#FFFDF9] hover:text-[#FFFDF9] border-none",
+    green: "bg-[#1E6640] hover:bg-[#15492D] text-[#FFFDF9] hover:text-[#FFFDF9] border-none",
+    gold: "bg-[#C89B47] hover:bg-[#A37B32] text-[#1A0A0F] hover:text-[#1A0A0F] border-none",
+    ghost: "bg-transparent text-[#6E0F2D] border border-[#6E0F2D] hover:bg-[#6E0F2D]/10",
+    crim: "bg-[#C0392B] hover:bg-[#962D22] text-[#FFFDF9] hover:text-[#FFFDF9] border-none",
   };
   return (
     <div style={style}>

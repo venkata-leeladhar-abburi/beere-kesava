@@ -6,10 +6,10 @@ import { Modal } from "../../../../shared/ui/overlay";
 import {
   X, Search, UserRound,
   Phone,
-  ArrowRight, ShoppingBag, Star
+  ArrowRight, ShoppingBag, Star, Users
 } from 'lucide-react';
 
-import { C, F, Card, Chip, useCanSeePrices } from './theme';
+import { C, F, Card, Chip, useCanSeePrices, PageHero, PortalStatsStrip, type PortalStat } from './theme';
 import { Button, IconButton, Input } from "../../../../shared/ui/primitives";
 import { useQuery } from '@tanstack/react-query';
 import { customersApi } from '../../../../shared/api/customers';
@@ -87,46 +87,29 @@ function CustomerProfiles() {
     }));
   }, [activeCustomer, salesList]);
 
-  return (
-    <div style={{ paddingBottom: 32 }}>
-      {/* Hero */}
-      <div style={{ background: C.dark, padding: "26px 20px 24px" }}>
-        <div style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 3, color: "rgba(255,255,255,0.55)", textTransform: "uppercase" as const, marginBottom: 8 }}>SINCE 1999 · CUSTOMER PROFILES</div>
-        <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 38, color: "#FFF", lineHeight: 1.15, marginBottom: 5 }}>Customer Profiles</div>
-        <div style={{ fontFamily: F.d, fontStyle: "italic", fontWeight: 500, fontSize: 18, color: C.gold }}>All retail customers</div>
-      </div>
+  const regularCount = customers.filter(c => c.regular).length;
+  const todayTransactions = salesList.filter(s => new Date(s.saleDate).toDateString() === new Date().toDateString()).length;
+  const topCustomer = customers[0]?.name ?? "—";
 
-      {/* Stats — stacked cards, no wrapping/truncation */}
-      <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 10, padding: "16px 20px 4px" }}>
-        <div style={{ flex: "1 1 100%", background: C.dark, borderRadius: 16, padding: "18px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div>
-            <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12, color: C.gold, marginBottom: 6 }}>Total Customers</div>
-            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.gold, lineHeight: 1 }}>{customers.length}</div>
-          </div>
-          <div style={{ fontFamily: F.u, fontSize: 12, color: "rgba(255,255,255,0.55)", textAlign: "right" as const }}>Active this year</div>
-        </div>
-        <div style={{ flex: "1 1 calc(50% - 5px)", background: "rgba(110,15,45,0.08)", border: `1px solid ${C.bdr}`, borderRadius: 16, padding: "16px 18px" }}>
-          <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12, color: C.text, marginBottom: 6 }}>Regular Customers</div>
-          <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.text, lineHeight: 1.2 }}>{customers.filter(c => c.regular).length}</div>
-          <div style={{ fontFamily: F.u, fontSize: 12, color: "rgba(26,10,15,0.55)", marginTop: 4 }}>Wholesale & repeat</div>
-        </div>
-        {canSeePrices ? (
-          <div style={{ flex: "1 1 calc(50% - 5px)", background: "rgba(200,155,71,0.12)", border: `1px solid rgba(200,155,71,0.30)`, borderRadius: 16, padding: "16px 18px" }}>
-            <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12, color: C.burg, marginBottom: 6 }}>Active Today</div>
-            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.burg, lineHeight: 1.2 }}>{salesList.filter(s => new Date(s.saleDate).toDateString() === new Date().toDateString()).length}</div>
-            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 4 }}>Transactions</div>
-          </div>
-        ) : (
-          <div style={{ flex: "1 1 calc(50% - 5px)", background: "rgba(200,155,71,0.12)", border: `1px solid rgba(200,155,71,0.30)`, borderRadius: 16, padding: "16px 18px" }}>
-            <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12, color: C.burg, marginBottom: 6 }}>Active Today</div>
-            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.burg, lineHeight: 1.2 }}>{salesList.filter(s => new Date(s.saleDate).toDateString() === new Date().toDateString()).length}</div>
-            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 4 }}>Transactions</div>
-          </div>
-        )}
-      </div>
+  const stats: PortalStat[] = [
+    { label: "Total customers", value: customers.length, sub: "Registered in system", icon: Users, highlight: true },
+    { label: "Regular customers", value: regularCount, sub: "Wholesale & repeat buyers", icon: Star },
+    { label: "Active today", value: todayTransactions, sub: "Transactions today", icon: ShoppingBag },
+    ...(canSeePrices ? [{ label: "Recent signup", value: topCustomer, sub: "Latest customer record", icon: Users }] : []),
+  ];
+
+  return (
+    <div style={{ paddingBottom: 110 }}>
+      <PageHero
+        eyebrow="Shop Staff Portal · Beere Kesava & Brothers Silks"
+        title="Customer Profiles"
+        titleAccent="& History"
+        description="All retail & wholesale customers — browse their purchase history, spending patterns, and contact details. Regular customers are starred for easy identification."
+      />
+      <PortalStatsStrip stats={stats} />
 
       {/* Search + Filter */}
-      <div style={{ padding: "16px 20px 8px" }}>
+      <div style={{ padding: "24px 20px 0" }}>
         <div style={{ marginBottom: 12 }}>
           <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name or phone" iconLeft={Search} size="lg" containerClassName="h-12 rounded-xl" />
         </div>
@@ -138,7 +121,7 @@ function CustomerProfiles() {
               size="sm"
               className={
                 "shrink-0 rounded-full px-[15px] py-2 h-auto whitespace-nowrap border " +
-                (sort === s ? "border-[#6E0F2D] bg-[#6E0F2D] text-white font-semibold" : "border-[rgba(110,15,45,0.12)] bg-transparent text-[#69635E] font-semibold")
+                (sort === s ? "border-[#6E0F2D] bg-[#6E0F2D] hover:bg-[#4A061B] text-[#FFFDF9] hover:text-[#FFFDF9] font-semibold" : "border-[rgba(110,15,45,0.12)] bg-transparent hover:bg-[#6E0F2D]/10 text-[#69635E] hover:text-[#6E0F2D] font-semibold")
               }
             >{s}</Button>
           ))}
@@ -166,7 +149,7 @@ function CustomerProfiles() {
               {canSeePrices && <Chip label={c.total} color={C.gold} bg="rgba(200,155,71,0.12)" />}
               <Chip label={`Last: ${c.last}`} color={C.muted} bg="rgba(139,112,96,0.08)" />
             </div>
-            <Button onClick={() => setSelected(i)} fullWidth className="h-[46px] gap-2 rounded-full bg-[#6E0F2D] border-none font-semibold text-sm text-white shadow-[0_2px_10px_rgba(110,15,45,0.28)]">
+            <Button variant="primary" onClick={() => setSelected(i)} fullWidth className="h-[46px] gap-2 rounded-full bg-[#6E0F2D] hover:bg-[#4A061B] text-[#FFFDF9] hover:text-[#FFFDF9] border-none font-semibold text-sm shadow-[0_2px_10px_rgba(110,15,45,0.28)]">
               <UserRound size={16} /> View Profile <ArrowRight size={14} />
             </Button>
           </Card>

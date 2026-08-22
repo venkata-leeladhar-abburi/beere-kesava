@@ -137,7 +137,7 @@ function ShopInventory() {
               size="sm"
               className={
                 "shrink-0 rounded-full px-4 py-2 h-auto whitespace-nowrap border " +
-                (filter === f ? "border-[#6E0F2D] bg-[#6E0F2D] text-white font-semibold" : "border-[rgba(110,15,45,0.12)] bg-transparent text-[#69635E] font-semibold")
+                (filter === f ? "border-[#6E0F2D] bg-[#6E0F2D] hover:bg-[#4A061B] text-[#FFFDF9] hover:text-[#FFFDF9] font-semibold" : "border-[rgba(110,15,45,0.12)] bg-transparent hover:bg-[#6E0F2D]/10 text-[#69635E] hover:text-[#6E0F2D] font-semibold")
               }
             >{f}</Button>
           ))}
@@ -155,7 +155,7 @@ function ShopInventory() {
                   size="sm"
                   className={
                     "shrink-0 rounded-full px-4 py-2 h-auto whitespace-nowrap border " +
-                    (isSel ? "border-[#6E0F2D] bg-[#6E0F2D] text-white font-semibold" : "border-[rgba(110,15,45,0.12)] bg-transparent text-[#69635E] font-semibold")
+                    (isSel ? "border-[#6E0F2D] bg-[#6E0F2D] hover:bg-[#4A061B] text-[#FFFDF9] hover:text-[#FFFDF9] font-semibold" : "border-[rgba(110,15,45,0.12)] bg-transparent hover:bg-[#6E0F2D]/10 text-[#69635E] hover:text-[#6E0F2D] font-semibold")
                   }
                 >
                   {l === "All Looms" ? "All Looms" : `Loom ${l}`}
@@ -177,7 +177,7 @@ function ShopInventory() {
                   size="sm"
                   className={
                     "shrink-0 rounded-full px-4 py-2 h-auto whitespace-nowrap border " +
-                    (isSel ? "border-[#6E0F2D] bg-[#6E0F2D] text-white font-semibold" : "border-[rgba(110,15,45,0.12)] bg-transparent text-[#69635E] font-semibold")
+                    (isSel ? "border-[#6E0F2D] bg-[#6E0F2D] hover:bg-[#4A061B] text-[#FFFDF9] hover:text-[#FFFDF9] font-semibold" : "border-[rgba(110,15,45,0.12)] bg-transparent hover:bg-[#6E0F2D]/10 text-[#69635E] hover:text-[#6E0F2D] font-semibold")
                   }
                 >
                   {w}

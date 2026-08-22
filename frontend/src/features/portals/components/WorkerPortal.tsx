@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { useAuth, type Role } from "../../../contexts/AuthContext";
 import { motion, AnimatePresence } from "motion/react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Home, Users, Bell, ChevronLeft, Menu, Search, X, UserRound, Sparkles, UserCheck, Truck, LogOut } from "lucide-react";
 import { C, F } from "./worker/tokens";
-import { Drawer } from "../../../shared/ui/overlay";
+import { Drawer, Popover } from "../../../shared/ui/overlay";
+import { BackendNotification, notificationsApi } from "../../../shared/api/notifications";
 import { WorkerHome } from "./worker/WorkerHome";
 import { WorkerWeavers } from "./worker/WorkerWeavers";
 import { WorkerQC } from "./worker/WorkerQC";
@@ -22,6 +23,22 @@ import { Button, IconButton } from "../../../shared/ui/primitives";
 import { imgBKLogo } from "../../../shared/constants/weaverImages";
 
 type Tab = "home" | "qc" | "weavers" | "finishing" | "dispatch" | "profile";
+
+function notifEmoji(type: string): string {
+  if (type.includes("qc")) return "🔍";
+  if (type.includes("receive") || type.includes("weaver")) return "🧵";
+  if (type.includes("pass") || type.includes("complete")) return "✅";
+  return "🔔";
+}
+
+function formatRelativeTime(iso: string): string {
+  const diffMin = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+  if (diffMin < 1) return "Now";
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffHrs = Math.round(diffMin / 60);
+  if (diffHrs < 24) return `${diffHrs}h ago`;
+  return `${Math.round(diffHrs / 24)}d ago`;
+}
 
 const TABS: { id: Tab; Icon: IconComponent; label: string; badge?: string }[] = [
   { id: "home",      Icon: Home,       label: "Home"          },
@@ -45,6 +62,14 @@ interface WorkerPortalProps { onBack?: () => void }
 function WorkerMobileTopNav({ onMenuOpen, onProfile }: { onMenuOpen: () => void; onProfile: () => void }) {
   const { user, logout } = useAuth();
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [showNotif, setShowNotif] = useState(false);
+  const [notifications, setNotifications] = useState<BackendNotification[]>([]);
+
+  useEffect(() => {
+    notificationsApi.list({ role: "WORKER", pageSize: 5 })
+      .then(res => setNotifications(res.items))
+      .catch(() => setNotifications([]));
+  }, []);
 
   const userName = user?.name || "Ravi Kumar";
   const initials = userName.split(" ").filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase() || "RK";
@@ -87,36 +112,76 @@ function WorkerMobileTopNav({ onMenuOpen, onProfile }: { onMenuOpen: () => void;
         </div>
       </div>
 
-      <div style={{ position: "relative" }}>
-        <div style={{ borderRadius: 10, border: `1px solid ${showProfileDropdown ? C.gold : "rgba(200,155,71,0.40)"}`, boxShadow: "0 3px 10px rgba(110,15,45,0.15)", display: "inline-block" }}>
-          <Button
-            onClick={() => setShowProfileDropdown(p => !p)}
-            variant="tertiary"
-            className="!size-9 !rounded-[10px] !p-0 !border-none !bg-[#6E0F2D] hover:!bg-[#6E0F2D]"
-          >
-            <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 12, color: "#FFFFFF" }}>{initials}</span>
-          </Button>
-        </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        {/* Notifications Icon Button */}
+        <Popover open={showNotif} onOpenChange={o => { setShowNotif(o); if (o) setShowProfileDropdown(false); }}>
+          <Popover.Trigger asChild>
+            <div style={{ position: "relative" }}>
+              <IconButton
+                icon={Bell}
+                label="Notifications"
+                variant="ghost"
+                className="!size-9 !rounded-[10px] border border-[rgba(110,15,45,0.12)] bg-transparent hover:bg-[rgba(0,0,0,0.04)] text-[#1A0A0F]"
+              />
+              <div style={{ position: "absolute", top: 4, right: 4, width: 8, height: 8, borderRadius: "50%", background: "#F47B72", border: `1.5px solid #FFFDF9`, pointerEvents: "none" }} />
+            </div>
+          </Popover.Trigger>
+          <Popover.Content align="end" sideOffset={8} className="!w-[300px] !max-w-[calc(100vw-32px)] !p-0 !overflow-hidden !z-[200]">
+            <div style={{ padding: "12px 16px", borderBottom: `1px solid rgba(110,15,45,0.08)`, display: "flex", justifyContent: "space-between", alignItems: "center", background: "#FFFDF9" }}>
+              <span style={{ fontFamily: F.d, fontSize: 14, fontWeight: 600, color: C.dark }}>Notifications</span>
+              <span style={{ fontFamily: F.u, fontSize: 12, color: C.gold, cursor: "pointer" }}>Mark all read</span>
+            </div>
+            <div style={{ background: "#FFF" }}>
+              {notifications.length === 0 ? (
+                <div style={{ padding: "20px 16px", textAlign: "center", fontFamily: F.u, fontSize: 13, color: C.muted }}>No notifications.</div>
+              ) : notifications.map((n, i) => (
+                <div key={n.id} style={{ padding: "10px 16px", borderBottom: i < notifications.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", display: "flex", gap: 10, alignItems: "flex-start" }}>
+                  <span style={{ fontSize: 14, flexShrink: 0 }}>{notifEmoji(n.type)}</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.dark, marginBottom: 2 }}>{n.type.replace(/_/g, " ")}</div>
+                    {n.payload && Object.keys(n.payload).length > 0 && (
+                      <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{JSON.stringify(n.payload)}</div>
+                    )}
+                  </div>
+                  <span style={{ fontFamily: F.m, fontSize: 11, color: C.muted, flexShrink: 0 }}>{formatRelativeTime(n.createdAt)}</span>
+                </div>
+              ))}
+            </div>
+          </Popover.Content>
+        </Popover>
 
-        {showProfileDropdown && (
-          <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: 200, background: "#FFFDF9", borderRadius: 14, border: `1px solid rgba(110,15,45,0.14)`, boxShadow: "0 8px 32px rgba(44,24,16,0.14)", minWidth: 210, overflow: "hidden" }}>
-            <div style={{ padding: "14px 16px", background: "rgba(196,146,58,0.06)", borderBottom: `1px solid rgba(110,15,45,0.10)` }}>
-              <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.dark }}>{userName}</div>
-              <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>{subtitleText}</div>
-            </div>
-            <div style={{ padding: "6px 0" }}>
-              <Button onClick={() => { setShowProfileDropdown(false); onProfile(); }} variant="tertiary" fullWidth
-                className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]">
-                <UserRound size={14} color={C.muted} /> View Profile
-              </Button>
-              <div style={{ height: 1, background: "rgba(110,15,45,0.08)", margin: "4px 0" }} />
-              <Button onClick={() => { setShowProfileDropdown(false); logout(); }} variant="tertiary" fullWidth
-                className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#C0392B] hover:!text-[#C0392B]">
-                <LogOut size={14} color="#C0392B" /> Logout
-              </Button>
-            </div>
+        {/* Profile Avatar Button */}
+        <div style={{ position: "relative" }}>
+          <div style={{ borderRadius: 10, border: `1px solid ${showProfileDropdown ? C.gold : "rgba(200,155,71,0.40)"}`, boxShadow: "0 3px 10px rgba(110,15,45,0.15)", display: "inline-block" }}>
+            <Button
+              onClick={() => { setShowProfileDropdown(p => !p); if (!showProfileDropdown) setShowNotif(false); }}
+              variant="tertiary"
+              className="!size-9 !rounded-[10px] !p-0 !border-none !bg-[#6E0F2D] hover:!bg-[#6E0F2D]"
+            >
+              <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 12, color: "#FFFFFF" }}>{initials}</span>
+            </Button>
           </div>
-        )}
+
+          {showProfileDropdown && (
+            <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: 200, background: "#FFFDF9", borderRadius: 14, border: `1px solid rgba(110,15,45,0.14)`, boxShadow: "0 8px 32px rgba(44,24,16,0.14)", minWidth: 210, overflow: "hidden" }}>
+              <div style={{ padding: "14px 16px", background: "rgba(196,146,58,0.06)", borderBottom: `1px solid rgba(110,15,45,0.10)` }}>
+                <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.dark }}>{userName}</div>
+                <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>{subtitleText}</div>
+              </div>
+              <div style={{ padding: "6px 0" }}>
+                <Button onClick={() => { setShowProfileDropdown(false); onProfile(); }} variant="tertiary" fullWidth
+                  className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#3B2314]">
+                  <UserRound size={14} color={C.muted} /> View Profile
+                </Button>
+                <div style={{ height: 1, background: "rgba(110,15,45,0.08)", margin: "4px 0" }} />
+                <Button onClick={() => { setShowProfileDropdown(false); logout(); }} variant="tertiary" fullWidth
+                  className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#C0392B] hover:!text-[#C0392B]">
+                  <LogOut size={14} color="#C0392B" /> Logout
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </nav>
   );
@@ -319,23 +384,25 @@ function MobilePortal({ onBack, activeTab, setActiveTab }: MobilePortalProps) {
       {/* Global Header matching Superadmin mobile header */}
       <WorkerMobileTopNav onMenuOpen={() => setShowMenu(true)} onProfile={() => setShowProfile(true)} />
 
-      {/* Content */}
-      <div style={{ flex: 1, overflowY: "auto", paddingBottom: 68 }}>
-        {activeTab === "qc" && (
-          <SectionNavigator
-            sections={PAGE_SECTIONS.WorkerQC}
-            stickyTop={0}
-            height={WORKER_SECTION_NAV_H}
-            activeColor={C.burg}
-            mutedColor={C.muted}
-            borderColor={C.bdr}
-            fontFamily={F.u}
-            padding="8px 16px"
-            layoutId="worker-qc-section-pill"
-          />
-        )}
+      {/* Sticky Section Navigator — matching SuperadminDashboard layout */}
+      {activeTab === "qc" && (
+        <SectionNavigator
+          sections={PAGE_SECTIONS.WorkerQC}
+          stickyTop={60}
+          height={WORKER_SECTION_NAV_H}
+          activeColor={C.burg}
+          mutedColor={C.muted}
+          borderColor={C.bdr}
+          fontFamily={F.u}
+          padding="8px 16px"
+          layoutId="worker-qc-section-pill"
+        />
+      )}
+
+      {/* Content — window scroll matching SuperadminDashboard */}
+      <div style={{ flex: 1, paddingBottom: 80 }}>
         <AnimatePresence mode="wait">
-          <motion.div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
+          <motion.div key={activeTab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
             {activeTab === "home"      && <WorkerHome onNavigate={handleNavigate} />}
             {activeTab === "qc"       && <WorkerQC />}
             {activeTab === "weavers"  && <WorkerWeavers />}

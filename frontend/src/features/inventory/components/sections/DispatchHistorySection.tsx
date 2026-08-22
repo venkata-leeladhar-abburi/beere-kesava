@@ -72,49 +72,49 @@ function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { row
   const editingCustomer = editingCustomerId ? customers.find(c => c.id === editingCustomerId) ?? null : null;
   const columns: ColumnDef<DispatchRecord>[] = [
     {
-      id: "date", header: "Date", accessor: d => formatDateStr(d.dispatchDate), width: 110,
-      cell: (_v, d) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontVariantNumeric: "tabular-nums" }}>{formatDateStr(d.dispatchDate)}</span>,
+      id: "date", header: "Date", accessor: d => formatDateStr(d.dispatchDate), width: 130,
+      cell: (_v, d) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{formatDateStr(d.dispatchDate)}</span>,
     },
     {
-      id: "type", header: "Type", accessor: d => d.type, width: 90,
+      id: "type", header: "Type", accessor: d => d.type, width: 110,
       cell: (_v, d) => (
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: d.type === "wholesale" ? "rgba(110,15,45,0.08)" : "rgba(200,155,71,0.14)", color: d.type === "wholesale" ? T.royalBurgundy : "#8B6018", border: `1px solid ${d.type === "wholesale" ? "rgba(110,15,45,0.18)" : "rgba(200,155,71,0.32)"}`, borderRadius: 999, padding: "2px 9px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, textTransform: "capitalize" as const }}>
-          {d.type === "wholesale" ? <Users size={10} /> : <ShoppingBag size={10} />}{d.type}
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: d.type === "wholesale" ? "rgba(110,15,45,0.08)" : "rgba(200,155,71,0.14)", color: d.type === "wholesale" ? T.royalBurgundy : "#8B6018", border: `1px solid ${d.type === "wholesale" ? "rgba(110,15,45,0.18)" : "rgba(200,155,71,0.32)"}`, borderRadius: 999, padding: "3px 10px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, textTransform: "capitalize" as const, whiteSpace: "nowrap" }}>
+          {d.type === "wholesale" ? <Users size={11} /> : <ShoppingBag size={11} />}{d.type}
         </span>
       ),
     },
     {
-      id: "destination", header: "Destination", accessor: d => d.customerName ?? "", priority: 1,
-      cell: (_v, d) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{d.type === "wholesale" ? (d.customerName ?? "—") : "Shop / Showroom"}</span>,
+      id: "destination", header: "Destination", accessor: d => d.customerName ?? "", width: 180, priority: 1,
+      cell: (_v, d) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, whiteSpace: "nowrap" }}>{d.type === "wholesale" ? (d.customerName ?? "—") : "Shop / Showroom"}</span>,
     },
     {
-      id: "lr", header: "LR / Transport", accessor: d => d.lrNumber, width: 130, priority: 3,
+      id: "lr", header: "LR / Transport", accessor: d => d.lrNumber, width: 160, priority: 3,
       cell: (_v, d) => (
         <div>
-          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.royalBurgundy, fontVariantNumeric: "tabular-nums" }}>{d.lrNumber || "—"}</div>
-          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>{d.transportCompany || "—"}</div>
+          <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.royalBurgundy, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{d.lrNumber || "—"}</div>
+          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1, whiteSpace: "nowrap" }}>{d.transportCompany || "—"}</div>
         </div>
       ),
     },
     {
-      id: "invoice", header: "Invoice", accessor: d => d.invoiceNumber, width: 100, priority: 3,
+      id: "invoice", header: "Invoice", accessor: d => d.invoiceNumber, width: 130, priority: 3,
       cell: (_v, d) => d.invoiceNumber
         ? <EntityCode type="invoice" value={d.invoiceNumber} />
         : <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>—</span>,
     },
     {
-      id: "sarees", header: "Sarees", accessor: d => d.sareeIds.length, type: "number", width: 80,
-      cell: (_v, d) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, fontVariantNumeric: "tabular-nums" }}>{d.sareeIds.length}</span>,
+      id: "sarees", header: "Sarees", accessor: d => d.sareeIds.length, type: "number", width: 95,
+      cell: (_v, d) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{d.sareeIds.length} sarees</span>,
     },
     {
-      id: "firm", header: "Firm", accessor: d => d.firmName, width: 110, priority: 3,
+      id: "firm", header: "Firm", accessor: d => d.firmName, width: 150, priority: 3,
       cell: (_v, d) => {
         const firm = firms.find(f => f.id === d.firmId);
-        return <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{d.firmName || firm?.firmName || "—"}</span>;
+        return <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>{d.firmName || firm?.firmName || "—"}</span>;
       },
     },
     {
-      id: "status", header: "Status", accessor: d => (d.pendingTransport || d.pendingReceipt) ? "incomplete" : "complete", type: "status", width: 130,
+      id: "status", header: "Status", accessor: d => (d.pendingTransport || d.pendingReceipt) ? "incomplete" : "complete", type: "status", width: 160,
       cell: (_v, d) => {
         const incomplete = d.pendingTransport || d.pendingReceipt;
         return incomplete ? (
@@ -128,16 +128,16 @@ function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { row
             Complete Details
           </Button>
         ) : (
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.green }}>
-            <CheckCircle2 size={12} /> Complete
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.green, whiteSpace: "nowrap" }}>
+            <CheckCircle2 size={13} /> Complete
           </span>
         );
       },
     },
     {
-      id: "actions", header: "Actions", accessor: () => null, type: "actions", width: 130, exportable: false,
+      id: "actions", header: "Actions", accessor: () => null, type: "actions", width: 110, exportable: false,
       cell: (_v, d) => (
-        <div style={{ display: "flex", gap: 8 }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           {d.type === "wholesale" && d.customerId && (
             <button
               onClick={() => setEditingCustomerId(d.customerId!)}
@@ -180,43 +180,33 @@ function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { row
         <EditWholesaleCustomerModal customer={editingCustomer} onClose={() => setEditingCustomerId(null)} />
       )}
 
-      {/* Mobile View Switcher */}
-      <div className="md:hidden flex justify-between items-center p-3 bg-[#FAFAF8] border-b border-[#E8E2D9]">
-        <div style={{ display: "inline-flex", alignItems: "center", background: "#FFFFFF", border: `1.5px solid ${T.borderDef}`, borderRadius: 999, padding: 3, gap: 2 }}>
-          <button
+      {/* View Switcher Segment — matching SectionC.tsx (Mobile Only) */}
+      <div className="md:hidden p-3">
+        <div className="flex items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0 inline-flex">
+          <Button
             type="button"
             onClick={() => setView("card")}
-            style={{
-              display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 999,
-              fontFamily: F.ui, fontSize: 13, fontWeight: 600,
-              background: view === "card" ? "#6E0F2D" : "transparent",
-              color: view === "card" ? "#FFFFFF" : T.taupe,
-              border: "none",
-              boxShadow: view === "card" ? "0 2px 8px rgba(110,15,45,0.25)" : "none",
-              cursor: "pointer",
-              transition: "all 0.2s ease",
-            }}
+            variant="ghost"
+            className={`h-auto rounded-none gap-1.5 py-1.5 px-3.5 text-[12px] font-bold ${
+              view === "card"
+                ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+                : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+            }`}
           >
-            <LayoutGrid size={15} color={view === "card" ? "#FFFFFF" : T.taupe} />
-            Card View
-          </button>
-          <button
+            <LayoutGrid size={14} /> Card View
+          </Button>
+          <Button
             type="button"
             onClick={() => setView("table")}
-            style={{
-              display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 999,
-              fontFamily: F.ui, fontSize: 13, fontWeight: 600,
-              background: view === "table" ? "#6E0F2D" : "transparent",
-              color: view === "table" ? "#FFFFFF" : T.taupe,
-              border: "none",
-              boxShadow: view === "table" ? "0 2px 8px rgba(110,15,45,0.25)" : "none",
-              cursor: "pointer",
-              transition: "all 0.2s ease",
-            }}
+            variant="ghost"
+            className={`h-auto rounded-none gap-1.5 py-1.5 px-3.5 text-[12px] font-bold ${
+              view === "table"
+                ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
+                : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+            }`}
           >
-            <LayoutList size={15} color={view === "table" ? "#FFFFFF" : T.taupe} />
-            Table View
-          </button>
+            <LayoutList size={14} /> Table View
+          </Button>
         </div>
       </div>
 
@@ -323,7 +313,7 @@ function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { row
 
       {/* Table View (Mobile Table mode or Desktop default) */}
       <div className={view === "table" ? "w-full overflow-x-auto section-nav-scroll" : "hidden md:block w-full overflow-x-auto section-nav-scroll"}>
-        <div className="min-w-[850px]">
+        <div className="min-w-[1080px]">
           <DataTable
             responsive={false}
             columns={columns}

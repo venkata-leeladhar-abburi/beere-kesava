@@ -1,5 +1,6 @@
-import { useCanSeePrices, HeroHeader, StatsStrip, TabId } from "./theme";
-import { ShoppingBag, Check, Send, AlertTriangle, Package, RotateCcw, ArrowUpRight, X } from "lucide-react";
+import { useCanSeePrices, PageHero, PortalStatsStrip, TabId, type PortalStat } from "./theme";
+import { ShoppingBag, Check, Send, AlertTriangle, Package, RotateCcw, ArrowUpRight, X, ChevronRight, BarChart2 } from "lucide-react";
+import { useAuth } from "../../../../contexts/AuthContext";
 import React, { useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { Modal } from "../../../../shared/ui/overlay";
@@ -22,6 +23,7 @@ function dateLabel(iso: string) {
 }
 
 function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void }) {
+  const { user } = useAuth();
   const canSeePrices = useCanSeePrices();
   const [alerted, setAlerted] = useState(false);
   const [showLowStockDialog, setShowLowStockDialog] = useState(false);
@@ -93,20 +95,39 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
   }));
 
   const latestReturn = returnsList[0];
+  const firstName = user?.name ? user.name.split(" ")[0] : "Staff";
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+
+  const stats: PortalStat[] = [
+    { label: "Today's sales", value: salesError ? "Error" : todaySales.length, sub: salesError ? "Failed to load" : "Recorded today", icon: ShoppingBag, highlight: true },
+    ...(canSeePrices ? [{ label: "Today's revenue", value: salesError ? "Error" : formatMoney(rupees(todayRevenue)), sub: salesError ? "Failed to load" : `From ${todaySales.length} sales`, icon: BarChart2 }] : []),
+    { label: "Shop inventory", value: inventoryError ? "Error" : inventoryList.length, sub: inventoryError ? "Failed to load" : "Currently in stock", icon: Package },
+    { label: "Returns today", value: returnsError ? "Error" : todayReturns.length, sub: returnsError ? "Failed to load" : "Processed and recorded", icon: RotateCcw, alert: todayReturns.length > 0 },
+  ];
 
   return (
-    <div style={{ paddingBottom: 32 }}>
-      <HeroHeader eyebrow="SINCE 1999 · SHOP OVERVIEW" title="Shop Home" sub="& Today's Overview"
-        desc="Today's sales, current inventory, and quick actions for the shop counter." />
-      <StatsStrip items={[
-        { label: "TODAY'S SALES", val: salesError ? "Error" : `${todaySales.length} saree${todaySales.length !== 1 ? "s" : ""}`, sub: salesError ? "Failed to load" : "Recorded today" },
-        ...(canSeePrices ? [{ label: "TODAY'S REVENUE", val: salesError ? "Error" : formatMoney(rupees(todayRevenue)), sub: salesError ? "Failed to load" : `From ${todaySales.length} sales` }] : []),
-        { label: "SHOP INVENTORY", val: inventoryError ? "Error" : `${inventoryList.length} sarees`, sub: inventoryError ? "Failed to load" : "Currently in stock", highlight: true },
-        { label: "RETURNS TODAY", val: returnsError ? "Error" : `${todayReturns.length} return${todayReturns.length !== 1 ? "s" : ""}`, sub: returnsError ? "Failed to load" : "Processed and recorded" },
-      ]} />
+    <div style={{ paddingBottom: 110 }}>
+      <PageHero
+        eyebrow="Shop Staff Portal · Beere Kesava & Brothers Silks"
+        title={greeting + ","}
+        titleAccent={firstName}
+        description={`Here's what needs your attention today. You have ${todaySales.length} sale${todaySales.length === 1 ? "" : "s"} recorded today.`}
+        actions={
+          <Button
+            variant="primary"
+            iconRight={ChevronRight}
+            onClick={() => onNavigate("sale")}
+            className="rounded-[14px] bg-gradient-to-br from-[#6E0F2D] to-[#4A061B] px-6 py-[13px] text-[#FFFDF9] shadow-[0_8px_28px_rgba(110,15,45,0.45)] hover:from-[#6E0F2D] hover:to-[#4A061B]"
+          >
+            Start Today's Work
+          </Button>
+        }
+      />
+      <PortalStatsStrip stats={stats} />
 
       {/* Quick New Sale */}
-      <div style={{ margin: "20px 20px 14px" }}>
+      <div style={{ margin: "24px 20px 0" }}>
         <div style={{
           background: "linear-gradient(160deg, rgba(200,155,71,0.10) 0%, rgba(110,15,45,0.05) 100%)",
           border: `2px solid ${C.burg}`, borderRadius: 20, padding: "22px 20px", boxShadow: "0 4px 18px rgba(110,15,45,0.08)",
@@ -120,84 +141,80 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
               <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginTop: 3, lineHeight: 1.4 }}>Record a sale at the counter</div>
             </div>
           </div>
-          <Button onClick={() => onNavigate("sale")} fullWidth className="h-14 rounded-full bg-[#6E0F2D] border-none font-bold text-base text-white gap-2 shadow-[0_6px_18px_rgba(110,15,45,0.30)]">
+          <Button variant="primary" onClick={() => onNavigate("sale")} fullWidth className="h-14 rounded-full bg-[#6E0F2D] hover:bg-[#4A061B] text-[#FFFDF9] hover:text-[#FFFDF9] border-none font-bold text-base gap-2 shadow-[0_6px_18px_rgba(110,15,45,0.30)]">
             <ArrowUpRight size={20} /> Start New Sale
           </Button>
         </div>
       </div>
 
-      {/* Process Return quick link */}
-      <div style={{ margin: "0 20px 8px", display: "flex", gap: 12 }}>
-        <Button onClick={() => onNavigate("return")} className="flex-1 h-[52px] border border-[rgba(110,15,45,0.12)] bg-white rounded-2xl font-semibold text-sm text-[#1A0A0F] gap-2 shadow-[0_1px_6px_rgba(44,24,16,0.05)]">
-          <RotateCcw size={17} color={C.crim} /> Process Return
-        </Button>
-        <Button onClick={() => onNavigate("inventory")} className="flex-1 h-[52px] border border-[rgba(110,15,45,0.12)] bg-white rounded-2xl font-semibold text-sm text-[#1A0A0F] gap-2 shadow-[0_1px_6px_rgba(44,24,16,0.05)]">
-          <Package size={17} color={C.burg} /> View Inventory
-        </Button>
+      {/* Recent Sales */}
+      <div style={{ margin: "24px 20px 0" }}>
+        <SectionTitle title="Recent Sales — Today" link="View All →" onLink={() => onNavigate("reports")} />
+        <Card style={{ margin: 0, padding: 0, overflow: "hidden" }}>
+          {recentSales.length === 0 ? (
+            <div style={{ padding: "24px 16px", textAlign: "center", fontFamily: F.u, fontSize: 14, color: C.muted }}>
+              No sales recorded today yet.
+            </div>
+          ) : (
+            recentSales.map((s, i) => (
+              <div key={s.id} style={{ display: "flex", alignItems: "center", padding: "16px", borderBottom: i < recentSales.length - 1 ? `1px solid rgba(110,15,45,0.08)` : "none" }}>
+                <div style={{ width: 6, height: 40, borderRadius: 3, background: s.color, marginRight: 14, flexShrink: 0 }} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" as const }}>
+                    <span style={{ fontFamily: F.m, fontSize: 13, color: C.burg, fontWeight: 700 }}>{s.id}</span>
+                    {s.ext && <Chip label="📦 External" color={C.gold} bg="rgba(200,155,71,0.12)" />}
+                  </div>
+                  <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text, marginTop: 3 }}>{s.customer}</div>
+                  <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginTop: 1 }}>{s.design}</div>
+                </div>
+                <div style={{ textAlign: "right" as const, flexShrink: 0, marginLeft: 8 }}>
+                  {canSeePrices && <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: C.gold }}>{s.amt}</div>}
+                  <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 3 }}>{s.time}</div>
+                </div>
+              </div>
+            ))
+          )}
+        </Card>
       </div>
 
-      {/* Recent Sales */}
-      <SectionTitle title="Recent Sales — Today" link="View All →" onLink={() => onNavigate("reports")} />
-      <Card style={{ margin: "0 20px", padding: 0, overflow: "hidden" }}>
-        {recentSales.length === 0 ? (
-          <div style={{ padding: "24px 16px", textAlign: "center", fontFamily: F.u, fontSize: 14, color: C.muted }}>
-            No sales recorded today yet.
-          </div>
-        ) : (
-          recentSales.map((s, i) => (
-            <div key={s.id} style={{ display: "flex", alignItems: "center", padding: "16px", borderBottom: i < recentSales.length - 1 ? `1px solid rgba(110,15,45,0.08)` : "none" }}>
-              <div style={{ width: 6, height: 40, borderRadius: 3, background: s.color, marginRight: 14, flexShrink: 0 }} />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" as const }}>
-                  <span style={{ fontFamily: F.m, fontSize: 13, color: C.burg }}>{s.id}</span>
-                  {s.ext && <Chip label="📦 External" color={C.gold} bg="rgba(200,155,71,0.12)" />}
-                </div>
-                <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text, marginTop: 3 }}>{s.customer}</div>
-                <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginTop: 1 }}>{s.design}</div>
-              </div>
-              <div style={{ textAlign: "right" as const, flexShrink: 0, marginLeft: 8 }}>
-                {canSeePrices && <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: C.gold }}>{s.amt}</div>}
-                <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 3 }}>{s.time}</div>
-              </div>
-            </div>
-          ))
-        )}
-      </Card>
-
       {/* Returns Today */}
-      <SectionTitle title="Returns Today" />
-      <div style={{ margin: "0 20px", background: C.white, border: `1px solid ${C.bdr}`, borderLeft: `3px solid ${C.crim}`, borderRadius: 14, padding: "16px" }}>
-        {latestReturn ? (
-          <div style={{ display: "flex", alignItems: "flex-start", gap: 10, flexWrap: "wrap" as const }}>
-            <Chip label="↩ Return" color={C.crim} bg="rgba(192,57,43,0.10)" />
-            <div style={{ flex: 1, minWidth: 180 }}>
-              <div style={{ fontFamily: F.m, fontSize: 13, color: C.burg }}>{latestReturn.sareeId}</div>
-              <div style={{ fontFamily: F.u, fontSize: 14, color: C.text, marginTop: 2, lineHeight: 1.4 }}>
-                {latestReturn.reason}
-                {canSeePrices && latestReturn.refundAmount ? ` · ${formatMoney(rupees(Number(latestReturn.refundAmount)))}` : ""}
+      <div style={{ margin: "24px 20px 0" }}>
+        <SectionTitle title="Returns Today" />
+        <div style={{ background: C.white, border: `1px solid ${C.bdr}`, borderLeft: `3px solid ${C.crim}`, borderRadius: 14, padding: "16px" }}>
+          {latestReturn ? (
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 10, flexWrap: "wrap" as const }}>
+              <Chip label="↩ Return" color={C.crim} bg="rgba(192,57,43,0.10)" />
+              <div style={{ flex: 1, minWidth: 180 }}>
+                <div style={{ fontFamily: F.m, fontSize: 13, color: C.burg, fontWeight: 700 }}>{latestReturn.sareeId}</div>
+                <div style={{ fontFamily: F.u, fontSize: 14, color: C.text, marginTop: 2, lineHeight: 1.4 }}>
+                  {latestReturn.reason}
+                  {canSeePrices && latestReturn.refundAmount ? ` · ${formatMoney(rupees(Number(latestReturn.refundAmount)))}` : ""}
+                </div>
               </div>
+              <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{dateLabel(latestReturn.returnDate)}</div>
             </div>
-            <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{dateLabel(latestReturn.returnDate)}</div>
-          </div>
-        ) : (
-          <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>No returns recorded today.</div>
-        )}
+          ) : (
+            <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>No returns recorded today.</div>
+          )}
+        </div>
       </div>
 
       {/* Low Stock Alert */}
-      <SectionTitle title="Stock Alert" />
-      <div style={{ margin: "0 20px 16px", background: "rgba(192,57,43,0.06)", borderRadius: 16, borderLeft: `4px solid ${C.crim}`, padding: "18px" }}>
-        <div style={{ fontFamily: F.u, fontWeight: 500, fontSize: 14, color: C.text, marginBottom: 14, lineHeight: 1.5 }}>
-          ⚠ Shop stock is running low — only <strong>{inventoryList.length} sarees</strong> remaining.
-        </div>
-        {alerted ? (
-          <div style={{ display: "flex", alignItems: "center", gap: 8, color: C.green }}>
-            <Check size={18} />
-            <span style={{ fontFamily: F.u, fontSize: 14, lineHeight: 1.4 }}>Admin and Superadmin have been notified about low stock.</span>
+      <div style={{ margin: "24px 20px 0" }}>
+        <SectionTitle title="Stock Alert" />
+        <div style={{ background: "rgba(192,57,43,0.06)", borderRadius: 16, borderLeft: `4px solid ${C.crim}`, padding: "18px" }}>
+          <div style={{ fontFamily: F.u, fontWeight: 500, fontSize: 14, color: C.text, marginBottom: 14, lineHeight: 1.5 }}>
+            ⚠ Shop stock is running low — only <strong>{inventoryList.length} sarees</strong> remaining.
           </div>
-        ) : (
-          <Btn label="Report Low Stock to Admin" icon={<Send size={16} />} onClick={() => setShowLowStockDialog(true)} style={{ width: "100%", height: 54, background: C.burg, fontSize: 14 }} />
-        )}
+          {alerted ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, color: C.green }}>
+              <Check size={18} />
+              <span style={{ fontFamily: F.u, fontSize: 14, lineHeight: 1.4 }}>Admin and Superadmin have been notified about low stock.</span>
+            </div>
+          ) : (
+            <Btn label="Report Low Stock to Admin" icon={<Send size={16} />} onClick={() => setShowLowStockDialog(true)} style={{ width: "100%", height: 54, background: C.burg, fontSize: 14 }} />
+          )}
+        </div>
       </div>
 
       {/* Low Stock Dialog — bottom sheet */}

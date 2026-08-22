@@ -52,15 +52,15 @@ export function InactiveCustomersSection({
   const inactiveColumns: ColumnDef<Row>[] = [
     {
       id: "name", header: "Customer Name", accessor: row => row.name, priority: 1,
-      cell: (_v, row) => <span style={{ fontWeight: 600, color: T.luxuryBrown }}>{row.name}</span>,
+      cell: (_v, row) => <span style={{ fontWeight: 600, color: T.luxuryBrown, whiteSpace: "nowrap" }}>{row.name}</span>,
     },
     {
       id: "type", header: "Type", accessor: row => row.type,
-      cell: (_v, row) => <span style={{ padding: "4px 8px", background: row.type === "Wholesale" ? T.crimsonBg : T.greenBg, color: row.type === "Wholesale" ? T.crimson : T.greenMid, fontSize: 12, borderRadius: 4, fontWeight: 600 }}>{row.type}</span>,
+      cell: (_v, row) => <span style={{ padding: "4px 8px", background: row.type === "Wholesale" ? T.crimsonBg : T.greenBg, color: row.type === "Wholesale" ? T.crimson : T.greenMid, fontSize: 12, borderRadius: 4, fontWeight: 600, whiteSpace: "nowrap" }}>{row.type}</span>,
     },
     {
       id: "city", header: "City", accessor: row => row.city, priority: 3,
-      cell: (_v, row) => <span style={{ color: T.taupe }}>{row.city}</span>,
+      cell: (_v, row) => <span style={{ color: T.taupe, whiteSpace: "nowrap" }}>{row.city}</span>,
     },
     {
       id: "inactiveSince", header: "Inactive Since", accessor: row => row.last,
@@ -71,8 +71,8 @@ export function InactiveCustomersSection({
         return (
           <div style={{ minWidth: 180 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
-              <span style={{ fontWeight: 600, color: severity.color }}>{row.last}</span>
-              <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: severity.color, background: severity.bg, borderRadius: 999, padding: "2px 8px" }}>{severity.label}</span>
+              <span style={{ fontWeight: 600, color: severity.color, whiteSpace: "nowrap" }}>{row.last}</span>
+              <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: severity.color, background: severity.bg, borderRadius: 999, padding: "2px 8px", whiteSpace: "nowrap" }}>{severity.label}</span>
             </div>
             <div style={{ height: 4, background: T.silkCream, borderRadius: 2, overflow: "hidden" }}>
               <div style={{ width: `${pct}%`, height: "100%", background: severity.color, borderRadius: 2 }} />
@@ -83,12 +83,12 @@ export function InactiveCustomersSection({
     },
     {
       id: "spend", header: "Total Spend Ever", accessor: row => row.spend,
-      cell: (_v, row) => <span style={{ color: T.luxuryBrown, fontFamily: "var(--font-mono)" }}>{formatMoney(rupees(Number(String(row.spend).replace(/,/g, "")) || 0))}</span>,
+      cell: (_v, row) => <span style={{ color: T.luxuryBrown, fontFamily: "var(--font-mono)", whiteSpace: "nowrap" }}>{formatMoney(rupees(Number(String(row.spend).replace(/,/g, "")) || 0))}</span>,
     },
     {
       id: "action", header: "Action", accessor: () => null, type: "actions",
       cell: () => (
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, whiteSpace: "nowrap" }}>
           <Button variant="link">Mark as Inactive</Button>
           <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, whiteSpace: "nowrap" as const }}>🔒 Superadmin only</span>
         </div>
@@ -155,13 +155,14 @@ export function InactiveCustomersSection({
       <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 12 }}>{filteredInactive.length} customer{filteredInactive.length !== 1 ? "s" : ""} found</div>
 
       <div style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
-        <DataTable
-          responsive
-          columns={inactiveColumns}
-          data={filteredInactive.map((row, i) => ({ ...row, _rowIndex: i }))}
-          getRowId={row => String(row._rowIndex)}
-          emptyTitle="No customers match these filters"
-        />
+        <div className="w-full overflow-x-auto">
+          <DataTable
+            columns={inactiveColumns}
+            data={filteredInactive.map((row, i) => ({ ...row, _rowIndex: i }))}
+            getRowId={row => String(row._rowIndex)}
+            emptyTitle="No customers match these filters"
+          />
+        </div>
       </div>
     </SectionCard>
     </div>

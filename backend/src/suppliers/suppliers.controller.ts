@@ -6,9 +6,9 @@ import { UpdatePartyDto } from "../common/dto/update-party.dto";
 import { UserRole } from "../generated/prisma/client";
 import { SuppliersService } from "./suppliers.service";
 
-// Supplier master data (purchasing) — financial, ACCOUNTANT access only.
+// Supplier master data (purchasing) — financial, ACCOUNTANT, ADMIN, SUPERADMIN access.
 @Controller("suppliers")
-@RequireRoles(UserRole.ACCOUNTANT)
+@RequireRoles(UserRole.ACCOUNTANT, UserRole.ADMIN, UserRole.SUPERADMIN)
 export class SuppliersController {
   constructor(private readonly suppliersService: SuppliersService) {}
 

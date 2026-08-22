@@ -63,9 +63,27 @@ export function ConfirmSection({
             <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 38, color: C.text, marginBottom: 16 }}>Materials Confirmed!</div>
             <div style={{ fontFamily: F.u, fontSize: 16, color: C.muted, lineHeight: 1.7, marginBottom: 24 }}>You have confirmed receipt of all materials in {confirmedRecord.id}. Good luck with your weaving!</div>
             <div style={{ display: "inline-block", background: "rgba(110,15,45,0.08)", color: C.burg, borderRadius: 999, padding: "10px 24px", fontFamily: F.m, fontSize: 18, marginBottom: 36 }}>{confirmedRecord.id}</div>
-            <Button onClick={() => { setConfirmed(false); setConfirmedRecord(null); setSigMethod("none"); setHasSig(false); setRequestSent(false); }} fullWidth className="block h-[60px] bg-[#6E0F2D] border-none rounded-full font-bold text-lg text-white">
+            <button
+              onClick={() => { setConfirmed(false); setConfirmedRecord(null); setSigMethod("none"); setHasSig(false); setRequestSent(false); }}
+              style={{
+                width: "100%",
+                height: 60,
+                borderRadius: 999,
+                border: "none",
+                background: "#6E0F2D",
+                color: "#FFFFFF",
+                fontFamily: F.u,
+                fontWeight: 700,
+                fontSize: 18,
+                cursor: "pointer",
+                boxShadow: "0 4px 16px rgba(110,15,45,0.30)",
+                transition: "all 0.2s ease",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "#520920"; e.currentTarget.style.color = "#FFFFFF"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "#6E0F2D"; e.currentTarget.style.color = "#FFFFFF"; }}
+            >
               ← Back to My Batches
-            </Button>
+            </button>
           </div>
         ) : !pendingMaterialRecord ? (
           <div style={{ maxWidth: "600px", margin: "0 auto", textAlign: "center" as const, padding: "60px 48px", background: "#FFF", borderRadius: 24, border: `1px solid ${C.bdr}`, boxShadow: "0 4px 32px rgba(44,24,16,0.10)" }}>
@@ -74,9 +92,27 @@ export function ConfirmSection({
             </div>
             <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 30, color: C.text, marginBottom: 16 }}>No pending material receipt</div>
             <div style={{ fontFamily: F.u, fontSize: 16, color: C.muted, lineHeight: 1.7, marginBottom: 24 }}>All material receipts are confirmed. Nothing pending.</div>
-            <Button onClick={() => setActive("batches")} fullWidth className="block h-14 bg-[#6E0F2D] border-none rounded-full font-bold text-base text-white">
+            <button
+              onClick={() => setActive("batches")}
+              style={{
+                width: "100%",
+                height: 56,
+                borderRadius: 999,
+                border: "none",
+                background: "#6E0F2D",
+                color: "#FFFFFF",
+                fontFamily: F.u,
+                fontWeight: 700,
+                fontSize: 16,
+                cursor: "pointer",
+                boxShadow: "0 4px 16px rgba(110,15,45,0.30)",
+                transition: "all 0.2s ease",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "#520920"; e.currentTarget.style.color = "#FFFFFF"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "#6E0F2D"; e.currentTarget.style.color = "#FFFFFF"; }}
+            >
               ← Go to My Batches
-            </Button>
+            </button>
           </div>
         ) : (
           <div style={{ background: "rgba(200,155,71,0.12)", border: `2px solid ${C.gold}`, borderRadius: 20, padding: "26px 30px" }}>

@@ -6,9 +6,9 @@ import { CreateCustomerDto } from "./dto/create-customer.dto";
 import { ListCustomersQueryDto } from "./dto/list-customers-query.dto";
 import { UpdateCustomerDto } from "./dto/update-customer.dto";
 
-// Retail/customer-facing module — SHOP access only.
+// Retail/customer-facing module — SHOP, ACCOUNTANT, ADMIN, SUPERADMIN access.
 @Controller("customers")
-@RequireRoles(UserRole.SHOP)
+@RequireRoles(UserRole.SHOP, UserRole.ACCOUNTANT, UserRole.ADMIN, UserRole.SUPERADMIN)
 export class CustomersController {
   constructor(private readonly customersService: CustomersService) {}
 
