@@ -56,7 +56,7 @@ export function IssueMaterialPage() {
       ]);
       if (cancelled) return;
       setWeavers(weaversRes.items.map(w => ({
-        id: w.id, name: w.name, village: w.village ?? "", initials: w.initials,
+        id: w.id, code: w.code, name: w.name, village: w.village ?? "", initials: w.initials,
         bg: avatarColorFor(w.id), status: w.status === "ACTIVE" ? "active" : "idle",
         looms: w.looms, phone: w.phone,
       })));
@@ -67,36 +67,31 @@ export function IssueMaterialPage() {
         installedYear: l.installedYear ? String(l.installedYear) : "", notes: l.notes ?? "",
       })));
 
-      const batches: GrnBatch[] = [];
-      grnsRes.items.forEach(grn => {
-        grn.items.forEach(item => {
-          batches.push({
-            grnBatchId: grn.id,
-            vendor: grn.supplierName,
-            dateReceived: new Date(grn.receivedDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
-            materialType: item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari",
-            // Real remaining stock (received minus rejected minus already
-            // issued), computed server-side — not the as-received quantity.
-            availableQty: item.availableQuantity,
-            unit: item.unit || "kg",
-            poNumber: grn.purchaseOrders[0]?.poNumber ?? null,
-            // Every other material line on this same receipt — so picking a
-            // batch shows the full delivery it came from, not just this one
-            // material (this is what actually made a multi-material
-            // purchase traceable, instead of only the currently-filtered
-            // material type).
-            siblingItems: grn.items
-              .filter(other => other.id !== item.id)
-              .map(other => ({
-                materialType: other.materialType === "WARP" ? "Warp" : other.materialType === "RESHAM" ? "Resham" : "Jari",
-                name: other.name,
-                quantity: other.availableQuantity,
-                unit: other.unit || "kg",
-              })),
-          });
-        });
-      });
-      setGrnBatches(batches);
+      // One entry per GRN receipt, carrying every material line on it. The
+      // selector drills receipt → line, so material is always issued against
+      // one exact line (and one exact item code) rather than a whole receipt.
+      setGrnBatches(grnsRes.items.map(grn => ({
+        grnBatchId: grn.id,
+        vendor: grn.supplierName,
+        dateReceived: new Date(grn.receivedDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
+        poNumber: grn.purchaseOrders[0]?.poNumber ?? null,
+        firmName: grn.firm?.firmName ?? null,
+        lines: grn.items.map((item, index) => ({
+          id: item.id,
+          // Older rows predate itemCode; fall back to the same
+          // "{receipt}-{position}" shape so the UI never shows a bare uuid.
+          itemCode: item.itemCode || `${grn.id}-${index + 1}`,
+          materialType: item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari",
+          name: item.name,
+          description: item.description ?? "",
+          // Real remaining stock (received minus rejected minus already
+          // issued), computed server-side — not the as-received quantity.
+          receivedQty: item.receivedQuantity,
+          issuedQty: item.issuedQuantity,
+          availableQty: item.availableQuantity,
+          unit: item.unit || "kg",
+        })),
+      })));
     })();
     return () => { cancelled = true; };
   }, []);
@@ -172,8 +167,10 @@ export function IssueMaterialPage() {
   // admin session has no way to know synchronously when that happens.
   const isSigned = (sigMethod === "here" && signed) || (sigMethod === "remote" && remoteSent);
 
+  // A row is only issuable once it names the exact GRN line it draws from —
+  // `grnBatchId` alone can't identify which of a receipt's lines to deduct.
   // eslint-disable-next-line no-restricted-syntax -- material quantity (kg/g/reels/buns), not currency
-  const validRows = rows.filter(r => r.materialType && r.quantity && parseFloat(r.quantity) > 0 && r.grnBatchId);
+  const validRows = rows.filter(r => r.materialType && r.quantity && parseFloat(r.quantity) > 0 && r.grnBatchId && r.grnItemId);
   const recipientReady = recipientType === "weaver"
     ? (!!selectedWeaver && selectedLoom !== "" && !!selectedBatchId)
     : (!!selectedFactoryLoom && !!selectedBatchId);
@@ -211,6 +208,7 @@ export function IssueMaterialPage() {
         quantity: parseFloat(r.quantity),
         unit: r.materialType === "Jari" ? r.jariUnit : (r.warpReshamUnit || "kg"),
         grnBatchId: r.grnBatchId,
+        grnItemId: r.grnItemId,
       };
       if (r.materialType === "Warp") { base.warpSubtype = r.warpSubtype; if (r.description) base.description = r.description; }
       if (r.materialType === "Resham") { if (r.description) base.description = r.description; if (r.jariColor) base.jariColor = r.jariColor; }
@@ -234,11 +232,19 @@ export function IssueMaterialPage() {
         notes: notes || undefined,
       });
 
-      // Reduce GRN batch remaining quantities
-      setGrnBatches(prev => prev.map(g => {
-        const used = materials.filter(m => m.grnBatchId === g.grnBatchId).reduce((s, m) => s + m.quantity, 0);
-        return used > 0 ? { ...g, availableQty: Math.max(0, g.availableQty - used) } : g;
-      }));
+      // Draw down the exact lines that were issued from, so a second issuance
+      // in the same session sees the reduced figures without a refetch.
+      setGrnBatches(prev => prev.map(batch => ({
+        ...batch,
+        lines: batch.lines.map(line => {
+          const used = materials
+            .filter(m => m.grnItemId === line.id)
+            .reduce((sum, m) => sum + m.quantity, 0);
+          return used > 0
+            ? { ...line, issuedQty: line.issuedQty + used, availableQty: Math.max(0, line.availableQty - used) }
+            : line;
+        }),
+      })));
 
       setSuccessRecord(record);
       resetForm();

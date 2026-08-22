@@ -2,13 +2,15 @@ import React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Check, TrendingUp, TrendingDown, PlusCircle, FileSpreadsheet, ChevronDown, ChevronUp, Minus,
+  AlertTriangle, Pencil, Trash2,
 } from "lucide-react";
 import {
   FinancialEntry, MiscEntry, IncomeCategory, ExpenseCategory, MiscType,
 } from "../contexts/FirmsContext";
+import type { DuplicateMatch } from "./duplicateEntries";
 import { T, F, EASE, INCOME_CATS, EXPENSE_CATS } from "./theme";
 import { fmtFull, today } from "./utils";
-import { Button, Input, Select, SelectItem } from "../../../shared/ui/primitives";
+import { Button, IconButton, Input, Select, SelectItem } from "../../../shared/ui/primitives";
 import { DatePicker, formatDate } from "../../../shared/ui/date";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { toPaise, fromPaise } from "@/lib/gst";
@@ -62,17 +64,31 @@ export function FinSummaryStrip({ income, expenses, misc }: { income: FinancialE
   );
 }
 
-export function AddEntryForm({ type, onSave, onCancel }: {
+export function AddEntryForm({ type, onSave, onCancel, initial, saveLabel }: {
   type: "income" | "expense" | "misc";
   onSave: (data: Omit<FinancialEntry, "id"> | Omit<MiscEntry, "id">) => void;
   onCancel: () => void;
+  /** Present when correcting an existing row rather than adding a new one. */
+  initial?: FinancialEntry | MiscEntry;
+  saveLabel?: string;
 }) {
-  const [desc, setDesc]         = React.useState("");
-  const [amount, setAmount]     = React.useState("");
-  const [date, setDate]         = React.useState(today());
-  const [cat, setCat]           = React.useState<string>(type === "income" ? "Wholesale Sale" : type === "expense" ? "Weaver Payments" : "income");
-  const [notes, setNotes]       = React.useState("");
-  const [otherLabel, setOtherLabel] = React.useState("");
+  const initialCat = initial
+    ? ("type" in initial ? initial.type : initial.category)
+    : type === "income" ? "Wholesale Sale" : type === "expense" ? "Weaver Payments" : "income";
+  // A saved "Other — Commission" category has to be split back into the
+  // dropdown value plus its free-text half, or editing such a row would
+  // silently rewrite the category to a literal "Other — Commission" option
+  // that doesn't exist in the list.
+  const savedOther = typeof initialCat === "string" && initialCat.startsWith("Other — ");
+
+  const [desc, setDesc]         = React.useState(initial?.description ?? "");
+  const [amount, setAmount]     = React.useState(initial ? String(initial.amount) : "");
+  // Normalised to YYYY-MM-DD: a stored entry's date arrives as a full ISO
+  // timestamp, which the date input can't round-trip as-is.
+  const [date, setDate]         = React.useState(initial?.date ? initial.date.slice(0, 10) : today());
+  const [cat, setCat]           = React.useState<string>(savedOther ? "Other" : String(initialCat));
+  const [notes, setNotes]       = React.useState(initial && "notes" in initial ? initial.notes ?? "" : "");
+  const [otherLabel, setOtherLabel] = React.useState(savedOther ? String(initialCat).slice("Other — ".length) : "");
   const isOther = cat === "Other" && type !== "misc";
   function canSave() { return desc.trim() && toPaise(Number(amount) || 0) > 0 && date && (!isOther || otherLabel.trim()); }
   function handleSave() {
@@ -115,7 +131,7 @@ export function AddEntryForm({ type, onSave, onCancel }: {
       )}
       <div style={{ display: "flex", gap: 8 }}>
         <Button onClick={handleSave} disabled={!canSave()} variant="primary" size="sm" iconLeft={Check}>
-          Save Entry
+          {saveLabel ?? "Save Entry"}
         </Button>
         <Button onClick={onCancel} variant="tertiary" size="sm">
           Cancel
@@ -169,7 +185,14 @@ export function ExcelUploadBtn({ onImport, type }: { onImport: (rows: Omit<Finan
  * <th>/<table> semantics; every cell keeps its original font/colour/format
  * via a `cell` override. Header row now uses DataTable's 12px Inter spec.
  */
-function EntryTable({ entries, type }: { entries: (FinancialEntry | MiscEntry)[]; type?: "income" | "expense" }) {
+function EntryTable({ entries, type, duplicates, onEdit, onDelete }: {
+  entries: (FinancialEntry | MiscEntry)[];
+  type?: "income" | "expense";
+  /** entry id → the auto-tracked payment it appears to restate. */
+  duplicates?: Map<string, DuplicateMatch>;
+  onEdit?: (entry: FinancialEntry | MiscEntry) => void;
+  onDelete?: (entry: FinancialEntry | MiscEntry) => void;
+}) {
   function isIncomeOf(entry: FinancialEntry | MiscEntry): boolean {
     const isMisc = "type" in entry;
     return isMisc ? (entry as MiscEntry).type === "income" : (type === "income");
@@ -181,11 +204,24 @@ function EntryTable({ entries, type }: { entries: (FinancialEntry | MiscEntry)[]
   const columns: ColumnDef<FinancialEntry | MiscEntry>[] = [
     {
       id: "description", header: "Description", accessor: e => e.description, priority: 1,
-      cell: (_v, e) => (
-        <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, wordBreak: "break-word", lineHeight: 1.45, display: "block" }}>
-          {e.description}
-        </span>
-      ),
+      cell: (_v, e) => {
+        const dup = duplicates?.get(e.id);
+        return (
+          <div>
+            <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, wordBreak: "break-word", lineHeight: 1.45, display: "block" }}>
+              {e.description}
+            </span>
+            {dup && (
+              <span
+                title={`Matches the auto-tracked payment ${dup.payment.reference} to ${dup.payment.party} on ${dup.payment.date}. If this manual row was typed to record that same payment, delete it — otherwise both are counted.`}
+                style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 5, background: "rgba(200,155,71,0.14)", border: "1px solid rgba(200,155,71,0.35)", borderRadius: 999, padding: "2px 9px", fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: "#8B6018" }}
+              >
+                <AlertTriangle size={11} /> Possible duplicate of {dup.payment.reference}
+              </span>
+            )}
+          </div>
+        );
+      },
     },
     {
       id: "amount", header: "Amount", accessor: e => e.amount,
@@ -199,8 +235,16 @@ function EntryTable({ entries, type }: { entries: (FinancialEntry | MiscEntry)[]
       },
     },
     {
+      // The backend stores a full DateTime, so `e.date` arrives as an ISO
+      // timestamp — rendering it raw printed "2026-08-11T00:00:00.000Z" in
+      // the cell. Formatted here rather than at the edge because the raw
+      // value is still what the edit form and date filters read.
       id: "date", header: "Date", accessor: e => e.date, priority: 3,
-      cell: (_v, e) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{e.date}</span>,
+      cell: (_v, e) => (
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, whiteSpace: "nowrap" }}>
+          {formatDate(new Date(e.date), "cell") || e.date}
+        </span>
+      ),
     },
     {
       id: "category", header: type ? "Category" : "Type", accessor: e => catOf(e),
@@ -216,6 +260,26 @@ function EntryTable({ entries, type }: { entries: (FinancialEntry | MiscEntry)[]
         );
       },
     },
+    ...(onEdit || onDelete ? [{
+      id: "actions", header: "", type: "actions" as const, accessor: () => null,
+      cell: (_v: unknown, e: FinancialEntry | MiscEntry) => (
+        <div style={{ display: "flex", gap: 4, justifyContent: "flex-end" }}>
+          {onEdit && (
+            <IconButton icon={Pencil} label={`Edit "${e.description}"`} variant="ghost" size="sm" onClick={() => onEdit(e)} />
+          )}
+          {onDelete && (
+            <IconButton
+              icon={Trash2}
+              label={`Delete "${e.description}"`}
+              variant="ghost"
+              size="sm"
+              onClick={() => onDelete(e)}
+              className="text-[var(--text-danger)] hover:bg-[rgba(192,57,43,0.10)]"
+            />
+          )}
+        </div>
+      ),
+    } as ColumnDef<FinancialEntry | MiscEntry>] : []),
   ];
 
   return (
@@ -228,16 +292,21 @@ function EntryTable({ entries, type }: { entries: (FinancialEntry | MiscEntry)[]
   );
 }
 
-export function FinSection({ title, icon, entries, color, bg, onAdd, onBulkImport, type }: {
+export function FinSection({ title, icon, entries, color, bg, onAdd, onBulkImport, type, duplicates, onUpdate, onDelete }: {
   title: string; icon: React.ReactNode;
   entries: FinancialEntry[]; color: string; bg: string;
   onAdd: (e: Omit<FinancialEntry, "id">) => void;
   onBulkImport?: (rows: Omit<FinancialEntry, "id">[]) => void;
   type: "income" | "expense";
+  duplicates?: Map<string, DuplicateMatch>;
+  onUpdate?: (entryId: string, e: Omit<FinancialEntry, "id">) => void;
+  onDelete?: (entry: FinancialEntry) => void;
 }) {
   const [open, setOpen]       = React.useState(true);
   const [adding, setAdding]   = React.useState(false);
+  const [editing, setEditing] = React.useState<FinancialEntry | null>(null);
   const [importMsg, setImportMsg] = React.useState("");
+  const dupCount = duplicates ? entries.filter(e => duplicates.has(e.id)).length : 0;
   const total = entries.reduce((s, e) => s + e.amount, 0);
   function handleImport(rows: Omit<FinancialEntry, "id">[]) {
     if (onBulkImport) { onBulkImport(rows); setImportMsg(`${rows.length} row${rows.length > 1 ? "s" : ""} imported`); setTimeout(() => setImportMsg(""), 3000); }
@@ -264,10 +333,31 @@ export function FinSection({ title, icon, entries, color, bg, onAdd, onBulkImpor
               {onBulkImport && <ExcelUploadBtn onImport={handleImport} type={type} />}
               {importMsg && <span style={{ fontFamily: F.ui, fontSize: 12, color: T.green, display: "flex", alignItems: "center", gap: 4 }}><Check size={12} /> {importMsg}</span>}
             </div>
+            {dupCount > 0 && (
+              <div style={{ margin: "12px 14px 0", padding: "10px 14px", background: "rgba(200,155,71,0.10)", border: "1px solid rgba(200,155,71,0.32)", borderRadius: 10, display: "flex", gap: 10, alignItems: "flex-start" }}>
+                <AlertTriangle size={14} color="#8B6018" style={{ flexShrink: 0, marginTop: 2 }} />
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: "#7A5514", lineHeight: 1.6 }}>
+                  <strong>{dupCount} manual {dupCount === 1 ? "entry" : "entries"} may double-count a payment.</strong>{" "}
+                  These look like they were typed by hand to record a payment that is now tracked automatically under Recorded Payments —
+                  so the amount is being counted twice. Check the flagged rows below and delete the manual copy if it&rsquo;s the same payment.
+                </div>
+              </div>
+            )}
             <AnimatePresence>
               {adding && (
                 <div style={{ padding: "12px 14px 0", background: "#FFF" }}>
                   <AddEntryForm type={type} onSave={d => { onAdd(d as Omit<FinancialEntry, "id">); setAdding(false); }} onCancel={() => setAdding(false)} />
+                </div>
+              )}
+              {editing && (
+                <div style={{ padding: "12px 14px 0", background: "#FFF" }}>
+                  <AddEntryForm
+                    type={type}
+                    initial={editing}
+                    saveLabel="Save Changes"
+                    onSave={d => { onUpdate?.(editing.id, d as Omit<FinancialEntry, "id">); setEditing(null); }}
+                    onCancel={() => setEditing(null)}
+                  />
                 </div>
               )}
             </AnimatePresence>
@@ -277,7 +367,13 @@ export function FinSection({ title, icon, entries, color, bg, onAdd, onBulkImpor
               </div>
             ) : entries.length > 0 && (
               <div style={{ background: "#FFF" }}>
-                <EntryTable entries={entries} type={type} />
+                <EntryTable
+                  entries={entries}
+                  type={type}
+                  duplicates={duplicates}
+                  onEdit={onUpdate ? e => { setAdding(false); setEditing(e as FinancialEntry); } : undefined}
+                  onDelete={onDelete ? e => onDelete(e as FinancialEntry) : undefined}
+                />
               </div>
             )}
           </motion.div>
@@ -287,9 +383,15 @@ export function FinSection({ title, icon, entries, color, bg, onAdd, onBulkImpor
   );
 }
 
-export function MiscSection({ entries, onAdd }: { entries: MiscEntry[]; onAdd: (e: Omit<MiscEntry, "id">) => void }) {
+export function MiscSection({ entries, onAdd, onUpdate, onDelete }: {
+  entries: MiscEntry[];
+  onAdd: (e: Omit<MiscEntry, "id">) => void;
+  onUpdate?: (entryId: string, e: Omit<MiscEntry, "id">) => void;
+  onDelete?: (entry: MiscEntry) => void;
+}) {
   const [open, setOpen]     = React.useState(true);
   const [adding, setAdding] = React.useState(false);
+  const [editing, setEditing] = React.useState<MiscEntry | null>(null);
   const totalInc = entries.filter(m => m.type === "income").reduce((s, m) => s + m.amount, 0);
   const totalExp = entries.filter(m => m.type === "expense").reduce((s, m) => s + m.amount, 0);
   return (
@@ -319,12 +421,27 @@ export function MiscSection({ entries, onAdd }: { entries: MiscEntry[]; onAdd: (
                   <AddEntryForm type="misc" onSave={d => { onAdd(d as Omit<MiscEntry, "id">); setAdding(false); }} onCancel={() => setAdding(false)} />
                 </div>
               )}
+              {editing && (
+                <div style={{ padding: "12px 14px 0", background: "#FFF" }}>
+                  <AddEntryForm
+                    type="misc"
+                    initial={editing}
+                    saveLabel="Save Changes"
+                    onSave={d => { onUpdate?.(editing.id, d as Omit<MiscEntry, "id">); setEditing(null); }}
+                    onCancel={() => setEditing(null)}
+                  />
+                </div>
+              )}
             </AnimatePresence>
             {entries.length === 0 && !adding ? (
               <div style={{ padding: "24px 18px", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe, background: "#FFF" }}>No miscellaneous entries yet.</div>
             ) : entries.length > 0 && (
               <div style={{ background: "#FFF" }}>
-                <EntryTable entries={entries} />
+                <EntryTable
+                  entries={entries}
+                  onEdit={onUpdate ? e => { setAdding(false); setEditing(e as MiscEntry); } : undefined}
+                  onDelete={onDelete ? e => onDelete(e as MiscEntry) : undefined}
+                />
               </div>
             )}
           </motion.div>

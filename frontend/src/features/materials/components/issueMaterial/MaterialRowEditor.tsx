@@ -10,10 +10,12 @@ export function MaterialRowEditor({ row, grnBatches, onChange, onRemove, showRem
   row: MaterialRowState; grnBatches: GrnBatch[]; onChange: (r: MaterialRowState) => void; onRemove: () => void; showRemove: boolean;
 }) {
   const patch = (p: Partial<MaterialRowState>) => onChange({ ...row, ...p });
-  const selectedGrn = grnBatches.find(g => g.grnBatchId === row.grnBatchId);
+  const selectedLine = grnBatches
+    .find(g => g.grnBatchId === row.grnBatchId)
+    ?.lines.find(l => l.id === row.grnItemId);
   // eslint-disable-next-line no-restricted-syntax -- material quantity (kg/g/reels/buns), not currency
   const qtyNum = parseFloat(row.quantity) || 0;
-  const overAvailable = selectedGrn && qtyNum > selectedGrn.availableQty;
+  const overAvailable = !!selectedLine && qtyNum > selectedLine.availableQty;
   const reelsToBuns = row.jariUnit === "Reels" ? (qtyNum * 4) : (qtyNum / 4);
 
   return (
@@ -32,7 +34,9 @@ export function MaterialRowEditor({ row, grnBatches, onChange, onRemove, showRem
       {/* Material Type */}
       <div style={{ marginBottom: 16 }}>
         <span style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.taupe, display: "block", marginBottom: 8 }}>Material Type</span>
-        <PillTab options={["Warp", "Resham", "Jari"]} value={row.materialType} onChange={v => patch({ materialType: v as "Warp" | "Resham" | "Jari", grnBatchId: "", description: "", quantity: "" })} />
+        {/* Switching material type invalidates the picked GRN line (it belongs
+            to the old type), so the selection is cleared with it. */}
+        <PillTab options={["Warp", "Resham", "Jari"]} value={row.materialType} onChange={v => patch({ materialType: v as "Warp" | "Resham" | "Jari", grnBatchId: "", grnItemId: "", description: "", quantity: "" })} />
       </div>
 
       {/* Description + Quantity */}
@@ -120,11 +124,20 @@ export function MaterialRowEditor({ row, grnBatches, onChange, onRemove, showRem
 
       {/* GRN Batch Selector */}
       <div>
-        <GrnBatchSelector grnBatches={grnBatches} materialType={row.materialType} value={row.grnBatchId} onChange={v => patch({ grnBatchId: v })} pendingQty={qtyNum} />
+        <GrnBatchSelector
+          grnBatches={grnBatches}
+          materialType={row.materialType}
+          value={row.grnBatchId}
+          selectedLineId={row.grnItemId}
+          onChange={(grnBatchId, line) => patch({ grnBatchId, grnItemId: line?.id ?? "" })}
+          pendingQty={qtyNum}
+        />
         {overAvailable && (
           <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 7, background: "rgba(196,146,58,0.14)", border: `1px solid ${T.antiqueGold}`, borderRadius: 8, padding: "8px 12px" }}>
             <AlertTriangle size={14} color="#8B6018" />
-            <span style={{ fontFamily: F.ui, fontSize: 12, color: "#8B6018" }}>Only {selectedGrn!.availableQty} {selectedGrn!.unit} available — you entered {qtyNum} {selectedGrn!.unit}</span>
+            <span style={{ fontFamily: F.ui, fontSize: 12, color: "#8B6018" }}>
+              {selectedLine!.itemCode} only has {selectedLine!.availableQty} {selectedLine!.unit} available — you entered {qtyNum} {selectedLine!.unit}
+            </span>
           </div>
         )}
       </div>

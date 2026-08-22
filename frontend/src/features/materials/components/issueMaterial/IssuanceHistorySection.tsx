@@ -50,20 +50,29 @@ export function IssuanceHistorySection({
       ),
     },
     {
-      id: "weaverId", header: "Weaver ID", accessor: r => r.weaverId, priority: 3,
-      cell: (_v, r) => r.weaverId ? <EntityCode type="weaver" value={r.weaverId} size="sm" /> : <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>—</span>,
+      // The human-facing weaver code ("Wea-003"), not Weaver.id — this column
+      // used to print the raw UUID, which matched nothing shown elsewhere.
+      id: "weaverId", header: "Weaver ID", accessor: r => r.weaverCode, priority: 3,
+      cell: (_v, r) => r.weaverCode
+        ? <EntityCode type="weaver" value={r.weaverCode} size="sm" />
+        : <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>—</span>,
     },
     {
+      // Type, description, quantity and the exact GRN line id per material —
+      // the separate "GRN Batch IDs" column this replaces listed only the
+      // parent receipts, so you couldn't tell which line fed which material.
       id: "materials", header: "Materials Summary", accessor: r => r.materials,
       cell: (_v, r) => renderIssuedMaterials(r.materials),
     },
     {
-      id: "grnIds", header: "GRN Batch IDs", accessor: r => r.materials, priority: 3,
+      id: "grnIds", header: "GRN Receipt", accessor: r => r.materials, priority: 3,
       cell: (_v, r) => {
-        const grnIds = Array.from(new Set(r.materials.map(m => m.grnBatchId)));
+        const grnIds = Array.from(new Set(r.materials.map(m => m.grnBatchId).filter(Boolean)));
         return (
           <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-            {grnIds.map(g => <EntityCode key={g} type="goodsReceipt" value={g} size="sm" />)}
+            {grnIds.length === 0
+              ? <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>—</span>
+              : grnIds.map(g => <EntityCode key={g} type="goodsReceipt" value={g} size="sm" />)}
           </div>
         );
       },

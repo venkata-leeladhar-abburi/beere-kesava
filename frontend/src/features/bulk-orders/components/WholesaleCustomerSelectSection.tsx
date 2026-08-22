@@ -11,7 +11,10 @@ const T = {
 const F = { display: "'Plus Jakarta Sans', sans-serif", ui: "'Inter', sans-serif", mono: "'JetBrains Mono', monospace" };
 
 export interface WholesaleCustomer {
+  /** Customer.id (UUID) — the FK stored on the order, never shown to staff. */
   id: string;
+  /** Human-facing customer ID (e.g. "WHL-001"). This is what the UI displays. */
+  code: string;
   name: string;
   city: string;
   terms: string;
@@ -27,6 +30,9 @@ export function useAllWholesaleCustomers(): WholesaleCustomer[] {
     const backendWholesale = ctx?.wholesaleCustomers ?? [];
     return backendWholesale.map(c => ({
       id: c.id,
+      // Customers created before codes were generated have none — fall back to
+      // a dash rather than leaking the UUID into the label.
+      code: c.code || "—",
       name: c.name,
       city: c.city || "—",
       terms: "Net 30",
@@ -76,7 +82,9 @@ export function WholesaleCustomerSelectSection({
           invalid={!!errors.customerId}
         >
           {customersList.map(c => (
-            <SelectItem key={c.id} value={c.id}>{c.name} ({c.id}, {c.city})</SelectItem>
+            // Value stays the UUID (it's the FK the order is saved against);
+            // only the label switches to the readable code.
+            <SelectItem key={c.id} value={c.id}>{c.name} ({c.code}, {c.city})</SelectItem>
           ))}
         </Select>
       </Field>
@@ -90,7 +98,7 @@ export function WholesaleCustomerSelectSection({
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 800, color: T.luxuryBrown, lineHeight: 1.2 }}>{selectedCustomer.name}</div>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 3 }}>
-                <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.10)", padding: "2px 8px", borderRadius: 5 }}>{selectedCustomer.id}</span>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.10)", padding: "2px 8px", borderRadius: 5 }}>{selectedCustomer.code}</span>
                 <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>📍 {selectedCustomer.city}</span>
               </div>
             </div>

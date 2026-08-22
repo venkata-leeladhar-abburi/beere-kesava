@@ -31,6 +31,7 @@ export class PurchaseOrdersService {
       data: {
         poNumber,
         vendorId: dto.vendorId,
+        firmId: dto.firmId ?? null,
         deliveryDate: dto.deliveryDate ? new Date(dto.deliveryDate) : undefined,
         totalValue: dto.totalValue ?? 0,
         urgency: dto.urgency,
@@ -76,9 +77,10 @@ export class PurchaseOrdersService {
     const [items, total] = await Promise.all([
       this.prisma.purchaseOrder.findMany({
         where,
-        include: { 
-          vendor: true, 
-          items: true, 
+        include: {
+          vendor: true,
+          items: true,
+          firm: { select: { id: true, firmName: true } },
           createdBy: { select: { firstName: true, lastName: true } },
           grnReceipt: { include: { receivedBy: { select: { id: true, firstName: true, lastName: true } } } }
         },
@@ -95,7 +97,11 @@ export class PurchaseOrdersService {
   async findOne(id: string) {
     const po = await this.prisma.purchaseOrder.findUnique({
       where: { id },
-      include: { vendor: true, createdBy: { select: { firstName: true, lastName: true } } },
+      include: {
+        vendor: true,
+        firm: { select: { id: true, firmName: true } },
+        createdBy: { select: { firstName: true, lastName: true } },
+      },
     });
     if (!po) {
       throw new NotFoundException(`Purchase order ${id} not found`);
@@ -168,6 +174,16 @@ export class PurchaseOrdersService {
       grnReceipt?.id ??
       (await this.idGenerator.nextScoped("GRN", po.vendor.code ?? businessSegment(po.vendor.name, "Vendor")));
     const actualReceivedDate = dto.actualReceivedDate ? new Date(dto.actualReceivedDate) : new Date();
+
+    // The firm is chosen when the order is raised, not when it's received —
+    // carry it onto the receipt so Goods Receipt History can show it. Only
+    // fills a blank; never overwrites a firm the receiving clerk set.
+    if (grnReceipt && po.firmId && !grnReceipt.firmId) {
+      await this.prisma.grnReceipt.update({
+        where: { id: grnReceipt.id },
+        data: { firmId: po.firmId },
+      });
+    }
 
     const updated = await this.prisma.purchaseOrder.update({
       where: { id },

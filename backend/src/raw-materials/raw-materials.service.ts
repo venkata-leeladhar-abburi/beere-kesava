@@ -59,11 +59,14 @@ export class RawMaterialsService {
       orderBy: { createdAt: "desc" },
     });
 
-    // The Issue Material screen picks a GRN batch by (grnId, materialType) —
-    // see MaterialIssueItem.grnBatchId, which is set to the GrnReceipt's id,
-    // not a specific GrnItem. Sum what's already been issued against each
-    // (grnId, materialType) pair so "available" reflects real remaining
-    // stock instead of always showing the as-received quantity.
+    // Sum what's already been issued so "available" reflects real remaining
+    // stock rather than the as-received quantity.
+    //
+    // Issuances made since MaterialIssueItem.grnItemId exists point at one
+    // exact GrnItem line, so they're attributed to it directly. Older rows
+    // only recorded (grnBatchId, materialType); those are still counted, but
+    // spread across every line of that receipt sharing the material type —
+    // the finest attribution their data supports.
     const grnIds = grns.map((g) => g.id);
     const issuedItems = grnIds.length
       ? await this.prisma.materialIssueItem.findMany({
@@ -71,26 +74,48 @@ export class RawMaterialsService {
             grnBatchId: { in: grnIds },
             issue: { status: { not: "CANCELLED" } },
           },
-          select: { grnBatchId: true, materialType: true, quantity: true, unit: true },
+          select: { grnBatchId: true, grnItemId: true, materialType: true, quantity: true, unit: true },
         })
       : [];
-    const issuedGramsByKey = new Map<string, number>();
-    for (const item of issuedItems) {
-      const key = `${item.grnBatchId}::${item.materialType}`;
-      const grams = toGrams(Number(item.quantity), item.unit);
-      issuedGramsByKey.set(key, (issuedGramsByKey.get(key) ?? 0) + grams);
+
+    const issuedGramsByItemId = new Map<string, number>();
+    const legacyGramsByTypeKey = new Map<string, number>();
+    for (const issued of issuedItems) {
+      const grams = toGrams(Number(issued.quantity), issued.unit);
+      if (issued.grnItemId) {
+        issuedGramsByItemId.set(issued.grnItemId, (issuedGramsByItemId.get(issued.grnItemId) ?? 0) + grams);
+      } else {
+        const key = `${issued.grnBatchId}::${issued.materialType}`;
+        legacyGramsByTypeKey.set(key, (legacyGramsByTypeKey.get(key) ?? 0) + grams);
+      }
     }
 
-    const withAvailability = grns.map((grn) => ({
-      ...grn,
-      items: grn.items.map((item) => {
-        const key = `${grn.id}::${item.materialType}`;
-        const issuedGrams = issuedGramsByKey.get(key) ?? 0;
-        const receivedGrams = toGrams(Number(item.quantity) - Number(item.rejectedQuantity), item.unit);
-        const availableQuantity = Math.max(0, fromGrams(receivedGrams - issuedGrams, item.unit));
-        return { ...item, issuedQuantity: fromGrams(issuedGrams, item.unit), availableQuantity };
-      }),
-    }));
+    const withAvailability = grns.map((grn) => {
+      // Legacy (un-attributed) issuances are divided evenly between the lines
+      // of the same material type on this receipt, so the receipt's total
+      // still reconciles even though the per-line split is an estimate.
+      const lineCountByType = new Map<string, number>();
+      for (const item of grn.items) {
+        lineCountByType.set(item.materialType, (lineCountByType.get(item.materialType) ?? 0) + 1);
+      }
+
+      return {
+        ...grn,
+        items: grn.items.map((item) => {
+          const legacyTotal = legacyGramsByTypeKey.get(`${grn.id}::${item.materialType}`) ?? 0;
+          const legacyShare = legacyTotal / (lineCountByType.get(item.materialType) || 1);
+          const issuedGrams = (issuedGramsByItemId.get(item.id) ?? 0) + legacyShare;
+          const receivedGrams = toGrams(Number(item.quantity) - Number(item.rejectedQuantity), item.unit);
+          const availableQuantity = Math.max(0, fromGrams(receivedGrams - issuedGrams, item.unit));
+          return {
+            ...item,
+            receivedQuantity: fromGrams(receivedGrams, item.unit),
+            issuedQuantity: fromGrams(issuedGrams, item.unit),
+            availableQuantity,
+          };
+        }),
+      };
+    });
 
     return { items: withAvailability };
   }

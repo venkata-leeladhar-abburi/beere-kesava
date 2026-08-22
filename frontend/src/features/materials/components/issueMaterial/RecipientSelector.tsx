@@ -69,7 +69,7 @@ export function RecipientSelector({
                       <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 12, color: "#FFF" }}>{w.initials}</span>
                     </div>
                     <div style={{ flex: 1, textAlign: "left" }}>
-                      <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 6 }}>{w.name} <EntityCode type="weaver" value={w.id} size="sm" /></div>
+                      <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 6 }}>{w.name} <EntityCode type="weaver" value={w.code} size="sm" /></div>
                       <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{w.village} · {w.looms} active loom{w.looms !== 1 ? "s" : ""}</div>
                     </div>
                     <span style={{ background: STATUS_CFG[w.status].bg, color: STATUS_CFG[w.status].color, borderRadius: 999, padding: "3px 10px", fontFamily: F.ui, fontSize: 12, fontWeight: 600 }}>{STATUS_CFG[w.status].label}</span>
@@ -85,7 +85,7 @@ export function RecipientSelector({
                 <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: "#FFF" }}>{selectedWeaver.initials}</span>
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 6 }}>{selectedWeaver.name} <EntityCode type="weaver" value={selectedWeaver.id} size="sm" /></div>
+                <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 6 }}>{selectedWeaver.name} <EntityCode type="weaver" value={selectedWeaver.code} size="sm" /></div>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{selectedWeaver.village} · {selectedWeaver.looms} active looms</div>
               </div>
               <span style={{ background: STATUS_CFG[selectedWeaver.status].bg, color: STATUS_CFG[selectedWeaver.status].color, borderRadius: 999, padding: "4px 12px", fontFamily: F.ui, fontSize: 12, fontWeight: 600 }}>{STATUS_CFG[selectedWeaver.status].label}</span>

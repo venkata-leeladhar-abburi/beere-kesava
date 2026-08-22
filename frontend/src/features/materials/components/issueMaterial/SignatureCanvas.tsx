@@ -1,4 +1,4 @@
-import React, { forwardRef, useImperativeHandle, useRef, useState } from "react";
+import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { CheckCircle2, PenLine } from "lucide-react";
 import { F, T } from "./theme";
 import { Button } from "../../../../shared/ui/primitives";
@@ -14,10 +14,17 @@ interface Point {
   y: number;
 }
 
+/**
+ * Pointer position in CSS pixels relative to the canvas. The backing store is
+ * kept in step with this box by `resizeCanvas` below (and the context is
+ * scaled to match), so these coordinates can be drawn with directly.
+ */
 function pointFromEvent(canvas: HTMLCanvasElement, e: React.PointerEvent): Point {
   const rect = canvas.getBoundingClientRect();
   return { x: e.clientX - rect.left, y: e.clientY - rect.top };
 }
+
+const CANVAS_CSS_HEIGHT = 150;
 
 /** Real signature capture: draws strokes on an HTML canvas via pointer events, exportable as a PNG blob. */
 export const SignatureCanvas = forwardRef<
@@ -28,10 +35,48 @@ export const SignatureCanvas = forwardRef<
     const drawingRef = useRef(false);
     const lastPointRef = useRef<Point | null>(null);
     const [hasDrawn, setHasDrawnState] = useState(false);
+    // Held in a ref so resizeCanvas can notify the parent without taking
+    // `onChange` as a dependency (it's a fresh closure on every parent render,
+    // which would re-run the observer effect and clear the canvas constantly).
+    const onChangeRef = useRef(onChange);
+    onChangeRef.current = onChange;
     const setHasDrawn = (v: boolean) => {
       setHasDrawnState(v);
-      onChange?.(v);
+      onChangeRef.current?.(v);
     };
+
+    // The canvas is laid out at `width: 100%` but its backing store has a
+    // fixed pixel size. Left unsynced, a stroke drawn at the pointer lands
+    // somewhere else entirely (the box was 520px wide internally while
+    // displaying at whatever the column happened to be) — which is what made
+    // signing look broken. Size the buffer to the real box, times the device
+    // pixel ratio so the result isn't blurry on high-DPI screens.
+    const resizeCanvas = useCallback(() => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const cssWidth = canvas.clientWidth;
+      if (cssWidth === 0) return;
+      const dpr = window.devicePixelRatio || 1;
+      const nextWidth = Math.round(cssWidth * dpr);
+      const nextHeight = Math.round(CANVAS_CSS_HEIGHT * dpr);
+      if (canvas.width === nextWidth && canvas.height === nextHeight) return;
+      // Resizing a canvas clears it. Nothing has been drawn at the point this
+      // first runs, and a later resize (rotate/window drag) discarding an
+      // in-progress signature is preferable to silently misaligned strokes.
+      canvas.width = nextWidth;
+      canvas.height = nextHeight;
+      const ctx = canvas.getContext("2d");
+      if (ctx) ctx.scale(dpr, dpr);
+      setHasDrawnState(false);
+      onChangeRef.current?.(false);
+    }, []);
+
+    useEffect(() => {
+      resizeCanvas();
+      const observer = new ResizeObserver(resizeCanvas);
+      if (canvasRef.current) observer.observe(canvasRef.current);
+      return () => observer.disconnect();
+    }, [resizeCanvas]);
 
     useImperativeHandle(ref, () => ({
       toBlob: () =>
@@ -101,15 +146,13 @@ export const SignatureCanvas = forwardRef<
         <canvas
           ref={canvasRef}
           aria-label="Signature drawing area"
-          width={520}
-          height={150}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
           onPointerLeave={handlePointerUp}
           style={{
             width: "100%",
-            height: 150,
+            height: CANVAS_CSS_HEIGHT,
             background: "#FFF",
             border: `1.5px solid ${hasDrawn ? "rgba(30,102,64,0.35)" : T.borderDef}`,
             borderRadius: 14,

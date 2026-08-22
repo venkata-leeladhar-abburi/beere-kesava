@@ -1,18 +1,14 @@
+// The firm *detail* view used to live here as a modal. It is now a real page
+// (FirmDetailPage) reached from the directory's "View Details" button, so the
+// only modal left in this file is the create/edit form.
 import React from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import {
-  Edit, X, Building2, CreditCard, User, Phone,
+  X, Building2, CreditCard, User, Phone,
   MapPin, Hash, Check,
-  TrendingUp, TrendingDown, AlertTriangle,
 } from "lucide-react";
-import {
-  useFirms, Firm, FinancialEntry,
-} from "../contexts/FirmsContext";
+import { Firm } from "../contexts/FirmsContext";
 import { T, F } from "./theme";
-import { initials, cardColor } from "./utils";
-import {
-  FinSummaryStrip, FinSection, MiscSection
-} from "./FirmFinanceSections";
 import { Button, IconButton, Field as PField, Input, Textarea } from "../../../shared/ui/primitives";
 import { Modal } from "../../../shared/ui/overlay";
 
@@ -98,112 +94,6 @@ export function FirmFormModal({ initial, onSave, onClose, title }: { initial: Fo
               {saved ? "Saved!" : title}
             </Button>
           </div>
-        </div>
-    </Modal>
-  );
-}
-
-export function FirmDetailModal({ firm, onClose, onEdit }: { firm: Firm; onClose: () => void; onEdit: () => void }) {
-  const { getFirmFinancials, addIncomeEntry, addExpenseEntry, addMiscEntry, bulkAddIncome, bulkAddExpenses } = useFirms();
-  const color = cardColor(firm.id);
-  const fin = getFirmFinancials(firm.id);
-  const [tab, setTab] = React.useState<"info" | "finance">("finance");
-  function Row({ label, value, mono }: { label: string; value?: string; mono?: boolean }) {
-    if (!value) return null;
-    return (
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "10px 0", borderBottom: `1px solid ${T.borderDef}`, gap: 16 }}>
-        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, flexShrink: 0 }}>{label}</span>
-        <span style={{ fontFamily: mono ? "var(--font-mono)" : F.ui, fontSize: 13, color: T.luxuryBrown, textAlign: "right", wordBreak: "break-all" }}>{value}</span>
-      </div>
-    );
-  }
-  return (
-    <Modal open onOpenChange={o => !o && onClose()} size="lg">
-        <div style={{ background: color, borderRadius: "var(--radius-xl) var(--radius-xl) 0 0", padding: "20px 24px", flexShrink: 0 }}>
-          {/* Top Row: Avatar + Title + Close button */}
-          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 14, flex: 1, minWidth: 0 }}>
-              <div style={{ width: 48, height: 48, borderRadius: 14, background: "rgba(255,255,255,0.18)", border: "1.5px solid rgba(255,255,255,0.30)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: "#FFF" }}>{initials(firm.firmName)}</span>
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <Dialog.Title asChild>
-                  <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFF", lineHeight: 1.2 }}>{firm.firmName}</div>
-                </Dialog.Title>
-              </div>
-            </div>
-            <Dialog.Close asChild>
-              <IconButton icon={X} label="Close" variant="secondary" size="sm" className="text-white border-white/20 bg-white/10 hover:bg-white/20 shrink-0" />
-            </Dialog.Close>
-          </div>
-
-          {/* Full Firm ID & Creation Date */}
-          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(255,255,255,0.85)", marginTop: 12, wordBreak: "break-all", lineHeight: 1.5 }}>
-            ID: {firm.id} {firm.createdAt ? `· Added ${firm.createdAt.includes("T") ? firm.createdAt.split("T")[0] : firm.createdAt}` : ""}
-          </div>
-
-          {/* Edit Button below full ID */}
-          <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 8 }}>
-            <Button variant="secondary" size="sm" iconLeft={Edit} className="text-white border-white/25 bg-white/10 hover:bg-white/20" onClick={() => { onClose(); onEdit(); }}>
-              Edit Firm
-            </Button>
-          </div>
-        </div>
-        <div style={{ display: "flex", borderBottom: `1px solid ${T.borderDef}`, flexShrink: 0, background: "#FFF" }}>
-          {[{ key: "finance", label: "Financial Tracking" }, { key: "info", label: "Firm Info" }].map(t => (
-            <div key={t.key} style={{ flex: 1, borderBottom: tab === t.key ? `2px solid ${T.royalBurgundy}` : "2px solid transparent" }}>
-              <Button variant="ghost" size="md" className="w-full h-[46px] rounded-none" onClick={() => setTab(t.key as "info" | "finance")}>
-                <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: tab === t.key ? 700 : 400, color: tab === t.key ? T.royalBurgundy : T.taupe }}>
-                  {t.label}
-                </span>
-              </Button>
-            </div>
-          ))}
-        </div>
-        <div style={{ flex: 1, overflowY: "auto", padding: "22px 24px 28px" }}>
-          {tab === "info" && (
-            <div>
-              <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, letterSpacing: "2px", color: T.taupe, textTransform: "uppercase", marginBottom: 4 }}>Firm Details</div>
-              <Row label="GST Number" value={firm.gstNumber} mono />
-              <Row label="Address" value={firm.address} />
-              {(firm.bankName || firm.accountNumber || firm.ifscCode) && (
-                <>
-                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, letterSpacing: "2px", color: T.taupe, textTransform: "uppercase", marginBottom: 4, marginTop: 18 }}>Bank Details</div>
-                  <Row label="Bank Name" value={firm.bankName} />
-                  <Row label="Account Number" value={firm.accountNumber} mono />
-                  <Row label="IFSC Code" value={firm.ifscCode} mono />
-                </>
-              )}
-              {(firm.contactPersonName || firm.contactPersonPhone) && (
-                <>
-                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, letterSpacing: "2px", color: T.taupe, textTransform: "uppercase", marginBottom: 4, marginTop: 18 }}>Contact Person</div>
-                  <Row label="Name" value={firm.contactPersonName} />
-                  <Row label="Phone" value={firm.contactPersonPhone} mono />
-                </>
-              )}
-            </div>
-          )}
-          {tab === "finance" && (
-            <div>
-              <div style={{ background: "linear-gradient(135deg, rgba(30,102,64,0.07), rgba(200,155,71,0.07))", border: `1px solid ${T.borderGold}`, borderRadius: 12, padding: "13px 16px", marginBottom: 18, display: "flex", gap: 12, alignItems: "flex-start" }}>
-                <AlertTriangle size={15} color={T.antiqueGold} style={{ flexShrink: 0, marginTop: 1 }} />
-                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, lineHeight: 1.6 }}>
-                  <strong style={{ color: T.antiqueGold }}>How entries work:</strong>{" "}
-                  <span style={{ color: T.green, fontWeight: 600 }}>Income</span> — add wholesale/retail receipts manually or import via Excel.{" "}
-                  <span style={{ color: T.crimson, fontWeight: 600 }}>Expenses</span> — add weaver payments, material purchases and overheads manually or import via Excel.{" "}
-                  <span style={{ color: T.antiqueGold, fontWeight: 600 }}>Miscellaneous</span> — bonus, advance, or one-off items.
-                </div>
-              </div>
-              <FinSummaryStrip income={fin.income} expenses={fin.expenses} misc={fin.misc} />
-              <FinSection title="Income" type="income" icon={<TrendingUp size={16} color={T.green} />} entries={fin.income} color={T.green} bg={T.greenBg}
-                onAdd={e => addIncomeEntry(firm.id, e as Omit<FinancialEntry, "id">)}
-                onBulkImport={rows => bulkAddIncome(firm.id, rows)} />
-              <FinSection title="Expenses" type="expense" icon={<TrendingDown size={16} color={T.crimson} />} entries={fin.expenses} color={T.crimson} bg={T.crimsonBg}
-                onAdd={e => addExpenseEntry(firm.id, e as Omit<FinancialEntry, "id">)}
-                onBulkImport={rows => bulkAddExpenses(firm.id, rows)} />
-              <MiscSection entries={fin.misc} onAdd={e => addMiscEntry(firm.id, e)} />
-            </div>
-          )}
         </div>
     </Modal>
   );

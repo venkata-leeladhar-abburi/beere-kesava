@@ -135,6 +135,10 @@ interface FirmsContextValue {
   addMiscEntry: (firmId: string, entry: Omit<MiscEntry, "id">) => void;
   bulkAddIncome: (firmId: string, entries: Omit<FinancialEntry, "id">[]) => void;
   bulkAddExpenses: (firmId: string, entries: Omit<FinancialEntry, "id">[]) => void;
+  /** Corrects a hand-typed entry in place — manual rows are the only part of
+   *  the ledger that can carry a typo, so they're the only editable part. */
+  updateEntry: (firmId: string, entryId: string, entry: Omit<FinancialEntry, "id"> | Omit<MiscEntry, "id">) => void;
+  deleteEntry: (firmId: string, entryId: string) => Promise<void>;
   getFirmFinancials: (firmId: string) => FirmFinancials;
 }
 
@@ -205,8 +209,9 @@ export function FirmsProvider({ children }: { children: React.ReactNode }) {
   const addEntryMutation = useMutation({
     mutationFn: (args: { firmId: string; payload: CreateFinancialEntryPayload }) =>
       firmsApi.addEntry(args.firmId, args.payload),
-    onSuccess: () => {
+    onSuccess: (_data, args) => {
       void queryClient.invalidateQueries({ queryKey: FINANCIALS_KEY });
+      void queryClient.invalidateQueries({ queryKey: ["firms", "activity", args.firmId] });
       toast.success("Entry added");
     },
     onError: (err: unknown) => {
@@ -220,12 +225,42 @@ export function FirmsProvider({ children }: { children: React.ReactNode }) {
         await firmsApi.addEntry(args.firmId, payload);
       }
     },
-    onSuccess: () => {
+    onSuccess: (_data, args) => {
       void queryClient.invalidateQueries({ queryKey: FINANCIALS_KEY });
+      void queryClient.invalidateQueries({ queryKey: ["firms", "activity", args.firmId] });
       toast.success("Entries added");
     },
     onError: (err: unknown) => {
       toast.error(err instanceof Error ? err.message : "Failed to add entries");
+    },
+  });
+
+  // Editing/deleting an entry changes the firm's totals, so the auto-tracked
+  // activity query is invalidated alongside the manual one — otherwise the
+  // summary strip keeps showing the pre-edit figure until a hard refresh.
+  const updateEntryMutation = useMutation({
+    mutationFn: (args: { firmId: string; entryId: string; payload: Partial<CreateFinancialEntryPayload> }) =>
+      firmsApi.updateEntry(args.firmId, args.entryId, args.payload),
+    onSuccess: (_data, args) => {
+      void queryClient.invalidateQueries({ queryKey: FINANCIALS_KEY });
+      void queryClient.invalidateQueries({ queryKey: ["firms", "activity", args.firmId] });
+      toast.success("Entry updated");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to update entry");
+    },
+  });
+
+  const deleteEntryMutation = useMutation({
+    mutationFn: (args: { firmId: string; entryId: string }) =>
+      firmsApi.removeEntry(args.firmId, args.entryId),
+    onSuccess: (_data, args) => {
+      void queryClient.invalidateQueries({ queryKey: FINANCIALS_KEY });
+      void queryClient.invalidateQueries({ queryKey: ["firms", "activity", args.firmId] });
+      toast.success("Entry deleted");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to delete entry");
     },
   });
 
@@ -283,6 +318,38 @@ export function FirmsProvider({ children }: { children: React.ReactNode }) {
       })),
     });
 
+  // Mirrors the add* helpers' encoding: a misc entry carries its income/
+  // expense sense in the category string, everything else in `kind`.
+  const updateEntry = (
+    firmId: string,
+    entryId: string,
+    entry: Omit<FinancialEntry, "id"> | Omit<MiscEntry, "id">,
+  ) => {
+    const isMisc = "type" in entry;
+    updateEntryMutation.mutate({
+      firmId,
+      entryId,
+      payload: isMisc
+        ? {
+            kind: "MISC",
+            category: entry.type === "expense" ? MISC_EXPENSE_CATEGORY : MISC_INCOME_CATEGORY,
+            description: entry.description,
+            amount: entry.amount,
+            date: entry.date,
+            notes: entry.notes,
+          }
+        : {
+            category: entry.category,
+            description: entry.description,
+            amount: entry.amount,
+            date: entry.date,
+          },
+    });
+  };
+
+  const deleteEntry = (firmId: string, entryId: string): Promise<void> =>
+    deleteEntryMutation.mutateAsync({ firmId, entryId }).then(() => undefined);
+
   const getFirmFinancials = useCallback(
     (firmId: string): FirmFinancials => {
       return financials.find((f) => f.firmId === firmId) ?? { firmId, income: [], expenses: [], misc: [] };
@@ -303,6 +370,8 @@ export function FirmsProvider({ children }: { children: React.ReactNode }) {
         addMiscEntry,
         bulkAddIncome,
         bulkAddExpenses,
+        updateEntry,
+        deleteEntry,
         getFirmFinancials,
       }}
     >
@@ -322,6 +391,8 @@ const FALLBACK_FIRMS: FirmsContextValue = {
   addMiscEntry: () => {},
   bulkAddIncome: () => {},
   bulkAddExpenses: () => {},
+  updateEntry: () => {},
+  deleteEntry: async () => {},
   getFirmFinancials: (firmId: string) => ({
     firmId,
     income: [],

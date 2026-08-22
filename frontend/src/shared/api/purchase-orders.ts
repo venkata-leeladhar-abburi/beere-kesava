@@ -5,6 +5,8 @@ export interface BackendPurchaseOrder {
   poNumber: string;
   vendorId: string;
   vendor: { id: string; name: string; city: string | null; contactName: string | null };
+  firmId: string | null;
+  firm?: { id: string; firmName: string } | null;
   deliveryDate: string | null;
   totalValue: string;
   urgency: string | null;
@@ -34,6 +36,8 @@ export interface BackendPurchaseOrder {
 export interface CreatePurchaseOrderPayload {
   actorId?: string;
   vendorId: string;
+  /** Purchasing firm this order is raised under — carried onto the GRN when the goods arrive. */
+  firmId?: string;
   deliveryDate?: string;
   totalValue?: number;
   urgency?: string;

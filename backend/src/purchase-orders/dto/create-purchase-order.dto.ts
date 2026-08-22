@@ -47,6 +47,11 @@ export class CreatePurchaseOrderDto {
   @IsUUID()
   vendorId!: string;
 
+  /** Which of the company's legal firms this order is raised under — copied onto the GrnReceipt when the goods arrive. */
+  @IsOptional()
+  @IsUUID()
+  firmId?: string;
+
   @IsOptional()
   @IsDateString()
   deliveryDate?: string;

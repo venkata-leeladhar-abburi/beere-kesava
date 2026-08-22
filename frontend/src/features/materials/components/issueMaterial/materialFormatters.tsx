@@ -12,32 +12,50 @@ export function summarizeMaterials(items: IssuedMaterialItem[]): string {
   }).join(" · ");
 }
 
+/** Human-readable detail line for one issued material (subtype, colour, grade, or the GRN line's own description). */
+export function describeMaterial(m: IssuedMaterialItem): string {
+  if (m.materialType === "Warp") {
+    const parts = [m.warpSubtype, m.description].filter(Boolean);
+    return parts.join(" · ");
+  }
+  if (m.materialType === "Resham") {
+    return m.description || m.jariColor || "";
+  }
+  return `${m.jariType || ""} ${m.jariGrade || ""} ${m.jariColor || ""}`.replace(/\s+/g, " ").trim();
+}
+
+/**
+ * One stacked block per issued material: type badge, description, quantity,
+ * and the exact GRN line code it came from — the same id printed on that
+ * batch's label and shown in Goods Receipt History, so a material can be
+ * traced back to its delivery from here without opening the record.
+ */
 export function renderIssuedMaterials(items: IssuedMaterialItem[]) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-      {items.map((m) => {
-        let desc = "";
-        if (m.materialType === "Warp") {
-          desc = m.warpSubtype || "";
-          if (m.description) desc += desc ? ` (${m.description})` : m.description;
-        } else if (m.materialType === "Resham") {
-          desc = m.description || m.jariColor || "";
-        } else if (m.materialType === "Jari") {
-          desc = `${m.jariType || ""} ${m.jariGrade || ""} ${m.jariColor || ""}`.replace(/\s+/g, " ").trim();
-        }
-
+    <div style={{ display: "flex", flexDirection: "column", gap: 8, minWidth: 230 }}>
+      {items.map((m, idx) => {
+        const desc = describeMaterial(m);
         return (
-          // grnBatchId can repeat across issued lines (multiple material types drawn from the
-          // same GRN batch), so it's combined with the other per-line fields for a stable key.
-          <div key={`${m.grnBatchId}-${m.materialType}-${desc}-${m.quantity}-${m.unit}`} style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-            <span style={{
-              fontFamily: F.ui, fontSize: 12, fontWeight: 700,
-              color: m.materialType === "Warp" ? "#7A5010" : m.materialType === "Resham" ? "#7A5E1C" : T.royalBurgundy,
-              background: m.materialType === "Warp" ? "rgba(196,146,58,0.14)" : m.materialType === "Resham" ? "rgba(200,155,71,0.13)" : "rgba(110,15,45,0.08)",
-              padding: "2px 6px", borderRadius: 4
-            }}>{m.materialType}</span>
-            {desc && <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{desc}</span>}
-            <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{m.quantity} {m.unit}</span>
+          <div
+            // grnBatchId repeats when several materials come from one receipt,
+            // so index is folded in to keep the key stable per rendered line.
+            // eslint-disable-next-line react/no-array-index-key -- issued lines have no stable client-side id; order is fixed per record
+            key={`${m.grnItemCode ?? m.grnBatchId}-${idx}`}
+            style={{ display: "flex", flexDirection: "column", gap: 2 }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+              <span style={{
+                fontFamily: F.ui, fontSize: 12, fontWeight: 700,
+                color: m.materialType === "Warp" ? "#7A5010" : m.materialType === "Resham" ? "#7A5E1C" : T.royalBurgundy,
+                background: m.materialType === "Warp" ? "rgba(196,146,58,0.14)" : m.materialType === "Resham" ? "rgba(200,155,71,0.13)" : "rgba(110,15,45,0.08)",
+                padding: "2px 6px", borderRadius: 4
+              }}>{m.materialType}</span>
+              {desc && <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{desc}</span>}
+              <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{m.quantity} {m.unit}</span>
+            </div>
+            {m.grnItemCode && (
+              <span style={{ fontFamily: F.mono, fontSize: 10.5, color: T.taupe }}>{m.grnItemCode}</span>
+            )}
           </div>
         );
       })}

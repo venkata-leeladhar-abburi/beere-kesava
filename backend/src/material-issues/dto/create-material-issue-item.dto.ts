@@ -31,4 +31,9 @@ export class CreateMaterialIssueItemDto {
   @IsOptional()
   @IsString()
   grnBatchId?: string;
+
+  /** GrnItem.id of the exact received line this material is drawn from. */
+  @IsOptional()
+  @IsString()
+  grnItemId?: string;
 }

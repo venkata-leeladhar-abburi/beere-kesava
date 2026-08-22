@@ -208,7 +208,9 @@ export function WorkerGRN({
 
     const payload: CreateGrnPayload = {
       vendorId: selectedPO.vendorId,
-      firmId: undefined, // Add if you have firmId in PO
+      // Inherited from the purchase order — the firm is chosen when the order
+      // is raised, not at the receiving desk.
+      firmId: selectedPO.firmId || undefined,
       supplierName: selectedPO.vendor,
       invoiceNo: selectedPO.poNumber,
       actorId: user?.id,

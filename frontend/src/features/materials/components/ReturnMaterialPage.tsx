@@ -48,7 +48,7 @@ export function ReturnMaterialPage() {
       const [weaversRes, loomsRes] = await Promise.all([weaversApi.list(), factoryLoomsApi.list()]);
       if (cancelled) return;
       setWeavers(weaversRes.items.map(w => ({
-        id: w.id, name: w.name, village: w.village ?? "", initials: w.initials,
+        id: w.id, code: w.code, name: w.name, village: w.village ?? "", initials: w.initials,
         bg: avatarColorFor(w.id), status: w.status === "ACTIVE" ? "active" : "idle",
         looms: w.looms, phone: w.phone,
       })));

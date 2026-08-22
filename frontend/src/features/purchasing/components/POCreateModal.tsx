@@ -133,6 +133,13 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
       vendor: vendor!.name,
       vendorCity: vendor!.city || "",
       vendorContact: vendorContact || undefined,
+      // firmId is the half that actually persists — POContext sends it to the
+      // backend as PurchaseOrder.firmId. It was previously omitted here while
+      // only the display-only `firmName` was set, so every order was saved
+      // with firmId: null despite "Purchasing Firm" being a required field.
+      // That broke the firm's ledger (the order never appeared against it)
+      // and left Goods Receipt History's firm column blank.
+      firmId: selectedFirmId,
       firmName: selectedFirm?.firmName,
       deliveryDate: deliveryDate || new Date().toISOString().split("T")[0],
       materials: materials.map(m => ({

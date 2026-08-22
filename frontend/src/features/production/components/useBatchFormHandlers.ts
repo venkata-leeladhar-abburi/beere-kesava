@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { toast } from "sonner";
 import { SareeRow, generateSareeId } from "../contexts/BatchContext";
 import type { ActivePicker } from "./batch-creation/types";
 import type { BulkOrder } from "@/features/bulk-orders";
@@ -13,7 +12,33 @@ export interface LoomOption {
   operatorName: string; operatorPhone: string; installedYear: number | null; notes: string;
 }
 
-export function useBatchFormHandlers(bulkOrders: BulkOrder[]) {
+/**
+ * A bulk-order assignment that would overflow the order's placed quantity.
+ * Surfaced to the page as a blocking modal instead of being silently capped —
+ * assigning 30 sarees to a 20-saree order is a data-entry mistake the admin
+ * has to see and resolve, not something to quietly absorb.
+ */
+export interface BulkOrderCapacityConflict {
+  order: BulkOrder;
+  ref: string;
+  label: string;
+  /** How many rows the admin had selected. */
+  selectedCount: number;
+  /** How many of those can actually be taken (order total − already assigned). */
+  capacity: number;
+  /** Rows on this order elsewhere in this batch. */
+  assignedInBatch: number;
+  /** Rows on this order in other batches. */
+  assignedElsewhere: number;
+  /** selectedCount − capacity. */
+  overflow: number;
+}
+
+export function useBatchFormHandlers(
+  bulkOrders: BulkOrder[],
+  /** Sarees already tied to each bulk order ref in *other* batches, keyed by ref. */
+  assignedElsewhereByRef: Record<string, number> = {},
+) {
   const [rows, setRows] = useState<SareeRow[]>([]);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [picker, setPicker] = useState<ActivePicker>(null);
@@ -106,11 +131,15 @@ export function useBatchFormHandlers(bulkOrders: BulkOrder[]) {
     setPicker(null);
   }
 
-  function applyBulkOrder(ref: string | null, label: string) {
+  const [bulkOrderConflict, setBulkOrderConflict] = useState<BulkOrderCapacityConflict | null>(null);
+
+  // Writes the order (and the saree type / design it implies) onto every row in
+  // `allowed`; anything selected but not allowed is left untouched.
+  function commitBulkOrder(ref: string | null, label: string, allowed: Set<number> | null) {
     const order = bulkOrders.find(o => o.ref === ref);
-    let sareeTypeCode = null;
-    let sareeTypeName = null;
-    let designCode = null;
+    let sareeTypeCode: string | null = null;
+    let sareeTypeName: string | null = null;
+    let designCode: string | null = null;
     if (order) {
       const match = order.sareeType.match(/(.*)\s+·\s+(.*)/) || order.sareeType.match(/(.*)·(.*)/);
       if (match) {
@@ -126,45 +155,63 @@ export function useBatchFormHandlers(bulkOrders: BulkOrder[]) {
       designCode = order.design || null;
     }
 
-    // A bulk order only has room for as many sarees as it was placed for —
-    // don't let it silently absorb more than that. Cap the assignment at the
-    // order's remaining capacity (its total, minus rows already on it
-    // elsewhere in this batch); anything selected past the cap goes to
-    // General Stock instead, for the admin to route separately.
-    const selectedSerials = rows
-      .filter(r => selected.has(r.serial))
-      .map(r => r.serial)
-      .sort((a, b) => a - b);
-    let capacity = selectedSerials.length;
-    if (order) {
-      const alreadyOnOrder = rows.filter(r => r.bulkOrderRef === ref && !selected.has(r.serial)).length;
-      capacity = Math.max(0, order.total - alreadyOnOrder);
-    }
-    const capped = new Set(selectedSerials.slice(0, capacity));
-    const overflow = selectedSerials.length - capped.size;
-
     setRows(prev => prev.map(r => {
       if (!selected.has(r.serial)) return r;
-      if (order && !capped.has(r.serial)) {
-        // Past this order's capacity — route to General Stock rather than
-        // leaving it silently tied to an order it can't actually belong to.
-        return { ...r, bulkOrderRef: null, bulkOrderLabel: null };
-      }
+      if (allowed && !allowed.has(r.serial)) return r;
       return {
         ...r,
         bulkOrderRef: ref,
         bulkOrderLabel: label,
-        ...(order ? { sareeTypeCode, sareeTypeName, designCode } : {})
+        ...(order ? { sareeTypeCode, sareeTypeName, designCode } : {}),
       };
     }));
     setPicker(null);
-
-    if (order && overflow > 0) {
-      toast.warning(
-        `${order.ref} only has room for ${capacity} more saree${capacity === 1 ? "" : "s"} — ${overflow} of your ${selectedSerials.length} selected rows went to General Stock instead.`,
-      );
-    }
   }
+
+  function applyBulkOrder(ref: string | null, label: string) {
+    const order = bulkOrders.find(o => o.ref === ref);
+
+    // General Stock is unbounded — nothing to check.
+    if (!order || !ref) {
+      commitBulkOrder(ref, label, null);
+      return;
+    }
+
+    // A bulk order only has room for as many sarees as it was placed for.
+    // Its remaining capacity is its total minus rows already on it — both
+    // elsewhere in this batch and in every other batch.
+    const selectedCount = rows.filter(r => selected.has(r.serial)).length;
+    const assignedInBatch = rows.filter(r => r.bulkOrderRef === ref && !selected.has(r.serial)).length;
+    const assignedElsewhere = assignedElsewhereByRef[ref] ?? 0;
+    const capacity = Math.max(0, order.total - assignedInBatch - assignedElsewhere);
+
+    if (selectedCount > capacity) {
+      // Don't touch a single row — show the admin exactly what doesn't fit and
+      // let them choose to take the part that does.
+      setPicker(null);
+      setBulkOrderConflict({
+        order, ref, label, selectedCount, capacity,
+        assignedInBatch, assignedElsewhere,
+        overflow: selectedCount - capacity,
+      });
+      return;
+    }
+
+    commitBulkOrder(ref, label, null);
+  }
+
+  /** Assign only as many of the selected rows as the order still has room for. */
+  function assignBulkOrderUpToCapacity() {
+    const c = bulkOrderConflict;
+    if (!c) return;
+    const allowed = new Set(
+      rows.filter(r => selected.has(r.serial)).map(r => r.serial).sort((a, b) => a - b).slice(0, c.capacity),
+    );
+    commitBulkOrder(c.ref, c.label, allowed);
+    setBulkOrderConflict(null);
+  }
+
+  function dismissBulkOrderConflict() { setBulkOrderConflict(null); }
 
   function applyDesign(code: string) {
     setRows(prev => prev.map(r => selected.has(r.serial) ? { ...r, designCode: code } : r));
@@ -208,5 +255,6 @@ export function useBatchFormHandlers(bulkOrders: BulkOrder[]) {
     loomPickerRow, setLoomPickerRow, generateRows, addRows, allSelected, toggleAll, toggleRow,
     applyWeaver, applyWeaverLoomToRow, applyFactoryLoom, applyBulkOrder, applyDesign,
     applySareeType, removeSelected,
+    bulkOrderConflict, assignBulkOrderUpToCapacity, dismissBulkOrderConflict,
   };
 }

@@ -5,7 +5,7 @@ import { MaterialIssueRecord } from "../../contexts/MaterialIssueContext";
 import { resolveSignatureUrl } from "../../../../shared/api/material-issues";
 import { F, T } from "./theme";
 import { SectionPill } from "./primitives";
-import { materialIcon } from "./materialFormatters";
+import { describeMaterial, materialIcon } from "./materialFormatters";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { Modal } from "../../../../shared/ui/overlay";
@@ -35,7 +35,7 @@ export function RecordDetailsModal({ record, onClose }: { record: MaterialIssueR
       id: "details", header: "Details", accessor: m => m.description,
       cell: (_v, m) => (
         <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-          {m.materialType === "Warp" ? m.warpSubtype : m.materialType === "Jari" ? `${m.jariType} · ${m.jariGrade} · ${m.jariColor}` : (m.description || m.jariColor || "—")}
+          {describeMaterial(m) || "—"}
         </span>
       ),
     },
@@ -44,8 +44,17 @@ export function RecordDetailsModal({ record, onClose }: { record: MaterialIssueR
       cell: (_v, m) => <span style={{ fontFamily: F.ui, fontVariantNumeric: "tabular-nums", fontSize: 13, color: T.luxuryBrown }}>{m.quantity} {m.unit}</span>,
     },
     {
-      id: "grn", header: "GRN Batch", accessor: m => m.grnBatchId,
-      cell: (_v, m) => <EntityCode type="goodsReceipt" value={m.grnBatchId} size="sm" />,
+      // The specific received line, with its parent receipt underneath — the
+      // same pair of ids Receive Stock shows for that delivery.
+      id: "grn", header: "GRN Item", accessor: m => m.grnItemCode ?? m.grnBatchId,
+      cell: (_v, m) => (
+        <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+          <EntityCode type="goodsReceipt" value={m.grnItemCode ?? m.grnBatchId} size="sm" />
+          {m.grnItemCode && m.grnBatchId && (
+            <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>of {m.grnBatchId}</span>
+          )}
+        </div>
+      ),
     },
   ];
 
@@ -57,7 +66,11 @@ export function RecordDetailsModal({ record, onClose }: { record: MaterialIssueR
             <Dialog.Title style={{ marginBottom: 4 }}>
               <EntityCode type="goodsReceipt" value={record.id} size="md" />
             </Dialog.Title>
-            <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.65)" }}>{record.weaverName} · {record.weaverId}{record.loomNumber ? ` · Loom ${record.loomNumber}` : ""}</div>
+            <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.65)" }}>
+              {record.weaverName ?? record.factoryLoomNumber}
+              {record.weaverCode ? ` · ${record.weaverCode}` : ""}
+              {record.loomNumber ? ` · Loom ${record.loomNumber}` : ""}
+            </div>
           </div>
           <Dialog.Close asChild>
             <IconButton
@@ -108,13 +121,31 @@ export function RecordDetailsModal({ record, onClose }: { record: MaterialIssueR
 
           <div>
             <SectionPill label="Stock Impact" />
-            <div style={{ display: "flex", flexDirection: "column" as const, gap: 6 }}>
-              {record.materials.map((m) => (
-                // grnBatchId can repeat if multiple lines draw from the same batch, so it's combined with quantity/unit for a stable key.
-                <div key={`${m.grnBatchId}-${m.quantity}-${m.unit}`} style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, display: "flex", alignItems: "center", gap: 6 }}>
-                  <CheckCircle2 size={13} color={T.green} /> Reduced {m.quantity} {m.unit} from <EntityCode type="goodsReceipt" value={m.grnBatchId} size="sm" />
-                </div>
-              ))}
+            <div style={{ display: "flex", flexDirection: "column" as const, gap: 8 }}>
+              {record.materials.map((m, idx) => {
+                // How much the GRN line held before this slip drew from it.
+                // Only known for issuances recorded against a specific line;
+                // older rows show the deduction alone.
+                const received = m.grnItemReceivedQty;
+                return (
+                  <div
+                    // eslint-disable-next-line react/no-array-index-key -- issued lines have no stable client-side id; order is fixed per record
+                    key={`${m.grnItemCode ?? m.grnBatchId}-${idx}`}
+                    style={{ background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "9px 12px" }}
+                  >
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                      <CheckCircle2 size={13} color={T.green} />
+                      Reduced <strong>{m.quantity} {m.unit}</strong> of {m.materialType} from
+                      <EntityCode type="goodsReceipt" value={m.grnItemCode ?? m.grnBatchId} size="sm" />
+                    </div>
+                    <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginTop: 3, paddingLeft: 19 }}>
+                      {received !== undefined
+                        ? <>That line was received with {received} {m.unit} · {Math.max(0, received - m.quantity)} {m.unit} left after this slip</>
+                        : <>Received on {m.grnBatchId}</>}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 

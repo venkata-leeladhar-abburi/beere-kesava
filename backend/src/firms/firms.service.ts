@@ -6,6 +6,7 @@ import { CreateFinancialEntryDto } from "./dto/create-financial-entry.dto";
 import { CreateFirmDto } from "./dto/create-firm.dto";
 import { ListFinancialEntriesQueryDto } from "./dto/list-financial-entries-query.dto";
 import { ListFirmsQueryDto } from "./dto/list-firms-query.dto";
+import { UpdateFinancialEntryDto } from "./dto/update-financial-entry.dto";
 import { UpdateFirmDto } from "./dto/update-firm.dto";
 
 @Injectable()
@@ -105,6 +106,40 @@ export class FirmsService {
         notes: dto.notes,
       },
     });
+  }
+
+  // Manual entries are hand-typed, so they are the one part of a firm's
+  // ledger that can be wrong — a typo'd amount, or a row that duplicates a
+  // payment now tracked automatically. Both need a way out; entries were
+  // previously append-only with no correction path at all.
+  private async findEntry(firmId: string, entryId: string) {
+    const entry = await this.prisma.firmFinancialEntry.findUnique({ where: { id: entryId } });
+    // Scoped to the firm in the path, so an entry id belonging to another
+    // firm can't be edited through this firm's route.
+    if (!entry || entry.firmId !== firmId) {
+      throw new NotFoundException(`Financial entry ${entryId} not found on firm ${firmId}`);
+    }
+    return entry;
+  }
+
+  async updateEntry(firmId: string, entryId: string, dto: UpdateFinancialEntryDto) {
+    await this.findEntry(firmId, entryId);
+    return this.prisma.firmFinancialEntry.update({
+      where: { id: entryId },
+      data: {
+        kind: dto.kind,
+        category: dto.category,
+        description: dto.description,
+        amount: dto.amount,
+        date: dto.date ? new Date(dto.date) : undefined,
+        notes: dto.notes,
+      },
+    });
+  }
+
+  async removeEntry(firmId: string, entryId: string) {
+    await this.findEntry(firmId, entryId);
+    await this.prisma.firmFinancialEntry.delete({ where: { id: entryId } });
   }
 
   async listEntries(

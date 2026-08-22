@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
-import { Scan, X, ShoppingBag, Users, FileText } from "lucide-react";
+import { Scan, Camera, X, ShoppingBag, Users, FileText } from "lucide-react";
 import { T, F, EASE, card } from "../theme";
 import { Button, IconButton, Input } from "../../../../shared/ui/primitives";
+import { CameraScannerModal } from "../../../../shared/ui/CameraScannerModal";
 
 interface ActionBarProps {
   hasAnyDispatchAction: boolean;
@@ -30,13 +31,20 @@ export function ActionBar({
   onClearSelection,
 }: ActionBarProps) {
   const [scanValue, setScanValue] = useState("");
+  const [cameraOpen, setCameraOpen] = useState(false);
+
+  const handleDetected = (text: string) => {
+    setCameraOpen(false);
+    onScan(text);
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       {/* Toolbar */}
       <div style={{ ...card, padding: "16px 20px", display: "flex", flexDirection: "column", gap: 10 }}>
         {/* Barcode scanners type the code and press Enter, so the same input
-            serves both a physical scanner and manual entry. */}
+            serves both a physical scanner and manual entry. The camera button
+            covers devices with no hardware scanner attached. */}
         <form
           onSubmit={e => { e.preventDefault(); onScan(scanValue); setScanValue(""); }}
           style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" as const }}
@@ -51,10 +59,20 @@ export function ActionBar({
           <Button type="submit" variant="primary" size="sm" iconLeft={Scan} className="shrink-0">
             Scan
           </Button>
+          <Button type="button" variant="secondary" size="sm" iconLeft={Camera} onClick={() => setCameraOpen(true)} className="shrink-0">
+            Open Camera
+          </Button>
           <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
             Selects the scanned saree in the table below.
           </span>
         </form>
+        <CameraScannerModal
+          open={cameraOpen}
+          onClose={() => setCameraOpen(false)}
+          onDetected={handleDetected}
+          title="Scan Saree Barcode"
+          hint="Point the camera at the barcode tag on the saree label."
+        />
 
         {/* Scan feedback */}
         {scanMsg && (

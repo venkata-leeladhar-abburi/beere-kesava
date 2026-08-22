@@ -61,12 +61,8 @@ function toPurchaseOrder(po: BackendPurchaseOrder, materials: POItem[] = []): Pu
   return {
     id: po.id,
     poNumber: po.poNumber,
-    // NOTE(backend gap): PurchaseOrder has no firm relation in the schema, so
-    // there is nothing to read here yet — PODocPreview falls back accordingly.
-    // These were cast through `any`, which made two always-undefined reads look
-    // like real fields.
-    firmId: undefined,
-    firmName: undefined,
+    firmId: po.firmId ?? undefined,
+    firmName: po.firm?.firmName ?? undefined,
     vendorId: po.vendorId,
     vendor: po.vendor.name,
     vendorCity: po.vendor.city ?? "",
@@ -128,6 +124,10 @@ export function POProvider({ children }: { children: React.ReactNode }) {
       const created = await purchaseOrdersApi.create({
         actorId: user?.id,
         vendorId,
+        // The create form has always collected a purchasing firm, but it was
+        // never sent — which is why Goods Receipt History's Firm Name column
+        // was blank for every order.
+        firmId: po.firmId || undefined,
         deliveryDate: po.deliveryDate || undefined,
         totalValue: po.totalValue || 0,
         urgency: po.urgency,

@@ -11,13 +11,25 @@ import { Modal } from "../../../../shared/ui/overlay";
 import { GRNPrintView } from "./GRNSuccessPrint";
 import type { ReconResult } from "@/lib/domain/status";
 
+/** One received material line, as shown in the Materials column. */
+export interface ReceiptMaterialLine {
+  /** Structured per-line id (e.g. "GRN-SreeVignesh-004-002-1") — the same id printed on that line's barcode label. */
+  itemCode: string;
+  type: "Warp" | "Resham" | "Jari";
+  name: string;
+  description: string;
+  quantity: number;
+  unit: string;
+}
+
 export interface ReceiptRecord {
   grnId: string;
   poRef: string;
   vendor: string;
   firmName: string;
   dateReceived: string;
-  materialsSummary: string;
+  /** Structured per-material lines. Replaced a joined-then-reparsed string, which mangled any description containing the delimiter. */
+  materials: ReceiptMaterialLine[];
   receivedBy: string;
   // Reconciliation result of a GRN receipt against its PO — lib/domain/status.ts's
   // `ReconResult` (Part D.1: found living inside `status` as "Match"/"Short"/
@@ -33,34 +45,30 @@ const HIST_STATUS_CFG: Record<ReconResult, { label: string; color: string; bg: s
   excess: { label: "Excess", color: "#1565C0", bg: "rgba(21,101,192,0.10)" },
 };
 
-// Joins/splits one material line per row — not ", " (a description can
-// legitimately contain commas, e.g. "Premium grade, off-white, 40s count",
-// which would otherwise get sliced into multiple fake lines).
-const SUMMARY_LINE_SEP = " ||| ";
+const MAT_COLOR: Record<ReceiptMaterialLine["type"], string> = {
+  Warp: "#7A5010",
+  Resham: "#7A5E1C",
+  Jari: C.burg,
+};
 
-function renderMaterialsSummary(summary: string) {
-  if (!summary) return null;
-  const parts = summary.split(SUMMARY_LINE_SEP);
+/** One spaced block per material: type, name + description, quantity, and the line's own GRN item code. */
+function renderMaterialsSummary(lines: ReceiptMaterialLine[]) {
+  if (lines.length === 0) return <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>—</span>;
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 5, minWidth: 260 }}>
-      {parts.map((p, idx) => {
-        const matchDesc = p.match(/^([^-]+)\s*-\s*([^(]+)\s*\(([^)]+)\)$/);
-        if (matchDesc) {
-          const type = matchDesc[1].trim();
-          const detail = matchDesc[2].trim();
-          const qty = matchDesc[3].trim();
-          return (
-            <div key={idx} style={{ fontFamily: F.u, fontSize: 12, color: C.text, whiteSpace: "nowrap" }}>
-              <span style={{ fontWeight: 700, color: C.burg }}>{type}</span> - {detail} <span style={{ color: C.muted }}>({qty})</span>
-            </div>
-          );
-        }
-        return (
-          <div key={idx} style={{ fontFamily: F.u, fontSize: 12, color: C.text, whiteSpace: "nowrap" }}>
-            {p}
+    <div style={{ display: "flex", flexDirection: "column", gap: 10, minWidth: 260 }}>
+      {lines.map(line => (
+        <div key={line.itemCode} style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 6, flexWrap: "wrap" }}>
+            <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: MAT_COLOR[line.type] }}>{line.type}</span>
+            <span style={{ fontFamily: F.u, fontSize: 12, color: C.text }}>{line.name}</span>
+            <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.burg }}>{line.quantity} {line.unit}</span>
           </div>
-        );
-      })}
+          {line.description && (
+            <span style={{ fontFamily: F.u, fontSize: 11.5, color: C.muted }}>{line.description}</span>
+          )}
+          <span style={{ fontFamily: F.m, fontSize: 10.5, color: C.muted }}>{line.itemCode}</span>
+        </div>
+      ))}
     </div>
   );
 }
@@ -96,15 +104,19 @@ export function ReceiptHistoryTable({ receiptHistory: propReceiptHistory, compac
         vendor: g.supplierName ?? "Vendor",
         firmName: g.firm?.firmName ?? "—",
         dateReceived: g.receivedDate ? new Date(g.receivedDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "Recent",
-        materialsSummary: g.items.map(i => {
+        materials: g.items.map((i, index) => {
           const isJari = i.materialType === "JARI";
-          const qty = isJari ? jariToReels(i.quantity, i.unit ?? "KG") : i.quantity;
-          const unit = isJari ? "Reels" : "kg";
-          const type = i.materialType === "WARP" ? "Warp" : i.materialType === "RESHAM" ? "Resham" : "Jari";
-          const label = i.description ? `${i.name}: ${i.description}` : i.name;
-          const code = i.itemCode ? ` · ${i.itemCode}` : "";
-          return `${type} - ${label} (${qty} ${unit}${code})`;
-        }).join(SUMMARY_LINE_SEP),
+          return {
+            // Older rows predate itemCode; fall back to the same
+            // "{receipt}-{position}" shape the backend now assigns.
+            itemCode: i.itemCode || `${g.id}-${index + 1}`,
+            type: (i.materialType === "WARP" ? "Warp" : i.materialType === "RESHAM" ? "Resham" : "Jari") as ReceiptMaterialLine["type"],
+            name: i.name,
+            description: i.description ?? "",
+            quantity: isJari ? jariToReels(i.quantity, i.unit ?? "KG") : i.quantity,
+            unit: isJari ? "Reels" : "kg",
+          };
+        }),
         receivedBy: g.receivedBy ? `${g.receivedBy.firstName} ${g.receivedBy.lastName}`.trim() : "—",
         status: (anyRejected ? "short" : "match") as ReconResult,
         fullReceipt: g,
@@ -126,7 +138,15 @@ export function ReceiptHistoryTable({ receiptHistory: propReceiptHistory, compac
     if (!matchesDateFilter(r.dateReceived, historyDateFilter)) return false;
     if (!historySearch) return true;
     const q = historySearch.toLowerCase();
-    return r.grnId.toLowerCase().includes(q) || r.poRef.toLowerCase().includes(q) || r.vendor.toLowerCase().includes(q);
+    return r.grnId.toLowerCase().includes(q)
+      || r.poRef.toLowerCase().includes(q)
+      || r.vendor.toLowerCase().includes(q)
+      // Per-line codes and descriptions are visible in the table, so they
+      // should be searchable too.
+      || r.materials.some(m =>
+        m.itemCode.toLowerCase().includes(q)
+        || m.name.toLowerCase().includes(q)
+        || m.description.toLowerCase().includes(q));
   });
 
   const totalPages = Math.max(1, Math.ceil(filteredHistory.length / PAGE_SIZE));
@@ -139,10 +159,10 @@ export function ReceiptHistoryTable({ receiptHistory: propReceiptHistory, compac
     { id: "firmName", header: "Firm Name", accessor: r => r.firmName, priority: 3, cell: (_v, r) => <span style={{ fontFamily: F.u, fontSize: compact ? 12 : 12.5, color: C.muted }}>{r.firmName}</span> },
     { id: "dateReceived", header: "Date Received", accessor: r => r.dateReceived, priority: 3, cell: (_v, r) => <span style={{ fontFamily: F.u, fontSize: compact ? 12 : 12.5, color: C.muted, whiteSpace: "nowrap" }}>{r.dateReceived}</span> },
     {
-      id: "materials", header: "Materials", accessor: r => r.materialsSummary,
+      id: "materials", header: "Materials", accessor: r => r.materials.map(m => m.itemCode).join(" "),
       cell: (_v, r) => (
-        <div style={{ minWidth: 260, maxWidth: 420 }}>
-          {renderMaterialsSummary(r.materialsSummary)}
+        <div style={{ minWidth: 260, maxWidth: 420, paddingTop: 4, paddingBottom: 4 }}>
+          {renderMaterialsSummary(r.materials)}
         </div>
       ),
     },

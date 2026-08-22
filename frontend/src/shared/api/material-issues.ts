@@ -24,12 +24,23 @@ export interface BackendMaterialIssueItem {
   jariGrade: BackendJariGrade | null;
   jariColor: string | null;
   grnBatchId: string | null;
+  grnItemId: string | null;
+  /** The GRN line this was drawn from — its `itemCode` is the same id Receive Stock shows. Null for issuances recorded before per-line tracking existed. */
+  grnItem?: {
+    id: string;
+    itemCode: string | null;
+    name: string;
+    description: string | null;
+    quantity: string;
+    unit: string;
+  } | null;
 }
 
 export interface BackendMaterialIssueRecord {
   id: string;
   weaverId: string | null;
-  weaver?: { id: string; name: string } | null;
+  /** `code` is the human-facing weaver ID (e.g. "Wea-003") — show this, not `weaverId` (a UUID). */
+  weaver?: { code: string; name: string } | null;
   factoryLoomId: string | null;
   loomNumber: string | null;
   batchId: string | null;
@@ -62,6 +73,8 @@ export interface CreateMaterialIssueItemPayload {
   jariGrade?: BackendJariGrade;
   jariColor?: string;
   grnBatchId?: string;
+  /** GrnItem.id of the exact received line this is drawn from. */
+  grnItemId?: string;
 }
 
 export interface CreateMaterialIssuePayload {

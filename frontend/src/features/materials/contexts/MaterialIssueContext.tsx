@@ -25,11 +25,19 @@ export interface IssuedMaterialItem {
   jariGrade?: "1G" | "2G" | "3G" | "4G" | "5G";
   jariColor?: string;
   grnBatchId: string;  // which received GRN batch this material came from
+  /** GrnItem.id of the exact received line — what the backend deducts against. */
+  grnItemId?: string;
+  /** Structured per-line code of that GRN line (e.g. "GRN-SreeVignesh-004-002-1") — the same id Receive Stock displays. */
+  grnItemCode?: string;
+  /** How much that GRN line originally held, for the stock-impact breakdown. */
+  grnItemReceivedQty?: number;
 }
 
 export interface MaterialIssueRecord {
   id: string;               // auto-generated e.g. "MIR-2026-001"
-  weaverId?: string;         // set when issued to a weaver
+  weaverId?: string;         // Weaver.id (UUID) — the FK, not for display
+  /** Human-facing weaver ID (e.g. "Wea-003"). Show this in the UI; `weaverId` is a UUID. */
+  weaverCode?: string;
   weaverName?: string;
   loomNumber?: number;      // Loom number selected
   batchId?: string;         // Production batch this issuance is for
@@ -88,6 +96,10 @@ function backendItemToFrontend(item: BackendMaterialIssueRecord["items"][number]
     jariGrade: item.jariGrade ? JARI_GRADE_FROM_BACKEND[item.jariGrade] : undefined,
     jariColor: item.jariColor ?? undefined,
     grnBatchId: item.grnBatchId ?? "",
+    grnItemId: item.grnItemId ?? undefined,
+    grnItemCode: item.grnItem?.itemCode ?? undefined,
+    description: item.grnItem?.description ?? undefined,
+    grnItemReceivedQty: item.grnItem ? Number(item.grnItem.quantity) : undefined,
   };
 }
 
@@ -99,7 +111,8 @@ function backendRecordToFrontend(
   return {
     id: r.id,
     weaverId: r.weaverId ?? undefined,
-    weaverName: r.weaverId ? weaverLookup.get(r.weaverId) : undefined,
+    weaverCode: r.weaver?.code ?? undefined,
+    weaverName: r.weaver?.name ?? (r.weaverId ? weaverLookup.get(r.weaverId) : undefined),
     loomNumber: r.loomNumber ? Number(r.loomNumber) : undefined,
     batchId: r.batchId ?? undefined,
     factoryLoomId: r.factoryLoomId ?? undefined,
@@ -126,6 +139,7 @@ function frontendItemToPayload(m: IssuedMaterialItem): CreateMaterialIssuePayloa
     jariGrade: m.jariGrade ? JARI_GRADE_TO_BACKEND[m.jariGrade] : undefined,
     jariColor: m.jariColor,
     grnBatchId: m.grnBatchId || undefined,
+    grnItemId: m.grnItemId || undefined,
   };
 }
 

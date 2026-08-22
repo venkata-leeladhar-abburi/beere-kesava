@@ -1,11 +1,10 @@
 import React, { useState, useMemo } from "react";
-import { useLocation } from "react-router";
+import { useLocation, useNavigate, useSearchParams } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Plus, Edit3, Eye, Building2, CreditCard, Phone,
   MapPin, Hash, IndianRupee, Trash2,
   TrendingUp, TrendingDown, ChevronDown, ChevronUp, ChevronRight,
-  ArrowRight,
 } from "lucide-react";
 import {
   useFirms, Firm,
@@ -84,14 +83,15 @@ function overviewColumns(onGoToFirm?: (firmId: string) => void): ColumnDef<Overv
       id: "actions", header: "", type: "actions", accessor: () => null,
       cell: (_v, r) => (
         <div style={{ display: "flex", justifyContent: "flex-end" as const }}>
-          <IconButton
-            icon={ArrowRight}
-            label={`Go to ${r.firm.firmName}`}
-            variant="tertiary"
+          <Button
+            variant="secondary"
             size="sm"
+            iconRight={ChevronRight}
             onClick={() => onGoToFirm?.(r.firm.id)}
-            className="size-7"
-          />
+            className="whitespace-nowrap"
+          >
+            View Details
+          </Button>
         </div>
       ),
     },
@@ -124,6 +124,8 @@ function BusinessOverview({ onGoToFirm }: { onGoToFirm?: (firmId: string) => voi
         className="p-4 sm:p-6 cursor-pointer"
         style={{ background: `linear-gradient(135deg, ${T.darkBurgundy} 0%, ${T.royalBurgundy} 100%)` }}
         onClick={() => setOpen(o => !o)} role="button" tabIndex={0}
+        aria-label={open ? "Collapse Business Overview" : "Expand Business Overview"}
+        aria-expanded={open}
         onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => setOpen(o => !o))?.(); } }}
       >
         <div className="flex items-start gap-3.5 sm:gap-4 w-full">
@@ -168,7 +170,7 @@ function BusinessOverview({ onGoToFirm }: { onGoToFirm?: (firmId: string) => voi
               getRowId={r => r.firm.id}
             />
             {/* Totals row */}
-            <div className="grid grid-cols-1 md:grid-cols-[2fr_130px_130px_150px_80px_36px]" style={{ gap: 0, padding: "16px 28px", background: T.bgGold, borderTop: `1.5px solid ${T.borderGold}`, borderLeft: `4px solid ${T.antiqueGold}` }}>
+            <div className="grid grid-cols-1 md:grid-cols-[2fr_130px_130px_150px_80px_130px]" style={{ gap: 0, padding: "16px 28px", background: T.bgGold, borderTop: `1.5px solid ${T.borderGold}`, borderLeft: `4px solid ${T.antiqueGold}` }}>
               <div>
                 <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>All Firms Total</div>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{rows.length} firms · manual entries</div>
@@ -297,7 +299,8 @@ const FirmCard = React.forwardRef<HTMLDivElement, { firm: Firm; onEdit: () => vo
 });
 FirmCard.displayName = "FirmCard";
 
-import { FirmFormModal, FirmDetailModal } from "./FirmModals";
+import { FirmFormModal } from "./FirmModals";
+import { FirmDetailPage } from "./FirmDetailPage";
 const BLANK = { firmName: "", gstNumber: "", address: "", accountNumber: "", ifscCode: "", bankName: "", contactPersonName: "", contactPersonPhone: "", purchaseAmount: undefined };
 
 
@@ -306,13 +309,22 @@ export function FirmsPage() {
   const { firms, addFirm, updateFirm, deleteFirm, getFirmFinancials } = useFirms();
   const confirm = useConfirm();
   const location = useLocation();
+  const navigate = useNavigate();
+  // A firm's details are a PAGE, not a modal — the id lives in the URL so the
+  // view is linkable, survives a refresh, and gets a real Back button. The
+  // role dashboards route on `/:role/:tab`, so a query param is the one place
+  // a sub-view can live without every role's route table having to know
+  // about it.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const openFirmId = searchParams.get("firm");
+  const openFirm = openFirmId ? firms.find(f => f.id === openFirmId) ?? null : null;
+
   const [search, setSearch] = useState("");
   // Command palette "New Firm" action deep-links here with ?new=1 to open
   // the create-firm form straight away.
   const [modal, setModal] = useState<
     | { type: "create" }
     | { type: "edit"; firm: Firm }
-    | { type: "view"; firm: Firm }
     | null
   >(() => (new URLSearchParams(location.search).get("new") === "1" ? { type: "create" } : null));
 
@@ -336,8 +348,22 @@ export function FirmsPage() {
   const firmsWithBalanceCount = firmExpenseTotals.filter(v => v > 0).length;
 
   function openFirmView(firmId: string) {
-    const firm = firms.find(f => f.id === firmId);
-    if (firm) setModal({ type: "view", firm });
+    setSearchParams({ firm: firmId });
+    window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+  }
+
+  function closeFirmView() {
+    setSearchParams({});
+    window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+  }
+
+  // Payment entry stays owned by the Payments page — the firm view links out
+  // rather than growing a second, divergent payment form. The role segment is
+  // taken from the live path so this works for every dashboard that mounts
+  // FirmsPage (superadmin, admin, accountant).
+  function goToPayments() {
+    const role = location.pathname.split("/").filter(Boolean)[0];
+    navigate(role ? `/${role}/payments` : "/superadmin/payments");
   }
 
   async function handleDeleteFirm(firm: Firm) {
@@ -350,6 +376,36 @@ export function FirmsPage() {
     if (!confirmed) return;
     await deleteFirm(firm.id);
   }
+
+  // ── Firm detail view ────────────────────────────────────────────────────
+  // Rendered in place of the directory (not over it) — a real page with its
+  // own header and Back button. The edit modal stays available on top.
+  if (openFirm) {
+    return (
+      <>
+        <FirmDetailPage
+          firm={openFirm}
+          onBack={closeFirmView}
+          onEdit={() => setModal({ type: "edit", firm: openFirm })}
+          onGoToPayments={goToPayments}
+        />
+        <AnimatePresence>
+          {modal?.type === "edit" && (
+            <FirmFormModal
+              key="edit-modal"
+              title="Save Changes"
+              initial={{ firmName: modal.firm.firmName, gstNumber: modal.firm.gstNumber ?? "", address: modal.firm.address ?? "", accountNumber: modal.firm.accountNumber ?? "", ifscCode: modal.firm.ifscCode ?? "", bankName: modal.firm.bankName ?? "", contactPersonName: modal.firm.contactPersonName ?? "", contactPersonPhone: modal.firm.contactPersonPhone ?? "", purchaseAmount: modal.firm.purchaseAmount }}
+              onSave={data => updateFirm(modal.firm.id, data)}
+              onClose={() => setModal(null)}
+            />
+          )}
+        </AnimatePresence>
+      </>
+    );
+  }
+
+  // A stale ?firm= id (deleted firm, hand-edited URL) must not strand the
+  // user on a blank screen — fall through to the directory below.
 
   return (
     <div style={{ minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui }}>
@@ -417,7 +473,7 @@ export function FirmsPage() {
               {filtered.map(firm => (
                 <FirmCard key={firm.id} firm={firm}
                   onEdit={() => setModal({ type: "edit", firm })}
-                  onView={() => setModal({ type: "view", firm })}
+                  onView={() => openFirmView(firm.id)}
                   onDelete={() => void handleDeleteFirm(firm)} />
               ))}
             </AnimatePresence>
@@ -436,11 +492,6 @@ export function FirmsPage() {
           <FirmFormModal key="edit-modal" title="Save Changes"
             initial={{ firmName: modal.firm.firmName, gstNumber: modal.firm.gstNumber ?? "", address: modal.firm.address ?? "", accountNumber: modal.firm.accountNumber ?? "", ifscCode: modal.firm.ifscCode ?? "", bankName: modal.firm.bankName ?? "", contactPersonName: modal.firm.contactPersonName ?? "", contactPersonPhone: modal.firm.contactPersonPhone ?? "", purchaseAmount: modal.firm.purchaseAmount }}
             onSave={data => updateFirm(modal.firm.id, data)} onClose={() => setModal(null)} />
-        )}
-        {modal?.type === "view" && (
-          <FirmDetailModal key="view-modal" firm={modal.firm}
-            onClose={() => setModal(null)}
-            onEdit={() => setModal({ type: "edit", firm: modal.firm })} />
         )}
       </AnimatePresence>
     </div>

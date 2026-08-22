@@ -6,12 +6,17 @@ import { CreateFirmDto } from "./dto/create-firm.dto";
 import { ListFinancialEntriesQueryDto } from "./dto/list-financial-entries-query.dto";
 import { ListFirmsQueryDto } from "./dto/list-firms-query.dto";
 import { UpdateFirmDto } from "./dto/update-firm.dto";
+import { UpdateFinancialEntryDto } from "./dto/update-financial-entry.dto";
+import { FirmActivityService } from "./firm-activity.service";
 import { FirmsService } from "./firms.service";
 
 // Firm ledgers — financial, ACCOUNTANT access only for mutations.
 @Controller("firms")
 export class FirmsController {
-  constructor(private readonly firmsService: FirmsService) {}
+  constructor(
+    private readonly firmsService: FirmsService,
+    private readonly firmActivityService: FirmActivityService,
+  ) {}
 
   @Post()
   @RequireRoles(UserRole.ACCOUNTANT, UserRole.SUPERADMIN)
@@ -53,8 +58,32 @@ export class FirmsController {
     return this.firmsService.listEntries(id, query);
   }
 
+  @Patch(":id/entries/:entryId")
+  @RequireRoles(UserRole.ACCOUNTANT, UserRole.SUPERADMIN)
+  updateEntry(
+    @Param("id") id: string,
+    @Param("entryId") entryId: string,
+    @Body() dto: UpdateFinancialEntryDto,
+  ) {
+    return this.firmsService.updateEntry(id, entryId, dto);
+  }
+
+  @Delete(":id/entries/:entryId")
+  @RequireRoles(UserRole.ACCOUNTANT, UserRole.SUPERADMIN)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  removeEntry(@Param("id") id: string, @Param("entryId") entryId: string) {
+    return this.firmsService.removeEntry(id, entryId);
+  }
+
   @Get(":id/ledger-summary")
   getLedgerSummary(@Param("id") id: string) {
     return this.firmsService.getLedgerSummary(id);
+  }
+
+  // Every real document and payment that names this firm — the auto-tracked
+  // half of the ledger, alongside the manually-entered half above.
+  @Get(":id/activity")
+  getActivity(@Param("id") id: string) {
+    return this.firmActivityService.getActivity(id);
   }
 }

@@ -24,40 +24,55 @@ export const F = {
 export const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 // ── Local weaver directory (mirrors WeaversPage.tsx) ─────────────────────────
-export interface WeaverLite { id: string; name: string; village: string; initials: string; bg: string; status: "active" | "qc" | "idle"; looms: number; phone: string; }
-export const WEAVERS: WeaverLite[] = [
-  { id: "b5f9178c-b1b9-4871-a7c3-0d68a462d57a", name: "Ravi Kumar",   village: "Dharmavaram, AP",        initials: "RK", bg: "#5A3E6B", status: "active", looms: 3, phone: "98765 43210" },
-  { id: "8937070a-ea63-43f3-9cb4-dcbcfd362ff7", name: "Padma Veni",   village: "Pochampally, Telangana", initials: "PV", bg: "#9B6B8A", status: "active", looms: 2, phone: "87654 38834" },
-  { id: "11278a51-a26d-4eaa-adbf-bedbfa7fdf46", name: "Suresh Murti", village: "Venkatagiri, AP",        initials: "SM", bg: "#2D6B6B", status: "qc",     looms: 2, phone: "76549 99982" },
-  { id: "71413724-378d-4336-93dd-1db33cba3510", name: "Anand K.",     village: "Pochampally, Telangana", initials: "AK", bg: "#4A6B4A", status: "active", looms: 2, phone: "65438 77723" },
-  { id: "95cc89ea-6cf3-418c-bf9b-299e59f47389", name: "Meena R.",     village: "Siddipet, Telangana",    initials: "MR", bg: "#9B6B8A", status: "active", looms: 1, phone: "54327 66614" },
-  { id: "d3fd5a81-7d3a-478d-9a0f-d65a5db6779a", name: "Lakshmi D.",   village: "Dharmavaram, AP",        initials: "LD", bg: "#2D7D6B", status: "qc",     looms: 2, phone: "43216 33341" },
-  { id: "c7d8e833-dcd7-4a52-a867-f77d8ca2e1cf", name: "Venkat Rao",   village: "Venkatagiri, AP",        initials: "VR", bg: "#4A5E7A", status: "idle",   looms: 4, phone: "32105 11122" },
-  { id: "51490482-11cf-425b-8d54-7bd918f6db18", name: "Kamala B.",    village: "Pochampally, Telangana", initials: "KB", bg: "#7A2040", status: "active", looms: 3, phone: "21098 55589" },
-];
+export interface WeaverLite {
+  /** Weaver.id (UUID) — the FK used when issuing, never shown to staff. */
+  id: string;
+  /** Human-facing weaver ID (e.g. "Swarna-003") — this is what the UI displays. */
+  code: string;
+  name: string; village: string; initials: string; bg: string; status: "active" | "qc" | "idle"; looms: number; phone: string;
+}
 export const STATUS_CFG: Record<string, { label: string; color: string; bg: string }> = {
   active: { label: "Active",   color: T.green,   bg: "rgba(30,102,64,0.10)" },
   qc:     { label: "In QC",    color: T.antiqueGold, bg: "rgba(200,155,71,0.14)" },
   idle:   { label: "Idle",     color: T.taupe,    bg: "rgba(139,112,96,0.10)" },
 };
 
-// ── Local GRN batch directory (mirrors WorkerGRN.tsx format GRN-YYYY-MMM-###) ─
-export interface GrnBatchSibling { materialType: "Warp" | "Resham" | "Jari"; name: string; quantity: number; unit: string; }
+// ── GRN directory, shaped as the receipt hierarchy the UI actually needs ─────
+// One GrnReceipt (e.g. "GRN-SreeVignesh-004-002") carries several material
+// lines, each with its own structured code ("…-002-1", "…-002-2"). Material is
+// issued from one specific line, so the selector picks a line, not a receipt.
+
+/** One material line within a GRN receipt. */
+export interface GrnLine {
+  /** GrnItem.id (UUID) — what the backend deducts against. */
+  id: string;
+  /** Structured per-line code shown to staff and printed on the batch label (e.g. "GRN-SreeVignesh-004-002-1"). */
+  itemCode: string;
+  materialType: "Warp" | "Resham" | "Jari";
+  /** Short material name from the receipt (e.g. "Cotton/Silk"). */
+  name: string;
+  /** Colour/grade/quality notes carried over from the purchase order. */
+  description: string;
+  /** Quantity that originally entered stock (received minus rejected). */
+  receivedQty: number;
+  /** Already issued out of this line. */
+  issuedQty: number;
+  /** Still on hand for this line. */
+  availableQty: number;
+  unit: string;
+}
+
+/** A GRN receipt and every material line on it. */
 export interface GrnBatch {
-  grnBatchId: string; vendor: string; dateReceived: string; materialType: "Warp" | "Resham" | "Jari"; availableQty: number; unit: string;
+  grnBatchId: string;
+  vendor: string;
+  dateReceived: string;
   /** Purchase order this GRN was received against, if any — null for ad-hoc "Add New Stock" receipts. */
   poNumber: string | null;
-  /** Other material lines received on this same GRN receipt (excludes the current material type's own line) — lets staff see the full delivery a batch came from, not just the one material they're issuing. */
-  siblingItems: GrnBatchSibling[];
+  firmName: string | null;
+  lines: GrnLine[];
 }
-export const INITIAL_GRN_BATCHES: GrnBatch[] = [
-  { grnBatchId: "GRN-2026-JUN-001", vendor: "Sri Venkateswara Textiles", dateReceived: "01 Jun 2026", materialType: "Warp",   availableQty: 48, unit: "kg",    poNumber: null, siblingItems: [] },
-  { grnBatchId: "GRN-2026-JUN-002", vendor: "Kanchipuram Silks",         dateReceived: "02 Jun 2026", materialType: "Resham", availableQty: 22, unit: "kg",    poNumber: null, siblingItems: [] },
-  { grnBatchId: "GRN-2026-JUN-003", vendor: "Surat Zari Works",          dateReceived: "03 Jun 2026", materialType: "Jari",   availableQty: 40, unit: "Reels", poNumber: null, siblingItems: [] },
-  { grnBatchId: "GRN-2026-MAY-014", vendor: "Surat Zari Works",          dateReceived: "20 May 2026", materialType: "Jari",   availableQty: 12, unit: "Buns",  poNumber: null, siblingItems: [] },
-  { grnBatchId: "GRN-2026-MAY-011", vendor: "Kanchipuram Silks",         dateReceived: "17 May 2026", materialType: "Resham", availableQty: 14, unit: "kg",    poNumber: null, siblingItems: [] },
-  { grnBatchId: "GRN-2026-MAY-006", vendor: "Sri Venkateswara Textiles", dateReceived: "12 May 2026", materialType: "Warp",   availableQty: 30, unit: "kg",    poNumber: null, siblingItems: [] },
-];
+export const INITIAL_GRN_BATCHES: GrnBatch[] = [];
 
 export const RESHAM_COLORS = [
   { name: "Gold",         hex: "#C4923A" },
@@ -88,7 +103,10 @@ export interface MaterialRowState {
   jariColor: string;
   jariUnit: "Reels" | "Buns";
   warpReshamUnit: "kg" | "g";
+  /** The GRN receipt the selected line belongs to. */
   grnBatchId: string;
+  /** GrnItem.id of the specific line being issued from — "" until one is picked. */
+  grnItemId: string;
 }
 
 export function emptyRow(): MaterialRowState {
@@ -105,5 +123,6 @@ export function emptyRow(): MaterialRowState {
     jariUnit: "Reels",
     warpReshamUnit: "kg",
     grnBatchId: "",
+    grnItemId: "",
   };
 }

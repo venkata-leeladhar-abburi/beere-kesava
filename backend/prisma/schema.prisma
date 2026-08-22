@@ -607,9 +607,21 @@ model MaterialIssueItem {
   jariType     String?
   jariGrade    JariGrade?
   jariColor    String?
+  // The parent GRN receipt this material came from (e.g.
+  // "GRN-SreeVignesh-004-002").
   grnBatchId   String?
+  // The specific GrnItem line within that receipt (see GrnItem.itemCode,
+  // e.g. "GRN-SreeVignesh-004-002-1"). Issuing used to be tracked only at
+  // (grnBatchId, materialType) granularity, which could not tell two lines
+  // of the same material type apart and left the ids shown on Issue
+  // Material inconsistent with the ones on Receive Stock. Nullable: rows
+  // issued before this existed have none and still fall back to the old
+  // material-type matching.
+  grnItemId    String?
+  grnItem      GrnItem?            @relation(fields: [grnItemId], references: [id])
 
   @@index([issueId])
+  @@index([grnItemId])
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -1130,6 +1142,11 @@ model PurchaseOrder {
   totalValue        Decimal             @db.Decimal(12, 2)
   urgency           String?
   status            PurchaseOrderStatus @default(PENDING)
+  // Which of the company's legal firms this order is raised under. Copied
+  // onto the GrnReceipt when the goods are received, so Goods Receipt
+  // History can show a real firm name instead of a blank column.
+  firmId            String?
+  firm              Firm?               @relation(fields: [firmId], references: [id])
   grnId             String? // display code, kept for backward compatibility
   grnReceiptId      String? // real FK to GrnReceipt.id, once GRN is received
   grnReceipt        GrnReceipt?         @relation(fields: [grnReceiptId], references: [id])
@@ -1239,6 +1256,7 @@ model Firm {
   quotations       Quotation[]
   dispatchRecords  DispatchRecord[]
   grnReceipts      GrnReceipt[]
+  purchaseOrders   PurchaseOrder[]
 }
 
 model FirmFinancialEntry {
@@ -1507,6 +1525,8 @@ model GrnItem {
   unitPrice        Decimal      @db.Decimal(12, 2)
   totalPrice       Decimal      @db.Decimal(12, 2)
   rejectedQuantity Decimal      @default(0) @db.Decimal(12, 3)
+
+  issuedItems MaterialIssueItem[]
 
   @@index([grnId])
 }

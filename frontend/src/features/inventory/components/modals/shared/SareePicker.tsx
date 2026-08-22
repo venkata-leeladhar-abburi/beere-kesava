@@ -1,9 +1,10 @@
 import React, { useState, useMemo, useCallback } from "react";
-import { Scan, Package, ChevronDown, ChevronUp } from "lucide-react";
+import { Scan, Camera, Package, ChevronDown, ChevronUp } from "lucide-react";
 import { FinishingReturn } from "@/features/finishing";
 import { WeaverSareesSection, WeaverSareeRow } from "@/features/weavers";
 import { T, F } from "../../theme";
 import { Button, Chip, Input } from "../../../../../shared/ui/primitives";
+import { CameraScannerModal } from "../../../../../shared/ui/CameraScannerModal";
 
 // ── Row → dispatch-saree mapper ───────────────────────────────────────────────
 // One definition shared by the page and the in-modal picker so a saree looks the
@@ -37,6 +38,7 @@ export function SareePicker({ available, picked, onChange, label, onBrowseChange
   const [browse, setBrowse] = useState(false);
   const [scanMsg, setScanMsg] = useState("");
   const [scanValue, setScanValue] = useState("");
+  const [cameraOpen, setCameraOpen] = useState(false);
   const [rows, setRows] = useState<WeaverSareeRow[]>([]);
 
   const pickedIds = useMemo(() => new Set(picked.map(s => s.sareeId || s.id)), [picked]);
@@ -82,6 +84,11 @@ export function SareePicker({ available, picked, onChange, label, onBrowseChange
     show(`Added ${match.sareeId || match.id}`);
   };
 
+  const handleDetected = (text: string) => {
+    setCameraOpen(false);
+    scan(text);
+  };
+
   return (
     <div style={{ border: `1.5px solid ${T.borderGold}`, background: "rgba(200,155,71,0.05)", borderRadius: 14, padding: "14px 16px", marginBottom: 18 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" as const }}>
@@ -109,6 +116,23 @@ export function SareePicker({ available, picked, onChange, label, onBrowseChange
             Scan Saree
           </Button>
         </form>
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          iconLeft={Camera}
+          onClick={() => setCameraOpen(true)}
+          className="rounded-[10px]"
+        >
+          Open Camera
+        </Button>
+        <CameraScannerModal
+          open={cameraOpen}
+          onClose={() => setCameraOpen(false)}
+          onDetected={handleDetected}
+          title="Scan Saree Barcode"
+          hint="Point the camera at the barcode tag on the saree label."
+        />
         <Button
           onClick={toggleBrowse}
           variant={browse ? "primary" : "secondary"}

@@ -1,6 +1,6 @@
 import React from "react";
 import {
-  Users, Tag, ShoppingBag, Trash2 as Trash, Factory, ArrowUpNarrowWide as SortAscending, Table2, PackageCheck,
+  Users, Tag, ShoppingBag, Trash2 as Trash, Factory, ArrowUpNarrowWide as SortAscending, Table2,
 } from "lucide-react";
 import { SareeRow } from "../../contexts/BatchContext";
 import { T, F, th, td, rowComplete, Pip, EmptyCell } from "./constants";
@@ -9,7 +9,6 @@ import type { WeaverOption, LoomOption } from "../useBatchFormHandlers";
 import { pipColor } from "./PickerModals";
 import { Button, Checkbox, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { SectionCard } from "../common/primitives";
-import type { MaterialIssueRecord } from "@/features/materials";
 import type { BulkOrder } from "@/features/bulk-orders";
 
 // ── Status dot per row ────────────────────────────────────────────────────────
@@ -21,115 +20,12 @@ function StatusDot({ row }: { row: SareeRow }) {
   return <div title={title} style={{ width: 10, height: 10, borderRadius: "50%", background: color, flexShrink: 0 }} />;
 }
 
-// ── Materials Given panel ───────────────────────────────────────────────────
-// Rendered once per weaver+loom (or factory loom), not once per saree row —
-// a card grid rather than a table cell, so a group's materials appear a
-// single time no matter how many sarees that loom is weaving in this batch.
-function MaterialsGivenPanel({
-  rows, issueRecords, batchId, weavers,
-}: {
-  rows: SareeRow[];
-  issueRecords: MaterialIssueRecord[];
-  batchId: string;
-  weavers: WeaverOption[];
-}) {
-  const groupKey = (row: SareeRow) =>
-    row.weaverId ? `w::${row.weaverId}::${row.weaverLoom ?? ""}` : row.factoryLoomId ? `f::${row.factoryLoomId}` : null;
-
-  const groups: SareeRow[] = [];
-  const seen = new Set<string>();
-  for (const row of rows) {
-    const key = groupKey(row);
-    if (!key || seen.has(key)) continue;
-    seen.add(key);
-    groups.push(row);
-  }
-
-  if (groups.length === 0) {
-    return (
-      <div style={{ padding: "18px 4px", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
-        Assign a weaver or factory loom to a saree to see materials issued here.
-      </div>
-    );
-  }
-
-  return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 14 }}>
-      {groups.map(row => {
-        const weaverForRow = row.weaverId ? weavers.find(x => x.id === row.weaverId) : undefined;
-        const records = issueRecords
-          .filter(r => r.batchId === batchId && r.status !== "cancelled" && (
-            row.weaverId
-              ? r.weaverId === row.weaverId && r.loomNumber === row.weaverLoom
-              : r.factoryLoomId === row.factoryLoomId
-          ))
-          .sort((a, b) => a.issuedAt.localeCompare(b.issuedAt));
-
-        return (
-          <div key={groupKey(row)} style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
-            {/* Header: who / which loom */}
-            <div style={{ display: "flex", alignItems: "center", gap: 8, paddingBottom: 12, borderBottom: `1px solid ${T.borderDef}` }}>
-              {row.weaverId ? (
-                <>
-                  <Pip initials={weaverForRow?.initials ?? row.weaverInitials ?? "?"} bg={pipColor(row.weaverId)} size={30} />
-                  <div style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
-                    <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                      {weaverForRow?.name ?? row.weaverName ?? row.weaverId}
-                    </span>
-                    <span style={{ fontFamily: F.mono, fontSize: 10, color: T.taupe }}>{row.weaverId}</span>
-                  </div>
-                  {row.weaverLoom && (
-                    <span style={{ marginLeft: "auto", fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.antiqueGold, background: "rgba(200,155,71,0.1)", border: "1px solid rgba(200,155,71,0.22)", borderRadius: 6, padding: "3px 8px", whiteSpace: "nowrap" }}>
-                      Loom {row.weaverLoom}
-                    </span>
-                  )}
-                </>
-              ) : (
-                <>
-                  <div style={{ width: 30, height: 30, borderRadius: 8, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <Factory size={15} color={T.royalBurgundy} />
-                  </div>
-                  <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>
-                    Factory Loom {row.factoryLoomNumber}
-                  </span>
-                </>
-              )}
-            </div>
-
-            {/* Materials issued, most recent last */}
-            {records.length > 0 ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {records.map((r, i) => (
-                  <div key={r.id} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: T.antiqueGold, marginTop: 6, flexShrink: 0 }} />
-                    <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                      <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.4px" }}>
-                        {i === 0 ? "Issued" : `Issued (again)`}
-                      </span>
-                      <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>
-                        {r.materials.map(m => `${m.materialType}: ${m.quantity}${m.unit}`).join(", ")}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <span style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(139,112,96,0.5)", fontStyle: "italic" }}>No materials issued yet</span>
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
 export function BatchTable({
   rows, displayRows, selected, toggleAll, toggleRow, allSelected,
   sortBy, setSortBy, searchFilter, setSearchFilter, weaverFilter, setWeaverFilter,
   sareeTypeFilter, setSareeTypeFilter, orderFilter, setOrderFilter,
   weaverOptions, orderOptions, sareeTypeOptions,
-  completeRows, incompleteRows, setPicker, removeSelected, batchId,
-  issueRecords, bulkOrders,
+  completeRows, incompleteRows, setPicker, removeSelected, bulkOrders,
   setViewSareeRow, setViewFactoryLoom, setViewWeaver, setViewBulkOrder,
   setLoomPickerRow, openSareeTypeCard, weavers, looms,
 }: {
@@ -158,8 +54,6 @@ export function BatchTable({
   incompleteRows: SareeRow[];
   setPicker: (p: ActivePicker) => void;
   removeSelected: () => void;
-  batchId: string;
-  issueRecords: MaterialIssueRecord[];
   bulkOrders: BulkOrder[];
   setViewSareeRow: (r: SareeRow) => void;
   setViewFactoryLoom: (l: LoomOption) => void;
@@ -324,12 +218,6 @@ export function BatchTable({
         </table>
       </div>
     </SectionCard>
-
-    <div style={{ marginTop: 20 }}>
-      <SectionCard icon={PackageCheck} title="Materials Given" subtitle="Grouped by weaver / factory loom">
-        <MaterialsGivenPanel rows={rows} issueRecords={issueRecords} batchId={batchId} weavers={weavers} />
-      </SectionCard>
-    </div>
     </div>
   );
 }

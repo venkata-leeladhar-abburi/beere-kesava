@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { AnimatePresence, motion } from "motion/react";
-import { Save as FloppyDisk, CheckCircle2 as CheckCircle } from "lucide-react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { AnimatePresence } from "motion/react";
+import { CheckCircle2 as CheckCircle, PackageCheck } from "lucide-react";
 import { useBatches, SareeRow, BatchRecord } from "../contexts/BatchContext";
 import { useBulkOrders, BulkOrder } from "@/features/bulk-orders";
 import { SareeTypeCard, SareeTypeRecord } from "@/features/pricing";
@@ -21,6 +21,10 @@ import {
   WeaverDetailsModal, FactoryLoomDetailsModal, BulkOrderDetailsModal, SareeDetailsModal,
 } from "./batch-creation/DetailModals";
 import { BatchTable } from "./batch-creation/BatchTable";
+import { MaterialsGivenPanel } from "./batch-creation/MaterialsGivenPanel";
+import { BatchActionBar } from "./batch-creation/BatchActionBar";
+import { BulkOrderCapacityModal, UnsavedChangesModal } from "./batch-creation/BatchWarningModals";
+import { SectionCard } from "./common/primitives";
 import { DraftsTab } from "./batch-creation/DraftsTab";
 import { BatchCreationStatsHeader } from "./BatchCreationStatsHeader";
 import { BatchSetupStep } from "./BatchSetupStep";
@@ -74,13 +78,29 @@ export function BatchCreationPage() {
   const [totalCount, setTotalCount] = useState<string>("");
   const [dueDate, setDueDate] = useState("");
 
+  // How many sarees each bulk order has already claimed in *other* batches —
+  // a bulk order's capacity is global, so an assignment here has to account
+  // for rows sitting on the same order elsewhere, not just in this batch.
+  const assignedElsewhereByRef = React.useMemo(() => {
+    const acc: Record<string, number> = {};
+    for (const b of batches) {
+      if (b.batchId === editingBatchId) continue;
+      for (const r of b.rows) {
+        if (r.bulkOrderRef) acc[r.bulkOrderRef] = (acc[r.bulkOrderRef] ?? 0) + 1;
+      }
+    }
+    return acc;
+  // editingBatchId is read above; recompute when either input changes.
+  }, [batches, editingBatchId]);
+
   // Custom hook for row management and picker handlers
   const {
     rows, setRows, selected, setSelected, picker, setPicker, generated, setGenerated,
     loomPickerRow, setLoomPickerRow, generateRows, addRows, allSelected, toggleAll, toggleRow,
     applyWeaver, applyWeaverLoomToRow, applyFactoryLoom, applyBulkOrder,
     applySareeType, removeSelected,
-  } = useBatchFormHandlers(bulkOrders);
+    bulkOrderConflict, assignBulkOrderUpToCapacity, dismissBulkOrderConflict,
+  } = useBatchFormHandlers(bulkOrders, assignedElsewhereByRef);
 
   // ── Add more sarees to an already-generated table (editing a draft/active
   // batch shouldn't require regenerating and losing existing row data).
@@ -115,6 +135,25 @@ export function BatchCreationPage() {
   // ── Saved feedback
   const [savedMsg, setSavedMsg] = useState<string | null>(null);
 
+  // ── Unsaved-change tracking ────────────────────────────────────────────────
+  // A snapshot of what was last persisted. Edits made to a batch used to be
+  // lost silently when the tab changed (nothing but the bottom-of-page Save
+  // button ever wrote them back), so the page now knows when it is dirty and
+  // both warns before leaving and offers Save at the top of the table.
+  const savedSnapshot = useRef<string>("");
+  const snapshotOf = useCallback(
+    (r: SareeRow[], due: string) => JSON.stringify({ due, rows: r }),
+    [],
+  );
+  const isDirty = rows.length > 0 && snapshotOf(rows, dueDate) !== savedSnapshot.current;
+
+  // Navigation the user asked for but that is blocked pending a dirty check.
+  const [pendingLeave, setPendingLeave] = useState<(() => void) | null>(null);
+  const guardLeave = useCallback((go: () => void) => {
+    if (isDirty) setPendingLeave(() => go);
+    else go();
+  }, [isDirty]);
+
   // Keep batchId in sync with next available when not editing a draft
   useEffect(() => {
     if (!editingBatchId) setBatchId(nextBatchId);
@@ -128,7 +167,7 @@ export function BatchCreationPage() {
   // server's IdCounter may assign something different. Without this sync,
   // every later save/finalize call would target a batchId the backend has
   // never heard of, silently spawning a new empty batch each time.
-  async function handleSaveDraft() {
+  async function handleSaveDraft(): Promise<boolean> {
     const record: BatchRecord = {
       batchId, totalCount: rows.length, dueDate, rows,
       status: "draft",
@@ -140,10 +179,13 @@ export function BatchCreationPage() {
       const realId = await saveDraft(record);
       setBatchId(realId);
       setEditingBatchId(realId);
-      setSavedMsg("Saved as draft.");
+      savedSnapshot.current = snapshotOf(rows, dueDate);
+      setSavedMsg("All changes saved.");
       setTimeout(() => setSavedMsg(null), 3000);
+      return true;
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : "Could not save the draft. Please try again.");
+      return false;
     }
   }
 
@@ -176,6 +218,7 @@ export function BatchCreationPage() {
       } else {
         setFinalizeResult({ kind: "success", message: `Batch ${realId} updated.` });
       }
+      savedSnapshot.current = "";
       setBatchId(realId);
       setEditingBatchId(realId);
       setRows([]);
@@ -223,6 +266,7 @@ export function BatchCreationPage() {
     setRows(b.rows);
     setGenerated(true);
     setSelected(new Set());
+    savedSnapshot.current = snapshotOf(b.rows, b.dueDate);
     setTab("new");
   }
 
@@ -269,6 +313,7 @@ export function BatchCreationPage() {
         setDueDate={setDueDate}
         setGenerated={setGenerated}
         setSelected={setSelected}
+        guardLeave={guardLeave}
       />
 
       {/* ════════════════════ TAB: NEW BATCH ════════════════════ */}
@@ -285,6 +330,9 @@ export function BatchCreationPage() {
             setGenerated={setGenerated}
             generated={generated}
             incompleteRows={incompleteRows}
+            isEditing={!!editingBatchId}
+            rowCount={rows.length}
+            batchStatus={editingBatchId ? batches.find(b => b.batchId === editingBatchId)?.status : undefined}
           />
 
           {/* Add more sarees to the table without losing existing rows */}
@@ -299,6 +347,36 @@ export function BatchCreationPage() {
               <Button onClick={handleAddSarees} disabled={!addSareesCount || parseInt(addSareesCount, 10) < 1} variant="secondary" size="md">
                 + Add Sarees
               </Button>
+            </div>
+          )}
+
+          {/* Save/Finalize pinned above the table — a 30-saree batch should
+              never have to be scrolled to the bottom just to save an edit. */}
+          {generated && rows.length > 0 && (
+            <BatchActionBar
+              variant="sticky"
+              onSaveDraft={() => void handleSaveDraft()}
+              onFinalize={() => void handleFinalize()}
+              isSaving={isSaving}
+              isFinalizing={isFinalizing}
+              canFinalize={canFinalize}
+              isDirty={isDirty}
+              savedMsg={savedMsg}
+              saveError={saveError}
+            />
+          )}
+
+          {/* Materials Given — above the saree table, where it is visible
+              without scrolling past every row. */}
+          {generated && rows.length > 0 && (
+            <div style={{ marginBottom: 20 }}>
+              <SectionCard
+                icon={PackageCheck}
+                title="Materials Given"
+                subtitle="Every material issued for this batch, grouped by weaver / factory loom"
+              >
+                <MaterialsGivenPanel rows={rows} issueRecords={issueRecords} batchId={batchId} weavers={weavers} />
+              </SectionCard>
             </div>
           )}
 
@@ -330,8 +408,6 @@ export function BatchCreationPage() {
               incompleteRows={incompleteRows}
               setPicker={setPicker}
               removeSelected={removeSelected}
-              batchId={batchId}
-              issueRecords={issueRecords}
               bulkOrders={bulkOrders}
               setViewSareeRow={setViewSareeRow}
               setViewFactoryLoom={setViewFactoryLoom}
@@ -342,28 +418,21 @@ export function BatchCreationPage() {
             />
           )}
 
-          {/* Step 5: Save buttons */}
+          {/* Step 5: Save buttons (also pinned above the table) */}
           {generated && rows.length > 0 && (
-            <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-              <Button onClick={() => void handleSaveDraft()} disabled={isSaving || isFinalizing} variant="secondary" size="lg">
-                <FloppyDisk size={17} /> {isSaving ? "Saving…" : "Save as Draft"}
-              </Button>
-              <Button onClick={() => void handleFinalize()} disabled={!canFinalize || isSaving || isFinalizing} variant="primary" size="lg">
-                <CheckCircle size={17} /> {isFinalizing || isSaving ? "Finalizing…" : "Finalize Batch"}
-              </Button>
-              {savedMsg && (
-                <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
-                  style={{ fontFamily: F.ui, fontSize: 13, color: T.green, fontWeight: 600 }}>
-                  ✓ {savedMsg}
-                </motion.div>
-              )}
-              {saveError && (
-                <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
-                  style={{ fontFamily: F.ui, fontSize: 13, color: T.red, fontWeight: 600 }}>
-                  {saveError}
-                </motion.div>
-              )}
-            </div>
+            <BatchActionBar
+              variant="footer"
+              onSaveDraft={() => void handleSaveDraft()}
+              onFinalize={() => void handleFinalize()}
+              isSaving={isSaving}
+              isFinalizing={isFinalizing}
+              canFinalize={canFinalize}
+              isDirty={isDirty}
+              // Feedback lives on the sticky bar only — showing the same
+              // "saved"/error line twice on one screen reads as a glitch.
+              savedMsg={null}
+              saveError={null}
+            />
           )}
         </div>
       )}
@@ -406,6 +475,43 @@ export function BatchCreationPage() {
         {viewBulkOrder && <BulkOrderDetailsModal key="bo" order={viewBulkOrder} onClose={() => setViewBulkOrder(null)} />}
         {viewSareeRow  && <SareeDetailsModal key="sr" row={viewSareeRow} onClose={() => setViewSareeRow(null)} />}
       </AnimatePresence>
+
+      {/* Bulk order over-capacity guard */}
+      <BulkOrderCapacityModal
+        conflict={bulkOrderConflict}
+        onAssignPartial={assignBulkOrderUpToCapacity}
+        onCancel={dismissBulkOrderConflict}
+      />
+
+      {/* Unsaved-changes guard on leaving the batch being edited */}
+      <UnsavedChangesModal
+        open={!!pendingLeave}
+        isSaving={isSaving}
+        onCancel={() => setPendingLeave(null)}
+        onDiscard={() => {
+          // Roll the form back to what the server last stored, so the discarded
+          // edits are actually gone rather than lingering in memory.
+          const saved = editingBatchId ? batches.find(b => b.batchId === editingBatchId) : undefined;
+          if (saved) {
+            setRows(saved.rows);
+            setDueDate(saved.dueDate);
+            savedSnapshot.current = snapshotOf(saved.rows, saved.dueDate);
+          } else {
+            savedSnapshot.current = snapshotOf(rows, dueDate);
+          }
+          setSelected(new Set());
+          const go = pendingLeave;
+          setPendingLeave(null);
+          go?.();
+        }}
+        onSaveAndLeave={() => { void (async () => {
+          const ok = await handleSaveDraft();
+          if (!ok) return;
+          const go = pendingLeave;
+          setPendingLeave(null);
+          go?.();
+        })(); }}
+      />
 
       {/* Finalize result popup */}
       <Modal open={!!finalizeResult} onOpenChange={o => { if (!o) setFinalizeResult(null); }} size="xs">

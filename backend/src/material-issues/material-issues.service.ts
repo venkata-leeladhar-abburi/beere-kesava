@@ -13,8 +13,20 @@ const MIR_ID_PREFIX_BASE = "MIR";
 // issuedBy trimmed to just name — surfaced on the frontend as "Issued by
 // [name]" so every material issue record shows who created it.
 const includeItems = {
-  items: true,
+  // grnItem carries the structured per-line code/description shown on Receive
+  // Stock — including it here is what keeps the GRN ids the Issue Material
+  // screen displays identical to the ones on the receiving side.
+  items: {
+    include: {
+      grnItem: {
+        select: { id: true, itemCode: true, name: true, description: true, quantity: true, unit: true },
+      },
+    },
+  },
   issuedBy: { select: { firstName: true, lastName: true } },
+  // The human-facing weaver code (e.g. "Wea-003") — the history table used to
+  // print the raw UUID because nothing else was selected here.
+  weaver: { select: { code: true, name: true } },
 } satisfies Prisma.MaterialIssueRecordInclude;
 
 @Injectable()
@@ -36,6 +48,11 @@ export class MaterialIssuesService {
         throw new BadRequestException(`Jari must be issued in Reels or Buns, not "${item.unit}"`);
       }
     }
+
+    // Refuse to issue more of a GRN line than it actually has left. Without
+    // this the UI's "remaining" figure is advisory only and stock can go
+    // negative on the server.
+    await this.assertGrnLinesHaveStock(dto.items);
 
     const issuer = await this.prisma.user.findUnique({ where: { id: dto.issuedById } });
     if (!issuer) {
@@ -220,5 +237,66 @@ export class MaterialIssuesService {
     }
 
     await this.prisma.materialIssueRecord.delete({ where: { id } });
+  }
+
+  /**
+   * Rejects the issuance if any line asks for more than its GRN line has
+   * left. Quantities are compared in grams so a line received in kg can be
+   * issued in g (or Reels vs Buns) without a false shortfall.
+   */
+  private async assertGrnLinesHaveStock(
+    items: { grnItemId?: string; quantity: number; unit: string }[],
+  ): Promise<void> {
+    // Several lines of one issuance can draw from the same GRN line — check
+    // the combined request, not each line in isolation.
+    const requestedGramsByItemId = new Map<string, number>();
+    for (const item of items) {
+      if (!item.grnItemId) continue;
+      const grams = toGrams(Number(item.quantity), item.unit);
+      requestedGramsByItemId.set(
+        item.grnItemId,
+        (requestedGramsByItemId.get(item.grnItemId) ?? 0) + grams,
+      );
+    }
+    if (requestedGramsByItemId.size === 0) return;
+
+    const grnItemIds = [...requestedGramsByItemId.keys()];
+    const grnItems = await this.prisma.grnItem.findMany({
+      where: { id: { in: grnItemIds } },
+      select: { id: true, itemCode: true, quantity: true, rejectedQuantity: true, unit: true },
+    });
+
+    const alreadyIssued = await this.prisma.materialIssueItem.findMany({
+      where: { grnItemId: { in: grnItemIds }, issue: { status: { not: "CANCELLED" } } },
+      select: { grnItemId: true, quantity: true, unit: true },
+    });
+    const issuedGramsByItemId = new Map<string, number>();
+    for (const issued of alreadyIssued) {
+      if (!issued.grnItemId) continue;
+      issuedGramsByItemId.set(
+        issued.grnItemId,
+        (issuedGramsByItemId.get(issued.grnItemId) ?? 0) + toGrams(Number(issued.quantity), issued.unit),
+      );
+    }
+
+    for (const [grnItemId, requestedGrams] of requestedGramsByItemId) {
+      const grnItem = grnItems.find((g) => g.id === grnItemId);
+      if (!grnItem) {
+        throw new NotFoundException(`GRN item ${grnItemId} not found`);
+      }
+      const receivedGrams = toGrams(
+        Number(grnItem.quantity) - Number(grnItem.rejectedQuantity),
+        grnItem.unit,
+      );
+      const availableGrams = receivedGrams - (issuedGramsByItemId.get(grnItemId) ?? 0);
+      if (requestedGrams > availableGrams) {
+        const label = grnItem.itemCode ?? grnItemId;
+        const available = fromGrams(Math.max(0, availableGrams), grnItem.unit);
+        const requested = fromGrams(requestedGrams, grnItem.unit);
+        throw new BadRequestException(
+          `${label} only has ${available} ${grnItem.unit} left — cannot issue ${requested} ${grnItem.unit}.`,
+        );
+      }
+    }
   }
 }

@@ -20,6 +20,8 @@ interface BatchCreationStatsHeaderProps {
   setDueDate: (v: string) => void;
   setGenerated: (v: boolean) => void;
   setSelected: (s: Set<number>) => void;
+  /** Runs `go` only once unsaved edits are saved or explicitly discarded. */
+  guardLeave: (go: () => void) => void;
 }
 
 import { LuxuryStatsCard } from "../../../shared/ui/LuxuryStatsCard";
@@ -40,6 +42,7 @@ export function BatchCreationStatsHeader({
   setDueDate,
   setGenerated,
   setSelected,
+  guardLeave,
 }: BatchCreationStatsHeaderProps) {
   const statItems = [
     { label: "ACTIVE BATCHES", value: String(active.length), icon: <Layers size={22} color={T.warmCream} />, sub: "Currently weaving", highlight: false },
@@ -87,7 +90,7 @@ export function BatchCreationStatsHeader({
           }}
         >
           <Button
-            onClick={() => {
+            onClick={() => guardLeave(() => {
               if (editingBatchId) {
                 setEditingBatchId(null);
                 setBatchId(nextBatchId);
@@ -98,7 +101,7 @@ export function BatchCreationStatsHeader({
                 setSelected(new Set());
               }
               setTab("new");
-            }}
+            })}
             variant={tab === "new" && !editingBatchId ? "primary" : "tertiary"}
             size="sm"
             className="shrink-0"
@@ -118,7 +121,7 @@ export function BatchCreationStatsHeader({
           )}
 
           <Button
-            onClick={() => setTab("drafts")}
+            onClick={() => guardLeave(() => setTab("drafts"))}
             variant={tab === "drafts" ? "primary" : "tertiary"}
             size="sm"
             className="shrink-0"

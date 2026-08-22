@@ -68,9 +68,11 @@ export interface GrnReceiptItem {
     unitPrice: number;
     totalPrice: number;
     rejectedQuantity: number;
-    /** Already issued against this (GRN, materialType) pair, converted back into `unit`. */
+    /** `quantity - rejectedQuantity` — what actually entered stock. */
+    receivedQuantity: number;
+    /** Already issued out of this specific line, converted back into `unit`. */
     issuedQuantity: number;
-    /** `quantity - rejectedQuantity - issuedQuantity`, converted back into `unit`. This is the true remaining stock — use it, not `quantity`, wherever "available" is shown. */
+    /** `receivedQuantity - issuedQuantity`, converted back into `unit`. This is the true remaining stock — use it, not `quantity`, wherever "available" is shown. */
     availableQuantity: number;
   }[];
 }
