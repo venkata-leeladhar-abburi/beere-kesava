@@ -28,6 +28,7 @@ function lineData(l: CreatePurchaseSareeLineDto, idx: number) {
     finalAmount: l.finalAmount ?? (price + (price * sellPercent) / 100) * quantity,
     notes: l.notes,
     imageUrl: l.imageUrl,
+    pieceImageUrls: l.pieceImageUrls ?? [],
     returnedQuantity: Math.min(l.returnedQuantity ?? 0, quantity),
   };
 }

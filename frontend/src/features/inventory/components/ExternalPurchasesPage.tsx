@@ -4,7 +4,6 @@ import {
   totalPieces,
 } from "@/features/suppliers";
 import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
-import { SariTagPrintModal } from "@/features/production";
 
 import { T } from "./externalPurchases/theme";
 import { FormState } from "./externalPurchases/types";
@@ -48,8 +47,6 @@ export function ExternalPurchasesPage() {
 
   const [formModal, setFormModal] = useState<{ mode: "add" | "edit" | "request" | "request"; editId?: string } | null>(null);
   const [sareeListPurchase, setSareeListPurchase] = useState<Purchase | null>(null);
-  const [printSaree, setPrintSaree] = useState<SareeTag | null>(null);
-  const [printSareeSupplier, setPrintSareeSupplier] = useState<string>("");
 
   const [fSupplier, setFSupplier] = useState("All Suppliers");
   const [fPurchaseOrder, setFPurchaseOrder] = useState("All Purchase Orders");
@@ -267,29 +264,6 @@ export function ExternalPurchasesPage() {
         <SareeListModal
           purchase={purchases.find((p) => p.id === sareeListPurchase.id) || sareeListPurchase}
           onClose={() => setSareeListPurchase(null)}
-          onPrint={(saree) => {
-            setPrintSareeSupplier(sareeListPurchase.supplier);
-            setPrintSaree(saree);
-            setSareeListPurchase(null);
-          }}
-        />
-      )}
-
-      {/* SAREE TAG PRINT MODAL */}
-      {printSaree && (
-        <SariTagPrintModal
-          saree={{
-            id: printSaree.id,
-            weaver: null,
-            design: printSaree.id,
-            sareeType: printSaree.sareeType,
-            weight: printSaree.weight,
-            qcDate: printSaree.date,
-            source: "external",
-            loom: 0,
-            supplier: printSareeSupplier,
-          }}
-          onClose={() => setPrintSaree(null)}
         />
       )}
     </div>

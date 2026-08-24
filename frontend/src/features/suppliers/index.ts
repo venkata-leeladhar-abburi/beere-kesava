@@ -5,5 +5,6 @@
 // warning while existing cross-feature imports are migrated over.
 
 export * from "./components/SuppliersPage";
+export * from "./components/sections/SareeInventoryTable";
 export * from "./contexts/SupplierContext";
 export * from "./contexts/supplier-types";

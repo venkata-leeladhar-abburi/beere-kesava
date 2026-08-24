@@ -9,6 +9,8 @@ export { TermsBlock, type BankDetails, type TermsBlockProps } from "./TermsBlock
 export { SignatureBlock, type SignatureBlockProps } from "./SignatureBlock";
 export { DocumentViewer, type DocumentViewerProps } from "./DocumentViewer";
 export { useDocument } from "./useDocument";
+export { exportDocumentPdf, type ExportPdfOptions } from "./exportPdf";
+export { DocumentThumb } from "./DocumentThumb";
 export { InvoiceDocument, type InvoiceLineItem, type InvoiceParty, type InvoiceDocumentProps } from "./InvoiceDocument";
 export { PurchaseOrderDocument, type PODocumentItem, type PurchaseOrderDocumentProps } from "./PurchaseOrderDocument";
 export { QuotationDocument, toQuotationItems, type QuotationLineItem, type QuotationDocumentProps } from "./QuotationDocument";

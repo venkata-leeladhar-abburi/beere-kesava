@@ -1,5 +1,5 @@
 import { useState, useMemo, type CSSProperties } from "react";
-import { Users, ChevronDown, Camera, Search, LayoutGrid, List } from "lucide-react";
+import { Users, ChevronDown, Camera, Search, LayoutGrid, List, ImageOff } from "lucide-react";
 import { C, F } from "../tokens";
 import { useFinishing, FinishingAssignment, FinishingReturn } from "@/features/finishing";
 import { SectionCard } from "../primitives";
@@ -166,6 +166,20 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
   const assignmentColumns: ColumnDef<FinishingAssignment>[] = [
     { id: "sareeId", header: "Saree ID", accessor: a => a.sareeId, cell: v => <span style={{ fontFamily: F.m, fontSize: 12, color: C.burg, fontWeight: 600 }}>{v as string}</span> },
     {
+      id: "weaver", header: "Weaver / Loom", accessor: a => a.weaverName,
+      cell: v => v ? <span style={{ fontFamily: F.u, fontSize: 12, color: C.text }}>{v as string}</span> : <span style={{ color: C.muted, fontSize: 12 }}>—</span>,
+    },
+    {
+      id: "sareeType", header: "Saree Type", accessor: a => a.sareeType,
+      cell: v => v ? (
+        <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 500, color: "#845E04", background: "rgba(200,155,71,0.12)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 8, padding: "4px 9px", whiteSpace: "nowrap" }}>{v as string}</span>
+      ) : <span style={{ color: C.muted, fontSize: 12 }}>—</span>,
+    },
+    {
+      id: "batch", header: "Batch", accessor: a => a.batchId,
+      cell: v => <span style={{ fontFamily: F.u, fontSize: 12, color: v ? C.burg : C.muted }}>{(v as string) || "—"}</span>,
+    },
+    {
       id: "quotation", header: "Quotation", accessor: a => a.quotationRef,
       cell: v => v ? (
         <span style={{ fontFamily: F.u, fontSize: 11, fontWeight: 700, color: "#8B6018", background: "rgba(200,146,58,0.14)", borderRadius: 999, padding: "2px 8px", display: "inline-block", wordBreak: "break-all" }}>{v as string}</span>
@@ -201,7 +215,9 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
           <Camera size={12} color="rgba(255,255,255,0.85)" />
         </button>
       ) : (
-        <span style={{ color: C.muted, fontSize: 12 }}>—</span>
+        <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 28, height: 28, borderRadius: 6, border: `1px dashed ${C.bdr}`, color: C.muted }} title="No photo on file">
+          <ImageOff size={12} />
+        </span>
       ),
     },
   ];

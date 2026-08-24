@@ -1,10 +1,26 @@
 import React, { useState } from "react";
-import { AlertTriangle, CheckCircle2, Pencil, Scale, X } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ImageOff, Pencil, Scale, X } from "lucide-react";
 import { T, F } from "../../theme";
 import { trimNum } from "@/features/pricing";
 import type { SareeTypeRecord } from "@/features/pricing";
 import { Button, NumberInput } from "../../../../../shared/ui/primitives";
 import { EntityCode } from "@/shared/ui/domain";
+import { ImageZoomModal, type ZoomImage } from "../../../../../shared/ui/ImageZoomModal";
+
+function TallyPhotoThumb({ url, sareeId, onView }: { url: string | null | undefined; sareeId: string | null; onView: (image: ZoomImage) => void }) {
+  return url ? (
+    <button
+      type="button"
+      onClick={() => onView({ url, label: `Saree photo — ${sareeId ?? "unassigned"}` })}
+      title="View saree photo"
+      style={{ width: 30, height: 30, borderRadius: 7, border: `1px solid ${T.borderDef}`, padding: 0, cursor: "pointer", backgroundImage: `url(${url})`, backgroundSize: "cover", backgroundPosition: "center", flexShrink: 0 }}
+    />
+  ) : (
+    <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 30, height: 30, borderRadius: 7, border: `1px dashed ${T.borderDef}`, color: T.taupe, flexShrink: 0 }} title="No photo on file">
+      <ImageOff size={13} />
+    </span>
+  );
+}
 
 // ── Per-saree weight & material tally ───────────────────────────────────────
 // Shared between the batch admin view (every saree in a batch) and the bulk
@@ -32,6 +48,8 @@ export interface TallyRowItem {
   bulkOrderLabel?: string | null;
   qcPassed?: boolean;
   sareeTypeCode: string | null;
+  /** Photo captured by Worker Staff at Receive Sarees — same source as the worker portal's Received History. */
+  receivedPhotoUrl?: string | null;
   actualWeight: number | null;
   actualWarpG: number | null;
   actualReshamG: number | null;
@@ -62,11 +80,13 @@ function EditRow({
   busy,
   onCancel,
   onSave,
+  onViewPhoto,
 }: {
   item: TallyRowItem;
   busy: boolean;
   onCancel: () => void;
   onSave: (correction: TallyCorrection) => void;
+  onViewPhoto: (image: ZoomImage) => void;
 }) {
   const [weight, setWeight] = useState<string>(item.actualWeight !== null ? String(item.actualWeight) : "");
   const [warpG, setWarpG] = useState<string>(item.actualWarpG !== null ? String(item.actualWarpG) : "");
@@ -108,6 +128,7 @@ function EditRow({
       <div style={{ display: "flex", alignItems: "flex-start", gap: 14, flexWrap: "wrap" as const }}>
         <div style={{ minWidth: 170, paddingTop: LABEL_ROW_HEIGHT + 3 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" as const }}>
+            <TallyPhotoThumb url={item.receivedPhotoUrl} sareeId={item.sareeId} onView={onViewPhoto} />
             <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>Saree {item.serial}</span>
             {item.sareeId && <EntityCode type="saree" value={item.sareeId} size="sm" />}
           </div>
@@ -181,6 +202,7 @@ export function SareeWeightTallyList({
   busyKey?: string | null;
 }) {
   const [editingKey, setEditingKey] = useState<string | null>(null);
+  const [zoomImage, setZoomImage] = useState<ZoomImage | null>(null);
 
   if (items.length === 0) {
     return (
@@ -191,6 +213,7 @@ export function SareeWeightTallyList({
   }
 
   return (
+    <>
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       {items.map(item => {
         const rate = item.sareeTypeCode ? getSareeTypeByCode(item.sareeTypeCode) : undefined;
@@ -220,11 +243,13 @@ export function SareeWeightTallyList({
                 busy={busy}
                 onCancel={() => setEditingKey(null)}
                 onSave={correction => { onSaveCorrection(item, correction); setEditingKey(null); }}
+                onViewPhoto={setZoomImage}
               />
             ) : (
               <>
                 <div style={{ minWidth: 170 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" as const }}>
+                    <TallyPhotoThumb url={item.receivedPhotoUrl} sareeId={item.sareeId} onView={setZoomImage} />
                     <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>Saree {item.serial}</span>
                     {item.sareeId && <EntityCode type="saree" value={item.sareeId} size="sm" />}
                   </div>
@@ -307,5 +332,7 @@ export function SareeWeightTallyList({
         );
       })}
     </div>
+    <ImageZoomModal image={zoomImage} onClose={() => setZoomImage(null)} />
+    </>
   );
 }

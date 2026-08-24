@@ -8,7 +8,6 @@
  */
 import * as React from "react";
 import { Printer, Download } from "lucide-react";
-import { toast } from "sonner";
 import { Button } from "../primitives/Button";
 import { DocumentViewport } from "./DocumentPage";
 import { useDocument } from "./useDocument";
@@ -19,16 +18,24 @@ export interface DocumentViewerProps {
   children: React.ReactNode;
   /** Extra actions rendered before Print/Download (e.g. a future Email button). */
   actions?: React.ReactNode;
+  /**
+   * File name (no extension) for the downloaded PDF — pass the document's
+   * own number so the file lands in Downloads as `INV-Parvathi-1-004.pdf`
+   * rather than a generic `document.pdf`.
+   */
+  fileName?: string;
+  /** PDF metadata title, e.g. "Tax Invoice INV-Parvathi-1-004". */
+  documentTitle?: string;
   className?: string;
 }
 
-export function DocumentViewer({ children, actions, className }: DocumentViewerProps) {
+export function DocumentViewer({ children, actions, fileName, documentTitle, className }: DocumentViewerProps) {
   const { print, download } = useDocument();
 
-  const handleDownload = () => {
-    toast.info("Choose “Save as PDF” as the destination to download this document.");
-    download(children);
-  };
+  // Download writes a real PDF from this exact tree (see exportPdf.ts) — no
+  // "pick Save as PDF in the dialog" instruction toast any more, because
+  // there is no dialog.
+  const handleDownload = () => download(children, { fileName, title: documentTitle });
 
   return (
     <div className={className} style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: 0 }}>

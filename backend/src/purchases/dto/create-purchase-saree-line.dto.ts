@@ -1,4 +1,4 @@
-import { IsDateString, IsInt, IsNumber, IsOptional, IsString, Min } from "class-validator";
+import { IsArray, IsDateString, IsInt, IsNumber, IsOptional, IsString, Min } from "class-validator";
 
 /** One saree line inside a purchase — mirrors the frontend's SareeTag. */
 export class CreatePurchaseSareeLineDto {
@@ -51,6 +51,14 @@ export class CreatePurchaseSareeLineDto {
   @IsOptional()
   @IsString()
   imageUrl?: string;
+
+  // Optional per-physical-piece photo override, indexed by piece position
+  // (pieceImageUrls[0] is piece 1 of `quantity`) — a piece with no entry (or
+  // an empty string) here just falls back to the line's own `imageUrl`.
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  pieceImageUrls?: string[];
 
   // How many of this line's pieces have already been returned to the
   // supplier. Sent back through the same full-replace update as every other

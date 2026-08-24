@@ -4,8 +4,8 @@
 import { useState } from "react";
 import { T, F } from "../theme";
 import { PayStatusPill } from "../common/primitives";
-import { SareeInventoryTable } from "./SareeInventoryTable";
-import { Purchase, purchaseTotals } from "../../contexts/SupplierContext";
+import { SareeInventoryTable, type SareeRow } from "./SareeInventoryTable";
+import { Purchase, purchaseTotals, useSuppliers, withPieceImage } from "../../contexts/SupplierContext";
 import { formatMoney, rupees } from "@/lib/domain/money";
 import { FileText } from "lucide-react";
 import { Button } from "../../../../shared/ui/primitives";
@@ -13,6 +13,7 @@ import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 
 export function PurchaseHistoryTable({ purchases }: { purchases: Purchase[] }) {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const { updatePurchase } = useSuppliers();
 
   function toggle(id: string) {
     setExpandedIds(prev => {
@@ -89,7 +90,13 @@ export function PurchaseHistoryTable({ purchases }: { purchases: Purchase[] }) {
       expandedIds={expandedIds}
       renderExpandedRow={p => (
         <div style={{ padding: "6px 16px 16px", background: "rgba(247,242,234,0.7)" }}>
-          <SareeInventoryTable rows={p.sarees.map(s => ({ ...s, purchaseId: p.id, invoiceNumber: p.invoiceNumber, supplier: p.supplier }))} />
+          <SareeInventoryTable
+            rows={p.sarees.map(s => ({ ...s, purchaseId: p.id, invoiceNumber: p.invoiceNumber, supplier: p.supplier }))}
+            onUploadPhoto={(row: SareeRow, dataUrl: string) =>
+              updatePurchase(p.id, { sarees: p.sarees.map(s => s.id === row.id ? { ...s, imageUrl: dataUrl } : s) })}
+            onUploadPieceImage={(row: SareeRow, pieceNo: number, dataUrl: string) =>
+              updatePurchase(p.id, { sarees: p.sarees.map(s => s.id === row.id ? withPieceImage(s, pieceNo, dataUrl) : s) })}
+          />
         </div>
       )}
       emptyTitle="No purchases in this period."

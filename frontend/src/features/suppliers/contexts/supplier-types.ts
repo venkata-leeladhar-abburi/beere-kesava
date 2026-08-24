@@ -21,6 +21,10 @@ export interface SareeTag {
   notes: string;
   /** Optional photo of the saree, stored as a data URL. */
   imageUrl?: string;
+  /** Optional per-physical-piece photo override, indexed by piece position
+   * (pieceImageUrls[0] is piece 1 of `quantity`) — a piece with nothing here
+   * just falls back to `imageUrl`. */
+  pieceImageUrls?: string[];
   /** How many of this line's `quantity` pieces have been returned to the supplier. */
   returnedQuantity?: number;
 }
@@ -214,11 +218,21 @@ export function expandSareePieces<T extends SareeTag>(sarees: T[]): (T & SareePi
       quantity: 1,
       price,
       finalAmount: computeFinalAmount(price, sellPercent, 1),
+      imageUrl: s.pieceImageUrls?.[i] || s.imageUrl,
       // The line only tracks *how many* pieces came back, not which — treat
       // the first `returnedQuantity` pieces of the line as the returned ones.
       returned: i + 1 <= returnedQty,
     }));
   });
+}
+
+/** Returns a copy of `s` with piece `pieceNo`'s photo override set, padding
+ * `pieceImageUrls` out to length as needed so the index lines up. */
+export function withPieceImage<T extends SareeTag>(s: T, pieceNo: number, dataUrl: string): T {
+  const next = [...(s.pieceImageUrls ?? [])];
+  while (next.length < pieceNo) next.push("");
+  next[pieceNo - 1] = dataUrl;
+  return { ...s, pieceImageUrls: next };
 }
 
 export interface PurchaseTotals {

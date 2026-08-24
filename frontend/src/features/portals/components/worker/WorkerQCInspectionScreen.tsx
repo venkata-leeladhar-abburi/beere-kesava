@@ -17,8 +17,8 @@ interface WorkerQCInspectionScreenProps {
   defectSubmitted: boolean;
   defectTypes: string[];
   setDefectTypes: React.Dispatch<React.SetStateAction<string[]>>;
-  hasPhoto: boolean;
-  setHasPhoto: React.Dispatch<React.SetStateAction<boolean>>;
+  photoUrl: string | null;
+  setPhotoUrl: React.Dispatch<React.SetStateAction<string | null>>;
   notes: string;
   setNotes: React.Dispatch<React.SetStateAction<string>>;
   deductionAmount: number | "";
@@ -36,8 +36,8 @@ export function WorkerQCInspectionScreen({
   defectSubmitted,
   defectTypes,
   setDefectTypes,
-  hasPhoto,
-  setHasPhoto,
+  photoUrl,
+  setPhotoUrl,
   notes,
   setNotes,
   deductionAmount,
@@ -50,23 +50,26 @@ export function WorkerQCInspectionScreen({
   const v = variance(inspecting.weight, inspecting.std);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const cameraInputRef = React.useRef<HTMLInputElement>(null);
-  const [photoPreview, setPhotoPreview] = React.useState<string | null>(null);
+  const hasPhoto = !!photoUrl;
 
   const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       const reader = new FileReader();
       reader.onload = (ev) => {
-        setPhotoPreview(ev.target?.result as string);
-        setHasPhoto(true);
+        // Data URL for now — this is what gets saved as the QC record's
+        // photoUrl. Once cloud storage is wired up, swap this for an
+        // upload call that resolves to the hosted URL; the rest of the
+        // pipeline (QC payload, DB column, detail-view <img>) already
+        // just treats photoUrl as an opaque string.
+        setPhotoUrl(ev.target?.result as string);
       };
       reader.readAsDataURL(file);
     }
   };
 
   const handleRetake = () => {
-    setHasPhoto(false);
-    setPhotoPreview(null);
+    setPhotoUrl(null);
   };
 
   return (
@@ -188,8 +191,8 @@ export function WorkerQCInspectionScreen({
               ) : (
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
                   <div style={{ width: 60, height: 60, background: "#F5E8D0", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", border: `1px solid ${T.bdr}`, position: "relative", overflow: "hidden" }}>
-                    {photoPreview ? (
-                      <img src={photoPreview} alt="Defect" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    {photoUrl ? (
+                      <img src={photoUrl} alt="Defect" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     ) : (
                       <Camera size={22} color={T.muted} />
                     )}

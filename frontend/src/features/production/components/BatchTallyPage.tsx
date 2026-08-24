@@ -84,6 +84,7 @@ export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: s
       bulkOrderLabel: r.bulkOrderLabel,
       qcPassed: !!r.qcPassed,
       sareeTypeCode: r.sareeTypeCode,
+      receivedPhotoUrl: r.receivedPhotoUrl,
       // eslint-disable-next-line no-restricted-syntax -- saree weight in grams, not money
       actualWeight: r.receivedWeight ? parseFloat(r.receivedWeight) : null,
       // eslint-disable-next-line no-restricted-syntax -- warp weight in grams, not money

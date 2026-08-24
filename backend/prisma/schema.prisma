@@ -981,6 +981,7 @@ model Supplier {
   accountNo   String?
   ifscCode    String?
   notes       String?
+  visitingCardUrl String?
   status      PartyStatus @default(ACTIVE)
   rating      Int?
   createdAt   DateTime    @default(now())
@@ -1026,6 +1027,7 @@ model Vendor {
   accountNo   String?
   ifscCode    String?
   notes       String?
+  visitingCardUrl String?
   status      PartyStatus @default(ACTIVE)
   rating      Int?
   createdAt   DateTime    @default(now())
@@ -1092,6 +1094,11 @@ model PurchaseSareeLine {
   // so it's stored as-is rather than uploaded to disk (see common/storage
   // for the disk-upload pattern used elsewhere, if this ever needs it).
   imageUrl    String?  @db.Text
+  // Optional photo override for individual physical pieces within this line,
+  // indexed by piece position (pieceImageUrls[0] is piece 1 of `quantity`) —
+  // a piece with no entry (or an empty string) here just falls back to the
+  // line's own `imageUrl`.
+  pieceImageUrls String[] @default([])
   // How many of this line's `quantity` pieces have been returned to the
   // supplier — a line covers N identical physical sarees, so return status
   // is tracked as a count rather than a per-piece flag; the frontend treats

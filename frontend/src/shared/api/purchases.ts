@@ -24,6 +24,7 @@ export interface BackendPurchaseSareeLine {
   finalAmount: string;
   notes: string | null;
   imageUrl: string | null;
+  pieceImageUrls: string[];
   returnedQuantity: number;
 }
 
@@ -64,6 +65,7 @@ export interface CreatePurchaseSareeLinePayload {
   finalAmount?: number;
   notes?: string;
   imageUrl?: string;
+  pieceImageUrls?: string[];
   returnedQuantity?: number;
 }
 

@@ -2,12 +2,14 @@ import React from "react";
 import { T, F } from "../../theme";
 import { WholesaleCustomer, WholesaleTab } from "../../types";
 import { Button, Field, Input, Textarea } from "../../../../../shared/ui/primitives";
+import { VisitingCardUploadField } from "../../../../../shared/ui/VisitingCardUploadField";
 
 export function EditProfileTab({ customer, setWholesaleTab, onSave }: {
   customer: WholesaleCustomer;
   setWholesaleTab: (t: WholesaleTab) => void;
   onSave: (updated: WholesaleCustomer) => void;
 }) {
+  const [cardUrl, setCardUrl] = React.useState<string | null>(customer.visitingCard || null);
   const [name, setName] = React.useState(customer.name);
   const [contactName, setContactName] = React.useState(customer.contactName);
   const [phone, setPhone] = React.useState(customer.phone);
@@ -38,6 +40,7 @@ export function EditProfileTab({ customer, setWholesaleTab, onSave }: {
       ifscCode,
       gstNumber,
       notes,
+      visitingCard: cardUrl || "",
     });
     setWholesaleTab("Overview");
   };
@@ -97,11 +100,7 @@ export function EditProfileTab({ customer, setWholesaleTab, onSave }: {
               <Input type="text" value={gstNumber} onChange={e => setGstNumber(e.target.value)} placeholder="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" />
             </Field>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
-            <Field label="Visiting Card Photo">
-              <Input type="file" accept="image/*" />
-            </Field>
-          </div>
+          <VisitingCardUploadField cardUrl={cardUrl} onChange={setCardUrl} />
           <Field label="Notes">
             <Input type="text" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Any special instructions..." />
           </Field>

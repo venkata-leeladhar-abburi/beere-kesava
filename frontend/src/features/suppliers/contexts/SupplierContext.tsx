@@ -42,6 +42,7 @@ function toSupplier(s: BackendSupplier): Supplier {
     accountNo: s.accountNo ?? undefined,
     ifscCode: s.ifscCode ?? undefined,
     notes: s.notes ?? undefined,
+    visitingCard: s.visitingCardUrl ?? undefined,
     status: s.status === "ACTIVE" ? "active" : s.status === "INACTIVE" ? "inactive" : "overdue",
     rating: s.rating ?? 0,
   };
@@ -60,6 +61,7 @@ function toSareeTag(l: BackendPurchaseSareeLine): SareeTag {
     finalAmount: Number(l.finalAmount),
     notes: l.notes ?? "",
     imageUrl: l.imageUrl ?? undefined,
+    pieceImageUrls: l.pieceImageUrls,
     returnedQuantity: l.returnedQuantity ?? 0,
   };
 }
@@ -104,6 +106,7 @@ function toSareeLinePayload(s: SareeTag): CreatePurchaseSareeLinePayload {
     finalAmount: s.finalAmount,
     notes: s.notes || undefined,
     imageUrl: s.imageUrl,
+    pieceImageUrls: s.pieceImageUrls,
     returnedQuantity: s.returnedQuantity ?? 0,
   };
 }
@@ -275,7 +278,7 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
         name: s.name, contactName: s.contactName, phone: s.phone, whatsapp: s.whatsapp,
         city: s.city, state: s.state, address: s.address, gstCode: s.gstCode,
         specialty: s.specialty, terms: s.terms, bankName: s.bankName, accountNo: s.accountNo, ifscCode: s.ifscCode,
-        notes: s.notes, rating: s.rating,
+        notes: s.notes, visitingCardUrl: s.visitingCard, rating: s.rating,
       }),
     onSuccess: (created) => {
       setSuppliers(prev => [toSupplier(created), ...prev]);
@@ -293,7 +296,7 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
         whatsapp: args.patch.whatsapp, city: args.patch.city, state: args.patch.state,
         address: args.patch.address, gstCode: args.patch.gstCode, specialty: args.patch.specialty,
         terms: args.patch.terms, bankName: args.patch.bankName, accountNo: args.patch.accountNo, ifscCode: args.patch.ifscCode,
-        notes: args.patch.notes, rating: args.patch.rating,
+        notes: args.patch.notes, visitingCardUrl: args.patch.visitingCard, rating: args.patch.rating,
         status: args.patch.status ? args.patch.status.toUpperCase() : undefined,
       }),
     onSuccess: (updated) => {

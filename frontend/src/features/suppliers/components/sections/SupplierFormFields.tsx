@@ -3,11 +3,12 @@
 // Profile" tab.
 
 import React from "react";
-import { Star, X } from "lucide-react";
+import { Star } from "lucide-react";
 import { T } from "../theme";
 import { inp, lbl } from "../common/primitives";
 import { SupplierFormValues } from "../types";
-import { Field, Input, IconButton } from "../../../../shared/ui/primitives";
+import { Field, Input } from "../../../../shared/ui/primitives";
+import { VisitingCardUploadField } from "../../../../shared/ui/VisitingCardUploadField";
 
 export function SupplierFormFields({
   form, setForm, errors, cardPreview, onCardChange,
@@ -89,31 +90,7 @@ export function SupplierFormFields({
               className="font-mono text-[13px]" />
           </Field>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
-          <Field label="Visiting Card Photo" id="visiting-card-photo">
-            <Input type="file" accept="image/*" onChange={e => {
-              const file = e.target.files?.[0];
-              if (!file) return;
-              const reader = new FileReader();
-              reader.onload = ev => onCardChange(ev.target?.result as string);
-              reader.readAsDataURL(file);
-            }} />
-          </Field>
-        </div>
-        {cardPreview && (
-          <div style={{ borderRadius: 10, overflow: "hidden", border: `1px solid ${T.borderDef}`, position: "relative" }}>
-            <img src={cardPreview} alt="Visiting card" style={{ width: "100%", height: 120, objectFit: "cover", display: "block" }} />
-            <IconButton
-              label="Remove visiting card photo"
-              icon={X}
-              variant="secondary"
-              size="sm"
-              shape="circle"
-              onClick={() => onCardChange(null)}
-              className="absolute top-2 right-2 bg-black/55 text-white border-none hover:bg-black/70"
-            />
-          </div>
-        )}
+        <VisitingCardUploadField cardUrl={cardPreview} onChange={onCardChange} />
         <div>
           <label style={lbl} htmlFor="notes">Notes</label>
           <textarea id="notes" aria-label="Notes" value={form.notes} onChange={e => set("notes", e.target.value)} placeholder="Any special instructions or supplier notes..." rows={2}

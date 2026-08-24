@@ -3,21 +3,22 @@ import { Star } from "lucide-react";
 import { T, F } from "./theme";
 import { Vendor } from "./types";
 import { Button, Field, Input, Textarea, CheckboxField } from "../../../../shared/ui/primitives";
+import { VisitingCardUploadField } from "../../../../shared/ui/VisitingCardUploadField";
 
 export function VendorEditFormTab({ vendor, onUpdate }: { vendor: Vendor; onUpdate?: (v: Vendor) => void }) {
   const [form, setForm] = React.useState(vendor);
   const set = <K extends keyof Vendor>(k: K, v: Vendor[K]) => setForm(p => ({ ...p, [k]: v }));
 
-  const [cardPreview, setCardPreview] = React.useState<string | null>(vendor.visitingCard || null);
+  const [cardUrl, setCardUrl] = React.useState<string | null>(vendor.visitingCard || null);
 
-  React.useEffect(() => { 
-    setForm(vendor); 
-    setCardPreview(vendor.visitingCard || null);
+  React.useEffect(() => {
+    setForm(vendor);
+    setCardUrl(vendor.visitingCard || null);
   }, [vendor]);
 
   const handleSave = () => {
     const finalWhatsapp = form.whatsapp?.trim() ? form.whatsapp : form.phone;
-    onUpdate?.({ ...form, whatsapp: finalWhatsapp, visitingCard: cardPreview || undefined });
+    onUpdate?.({ ...form, whatsapp: finalWhatsapp, visitingCard: cardUrl ?? "" });
   };
 
   const lbl: React.CSSProperties = {
@@ -115,21 +116,7 @@ export function VendorEditFormTab({ vendor, onUpdate }: { vendor: Vendor; onUpda
               <Input value={form.gstCode} onChange={e => set("gstCode", e.target.value)} placeholder="15-digit GSTIN" />
             </Field>
           </div>
-          <Field label="Visiting Card Photo" id="visiting-card-photo">
-            <Input type="file" accept="image/*" onChange={e => {
-              const file = e.target.files?.[0];
-              if (file) {
-                const reader = new FileReader();
-                reader.onload = ev => setCardPreview(ev.target?.result as string);
-                reader.readAsDataURL(file);
-              }
-            }} />
-          </Field>
-          {cardPreview && (
-            <div style={{ borderRadius: 10, overflow: "hidden", border: `1px solid rgba(110,15,45,0.12)`, maxHeight: 120 }}>
-              <img src={cardPreview} alt="Visiting Card" style={{ width: "100%", height: 120, objectFit: "cover" }} />
-            </div>
-          )}
+          <VisitingCardUploadField cardUrl={cardUrl} onChange={setCardUrl} />
           <Field label="Notes" id="notes">
             <Textarea value={form.notes || ""} onChange={e => set("notes", e.target.value)} placeholder="Any special instructions or supplier notes..." rows={3} className="resize-none" />
           </Field>

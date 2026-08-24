@@ -1,8 +1,7 @@
 import React from "react";
-import { ShoppingBag, Send, Save } from "lucide-react";
+import { Send, Save } from "lucide-react";
 import { FinishingReturn } from "@/features/finishing";
 import { useFirms } from "@/features/firms";
-import { useBulkOrders } from "@/features/bulk-orders";
 import { useBatches } from "@/features/production";
 import { T, F, inp } from "../../theme";
 import { WholesaleCustomer } from "@/features/bulk-orders";
@@ -12,8 +11,11 @@ import { Button, CurrencyInput, NumberInput, CheckboxField, Textarea } from "../
 import { DatePicker, formatDate } from "../../../../../shared/ui/date";
 import { toPaise, fromPaise } from "../../../../../lib/gst";
 import { rupees } from "@/lib/domain/money";
-import { Money, EntityCode } from "@/shared/ui/domain";
-import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
+import { Money } from "@/shared/ui/domain";
+import {
+  DocumentThumb, InvoiceDocument, QuotationDocument, DEFAULT_LETTERHEAD_FIRM,
+  type InvoiceLineItem, type LetterheadFirm,
+} from "../../../../../shared/ui/document";
 
 // ── Invoice generator (wholesale step 5) ─────────────────────────────────────
 export function InvoiceGenerator({
@@ -35,13 +37,10 @@ export function InvoiceGenerator({
   const isQuotation = mode === "quotation";
   const docLabel = isQuotation ? "Quotation" : "Invoice";
   const { firms } = useFirms();
-  const { bulkOrders } = useBulkOrders();
   const { batches } = useBatches();
-  const linkedOrder = bulkOrders.find(o => o.ref === bulkOrderRef);
   const set = (k: keyof InvoiceData) => (v: string | boolean | Record<string, string>) => onChange({ ...data, [k]: v });
   const setPrice = (sId: string, p: string) => onChange({ ...data, prices: { ...data.prices, [sId]: p } });
 
-  const qty = sarees.length;
   // Part A.4/I.5 — every line converts to integer paise BEFORE summing, so
   // the total is exact by construction rather than drifting from summing
   // floats. gstPct is a percentage entered as a string, not a currency
@@ -62,6 +61,37 @@ export function InvoiceGenerator({
     sareeIds.map(id => batches.find(b => b.rows.some(row => row.sareeId === id))?.batchId).filter(Boolean)
   ));
   const batchStr = detectedBatches.length > 0 ? detectedBatches.join(", ") : "—";
+
+  // ── Adapters onto the real document components ─────────────────────────
+  // The preview renders InvoiceDocument/QuotationDocument directly, so these
+  // map the generator's form state onto those components' props. Money
+  // crosses over in integer paise (toPaise), never as a float, matching the
+  // totals maths above.
+  const docFirm: LetterheadFirm = selectedFirm
+    ? {
+        name: selectedFirm.firmName,
+        tagline: DEFAULT_LETTERHEAD_FIRM.tagline,
+        address: selectedFirm.address || DEFAULT_LETTERHEAD_FIRM.address,
+        gstin: selectedFirm.gstNumber || undefined,
+      }
+    : DEFAULT_LETTERHEAD_FIRM;
+
+  const docCustomer = {
+    name: customer?.name ?? "—",
+    address: customer?.address || customer?.city,
+    phone: customer?.phone,
+    gstin: customer?.gstCode,
+  };
+
+  const docItems: InvoiceLineItem[] = sarees.map(s => {
+    const sId = s.sareeId || s.id;
+    return {
+      id: sId,
+      description: [s.designCode, s.sareeType].filter(Boolean).join(" · ") || "Saree",
+      batchLabel: batches.find(b => b.rows.some(row => row.sareeId === sId))?.batchId,
+      ratePaise: toPaise(Number(data.prices[sId]) || 0),
+    };
+  });
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 24, alignItems: "start" }}>
@@ -189,160 +219,79 @@ export function InvoiceGenerator({
         </div>
       </div>
 
-      {/* Right — live invoice preview */}
-      <div style={{ background: "#FFFDF9", border: `1.5px solid ${T.borderGold}`, borderRadius: 16, overflow: "hidden", boxShadow: "0 4px 24px rgba(200,155,71,0.12)" }}>
-        {/* Header */}
-        <div style={{ background: `linear-gradient(135deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`, padding: "18px 24px" }}>
-          <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFF" }}>
-            {selectedFirm?.firmName ?? "Beere Kesava & Brothers Silks"}
-          </div>
-          <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.65)", marginTop: 3 }}>
-            {selectedFirm?.address ?? "Hyderabad, Telangana"}
-          </div>
-          {selectedFirm?.gstNumber && (
-            <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.antiqueGold, marginTop: 4 }}>GST: {selectedFirm.gstNumber}</div>
-          )}
+      {/* Right — live document preview.
+          ═══════════════════════════════════════════════════════════════════
+          This panel used to be a hand-built lookalike of the invoice: its
+          own gradient header, its own DataTable, its own totals stack. It
+          was a second implementation of the document, so it drifted from
+          the real InvoiceDocument/QuotationDocument that actually prints
+          and gets sent — the preview and the output disagreed.
+
+          It now renders the REAL document (scaled to fit the panel), so
+          what the operator sees while typing is exactly the sheet that will
+          be printed and downloaded. */}
+      <div
+        style={{
+          background: T.silkCream,
+          border: `1.5px solid ${T.borderGold}`,
+          borderRadius: 16,
+          padding: 16,
+          boxShadow: "0 4px 24px rgba(200,155,71,0.12)",
+          position: "sticky",
+          top: 0,
+        }}
+      >
+        <div
+          style={{
+            fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe,
+            textTransform: "uppercase" as const, letterSpacing: "0.05em",
+            textAlign: "center" as const, marginBottom: 12,
+          }}
+        >
+          Live {docLabel} Preview
         </div>
 
-        <div style={{ padding: "18px 24px" }}>
-          {/* Invoice meta */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14, paddingBottom: 14, borderBottom: `1px solid ${T.borderDef}` }}>
-            <div>
-              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: T.royalBurgundy }}>{isQuotation ? "QUOTATION" : "TAX INVOICE"}</div>
-              <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 2 }}>{data.invoiceNumber || "Auto-generated"}</div>
-              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>Date: {data.invoiceDate || todayStr}</div>
-              {bulkOrderRef && (
-                <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 3 }}>
-                  <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(110,15,45,0.07)", border: `1px solid rgba(110,15,45,0.16)`, borderRadius: 6, padding: "3px 8px", width: "fit-content" }}>
-                    <ShoppingBag size={10} color={T.royalBurgundy} />
-                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{bulkOrderRef}</span>
-                  </div>
-                  {linkedOrder && (
-                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1, textTransform: "capitalize" as const, maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
-                      {linkedOrder.sareeType.split(" · ")[0]} · {linkedOrder.design}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-            <div style={{ textAlign: "right" as const, maxWidth: "55%" }}>
-              <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Bill To</div>
-              <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown, marginTop: 3 }}>{customer?.name ?? "—"}</div>
-              {customer?.address ? (
-                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3, lineHeight: 1.4 }}>{customer.address}</div>
-              ) : (
-                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3 }}>{customer?.city}</div>
-              )}
-              {customer?.phone && (
-                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 2 }}>{customer.phone}</div>
-              )}
-              {customer?.gstCode && (
-                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy, fontWeight: 700, marginTop: 2 }}>GST: {customer.gstCode}</div>
-              )}
-            </div>
-          </div>
-
-          {/* Sarees table — migrated onto <DataTable>, design-system/04-DATA-DISPLAY.md
-              Part S. Display-only change (header spec + real table semantics);
-              no totals/arithmetic touched. */}
-          <div style={{ marginBottom: 14 }}>
-            <DataTable
-              columns={([
-                {
-                  id: "item", header: "Item", accessor: s => s.sareeId || s.id, priority: 1,
-                  cell: (_v, s) => {
-                    const sId = s.sareeId || s.id;
-                    const sareeBatch = batches.find(b => b.rows.some(row => row.sareeId === sId))?.batchId;
-                    return (
-                      <div>
-                        <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
-                          <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy, fontWeight: 600 }}>{sId}</span>
-                          {sareeBatch && (
-                            <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.antiqueGold, background: "rgba(200,155,71,0.08)", border: "1px solid rgba(200,155,71,0.18)", padding: "1px 5px", borderRadius: 4 }}>{sareeBatch}</span>
-                          )}
-                        </div>
-                        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{s.designCode} · {s.sareeType}</div>
-                      </div>
-                    );
-                  },
-                },
-                {
-                  // eslint-disable-next-line no-restricted-syntax -- column header label (unit annotation), not a rendered money value; the amount itself renders via <Money> below
-                  id: "amount", header: "Amount (₹)", width: 100,
-                  accessor: s => fromPaise(toPaise(Number(data.prices[s.sareeId || s.id]) || 0)),
-                  cell: (_v, s) => {
-                    const p = fromPaise(toPaise(Number(data.prices[s.sareeId || s.id]) || 0));
-                    return <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{p ? <Money value={rupees(p)} /> : "—"}</span>;
-                  },
-                },
-              ] as ColumnDef<FinishingReturn>[])}
-              data={sarees.slice(0, 4)}
-              getRowId={s => s.id}
-              responsive
+        <DocumentThumb>
+          {isQuotation ? (
+            <QuotationDocument
+              quotationNumber={data.invoiceNumber || "Auto-generated on save"}
+              quotationDate={data.invoiceDate || todayStr}
+              validUntil={data.paymentDueDate || undefined}
+              firm={docFirm}
+              customer={docCustomer}
+              items={docItems}
+              estGstPct={data.applyGst ? Number(data.gstPct) || undefined : undefined}
+              bulkOrderRef={bulkOrderRef || undefined}
+              notes={data.invoiceNotes || undefined}
             />
-            {sarees.length > 4 && (
-              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, padding: "5px 0" }}>+ {sarees.length - 4} more sarees…</div>
-            )}
-          </div>
-
-          {/* Totals */}
-          <div style={{ borderTop: `1.5px solid ${T.borderDef}`, paddingTop: 12, display: "flex", flexDirection: "column", gap: 4 }}>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Subtotal ({qty} sarees)</span>
-              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}><Money value={rupees(subtotal)} /></span>
-            </div>
-            {data.applyGst && (
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>GST ({data.gstPct}%)</span>
-                <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}><Money value={rupees(gstAmount)} /></span>
-              </div>
-            )}
-            <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6, paddingTop: 8, borderTop: `1px solid ${T.borderDef}` }}>
-              <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>Grand Total</span>
-              <span style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.royalBurgundy }}><Money value={rupees(grandTotal)} /></span>
-            </div>
-            {data.paymentDueDate && (
-              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>Payment due: {data.paymentDueDate}</div>
-            )}
-          </div>
-
-          {/* Dispatch details */}
-          {!isQuotation && (
-          <div style={{ marginTop: 14, background: T.silkCream, borderRadius: 8, padding: "10px 12px" }}>
-            <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: 6 }}>Dispatch Details</div>
-            {bulkOrderRef && (
-              <div style={{ marginBottom: 8, display: "flex", alignItems: "center", gap: 6, background: "rgba(110,15,45,0.06)", border: `1px solid rgba(110,15,45,0.14)`, borderRadius: 6, padding: "5px 10px" }}>
-                <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Bulk Order: </span>
-                <EntityCode type="order" value={bulkOrderRef} />
-              </div>
-            )}
-            {detectedBatches.length > 0 && (
-              <div style={{ marginBottom: 8, display: "flex", alignItems: "center", gap: 6, background: "rgba(200,155,71,0.06)", border: `1px solid rgba(200,155,71,0.14)`, borderRadius: 6, padding: "5px 10px" }}>
-                <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Production Batch: </span>
-                {detectedBatches.length > 0 ? (
-                  <span style={{ display: "inline-flex", flexWrap: "wrap" as const, gap: 4 }}>
-                    {detectedBatches.map(b => <EntityCode key={b} type="batch" value={b as string} />)}
-                  </span>
-                ) : (
-                  <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.antiqueGold }}>{batchStr}</span>
-                )}
-              </div>
-            )}
-            <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: "4px 12px" }}>
-              {[
-                ["LR Number", transport.lrNumber || "—"],
-                ["Transport", transport.transportCompany || "—"],
-                ["Vehicle",   transport.vehicleNumber || "—"],
-                ["Date",      transport.dispatchDate || "—"],
-              ].map(([k, v]) => (
-                <div key={k}>
-                  <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{k}: </span>
-                  <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{v}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+          ) : (
+            <InvoiceDocument
+              invoiceNumber={data.invoiceNumber || "Auto-generated on save"}
+              invoiceDate={data.invoiceDate || todayStr}
+              dueDate={data.paymentDueDate || undefined}
+              firm={docFirm}
+              customer={docCustomer}
+              items={docItems}
+              applyGst={!!data.applyGst}
+              bulkOrderRef={bulkOrderRef || undefined}
+              dispatch={{
+                lrNumber: transport.lrNumber,
+                transportCompany: transport.transportCompany,
+                vehicleNumber: transport.vehicleNumber,
+                dispatchDate: transport.dispatchDate,
+              }}
+              notes={data.invoiceNotes || undefined}
+            />
           )}
+        </DocumentThumb>
+
+        <div
+          style={{
+            fontFamily: F.ui, fontSize: 12, color: T.taupe, fontStyle: "italic",
+            textAlign: "center" as const, marginTop: 12,
+          }}
+        >
+          This preview is the document — it updates live as you fill the form
         </div>
       </div>
 

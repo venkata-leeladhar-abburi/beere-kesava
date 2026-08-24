@@ -86,7 +86,10 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
   const [inspecting, setInspecting] = useState<SareeItem | null>(null);
   const [result, setResult] = useState<InspectionResult>(null);
   const [defectTypes, setDefectTypes] = useState<string[]>([]);
-  const [hasPhoto, setHasPhoto] = useState(false);
+  // The actual captured image (data URL for now — swap for the uploaded
+  // cloud URL once storage is wired up server-side; the QC payload/API
+  // already just takes a string, so nothing else here needs to change).
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
   const [deductionAmount, setDeductionAmount] = useState<number | "">("");
   const [defectSubmitted, setDefectSubmitted] = useState(false);
@@ -192,7 +195,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
   const reset = () => {
     setResult(null);
     setDefectTypes([]);
-    setHasPhoto(false);
+    setPhotoUrl(null);
     setNotes("");
     setDeductionAmount("");
     setDefectSubmitted(false);
@@ -222,6 +225,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
       defects: result === "passed" ? [] : defectTypes,
       semiDeduction,
       notes: result === "passed" ? undefined : notes || undefined,
+      photoUrl: result === "passed" ? undefined : photoUrl ?? undefined,
       inspectedBy: "Worker Staff",
     });
   };
@@ -330,8 +334,8 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
           defectSubmitted={defectSubmitted}
           defectTypes={defectTypes}
           setDefectTypes={setDefectTypes}
-          hasPhoto={hasPhoto}
-          setHasPhoto={setHasPhoto}
+          photoUrl={photoUrl}
+          setPhotoUrl={setPhotoUrl}
           notes={notes}
           setNotes={setNotes}
           deductionAmount={deductionAmount}

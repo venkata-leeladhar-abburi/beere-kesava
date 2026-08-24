@@ -24,6 +24,8 @@ import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { Breadcrumbs } from "../../../../shared/ui/nav/Breadcrumbs";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { recordView, useConfirm } from "../../../../shared/ui/overlay";
+import { resolveAssetUrl } from "../../../../shared/api/uploads";
+import { ImageZoomModal, type ZoomImage } from "../../../../shared/ui/ImageZoomModal";
 
 const BILL_STATUS_LABEL: Record<VendorBillStatus, VendorBill["status"]> = {
   PAID: "Paid", PARTIAL: "Partial", PENDING: "Pending", OVERDUE: "Overdue",
@@ -31,6 +33,7 @@ const BILL_STATUS_LABEL: Record<VendorBillStatus, VendorBill["status"]> = {
 
 export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: Vendor; onBack: () => void; onUpdate?: (v: Vendor) => void; onDelete?: (v: Vendor) => void }) {
   const [tab, setTab] = useState<"overview" | "orders" | "payments" | "contact" | "edit">("overview");
+  const [zoomImage, setZoomImage] = useState<ZoomImage | null>(null);
   const confirm = useConfirm();
 
   // Command palette RECENT group (design-system/05-OVERLAYS.md Part H) —
@@ -522,17 +525,13 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
               <div style={{ flex: "0 0 320px", display: "flex", flexDirection: "column", gap: 16 }}>
                 <div style={{ background: "#fff", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: 24, boxShadow: "0 2px 8px rgba(0,0,0,0.02)" }}>
                   <h3 style={{ fontFamily: F.display, fontSize: 18, color: T.luxuryBrown, margin: "0 0 16px 0" }}>Visiting Card</h3>
-                  {vendor.visitingCard ? (
-                    <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden", position: "relative", cursor: "pointer", transition: "transform 0.2s ease" }} 
+                  {resolveAssetUrl(vendor.visitingCard) ? (
+                    <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden", position: "relative", cursor: "pointer", transition: "transform 0.2s ease" }}
                          onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.02)")}
                          onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
-                         onClick={() => {
-                           const el = document.createElement("a");
-                           el.href = vendor.visitingCard!;
-                           el.target = "_blank";
-                           el.click();
-                         }} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); window.open(vendor.visitingCard!, "_blank"); } }}>
-                      <img src={vendor.visitingCard} alt="Visiting Card" style={{ width: "100%", height: 200, objectFit: "cover" }} />
+                         onClick={() => setZoomImage({ url: resolveAssetUrl(vendor.visitingCard)!, label: `Visiting card — ${vendor.name}` })}
+                         role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setZoomImage({ url: resolveAssetUrl(vendor.visitingCard)!, label: `Visiting card — ${vendor.name}` }); } }}>
+                      <img src={resolveAssetUrl(vendor.visitingCard)!} alt="Visiting Card" style={{ width: "100%", height: 200, objectFit: "cover" }} />
                       <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%)", color: "#fff", fontFamily: F.ui, fontSize: 13, padding: "24px 16px 12px", textAlign: "center", fontWeight: 500 }}>
                         Click to Expand
                       </div>
@@ -552,6 +551,7 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
           )}
         </motion.div>
       </AnimatePresence>
+      <ImageZoomModal image={zoomImage} onClose={() => setZoomImage(null)} />
     </div>
   );
 }

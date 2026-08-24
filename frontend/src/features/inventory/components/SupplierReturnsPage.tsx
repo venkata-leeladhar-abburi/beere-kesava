@@ -1,11 +1,14 @@
 import { useMemo, useState } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
+import { motion } from "motion/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, RotateCcw, X } from "lucide-react";
+import { CheckCircle2, Image as ImageIcon, RotateCcw, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { STOPGAP_ACTING_USER_ID } from "@/shared/api/purchase-requests";
 import { BackendSupplierReturnStatus, supplierReturnsApi } from "@/shared/api/supplier-returns";
 import { Button } from "../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../shared/ui/data";
+import { Modal } from "../../../shared/ui/overlay";
 import { T, F } from "./externalPurchases/theme";
 
 type StatusFilter = "ALL" | BackendSupplierReturnStatus;
@@ -30,6 +33,7 @@ export function SupplierReturnsPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("PENDING");
   const [decidingId, setDecidingId] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const [preview, setPreview] = useState<string | null>(null);
 
   // pageSize is capped at 100 server-side (ListSupplierReturnRequestsQueryDto);
   // requesting more than that 400s. isError is surfaced below rather than
@@ -68,6 +72,19 @@ export function SupplierReturnsPage() {
     {
       id: "id", header: "Return ID", accessor: r => r.id, priority: 1,
       cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 12, color: T.royalBurgundy, whiteSpace: "nowrap" as const }}>{r.id}</span>,
+    },
+    {
+      id: "photo", header: "Photo", accessor: r => r.sareeLine.imageUrl,
+      cell: (_v, r) => r.sareeLine.imageUrl ? (
+        <button type="button" onClick={() => setPreview(r.sareeLine.imageUrl)} className="p-0 border-0 bg-transparent cursor-pointer">
+          <img src={r.sareeLine.imageUrl} alt={r.sareeLine.code}
+            style={{ width: 40, height: 40, borderRadius: 8, objectFit: "cover", border: `1px solid ${T.borderDef}` }} />
+        </button>
+      ) : (
+        <div style={{ width: 40, height: 40, borderRadius: 8, background: T.silkCream, border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <ImageIcon size={14} color={T.taupe} />
+        </div>
+      ),
     },
     {
       id: "purchase", header: "From Purchase", accessor: r => r.purchaseId,
@@ -185,6 +202,16 @@ export function SupplierReturnsPage() {
       ) : (
         <DataTable responsive columns={columns} data={rows} getRowId={r => r.id} />
       )}
+
+      <Modal open={!!preview} onOpenChange={o => { if (!o) setPreview(null); }} size="xl">
+        <Dialog.Title className="sr-only">Saree photo preview</Dialog.Title>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+          {preview && (
+            <motion.img initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+              src={preview} alt="Saree" style={{ maxWidth: "100%", maxHeight: "80vh", borderRadius: 14, boxShadow: "0 30px 80px rgba(0,0,0,0.5)" }} />
+          )}
+        </div>
+      </Modal>
     </div>
   );
 }

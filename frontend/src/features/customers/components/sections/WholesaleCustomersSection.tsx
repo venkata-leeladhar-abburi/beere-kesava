@@ -13,6 +13,7 @@ import { useCustomers } from "../../contexts/CustomersContext";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees, formatMoney, paise } from "@/lib/domain/money";
 import { Money } from "../../../../shared/ui/domain/Money";
+import { VisitingCardUploadField } from "../../../../shared/ui/VisitingCardUploadField";
 
 interface WholesaleFormState {
   name: string;
@@ -62,6 +63,7 @@ export function WholesaleCustomersSection({
 }: WholesaleCustomersSectionProps) {
   const { addCustomer } = useCustomers();
   const [form, setForm] = useState<WholesaleFormState>(EMPTY_WHOLESALE_FORM);
+  const [cardUrl, setCardUrl] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -100,6 +102,7 @@ export function WholesaleCustomersSection({
   const closeAddWholesale = () => {
     setShowAddWholesale(false);
     setForm(EMPTY_WHOLESALE_FORM);
+    setCardUrl(null);
     setError(null);
   };
 
@@ -126,6 +129,7 @@ export function WholesaleCustomersSection({
         state: form.state || undefined,
         paymentTerms: form.paymentTerms || undefined,
         notes: form.notes.trim() || undefined,
+        visitingCardUrl: cardUrl || undefined,
       });
       closeAddWholesale();
     } catch (err) {
@@ -196,9 +200,7 @@ export function WholesaleCustomersSection({
                   <Field label="IFSC Code"><Input aria-label="Bank IFSC code" type="text" placeholder="e.g. HDFC0001842" value={form.ifscCode} onChange={e => updateField("ifscCode", e.target.value)} /></Field>
                   <Field label="GST Number"><Input aria-label="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" type="text" placeholder="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" value={form.gstNumber} onChange={e => updateField("gstNumber", e.target.value)} /></Field>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
-                  <Field label="Visiting Card Photo"><Input type="file" accept="image/*" /></Field>
-                </div>
+                <VisitingCardUploadField cardUrl={cardUrl} onChange={setCardUrl} />
                 <Field label="Notes"><Input aria-label="Any special instructions..." type="text" placeholder="Any special instructions..." value={form.notes} onChange={e => updateField("notes", e.target.value)} /></Field>
               </div>
             </div>

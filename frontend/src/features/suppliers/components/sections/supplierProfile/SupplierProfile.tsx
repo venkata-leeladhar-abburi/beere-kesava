@@ -144,7 +144,7 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
   }, [supplier]);
 
   const saveProfile = (values: SupplierFormValues = form) => {
-    updateSupplier(supplier.id, { ...values, visitingCard: cardPreview || undefined });
+    updateSupplier(supplier.id, { ...values, visitingCard: cardPreview ?? "" });
     setSavedFlash(true);
     setTimeout(() => setSavedFlash(false), 2200);
   };

@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import {
-  Users, Tag, ShoppingBag, Trash2 as Trash, Factory, ArrowUpNarrowWide as SortAscending, Table2,
+  Users, Tag, ShoppingBag, Trash2 as Trash, Factory, ArrowUpNarrowWide as SortAscending, Table2, ImageOff,
 } from "lucide-react";
 import { SareeRow } from "../../contexts/BatchContext";
 import { T, F, th, td, rowComplete, Pip, EmptyCell } from "./constants";
@@ -10,6 +10,28 @@ import { pipColor } from "./PickerModals";
 import { Button, Checkbox, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { SectionCard } from "../common/primitives";
 import type { BulkOrder } from "@/features/bulk-orders";
+import { ImageZoomModal, type ZoomImage } from "../../../../shared/ui/ImageZoomModal";
+
+// Photo captured by Worker Staff at Receive Sarees — same source as the
+// worker portal's Received History. Null until the saree is actually
+// received back from the weaver/loom, which is normal for most rows here
+// since this table is the pre-receipt batch-assignment editor.
+function PhotoCell({ row, onView }: { row: SareeRow; onView: (image: ZoomImage) => void }) {
+  const url = row.receivedPhotoUrl;
+  return url ? (
+    <button
+      type="button"
+      onClick={() => onView({ url, label: `Saree photo — ${row.sareeId}` })}
+      title="View saree photo"
+      aria-label={`View photo for ${row.sareeId}`}
+      style={{ width: 30, height: 30, borderRadius: 7, border: `1px solid ${T.borderDef}`, padding: 0, cursor: "pointer", backgroundImage: `url(${url})`, backgroundSize: "cover", backgroundPosition: "center" }}
+    />
+  ) : (
+    <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 30, height: 30, borderRadius: 7, border: `1px dashed ${T.borderDef}`, color: T.taupe }} title="No photo on file">
+      <ImageOff size={13} />
+    </span>
+  );
+}
 
 // ── Status dot per row ────────────────────────────────────────────────────────
 function StatusDot({ row }: { row: SareeRow }) {
@@ -20,15 +42,7 @@ function StatusDot({ row }: { row: SareeRow }) {
   return <div title={title} style={{ width: 10, height: 10, borderRadius: "50%", background: color, flexShrink: 0 }} />;
 }
 
-export function BatchTable({
-  rows, displayRows, selected, toggleAll, toggleRow, allSelected,
-  sortBy, setSortBy, searchFilter, setSearchFilter, weaverFilter, setWeaverFilter,
-  sareeTypeFilter, setSareeTypeFilter, orderFilter, setOrderFilter,
-  weaverOptions, orderOptions, sareeTypeOptions,
-  completeRows, incompleteRows, setPicker, removeSelected, bulkOrders,
-  setViewSareeRow, setViewFactoryLoom, setViewWeaver, setViewBulkOrder,
-  setLoomPickerRow, openSareeTypeCard, weavers, looms,
-}: {
+interface BatchTableProps {
   weavers: WeaverOption[];
   looms: LoomOption[];
   rows: SareeRow[];
@@ -61,8 +75,20 @@ export function BatchTable({
   setViewBulkOrder: (o: BulkOrder) => void;
   setLoomPickerRow: (r: SareeRow) => void;
   openSareeTypeCard: (code: string) => void;
-}) {
+}
+
+export function BatchTable({
+  rows, displayRows, selected, toggleAll, toggleRow, allSelected,
+  sortBy, setSortBy, searchFilter, setSearchFilter, weaverFilter, setWeaverFilter,
+  sareeTypeFilter, setSareeTypeFilter, orderFilter, setOrderFilter,
+  weaverOptions, orderOptions, sareeTypeOptions,
+  completeRows, incompleteRows, setPicker, removeSelected, bulkOrders,
+  setViewSareeRow, setViewFactoryLoom, setViewWeaver, setViewBulkOrder,
+  setLoomPickerRow, openSareeTypeCard, weavers, looms,
+}: BatchTableProps) {
+  const [zoomImage, setZoomImage] = useState<ZoomImage | null>(null);
   return (
+    <>
     <div style={{ marginBottom: 20 }}>
     <SectionCard
       icon={Table2}
@@ -131,7 +157,7 @@ export function BatchTable({
               <th style={th}>
                 <Checkbox checked={allSelected} onCheckedChange={() => toggleAll()} aria-label="Select all rows" />
               </th>
-              {["#", "Saree ID", "Weaver / Factory Loom", "Loom No.", "Saree Type", "Bulk Order", ""].map(h => (
+              {["#", "Saree ID", "Photo", "Weaver / Factory Loom", "Loom No.", "Saree Type", "Bulk Order", ""].map(h => (
                 // eslint-disable-next-line no-restricted-syntax -- raw <th>, documented Phase 4 exclusion (see comment above table)
                 <th key={h} style={th}>{h}</th>
               ))}
@@ -157,6 +183,9 @@ export function BatchTable({
                     ) : (
                       <span style={{ color: "rgba(139,112,96,0.4)", fontSize: 12 }}>— assign weaver</span>
                     )}
+                  </td>
+                  <td style={td}>
+                    <PhotoCell row={row} onView={setZoomImage} />
                   </td>
                   <td style={{ ...td, minWidth: 150 }}>
                     {row.recipientType === "factoryLoom" && row.factoryLoomId ? (
@@ -221,5 +250,7 @@ export function BatchTable({
       </div>
     </SectionCard>
     </div>
+    <ImageZoomModal image={zoomImage} onClose={() => setZoomImage(null)} />
+    </>
   );
 }

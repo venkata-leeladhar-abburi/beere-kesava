@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { AnimatePresence } from "motion/react";
-import { Eye, LayoutGrid, List } from "lucide-react";
+import { Eye, LayoutGrid, List, ImageOff } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Shield, Download as DownloadSimple, ShieldAlert as SealWarning, AlertCircle as WarningCircle,
@@ -11,9 +11,11 @@ import { FadeUp, ProductionDialog } from "../common/primitives";
 import { Button, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { qcApi } from "../../../../shared/api/qc";
 import { weaversApi } from "../../../../shared/api/weavers";
+import { useBatches } from "@/features/production";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees, formatMoney, addMoney, type Paise } from "@/lib/domain/money";
 import { EntityCode } from "@/shared/ui/domain";
+import { ImageZoomModal, type ZoomImage } from "../../../../shared/ui/ImageZoomModal";
 
 interface DefectiveRow {
   id: string;
@@ -23,6 +25,24 @@ interface DefectiveRow {
   defects: string[];
   qcDate: string;
   deduction: Paise;
+  /** Photo captured by Worker Staff at Receive Sarees — same source as the worker portal's Received History. */
+  photoUrl: string | null;
+}
+
+function DefectivePhotoCell({ url, sareeId, onView }: { url: string | null; sareeId: string; onView: (image: ZoomImage) => void }) {
+  return url ? (
+    <button
+      type="button"
+      onClick={() => onView({ url, label: `Saree photo — ${sareeId}` })}
+      title="View saree photo"
+      aria-label={`View photo for ${sareeId}`}
+      style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${T.borderDef}`, padding: 0, cursor: "pointer", backgroundImage: `url(${url})`, backgroundSize: "cover", backgroundPosition: "center", flexShrink: 0 }}
+    />
+  ) : (
+    <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 32, height: 32, borderRadius: 8, border: `1px dashed ${T.borderDef}`, color: T.taupe, flexShrink: 0 }} title="No photo on file">
+      <ImageOff size={13} />
+    </span>
+  );
 }
 
 export function DefectiveSareesSection({ superadmin = false }: { superadmin?: boolean; onNavigate?: (tab: string) => void } & CodeCallbacks) {
@@ -35,6 +55,7 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
   const [dlWeaver, setDlWeaver] = useState("All Weavers");
   const [dlDefectType, setDlDefectType] = useState("All Defect Types");
   const [dlPeriod, setDlPeriod] = useState("This Month");
+  const [zoomImage, setZoomImage] = useState<ZoomImage | null>(null);
 
   const { data: qcRecords = [], isLoading: qcLoading, isError: qcError } = useQuery({
     queryKey: ["qc", "all"],
@@ -46,25 +67,37 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
   });
   const weaverLookup = useMemo(() => new Map(weavers.map(w => [w.id, w.name])), [weavers]);
 
+  // The saree type and receipt photo aren't on the QC record itself — both
+  // live on the batch row (BatchSareeRow.sareeTypeCode / receivedPhotoUrl),
+  // captured back at Receive Sarees. Join by sareeId, same as the worker
+  // portal's Received History.
+  const { batches: allBatches } = useBatches();
+  const rowLookup = useMemo(() => {
+    const m = new Map<string, { sareeTypeCode: string | null; receivedPhotoUrl: string | null }>();
+    for (const b of allBatches) for (const r of b.rows) if (r.sareeId) m.set(r.sareeId, { sareeTypeCode: r.sareeTypeCode, receivedPhotoUrl: r.receivedPhotoUrl });
+    return m;
+  }, [allBatches]);
+
   // Only DEFECTIVE-result QC records represent sarees that failed quality
   // check — SEMI/PASSED sarees aren't shown here.
   const DEFECTIVE_DATA: DefectiveRow[] = useMemo(
     () =>
       qcRecords
         .filter(r => r.result === "DEFECTIVE")
-        .map(r => ({
-          id: r.sareeId,
-          weaver: r.weaverId ? (weaverLookup.get(r.weaverId) ?? "Unknown Weaver") : "Own Factory",
-          batch: r.batchId ?? "—",
-          // NOTE(backend gap): BackendQcRecord doesn't include the saree type
-          // — the QC list endpoint doesn't join batchSareeRow.sareeType, so
-          // this column can't be populated without fabricating data.
-          sareeType: "—",
-          defects: r.defects,
-          qcDate: new Date(r.qcDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
-          deduction: rupees(Math.round(Number(r.deduction))),
-        })),
-    [qcRecords, weaverLookup],
+        .map(r => {
+          const row = rowLookup.get(r.sareeId);
+          return {
+            id: r.sareeId,
+            weaver: r.weaverId ? (weaverLookup.get(r.weaverId) ?? "Unknown Weaver") : "Own Factory",
+            batch: r.batchId ?? "—",
+            sareeType: row?.sareeTypeCode ?? "—",
+            defects: r.defects,
+            qcDate: new Date(r.qcDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+            deduction: rupees(Math.round(Number(r.deduction))),
+            photoUrl: row?.receivedPhotoUrl ?? null,
+          };
+        }),
+    [qcRecords, weaverLookup, rowLookup],
   );
 
   const uniqueWeavers = useMemo(() => {
@@ -91,6 +124,10 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
 
   const columns: ColumnDef<DefectiveRow>[] = [
     { id: "sareeId", header: "Saree ID", accessor: r => r.id, priority: 1, cell: (_v, r) => <EntityCode type="saree" value={r.id} size="sm" /> },
+    {
+      id: "photo", header: "Photo", accessor: r => r.photoUrl,
+      cell: (_v, r) => <DefectivePhotoCell url={r.photoUrl} sareeId={r.id} onView={setZoomImage} />,
+    },
     { id: "weaver", header: "Weaver", accessor: r => r.weaver, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{r.weaver}</span> },
     { id: "batch", header: "Batch", accessor: r => r.batch, priority: 3, cell: (_v, r) => <EntityCode type="batch" value={r.batch} size="sm" /> },
     { id: "sareeType", header: "Saree Type", accessor: r => r.sareeType },
@@ -258,7 +295,10 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
                         }}
                       >
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                          <EntityCode type="saree" value={r.id} size="sm" />
+                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <DefectivePhotoCell url={r.photoUrl} sareeId={r.id} onView={setZoomImage} />
+                            <EntityCode type="saree" value={r.id} size="sm" />
+                          </div>
                           <Button onClick={() => setViewDefect(r)} variant="secondary" size="sm" className="h-8 px-2.5">
                             <Eye size={13} /> View
                           </Button>
@@ -400,6 +440,21 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
           {viewDefect && (
             <ProductionDialog open title="Defective Saree — Details" onClose={() => setViewDefect(null)}>
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                {viewDefect.photoUrl ? (
+                  <button
+                    type="button"
+                    onClick={() => setZoomImage({ url: viewDefect.photoUrl!, label: `Saree photo — ${viewDefect.id}` })}
+                    title="Click to view full size"
+                    style={{ display: "block", width: "100%", padding: 0, border: `1px solid ${T.borderDef}`, borderRadius: 10, cursor: "zoom-in", background: "none" }}
+                  >
+                    <img src={viewDefect.photoUrl} alt="Saree" style={{ width: "100%", height: 160, objectFit: "cover", borderRadius: 10, display: "block" }} />
+                  </button>
+                ) : (
+                  <div style={{ width: "100%", height: 90, borderRadius: 10, border: `1px dashed ${T.borderDef}`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, color: T.taupe }}>
+                    <ImageOff size={18} />
+                    <span style={{ fontFamily: F.ui, fontSize: 11 }}>No photo on file</span>
+                  </div>
+                )}
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                   {viewDefect.defects.map(d => (
                     <span key={d} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.crimson, background: "rgba(192,57,43,0.09)", border: "1px solid rgba(192,57,43,0.22)", padding: "6px 14px", borderRadius: 99 }}>
@@ -446,6 +501,7 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
           )}
         </AnimatePresence>
       </section>
+      <ImageZoomModal image={zoomImage} onClose={() => setZoomImage(null)} />
     </FadeUp>
   );
 }

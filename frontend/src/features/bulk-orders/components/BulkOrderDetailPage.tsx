@@ -196,6 +196,7 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
           batchId: s.batchId as string,
           weaverName: s.weaverName,
           sareeTypeCode: s.sareeTypeCode ?? null,
+          receivedPhotoUrl: row?.receivedPhotoUrl ?? null,
           actualWeight: row?.receivedWeight ? Number(row.receivedWeight) : null,
           actualWarpG: row?.receivedWarpG ? Number(row.receivedWarpG) : null,
           actualReshamG: row?.receivedReshamG ? Number(row.receivedReshamG) : null,

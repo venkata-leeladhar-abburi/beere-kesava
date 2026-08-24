@@ -204,6 +204,7 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
         await receiveRow(currentBatch.id, no, {
           weight: parseFloat(sareeWeight),
           color: sareeColor,
+          photoUrl: photoUrl ?? undefined,
           warpG: Number.isFinite(warpG) ? warpG : undefined,
           reshamG: Number.isFinite(reshamG) ? reshamG : undefined,
           jariReels: Number.isFinite(jariReels) ? jariReels : undefined,
@@ -213,6 +214,8 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
           id: s.sareeId, weaver: selectedWeaver.name, wcode: selectedWeaver.code, batch: currentBatch.id,
           weight: `${sareeWeight}g`, date: dateStr,
           color: sareeColor, status: "Pending QC",
+          photoUrl, loomNumber: s.weaverLoom ?? currentBatch.loomNumber ?? null,
+          sareeType: currentBatch.sareeTypeCode, bulkOrder: currentBatch.bulkOrderLabel ?? null,
         });
       }
       setSelectedSareeNos(new Set()); setSareeColor(""); setSareeWeight(""); setSareePrice(""); setHasPhoto(false); setMatEdits({});
@@ -452,6 +455,8 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
                         id: s.sareeId, weaver: selectedWeaver.name, wcode: selectedWeaver.code, batch: currentBatch.id,
                         weight: sareeWeight ? `${sareeWeight}g` : "—", date: dateStr,
                         color: sareeColor || "—", status: "Defective",
+                        photoUrl, loomNumber: s.weaverLoom ?? currentBatch.loomNumber ?? null,
+                        sareeType: currentBatch.sareeTypeCode, bulkOrder: currentBatch.bulkOrderLabel ?? null,
                       });
                     });
                   }

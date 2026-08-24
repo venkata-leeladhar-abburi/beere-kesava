@@ -18,6 +18,7 @@ export interface BackendVendor {
   accountNo: string | null;
   ifscCode: string | null;
   notes: string | null;
+  visitingCardUrl: string | null;
   status: "ACTIVE" | "INACTIVE" | "OVERDUE";
   rating: number | null;
   createdAt: string;
@@ -39,6 +40,7 @@ export interface CreateVendorPayload {
   accountNo?: string;
   ifscCode?: string;
   notes?: string;
+  visitingCardUrl?: string;
   rating?: number;
 }
 

@@ -15,7 +15,7 @@ import { RetailCustomersSection } from "./sections/RetailCustomersSection";
 import { InactiveCustomersSection } from "./sections/InactiveCustomersSection";
 import { CustomerModals } from "./modals/CustomerModals";
 import { monthsSinceLabel } from "./utils";
-import { retailData, inactiveData, wholesaleData } from "./data";
+import { retailData, inactiveData } from "./data";
 import { WholesaleCustomer, RetailCustomer, WholesaleTab } from "./types";
 import { useCustomers } from "../contexts/CustomersContext";
 import { useUrlFilters } from "../../../shared/ui/filter";
@@ -72,7 +72,7 @@ export function CustomersPage() {
         activeOrder,
         duesMsg: outstanding > 0 ? `${formatMoney(rupees(outstanding))} outstanding` : "✓ All Payments Clear",
         gstNumber: c.gstCode || "—",
-        visitingCard: c.visitingCardUrl || "https://images.unsplash.com/photo-1589758438368-0ad531db3366?w=400&fit=crop&q=80",
+        visitingCard: c.visitingCardUrl || "",
         contactName: c.contactName || "",
         phone: c.phone || "",
         address: c.address || "",
@@ -84,7 +84,7 @@ export function CustomersPage() {
         notes: c.notes || "",
       };
     });
-    return [...mapped, ...wholesaleData];
+    return mapped;
   }, [customers, bulkOrders]);
 
   useEffect(() => {
@@ -231,6 +231,7 @@ export function CustomersPage() {
                 state: updated.state || undefined,
                 paymentTerms: updated.terms || undefined,
                 notes: updated.notes || undefined,
+                visitingCardUrl: updated.visitingCard ?? "",
               });
             }
             setSelectedWholesaleCust(updated);

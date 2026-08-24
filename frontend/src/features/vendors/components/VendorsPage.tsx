@@ -35,6 +35,7 @@ function toVendor(v: BackendVendor): Vendor {
     accountNo: v.accountNo ?? undefined,
     ifscCode: v.ifscCode ?? undefined,
     notes: v.notes ?? undefined,
+    visitingCard: v.visitingCardUrl ?? undefined,
     status: v.status === "ACTIVE" ? "active" : v.status === "INACTIVE" ? "inactive" : "overdue",
     totalOrders: 0,
     totalSpend: "0",
@@ -62,7 +63,7 @@ export function VendorsPage() {
       name: v.name, contactName: v.contactName, phone: v.phone, whatsapp: v.whatsapp,
       city: v.city, state: v.state, address: v.address, gstCode: v.gstCode,
       specialty: v.type, terms: v.terms, bankName: v.bankName, accountNo: v.accountNo, ifscCode: v.ifscCode,
-      notes: v.notes, rating: v.rating,
+      notes: v.notes, visitingCardUrl: v.visitingCard, rating: v.rating,
     });
     setVendors(p => [toVendor(created), ...p]);
     setShowAddForm(false);
@@ -73,7 +74,7 @@ export function VendorsPage() {
       name: v.name, contactName: v.contactName, phone: v.phone, whatsapp: v.whatsapp,
       city: v.city, state: v.state, address: v.address, gstCode: v.gstCode,
       specialty: v.type, terms: v.terms, bankName: v.bankName, accountNo: v.accountNo, ifscCode: v.ifscCode,
-      notes: v.notes, rating: v.rating, status: v.status.toUpperCase(),
+      notes: v.notes, visitingCardUrl: v.visitingCard, rating: v.rating, status: v.status.toUpperCase(),
     });
     const merged = { ...toVendor(updated), totalOrders: v.totalOrders, totalSpend: v.totalSpend, outstanding: v.outstanding, lastOrder: v.lastOrder };
     setVendors(prev => prev.map(old => old.id === merged.id ? merged : old));

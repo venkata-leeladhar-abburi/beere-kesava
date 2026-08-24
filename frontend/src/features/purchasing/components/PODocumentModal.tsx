@@ -118,7 +118,7 @@ export function PODocumentModal({ open, onClose, po, isApproved }: PODocumentMod
             once and reused for screen preview, Print and Download via
             DocumentViewer/useDocument (Part C.1). Replaces the bespoke
             print-area card and its raw calls to window's print method. */}
-        <DocumentViewer>
+        <DocumentViewer fileName={po.poNumber} documentTitle={`Purchase Order ${po.poNumber}`}>
           <PurchaseOrderDocument
             poNumber={po.poNumber}
             submittedDate={new Date(po.submittedDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}

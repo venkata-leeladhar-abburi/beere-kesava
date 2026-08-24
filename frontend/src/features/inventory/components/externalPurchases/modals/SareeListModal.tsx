@@ -3,8 +3,10 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { X, Printer, Undo2 } from "lucide-react";
 import {
-  Purchase, SareeTag,
-  lineProfit, purchaseTotals, expandSareePieces,
+  Purchase,
+  lineProfit, purchaseTotals, expandSareePieces, withPieceImage,
+  SareeInventoryTable, type PieceExtra,
+  useSuppliers,
 } from "@/features/suppliers";
 import { useAuth } from "@/contexts/AuthContext";
 import { STOPGAP_ACTING_USER_ID } from "@/shared/api/purchase-requests";
@@ -12,23 +14,23 @@ import { supplierReturnsApi } from "@/shared/api/supplier-returns";
 import { formatMoney, rupees } from "@/lib/domain/money";
 import { T, F } from "../theme";
 import { Button, IconButton, Textarea } from "../../../../../shared/ui/primitives";
-import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
 import { Modal } from "../../../../../shared/ui/overlay";
 import { useDocument } from "../../../../../shared/ui/document";
 
-/** Full saree/barcode breakdown for one purchase — one row per physical piece. */
+/** Full saree/barcode breakdown for one purchase — grouped by serial number
+ * (one row per purchase line), matching the Suppliers → Order History view,
+ * expandable to the individual physical pieces under each serial. */
 export function SareeListModal({
   purchase,
   onClose,
-  onPrint,
 }: {
   purchase: Purchase;
   onClose: () => void;
-  onPrint: (saree: SareeTag) => void;
 }) {
   const { print } = useDocument();
   const { user } = useAuth();
   const qc = useQueryClient();
+  const { updatePurchase } = useSuppliers();
   const requestedById = user?.id ?? STOPGAP_ACTING_USER_ID;
 
   // Pending return requests reserve pieces the same way an APPROVED one
@@ -57,13 +59,11 @@ export function SareeListModal({
       return { ...s, pending: !s.returned && s.pieceNo <= returnedQty + pendingQty };
     });
   }, [purchase.sarees, pendingByLineId]);
-  type Piece = (typeof pieces)[number];
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [reason, setReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   // Only pieces with nothing already in motion can be selected.
-  const selectablePieces = pieces.filter(s => !s.returned && !s.pending);
   const selectedReturnablePieces = pieces.filter(s => selectedIds.has(s.id) && !s.returned && !s.pending);
 
   // Raises one SupplierReturnRequest per affected line (PENDING — nothing
@@ -98,73 +98,33 @@ export function SareeListModal({
     }
   };
 
-  const columns: ColumnDef<Piece>[] = [
-    {
-      id: "sno", header: "S.No", accessor: (_s) => pieces.indexOf(_s) + 1, priority: 3,
-      cell: (_v, s) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{pieces.indexOf(s) + 1}</span>,
-    },
-    {
-      id: "sareeCode", header: "Saree Code", accessor: s => s.id, priority: 1,
-      cell: (_v, s) => <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 12, color: T.royalBurgundy, whiteSpace: "nowrap" as const }}>{s.id}</span>,
-    },
-    {
-      id: "status", header: "Status", accessor: s => s.returned ? "returned" : s.pending ? "pending" : "with-us", type: "status",
-      cell: (_v, s) => s.returned
-        ? <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.crimson, background: "rgba(192,57,43,0.08)", borderRadius: 6, padding: "2px 8px", whiteSpace: "nowrap" as const }}>Returned</span>
-        : s.pending
-        ? <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.antiqueGold, background: "rgba(200,155,71,0.10)", borderRadius: 6, padding: "2px 8px", whiteSpace: "nowrap" as const }}>Return Pending</span>
-        : <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.green, background: "rgba(30,102,64,0.08)", borderRadius: 6, padding: "2px 8px", whiteSpace: "nowrap" as const }}>With Us</span>,
-    },
-    {
-      id: "lineSerial", header: "Line Serial", accessor: s => s.lineCode, priority: 3,
-      cell: (_v, s) => (
-        <span style={{ whiteSpace: "nowrap" as const }}>
-          <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{s.lineCode}</span>
-          <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginLeft: 6 }}>pc {s.pieceNo}/{s.lineQuantity}</span>
-        </span>
-      ),
-    },
-    {
-      id: "sareeType", header: "Saree Type", accessor: s => s.sareeType,
-      cell: (_v, s) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>{s.sareeType || "—"}</span>,
-    },
-    {
-      id: "colour", header: "Colour", accessor: s => s.color,
-      cell: (_v, s) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>{s.color || "—"}</span>,
-    },
-    {
-      id: "weight", header: "Weight", accessor: s => s.weight, priority: 3,
-      cell: (_v, s) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>{s.weight}</span>,
-    },
-    {
-      id: "buying", header: "Buying Price", accessor: s => s.price,
-      cell: (_v, s) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>{formatMoney(rupees(s.price))}</span>,
-    },
-    {
-      id: "sellPct", header: "Sell %", accessor: s => s.sellPercent, priority: 3,
-      cell: (_v, s) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, whiteSpace: "nowrap" as const }}>{s.sellPercent}%</span>,
-    },
-    {
-      id: "selling", header: "Selling Price", accessor: s => s.finalAmount,
-      cell: (_v, s) => <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 12, color: T.antiqueGold, whiteSpace: "nowrap" as const }}>{formatMoney(rupees(s.finalAmount))}</span>,
-    },
-    {
-      id: "profit", header: "Profit", accessor: s => lineProfit(s),
-      cell: (_v, s) => <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 12, color: T.green, whiteSpace: "nowrap" as const }}>{formatMoney(rupees(lineProfit(s)))}</span>,
-    },
-    {
-      id: "notes", header: "Notes", accessor: s => s.notes, priority: 3,
-      cell: (_v, s) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, maxWidth: 200 }}>{s.notes || "—"}</span>,
-    },
-    {
-      id: "barcode", header: "Barcode", accessor: () => null, type: "actions",
-      cell: (_v, s) => (
-        <Button variant="primary" size="sm" iconLeft={Printer} onClick={() => onPrint(s)} className="whitespace-nowrap">
-          Print
-        </Button>
-      ),
-    },
-  ];
+  // Status badge + selectability per physical piece, keyed by piece id —
+  // handed to SareeInventoryTable's expanded piece list so a piece already
+  // returned or pending a decision can't be selected again.
+  const pieceExtra = (pieceId: string): PieceExtra | undefined => {
+    const s = pieces.find(p => p.id === pieceId);
+    if (!s) return undefined;
+    if (s.returned) return { badge: { label: "Returned", color: T.crimson, bg: "rgba(192,57,43,0.08)" }, selectable: false };
+    if (s.pending) return { badge: { label: "Return Pending", color: T.antiqueGold, bg: "rgba(200,155,71,0.10)" }, selectable: false };
+    return { badge: { label: "With Us", color: T.green, bg: "rgba(30,102,64,0.08)" }, selectable: true };
+  };
+
+  const toggleSelectPiece = (pieceId: string) => {
+    if (!pieceExtra(pieceId)?.selectable) return;
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(pieceId)) next.delete(pieceId); else next.add(pieceId);
+      return next;
+    });
+  };
+
+  const rows = purchase.sarees.map(s => ({ ...s, purchaseId: purchase.id, invoiceNumber: purchase.invoiceNumber, supplier: purchase.supplier }));
+
+  const handleUploadPhoto = (row: (typeof rows)[number], dataUrl: string) =>
+    updatePurchase(purchase.id, { sarees: purchase.sarees.map(s => s.id === row.id ? { ...s, imageUrl: dataUrl } : s) });
+
+  const handleUploadPieceImage = (row: (typeof rows)[number], pieceNo: number, dataUrl: string) =>
+    updatePurchase(purchase.id, { sarees: purchase.sarees.map(s => s.id === row.id ? withPieceImage(s, pieceNo, dataUrl) : s) });
 
   const totals = purchaseTotals(purchase.sarees);
 
@@ -263,15 +223,15 @@ export function SareeListModal({
           </div>
 
           <div style={{ overflow: "auto", flex: 1 }}>
-            <DataTable
-              responsive
-              columns={columns}
-              data={pieces}
-              getRowId={s => s.id}
-              selectedIds={selectedIds}
-              onSelectionChange={next => setSelectedIds(new Set([...next].filter(id => selectablePieces.some(s => s.id === id))))}
+            <SareeInventoryTable
+              rows={rows}
+              onUploadPhoto={handleUploadPhoto}
+              onUploadPieceImage={handleUploadPieceImage}
+              pieceExtra={pieceExtra}
+              selectedPieceIds={selectedIds}
+              onTogglePieceSelect={toggleSelectPiece}
             />
-            {/* DataTable has no tfoot support — totals row rendered as a matching footer bar. */}
+            {/* SareeInventoryTable has no tfoot support — totals row rendered as a matching footer bar. */}
             <div
               style={{
                 display: "flex",

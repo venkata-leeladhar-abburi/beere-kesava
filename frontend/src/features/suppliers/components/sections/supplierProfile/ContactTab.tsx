@@ -1,11 +1,15 @@
-import React from "react";
+import React, { useState } from "react";
 import { Building2, Phone, FileText, Clock, Package, MapPin, Landmark, MessageSquare, StickyNote } from "lucide-react";
 import { T, F } from "../../theme";
 import { Supplier } from "../../../contexts/SupplierContext";
+import { resolveAssetUrl } from "../../../../../shared/api/uploads";
+import { ImageZoomModal, type ZoomImage } from "../../../../../shared/ui/ImageZoomModal";
 
 export function ContactTab({ supplier }: { supplier: Supplier }) {
   const hasBankDetails = supplier.bankName || supplier.accountNo || supplier.ifscCode;
-  
+  const [zoomImage, setZoomImage] = useState<ZoomImage | null>(null);
+  const cardSrc = resolveAssetUrl(supplier.visitingCard);
+
   return (
     <div style={{ display: "flex", gap: 32, flexWrap: "wrap", alignItems: "flex-start" }}>
       
@@ -102,17 +106,13 @@ export function ContactTab({ supplier }: { supplier: Supplier }) {
       <div style={{ flex: "0 0 320px", display: "flex", flexDirection: "column", gap: 16 }}>
         <div style={{ background: "#fff", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: 24, boxShadow: "0 2px 8px rgba(0,0,0,0.02)" }}>
           <h3 style={{ fontFamily: F.display, fontSize: 18, color: T.luxuryBrown, margin: "0 0 16px 0" }}>Visiting Card</h3>
-          {supplier.visitingCard ? (
-            <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden", position: "relative", cursor: "pointer", transition: "transform 0.2s ease" }} 
+          {cardSrc ? (
+            <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden", position: "relative", cursor: "pointer", transition: "transform 0.2s ease" }}
                  onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.02)")}
                  onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
-                 onClick={() => {
-                   const el = document.createElement("a");
-                   el.href = supplier.visitingCard!;
-                   el.target = "_blank";
-                   el.click();
-                 }} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); window.open(supplier.visitingCard!, "_blank"); } }}>
-              <img src={supplier.visitingCard} alt="Visiting Card" style={{ width: "100%", height: 200, objectFit: "cover" }} />
+                 onClick={() => setZoomImage({ url: cardSrc, label: `Visiting card — ${supplier.name}` })}
+                 role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setZoomImage({ url: cardSrc, label: `Visiting card — ${supplier.name}` }); } }}>
+              <img src={cardSrc} alt="Visiting Card" style={{ width: "100%", height: 200, objectFit: "cover" }} />
               <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%)", color: "#fff", fontFamily: F.ui, fontSize: 13, padding: "24px 16px 12px", textAlign: "center", fontWeight: 500 }}>
                 Click to Expand
               </div>
@@ -125,6 +125,7 @@ export function ContactTab({ supplier }: { supplier: Supplier }) {
         </div>
       </div>
 
+      <ImageZoomModal image={zoomImage} onClose={() => setZoomImage(null)} />
     </div>
   );
 }

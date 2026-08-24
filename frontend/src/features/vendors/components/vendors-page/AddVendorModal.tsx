@@ -6,16 +6,17 @@ import { Vendor } from "./types";
 import { PAYMENT_TERMS, STATES } from "./data";
 import { Button, Field, Input, Textarea, Select, SelectItem, CheckboxField } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
+import { VisitingCardUploadField } from "../../../../shared/ui/VisitingCardUploadField";
 
 export function AddVendorModal({ onSave, onCancel }: { onSave: (v: Vendor) => void; onCancel: () => void }) {
   const [form, setForm] = useState({
     name: "", contactName: "", phone: "", whatsapp: "",
     city: "", state: "Andhra Pradesh", address: "",
     gstCode: "", types: ["Warp"], terms: "30 days",
-    bankName: "", accountNo: "", ifscCode: "", notes: "", visitingCard: "",
+    bankName: "", accountNo: "", ifscCode: "", notes: "",
     rating: 3,
   });
-  const [cardPreview, setCardPreview] = useState<string | null>(null);
+  const [cardUrl, setCardUrl] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const set = (k: string, v: string) => setForm(p => ({ ...p, [k]: v }));
@@ -41,7 +42,7 @@ export function AddVendorModal({ onSave, onCancel }: { onSave: (v: Vendor) => vo
       whatsapp: form.whatsapp, city: form.city, state: form.state,
       address: form.address, gstCode: form.gstCode, type: form.types.join(" / "),
       terms: form.terms, bankName: form.bankName, accountNo: form.accountNo, ifscCode: form.ifscCode,
-      notes: form.notes, visitingCard: cardPreview || undefined,
+      notes: form.notes, visitingCard: cardUrl || undefined,
       status: "active", totalOrders: 0, totalSpend: "0",
       outstanding: "0", lastOrder: "—", rating: form.rating,
     });
@@ -146,23 +147,7 @@ export function AddVendorModal({ onSave, onCancel }: { onSave: (v: Vendor) => vo
                 <Input value={form.gstCode} onChange={e => set("gstCode", e.target.value)} placeholder="15-digit GSTIN" />
               </Field>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
-              <Field label="Visiting Card Photo" id="visiting-card-photo">
-                <Input type="file" accept="image/*" onChange={e => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    const reader = new FileReader();
-                    reader.onload = ev => setCardPreview(ev.target?.result as string);
-                    reader.readAsDataURL(file);
-                  }
-                }} />
-              </Field>
-            </div>
-            {cardPreview && (
-              <div style={{ borderRadius: 10, overflow: "hidden", border: `1px solid rgba(110,15,45,0.12)`, maxHeight: 120 }}>
-                <img src={cardPreview} alt="Visiting Card" style={{ width: "100%", height: 120, objectFit: "cover" }} />
-              </div>
-            )}
+            <VisitingCardUploadField cardUrl={cardUrl} onChange={setCardUrl} />
             <Field label="Notes" id="notes">
               <Input value={form.notes} onChange={e => set("notes", e.target.value)} placeholder="Any special instructions or supplier notes..." />
             </Field>

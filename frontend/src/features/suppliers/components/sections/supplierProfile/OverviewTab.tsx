@@ -10,7 +10,7 @@ import {
 import { Package, FileText, Wallet, IndianRupee } from "lucide-react";
 import { DateFilterBar, DateFilterState } from "../../../../../shared/ui/DateFilterBar";
 import { T, F } from "../../theme";
-import { Purchase, SareeTag, PurchaseRequest, purchaseTotals } from "../../../contexts/SupplierContext";
+import { Purchase, SareeTag, PurchaseRequest, purchaseTotals, useSuppliers, withPieceImage } from "../../../contexts/SupplierContext";
 import { formatMoney, rupees } from "@/lib/domain/money";
 import { SareeInventoryTable } from "../SareeInventoryTable";
 import { SearchInput, Select, SelectItem } from "../../../../../shared/ui/primitives";
@@ -49,6 +49,7 @@ export function OverviewTab({
   paymentStatusBreakdown: { name: string; value: number; fill: string }[];
   myRequests: PurchaseRequest[];
 }) {
+  const { updatePurchase } = useSuppliers();
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
       {/* Time-range controls drive every number and the inventory below. */}
@@ -184,7 +185,19 @@ export function OverviewTab({
             </div>
           </div>
         </div>
-        <SareeInventoryTable rows={filteredSarees} />
+        <SareeInventoryTable
+          rows={filteredSarees}
+          onUploadPhoto={(row, dataUrl) => {
+            const p = rangePurchases.find(x => x.id === row.purchaseId);
+            if (!p) return;
+            updatePurchase(p.id, { sarees: p.sarees.map(s => s.id === row.id ? { ...s, imageUrl: dataUrl } : s) });
+          }}
+          onUploadPieceImage={(row, pieceNo, dataUrl) => {
+            const p = rangePurchases.find(x => x.id === row.purchaseId);
+            if (!p) return;
+            updatePurchase(p.id, { sarees: p.sarees.map(s => s.id === row.id ? withPieceImage(s, pieceNo, dataUrl) : s) });
+          }}
+        />
       </div>
 
       {/* Purchase requests raised for this supplier */}

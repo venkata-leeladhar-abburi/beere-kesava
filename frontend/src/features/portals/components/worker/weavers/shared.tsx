@@ -15,6 +15,12 @@ export type IssueSource = "own" | "outsourced" | null;
 export interface ReceivedSareeLog {
   id: string; weaver: string; wcode: string; batch: string;
   weight: string; date: string; color: string; status: "Passed QC" | "Defective" | "Pending QC";
+  /** Photo captured at receipt (data URL or hosted URL) — shown as a thumbnail in Received History. */
+  photoUrl?: string | null;
+  /** Which loom (weaver's own, 1..N) this saree was woven on, when known. */
+  loomNumber?: number | string | null;
+  sareeType?: string | null;
+  bulkOrder?: string | null;
 }
 
 export function FieldLabel({ children }: { children: React.ReactNode }) {

@@ -74,4 +74,8 @@ export class UpdatePartyDto {
   @IsOptional()
   @IsString()
   notes?: string;
+
+  @IsOptional()
+  @IsString()
+  visitingCardUrl?: string;
 }

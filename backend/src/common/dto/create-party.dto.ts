@@ -68,4 +68,8 @@ export class CreatePartyDto {
   @IsOptional()
   @IsString()
   notes?: string;
+
+  @IsOptional()
+  @IsString()
+  visitingCardUrl?: string;
 }
