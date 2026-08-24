@@ -62,7 +62,7 @@ export function SectionCard({
 }) {
   return (
     <div id={id} style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`, boxShadow: "0 6px 32px rgba(74,6,27,0.08)", overflow: "hidden" }}>
-      <div className="p-4 sm:p-7" style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)` }}>
+      <div className="p-4 sm:p-7" style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`, borderTopLeftRadius: 19, borderTopRightRadius: 19 }}>
         <div className="flex items-start gap-3.5 sm:gap-4 w-full">
           <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
             <Icon size={24} color="#FFFDF9" />
@@ -76,7 +76,7 @@ export function SectionCard({
           </div>
         </div>
       </div>
-      <div className="p-2.5 sm:p-5 md:p-6 pb-2.5 sm:pb-4">
+      <div className="p-2.5 sm:p-5 md:p-6 pb-2.5 sm:pb-4 min-w-0 max-w-full w-full overflow-hidden">
         {children}
       </div>
     </div>

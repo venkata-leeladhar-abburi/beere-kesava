@@ -3,17 +3,18 @@ import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   ChevronLeft as ChevronLeftIcon, Layers3, MapPin, Phone, Camera, FileText, Save, ClipboardList,
-  Smartphone, Landmark, Home, CreditCard, Activity, Edit3, PackageCheck,
+  Smartphone, Landmark, Home, CreditCard, Activity, Edit3, PackageCheck, UserRound, Boxes, Trash2, X,
 } from "lucide-react";
 import { Send as PaperPlaneTilt } from "lucide-react";
 import { T, F } from "../theme";
 import { STATUS_CFG } from "../types";
 import { WEAVERS } from "../data";
-import { Avatar, SectionPill } from "../common/primitives";
+import { Avatar, SectionPill, SectionCard } from "../common/primitives";
 import { WeaverSareesSection } from "../WeaverSareesSection";
 import { useWeaverPayments } from "../../contexts/WeaverPaymentsContext";
 import { useMaterialIssue } from "@/features/materials";
 import { rupees, formatMoney } from "@/lib/domain/money";
+import { BG_IMAGE } from "@/features/portals/components/weaver-portal/WeaverBatchNotifData";
 import { useBatches } from "@/features/production";
 import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { useDesignLibrary, DispatchRecord } from "@/features/design-library";
@@ -171,12 +172,22 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 16 }} transition={{ duration: 0.25 }}
         style={{ width: "100%", background: T.silkCream, minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
 
-        <div className="px-4 md:px-7 xl:px-12" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 20, paddingBottom: 20, borderBottom: `1px solid ${T.borderDef}`, background: "#FFFFFF", position: "sticky", top: 0, zIndex: 10 }}>
-          <Button onClick={onClose} variant="ghost" size="sm" className="text-[#6E0F2D] font-bold">
-            <ChevronLeftIcon size={20} /> Back to Weavers
+        {/* Sticky Header Navigation Bar */}
+        <div className="px-3 sm:px-7 xl:px-12 py-3 sm:py-4 flex items-center justify-between border-b border-[var(--border-default)] bg-white sticky top-0 z-10 gap-2 flex-wrap">
+          <Button
+            onClick={onClose}
+            variant="secondary"
+            className="h-9 sm:h-10 px-3.5 sm:px-5 rounded-full border border-[rgba(110,15,45,0.25)] bg-[#FFFDF9] hover:bg-[#6E0F2D] text-[#6E0F2D] hover:text-white font-bold text-xs sm:text-sm gap-1.5 sm:gap-2 shadow-sm transition-all cursor-pointer"
+          >
+            <ChevronLeftIcon size={16} /> Back to Weavers
           </Button>
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, letterSpacing: "1px", textTransform: "uppercase", color: T.taupe }}>Weaver Profile</span>
+
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="hidden xs:flex items-center gap-2 h-9 sm:h-10 px-3.5 sm:px-4 rounded-full bg-[rgba(110,15,45,0.06)] border border-[rgba(110,15,45,0.18)] text-[#6E0F2D] font-bold text-xs uppercase tracking-wider">
+              <UserRound size={14} className="text-[#6E0F2D]" />
+              <span>Weaver Profile</span>
+            </div>
+
             <Button
               onClick={async () => {
                 const ok = await confirm({
@@ -187,15 +198,16 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
                 });
                 if (ok) deleteWeaver.mutate();
               }}
-              variant="tertiary" size="sm"
+              variant="secondary"
               disabled={deleteWeaver.isPending}
+              className="h-9 sm:h-10 px-3.5 sm:px-4 rounded-full border border-red-200 bg-red-50 hover:bg-red-600 text-red-700 hover:text-white font-bold text-xs gap-1.5 shadow-sm transition-all cursor-pointer"
             >
-              Delete
+              <Trash2 size={14} /> Delete Weaver
             </Button>
           </div>
         </div>
 
-        <div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 16, background: "#FFFFFF" }}>
+        <div className="hidden sm:block px-3 sm:px-7 xl:px-12 pt-3 pb-1" style={{ background: T.silkCream }}>
           <Breadcrumbs
             items={[
               { key: "people", label: "People", onClick: onClose },
@@ -205,84 +217,146 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
           />
         </div>
 
-        <div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 40, paddingBottom: 40, background: "#FFFFFF", borderBottom: `1px solid ${T.borderDef}` }}>
-          <div style={{ display: "flex", gap: 28, alignItems: "center", flexWrap: "wrap" as const }}>
-            <Avatar photo={weaver.photo} initials={weaver.initials} bg={weaver.bg} size={104} />
-            <div style={{ flex: "1 1 320px" }}>
-              <span style={{ display: "inline-block", fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: cfg.color, background: cfg.badge, borderRadius: 99, padding: "5px 14px", marginBottom: 12 }}>{cfg.label}</span>
-              <div style={{ fontFamily: F.display, fontSize: 30, color: "#1A0A0F", lineHeight: 1.2, fontWeight: 600 }}>{weaver.name}</div>
-              <div style={{ marginTop: 6 }}><EntityCode type="weaver" value={weaver.id} size="md" /></div>
-            </div>
-            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" as const }}>
-              {[
-                { icon: <MapPin size={15} color={T.royalBurgundy} />, label: "Village", value: weaver.village },
-                { icon: <Phone size={15} color={T.royalBurgundy} />, label: "Mobile", value: weaver.mobile },
-                { icon: <Activity size={15} color={T.royalBurgundy} />, label: "Looms", value: `${weaver.looms} Looms` },
-              ].map(s => (
-                <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 10, background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 16px", minWidth: 140 }}>
-                  {s.icon}
-                  <div>
-                    <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>{s.label}</div>
-                    <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>{s.value}</div>
+        {/* Luxury Hero Banner Section */}
+        <div className="px-3 sm:px-7 xl:px-12 py-3 sm:py-4">
+          <div className="relative bg-[#0D0207] rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl border border-[rgba(200,155,71,0.25)]">
+            <div style={{
+              position: "absolute", inset: 0,
+              backgroundImage: `url(${BG_IMAGE})`,
+              backgroundSize: "cover", backgroundPosition: "center",
+              opacity: 0.24, pointerEvents: "none"
+            }} />
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(74,6,27,0.92) 0%, rgba(13,2,7,0.95) 100%)", pointerEvents: "none" }} />
+
+            <div className="relative z-10 p-4 sm:p-8 flex flex-col lg:flex-row gap-5 lg:gap-7 items-start lg:items-center justify-between">
+              <div className="flex items-center gap-4 sm:gap-6 flex-wrap sm:flex-nowrap w-full lg:w-auto">
+                <div className="relative shrink-0">
+                  <Avatar photo={weaver.photo} initials={weaver.initials} bg={weaver.bg} size={76} />
+                  <div style={{ position: "absolute", inset: -3, borderRadius: "50%", border: "2px solid rgba(200,155,71,0.45)", pointerEvents: "none" }} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 mb-2 flex-wrap">
+                    <span style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.antiqueGold, letterSpacing: "1.4px", textTransform: "uppercase", background: "rgba(200,155,71,0.14)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 99, padding: "2px 10px" }}>
+                      WEAVER PROFILE
+                    </span>
+                    <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: cfg.color, background: cfg.badge, borderRadius: 99, padding: "2px 10px" }}>
+                      {cfg.label}
+                    </span>
+                  </div>
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl text-[#FFFDF9] font-bold font-serif leading-tight truncate">
+                    {weaver.name}
+                  </h1>
+                  <div className="mt-2 flex items-center gap-2 max-w-full">
+                    <EntityCode type="weaver" value={weaver.id} size="md" className="break-all !whitespace-normal max-w-full" />
                   </div>
                 </div>
-              ))}
+              </div>
+
+              {/* Luxury Metrics Stats Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full lg:w-auto">
+                {[
+                  { icon: <MapPin size={16} color={T.antiqueGold} />, label: "Village", value: weaver.village || "—" },
+                  { icon: <Phone size={16} color={T.antiqueGold} />, label: "Mobile", value: weaver.mobile || "—" },
+                  { icon: <Activity size={16} color={T.antiqueGold} />, label: "Looms", value: `${weaver.looms} Active` },
+                ].map(s => (
+                  <div key={s.label} className="flex items-center gap-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-3 sm:px-4 sm:py-3.5 min-w-[130px]">
+                    <div className="w-9 h-9 rounded-lg bg-[rgba(200,155,71,0.16)] flex items-center justify-center shrink-0">
+                      {s.icon}
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-bold text-white/50 uppercase tracking-wider">{s.label}</div>
+                      <div className="text-xs sm:text-sm font-bold text-[#FFFDF9] mt-0.5 truncate">{s.value}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
 
         {mode === "edit" && (
-          <div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 24, paddingBottom: 24, background: "#FFFFFF", borderBottom: `1px solid ${T.borderDef}` }}>
-            <SectionPill label="Edit Weaver Details" />
-            <div style={{ marginBottom: 18, display: "flex", alignItems: "center", gap: 20 }}>
-              <div style={{ width: 88, height: 88, borderRadius: "50%", border: "2px dashed rgba(110,15,45,0.25)", background: "rgba(110,15,45,0.04)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
-                <Camera size={22} color="rgba(110,15,45,0.35)" strokeWidth={1.5} />
-                <span style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(110,15,45,0.45)", marginTop: 5, fontWeight: 600 }}>Upload Photo</span>
-              </div>
-              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>JPG or PNG · Max 5MB</div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 14 }}>
-              <Field label="First Name">
-                <Input value={editForm.firstName} onChange={e => setEditForm(p => ({ ...p, firstName: e.target.value }))} placeholder="First Name" />
-              </Field>
-              <Field label="Last Name">
-                <Input value={editForm.lastName} onChange={e => setEditForm(p => ({ ...p, lastName: e.target.value }))} placeholder="Last Name" />
-              </Field>
-              <Field label="Email ID">
-                <Input value={editForm.email} onChange={e => setEditForm(p => ({ ...p, email: e.target.value }))} placeholder="Email ID" />
-              </Field>
-              <Field label="Mobile Number">
-                <Input value={editForm.phone} onChange={e => setEditForm(p => ({ ...p, phone: e.target.value }))} placeholder="Mobile Number" />
-              </Field>
-              <Field label="Village / Location">
-                <Input value={editForm.village} onChange={e => setEditForm(p => ({ ...p, village: e.target.value }))} placeholder="Village" />
-              </Field>
-              <Field label="Number of Looms">
-                <NumberInput value={editForm.looms === "" ? "" : Number(editForm.looms)} onValueChange={v => setEditForm(p => ({ ...p, looms: v === "" ? "" : String(v) }))} placeholder="Looms" />
-              </Field>
-              <Field label="Bank Account Number">
-                <Input value={editForm.accountNo} onChange={e => setEditForm(p => ({ ...p, accountNo: e.target.value }))} placeholder="Bank Account Number" />
-              </Field>
-              <Field label="IFSC Code">
-                <Input value={editForm.ifsc} onChange={e => setEditForm(p => ({ ...p, ifsc: e.target.value }))} placeholder="IFSC Code" />
-              </Field>
-              <Field label="Bank Name">
-                <Input value={editForm.bankName} onChange={e => setEditForm(p => ({ ...p, bankName: e.target.value }))} placeholder="Bank Name" />
-              </Field>
-            </div>
-            <Button
-              disabled={updateWeaver.isPending}
-              loading={updateWeaver.isPending}
-              onClick={handleSaveEdit}
-              variant="primary"
-              className="mt-4 bg-[#6E0F2D]"
+          <div className="px-3 sm:px-7 xl:px-12 py-4 sm:py-6">
+            <SectionCard
+              icon={Edit3}
+              title="Edit Weaver Profile Details"
+              subtitle={`Update personal contact, village location, and bank account information for ${weaver.name}`}
+              actions={
+                <Button
+                  onClick={() => setMode("view")}
+                  variant="secondary"
+                  size="sm"
+                  className="h-9 px-4 rounded-full border border-white/30 bg-white/15 hover:bg-white/30 !text-white font-bold text-xs gap-1.5 shadow-sm transition-all cursor-pointer"
+                >
+                  <X size={14} className="text-white" /> Cancel
+                </Button>
+              }
             >
-              <Save size={16} /> {updateWeaver.isPending ? "Saving..." : "Save changes"}
-            </Button>
+              <div className="mb-5 sm:mb-6 flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-4 sm:gap-5 p-4 sm:p-5 bg-[#FFFDF9] rounded-2xl border border-[#E8DCC4]">
+                <div className="w-20 h-20 rounded-full border-2 border-dashed border-[rgba(110,15,45,0.35)] bg-[rgba(110,15,45,0.06)] flex flex-col items-center justify-center cursor-pointer shrink-0">
+                  <Camera size={20} color={T.royalBurgundy} strokeWidth={1.5} />
+                  <span className="text-[11px] font-bold text-[#6E0F2D] mt-1">Upload Photo</span>
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-[#3B2314]">Profile Photo</div>
+                  <div className="text-xs text-[#8C7A6B] mt-1">JPG or PNG format · Maximum size 5MB</div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4">
+                <Field label="First Name">
+                  <Input value={editForm.firstName} onChange={e => setEditForm(p => ({ ...p, firstName: e.target.value }))} placeholder="First Name" />
+                </Field>
+                <Field label="Last Name">
+                  <Input value={editForm.lastName} onChange={e => setEditForm(p => ({ ...p, lastName: e.target.value }))} placeholder="Last Name" />
+                </Field>
+                <Field label="Email ID">
+                  <Input value={editForm.email} onChange={e => setEditForm(p => ({ ...p, email: e.target.value }))} placeholder="Email ID" />
+                </Field>
+                <Field label="Mobile Number">
+                  <Input value={editForm.phone} onChange={e => setEditForm(p => ({ ...p, phone: e.target.value }))} placeholder="Mobile Number" />
+                </Field>
+                <Field label="Village / Location">
+                  <Input value={editForm.village} onChange={e => setEditForm(p => ({ ...p, village: e.target.value }))} placeholder="Village" />
+                </Field>
+                <Field label="Number of Looms">
+                  <NumberInput value={editForm.looms === "" ? "" : Number(editForm.looms)} onValueChange={v => setEditForm(p => ({ ...p, looms: v === "" ? "" : String(v) }))} placeholder="Looms" />
+                </Field>
+                <Field label="Bank Account Number">
+                  <Input value={editForm.accountNo} onChange={e => setEditForm(p => ({ ...p, accountNo: e.target.value }))} placeholder="Bank Account Number" />
+                </Field>
+                <Field label="IFSC Code">
+                  <Input value={editForm.ifsc} onChange={e => setEditForm(p => ({ ...p, ifsc: e.target.value }))} placeholder="IFSC Code" />
+                </Field>
+                <Field label="Bank Name" className="md:col-span-2">
+                  <Input value={editForm.bankName} onChange={e => setEditForm(p => ({ ...p, bankName: e.target.value }))} placeholder="Bank Name" />
+                </Field>
+              </div>
+
+              <div className="mt-6 flex flex-col-reverse sm:flex-row gap-3 justify-end items-stretch sm:items-center">
+                <Button
+                  onClick={() => setMode("view")}
+                  variant="secondary"
+                  size="md"
+                  className="h-11 px-6 rounded-xl border border-[#D0C4B4] bg-[#FFFDF9] hover:bg-[#F2EAE0] !text-[#3B2314] font-bold text-sm gap-1.5 shadow-sm transition-all cursor-pointer w-full sm:w-auto"
+                >
+                  <X size={16} className="text-[#3B2314]" /> Cancel
+                </Button>
+                <Button
+                  disabled={updateWeaver.isPending}
+                  loading={updateWeaver.isPending}
+                  onClick={handleSaveEdit}
+                  variant="primary"
+                  size="md"
+                  className="h-11 px-8 rounded-xl bg-[#6E0F2D] hover:bg-[#520920] text-white font-bold text-sm shadow-sm gap-2 transition-all cursor-pointer w-full sm:w-auto"
+                >
+                  <Save size={16} /> {updateWeaver.isPending ? "Saving..." : "Save Changes"}
+                </Button>
+              </div>
+            </SectionCard>
           </div>
         )}
 
-        <div className="px-4 md:px-7 xl:px-12" style={{ borderBottom: `1px solid ${T.borderDef}`, display: "flex", gap: 24, background: "#FFFFFF", overflowX: "auto" }}>
+        <div className="px-3 sm:px-7 xl:px-12 border-b border-[var(--border-default)] flex gap-4 sm:gap-6 bg-white overflow-x-auto scrollbar-none">
           {[
             { key: "overview", label: "Overview", icon: <ClipboardList size={16} /> },
             { key: "batches", label: "Batch History", icon: <Layers3 size={16} /> },
@@ -294,8 +368,8 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
               variant="ghost"
               className={
                 tab === key
-                  ? "rounded-none py-4 px-0 border-b-[3px] border-[#6E0F2D] text-[#6E0F2D] whitespace-nowrap transition-colors"
-                  : "rounded-none py-4 px-0 border-b-[3px] border-transparent text-[var(--text-tertiary)] whitespace-nowrap transition-colors"
+                  ? "rounded-none py-3.5 px-0 border-b-[3px] border-[#6E0F2D] text-[#6E0F2D] whitespace-nowrap transition-colors font-bold text-xs sm:text-sm"
+                  : "rounded-none py-3.5 px-0 border-b-[3px] border-transparent text-[var(--text-tertiary)] whitespace-nowrap transition-colors text-xs sm:text-sm"
               }>
               {icon}
               {label}
@@ -303,117 +377,140 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
           ))}
         </div>
 
-        <div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 40, paddingBottom: 40, flex: 1 }}>
+        <div className="px-3 sm:px-7 xl:px-12 py-6 sm:py-8 flex-1">
           {tab === "overview" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 36 }}>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(420px, 1fr))", gap: 32, alignItems: "start" }}>
-              <div>
-                <SectionPill label="Personal Details" />
-                <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
+            <div className="flex flex-col gap-6 sm:gap-8">
+              {/* 1. Personal & Financial Details SectionCard */}
+              <SectionCard
+                icon={UserRound}
+                title="Personal & Bank Details"
+                subtitle={`Contact information, location, and bank account details for ${weaver.name}`}
+              >
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
                   {[
-                    { icon: <Smartphone size={16} color={T.royalBurgundy} style={{ flexShrink: 0 }} />, label: "Mobile Number", value: weaver.mobile },
-                    { icon: <Landmark size={16} color={T.royalBurgundy} style={{ flexShrink: 0 }} />, label: "Bank Account", value: "State Bank of India — ×××× 8990" },
-                    { icon: <CreditCard size={16} color={T.royalBurgundy} style={{ flexShrink: 0 }} />, label: "IFSC Code", value: "SBIN0001234" },
-                    { icon: <Home size={16} color={T.royalBurgundy} style={{ flexShrink: 0 }} />, label: "Address", value: `14-2, Main Handloom Street, ${weaver.village}` },
-                  ].map((r, i) => (
-                    <div key={r.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 20px", borderBottom: i < 3 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 1 ? T.warmIvory : "#FFFFFF" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 12, color: T.taupe, fontFamily: F.ui, fontSize: 14 }}>
+                    { icon: <Smartphone size={18} color={T.royalBurgundy} />, label: "Mobile Number", value: weaver.mobile || "—" },
+                    { icon: <MapPin size={18} color={T.royalBurgundy} />, label: "Village / Location", value: weaver.village || "—" },
+                    { icon: <Home size={18} color={T.royalBurgundy} />, label: "Address", value: `14-2, Main Handloom Street, ${weaver.village}` },
+                    { icon: <Activity size={18} color={T.royalBurgundy} />, label: "Number of Looms", value: `${weaver.looms} Active Looms` },
+                    { icon: <Landmark size={18} color={T.royalBurgundy} />, label: "Bank Account", value: "State Bank of India — ×××× 8990" },
+                    { icon: <CreditCard size={18} color={T.royalBurgundy} />, label: "IFSC Code", value: "SBIN0001234" },
+                  ].map(r => (
+                    <div key={r.label} style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: "14px 16px", display: "flex", alignItems: "center", gap: 12 }}>
+                      <div style={{ width: 38, height: 38, borderRadius: 10, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                         {r.icon}
-                        <span>{r.label}</span>
                       </div>
-                      <div style={{ fontFamily: weaver.id === "b5f9178c-b1b9-4871-a7c3-0d68a462d57a" && r.label === "IFSC Code" ? "var(--font-mono)" : F.ui, fontSize: 14, color: T.luxuryBrown, fontWeight: 600 }}>{r.value}</div>
+                      <div className="min-w-0 flex-1">
+                        <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px" }}>{r.label}</div>
+                        <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown, marginTop: 2 }} className="truncate">{r.value}</div>
+                      </div>
                     </div>
                   ))}
                 </div>
-              </div>
+              </SectionCard>
 
-              {/* Materials History */}
-              <div>
-                <SectionPill label="Materials History" />
-                {materialRecords.length > 0 ? (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10, maxHeight: 220, overflowY: "auto", background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: "16px 20px" }}>
-                    {materialRecords.map((r, i) => (
-                      <div key={r.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", paddingBottom: i < materialRecords.length - 1 ? 12 : 0, borderBottom: i < materialRecords.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none" }}>
-                        <div>
-                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", borderRadius: 6, padding: "2px 8px", fontWeight: 700 }}>{r.id}</span>
-                            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{new Date(r.issuedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>
+              {/* 2. Materials & Payments History Grid (Above Sarees Inventory) */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-7 items-start">
+                {/* Materials History */}
+                <SectionCard
+                  icon={PackageCheck}
+                  title="Materials History"
+                  subtitle="Raw material yarn & GRN allocations issued"
+                >
+                  {materialRecords.length > 0 ? (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10, maxHeight: 280, overflowY: "auto" }}>
+                      {materialRecords.map((r, i) => (
+                        <div key={r.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "12px 16px", background: i % 2 === 1 ? T.warmIvory : "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}` }}>
+                          <div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                              <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.royalBurgundy, background: "rgba(110,15,45,0.07)", borderRadius: 6, padding: "2px 8px", fontWeight: 700 }}>{r.id}</span>
+                              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{new Date(r.issuedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>
+                            </div>
+                            <div style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 8 }}>
+                              {r.materials.map((m, idx: number) => (
+                                <div key={`${m.materialType}-${m.warpSubtype ?? m.jariType ?? ""}-${idx}`} style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>
+                                  • {m.materialType}: <b>{m.quantity} {m.unit}</b> {m.warpSubtype || m.jariType || ""}
+                                </div>
+                              ))}
+                            </div>
                           </div>
-                          <div style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 8 }}>
-                            {r.materials.map((m, idx: number) => (
-                              // Material line items carry no unique id — materialType + subtype +
-                              // index distinguishes rows within this record.
-                              // eslint-disable-next-line react/no-array-index-key
-                              <div key={`${m.materialType}-${m.warpSubtype ?? m.jariType ?? ""}-${idx}`} style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>
-                                • {m.materialType}: <b>{m.quantity} {m.unit}</b> {m.warpSubtype || m.jariType || ""}
-                              </div>
-                            ))}
+                          <div style={{ textAlign: "right" }}>
+                            <span style={{ fontFamily: F.ui, fontSize: 12, color: r.signatureCaptured ? T.green : "#8B6018", background: r.signatureCaptured ? "rgba(30,102,64,0.08)" : "rgba(200,155,71,0.08)", borderRadius: 6, padding: "3px 8px", fontWeight: 700 }}>
+                              {r.signatureCaptured ? "✓ Signed" : "Pending"}
+                            </span>
+                            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 6 }}>By {r.issuedBy}</div>
                           </div>
                         </div>
-                        <div style={{ textAlign: "right" }}>
-                          <span style={{ fontFamily: F.ui, fontSize: 12, color: r.signatureCaptured ? T.green : "#8B6018", background: r.signatureCaptured ? "rgba(30,102,64,0.08)" : "rgba(200,155,71,0.08)", borderRadius: 6, padding: "3px 8px", fontWeight: 700 }}>
-                            {r.signatureCaptured ? "✓ Signed" : "Pending"}
-                          </span>
-                          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 6 }}>By {r.issuedBy}</div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ background: T.warmIvory, borderRadius: 14, padding: 24, textAlign: "center", color: T.taupe, fontFamily: F.ui, fontSize: 14, fontStyle: "italic", border: `1px solid ${T.borderDef}` }}>
+                      No materials issued to this weaver yet.
+                    </div>
+                  )}
+                </SectionCard>
+
+                {/* Payments History */}
+                <SectionCard
+                  icon={CreditCard}
+                  title="Payments History"
+                  subtitle="Financial transactions & UTR receipts"
+                >
+                  {weaverPayments.length > 0 ? (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10, maxHeight: 280, overflowY: "auto" }}>
+                      {weaverPayments.map((p, i) => (
+                        <div key={p.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", background: i % 2 === 1 ? T.warmIvory : "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}` }}>
+                          <div>
+                            <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{p.firmName}</div>
+                            <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 3 }}>UTR: {p.utrNumber}</div>
+                          </div>
+                          <div style={{ textAlign: "right" }}>
+                            <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: T.green }}>{formatMoney(rupees(p.amountPaid))}</div>
+                            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>{p.paymentDate}</div>
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div style={{ background: T.warmIvory, borderRadius: 16, padding: 20, textAlign: "center", color: T.taupe, fontFamily: F.ui, fontSize: 14, fontStyle: "italic", border: `1px solid ${T.borderDef}` }}>
-                    No materials issued to this weaver yet.
-                  </div>
-                )}
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ background: T.warmIvory, borderRadius: 14, padding: 24, textAlign: "center", color: T.taupe, fontFamily: F.ui, fontSize: 14, fontStyle: "italic", border: `1px solid ${T.borderDef}` }}>
+                      No payments history found.
+                    </div>
+                  )}
+                </SectionCard>
               </div>
 
-              {/* Payments History */}
-              <div>
-                <SectionPill label="Payments History" />
-                {weaverPayments.length > 0 ? (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10, maxHeight: 220, overflowY: "auto", background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: "16px 20px" }}>
-                    {weaverPayments.map((p, i) => (
-                      <div key={p.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: i < weaverPayments.length - 1 ? 12 : 0, borderBottom: i < weaverPayments.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none" }}>
-                        <div>
-                          <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{p.firmName}</div>
-                          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 3 }}>UTR: {p.utrNumber}</div>
-                        </div>
-                        <div style={{ textAlign: "right" }}>
-                          <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: T.green }}>{formatMoney(rupees(p.amountPaid))}</div>
-                          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>{p.paymentDate}</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div style={{ background: T.warmIvory, borderRadius: 16, padding: 20, textAlign: "center", color: T.taupe, fontFamily: F.ui, fontSize: 14, fontStyle: "italic", border: `1px solid ${T.borderDef}` }}>
-                    No payments history found.
-                  </div>
-                )}
-              </div>
-              </div>
-
-              {/* Sarees — Assigned / Produced / QC / Finishing / Sold / Outstanding */}
-              <div>
-                <SectionPill label="Sarees" />
+              {/* 3. Sarees Inventory & Production History SectionCard */}
+              <SectionCard
+                icon={Boxes}
+                title="Sarees Inventory & Production History"
+                subtitle={`Live saree inventory, loom dispatches, QC status, and sales history for ${weaver.name}`}
+              >
                 <WeaverSareesSection weaverId={weaver.id} weaverName={weaver.name} />
-              </div>
+              </SectionCard>
             </div>
           )}
 
           {tab === "batches" && (
-            <BatchesTab sortedAllWeaverBatches={sortedAllWeaverBatches} dispatches={dispatches} weaver={weaver} batchDateFilter={batchDateFilter} setBatchDateFilter={setBatchDateFilter} setViewDispatches={setViewDispatches} onNavigate={onNavigate} />
+            <SectionCard icon={Layers3} title="Batch History" subtitle={`Production batches assigned to ${weaver.name}`}>
+              <BatchesTab sortedAllWeaverBatches={sortedAllWeaverBatches} dispatches={dispatches} weaver={weaver} batchDateFilter={batchDateFilter} setBatchDateFilter={setBatchDateFilter} setViewDispatches={setViewDispatches} onNavigate={onNavigate} />
+            </SectionCard>
           )}
 
           {tab === "dispatches" && (
-            <DispatchesTab dispatchGroups={dispatchGroups} dispatchDateFilter={dispatchDateFilter} setDispatchDateFilter={setDispatchDateFilter} setZoomImage={setZoomImage} />
+            <SectionCard icon={PaperPlaneTilt} title="Design Dispatches" subtitle={`Design cards and pattern dispatches for ${weaver.name}`}>
+              <DispatchesTab dispatchGroups={dispatchGroups} dispatchDateFilter={dispatchDateFilter} setDispatchDateFilter={setDispatchDateFilter} setZoomImage={setZoomImage} />
+            </SectionCard>
           )}
 
           {tab === "payments" && (
-            <PaymentsTab weaver={weaver} weaverPayments={weaverPayments} filteredWeaverPayments={filteredWeaverPayments} paymentDateFilter={paymentDateFilter} setPaymentDateFilter={setPaymentDateFilter} />
+            <SectionCard icon={FileText} title="Payments Ledger" subtitle={`Financial payout records and transaction statement for ${weaver.name}`}>
+              <PaymentsTab weaver={weaver} weaverPayments={weaverPayments} filteredWeaverPayments={filteredWeaverPayments} paymentDateFilter={paymentDateFilter} setPaymentDateFilter={setPaymentDateFilter} />
+            </SectionCard>
           )}
 
           {tab === "materials" && (
-            <MaterialsTab materialRecords={materialRecords} materialByBatch={materialByBatch} />
+            <SectionCard icon={PackageCheck} title="Raw Materials Received" subtitle={`Yarn issue records and GRN allocations for ${weaver.name}`}>
+              <MaterialsTab materialRecords={materialRecords} materialByBatch={materialByBatch} />
+            </SectionCard>
           )}
         </div>
 

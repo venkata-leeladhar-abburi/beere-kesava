@@ -4,8 +4,10 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ArrowLeft, MapPin, Package, Send, Trash2, Wallet } from "lucide-react";
+import { ArrowLeft, MapPin, Package, Send, Trash2, Wallet, ChevronLeft, UserRound, Boxes, ShoppingBag, CreditCard, UserCheck, Edit3 } from "lucide-react";
 import { toast } from "sonner";
+import { BG_IMAGE } from "@/features/portals/components/weaver-portal/WeaverBatchNotifData";
+import { SectionCard } from "@/features/weavers/components/common/primitives";
 import { SupplierPayNowModal } from "@/features/payments";
 import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../../shared/ui/DateFilterBar";
 import { T, F } from "../../theme";
@@ -103,14 +105,13 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
   const spendByMonth = useMemo(() => {
     const buckets = new Map<string, number>();
     stats.purchases.forEach(p => {
-      const month = (p.date || "").split(" ").slice(1).join(" ") || "—"; // "01 Jun 2026" → "Jun 2026"
+      const month = (p.date || "").split(" ").slice(1).join(" ") || "—";
       buckets.set(month, (buckets.get(month) || 0) + parseINR(p.billAmount));
     });
     return Array.from(buckets, ([month, spend]) => ({ month, spend })).reverse();
   }, [stats.purchases]);
 
-  // Billed amount grouped by payment status — the number that matters most when
-  // deciding which supplier needs to be paid next.
+  // Billed amount grouped by payment status.
   const paymentStatusBreakdown = useMemo(() => {
     const colors: Record<string, string> = { Paid: T.green, Pending: T.antiqueGold, Partial: T.crimson };
     const buckets = new Map<string, number>();
@@ -152,8 +153,8 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
   const card: React.CSSProperties = { background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, overflow: "hidden" };
 
   return (
-    <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40, paddingBottom: 40, background: T.silkCream, minHeight: "100dvh" }}>
-      <div style={{ marginBottom: 16 }}>
+    <div className="px-3 sm:px-7 xl:px-14 py-4 sm:py-8">
+      <div className="mb-3 sm:mb-4">
         <Breadcrumbs
           items={[
             { key: "people", label: "People", onClick: onBack },
@@ -162,34 +163,21 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
           ]}
         />
       </div>
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <Button variant="tertiary" size="md" iconLeft={ArrowLeft} onClick={onBack}>
-          Back to Suppliers
-        </Button>
-        <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto justify-start sm:justify-end">
+
+      {/* Header row with Back button and Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6 bg-white p-3 sm:px-5 sm:py-3.5 rounded-2xl border border-[var(--border-default)] shadow-sm">
+        <div className="flex items-center justify-between gap-2 w-full sm:w-auto">
           <Button
-            variant="primary"
-            size="md"
-            iconLeft={Wallet}
-            disabled={stats.outstanding <= 0}
-            onClick={() => setPayModalOpen(true)}
-            className="border-none shadow-[0_4px_16px_rgba(110,15,45,0.3)] bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D] disabled:opacity-50"
+            onClick={onBack}
+            variant="secondary"
+            className="h-9 sm:h-10 px-3.5 sm:px-5 rounded-full border border-[rgba(110,15,45,0.25)] bg-[#FFFDF9] hover:bg-[#6E0F2D] text-[#6E0F2D] hover:text-white font-bold text-xs sm:text-sm gap-1.5 sm:gap-2 shadow-sm transition-all cursor-pointer whitespace-nowrap"
           >
-            Pay Supplier
+            <ChevronLeft size={16} /> Back to Suppliers
           </Button>
+
           <Button
-            variant="primary"
-            size="md"
-            iconLeft={Send}
-            onClick={() => onRaiseRequest(supplier.id)}
-            className="border-none shadow-[0_4px_16px_rgba(200,155,71,0.3)] bg-[linear-gradient(135deg,#C89B47,#E7C983)] text-[#2C0913] hover:bg-[linear-gradient(135deg,#C89B47,#E7C983)]"
-          >
-            Raise Purchase Request
-          </Button>
-          <StatusPill status={supplier.status} />
-          <EntityCode type="supplier" value={supplier.code || supplier.id} />
-          <Button
-            variant="tertiary" size="md" iconLeft={Trash2}
+            variant="secondary"
+            className="sm:hidden h-9 px-3 rounded-full border border-red-200 bg-red-50 hover:bg-red-600 text-red-700 hover:text-white font-bold text-xs gap-1.5 shadow-sm transition-all cursor-pointer whitespace-nowrap shrink-0"
             onClick={async () => {
               const ok = await confirm({
                 title: `Delete supplier "${supplier.name}"?`,
@@ -200,38 +188,131 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
               if (ok) deleteSupplier(supplier.id).then(onBack);
             }}
           >
-            Delete
+            <Trash2 size={14} /> Delete
+          </Button>
+        </div>
+
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap justify-start sm:justify-end w-full sm:w-auto pt-2.5 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+          <Button
+            variant="primary"
+            size="md"
+            iconLeft={Wallet}
+            disabled={stats.outstanding <= 0}
+            onClick={() => setPayModalOpen(true)}
+            className="h-9 sm:h-10 px-4 rounded-full border-none shadow-[0_4px_16px_rgba(110,15,45,0.3)] bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#580C24] font-bold text-xs sm:text-sm cursor-pointer disabled:opacity-50"
+          >
+            Pay Supplier
+          </Button>
+
+          <Button
+            variant="primary"
+            size="md"
+            iconLeft={Send}
+            onClick={() => onRaiseRequest(supplier.id)}
+            className="h-9 sm:h-10 px-4 rounded-full border-none shadow-[0_4px_16px_rgba(200,155,71,0.3)] bg-[linear-gradient(135deg,#C89B47,#E7C983)] text-[#2C0913] hover:brightness-105 font-bold text-xs sm:text-sm cursor-pointer"
+          >
+            Raise Purchase Request
+          </Button>
+
+          <div className="hidden xs:flex items-center gap-2 h-9 sm:h-10 px-3.5 sm:px-4 rounded-full bg-[rgba(110,15,45,0.06)] border border-[rgba(110,15,45,0.18)] text-[#6E0F2D] font-bold text-xs uppercase tracking-wider whitespace-nowrap">
+            <UserRound size={14} className="text-[#6E0F2D]" />
+            <span>Supplier Profile</span>
+          </div>
+
+          <span className={`h-9 sm:h-10 px-3.5 sm:px-4 rounded-full flex items-center justify-center font-bold text-xs uppercase tracking-wider whitespace-nowrap shrink-0 ${supplier.status === "active" ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
+            {supplier.status}
+          </span>
+
+          <EntityCode type="supplier" value={supplier.code || supplier.id} size="md" className="h-9 sm:h-10 px-3.5 sm:px-4 rounded-full bg-[#FFFDF9] border border-[#E8DCC4] text-[#3B2314] font-mono font-bold text-xs flex items-center whitespace-nowrap shrink-0" />
+
+          <Button
+            variant="secondary"
+            className="hidden sm:flex h-9 sm:h-10 px-3.5 sm:px-4 rounded-full border border-red-200 bg-red-50 hover:bg-red-600 text-red-700 hover:text-white font-bold text-xs gap-1.5 shadow-sm transition-all cursor-pointer whitespace-nowrap shrink-0"
+            onClick={async () => {
+              const ok = await confirm({
+                title: `Delete supplier "${supplier.name}"?`,
+                description: "This can't be undone. Suppliers with existing purchases or payments can't be deleted — deactivate them instead.",
+                confirmLabel: "Delete Supplier",
+                tone: "danger",
+              });
+              if (ok) deleteSupplier(supplier.id).then(onBack);
+            }}
+          >
+            <Trash2 size={14} /> Delete Supplier
           </Button>
         </div>
       </div>
 
-      <FadeUp>
-        <div style={{ background: `linear-gradient(135deg,${T.darkBurgundy},#1A040B)`, borderRadius: 20, border: "1.5px solid rgba(200,155,71,0.25)", color: "#FFF", marginBottom: 8, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 20 }} className="p-5 sm:p-8">
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <div style={{ width: 56, height: 56, borderRadius: "50%", background: `linear-gradient(135deg,${T.antiqueGold},${T.goldLight})`, color: T.darkBurgundy, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 18, fontWeight: 800, flexShrink: 0, boxShadow: "0 6px 20px rgba(200,155,71,0.35)" }}>{supplier.initials}</div>
-            <div>
-              <h2 style={{ fontFamily: F.display, fontSize: 26, fontWeight: 700, margin: "0 0 6px" }}>{supplier.name}</h2>
-              <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-                <span style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.65)", display: "flex", alignItems: "center", gap: 6 }}><MapPin size={13} color={T.antiqueGold} />{supplier.city}, {supplier.state}</span>
-                <span style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.65)", display: "flex", alignItems: "center", gap: 6 }}><Package size={13} color={T.antiqueGold} />{supplier.specialty}</span>
-                <StarRating rating={supplier.rating} />
+      {/* Profile Hero Banner */}
+      <div className="mb-6">
+        <div className="relative bg-[#0D0207] rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl border border-[rgba(200,155,71,0.25)]">
+          <div style={{
+            position: "absolute", inset: 0,
+            backgroundImage: `url(${BG_IMAGE})`,
+            backgroundSize: "cover", backgroundPosition: "center",
+            opacity: 0.24, pointerEvents: "none"
+          }} />
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(74,6,27,0.92) 0%, rgba(13,2,7,0.95) 100%)", pointerEvents: "none" }} />
+
+          <div className="relative z-10 p-5 sm:p-8 flex flex-col lg:flex-row gap-5 lg:gap-7 items-start lg:items-center justify-between">
+            <div className="flex items-center gap-4 sm:gap-6 flex-wrap sm:flex-nowrap w-full lg:w-auto">
+              <div className="relative shrink-0">
+                <div style={{ width: 76, height: 76, borderRadius: "50%", background: `linear-gradient(135deg, ${T.antiqueGold}, ${T.goldLight})`, color: T.darkBurgundy, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 24, fontWeight: 700, border: "2px solid rgba(200,155,71,0.45)", boxShadow: "0 6px 20px rgba(200,155,71,0.35)" }}>
+                  {supplier.initials}
+                </div>
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                  <span style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.antiqueGold, letterSpacing: "1.4px", textTransform: "uppercase", background: "rgba(200,155,71,0.14)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 99, padding: "2px 10px" }}>
+                    SILK SAREE SUPPLIER
+                  </span>
+                </div>
+                <h1 className="text-xl sm:text-2xl lg:text-3xl text-[#FFFDF9] font-bold font-serif leading-tight truncate">
+                  {supplier.name}
+                </h1>
+                <div className="mt-2 flex items-center gap-3 flex-wrap text-xs sm:text-sm text-white/70">
+                  <span className="flex items-center gap-1.5"><MapPin size={14} color={T.antiqueGold} /> {supplier.city}, {supplier.state}</span>
+                  <span className="flex items-center gap-1.5"><Package size={14} color={T.antiqueGold} /> {supplier.specialty}</span>
+                  <StarRating rating={supplier.rating} />
+                </div>
+              </div>
+            </div>
+
+            {/* Metrics Stats Cards */}
+            <div className="flex flex-wrap sm:flex-nowrap gap-3 w-full lg:w-auto shrink-0">
+              <div className="flex items-center gap-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-3.5 sm:px-5 sm:py-4 flex-1 sm:flex-none">
+                <div className="w-10 h-10 rounded-lg bg-[rgba(200,155,71,0.16)] flex items-center justify-center shrink-0">
+                  <CreditCard size={20} color={T.antiqueGold} />
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold text-white/50 uppercase tracking-wider">Total Purchased</div>
+                  <div className="text-sm sm:text-base font-bold text-[#FFFDF9] mt-0.5 whitespace-nowrap">{formatMoney(rupees(stats.totalPurchased))}</div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-3.5 sm:px-5 sm:py-4 flex-1 sm:flex-none">
+                <div className="w-10 h-10 rounded-lg bg-emerald-500/15 flex items-center justify-center shrink-0">
+                  <Wallet size={20} className="text-emerald-400" />
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold text-white/50 uppercase tracking-wider">Total Paid</div>
+                  <div className="text-sm sm:text-base font-bold text-[#7EE2A8] mt-0.5 whitespace-nowrap">{formatMoney(rupees(stats.totalPaid))}</div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-3.5 sm:px-5 sm:py-4 flex-1 sm:flex-none">
+                <div className="w-10 h-10 rounded-lg bg-red-500/15 flex items-center justify-center shrink-0">
+                  <CreditCard size={20} className="text-red-400" />
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold text-white/50 uppercase tracking-wider">Outstanding</div>
+                  <div className="text-sm sm:text-base font-bold text-[#FFFDF9] mt-0.5 whitespace-nowrap">{formatMoney(rupees(stats.outstanding))}</div>
+                </div>
               </div>
             </div>
           </div>
-          <div className="flex flex-wrap gap-5 sm:gap-10 items-center justify-between sm:justify-end w-full sm:w-auto pt-2 sm:pt-0">
-            {[
-              { label: "TOTAL PURCHASED", value: formatMoney(rupees(stats.totalPurchased)), color: T.goldLight },
-              { label: "TOTAL PAID",      value: formatMoney(rupees(stats.totalPaid)),      color: "#7EE2A8" },
-              { label: "OUTSTANDING",     value: formatMoney(rupees(stats.outstanding)),    color: stats.outstanding > 0 ? "#F87171" : T.goldLight },
-            ].map(m => (
-              <div key={m.label} className="text-left sm:text-right">
-                <div style={{ fontFamily: F.ui, fontSize: 11, color: "rgba(255,255,255,0.55)", marginBottom: 3 }}>{m.label}</div>
-                <div className="text-lg sm:text-2xl font-bold" style={{ fontFamily: F.display, color: m.color }}>{m.value}</div>
-              </div>
-            ))}
-          </div>
         </div>
-      </FadeUp>
+      </div>
 
       {/* Tabs */}
       <div className="w-full overflow-x-auto section-nav-scroll pb-1 mb-6 border-b-2 border-[var(--border-default)]">
@@ -239,14 +320,13 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
           {tabs.map(t => (
             <Button
               key={t.key}
-              variant="link"
-              size="md"
+              variant="tertiary"
               onClick={() => setTab(t.key)}
               className={
-                "rounded-none px-4 sm:px-6 py-3 mb-[-6px] shrink-0 border-0 border-b-2 no-underline hover:no-underline text-sm sm:text-base " +
+                "rounded-none px-4 sm:px-6 py-3 mb-[-6px] shrink-0 text-sm sm:text-base cursor-pointer " +
                 (tab === t.key
-                  ? "border-b-[var(--surface-brand)] font-bold text-[color:var(--text-brand)]"
-                  : "border-b-transparent font-normal text-[color:var(--text-tertiary)]")
+                  ? "border-b-[3px] border-[#6E0F2D] text-[#6E0F2D] font-bold"
+                  : "border-b-[3px] border-transparent text-[#9C8672] font-medium")
               }
             >
               {t.label}
@@ -259,61 +339,94 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
         <motion.div key={tab} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.22 }}>
 
           {tab === "overview" && (
-            <OverviewTab
-              card={card}
-              supplierName={supplier.name}
-              invFilter={invFilter}
-              setInvFilter={setInvFilter}
-              rangePurchases={rangePurchases}
-              rangeBilled={rangeBilled}
-              rangePaid={rangePaid}
-              filteredSarees={filteredSarees}
-              sareeSearch={sareeSearch}
-              setSareeSearch={setSareeSearch}
-              typeFilter={typeFilter}
-              setTypeFilter={setTypeFilter}
-              sareeTypes={sareeTypes}
-              colorFilter={colorFilter}
-              setColorFilter={setColorFilter}
-              sareeColors={sareeColors}
-              purchaseFilter={purchaseFilter}
-              setPurchaseFilter={setPurchaseFilter}
-              purchaseOptions={purchaseOptions}
-              spendByMonth={spendByMonth}
-              paymentStatusBreakdown={paymentStatusBreakdown}
-              myRequests={myRequests}
-            />
+            <SectionCard
+              icon={Boxes}
+              title="Supplier Account Overview"
+              subtitle={`Key metrics, saree purchases, and inventory records for ${supplier.name}`}
+            >
+              <OverviewTab
+                card={card}
+                supplierName={supplier.name}
+                invFilter={invFilter}
+                setInvFilter={setInvFilter}
+                rangePurchases={rangePurchases}
+                rangeBilled={rangeBilled}
+                rangePaid={rangePaid}
+                filteredSarees={filteredSarees}
+                sareeSearch={sareeSearch}
+                setSareeSearch={setSareeSearch}
+                typeFilter={typeFilter}
+                setTypeFilter={setTypeFilter}
+                sareeTypes={sareeTypes}
+                colorFilter={colorFilter}
+                setColorFilter={setColorFilter}
+                sareeColors={sareeColors}
+                purchaseFilter={purchaseFilter}
+                setPurchaseFilter={setPurchaseFilter}
+                purchaseOptions={purchaseOptions}
+                spendByMonth={spendByMonth}
+                paymentStatusBreakdown={paymentStatusBreakdown}
+                myRequests={myRequests}
+              />
+            </SectionCard>
           )}
 
           {tab === "orders" && (
-            <OrdersTab card={card} orderFilter={orderFilter} setOrderFilter={setOrderFilter} filteredOrders={filteredOrders} />
+            <SectionCard
+              icon={ShoppingBag}
+              title="Purchase Orders & Requests History"
+              subtitle={`Full history of all saree purchase orders and requests with ${supplier.name}`}
+            >
+              <OrdersTab card={card} orderFilter={orderFilter} setOrderFilter={setOrderFilter} filteredOrders={filteredOrders} />
+            </SectionCard>
           )}
 
           {tab === "payments" && (
-            <PaymentsTab
-              card={card}
-              filteredPaidSum={filteredPaidSum}
-              totalPaid={stats.totalPaid}
-              outstanding={stats.outstanding}
-              payFilter={payFilter}
-              setPayFilter={setPayFilter}
-              filteredPayments={filteredPayments}
-            />
+            <SectionCard
+              icon={CreditCard}
+              title="Supplier Ledger & Payments"
+              subtitle={`Settlement progress, invoice-wise transactions, and payment history for ${supplier.name}`}
+            >
+              <PaymentsTab
+                card={card}
+                filteredPaidSum={filteredPaidSum}
+                totalPaid={stats.totalPaid}
+                outstanding={stats.outstanding}
+                payFilter={payFilter}
+                setPayFilter={setPayFilter}
+                filteredPayments={filteredPayments}
+              />
+            </SectionCard>
           )}
 
-          {tab === "contact" && <ContactTab supplier={supplier} />}
+          {tab === "contact" && (
+            <SectionCard
+              icon={UserCheck}
+              title="Supplier Contact & Bank Details"
+              subtitle={`Official address, GSTIN, phone, and banking records for ${supplier.name}`}
+            >
+              <ContactTab supplier={supplier} />
+            </SectionCard>
+          )}
 
           {tab === "edit" && (
-            <EditTab
-              card={card}
-              form={form}
-              setForm={setForm}
-              cardPreview={cardPreview}
-              setCardPreview={setCardPreview}
-              savedFlash={savedFlash}
-              onSave={saveProfile}
-            />
+            <SectionCard
+              icon={Edit3}
+              title="Edit Supplier Profile"
+              subtitle={`Update contact details, bank credentials, and status for ${supplier.name}`}
+            >
+              <EditTab
+                card={card}
+                form={form}
+                setForm={setForm}
+                cardPreview={cardPreview}
+                setCardPreview={setCardPreview}
+                savedFlash={savedFlash}
+                onSave={saveProfile}
+              />
+            </SectionCard>
           )}
+
         </motion.div>
       </AnimatePresence>
 

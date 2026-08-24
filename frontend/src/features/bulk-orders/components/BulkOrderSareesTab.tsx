@@ -135,35 +135,39 @@ export function BulkOrderSareesTab({
 
   return (
     <div>
-      <div style={{ background: "#FFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, padding: "16px 20px", marginBottom: 20, display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" as const }}>
-        <div style={{ flex: "1 1 240px" }}>
+      <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 bg-white p-3.5 sm:p-4 rounded-2xl border border-[var(--border-default)] shadow-sm mb-5 flex-wrap">
+        <div className="flex-1 min-w-[220px]">
           <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search saree ID, design, or weaver…" />
         </div>
-        <Select size="sm" value={statusFilter} onValueChange={setStatusFilter}>
-          {["All", "QC Passed", "Finishing complete", "Dispatched", "Damaged — Review Needed"].map(s => <SelectItem key={s} value={s}>{s === "All" ? "All Statuses" : s}</SelectItem>)}
-        </Select>
-        <Select size="sm" value={batchFilter} onValueChange={setBatchFilter}>
-          {batchOptions.map(b => <SelectItem key={b} value={b}>{b === "All" ? "All Batches" : b}</SelectItem>)}
-        </Select>
-        <Select size="sm" value={dispatchFilter} onValueChange={setDispatchFilter}>
-          {["All", "Dispatched", "Not Dispatched"].map(s => <SelectItem key={s} value={s}>{s === "All" ? "All Dispatch" : s}</SelectItem>)}
-        </Select>
-        <Select size="sm" value={weaverFilter} onValueChange={setWeaverFilter}>
-          {weaverOptions.map(w => <SelectItem key={w} value={w}>{w === "All" ? "All Weavers" : w}</SelectItem>)}
-        </Select>
-        <Select size="sm" value={sareeTypeFilter} onValueChange={setSareeTypeFilter}>
-          {sareeTypeOptions.map(t => <SelectItem key={t} value={t}>{t === "All" ? "All Saree Types" : t}</SelectItem>)}
-        </Select>
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <Select size="sm" containerClassName="w-auto shrink-0" className="w-auto font-medium" value={statusFilter} onValueChange={setStatusFilter}>
+            {["All", "QC Passed", "Finishing complete", "Dispatched", "Damaged — Review Needed"].map(s => <SelectItem key={s} value={s}>{s === "All" ? "All Statuses" : s}</SelectItem>)}
+          </Select>
+          <Select size="sm" containerClassName="w-auto shrink-0" className="w-auto font-medium" value={batchFilter} onValueChange={setBatchFilter}>
+            {batchOptions.map(b => <SelectItem key={b} value={b}>{b === "All" ? "All Batches" : b}</SelectItem>)}
+          </Select>
+          <Select size="sm" containerClassName="w-auto shrink-0" className="w-auto font-medium" value={dispatchFilter} onValueChange={setDispatchFilter}>
+            {["All", "Dispatched", "Not Dispatched"].map(s => <SelectItem key={s} value={s}>{s === "All" ? "All Dispatch" : s}</SelectItem>)}
+          </Select>
+          <Select size="sm" containerClassName="w-auto shrink-0" className="w-auto font-medium" value={weaverFilter} onValueChange={setWeaverFilter}>
+            {weaverOptions.map(w => <SelectItem key={w} value={w}>{w === "All" ? "All Weavers" : w}</SelectItem>)}
+          </Select>
+          <Select size="sm" containerClassName="w-auto shrink-0" className="w-auto font-medium" value={sareeTypeFilter} onValueChange={setSareeTypeFilter}>
+            {sareeTypeOptions.map(t => <SelectItem key={t} value={t}>{t === "All" ? "All Saree Types" : t}</SelectItem>)}
+          </Select>
+        </div>
       </div>
 
-      <div style={{ background: "#FFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, overflow: "hidden" }}>
-        <DataTable
-          responsive
-          columns={columns}
-          data={filteredSarees}
-          getRowId={s => s.id}
-          emptyTitle="No sarees match this filter"
-        />
+      <div className="bg-white rounded-2xl border border-[var(--border-default)] overflow-x-auto shadow-sm">
+        <div className="min-w-[700px]">
+          <DataTable
+            responsive={false}
+            columns={columns}
+            data={filteredSarees}
+            getRowId={s => s.id}
+            emptyTitle="No sarees match this filter"
+          />
+        </div>
       </div>
     </div>
   );

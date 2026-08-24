@@ -47,7 +47,6 @@ export function EditProfileTab({ customer, setWholesaleTab, onSave }: {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-      <h3 style={{ fontFamily: F.display, fontSize: 18, color: T.luxuryBrown, margin: 0 }}>Edit Customer Profile</h3>
 
       <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 32 }}>
         {/* Col 1 */}

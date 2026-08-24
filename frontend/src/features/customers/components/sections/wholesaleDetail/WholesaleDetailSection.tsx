@@ -1,5 +1,5 @@
 import React from "react";
-import { MapPin } from "lucide-react";
+import { MapPin, ChevronLeft, UserRound, Boxes, ShoppingBag, CreditCard, Edit3, TrendingUp } from "lucide-react";
 import { useBulkOrders, BulkOrder } from "@/features/bulk-orders";
 import { DateFilterState } from "../../../../../shared/ui/DateFilterBar";
 import { resolveOrderMoney } from "@/features/bulk-orders";
@@ -14,6 +14,8 @@ import { EditProfileTab } from "./EditProfileTab";
 import { Button } from "../../../../../shared/ui/primitives";
 import { Breadcrumbs } from "../../../../../shared/ui/nav/Breadcrumbs";
 import { rupees, formatMoney } from "@/lib/domain/money";
+import { BG_IMAGE } from "@/features/portals/components/weaver-portal/WeaverBatchNotifData";
+import { SectionCard } from "@/features/weavers/components/common/primitives";
 
 export interface WholesaleDetailSectionProps {
   customer: WholesaleCustomer;
@@ -56,8 +58,8 @@ export function WholesaleDetailSection({
   const custActiveOrders = custOrders.filter(o => o.done < o.total);
 
   return (
-    <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 48, paddingBottom: 48 }}>
-      <div style={{ marginBottom: 16 }}>
+    <div className="px-3 sm:px-7 xl:px-14 py-4 sm:py-8" style={{ background: T.silkCream, minHeight: "100dvh" }}>
+      <div className="hidden sm:block mb-4">
         <Breadcrumbs
           items={[
             { key: "people", label: "People", onClick: onBack },
@@ -66,51 +68,98 @@ export function WholesaleDetailSection({
           ]}
         />
       </div>
+
       {/* Header row with Back button */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32 }}>
-        <Button onClick={onBack} variant="secondary" size="sm">
-          ← Back to Customers
-        </Button>
-        <div style={{ display: "flex", gap: 12 }}>
-          <span style={{ fontFamily: F.ui, fontSize: 13, background: customer.status === "clear" ? T.greenBg : T.crimsonBg, color: customer.status === "clear" ? T.greenMid : T.crimson, padding: "5px 12px", borderRadius: 6, fontWeight: 700 }}>
-            {customer.status.toUpperCase()}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6 bg-white p-3 sm:px-5 sm:py-3.5 rounded-2xl border border-[var(--border-default)] shadow-sm">
+        <div className="flex items-center justify-between gap-2 w-full sm:w-auto">
+          <Button
+            onClick={onBack}
+            variant="secondary"
+            className="h-9 sm:h-10 px-3.5 sm:px-5 rounded-full border border-[rgba(110,15,45,0.25)] bg-[#FFFDF9] hover:bg-[#6E0F2D] text-[#6E0F2D] hover:text-white font-bold text-xs sm:text-sm gap-1.5 sm:gap-2 shadow-sm transition-all cursor-pointer whitespace-nowrap"
+          >
+            <ChevronLeft size={16} /> Back to Customers
+          </Button>
+        </div>
+
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap justify-start sm:justify-end w-full sm:w-auto pt-2.5 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+          <div className="hidden xs:flex items-center gap-2 h-9 sm:h-10 px-3.5 sm:px-4 rounded-full bg-[rgba(110,15,45,0.06)] border border-[rgba(110,15,45,0.18)] text-[#6E0F2D] font-bold text-xs uppercase tracking-wider whitespace-nowrap">
+            <UserRound size={14} className="text-[#6E0F2D]" />
+            <span>Customer Profile</span>
+          </div>
+
+          <span className={`h-9 sm:h-10 px-3.5 sm:px-4 rounded-full flex items-center justify-center font-bold text-xs uppercase tracking-wider whitespace-nowrap shrink-0 ${customer.status === "clear" ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
+            {customer.status}
           </span>
-          <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, background: T.silkCream, border: `1px solid ${T.borderDef}`, padding: "5px 12px", borderRadius: 6, color: T.luxuryBrown, fontWeight: 600 }}>
+
+          <span className="h-9 sm:h-10 px-3.5 sm:px-4 rounded-full bg-[#FFFDF9] border border-[#E8DCC4] text-[#3B2314] font-mono font-bold text-xs flex items-center whitespace-nowrap shrink-0">
             {customer.displayCode || customer.id}
           </span>
         </div>
       </div>
 
       {/* Profile Header Card */}
-      <div style={{ background: `linear-gradient(135deg, ${T.darkBurgundy}, #1A040B)`, borderRadius: 20, border: "1.5px solid rgba(200,155,71,0.25)", padding: 32, color: "#FFF", marginBottom: 32, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 24 }}>
-        <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 12 }}>
-            <div style={{ width: 56, height: 56, borderRadius: "50%", background: `linear-gradient(135deg, ${T.antiqueGold}, ${T.goldLight})`, color: T.darkBurgundy, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 20, fontWeight: 700 }}>
-              {customer.code}
-            </div>
-            <div>
-              <h2 style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, margin: 0 }}>{customer.name}</h2>
-              <div style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,255,255,0.6)", marginTop: 4, display: "flex", alignItems: "center", gap: 6 }}>
-                <MapPin size={14} color={T.antiqueGold} /> {customer.city}
+      <div className="mb-6">
+        <div className="relative bg-[#0D0207] rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl border border-[rgba(200,155,71,0.25)]">
+          <div style={{
+            position: "absolute", inset: 0,
+            backgroundImage: `url(${BG_IMAGE})`,
+            backgroundSize: "cover", backgroundPosition: "center",
+            opacity: 0.24, pointerEvents: "none"
+          }} />
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(74,6,27,0.92) 0%, rgba(13,2,7,0.95) 100%)", pointerEvents: "none" }} />
+
+          <div className="relative z-10 p-5 sm:p-8 flex flex-col lg:flex-row gap-5 lg:gap-7 items-start lg:items-center justify-between">
+            <div className="flex items-center gap-4 sm:gap-6 flex-wrap sm:flex-nowrap w-full lg:w-auto">
+              <div className="relative shrink-0">
+                <div style={{ width: 76, height: 76, borderRadius: "50%", background: `linear-gradient(135deg, ${T.antiqueGold}, ${T.goldLight})`, color: T.darkBurgundy, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 24, fontWeight: 700, border: "2px solid rgba(200,155,71,0.45)" }}>
+                  {customer.code}
+                </div>
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                  <span style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.antiqueGold, letterSpacing: "1.4px", textTransform: "uppercase", background: "rgba(200,155,71,0.14)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 99, padding: "2px 10px" }}>
+                    WHOLESALE CUSTOMER
+                  </span>
+                </div>
+                <h1 className="text-xl sm:text-2xl lg:text-3xl text-[#FFFDF9] font-bold font-serif leading-tight truncate">
+                  {customer.name}
+                </h1>
+                <div className="mt-2 flex items-center gap-2 text-xs sm:text-sm text-white/70">
+                  <MapPin size={15} color={T.antiqueGold} /> {customer.city}
+                </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        <div style={{ display: "flex", gap: 32, alignItems: "center" }}>
-          <div style={{ textAlign: "right" }}>
-            <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.4)", textTransform: "uppercase" }}>Total Spend</div>
-            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.goldLight, marginTop: 4 }}>{formatMoney(rupees(Number(customer.spend) || 0))}</div>
-          </div>
-          <div style={{ textAlign: "right" }}>
-            <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.4)", textTransform: "uppercase" }}>Outstanding</div>
-            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: customer.out === "0" ? T.greenMid : T.crimson, marginTop: 4 }}>{formatMoney(rupees(Number(customer.out) || 0))}</div>
+            {/* Luxury Metrics Stats Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 w-full lg:w-auto">
+              <div className="flex items-center gap-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-3.5 sm:px-5 sm:py-4 min-w-[160px]">
+                <div className="w-10 h-10 rounded-lg bg-[rgba(200,155,71,0.16)] flex items-center justify-center shrink-0">
+                  <CreditCard size={20} color={T.antiqueGold} />
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold text-white/50 uppercase tracking-wider">Total Spend</div>
+                  <div className="text-sm sm:text-base font-bold text-[#FFFDF9] mt-0.5 truncate">{formatMoney(rupees(Number(customer.spend) || 0))}</div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-3.5 sm:px-5 sm:py-4 min-w-[160px]">
+                <div className="w-10 h-10 rounded-lg bg-[rgba(200,155,71,0.16)] flex items-center justify-center shrink-0">
+                  <TrendingUp size={20} color={T.antiqueGold} />
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold text-white/50 uppercase tracking-wider">Outstanding</div>
+                  <div className={`text-sm sm:text-base font-bold mt-0.5 truncate ${customer.out === "0" ? "text-emerald-400" : "text-rose-400"}`}>
+                    {formatMoney(rupees(Number(customer.out) || 0))}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Sub-tab strip */}
-      <div style={{ display: "flex", borderBottom: `1px solid ${T.borderDef}`, marginBottom: 32, gap: 8 }}>
+      <div className="flex border-b border-[var(--border-default)] mb-6 gap-4 sm:gap-6 bg-white px-3 sm:px-5 rounded-2xl overflow-x-auto scrollbar-none shadow-sm">
         {(["Overview", "Order History", "Payment History", "Contact Details", "Edit Profile"] as WholesaleTab[]).map(tabName => {
           const isActive = wholesaleTab === tabName;
           return (
@@ -119,19 +168,25 @@ export function WholesaleDetailSection({
               onClick={() => setWholesaleTab(tabName)}
               variant="ghost"
               size="sm"
-              className={`rounded-none ${isActive ? "font-semibold" : "font-medium"}`}
+              className={`rounded-none py-3.5 px-0 border-b-[3px] transition-colors whitespace-nowrap text-xs sm:text-sm ${
+                isActive
+                  ? "border-[#6E0F2D] text-[#6E0F2D] font-bold"
+                  : "border-transparent text-[var(--text-tertiary)] font-medium"
+              }`}
             >
-              <span style={{ borderBottom: isActive ? `3px solid ${T.royalBurgundy}` : "3px solid transparent", color: isActive ? T.royalBurgundy : T.taupe, paddingBottom: 12, marginBottom: -12 }}>
-                {tabName}
-              </span>
+              {tabName}
             </Button>
           );
         })}
       </div>
 
-      {/* Tab Content */}
-      <div style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`, padding: 32, boxShadow: "0 4px 20px rgba(0,0,0,0.02)" }}>
-        {wholesaleTab === "Overview" && (
+      {/* Tab Content inside SectionCard */}
+      {wholesaleTab === "Overview" && (
+        <SectionCard
+          icon={Boxes}
+          title="Customer Account Overview"
+          subtitle={`Key metrics, saree orders, and live production status for ${customer.name}`}
+        >
           <OverviewTab
             customer={customer}
             custOrders={custOrders}
@@ -143,9 +198,15 @@ export function WholesaleDetailSection({
             setWholesaleTab={setWholesaleTab}
             onViewBulkOrder={onViewBulkOrder}
           />
-        )}
+        </SectionCard>
+      )}
 
-        {wholesaleTab === "Order History" && (
+      {wholesaleTab === "Order History" && (
+        <SectionCard
+          icon={ShoppingBag}
+          title="Customer Orders History"
+          subtitle={`Full breakdown of all wholesale saree orders placed by ${customer.name}`}
+        >
           <OrderHistoryTab
             custOrders={custOrders}
             custOrderMoney={custOrderMoney}
@@ -153,24 +214,42 @@ export function WholesaleDetailSection({
             setWholesaleOrderDateFilter={setWholesaleOrderDateFilter}
             onViewBulkOrder={onViewBulkOrder}
           />
-        )}
+        </SectionCard>
+      )}
 
-        {wholesaleTab === "Payment History" && (
+      {wholesaleTab === "Payment History" && (
+        <SectionCard
+          icon={CreditCard}
+          title="Customer Payments & Receipts"
+          subtitle={`Financial transaction history and balance clearance records for ${customer.name}`}
+        >
           <PaymentHistoryTab
             customerId={customer.id}
             wholesalePaymentDateFilter={wholesalePaymentDateFilter}
             setWholesalePaymentDateFilter={setWholesalePaymentDateFilter}
           />
-        )}
+        </SectionCard>
+      )}
 
-        {wholesaleTab === "Contact Details" && (
+      {wholesaleTab === "Contact Details" && (
+        <SectionCard
+          icon={UserRound}
+          title="Customer Contact & Business Details"
+          subtitle={`Location, GST, phone numbers, and visiting cards for ${customer.name}`}
+        >
           <ContactDetailsTab customer={customer} onViewCard={onViewCard} />
-        )}
+        </SectionCard>
+      )}
 
-        {wholesaleTab === "Edit Profile" && (
+      {wholesaleTab === "Edit Profile" && (
+        <SectionCard
+          icon={Edit3}
+          title="Edit Customer Profile Details"
+          subtitle={`Update business name, phone, address, and payment terms for ${customer.name}`}
+        >
           <EditProfileTab customer={customer} setWholesaleTab={setWholesaleTab} onSave={onSave} />
-        )}
-      </div>
+        </SectionCard>
+      )}
     </div>
   );
 }

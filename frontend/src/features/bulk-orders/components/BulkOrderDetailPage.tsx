@@ -5,6 +5,7 @@ import {
   ArrowLeft, MapPin, Phone, Package,
   CheckCircle2, FileText, ClipboardCheck,
   Send, ArrowRight, Truck, Scale, AlertTriangle, Trash2,
+  ChevronLeft, UserRound, Boxes, Layers, CreditCard, TrendingUp,
 } from "lucide-react";
 import type { BulkOrder } from "../contexts/BulkOrderContext";
 import { useBulkOrders } from "../contexts/BulkOrderContext";
@@ -24,7 +25,9 @@ import { Button } from "../../../shared/ui/primitives";
 import { Modal } from "../../../shared/ui/overlay";
 import { Breadcrumbs } from "../../../shared/ui/nav/Breadcrumbs";
 import { rupees, formatMoney } from "@/lib/domain/money";
-import { Money } from "@/shared/ui/domain";
+import { Money, EntityCode } from "@/shared/ui/domain";
+import { BG_IMAGE } from "@/features/portals/components/weaver-portal/WeaverBatchNotifData";
+import { SectionCard } from "@/features/weavers/components/common/primitives";
 
 const T = {
   silkCream: "#F7F2EA", royalBurgundy: "#6E0F2D",
@@ -278,7 +281,6 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
 
   const inr = (n: number) => formatMoney(rupees(n));
 
-  const card: React.CSSProperties = { background: "#FFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, padding: "20px 22px" };
   const tabs = [
     { key: "overview" as const, label: "Overview" },
     { key: "sarees" as const, label: `Sarees (${linkedSarees.length})` },
@@ -287,101 +289,187 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
   ];
 
   return (
-    <div style={{ background: T.silkCream, minHeight: "100dvh", paddingBottom: 100 }}>
-      <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40 }}>
-        <div style={{ marginBottom: 16 }}>
-          <Breadcrumbs
-            items={[
-              { key: "production", label: "Production", onClick: onBack },
-              { key: "bulk-orders", label: "Bulk Orders", onClick: onBack },
-              { key: "order", label: live.ref },
-            ]}
-          />
-        </div>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28 }}>
-          <Button onClick={onBack} variant="tertiary" size="md" iconLeft={ArrowLeft}>
-            Back to Bulk Orders
+    <div className="px-3 sm:px-7 xl:px-14 py-4 sm:py-8" style={{ background: T.silkCream, minHeight: "100dvh" }}>
+      <div className="hidden sm:block mb-4">
+        <Breadcrumbs
+          items={[
+            { key: "production", label: "Production", onClick: onBack },
+            { key: "bulk-orders", label: "Bulk Orders", onClick: onBack },
+            { key: "order", label: live.ref },
+          ]}
+        />
+      </div>
+
+      {/* Header row with Back button */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6 bg-white p-3 sm:px-5 sm:py-3.5 rounded-2xl border border-[var(--border-default)] shadow-sm">
+        <div className="flex items-center justify-between gap-2 w-full sm:w-auto">
+          <Button
+            onClick={onBack}
+            variant="secondary"
+            className="h-9 sm:h-10 px-3.5 sm:px-5 rounded-full border border-[rgba(110,15,45,0.25)] bg-[#FFFDF9] hover:bg-[#6E0F2D] text-[#6E0F2D] hover:text-white font-bold text-xs sm:text-sm gap-1.5 sm:gap-2 shadow-sm transition-all cursor-pointer whitespace-nowrap"
+          >
+            <ChevronLeft size={16} /> Back to Bulk Orders
           </Button>
-          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: cfg.bg, color: cfg.color, padding: "5px 13px", borderRadius: 20 }}>{cfg.label}</span>
-            <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, background: T.silkCream, border: `1px solid ${T.borderDef}`, padding: "5px 12px", borderRadius: 6, color: T.luxuryBrown, fontWeight: 600 }}>{live.ref}</span>
-            <Button onClick={() => setDeletePrompt(true)} variant="tertiary" size="md" iconLeft={Trash2}>
-              Delete Order
-            </Button>
-          </div>
+
+          <Button
+            onClick={() => setDeletePrompt(true)}
+            variant="secondary"
+            className="sm:hidden h-9 px-3 rounded-full border border-red-200 bg-red-50 hover:bg-red-600 text-red-700 hover:text-white font-bold text-xs gap-1.5 shadow-sm transition-all cursor-pointer whitespace-nowrap shrink-0"
+          >
+            <Trash2 size={14} /> Delete
+          </Button>
         </div>
 
-        {/* Hero */}
-        <div style={{ background: `linear-gradient(135deg,${T.darkBurgundy},#1A040B)`, borderRadius: 20, border: "1.5px solid rgba(200,155,71,0.25)", padding: 32, color: "#FFF", marginBottom: 24, display: "flex", justifyContent: "space-between", flexWrap: "wrap" as const, gap: 24 }}>
-          <div style={{ minWidth: 260 }}>
-            <h2 style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, margin: "0 0 8px" }}>{live.customer}</h2>
-            <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" as const, marginBottom: 10 }}>
-              {live.address && <span style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.65)", display: "flex", alignItems: "center", gap: 6 }}><MapPin size={13} color={T.antiqueGold} />{live.address}</span>}
-              {live.phone && <span style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.65)", display: "flex", alignItems: "center", gap: 6 }}><Phone size={13} color={T.antiqueGold} />{live.phone}</span>}
-            </div>
-            <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.65)", display: "flex", alignItems: "center", gap: 6 }}>
-              <Package size={13} color={T.antiqueGold} />{live.sareeType}
-            </div>
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap justify-start sm:justify-end w-full sm:w-auto pt-2.5 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+          <div className="hidden xs:flex items-center gap-2 h-9 sm:h-10 px-3.5 sm:px-4 rounded-full bg-[rgba(110,15,45,0.06)] border border-[rgba(110,15,45,0.18)] text-[#6E0F2D] font-bold text-xs uppercase tracking-wider whitespace-nowrap">
+            <Package size={14} className="text-[#6E0F2D]" />
+            <span>Bulk Order</span>
           </div>
-          <div style={{ display: "flex", gap: 40, alignItems: "center", flexWrap: "wrap" as const }}>
-            <div>
-              <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.55)", marginBottom: 4 }}>PROGRESS</div>
-              <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.goldLight }}>{producedCount}/{live.total} <span style={{ fontSize: 16 }}>({pct}%)</span></div>
+
+          <span className="h-9 sm:h-10 px-3.5 sm:px-4 rounded-full flex items-center justify-center font-bold text-xs uppercase tracking-wider whitespace-nowrap shrink-0" style={{ background: cfg.bg, color: cfg.color }}>
+            {cfg.label}
+          </span>
+
+          <EntityCode type="order" value={live.ref} size="md" className="h-9 sm:h-10 px-3.5 sm:px-4 rounded-full bg-[#FFFDF9] border border-[#E8DCC4] text-[#3B2314] font-mono font-bold text-xs flex items-center whitespace-nowrap shrink-0" />
+
+          <Button
+            onClick={() => setDeletePrompt(true)}
+            variant="secondary"
+            className="hidden sm:flex h-9 sm:h-10 px-3.5 sm:px-4 rounded-full border border-red-200 bg-red-50 hover:bg-red-600 text-red-700 hover:text-white font-bold text-xs gap-1.5 shadow-sm transition-all cursor-pointer whitespace-nowrap shrink-0"
+          >
+            <Trash2 size={14} /> Delete Order
+          </Button>
+        </div>
+      </div>
+
+      {/* Hero Banner Card */}
+      <div className="mb-6">
+        <div className="relative bg-[#0D0207] rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl border border-[rgba(200,155,71,0.25)]">
+          <div style={{
+            position: "absolute", inset: 0,
+            backgroundImage: `url(${BG_IMAGE})`,
+            backgroundSize: "cover", backgroundPosition: "center",
+            opacity: 0.24, pointerEvents: "none"
+          }} />
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(74,6,27,0.92) 0%, rgba(13,2,7,0.95) 100%)", pointerEvents: "none" }} />
+
+          <div className="relative z-10 p-5 sm:p-8 flex flex-col xl:flex-row gap-6 items-start xl:items-center justify-between">
+            <div className="flex items-center gap-4 sm:gap-6 flex-wrap sm:flex-nowrap min-w-0 flex-1">
+              <div className="relative shrink-0">
+                <div style={{ width: 76, height: 76, borderRadius: "50%", background: `linear-gradient(135deg, ${T.antiqueGold}, ${T.goldLight})`, color: T.darkBurgundy, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 24, fontWeight: 700, border: "2px solid rgba(200,155,71,0.45)" }}>
+                  {live.customer.slice(0, 2).toUpperCase()}
+                </div>
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                  <span style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.antiqueGold, letterSpacing: "1.4px", textTransform: "uppercase", background: "rgba(200,155,71,0.14)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 99, padding: "2px 10px" }}>
+                    BULK ORDER DETAILS
+                  </span>
+                </div>
+                <h1 className="text-xl sm:text-2xl lg:text-3xl text-[#FFFDF9] font-bold font-serif leading-tight truncate">
+                  {live.customer}
+                </h1>
+                <div className="mt-2 flex flex-col gap-1 text-xs sm:text-sm text-white/70">
+                  {live.address && (
+                    <div className="flex items-start gap-1.5 line-clamp-2 max-w-2xl">
+                      <MapPin size={14} color={T.antiqueGold} className="shrink-0 mt-0.5" />
+                      <span>{live.address}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-4 flex-wrap mt-0.5">
+                    {live.phone && (
+                      <span className="flex items-center gap-1.5">
+                        <Phone size={14} color={T.antiqueGold} />
+                        {live.phone}
+                      </span>
+                    )}
+                    <span className="flex items-center gap-1.5">
+                      <Package size={14} color={T.antiqueGold} />
+                      {live.sareeType}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div>
-              <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.55)", marginBottom: 4 }}>DELIVERY DEADLINE</div>
-              <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700 }}>{live.due}</div>
-            </div>
-            <div style={{ textAlign: "right" as const }}>
-              <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.55)", marginBottom: 4 }}>OUTSTANDING</div>
-              <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: balance > 0 ? "#F87171" : T.goldLight }}>{balance > 0 ? inr(balance) : <Money value={rupees(0)} />}</div>
+
+            {/* Luxury Metrics Stats Cards Row */}
+            <div className="flex flex-wrap sm:flex-nowrap gap-3 shrink-0 w-full xl:w-auto">
+              <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/15 rounded-xl px-4 py-3 min-w-[150px] flex-1 sm:flex-none">
+                <div className="w-10 h-10 rounded-lg bg-[rgba(200,155,71,0.20)] flex items-center justify-center shrink-0">
+                  <Boxes size={20} color={T.antiqueGold} />
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold text-white/60 uppercase tracking-wider">Progress</div>
+                  <div className="text-sm sm:text-base font-bold text-[#FFFDF9] mt-0.5 whitespace-nowrap">{producedCount}/{live.total} <span className="text-white/60 text-xs font-normal">({pct}%)</span></div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/15 rounded-xl px-4 py-3 min-w-[150px] flex-1 sm:flex-none">
+                <div className="w-10 h-10 rounded-lg bg-[rgba(200,155,71,0.20)] flex items-center justify-center shrink-0">
+                  <Truck size={20} color={T.antiqueGold} />
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold text-white/60 uppercase tracking-wider">Deadline</div>
+                  <div className="text-sm sm:text-base font-bold text-[#FFFDF9] mt-0.5 whitespace-nowrap">{live.due}</div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/15 rounded-xl px-4 py-3 min-w-[150px] flex-1 sm:flex-none">
+                <div className="w-10 h-10 rounded-lg bg-[rgba(200,155,71,0.20)] flex items-center justify-center shrink-0">
+                  <CreditCard size={20} color={T.antiqueGold} />
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold text-white/60 uppercase tracking-wider">Outstanding</div>
+                  <div className={`text-sm sm:text-base font-bold mt-0.5 whitespace-nowrap ${balance > 0 ? "text-rose-400" : "text-emerald-400"}`}>
+                    {balance > 0 ? inr(balance) : <Money value={rupees(0)} />}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Tally strip */}
-        <div style={{ marginBottom: 24, background: live.tallied ? T.greenBg : "rgba(200,155,71,0.10)", border: `1px solid ${live.tallied ? "rgba(30,102,64,0.22)" : T.borderGold}`, borderRadius: 14, padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" as const }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <ClipboardCheck size={20} color={live.tallied ? T.green : "#8B6018"} />
+      {/* Weight & Material Tally inside SectionCard */}
+      <div className="mb-6">
+        <SectionCard
+          icon={Scale}
+          title="Weight & Material Tally"
+          subtitle={
+            weightTally.rate
+              ? `${weightTally.weighedCount} of ${live.total} sarees weighed so far, against the ${weightTally.rate.code} standard (${weightTally.rate.stdWeight}g/saree).`
+              : `${weightTally.weighedCount} of ${live.total} sarees weighed so far — no rate card found for "${live.sareeType}", so expected figures can't be computed.`
+          }
+          actions={
+            !live.tallied && (
+              <Button onClick={() => setTallyPrompt(true)} variant="primary" size="sm" iconLeft={CheckCircle2} className="bg-[#C89B47] hover:bg-[#E7C983] text-[#3B2314] font-bold">
+                Mark as Tallied
+              </Button>
+            )
+          }
+        >
+          {/* Tally status alert banner */}
+          <div className={`mb-5 p-3.5 sm:p-4 rounded-xl border flex items-center gap-3 ${live.tallied ? "bg-emerald-50 border-emerald-200 text-emerald-800" : "bg-amber-50 border-amber-200 text-amber-900"}`}>
+            <ClipboardCheck size={20} className={live.tallied ? "text-emerald-600" : "text-amber-700"} />
             <div>
-              <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: live.tallied ? T.green : "#8B6018" }}>
+              <div className="text-xs sm:text-sm font-bold">
                 {live.tallied ? "Sarees Tallied" : "Sarees Not Yet Tallied"}
               </div>
-              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>
+              <div className="text-xs opacity-80 mt-0.5">
                 {live.tallied
-                  ? `Verified against the physical count by ${live.talliedBy} on ${live.talliedDate}`
+                  ? `Verified against physical count by ${live.talliedBy} on ${live.talliedDate}`
                   : "Count the physical sarees for this order against the list below, then mark it tallied."}
               </div>
             </div>
           </div>
-          {!live.tallied && (
-            <Button onClick={() => setTallyPrompt(true)} variant="primary" size="md" iconLeft={CheckCircle2}>
-              Mark as Tallied
-            </Button>
-          )}
-        </div>
 
-        {/* Weight & material tally */}
-        <div style={{ marginBottom: 24, background: "#FFF", border: `1.5px solid ${T.borderDef}`, borderRadius: 16, padding: "18px 22px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-            <Scale size={18} color={T.royalBurgundy} />
-            <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>Weight & Material Tally</span>
-          </div>
-          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 16 }}>
-            {weightTally.rate
-              ? `${weightTally.weighedCount} of ${live.total} sarees weighed so far, against the ${weightTally.rate.code} standard (${weightTally.rate.stdWeight}g/saree).`
-              : `${weightTally.weighedCount} of ${live.total} sarees weighed so far — no rate card found for "${live.sareeType}", so expected figures can't be computed.`}
-          </div>
-          <div className="grid grid-cols-2 xl:grid-cols-4" style={{ gap: 14 }}>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-5">
             {[
               { label: "Total Weight", actual: weightTally.actualWeight, expected: weightTally.expectedWeight, unit: "g" },
               { label: "Warp", actual: weightTally.warpG, expected: weightTally.expectedWarpG, unit: "g" },
               { label: "Resham", actual: weightTally.reshamG, expected: weightTally.expectedReshamG, unit: "g" },
               { label: "Jari", actual: weightTally.jariReels, expected: weightTally.expectedJariReels, unit: "reels" },
             ].map(m => {
-              // Only flag a shortfall once every saree has actually been
-              // weighed — a partial tally is expected to read low and isn't a
-              // discrepancy worth calling out yet.
               const complete = weightTally.weighedCount >= live.total && live.total > 0;
               const short = complete && m.expected > 0 && m.actual < m.expected * 0.95;
               return (
@@ -402,9 +490,7 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
             })}
           </div>
 
-          <div style={{ height: 1, background: "rgba(110,15,45,0.06)", margin: "18px 0 14px" }} />
-
-          <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: 10 }}>
+          <div className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-4">
             Per-Saree Tally ({tallyItems.filter(i => i.tallied).length} / {tallyItems.length} tallied)
           </div>
           <SareeWeightTallyList
@@ -414,23 +500,37 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
             onSaveCorrection={handleSaveSareeCorrection}
             busyKey={tallyBusyKey}
           />
-        </div>
+        </SectionCard>
+      </div>
 
-        {/* Tabs */}
-        <div style={{ display: "flex", gap: 0, borderBottom: `2px solid ${T.borderDef}`, marginBottom: 28 }}>
-          {tabs.map(t => (
-            <div key={t.key} style={{ padding: "14px 22px", fontWeight: tab === t.key ? 700 : 400, color: tab === t.key ? T.royalBurgundy : T.taupe, borderRadius: 0, borderBottom: tab === t.key ? `2px solid ${T.royalBurgundy}` : "2px solid transparent", marginBottom: -2 }}>
-              <Button onClick={() => setTab(t.key)} variant="link" size="md">
-                {t.label}
-              </Button>
-            </div>
-          ))}
-        </div>
+      {/* Sub-tab strip */}
+      <div className="flex border-b border-[var(--border-default)] mb-6 gap-4 sm:gap-6 bg-white px-3 sm:px-5 rounded-2xl overflow-x-auto scrollbar-none shadow-sm">
+        {tabs.map(t => (
+          <Button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            variant="ghost"
+            size="sm"
+            className={`rounded-none py-3.5 px-0 border-b-[3px] transition-colors whitespace-nowrap text-xs sm:text-sm ${
+              tab === t.key
+                ? "border-[#6E0F2D] text-[#6E0F2D] font-bold"
+                : "border-transparent text-[var(--text-tertiary)] font-medium"
+            }`}
+          >
+            {t.label}
+          </Button>
+        ))}
+      </div>
 
-        <AnimatePresence mode="wait">
-          <motion.div key={tab} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
+      <AnimatePresence mode="wait">
+        <motion.div key={tab} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
 
-            {tab === "overview" && (
+          {tab === "overview" && (
+            <SectionCard
+              icon={Boxes}
+              title="Bulk Order Overview & Status"
+              subtitle={`Production metrics, dispatches summary, and invoice balance for ${live.ref}`}
+            >
               <BulkOrderOverviewTab
                 live={live}
                 producedCount={producedCount}
@@ -441,9 +541,15 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
                 amountPaid={amountPaid}
                 inr={inr}
               />
-            )}
+            </SectionCard>
+          )}
 
-            {tab === "sarees" && (
+          {tab === "sarees" && (
+            <SectionCard
+              icon={Layers}
+              title="Sarees Production & Dispatches"
+              subtitle={`Track every saree tied to order ${live.ref} across looms, QC, and dispatches`}
+            >
               <BulkOrderSareesTab
                 search={search}
                 setSearch={setSearch}
@@ -463,83 +569,75 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
                 filteredSarees={filteredSarees}
                 setDispatchPanel={setDispatchPanel}
               />
-            )}
+            </SectionCard>
+          )}
 
-            {tab === "payments" && (
-              <BulkOrderPaymentsTab
-                amountDue={amountDue}
-                amountPaid={amountPaid}
-                balance={balance}
-                payments={payments}
-                matchedInvoice={matchedInvoice}
-                inr={inr}
-              />
-            )}
-
-            {tab === "quotations" && (
-              <div>
-                {linkedQuotations.length === 0 ? (
-                  <div style={{ ...card, textAlign: "center" as const, padding: "48px 24px" }}>
-                    <FileText size={36} color={T.taupe} style={{ marginBottom: 12 }} />
-                    <div style={{ fontFamily: F.display, fontSize: 16, color: T.taupe }}>No quotations have been raised against this bulk order yet.</div>
-                  </div>
-                ) : (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                    {linkedQuotations.map(q => {
-                      const qCfg = QUOTE_STATUS_CFG[q.status];
-                      const qDispatch = dispatches.find(d => d.quotationRef === q.quotationNumber);
-                      return (
-                        <div key={q.id} style={card}>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14, flexWrap: "wrap" as const, gap: 10 }}>
-                            <div>
-                              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                                <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}>{q.quotationNumber}</span>
-                                <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, textTransform: "capitalize" as const, background: qCfg.bg, color: qCfg.color, padding: "3px 9px", borderRadius: 20 }}>{q.status.replace(/-/g, " ")}</span>
-                              </div>
-                              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>{q.quotationDate} · {q.sarees.length} saree{q.sarees.length === 1 ? "" : "s"} · {q.firmName || "—"}</div>
+          {tab === "quotations" && (
+            <SectionCard
+              icon={FileText}
+              title="Quotations & Cost Estimates"
+              subtitle={`Linked quotations raised against bulk order ${live.ref}`}
+            >
+              {linkedQuotations.length === 0 ? (
+                <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "40px 20px", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+                  No quotations linked to this bulk order yet.
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                  {linkedQuotations.map(q => {
+                    const qCfg = QUOTE_STATUS_CFG[q.status];
+                    const qDispatch = dispatches.find(d => d.quotationRef === q.quotationNumber);
+                    return (
+                      <div key={q.id} style={{ border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: "18px 20px", background: T.silkCream }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14, flexWrap: "wrap", gap: 10 }}>
+                          <div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                              <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color: T.royalBurgundy }}>{q.quotationNumber}</span>
+                              <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, textTransform: "capitalize", background: qCfg.bg, color: qCfg.color, padding: "3px 9px", borderRadius: 20 }}>{q.status.replace(/-/g, " ")}</span>
                             </div>
-                            <div style={{ textAlign: "right" as const }}>
-                              <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.luxuryBrown }}>{inr(q.grandTotal)}</div>
-                              {q.applyGst && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>incl. {q.gstPct}% GST</div>}
-                            </div>
+                            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 4 }}>{q.quotationDate} · {q.sarees.length} saree{q.sarees.length === 1 ? "" : "s"} · {q.firmName || "—"}</div>
                           </div>
-
-                          <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 6, marginBottom: qDispatch ? 14 : 0 }}>
-                            {q.sarees.map(s => (
-                              <span key={s.sareeId} style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "3px 8px", borderRadius: 6 }}>{s.sareeId}</span>
-                            ))}
+                          <div style={{ textAlign: "right" }}>
+                            <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.luxuryBrown }}>{inr(q.grandTotal)}</div>
+                            {q.applyGst && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>incl. {q.gstPct}% GST</div>}
                           </div>
+                        </div>
 
-                          {qDispatch ? (
-                            <div style={{ borderTop: `1px solid ${T.borderDef}`, paddingTop: 14, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" as const, gap: 10 }}>
-                              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                                <Truck size={16} color={T.greenMid} />
-                                <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>
-                                  Dispatched {qDispatch.dispatchDate} · LR <strong>{qDispatch.lrNumber || "—"}</strong> · {qDispatch.transportCompany || "—"}
-                                </span>
-                              </div>
-                              <span style={{ display: "inline-block", background: T.greenBg, color: T.greenMid, borderRadius: 8 }}>
-                                <Button onClick={() => setDispatchPanel(qDispatch)} variant="tertiary" size="sm">
-                                  View Full Dispatch Details
-                                </Button>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: qDispatch ? 14 : 0 }}>
+                          {q.sarees.map(s => (
+                            <span key={s.sareeId} style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: "rgba(110,15,45,0.06)", padding: "3px 8px", borderRadius: 6 }}>{s.sareeId}</span>
+                          ))}
+                        </div>
+
+                        {qDispatch ? (
+                          <div style={{ borderTop: `1px solid ${T.borderDef}`, paddingTop: 14, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                              <Truck size={16} color={T.greenMid} />
+                              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>
+                                Dispatched {qDispatch.dispatchDate} · LR <strong>{qDispatch.lrNumber || "—"}</strong> · {qDispatch.transportCompany || "—"}
                               </span>
                             </div>
-                          ) : (
-                            <div style={{ borderTop: `1px solid ${T.borderDef}`, paddingTop: 14, fontFamily: F.ui, fontSize: 12, color: T.taupe, display: "flex", alignItems: "center", gap: 8 }}>
-                              <Send size={13} /> Not dispatched yet — send from Inventory once the sarees are received from finishing.
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            )}
+                            <span style={{ display: "inline-block", background: T.greenBg, color: T.greenMid, borderRadius: 8 }}>
+                              <Button onClick={() => setDispatchPanel(qDispatch)} variant="tertiary" size="sm">
+                                View Full Dispatch Details
+                              </Button>
+                            </span>
+                          </div>
+                        ) : (
+                          <div style={{ borderTop: `1px solid ${T.borderDef}`, paddingTop: 14, fontFamily: F.ui, fontSize: 12, color: T.taupe, display: "flex", alignItems: "center", gap: 8 }}>
+                            <Send size={13} /> Not dispatched yet — send from Inventory once the sarees are received from finishing.
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </SectionCard>
+          )}
 
-          </motion.div>
-        </AnimatePresence>
-      </div>
+        </motion.div>
+      </AnimatePresence>
 
       <AnimatePresence>
         {dispatchPanel && <DispatchDetailPanel dispatch={dispatchPanel} onClose={() => setDispatchPanel(null)} />}

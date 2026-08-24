@@ -3,8 +3,10 @@ import { motion, AnimatePresence } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 import {
   MapPin, Phone, Building2, FileText, MessageSquare, Landmark, StickyNote,
-  AlertTriangle, Package, Trash2,
+  AlertTriangle, Package, Trash2, ChevronLeft, UserRound, Boxes, ShoppingBag, CreditCard, UserCheck, Edit3,
 } from "lucide-react";
+import { BG_IMAGE } from "@/features/portals/components/weaver-portal/WeaverBatchNotifData";
+import { SectionCard } from "../../../weavers/components/common/primitives";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { T, F } from "./theme";
 import { Vendor, VendorBill, VendorPaymentTxn } from "./types";
@@ -12,7 +14,7 @@ import { PAY_MODE_FILL } from "./data";
 import { StatusPill, StarRating } from "./SharedBits";
 import { StatusPill as DomainStatusPill, EntityCode } from "../../../../shared/ui/domain";
 import type { StatusValueOf } from "../../../../lib/domain/status";
-import { PurchaseOrderHistoryTable } from "./PurchaseOrderHistoryTable";
+import { PurchaseOrderHistoryTable, type PurchaseOrderHistoryRow } from "./PurchaseOrderHistoryTable";
 import { FadeUp } from "./FadeUp";
 import { VendorEditFormTab } from "./VendorEditFormTab";
 import { purchaseOrdersApi } from "../../../../shared/api/purchase-orders";
@@ -110,17 +112,18 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
     }));
 
     const totalBilled = bills.reduce((a, b) => a + b.amount, 0);
-    const totalPaid = rawPayments.reduce((a, p) => a + Number(p.amount), 0);
-    const outstanding = bills.reduce((a, b) => a + b.balance, 0);
+    const totalPaid = txns.reduce((a, t) => a + t.amount, 0);
+    const outstanding = Math.max(0, totalBilled - totalPaid);
 
     return { bills, txns, totalBilled, totalPaid, outstanding };
   }, [billsRes, paymentsRes]);
+
   const vendorPos = React.useMemo(
     () => (poRes?.items ?? []).filter(p => p.vendorId === vendor.id || p.vendor?.id === vendor.id),
     [poRes, vendor.id]
   );
-  const orders = React.useMemo(() => vendorPos.map(p => ({
-    id: p.poNumber || p.id,
+  const orders: PurchaseOrderHistoryRow[] = React.useMemo(() => vendorPos.map(p => ({
+    id: p.poNumber || `PO-${p.id.slice(0, 8).toUpperCase()}`,
     date: p.createdAt ? p.createdAt.split("T")[0] : "",
     materials: (p.items ?? []).map(item => ({
       type: item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari",
@@ -136,68 +139,47 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
     status: (p.status === "RECEIVED" ? "Delivered" : p.status === "APPROVED" ? "Approved" : p.status === "REJECTED" ? "Cancelled" : "Pending") as "Delivered" | "Approved" | "Cancelled" | "Pending",
     receiveStatus: undefined as string | undefined,
   })), [vendorPos]);
-  const realTotalSpend = React.useMemo(() => vendorPos.reduce((a, p) => a + Number(p.totalValue || 0), 0), [vendorPos]);
-  const lastOrderDate = React.useMemo(() => {
-    if (!vendorPos.length) return null;
-    return vendorPos.reduce((latest, p) => (!latest || p.createdAt > latest ? p.createdAt : latest), "" as string);
-  }, [vendorPos]);
 
-  const filteredBills = React.useMemo(
-    () => ledger.bills.filter(b => matchesDateFilter(b.date, payFilter)),
-    [ledger.bills, payFilter]
-  );
-  const filteredTxns = React.useMemo(
-    () => ledger.txns.filter(t => matchesDateFilter(t.date, payFilter)),
-    [ledger.txns, payFilter]
-  );
-  const paidInRange = filteredTxns.reduce((a, t) => a + t.amount, 0);
-  const overdueBills = ledger.bills.filter(b => b.status === "Overdue");
-  const modeSplit = React.useMemo(() => {
-    const m = new Map<string, number>();
-    filteredTxns.forEach(t => m.set(t.mode, (m.get(t.mode) || 0) + t.amount));
-    return [...m.entries()].map(([mode, amount]) => ({ mode, amount })).sort((a, b) => b.amount - a.amount);
-  }, [filteredTxns]);
+  const lastOrderDate = orders.length ? orders[0].date : null;
+  const overdueBills = ledger.bills.filter(b => b.status === "Overdue" || b.daysOverdue > 0);
   const moneyVisible = useMoneyVisible();
-  const inr = (n: number) => (moneyVisible ? formatMoney(rupees(n)) : "—");
+  const realTotalSpend = orders.reduce((a, o) => a + o.amount, 0);
+
+  const filteredBills = ledger.bills.filter(b => matchesDateFilter(b.date, payFilter));
+  const filteredTxns = ledger.txns.filter(t => matchesDateFilter(t.date, payFilter));
+  const paidInRange = filteredTxns.reduce((a, t) => a + t.amount, 0);
+
+  const modeSplit = React.useMemo(() => {
+    const map = new Map<string, number>();
+    for (const t of filteredTxns) {
+      map.set(t.mode, (map.get(t.mode) ?? 0) + t.amount);
+    }
+    return Array.from(map.entries()).map(([mode, amount]) => ({ mode: mode as VendorPaymentTxn["mode"], amount }));
+  }, [filteredTxns]);
+
+  const inr = (n: number) => formatMoney(rupees(n));
 
   const billColumns: ColumnDef<VendorBill>[] = [
-    {
-      id: "poInvoice", header: "PO / Invoice", accessor: b => b.id, priority: 1,
-      cell: (_v, b) => (
-        <div>
-          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{b.id}</div>
-          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 3 }}>{b.invoiceNo}</div>
-        </div>
-      ),
-    },
-    { id: "billDate", header: "Bill Date", accessor: b => b.date, priority: 3, cell: (_v, b) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{b.date}</span> },
-    {
-      id: "dueDate", header: "Due Date", accessor: b => b.dueDate,
-      cell: (_v, b) => (
-        <span style={{ fontFamily: F.ui, fontSize: 12, color: b.daysOverdue > 0 ? T.crimson : T.taupe, fontWeight: b.daysOverdue > 0 ? 700 : 400 }}>
-          {b.dueDate}
-          {b.daysOverdue > 0 && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.crimson }}>{b.daysOverdue}d overdue</div>}
-        </span>
-      ),
-    },
-    { id: "amount", header: "Invoice Amount", accessor: b => b.amount, cell: (_v, b) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: "#8B6018" }}>{inr(b.amount)}</span> },
-    { id: "paid", header: "Paid", accessor: b => b.paid, priority: 3, cell: (_v, b) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, color: T.greenMid }}>{inr(b.paid)}</span> },
-    { id: "balance", header: "Balance", accessor: b => b.balance, cell: (_v, b) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: b.balance > 0 ? T.crimson : T.taupe }}>{b.balance > 0 ? inr(b.balance) : "—"}</span> },
-    {
-      id: "status", header: "Status", accessor: b => b.status, type: "status",
-      cell: (_v, b) => <DomainStatusPill taxonomy="payment" status={BILL_STATUS_KEY[b.status]} />,
-    },
+    { id: "id", header: "Bill ID", accessor: b => b.id, priority: 1, cell: (_v, b) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.royalBurgundy, fontWeight: 700 }}>{b.id}</span> },
+    { id: "invoiceNo", header: "Ref / PO", accessor: b => b.invoiceNo, priority: 3, cell: (_v, b) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{b.invoiceNo}</span> },
+    { id: "date", header: "Bill Date", accessor: b => b.date, priority: 3, cell: (_v, b) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{b.date}</span> },
+    { id: "dueDate", header: "Due Date", accessor: b => b.dueDate, priority: 3, cell: (_v, b) => <span style={{ fontFamily: F.ui, fontSize: 12, color: b.daysOverdue > 0 ? T.crimson : T.taupe, fontWeight: b.daysOverdue > 0 ? 700 : 400 }}>{b.dueDate}{b.daysOverdue > 0 ? ` (${b.daysOverdue}d overdue)` : ""}</span> },
+    { id: "amount", header: "Bill Amount", accessor: b => b.amount, align: "end", cell: (_v, b) => <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>{inr(b.amount)}</span> },
+    { id: "paid", header: "Paid", accessor: b => b.paid, align: "end", priority: 3, cell: (_v, b) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.greenMid }}>{inr(b.paid)}</span> },
+    { id: "balance", header: "Balance Due", accessor: b => b.balance, align: "end", priority: 1, cell: (_v, b) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, color: b.balance > 0 ? T.crimson : T.taupe }}>{b.balance > 0 ? inr(b.balance) : "—"}</span> },
+    { id: "status", header: "Status", accessor: b => b.status, type: "status", cell: (_v, b) => <DomainStatusPill taxonomy="payment" status={BILL_STATUS_KEY[b.status]} /> },
   ];
 
   const txnColumns: ColumnDef<VendorPaymentTxn>[] = [
-    { id: "ref", header: "Payment Ref", accessor: p => p.id, priority: 1, cell: (_v, p) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{p.id}</span> },
-    { id: "date", header: "Date", accessor: p => p.date, cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.date}</span> },
-    { id: "billId", header: "Against PO", accessor: p => p.billId, cell: (_v, p) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.luxuryBrown }}>{p.billId}</span> },
+    { id: "id", header: "Txn ID", accessor: p => p.id, priority: 1, cell: (_v, p) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.royalBurgundy, fontWeight: 700 }}>{p.id}</span> },
+    { id: "billId", header: "Against Bill", accessor: p => p.billId, priority: 3, cell: (_v, p) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{p.billId}</span> },
+    { id: "date", header: "Date", accessor: p => p.date, priority: 3, cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.date}</span> },
     {
-      id: "mode", header: "Mode", accessor: p => p.mode,
+      id: "mode", header: "Mode", accessor: p => p.mode, priority: 3,
       cell: (_v, p) => (
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>
-          <span style={{ width: 9, height: 9, borderRadius: 3, background: PAY_MODE_FILL[p.mode] ?? T.taupe }} />{p.mode}
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 6, background: T.silkCream, border: `1px solid ${T.borderDef}`, padding: "2px 10px", borderRadius: 12, fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>
+          <span style={{ width: 7, height: 7, borderRadius: "50%", background: PAY_MODE_FILL[p.mode] ?? T.taupe }} />
+          {p.mode}
         </span>
       ),
     },
@@ -207,8 +189,8 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
   ];
 
   return (
-    <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40, paddingBottom: 40 }}>
-      <div style={{ marginBottom: 16 }}>
+    <div className="px-3 sm:px-7 xl:px-14 py-4 sm:py-8">
+      <div className="mb-3 sm:mb-4">
         <Breadcrumbs
           items={[
             { key: "people", label: "People", onClick: onBack },
@@ -217,15 +199,18 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
           ]}
         />
       </div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28 }}>
-        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} style={{ display: "inline-block" }}>
-          <Button onClick={onBack} variant="secondary" iconLeft="back" className="rounded-lg text-[#6E0F2D]">
-            Back to Vendors
+
+      {/* Header row with Back button */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6 bg-white p-3 sm:px-5 sm:py-3.5 rounded-2xl border border-[var(--border-default)] shadow-sm">
+        <div className="flex items-center justify-between gap-2 w-full sm:w-auto">
+          <Button
+            onClick={onBack}
+            variant="secondary"
+            className="h-9 sm:h-10 px-3.5 sm:px-5 rounded-full border border-[rgba(110,15,45,0.25)] bg-[#FFFDF9] hover:bg-[#6E0F2D] text-[#6E0F2D] hover:text-white font-bold text-xs sm:text-sm gap-1.5 sm:gap-2 shadow-sm transition-all cursor-pointer whitespace-nowrap"
+          >
+            <ChevronLeft size={16} /> Back to Vendors
           </Button>
-        </motion.div>
-        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          <StatusPill status={vendor.status} />
-          <EntityCode type="vendor" value={vendor.code || vendor.id} />
+
           {onDelete && (
             <Button
               onClick={async () => {
@@ -237,39 +222,106 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
                 });
                 if (ok) onDelete(vendor);
               }}
-              variant="tertiary" size="sm" iconLeft={Trash2}
+              variant="secondary"
+              className="sm:hidden h-9 px-3 rounded-full border border-red-200 bg-red-50 hover:bg-red-600 text-red-700 hover:text-white font-bold text-xs gap-1.5 shadow-sm transition-all cursor-pointer whitespace-nowrap shrink-0"
             >
-              Delete
+              <Trash2 size={14} /> Delete
+            </Button>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap justify-start sm:justify-end w-full sm:w-auto pt-2.5 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+          <div className="hidden xs:flex items-center gap-2 h-9 sm:h-10 px-3.5 sm:px-4 rounded-full bg-[rgba(110,15,45,0.06)] border border-[rgba(110,15,45,0.18)] text-[#6E0F2D] font-bold text-xs uppercase tracking-wider whitespace-nowrap">
+            <UserRound size={14} className="text-[#6E0F2D]" />
+            <span>Vendor Profile</span>
+          </div>
+
+          <span className={`h-9 sm:h-10 px-3.5 sm:px-4 rounded-full flex items-center justify-center font-bold text-xs uppercase tracking-wider whitespace-nowrap shrink-0 ${vendor.status === "active" ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
+            {vendor.status}
+          </span>
+
+          <EntityCode type="vendor" value={vendor.code || vendor.id} size="md" className="h-9 sm:h-10 px-3.5 sm:px-4 rounded-full bg-[#FFFDF9] border border-[#E8DCC4] text-[#3B2314] font-mono font-bold text-xs flex items-center whitespace-nowrap shrink-0" />
+
+          {onDelete && (
+            <Button
+              onClick={async () => {
+                const ok = await confirm({
+                  title: `Delete vendor "${vendor.name}"?`,
+                  description: "This can't be undone. Vendors with existing purchase orders, bills, or payments can't be deleted — deactivate them instead.",
+                  confirmLabel: "Delete Vendor",
+                  tone: "danger",
+                });
+                if (ok) onDelete(vendor);
+              }}
+              variant="secondary"
+              className="hidden sm:flex h-9 sm:h-10 px-3.5 sm:px-4 rounded-full border border-red-200 bg-red-50 hover:bg-red-600 text-red-700 hover:text-white font-bold text-xs gap-1.5 shadow-sm transition-all cursor-pointer whitespace-nowrap shrink-0"
+            >
+              <Trash2 size={14} /> Delete Vendor
             </Button>
           )}
         </div>
       </div>
 
-      <FadeUp>
-        <div style={{ background: `linear-gradient(135deg,${T.darkBurgundy},#1A040B)`, borderRadius: 20, border: "1.5px solid rgba(200,155,71,0.25)", padding: 32, color: "#FFF", marginBottom: 8, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 24 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-            <div style={{ width: 64, height: 64, borderRadius: "50%", background: `linear-gradient(135deg,${T.antiqueGold},${T.goldLight})`, color: T.darkBurgundy, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 20, fontWeight: 800, flexShrink: 0, boxShadow: "0 6px 20px rgba(200,155,71,0.35)" }}>{vendor.initials}</div>
-            <div>
-              <h2 style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, margin: "0 0 6px" }}>{vendor.name}</h2>
-              <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
-                <span style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.65)", display: "flex", alignItems: "center", gap: 6 }}><MapPin size={13} color={T.antiqueGold} />{vendor.city}, {vendor.state}</span>
-                <span style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.65)", display: "flex", alignItems: "center", gap: 6 }}><Package size={13} color={T.antiqueGold} />{vendor.type}</span>
-                <StarRating rating={vendor.rating} />
+      {/* Profile Hero Banner */}
+      <div className="mb-6">
+        <div className="relative bg-[#0D0207] rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl border border-[rgba(200,155,71,0.25)]">
+          <div style={{
+            position: "absolute", inset: 0,
+            backgroundImage: `url(${BG_IMAGE})`,
+            backgroundSize: "cover", backgroundPosition: "center",
+            opacity: 0.24, pointerEvents: "none"
+          }} />
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(74,6,27,0.92) 0%, rgba(13,2,7,0.95) 100%)", pointerEvents: "none" }} />
+
+          <div className="relative z-10 p-5 sm:p-8 flex flex-col lg:flex-row gap-5 lg:gap-7 items-start lg:items-center justify-between">
+            <div className="flex items-center gap-4 sm:gap-6 flex-wrap sm:flex-nowrap w-full lg:w-auto">
+              <div className="relative shrink-0">
+                <div style={{ width: 76, height: 76, borderRadius: "50%", background: `linear-gradient(135deg, ${T.antiqueGold}, ${T.goldLight})`, color: T.darkBurgundy, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 24, fontWeight: 700, border: "2px solid rgba(200,155,71,0.45)", boxShadow: "0 6px 20px rgba(200,155,71,0.35)" }}>
+                  {vendor.initials}
+                </div>
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                  <span style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.antiqueGold, letterSpacing: "1.4px", textTransform: "uppercase", background: "rgba(200,155,71,0.14)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 99, padding: "2px 10px" }}>
+                    RAW MATERIAL VENDOR
+                  </span>
+                </div>
+                <h1 className="text-xl sm:text-2xl lg:text-3xl text-[#FFFDF9] font-bold font-serif leading-tight truncate">
+                  {vendor.name}
+                </h1>
+                <div className="mt-2 flex items-center gap-3 flex-wrap text-xs sm:text-sm text-white/70">
+                  <span className="flex items-center gap-1.5"><MapPin size={14} color={T.antiqueGold} /> {vendor.city}, {vendor.state}</span>
+                  <span className="flex items-center gap-1.5"><Package size={14} color={T.antiqueGold} /> {vendor.type}</span>
+                  <StarRating rating={vendor.rating} />
+                </div>
+              </div>
+            </div>
+
+            {/* Metrics Stats Cards */}
+            <div className="flex flex-wrap sm:flex-nowrap gap-3 w-full lg:w-auto shrink-0">
+              <div className="flex items-center gap-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-3.5 sm:px-5 sm:py-4 flex-1 sm:flex-none">
+                <div className="w-10 h-10 rounded-lg bg-[rgba(200,155,71,0.16)] flex items-center justify-center shrink-0">
+                  <CreditCard size={20} color={T.antiqueGold} />
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold text-white/50 uppercase tracking-wider">Total Spend</div>
+                  <div className="text-sm sm:text-base font-bold text-[#FFFDF9] mt-0.5 whitespace-nowrap">{moneyVisible ? formatMoney(rupees(realTotalSpend)) : "—"}</div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-3.5 sm:px-5 sm:py-4 flex-1 sm:flex-none">
+                <div className="w-10 h-10 rounded-lg bg-red-500/15 flex items-center justify-center shrink-0">
+                  <AlertTriangle size={20} className="text-red-400" />
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold text-white/50 uppercase tracking-wider">Outstanding</div>
+                  <div className="text-sm sm:text-base font-bold text-[#FFFDF9] mt-0.5 whitespace-nowrap">{!moneyVisible ? "—" : formatMoney(rupees(Number(vendor.outstanding) || 0))}</div>
+                </div>
               </div>
             </div>
           </div>
-          <div style={{ display: "flex", gap: 48, alignItems: "center" }}>
-            <div style={{ textAlign: "right" }}>
-              <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.55)", marginBottom: 4 }}>TOTAL SPEND</div>
-              <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: T.goldLight }}>{moneyVisible ? formatMoney(rupees(realTotalSpend)) : "—"}</div>
-            </div>
-            <div style={{ textAlign: "right" }}>
-              <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.55)", marginBottom: 4 }}>OUTSTANDING</div>
-              <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: vendor.outstanding !== "0" ? "#F87171" : T.goldLight }}>{!moneyVisible ? "—" : formatMoney(rupees(Number(vendor.outstanding) || 0))}</div>
-            </div>
-          </div>
         </div>
-      </FadeUp>
+      </div>
 
       {/* Tabs */}
       <div className="w-full overflow-x-auto section-nav-scroll pb-1 mb-6 border-b-2 border-[var(--border-default)]">
@@ -280,7 +332,7 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
               onClick={() => setTab(t.key)}
               variant="tertiary"
               className={
-                "rounded-none px-4 sm:px-6 py-3 mb-[-6px] shrink-0 text-sm sm:text-base " +
+                "rounded-none px-4 sm:px-6 py-3 mb-[-6px] shrink-0 text-sm sm:text-base cursor-pointer " +
                 (tab === t.key
                   ? "border-b-[3px] border-[#6E0F2D] text-[#6E0F2D] font-bold"
                   : "border-b-[3px] border-transparent text-[#9C8672] font-medium")
@@ -295,24 +347,51 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
       <AnimatePresence mode="wait">
         <motion.div key={tab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
           {tab === "overview" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-              <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 16 }}>
-                {[
-                  { label: "Active Orders", value: orders.filter(o => o.status === "Approved" || o.status === "Pending").length, sub: "In progress", color: T.royalBurgundy },
-                  { label: "Total Orders", value: orders.length, sub: lastOrderDate ? `Last order ${lastOrderDate.split("T")[0]}` : "All time", color: T.luxuryBrown },
-                  { label: "Pending Bills", value: inr(ledger.outstanding), sub: `${overdueBills.length} overdue`, color: ledger.outstanding > 0 ? T.crimson : T.green },
-                  { label: "Rating", value: `${vendor.rating} ★`, sub: "Vendor score", color: T.antiqueGold },
-                ].map(s => (
-                  <div key={s.label} style={{ background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, padding: 20 }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>{s.label}</div>
-                    <div style={{ fontFamily: F.display, fontSize: 26, fontWeight: 700, color: s.color, margin: "6px 0 2px" }}>{s.value}</div>
-                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{s.sub}</div>
-                  </div>
-                ))}
+            <SectionCard
+              icon={Boxes}
+              title="Vendor Account Overview"
+              subtitle={`Key metrics, recent purchase orders, and ratings for ${vendor.name}`}
+            >
+              <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+                <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 16 }}>
+                  {[
+                    { label: "Active Orders", value: orders.filter(o => o.status === "Approved" || o.status === "Pending").length, sub: "In progress", color: T.royalBurgundy },
+                    { label: "Total Orders", value: orders.length, sub: lastOrderDate ? `Last order ${lastOrderDate.split("T")[0]}` : "All time", color: T.luxuryBrown },
+                    { label: "Pending Bills", value: inr(ledger.outstanding), sub: `${overdueBills.length} overdue`, color: ledger.outstanding > 0 ? T.crimson : T.green },
+                    { label: "Rating", value: `${vendor.rating} ★`, sub: "Vendor score", color: T.antiqueGold },
+                  ].map(s => (
+                    <div key={s.label} style={{ background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, padding: 20 }}>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>{s.label}</div>
+                      <div style={{ fontFamily: F.display, fontSize: 26, fontWeight: 700, color: s.color, margin: "6px 0 2px" }}>{s.value}</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{s.sub}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, overflow: "hidden" }}>
+                  {posLoading ? (
+                    <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loading purchase orders…</div>
+                  ) : posError ? (
+                    <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.crimson }}>Failed to load purchase orders. Please try again.</div>
+                  ) : orders.length === 0 ? (
+                    <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No purchase orders yet for this vendor.</div>
+                  ) : (
+                    <PurchaseOrderHistoryTable orders={orders.slice(0, 2)} />
+                  )}
+                </div>
               </div>
+            </SectionCard>
+          )}
+
+          {tab === "orders" && (
+            <SectionCard
+              icon={ShoppingBag}
+              title="Full Purchase Order History"
+              subtitle={`Full history of all raw material purchase orders issued to ${vendor.name}`}
+            >
               <div style={{ background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, overflow: "hidden" }}>
-                <div style={{ padding: "18px 22px", borderBottom: `1px solid ${T.borderDef}` }}>
-                  <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 600, color: T.luxuryBrown }}>Recent Purchase Orders</div>
+                <div style={{ padding: "14px 18px", borderBottom: `1px solid ${T.borderDef}` }}>
+                  <DateFilterBar filter={orderDateFilter} onChange={setOrderDateFilter} />
                 </div>
                 {posLoading ? (
                   <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loading purchase orders…</div>
@@ -321,233 +400,242 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
                 ) : orders.length === 0 ? (
                   <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No purchase orders yet for this vendor.</div>
                 ) : (
-                  <PurchaseOrderHistoryTable orders={orders.slice(0, 2)} />
+                  <PurchaseOrderHistoryTable orders={orders.filter(o => matchesDateFilter(o.date, orderDateFilter))} />
                 )}
               </div>
-            </div>
+            </SectionCard>
           )}
-          {tab === "orders" && (
-            <div style={{ background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, overflow: "hidden" }}>
-              <div style={{ padding: "18px 22px", borderBottom: `1px solid ${T.borderDef}` }}>
-                <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 600, color: T.luxuryBrown, marginBottom: 12 }}>Full Purchase Order History</div>
-                <DateFilterBar filter={orderDateFilter} onChange={setOrderDateFilter} />
-              </div>
-              {posLoading ? (
-                <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loading purchase orders…</div>
-              ) : posError ? (
-                <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.crimson }}>Failed to load purchase orders. Please try again.</div>
-              ) : orders.length === 0 ? (
-                <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No purchase orders yet for this vendor.</div>
-              ) : (
-                <PurchaseOrderHistoryTable orders={orders.filter(o => matchesDateFilter(o.date, orderDateFilter))} />
-              )}
-            </div>
-          )}
+
           {tab === "payments" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 16 }}>
-                {[
-                  { label: "Paid in Range", value: inr(paidInRange), color: T.greenMid, sub: `${filteredTxns.length} transaction${filteredTxns.length === 1 ? "" : "s"}` },
-                  { label: "Paid All Time", value: inr(ledger.totalPaid), color: T.luxuryBrown, sub: `of ${inr(ledger.totalBilled)} billed` },
-                  { label: "Outstanding", value: inr(ledger.outstanding), color: ledger.outstanding > 0 ? T.crimson : T.green, sub: ledger.outstanding > 0 ? "Awaiting settlement" : "Fully settled" },
-                  { label: "Overdue Bills", value: String(overdueBills.length), color: overdueBills.length ? T.crimson : T.green, sub: `Terms ${vendor.terms}` },
-                ].map(s => (
-                  <div key={s.label} style={{ background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, padding: "18px 20px" }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 8 }}>{s.label}</div>
-                    <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: s.color, lineHeight: 1.1 }}>{s.value}</div>
-                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 6 }}>{s.sub}</div>
-                  </div>
-                ))}
-              </div>
-
-              <div style={{ background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, padding: "20px 24px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                  <div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>Settlement Progress</div>
-                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>
-                    {ledger.totalBilled ? Math.round((ledger.totalPaid / ledger.totalBilled) * 100) : 0}% cleared
-                  </div>
-                </div>
-                <div style={{ height: 10, borderRadius: 5, background: T.silkCream, overflow: "hidden", border: `1px solid ${T.borderDef}` }}>
-                  <div style={{ width: `${ledger.totalBilled ? (ledger.totalPaid / ledger.totalBilled) * 100 : 0}%`, height: "100%", background: `linear-gradient(90deg,${T.deepWine},${T.royalBurgundy})` }} />
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 8 }}>
-                  <span>Paid {inr(ledger.totalPaid)}</span>
-                  <span>Billed {inr(ledger.totalBilled)}</span>
-                </div>
-                {modeSplit.length > 0 && (
-                  <div style={{ display: "flex", gap: 8, marginTop: 16, borderTop: `1px solid ${T.borderDef}`, paddingTop: 14, flexWrap: "wrap" as const }}>
-                    {modeSplit.map(m => (
-                      <div key={m.mode} style={{ display: "flex", alignItems: "center", gap: 8, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 20, padding: "6px 14px" }}>
-                        <div style={{ width: 9, height: 9, borderRadius: 3, background: PAY_MODE_FILL[m.mode] ?? T.taupe }} />
-                        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{m.mode}</span>
-                        <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{inr(m.amount)}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div style={{ background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, padding: "16px 22px 2px" }}>
-                <DateFilterBar filter={payFilter} onChange={setPayFilter} />
-              </div>
-
-              <div style={{ background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, overflow: "hidden" }}>
-                <div style={{ padding: "18px 22px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 600, color: T.luxuryBrown }}>Invoice-wise Settlement</div>
-                  <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Due dates from payment terms · {vendor.terms}</span>
-                </div>
-                {ledgerLoading ? (
-                  <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loading bills…</div>
-                ) : ledgerError ? (
-                  <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.crimson }}>Failed to load bills. Please try again.</div>
-                ) : filteredBills.length === 0 ? (
-                  <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No bills raised in this period.</div>
-                ) : (
-                  <DataTable responsive columns={billColumns} data={filteredBills} getRowId={b => b.id} emptyTitle="No bills raised in this period." />
-                )}
-              </div>
-
-              <div style={{ background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, overflow: "hidden" }}>
-                <div style={{ padding: "18px 22px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 600, color: T.luxuryBrown }}>Payments Made</div>
-                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.greenMid }}>{inr(paidInRange)}</span>
-                </div>
-                {ledgerLoading ? (
-                  <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loading payments…</div>
-                ) : ledgerError ? (
-                  <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.crimson }}>Failed to load payments. Please try again.</div>
-                ) : filteredTxns.length === 0 ? (
-                  <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No payments in this period.</div>
-                ) : (
-                  <DataTable responsive columns={txnColumns} data={filteredTxns} getRowId={p => p.id} emptyTitle="No payments in this period." />
-                )}
-              </div>
-
-              {overdueBills.length > 0 && (
-                <div style={{ background: T.crimsonBg, border: `1px solid rgba(192,57,43,0.20)`, borderRadius: 14, padding: "18px 22px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                    <AlertTriangle size={16} color={T.crimson} />
-                    <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.crimson }}>
-                      {overdueBills.length} bill{overdueBills.length > 1 ? "s" : ""} past the agreed {vendor.terms} terms
-                    </span>
-                  </div>
-                  <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, lineHeight: 1.6 }}>
-                    {overdueBills.map(b => `${b.id} — ${inr(b.balance)} (${b.daysOverdue}d)`).join(" · ")}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-          {tab === "contact" && (
-            <div style={{ display: "flex", gap: 32, flexWrap: "wrap", alignItems: "flex-start" }}>
-              {/* Left Column: Details Cards */}
-              <div style={{ flex: 1, minWidth: 300, display: "flex", flexDirection: "column", gap: 24 }}>
-                
-                {/* Core Contact Card */}
-                <div style={{ background: "#fff", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: 24, boxShadow: "0 2px 8px rgba(0,0,0,0.02)" }}>
-                  <h3 style={{ fontFamily: F.display, fontSize: 18, color: T.luxuryBrown, margin: "0 0 20px 0", display: "flex", alignItems: "center", gap: 8 }}>
-                    <Building2 size={20} color={T.royalBurgundy} /> Business Contact Info
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 20 }}>
-                    <div>
-                      <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, display: "flex", alignItems: "center", gap: 6 }}>Owner / Contact</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 600, color: T.luxuryBrown, marginTop: 4 }}>{vendor.contactName || "—"}</div>
+            <SectionCard
+              icon={CreditCard}
+              title="Vendor Ledger & Payments"
+              subtitle={`Settlement progress, invoice-wise bills, and payment transactions for ${vendor.name}`}
+            >
+              <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 16 }}>
+                  {[
+                    { label: "Paid in Range", value: inr(paidInRange), color: T.greenMid, sub: `${filteredTxns.length} transaction${filteredTxns.length === 1 ? "" : "s"}` },
+                    { label: "Paid All Time", value: inr(ledger.totalPaid), color: T.luxuryBrown, sub: `of ${inr(ledger.totalBilled)} billed` },
+                    { label: "Outstanding", value: inr(ledger.outstanding), color: ledger.outstanding > 0 ? T.crimson : T.green, sub: ledger.outstanding > 0 ? "Awaiting settlement" : "Fully settled" },
+                    { label: "Overdue Bills", value: String(overdueBills.length), color: overdueBills.length ? T.crimson : T.green, sub: `Terms ${vendor.terms}` },
+                  ].map(s => (
+                    <div key={s.label} style={{ background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, padding: "18px 20px" }}>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 8 }}>{s.label}</div>
+                      <div style={{ fontFamily: F.display, fontSize: 24, fontWeight: 700, color: s.color, lineHeight: 1.1 }}>{s.value}</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 6 }}>{s.sub}</div>
                     </div>
-                    <div>
-                      <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, display: "flex", alignItems: "center", gap: 6 }}><FileText size={14} /> GSTIN</div>
-                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 600, color: T.royalBurgundy, marginTop: 4 }}>{vendor.gstCode || "Unregistered"}</div>
-                    </div>
-                    <div>
-                      <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, display: "flex", alignItems: "center", gap: 6 }}><Phone size={14} /> Phone Number</div>
-                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 15, color: T.luxuryBrown, marginTop: 4 }}>{vendor.phone || "—"}</div>
-                    </div>
-                    <div>
-                      <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, display: "flex", alignItems: "center", gap: 6 }}><MessageSquare size={14} /> WhatsApp</div>
-                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 15, color: T.luxuryBrown, marginTop: 4 }}>{vendor.whatsapp || "—"}</div>
+                  ))}
+                </div>
+
+                <div style={{ background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, padding: "20px 24px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                    <div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>Settlement Progress</div>
+                    <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>
+                      {ledger.totalBilled ? Math.round((ledger.totalPaid / ledger.totalBilled) * 100) : 0}% cleared
                     </div>
                   </div>
-                </div>
-
-                {/* Address Card */}
-                <div style={{ background: "#fff", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: 24, boxShadow: "0 2px 8px rgba(0,0,0,0.02)" }}>
-                  <h3 style={{ fontFamily: F.display, fontSize: 16, color: T.luxuryBrown, margin: "0 0 16px 0", display: "flex", alignItems: "center", gap: 8 }}>
-                    <MapPin size={18} color={T.antiqueGold} /> Billing Address
-                  </h3>
-                  <div style={{ fontFamily: F.ui, fontSize: 15, color: T.luxuryBrown, lineHeight: 1.6 }}>
-                    {vendor.address ? (
-                      <>
-                        {vendor.address}
-                        <br />
-                        {vendor.city}{vendor.city && vendor.state ? ", " : ""}{vendor.state}
-                      </>
-                    ) : "No address provided."}
+                  <div style={{ height: 10, borderRadius: 5, background: T.silkCream, overflow: "hidden", border: `1px solid ${T.borderDef}` }}>
+                    <div style={{ width: `${ledger.totalBilled ? (ledger.totalPaid / ledger.totalBilled) * 100 : 0}%`, height: "100%", background: `linear-gradient(90deg,${T.deepWine},${T.royalBurgundy})` }} />
                   </div>
-                </div>
-
-                {/* Financials & Notes Container */}
-                <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 24 }}>
-                  <div style={{ background: "#fff", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: 24, boxShadow: "0 2px 8px rgba(0,0,0,0.02)" }}>
-                    <h3 style={{ fontFamily: F.display, fontSize: 16, color: T.luxuryBrown, margin: "0 0 16px 0", display: "flex", alignItems: "center", gap: 8 }}>
-                      <Landmark size={18} color={T.taupe} /> Bank Details
-                    </h3>
-                    {(vendor.bankName || vendor.accountNo || vendor.ifscCode) ? (
-                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                        <div>
-                          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Bank:</span>
-                          <div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, fontWeight: 500 }}>{vendor.bankName || "—"}</div>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 8 }}>
+                    <span>Paid {inr(ledger.totalPaid)}</span>
+                    <span>Billed {inr(ledger.totalBilled)}</span>
+                  </div>
+                  {modeSplit.length > 0 && (
+                    <div style={{ display: "flex", gap: 8, marginTop: 16, borderTop: `1px solid ${T.borderDef}`, paddingTop: 14, flexWrap: "wrap" as const }}>
+                      {modeSplit.map(m => (
+                        <div key={m.mode} style={{ display: "flex", alignItems: "center", gap: 8, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 20, padding: "6px 14px" }}>
+                          <div style={{ width: 9, height: 9, borderRadius: 3, background: PAY_MODE_FILL[m.mode] ?? T.taupe }} />
+                          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{m.mode}</span>
+                          <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{inr(m.amount)}</span>
                         </div>
-                        <div>
-                          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Account:</span>
-                          <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, color: T.luxuryBrown }}>{vendor.accountNo || "—"}</div>
-                        </div>
-                        <div>
-                          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>IFSC:</span>
-                          <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, color: T.luxuryBrown }}>{vendor.ifscCode || "—"}</div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, fontStyle: "italic" }}>No bank details on file.</div>
-                    )}
-                  </div>
-                  <div style={{ background: "#fff", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: 24, boxShadow: "0 2px 8px rgba(0,0,0,0.02)" }}>
-                    <h3 style={{ fontFamily: F.display, fontSize: 16, color: T.luxuryBrown, margin: "0 0 16px 0", display: "flex", alignItems: "center", gap: 8 }}>
-                      <StickyNote size={18} color={T.taupe} /> Special Instructions
-                    </h3>
-                    <div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, lineHeight: 1.6 }}>
-                      {vendor.notes || "No special notes or instructions for this vendor."}
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-
-              {/* Right Column: Visiting Card */}
-              <div style={{ flex: "0 0 320px", display: "flex", flexDirection: "column", gap: 16 }}>
-                <div style={{ background: "#fff", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: 24, boxShadow: "0 2px 8px rgba(0,0,0,0.02)" }}>
-                  <h3 style={{ fontFamily: F.display, fontSize: 18, color: T.luxuryBrown, margin: "0 0 16px 0" }}>Visiting Card</h3>
-                  {resolveAssetUrl(vendor.visitingCard) ? (
-                    <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden", position: "relative", cursor: "pointer", transition: "transform 0.2s ease" }}
-                         onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.02)")}
-                         onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
-                         onClick={() => setZoomImage({ url: resolveAssetUrl(vendor.visitingCard)!, label: `Visiting card — ${vendor.name}` })}
-                         role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setZoomImage({ url: resolveAssetUrl(vendor.visitingCard)!, label: `Visiting card — ${vendor.name}` }); } }}>
-                      <img src={resolveAssetUrl(vendor.visitingCard)!} alt="Visiting Card" style={{ width: "100%", height: 200, objectFit: "cover" }} />
-                      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%)", color: "#fff", fontFamily: F.ui, fontSize: 13, padding: "24px 16px 12px", textAlign: "center", fontWeight: 500 }}>
-                        Click to Expand
-                      </div>
-                    </div>
-                  ) : (
-                    <div style={{ border: `1.5px dashed ${T.borderDef}`, borderRadius: 12, height: 200, display: "flex", alignItems: "center", justifyContent: "center", color: T.taupe, fontFamily: F.ui, fontSize: 14, fontStyle: "italic", background: T.silkCream }}>
-                      No visiting card uploaded.
+                      ))}
                     </div>
                   )}
                 </div>
-              </div>
 
-            </div>
+                <div style={{ background: "#FFF", borderRadius: 14, border: `1.5px solid ${T.borderDef}`, padding: "16px 22px 2px" }}>
+                  <DateFilterBar filter={payFilter} onChange={setPayFilter} />
+                </div>
+
+                <div className="w-full max-w-full min-w-0 overflow-x-auto border border-[var(--border-default)] rounded-2xl bg-white shadow-xs">
+                  <div className="p-4 border-b border-slate-100 flex justify-between items-center">
+                    <span className="font-bold text-sm text-[#3B2314]">Invoice-wise Settlement</span>
+                    <span className="text-xs text-[var(--text-tertiary)]">Terms: {vendor.terms}</span>
+                  </div>
+                  {ledgerLoading ? (
+                    <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loading bills…</div>
+                  ) : ledgerError ? (
+                    <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.crimson }}>Failed to load bills. Please try again.</div>
+                  ) : filteredBills.length === 0 ? (
+                    <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No bills raised in this period.</div>
+                  ) : (
+                    <div style={{ minWidth: 650 }}>
+                      <DataTable responsive={false} columns={billColumns} data={filteredBills} getRowId={b => b.id} emptyTitle="No bills raised in this period." />
+                    </div>
+                  )}
+                </div>
+
+                <div className="w-full max-w-full min-w-0 overflow-x-auto border border-[var(--border-default)] rounded-2xl bg-white shadow-xs">
+                  <div className="p-4 border-b border-slate-100 flex justify-between items-center">
+                    <span className="font-bold text-sm text-[#3B2314]">Payments Made</span>
+                    <span className="font-mono font-bold text-xs text-emerald-700">{inr(paidInRange)}</span>
+                  </div>
+                  {ledgerLoading ? (
+                    <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loading payments…</div>
+                  ) : ledgerError ? (
+                    <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.crimson }}>Failed to load payments. Please try again.</div>
+                  ) : filteredTxns.length === 0 ? (
+                    <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No payments in this period.</div>
+                  ) : (
+                    <div style={{ minWidth: 650 }}>
+                      <DataTable responsive={false} columns={txnColumns} data={filteredTxns} getRowId={p => p.id} emptyTitle="No payments in this period." />
+                    </div>
+                  )}
+                </div>
+
+                {overdueBills.length > 0 && (
+                  <div style={{ background: T.crimsonBg, border: `1px solid rgba(192,57,43,0.20)`, borderRadius: 14, padding: "18px 22px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                      <AlertTriangle size={16} color={T.crimson} />
+                      <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.crimson }}>
+                        {overdueBills.length} bill{overdueBills.length > 1 ? "s" : ""} past the agreed {vendor.terms} terms
+                      </span>
+                    </div>
+                    <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, lineHeight: 1.6 }}>
+                      {overdueBills.map(b => `${b.id} — ${inr(b.balance)} (${b.daysOverdue}d)`).join(" · ")}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </SectionCard>
           )}
+
+          {tab === "contact" && (
+            <SectionCard
+              icon={UserCheck}
+              title="Vendor Contact & Bank Details"
+              subtitle={`Official address, GSTIN, phone, and banking records for ${vendor.name}`}
+            >
+              <div style={{ display: "flex", gap: 24, flexWrap: "wrap", alignItems: "flex-start" }}>
+                {/* Left Column: Details Cards */}
+                <div style={{ flex: 1, minWidth: 280, display: "flex", flexDirection: "column", gap: 20 }}>
+                  
+                  {/* Core Contact Card */}
+                  <div style={{ background: "#fff", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: 24, boxShadow: "0 2px 8px rgba(0,0,0,0.02)" }}>
+                    <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 20 }}>
+                      <div>
+                        <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, display: "flex", alignItems: "center", gap: 6 }}>Owner / Contact</div>
+                        <div style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 600, color: T.luxuryBrown, marginTop: 4 }}>{vendor.contactName || "—"}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, display: "flex", alignItems: "center", gap: 6 }}><FileText size={14} /> GSTIN</div>
+                        <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 600, color: T.royalBurgundy, marginTop: 4 }}>{vendor.gstCode || "Unregistered"}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, display: "flex", alignItems: "center", gap: 6 }}><Phone size={14} /> Phone Number</div>
+                        <div style={{ fontFamily: "var(--font-mono)", fontSize: 15, color: T.luxuryBrown, marginTop: 4 }}>{vendor.phone || "—"}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, display: "flex", alignItems: "center", gap: 6 }}><MessageSquare size={14} /> WhatsApp</div>
+                        <div style={{ fontFamily: "var(--font-mono)", fontSize: 15, color: T.luxuryBrown, marginTop: 4 }}>{vendor.whatsapp || "—"}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Address Card */}
+                  <div style={{ background: "#fff", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: 24, boxShadow: "0 2px 8px rgba(0,0,0,0.02)" }}>
+                    <div style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: T.luxuryBrown, marginBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
+                      <MapPin size={18} color={T.antiqueGold} /> Billing Address
+                    </div>
+                    <div style={{ fontFamily: F.ui, fontSize: 15, color: T.luxuryBrown, lineHeight: 1.6 }}>
+                      {vendor.address ? (
+                        <>
+                          {vendor.address}
+                          <br />
+                          {vendor.city}{vendor.city && vendor.state ? ", " : ""}{vendor.state}
+                        </>
+                      ) : "No address provided."}
+                    </div>
+                  </div>
+
+                  {/* Financials & Notes Container */}
+                  <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 20 }}>
+                    <div style={{ background: "#fff", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: 24, boxShadow: "0 2px 8px rgba(0,0,0,0.02)" }}>
+                      <div style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: T.luxuryBrown, marginBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
+                        <Landmark size={18} color={T.taupe} /> Bank Details
+                      </div>
+                      {(vendor.bankName || vendor.accountNo || vendor.ifscCode) ? (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                          <div>
+                            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Bank:</span>
+                            <div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, fontWeight: 500 }}>{vendor.bankName || "—"}</div>
+                          </div>
+                          <div>
+                            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Account:</span>
+                            <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, color: T.luxuryBrown }}>{vendor.accountNo || "—"}</div>
+                          </div>
+                          <div>
+                            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>IFSC:</span>
+                            <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, color: T.luxuryBrown }}>{vendor.ifscCode || "—"}</div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, fontStyle: "italic" }}>No bank details on file.</div>
+                      )}
+                    </div>
+                    <div style={{ background: "#fff", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: 24, boxShadow: "0 2px 8px rgba(0,0,0,0.02)" }}>
+                      <div style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: T.luxuryBrown, marginBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
+                        <StickyNote size={18} color={T.taupe} /> Special Instructions
+                      </div>
+                      <div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, lineHeight: 1.6 }}>
+                        {vendor.notes || "No special notes or instructions for this vendor."}
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* Right Column: Visiting Card */}
+                <div style={{ flex: "0 0 300px", display: "flex", flexDirection: "column", gap: 16 }}>
+                  <div style={{ background: "#fff", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: 24, boxShadow: "0 2px 8px rgba(0,0,0,0.02)" }}>
+                    <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, marginBottom: 14 }}>Visiting Card</div>
+                    {vendor.visitingCard ? (
+                      <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden", position: "relative", cursor: "pointer", transition: "transform 0.2s ease" }} 
+                           onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.02)")}
+                           onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
+                           onClick={() => {
+                             const el = document.createElement("a");
+                             el.href = vendor.visitingCard!;
+                             el.target = "_blank";
+                             el.click();
+                           }} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); window.open(vendor.visitingCard!, "_blank"); } }}>
+                        <img src={vendor.visitingCard} alt="Visiting Card" style={{ width: "100%", height: 200, objectFit: "cover" }} />
+                        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%)", color: "#fff", fontFamily: F.ui, fontSize: 13, padding: "24px 16px 12px", textAlign: "center", fontWeight: 500 }}>
+                          Click to Expand
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ border: `1.5px dashed ${T.borderDef}`, borderRadius: 12, height: 200, display: "flex", alignItems: "center", justifyContent: "center", color: T.taupe, fontFamily: F.ui, fontSize: 14, fontStyle: "italic", background: T.silkCream }}>
+                        No visiting card uploaded.
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+              </div>
+            </SectionCard>
+          )}
+
           {tab === "edit" && (
-            <VendorEditFormTab vendor={vendor} onUpdate={onUpdate} />
+            <SectionCard
+              icon={Edit3}
+              title="Edit Vendor Profile"
+              subtitle={`Update contact details, bank credentials, and status for ${vendor.name}`}
+            >
+              <VendorEditFormTab vendor={vendor} onUpdate={onUpdate} />
+            </SectionCard>
           )}
         </motion.div>
       </AnimatePresence>
