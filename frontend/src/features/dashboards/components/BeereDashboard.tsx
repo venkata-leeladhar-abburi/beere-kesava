@@ -8,6 +8,7 @@ import { WorkerGRN, INITIAL_HISTORY as GRN_INITIAL_HISTORY } from "@/features/po
 import type { ReceiptRecord } from "@/features/portals";
 import { useQuery } from "@tanstack/react-query";
 import { rawMaterialsApi } from "../../../shared/api/rawMaterials";
+import { BG_IMAGE } from "@/features/portals/components/weaver-portal/WeaverBatchNotifData";
 
 // Lazily loaded so the initial dashboard bundle doesn't pay for every tab's
 // page — only the active tab's chunk is fetched, on first navigation to it.
@@ -189,7 +190,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
   const dashboardContent = isMobile ? (
     <div id="main-content" style={{ width: "100%", minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui }}>
       <MobileMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} activeTab={mobileTab} setTab={navigateMobile} />
-      <MobileTopNav onMenuOpen={() => setMenuOpen(true)} onBack={onBack} onLogout={handleLogout} onProfile={() => setShowProfileModal(true)} />
+      <MobileTopNav onMenuOpen={() => setMenuOpen(true)} onBack={onBack} onLogout={handleLogout} onProfile={() => setShowProfileModal(true)} onNotifications={() => navigateMobile("Notifications")} />
       {PAGE_SECTIONS[mobileTab] && (
         <SectionNavigator sections={PAGE_SECTIONS[mobileTab]} stickyTop={MOBILE_NAV_H} padding="0 18px" />
       )}
@@ -244,7 +245,63 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
       ) : mobileTab === "SupplierReturns" ? (
         <SupplierReturnsPage />
       ) : mobileTab === "ReceiveStock" ? (
-        <WorkerGRN />
+        <div style={{ background: T.silkCream, minHeight: "100dvh" }}>
+          {/* Mobile Admin Luxury Hero Banner */}
+          <section style={{ position: "relative", overflow: "hidden", background: "#0D0207", padding: "28px 16px 36px" }}>
+            <div style={{
+              position: "absolute", inset: 0,
+              backgroundImage: `url(${BG_IMAGE})`,
+              backgroundSize: "cover", backgroundPosition: "center",
+              opacity: 0.22, pointerEvents: "none"
+            }} />
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(13,2,7,0.75) 0%, #0D0207 100%)", pointerEvents: "none" }} />
+
+            <div style={{ position: "relative", zIndex: 5, display: "flex", flexDirection: "column", gap: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ width: 20, height: 1, background: T.antiqueGold }} />
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: `${T.antiqueGold}80`, letterSpacing: "1.8px", textTransform: "uppercase" }}>
+                  SINCE 1999 · ADMIN · MATERIALS
+                </span>
+              </div>
+
+              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 26, color: "#FFFDF9", lineHeight: 1.15 }}>
+                Receive Stock <span style={{ fontFamily: F.display, fontStyle: "italic", fontWeight: 400, fontSize: 20, color: T.antiqueGold }}>&amp; Goods Receipt Note</span>
+              </div>
+
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.75)", lineHeight: 1.55 }}>
+                Record incoming raw materials from vendors against purchase orders and generate GRN numbers.
+              </div>
+
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {[
+                  { text: "SINCE 1999 · ADMIN PORTAL", color: T.antiqueGold },
+                  { text: "RAW MATERIALS & GRN" },
+                  { text: "VENDOR DELIVERIES" },
+                ].map(p => (
+                  <div key={p.text} style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 999, padding: "4px 12px" }}>
+                    <span style={{ fontFamily: F.ui, fontSize: 11.5, fontWeight: 600, color: p.color || "#FFF" }}>{p.text}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <div style={{ padding: "20px 16px 80px", display: "flex", flexDirection: "column", gap: 24 }}>
+            {/* Section 1: Receive Stock Form SectionCard */}
+            <SectionCard icon={PackageCheck} title="Receive Stock" subtitle="Record incoming raw materials from vendors and generate a GRN number.">
+              <div style={{ margin: "-24px -28px" }}>
+                <WorkerGRN mode="form" history={grnHistory} setHistory={setGrnHistory} initialPOId={(state as { poId?: string } | null)?.poId} />
+              </div>
+            </SectionCard>
+
+            {/* Section 2: Goods Receipt History SectionCard */}
+            <SectionCard icon={History} title="Goods Receipt History" subtitle="Every GRN recorded so far, with vendor, materials, and quantities.">
+              <div style={{ margin: "-24px -28px" }}>
+                <WorkerGRN mode="history" history={grnHistory} setHistory={setGrnHistory} />
+              </div>
+            </SectionCard>
+          </div>
+        </div>
       ) : mobileTab === "Batches" ? (
         <BatchCreationPage />
       ) : mobileTab === "Designs" ? (
@@ -306,24 +363,43 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
         <AuditLogPage />
       ) : nav === "ReceiveStock" ? (
         <div style={{ background: T.silkCream, minHeight: "100dvh" }}>
-          {/* Admin-style page header — matches AuditLogPage / AddUserPage pattern exactly */}
-          <div style={{ background: "#3D0E1A", position: "relative", overflow: "hidden", minHeight: 200, display: "flex", alignItems: "stretch" }}>
+          {/* Admin-style page header — matches luxury hero design system */}
+          <div style={{ background: "#0D0207", position: "relative", overflow: "hidden", minHeight: 220, display: "flex", alignItems: "stretch" }}>
+            <div style={{
+              position: "absolute", inset: 0,
+              backgroundImage: `url(${BG_IMAGE})`,
+              backgroundSize: "cover", backgroundPosition: "center",
+              opacity: 0.22, pointerEvents: "none"
+            }} />
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(13,2,7,0.75) 0%, #0D0207 100%)", pointerEvents: "none" }} />
+
             <div className="px-4 md:px-7 xl:px-14" style={{ flex: 1, paddingTop: 44, paddingBottom: 48, zIndex: 10, position: "relative" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
                 <div style={{ width: 28, height: 1, background: T.antiqueGold }} />
                 <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: `${T.antiqueGold}80`, letterSpacing: "1.5px", textTransform: "uppercase" as const }}>
                   SINCE 1999 · ADMIN · MATERIALS
                 </span>
               </div>
-              <h1 style={{ fontFamily: F.display, fontWeight: 700, fontSize: 48, color: "#fff", margin: "0 0 4px", lineHeight: 1.1 }}>
+              <h1 style={{ fontFamily: F.display, fontWeight: 700, fontSize: "clamp(32px, 5vw, 48px)", color: "#fff", margin: "0 0 4px", lineHeight: 1.1 }}>
                 Receive Stock
               </h1>
-              <div style={{ fontFamily: F.display, fontWeight: 500, fontStyle: "italic", fontSize: 30, color: T.antiqueGold, marginBottom: 16, lineHeight: 1.2 }}>
+              <div style={{ fontFamily: F.display, fontWeight: 500, fontStyle: "italic", fontSize: "clamp(22px, 4vw, 30px)", color: T.antiqueGold, marginBottom: 14, lineHeight: 1.2 }}>
                 &amp; Goods Receipt Note
               </div>
-              <p style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,255,255,0.60)", maxWidth: "min(520px, 100%)", margin: 0, lineHeight: 1.65 }}>
+              <p style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,255,255,0.70)", maxWidth: "min(560px, 100%)", margin: "0 0 16px", lineHeight: 1.65 }}>
                 Record incoming raw materials from vendors against purchase orders and generate GRN numbers.
               </p>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {[
+                  { text: "SINCE 1999 · ADMIN PORTAL", color: T.antiqueGold },
+                  { text: "RAW MATERIALS & GRN" },
+                  { text: "VENDOR DELIVERIES" },
+                ].map(p => (
+                  <div key={p.text} style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 999, padding: "5px 14px" }}>
+                    <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: p.color || "#FFF" }}>{p.text}</span>
+                  </div>
+                ))}
+              </div>
             </div>
             <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", gap: 10, marginRight: 56, alignItems: "flex-end", justifyContent: "center", zIndex: 10, position: "relative" }}>
               {[

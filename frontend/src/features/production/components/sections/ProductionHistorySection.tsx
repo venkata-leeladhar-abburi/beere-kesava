@@ -240,15 +240,13 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2.5 p-3.5 sm:px-6 bg-white border-x border-[rgba(110,15,45,0.10)] w-full">
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
+        <div className="flex flex-col md:flex-row md:items-center gap-2.5 p-3.5 sm:px-6 bg-white border-x border-[rgba(110,15,45,0.10)] w-full overflow-x-auto">
+          <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search batches..." className="w-full md:w-[240px] shrink-0" />
+          <div className="flex items-center gap-2.5 flex-nowrap overflow-x-auto shrink-0 w-full md:w-auto pb-1 md:pb-0">
             <HistoryDropBtn label="30 Apr 2026 – 30 Apr 2026" icon={<Calendar size={14} style={{ color: T.royalBurgundy }} />} />
             <HistoryDropBtn label="All Saree Types" />
             <HistoryDropBtn label="All Weavers" icon={<Users size={14} style={{ color: T.royalBurgundy }} />} />
             <HistoryDropBtn label="All Orders" />
-          </div>
-          <div className="w-full sm:flex-1 sm:min-w-[180px]">
-            <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search batches..." />
           </div>
         </div>
 

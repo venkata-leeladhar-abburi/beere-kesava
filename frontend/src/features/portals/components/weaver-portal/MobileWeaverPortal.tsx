@@ -239,23 +239,28 @@ export function MobileWeaverPortal({ onBack, active, setActive, onProfile }: { o
         open={menuOpen}
         onOpenChange={setMenuOpen}
         onProfile={() => onProfile?.()}
-        activeTab={active}
+        activeTab={showNotifs ? ("notifications" as Tab5) : active}
         onSelectTab={t => {
-          setActive(t);
-          setShowNotifs(false);
+          if (t === "notifications") {
+            setShowNotifs(true);
+            setActive(t);
+          } else {
+            setActive(t);
+            setShowNotifs(false);
+          }
         }}
       />
 
       {/* Content */}
       <div style={{ flex: 1, overflowY: 'auto' as const, paddingBottom: 'calc(68px + env(safe-area-inset-bottom, 0px))' }}>
         <AnimatePresence mode="wait">
-          {showNotifs ? (
+          {showNotifs || active === 'notifications' ? (
             <motion.div key="notifs" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
               <NotificationsPage />
             </motion.div>
           ) : (
             <motion.div key={active} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>
-              {active === 'batches' && (<MyBatchesPage />)}
+              {active === 'batches' && (<MyBatchesPage onGoToPayments={() => setActive('payments')} />)}
               {active === 'confirm' && (<ConfirmMaterialPage onGoToBatches={() => setActive('batches')} />)}
               {active === 'warp'    && (<WarpRequestPage />)}
               {active === 'payments' && (<PaymentLedgerPage />)}

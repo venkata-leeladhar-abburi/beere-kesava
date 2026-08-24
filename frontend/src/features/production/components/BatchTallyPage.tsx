@@ -225,19 +225,19 @@ export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: s
             Weight is what Worker Staff entered at receipt, shown against the SareeTypeRate standard for that saree's type. Tally each saree once you've physically verified it.
           </div>
 
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 16 }}>
-            <div style={{ flex: "1 1 200px" }}>
-              <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search Saree ID, Weaver..." className="w-full" />
+          <div className="flex flex-col md:flex-row md:items-center gap-2.5 mb-4">
+            <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search Saree ID, Weaver..." className="w-full md:w-[240px] shrink-0" />
+            <div className="flex items-center gap-2.5 flex-nowrap overflow-x-auto shrink-0 w-full md:w-auto pb-1 md:pb-0">
+              <Select value={weaverFilter} onValueChange={setWeaverFilter} size="sm" className="w-auto min-w-[130px] shrink-0">
+                {weaverOptions.map(w => <SelectItem key={w as string} value={w as string}>{w === "All" ? "All Weavers" : w as string}</SelectItem>)}
+              </Select>
+              <Select value={orderFilter} onValueChange={setOrderFilter} size="sm" className="w-auto min-w-[130px] shrink-0">
+                {orderOptions.map(o => <SelectItem key={o as string} value={o as string}>{o === "All" ? "All Orders" : o as string}</SelectItem>)}
+              </Select>
+              <Select value={qcFilter} onValueChange={setQcFilter} size="sm" className="w-auto min-w-[130px] shrink-0">
+                {["All", "QC Passed", "In Progress"].map(q => <SelectItem key={q} value={q}>{q === "All" ? "All QC Status" : q}</SelectItem>)}
+              </Select>
             </div>
-            <Select value={weaverFilter} onValueChange={setWeaverFilter} size="sm" className="w-auto min-w-[130px]">
-              {weaverOptions.map(w => <SelectItem key={w as string} value={w as string}>{w === "All" ? "All Weavers" : w as string}</SelectItem>)}
-            </Select>
-            <Select value={orderFilter} onValueChange={setOrderFilter} size="sm" className="w-auto min-w-[130px]">
-              {orderOptions.map(o => <SelectItem key={o as string} value={o as string}>{o === "All" ? "All Orders" : o as string}</SelectItem>)}
-            </Select>
-            <Select value={qcFilter} onValueChange={setQcFilter} size="sm" className="w-auto min-w-[130px]">
-              {["All", "QC Passed", "In Progress"].map(q => <SelectItem key={q} value={q}>{q === "All" ? "All QC Status" : q}</SelectItem>)}
-            </Select>
           </div>
 
           <SareeWeightTallyList

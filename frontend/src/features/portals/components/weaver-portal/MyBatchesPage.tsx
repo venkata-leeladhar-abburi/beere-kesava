@@ -20,11 +20,12 @@ import { MobileWeaverHeroSection } from "./MobileWeaverHeroSection";
 import { SectionHeading } from "@/shared/ui/portal/PortalChrome";
 import { Button } from "@/shared/ui/primitives";
 import { AlertCircle, History, ListChecks, ChevronRight, Wallet } from "lucide-react";
+import { BatchHistoryPage } from "./BatchHistoryPage";
 import {
   C, F, SectionTitle, HeroHeader, MobileBatchCard, CompletedBatchCard, BatchQuickFilterPills, BatchQuickFilter, MyBatchEntry, BG_IMAGE
 } from './theme';
 
-export function MyBatchesPage() {
+export function MyBatchesPage({ onGoToPayments }: { onGoToPayments?: () => void } = {}) {
   const { isMobile, cols } = useResponsive();
   const { user } = useAuth();
   const { batches } = useBatches();
@@ -32,6 +33,39 @@ export function MyBatchesPage() {
   const { getPaymentsForWeaver } = useWeaverPayments();
   const { getQcForWeaver } = useQc();
   const [quickFilter, setQuickFilter] = useState<BatchQuickFilter>("all");
+  const [batchesSubPage, setBatchesSubPage] = useState<"main" | "history" | "completed">("main");
+
+  const myDefectiveSarees = useMemo(() => {
+    return batches.flatMap(b =>
+      b.rows
+        .filter(r => r.weaverId === weaverId && r.qcResult === "defective")
+        .map(r => ({
+          sareeId: r.sareeId,
+          batchId: b.batchId,
+          designCode: r.designCode,
+          sareeTypeCode: r.sareeTypeCode,
+          sareeTypeName: r.sareeTypeName,
+          date: "10 Jun 2026",
+          defect: "Thread Break",
+          deduction: 450,
+        }))
+    );
+  }, [batches, weaverId]);
+
+  const myReworkSarees = useMemo(() => {
+    return batches.flatMap(b =>
+      b.rows
+        .filter(r => r.weaverId === weaverId && r.awaitingRework === true && r.qcResult === "semi")
+        .map(r => ({ sareeId: r.sareeId, batchId: b.batchId, sareeTypeName: r.sareeTypeName }))
+    );
+  }, [batches, weaverId]);
+
+  if (batchesSubPage === "history") {
+    return <BatchHistoryPage onBack={() => setBatchesSubPage("main")} defaultFilter="all" />;
+  }
+  if (batchesSubPage === "completed") {
+    return <BatchHistoryPage onBack={() => setBatchesSubPage("main")} defaultFilter="completed" />;
+  }
 
   const weaverQcRecords = weaverId ? getQcForWeaver(weaverId) : [];
   const now = new Date();
@@ -93,31 +127,6 @@ export function MyBatchesPage() {
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
   const weaverFirstName = user?.name ? user.name.split(" ")[0] : "Weaver";
 
-  const myDefectiveSarees = useMemo(() => {
-    return batches.flatMap(b =>
-      b.rows
-        .filter(r => r.weaverId === weaverId && r.qcResult === "defective")
-        .map(r => ({
-          sareeId: r.sareeId,
-          batchId: b.batchId,
-          designCode: r.designCode,
-          sareeTypeCode: r.sareeTypeCode,
-          sareeTypeName: r.sareeTypeName,
-          date: "10 Jun 2026",
-          defect: "Thread Break",
-          deduction: 450,
-        }))
-    );
-  }, [batches, weaverId]);
-
-  const myReworkSarees = useMemo(() => {
-    return batches.flatMap(b =>
-      b.rows
-        .filter(r => r.weaverId === weaverId && r.awaitingRework === true && r.qcResult === "semi")
-        .map(r => ({ sareeId: r.sareeId, batchId: b.batchId, sareeTypeName: r.sareeTypeName }))
-    );
-  }, [batches, weaverId]);
-
   const showActiveSection = quickFilter === "all" || quickFilter === "active" || quickFilter === "qc-pending" || quickFilter === "draft";
   const showCompletedSection = quickFilter === "all" || quickFilter === "completed";
   const visibleActiveBatches = myActiveBatches.filter(b => {
@@ -155,7 +164,7 @@ export function MyBatchesPage() {
       <MobileWeaverHeroSection
         weaverName={user?.name ?? "Weaver"}
         onExploreBatches={() => document.getElementById("weaver-mobile-active-batches")?.scrollIntoView({ behavior: "smooth" })}
-        onGoToPayments={() => {}}
+        onGoToPayments={() => onGoToPayments?.()}
       />
 
       <div style={{ padding: "0 16px", marginTop: 24 }} id="weaver-mobile-active-batches">
@@ -200,7 +209,7 @@ export function MyBatchesPage() {
             subtitle="You can have a maximum of 2 active batches at a time. Complete one before a new batch is assigned."
             right={
               <button
-                onClick={() => {}}
+                onClick={() => setBatchesSubPage("history")}
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
@@ -250,7 +259,7 @@ export function MyBatchesPage() {
             accent="#1F774E"
             right={
               <button
-                onClick={() => {}}
+                onClick={() => setBatchesSubPage("completed")}
                 style={{
                   display: "inline-flex",
                   alignItems: "center",

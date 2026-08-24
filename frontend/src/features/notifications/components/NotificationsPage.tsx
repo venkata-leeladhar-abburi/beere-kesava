@@ -53,15 +53,44 @@ function formatRelativeTime(iso: string): string {
   return `${diffDays} days ago`;
 }
 
+function humanizeType(type: string): string {
+  return type.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function inferCategory(type: string): UnifiedNotif["category"] {
+  const t = type.toUpperCase();
+  if (t.includes("PAYMENT") || t.includes("INVOICE") || t.includes("BILL")) return "payment";
+  if (t.includes("WARP") || t.includes("MATERIAL") || t.includes("STOCK") || t.includes("GRN")) return "material";
+  if (t.includes("BATCH") || t.includes("SAREE") || t.includes("QC") || t.includes("FINISHING")) return "production";
+  if (t.includes("WEAVER") || t.includes("LOOM")) return "weaver";
+  if (t.includes("DISPATCH") || t.includes("ORDER") || t.includes("SALE")) return "dispatch";
+  return "production";
+}
+
+function inferPriority(type: string): Priority {
+  const t = type.toUpperCase();
+  if (t.includes("REJECT") || t.includes("FAIL") || t.includes("DEFECT") || t.includes("OVERDUE") || t.includes("CRITICAL")) return "critical";
+  if (t.includes("PENDING") || t.includes("WARN") || t.includes("RISK")) return "warning";
+  if (t.includes("APPROVE") || t.includes("PAID") || t.includes("SUCCESS") || t.includes("COMPLETE") || t.includes("SIGNED")) return "success";
+  return "info";
+}
+
+function formatPayloadBody(payload?: Record<string, unknown> | null): string {
+  if (!payload || Object.keys(payload).length === 0) return "No details provided.";
+  return Object.entries(payload)
+    .map(([k, v]) => `${humanizeType(k)}: ${v}`)
+    .join(" · ");
+}
+
 function toUnifiedNotif(n: BackendNotification): UnifiedNotif {
   const cfg = TYPE_CONFIG[n.type];
   const payload = n.payload ?? {};
   return {
     id: n.id,
-    priority: cfg?.priority ?? "info",
-    category: cfg?.category ?? "payment",
-    title: cfg ? cfg.title(payload) : n.type,
-    body: cfg ? cfg.body(payload) : JSON.stringify(payload),
+    priority: cfg?.priority ?? inferPriority(n.type),
+    category: cfg?.category ?? inferCategory(n.type),
+    title: cfg ? cfg.title(payload) : humanizeType(n.type),
+    body: cfg ? cfg.body(payload) : formatPayloadBody(payload),
     time: formatRelativeTime(n.createdAt),
     read: n.readAt !== null,
   };
@@ -331,7 +360,7 @@ export function NotificationsPage() {
                     const isRead = n.read;
                     const isSelected = selected?.id === n.id;
                     const PriorityIcon = cfg.Icon;
-                    const catCfg = CATEGORIES.find(c => c.key === n.category)!;
+                    const catCfg = CATEGORIES.find(c => c.key === n.category) || CATEGORIES[0];
                     const CatIcon = catCfg.Icon;
 
                     return (

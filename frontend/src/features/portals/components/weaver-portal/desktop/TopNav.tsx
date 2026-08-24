@@ -143,11 +143,7 @@ export function TopNav({
                   }} className="!h-auto !py-2.5 !px-[18px] !text-sm !text-[#3B2314]">
                     <ChevronLeft size={15} color={C.muted} /> My Portal
                   </DropdownMenuItem>
-                ) : (
-                  <DropdownMenuItem onClick={() => { selectRole(null); navigate("/select-role"); }} className="!h-auto !py-2.5 !px-[18px] !text-sm !text-[#3B2314]">
-                    <ChevronLeft size={15} color={C.muted} /> Switch Portal
-                  </DropdownMenuItem>
-                )}
+                ) : null}
                 <DropdownMenuItem onClick={() => { logout(); navigate("/login"); }} destructive className="!h-auto !py-2.5 !px-[18px] !text-sm">
                   <LogOut size={15} color="#C0392B" /> Logout
                 </DropdownMenuItem>

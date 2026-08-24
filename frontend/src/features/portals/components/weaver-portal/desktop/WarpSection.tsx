@@ -244,8 +244,8 @@ export function WarpSection({
                 onClick={() => (!isLocked && (materials.warp || materials.resham || materials.jari)) ? createRequestMutation.mutate() : undefined}
                 disabled={isLocked || createRequestMutation.isPending || !(materials.warp || materials.resham || materials.jari)}
                 fullWidth
-                className="h-[60px] bg-[#6E0F2D] border-none rounded-full font-bold text-lg text-white gap-3 shadow-[0_4px_20px_rgba(110,15,45,0.35)] disabled:opacity-50">
-                <Send size={22} /> {createRequestMutation.isPending ? "Sending Request…" : isLocked ? "Warp Request Locked" : "Send Warp Request"}
+                className="h-[60px] bg-[#6E0F2D] hover:bg-[#520920] active:bg-[#3D0616] text-white hover:text-white border-none rounded-full font-bold text-lg gap-3 shadow-[0_4px_20px_rgba(110,15,45,0.35)] disabled:bg-[#E8DCC4] disabled:text-[#8C7A6B] disabled:opacity-80 cursor-pointer">
+                <Send size={22} className="shrink-0" /> {createRequestMutation.isPending ? "Sending Request…" : isLocked ? "Warp Request Locked" : "Send Warp Request"}
               </Button>
             </div>
 

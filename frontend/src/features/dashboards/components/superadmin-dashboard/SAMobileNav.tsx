@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { motion } from "motion/react";
-import { ChevronRight, Menu, UserRound, ChevronLeft, LogOut, X } from "lucide-react";
+import { ChevronRight, Menu, UserRound, ChevronLeft, LogOut, X, Bell } from "lucide-react";
 import { imgBKLogo } from "../../../../shared/constants/weaverImages";
 import { T, F, G, EASE } from "./theme";
 import { NAV_GROUPS, findNavGroup } from "./data";
@@ -118,8 +118,9 @@ export function SAMobileMenuDrawer({ open, onClose, activeTab, setTab }: {
   );
 }
 
-export function SAMobileTopNav({ onMenuOpen, onBack, onProfile }: { onMenuOpen: () => void; onBack?: () => void; onProfile?: () => void }) {
+export function SAMobileTopNav({ onMenuOpen, onBack, onProfile, onNotifications }: { onMenuOpen: () => void; onBack?: () => void; onProfile?: () => void; onNotifications?: () => void }) {
   const [showProfile, setShowProfile] = useState(false);
+  const [showNotif, setShowNotif] = useState(false);
   const [scrollDirection, setScrollDirection] = useState<"up" | "down">("up");
   const lastScrollYRef = useRef(0);
 
@@ -183,16 +184,60 @@ export function SAMobileTopNav({ onMenuOpen, onBack, onProfile }: { onMenuOpen: 
           <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: T.taupe, letterSpacing: "0.2px" }}>Superadmin · Est. 1999</div>
         </div>
       </div>
-      <div style={{ position: "relative" }}>
-        <div style={{ borderRadius: 10, border: `1px solid ${showProfile ? T.antiqueGold : T.borderDef}`, boxShadow: "0 3px 10px rgba(196,146,58,0.35)", display: "inline-block" }}>
-          <Button
-            onClick={() => setShowProfile(p => !p)}
-            variant="tertiary"
-            className="!size-9 !rounded-[10px] !p-0 !border-none !bg-[#C4923A] hover:!bg-[#C4923A]"
-          >
-            <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 12, color: "#FFFFFF" }}>SA</span>
-          </Button>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        {/* Notification Bell Dropdown */}
+        <div style={{ position: "relative" }}>
+          <IconButton
+            icon={Bell}
+            label="Notifications"
+            onClick={() => { setShowNotif(n => !n); setShowProfile(false); }}
+            variant="ghost"
+            className={`!size-9 !rounded-[10px] border border-[rgba(110,15,45,0.10)] bg-transparent hover:bg-[rgba(0,0,0,0.04)] ${showNotif ? "text-[#C4923A] bg-rgba(110,15,45,0.06)" : "text-[#6E0F2D]"}`}
+          />
+          <div style={{ position: "absolute", top: 4, right: 4, width: 7, height: 7, borderRadius: "50%", background: "#C4923A", border: "1.5px solid #FFFDF9", pointerEvents: "none" }} />
+          {showNotif && (
+            <div style={{
+              position: "absolute", top: "calc(100% + 10px)", right: -42,
+              zIndex: "var(--z-tooltip)", background: "#FFFDF9",
+              borderRadius: 16, border: `1px solid ${T.borderDef}`,
+              boxShadow: "0 10px 36px rgba(44,24,16,0.18)",
+              width: "calc(100vw - 32px)", maxWidth: 310, overflow: "hidden"
+            }}>
+              <div style={{ padding: "14px 18px", borderBottom: `1px solid ${T.borderDef}`, display: "flex", justifyContent: "space-between", alignItems: "center", background: "rgba(196,146,58,0.06)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>Notifications</span>
+                  <span style={{ background: T.royalBurgundy, color: "#FFFDF9", fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, borderRadius: 999, padding: "2px 7px" }}>0</span>
+                </div>
+                <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.antiqueGold, cursor: "pointer" }}>Mark all read</span>
+              </div>
+              <div style={{ padding: "22px 18px", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+                No new notifications.
+              </div>
+              <div style={{ padding: "10px 14px", borderTop: `1px solid ${T.borderDef}`, background: "#F7F2EA", textAlign: "center" }}>
+                <Button
+                  onClick={() => { setShowNotif(false); onNotifications?.(); }}
+                  variant="tertiary"
+                  fullWidth
+                  className="!text-xs !font-semibold !text-[#6E0F2D] !py-1.5"
+                >
+                  View All Notifications →
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
+
+        {/* Profile Avatar */}
+        <div style={{ position: "relative" }}>
+          <div style={{ borderRadius: 10, border: `1px solid ${showProfile ? T.antiqueGold : T.borderDef}`, boxShadow: "0 3px 10px rgba(196,146,58,0.35)", display: "inline-block" }}>
+            <Button
+              onClick={() => setShowProfile(p => !p)}
+              variant="tertiary"
+              className="!size-9 !rounded-[10px] !p-0 !border-none !bg-[#C4923A] hover:!bg-[#C4923A]"
+            >
+              <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 12, color: "#FFFFFF" }}>SA</span>
+            </Button>
+          </div>
         {showProfile && (
           <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: "var(--z-tooltip)", background: "#FFFDF9", borderRadius: 14, border: `1px solid ${T.borderDef}`, boxShadow: "0 8px 32px rgba(44,24,16,0.14)", minWidth: 210, overflow: "hidden" }}>
             <div style={{ padding: "14px 16px", background: "rgba(196,146,58,0.06)", borderBottom: `1px solid ${T.borderDef}` }}>
@@ -216,6 +261,7 @@ export function SAMobileTopNav({ onMenuOpen, onBack, onProfile }: { onMenuOpen: 
             </div>
           </div>
         )}
+        </div>
       </div>
     </motion.nav>
   );

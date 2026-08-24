@@ -268,15 +268,15 @@ export function SareeSelectionTable({
             </span>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0, whiteSpace: "nowrap" }}>
             {pendingSarees.length > 0 && (
-              <Button variant="link" onClick={onToggleAll} className="gap-1.5 p-0 px-1.5 py-1 text-xs text-[#69635E]">
+              <Button variant="link" onClick={onToggleAll} className="gap-1.5 p-0 px-1.5 py-1 text-xs text-[#69635E] shrink-0">
                 {allPendingSelected ? <CheckSquare size={15} color={C.burg} /> : <Square size={15} color={C.muted} />}
                 {allPendingSelected ? "Deselect All" : "Select All"}
               </Button>
             )}
-            <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Sort by</span>
-            <Select value={sareeSort} onValueChange={v => setSareeSort(v as "serial" | "status")} size="sm">
+            <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted, whiteSpace: "nowrap" }}>Sort by</span>
+            <Select value={sareeSort} onValueChange={v => setSareeSort(v as "serial" | "status")} size="sm" className="shrink-0">
               <SelectItem value="serial">Default (#)</SelectItem>
               <SelectItem value="status">Status</SelectItem>
             </Select>

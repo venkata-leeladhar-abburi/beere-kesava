@@ -25,7 +25,7 @@ interface NotificationDetailPanelProps {
 export function NotificationDetailPanel({ selected, setSelected, markRead }: NotificationDetailPanelProps) {
   const cfg = PRIORITY[selected.priority];
   const PriorityIcon = cfg.Icon;
-  const catCfg = CATEGORIES.find(c => c.key === selected.category)!;
+  const catCfg = CATEGORIES.find(c => c.key === selected.category) || CATEGORIES[0];
   const CatIcon = catCfg.Icon;
 
   return (

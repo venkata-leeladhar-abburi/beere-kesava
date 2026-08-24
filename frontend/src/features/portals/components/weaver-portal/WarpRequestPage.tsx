@@ -330,42 +330,14 @@ export function WarpRequestPage() {
 
       {/* Submit Button */}
       <div style={{ margin: "0 20px 24px" }}>
-        <button
+        <Button
           onClick={() => (!isLocked && (materials.warp || materials.resham || materials.jari)) ? createRequestMutation.mutate() : undefined}
           disabled={isLocked || createRequestMutation.isPending || !(materials.warp || materials.resham || materials.jari)}
-          style={{
-            width: "100%",
-            height: 56,
-            borderRadius: 999,
-            border: "none",
-            background: isLocked || !(materials.warp || materials.resham || materials.jari) ? "#C0C0C0" : "#6E0F2D",
-            color: "#FFFFFF",
-            fontFamily: F.u,
-            fontWeight: 700,
-            fontSize: 16,
-            cursor: isLocked || !(materials.warp || materials.resham || materials.jari) ? "not-allowed" : "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 10,
-            boxShadow: isLocked ? "none" : "0 4px 20px rgba(110,15,45,0.35)",
-            transition: "all 0.2s ease",
-          }}
-          onMouseEnter={(e) => {
-            if (!isLocked && (materials.warp || materials.resham || materials.jari)) {
-              e.currentTarget.style.background = "#520920";
-              e.currentTarget.style.color = "#FFFFFF";
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!isLocked && (materials.warp || materials.resham || materials.jari)) {
-              e.currentTarget.style.background = "#6E0F2D";
-              e.currentTarget.style.color = "#FFFFFF";
-            }
-          }}
+          fullWidth
+          className="h-14 bg-[#6E0F2D] hover:bg-[#520920] active:bg-[#3D0616] text-white hover:text-white font-bold text-base rounded-full gap-2.5 shadow-[0_4px_20px_rgba(110,15,45,0.35)] disabled:bg-[#E8DCC4] disabled:text-[#8C7A6B] disabled:opacity-80 border-none cursor-pointer"
         >
-          <Send size={20} color="#FFFFFF" /> {createRequestMutation.isPending ? "Sending Request…" : isLocked ? "Warp Request Locked" : "Send Warp Request"}
-        </button>
+          <Send size={20} className="shrink-0" /> {createRequestMutation.isPending ? "Sending Request…" : isLocked ? "Warp Request Locked" : "Send Warp Request"}
+        </Button>
       </div>
 
       {/* System Rule Card */}

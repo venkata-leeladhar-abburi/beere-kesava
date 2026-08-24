@@ -50,8 +50,10 @@ export function Select({
     onValueChange?.(e.target.value);
   };
 
+  const defaultContainerClass = className?.includes("w-auto") ? "w-auto shrink-0" : "w-full";
+
   return (
-    <div className={cn("relative inline-flex items-center", containerClassName || "w-full")}>
+    <div className={cn("relative inline-flex items-center", containerClassName || defaultContainerClass)}>
       <select
         id={field?.inputId}
         value={value}

@@ -33,6 +33,7 @@ export function MobileWeaverHeroSection({
     icon: ICONS[i],
     highlight: m.hi,
     goldVal: m.hi,
+    onClick: i === 4 || m.label.toLowerCase().includes("charge") || m.label.toLowerCase().includes("payment") ? onGoToPayments : undefined,
   }));
 
   return (
