@@ -230,12 +230,16 @@ export function SareeWeightTallyList({
         return (
           <div
             key={`${item.batchId}-${item.serial}`}
-            style={{
-              display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" as const,
-              background: editing ? "rgba(200,155,71,0.05)" : item.tallied ? "rgba(30,102,64,0.04)" : short ? "rgba(192,57,43,0.03)" : "#FFF",
-              border: `1px solid ${editing ? T.antiqueGold : item.tallied ? "rgba(30,102,64,0.18)" : short ? "rgba(192,57,43,0.18)" : T.borderDef}`,
-              borderRadius: 12, padding: "12px 16px",
-            }}
+            className={
+              "flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 p-4 sm:px-5 sm:py-4 rounded-2xl border transition-all shadow-xs " +
+              (editing
+                ? "bg-[#FFFDF9] border-[#C89B47]"
+                : item.tallied
+                ? "bg-[#F4F9F5] border-[#BCE3C8]"
+                : short
+                ? "bg-[#FDF4F4] border-[#F5C6C6]"
+                : "bg-white border-[#E8DCC4]")
+            }
           >
             {editing ? (
               <EditRow
@@ -247,42 +251,46 @@ export function SareeWeightTallyList({
               />
             ) : (
               <>
-                <div style={{ minWidth: 170 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" as const }}>
+                {/* Saree Info Column */}
+                <div className="flex flex-col gap-1 min-w-0 sm:min-w-[200px]">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <TallyPhotoThumb url={item.receivedPhotoUrl} sareeId={item.sareeId} onView={setZoomImage} />
-                    <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.royalBurgundy }}>Saree {item.serial}</span>
+                    <span className="font-bold text-sm text-[#6E0F2D] font-serif">Saree {item.serial}</span>
                     {item.sareeId && <EntityCode type="saree" value={item.sareeId} size="sm" />}
                   </div>
-                  <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, marginTop: 3 }}>
+                  <div className="text-xs text-[#523F31] font-medium mt-0.5">
                     {item.weaverLoom ? `Loom ${item.weaverLoom} · ` : ""}{item.weaverName || "Unassigned"}
                   </div>
                   {item.bulkOrderLabel && (
-                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.green, marginTop: 2 }}>↳ Order: {item.bulkOrderLabel}</div>
+                    <div className="text-xs font-semibold text-emerald-700 flex items-center gap-1">
+                      <span>↳ Order: {item.bulkOrderLabel}</span>
+                    </div>
                   )}
                   {item.qcPassed !== undefined && (
-                    <span style={{ display: "inline-block", marginTop: 4, fontFamily: F.ui, fontSize: 11, fontWeight: 800, textTransform: "uppercase" as const, color: item.qcPassed ? T.green : T.taupe, background: item.qcPassed ? "rgba(30,102,64,0.08)" : "rgba(139,112,96,0.08)", borderRadius: 6, padding: "3px 7px" }}>
-                      {item.qcPassed ? "QC Passed" : "In Progress"}
-                    </span>
+                    <div className="mt-1">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wider ${item.qcPassed ? "bg-emerald-100/70 text-emerald-800 border border-emerald-300/50" : "bg-amber-100/70 text-amber-800 border border-amber-300/50"}`}>
+                        {item.qcPassed ? "QC PASSED" : "IN PROGRESS"}
+                      </span>
+                    </div>
                   )}
                 </div>
 
-                <div className="flex-1 min-w-[280px]" style={{ display: "grid", gridTemplateColumns: "repeat(4,minmax(0,1fr))", gap: 10, alignItems: "start" }}>
+                {/* Metrics Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4 my-1 sm:my-0 p-3 sm:p-0 rounded-xl bg-[#FAF6F0]/60 sm:bg-transparent border border-[#E8DCC4]/60 sm:border-none flex-1 min-w-0 sm:min-w-[320px]">
                   {[
-                    // Only Weight is compared against the rate card standard;
-                    // the material figures read as plain measured quantities.
-                    { label: "Weight", actual: item.actualWeight, expected: expectedWeight, unit: "g", showExpected: true },
-                    { label: "Warp", actual: item.actualWarpG, expected: expectedWarpG, unit: "g", showExpected: false },
-                    { label: "Resham", actual: item.actualReshamG, expected: expectedReshamG, unit: "g", showExpected: false },
-                    { label: "Jari", actual: item.actualJariReels, expected: expectedJariReels, unit: " reels", showExpected: false },
+                    { label: "WEIGHT", actual: item.actualWeight, expected: expectedWeight, unit: "g", showExpected: true },
+                    { label: "WARP", actual: item.actualWarpG, expected: expectedWarpG, unit: "g", showExpected: false },
+                    { label: "RESHAM", actual: item.actualReshamG, expected: expectedReshamG, unit: "g", showExpected: false },
+                    { label: "JARI", actual: item.actualJariReels, expected: expectedJariReels, unit: " reels", showExpected: false },
                   ].map(m => {
                     const dp = m.unit === " reels" ? 2 : 0;
                     return (
-                      <div key={m.label} style={{ minWidth: 0 }}>
-                        <div style={{ ...labelRowStyle, marginBottom: 3 }}><span style={labelTextStyle}>{m.label}</span></div>
-                        <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: short ? T.crimson : T.luxuryBrown }}>
+                      <div key={m.label} className="flex flex-col min-w-0">
+                        <span className="text-[10px] font-bold text-[#8B7060] uppercase tracking-wider">{m.label}</span>
+                        <div className={`text-sm sm:text-base font-bold mt-0.5 ${short ? "text-rose-700" : "text-[#3B2314]"}`}>
                           {m.actual === null ? "—" : `${trimNum(m.actual, dp)}${m.unit}`}
                           {m.showExpected && m.expected > 0 && (
-                            <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 400, color: T.taupe }}> / {trimNum(m.expected, dp)}{m.unit}</span>
+                            <span className="text-xs font-normal text-[#8B7060] ml-1"> / {trimNum(m.expected, dp)}{m.unit}</span>
                           )}
                         </div>
                       </div>
@@ -290,41 +298,49 @@ export function SareeWeightTallyList({
                   })}
                 </div>
 
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: "auto" }}>
-                  {!weighed ? (
-                    <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontStyle: "italic" as const }}>Not weighed yet</span>
-                  ) : short && !item.tallied ? (
-                    <span style={{ display: "flex", alignItems: "center", gap: 4, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.crimson }}>
-                      <AlertTriangle size={13} /> Shortfall
-                    </span>
-                  ) : null}
-                  <Button
-                    onClick={() => setEditingKey(key)}
-                    variant="tertiary" size="sm" iconLeft={Pencil}
-                    disabled={!weighed || busy}
-                    title={!weighed ? "Worker Staff hasn't weighed this saree yet" : "Correct the recorded weight/material"}
-                  >
-                    Edit
-                  </Button>
-                  {item.tallied ? (
+                {/* Actions Row */}
+                <div className="flex items-center justify-between sm:justify-end gap-2.5 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100/80 shrink-0">
+                  <div className="flex items-center gap-1.5">
+                    {!weighed ? (
+                      <span className="text-xs text-[#8B7060] italic">Not weighed yet</span>
+                    ) : short && !item.tallied ? (
+                      <span className="flex items-center gap-1 text-xs font-bold text-rose-700">
+                        <AlertTriangle size={13} /> Shortfall
+                      </span>
+                    ) : null}
+                  </div>
+
+                  <div className="flex items-center gap-2">
                     <Button
-                      onClick={() => onToggleTally(item, false)}
-                      variant="secondary" size="sm" iconLeft={CheckCircle2}
-                      disabled={busy}
-                      className="rounded-full bg-[rgba(30,102,64,0.10)] border-[rgba(30,102,64,0.24)] text-[#1E6640] hover:bg-[rgba(30,102,64,0.16)]"
-                    >
-                      Tallied
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={() => onToggleTally(item, true)}
-                      variant="secondary" size="sm" iconLeft={Scale}
+                      onClick={() => setEditingKey(key)}
+                      variant="tertiary" size="sm" iconLeft={Pencil}
                       disabled={!weighed || busy}
-                      title={!weighed ? "Worker Staff hasn't weighed this saree yet" : undefined}
+                      className="h-8 sm:h-9 px-3 rounded-xl border border-[#E8DCC4] text-[#6E0F2D] hover:bg-[#6E0F2D]/5 font-bold text-xs cursor-pointer"
+                      title={!weighed ? "Worker Staff hasn't weighed this saree yet" : "Correct the recorded weight/material"}
                     >
-                      Tally
+                      Edit
                     </Button>
-                  )}
+                    {item.tallied ? (
+                      <Button
+                        onClick={() => onToggleTally(item, false)}
+                        variant="secondary" size="sm" iconLeft={CheckCircle2}
+                        disabled={busy}
+                        className="h-8 sm:h-9 px-3.5 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-800 hover:bg-emerald-100 font-bold text-xs cursor-pointer"
+                      >
+                        Tallied
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={() => onToggleTally(item, true)}
+                        variant="secondary" size="sm" iconLeft={Scale}
+                        disabled={!weighed || busy}
+                        className="h-8 sm:h-9 px-3.5 rounded-xl border border-[#6E0F2D] text-[#6E0F2D] hover:bg-[#6E0F2D] hover:text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
+                        title={!weighed ? "Worker Staff hasn't weighed this saree yet" : undefined}
+                      >
+                        Tally
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </>
             )}

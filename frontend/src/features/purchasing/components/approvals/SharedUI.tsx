@@ -46,7 +46,7 @@ export function SectionCard({
 
 export function GreenBtn({ children, onClick, className }: { children: React.ReactNode; onClick?: () => void; className?: string }) {
   return (
-    <Button onClick={onClick} variant="primary" size="sm" className={"rounded-full justify-center " + (className ?? "")}>
+    <Button onClick={onClick} variant="primary" size="sm" className={"rounded-[10px] justify-center " + (className ?? "")}>
       {children}
     </Button>
   );
@@ -54,7 +54,7 @@ export function GreenBtn({ children, onClick, className }: { children: React.Rea
 
 export function CrimsonBtn({ children, onClick, className }: { children: React.ReactNode; onClick?: () => void; className?: string }) {
   return (
-    <Button onClick={onClick} variant="danger-subtle" size="sm" className={"rounded-full justify-center " + (className ?? "")}>
+    <Button onClick={onClick} variant="danger-subtle" size="sm" className={"rounded-[10px] justify-center " + (className ?? "")}>
       {children}
     </Button>
   );

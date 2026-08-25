@@ -58,13 +58,13 @@ export function RecipientSelector({
                 placeholder="Search weaver by name or ID…" size="lg" />
             </div>
             {showWeaverList && (
-              <div style={{ position: "absolute" as const, top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 40, background: "#FFF", border: `1px solid ${T.royalBurgundy}`, borderRadius: 14, boxShadow: "0 8px 28px rgba(74,6,27,0.16)", maxHeight: 320, overflowY: "auto" as const }}>
+              <div style={{ position: "absolute" as const, top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 40, background: "#FFF", border: `1px solid ${T.royalBurgundy}`, borderRadius: 10, boxShadow: "0 8px 28px rgba(74,6,27,0.16)", maxHeight: 320, overflowY: "auto" as const, padding: 4 }}>
                 {filteredWeavers.length === 0 ? (
                   <div style={{ padding: 16, textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No weavers found</div>
                 ) : filteredWeavers.map(w => (
                   <Button key={w.id} onClick={() => { setSelectedWeaverId(w.id); setSelectedBatchId(null); setShowWeaverList(false); setWeaverSearch(""); }}
                     variant="ghost" size="lg" fullWidth
-                    className="justify-start rounded-none border-b border-[var(--border-default)] last:border-b-0">
+                    className="justify-start rounded-[10px] border-b border-[var(--border-default)] last:border-b-0 hover:bg-[rgba(110,15,45,0.06)]">
                     <div style={{ width: 38, height: 38, borderRadius: "50%", background: w.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                       <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 12, color: "#FFF" }}>{w.initials}</span>
                     </div>

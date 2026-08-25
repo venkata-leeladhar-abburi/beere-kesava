@@ -200,33 +200,27 @@ export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: s
               </div>
             </div>
 
-            {/* Metrics Stats Cards & Status Badge */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full lg:w-auto shrink-0">
-              <div className="flex flex-wrap sm:flex-nowrap gap-3 w-full sm:w-auto">
-                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/15 rounded-xl p-3.5 sm:px-5 sm:py-4 flex-1 sm:flex-none">
-                  <div className="w-10 h-10 rounded-lg bg-[rgba(200,155,71,0.2)] flex items-center justify-center shrink-0">
-                    <TrendingUp size={20} color={T.antiqueGold} />
-                  </div>
-                  <div>
-                    <div className="text-[10px] font-bold text-white/60 uppercase tracking-wider">Progress</div>
-                    <div className="text-sm sm:text-base font-bold text-[#FFFDF9] mt-0.5 whitespace-nowrap">{pct}% Complete</div>
-                  </div>
+            {/* Metrics Stats Cards */}
+            <div className="flex flex-wrap sm:flex-nowrap gap-3 w-full lg:w-auto shrink-0">
+              <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/15 rounded-xl p-3.5 sm:px-5 sm:py-4 flex-1 sm:flex-none">
+                <div className="w-10 h-10 rounded-lg bg-[rgba(200,155,71,0.2)] flex items-center justify-center shrink-0">
+                  <TrendingUp size={20} color={T.antiqueGold} />
                 </div>
-
-                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/15 rounded-xl p-3.5 sm:px-5 sm:py-4 flex-1 sm:flex-none">
-                  <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center shrink-0">
-                    <Scale size={20} className="text-emerald-400" />
-                  </div>
-                  <div>
-                    <div className="text-[10px] font-bold text-white/60 uppercase tracking-wider">Tallied</div>
-                    <div className="text-sm sm:text-base font-bold text-[#7EE2A8] mt-0.5 whitespace-nowrap">{tallyItems.filter(i => i.tallied).length} / {tallyItems.length}</div>
-                  </div>
+                <div>
+                  <div className="text-[10px] font-bold text-white/60 uppercase tracking-wider">Progress</div>
+                  <div className="text-sm sm:text-base font-bold text-[#FFFDF9] mt-0.5 whitespace-nowrap">{pct}% Complete</div>
                 </div>
               </div>
 
-              <span className={`px-4 py-1.5 rounded-full font-bold text-xs uppercase tracking-wider shadow-md shrink-0 ${b.status === "active" ? "bg-emerald-500 text-white" : "bg-amber-500 text-white"}`}>
-                {b.status === "active" ? "ACTIVE" : "DRAFT"}
-              </span>
+              <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/15 rounded-xl p-3.5 sm:px-5 sm:py-4 flex-1 sm:flex-none">
+                <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center shrink-0">
+                  <Scale size={20} className="text-emerald-400" />
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold text-white/60 uppercase tracking-wider">Tallied</div>
+                  <div className="text-sm sm:text-base font-bold text-[#7EE2A8] mt-0.5 whitespace-nowrap">{tallyItems.filter(i => i.tallied).length} / {tallyItems.length}</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

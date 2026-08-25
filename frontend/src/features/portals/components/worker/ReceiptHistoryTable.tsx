@@ -189,8 +189,8 @@ export function ReceiptHistoryTable({ receiptHistory: propReceiptHistory, compac
   ];
 
   return (
-    <div style={{ padding: compact ? 0 : "8px 0" }}>
-      <div style={{ marginBottom: compact ? 10 : 12 }}>
+    <div className="flex flex-col gap-4">
+      <div>
         <Input
           value={historySearch}
           onChange={e => { setHistorySearch(e.target.value); setHistoryPage(1); }}
@@ -200,11 +200,11 @@ export function ReceiptHistoryTable({ receiptHistory: propReceiptHistory, compac
         />
       </div>
 
-      <div style={{ marginBottom: 12 }}>
+      <div>
         <DateFilterBar filter={historyDateFilter} onChange={f => { setHistoryDateFilter(f); setHistoryPage(1); }} />
       </div>
 
-      <div className="flex md:hidden items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0 mb-3 w-fit">
+      <div className="flex md:hidden items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0 w-fit">
         <Button
           onClick={() => setViewMode("card")}
           variant="ghost"

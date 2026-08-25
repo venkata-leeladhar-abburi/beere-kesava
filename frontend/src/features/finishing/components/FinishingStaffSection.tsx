@@ -219,8 +219,8 @@ export function FinishingStaffSection({
                               variant="ghost"
                               className={`h-auto rounded-none gap-1.5 py-1.5 px-2.5 text-[12px] font-bold ${
                                 viewMode === "card"
-                                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
-                                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+                                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D] hover:text-[#FFFDF9]"
+                                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA] hover:text-[#6E0F2D]"
                               }`}
                             >
                               <LayoutGrid size={14} /> Card View
@@ -230,8 +230,8 @@ export function FinishingStaffSection({
                               variant="ghost"
                               className={`h-auto rounded-none gap-1.5 py-1.5 px-2.5 text-[12px] font-bold ${
                                 viewMode === "table"
-                                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
-                                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+                                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D] hover:text-[#FFFDF9]"
+                                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA] hover:text-[#6E0F2D]"
                               }`}
                             >
                               <List size={14} /> Table View

@@ -72,6 +72,10 @@ import {
   SectionNavigator, PAGE_SECTIONS, SECTION_NAV_GLOBAL_STYLE,
   MOBILE_NAV_H,
 } from "../../../shared/ui/SectionNavigator";
+import { ChevronLeft, UserRound, PackageCheck, History } from "lucide-react";
+import { Button } from "../../../shared/ui/primitives";
+import { EntityCode } from "../../../shared/ui/domain";
+import { Breadcrumbs } from "../../../shared/ui/nav/Breadcrumbs";
 import { AnimatePresence } from "motion/react";
 import { UserProfileModal } from "../../../shared/ui/UserProfileModal";
 
@@ -80,7 +84,6 @@ import { UserProfileModal } from "../../../shared/ui/UserProfileModal";
 // ═══════════════════════════════════════════════════════════════════════════════
 import { T, F, GLOBAL_STYLE } from './beere-dashboard/theme';
 import { SectionCard } from './beere-dashboard/primitives';
-import { PackageCheck, History } from 'lucide-react';
 import { TopNav, Hero, MetricsBar, ThreeCol, ActivityStrip, WeaverSection, RawMaterial, Footer } from './beere-dashboard/desktop';
 import { MobileMenuDrawer, MobileTopNav, MobileHero, MobileMetrics, MobilePerformance, MobileFeaturedProduct, MobileActivity, MobileWeavers, MobileRawMaterial, MobileFooter } from './beere-dashboard/mobile';
 
@@ -286,19 +289,42 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
             </div>
           </section>
 
-          <div style={{ padding: "20px 16px 80px", display: "flex", flexDirection: "column", gap: 24 }}>
+          <div style={{ padding: "20px 16px 80px", display: "flex", flexDirection: "column", gap: 20 }}>
             {/* Section 1: Receive Stock Form SectionCard */}
             <SectionCard icon={PackageCheck} title="Receive Stock" subtitle="Record incoming raw materials from vendors and generate a GRN number.">
-              <div style={{ margin: "-24px -28px" }}>
-                <WorkerGRN mode="form" history={grnHistory} setHistory={setGrnHistory} initialPOId={(state as { poId?: string } | null)?.poId} />
-              </div>
+              <WorkerGRN mode="form" history={grnHistory} setHistory={setGrnHistory} initialPOId={(state as { poId?: string } | null)?.poId} />
             </SectionCard>
+
+            {/* Current Stock Card */}
+            <div style={{ background: "rgba(200,155,71,0.10)", border: `1px solid rgba(200,155,71,0.25)`, borderRadius: 16, padding: "18px 22px" }}>
+              <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.antiqueGold, marginBottom: 12, textTransform: "uppercase" as const, letterSpacing: "0.5px" }}>Current Stock</div>
+              {!rawMaterialStock ? (
+                <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, textAlign: "center", padding: "10px 0" }}>
+                  Loading stock levels...
+                </div>
+              ) : rawMaterialStock.items.length === 0 ? (
+                <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, textAlign: "center", padding: "10px 0" }}>
+                  No stock recorded yet.
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {rawMaterialStock.items.map(item => (
+                    <div key={item.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                      <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, fontWeight: 600 }}>
+                        {item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari"} · {item.name}
+                      </span>
+                      <span style={{ fontFamily: F.ui, fontSize: 13, color: item.currentStock <= item.reorderLevel ? "#B03A2E" : T.taupe, fontWeight: 700, whiteSpace: "nowrap" as const }}>
+                        {item.currentStock} {item.unit}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* Section 2: Goods Receipt History SectionCard */}
             <SectionCard icon={History} title="Goods Receipt History" subtitle="Every GRN recorded so far, with vendor, materials, and quantities.">
-              <div style={{ margin: "-24px -28px" }}>
-                <WorkerGRN mode="history" history={grnHistory} setHistory={setGrnHistory} />
-              </div>
+              <WorkerGRN mode="history" history={grnHistory} setHistory={setGrnHistory} />
             </SectionCard>
           </div>
         </div>
@@ -341,26 +367,6 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
         <ProductionHistoryPage />
       ) : nav === "QcHistory" ? (
         <QcHistoryPage onBack={() => navigate("Production")} />
-      ) : nav === "Payments" ? (
-        <PaymentsPage />
-      ) : nav === "Reports" ? (
-        <ReportsPage />
-      ) : nav === "Inventory" ? (
-        <InventoryPage />
-      ) : nav === "Customers" ? (
-        <CustomersPage />
-      ) : nav === "Vendors" ? (
-        <VendorsPage />
-      ) : nav === "Suppliers" ? (
-        <SuppliersPage />
-      ) : nav === "FactoryLooms" ? (
-        <FactoryLoomPage />
-      ) : nav === "Firms" ? (
-        <FirmsPage />
-      ) : nav === "Notifications" ? (
-        <NotificationsPage />
-      ) : nav === "AuditLog" ? (
-        <AuditLogPage />
       ) : nav === "ReceiveStock" ? (
         <div style={{ background: T.silkCream, minHeight: "100dvh" }}>
           {/* Admin-style page header — matches luxury hero design system */}
@@ -373,20 +379,20 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
             }} />
             <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(13,2,7,0.75) 0%, #0D0207 100%)", pointerEvents: "none" }} />
 
-            <div className="px-4 md:px-7 xl:px-14" style={{ flex: 1, paddingTop: 44, paddingBottom: 48, zIndex: 10, position: "relative" }}>
+            <div className="px-4 md:px-7 xl:px-14" style={{ flex: 1, paddingTop: 36, paddingBottom: 40, zIndex: 10, position: "relative" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
                 <div style={{ width: 28, height: 1, background: T.antiqueGold }} />
                 <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: `${T.antiqueGold}80`, letterSpacing: "1.5px", textTransform: "uppercase" as const }}>
                   SINCE 1999 · ADMIN · MATERIALS
                 </span>
               </div>
-              <h1 style={{ fontFamily: F.display, fontWeight: 700, fontSize: "clamp(32px, 5vw, 48px)", color: "#fff", margin: "0 0 4px", lineHeight: 1.1 }}>
+              <h1 style={{ fontFamily: F.display, fontWeight: 700, fontSize: "clamp(30px, 4.5vw, 44px)", color: "#fff", margin: "0 0 4px", lineHeight: 1.1 }}>
                 Receive Stock
               </h1>
-              <div style={{ fontFamily: F.display, fontWeight: 500, fontStyle: "italic", fontSize: "clamp(22px, 4vw, 30px)", color: T.antiqueGold, marginBottom: 14, lineHeight: 1.2 }}>
+              <div style={{ fontFamily: F.display, fontWeight: 500, fontStyle: "italic", fontSize: "clamp(20px, 3.5vw, 28px)", color: T.antiqueGold, marginBottom: 14, lineHeight: 1.2 }}>
                 &amp; Goods Receipt Note
               </div>
-              <p style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,255,255,0.70)", maxWidth: "min(560px, 100%)", margin: "0 0 16px", lineHeight: 1.65 }}>
+              <p style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,255,255,0.75)", maxWidth: "min(560px, 100%)", margin: "0 0 16px", lineHeight: 1.65 }}>
                 Record incoming raw materials from vendors against purchase orders and generate GRN numbers.
               </p>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -401,29 +407,20 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
                 ))}
               </div>
             </div>
-            <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", gap: 10, marginRight: 56, alignItems: "flex-end", justifyContent: "center", zIndex: 10, position: "relative" }}>
-              {[
-                { label: "Warp · 142 kg in stock" },
-                { label: "Resham · 18 kg in stock" },
-                { label: "Jari · 24 Reels in stock" },
-              ].map((chip) => (
-                <div key={chip.label} style={{ padding: "10px 18px", backdropFilter: "blur(8px)", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 12, fontFamily: F.ui, fontSize: 13, color: "#fff", whiteSpace: "nowrap" as const }}>
-                  {chip.label}
-                </div>
-              ))}
-            </div>
             {[300, 440].map((sz, i) => (
               <div key={sz} style={{ position: "absolute", right: -sz * 0.3, bottom: -sz * 0.4, width: sz, height: sz, borderRadius: "50%", border: `1px solid rgba(200,155,71,${0.10 - i * 0.025})`, pointerEvents: "none" }} />
             ))}
           </div>
+
           {/* Content */}
-          <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40, paddingBottom: 80, display: "flex", flexDirection: "column", gap: 24 }}>
-            <div className="grid grid-cols-1 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]" style={{ gap: 24, alignItems: "start" }}>
+          <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 32, paddingBottom: 80, display: "flex", flexDirection: "column", gap: 24 }}>
+            <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-6 items-start">
+              {/* Section 1: Receive Stock Form SectionCard */}
               <SectionCard icon={PackageCheck} title="Receive Stock" subtitle="Record incoming raw materials from vendors and generate a GRN number.">
-                <div style={{ margin: "-24px -28px" }}>
-                  <WorkerGRN mode="form" history={grnHistory} setHistory={setGrnHistory} initialPOId={(state as { poId?: string } | null)?.poId} />
-                </div>
+                <WorkerGRN mode="form" history={grnHistory} setHistory={setGrnHistory} initialPOId={(state as { poId?: string } | null)?.poId} />
               </SectionCard>
+
+              {/* Current Stock Sidebar */}
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                 <div style={{ background: "rgba(200,155,71,0.10)", border: `1px solid rgba(200,155,71,0.25)`, borderRadius: 16, padding: "18px 22px" }}>
                   <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.antiqueGold, marginBottom: 12, textTransform: "uppercase" as const, letterSpacing: "0.5px" }}>Current Stock</div>
@@ -453,14 +450,32 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
               </div>
             </div>
 
-            {/* Separate Full-Width GRN History Section */}
+            {/* Section 2: Goods Receipt History SectionCard (Full Width) */}
             <SectionCard icon={History} title="Goods Receipt History" subtitle="Every GRN recorded so far, with vendor, materials, and quantities.">
-              <div style={{ margin: "-24px -28px" }}>
-                <WorkerGRN mode="history" history={grnHistory} setHistory={setGrnHistory} />
-              </div>
+              <WorkerGRN mode="history" history={grnHistory} setHistory={setGrnHistory} />
             </SectionCard>
           </div>
         </div>
+      ) : nav === "Customers" ? (
+        <CustomersPage />
+      ) : nav === "Vendors" ? (
+        <VendorsPage />
+      ) : nav === "Suppliers" ? (
+        <SuppliersPage />
+      ) : nav === "FactoryLooms" ? (
+        <FactoryLoomPage />
+      ) : nav === "Firms" ? (
+        <FirmsPage />
+      ) : nav === "Inventory" ? (
+        <InventoryPage />
+      ) : nav === "Payments" ? (
+        <PaymentsPage />
+      ) : nav === "Reports" ? (
+        <ReportsPage />
+      ) : nav === "Notifications" ? (
+        <NotificationsPage />
+      ) : nav === "AuditLog" ? (
+        <AuditLogPage />
       ) : nav === "AddUser" ? (
         <AddUserPage />
       ) : nav === "ExternalPurchases" ? (

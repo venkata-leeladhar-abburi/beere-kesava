@@ -138,7 +138,7 @@ export function HistorySection({
             <Button
               key={f}
               onClick={() => setHistFilter(f)}
-              variant={histFilter === f ? "primary" : "secondary"} size="sm" className="rounded-full text-xs px-2.5 sm:px-3"
+              variant={histFilter === f ? "primary" : "secondary"} size="sm" className="rounded-[10px] text-xs px-2.5 sm:px-3"
             >
               {f}
             </Button>
@@ -153,8 +153,8 @@ export function HistorySection({
             size="sm"
             className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold transition-colors ${
               viewMode === "card"
-                ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
-                : "bg-white text-[#8B7060] hover:bg-[#F7F2EA]"
+                ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D] hover:text-[#FFFDF9]"
+                : "bg-white text-[#8B7060] hover:bg-[#F7F2EA] hover:text-[#6E0F2D]"
             }`}
           >
             <LayoutGrid size={14} /> Card View
@@ -165,8 +165,8 @@ export function HistorySection({
             size="sm"
             className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold transition-colors ${
               viewMode === "table"
-                ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
-                : "bg-white text-[#8B7060] hover:bg-[#F7F2EA]"
+                ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D] hover:text-[#FFFDF9]"
+                : "bg-white text-[#8B7060] hover:bg-[#F7F2EA] hover:text-[#6E0F2D]"
             }`}
           >
             <List size={14} /> Table View
@@ -180,7 +180,7 @@ export function HistorySection({
           <Button
             key={p}
             onClick={() => setHistPeriod(p)}
-            variant={histPeriod === p ? "primary" : "secondary"} size="sm" className="rounded-full text-xs px-2.5 sm:px-3"
+            variant={histPeriod === p ? "primary" : "secondary"} size="sm" className="rounded-[10px] text-xs px-2.5 sm:px-3"
           >
             {p}
           </Button>

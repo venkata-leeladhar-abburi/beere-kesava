@@ -6,11 +6,14 @@ import {
   SectionNavigator, PAGE_SECTIONS, SECTION_NAV_GLOBAL_STYLE, MOBILE_NAV_H,
 } from "../../../shared/ui/SectionNavigator";
 
-import { PackageCheck, History } from "lucide-react";
+import { PackageCheck, History, ChevronLeft, UserRound } from "lucide-react";
 import { T, F, EASE } from "./superadmin-dashboard/theme";
 import { TabLoadingFallback } from "./superadmin-dashboard/atoms";
 import { BG_IMAGE } from "@/features/portals/components/weaver-portal/WeaverBatchNotifData";
 import { SectionCard } from "./beere-dashboard/primitives";
+import { Button } from "../../../shared/ui/primitives";
+import { EntityCode } from "../../../shared/ui/domain";
+import { Breadcrumbs } from "../../../shared/ui/nav/Breadcrumbs";
 import { SATopNav } from "./superadmin-dashboard/SATopNav";
 import { SAMobileMenuDrawer, SAMobileTopNav } from "./superadmin-dashboard/SAMobileNav";
 import { SAOverviewPage } from "./superadmin-dashboard/SAOverviewPage";
@@ -151,8 +154,8 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
       case "ReturnMaterial": return <ReturnMaterialPage />;
       case "ReceiveStock": return (
         <div style={{ background: T.silkCream, minHeight: "100dvh" }}>
-          {/* Luxury Hero Banner */}
-          <section style={{ position: "relative", overflow: "hidden", background: "#0D0207", padding: "28px 16px 36px" }}>
+          {/* Admin-style page header — matches luxury hero design system */}
+          <div style={{ background: "#0D0207", position: "relative", overflow: "hidden", minHeight: 220, display: "flex", alignItems: "stretch" }}>
             <div style={{
               position: "absolute", inset: 0,
               backgroundImage: `url(${BG_IMAGE})`,
@@ -161,49 +164,49 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
             }} />
             <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(13,2,7,0.75) 0%, #0D0207 100%)", pointerEvents: "none" }} />
 
-            <div style={{ position: "relative", zIndex: 5, display: "flex", flexDirection: "column", gap: 10 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <div style={{ width: 20, height: 1, background: T.antiqueGold }} />
-                <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: `${T.antiqueGold}80`, letterSpacing: "1.8px", textTransform: "uppercase" }}>
+            <div className="px-4 md:px-7 xl:px-14" style={{ flex: 1, paddingTop: 36, paddingBottom: 40, zIndex: 10, position: "relative" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+                <div style={{ width: 28, height: 1, background: T.antiqueGold }} />
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: `${T.antiqueGold}80`, letterSpacing: "1.5px", textTransform: "uppercase" as const }}>
                   SINCE 1999 · SUPERADMIN · MATERIALS
                 </span>
               </div>
-
-              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 26, color: "#FFFDF9", lineHeight: 1.15 }}>
-                Receive Stock <span style={{ fontFamily: F.display, fontStyle: "italic", fontWeight: 400, fontSize: 20, color: T.antiqueGold }}>&amp; Goods Receipt Note</span>
+              <h1 style={{ fontFamily: F.display, fontWeight: 700, fontSize: "clamp(30px, 4.5vw, 44px)", color: "#fff", margin: "0 0 4px", lineHeight: 1.1 }}>
+                Receive Stock
+              </h1>
+              <div style={{ fontFamily: F.display, fontWeight: 500, fontStyle: "italic", fontSize: "clamp(20px, 3.5vw, 28px)", color: T.antiqueGold, marginBottom: 14, lineHeight: 1.2 }}>
+                &amp; Goods Receipt Note
               </div>
-
-              <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.75)", lineHeight: 1.55 }}>
+              <p style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,255,255,0.75)", maxWidth: "min(560px, 100%)", margin: "0 0 16px", lineHeight: 1.65 }}>
                 Record incoming raw materials from vendors against purchase orders and generate GRN numbers.
-              </div>
-
+              </p>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 {[
                   { text: "SINCE 1999 · SUPERADMIN PORTAL", color: T.antiqueGold },
                   { text: "RAW MATERIALS & GRN" },
                   { text: "VENDOR DELIVERIES" },
                 ].map(p => (
-                  <div key={p.text} style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 999, padding: "4px 12px" }}>
-                    <span style={{ fontFamily: F.ui, fontSize: 11.5, fontWeight: 600, color: p.color || "#FFF" }}>{p.text}</span>
+                  <div key={p.text} style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 999, padding: "5px 14px" }}>
+                    <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: p.color || "#FFF" }}>{p.text}</span>
                   </div>
                 ))}
               </div>
             </div>
-          </section>
+            {[300, 440].map((sz, i) => (
+              <div key={sz} style={{ position: "absolute", right: -sz * 0.3, bottom: -sz * 0.4, width: sz, height: sz, borderRadius: "50%", border: `1px solid rgba(200,155,71,${0.10 - i * 0.025})`, pointerEvents: "none" }} />
+            ))}
+          </div>
 
-          <div style={{ padding: "20px 16px 80px", display: "flex", flexDirection: "column", gap: 24 }}>
+          {/* Content */}
+          <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 32, paddingBottom: 80, display: "flex", flexDirection: "column", gap: 24 }}>
             {/* Section 1: Receive Stock Form SectionCard */}
             <SectionCard icon={PackageCheck} title="Receive Stock" subtitle="Record incoming raw materials from vendors and generate a GRN number.">
-              <div style={{ margin: "-24px -28px" }}>
-                <WorkerGRN mode="form" />
-              </div>
+              <WorkerGRN mode="form" />
             </SectionCard>
 
             {/* Section 2: Goods Receipt History SectionCard */}
             <SectionCard icon={History} title="Goods Receipt History" subtitle="Every GRN recorded so far, with vendor, materials, and quantities.">
-              <div style={{ margin: "-24px -28px" }}>
-                <WorkerGRN mode="history" />
-              </div>
+              <WorkerGRN mode="history" />
             </SectionCard>
           </div>
         </div>

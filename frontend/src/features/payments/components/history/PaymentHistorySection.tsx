@@ -305,15 +305,15 @@ export function PaymentHistorySection() {
             <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
           </div>
 
-          <div className="flex md:hidden items-center justify-between gap-3 mb-4 flex-wrap">
-            <div className="flex items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0">
+          <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+            <div className="flex items-center gap-1 border border-[#E8DCC4] rounded-[10px] p-1 bg-white shrink-0">
               <Button
                 onClick={() => setView("card")}
                 variant="ghost"
-                className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
+                className={`h-auto rounded-[8px] gap-1.5 py-1.5 px-3 text-[12px] sm:text-[13px] font-bold ${
                   view === "card"
                     ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
-                    : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+                    : "bg-transparent text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
                 }`}
               >
                 <LayoutGrid size={14} /> Card View
@@ -321,10 +321,10 @@ export function PaymentHistorySection() {
               <Button
                 onClick={() => setView("table")}
                 variant="ghost"
-                className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
+                className={`h-auto rounded-[8px] gap-1.5 py-1.5 px-3 text-[12px] sm:text-[13px] font-bold ${
                   view === "table"
                     ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
-                    : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+                    : "bg-transparent text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
                 }`}
               >
                 <AlignJustify size={14} /> Table View

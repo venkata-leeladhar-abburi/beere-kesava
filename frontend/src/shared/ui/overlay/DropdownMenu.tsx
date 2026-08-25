@@ -28,7 +28,7 @@ export function DropdownMenuContent({
         align={align}
         className={cn(
           "min-w-[200px] max-h-[320px] overflow-y-auto",
-          "rounded-[var(--radius-lg)] p-1",
+          "rounded-[10px] p-1",
           "bg-[var(--surface-overlay)] border border-[var(--border-default)] shadow-[var(--shadow-lg)]",
           "data-[state=open]:animate-in data-[state=open]:fade-in data-[state=open]:slide-in-from-top-1",
           "data-[state=closed]:animate-out data-[state=closed]:fade-out",
@@ -47,8 +47,8 @@ export function DropdownMenuItem({
   return (
     <RadixDropdown.Item
       className={cn(
-        "flex h-10 items-center gap-2 rounded-[var(--radius-sm)] px-3 text-sm cursor-pointer outline-none focus-visible:!outline-none select-none",
-        "data-[highlighted]:bg-[var(--bk-neutral-50)]",
+        "flex h-10 items-center gap-2 rounded-[10px] px-3 text-sm cursor-pointer outline-none focus-visible:!outline-none select-none",
+        "data-[highlighted]:bg-[rgba(110,15,45,0.06)] data-[highlighted]:text-[var(--text-primary)]",
         "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
         inset && "pl-8",
         destructive
@@ -65,8 +65,8 @@ export function DropdownMenuCheckboxItem({ className, children, ...props }: Reac
   return (
     <RadixDropdown.CheckboxItem
       className={cn(
-        "relative flex h-10 items-center gap-2 rounded-[var(--radius-sm)] pl-8 pr-3 text-sm cursor-pointer outline-none focus-visible:!outline-none select-none",
-        "text-[var(--text-primary)] data-[highlighted]:bg-[var(--bk-neutral-50)]",
+        "relative flex h-10 items-center gap-2 rounded-[10px] pl-8 pr-3 text-sm cursor-pointer outline-none focus-visible:!outline-none select-none",
+        "text-[var(--text-primary)] data-[highlighted]:bg-[rgba(110,15,45,0.06)]",
         "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
         className
       )}
@@ -84,8 +84,8 @@ export function DropdownMenuRadioItem({ className, children, ...props }: React.C
   return (
     <RadixDropdown.RadioItem
       className={cn(
-        "relative flex h-10 items-center gap-2 rounded-[var(--radius-sm)] pl-8 pr-3 text-sm cursor-pointer outline-none focus-visible:!outline-none select-none",
-        "text-[var(--text-primary)] data-[highlighted]:bg-[var(--bk-neutral-50)]",
+        "relative flex h-10 items-center gap-2 rounded-[10px] pl-8 pr-3 text-sm cursor-pointer outline-none focus-visible:!outline-none select-none",
+        "text-[var(--text-primary)] data-[highlighted]:bg-[rgba(110,15,45,0.06)]",
         "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
         className
       )}
@@ -135,8 +135,8 @@ export function DropdownMenuSubTrigger({ className, children, ...props }: React.
   return (
     <RadixDropdown.SubTrigger
       className={cn(
-        "flex h-10 items-center gap-2 rounded-[var(--radius-sm)] px-3 text-sm cursor-pointer outline-none focus-visible:!outline-none select-none",
-        "text-[var(--text-primary)] data-[highlighted]:bg-[var(--bk-neutral-50)] data-[state=open]:bg-[var(--bk-neutral-50)]",
+        "flex h-10 items-center gap-2 rounded-[10px] px-3 text-sm cursor-pointer outline-none focus-visible:!outline-none select-none",
+        "text-[var(--text-primary)] data-[highlighted]:bg-[rgba(110,15,45,0.06)] data-[state=open]:bg-[rgba(110,15,45,0.04)]",
         className
       )}
       {...props}
@@ -152,7 +152,7 @@ export function DropdownMenuSubContent({ className, ...props }: React.ComponentP
     <RadixDropdown.Portal>
       <RadixDropdown.SubContent
         className={cn(
-          "min-w-[200px] rounded-[var(--radius-lg)] p-1",
+          "min-w-[200px] rounded-[10px] p-1",
           "bg-[var(--surface-overlay)] border border-[var(--border-default)] shadow-[var(--shadow-lg)]",
           "data-[state=open]:animate-in data-[state=open]:fade-in",
           "data-[state=closed]:animate-out data-[state=closed]:fade-out",

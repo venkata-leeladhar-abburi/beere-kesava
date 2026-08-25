@@ -112,7 +112,7 @@ export function Combobox({
           id={listId}
           className={cn(
             "absolute left-0 right-0 top-[calc(100%+4px)] z-[var(--z-dropdown)]",
-            "rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--surface-overlay)]",
+            "rounded-[10px] border border-[var(--border-default)] bg-[var(--surface-overlay)]",
             "shadow-[var(--shadow-lg)] overflow-hidden"
           )}
         >
@@ -139,11 +139,11 @@ export function Combobox({
                     setOpen(false);
                   }}
                   className={cn(
-                    "relative flex h-10 items-center gap-2 rounded-[var(--radius-sm)] px-3 pr-8 text-[14px] cursor-pointer select-none outline-none focus-visible:!outline-none",
+                    "relative flex h-10 items-center gap-2 rounded-[10px] px-3 pr-8 text-[14px] cursor-pointer select-none outline-none focus-visible:!outline-none",
                     "text-[var(--text-primary)]",
-                    "data-[selected=true]:bg-[var(--bk-neutral-50)]",
+                    "data-[selected=true]:bg-[rgba(110,15,45,0.06)]",
                     "data-[disabled=true]:opacity-50 data-[disabled=true]:cursor-not-allowed",
-                    option.value === value && "bg-[var(--surface-brand-subtle)]"
+                    option.value === value && "bg-[rgba(110,15,45,0.08)] font-semibold text-[var(--text-brand)]"
                   )}
                 >
                   {option.label}

@@ -301,8 +301,20 @@ export function NotificationsPage() {
       </div>
 
       {/* PRIORITY FILTER BAR */}
-      <div className="px-3 sm:px-4 md:px-7 xl:px-14" style={{ background: T.warmIvory, borderBottom: `1px solid ${T.borderDef}`, position: "relative", zIndex: 10, marginTop: 20, overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 0, height: 52, minWidth: "max-content" }}>
+      <div className="px-4 md:px-7 xl:px-14" style={{ marginTop: 24, marginBottom: 12, position: "relative", zIndex: 10 }}>
+        <div style={{
+          background: "#FFFFFF",
+          borderRadius: 16,
+          border: `1px solid ${T.borderDef}`,
+          boxShadow: "0 2px 12px rgba(74,6,27,0.05)",
+          padding: "0 16px",
+          display: "flex",
+          alignItems: "center",
+          gap: 0,
+          height: 52,
+          overflowX: "auto",
+          WebkitOverflowScrolling: "touch",
+        }}>
           {FILTERS.map(f => {
             const active = filter === f.key;
             const count = f.key === "all" ? categoryFiltered.length : categoryFiltered.filter(n => n.priority === f.key).length;
@@ -328,7 +340,7 @@ export function NotificationsPage() {
       </div>
 
       {/* MAIN CONTENT GRID */}
-      <div className="px-3 sm:px-4 md:px-7 xl:px-14 flex flex-col lg:flex-row gap-6 md:gap-7 items-start" style={{ paddingTop: 28, paddingBottom: 80 }}>
+      <div className="px-4 md:px-7 xl:px-14 flex flex-col lg:flex-row gap-6 md:gap-7 items-start" style={{ paddingTop: 20, paddingBottom: 80 }}>
         {/* Left list */}
         <div className="w-full flex-1 min-w-0">
         <SectionCard

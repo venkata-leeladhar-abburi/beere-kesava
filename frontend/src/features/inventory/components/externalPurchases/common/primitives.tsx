@@ -49,11 +49,11 @@ export function SectionCard({
 import { StatusPill as DomainStatusPill } from "../../../../../shared/ui/domain";
 import type { StatusValueOf } from "../../../../../lib/domain/status";
 
-export function Select({ value, options, onChange }: {
-  value: string; options: string[]; onChange: (v: string) => void;
+export function Select({ value, options, onChange, containerClassName, className, size = "md" }: {
+  value: string; options: string[]; onChange: (v: string) => void; containerClassName?: string; className?: string; size?: "sm" | "md" | "lg";
 }) {
   return (
-    <DsSelect value={value} onValueChange={onChange}>
+    <DsSelect value={value} onValueChange={onChange} containerClassName={containerClassName} className={className} size={size}>
       {options.map((o) => (
         <SelectItem key={o} value={o}>{o}</SelectItem>
       ))}
