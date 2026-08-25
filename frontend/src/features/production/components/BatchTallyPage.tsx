@@ -1,5 +1,5 @@
 import React, { useLayoutEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, ArrowRight, Scale } from "lucide-react";
+import { ArrowLeft, ArrowRight, Scale, ChevronLeft, UserRound, Layers, TrendingUp } from "lucide-react";
 import { useDesignLibrary } from "@/features/design-library";
 import { useBatches, type SareeRow } from "../contexts/BatchContext";
 import { useRatesPricing } from "@/features/pricing";
@@ -7,10 +7,11 @@ import { useAuth } from "../../../contexts/AuthContext";
 import { T, F } from "./theme";
 import { rowComplete, weaverBreakdown, bulkOrderBreakdown } from "./sections/batches/ContextBatchCard";
 import { SareeWeightTallyList, type TallyRowItem, type TallyCorrection } from "./sections/batches/SareeWeightTallyList";
-import { Button, IconButton, SearchInput, Select, SelectItem } from "../../../shared/ui/primitives";
+import { Button, SearchInput, Select, SelectItem } from "../../../shared/ui/primitives";
 import { EntityCode } from "@/shared/ui/domain";
-
-const imgSaree = "https://images.unsplash.com/photo-1588140686379-1b76a52103dc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
+import { Breadcrumbs } from "../../../shared/ui/nav/Breadcrumbs";
+import { BG_IMAGE } from "@/features/portals/components/weaver-portal/WeaverBatchNotifData";
+import { SectionCard } from "@/features/weavers/components/common/primitives";
 
 /**
  * Batch Tally as its own full page (same pattern as BulkOrderDetailPage —
@@ -31,15 +32,6 @@ export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: s
   const [orderFilter, setOrderFilter] = useState("All");
   const [qcFilter, setQcFilter] = useState("All");
 
-  const { getDesign } = useDesignLibrary();
-
-  // This page replaces the Production page in place (no route change), so the
-  // window keeps whatever scroll position Production had and the tally opens
-  // mid-page. Reset the window *and* every scrollable ancestor of this page —
-  // the dashboard shells differ in which element actually scrolls — and
-  // re-assert across the next few frames, because layout is still settling
-  // (hero image, lazy sections) right after mount and the browser's scroll
-  // anchoring can otherwise pull the position back down.
   const rootRef = useRef<HTMLDivElement | null>(null);
   useLayoutEffect(() => {
     const toTop = () => {
@@ -72,8 +64,6 @@ export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: s
     return mSearch && mWeaver && mOrder && mQc;
   });
 
-  // Every filtered row appears in the combined table — rows without a saree
-  // ID yet are listed by serial rather than dropped.
   const tallyItems: TallyRowItem[] = filteredRows
     .map((r: SareeRow) => ({
       sareeId: r.sareeId ?? null,
@@ -85,13 +75,9 @@ export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: s
       qcPassed: !!r.qcPassed,
       sareeTypeCode: r.sareeTypeCode,
       receivedPhotoUrl: r.receivedPhotoUrl,
-      // eslint-disable-next-line no-restricted-syntax -- saree weight in grams, not money
       actualWeight: r.receivedWeight ? parseFloat(r.receivedWeight) : null,
-      // eslint-disable-next-line no-restricted-syntax -- warp weight in grams, not money
       actualWarpG: r.receivedWarpG ? parseFloat(r.receivedWarpG) : null,
-      // eslint-disable-next-line no-restricted-syntax -- resham weight in grams, not money
       actualReshamG: r.receivedReshamG ? parseFloat(r.receivedReshamG) : null,
-      // eslint-disable-next-line no-restricted-syntax -- jari reel count, not money
       actualJariReels: r.receivedJariReels ? parseFloat(r.receivedJariReels) : null,
       tallied: r.tallied,
       talliedBy: r.talliedBy,
@@ -108,8 +94,6 @@ export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: s
     }
   };
 
-  // Admin corrects the weight/material figures Worker Staff entered at
-  // receipt, then the row is marked tallied in the same action.
   const handleSaveCorrection = async (item: TallyRowItem, correction: TallyCorrection) => {
     const key = `${item.batchId}-${item.serial}`;
     setBusyKey(key);
@@ -134,95 +118,189 @@ export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: s
   const weavers = weaverBreakdown(b.rows);
   const orders = bulkOrderBreakdown(b.rows);
   const firstRow = b.rows[0];
-  const designObj = firstRow ? getDesign(firstRow.designCode) : undefined;
-  const designImage = designObj?.colorSlipPhoto || designObj?.designGraph || imgSaree;
 
   return (
-    <div ref={rootRef} style={{ fontFamily: F.ui, minHeight: "100vh", background: T.silkCream, overflowAnchor: "none" }}>
-      <div style={{ height: 220, position: "relative", overflow: "hidden", background: T.silkCream }}>
-        <img src={designImage} alt="Design" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.65) 100%)" }} />
+    <div ref={rootRef} className="px-3 sm:px-7 xl:px-14 py-4 sm:py-8 min-h-dvh">
+      <div className="mb-3 sm:mb-4">
+        <Breadcrumbs
+          items={[
+            { key: "production", label: "Production", onClick: onBack },
+            { key: "batches", label: "Batches", onClick: onBack },
+            { key: "batch", label: b.batchId },
+          ]}
+        />
+      </div>
 
-        <IconButton icon={ArrowLeft} label="Back to Batches" onClick={onBack} variant="ghost" size="sm"
-          className="absolute top-5 left-6 rounded-[10px] border border-white/22 bg-[rgba(26,10,15,0.45)] text-white hover:bg-[rgba(26,10,15,0.6)]" />
+      {/* Header row with Back button and Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6 bg-white p-3 sm:px-5 sm:py-3.5 rounded-2xl border border-[var(--border-default)] shadow-sm">
+        <div className="flex items-center justify-between gap-2 w-full sm:w-auto">
+          <Button
+            onClick={onBack}
+            variant="secondary"
+            className="h-9 sm:h-10 px-3.5 sm:px-5 rounded-full border border-[rgba(110,15,45,0.25)] bg-[#FFFDF9] hover:bg-[#6E0F2D] text-[#6E0F2D] hover:text-white font-bold text-xs sm:text-sm gap-1.5 sm:gap-2 shadow-sm transition-all cursor-pointer whitespace-nowrap"
+          >
+            <ChevronLeft size={16} /> Back to Batches
+          </Button>
+        </div>
 
-        <div style={{ position: "absolute", bottom: 20, left: 32, right: 32, display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-          <div>
-            <div style={{ marginBottom: 4 }}>
-              <EntityCode type="batch" value={b.batchId} size="sm" />
-            </div>
-            <div style={{ fontFamily: F.display, fontSize: 28, fontWeight: 800, color: "#FFFFFF" }}>
-              {firstRow ? firstRow.sareeTypeName : "Batch"} Production
-            </div>
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap justify-start sm:justify-end w-full sm:w-auto pt-2.5 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+          <Button
+            onClick={onOpenCreation}
+            variant="primary"
+            size="md"
+            iconRight={ArrowRight}
+            className="h-9 sm:h-10 px-4 rounded-full border-none shadow-[0_4px_16px_rgba(110,15,45,0.3)] bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#580C24] font-bold text-xs sm:text-sm cursor-pointer"
+          >
+            Open in Batch Creation
+          </Button>
+
+          <div className="hidden xs:flex items-center gap-2 h-9 sm:h-10 px-3.5 sm:px-4 rounded-full bg-[rgba(110,15,45,0.06)] border border-[rgba(110,15,45,0.18)] text-[#6E0F2D] font-bold text-xs uppercase tracking-wider whitespace-nowrap">
+            <UserRound size={14} className="text-[#6E0F2D]" />
+            <span>Batch Profile</span>
           </div>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: F.ui, fontSize: 12, fontWeight: 800, color: b.status === "active" ? "#FFFFFF" : T.luxuryBrown, background: b.status === "active" ? "#2ECC71" : T.antiqueGold, borderRadius: 99, padding: "5px 12px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-            {b.status === "active" ? "Active" : "Draft"}
-          </span>
+
+          <EntityCode type="batch" value={b.batchId} size="md" className="h-9 sm:h-10 px-3.5 sm:px-4 rounded-full bg-[#FFFDF9] border border-[#E8DCC4] text-[#3B2314] font-mono font-bold text-xs flex items-center whitespace-nowrap shrink-0" />
         </div>
       </div>
 
-      <div className="px-4 md:px-7 xl:px-8 max-w-[980px] mx-auto" style={{ paddingTop: 28, paddingBottom: 40, display: "flex", flexDirection: "column", gap: 22 }}>
-        <div style={{ background: "#FFFFFF", border: `1px solid ${T.borderDef}`, borderRadius: 16, padding: "18px 22px" }}>
+      {/* Profile Hero Banner */}
+      <div className="mb-6">
+        <div className="relative bg-[#0D0207] rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl border border-[rgba(200,155,71,0.3)]">
+          <div style={{
+            position: "absolute", inset: 0,
+            backgroundImage: `url(${BG_IMAGE})`,
+            backgroundSize: "cover", backgroundPosition: "center",
+            opacity: 0.35, pointerEvents: "none"
+          }} />
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(74,6,27,0.88) 0%, rgba(13,2,7,0.94) 100%)", pointerEvents: "none" }} />
+
+          <div className="relative z-10 p-5 sm:p-8 flex flex-col lg:flex-row gap-5 lg:gap-7 items-start lg:items-center justify-between">
+            <div className="flex items-center gap-4 sm:gap-6 flex-wrap sm:flex-nowrap w-full lg:w-auto">
+              <div className="relative shrink-0">
+                <div style={{ width: 76, height: 76, borderRadius: "50%", background: `linear-gradient(135deg, ${T.antiqueGold}, ${T.goldLight})`, color: T.darkBurgundy, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid rgba(200,155,71,0.45)", boxShadow: "0 6px 20px rgba(200,155,71,0.35)" }}>
+                  <Layers size={36} color={T.darkBurgundy} />
+                </div>
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider bg-white/90 text-[#3B2314] px-2.5 py-0.5 rounded-md shadow-xs">
+                    {b.batchId}
+                  </span>
+                  <span style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.antiqueGold, letterSpacing: "1.4px", textTransform: "uppercase", background: "rgba(200,155,71,0.14)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 99, padding: "2px 10px" }}>
+                    PRODUCTION BATCH
+                  </span>
+                </div>
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl text-[#FFFDF9] font-bold font-serif leading-tight truncate tracking-tight">
+                  {firstRow ? firstRow.sareeTypeName : "Batch"} Production
+                </h1>
+                <div className="mt-2.5 flex items-center gap-3 flex-wrap text-xs sm:text-sm text-white/80">
+                  <span className="flex items-center gap-1.5"><Layers size={14} color={T.antiqueGold} /> Total Sarees: <strong>{b.totalCount}</strong></span>
+                  <span className="flex items-center gap-1.5"><UserRound size={14} color={T.antiqueGold} /> Weavers: <strong>{weavers.length} Assigned</strong></span>
+                </div>
+              </div>
+            </div>
+
+            {/* Metrics Stats Cards & Status Badge */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full lg:w-auto shrink-0">
+              <div className="flex flex-wrap sm:flex-nowrap gap-3 w-full sm:w-auto">
+                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/15 rounded-xl p-3.5 sm:px-5 sm:py-4 flex-1 sm:flex-none">
+                  <div className="w-10 h-10 rounded-lg bg-[rgba(200,155,71,0.2)] flex items-center justify-center shrink-0">
+                    <TrendingUp size={20} color={T.antiqueGold} />
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-bold text-white/60 uppercase tracking-wider">Progress</div>
+                    <div className="text-sm sm:text-base font-bold text-[#FFFDF9] mt-0.5 whitespace-nowrap">{pct}% Complete</div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/15 rounded-xl p-3.5 sm:px-5 sm:py-4 flex-1 sm:flex-none">
+                  <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center shrink-0">
+                    <Scale size={20} className="text-emerald-400" />
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-bold text-white/60 uppercase tracking-wider">Tallied</div>
+                    <div className="text-sm sm:text-base font-bold text-[#7EE2A8] mt-0.5 whitespace-nowrap">{tallyItems.filter(i => i.tallied).length} / {tallyItems.length}</div>
+                  </div>
+                </div>
+              </div>
+
+              <span className={`px-4 py-1.5 rounded-full font-bold text-xs uppercase tracking-wider shadow-md shrink-0 ${b.status === "active" ? "bg-emerald-500 text-white" : "bg-amber-500 text-white"}`}>
+                {b.status === "active" ? "ACTIVE" : "DRAFT"}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-6 w-full">
+        <SectionCard
+          icon={TrendingUp}
+          title="Production Progress"
+          subtitle={`Live manufacturing progress for batch ${b.batchId}`}
+        >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
-            <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>Production progress</span>
+            <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>Batch Progress</span>
             <span style={{ fontFamily: F.display, fontSize: 18, fontWeight: 800, color: pct === 100 ? T.green : T.antiqueGold }}>
               {completeCount} / {b.totalCount} ({pct}%) Complete
             </span>
           </div>
-          <div style={{ height: 10, background: "rgba(110,15,45,0.06)", borderRadius: 99, overflow: "hidden" }}>
+          <div style={{ height: 12, background: "rgba(110,15,45,0.06)", borderRadius: 99, overflow: "hidden" }}>
             <div style={{ height: "100%", width: `${pct}%`, background: pct === 100 ? `linear-gradient(90deg, ${T.green} 0%, #4ade80 100%)` : `linear-gradient(90deg, ${T.antiqueGold} 0%, ${T.goldLight} 100%)`, borderRadius: 99 }} />
           </div>
-        </div>
+        </SectionCard>
 
-        <div style={{ background: "#FFFFFF", border: `1px solid ${T.borderDef}`, borderRadius: 16, padding: "18px 22px", display: "flex", flexDirection: "column", gap: 16 }}>
-          <div>
-            <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>Due Date</div>
-            <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{b.dueDate || "Not Set"}</div>
-          </div>
-
-          <div style={{ height: 1, background: "rgba(110,15,45,0.06)" }} />
-
-          <div>
-            <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>
-              Assigned Weavers
+        <SectionCard
+          icon={Layers}
+          title="Batch Details & Weaver Assignments"
+          subtitle={`Due date, weaver allocation, and linked bulk orders for ${b.batchId}`}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>Due Date</div>
+              <div style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 700, color: T.luxuryBrown }}>{b.dueDate || "Not Set"}</div>
             </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {weavers.map(w => (
-                <span key={w.name} style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, background: w.name === "Unassigned" ? "rgba(139,112,96,0.06)" : "rgba(110,15,45,0.05)", color: w.name === "Unassigned" ? T.taupe : T.royalBurgundy, border: `1px solid ${w.name === "Unassigned" ? "rgba(139,112,96,0.15)" : T.borderDef}`, borderRadius: 8, padding: "5px 10px" }}>
-                  {w.count} × {w.name}
-                </span>
-              ))}
-            </div>
-          </div>
 
-          {orders.length > 0 && (
-            <>
-              <div style={{ height: 1, background: "rgba(110,15,45,0.06)" }} />
-              <div>
-                <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>
-                  Linked Bulk Orders
-                </div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                  {orders.map(o => (
-                    <span key={o.label} style={{ background: "rgba(30,102,64,0.08)", border: "1px solid rgba(30,102,64,0.2)", borderRadius: 8, padding: "6px 12px", fontSize: 13, color: T.green, fontWeight: 600 }}>
-                      {o.label} ({o.count})
-                    </span>
-                  ))}
-                </div>
+            <div style={{ height: 1, background: "rgba(110,15,45,0.06)" }} />
+
+            <div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>
+                Assigned Weavers
               </div>
-            </>
-          )}
-        </div>
-
-        {/* ── Sarees + Weight & Material Tally (one combined table) ── */}
-        <div style={{ background: "#FFFFFF", border: `1px solid ${T.borderDef}`, borderRadius: 16, padding: "18px 22px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-            <Scale size={16} color={T.royalBurgundy} />
-            <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>
-              Sarees &amp; Weight Tally ({filteredRows.length} sarees · {tallyItems.filter(i => i.tallied).length} / {tallyItems.length} tallied)
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {weavers.map(w => (
+                  <span key={w.name} style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, background: w.name === "Unassigned" ? "rgba(139,112,96,0.06)" : "rgba(110,15,45,0.05)", color: w.name === "Unassigned" ? T.taupe : T.royalBurgundy, border: `1px solid ${w.name === "Unassigned" ? "rgba(139,112,96,0.15)" : T.borderDef}`, borderRadius: 8, padding: "5px 10px" }}>
+                    {w.count} × {w.name}
+                  </span>
+                ))}
+              </div>
             </div>
+
+            {orders.length > 0 && (
+              <>
+                <div style={{ height: 1, background: "rgba(110,15,45,0.06)" }} />
+                <div>
+                  <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>
+                    Linked Bulk Orders
+                  </div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                    {orders.map(o => (
+                      <span key={o.label} style={{ background: "rgba(30,102,64,0.08)", border: "1px solid rgba(30,102,64,0.2)", borderRadius: 8, padding: "6px 12px", fontSize: 13, color: T.green, fontWeight: 600 }}>
+                        {o.label} ({o.count})
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
-          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 12 }}>
+        </SectionCard>
+
+        <SectionCard
+          icon={Scale}
+          title="Sarees & Weight Tally"
+          subtitle={`Physical tally and material weight verification records for ${b.batchId}`}
+        >
+          <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 14 }}>
             Weight is what Worker Staff entered at receipt, shown against the SareeTypeRate standard for that saree's type. Tally each saree once you've physically verified it.
           </div>
 
@@ -248,16 +326,7 @@ export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: s
             onSaveCorrection={handleSaveCorrection}
             busyKey={busyKey}
           />
-        </div>
-
-        <div style={{ display: "flex", gap: 12 }}>
-          <Button onClick={onBack} variant="secondary" size="lg" className="flex-1 h-11" iconLeft={ArrowLeft}>
-            Back to Batches
-          </Button>
-          <Button onClick={onOpenCreation} variant="primary" size="lg" iconLeft={ArrowRight} className="flex-[1.5] h-11">
-            Open in Batch Creation
-          </Button>
-        </div>
+        </SectionCard>
       </div>
     </div>
   );

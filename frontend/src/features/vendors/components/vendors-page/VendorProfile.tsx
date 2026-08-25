@@ -264,14 +264,14 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
 
       {/* Profile Hero Banner */}
       <div className="mb-6">
-        <div className="relative bg-[#0D0207] rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl border border-[rgba(200,155,71,0.3)]">
+        <div className="relative bg-[#0D0207] rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl border border-[rgba(200,155,71,0.25)]">
           <div style={{
             position: "absolute", inset: 0,
             backgroundImage: `url(${BG_IMAGE})`,
             backgroundSize: "cover", backgroundPosition: "center",
-            opacity: 0.35, pointerEvents: "none"
+            opacity: 0.24, pointerEvents: "none"
           }} />
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(74,6,27,0.88) 0%, rgba(13,2,7,0.94) 100%)", pointerEvents: "none" }} />
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(74,6,27,0.92) 0%, rgba(13,2,7,0.95) 100%)", pointerEvents: "none" }} />
 
           <div className="relative z-10 p-5 sm:p-8 flex flex-col lg:flex-row gap-5 lg:gap-7 items-start lg:items-center justify-between">
             <div className="flex items-center gap-4 sm:gap-6 flex-wrap sm:flex-nowrap w-full lg:w-auto">
@@ -282,17 +282,14 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 mb-2 flex-wrap">
-                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider bg-white/90 text-[#3B2314] px-2.5 py-0.5 rounded-md shadow-xs">
-                    {vendor.code || vendor.id}
-                  </span>
                   <span style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.antiqueGold, letterSpacing: "1.4px", textTransform: "uppercase", background: "rgba(200,155,71,0.14)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 99, padding: "2px 10px" }}>
                     RAW MATERIAL VENDOR
                   </span>
                 </div>
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl text-[#FFFDF9] font-bold font-serif leading-tight truncate tracking-tight">
+                <h1 className="text-xl sm:text-2xl lg:text-3xl text-[#FFFDF9] font-bold font-serif leading-tight truncate">
                   {vendor.name}
                 </h1>
-                <div className="mt-2.5 flex items-center gap-3 flex-wrap text-xs sm:text-sm text-white/80">
+                <div className="mt-2 flex items-center gap-3 flex-wrap text-xs sm:text-sm text-white/70">
                   <span className="flex items-center gap-1.5"><MapPin size={14} color={T.antiqueGold} /> {vendor.city}, {vendor.state}</span>
                   <span className="flex items-center gap-1.5"><Package size={14} color={T.antiqueGold} /> {vendor.type}</span>
                   <StarRating rating={vendor.rating} />
@@ -300,33 +297,27 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
               </div>
             </div>
 
-            {/* Metrics Stats Cards & Status Badge */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full lg:w-auto shrink-0">
-              <div className="flex flex-wrap sm:flex-nowrap gap-3 w-full sm:w-auto">
-                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/15 rounded-xl p-3.5 sm:px-5 sm:py-4 flex-1 sm:flex-none">
-                  <div className="w-10 h-10 rounded-lg bg-[rgba(200,155,71,0.2)] flex items-center justify-center shrink-0">
-                    <CreditCard size={20} color={T.antiqueGold} />
-                  </div>
-                  <div>
-                    <div className="text-[10px] font-bold text-white/60 uppercase tracking-wider">Total Spend</div>
-                    <div className="text-sm sm:text-base font-bold text-[#FFFDF9] mt-0.5 whitespace-nowrap">{moneyVisible ? formatMoney(rupees(realTotalSpend)) : "—"}</div>
-                  </div>
+            {/* Metrics Stats Cards */}
+            <div className="flex flex-wrap sm:flex-nowrap gap-3 w-full lg:w-auto shrink-0">
+              <div className="flex items-center gap-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-3.5 sm:px-5 sm:py-4 flex-1 sm:flex-none">
+                <div className="w-10 h-10 rounded-lg bg-[rgba(200,155,71,0.16)] flex items-center justify-center shrink-0">
+                  <CreditCard size={20} color={T.antiqueGold} />
                 </div>
-
-                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/15 rounded-xl p-3.5 sm:px-5 sm:py-4 flex-1 sm:flex-none">
-                  <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center shrink-0">
-                    <AlertTriangle size={20} className="text-red-300" />
-                  </div>
-                  <div>
-                    <div className="text-[10px] font-bold text-white/60 uppercase tracking-wider">Outstanding</div>
-                    <div className="text-sm sm:text-base font-bold text-[#FFFDF9] mt-0.5 whitespace-nowrap">{!moneyVisible ? "—" : formatMoney(rupees(Number(vendor.outstanding) || 0))}</div>
-                  </div>
+                <div>
+                  <div className="text-[10px] font-bold text-white/50 uppercase tracking-wider">Total Spend</div>
+                  <div className="text-sm sm:text-base font-bold text-[#FFFDF9] mt-0.5 whitespace-nowrap">{moneyVisible ? formatMoney(rupees(realTotalSpend)) : "—"}</div>
                 </div>
               </div>
 
-              <span className={`px-4 py-1.5 rounded-full font-bold text-xs uppercase tracking-wider shadow-md shrink-0 ${vendor.status === "active" ? "bg-emerald-500 text-white" : "bg-rose-500 text-white"}`}>
-                {vendor.status}
-              </span>
+              <div className="flex items-center gap-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-3.5 sm:px-5 sm:py-4 flex-1 sm:flex-none">
+                <div className="w-10 h-10 rounded-lg bg-red-500/15 flex items-center justify-center shrink-0">
+                  <AlertTriangle size={20} className="text-red-400" />
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold text-white/50 uppercase tracking-wider">Outstanding</div>
+                  <div className="text-sm sm:text-base font-bold text-[#FFFDF9] mt-0.5 whitespace-nowrap">{!moneyVisible ? "—" : formatMoney(rupees(Number(vendor.outstanding) || 0))}</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -534,7 +525,7 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
               <div style={{ display: "flex", gap: 24, flexWrap: "wrap", alignItems: "flex-start" }}>
                 {/* Left Column: Details Cards */}
                 <div style={{ flex: 1, minWidth: 280, display: "flex", flexDirection: "column", gap: 20 }}>
-                  
+
                   {/* Core Contact Card */}
                   <div style={{ background: "#fff", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: 24, boxShadow: "0 2px 8px rgba(0,0,0,0.02)" }}>
                     <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 20 }}>
@@ -615,15 +606,15 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
                   <div style={{ background: "#fff", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: 24, boxShadow: "0 2px 8px rgba(0,0,0,0.02)" }}>
                     <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, marginBottom: 14 }}>Visiting Card</div>
                     {vendor.visitingCard ? (
-                      <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden", position: "relative", cursor: "pointer", transition: "transform 0.2s ease" }} 
-                           onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.02)")}
-                           onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
-                           onClick={() => {
-                             const el = document.createElement("a");
-                             el.href = vendor.visitingCard!;
-                             el.target = "_blank";
-                             el.click();
-                           }} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); window.open(vendor.visitingCard!, "_blank"); } }}>
+                      <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden", position: "relative", cursor: "pointer", transition: "transform 0.2s ease" }}
+                        onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.02)")}
+                        onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
+                        onClick={() => {
+                          const el = document.createElement("a");
+                          el.href = vendor.visitingCard!;
+                          el.target = "_blank";
+                          el.click();
+                        }} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); window.open(vendor.visitingCard!, "_blank"); } }}>
                         <img src={vendor.visitingCard} alt="Visiting Card" style={{ width: "100%", height: 200, objectFit: "cover" }} />
                         <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%)", color: "#fff", fontFamily: F.ui, fontSize: 13, padding: "24px 16px 12px", textAlign: "center", fontWeight: 500 }}>
                           Click to Expand
