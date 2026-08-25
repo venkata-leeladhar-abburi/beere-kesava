@@ -159,25 +159,34 @@ export function WholesaleDetailSection({
       </div>
 
       {/* Sub-tab strip */}
-      <div className="flex border-b border-[var(--border-default)] mb-6 gap-4 sm:gap-6 bg-white px-3 sm:px-5 rounded-2xl overflow-x-auto scrollbar-none shadow-sm">
-        {(["Overview", "Order History", "Payment History", "Contact Details", "Edit Profile"] as WholesaleTab[]).map(tabName => {
-          const isActive = wholesaleTab === tabName;
-          return (
-            <Button
-              key={tabName}
-              onClick={() => setWholesaleTab(tabName)}
-              variant="ghost"
-              size="sm"
-              className={`rounded-none py-3.5 px-0 border-b-[3px] transition-colors whitespace-nowrap text-xs sm:text-sm ${
-                isActive
-                  ? "border-[#6E0F2D] text-[#6E0F2D] font-bold"
-                  : "border-transparent text-[var(--text-tertiary)] font-medium"
-              }`}
-            >
-              {tabName}
-            </Button>
-          );
-        })}
+      <div className="w-full overflow-x-auto section-nav-scroll pb-1 mb-6 border-b-2 border-[var(--border-default)]">
+        <div className="flex items-center gap-1 min-w-max">
+          {[
+            { key: "Overview" as const, label: "Overview", icon: <Boxes size={18} /> },
+            { key: "Order History" as const, label: "Order History", icon: <ShoppingBag size={18} /> },
+            { key: "Payment History" as const, label: "Payment History", icon: <CreditCard size={18} /> },
+            { key: "Contact Details" as const, label: "Contact Details", icon: <UserRound size={18} /> },
+            { key: "Edit Profile" as const, label: "Edit Profile", icon: <Edit3 size={18} /> },
+          ].map(t => {
+            const isActive = wholesaleTab === t.key;
+            return (
+              <Button
+                key={t.key}
+                variant="tertiary"
+                onClick={() => setWholesaleTab(t.key)}
+                className={
+                  "rounded-none px-4 sm:px-6 py-3 mb-[-6px] shrink-0 text-sm sm:text-base cursor-pointer flex items-center gap-2.5 transition-all " +
+                  (isActive
+                    ? "border-b-[3px] border-[#6E0F2D] text-[#6E0F2D] font-bold"
+                    : "border-b-[3px] border-transparent text-[#9C8672] hover:text-[#6E0F2D] font-medium")
+                }
+              >
+                {t.icon}
+                <span>{t.label}</span>
+              </Button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Tab Content inside SectionCard */}

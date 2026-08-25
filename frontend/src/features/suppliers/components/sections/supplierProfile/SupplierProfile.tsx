@@ -44,11 +44,11 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
     recordView({ key: `supplier:${supplier.id}`, label: supplier.name, path: "/admin/suppliers", kind: "Supplier" });
   }, [supplier.id, supplier.name]);
   const tabs = [
-    { key: "overview", label: "Overview" },
-    { key: "orders",   label: "Order History" },
-    { key: "payments", label: "Payment History" },
-    { key: "contact",  label: "Contact Details" },
-    { key: "edit",     label: "Edit Profile" },
+    { key: "overview", label: "Overview", icon: <Boxes size={18} /> },
+    { key: "orders",   label: "Order History", icon: <ShoppingBag size={18} /> },
+    { key: "payments", label: "Payment History", icon: <CreditCard size={18} /> },
+    { key: "contact",  label: "Contact Details", icon: <UserCheck size={18} /> },
+    { key: "edit",     label: "Edit Profile", icon: <Edit3 size={18} /> },
   ] as const;
 
   // Independent date filters — the overview inventory and the order history each
@@ -317,21 +317,25 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
       {/* Tabs */}
       <div className="w-full overflow-x-auto section-nav-scroll pb-1 mb-6 border-b-2 border-[var(--border-default)]">
         <div className="flex items-center gap-1 min-w-max">
-          {tabs.map(t => (
-            <Button
-              key={t.key}
-              variant="tertiary"
-              onClick={() => setTab(t.key)}
-              className={
-                "rounded-none px-4 sm:px-6 py-3 mb-[-6px] shrink-0 text-sm sm:text-base cursor-pointer " +
-                (tab === t.key
-                  ? "border-b-[3px] border-[#6E0F2D] text-[#6E0F2D] font-bold"
-                  : "border-b-[3px] border-transparent text-[#9C8672] font-medium")
-              }
-            >
-              {t.label}
-            </Button>
-          ))}
+          {tabs.map(t => {
+            const isActive = tab === t.key;
+            return (
+              <Button
+                key={t.key}
+                variant="tertiary"
+                onClick={() => setTab(t.key)}
+                className={
+                  "rounded-none px-4 sm:px-6 py-3 mb-[-6px] shrink-0 text-sm sm:text-base cursor-pointer flex items-center gap-2.5 transition-all " +
+                  (isActive
+                    ? "border-b-[3px] border-[#6E0F2D] text-[#6E0F2D] font-bold"
+                    : "border-b-[3px] border-transparent text-[#9C8672] hover:text-[#6E0F2D] font-medium")
+                }
+              >
+                {t.icon}
+                <span>{t.label}</span>
+              </Button>
+            );
+          })}
         </div>
       </div>
 

@@ -282,10 +282,10 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
   const inr = (n: number) => formatMoney(rupees(n));
 
   const tabs = [
-    { key: "overview" as const, label: "Overview" },
-    { key: "sarees" as const, label: `Sarees (${linkedSarees.length})` },
-    { key: "payments" as const, label: "Payments" },
-    { key: "quotations" as const, label: `Quotations (${linkedQuotations.length})` },
+    { key: "overview" as const, label: "Overview", icon: <Boxes size={18} /> },
+    { key: "sarees" as const, label: `Sarees (${linkedSarees.length})`, icon: <Package size={18} /> },
+    { key: "payments" as const, label: "Payments", icon: <CreditCard size={18} /> },
+    { key: "quotations" as const, label: `Quotations (${linkedQuotations.length})`, icon: <FileText size={18} /> },
   ];
 
   return (
@@ -504,22 +504,28 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
       </div>
 
       {/* Sub-tab strip */}
-      <div className="flex border-b border-[var(--border-default)] mb-6 gap-4 sm:gap-6 bg-white px-3 sm:px-5 rounded-2xl overflow-x-auto scrollbar-none shadow-sm">
-        {tabs.map(t => (
-          <Button
-            key={t.key}
-            onClick={() => setTab(t.key)}
-            variant="ghost"
-            size="sm"
-            className={`rounded-none py-3.5 px-0 border-b-[3px] transition-colors whitespace-nowrap text-xs sm:text-sm ${
-              tab === t.key
-                ? "border-[#6E0F2D] text-[#6E0F2D] font-bold"
-                : "border-transparent text-[var(--text-tertiary)] font-medium"
-            }`}
-          >
-            {t.label}
-          </Button>
-        ))}
+      <div className="w-full overflow-x-auto section-nav-scroll pb-1 mb-6 border-b-2 border-[var(--border-default)]">
+        <div className="flex items-center gap-1 min-w-max">
+          {tabs.map(t => {
+            const isActive = tab === t.key;
+            return (
+              <Button
+                key={t.key}
+                variant="tertiary"
+                onClick={() => setTab(t.key)}
+                className={
+                  "rounded-none px-4 sm:px-6 py-3 mb-[-6px] shrink-0 text-sm sm:text-base cursor-pointer flex items-center gap-2.5 transition-all " +
+                  (isActive
+                    ? "border-b-[3px] border-[#6E0F2D] text-[#6E0F2D] font-bold"
+                    : "border-b-[3px] border-transparent text-[#9C8672] hover:text-[#6E0F2D] font-medium")
+                }
+              >
+                {t.icon}
+                <span>{t.label}</span>
+              </Button>
+            );
+          })}
+        </div>
       </div>
 
       <AnimatePresence mode="wait">
