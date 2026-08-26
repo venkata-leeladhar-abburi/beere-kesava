@@ -30,7 +30,6 @@ const isUuid = (str?: string | null) =>
 
 export function WorkerQCSareeCard({
   saree: s,
-  isDesktop,
   onMarkPassed,
   onStartSemiApproved,
   onStartDefect,

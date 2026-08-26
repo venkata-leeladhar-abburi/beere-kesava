@@ -329,26 +329,27 @@ model User {
   linkedWeaverId String? @unique
   linkedWeaver   Weaver? @relation(fields: [linkedWeaverId], references: [id])
 
-  permissionOverrides  UserPermissionOverride[]
-  auditLogs            AuditLog[]
-  actionLogs           ActionLog[]
-  notifications        Notification[]
-  issuedMaterialIssues MaterialIssueRecord[]    @relation("IssuedBy")
-  receivedMaterialReturns MaterialReturnRecord[] @relation("ReceivedBy")
-  addedPurchases       Purchase[]               @relation("PurchaseAddedBy")
-  inspectedQcRecords   QcRecord[]               @relation("InspectedBy")
-  assignedFinishings   FinishingAssignment[]    @relation("AssignedBy")
-  raisedQuotations     Quotation[]              @relation("RaisedBy")
-  requestedPurchases   PurchaseRequest[]        @relation("RequestedBy")
-  decidedPurchases     PurchaseRequest[]        @relation("DecidedBy")
-  decidedWarpRequests  WarpRequest[]            @relation("DecidedWarpRequests")
-  requestedRateChanges RateChangeRequest[]     @relation("RequestedRateChanges")
-  decidedRateChanges   RateChangeRequest[]     @relation("DecidedRateChanges")
-  reportDownloads      ReportDownloadHistory[]
-  createdPurchaseOrders PurchaseOrder[]
-  receivedGrnReceipts  GrnReceipt[]
-  requestedSupplierReturns SupplierReturnRequest[] @relation("RequestedSupplierReturns")
-  decidedSupplierReturns   SupplierReturnRequest[] @relation("DecidedSupplierReturns")
+  permissionOverrides      UserPermissionOverride[]
+  auditLogs                AuditLog[]
+  actionLogs               ActionLog[]
+  notifications            Notification[]
+  issuedMaterialIssues     MaterialIssueRecord[]    @relation("IssuedBy")
+  receivedMaterialReturns  MaterialReturnRecord[]   @relation("ReceivedBy")
+  addedPurchases           Purchase[]               @relation("PurchaseAddedBy")
+  inspectedQcRecords       QcRecord[]               @relation("InspectedBy")
+  assignedFinishings       FinishingAssignment[]    @relation("AssignedBy")
+  raisedQuotations         Quotation[]              @relation("RaisedBy")
+  requestedPurchases       PurchaseRequest[]        @relation("RequestedBy")
+  decidedPurchases         PurchaseRequest[]        @relation("DecidedBy")
+  decidedWarpRequests      WarpRequest[]            @relation("DecidedWarpRequests")
+  requestedRateChanges     RateChangeRequest[]      @relation("RequestedRateChanges")
+  decidedRateChanges       RateChangeRequest[]      @relation("DecidedRateChanges")
+  reportDownloads          ReportDownloadHistory[]
+  createdPurchaseOrders    PurchaseOrder[]
+  receivedGrnReceipts      GrnReceipt[]
+  requestedSupplierReturns SupplierReturnRequest[]  @relation("RequestedSupplierReturns")
+  decidedSupplierReturns   SupplierReturnRequest[]  @relation("DecidedSupplierReturns")
+  sentWhatsAppMessages     WhatsAppMessage[]
 
   @@index([role])
 }
@@ -363,6 +364,39 @@ model OtpCode {
   createdAt   DateTime  @default(now())
 
   @@index([phoneNumber])
+}
+
+/// Outbound WhatsApp send log — one row per message handed to the provider
+/// (login OTPs today; documents, reports and retail bills are the other kinds
+/// the provider campaign supports).
+///
+/// This table already existed in the database but had never been declared here,
+/// so `prisma db push` read it as a table to drop — taking the send history
+/// with it — and refused to run at all without --accept-data-loss. Declaring it
+/// is what makes the schema and the database agree again.
+model WhatsAppMessage {
+  id             String                @id
+  kind           WhatsAppMessageKind
+  campaignName   String
+  destination    String
+  templateParams Json?
+  mediaUrl       String?
+  status         WhatsAppMessageStatus @default(QUEUED)
+  providerId     String?
+  errorMessage   String?
+  attempts       Int                   @default(0)
+  /// Free-form pointer at whatever the message was about (an invoice, a report
+  /// run, ...) — deliberately not an FK, since it spans several entity types.
+  relatedType    String?
+  relatedId      String?
+  sentById       String?
+  sentBy         User?                 @relation(fields: [sentById], references: [id])
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+
+  @@index([destination])
+  @@index([status])
+  @@index([relatedType, relatedId])
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -393,15 +427,15 @@ model Weaver {
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
 
-  designs        DesignLibrary[]
-  batchSareeRows BatchSareeRow[]
-  materialIssues MaterialIssueRecord[]
+  designs         DesignLibrary[]
+  batchSareeRows  BatchSareeRow[]
+  materialIssues  MaterialIssueRecord[]
   materialReturns MaterialReturnRecord[]
-  qcRecords      QcRecord[]
-  sarees         Saree[]
-  payments       WeaverPayment[]
-  warpRequests   WarpRequest[]
-  linkedUser     User?
+  qcRecords       QcRecord[]
+  sarees          Saree[]
+  payments        WeaverPayment[]
+  warpRequests    WarpRequest[]
+  linkedUser      User?
 
   @@index([status])
 }
@@ -424,11 +458,11 @@ model FactoryLoom {
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
 
-  batchSareeRows BatchSareeRow[]
-  materialIssues MaterialIssueRecord[]
+  batchSareeRows  BatchSareeRow[]
+  materialIssues  MaterialIssueRecord[]
   materialReturns MaterialReturnRecord[]
-  qcRecords      QcRecord[]
-  sarees         Saree[]
+  qcRecords       QcRecord[]
+  sarees          Saree[]
 
   @@index([status])
 }
@@ -453,17 +487,16 @@ model DesignLibrary {
 }
 
 model DesignDispatch {
-  id                 String        @id
-  recipientType      RecipientType
-  recipientId        String        // weaver id or loom number string
-  recipientName      String
-  instructions       String
-  colorSlipImageUrl  String?
+  id                  String        @id
+  recipientType       RecipientType
+  recipientId         String // weaver id or loom number string
+  recipientName       String
+  instructions        String
+  colorSlipImageUrl   String?
   designGraphImageUrl String?
-  batches            String[]      // array of batch IDs
-  sentAt             DateTime      @default(now())
+  batches             String[] // array of batch IDs
+  sentAt              DateTime      @default(now())
 }
-
 
 model SareeTypeRate {
   code           String   @id
@@ -503,9 +536,9 @@ model Batch {
 }
 
 model BatchSareeRow {
-  id            String        @id @default(uuid())
+  id            String         @id @default(uuid())
   batchId       String
-  batch         Batch         @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  batch         Batch          @relation(fields: [batchId], references: [id], onDelete: Cascade)
   serial        Int
   sareeId       String?        @unique
   // Nullable: a batch is created with N empty slots up front and each row is
@@ -523,27 +556,27 @@ model BatchSareeRow {
   bulkOrderRef  String?
   bulkOrder     BulkOrder?     @relation(fields: [bulkOrderRef], references: [ref])
   qcPassed      Boolean?
-  createdAt     DateTime      @default(now())
+  createdAt     DateTime       @default(now())
 
   // Set when Worker Staff physically receives the finished saree from the
   // weaver/loom — a row must be received before it enters the QC queue.
-  receivedAt     DateTime?
-  receivedWeight Decimal?  @db.Decimal(8, 2)
-  receivedColor  String?
-  receivedPhotoUrl String?
+  receivedAt           DateTime?
+  receivedWeight       Decimal?  @db.Decimal(8, 2)
+  receivedColor        String?
+  receivedPhotoUrl     String?
   // Actual material split entered at receipt (grams for warp/resham, reels
   // for jari) — defaults to the rate card's standard split scaled to the
   // entered weight, but Worker Staff can override it. Persisted separately
   // from receivedWeight so a bulk order's material tally reflects what was
   // actually recorded, not a re-derived estimate.
-  receivedWarpG      Decimal? @db.Decimal(8, 2)
-  receivedReshamG    Decimal? @db.Decimal(8, 2)
-  receivedJariReels  Decimal? @db.Decimal(8, 2)
+  receivedWarpG        Decimal?  @db.Decimal(8, 2)
+  receivedReshamG      Decimal?  @db.Decimal(8, 2)
+  receivedJariReels    Decimal?  @db.Decimal(8, 2)
   // Retail selling price Worker Staff enters for THIS specific saree at
   // receipt, overriding the saree type's shared SareeTypeRate.retailPrice —
   // null until received, and null forever for a saree received before this
   // field existed (the New Sale flow falls back to the type rate then).
-  receivedSellingPrice Decimal? @db.Decimal(12, 2)
+  receivedSellingPrice Decimal?  @db.Decimal(12, 2)
 
   // Admin's physical-count verification of this one saree, separate from
   // BulkOrder.tallied (which only confirms the order's overall saree count).
@@ -555,8 +588,8 @@ model BatchSareeRow {
 
   // History: a saree can be re-inspected after a SEMI verdict sends it back
   // to the weaver for rework, so this is one-to-many, newest last by qcDate.
-  qcRecords            QcRecord[]
-  finishingAssignment  FinishingAssignment?
+  qcRecords           QcRecord[]
+  finishingAssignment FinishingAssignment?
 
   @@unique([batchId, serial])
   @@index([weaverId])
@@ -832,36 +865,42 @@ model BulkOrder {
 }
 
 model DispatchRecord {
-  id               String       @id @default(uuid())
-  type             DispatchType
-  dispatchDate     DateTime     @default(now())
-  lrNumber         String?
-  transportCompany String?
-  vehicleNumber    String?
-  driverName       String?
-  customerId       String?
-  customer         Customer?    @relation(fields: [customerId], references: [id])
-  invoiceNumber    String?
-  invoiceDate      DateTime?
-  pricePerSaree    Decimal?     @db.Decimal(12, 2)
-  totalAmount      Decimal      @db.Decimal(12, 2)
-  gstPct           Decimal?     @db.Decimal(5, 2)
-  grandTotal       Decimal      @db.Decimal(12, 2)
-  firmId           String?
-  firm             Firm?        @relation(fields: [firmId], references: [id])
-  paymentDueDate   DateTime?
-  bulkOrderRef     String?
-  bulkOrder        BulkOrder?   @relation(fields: [bulkOrderRef], references: [ref])
-  quotationRef     String?
+  id                  String       @id @default(uuid())
+  type                DispatchType
+  dispatchDate        DateTime     @default(now())
+  lrNumber            String?
+  transportCompany    String?
+  vehicleNumber       String?
+  driverName          String?
+  customerId          String?
+  customer            Customer?    @relation(fields: [customerId], references: [id])
+  invoiceNumber       String?
+  invoiceDate         DateTime?
+  /// A SHOP dispatch moves stock to our own showroom — no sale, so no tax
+  /// invoice and no invoice number. It gets a Delivery Challan number instead
+  /// (DC-<FY>-NNN), allocated server-side like every other business id.
+  /// Nullable: wholesale dispatches never have one, and shop dispatches raised
+  /// before this column existed keep a derived reference on the document.
+  challanNumber       String?      @unique
+  pricePerSaree       Decimal?     @db.Decimal(12, 2)
+  totalAmount         Decimal      @db.Decimal(12, 2)
+  gstPct              Decimal?     @db.Decimal(5, 2)
+  grandTotal          Decimal      @db.Decimal(12, 2)
+  firmId              String?
+  firm                Firm?        @relation(fields: [firmId], references: [id])
+  paymentDueDate      DateTime?
+  bulkOrderRef        String?
+  bulkOrder           BulkOrder?   @relation(fields: [bulkOrderRef], references: [ref])
+  quotationRef        String?
   // "Skip transport/invoicing details for now, dispatch anyway, fill them in
   // later" — matches the frontend's ResumeDispatchModal / DispatchDetailsModal flow.
-  pendingTransport Boolean      @default(false)
-  pendingReceipt   Boolean      @default(false)
-  notes            String?
+  pendingTransport    Boolean      @default(false)
+  pendingReceipt      Boolean      @default(false)
+  notes               String?
   // Wholesale-only fields from TransportForm — expectedDelivery mirrors
   // dispatchDate's shape (a plain date), specialInstructions replaces
   // `notes` in that form's UI (retail dispatch uses `notes` instead).
-  expectedDelivery   DateTime?
+  expectedDelivery    DateTime?
   specialInstructions String?
 
   sarees  DispatchSaree[]
@@ -961,30 +1000,30 @@ model ReturnRecord {
 // ─────────────────────────────────────────────────────────────────────────
 
 model Supplier {
-  id          String      @id @default(uuid())
+  id              String      @id @default(uuid())
   // Human-facing sequential id (e.g. "SUPPLIER-001") — generated via
   // IdGeneratorService.nextFormatted("SUPPLIER"), distinct from `id` (UUID),
   // which stays the real FK target everywhere else.
-  code        String?     @unique
-  name        String
-  initials    String?
-  contactName String?
-  phone       String?
-  whatsapp    String?
-  city        String?
-  state       String?
-  address     String?
-  gstCode     String?
-  specialty   String?
-  terms       String?
-  bankName    String?
-  accountNo   String?
-  ifscCode    String?
-  notes       String?
+  code            String?     @unique
+  name            String
+  initials        String?
+  contactName     String?
+  phone           String?
+  whatsapp        String?
+  city            String?
+  state           String?
+  address         String?
+  gstCode         String?
+  specialty       String?
+  terms           String?
+  bankName        String?
+  accountNo       String?
+  ifscCode        String?
+  notes           String?
   visitingCardUrl String?
-  status      PartyStatus @default(ACTIVE)
-  rating      Int?
-  createdAt   DateTime    @default(now())
+  status          PartyStatus @default(ACTIVE)
+  rating          Int?
+  createdAt       DateTime    @default(now())
 
   purchases        Purchase[]
   purchaseRequests PurchaseRequest[]
@@ -1007,30 +1046,30 @@ model SupplierPayment {
 }
 
 model Vendor {
-  id          String      @id @default(uuid())
+  id              String      @id @default(uuid())
   // Human-facing sequential id (e.g. "VENDOR-001") — generated via
   // IdGeneratorService.nextFormatted("VENDOR"), distinct from `id` (UUID),
   // which stays the real FK target everywhere else.
-  code        String?     @unique
-  name        String
-  initials    String?
-  contactName String?
-  phone       String?
-  whatsapp    String?
-  city        String?
-  state       String?
-  address     String?
-  gstCode     String?
-  specialty   String?
-  terms       String?
-  bankName    String?
-  accountNo   String?
-  ifscCode    String?
-  notes       String?
+  code            String?     @unique
+  name            String
+  initials        String?
+  contactName     String?
+  phone           String?
+  whatsapp        String?
+  city            String?
+  state           String?
+  address         String?
+  gstCode         String?
+  specialty       String?
+  terms           String?
+  bankName        String?
+  accountNo       String?
+  ifscCode        String?
+  notes           String?
   visitingCardUrl String?
-  status      PartyStatus @default(ACTIVE)
-  rating      Int?
-  createdAt   DateTime    @default(now())
+  status          PartyStatus @default(ACTIVE)
+  rating          Int?
+  createdAt       DateTime    @default(now())
 
   purchaseOrders PurchaseOrder[]
   vendorPayments VendorPayment[]
@@ -1040,29 +1079,29 @@ model Vendor {
 }
 
 model Purchase {
-  id            String                @id // EXT-2026-NNN
+  id              String                @id // EXT-2026-NNN
   // Optional so an unregistered ("Other, enter manually") supplier can still
   // be recorded — supplierName/location carry the free-text entry in that
   // case. Exactly one of supplierId/supplierName must be set (enforced in
   // PurchasesService.create).
-  supplierId    String?
-  supplier      Supplier?             @relation(fields: [supplierId], references: [id])
-  supplierName  String?
-  location      String?
-  date          DateTime              @default(now())
-  sareeCount    Int
-  gstNumber     String?
-  invoiceNumber String?
-  billAmount    Decimal               @db.Decimal(12, 2)
-  status        PurchasePaymentStatus @default(PENDING)
-  notes         String?
+  supplierId      String?
+  supplier        Supplier?             @relation(fields: [supplierId], references: [id])
+  supplierName    String?
+  location        String?
+  date            DateTime              @default(now())
+  sareeCount      Int
+  gstNumber       String?
+  invoiceNumber   String?
+  billAmount      Decimal               @db.Decimal(12, 2)
+  status          PurchasePaymentStatus @default(PENDING)
+  notes           String?
   invoiceFileName String?
-  addedById     String?
-  addedBy       User?                 @relation("PurchaseAddedBy", fields: [addedById], references: [id])
-  createdAt     DateTime              @default(now())
+  addedById       String?
+  addedBy         User?                 @relation("PurchaseAddedBy", fields: [addedById], references: [id])
+  createdAt       DateTime              @default(now())
 
-  sarees     Saree[]
-  sareeLines PurchaseSareeLine[]
+  sarees                 Saree[]
+  sareeLines             PurchaseSareeLine[]
   supplierReturnRequests SupplierReturnRequest[]
 
   @@index([supplierId])
@@ -1073,37 +1112,37 @@ model Purchase {
 // physical saree bought, distinct from `Purchase.sarees` (real production
 // Saree rows, a separate and currently unpopulated concern).
 model PurchaseSareeLine {
-  id          String   @id @default(uuid())
-  purchaseId  String
-  purchase    Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  id               String    @id @default(uuid())
+  purchaseId       String
+  purchase         Purchase  @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
   // Human-facing line code, e.g. RAVI-INV118-003 — computed client-side
   // (buildSareeCode) and passed through; never regenerated server-side once set.
-  code        String
-  weight      String?
+  code             String
+  weight           String?
   // Renamed from the frontend's `date` (which is per-line, defaulting to the
   // purchase date) to avoid confusion with Purchase.date.
-  sareeDate   DateTime?
-  sareeType   String?
-  color       String?
-  price       Decimal  @default(0) @db.Decimal(12, 2)
-  sellPercent Decimal  @default(0) @db.Decimal(6, 2)
-  quantity    Int      @default(1)
-  finalAmount Decimal  @default(0) @db.Decimal(12, 2)
-  notes       String?
+  sareeDate        DateTime?
+  sareeType        String?
+  color            String?
+  price            Decimal   @default(0) @db.Decimal(12, 2)
+  sellPercent      Decimal   @default(0) @db.Decimal(6, 2)
+  quantity         Int       @default(1)
+  finalAmount      Decimal   @default(0) @db.Decimal(12, 2)
+  notes            String?
   // Photo of the saree — the frontend currently captures this as a data URL,
   // so it's stored as-is rather than uploaded to disk (see common/storage
   // for the disk-upload pattern used elsewhere, if this ever needs it).
-  imageUrl    String?  @db.Text
+  imageUrl         String?   @db.Text
   // Optional photo for individual physical pieces within this line, indexed by
   // piece position (pieceImageUrls[0] is piece 1 of `quantity`). Independent of
   // the line's own `imageUrl`: a piece with no entry (or an empty string) here
   // simply has no photo — it does not borrow the serial's.
-  pieceImageUrls String[] @default([])
+  pieceImageUrls   String[]  @default([])
   // How many of this line's `quantity` pieces have been returned to the
   // supplier — a line covers N identical physical sarees, so return status
   // is tracked as a count rather than a per-piece flag; the frontend treats
   // the first `returnedQuantity` expanded pieces of the line as returned.
-  returnedQuantity Int @default(0)
+  returnedQuantity Int       @default(0)
 
   supplierReturnRequests SupplierReturnRequest[]
 
@@ -1141,29 +1180,29 @@ model SupplierReturnRequest {
 }
 
 model PurchaseOrder {
-  id                String              @id @default(uuid())
-  poNumber          String              @unique // PO-2026-NNN
-  vendorId          String
-  vendor            Vendor              @relation(fields: [vendorId], references: [id])
-  deliveryDate      DateTime?
-  totalValue        Decimal             @db.Decimal(12, 2)
-  urgency           String?
-  status            PurchaseOrderStatus @default(PENDING)
+  id                 String              @id @default(uuid())
+  poNumber           String              @unique // PO-2026-NNN
+  vendorId           String
+  vendor             Vendor              @relation(fields: [vendorId], references: [id])
+  deliveryDate       DateTime?
+  totalValue         Decimal             @db.Decimal(12, 2)
+  urgency            String?
+  status             PurchaseOrderStatus @default(PENDING)
   // Which of the company's legal firms this order is raised under. Copied
   // onto the GrnReceipt when the goods are received, so Goods Receipt
   // History can show a real firm name instead of a blank column.
-  firmId            String?
-  firm              Firm?               @relation(fields: [firmId], references: [id])
-  grnId             String? // display code, kept for backward compatibility
-  grnReceiptId      String? // real FK to GrnReceipt.id, once GRN is received
-  grnReceipt        GrnReceipt?         @relation(fields: [grnReceiptId], references: [id])
+  firmId             String?
+  firm               Firm?               @relation(fields: [firmId], references: [id])
+  grnId              String? // display code, kept for backward compatibility
+  grnReceiptId       String? // real FK to GrnReceipt.id, once GRN is received
+  grnReceipt         GrnReceipt?         @relation(fields: [grnReceiptId], references: [id])
   actualReceivedDate DateTime? // stamped on receiveGrn(); compare against deliveryDate for on-time-delivery
-  rejectionReason   String?
-  createdAt         DateTime            @default(now())
-  createdById       String?
-  createdBy         User?               @relation(fields: [createdById], references: [id])
+  rejectionReason    String?
+  createdAt          DateTime            @default(now())
+  createdById        String?
+  createdBy          User?               @relation(fields: [createdById], references: [id])
 
-  items PurchaseOrderItem[]
+  items       PurchaseOrderItem[]
   vendorBills VendorBill[]
 
   @@index([vendorId])
@@ -1320,19 +1359,19 @@ model VendorPayment {
 }
 
 model Invoice {
-  id          String         @id @default(uuid())
+  id          String          @id @default(uuid())
   // Human-facing id (INV-<WholesaleCustomerCode>-NNN), distinct from `id`
   // (UUID) which stays the real FK target everywhere else — mirrors
   // Customer.code/FactoryLoom.code.
-  code        String?        @unique
+  code        String?         @unique
   customerId  String
-  customer    Customer       @relation(fields: [customerId], references: [id])
-  invoiceDate DateTime       @default(now())
+  customer    Customer        @relation(fields: [customerId], references: [id])
+  invoiceDate DateTime        @default(now())
   dueDate     DateTime?
-  total       Decimal        @db.Decimal(12, 2)
-  paid        Decimal        @default(0) @db.Decimal(12, 2)
-  status      InvoiceStatus  @default(PENDING)
-  dispatchId  String?        @unique
+  total       Decimal         @db.Decimal(12, 2)
+  paid        Decimal         @default(0) @db.Decimal(12, 2)
+  status      InvoiceStatus   @default(PENDING)
+  dispatchId  String?         @unique
   dispatch    DispatchRecord? @relation(fields: [dispatchId], references: [id])
 
   payments InvoicePayment[]
@@ -1431,9 +1470,9 @@ model AuditLog {
 }
 
 model ActionLog {
-  id          String    @id @default(uuid())
+  id          String   @id @default(uuid())
   userId      String?
-  user        User?     @relation(fields: [userId], references: [id])
+  user        User?    @relation(fields: [userId], references: [id])
   role        UserRole
   module      String
   action      String
@@ -1442,7 +1481,7 @@ model ActionLog {
   recordLabel String?
   oldValue    String?
   newValue    String?
-  createdAt   DateTime  @default(now())
+  createdAt   DateTime @default(now())
 
   @@index([userId])
   @@index([module])
@@ -1565,8 +1604,8 @@ model WarpRequest {
 
 model RateChangeRequest {
   id                String            @id // RCR-2026-NNN
-  sareeTypeCode    String
-  sareeType        SareeTypeRate     @relation(fields: [sareeTypeCode], references: [code])
+  sareeTypeCode     String
+  sareeType         SareeTypeRate     @relation(fields: [sareeTypeCode], references: [code])
   oldMakingCharge   Decimal           @db.Decimal(12, 2)
   newMakingCharge   Decimal           @db.Decimal(12, 2)
   oldRetailPrice    Decimal           @db.Decimal(12, 2)
@@ -1575,12 +1614,12 @@ model RateChangeRequest {
   newWholesalePrice Decimal           @db.Decimal(12, 2)
   status            RateRequestStatus @default(PENDING)
   reason            String?
-  requestedById    String
-  requestedBy      User              @relation("RequestedRateChanges", fields: [requestedById], references: [id])
-  decidedById      String?
-  decidedBy        User?             @relation("DecidedRateChanges", fields: [decidedById], references: [id])
-  createdAt        DateTime          @default(now())
-  decidedAt        DateTime?
+  requestedById     String
+  requestedBy       User              @relation("RequestedRateChanges", fields: [requestedById], references: [id])
+  decidedById       String?
+  decidedBy         User?             @relation("DecidedRateChanges", fields: [decidedById], references: [id])
+  createdAt         DateTime          @default(now())
+  decidedAt         DateTime?
 
   @@index([sareeTypeCode])
   @@index([status])
@@ -1603,14 +1642,30 @@ model ScheduledReport {
 }
 
 model ReportDownloadHistory {
-  id            String   @id @default(uuid())
-  reportName    String
-  fileType      String   @default("PDF")
-  downloadUrl   String?
+  id             String   @id @default(uuid())
+  reportName     String
+  fileType       String   @default("PDF")
+  downloadUrl    String?
   downloadedById String?
-  downloadedBy  User?    @relation(fields: [downloadedById], references: [id])
-  downloadedAt  DateTime @default(now())
-  filtersUsed   Json?
+  downloadedBy   User?    @relation(fields: [downloadedById], references: [id])
+  downloadedAt   DateTime @default(now())
+  filtersUsed    Json?
 
   @@index([downloadedAt])
+}
+
+enum WhatsAppMessageKind {
+  OTP
+  DOCUMENT
+  REPORT
+  RETAIL_BILL
+  MANUAL
+}
+
+enum WhatsAppMessageStatus {
+  QUEUED
+  SENT
+  DELIVERED
+  READ
+  FAILED
 }

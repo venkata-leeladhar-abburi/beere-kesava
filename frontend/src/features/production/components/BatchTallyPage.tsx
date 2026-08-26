@@ -1,6 +1,5 @@
 import React, { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, Scale, ChevronLeft, UserRound, Layers, TrendingUp } from "lucide-react";
-import { useDesignLibrary } from "@/features/design-library";
 import { useBatches, type SareeRow } from "../contexts/BatchContext";
 import { useRatesPricing } from "@/features/pricing";
 import { useAuth } from "../../../contexts/AuthContext";
@@ -11,8 +10,8 @@ import { Button, SearchInput, Select, SelectItem } from "../../../shared/ui/prim
 import { LoadingState, ErrorState } from "../../../shared/ui/state";
 import { EntityCode } from "@/shared/ui/domain";
 import { Breadcrumbs } from "../../../shared/ui/nav/Breadcrumbs";
-import { BG_IMAGE } from "@/features/portals/components/weaver-portal/WeaverBatchNotifData";
-import { SectionCard } from "@/features/weavers/components/common/primitives";
+import { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
+import { SectionCard } from "@/shared/ui/SectionCard";
 
 /**
  * Batch Tally as its own full page (same pattern as BulkOrderDetailPage —
@@ -76,10 +75,10 @@ export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: s
       qcPassed: !!r.qcPassed,
       sareeTypeCode: r.sareeTypeCode,
       receivedPhotoUrl: r.receivedPhotoUrl,
-      actualWeight: r.receivedWeight ? parseFloat(r.receivedWeight) : null,
-      actualWarpG: r.receivedWarpG ? parseFloat(r.receivedWarpG) : null,
-      actualReshamG: r.receivedReshamG ? parseFloat(r.receivedReshamG) : null,
-      actualJariReels: r.receivedJariReels ? parseFloat(r.receivedJariReels) : null,
+      actualWeight: r.receivedWeight ? Number(r.receivedWeight) : null,
+      actualWarpG: r.receivedWarpG ? Number(r.receivedWarpG) : null,
+      actualReshamG: r.receivedReshamG ? Number(r.receivedReshamG) : null,
+      actualJariReels: r.receivedJariReels ? Number(r.receivedJariReels) : null,
       tallied: r.tallied,
       talliedBy: r.talliedBy,
       talliedAt: r.talliedAt,

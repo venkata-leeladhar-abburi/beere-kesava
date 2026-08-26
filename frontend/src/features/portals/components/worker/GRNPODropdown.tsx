@@ -33,8 +33,8 @@ export function GRNPODropdown({
         Firm: {selectedPO.firmName ?? "—"} · City: {selectedPO.vendorCity}
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 4 }}>
-        {selectedPO.materials.map((m, idx) => (
-          <span key={`${m.materialType}-${m.unit}-${idx}`} style={{
+        {selectedPO.materials.map(m => (
+          <span key={`${m.materialType}-${m.unit}`} style={{
             fontFamily: F.u,
             fontSize: 12,
             fontWeight: 700,
@@ -105,9 +105,19 @@ export function GRNPODropdown({
               approvedPOs.map(po => (
                 <div
                   key={po.id}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Select purchase order ${po.poNumber ?? po.id}`}
                   onClick={() => {
                     handleSelectPO(po);
                     setShowPODrop(false);
+                  }}
+                  onKeyDown={e => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleSelectPO(po);
+                      setShowPODrop(false);
+                    }
                   }}
                   className="p-3.5 hover:bg-[rgba(110,15,45,0.04)] active:bg-[rgba(110,15,45,0.08)] cursor-pointer transition-colors text-left"
                 >
@@ -130,8 +140,8 @@ export function GRNPODropdown({
                     </div>
                   )}
                   <div className="flex flex-wrap gap-1 mt-1">
-                    {po.materials.map((m, idx) => (
-                      <span key={`${m.materialType}-${idx}`} style={{
+                    {po.materials.map(m => (
+                      <span key={m.materialType} style={{
                         fontFamily: F.u, fontSize: 11, fontWeight: 600,
                         color: m.materialType === "Warp" ? "#7A5010" : m.materialType === "Resham" ? "#7A5E1C" : C.burg,
                         background: m.materialType === "Warp" ? "rgba(196,146,58,0.1)" : m.materialType === "Resham" ? "rgba(200,155,71,0.1)" : "rgba(110,15,45,0.05)",
@@ -203,8 +213,8 @@ export function GRNPODropdown({
                 </div>
               )}
               <div className="flex flex-wrap gap-1 mt-1">
-                {po.materials.map((m, idx) => (
-                  <span key={`${m.materialType}-${idx}`} style={{
+                {po.materials.map(m => (
+                  <span key={m.materialType} style={{
                     fontFamily: F.u, fontSize: 11, fontWeight: 600,
                     color: m.materialType === "Warp" ? "#7A5010" : m.materialType === "Resham" ? "#7A5E1C" : C.burg,
                     background: m.materialType === "Warp" ? "rgba(196,146,58,0.1)" : m.materialType === "Resham" ? "rgba(200,155,71,0.1)" : "rgba(110,15,45,0.05)",

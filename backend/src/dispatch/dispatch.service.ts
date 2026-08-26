@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from "@nestjs/comm
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
 import { DispatchType, Prisma } from "../generated/prisma/client";
-import { IdGeneratorService, businessSegment } from "../id-generator/id-generator.service";
+import { IdGeneratorService, businessSegment, financialYearCode } from "../id-generator/id-generator.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateDispatchDto } from "./dto/create-dispatch.dto";
 import { ListDispatchQueryDto } from "./dto/list-dispatch-query.dto";
@@ -107,6 +107,15 @@ export class DispatchService {
       ? await this.idGenerator.nextScoped("INV", customer!.code ?? businessSegment(customer!.name, "Customer"))
       : undefined;
 
+    // A SHOP dispatch bills nobody, so it raises a Delivery Challan rather than
+    // a tax invoice. Its number is allocated here for the same reason invoice
+    // numbers are — sequential and collision-free per financial year, never
+    // invented client-side. Scoped to the FY so the series restarts each April.
+    const challanNumber =
+      dto.type === DispatchType.SHOP
+        ? await this.idGenerator.nextScoped("DC", financialYearCode())
+        : undefined;
+
     const created = await this.prisma.dispatchRecord.create({
       data: {
         type: dto.type,
@@ -118,6 +127,7 @@ export class DispatchService {
         customerId: dto.customerId,
         invoiceNumber,
         invoiceDate: invoiceNumber ? new Date() : undefined,
+        challanNumber,
         pricePerSaree: dto.pricePerSaree,
         totalAmount,
         gstPct: dto.gstPct,
@@ -148,7 +158,7 @@ export class DispatchService {
       action: `Dispatched ${dto.sareeIds.length} saree(s) (${dto.type})`,
       entityType: "DispatchRecord",
       entityId: created.id,
-      recordLabel: dto.lrNumber ?? invoiceNumber ?? created.id,
+      recordLabel: dto.lrNumber ?? invoiceNumber ?? challanNumber ?? created.id,
     });
 
     return this.findOne(created.id);

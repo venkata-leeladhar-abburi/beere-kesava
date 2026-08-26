@@ -8,6 +8,7 @@ import { useRatesPricing } from "@/features/pricing";
 import { useCustomers } from "@/features/customers";
 import { TransportData, InvoiceData, InventoryRecord } from "../components/types";
 import { rowToDispatchSaree } from "../components/modals/shared/SareePicker";
+import { toast } from "sonner";
 import { toastMessageForError } from "@/shared/ui/state";
 import { WeaverSareeRow, isSareePickable } from "@/features/weavers";
 
@@ -37,7 +38,6 @@ export function useInventoryPageState() {
   const [seenRows, setSeenRows]               = useState<Map<string, WeaverSareeRow>>(new Map());
   const [viewingItem, setViewingItem]         = useState<InventoryRecord | null>(null);
   const [modal,    setModal]                  = useState<"shop" | "wholesale" | "quotation" | null>(null);
-  const [toast,    setToast]                  = useState("");
   const [scanMsg,  setScanMsg]                = useState("");
   const [quotationDispatch, setQuotationDispatch] = useState<Quotation | null>(null);
   const [resumeDispatch, setResumeDispatch]   = useState<DispatchRecord | null>(null);
@@ -237,14 +237,17 @@ export function useInventoryPageState() {
         pendingReceipt: !!opts?.skipped,
       });
     } catch (err) {
-      setToast(toastMessageForError(err));
+      toast.error(toastMessageForError(err));
       return;
     }
     setModal(null);
     setSelected(new Set());
-    setToast(opts?.skipped
-      ? `${sareeIds.length} saree${sareeIds.length > 1 ? "s" : ""} dispatched to Shop — complete remaining details from Dispatch History`
-      : `${sareeIds.length} saree${sareeIds.length > 1 ? "s" : ""} dispatched to Shop`);
+    toast.success(
+      `${sareeIds.length} saree${sareeIds.length > 1 ? "s" : ""} dispatched to Shop`,
+      opts?.skipped
+        ? { description: "Transport and receipt can be filled in later from Dispatch History." }
+        : undefined,
+    );
   };
 
   const quotationDispatchSarees = useMemo(() => {
@@ -278,7 +281,7 @@ export function useInventoryPageState() {
         pendingReceipt: !!opts?.skipped,
       });
     } catch (err) {
-      setToast(toastMessageForError(err));
+      toast.error(toastMessageForError(err));
       return;
     }
     if (bulkOrderRef) {
@@ -291,9 +294,12 @@ export function useInventoryPageState() {
     setQuotationDispatch(null);
     setSelected(new Set());
     const invoiceLabel = created.invoiceNumber ? ` ${created.invoiceNumber}` : "";
-    setToast(opts?.skipped
-      ? `Invoice${invoiceLabel} raised — ${sareeIds.length} saree${sareeIds.length > 1 ? "s" : ""} dispatched to ${customer?.name}, complete transport & receipt later`
-      : `Invoice${invoiceLabel} sent — ${sareeIds.length} saree${sareeIds.length > 1 ? "s" : ""} dispatched to ${customer?.name}`);
+    toast.success(
+      `Invoice${invoiceLabel} ${opts?.skipped ? "raised" : "sent"} — ${sareeIds.length} saree${sareeIds.length > 1 ? "s" : ""} dispatched to ${customer?.name}`,
+      opts?.skipped
+        ? { description: "Transport and receipt can be filled in later from Dispatch History." }
+        : undefined,
+    );
   };
 
   const handleRaiseQuotation = async (inv: InvoiceData, customerId: string, bulkOrderRef?: string, picked?: FinishingReturn[]) => {
@@ -341,7 +347,7 @@ export function useInventoryPageState() {
     });
     setModal(null);
     setSelected(new Set());
-    setToast(`Quotation ${createdQuotation.quotationNumber} raised for ${customer?.name} — sent to finishing`);
+    toast.success(`Quotation ${createdQuotation.quotationNumber} raised for ${customer?.name}`, { description: "Sent to finishing." });
   };
 
   return {
@@ -364,8 +370,6 @@ export function useInventoryPageState() {
     setViewingItem,
     modal,
     setModal,
-    toast,
-    setToast,
     scanMsg,
     setScanMsg,
     quotationDispatch,

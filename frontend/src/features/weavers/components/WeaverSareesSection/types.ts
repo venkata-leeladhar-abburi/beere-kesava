@@ -33,6 +33,10 @@ export interface WeaverSareeRow {
   finishingCompletedDate: string | null;
   /** true once this saree appears in a real DispatchRecord — already dispatched, including via a raised quotation. */
   dispatched: boolean;
+  /** true once a sale has been recorded against it. Independent of `dispatched`:
+   *  a wholesale counter sale marks a saree SOLD without any dispatch record,
+   *  and the server refuses to dispatch it either way. */
+  sold: boolean;
 
   /** present when the saree exists in the sales / stock ledger */
   stock: UnifiedSaree | null;

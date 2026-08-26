@@ -132,9 +132,18 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
     [recordReturnMutation],
   );
 
+  // Best-effort: the sales endpoint caps pageSize at 100 (ListSaleQueryDto), so
+  // this covers the most recent 100 sales. It is a UI guard, not the authority —
+  // DispatchService.create still rejects a sold saree outright, and that error
+  // is surfaced to the operator.
+  const soldSareeIds = useMemo(
+    () => new Set((rawSales?.items ?? []).map(s => s.sareeId)),
+    [rawSales],
+  );
+
   const value = useMemo(
-    () => ({ sarees, purchases: SEED_PURCHASE_SUMMARIES, recordSale, recordReturn, isError, error, isLoading, refetch }),
-    [sarees, isError, error, isLoading, refetch, recordSale, recordReturn],
+    () => ({ sarees, soldSareeIds, purchases: SEED_PURCHASE_SUMMARIES, recordSale, recordReturn, isError, error, isLoading, refetch }),
+    [sarees, soldSareeIds, isError, error, isLoading, refetch, recordSale, recordReturn],
   );
   return <SalesContext.Provider value={value}>{children}</SalesContext.Provider>;
 }
@@ -145,6 +154,7 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
  */
 const FALLBACK: SalesContextValue = {
   sarees: [],
+  soldSareeIds: new Set<string>(),
   purchases: SEED_PURCHASE_SUMMARIES,
   recordSale: () => {},
   recordReturn: () => {},

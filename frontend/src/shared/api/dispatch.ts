@@ -19,6 +19,9 @@ export interface BackendDispatchRecord {
   customer: { id: string; name: string; phone: string | null; address: string | null; city: string | null } | null;
   invoiceNumber: string | null;
   invoiceDate: string | null;
+  /** Delivery challan number for SHOP dispatches (DC-<FY>-NNN). Null for
+   *  wholesale, and for shop dispatches raised before it was allocated. */
+  challanNumber: string | null;
   pricePerSaree: string | null;
   totalAmount: string;
   gstPct: string | null;

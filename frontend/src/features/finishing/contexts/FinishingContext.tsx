@@ -99,6 +99,7 @@ function backendDispatchToFrontend(d: BackendDispatchRecord): DispatchRecord {
     customerName: d.customer?.name ?? undefined,
     customerPhone: d.customer?.phone ?? undefined,
     invoiceNumber: d.invoiceNumber ?? undefined,
+    challanNumber: d.challanNumber ?? undefined,
     invoiceDate: d.invoiceDate ?? undefined,
     pricePerSaree: d.pricePerSaree ? Number(d.pricePerSaree) : undefined,
     totalAmount: Number(d.totalAmount),

@@ -47,6 +47,7 @@ export function WorkerQCWeaverGrid({
           <button
             key={wg.name}
             type="button"
+            aria-label={`Open QC queue for ${wg.name}`}
             onClick={() => setSelectedWeaverQC(wg.name)}
             className="group relative flex flex-col justify-between items-start gap-3 rounded-2xl border border-[rgba(110,15,45,0.12)] bg-white p-4 text-left shadow-[0_4px_16px_rgba(74,6,27,0.06)] hover:shadow-[0_8px_24px_rgba(74,6,27,0.12)] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer overflow-hidden"
             style={{ borderTop: `3px solid ${T.gold}` }}

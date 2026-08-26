@@ -73,10 +73,7 @@ import {
   SectionNavigator, PAGE_SECTIONS, SECTION_NAV_GLOBAL_STYLE,
   MOBILE_NAV_H,
 } from "../../../shared/ui/SectionNavigator";
-import { ChevronLeft, UserRound, PackageCheck, History } from "lucide-react";
-import { Button } from "../../../shared/ui/primitives";
-import { EntityCode } from "../../../shared/ui/domain";
-import { Breadcrumbs } from "../../../shared/ui/nav/Breadcrumbs";
+import { PackageCheck, History } from "lucide-react";
 import { AnimatePresence } from "motion/react";
 import { UserProfileModal } from "../../../shared/ui/UserProfileModal";
 

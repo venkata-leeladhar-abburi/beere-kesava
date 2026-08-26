@@ -15,6 +15,9 @@ export function externalSerialOf(sareeId: string): string | null {
 
 /** Whether a saree may be ticked for a quotation or a dispatch.
  *
+ *  Mirrors DispatchService.create's rejection rule exactly — QC passed, and not
+ *  already DISPATCHED / SOLD / DAMAGED_REVIEW_NEEDED.
+ *
  *  A clean QC pass is the real precondition: DispatchService.create rejects
  *  anything else outright ("Saree(s) have not passed QC and cannot be
  *  dispatched"), so allowing sarees still in production or awaiting QC to be
@@ -26,12 +29,17 @@ export function externalSerialOf(sareeId: string): string | null {
  *  rule the table's checkboxes use: what you can tick is exactly what the
  *  dispatch/quotation modals receive, and exactly what the server accepts. */
 export const isSareePickable = (r: WeaverSareeRow): boolean =>
-  r.qcStatus === "passed" && !r.dispatched;
+  r.qcStatus === "passed"
+  && !r.dispatched
+  && !r.sold
+  && r.finishingStatus !== "rejected";
 
 /** Why a saree cannot be ticked — shown on the disabled checkbox so the row
  *  explains itself instead of just being unclickable. */
 export function pickBlockedReason(r: WeaverSareeRow): string | undefined {
+  if (r.sold) return "Already sold — it is no longer in stock";
   if (r.dispatched) return "Already dispatched";
+  if (r.finishingStatus === "rejected") return "Came back damaged from finishing — needs review before it can be dispatched";
   if (r.qcStatus === "defective") return "Failed QC — needs a decision before it can be dispatched";
   if (r.qcStatus === "semi") return "Semi-approved — needs a QC decision before it can be dispatched";
   if (r.qcStatus !== "passed") return "Not QC-passed yet — it cannot be dispatched or quoted";

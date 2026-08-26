@@ -9,6 +9,7 @@ import { SectionCard } from "../common/primitives";
 import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 import { EntityCode } from "@/shared/ui/domain";
 import { EditWholesaleCustomerModal } from "../modals/EditWholesaleCustomerModal";
+import { challanReference } from "../modals/dispatchDocument";
 import { LoadingState, ErrorState } from "../../../../shared/ui/state";
 
 function formatDateStr(s?: string): string {
@@ -33,10 +34,13 @@ export function DispatchHistorySection({ dispatches, firms, onResume, onDelete, 
       .sort((a, b) => (b.id > a.id ? 1 : -1)),
   [dispatches, tab]);
 
+  // Counts are consignments, not pieces — one badge per dispatch sent, matching
+  // the "Showing N of M dispatches" footer below. They used to sum sareeIds,
+  // so a single 2-saree run to the shop read as "To Shop (2)" against one row.
   const TABS: { key: typeof tab; label: string; count: number }[] = [
-    { key: "all",       label: "All",       count: dispatches.reduce((acc, d) => acc + d.sareeIds.length, 0) },
-    { key: "shop",      label: "To Shop",   count: dispatches.filter(d => d.type === "shop").reduce((acc, d) => acc + d.sareeIds.length, 0) },
-    { key: "wholesale", label: "Wholesale", count: dispatches.filter(d => d.type === "wholesale").reduce((acc, d) => acc + d.sareeIds.length, 0) },
+    { key: "all",       label: "All",       count: dispatches.length },
+    { key: "shop",      label: "To Shop",   count: dispatches.filter(d => d.type === "shop").length },
+    { key: "wholesale", label: "Wholesale", count: dispatches.filter(d => d.type === "wholesale").length },
   ];
 
   return (
@@ -99,10 +103,15 @@ function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { row
       ),
     },
     {
-      id: "invoice", header: "Invoice", accessor: d => d.invoiceNumber, width: 130, priority: 3,
-      cell: (_v, d) => d.invoiceNumber
-        ? <EntityCode type="invoice" value={d.invoiceNumber} />
-        : <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>—</span>,
+      // A shop dispatch raises no invoice — it carries a delivery challan, so
+      // the column shows whichever document that row actually has.
+      id: "invoice", header: "Document", width: 150, priority: 3,
+      accessor: d => (d.type === "shop" ? challanReference(d) : d.invoiceNumber),
+      cell: (_v, d) => d.type === "shop"
+        ? <EntityCode type="challan" value={challanReference(d)} truncate />
+        : d.invoiceNumber
+          ? <EntityCode type="invoice" value={d.invoiceNumber} />
+          : <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>—</span>,
     },
     {
       id: "sarees", header: "Sarees", accessor: d => d.sareeIds.length, type: "number", width: 95,
@@ -153,7 +162,8 @@ function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { row
             <button
               onClick={() => onViewInvoice(d)}
               style={{ background: "none", border: "none", padding: 4, cursor: "pointer", color: T.luxuryBrown }}
-              title="Invoice"
+              title={d.type === "shop" ? "Delivery challan" : "Tax invoice"}
+              aria-label={d.type === "shop" ? `View delivery challan ${challanReference(d)}` : `View tax invoice ${d.invoiceNumber ?? ""}`.trim()}
             >
               <FileText size={16} />
             </button>
@@ -282,7 +292,8 @@ function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { row
                       <button
                         onClick={() => onViewInvoice(d)}
                         style={{ background: "none", border: "none", padding: 4, cursor: "pointer", color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 4, fontSize: 12, fontFamily: F.ui }}
-                        title="Invoice"
+                        title={d.type === "shop" ? "Delivery challan" : "Tax invoice"}
+                        aria-label={d.type === "shop" ? `View delivery challan ${challanReference(d)}` : `View tax invoice ${d.invoiceNumber ?? ""}`.trim()}
                       >
                         <FileText size={15} />
                       </button>
