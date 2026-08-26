@@ -14,8 +14,8 @@ import { EditProfileTab } from "./EditProfileTab";
 import { Button } from "../../../../../shared/ui/primitives";
 import { Breadcrumbs } from "../../../../../shared/ui/nav/Breadcrumbs";
 import { rupees, formatMoney } from "@/lib/domain/money";
-import { BG_IMAGE } from "@/features/portals/components/weaver-portal/WeaverBatchNotifData";
-import { SectionCard } from "@/features/weavers/components/common/primitives";
+import { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
+import { SectionCard } from "@/shared/ui/SectionCard";
 
 export interface WholesaleDetailSectionProps {
   customer: WholesaleCustomer;

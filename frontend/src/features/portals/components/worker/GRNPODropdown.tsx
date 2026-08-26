@@ -1,7 +1,7 @@
 import React from "react";
 import { ChevronDown } from "lucide-react";
 import { C, F, card } from "./tokens";
-import { PurchaseOrder } from "@/features/purchasing";
+import { PurchaseOrder, usePO } from "@/features/purchasing";
 import { Button } from "../../../../shared/ui/primitives";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "../../../../shared/ui/overlay";
 import { useIsMobile } from "../../../../hooks/useResponsive";
@@ -22,9 +22,12 @@ export function GRNPODropdown({
   handleSelectPO
 }: GRNPODropdownProps) {
   const isMobile = useIsMobile();
+  const { isLoading, isError } = usePO();
 
   const selectedPOContent = selectedPO ? (
     <div>
+      {/* poNumber, not id — `id` is a UUID that matches nothing
+          staff ever see on paper or elsewhere in the app. */}
       <div style={{ fontWeight: 700, color: C.burg, marginBottom: 2, wordBreak: "break-all", overflowWrap: "anywhere" }}>{selectedPO.poNumber} — {selectedPO.vendor}</div>
       <div style={{ fontSize: 12, color: C.muted, marginBottom: 4 }}>
         Firm: {selectedPO.firmName ?? "—"} · City: {selectedPO.vendorCity}
@@ -86,7 +89,15 @@ export function GRNPODropdown({
 
         {showPODrop && (
           <div className="mt-2 w-full bg-white border border-[#E8DCC4] rounded-xl shadow-lg overflow-hidden max-h-[320px] overflow-y-auto divide-y divide-[#F0E6D8] transition-all">
-            {approvedPOs.length === 0 ? (
+            {isLoading ? (
+              <div className="p-4 text-center text-xs text-[#8C7A6B] font-medium">
+                Loading purchase orders&hellip;
+              </div>
+            ) : isError ? (
+              <div className="p-4 text-center text-xs text-[#C0392B] font-medium">
+                Couldn&rsquo;t load purchase orders. Try again.
+              </div>
+            ) : approvedPOs.length === 0 ? (
               <div className="p-4 text-center text-xs text-[#8C7A6B] font-medium">
                 No approved purchase orders available.
               </div>
@@ -160,10 +171,16 @@ export function GRNPODropdown({
           collisionPadding={12}
           className="!p-0 !rounded-[12px] z-[9999] shadow-2xl bg-white border border-[#E8DCC4] w-[var(--radix-dropdown-menu-trigger-width)] max-w-[calc(100vw-32px)] max-h-[320px] overflow-y-auto"
         >
-          {approvedPOs.length === 0 && (
+          {isLoading && (
+            <div style={{ padding: "16px", fontFamily: F.u, fontSize: 13, color: C.muted, textAlign: "center" }}>Loading purchase orders&hellip;</div>
+          )}
+          {!isLoading && isError && (
+            <div style={{ padding: "16px", fontFamily: F.u, fontSize: 13, color: "#C0392B", textAlign: "center" }}>Couldn&rsquo;t load purchase orders. Try again.</div>
+          )}
+          {!isLoading && !isError && approvedPOs.length === 0 && (
             <div style={{ padding: "16px", fontFamily: F.u, fontSize: 13, color: C.muted, textAlign: "center" }}>No approved purchase orders available.</div>
           )}
-          {approvedPOs.map(po => (
+          {!isLoading && !isError && approvedPOs.map(po => (
             <DropdownMenuItem key={po.id} onClick={() => handleSelectPO(po)}
               className="!h-auto !min-h-[56px] !flex-col !items-start !justify-start !rounded-none !border-b !border-[#F0E6D8] !px-4 !py-3.5 !text-left hover:bg-[rgba(110,15,45,0.04)] focus:bg-[rgba(110,15,45,0.04)] cursor-pointer whitespace-normal"
             >

@@ -1,5 +1,5 @@
 import React from "react";
-import { FileText, Pencil } from "lucide-react";
+import { FileText, Pencil, type LucideIcon } from "lucide-react";
 import { motion } from "motion/react";
 
 import { PurchaseOrder } from "@/features/purchasing";
@@ -59,7 +59,7 @@ export function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoic
   ].filter(Boolean) as Array<{
     key: string;
     label: string;
-    icon?: any;
+    icon?: LucideIcon;
     variant: "po" | "secondary" | "primary";
     onClick: () => void;
   }>;

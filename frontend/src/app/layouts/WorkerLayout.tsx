@@ -1,6 +1,6 @@
 import React from "react";
-import { Outlet, Navigate } from "react-router";
-import { useAuth } from "../../contexts/AuthContext";
+import { Outlet } from "react-router";
+import { RequireRole } from "../guards/RequireRole";
 import { composeProviders } from "../../lib/composeProviders";
 import { ErrorBoundary } from "../../components/ErrorBoundary";
 import {
@@ -22,17 +22,13 @@ const WorkerContexts = composeProviders([
 ]);
 
 export function WorkerLayout() {
-  const { isAuthenticated, role } = useAuth();
-
-  // Auth guard — no cross-portal viewing, not even for admin/superadmin.
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (role !== "worker") return <Navigate to="/login" replace />;
-
   return (
-    <WorkerContexts>
-      <ErrorBoundary resetTo="/worker">
-        <Outlet />
-      </ErrorBoundary>
-    </WorkerContexts>
+    <RequireRole allow="worker">
+      <WorkerContexts>
+        <ErrorBoundary resetTo="/worker">
+          <Outlet />
+        </ErrorBoundary>
+      </WorkerContexts>
+    </RequireRole>
   );
 }

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
-import { Scan, Camera, X, ShoppingBag, Users, FileText } from "lucide-react";
+import { Scan, X, ShoppingBag, Users, FileText } from "lucide-react";
 import { T, F, EASE, card } from "../theme";
 import { Button, IconButton, Input } from "../../../../shared/ui/primitives";
 import { CameraScannerModal } from "../../../../shared/ui/CameraScannerModal";
@@ -43,10 +43,17 @@ export function ActionBar({
       {/* Toolbar */}
       <div style={{ ...card, padding: "16px 20px", display: "flex", flexDirection: "column", gap: 10 }}>
         {/* Barcode scanners type the code and press Enter, so the same input
-            serves both a physical scanner and manual entry. The camera button
-            covers devices with no hardware scanner attached. */}
+            serves both a physical scanner and manual entry. One Scan button
+            covers both routes: with an ID in the field it looks that up, and
+            with the field empty it opens the camera for devices that have no
+            hardware scanner attached. */}
         <form
-          onSubmit={e => { e.preventDefault(); onScan(scanValue); setScanValue(""); }}
+          onSubmit={e => {
+            e.preventDefault();
+            if (!scanValue.trim()) { setCameraOpen(true); return; }
+            onScan(scanValue);
+            setScanValue("");
+          }}
           style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" as const }}
         >
           <Input
@@ -59,11 +66,8 @@ export function ActionBar({
           <Button type="submit" variant="primary" size="sm" iconLeft={Scan} className="shrink-0">
             Scan
           </Button>
-          <Button type="button" variant="secondary" size="sm" iconLeft={Camera} onClick={() => setCameraOpen(true)} className="shrink-0">
-            Open Camera
-          </Button>
           <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-            Selects the scanned saree in the table below.
+            Selects the scanned saree in the table below — press Scan with the box empty to use the camera.
           </span>
         </form>
         <CameraScannerModal

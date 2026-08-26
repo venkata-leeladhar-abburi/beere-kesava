@@ -57,7 +57,7 @@ export function QuotationsSection({ quotations, onDispatch }: { quotations: Quot
           const canDispatch = q.status === "received" || q.status === "partially-received";
           return (
             <div key={q.id} style={{ display: "flex", alignItems: "center", gap: 16, padding: "15px 24px", borderBottom: i < rows.length - 1 ? `1px solid ${T.borderDef}` : "none", background: i % 2 === 0 ? "#FFF" : T.warmIvory, flexWrap: "wrap" as const }}>
-              <div style={{ minWidth: 140 }}>
+              <div className="min-w-[140px]">
                 <EntityCode type="quotation" value={q.quotationNumber} />
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>{q.quotationDate}</div>
               </div>

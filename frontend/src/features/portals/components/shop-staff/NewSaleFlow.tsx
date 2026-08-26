@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { customersApi } from '../../../../shared/api/customers';
 import { inventoryApi } from '../../../../shared/api/inventory';
 import { 
@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { useRatesPricing } from "@/features/pricing";
 import { useResponsive } from "../../../../hooks/useResponsive";
-import { C, F, Chip, useCanSeePrices, HeroHeader, PageHero, ShopDesktopHero, SILK_BG } from './theme';
+import { C, F, Card, Chip, useCanSeePrices, ShopDesktopHero, SILK_BG } from './theme';
 import {
   Stepper, StepHeader, StepBody, FlowActions, SummaryPanel, OptionCard,
   ConsequenceNote, ACCENT_SALE, type FlowStep, type SummaryRow,
@@ -16,10 +16,11 @@ import { NewSaleBillModal } from './NewSaleBillModal';
 import { NewSaleSuccessView } from './NewSaleSuccessView';
 import { CustomerSelectStep, Customer } from './CustomerSelectStep';
 import { ScanSareeStep } from './ScanSareeStep';
+import { cartTotal, cartOriginalTotal, type SaleLine } from './sale-cart';
 import { ApiError } from "../../../../shared/api/client";
 import { scanApi } from "../../../../shared/api/scan";
 import { salesApi } from "../../../../shared/api/sales";
-import { Input } from '../../../../shared/ui/primitives';
+import { Input, CurrencyInput } from '../../../../shared/ui/primitives';
 import { rupees, formatMoney } from "@/lib/domain/money";
 
 export function NewSaleFlow() {
@@ -27,7 +28,6 @@ export function NewSaleFlow() {
   const { isMobile, isTablet } = useResponsive();
   const { getSareeTypeByCode } = useRatesPricing();
   const [step, setStep] = useState<1 | 2 | 3 | 4 | "success">(1);
-  const [sareeFound, setSareeFound] = useState(false);
   const [manualId, setManualId] = useState("");
   const [payment, setPayment] = useState<"cash" | "upi" | "card" | "other" | null>(null);
   const [payRef, setPayRef] = useState("");
@@ -41,18 +41,22 @@ export function NewSaleFlow() {
   const [showCustomerList, setShowCustomerList] = useState(false);
   const [isNewCustomer, setIsNewCustomer] = useState(false);
 
-  const [saree, setSaree] = useState({ id: "", design: "", name: "", type: "", typeCode: "", weight: "—", weaver: "" });
+  // A counter sale is a basket, not a single piece — the customer can walk up
+  // with several sarees and they all go on one bill.
+  const [cart, setCart] = useState<SaleLine[]>([]);
   const [scanError, setScanError] = useState<string | null>(null);
   const [showSareeList, setShowSareeList] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const originalPrice = Number(getSareeTypeByCode(saree.typeCode)?.retail ?? 0);
-  const [soldPrice, setSoldPrice] = useState(originalPrice);
-  const priceDiscount = originalPrice - soldPrice;
+  const total = cartTotal(cart);
+  const originalTotal = cartOriginalTotal(cart);
+  const priceDiscount = originalTotal - total;
   const fmtPrice = (n: number) => formatMoney(rupees(n));
 
-  const { data: customersRes } = useQuery({
+  const queryClient = useQueryClient();
+
+  const { data: customersRes, isLoading: customersLoading } = useQuery({
     queryKey: ["customers-list-newsale", "RETAIL"],
     // Counter sales are always to a retail customer — wholesale accounts are
     // handled through Bulk Orders, not this flow.
@@ -82,11 +86,14 @@ export function NewSaleFlow() {
     )
     : prevCustomers;
 
-  // Every QC-passed saree still sitting in shop stock — lets staff pick a
-  // saree by browsing/searching instead of only scanning or typing an ID.
-  const { data: inventoryRes } = useQuery({
-    queryKey: ["inventory-list-newsale"],
-    queryFn: () => inventoryApi.list(),
+  // What is actually on the shop floor — the sarees an admin dispatched to this
+  // shop and that have not been sold yet. Lets staff pick by browsing/searching
+  // instead of only scanning or typing an ID. Previously this read the factory
+  // stock list, which offered the counter sarees that had never been sent here
+  // (and hid the ones that had, since a dispatch removes a saree from that list).
+  const { data: inventoryRes, isLoading: inventoryLoading } = useQuery({
+    queryKey: ["shop-stock"],
+    queryFn: () => inventoryApi.shopStock(),
   });
 
   const availableSarees = useMemo(
@@ -102,13 +109,17 @@ export function NewSaleFlow() {
     )
     : availableSarees;
 
-  const handleScan = async (overrideId?: string) => {
-    const id = (overrideId ?? manualId).trim();
-    if (!id) {
-      setScanError("Enter a saree ID to look it up, or scan its barcode with the camera.");
-      return;
+  /**
+   * Resolves one saree id to a basket line. Returns an error string instead of
+   * throwing so a bulk add can report every rejected piece at once rather than
+   * dying on the first one.
+   */
+  const resolveLine = async (rawId: string, existing: SaleLine[]): Promise<SaleLine | string> => {
+    const id = rawId.trim();
+    if (!id) return "Enter a saree ID to look it up, or scan its barcode with the camera.";
+    if (existing.some(l => l.id.toLowerCase() === id.toLowerCase())) {
+      return `${id} is already on this sale.`;
     }
-    setScanError(null);
     try {
       const result = await scanApi.lookup(id);
       // A scanned/typed ID can belong to any saree ever produced — reject
@@ -117,15 +128,21 @@ export function NewSaleFlow() {
       // staff proceed to sell it again. Not gated on finishing — a saree
       // counts as in-stock the moment QC passes.
       if (result.saleEligibility !== "PASSED") {
-        const reason = result.saleEligibility === "DISPATCHED" ? "already dispatched"
+        if (result.saleEligibility === "NOT_IN_SHOP") {
+          return `Saree ${id} hasn't been dispatched to the shop yet — ask an admin to send it over before selling it.`;
+        }
+        const reason = result.saleEligibility === "WHOLESALE_DISPATCHED" ? "already dispatched to a wholesale customer"
           : result.saleEligibility === "SOLD" ? "already sold"
           : result.saleEligibility === "DAMAGED_REVIEW_NEEDED" ? "flagged for damage review"
           : "has not passed QC yet";
-        setScanError(`Saree ${id} is ${reason} — it can't be sold from the counter.`);
-        return;
+        return `Saree ${id} is ${reason} — it can't be sold from the counter.`;
       }
       const typeCode = result.sareeType?.code ?? "";
-      const nextSaree = {
+      // The price Worker Staff entered for THIS specific saree at receipt
+      // takes priority over the saree type's shared rate — falls back to
+      // the type rate for a saree received before that field existed.
+      const price = result.sellingPrice ?? Number(getSareeTypeByCode(typeCode)?.retail ?? 0);
+      return {
         id: result.sareeId,
         design: result.design?.code ?? "—",
         name: result.design?.name ?? result.sareeType?.type ?? "—",
@@ -133,23 +150,40 @@ export function NewSaleFlow() {
         typeCode,
         weight: "—",
         weaver: result.weaver?.name ?? (result.factoryLoom ? `Factory Loom ${result.factoryLoom.loomNumber}` : "—"),
+        originalPrice: price,
+        soldPrice: price,
       };
-      setSaree(nextSaree);
-      // The price Worker Staff entered for THIS specific saree at receipt
-      // takes priority over the saree type's shared rate — falls back to
-      // the type rate for a saree received before that field existed.
-      setSoldPrice(result.sellingPrice ?? Number(getSareeTypeByCode(typeCode)?.retail ?? 0));
-      setSareeFound(true);
-      setShowSareeList(false);
     } catch (err) {
-      setScanError(err instanceof ApiError ? err.message : "Could not find this saree.");
+      return err instanceof ApiError ? err.message : `Could not find saree ${id}.`;
     }
   };
 
-  const handleSelectSaree = (id: string) => {
-    setManualId(id);
-    handleScan(id);
+  /** Scan/type path — one saree at a time, and the field clears for the next. */
+  const handleScan = async (overrideId?: string) => {
+    setScanError(null);
+    const line = await resolveLine(overrideId ?? manualId, cart);
+    if (typeof line === "string") { setScanError(line); return; }
+    setCart(prev => [...prev, line]);
+    setManualId("");
   };
+
+  /** Stock-table path — every ticked saree is added in one pass. */
+  const handleAddSarees = async (ids: string[]) => {
+    setScanError(null);
+    const added: SaleLine[] = [];
+    const errors: string[] = [];
+    for (const id of ids) {
+      const line = await resolveLine(id, [...cart, ...added]);
+      if (typeof line === "string") errors.push(line); else added.push(line);
+    }
+    if (added.length > 0) setCart(prev => [...prev, ...added]);
+    if (errors.length > 0) setScanError(errors.join(" "));
+  };
+
+  const removeLine = (id: string) => setCart(prev => prev.filter(l => l.id !== id));
+
+  const setLinePrice = (id: string, price: number) =>
+    setCart(prev => prev.map(l => (l.id === id ? { ...l, soldPrice: price } : l)));
 
   const handleSelectCustomer = (cust: Customer) => {
     setSelectedCustomer(cust);
@@ -170,11 +204,11 @@ export function NewSaleFlow() {
   };
 
   const resetSale = () => {
-    setStep(1); setSareeFound(false); setManualId(""); setPayment(null); setPayRef("");
+    setStep(1); setCart([]); setManualId(""); setPayment(null); setPayRef("");
     setPhone(""); setCustName(""); setCustAddress("");
     setCustSearch(""); setSelectedCustomer(null); setIsEditingCustomer(false);
-    setIsNewCustomer(false); setShowCustomerList(false); setSoldPrice(originalPrice);
-    setShowSareeList(false);
+    setIsNewCustomer(false); setShowCustomerList(false);
+    setShowSareeList(false); setScanError(null); setSubmitError(null);
   };
 
   const canProceedStep1 = selectedCustomer !== null || (isNewCustomer && custName.trim() !== "");
@@ -182,11 +216,11 @@ export function NewSaleFlow() {
   if (showBill) {
     return (
       <NewSaleBillModal
-        saree={saree}
+        lines={cart}
         custName={custName}
         phone={phone}
         payment={payment}
-        soldPrice={soldPrice}
+        total={total}
         canSeePrices={canSeePrices}
         isMobile={isMobile}
         isTablet={isTablet}
@@ -199,10 +233,10 @@ export function NewSaleFlow() {
   if (step === "success") {
     return (
       <NewSaleSuccessView
-        saree={saree}
+        lines={cart}
         custName={custName}
         payment={payment}
-        soldPrice={soldPrice}
+        total={total}
         canSeePrices={canSeePrices}
         fmtPrice={fmtPrice}
         onShowBill={() => setShowBill(true)}
@@ -215,7 +249,7 @@ export function NewSaleFlow() {
   // to step backwards just to remember who the customer was.
   const steps: FlowStep[] = [
     { label: "Customer",   summary: selectedCustomer?.name ?? (custName.trim() || undefined) },
-    { label: "Scan Saree", summary: saree.id || undefined },
+    { label: "Scan Saree", summary: cart.length === 1 ? cart[0].id : cart.length > 1 ? `${cart.length} sarees` : undefined },
     { label: "Payment",    summary: payment ? payment.toUpperCase() : undefined },
     { label: "Confirm" },
   ];
@@ -255,6 +289,7 @@ export function NewSaleFlow() {
           selectedCustomer={selectedCustomer}
           setSelectedCustomer={setSelectedCustomer}
           filteredCustomers={filteredCustomers}
+          customersLoading={customersLoading}
           isEditingCustomer={isEditingCustomer}
           setIsEditingCustomer={setIsEditingCustomer}
           isNewCustomer={isNewCustomer}
@@ -276,23 +311,20 @@ export function NewSaleFlow() {
       {/* ── Step 2 — Scan Saree ── */}
       {step === 2 && (
         <ScanSareeStep
-          sareeFound={sareeFound}
-          setSareeFound={setSareeFound}
+          cart={cart}
           manualId={manualId}
           setManualId={setManualId}
-          saree={saree}
-          soldPrice={soldPrice}
-          setSoldPrice={setSoldPrice}
-          originalPrice={originalPrice}
-          canSeePrices={canSeePrices}
           isMobile={isMobile}
-          fmtPrice={fmtPrice}
           handleScan={handleScan}
+          handleAddSarees={handleAddSarees}
+          removeLine={removeLine}
           scanError={scanError}
           availableSarees={filteredSarees}
+          sareesLoading={inventoryLoading}
           showSareeList={showSareeList}
           setShowSareeList={setShowSareeList}
-          handleSelectSaree={handleSelectSaree}
+          isFiltered={manualId.trim().length >= 2}
+          onClearFilters={() => setManualId("")}
           onBack={() => setStep(1)}
           onNext={() => setStep(3)}
         />
@@ -302,7 +334,62 @@ export function NewSaleFlow() {
       {step === 3 && (
         <>
           <StepBody>
-            <StepHeader title="Payment Method" subtitle="How is the customer paying for this saree?" />
+            <StepHeader
+              title="Price & payment"
+              subtitle="Set what each saree is actually selling for, then record how the customer is paying."
+            />
+
+            {/* ── Per-saree pricing ── the price lives here, not at the scan
+                step, so the operator sets every price and sees the basket
+                total in one place before choosing a payment method. */}
+            {canSeePrices && (
+              <Card style={{ marginBottom: 22, overflow: "hidden" }}>
+                <div style={{ height: 4, background: `linear-gradient(90deg, ${C.burg}, ${C.gold})` }} />
+                <div style={{ padding: "10px 16px", borderBottom: `1px solid ${C.bdr}`, background: "rgba(110,15,45,0.03)" }}>
+                  <span style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 1.5, color: C.muted, textTransform: "uppercase" as const }}>
+                    {cart.length} saree{cart.length !== 1 ? "s" : ""} · set selling price
+                  </span>
+                </div>
+                {cart.map((l, i) => (
+                  <div
+                    key={l.id}
+                    style={{
+                      display: isMobile ? "block" : "flex", alignItems: "center", gap: 16,
+                      padding: "14px 16px",
+                      borderBottom: i < cart.length - 1 ? `1px solid ${C.bdr}` : "none",
+                    }}
+                  >
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 13, color: C.burg }}>{l.id}</div>
+                      <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>
+                        {l.name}{l.design && l.design !== "—" ? ` · ${l.design}` : ""}
+                      </div>
+                    </div>
+                    <div style={{ width: isMobile ? "100%" : 200, flexShrink: 0, marginTop: isMobile ? 10 : 0 }}>
+                      <label htmlFor={`price-${l.id}`} className="sr-only">Selling price for {l.id}</label>
+                      <CurrencyInput
+                        id={`price-${l.id}`}
+                        value={l.soldPrice}
+                        onValueChange={v => setLinePrice(l.id, v === "" ? 0 : v)}
+                        size="lg"
+                        className="w-full font-['Plus_Jakarta_Sans'] text-xl font-bold"
+                      />
+                      <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 6 }}>
+                        Default: {fmtPrice(l.originalPrice)}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                <div style={{ padding: "14px 16px", borderTop: `1px solid ${C.bdr}`, background: "rgba(110,15,45,0.03)", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                  <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text }}>Total</span>
+                  <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 26, color: C.burg, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>{fmtPrice(total)}</span>
+                </div>
+              </Card>
+            )}
+
+            <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text, marginBottom: 12 }}>
+              How is the customer paying?
+            </div>
             <div role="radiogroup" aria-label="Payment method" style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4, 1fr)", gap: 14, marginBottom: 20 }}>
               {[
                 { id: "cash" as const, label: "Cash", sub: "Physical currency", icon: IndianRupee },
@@ -367,36 +454,52 @@ export function NewSaleFlow() {
               title="Sale summary"
               accent={ACCENT_SALE}
               rows={([
-                { label: "Saree ID", value: saree.id || "—", mono: true },
-                { label: "Design", value: saree.name || "—" },
                 { label: "Customer", value: custName || selectedCustomer?.name || "—" },
                 { label: "Phone", value: phone ? `+91 ${phone}` : "—", mono: true },
+                { label: "Sarees", value: `${cart.length} piece${cart.length !== 1 ? "s" : ""}` },
                 { label: "Payment", value: payment ? payment.toUpperCase() : "—", mono: true },
                 ...(payRef ? [{ label: payment === "upi" ? "UPI reference" : "Card ending", value: payRef, mono: true }] : []),
               ] as SummaryRow[])}
-              footer={canSeePrices ? (
+              footer={
                 <div>
-                  {soldPrice !== originalPrice && (
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
-                      <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>Original price</span>
-                      <span style={{ fontFamily: F.u, fontSize: 14, color: C.muted, textDecoration: "line-through" }}>{fmtPrice(originalPrice)}</span>
+                  {/* Every piece on the bill, itemised — on a multi-saree sale
+                      a single total is not enough to check against. */}
+                  {cart.map(l => (
+                    <div key={l.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12, marginBottom: 8 }}>
+                      <span style={{ fontFamily: F.u, fontSize: 13, color: C.text, minWidth: 0 }}>
+                        <span style={{ fontFamily: F.m, color: C.burg }}>{l.id}</span>
+                        <span style={{ color: C.muted }}> · {l.name}</span>
+                      </span>
+                      {canSeePrices && (
+                        <span style={{ fontFamily: F.u, fontSize: 13, color: C.text, fontVariantNumeric: "tabular-nums", flexShrink: 0 }}>{fmtPrice(l.soldPrice)}</span>
+                      )}
                     </div>
-                  )}
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-                    <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text }}>Total payable</span>
-                    <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 30, color: C.burg, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>{fmtPrice(soldPrice)}</span>
-                  </div>
-                  {priceDiscount > 0 && (
-                    <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 10 }}>
-                      <Chip label={`Discount applied · ${fmtPrice(priceDiscount)}`} color="#845E04" bg="rgba(200,155,71,0.15)" />
+                  ))}
+                  {canSeePrices && (
+                    <div style={{ borderTop: `1px solid ${C.bdr}`, paddingTop: 12, marginTop: 6 }}>
+                      {priceDiscount !== 0 && (
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
+                          <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>Original total</span>
+                          <span style={{ fontFamily: F.u, fontSize: 14, color: C.muted, textDecoration: "line-through" }}>{fmtPrice(originalTotal)}</span>
+                        </div>
+                      )}
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                        <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text }}>Total payable</span>
+                        <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 30, color: C.burg, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>{fmtPrice(total)}</span>
+                      </div>
+                      {priceDiscount > 0 && (
+                        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 10 }}>
+                          <Chip label={`Discount applied · ${fmtPrice(priceDiscount)}`} color="#845E04" bg="rgba(200,155,71,0.15)" />
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
-              ) : undefined}
+              }
             />
 
             <ConsequenceNote tone="info">
-              Confirming records the sale, removes this saree from shop inventory, and generates a bill you can print or send on WhatsApp.
+              Confirming records the sale, removes {cart.length === 1 ? "this saree" : `these ${cart.length} sarees`} from shop inventory, and generates a bill you can print or send on WhatsApp.
             </ConsequenceNote>
 
             {submitError && (
@@ -410,7 +513,7 @@ export function NewSaleFlow() {
             backLabel="Edit details"
             onBack={() => setStep(3)}
             primaryIcon={Check}
-            primaryLabel="Confirm sale — generate bill"
+            primaryLabel={cart.length > 1 ? `Confirm sale — ${cart.length} sarees` : "Confirm sale — generate bill"}
             primaryBusy={isSubmitting}
             onPrimary={async () => {
               if (isSubmitting) return;
@@ -429,10 +532,37 @@ export function NewSaleFlow() {
                       address: custAddress.trim() || undefined,
                       type: "RETAIL",
                     })).id;
-                await salesApi.create({ sareeId: saree.id, channel: "RETAIL", amount: soldPrice, customerId });
+                // The backend records one SaleRecord per saree, so a basket
+                // is submitted line by line. Sequential, not parallel: each
+                // call mutates that saree's inventory status, and a partial
+                // failure has to name exactly which pieces did go through.
+                const recorded: string[] = [];
+                try {
+                  for (const line of cart) {
+                    await salesApi.create({ sareeId: line.id, channel: "RETAIL", amount: line.soldPrice, customerId });
+                    recorded.push(line.id);
+                  }
+                } catch (err) {
+                  if (recorded.length > 0) {
+                    setCart(prev => prev.filter(l => !recorded.includes(l.id)));
+                    throw new Error(
+                      `Recorded ${recorded.length} of ${cart.length} sarees (${recorded.join(", ")}). ` +
+                      `The rest are still on this sale — try confirming again.`,
+                    );
+                  }
+                  throw err;
+                }
+                // Sold sarees drop out of shop stock — refresh it so the
+                // Inventory tab and the next sale's picker agree with the bill
+                // that was just raised.
+                void queryClient.invalidateQueries({ queryKey: ["shop-stock"] });
                 setStep("success");
               } catch (err) {
-                setSubmitError(err instanceof ApiError ? err.message : "Failed to record sale — please try again.");
+                setSubmitError(
+                  err instanceof ApiError ? err.message
+                    : err instanceof Error ? err.message
+                    : "Failed to record sale — please try again.",
+                );
               } finally {
                 setIsSubmitting(false);
               }

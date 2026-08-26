@@ -67,7 +67,7 @@ export function InventoryPage({
     openSareeType,
     selected,
     setSelected,
-    setMirroredRows,
+    rememberVisibleRows,
     viewingItem,
     setViewingItem,
     modal,
@@ -148,7 +148,7 @@ export function InventoryPage({
                 selectedIds={selected}
                 onToggleRow={toggleSareeRow}
                 onToggleAll={toggleAllVisible}
-                onVisibleChange={setMirroredRows}
+                onVisibleChange={rememberVisibleRows}
               />
             </div>
           </div>

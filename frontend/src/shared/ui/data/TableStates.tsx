@@ -4,9 +4,11 @@
  * that matches nothing must never look identical to a table with no data at
  * all — that reads as data loss (Part F.3, the state this app was missing
  * most often before this component existed).
+ *
+ * Built on the shared StateView shell (ui/state/StateView.tsx) so a table's
+ * empty/error states and a page-level empty/error state never drift apart.
  */
-import { Icon } from "../primitives/Icon";
-import { Button } from "../primitives/Button";
+import { StateView } from "../state/StateView";
 import { Skeleton } from "../primitives/Skeleton";
 import type { IconName } from "../primitives/icons";
 
@@ -17,42 +19,16 @@ interface TableEmptyProps {
   action?: { label: string; onClick: () => void };
 }
 
-function TableEmptyBase({ icon = "search", title, description, action }: TableEmptyProps) {
-  return (
-    <div
-      role="status"
-      style={{
-        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-        gap: "var(--space-3)", padding: "var(--space-16) var(--space-6)", textAlign: "center",
-        color: "var(--text-tertiary)",
-      }}
-    >
-      <Icon name={icon} size="xl" />
-      <div className="bk-title-sm" style={{ color: "var(--text-primary)" }}>{title}</div>
-      {description && (
-        <div className="bk-body-md" style={{ color: "var(--text-secondary)", maxWidth: "40ch" }}>
-          {description}
-        </div>
-      )}
-      {action && (
-        <Button variant="primary" size="lg" onClick={action.onClick} className="mt-2">
-          {action.label}
-        </Button>
-      )}
-    </div>
-  );
-}
-
 /** No data has ever existed for this table. */
-export function TableEmpty(props: Omit<TableEmptyProps, "icon"> & { icon?: IconName }) {
-  return <TableEmptyBase icon={props.icon ?? "info"} {...props} />;
+export function TableEmpty({ icon = "info", title, description, action }: TableEmptyProps) {
+  return <StateView icon={icon} title={title} description={description} action={action} />;
 }
 
 /** Data exists, but the current filters/search matched nothing — NEVER
  *  render the same as TableEmpty; always offer a way out. */
 export function TableFilteredEmpty({ onClearFilters }: { onClearFilters: () => void }) {
   return (
-    <TableEmptyBase
+    <StateView
       icon="search"
       title="No results match your filters"
       description="Try removing a filter or broadening your search."
@@ -63,14 +39,13 @@ export function TableFilteredEmpty({ onClearFilters }: { onClearFilters: () => v
 
 export function TableError({ onRetry }: { onRetry: () => void }) {
   return (
-    <div role="alert">
-      <TableEmptyBase
-        icon="error"
-        title="Couldn't load this data"
-        description="Check your connection and try again."
-        action={{ label: "Retry", onClick: onRetry }}
-      />
-    </div>
+    <StateView
+      role="alert"
+      icon="error"
+      title="Couldn't load this data"
+      description="Check your connection and try again."
+      action={{ label: "Retry", onClick: onRetry }}
+    />
   );
 }
 

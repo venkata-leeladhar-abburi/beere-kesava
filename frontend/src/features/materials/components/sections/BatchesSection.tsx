@@ -11,6 +11,7 @@ import type { BatchRow, StatusType } from "../types";
 import { SectionCard, FadeUp } from "../common/primitives";
 import { BatchViewDetailsModal, PrintBarcodeModal } from "../modals/StockModals";
 import { Button, SearchInput } from "../../../../shared/ui/primitives";
+import { LoadingState, ErrorState, EmptyState, FilteredEmptyState } from "../../../../shared/ui/state";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "../../../../shared/ui/overlay";
 import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
@@ -203,7 +204,7 @@ export function BatchesSection({ onAddNewStock }: { onAddNewStock: () => void })
   const [selectedBatch, setSelectedBatch] = useState<BatchRow | null>(null);
   const [barcodeBatch, setBarcodeBatch] = useState<BatchRow | null>(null);
 
-  const { data: grnRes } = useQuery({
+  const { data: grnRes, isLoading, isError, refetch } = useQuery({
     queryKey: ["raw-material-grns-list"],
     queryFn: () => rawMaterialsApi.listGrns(),
   });
@@ -345,7 +346,17 @@ export function BatchesSection({ onAddNewStock }: { onAddNewStock: () => void })
       )}
 
       <FadeUp>
-        {view === "table"
+        {isLoading ? (
+          <LoadingState variant="skeleton" rows={4} />
+        ) : isError ? (
+          <ErrorState error={undefined} onRetry={() => void refetch()} />
+        ) : filtered.length === 0 ? (
+          (statusFilter !== "All Status" || matFilter !== "All Materials" || search) ? (
+            <FilteredEmptyState onClearFilters={() => { setStatusFilter("All Status"); setMatFilter("All Materials"); setSearch(""); }} />
+          ) : (
+            <EmptyState title="No batches yet" description="Materials received via GRN will show up here as batches." />
+          )
+        ) : view === "table"
           ? <BatchTableView rows={filtered} onViewDetails={setSelectedBatch} onPrintBarcode={setBarcodeBatch} />
           : <BatchCardView rows={filtered} onViewDetails={setSelectedBatch} onPrintBarcode={setBarcodeBatch} />
         }

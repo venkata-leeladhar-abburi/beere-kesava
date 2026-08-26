@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Monitor, Smartphone, AlignLeft, Table2, ChevronLeft, ChevronRight, LogIn,
@@ -9,6 +10,7 @@ import { PaginationBtn, SectionCard } from "./shared";
 import { Button } from "../../../../shared/ui/primitives";
 import { auditLogApi, BackendAuditLog } from "../../../../shared/api/audit-log";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { LoadingState, ErrorState, EmptyState } from "../../../../shared/ui/state";
 
 function formatTime(iso: string): string {
   const d = new Date(iso);
@@ -46,8 +48,6 @@ function toLoginEvent(log: BackendAuditLog): LoginEvent {
 
 export function LoginHistorySection() {
   const [loginView, setLoginView] = useState<"timeline"|"table">("timeline");
-  const [entries, setEntries] = useState<LoginEvent[]>([]);
-  const [total, setTotal] = useState(0);
 
   const columns: ColumnDef<LoginEvent>[] = [
     {
@@ -107,15 +107,13 @@ export function LoginHistorySection() {
     },
   ];
 
-  useEffect(() => {
-    auditLogApi.list().then(res => {
-      setEntries(res.items.map(toLoginEvent));
-      setTotal(res.total);
-    }).catch(() => {
-      setEntries([]);
-      setTotal(0);
-    });
-  }, []);
+  const { data, isLoading, isError, error, refetch } = useQuery({
+    queryKey: ["audit-log", "logins"],
+    queryFn: () => auditLogApi.list(),
+  });
+
+  const entries: LoginEvent[] = (data?.items ?? []).map(toLoginEvent);
+  const total = data?.total ?? 0;
 
   return (
     <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40 }}>
@@ -171,6 +169,12 @@ export function LoginHistorySection() {
               background: "rgba(110,15,45,0.18)",
               borderRadius: 1,
             }} />
+
+            {isLoading && <LoadingState variant="skeleton" rows={4} />}
+            {isError && <ErrorState error={error} onRetry={() => refetch()} />}
+            {!isLoading && !isError && entries.length === 0 && (
+              <EmptyState title="No login history yet" description="Logins, logouts, and failed attempts will show up here." />
+            )}
 
             {entries.map(entry => {
               const circleColor = entry.event === "login" ? T.green : entry.event === "logout" ? T.taupe : T.crimson;
@@ -277,7 +281,11 @@ export function LoginHistorySection() {
                 columns={columns}
                 data={entries}
                 getRowId={entry => String(entry.id)}
+                loading={isLoading}
+                error={isError}
+                onRetry={() => refetch()}
                 emptyTitle="No login history yet"
+                emptyDescription="Logins, logouts, and failed attempts will show up here."
               />
 
               {/* Pagination */}

@@ -17,23 +17,25 @@ const QUERY_KEY = ["sales", "sarees"] as const;
 export function SalesProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
 
-  const { data: rawInventory = [], isError: isInventoryError, error: inventoryError } = useQuery({
+  const { data: rawInventory = [], isError: isInventoryError, error: inventoryError, isLoading: isInventoryLoading, refetch: refetchInventory } = useQuery({
     queryKey: ["backend-inventory-list"],
     queryFn: () => inventoryApi.list(),
   });
 
-  const { data: rawSales, isError: isSalesError, error: salesError } = useQuery({
+  const { data: rawSales, isError: isSalesError, error: salesError, isLoading: isSalesLoading, refetch: refetchSales } = useQuery({
     queryKey: ["backend-sales-list"],
     queryFn: () => salesApi.list(100),
   });
 
-  const { data: rawReturns, isError: isReturnsError, error: returnsError } = useQuery({
+  const { data: rawReturns, isError: isReturnsError, error: returnsError, isLoading: isReturnsLoading, refetch: refetchReturns } = useQuery({
     queryKey: ["backend-returns-list"],
     queryFn: () => salesApi.listReturns(100),
   });
 
   const isError = isInventoryError || isSalesError || isReturnsError;
   const error = inventoryError ?? salesError ?? returnsError ?? null;
+  const isLoading = isInventoryLoading || isSalesLoading || isReturnsLoading;
+  const refetch = useCallback(() => { void refetchInventory(); void refetchSales(); void refetchReturns(); }, [refetchInventory, refetchSales, refetchReturns]);
 
   const sarees = useMemo<UnifiedSaree[]>(() => {
     if (!rawInventory || rawInventory.length === 0) return [];
@@ -131,8 +133,8 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
   );
 
   const value = useMemo(
-    () => ({ sarees, purchases: SEED_PURCHASE_SUMMARIES, recordSale, recordReturn, isError, error }),
-    [sarees, isError, error, recordSale, recordReturn],
+    () => ({ sarees, purchases: SEED_PURCHASE_SUMMARIES, recordSale, recordReturn, isError, error, isLoading, refetch }),
+    [sarees, isError, error, isLoading, refetch, recordSale, recordReturn],
   );
   return <SalesContext.Provider value={value}>{children}</SalesContext.Provider>;
 }
@@ -148,6 +150,8 @@ const FALLBACK: SalesContextValue = {
   recordReturn: () => {},
   isError: false,
   error: null,
+  isLoading: false,
+  refetch: () => {},
 };
 
 export function useSales(): SalesContextValue {

@@ -112,6 +112,12 @@ export type WorkerStat = {
   highlight?: boolean;
   /** Renders the numeral in the alert coral (use when the count needs action). */
   alert?: boolean;
+  /**
+   * Makes the tile clickable — used to offer a retry when `value` is itself
+   * showing a load-failure ("Error"). No visual change when unset: the tile
+   * only gains a pointer cursor/hover once a handler is actually passed.
+   */
+  onClick?: () => void;
 };
 
 import { LuxuryStatsCard, type StatItem } from "@/shared/ui/LuxuryStatsCard";
@@ -138,6 +144,7 @@ export function StatsStrip({
       highlight: !!s.highlight,
       crimson: !!s.alert,
       goldVal: !!s.highlight,
+      onClick: s.onClick,
     };
   });
 

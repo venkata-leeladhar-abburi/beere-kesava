@@ -2,20 +2,18 @@ import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 import {
-  MapPin, Phone, Building2, FileText, MessageSquare, Landmark, StickyNote,
-  AlertTriangle, Package, Trash2, ChevronLeft, UserRound, Boxes, ShoppingBag, CreditCard, UserCheck, Edit3,
-} from "lucide-react";
-import { BG_IMAGE } from "@/features/portals/components/weaver-portal/WeaverBatchNotifData";
-import { SectionCard } from "../../../weavers/components/common/primitives";
+  MapPin, Phone, FileText, MessageSquare, Landmark, StickyNote,
+  AlertTriangle, Package, Trash2, ChevronLeft, UserRound, Boxes, ShoppingBag, CreditCard, UserCheck, Edit3 } from "lucide-react";
+import { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
+import { SectionCard } from "@/shared/ui/SectionCard";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { T, F } from "./theme";
 import { Vendor, VendorBill, VendorPaymentTxn } from "./types";
 import { PAY_MODE_FILL } from "./data";
-import { StatusPill, StarRating } from "./SharedBits";
+import { StarRating } from "./SharedBits";
 import { StatusPill as DomainStatusPill, EntityCode } from "../../../../shared/ui/domain";
 import type { StatusValueOf } from "../../../../lib/domain/status";
 import { PurchaseOrderHistoryTable, type PurchaseOrderHistoryRow } from "./PurchaseOrderHistoryTable";
-import { FadeUp } from "./FadeUp";
 import { VendorEditFormTab } from "./VendorEditFormTab";
 import { purchaseOrdersApi } from "../../../../shared/api/purchase-orders";
 import { Button } from "../../../../shared/ui/primitives";
@@ -26,7 +24,6 @@ import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { Breadcrumbs } from "../../../../shared/ui/nav/Breadcrumbs";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { recordView, useConfirm } from "../../../../shared/ui/overlay";
-import { resolveAssetUrl } from "../../../../shared/api/uploads";
 import { ImageZoomModal, type ZoomImage } from "../../../../shared/ui/ImageZoomModal";
 
 const BILL_STATUS_LABEL: Record<VendorBillStatus, VendorBill["status"]> = {
@@ -475,7 +472,7 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
                   ) : filteredBills.length === 0 ? (
                     <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No bills raised in this period.</div>
                   ) : (
-                    <div style={{ minWidth: 650 }}>
+                    <div className="min-w-[650px]">
                       <DataTable responsive={false} columns={billColumns} data={filteredBills} getRowId={b => b.id} emptyTitle="No bills raised in this period." />
                     </div>
                   )}
@@ -493,7 +490,7 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
                   ) : filteredTxns.length === 0 ? (
                     <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No payments in this period.</div>
                   ) : (
-                    <div style={{ minWidth: 650 }}>
+                    <div className="min-w-[650px]">
                       <DataTable responsive={false} columns={txnColumns} data={filteredTxns} getRowId={p => p.id} emptyTitle="No payments in this period." />
                     </div>
                   )}

@@ -7,6 +7,7 @@ import { FinishingQuotationsSection } from "./FinishingQuotationsSection";
 import { FinishingStaffSection, StaffRow } from "./FinishingStaffSection";
 import { LuxuryStatsCard } from "../../../shared/ui/LuxuryStatsCard";
 import { TableError } from "../../../shared/ui/data/TableStates";
+import { LoadingState } from "../../../shared/ui/state";
 
 const T = {
   silkCream:     "#F7F2EA",
@@ -36,7 +37,7 @@ function summarizeAssignedBy(list: FinishingAssignment[]): string {
 }
 
 export function FinishingTrackingPage() {
-  const { assignments, returns, quotations, isError } = useFinishing();
+  const { assignments, returns, quotations, isError, isLoading, refetch } = useFinishing();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "awaiting" | "perfect" | "damaged">("all");
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
@@ -129,9 +130,13 @@ export function FinishingTrackingPage() {
       </div>
 
       <div className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 22, paddingBottom: 48, display: "flex", flexDirection: "column", gap: 20 }}>
-        {isError ? (
+        {isLoading ? (
+          <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 20px rgba(74,6,27,0.06)", padding: 20 }}>
+            <LoadingState variant="skeleton" rows={4} />
+          </div>
+        ) : isError ? (
           <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 20px rgba(74,6,27,0.06)" }}>
-            <TableError onRetry={() => window.location.reload()} />
+            <TableError onRetry={refetch} />
           </div>
         ) : (
           <>

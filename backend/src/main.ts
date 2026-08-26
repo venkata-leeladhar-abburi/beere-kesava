@@ -12,6 +12,7 @@ import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { AllExceptionsFilter } from "./common/filters/all-exceptions.filter";
+import { validationExceptionFactory } from "./common/errors/validation-exception.factory";
 import { ResponseInterceptor } from "./common/interceptors/response.interceptor";
 import { UPLOADS_ROOT } from "./common/storage/upload.config";
 
@@ -32,6 +33,9 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
+      // Preserves each failure's `property` so the client can put the message
+      // under the offending input instead of joining everything into a toast.
+      exceptionFactory: validationExceptionFactory,
     }),
   );
   app.useGlobalFilters(new AllExceptionsFilter());

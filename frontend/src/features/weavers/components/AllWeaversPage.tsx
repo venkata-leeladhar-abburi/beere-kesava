@@ -10,6 +10,7 @@ import { weaversApi, BackendWeaver, BackendWeaverStats } from "../../../shared/a
 import { resolveAssetUrl } from "../../../shared/api/uploads";
 import { Button, SearchInput, Select, SelectItem } from "../../../shared/ui/primitives";
 import { useUrlFilters } from "../../../shared/ui/filter";
+import { ErrorState } from "../../../shared/ui/state";
 
 // ── Design tokens ─────────────────────────────────────────────────────────
 const T = {
@@ -122,7 +123,7 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
   const setSortBy = (s: "name" | "output" | "looms") => weaverFilters.setFilter("weaverSort", s);
 
   // Real weaver roster/identity records from the backend.
-  const { data: weaversRes, isLoading: rosterLoading, isError: rosterError } = useQuery({
+  const { data: weaversRes, isLoading: rosterLoading, isError: rosterError, refetch: refetchRoster } = useQuery({
     queryKey: ["weavers-directory"],
     queryFn: () => weaversApi.list(),
   });
@@ -131,7 +132,7 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
 
   // Live per-weaver production/QC stats (thisMonth, batch id, totalPaid,
   // lastActive are NOT exposed by this endpoint yet — see toDisplayWeaver).
-  const { data: statsList, isLoading: statsLoading, isError: statsError } = useQuery({
+  const { data: statsList, isLoading: statsLoading, isError: statsError, refetch: refetchStats } = useQuery({
     queryKey: ["weavers-directory-stats", roster.map(w => w.id)],
     queryFn: () => Promise.all(roster.map(w => weaversApi.getStats(w.id))),
     enabled: roster.length > 0,
@@ -139,6 +140,7 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
 
   const isLoading = rosterLoading || (roster.length > 0 && statsLoading);
   const isError = rosterError || statsError;
+  const refetchAll = () => { void refetchRoster(); void refetchStats(); };
 
   const statsById = new Map((statsList ?? []).map(s => [s.weaverId, s]));
   const ALL_WEAVERS: Weaver[] = roster.map((w, i) => toDisplayWeaver(w, i, statsById.get(w.id)));
@@ -284,13 +286,7 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
             Loading weavers…
           </div>
         ) : isError ? (
-          <div style={{ textAlign: "center", padding: "80px 40px" }}>
-            <div style={{ width: 72, height: 72, borderRadius: 22, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.2)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
-              <AlertTriangle size={28} color="#C0392B" />
-            </div>
-            <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 20, color: T.luxuryBrown, marginBottom: 8 }}>Couldn't load weavers</div>
-            <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Please try refreshing the page.</div>
-          </div>
+          <ErrorState error={undefined} onRetry={refetchAll} />
         ) : filtered.length === 0 ? (
           <div style={{ textAlign: "center", padding: "80px 40px" }}>
             <div style={{ width: 72, height: 72, borderRadius: 22, background: "rgba(110,15,45,0.06)", border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>

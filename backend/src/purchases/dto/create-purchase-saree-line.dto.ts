@@ -52,9 +52,10 @@ export class CreatePurchaseSareeLineDto {
   @IsString()
   imageUrl?: string;
 
-  // Optional per-physical-piece photo override, indexed by piece position
-  // (pieceImageUrls[0] is piece 1 of `quantity`) — a piece with no entry (or
-  // an empty string) here just falls back to the line's own `imageUrl`.
+  // Optional per-physical-piece photo, indexed by piece position
+  // (pieceImageUrls[0] is piece 1 of `quantity`). Independent of the line's
+  // own `imageUrl`: a piece with no entry (or an empty string) here simply has
+  // no photo — it does not borrow the serial's.
   @IsOptional()
   @IsArray()
   @IsString({ each: true })

@@ -103,6 +103,9 @@ export function OverviewTab({
                 <div
                   key={o.ref}
                   onClick={() => onViewBulkOrder(o, "overview")}
+                  role="button" tabIndex={0}
+                  aria-label={`Open bulk order ${o.ref}`}
+                  onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onViewBulkOrder(o, "overview"); } }}
                   className="bg-black/20 hover:bg-black/30 p-3.5 sm:p-4 rounded-xl border border-white/10 transition-all cursor-pointer space-y-2.5"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -191,6 +194,9 @@ export function OverviewTab({
                       <div
                         key={o.ref}
                         onClick={() => onViewBulkOrder(o, "overview")}
+                        role="button" tabIndex={0}
+                        aria-label={`Open bulk order ${o.ref}`}
+                        onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onViewBulkOrder(o, "overview"); } }}
                         className="bg-white rounded-2xl border border-[var(--border-default)] p-4 hover:border-[#6E0F2D] transition-all cursor-pointer shadow-sm hover:shadow-md flex flex-col justify-between"
                       >
                         <div className="flex items-center justify-between gap-2 mb-3">
@@ -230,7 +236,7 @@ export function OverviewTab({
                   className="w-full max-w-full min-w-0 overflow-x-auto touch-pan-x border border-[var(--border-default)] rounded-2xl bg-white shadow-xs"
                   style={{ WebkitOverflowScrolling: "touch" }}
                 >
-                  <div style={{ minWidth: 650 }}>
+                  <div className="min-w-[650px]">
                     <DataTable
                       responsive={false}
                       columns={orderColumns}
@@ -248,7 +254,7 @@ export function OverviewTab({
               className="hidden sm:block w-full max-w-full min-w-0 overflow-x-auto touch-pan-x border border-[var(--border-default)] rounded-2xl bg-white shadow-xs"
               style={{ WebkitOverflowScrolling: "touch" }}
             >
-              <div style={{ minWidth: 650 }}>
+              <div className="min-w-[650px]">
                 <DataTable
                   responsive={false}
                   columns={orderColumns}

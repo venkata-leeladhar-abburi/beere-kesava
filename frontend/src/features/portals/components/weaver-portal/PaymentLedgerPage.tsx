@@ -1,20 +1,16 @@
 
 import React, { useMemo } from "react";
-import { useResponsive } from "../../../../hooks/useResponsive";
 import { useBatches } from "@/features/production";
 import { useWeaverPayments } from "@/features/weavers";
 import { rupees, formatMoney } from "@/lib/domain/money";
-import { Money } from "@/shared/ui/domain";
 import { useCurrentWeaver } from "./useCurrentWeaver";
 import {
   Check,
-  AlertTriangle,
-  Clock,
-} from "lucide-react";
+  AlertTriangle } from "lucide-react";
 
 // ─── Design Tokens ─────────────────────────────────────────────────────────
 import {
-  C, F, SectionTitle, Card, HeroHeader
+  C, F, HeroHeader
 } from './theme';
 import { SectionHeading } from "@/shared/ui/portal/PortalChrome";
 
@@ -24,11 +20,11 @@ import { useAuth } from "../../../../contexts/AuthContext";
 import { BG_IMAGE } from "./WeaverBatchNotifData";
 import { LuxuryStatsCard, type StatItem } from "@/shared/ui/LuxuryStatsCard";
 import { IcoResourceMgmt, IcoFabricRoll, IcoQualityCheck, IcoInvoice } from "@/features/dashboards";
+import { LoadingState, ErrorState } from "@/shared/ui/state";
 
 export function PaymentLedgerPage() {
-  const { isMobile } = useResponsive();
-  const { getPaymentsForWeaver } = useWeaverPayments();
-  const { getQcForWeaver } = useQc();
+  const { getPaymentsForWeaver, isLoading: paymentsLoading, isError: paymentsError, error: paymentsErrorObj, refetch: refetchPayments } = useWeaverPayments();
+  const { getQcForWeaver, isLoading: qcLoading, isError: qcError, error: qcErrorObj, refetch: refetchQc } = useQc();
   useBatches();
   const { weaverId, weaverCode, isLoading: weaverLoading, isError: weaverError } = useCurrentWeaver();
   const { user } = useAuth();
@@ -90,25 +86,6 @@ export function PaymentLedgerPage() {
   const isPaid = currentPayment !== null;
 
   // Last 6 months of this weaver's real payments, bar-scaled to the biggest.
-  const earningTrend = useMemo(() => {
-    const byMonth = new Map<string, number>();
-    for (const p of myPayments) {
-      const d = new Date(p.paymentDate || p.uploadedAt);
-      if (Number.isNaN(d.getTime())) continue;
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-      byMonth.set(key, (byMonth.get(key) ?? 0) + p.amountPaid);
-    }
-    const rows = Array.from(byMonth.entries()).sort(([a], [b]) => a.localeCompare(b)).slice(-6);
-    const max = Math.max(...rows.map(([, amt]) => amt), 1);
-    return rows.map(([key, amt]) => {
-      const [y, m] = key.split("-");
-      return {
-        month: new Date(Number(y), Number(m) - 1).toLocaleDateString("en-IN", { month: "short", year: "numeric" }),
-        amt,
-        pct: Math.round((amt / max) * 100),
-      };
-    });
-  }, [myPayments]);
 
   const fmtAmt = (n: number) => formatMoney(rupees(n));
 
@@ -156,11 +133,24 @@ export function PaymentLedgerPage() {
     },
   ], [totalSareesCount, passedSarees.length, grossChargesVal, deductionsVal, failedSarees.length, netAmountVal, currentMonthLabel, statIcons]);
 
-  if (weaverLoading) {
+  if (weaverLoading || paymentsLoading) {
     return (
       <div style={{ paddingBottom: 32 }}>
         <HeroHeader eyebrow="SINCE 1999 · MY EARNINGS" title="My Payment Ledger" sub="Earnings, deductions, balance" />
-        <div style={{ margin: "40px 20px", textAlign: "center" as const, fontFamily: F.u, fontSize: 14, color: C.muted }}>Loading your payment ledger…</div>
+        <div style={{ margin: "20px" }}>
+          <LoadingState variant="skeleton" rows={4} />
+        </div>
+      </div>
+    );
+  }
+
+  if (paymentsError) {
+    return (
+      <div style={{ paddingBottom: 32 }}>
+        <HeroHeader eyebrow="SINCE 1999 · MY EARNINGS" title="My Payment Ledger" sub="Earnings, deductions, balance" />
+        <div style={{ margin: "20px" }}>
+          <ErrorState error={paymentsErrorObj} onRetry={refetchPayments} />
+        </div>
       </div>
     );
   }
@@ -234,7 +224,11 @@ export function PaymentLedgerPage() {
           Your gross making charge this month, broken down by saree type — sarees × rate for that type.
         </div>
 
-        {chargesByType.length === 0 ? (
+        {qcLoading ? (
+          <LoadingState variant="skeleton" rows={3} />
+        ) : qcError ? (
+          <ErrorState error={qcErrorObj} onRetry={refetchQc} />
+        ) : chargesByType.length === 0 ? (
           <div style={{ background: C.cream, border: `1px solid ${C.bdr}`, borderRadius: 16, padding: "24px 20px", textAlign: "center" as const, marginBottom: 24 }}>
             <div style={{ fontFamily: F.u, fontSize: 13.5, color: C.muted }}>No sarees QC'd yet this month.</div>
           </div>
@@ -305,7 +299,11 @@ export function PaymentLedgerPage() {
           Amounts deducted from your gross making charges this month.
         </div>
 
-        {failedSarees.length === 0 ? (
+        {qcLoading ? (
+          <LoadingState variant="skeleton" rows={2} />
+        ) : qcError ? (
+          <ErrorState error={qcErrorObj} onRetry={refetchQc} />
+        ) : failedSarees.length === 0 ? (
           <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderLeft: `6px solid ${C.green}`, borderRadius: 18, padding: "20px 24px", boxShadow: "0 4px 20px rgba(44,24,16,0.06)" }}>
             <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 16, color: C.green }}>No Deductions Applied This Month</div>
             <div style={{ fontFamily: F.u, fontSize: 13.5, color: C.muted, marginTop: 4 }}>You have a 100% clean quality inspection record for {currentMonthLabel}.</div>

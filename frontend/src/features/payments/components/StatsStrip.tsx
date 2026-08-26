@@ -5,7 +5,7 @@ import { AlertTriangle, FileText, IndianRupee, TrendingUp, Users } from "lucide-
 
 import { weaverPaymentsApi, vendorPaymentsApi, supplierPaymentsApi } from "../../../shared/api/payments";
 import { invoicesApi } from "../../../shared/api/invoices";
-import { EASE, F, T } from "../theme";
+import { EASE } from "../theme";
 import { AnimCount } from "./common/motion";
 import { useMoneyVisible } from "../../../shared/ui/MoneyValue";
 import { rupees, formatMoney } from "@/lib/domain/money";
@@ -47,7 +47,15 @@ export function StatsStrip() {
   }, [supplierPaymentsRes, collectedFromCustomers, totalVendorPayments, paidToWeavers]);
 
   const moneyVisible = useMoneyVisible();
-  const fmt = (n: number) => (moneyVisible ? formatMoney(rupees(n)) : "—");
+  // Until every source has answered, each figure below would total to ₹0 — a
+  // number the reader has no reason to disbelieve. `isLoading`/`isError` were
+  // already derived here but never consulted, so that is exactly what the strip
+  // used to show while its four queries were still in flight.
+  const fmt = (n: number) => {
+    if (isError) return "—";
+    if (isLoading) return "…";
+    return moneyVisible ? formatMoney(rupees(n)) : "—";
+  };
 
   const STATS = [
     {

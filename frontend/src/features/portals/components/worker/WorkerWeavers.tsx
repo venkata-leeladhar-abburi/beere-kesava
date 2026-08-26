@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { PackageCheck, Package, ShieldAlert } from "lucide-react";
-import { C, F, G } from "./tokens";
+import { C } from "./tokens";
 import { useMaterialIssue } from "@/features/materials";
 import { useBatches } from "@/features/production";
 import { PageHero, StatsStrip, type WorkerStat } from "./primitives";

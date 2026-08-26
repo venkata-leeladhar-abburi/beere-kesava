@@ -11,6 +11,7 @@ import {
 
 import { C, F, Card, Chip, useCanSeePrices, PageHero, PortalStatsStrip, type PortalStat } from './theme';
 import { Button, IconButton, Input } from "../../../../shared/ui/primitives";
+import { LoadingState, ErrorState, EmptyState } from "../../../../shared/ui/state";
 import { useQuery } from '@tanstack/react-query';
 import { customersApi } from '../../../../shared/api/customers';
 import { salesApi } from '../../../../shared/api/sales';
@@ -22,12 +23,12 @@ function CustomerProfiles() {
   const [sort, setSort] = useState("All");
   const [selected, setSelected] = useState<number | null>(null);
 
-  const { data: customersRes } = useQuery({
+  const { data: customersRes, isLoading: customersLoading, isError: customersError, refetch: refetchCustomers } = useQuery({
     queryKey: ["shop-customers-list"],
     queryFn: () => customersApi.list(100),
   });
 
-  const { data: salesRes } = useQuery({
+  const { data: salesRes, isLoading: salesLoading, isError: salesError, refetch: refetchSales } = useQuery({
     queryKey: ["shop-sales-list-customers"],
     queryFn: () => salesApi.list(100),
   });
@@ -128,6 +129,17 @@ function CustomerProfiles() {
         </div>
       </div>
 
+      {(customersLoading || salesLoading) ? (
+        <div style={{ padding: "8px 20px 0" }}><LoadingState variant="skeleton" rows={4} /></div>
+      ) : (customersError || salesError) ? (
+        <div style={{ padding: "8px 20px 0" }}>
+          <ErrorState error={undefined} onRetry={() => { void refetchCustomers(); void refetchSales(); }} />
+        </div>
+      ) : filtered.length === 0 ? (
+        <div style={{ padding: "8px 20px 0" }}>
+          <EmptyState title="No customers yet" description="Customers who make a purchase will show up here." />
+        </div>
+      ) : (
       <div style={{ padding: "8px 20px 0", display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 }}>
         {filtered.map((c, i) => (
           <Card key={c.id} style={{ padding: 20 }}>
@@ -155,6 +167,7 @@ function CustomerProfiles() {
           </Card>
         ))}
       </div>
+      )}
 
       {/* ══════ MODAL: CUSTOMER PROFILE ══════ */}
       <Modal open={!!activeCustomer} onOpenChange={o => !o && setSelected(null)} size="sm">

@@ -34,11 +34,11 @@ export function VendorPaymentsSection() {
   const { firms, addExpenseEntry } = useFirms();
   const queryClient = useQueryClient();
 
-  const { data: vendorPaymentsRes, refetch: refetchVendorPayments } = useQuery({
+  const { data: vendorPaymentsRes, isLoading: paymentsLoading, isError: paymentsError, refetch: refetchVendorPayments } = useQuery({
     queryKey: ["vendor-payments-section-totals"],
     queryFn: () => vendorPaymentsApi.list(),
   });
-  const { data: vendorBillsRes, refetch: refetchVendorBills } = useQuery({
+  const { data: vendorBillsRes, isLoading: billsLoading, isError: billsError, refetch: refetchVendorBills } = useQuery({
     queryKey: ["vendor-payments-bills"],
     queryFn: () => vendorBillsApi.list(),
   });
@@ -441,7 +441,7 @@ export function VendorPaymentsSection() {
 
         {view === "list" && (
           <div className="overflow-x-auto w-full mb-8">
-            <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", minWidth: 600 }}>
+            <div className="min-w-[600px]" style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
               {filtered.map((vp, i) => {
                 const balance = vp.invoiceAmt - vp.paidAmt;
                 const cfg = VENDOR_STATUS_CFG[vp.status];
@@ -476,12 +476,15 @@ export function VendorPaymentsSection() {
             <div className="w-full lg:flex-1 min-w-0">
               <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
                 <div style={{ overflowX: "auto" }} className="w-full">
-                  <div style={{ minWidth: 1350 }}>
+                  <div className="min-w-[1350px]">
                     <DataTable
                       responsive={false}
                       columns={vendorTableColumns}
                       data={filtered}
                       getRowId={vp => vp.id}
+                      loading={paymentsLoading || billsLoading}
+                      error={paymentsError || billsError}
+                      onRetry={() => { void refetchVendorPayments(); void refetchVendorBills(); }}
                       emptyTitle="No vendor bills match your filters"
                     />
                   </div>

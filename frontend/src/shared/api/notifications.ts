@@ -43,15 +43,12 @@ export const notificationsApi = {
 };
 
 /**
- * Connects to the real-time notifications gateway and joins the given
- * role/user rooms. No auth yet, so the room is self-declared by the client
- * (see backend's notifications.gateway.ts NOTE) — swap for a server-derived
- * room once JWT auth lands.
+ * Connects to the real-time notifications gateway. Room membership is now
+ * derived server-side from this token (see backend's notifications.gateway.ts)
+ * — the `params` a caller used to pass are no longer trusted by the server,
+ * kept only so existing call sites don't need to change their signature.
  */
-export function connectNotificationsSocket(params: { userId?: string; role?: string }): Socket {
-  const socket = io(API_BASE_URL, { transports: ["websocket"] });
-  socket.on("connect", () => {
-    socket.emit("subscribe", params);
-  });
-  return socket;
+export function connectNotificationsSocket(_params: { userId?: string; role?: string } = {}): Socket {
+  const token = localStorage.getItem("token") || sessionStorage.getItem("token") || undefined;
+  return io(API_BASE_URL, { transports: ["websocket"], auth: { token } });
 }

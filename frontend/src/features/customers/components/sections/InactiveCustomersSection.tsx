@@ -69,7 +69,7 @@ export function InactiveCustomersSection({
         const severity = months >= 12 ? { color: T.crimson, bg: T.crimsonBg, label: "Critical" } : months >= 9 ? { color: "#B5651D", bg: "rgba(181,101,29,0.10)", label: "High" } : { color: T.antiqueGold, bg: "rgba(200,155,71,0.12)", label: "Moderate" };
         const pct = Math.min(100, Math.round((months / 12) * 100));
         return (
-          <div style={{ minWidth: 180 }}>
+          <div className="min-w-[180px]">
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
               <span style={{ fontWeight: 600, color: severity.color, whiteSpace: "nowrap" }}>{row.last}</span>
               <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: severity.color, background: severity.bg, borderRadius: 999, padding: "2px 8px", whiteSpace: "nowrap" }}>{severity.label}</span>
@@ -160,7 +160,10 @@ export function InactiveCustomersSection({
             columns={inactiveColumns}
             data={filteredInactive.map((row, i) => ({ ...row, _rowIndex: i }))}
             getRowId={row => String(row._rowIndex)}
-            emptyTitle="No customers match these filters"
+            isFiltered={activeFilters.length > 0}
+            onClearFilters={onClearAllFilters}
+            emptyTitle="No inactive customers"
+            emptyDescription="Customers who haven't ordered recently will show up here."
           />
         </div>
       </div>

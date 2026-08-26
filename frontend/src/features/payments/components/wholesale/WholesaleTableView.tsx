@@ -19,7 +19,7 @@ export function WholesaleTableView({ view, filtered, setViewInvoice, setRecordPa
   if (view === "list") {
     return (
       <div className="overflow-x-auto w-full mb-8">
-        <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden", minWidth: 700, boxShadow: "0 4px 20px rgba(74,6,27,0.05)" }}>
+        <div className="min-w-[700px]" style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 4px 20px rgba(74,6,27,0.05)" }}>
         {filtered.map((inv, i) => {
           const rem = inv.total - inv.paid;
           return (
@@ -72,7 +72,10 @@ export function WholesaleTableView({ view, filtered, setViewInvoice, setRecordPa
 
   const columns: ColumnDef<Invoice>[] = [
     {
-      id: "id", header: "Invoice ID", accessor: inv => inv.id, width: 320,
+      // Width comes from the cell's own class rather than ColumnDef.width —
+      // the two were duplicating the same 320px and the column sizes to its
+      // content either way.
+      id: "id", header: "Invoice ID", accessor: inv => inv.id,
       cell: (_v, inv) => (
         <div className="w-[320px] min-w-[320px] whitespace-nowrap">
           <EntityCode type="invoice" value={inv.id} size="sm" className="whitespace-nowrap" />
@@ -151,7 +154,7 @@ export function WholesaleTableView({ view, filtered, setViewInvoice, setRecordPa
   return (
     <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)", marginBottom: 32 }}>
       <div style={{ overflowX: "auto" }} className="w-full">
-        <div style={{ minWidth: 1650 }}>
+        <div className="min-w-[1650px]">
           <DataTable
             responsive={false}
             columns={columns}

@@ -6,12 +6,32 @@ import { ActionLogSection } from "./audit-log/ActionLogSection";
 import { LoginHistorySection } from "./audit-log/LoginHistorySection";
 import { NoticeFooter } from "./audit-log/NoticeFooter";
 
+const DEFAULT_ROLE = "All Roles";
+const DEFAULT_MODULE = "All Modules";
+const DEFAULT_ACTION = "All Actions";
+const DEFAULT_PERIOD = "All Time";
+
 export function AuditLogPage() {
   const [search, setSearch] = useState("");
-  const [roleFilter, setRoleFilter] = useState("All Roles");
-  const [moduleFilter, setModuleFilter] = useState("All Modules");
-  const [actionFilter, setActionFilter] = useState("All Actions");
-  const [periodFilter, setPeriodFilter] = useState("All Time");
+  const [roleFilter, setRoleFilter] = useState(DEFAULT_ROLE);
+  const [moduleFilter, setModuleFilter] = useState(DEFAULT_MODULE);
+  const [actionFilter, setActionFilter] = useState(DEFAULT_ACTION);
+  const [periodFilter, setPeriodFilter] = useState(DEFAULT_PERIOD);
+
+  const isFiltered =
+    search.trim() !== "" ||
+    roleFilter !== DEFAULT_ROLE ||
+    moduleFilter !== DEFAULT_MODULE ||
+    actionFilter !== DEFAULT_ACTION ||
+    periodFilter !== DEFAULT_PERIOD;
+
+  const clearFilters = () => {
+    setSearch("");
+    setRoleFilter(DEFAULT_ROLE);
+    setModuleFilter(DEFAULT_MODULE);
+    setActionFilter(DEFAULT_ACTION);
+    setPeriodFilter(DEFAULT_PERIOD);
+  };
 
   return (
     <div style={{ background: T.silkCream, minHeight: "100dvh", fontFamily: "'Inter', sans-serif" }}>
@@ -34,6 +54,8 @@ export function AuditLogPage() {
         moduleFilter={moduleFilter}
         actionFilter={actionFilter}
         periodFilter={periodFilter}
+        isFiltered={isFiltered}
+        onClearFilters={clearFilters}
       />
       <LoginHistorySection />
       <NoticeFooter />

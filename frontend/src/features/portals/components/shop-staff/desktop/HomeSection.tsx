@@ -1,13 +1,14 @@
 import React from "react";
-import { AlertTriangle, ArrowRight, ArrowUpRight, BarChart2, Check, ChevronRight, Package, RotateCcw, Send, ShoppingBag, Users } from "lucide-react";
+import { AlertTriangle, ArrowUpRight, BarChart2, Check, ChevronRight, Package, RotateCcw, Send, ShoppingBag } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { salesApi } from "../../../../../shared/api/sales";
 import { inventoryApi } from "../../../../../shared/api/inventory";
 import { customersApi } from "../../../../../shared/api/customers";
 import { useAuth } from "../../../../../contexts/AuthContext";
-import { C, F, PageHero, PortalStatsStrip, SectionTitle, type PortalStat } from "../theme";
+import { C, F, PageHero, PortalStatsStrip, type PortalStat } from "../theme";
 import { DSH } from "./DSH";
 import { Button } from "../../../../../shared/ui/primitives";
+import { LoadingState, ErrorState } from "../../../../../shared/ui/state";
 import { rupees, formatMoney } from "@/lib/domain/money";
 
 type TabId = "home" | "sale" | "inventory" | "customers" | "reports";
@@ -22,24 +23,27 @@ function dateLabel(iso: string) {
 }
 
 export function HomeSection({
-  bp, isTablet, canSeePrices, setActive, setShowReturn, invLowStockSent, setShowInvLowStockDialog,
+  isTablet, canSeePrices, setActive, invLowStockSent, setShowInvLowStockDialog,
 }: {
   bp: "tablet" | "desktop"; isTablet: boolean; canSeePrices: boolean;
   setActive: (tab: TabId) => void; setShowReturn: (v: boolean) => void;
   invLowStockSent: boolean; setShowInvLowStockDialog: (v: boolean) => void;
 }) {
   const { user } = useAuth();
-  const { data: salesRes } = useQuery({
+  const { data: salesRes, isLoading: salesLoading, isError: salesError, refetch: refetchSales } = useQuery({
     queryKey: ["sales-list-homesection"],
     queryFn: () => salesApi.list(100),
   });
 
-  const { data: inventoryRes } = useQuery({
-    queryKey: ["inventory-list-homesection"],
-    queryFn: () => inventoryApi.list(),
+  const { data: inventoryRes, isError: inventoryError, refetch: refetchInventory } = useQuery({
+    // Shop stock, not factory stock — these tiles are labelled "Shop
+    // inventory" but counted every QC-passed saree in the factory, including
+    // ones that had never been dispatched here.
+    queryKey: ["shop-stock"],
+    queryFn: () => inventoryApi.shopStock(),
   });
 
-  const { data: returnsRes } = useQuery({
+  const { data: returnsRes, isError: returnsError, refetch: refetchReturns } = useQuery({
     queryKey: ["returns-list-homesection"],
     queryFn: () => salesApi.listReturns(100),
   });
@@ -50,7 +54,8 @@ export function HomeSection({
   });
 
   const salesList = salesRes?.items ?? [];
-  const inventoryList = inventoryRes ?? [];
+  // Sold pieces are still delivered stock, but they are not what "in stock" means.
+  const inventoryList = (inventoryRes ?? []).filter(s => s.status !== "sold");
   const returnsList = returnsRes?.items ?? [];
   const customerMap = new Map((customersRes?.items ?? []).map(c => [c.id, c.name]));
 
@@ -77,10 +82,10 @@ export function HomeSection({
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
   const stats: PortalStat[] = [
-    { label: "Today's sales", value: todaySales.length, sub: "Recorded today", icon: ShoppingBag, highlight: true },
-    ...(canSeePrices ? [{ label: "Today's revenue", value: formatMoney(rupees(todayRevenue)), sub: `From ${todaySales.length} sales`, icon: BarChart2 }] : []),
-    { label: "Shop inventory", value: inventoryList.length, sub: "Sarees currently in stock", icon: Package },
-    { label: "Returns today", value: todayReturns.length, sub: "Processed and recorded", icon: RotateCcw, alert: todayReturns.length > 0 },
+    { label: "Today's sales", value: salesError ? "Error" : todaySales.length, sub: salesError ? "Tap to retry" : "Recorded today", icon: ShoppingBag, highlight: true, onClick: salesError ? () => refetchSales() : undefined },
+    ...(canSeePrices ? [{ label: "Today's revenue", value: salesError ? "Error" : formatMoney(rupees(todayRevenue)), sub: salesError ? "Tap to retry" : `From ${todaySales.length} sales`, icon: BarChart2, onClick: salesError ? () => refetchSales() : undefined }] : []),
+    { label: "Shop inventory", value: inventoryError ? "Error" : inventoryList.length, sub: inventoryError ? "Tap to retry" : "Sarees currently in stock", icon: Package, onClick: inventoryError ? () => refetchInventory() : undefined },
+    { label: "Returns today", value: returnsError ? "Error" : todayReturns.length, sub: returnsError ? "Tap to retry" : "Processed and recorded", icon: RotateCcw, alert: todayReturns.length > 0, onClick: returnsError ? () => refetchReturns() : undefined },
   ];
 
   return (
@@ -141,7 +146,11 @@ export function HomeSection({
                     ))}
                   </div>
                 </div>
-                {recentSales.length === 0 ? (
+                {salesLoading ? (
+                  <div style={{ padding: 16 }}><LoadingState variant="skeleton" rows={4} /></div>
+                ) : salesError ? (
+                  <ErrorState error={undefined} onRetry={() => void refetchSales()} />
+                ) : recentSales.length === 0 ? (
                   <div style={{ padding: "24px 16px", textAlign: "center", fontFamily: F.u, fontSize: 14, color: C.muted }}>
                     No sales recorded today yet.
                   </div>

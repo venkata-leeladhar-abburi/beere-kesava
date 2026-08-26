@@ -1,13 +1,13 @@
 import React, { useContext } from "react";
 import { motion } from "motion/react";
-import { ChevronRight, Package, Layers, Palette, Bell } from "lucide-react";
+import { Package, Layers, Palette, Bell } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { T, F, EASE, G_CARD, NUM, MobileCtx } from "../theme";
+import { T, F, EASE, MobileCtx } from "../theme";
 import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
 import { AnimatedNumber } from "../common/primitives";
 import { jariToReels } from "../../../../shared/lib/weightUnits";
 import { LuxuryStatsCard } from "../../../../shared/ui/LuxuryStatsCard";
-import { BG_IMAGE } from "@/features/portals/components/weaver-portal/WeaverBatchNotifData";
+import { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
 
 export function PageHeader() {
   return (

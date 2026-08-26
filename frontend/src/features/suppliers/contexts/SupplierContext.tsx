@@ -181,6 +181,8 @@ interface SupplierContextValue {
 
   isError: boolean;
   error: unknown;
+  isLoading: boolean;
+  refetch: () => void;
 }
 
 const SupplierContext = createContext<SupplierContextValue | null>(null);
@@ -226,7 +228,7 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
   const enabled = role === "accountant" || role === "admin" || role === "superadmin";
   const actingUserId = user?.id ?? STOPGAP_ACTING_USER_ID;
 
-  const { data: suppliers = [], isError: isSuppliersError, error: suppliersError } = useQuery({
+  const { data: suppliers = [], isError: isSuppliersError, error: suppliersError, isLoading: isSuppliersLoading, refetch: refetchSuppliers } = useQuery({
     queryKey: SUPPLIERS_KEY,
     queryFn: async () => (await suppliersApi.list()).items.map(toSupplier),
     enabled,
@@ -259,6 +261,7 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
 
   const isError = isSuppliersError || isPaymentsError || isRequestsError;
   const error = suppliersError ?? paymentsError ?? requestsError ?? null;
+  const isLoading = isSuppliersLoading;
   const requests = rawRequests.map((r) =>
     toPurchaseRequest(r, suppliers.find((s) => s.id === r.supplierId)?.name ?? "")
   );
@@ -473,7 +476,8 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
     addSupplier, updateSupplier, deleteSupplier, getSupplier,
     addPurchase, updatePurchase, deletePurchase,
     addPayment, raiseRequest, decideRequest, statsFor,
-    isError, error,
+    isError, error, isLoading,
+    refetch: () => void refetchSuppliers(),
   };
 
   return <SupplierContext.Provider value={value}>{children}</SupplierContext.Provider>;

@@ -15,6 +15,7 @@ import { T, F } from "./theme";
 import { fmtFull, initials, cardColor } from "./utils";
 import { FinSection, MiscSection } from "./FirmFinanceSections";
 import { Button, Select, SelectItem, StatusPill, type StatusTone } from "../../../shared/ui/primitives";
+import { LoadingState, ErrorState, EmptyState } from "../../../shared/ui/state";
 import { DataTable, type ColumnDef } from "../../../shared/ui/data";
 import {
   DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter,
@@ -123,7 +124,7 @@ export function FirmDetailPage({ firm, onBack, onEdit, onGoToPayments }: {
   // `totals` from the API is deliberately unused — the summary strip is
   // recomputed from the filtered rows below so it always agrees with what's
   // on screen; the server's unfiltered figures would contradict it.
-  const { documents, payments, isLoading, error } = useFirmActivity(firm.id);
+  const { documents, payments, isLoading, isError, error, refetch } = useFirmActivity(firm.id);
   const fin = getFirmFinancials(firm.id);
   const color = cardColor(firm.id);
 
@@ -487,13 +488,20 @@ export function FirmDetailPage({ firm, onBack, onEdit, onGoToPayments }: {
               right={<span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{visibleDocs.length} document{visibleDocs.length === 1 ? "" : "s"}</span>}
             >
               {isLoading ? (
-                <div style={{ padding: "26px 18px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loading linked documents…</div>
+                <LoadingState variant="skeleton" rows={3} />
+              ) : isError ? (
+                <ErrorState error={error} onRetry={refetch} />
               ) : visibleDocs.length === 0 ? (
-                <div style={{ padding: "26px 18px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
-                  {documents.length === 0
-                    ? "No documents name this firm yet. Select this firm on a purchase order, quotation or dispatch invoice and it will appear here automatically."
-                    : "No documents match the current filters."}
-                </div>
+                documents.length === 0 ? (
+                  <EmptyState
+                    title="No linked documents yet"
+                    description="Select this firm on a purchase order, quotation, or dispatch invoice and it will appear here automatically."
+                  />
+                ) : (
+                  <div style={{ padding: "26px 18px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+                    No documents match the current filters.
+                  </div>
+                )
               ) : (
                 <DataTable responsive columns={docColumns} data={visibleDocs} getRowId={d => `${d.type}-${d.id}`} />
               )}
@@ -507,13 +515,17 @@ export function FirmDetailPage({ firm, onBack, onEdit, onGoToPayments }: {
               right={<span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{visiblePayments.length} payment{visiblePayments.length === 1 ? "" : "s"}</span>}
             >
               {isLoading ? (
-                <div style={{ padding: "26px 18px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loading payments…</div>
+                <LoadingState variant="skeleton" rows={3} />
+              ) : isError ? (
+                <ErrorState error={error} onRetry={refetch} />
               ) : visiblePayments.length === 0 ? (
-                <div style={{ padding: "26px 18px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
-                  {payments.length === 0
-                    ? "No payments recorded against this firm yet."
-                    : "No payments match the current filters."}
-                </div>
+                payments.length === 0 ? (
+                  <EmptyState title="No payments recorded yet" description="Payments recorded against this firm will show up here." />
+                ) : (
+                  <div style={{ padding: "26px 18px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
+                    No payments match the current filters.
+                  </div>
+                )
               ) : (
                 <DataTable responsive columns={paymentColumns} data={visiblePayments} getRowId={p => `${p.type}-${p.id}`} />
               )}

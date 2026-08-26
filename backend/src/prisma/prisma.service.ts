@@ -3,15 +3,19 @@ import { ConfigService } from "@nestjs/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../generated/prisma/client";
 import { Pool } from "pg";
+import { ResilientPool } from "./resilient-pool";
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
-  private readonly logger = new Logger(PrismaService.name);
+  private readonly logger: Logger;
   private pool: Pool;
 
   constructor(configService: ConfigService) {
     const connectionString = configService.getOrThrow<string>("DATABASE_URL");
-    const pool = new Pool({
+    // Declared before super() so the pool can log through it; assigned to the
+    // field below, since `this` is unavailable until super() returns.
+    const logger = new Logger(PrismaService.name);
+    const pool = new ResilientPool({
       connectionString,
       ssl: { rejectUnauthorized: false },
       max: 15,
@@ -22,6 +26,12 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       connectionTimeoutMillis: 10_000,
       keepAlive: true,
       keepAliveInitialDelayMillis: 10_000,
+      // Recycling idle clients still leaves a race: a connection can be checked
+      // out in the instant between pgbouncer sending FIN and Node handling it,
+      // and the in-flight query dies with "Connection terminated unexpectedly".
+      // Reads are replayed on a fresh connection rather than 500ing the request.
+      onRetry: (err, attempt) =>
+        logger.warn(`Retrying read after dropped connection (attempt ${attempt}): ${err.message}`),
     });
     super({
       adapter: new PrismaPg(pool),
@@ -35,6 +45,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       // start a transaction in the given time"), so it's bumped further.
       transactionOptions: { timeout: 20_000, maxWait: 20_000 },
     });
+    this.logger = logger;
     this.pool = pool;
     // node-postgres emits 'error' on the Pool when an *idle* client is
     // dropped by the server (exactly the pgbouncer-closed-connection case

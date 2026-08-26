@@ -20,7 +20,6 @@ import { ConfirmDialog } from "../../../shared/ui/ConfirmDialog";
 import { UserTable } from "./UserTable";
 import { AddUserForm, WeaverFieldsState } from "./AddUserForm";
 import { ApiError } from "../../../shared/api/client";
-import { Button } from "../../../shared/ui/primitives";
 import {
   BackendUser, FRONTEND_TO_BACKEND_ROLE, BACKEND_TO_FRONTEND_ROLE,
   backendAccessLevelToFrontend, frontendAccessLevelToBackend, usersApi,
@@ -498,16 +497,6 @@ export function AddUserPage() {
           />
         </motion.div>
 
-        {loadError && (
-          <div style={{ background: T.crimsonBg, border: "1px solid rgba(192,57,43,0.25)", borderRadius: 12, padding: "12px 18px", marginBottom: 16, fontFamily: F.ui, fontSize: 13, color: T.crimson, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span>Could not load users from the server: {loadError}</span>
-            <Button variant="danger-subtle" size="sm" onClick={() => void loadUsers()}>Retry</Button>
-          </div>
-        )}
-        {loading && !loadError && (
-          <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 16 }}>Loading users…</div>
-        )}
-
         {/* ── ALL USERS TABLE ──────────────────────────────────────────────── */}
         <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.26, ease: EASE }}>
           <UserTable
@@ -530,6 +519,11 @@ export function AddUserPage() {
             setViewingMember={setViewingMember}
             cardStyle={cardStyle}
             inputStyle={inputStyle}
+            loading={loading}
+            loadError={!!loadError}
+            onRetry={() => void loadUsers()}
+            isFiltered={searchQ.trim() !== "" || roleFilter !== "All Roles"}
+            onClearFilters={() => { setSearchQ(""); setRoleFilter("All Roles"); }}
           />
         </motion.div>
 

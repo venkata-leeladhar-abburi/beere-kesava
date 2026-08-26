@@ -4,10 +4,10 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ArrowLeft, MapPin, Package, Send, Trash2, Wallet, ChevronLeft, UserRound, Boxes, ShoppingBag, CreditCard, UserCheck, Edit3 } from "lucide-react";
+import { MapPin, Package, Send, Trash2, Wallet, ChevronLeft, UserRound, Boxes, ShoppingBag, CreditCard, UserCheck, Edit3 } from "lucide-react";
 import { toast } from "sonner";
-import { BG_IMAGE } from "@/features/portals/components/weaver-portal/WeaverBatchNotifData";
-import { SectionCard } from "@/features/weavers/components/common/primitives";
+import { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
+import { SectionCard } from "@/shared/ui/SectionCard";
 import { SupplierPayNowModal } from "@/features/payments";
 import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../../shared/ui/DateFilterBar";
 import { T, F } from "../../theme";
@@ -16,7 +16,7 @@ import {
 } from "../../../contexts/SupplierContext";
 import { formatMoney, rupees } from "@/lib/domain/money";
 import { SupplierFormValues } from "../../types";
-import { FadeUp, StatusPill, StarRating } from "../../common/primitives";
+import { StarRating } from "../../common/primitives";
 import { Button } from "../../../../../shared/ui/primitives";
 import { Breadcrumbs } from "../../../../../shared/ui/nav/Breadcrumbs";
 import { recordView, useConfirm } from "../../../../../shared/ui/overlay";

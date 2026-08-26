@@ -8,6 +8,7 @@ import { SectionCard } from "../primitives";
 import { StaffPickerModal } from "./StaffPickerModal";
 import { Button } from "../../../../../shared/ui/primitives";
 import { useAuth } from "../../../../../contexts/AuthContext";
+import { LoadingState, ErrorState } from "../../../../../shared/ui/state";
 import { STOPGAP_ACTING_USER_ID } from "../../../../../shared/api/purchase-requests";
 
 // ── Quotations — assign for finishing & receive back against a quotation ───────
@@ -27,7 +28,7 @@ function QuotationStatusBadge({ status }: { status: Quotation["status"] }) {
 }
 
 export function QuotationsSection(_props: { isMobile?: boolean }) {
-  const { quotations, assignQuotationFinishing, receiveQuotationSarees } = useFinishing();
+  const { quotations, assignQuotationFinishing, receiveQuotationSarees, isLoading, isError, error, refetch } = useFinishing();
   const { user } = useAuth();
   const actingUserId = user?.id ?? STOPGAP_ACTING_USER_ID;
   const [pickerFor, setPickerFor] = useState<string | null>(null);
@@ -80,7 +81,11 @@ export function QuotationsSection(_props: { isMobile?: boolean }) {
         </span>
       }
     >
-      {active.length === 0 ? (
+      {isLoading ? (
+        <LoadingState variant="skeleton" rows={4} />
+      ) : isError ? (
+        <ErrorState error={error} onRetry={refetch} />
+      ) : active.length === 0 ? (
         <div style={{ padding: "24px 0", textAlign: "center", fontFamily: F.u, fontSize: 13, color: C.muted }}>
           No quotations awaiting finishing.
         </div>

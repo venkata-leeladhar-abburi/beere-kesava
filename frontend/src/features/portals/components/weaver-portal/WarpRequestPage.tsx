@@ -1,6 +1,5 @@
 
 import { useState, useMemo, useCallback } from "react";
-import { useResponsive } from "../../../../hooks/useResponsive";
 import { useBatches } from "@/features/production";
 import { useCurrentWeaver } from "./useCurrentWeaver";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -14,11 +13,10 @@ import {
 
 // ─── Design Tokens ─────────────────────────────────────────────────────────
 import {
-  C, F, SectionTitle, Card, ProgressBar, StatusBadge, HeroHeader,
-} from './theme';
+  C, F, HeroHeader } from './theme';
 import { SectionHeading } from "@/shared/ui/portal/PortalChrome";
 import { Button, Input, Textarea } from '../../../../shared/ui/primitives';
-import { DataTable, type ColumnDef } from '../../../../shared/ui/data';
+import { LoadingState, ErrorState } from "../../../../shared/ui/state";
 
 const MATERIAL_TO_WARP_TYPE: Record<"warp" | "resham" | "jari", string> = {
   warp: "WARP", resham: "RESHAM", jari: "JARI",
@@ -30,7 +28,6 @@ import { LuxuryStatsCard, type StatItem } from "@/shared/ui/LuxuryStatsCard";
 import { IcoResourceMgmt, IcoFabricRoll, IcoQualityCheck } from "@/features/dashboards";
 
 export function WarpRequestPage() {
-  const { isMobile, isTablet } = useResponsive();
   const { batches } = useBatches();
   const { weaver, weaverId, weaverCode, isLoading: weaverLoading, isError: weaverError } = useCurrentWeaver();
   const { user } = useAuth();
@@ -68,7 +65,7 @@ export function WarpRequestPage() {
   const isLocked = batchProgress.pct < 50;
 
   // Previous requests raised by this weaver, most recent first.
-  const { data: warpRequestsData } = useQuery({
+  const { data: warpRequestsData, isLoading: warpLoading, isError: warpError, refetch: refetchWarp } = useQuery({
     queryKey: ["warpRequests"],
     queryFn: () => warpRequestsApi.list(),
   });
@@ -148,8 +145,20 @@ export function WarpRequestPage() {
     },
   });
 
-  if (weaverLoading) {
-    return <div style={{ padding: "60px 20px", textAlign: "center" as const, fontFamily: F.u, fontSize: 14, color: C.muted }}>Loading…</div>;
+  if (weaverLoading || warpLoading) {
+    return (
+      <div style={{ padding: 24 }}>
+        <LoadingState variant="skeleton" rows={4} />
+      </div>
+    );
+  }
+
+  if (warpError) {
+    return (
+      <div style={{ padding: 24 }}>
+        <ErrorState error={undefined} onRetry={() => void refetchWarp()} />
+      </div>
+    );
   }
 
   if (weaverError || !weaverId) {

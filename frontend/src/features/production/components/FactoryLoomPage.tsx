@@ -23,6 +23,7 @@ import { rawMaterialsApi } from "../../../shared/api/rawMaterials";
 import { qcApi } from "../../../shared/api/qc";
 import { Button, IconButton, SearchInput } from "../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../shared/ui/data";
+import { LoadingState, ErrorState, EmptyState, FilteredEmptyState } from "../../../shared/ui/state";
 import { LuxuryStatsCard } from "../../../shared/ui/LuxuryStatsCard";
 import { MaterialsFooter } from "@/features/materials";
 
@@ -322,13 +323,18 @@ export function FactoryLoomPage() {
 
               {/* Looms Listing */}
               {loading ? (
-                <div style={{ padding: "60px 0", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Loading factory looms…</div>
+                <LoadingState variant="skeleton" rows={4} />
+              ) : loadError ? (
+                <ErrorState error={loadError} onRetry={() => void loadLooms()} />
               ) : filtered.length === 0 ? (
-                <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: 48, textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
-                  {looms.length === 0
-                    ? "No power looms registered in the database yet. Click '+ Register New Power Loom' above to add one."
-                    : "No power looms match your search criteria."}
-                </div>
+                looms.length === 0 ? (
+                  <EmptyState
+                    title="No power looms registered yet"
+                    description="Click '+ Register New Power Loom' above to add one."
+                  />
+                ) : (
+                  <FilteredEmptyState onClearFilters={() => { setSearch(""); setSf("all"); }} />
+                )
               ) : view === "card" ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                   {filtered.map(l => (

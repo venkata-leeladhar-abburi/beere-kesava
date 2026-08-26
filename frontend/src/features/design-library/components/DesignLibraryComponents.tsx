@@ -12,6 +12,8 @@ import { T, F } from "./theme";
 import { Button, IconButton, Input } from "../../../shared/ui/primitives";
 import { Modal } from "../../../shared/ui/overlay";
 import { EntityCode } from "@/shared/ui/domain";
+import { uploadsApi, resolveAssetUrl } from "../../../shared/api/uploads";
+import { ApiError } from "../../../shared/api/client";
 
 export { AddDesignModal, SlipModal } from "./DesignModals";
 
@@ -123,31 +125,66 @@ export const labelStyle: React.CSSProperties = {
   color: T.luxuryBrown, display: "block", marginBottom: 6,
 };
 
+const UPLOAD_MAX_BYTES = 5 * 1024 * 1024;
+const UPLOAD_ACCEPTED_TYPES = new Set(["image/png", "image/jpeg"]);
+
+/**
+ * Image dropzone backed by POST /uploads/photo, same flow as PhotoUploadField.
+ * `onFile` receives the server-relative path (e.g. "/uploads/photos/x.png"),
+ * NOT a data URL — inlining base64 here is what made GET /design-dispatches
+ * return ~6.5MB per row and time out against Supabase's pooler.
+ */
 export function UploadZone({ label, hint, icon: Icon, preview, onFile }: {
   label: string; hint: string; icon: React.ElementType;
   preview: string | null; onFile: (url: string | null) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => onFile(ev.target?.result as string);
-    reader.readAsDataURL(file);
+  const [localPreview, setLocalPreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Local object URL wins while the upload is in flight so the user sees their
+  // pick immediately; once it resolves, `preview` holds the stored path.
+  const displayUrl = localPreview ?? resolveAssetUrl(preview);
+
+  async function handleFile(file: File) {
+    setError(null);
+    if (!UPLOAD_ACCEPTED_TYPES.has(file.type)) {
+      setError("Image must be a JPG or PNG.");
+      return;
+    }
+    if (file.size > UPLOAD_MAX_BYTES) {
+      setError("Image must be under 5MB.");
+      return;
+    }
+    const objectUrl = URL.createObjectURL(file);
+    setLocalPreview(objectUrl);
+    setUploading(true);
+    try {
+      const { url } = await uploadsApi.uploadPhoto(file);
+      onFile(url);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Could not upload image. Please try again.");
+      setLocalPreview(null);
+    } finally {
+      setUploading(false);
+      URL.revokeObjectURL(objectUrl);
+    }
   }
+
   return (
     <div>
       <label style={labelStyle}>{label}</label>
       <div
-        onClick={() => inputRef.current?.click()} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => inputRef.current?.click())?.(); } }}
-        style={{ height: 100, border: `2px dashed rgba(110,15,45,0.22)`, borderRadius: 12, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, cursor: "pointer", background: T.warmIvory, overflow: "hidden", position: "relative" }}
+        onClick={() => { if (!uploading) inputRef.current?.click(); }} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); if (!uploading) inputRef.current?.click(); } }}
+        style={{ height: 100, border: `2px dashed rgba(110,15,45,0.22)`, borderRadius: 12, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, cursor: uploading ? "wait" : "pointer", background: T.warmIvory, overflow: "hidden", position: "relative" }}
       >
-        {preview ? (
+        {displayUrl ? (
           <>
-            <img src={preview} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.7 }} />
+            <img src={displayUrl} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.7 }} />
             <div style={{ position: "relative", zIndex: 1, background: "rgba(61,14,26,0.65)", borderRadius: 8, padding: "4px 12px", display: "flex", alignItems: "center", gap: 6 }}>
               <UploadSimple size={13} color={T.goldLight} />
-              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.goldLight, fontWeight: 600 }}>Replace</span>
+              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.goldLight, fontWeight: 600 }}>{uploading ? "Uploading…" : "Replace"}</span>
             </div>
           </>
         ) : (
@@ -156,11 +193,16 @@ export function UploadZone({ label, hint, icon: Icon, preview, onFile }: {
               <Icon size={20} color={T.taupe} />
             </div>
             <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{hint}</span>
-            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.antiqueGold, fontWeight: 600 }}>Click to upload</span>
+            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.antiqueGold, fontWeight: 600 }}>{uploading ? "Uploading…" : "Click to upload"}</span>
           </>
         )}
       </div>
-      <Input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleChange} />
+      {error && <div style={{ fontFamily: F.ui, fontSize: 12, color: "#C0392B", marginTop: 6 }}>{error}</div>}
+      <Input ref={inputRef} type="file" accept="image/png,image/jpeg" className="hidden" onChange={e => {
+        const file = e.target.files?.[0];
+        if (file) void handleFile(file);
+        e.target.value = "";
+      }} />
     </div>
   );
 }

@@ -14,6 +14,8 @@ import { useQuery } from "@tanstack/react-query";
 import { warpRequestsApi } from "../../../shared/api/warpRequests";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { rateRequestsApi } from "../../../shared/api/rateRequests";
+import { Button } from "../../../shared/ui/primitives";
+import { LoadingState } from "../../../shared/ui/state";
 
 // ─── Main component ───────────────────────────────────────────────────────────
 export function ApprovalsPage() {
@@ -22,20 +24,22 @@ export function ApprovalsPage() {
   const [histPeriod, setHistPeriod] = useState("This Month");
   const [viewDocPOId, setViewDocPOId] = useState<string | null>(null);
 
-  const { data: warpRes, isError: warpError } = useQuery({
+  const { data: warpRes, isError: warpError, isLoading: warpLoading, refetch: refetchWarp } = useQuery({
     queryKey: ["warp-requests-pending"],
     queryFn: () => warpRequestsApi.list("PENDING"),
   });
   const warpList = warpRes?.items ?? [];
 
-  const { data: rateRes, isError: rateError } = useQuery({
+  const { data: rateRes, isError: rateError, isLoading: rateLoading, refetch: refetchRate } = useQuery({
     queryKey: ["rate-requests-pending"],
     queryFn: () => rateRequestsApi.list("PENDING"),
   });
   const rateList = rateRes?.items ?? [];
 
-  const { pos, approvePO, rejectPO, isError: poError } = usePO();
+  const { pos, approvePO, rejectPO, isError: poError, isLoading: poLoading, refetch: refetchPO } = usePO();
   const hasApprovalsError = warpError || rateError || poError;
+  const isLoading = warpLoading || rateLoading || poLoading;
+  const refetchAll = () => { void refetchWarp(); void refetchRate(); void refetchPO(); };
   const { requests, decideRequest } = useSuppliers();
   const pendingRequests = requests.filter(r => r.status === "pending");
 
@@ -104,11 +108,17 @@ export function ApprovalsPage() {
       <TabsNav tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} />
 
       {hasApprovalsError && (
-        <div style={{ margin: "0 56px", padding: "14px 20px", borderRadius: 12, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.30)", fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: "#C0392B" }}>
-          Failed to load some approvals data. Counts and lists shown below may be incomplete — please try refreshing the page.
+        <div style={{ margin: "0 56px", padding: "14px 20px", borderRadius: 12, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.30)", fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: "#C0392B", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+          <span>Failed to load some approvals data. Counts and lists shown below may be incomplete.</span>
+          <Button onClick={refetchAll} variant="danger-subtle" size="sm">Retry</Button>
         </div>
       )}
 
+      {isLoading ? (
+        <div style={{ margin: "0 56px" }}>
+          <LoadingState variant="skeleton" rows={4} />
+        </div>
+      ) : (
       <TabContent
         activeTab={activeTab}
         combinedPOList={combinedPOList}
@@ -123,6 +133,7 @@ export function ApprovalsPage() {
         setViewDocPOId={setViewDocPOId}
         decideExternal={decideExternal}
       />
+      )}
 
       <HistorySection
         histFilter={histFilter}

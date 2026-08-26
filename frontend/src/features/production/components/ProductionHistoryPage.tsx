@@ -58,9 +58,9 @@ const PIP_COLORS = ["#7C3AED", "#C0392B", "#0F766E", "#B45309"];
 // for "produced". A batch with a single recipient still shows as one row,
 // same as before; a multi-weaver batch can show one completed row per
 // weaver well before the batch as a whole is finalized.
-function useHistoryBatches(): { batches: HistoryBatch[]; isLoading: boolean; totalMakingCharges: Paise } {
-  const { batches } = useBatches();
-  const { data: qcRecords = [], isLoading } = useQuery({
+function useHistoryBatches(): { batches: HistoryBatch[]; isLoading: boolean; isError: boolean; error: unknown; refetch: () => void; totalMakingCharges: Paise } {
+  const { batches, isLoading: batchesLoading, isError: batchesError, error: batchesErrorObj, refetch: refetchBatches } = useBatches();
+  const { data: qcRecords = [], isLoading: qcLoading, isError: qcError, error: qcErrorObj, refetch: refetchQc } = useQuery({
     queryKey: ["qc", "all"],
     queryFn: () => qcApi.list().then(r => r.items),
   });
@@ -127,7 +127,12 @@ function useHistoryBatches(): { batches: HistoryBatch[]; isLoading: boolean; tot
     return { historyBatches: list, totalMakingCharges: addMoney(...makingChargesPaise) };
   }, [batches, qcRecords]);
 
-  return { batches: historyBatches, isLoading, totalMakingCharges };
+  const isLoading = batchesLoading || qcLoading;
+  const isError = batchesError || qcError;
+  const error = batchesErrorObj ?? qcErrorObj ?? null;
+  const refetch = () => { refetchBatches(); void refetchQc(); };
+
+  return { batches: historyBatches, isLoading, isError, error, refetch, totalMakingCharges };
 }
 
 // ── Weaver avatar pip ─────────────────────────────────────────────────────────
@@ -273,7 +278,7 @@ function StatsBar({ batches, totalMakingCharges }: { batches: HistoryBatch[]; to
 }
 
 // ── Section 4: Table ──────────────────────────────────────────────────────────
-function TableSection({ batches, isLoading }: { batches: HistoryBatch[]; isLoading: boolean }) {
+function TableSection({ batches, isLoading, isError, onRetry }: { batches: HistoryBatch[]; isLoading: boolean; isError: boolean; onRetry: () => void }) {
   const columns: ColumnDef<HistoryBatch>[] = [
     {
       id: "id", header: "Batch Number", accessor: b => b.batchId, priority: 1,
@@ -371,7 +376,10 @@ function TableSection({ batches, isLoading }: { batches: HistoryBatch[]; isLoadi
           data={batches}
           getRowId={b => b.id}
           loading={isLoading}
+          error={isError}
+          onRetry={onRetry}
           emptyTitle="No completed batches yet"
+          emptyDescription="Batches will appear here once every piece has passed QC or finishing."
         />
       </div>
 
@@ -396,13 +404,13 @@ function TableSection({ batches, isLoading }: { batches: HistoryBatch[]; isLoadi
 }
 
 export function ProductionHistoryPage() {
-  const { batches, isLoading, totalMakingCharges } = useHistoryBatches();
+  const { batches, isLoading, isError, refetch, totalMakingCharges } = useHistoryBatches();
   return (
     <div style={{ minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui }}>
       <PageHeader />
       <FilterBar />
       <StatsBar batches={batches} totalMakingCharges={totalMakingCharges} />
-      <TableSection batches={batches} isLoading={isLoading} />
+      <TableSection batches={batches} isLoading={isLoading} isError={isError} onRetry={refetch} />
       <ProductionHistoryFooter />
     </div>
   );

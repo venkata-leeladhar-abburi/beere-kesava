@@ -36,7 +36,7 @@ export type { FormState };
 export function ExternalPurchasesPage() {
   // Purchases live in the shared supplier context so the Suppliers page sees the
   // same inventory, spend and payment history that gets entered here.
-  const { purchases, addPurchase, updatePurchase, deletePurchase } = useSuppliers();
+  const { purchases, addPurchase, updatePurchase, deletePurchase, isLoading, isError, refetch } = useSuppliers();
   const confirm = useConfirm();
   const [detailRow, setDetailRow] = useState<Purchase | null>(null);
   const [search, setSearch] = useState("");
@@ -229,6 +229,10 @@ export function ExternalPurchasesPage() {
           onViewSarees={setSareeListPurchase}
           onEdit={(id) => setFormModal({ mode: "edit", editId: id })}
           onDelete={handleDelete}
+          loading={isLoading}
+          loadError={isError}
+          onRetry={refetch}
+          onClearFilters={clearFilters}
         />
       </FilterBar>
 

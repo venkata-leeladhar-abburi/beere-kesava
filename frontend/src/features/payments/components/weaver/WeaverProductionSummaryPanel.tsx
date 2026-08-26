@@ -427,14 +427,14 @@ export function WeaverProductionSummaryPanel({ refreshKey }: { refreshKey: numbe
 
           {prodViewMode === "card" ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-4">
-              {grouped.map((row, idx) => (
-                <WeaverProductionCard key={`${row.weaverId}-${row.batchId}-${row.loomNumber}-${idx}`} row={row} />
+              {grouped.map(row => (
+                <WeaverProductionCard key={`${row.weaverId}-${row.batchId}-${row.loomNumber}`} row={row} />
               ))}
             </div>
           ) : (
             <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden" }} className="w-full">
               <div style={{ overflowX: "auto" }} className="w-full">
-                <div style={{ minWidth: 1450 }}>
+                <div className="min-w-[1450px]">
                   <DataTable responsive={false} columns={displayColumns} data={grouped} getRowId={r => `${r.weaverId}-${r.batchId}-${r.loomNumber}`} emptyTitle="No production in this period." />
                 </div>
               </div>

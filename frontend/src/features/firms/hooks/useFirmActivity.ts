@@ -29,6 +29,8 @@ export function useFirmActivity(firmId: string | undefined) {
     payments: query.data?.payments ?? [],
     totals: query.data?.totals ?? EMPTY,
     isLoading: query.isLoading,
+    isError: query.isError,
     error: query.error as Error | null,
+    refetch: () => void query.refetch(),
   };
 }

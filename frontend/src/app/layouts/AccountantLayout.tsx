@@ -1,12 +1,18 @@
 import React from "react";
-import { Outlet, Navigate } from "react-router";
-import { useAuth } from "../../contexts/AuthContext";
+import { Outlet } from "react-router";
+import { RequireRole } from "../guards/RequireRole";
 import { composeProviders } from "../../lib/composeProviders";
 import { ErrorBoundary } from "../../components/ErrorBoundary";
 import {
-  POProvider, BulkOrderProvider, DesignLibraryProvider,
-  BatchProvider, MaterialIssueProvider, FirmsProvider,
-  WeaverPaymentsProvider, SalesProvider, CustomersProvider,
+  POProvider,
+  BulkOrderProvider,
+  DesignLibraryProvider,
+  BatchProvider,
+  MaterialIssueProvider,
+  FirmsProvider,
+  WeaverPaymentsProvider,
+  SalesProvider,
+  CustomersProvider,
 } from "../../contexts";
 
 // FinishingProvider / FinishingStaffProvider are mounted once in App.tsx so
@@ -24,17 +30,13 @@ const AccountantContexts = composeProviders([
 ]);
 
 export function AccountantLayout() {
-  const { isAuthenticated, role } = useAuth();
-
-  // Auth guard
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (role !== "accountant") return <Navigate to="/login" replace />;
-
   return (
-    <AccountantContexts>
-      <ErrorBoundary resetTo="/accountant">
-        <Outlet />
-      </ErrorBoundary>
-    </AccountantContexts>
+    <RequireRole allow="accountant">
+      <AccountantContexts>
+        <ErrorBoundary resetTo="/accountant">
+          <Outlet />
+        </ErrorBoundary>
+      </AccountantContexts>
+    </RequireRole>
   );
 }

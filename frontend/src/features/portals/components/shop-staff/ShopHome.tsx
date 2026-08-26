@@ -11,6 +11,7 @@ import { customersApi } from "../../../../shared/api/customers";
 import { notificationsApi } from "../../../../shared/api/notifications";
 import { C, F, Card, Btn, Chip, SectionTitle } from './theme';
 import { Button, IconButton, Textarea } from "../../../../shared/ui/primitives";
+import { LoadingState, ErrorState } from "../../../../shared/ui/state";
 import { rupees, formatMoney } from "@/lib/domain/money";
 
 function dateLabel(iso: string) {
@@ -54,17 +55,20 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
     }
   };
 
-  const { data: salesRes, isError: salesError } = useQuery({
+  const { data: salesRes, isError: salesError, isLoading: salesLoading, refetch: refetchSales } = useQuery({
     queryKey: ["sales-list-shophome"],
     queryFn: () => salesApi.list(100),
   });
 
-  const { data: inventoryRes, isError: inventoryError } = useQuery({
-    queryKey: ["inventory-list-shophome"],
-    queryFn: () => inventoryApi.list(),
+  const { data: inventoryRes, isError: inventoryError, refetch: refetchInventory } = useQuery({
+    // Shop stock, not factory stock — these tiles are labelled "Shop
+    // inventory" but counted every QC-passed saree in the factory, including
+    // ones that had never been dispatched here.
+    queryKey: ["shop-stock"],
+    queryFn: () => inventoryApi.shopStock(),
   });
 
-  const { data: returnsRes, isError: returnsError } = useQuery({
+  const { data: returnsRes, isError: returnsError, refetch: refetchReturns } = useQuery({
     queryKey: ["returns-list-shophome"],
     queryFn: () => salesApi.listReturns(100),
   });
@@ -75,7 +79,8 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
   });
 
   const salesList = salesRes?.items ?? [];
-  const inventoryList = inventoryRes ?? [];
+  // Sold pieces are still delivered stock, but they are not what "in stock" means.
+  const inventoryList = (inventoryRes ?? []).filter(s => s.status !== "sold");
   const returnsList = returnsRes?.items ?? [];
   const customerMap = new Map((customersRes?.items ?? []).map(c => [c.id, c.name]));
 
@@ -100,10 +105,10 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
   const stats: PortalStat[] = [
-    { label: "Today's sales", value: salesError ? "Error" : todaySales.length, sub: salesError ? "Failed to load" : "Recorded today", icon: ShoppingBag, highlight: true },
-    ...(canSeePrices ? [{ label: "Today's revenue", value: salesError ? "Error" : formatMoney(rupees(todayRevenue)), sub: salesError ? "Failed to load" : `From ${todaySales.length} sales`, icon: BarChart2 }] : []),
-    { label: "Shop inventory", value: inventoryError ? "Error" : inventoryList.length, sub: inventoryError ? "Failed to load" : "Currently in stock", icon: Package },
-    { label: "Returns today", value: returnsError ? "Error" : todayReturns.length, sub: returnsError ? "Failed to load" : "Processed and recorded", icon: RotateCcw, alert: todayReturns.length > 0 },
+    { label: "Today's sales", value: salesError ? "Error" : todaySales.length, sub: salesError ? "Tap to retry" : "Recorded today", icon: ShoppingBag, highlight: true, onClick: salesError ? () => refetchSales() : undefined },
+    ...(canSeePrices ? [{ label: "Today's revenue", value: salesError ? "Error" : formatMoney(rupees(todayRevenue)), sub: salesError ? "Tap to retry" : `From ${todaySales.length} sales`, icon: BarChart2, onClick: salesError ? () => refetchSales() : undefined }] : []),
+    { label: "Shop inventory", value: inventoryError ? "Error" : inventoryList.length, sub: inventoryError ? "Tap to retry" : "Currently in stock", icon: Package, onClick: inventoryError ? () => refetchInventory() : undefined },
+    { label: "Returns today", value: returnsError ? "Error" : todayReturns.length, sub: returnsError ? "Tap to retry" : "Processed and recorded", icon: RotateCcw, alert: todayReturns.length > 0, onClick: returnsError ? () => refetchReturns() : undefined },
   ];
 
   return (
@@ -151,7 +156,13 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
       <div style={{ margin: "24px 20px 0" }}>
         <SectionTitle title="Recent Sales — Today" link="View All →" onLink={() => onNavigate("reports")} />
         <Card style={{ margin: 0, padding: 0, overflow: "hidden" }}>
-          {recentSales.length === 0 ? (
+          {salesLoading ? (
+            <div style={{ padding: 16 }}>
+              <LoadingState variant="skeleton" rows={3} />
+            </div>
+          ) : salesError ? (
+            <ErrorState error={undefined} onRetry={() => void refetchSales()} />
+          ) : recentSales.length === 0 ? (
             <div style={{ padding: "24px 16px", textAlign: "center", fontFamily: F.u, fontSize: 14, color: C.muted }}>
               No sales recorded today yet.
             </div>

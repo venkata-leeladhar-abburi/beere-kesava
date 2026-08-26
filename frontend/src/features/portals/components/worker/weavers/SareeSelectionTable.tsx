@@ -50,6 +50,13 @@ function SareeSelectionCard({
   return (
     <div
       onClick={() => { if (isPending) onSelect(); }}
+      role="button"
+      tabIndex={0}
+      aria-pressed={isSel}
+      // A saree that is not awaiting selection stays focusable and announced,
+      // but is marked disabled rather than silently doing nothing on click.
+      aria-disabled={!isPending}
+      onKeyDown={e => { if (isPending && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); onSelect(); } }}
       style={{
         background: isSel ? "linear-gradient(135deg, #FFFDF9 0%, #FDF7ED 100%)" : "#FFFFFF",
         border: `1.5px solid ${isSel ? C.burg : C.bdr}`,

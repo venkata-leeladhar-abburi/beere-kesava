@@ -8,6 +8,8 @@ import { NotificationStatStrip } from "./NotificationStatStrip";
 import { NotificationDetailPanel } from "./NotificationDetailPanel";
 import { SectionCard } from "./common/primitives";
 import { BackendNotification, connectNotificationsSocket, notificationsApi } from "../../../shared/api/notifications";
+import type { Socket } from "socket.io-client";
+import { useSocketStatus } from "../../../shared/hooks";
 import { useAuth, Role } from "../../../contexts/AuthContext";
 import { rupees, formatMoney } from "@/lib/domain/money";
 
@@ -158,8 +160,9 @@ export function NotificationsPage() {
   const [dateFilter, setDateFilter]         = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [isLoading, setIsLoading]           = useState(true);
   const [isError, setIsError]               = useState(false);
+  const [socket, setSocket]                 = useState<Socket | null>(null);
 
-  useEffect(() => {
+  const loadNotifications = useCallback(() => {
     setIsLoading(true);
     setIsError(false);
     notificationsApi.list({ role: backendRole }).then(res => {
@@ -170,16 +173,21 @@ export function NotificationsPage() {
     }).finally(() => setIsLoading(false));
   }, [backendRole]);
 
+  useEffect(() => { loadNotifications(); }, [loadNotifications]);
+
   // Live push — backend gateway emits to `role:<ROLE>` rooms (no per-user
   // auth yet, so we can only reliably subscribe by role).
   useEffect(() => {
     if (!backendRole) return;
-    const socket = connectNotificationsSocket({ role: backendRole });
-    socket.on("notification", (raw: BackendNotification) => {
+    const s = connectNotificationsSocket({ role: backendRole });
+    setSocket(s);
+    s.on("notification", (raw: BackendNotification) => {
       setNotifications(prev => prev.some(n => n.id === raw.id) ? prev : [toUnifiedNotif(raw), ...prev]);
     });
-    return () => { socket.disconnect(); };
+    return () => { s.disconnect(); setSocket(null); };
   }, [backendRole]);
+
+  const socketStatus = useSocketStatus(socket);
 
   const markRead = useCallback((id: string) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
@@ -245,8 +253,13 @@ export function NotificationsPage() {
                 {unread} new
               </span>
             )}
+            {socketStatus !== "connected" && (
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.65)", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.14)", borderRadius: 999, padding: "3px 10px" }}>
+                {socketStatus === "disconnected" ? "Live updates paused — reconnecting" : "Connecting…"}
+              </span>
+            )}
           </div>
-          <p style={{ fontFamily: F.ui, fontSize: "clamp(13px, 2vw, 16px)", color: "rgba(255,253,249,0.70)", margin: 0, maxWidth: 600, lineHeight: 1.5, wordBreak: "break-word" }}>
+          <p className="max-w-[600px]" style={{ fontFamily: F.ui, fontSize: "clamp(13px, 2vw, 16px)", color: "rgba(255,253,249,0.70)", margin: 0, lineHeight: 1.5, wordBreak: "break-word" }}>
             Live operational alerts, stock updates, payment reminders, and production activity.
           </p>
           {unread > 0 && (
@@ -474,7 +487,8 @@ export function NotificationsPage() {
                 <Inbox size={28} color="#C0392B" />
               </div>
               <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#C0392B", marginBottom: 8 }}>Failed to load notifications</div>
-              <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Please try refreshing the page.</div>
+              <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginBottom: 20 }}>Please check your connection and try again.</div>
+              <Button variant="primary" size="md" onClick={loadNotifications}>Retry</Button>
             </div>
           )}
 

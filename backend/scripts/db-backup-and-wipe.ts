@@ -77,8 +77,10 @@ async function main() {
   let totalRows = 0;
 
   for (const { name, delegate } of MODELS) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const rows = await (prisma[delegate] as any).findMany();
+    // The model list is data-driven, so the delegate is looked up by name and
+    // typed as the narrowest thing every delegate satisfies.
+    const model = (prisma as unknown as Record<string, { findMany: () => Promise<unknown[]> }>)[delegate];
+    const rows: unknown[] = await model.findMany();
     dump[name] = rows;
     totalRows += rows.length;
     console.log(`  backed up ${name}: ${rows.length} rows`);

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Eye, ShoppingBag, LayoutGrid, List } from "lucide-react";
+import { Eye, LayoutGrid, List } from "lucide-react";
 import { BulkOrder } from "@/features/bulk-orders";
 import { DateFilterBar, DateFilterState, matchesDateFilter } from "../../../../../shared/ui/DateFilterBar";
 import { OrderMoney } from "@/features/bulk-orders";
@@ -8,11 +8,6 @@ import { Button } from "../../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
 
-const ORDER_STATUS_META: Record<string, { label: string; color: string; bg: string }> = {
-  "on-track": { label: "On Track", color: T.green, bg: T.greenBg },
-  "at-risk": { label: "At Risk", color: "#8B6018", bg: "rgba(200,155,71,0.14)" },
-  "overdue": { label: "Overdue", color: T.crimson, bg: T.crimsonBg },
-};
 const PAY_STATUS_META: Record<string, { label: string; color: string; bg: string }> = {
   paid: { label: "Paid", color: T.green, bg: T.greenBg },
   partial: { label: "Partial", color: "#8B6018", bg: "rgba(200,155,71,0.14)" },
@@ -154,7 +149,9 @@ export function OrderHistoryTab({
                   return (
                     <div
                       key={o.ref}
-                      onClick={() => onViewBulkOrder(o, "overview")}
+                      onClick={() => onViewBulkOrder(o, "overview")} role="button" tabIndex={0}
+                      aria-label={`Open bulk order ${o.ref}`}
+                      onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onViewBulkOrder(o, "overview"); } }}
                       className="bg-white rounded-2xl border border-[var(--border-default)] p-4 hover:border-[#6E0F2D] transition-all cursor-pointer shadow-sm hover:shadow-md flex flex-col justify-between"
                     >
                       <div className="flex items-center justify-between gap-2 mb-3">
@@ -194,7 +191,7 @@ export function OrderHistoryTab({
                 className="w-full max-w-full min-w-0 overflow-x-auto touch-pan-x border border-[var(--border-default)] rounded-2xl bg-white shadow-xs"
                 style={{ WebkitOverflowScrolling: "touch" }}
               >
-                <div style={{ minWidth: 650 }}>
+                <div className="min-w-[650px]">
                   <DataTable responsive={false} columns={columns} data={rows} getRowId={o => o.ref} />
                 </div>
               </div>
@@ -206,7 +203,7 @@ export function OrderHistoryTab({
             className="hidden sm:block w-full max-w-full min-w-0 overflow-x-auto touch-pan-x border border-[var(--border-default)] rounded-2xl bg-white shadow-xs"
             style={{ WebkitOverflowScrolling: "touch" }}
           >
-            <div style={{ minWidth: 650 }}>
+            <div className="min-w-[650px]">
               <DataTable responsive={false} columns={columns} data={rows} getRowId={o => o.ref} />
             </div>
           </div>

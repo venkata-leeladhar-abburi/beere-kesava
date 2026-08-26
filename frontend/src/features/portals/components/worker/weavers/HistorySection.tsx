@@ -77,10 +77,12 @@ export function HistorySection({ liveRecords = [] }: { liveRecords?: ReceivedSar
     }),
   [qcRecords, rowLookup]);
 
-  const allData: HistoryRow[] = [
-    ...liveRecords,
-    ...qcHistory,
-  ];
+  // Memoised because two useMemos below take it as a dependency — rebuilt on
+  // every render it made both of them recompute every render.
+  const allData: HistoryRow[] = useMemo(
+    () => [...liveRecords, ...qcHistory],
+    [liveRecords, qcHistory],
+  );
 
   const uniqueEntities = useMemo(() => Array.from(new Set(allData.map(h => h.weaver))).sort(), [allData]);
   const uniqueBatches = useMemo(() => Array.from(new Set(allData.map(h => h.batch))).filter(b => b !== "—").sort(), [allData]);

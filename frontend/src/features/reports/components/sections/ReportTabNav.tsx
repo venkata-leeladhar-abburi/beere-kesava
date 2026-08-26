@@ -4,7 +4,6 @@ import { Calendar, AlertTriangle, FileText, Download, Package, Scissors, Boxes, 
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { T, F } from "../theme";
 import { Button, Select, SelectItem } from "../../../../shared/ui/primitives";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "../../../../shared/ui/overlay";
 import type { ReportTabKey, ReportTab } from "../types";
 
 const REPORT_TABS: ReportTab[] = [

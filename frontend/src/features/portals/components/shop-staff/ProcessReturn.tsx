@@ -23,7 +23,7 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
   const [returnType, setReturnType] = useState<MyReturnType>(null);
   const [step, setStep] = useState<ReturnStep>("type");
 
-  const { data: returnsRes, refetch } = useQuery({
+  const { data: returnsRes, isLoading: returnsLoading, isError: returnsError, refetch } = useQuery({
     queryKey: ["returns-list-processreturn"],
     queryFn: () => salesApi.listReturns(100),
   });
@@ -265,7 +265,7 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
           </>
         )}
 
-        <ReturnHistorySection returnLog={returnLog} canSeePrices={canSeePrices} />
+        <ReturnHistorySection returnLog={returnLog} canSeePrices={canSeePrices} isLoading={returnsLoading} isError={returnsError} onRetry={() => void refetch()} />
       </div>
     );
   }
@@ -305,7 +305,7 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
         <ProcessReturnRetailFlow
           step={step as 1 | 2 | 3}
           setStep={setStep}
-          onBackToType={() => { setStep("type" as any); setReturnType(null); }}
+          onBackToType={() => { setStep("type"); setReturnType(null); }}
           saleFound={saleFound}
           setSaleFound={setSaleFound}
           foundSale={foundSale}

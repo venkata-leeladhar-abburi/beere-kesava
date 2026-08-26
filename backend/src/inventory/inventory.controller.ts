@@ -13,4 +13,12 @@ export class InventoryController {
   findAll() {
     return this.inventoryService.findAll();
   }
+
+  /** Stock physically standing in the shop — everything delivered by a SHOP
+   *  dispatch and not yet sold. Declared before no other :param route exists
+   *  here, but kept explicit so a future one cannot shadow it. */
+  @Get("shop")
+  findShopStock() {
+    return this.inventoryService.findShopStock();
+  }
 }

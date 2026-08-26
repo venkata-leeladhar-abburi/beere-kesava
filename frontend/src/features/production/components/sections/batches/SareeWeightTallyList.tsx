@@ -13,6 +13,7 @@ function TallyPhotoThumb({ url, sareeId, onView }: { url: string | null | undefi
       type="button"
       onClick={() => onView({ url, label: `Saree photo — ${sareeId ?? "unassigned"}` })}
       title="View saree photo"
+      aria-label={`View photo for saree ${sareeId ?? "unassigned"}`}
       style={{ width: 30, height: 30, borderRadius: 7, border: `1px solid ${T.borderDef}`, padding: 0, cursor: "pointer", backgroundImage: `url(${url})`, backgroundSize: "cover", backgroundPosition: "center", flexShrink: 0 }}
     />
   ) : (

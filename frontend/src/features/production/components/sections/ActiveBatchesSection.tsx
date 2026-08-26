@@ -9,11 +9,12 @@ import type { Batch, BatchStage, CodeCallbacks, WeaverRef } from "../types";
 import { FadeUp, ProductionDialog } from "../common/primitives";
 import { Button, Checkbox, SearchInput } from "../../../../shared/ui/primitives";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "../../../../shared/ui/overlay";
+import { LoadingState, ErrorState, EmptyState, FilteredEmptyState } from "../../../../shared/ui/state";
 import { BatchCardGrid, BatchListView, BatchTableView } from "./batches/BatchViews";
 import { rowComplete } from "./batches/ContextBatchCard";
 
 export function ActiveBatchesSection({ onNavigate, onOpenTally }: { onNavigate?: (tab: string) => void; onOpenTally?: (batchId: string) => void } & CodeCallbacks) {
-  const { batches, setPendingOpenBatchId } = useBatches();
+  const { batches, setPendingOpenBatchId, isLoading, isError, error, refetch } = useBatches();
   const contextBatches = batches.filter(b => b.status === "active" || b.status === "draft");
 
   const [view,   setView]   = useState("card");
@@ -217,10 +218,16 @@ export function ActiveBatchesSection({ onNavigate, onOpenTally }: { onNavigate?:
           <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 12 }}>
             Production Batches — {visible.length} batch{visible.length !== 1 ? "es" : ""}
           </div>
-          {visible.length === 0 ? (
-            <div style={{ padding: "40px", textAlign: "center", background: "#FFFFFF", borderRadius: 16, border: `1px dashed ${T.borderDef}`, color: T.taupe, fontFamily: F.ui }}>
-              No batches found matching the current filters.
-            </div>
+          {isLoading ? (
+            <LoadingState variant="skeleton" rows={4} />
+          ) : isError ? (
+            <ErrorState error={error} onRetry={refetch} />
+          ) : visible.length === 0 ? (
+            filter || search.trim() || !activeOnly ? (
+              <FilteredEmptyState onClearFilters={() => { setFilter(null); setSearch(""); setActiveOnly(true); }} />
+            ) : (
+              <EmptyState title="No active batches" description="Batches created here will show up as production progresses." />
+            )
           ) : (
             view === "card" ? <BatchCardGrid batches={visible} onView={handleViewBatch} onSlip={(batch) => setBatchDialog({ mode: "slip", batch })} onEdit={handleEditBatch} /> :
             view === "list" ? <BatchListView batches={visible} onView={handleViewBatch} onEdit={handleEditBatch} /> :

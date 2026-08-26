@@ -8,6 +8,7 @@ import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
 import { DateFilterBar, type DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../../shared/ui/DateFilterBar";
 import { Pagination, usePagination } from "../../../../../shared/ui/DataPagination";
 import { ImageZoomModal, type ZoomImage } from "../../../../../shared/ui/ImageZoomModal";
+import { LoadingState, ErrorState } from "../../../../../shared/ui/state";
 
 // ── Section C — Assignment History & Tracking ─────────────────────────────────
 
@@ -95,7 +96,7 @@ function StaffAssignmentsMobileList({ data, returns, onViewPhoto }: { data: Fini
 }
 
 export function SectionC({ isMobile }: { isMobile?: boolean }) {
-  const { assignments, returns } = useFinishing();
+  const { assignments, returns, isLoading, isError, error, refetch } = useFinishing();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
@@ -276,7 +277,11 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
         </div>
       )}
 
-      {rows.length === 0 ? (
+      {isLoading ? (
+        <LoadingState variant="skeleton" rows={4} />
+      ) : isError ? (
+        <ErrorState error={error} onRetry={refetch} />
+      ) : rows.length === 0 ? (
         <div style={{ padding: "24px 0", textAlign: "center", fontFamily: F.u, fontSize: 13, color: C.muted }}>
           {assignments.length === 0 ? "No finishing staff assignments yet." : "No results for selected filters."}
         </div>
@@ -287,7 +292,7 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
             const isOpen = expanded === r.name;
             return (
               <div key={r.name} style={{ border: `1.5px solid rgba(110,15,45,0.12)`, borderRadius: 16, overflow: "hidden", background: "#FFF", boxShadow: "0 2px 10px rgba(74,6,27,0.05)" }}>
-                <div onClick={() => setExpanded(isOpen ? null : r.name)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setExpanded(isOpen ? null : r.name); } }} style={{ padding: "14px 16px", cursor: "pointer", background: isOpen ? "rgba(110,15,45,0.03)" : "#FFF" }}>
+                <div onClick={() => setExpanded(isOpen ? null : r.name)} role="button" aria-label={`${isOpen ? "Collapse" : "Expand"} ${r.name}`} aria-expanded={isOpen} tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setExpanded(isOpen ? null : r.name); } }} style={{ padding: "14px 16px", cursor: "pointer", background: isOpen ? "rgba(110,15,45,0.03)" : "#FFF" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
                     <div>
                       <span style={{ fontFamily: F.u, fontSize: 15, fontWeight: 700, color: C.wine }}>{r.name}</span>

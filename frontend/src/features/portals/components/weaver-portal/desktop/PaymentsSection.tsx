@@ -13,6 +13,7 @@ import { useRatesPricing } from "@/features/pricing";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
 import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
+import { LoadingState, ErrorState } from "../../../../../shared/ui/state";
 
 /** Thin wrapper on the shared portal heading so this section matches admin,
  *  Worker Staff and the rest of the weaver portal. */
@@ -28,8 +29,8 @@ function DSectionHeader({ label, link, onLink }: { label: string; link?: string;
 export function PaymentsSection({ bp, isTablet }: { bp: "tablet" | "desktop"; isTablet: boolean }) {
   const { weaverId, weaverCode } = useCurrentWeaver();
   const { user } = useAuth();
-  const { getQcForWeaver } = useQc();
-  const { getPaymentsForWeaver } = useWeaverPayments();
+  const { getQcForWeaver, isLoading: qcLoading, isError: qcError, error: qcErrorObj, refetch: refetchQc } = useQc();
+  const { getPaymentsForWeaver, isLoading: paymentsLoading, isError: paymentsError, error: paymentsErrorObj, refetch: refetchPayments } = useWeaverPayments();
   const { batches } = useBatches();
   const { getSareeTypeByCode } = useRatesPricing();
 
@@ -180,7 +181,11 @@ export function PaymentsSection({ bp, isTablet }: { bp: "tablet" | "desktop"; is
             <DSectionHeader label="Charges by Saree Type" />
             <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginBottom: 22 }}>Your gross making charge this month, broken down by saree type — sarees × rate for that type.</div>
 
-            {chargesByType.length === 0 ? (
+            {qcLoading ? (
+              <LoadingState variant="skeleton" rows={3} />
+            ) : qcError ? (
+              <ErrorState error={qcErrorObj} onRetry={refetchQc} />
+            ) : chargesByType.length === 0 ? (
               <div style={{ background: C.cream, border: `1px solid ${C.bdr}`, borderRadius: 20, padding: "28px 24px", textAlign: "center" as const, marginBottom: 40 }}>
                 <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>No sarees QC'd yet this month.</div>
               </div>
@@ -201,7 +206,11 @@ export function PaymentsSection({ bp, isTablet }: { bp: "tablet" | "desktop"; is
             <DSectionHeader label="Deductions This Month" />
             <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginBottom: 22 }}>Amounts deducted from your gross making charges this month.</div>
 
-            {defectiveRecords.length === 0 ? (
+            {qcLoading ? (
+              <LoadingState variant="skeleton" rows={2} />
+            ) : qcError ? (
+              <ErrorState error={qcErrorObj} onRetry={refetchQc} />
+            ) : defectiveRecords.length === 0 ? (
               <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderLeft: `6px solid ${C.green}`, borderRadius: 20, padding: "24px 28px", boxShadow: "0 4px 20px rgba(44,24,16,0.08)", marginBottom: 40 }}>
                 <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 18, color: C.green }}>No Deductions Applied This Month</div>
                 <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginTop: 4 }}>You have a 100% clean quality inspection record for {monthName}.</div>
@@ -226,7 +235,11 @@ export function PaymentsSection({ bp, isTablet }: { bp: "tablet" | "desktop"; is
             )}
 
             <DSectionHeader label="Payment History" />
-            {myPayments.length === 0 ? (
+            {paymentsLoading ? (
+              <LoadingState variant="skeleton" rows={4} />
+            ) : paymentsError ? (
+              <ErrorState error={paymentsErrorObj} onRetry={refetchPayments} />
+            ) : myPayments.length === 0 ? (
               <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 20, padding: "32px 26px", textAlign: "center" as const }}>
                 <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>No payment records uploaded yet.</div>
               </div>

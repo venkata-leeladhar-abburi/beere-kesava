@@ -10,6 +10,7 @@ import { SectionCard, FadeUp } from "../common/primitives";
 import { rawMaterialsApi } from "../../../../shared/api/rawMaterials";
 import { materialIssuesApi } from "../../../../shared/api/material-issues";
 import { IconButton, Button } from "../../../../shared/ui/primitives";
+import { LoadingState, ErrorState } from "../../../../shared/ui/state";
 import { EntityCode } from "@/shared/ui/domain";
 import { exportTable, type ColumnDef } from "../../../../shared/ui/data";
 
@@ -71,12 +72,12 @@ export function MovementHistorySection({ onDownloadMovementReport }: { onDownloa
     }
   }
 
-  const { data: rawGrns } = useQuery({
+  const { data: rawGrns, isLoading: grnsLoading, isError: grnsError, refetch: refetchGrns } = useQuery({
     queryKey: ["grn-receipts"],
     queryFn: () => rawMaterialsApi.listGrns(),
   });
 
-  const { data: rawIssues } = useQuery({
+  const { data: rawIssues, isLoading: issuesLoading, isError: issuesError, refetch: refetchIssues } = useQuery({
     queryKey: ["material-issues"],
     queryFn: () => materialIssuesApi.list(100),
   });
@@ -85,6 +86,10 @@ export function MovementHistorySection({ onDownloadMovementReport }: { onDownloa
     queryKey: ["raw-material-stock"],
     queryFn: () => rawMaterialsApi.listStock(),
   });
+
+  const movementLoading = grnsLoading || issuesLoading;
+  const movementError = grnsError || issuesError;
+  const refetchMovement = () => { void refetchGrns(); void refetchIssues(); };
 
   const stats = useMemo(() => {
     const grns = rawGrns?.items ?? [];
@@ -254,7 +259,11 @@ export function MovementHistorySection({ onDownloadMovementReport }: { onDownloa
           </div>
 
           <div style={{ padding: "24px 28px 28px", display: "flex", flexDirection: "column", gap: 0 }}>
-            {stats.entries.length === 0 ? (
+            {movementLoading ? (
+              <LoadingState variant="skeleton" rows={4} />
+            ) : movementError ? (
+              <ErrorState error={undefined} onRetry={refetchMovement} />
+            ) : stats.entries.length === 0 ? (
               <div style={{ padding: "28px", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
                 No material movement entries recorded yet.
               </div>

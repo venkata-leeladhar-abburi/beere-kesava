@@ -48,14 +48,23 @@ function toVendor(v: BackendVendor): Vendor {
 export function VendorsPage() {
   const location = useLocation();
   const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [vendorsLoading, setVendorsLoading] = useState(true);
+  const [vendorsError, setVendorsError] = useState<unknown>(null);
   const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
   // Command palette "New Vendor" action deep-links here with ?new=1 to open
   // the add-vendor form straight away.
   const [showAddForm, setShowAddForm] = useState(() => new URLSearchParams(location.search).get("new") === "1");
 
-  useEffect(() => {
-    vendorsApi.list().then(res => setVendors(res.items.map(toVendor))).catch(() => setVendors([]));
+  const loadVendors = React.useCallback(() => {
+    setVendorsLoading(true);
+    setVendorsError(null);
+    vendorsApi.list()
+      .then(res => setVendors(res.items.map(toVendor)))
+      .catch(err => setVendorsError(err))
+      .finally(() => setVendorsLoading(false));
   }, []);
+
+  useEffect(() => { loadVendors(); }, [loadVendors]);
 
 
   const handleSave = async (v: Vendor) => {
@@ -114,6 +123,9 @@ export function VendorsPage() {
             vendors={vendors}
             onSelectVendor={setSelectedVendor}
             onAddClick={() => setShowAddForm(v => !v)}
+            loading={vendorsLoading}
+            error={vendorsError}
+            onRetry={loadVendors}
           />
         </>
       )}

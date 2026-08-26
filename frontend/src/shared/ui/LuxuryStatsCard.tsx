@@ -419,7 +419,7 @@ export function LuxuryStatsCard({ stats, className = "", style }: LuxuryStatsCar
       >
         {rows.map((row, rIdx) => (
           <div
-            key={rIdx}
+            key={row.map(s => s.label).join("|")}
             style={{
               display: "flex",
               borderBottom: rIdx < rows.length - 1 ? "1px solid rgba(245,232,208,0.12)" : "none",

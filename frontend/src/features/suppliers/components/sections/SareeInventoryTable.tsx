@@ -257,29 +257,40 @@ export function SareeInventoryTable({
                     <div key={p.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 8, padding: "8px 12px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                         {(p.imageUrl || onUploadPieceImage) && (
-                          <div style={{ position: "relative", width: 28, height: 28, flexShrink: 0 }}>
+                          <div style={{ position: "relative", width: 36, height: 36, flexShrink: 0 }}>
                             {p.imageUrl ? (
-                              <button type="button" onClick={() => setPreview(p.imageUrl!)} className="p-0 border-0 bg-transparent cursor-pointer">
+                              <button type="button" onClick={() => setPreview(p.imageUrl!)} title={`View photo of ${p.id}`} className="p-0 border-0 bg-transparent cursor-pointer">
                                 <img src={p.imageUrl} alt={p.id}
-                                  style={{ width: 28, height: 28, borderRadius: 6, objectFit: "cover", border: `1px solid ${T.borderDef}` }} />
+                                  style={{ width: 36, height: 36, borderRadius: 8, objectFit: "cover", border: `1px solid ${T.borderDef}` }} />
                               </button>
-                            ) : (
-                              <div style={{ width: 28, height: 28, borderRadius: 6, background: T.silkCream, border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                <ImageIcon size={11} color={T.taupe} />
-                              </div>
-                            )}
-                            {onUploadPieceImage && (
+                            ) : onUploadPieceImage ? (
+                              // No photo yet — the whole tile is the upload target, so the
+                              // designer isn't hunting for a 14px badge.
                               <button
                                 type="button"
                                 onClick={() => triggerPieceUpload(s, p.pieceNo)}
-                                title={p.imageUrl ? "Replace photo" : "Upload photo"}
+                                title={`Upload photo for ${p.id}`}
+                                style={{ width: 36, height: 36, borderRadius: 8, background: T.silkCream, border: `1px dashed ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0 }}
+                              >
+                                <Camera size={13} color={T.royalBurgundy} />
+                              </button>
+                            ) : (
+                              <div style={{ width: 36, height: 36, borderRadius: 8, background: T.silkCream, border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                <ImageIcon size={13} color={T.taupe} />
+                              </div>
+                            )}
+                            {onUploadPieceImage && p.imageUrl && (
+                              <button
+                                type="button"
+                                onClick={() => triggerPieceUpload(s, p.pieceNo)}
+                                title={`Replace photo for ${p.id}`}
                                 style={{
-                                  position: "absolute", bottom: -4, right: -4, width: 14, height: 14, borderRadius: "50%",
+                                  position: "absolute", bottom: -4, right: -4, width: 16, height: 16, borderRadius: "50%",
                                   background: T.royalBurgundy, border: "1.5px solid #FFF", display: "flex", alignItems: "center",
                                   justifyContent: "center", cursor: "pointer", padding: 0,
                                 }}
                               >
-                                <Camera size={7} color="#FFF" />
+                                <Camera size={8} color="#FFF" />
                               </button>
                             )}
                           </div>

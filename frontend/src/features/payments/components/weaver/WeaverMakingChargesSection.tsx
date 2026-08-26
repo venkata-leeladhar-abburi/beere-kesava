@@ -16,7 +16,7 @@ import { calcCharges, calcCompletedSarees, calcDeduction, calcNet, calcPaid } fr
 import { FadeUp } from "../common/motion";
 import { DropBtn, Pip, SectionCard, StatusBadge } from "../common/primitives";
 import { Button, Checkbox, SearchInput } from "../../../../shared/ui/primitives";
-import { exportTable, type ColumnDef } from "../../../../shared/ui/data";
+import { DataTable, exportTable, type ColumnDef } from "../../../../shared/ui/data";
 import { useDocument } from "../../../../shared/ui/document";
 import { BankUploadPanel } from "./BankUploadPanel";
 import { WeaverProductionSummaryPanel } from "./WeaverProductionSummaryPanel";
@@ -174,6 +174,81 @@ export function WeaverMakingChargesSection() {
     return matchSearch && matchVillage && matchStatus;
   });
 
+  // Declared for <DataTable> rather than hand-written <th>/<td> — the markup
+  // this replaced duplicated the header row, the zebra striping and the
+  // selection checkbox column that DataTable already owns.
+  const weaverColumns: ColumnDef<WeaverRecord>[] = [
+    {
+      id: "weaver", header: "Weaver", accessor: w => w.name, priority: 1, sortable: true,
+      cell: (_v, w) => (
+        <div className="flex items-center gap-3">
+          <Pip initials={w.initials || w.name} bg={w.bg} size={36} />
+          <div>
+            <div className="font-bold text-[14px] text-[#3B2314] whitespace-nowrap">{w.name}</div>
+            <div className="flex items-center gap-2 mt-1 whitespace-nowrap">
+              <EntityCode type="weaver" value={w.id} size="sm" className="whitespace-nowrap" />
+              <span className="text-[12px] text-[var(--text-tertiary)] shrink-0">📍 {w.village}</span>
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "completed", header: "Completed Sarees", accessor: w => calcCompletedSarees(w), priority: 2, sortable: true,
+      cell: (_v, w) => (
+        <>
+          <strong className="font-bold">{calcCompletedSarees(w)}</strong> sarees
+          {w.uploadedBatchNo && (
+            <div className="flex items-center gap-1.5 mt-0.5 text-[11px] text-[#6E0F2D] font-semibold flex-wrap">
+              Batch: <EntityCode type="batch" value={w.uploadedBatchNo} size="sm" className="break-all whitespace-normal" />
+              {w.uploadedLoomNumber ? <>· Loom: <EntityCode type="loom" value={w.uploadedLoomNumber} size="sm" className="break-all whitespace-normal" /></> : null}
+            </div>
+          )}
+        </>
+      ),
+    },
+    {
+      id: "gross", header: "Gross Charges", type: "currency", priority: 2, sortable: true,
+      accessor: w => calcCharges(w),
+      cell: (_v, w) => <Money value={rupees(calcCharges(w))} />,
+    },
+    {
+      id: "deductions", header: "Deductions", type: "currency", priority: 3, sortable: true,
+      accessor: w => calcDeduction(w),
+      cell: (_v, w) => <span className="text-[#C0392B]">−<Money value={rupees(calcDeduction(w))} /></span>,
+    },
+    {
+      id: "paid", header: "Amount Paid", type: "currency", priority: 3, sortable: true,
+      accessor: w => calcPaid(w),
+      cell: (_v, w) => (calcPaid(w) > 0
+        ? <span className="text-[#27AE60]">−<Money value={rupees(calcPaid(w))} /></span>
+        : "—"),
+    },
+    {
+      id: "balance", header: "Balance Due", type: "currency", priority: 1, sortable: true,
+      accessor: w => calcNet(w),
+      cell: (_v, w) => (
+        <span className="font-extrabold" style={{ color: w.status === "Paid" ? T.green : T.royalBurgundy }}>
+          <Money value={rupees(calcNet(w))} />
+        </span>
+      ),
+    },
+    {
+      id: "status", header: "Status", type: "status", align: "center", priority: 2, sortable: true,
+      accessor: w => w.status,
+      cell: (_v, w) => <StatusBadge status={w.status} />,
+    },
+    {
+      id: "actions", header: "Action", type: "actions", align: "center", priority: 1,
+      accessor: () => null,
+      cell: (_v, w) => (
+        <Button variant="secondary" size="sm" iconLeft={Eye} onClick={() => setSelWeaver(w)}>
+          Details
+        </Button>
+      ),
+    },
+  ];
+
   const toggleSelection = (id: string) => {
     setSelectedIds(prev => {
       const next = new Set(prev);
@@ -181,14 +256,6 @@ export function WeaverMakingChargesSection() {
       else next.add(id);
       return next;
     });
-  };
-
-  const toggleSelectAll = () => {
-    if (selectedIds.size === filtered.length) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(filtered.map(w => w.id)));
-    }
   };
 
   const downloadExcelTemplate = async () => {
@@ -508,89 +575,18 @@ export function WeaverMakingChargesSection() {
 
         {/* ── Table / List view ────────────────────────────────── */}
         {(view === "list" || view === "table") && (
-          <div className="overflow-x-auto w-full mb-8 rounded-xl border border-[#E8DCC4] bg-white shadow-sm">
-            <table className="w-full text-left border-collapse min-w-[1450px]">
-              <thead>
-                <tr className="bg-[#F7F2EA] border-b border-[#E8DCC4] text-[12px] font-bold text-[#3B2314] uppercase tracking-wider">
-                  <th className="py-3 px-4 w-10">
-                    <Checkbox
-                      checked={selectedIds.size > 0 && selectedIds.size === filtered.length}
-                      onCheckedChange={() => toggleSelectAll()}
-                    />
-                  </th>
-                  <th className="py-3 px-4 min-w-[420px]">Weaver</th>
-                  <th className="py-3 px-4 min-w-[180px]">Completed Sarees</th>
-                  <th className="py-3 px-4 text-right min-w-[140px]">Gross Charges</th>
-                  <th className="py-3 px-4 text-right min-w-[140px]">Deductions</th>
-                  <th className="py-3 px-4 text-right min-w-[140px]">Amount Paid</th>
-                  <th className="py-3 px-4 text-right min-w-[150px]">Balance Due</th>
-                  <th className="py-3 px-4 text-center min-w-[120px]">Status</th>
-                  <th className="py-3 px-4 text-center min-w-[120px]">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#E8DCC4]">
-                {filtered.map((w, i) => {
-                  const charges = calcCharges(w);
-                  const net = calcNet(w);
-                  const completedSarees = calcCompletedSarees(w);
-                  const deduction = calcDeduction(w);
-                  const amountPaid = calcPaid(w);
-                  return (
-                    <tr key={w.id} className={i % 2 === 0 ? "bg-[#FFFDF9]" : "bg-white"}>
-                      <td className="py-3 px-4">
-                        <Checkbox
-                          checked={selectedIds.has(w.id)}
-                          onCheckedChange={() => toggleSelection(w.id)}
-                        />
-                      </td>
-                      <td className="py-3 px-4 min-w-[420px]">
-                        <div className="flex items-center gap-3">
-                          <Pip initials={w.initials || w.name} bg={w.bg} size={36} />
-                          <div>
-                            <div className="font-bold text-[14px] text-[#3B2314] whitespace-nowrap">{w.name}</div>
-                            <div className="flex items-center gap-2 mt-1 whitespace-nowrap">
-                              <div className="w-[300px] min-w-[300px]">
-                                <EntityCode type="weaver" value={w.id} size="sm" className="whitespace-nowrap" />
-                              </div>
-                              <span className="text-[12px] text-[var(--text-tertiary)] shrink-0">📍 {w.village}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-3 px-4 text-[13px] text-[#3B2314]">
-                        <strong className="font-bold">{completedSarees}</strong> sarees
-                        {w.uploadedBatchNo && (
-                          <div className="flex items-center gap-1.5 mt-0.5 text-[11px] text-[#6E0F2D] font-semibold flex-wrap">
-                            Batch: <EntityCode type="batch" value={w.uploadedBatchNo} size="sm" className="break-all whitespace-normal" />
-                            {w.uploadedLoomNumber ? <>· Loom: <EntityCode type="loom" value={w.uploadedLoomNumber} size="sm" className="break-all whitespace-normal" /></> : null}
-                          </div>
-                        )}
-                      </td>
-                      <td className="py-3 px-4 text-right font-semibold text-[13px] text-[#3B2314] whitespace-nowrap">
-                        <Money value={rupees(charges)} />
-                      </td>
-                      <td className="py-3 px-4 text-right font-semibold text-[13px] text-[#C0392B] whitespace-nowrap">
-                        −<Money value={rupees(deduction)} />
-                      </td>
-                      <td className="py-3 px-4 text-right font-semibold text-[13px] text-[#27AE60] whitespace-nowrap">
-                        {amountPaid > 0 ? <>−<Money value={rupees(amountPaid)} /></> : "—"}
-                      </td>
-                      <td className="py-3 px-4 text-right font-extrabold text-[15px] whitespace-nowrap" style={{ color: w.status === "Paid" ? T.green : T.royalBurgundy }}>
-                        <Money value={rupees(net)} />
-                      </td>
-                      <td className="py-3 px-4 text-center whitespace-nowrap">
-                        <StatusBadge status={w.status} />
-                      </td>
-                      <td className="py-3 px-4 text-center whitespace-nowrap">
-                        <Button variant="secondary" size="sm" iconLeft={Eye} onClick={() => setSelWeaver(w)}>
-                          Details
-                        </Button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          <div className="overflow-x-auto w-full mb-8">
+            <div className="min-w-[1450px]">
+              <DataTable
+                columns={weaverColumns}
+                data={filtered}
+                getRowId={w => w.id}
+                caption="Weaver making charges"
+                selectedIds={selectedIds}
+                onSelectionChange={setSelectedIds}
+                emptyTitle="No weavers match your filters"
+              />
+            </div>
           </div>
         )}
         </>

@@ -124,6 +124,8 @@ interface QcContextValue {
   getQcForLoom: (factoryLoomId: string) => QcRecord[];
   isError: boolean;
   error: unknown;
+  isLoading: boolean;
+  refetch: () => void;
 }
 
 const QcContext = createContext<QcContextValue | null>(null);
@@ -174,7 +176,7 @@ export function QcProvider({ children }: { children: React.ReactNode }) {
   const canReadFactoryLooms = role === "worker" || role === "admin" || role === "superadmin";
   const { getSareeTypeByCode } = useRatesPricing();
 
-  const { data: qcRecords = [], isError, error } = useQuery({
+  const { data: qcRecords = [], isError, error, isLoading, refetch } = useQuery({
     queryKey: QUERY_KEY,
     queryFn: async () => {
       const [qcRes, weaversRes, loomsRes, batchesRes] = await Promise.all([
@@ -235,7 +237,7 @@ export function QcProvider({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <QcContext.Provider value={{ qcRecords, recordQc, getQcForSaree, getQcForWeaver, getQcForLoom, isError, error }}>
+    <QcContext.Provider value={{ qcRecords, recordQc, getQcForSaree, getQcForWeaver, getQcForLoom, isError, error, isLoading, refetch: () => void refetch() }}>
       {children}
     </QcContext.Provider>
   );
@@ -249,6 +251,8 @@ const FALLBACK: QcContextValue = {
   getQcForLoom: () => [],
   isError: false,
   error: null,
+  isLoading: false,
+  refetch: () => {},
 };
 
 export function useQc(): QcContextValue {

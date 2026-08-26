@@ -23,6 +23,7 @@ import {
   Bell, Calendar, Filter, LogOut, UserRound, Loader2,
   Palette, UserCircle2, Building2, Wrench, IdCard,
   FileSignature, ClipboardList, PackageCheck, Truck, ShoppingCart,
+  WifiOff, ShieldAlert, TimerOff,
   type LucideIcon,
 } from "lucide-react";
 
@@ -59,6 +60,9 @@ export const Icons = {
   check: Check,
   minus: Minus,
   spinner: Loader2,
+  offline: WifiOff,
+  accessDenied: ShieldAlert,
+  sessionExpired: TimerOff,
 
   // chrome
   notification: Bell,

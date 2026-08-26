@@ -112,7 +112,7 @@ export function Empty({ msg }: { msg: string }) {
   return (
     <div style={{ padding: "48px 24px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
       <Package size={44} color={T.taupe} style={{ opacity: 0.45, marginBottom: 12 }} />
-      <div style={{ fontFamily: F.display, fontSize: 16, color: T.taupe, maxWidth: 360, margin: "0 auto" }}>{msg}</div>
+      <div className="max-w-[360px]" style={{ fontFamily: F.display, fontSize: 16, color: T.taupe, margin: "0 auto" }}>{msg}</div>
     </div>
   );
 }

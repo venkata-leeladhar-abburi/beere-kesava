@@ -2,11 +2,12 @@
 
 import React from "react";
 import { Plus, Building2 } from "lucide-react";
-import { T, F } from "../theme";
+import { T } from "../theme";
 import { FadeUp, SectionCard } from "../common/primitives";
 import { Supplier, useSuppliers } from "../../contexts/SupplierContext";
 import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { SupplierCard, type SupplierCardProps } from "@/shared/ui/domain";
+import { LoadingState, ErrorState, EmptyState, FilteredEmptyState } from "../../../../shared/ui/state";
 import { rupees } from "@/lib/domain/money";
 
 // SupplierCard's shared taxonomy is person-only (design-system/06-DOMAIN.md
@@ -34,7 +35,7 @@ export function SupplierDirectorySection({
   onAddSupplier: () => void;
   onViewSupplier: (s: Supplier) => void;
 }) {
-  const { statsFor } = useSuppliers();
+  const { statsFor, isLoading, isError, error, refetch } = useSuppliers();
   return (
     <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 48 }}>
       <FadeUp>
@@ -72,6 +73,11 @@ export function SupplierDirectorySection({
           </div>
         </div>
 
+        {isLoading ? (
+          <LoadingState variant="skeleton" rows={4} />
+        ) : isError ? (
+          <ErrorState error={error} onRetry={refetch} />
+        ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {filtered.map((s, i) => {
             const stats = statsFor(s.id);
@@ -91,12 +97,16 @@ export function SupplierDirectorySection({
             );
           })}
           {filtered.length === 0 && (
-            <div style={{ gridColumn: "1 / -1", background: "#FFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, padding: "60px 24px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
-              <Building2 size={44} color={T.taupe} style={{ marginBottom: 12 }} />
-              <div style={{ fontFamily: F.display, fontSize: 18, color: T.taupe }}>No suppliers match your search or filter.</div>
+            <div style={{ gridColumn: "1 / -1" }}>
+              {search.trim() || statusFilter !== "All" || ratingFilter !== "All Ratings" ? (
+                <FilteredEmptyState onClearFilters={() => { setSearch(""); setStatusFilter("All"); setRatingFilter("All Ratings"); }} />
+              ) : (
+                <EmptyState title="No suppliers yet" description="Suppliers added here will show up in purchases and payments." />
+              )}
             </div>
           )}
         </div>
+        )}
       </SectionCard>
       </FadeUp>
     </div>

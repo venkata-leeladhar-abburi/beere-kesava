@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, UserRound, ShoppingBag, MapPin, CreditCard, TrendingUp } from "lucide-react";
+import { ChevronLeft, UserRound, ShoppingBag, MapPin, CreditCard } from "lucide-react";
 import { DateFilterBar, DateFilterState, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { T, F } from "../theme";
 import { RetailCustomer } from "../types";
@@ -11,8 +11,8 @@ import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
 import { salesApi } from "../../../../shared/api/sales";
 import { useRatesPricing } from "@/features/pricing";
-import { BG_IMAGE } from "@/features/portals/components/weaver-portal/WeaverBatchNotifData";
-import { SectionCard } from "@/features/weavers/components/common/primitives";
+import { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
+import { SectionCard } from "@/shared/ui/SectionCard";
 
 interface RetailPurchaseRow {
   date: string;

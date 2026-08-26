@@ -3,17 +3,15 @@ import { C, F } from "./theme";
 import { MobileNav, type MobileNavItem } from "../../../../shared/ui/nav/MobileNav";
 import { Home, ShoppingBag, Package, Users, RotateCcw } from "lucide-react";
 
-type TabId = "home" | "sale" | "inventory" | "customers" | "reports" | "return";
-
 export function MobileTabBar({
   active, showReturn, setActive, setShowReturn,
 }: {
   active: string;
   showReturn: boolean;
-  setActive: (tab: any) => void;
+  setActive: (tab: "home" | "sale" | "inventory" | "customers") => void;
   setShowReturn: (v: boolean) => void;
 }) {
-  const MOBILE_TABS = [
+  const MOBILE_TABS: { id: "home" | "sale" | "inventory" | "customers" | "return"; label: string; icon: React.ReactNode }[] = [
     { id: "home", label: "Home", icon: <Home size={20} /> },
     { id: "sale", label: "New Sale", icon: <ShoppingBag size={20} /> },
     { id: "inventory", label: "Inventory", icon: <Package size={20} /> },

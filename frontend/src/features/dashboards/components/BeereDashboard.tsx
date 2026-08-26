@@ -8,7 +8,7 @@ import { WorkerGRN, INITIAL_HISTORY as GRN_INITIAL_HISTORY } from "@/features/po
 import type { ReceiptRecord } from "@/features/portals";
 import { useQuery } from "@tanstack/react-query";
 import { rawMaterialsApi } from "../../../shared/api/rawMaterials";
-import { BG_IMAGE } from "@/features/portals/components/weaver-portal/WeaverBatchNotifData";
+import { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
 
 // Lazily loaded so the initial dashboard bundle doesn't pay for every tab's
 // page — only the active tab's chunk is fetched, on first navigation to it.
@@ -68,6 +68,7 @@ const SuppliersPage = lazy(() => import("../../suppliers/components/SuppliersPag
 const FactoryLoomPage = lazy(() => import("../../production/components/FactoryLoomPage").then(m => ({ default: m.FactoryLoomPage })));
 
 import { TabLoadingFallback } from './TabLoadingFallback';
+import { ErrorBoundary } from '../../../components/ErrorBoundary';
 import {
   SectionNavigator, PAGE_SECTIONS, SECTION_NAV_GLOBAL_STYLE,
   MOBILE_NAV_H,
@@ -197,6 +198,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
       {PAGE_SECTIONS[mobileTab] && (
         <SectionNavigator sections={PAGE_SECTIONS[mobileTab]} stickyTop={MOBILE_NAV_H} padding="0 18px" />
       )}
+      <ErrorBoundary variant="inline" resetKeys={[mobileTab]}>
       <Suspense fallback={<TabLoadingFallback />}>
       {mobileTab === "Overview" ? (
         <>
@@ -346,10 +348,12 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
         <FirmsPage />
       ) : null}
       </Suspense>
+      </ErrorBoundary>
     </div>
   ) : (
     <div id="main-content" style={{ width: "100%", minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui }}>
       <TopNav active={nav} set={navigate} onBack={onBack} onLogout={handleLogout} sections={PAGE_SECTIONS[nav]} onProfile={() => setShowProfileModal(true)} />
+      <ErrorBoundary variant="inline" resetKeys={[nav]}>
       <Suspense fallback={<TabLoadingFallback />}>
       {nav === "Materials" ? (
         <MaterialsPage onNavigate={navigate} />
@@ -506,6 +510,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
         </>
       )}
       </Suspense>
+      </ErrorBoundary>
     </div>
   );
 
