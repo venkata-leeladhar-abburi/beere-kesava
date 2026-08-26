@@ -58,10 +58,11 @@ export function RecipientSelector({
                 placeholder="Search weaver by name or ID…" size="lg" />
             </div>
             {showWeaverList && (
-              <div style={{ position: "absolute" as const, top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 9999, background: "#FFF", border: "1px solid rgba(110,15,45,0.14)", borderRadius: 10, boxShadow: "0 10px 30px rgba(74,6,27,0.12)", overflow: "hidden" }}>
+              <div style={{ position: "absolute" as const, top: "calc(100% + 4px)", left: 0, right: 0, zIndex: "var(--z-dropdown)", background: "#FFF", border: "1px solid rgba(110,15,45,0.14)", borderRadius: 10, boxShadow: "0 10px 30px rgba(74,6,27,0.12)", overflow: "hidden" }}>
                 <div style={{ padding: 8, borderBottom: `1px solid ${T.borderDef}` }}>
                   <SearchInput
                     aria-label="Filter weaver search"
+                    // eslint-disable-next-line jsx-a11y/no-autofocus -- popover opens on user action; focusing the search box it contains is expected keyboard behavior
                     autoFocus
                     value={weaverSearch}
                     onChange={e => setWeaverSearch(e.target.value)}

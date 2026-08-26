@@ -12,7 +12,7 @@ import type {
   FirmDocument, FirmPayment, FirmDocumentType, FirmActivityStatus,
 } from "../../../shared/api/firms";
 import { T, F } from "./theme";
-import { fmtFull, initials, cardColor } from "./utils";
+import { fmtFull, initials } from "./utils";
 import { FinSection, MiscSection } from "./FirmFinanceSections";
 import { Button, Select, SelectItem, StatusPill, type StatusTone } from "../../../shared/ui/primitives";
 import { LoadingState, ErrorState, EmptyState } from "../../../shared/ui/state";
@@ -356,7 +356,9 @@ export function FirmDetailPage({ firm, onBack, onEdit, onGoToPayments }: {
                       REGISTERED FIRM
                     </span>
                     {firm.gstNumber && (
-                      <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.75)", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 99, padding: "2px 10px" }}>
+                      <span
+                        // eslint-disable-next-line no-restricted-syntax -- GSTIN is a government tax id, not one of lib/domain/codes' entity types, so <EntityCode> cannot model it
+                        style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.75)", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 99, padding: "2px 10px" }}>
                         GST: {firm.gstNumber}
                       </span>
                     )}

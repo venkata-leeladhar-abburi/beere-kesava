@@ -39,6 +39,7 @@ function LineRow({ line, selectable, selected, onSelect }: {
       }}
     >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
+        {/* eslint-disable-next-line no-restricted-syntax -- raw-material item code; not one of lib/domain/codes' entity types, so <EntityCode> cannot model it */}
         <span style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: selected ? "#2C0913" : T.royalBurgundy }}>{line.itemCode}</span>
         <span style={{ fontFamily: F.ui, fontSize: 11.5, fontWeight: 700, color: depleted ? T.crimson : T.green, whiteSpace: "nowrap" }}>
           {depleted ? "none left" : `${fmt(line.availableQty)} ${line.unit} left`}
@@ -178,7 +179,7 @@ export function GrnBatchSelector({ grnBatches, materialType, value, selectedLine
           </button>
 
           {open && (
-            <div style={{ position: "absolute" as const, top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 9999, background: "#FFF", border: "1px solid rgba(110,15,45,0.14)", borderRadius: 10, boxShadow: "0 10px 30px rgba(74,6,27,0.12)", overflow: "hidden" }}>
+            <div style={{ position: "absolute" as const, top: "calc(100% + 4px)", left: 0, right: 0, zIndex: "var(--z-dropdown)", background: "#FFF", border: "1px solid rgba(110,15,45,0.14)", borderRadius: 10, boxShadow: "0 10px 30px rgba(74,6,27,0.12)", overflow: "hidden" }}>
               <div style={{ padding: 8, borderBottom: `1px solid ${T.borderDef}` }}>
                 <SearchInput
                   aria-label="Scan barcode, or search GRN, item code, or vendor"

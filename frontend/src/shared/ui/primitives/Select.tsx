@@ -59,13 +59,20 @@ export function Select({
   onValueChange,
   onChange,
   disabled,
-  id: idProp,
+<<<<<<< HEAD
+  id,
   name,
   align = "end",
 }: SelectProps) {
   const field = useFieldContext();
   const invalid = invalidProp ?? field?.invalid ?? false;
-  const id = idProp ?? field?.inputId;
+  // Same Field wiring as Input/Textarea (see Field.tsx: "Consumed by
+  // Input/Textarea/Select etc. so they never need their own id logic").
+  // Without it the trigger keeps Radix's own generated id and every
+  // <Field label> renders an htmlFor pointing at nothing, leaving the
+  // control unlabelled for screen readers.
+  const resolvedId = id ?? field?.inputId;
+  const describedBy = field ? (invalid ? field.errorId : field.hintId) : undefined;
   const [internalValue, setInternalValue] = React.useState<string>(defaultValue || "");
   const value = valueProp !== undefined ? valueProp : internalValue;
 
@@ -97,10 +104,15 @@ export function Select({
       React.Children.forEach(nodes, node => {
         if (!node) return;
         if (React.isValidElement(node)) {
-          if (node.props && (node.props as any).value !== undefined) {
-            map.set(String((node.props as any).value), (node.props as any).children);
-          } else if ((node.props as any)?.children) {
-            extract((node.props as any).children);
+          // Only these two fields are probed — a <SelectItem> contributes its
+          // value/label pair, anything else (a fragment, a wrapper) is
+          // recursed into. Narrowed to that shape rather than `any` so a
+          // typo in either field name is still a compile error here.
+          const props = (node.props ?? {}) as { value?: string; children?: React.ReactNode };
+          if (props.value !== undefined) {
+            map.set(String(props.value), props.children);
+          } else if (props.children) {
+            extract(props.children);
           }
         }
       });
@@ -125,8 +137,11 @@ export function Select({
       <DropdownMenu open={open} onOpenChange={setOpen}>
         <div className={cn("relative inline-flex items-center shrink-0", containerClassName || (className?.includes("w-full") ? "w-full" : "w-auto shrink-0"))}>
           <DropdownMenuTrigger
-            id={id}
+            id={resolvedId}
             disabled={disabled}
+            aria-invalid={invalid || undefined}
+            aria-describedby={describedBy}
+            aria-required={field?.required || undefined}
             className={cn(
               "appearance-none flex items-center justify-between font-semibold rounded-[10px] border transition-all cursor-pointer truncate outline-none select-none",
               className?.includes("w-full") ? "w-full" : "w-auto shrink-0 min-w-fit",
@@ -175,7 +190,7 @@ export const SelectItem = React.forwardRef<HTMLDivElement, SelectItemProps>(
 
     return (
       <DropdownMenuItem
-        ref={ref as any}
+        ref={ref}
         disabled={disabled}
         active={isSelected}
         onClick={() => ctx?.onSelect(value, children)}
