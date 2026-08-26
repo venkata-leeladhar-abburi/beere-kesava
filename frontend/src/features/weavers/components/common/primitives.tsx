@@ -19,9 +19,20 @@ export function FadeUp({ children, delay = 0, style = {} }: { children: React.Re
     </motion.div>
   );
 }
-export function Avatar({ photo, initials, bg, size = 44 }: { photo: string | null; initials: string; bg: string; size?: number }) {
+export function getTwoLetterInitials(nameOrInitials?: string): string {
+  if (!nameOrInitials) return "";
+  const parts = nameOrInitials.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "";
+  if (parts.length > 1) {
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  return parts[0].slice(0, 2).toUpperCase();
+}
+
+export function Avatar({ photo, initials, name, bg, size = 44 }: { photo: string | null; initials?: string; name?: string; bg: string; size?: number }) {
   const [imgError, setImgError] = React.useState(false);
   const showPhoto = photo && !imgError;
+  const displayInitials = getTwoLetterInitials(name || initials);
 
   return (
     <div style={{ width: size, height: size, borderRadius: "50%", overflow: "hidden", flexShrink: 0, border: `2px solid ${T.borderGold}` }}>
@@ -29,13 +40,13 @@ export function Avatar({ photo, initials, bg, size = 44 }: { photo: string | nul
         // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-load event, not a user interaction; it drives the initials fallback when the photo 404s.
         <img
           src={photo}
-          alt={initials}
+          alt={displayInitials}
           onError={() => setImgError(true)}
           style={{ width: "100%", height: "100%", objectFit: "cover" }}
         />
       ) : (
         <div style={{ width: "100%", height: "100%", background: bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <span style={{ fontFamily: F.display, fontSize: size * 0.38, fontWeight: 700, color: "#FFFDF9" }}>{initials}</span>
+          <span style={{ fontFamily: F.display, fontSize: size * 0.38, fontWeight: 700, color: "#FFFDF9" }}>{displayInitials}</span>
         </div>
       )}
     </div>

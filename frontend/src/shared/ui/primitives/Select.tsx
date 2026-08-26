@@ -1,126 +1,213 @@
 /**
  * Select — design-system/03-PRIMITIVES.md Part H.
  * ═══════════════════════════════════════════════════════════════════════════
- * Built with clean native select for 100% reliable touch & mobile picker
- * support without body-scroll locking or window scroll jump bugs.
+ * Rebuilt using Radix DropdownMenu so all selects and filter dropdowns
+ * render custom styled popovers with rounded corners, warm cream highlights,
+ * and dark luxury text across all browsers and devices.
  */
 import * as React from "react";
+import { ChevronDown } from "lucide-react";
 import { cn } from "../utils";
 import { useFieldContext } from "./Field";
-import { Icon } from "./Icon";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "../overlay/DropdownMenu";
 
 const SIZE_CLASS = {
-  sm: "h-8 text-[13px] pl-3 pr-8",
-  md: "h-10 text-[13px] sm:text-[14px] pl-3.5 pr-8.5",
-  lg: "h-12 text-[16px] pl-4 pr-10",
+  sm: "h-8.5 text-[13px] px-3 gap-2",
+  md: "h-10 text-[13.5px] px-3.5 gap-2.5",
+  lg: "h-12 text-[15px] px-4 gap-3",
 } as const;
 
-export interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "size" | "onChange"> {
+interface SelectContextValue {
+  value?: string;
+  onSelect: (val: string, label: React.ReactNode) => void;
+  registerItem: (val: string, label: React.ReactNode) => void;
+}
+
+const SelectContext = React.createContext<SelectContextValue | null>(null);
+
+export interface SelectProps {
   size?: "sm" | "md" | "lg";
   placeholder?: string;
   invalid?: boolean;
   className?: string;
   containerClassName?: string;
   value?: string;
+  defaultValue?: string;
   onValueChange?: (value: string) => void;
-  onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  onChange?: (e: { target: { value: string; name?: string } }) => void;
   children: React.ReactNode;
+  disabled?: boolean;
+  id?: string;
+  name?: string;
+  align?: "start" | "center" | "end";
 }
 
 export function Select({
   size = "md",
-  placeholder,
+  placeholder = "Select...",
   invalid: invalidProp,
   className,
   containerClassName,
   children,
-  value,
-  onValueChange,
+  value: valueProp,
   defaultValue,
-  disabled,
+  onValueChange,
   onChange,
-  ...props
+  disabled,
+  name,
+  align = "end",
 }: SelectProps) {
   const field = useFieldContext();
   const invalid = invalidProp ?? field?.invalid ?? false;
-  const describedBy = field ? (invalid ? field.errorId : field.hintId) : undefined;
+  const [internalValue, setInternalValue] = React.useState<string>(defaultValue || "");
+  const value = valueProp !== undefined ? valueProp : internalValue;
 
-  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    onChange?.(e);
-    onValueChange?.(e.target.value);
-  };
+  const [itemsMap, setItemsMap] = React.useState<Map<string, React.ReactNode>>(() => new Map());
+  const [open, setOpen] = React.useState(false);
 
-  const defaultContainerClass = className?.includes("w-auto") ? "w-auto shrink-0" : "w-full";
+  const registerItem = React.useCallback((val: string, label: React.ReactNode) => {
+    setItemsMap(prev => {
+      if (prev.get(val) === label) return prev;
+      const next = new Map(prev);
+      next.set(val, label);
+      return next;
+    });
+  }, []);
+
+  const handleSelect = React.useCallback((val: string) => {
+    if (valueProp === undefined) {
+      setInternalValue(val);
+    }
+    onValueChange?.(val);
+    onChange?.({ target: { value: val, name } });
+    setOpen(false);
+  }, [valueProp, onValueChange, onChange, name]);
+
+  // Synchronously parse React.Children to extract value -> label mapping on render
+  const childrenMap = React.useMemo(() => {
+    const map = new Map<string, React.ReactNode>();
+    const extract = (nodes: React.ReactNode) => {
+      React.Children.forEach(nodes, node => {
+        if (!node) return;
+        if (React.isValidElement(node)) {
+          if (node.props && (node.props as any).value !== undefined) {
+            map.set(String((node.props as any).value), (node.props as any).children);
+          } else if ((node.props as any)?.children) {
+            extract((node.props as any).children);
+          }
+        }
+      });
+    };
+    extract(children);
+    return map;
+  }, [children]);
+
+  const contextValue = React.useMemo<SelectContextValue>(
+    () => ({
+      value,
+      onSelect: handleSelect,
+      registerItem,
+    }),
+    [value, handleSelect, registerItem]
+  );
+
+  const activeLabel = childrenMap.get(value ?? "") ?? itemsMap.get(value ?? "") ?? (value ? String(value) : placeholder);
 
   return (
-    <div className={cn("relative inline-flex items-center", containerClassName || defaultContainerClass)}>
-      <select
-        id={field?.inputId}
-        value={value}
-        defaultValue={defaultValue}
-        disabled={disabled}
-        onChange={handleChange}
-        aria-invalid={invalid || undefined}
-        aria-describedby={describedBy}
-        aria-required={field?.required || undefined}
-        className={cn(
-          "w-full appearance-none flex items-center justify-between gap-2 rounded-[10px] border transition-colors cursor-pointer truncate",
-          "duration-[var(--duration-fast)] ease-[var(--ease-standard)]",
-          "bg-[var(--surface-raised)] text-[var(--text-primary)] font-medium",
-          invalid ? "border-[var(--border-danger)]" : "border-[var(--border-default)]",
-          "hover:border-[var(--border-strong)]",
-          "focus-visible:outline-none focus-visible:border-[var(--border-focus)] focus-visible:shadow-[var(--shadow-focus)]",
-          "disabled:opacity-50 disabled:cursor-not-allowed",
-          SIZE_CLASS[size],
-          className
-        )}
-        {...props}
-      >
-        {placeholder && <option value="" disabled hidden>{placeholder}</option>}
-        {children}
-      </select>
-      <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center justify-center">
-        <Icon name="expandDown" size="sm" className="text-[var(--text-tertiary)]" />
-      </div>
-    </div>
+    <SelectContext.Provider value={contextValue}>
+      <DropdownMenu open={open} onOpenChange={setOpen}>
+        <div className={cn("relative inline-flex items-center shrink-0", containerClassName || (className?.includes("w-full") ? "w-full" : "w-auto shrink-0"))}>
+          <DropdownMenuTrigger
+            disabled={disabled}
+            className={cn(
+              "appearance-none flex items-center justify-between font-semibold rounded-[10px] border transition-all cursor-pointer truncate outline-none select-none",
+              className?.includes("w-full") ? "w-full" : "w-auto shrink-0 min-w-fit",
+              "bg-white text-[#3B2314] border-[rgba(110,15,45,0.18)] shadow-xs",
+              "hover:border-[rgba(110,15,45,0.35)] hover:bg-[#FDF8F0]/50",
+              "focus-visible:border-[var(--bk-gold-500)] focus-visible:ring-2 focus-visible:ring-[rgba(200,155,71,0.25)]",
+              invalid && "border-[var(--border-danger)]",
+              disabled && "opacity-50 cursor-not-allowed pointer-events-none",
+              SIZE_CLASS[size],
+              className
+            )}
+          >
+            <span className="truncate flex-1 text-left">{activeLabel}</span>
+            <ChevronDown className={cn("size-4 shrink-0 transition-transform duration-200 text-[#3B2314]/70", open && "rotate-180")} />
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent
+            align={align}
+            sideOffset={6}
+            className="min-w-[180px] max-h-[300px] rounded-[10px] p-0 overflow-hidden bg-white border border-[rgba(110,15,45,0.14)] shadow-[0_10px_30px_rgba(74,6,27,0.12)]"
+          >
+            {children}
+          </DropdownMenuContent>
+        </div>
+      </DropdownMenu>
+    </SelectContext.Provider>
   );
 }
 
-export interface SelectItemProps extends React.OptionHTMLAttributes<HTMLOptionElement> {
+export interface SelectItemProps {
   value: string;
   children: React.ReactNode;
+  disabled?: boolean;
+  className?: string;
 }
 
-export const SelectItem = React.forwardRef<HTMLOptionElement, SelectItemProps>(
-  function SelectItem({ className, children, value, disabled, ...props }, ref) {
+export const SelectItem = React.forwardRef<HTMLDivElement, SelectItemProps>(
+  function SelectItem({ className, children, value, disabled }, ref) {
+    const ctx = React.useContext(SelectContext);
+
+    React.useEffect(() => {
+      ctx?.registerItem(value, children);
+    }, [ctx, value, children]);
+
+    const isSelected = ctx?.value === value;
+
     return (
-      <option
-        ref={ref}
-        value={value}
+      <DropdownMenuItem
+        ref={ref as any}
         disabled={disabled}
-        className={cn("bg-white text-[var(--text-primary)] py-1 px-2", className)}
-        {...props}
+        active={isSelected}
+        onClick={() => ctx?.onSelect(value, children)}
+        className={cn(
+          "h-11 px-4 text-[14px] font-medium cursor-pointer transition-colors border-b border-[rgba(110,15,45,0.04)] last:border-b-0",
+          isSelected
+            ? "bg-[#F8EFE0] font-semibold text-[#2C0913]"
+            : "bg-white text-[#3B2314] hover:bg-[#F9F0E1]/70 hover:text-[#2C0913]",
+          className
+        )}
       >
-        {children}
-      </option>
+        <span className="truncate">{children}</span>
+      </DropdownMenuItem>
     );
   }
 );
 
 export function SelectGroup({ children, label, className }: { children: React.ReactNode; label?: string; className?: string }) {
   return (
-    <optgroup label={label || ""} className={cn("font-semibold text-[var(--text-secondary)]", className)}>
+    <div className={cn("py-1", className)}>
+      {label && <div className="px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[var(--text-tertiary)]">{label}</div>}
       {children}
-    </optgroup>
+    </div>
   );
 }
 
 export function SelectLabel({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <optgroup label={typeof children === "string" ? children : ""} className={cn("font-semibold text-[var(--text-secondary)]", className)} />
+    <div className={cn("px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[var(--text-tertiary)]", className)}>
+      {children}
+    </div>
   );
 }
 
 export function SelectSeparator() {
-  return null;
+  return <div className="my-0.5 h-px bg-[rgba(110,15,45,0.08)]" />;
 }
+

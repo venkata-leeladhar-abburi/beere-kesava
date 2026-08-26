@@ -62,30 +62,67 @@ const tdMono: React.CSSProperties = { ...td, fontFamily: "var(--font-mono)", fon
 function buildAssignmentColumns(returns: FinishingReturn[], onViewPhoto: (image: ZoomImage) => void): ColumnDef<FinishingAssignment>[] {
   const findRet = (a: FinishingAssignment) => returns.find(rt => rt.sareeId === a.sareeId);
   return [
-    { id: "sareeCode", header: "Saree Code", accessor: a => a.sareeId, priority: 1, cell: (_v, a) => <span style={{ ...tdMono, wordBreak: "break-all" }}>{a.sareeId}</span> },
     {
-      id: "quotation", header: "Quotation", accessor: a => a.quotationRef,
+      id: "sareeCode",
+      header: "Saree Code",
+      accessor: a => a.sareeId,
+      priority: 1,
+      width: 170,
+      cell: (_v, a) => <span style={{ ...tdMono, whiteSpace: "nowrap" }}>{a.sareeId}</span>,
+    },
+    {
+      id: "quotation",
+      header: "Quotation",
+      accessor: a => a.quotationRef,
+      width: 165,
       cell: (_v, a) => a.quotationRef ? (
         <Pill
           label={a.quotationRef}
           color="#8B6018"
           bg="rgba(200,146,58,0.14)"
-          allowBreak
         />
       ) : <span style={{ color: T.taupe, fontSize: 12 }}>—</span>,
     },
-    { id: "sareeType", header: "Saree Type", accessor: a => a.sareeType, cell: (_v, a) => <span style={td}>{a.sareeTypeCode ? `${a.sareeTypeCode} · ` : ""}{a.sareeType}</span> },
-    { id: "weaver", header: "Weaver", accessor: a => a.weaverName, cell: (_v, a) => <span style={td}>{a.weaverName}</span> },
-    { id: "assignedOn", header: "Assigned On", accessor: a => a.assignedDate, cell: (_v, a) => <span style={td}>{formatDisplayDate(a.assignedDate)}</span> },
-    { id: "assignedBy", header: "Assigned By", accessor: a => a.assignedBy, priority: 3, cell: (_v, a) => <span style={td}>{a.assignedBy}</span> },
     {
-      id: "returnStatus", header: "Return Status", accessor: a => findRet(a)?.condition,
+      id: "sareeType",
+      header: "Saree Type",
+      accessor: a => a.sareeType,
+      width: 180,
+      cell: (_v, a) => <span style={{ ...td, whiteSpace: "nowrap" }}>{a.sareeTypeCode ? `${a.sareeTypeCode} · ` : ""}{a.sareeType}</span>,
+    },
+    {
+      id: "weaver",
+      header: "Weaver",
+      accessor: a => a.weaverName,
+      width: 140,
+      cell: (_v, a) => <span style={{ ...td, whiteSpace: "nowrap" }}>{a.weaverName}</span>,
+    },
+    {
+      id: "assignedOn",
+      header: "Assigned On",
+      accessor: a => a.assignedDate,
+      width: 120,
+      cell: (_v, a) => <span style={{ ...td, whiteSpace: "nowrap" }}>{formatDisplayDate(a.assignedDate)}</span>,
+    },
+    {
+      id: "assignedBy",
+      header: "Assigned By",
+      accessor: a => a.assignedBy,
+      priority: 3,
+      width: 140,
+      cell: (_v, a) => <span style={{ ...td, whiteSpace: "nowrap" }}>{a.assignedBy}</span>,
+    },
+    {
+      id: "returnStatus",
+      header: "Return Status",
+      accessor: a => findRet(a)?.condition,
+      width: 200,
       cell: (_v, a) => {
         const ret = findRet(a);
         return !ret ? (
           <Pill label="Awaiting Return" color={T.orange} bg="rgba(230,126,34,0.12)" />
         ) : (
-          <div>
+          <div style={{ whiteSpace: "nowrap" }}>
             <Pill
               label={ret.condition === "perfect" ? "Received · Perfect" : `Received · Damaged${ret.damageSeverity ? ` (${ret.damageSeverity})` : ""}`}
               color={ret.condition === "perfect" ? T.green : T.crimson}
@@ -100,14 +137,19 @@ function buildAssignmentColumns(returns: FinishingReturn[], onViewPhoto: (image:
       },
     },
     {
-      id: "photo", header: "Photo", accessor: a => findRet(a)?.damagePhotoUrl, priority: 3,
+      id: "photo",
+      header: "Photo",
+      accessor: a => findRet(a)?.damagePhotoUrl,
+      priority: 3,
+      align: "center",
+      width: 80,
       cell: (_v, a) => {
         const ret = findRet(a);
         return ret?.damagePhotoUrl ? (
           <button
             type="button"
             onClick={() => onViewPhoto({ url: ret.damagePhotoUrl!, label: `Damage photo — ${a.sareeId}` })}
-            style={{ width: 26, height: 26, borderRadius: 6, background: "linear-gradient(135deg,#F0E8D0,#C0392B)", display: "flex", alignItems: "center", justifyContent: "center", border: "none", cursor: "pointer", padding: 0 }}
+            style={{ width: 26, height: 26, borderRadius: 6, background: "linear-gradient(135deg,#F0E8D0,#C0392B)", display: "flex", alignItems: "center", justifyContent: "center", border: "none", cursor: "pointer", padding: 0, margin: "0 auto" }}
             title="View damage photo"
           >
             <Camera size={12} color="rgba(255,255,255,0.85)" />
@@ -116,7 +158,11 @@ function buildAssignmentColumns(returns: FinishingReturn[], onViewPhoto: (image:
       },
     },
     {
-      id: "inventoryStatus", header: "Inventory Status", accessor: a => findRet(a)?.inventoryStatus, priority: 3,
+      id: "inventoryStatus",
+      header: "Inventory Status",
+      accessor: a => findRet(a)?.inventoryStatus,
+      priority: 3,
+      width: 160,
       cell: (_v, a) => {
         const ret = findRet(a);
         return ret ? (

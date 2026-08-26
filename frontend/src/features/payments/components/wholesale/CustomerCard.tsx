@@ -2,7 +2,8 @@ import React from "react";
 import { CheckCircle2, Eye, IndianRupee, MapPin } from "lucide-react";
 import { motion } from "motion/react";
 
-import { F, T, BulkOrder } from "../../theme";
+import { F, T } from "../../theme";
+import { BulkOrder } from "@/features/production";
 import { Invoice } from "../../types";
 import { AnimBar } from "../common/motion";
 import { INV_STATUS_CFG, InvBadge } from "./InvBadge";

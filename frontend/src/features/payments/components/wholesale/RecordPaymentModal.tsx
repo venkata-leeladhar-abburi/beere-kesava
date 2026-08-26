@@ -2,7 +2,8 @@ import { useState } from "react";
 import { CalendarClock, Receipt, X } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
 
-import { F, T, useFirms } from "../../theme";
+import { F, T } from "../../theme";
+import { useFirms } from "@/features/firms";
 import { Invoice } from "../../types";
 import { Button, CurrencyInput, Field, IconButton, Input, Select, SelectItem, Textarea } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";

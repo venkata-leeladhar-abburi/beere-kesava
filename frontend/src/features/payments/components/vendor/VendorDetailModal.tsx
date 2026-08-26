@@ -4,7 +4,8 @@ import { X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 import { PurchaseOrder } from "@/features/purchasing";
-import { F, T, useFirms } from "../../theme";
+import { F, T } from "../../theme";
+import { useFirms } from "@/features/firms";
 import { VendorPayment } from "../../types";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";

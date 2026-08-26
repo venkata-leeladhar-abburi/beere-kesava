@@ -5,7 +5,8 @@ import { toast } from "sonner";
 
 import { useSuppliers } from "@/features/suppliers";
 import { Supplier } from "@/features/suppliers";
-import { F, T, DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../theme";
+import { F, T } from "../../theme";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { FadeUp } from "../common/motion";
 import { DropBtn, SectionCard } from "../common/primitives";
 import { SupplierPayNowModal } from "./SupplierPayNowModal";

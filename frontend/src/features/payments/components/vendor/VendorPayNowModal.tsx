@@ -3,7 +3,8 @@ import { FileText, X } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useQuery } from "@tanstack/react-query";
 
-import { F, T, useFirms } from "../../theme";
+import { F, T } from "../../theme";
+import { useFirms } from "@/features/firms";
 import { VendorPayment } from "../../types";
 import { Button, CurrencyInput, Field, IconButton, Input, Select, SelectItem, Textarea } from "../../../../shared/ui/primitives";
 import { vendorPaymentsApi } from "../../../../shared/api/payments";

@@ -88,7 +88,7 @@ export function WeaverLeaderboardClusterRow({
           {top10.slice(0, 3).map((w, i) => (
             <div key={w.id} style={{ flex: 1, display: "flex", alignItems: "center", gap: 12, background: i === 0 ? "rgba(200,155,71,0.08)" : T.silkCream, border: `1px solid ${i === 0 ? T.borderGold : T.borderDef}`, borderRadius: 14, padding: "12px 14px" }}>
               <div style={{ width: 30, height: 30, borderRadius: 10, flexShrink: 0, background: i === 0 ? "linear-gradient(135deg,#C89B47,#E7C983)" : "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 14, fontWeight: 700, color: i === 0 ? "#FFF" : T.taupe }}>{i + 1}</div>
-              <Avatar photo={w.photo} initials={w.initials} bg={w.bg} size={36} />
+              <Avatar photo={w.photo} name={w.name} initials={w.initials} bg={w.bg} size={36} />
               <div style={{ minWidth: 0, flex: 1 }}>
                 <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{w.name}</div>
                 <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{w.produced} sarees · {totalProduced ? Math.round((w.produced / totalProduced) * 100) : 0}% of output</div>

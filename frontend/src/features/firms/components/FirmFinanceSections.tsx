@@ -292,7 +292,7 @@ function EntryTable({ entries, type, duplicates, onEdit, onDelete }: {
   );
 }
 
-export function FinSection({ title, icon, entries, color, bg, onAdd, onBulkImport, type, duplicates, onUpdate, onDelete }: {
+export function FinSection({ title, icon, entries, color, bg: _bg, onAdd, onBulkImport, type, duplicates, onUpdate, onDelete }: {
   title: string; icon: React.ReactNode;
   entries: FinancialEntry[]; color: string; bg: string;
   onAdd: (e: Omit<FinancialEntry, "id">) => void;
@@ -312,13 +312,33 @@ export function FinSection({ title, icon, entries, color, bg, onAdd, onBulkImpor
     if (onBulkImport) { onBulkImport(rows); setImportMsg(`${rows.length} row${rows.length > 1 ? "s" : ""} imported`); setTimeout(() => setImportMsg(""), 3000); }
   }
   return (
-    <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 14, overflow: "hidden", marginBottom: 16 }}>
-      <div style={{ background: bg, padding: "12px 18px", display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }} onClick={() => setOpen(o => !o)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => setOpen(o => !o))?.(); } }}>
-        <span style={{ color }}>{icon}</span>
-        <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, flex: 1 }}>{title}</span>
-        <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 14, color }}>{fmtFull(total)}</span>
-        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginLeft: 4 }}>({entries.length} entries)</span>
-        {open ? <ChevronUp size={15} color={T.taupe} /> : <ChevronDown size={15} color={T.taupe} />}
+    <div className="mb-6 rounded-2xl border border-[#E8DCC4] overflow-hidden bg-white shadow-sm">
+      <div
+        className="bg-[#6E0F2D] p-4 sm:px-6 sm:py-4.5 text-white flex flex-wrap items-center justify-between gap-3 cursor-pointer select-none"
+        onClick={() => setOpen(o => !o)}
+        role="button"
+        tabIndex={0}
+        onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setOpen(o => !o); } }}
+      >
+        <div className="flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center shrink-0">
+            <span style={{ color: "#F5E8D0" }}>{icon}</span>
+          </div>
+          <div>
+            <h3 className="font-serif text-lg sm:text-xl font-bold text-[#FFFDF9] leading-snug">{title}</h3>
+            <p className="text-xs text-white/70 mt-0.5">{type === "income" ? "Manual income entries" : "Manual expense entries"}</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 ml-auto">
+          <div className="text-right">
+            <span className={`font-mono font-bold text-base ${type === "income" ? "text-emerald-300" : "text-rose-300"}`}>{fmtFull(total)}</span>
+            <span className="text-xs text-white/70 ml-2">({entries.length} {entries.length === 1 ? "entry" : "entries"})</span>
+          </div>
+          <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-white/80 shrink-0">
+            {open ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </div>
+        </div>
       </div>
       <AnimatePresence>
         {open && (
@@ -334,8 +354,8 @@ export function FinSection({ title, icon, entries, color, bg, onAdd, onBulkImpor
               {importMsg && <span style={{ fontFamily: F.ui, fontSize: 12, color: T.green, display: "flex", alignItems: "center", gap: 4 }}><Check size={12} /> {importMsg}</span>}
             </div>
             {dupCount > 0 && (
-              <div style={{ margin: "12px 14px 0", padding: "10px 14px", background: "rgba(200,155,71,0.10)", border: "1px solid rgba(200,155,71,0.32)", borderRadius: 10, display: "flex", gap: 10, alignItems: "flex-start" }}>
-                <AlertTriangle size={14} color="#8B6018" style={{ flexShrink: 0, marginTop: 2 }} />
+              <div style={{ margin: "12px 14px 14px", padding: "12px 16px", background: "rgba(200,155,71,0.10)", border: "1px solid rgba(200,155,71,0.32)", borderRadius: 12, display: "flex", gap: 10, alignItems: "flex-start" }}>
+                <AlertTriangle size={15} color="#8B6018" style={{ flexShrink: 0, marginTop: 1 }} />
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: "#7A5514", lineHeight: 1.6 }}>
                   <strong>{dupCount} manual {dupCount === 1 ? "entry" : "entries"} may double-count a payment.</strong>{" "}
                   These look like they were typed by hand to record a payment that is now tracked automatically under Recorded Payments —
@@ -395,15 +415,35 @@ export function MiscSection({ entries, onAdd, onUpdate, onDelete }: {
   const totalInc = entries.filter(m => m.type === "income").reduce((s, m) => s + m.amount, 0);
   const totalExp = entries.filter(m => m.type === "expense").reduce((s, m) => s + m.amount, 0);
   return (
-    <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 14, overflow: "hidden", marginBottom: 16 }}>
-      <div style={{ background: T.bgGold, padding: "12px 18px", display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }} onClick={() => setOpen(o => !o)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => setOpen(o => !o))?.(); } }}>
-        <Minus size={16} color={T.antiqueGold} />
-        <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, flex: 1 }}>Extra / Miscellaneous Payments</span>
-        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.green }}>{fmtFull(totalInc)} in</span>
-        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, margin: "0 4px" }}>·</span>
-        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.crimson }}>{fmtFull(totalExp)} out</span>
-        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginLeft: 4 }}>({entries.length})</span>
-        {open ? <ChevronUp size={15} color={T.taupe} /> : <ChevronDown size={15} color={T.taupe} />}
+    <div className="mb-6 rounded-2xl border border-[#E8DCC4] overflow-hidden bg-white shadow-sm">
+      <div
+        className="bg-[#6E0F2D] p-4 sm:px-6 sm:py-4.5 text-white flex flex-wrap items-center justify-between gap-3 cursor-pointer select-none"
+        onClick={() => setOpen(o => !o)}
+        role="button"
+        tabIndex={0}
+        onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setOpen(o => !o); } }}
+      >
+        <div className="flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center shrink-0">
+            <Minus size={20} className="text-[#F5E8D0]" />
+          </div>
+          <div>
+            <h3 className="font-serif text-lg sm:text-xl font-bold text-[#FFFDF9] leading-snug">Extra / Miscellaneous Payments</h3>
+            <p className="text-xs text-white/70 mt-0.5">Manual entries for auxiliary cash flows</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 ml-auto">
+          <div className="text-right flex items-center gap-2">
+            <span className="font-mono font-bold text-sm text-emerald-300">+{fmtFull(totalInc)}</span>
+            <span className="text-xs text-white/40">·</span>
+            <span className="font-mono font-bold text-sm text-rose-300">−{fmtFull(totalExp)}</span>
+            <span className="text-xs text-white/70 ml-1">({entries.length})</span>
+          </div>
+          <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-white/80 shrink-0">
+            {open ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </div>
+        </div>
       </div>
       <AnimatePresence>
         {open && (

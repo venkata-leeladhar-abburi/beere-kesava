@@ -356,25 +356,31 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
           </div>
         )}
 
-        <div className="px-3 sm:px-7 xl:px-12 border-b border-[var(--border-default)] flex gap-4 sm:gap-6 bg-white overflow-x-auto scrollbar-none">
-          {[
-            { key: "overview", label: "Overview", icon: <ClipboardList size={16} /> },
-            { key: "batches", label: "Batch History", icon: <Layers3 size={16} /> },
-            { key: "dispatches", label: "Design Dispatches", icon: <PaperPlaneTilt size={16} /> },
-            { key: "payments", label: "Payments", icon: <FileText size={16} /> },
-            { key: "materials", label: "Materials Received", icon: <PackageCheck size={16} /> }
-          ].map(({ key, label, icon }) => (
-            <Button key={key} onClick={() => setTab(key)}
-              variant="ghost"
-              className={
-                tab === key
-                  ? "rounded-none py-3.5 px-0 border-b-[3px] border-[#6E0F2D] text-[#6E0F2D] whitespace-nowrap transition-colors font-bold text-xs sm:text-sm"
-                  : "rounded-none py-3.5 px-0 border-b-[3px] border-transparent text-[var(--text-tertiary)] whitespace-nowrap transition-colors text-xs sm:text-sm"
-              }>
-              {icon}
-              {label}
-            </Button>
-          ))}
+        {/* Sub-tab Navigation Strip Card */}
+        <div className="px-4 md:px-7 xl:px-14 mt-4 mb-2">
+          <div className="bg-white rounded-[10px] border border-[#E8DCC4] px-3 sm:px-5 pt-2 pb-0 shadow-sm overflow-x-auto section-nav-scroll">
+            <div className="flex items-center gap-1 sm:gap-2 min-w-max">
+              {[
+                { key: "overview", label: "Overview", icon: <ClipboardList size={16} /> },
+                { key: "batches", label: "Batch History", icon: <Layers3 size={16} /> },
+                { key: "dispatches", label: "Design Dispatches", icon: <PaperPlaneTilt size={16} /> },
+                { key: "payments", label: "Payments", icon: <FileText size={16} /> },
+                { key: "materials", label: "Materials Received", icon: <PackageCheck size={16} /> }
+              ].map(({ key, label, icon }) => (
+                <Button key={key} onClick={() => setTab(key)}
+                  variant="tertiary"
+                  className={
+                    "rounded-none px-3.5 sm:px-5 py-3 shrink-0 text-xs sm:text-sm cursor-pointer flex items-center gap-2 transition-all " +
+                    (tab === key
+                      ? "border-b-[3px] border-[#6E0F2D] text-[#6E0F2D] font-bold"
+                      : "border-b-[3px] border-transparent text-[#9C8672] hover:text-[#6E0F2D] font-medium")
+                  }>
+                  {icon}
+                  <span>{label}</span>
+                </Button>
+              ))}
+            </div>
+          </div>
         </div>
 
         <div className="px-3 sm:px-7 xl:px-12 py-6 sm:py-8 flex-1">

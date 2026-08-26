@@ -112,7 +112,7 @@ export function PerformancePanel({ onNavigate }: { onNavigate?: (tab: string) =>
                     </div>
 
                     {/* Avatar */}
-                    <Avatar photo={resolveAssetUrl(l.photoUrl)} initials={l.initials} bg={T.royalBurgundy} size={44} />
+                    <Avatar photo={resolveAssetUrl(l.photoUrl)} name={l.name} initials={l.initials} bg={T.royalBurgundy} size={44} />
 
                     {/* Name + ID */}
                     <div style={{ flex: 1, minWidth: 0 }}>

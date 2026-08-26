@@ -165,7 +165,7 @@ export function ActiveBatchesSection({ onNavigate, onOpenTally }: { onNavigate?:
           </div>
 
         <div className="p-3.5 sm:p-6 md:p-7">
-        <div className="flex items-center gap-2 mb-4 overflow-x-auto max-w-full pb-1 scrollbar-none whitespace-nowrap">
+        <div className="flex items-center gap-2 mt-2 sm:mt-3.5 mb-4 overflow-x-auto max-w-full pb-1 scrollbar-none whitespace-nowrap">
           {FILTER_PILLS.map(f => (
             <Button key={f.label} onClick={() => setFilter(f.stage)} variant={filter === f.stage ? "primary" : "tertiary"} size="sm"
               className={`rounded-full shrink-0 whitespace-nowrap text-[12px] ${filter === f.stage ? "" : "border border-[rgba(110,15,45,0.18)] text-[var(--text-tertiary)]"}`}>

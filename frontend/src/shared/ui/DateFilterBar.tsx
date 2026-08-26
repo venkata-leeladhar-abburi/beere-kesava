@@ -63,7 +63,7 @@ function MonthField({ value, onChange }: { value: string; onChange: (v: string) 
       <Popover.Trigger asChild>
         <button
           type="button"
-          className="flex h-10 items-center gap-2 rounded-[var(--radius-md)] border px-3 text-[13px]"
+          className="flex h-10 items-center gap-2 rounded-[10px] border px-3 text-[13px]"
           style={{ borderColor: "var(--border-default)", background: "var(--surface-raised)", color: "var(--text-primary)" }}
         >
           {label}
@@ -74,7 +74,7 @@ function MonthField({ value, onChange }: { value: string; onChange: (v: string) 
         <Popover.Content
           align="start"
           sideOffset={8}
-          className="rounded-[var(--radius-lg)] border shadow-[var(--shadow-lg)] p-2"
+          className="rounded-[10px] border shadow-[var(--shadow-lg)] p-2"
           style={{ zIndex: "var(--z-popover)", background: "var(--surface-overlay)", borderColor: "var(--border-default)" }}
         >
           <div className="flex items-center justify-center gap-3 pb-1">
@@ -105,7 +105,7 @@ function YearField({ value, onChange }: { value: string; onChange: (v: string) =
       <Popover.Trigger asChild>
         <button
           type="button"
-          className="flex h-10 items-center gap-2 rounded-[var(--radius-md)] border px-3 text-[13px] tabular-nums"
+          className="flex h-10 items-center gap-2 rounded-[10px] border px-3 text-[13px] tabular-nums"
           style={{ borderColor: "var(--border-default)", background: "var(--surface-raised)", color: "var(--text-primary)" }}
         >
           {value || "Select year"}

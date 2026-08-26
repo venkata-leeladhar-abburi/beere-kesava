@@ -4,7 +4,8 @@ import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
-import { EASE, F, T, DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../theme";
+import { EASE, F, T } from "../../theme";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { PayHistRecord } from "../../types";
 import { FadeUp } from "../common/motion";
 import { SectionCard } from "../common/primitives";
@@ -233,7 +234,7 @@ export function PaymentHistorySection() {
   ];
 
   return (
-    <div id="pay-history" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 36 }}>
+    <div id="pay-history" className="px-4 md:px-7 xl:px-10 pb-10 md:pb-12" style={{ paddingTop: 36, paddingBottom: 48 }}>
       <FadeUp>
       <SectionCard
         icon={History}

@@ -32,7 +32,7 @@ function HistoryBatchSquares({ size }: { size: number }) {
 
 function HistoryDropBtn({ label, icon }: { label: string; icon?: React.ReactNode }) {
   return (
-    <Button variant="secondary" size="sm" className="w-full sm:w-auto justify-between sm:justify-start">
+    <Button variant="secondary" size="sm" className="w-auto shrink-0 justify-start">
       <span className="flex items-center gap-1.5">{icon}{label}</span><ChevronDown size={14} style={{ color: T.taupe }} />
     </Button>
   );
@@ -215,7 +215,7 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
   ];
 
   return (
-    <div id="prod-history" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 40 }}>
+    <div id="prod-history" className="px-4 md:px-7 xl:px-10 pb-10 md:pb-12" style={{ paddingTop: 40 }}>
       <FadeUp>
         <div className="p-4 sm:p-6 shadow-[0_6px_32px_rgba(74,6,27,0.08)] rounded-t-2xl" style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)` }}>
           <div className="flex items-start gap-3.5 sm:gap-4 w-full">

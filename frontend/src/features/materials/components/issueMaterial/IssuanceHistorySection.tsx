@@ -120,7 +120,7 @@ export function IssuanceHistorySection({
         <div style={{ flex: "1 1 260px" }}>
           <SearchInput aria-label="Search weaver, MIR ID, or GRN batch" value={histSearch} onChange={e => setHistSearch(e.target.value)} placeholder="Search weaver, MIR ID, or GRN batch…" className="w-full" />
         </div>
-        <Select value={histWeaverFilter} onValueChange={setHistWeaverFilter}>
+        <Select value={histWeaverFilter} onValueChange={setHistWeaverFilter} align="end">
           {weaverNames.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}
         </Select>
       </div>

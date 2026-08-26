@@ -2,7 +2,7 @@ import { X } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
 
 import { useFinishing } from "@/features/finishing";
-import { BulkOrder } from "../../theme";
+import type { BulkOrder } from "@/features/production";
 import { Invoice } from "../../types";
 import { IconButton } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
