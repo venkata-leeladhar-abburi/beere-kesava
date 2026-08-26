@@ -24,7 +24,7 @@ export function AllWeaversControls({ view, setView, filter, setFilter, search, s
               onClick={onViewAll}
               variant="secondary"
               size="lg"
-              className="rounded-[14px] bg-white/10 text-[#FFFDF9] border-white/20"
+              className="rounded-[14px] bg-white/10 text-[#FFFDF9] border-white/20 hover:bg-white/20 hover:text-white hover:border-white/30"
             >
               <Users size={20} /> View All Weavers
             </Button>
@@ -32,7 +32,7 @@ export function AllWeaversControls({ view, setView, filter, setFilter, search, s
               onClick={onImport}
               variant="secondary"
               size="lg"
-              className="rounded-[14px] bg-white/10 text-[#FFFDF9] border-white/20"
+              className="rounded-[14px] bg-white/10 text-[#FFFDF9] border-white/20 hover:bg-white/20 hover:text-white hover:border-white/30"
             >
               <UploadSimple size={20} /> Import from Excel
             </Button>

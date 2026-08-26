@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
-import { useAuth, type Role } from "../../../contexts/AuthContext";
+import { useAuth } from "../../../contexts/AuthContext";
 import { motion, AnimatePresence } from "motion/react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Home, Users, Bell, ChevronLeft, Menu, Search, X, UserRound, Sparkles, UserCheck, Truck, LogOut } from "lucide-react";
@@ -48,7 +48,7 @@ const TABS: { id: Tab; Icon: IconComponent; label: string; badge?: string }[] = 
   { id: "dispatch",  Icon: Truck,      label: "Dispatch"      },
 ];
 
-const PAGE_TITLES: Record<Tab, string> = {
+const _PAGE_TITLES: Record<Tab, string> = {
   home:      "Worker Dashboard",
   qc:        "Quality Check",
   weavers:   "Receive Sarees",
@@ -269,7 +269,7 @@ function MobileProfile({ onClose }: { onClose?: () => void }) {
   );
 }
 
-function HamburgerMenu({ open, onOpenChange, onProfile, onBack, activeTab, onSelectTab }: { open: boolean; onOpenChange: (open: boolean) => void; onProfile: () => void; onBack?: () => void; activeTab?: Tab; onSelectTab?: (t: Tab) => void }) {
+function HamburgerMenu({ open, onOpenChange, onProfile, onBack: _onBack, activeTab, onSelectTab }: { open: boolean; onOpenChange: (open: boolean) => void; onProfile: () => void; onBack?: () => void; activeTab?: Tab; onSelectTab?: (t: Tab) => void }) {
   const { logout } = useAuth();
   const onClose = () => onOpenChange(false);
 
@@ -295,6 +295,7 @@ function HamburgerMenu({ open, onOpenChange, onProfile, onBack, activeTab, onSel
               <Dialog.Title asChild>
                 <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 14, color: "#FFFDF9", lineHeight: 1.1 }}>Beere Kesava</div>
               </Dialog.Title>
+              <Dialog.Description className="sr-only">Worker staff portal navigation menu</Dialog.Description>
               <div style={{ fontFamily: F.u, fontWeight: 500, fontSize: 11, color: "rgba(231,201,131,0.85)", letterSpacing: "2px", textTransform: "uppercase" }}>WORKER STAFF</div>
             </div>
           </div>

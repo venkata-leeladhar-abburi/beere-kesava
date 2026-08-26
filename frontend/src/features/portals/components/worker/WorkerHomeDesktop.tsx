@@ -4,7 +4,7 @@ import {
   ChevronRight, Package, Shield, CheckCircle2, ClipboardList,
 } from "lucide-react";
 import { C, F } from "./tokens";
-import { PageHero, StatsStrip, SectionHeading, GUTTER_X, type WorkerStat } from "./primitives";
+import { PageHero, StatsStrip, SectionHeading, type WorkerStat } from "./primitives";
 import { Button } from "../../../../shared/ui/primitives";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { useBatches } from "@/features/production";
@@ -52,7 +52,7 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
     .flatMap(b => b.rows)
     .filter(r => r.sareeId && r.receivedAt && r.qcPassed == null).length;
 
-  const tasks = [
+  const _tasks = [
     {
       icon: Package, iconBg: "#B8860B", accentColor: "#B8860B",
       title: "Sarees Received — Record Them",

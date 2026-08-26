@@ -271,7 +271,7 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
             const isOpen = expanded === r.name;
             return (
               <div key={r.name} style={{ border: `1.5px solid rgba(110,15,45,0.12)`, borderRadius: 16, overflow: "hidden", background: "#FFF", boxShadow: "0 2px 10px rgba(74,6,27,0.05)" }}>
-                <div onClick={() => setExpanded(isOpen ? null : r.name)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setExpanded(isOpen ? null : r.name); } }} style={{ padding: "14px 16px", cursor: "pointer", background: isOpen ? "rgba(110,15,45,0.03)" : "#FFF" }}>
+                <div onClick={() => setExpanded(isOpen ? null : r.name)} role="button" tabIndex={0} aria-expanded={isOpen} aria-label={r.name} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setExpanded(isOpen ? null : r.name); } }} style={{ padding: "14px 16px", cursor: "pointer", background: isOpen ? "rgba(110,15,45,0.03)" : "#FFF" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
                     <div>
                       <span style={{ fontFamily: F.u, fontSize: 15, fontWeight: 700, color: C.wine }}>{r.name}</span>

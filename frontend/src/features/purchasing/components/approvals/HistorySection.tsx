@@ -5,7 +5,7 @@ import { T, F } from "./tokens";
 import { TypePill, SectionCard } from "./SharedUI";
 import { Button } from "../../../../shared/ui/primitives";
 import { auditLogApi } from "../../../../shared/api/audit-log";
-import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { DataTable, exportTable, type ColumnDef } from "../../../../shared/ui/data";
 
 const HIST_FILTERS = ["All History", "Purchase Orders", "Warp Requests", "Rate Changes", "Approved Only", "Rejected Only"];
 const HIST_PERIODS = ["This Month", "Last 3 Months", "All Time"];
@@ -16,6 +16,9 @@ const HIST_PERIODS = ["This Month", "Last 3 Months", "All Time"];
 // equivalent audit trail yet, so those filters will always show "no history"
 // until that logging is added — this is a real gap, not a bug in this view.
 type HistoryRow = {
+  // Audit-log entry id — carried through purely so the card list has a stable
+  // React key that survives filtering, instead of falling back to the index.
+  _id: string;
   date: string;
   type: "Purchase Order";
   by: string;
@@ -96,6 +99,7 @@ export function HistorySection({
     return items
       .filter(a => a.entityType === "PurchaseOrder")
       .map(a => ({
+        _id: a.id,
         date: new Date(a.createdAt).toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }),
         type: "Purchase Order" as const,
         by: a.user ? `${a.user.firstName} ${a.user.lastName}` : "System",
@@ -126,7 +130,7 @@ export function HistorySection({
       title="Approval History — All Past Decisions"
       subtitle="A permanent record of all approvals and rejections made in this portal."
       actions={
-        <Button variant="secondary" size="sm" iconLeft={Download} className="bg-white/10 text-[#FFFDF9] border-white/20 whitespace-nowrap">
+        <Button variant="secondary" size="sm" iconLeft={Download} onClick={() => exportTable({ columns: historyColumns, rows, filename: "approval-history" })} className="bg-white/10 text-[#FFFDF9] border-white/20 whitespace-nowrap">
           Download History
         </Button>
       }
@@ -205,8 +209,8 @@ export function HistorySection({
               No approval decisions recorded for this filter yet.
             </div>
           )}
-          {!isLoading && !isError && filteredRows.map((row, i) => (
-            <div key={`${row.date}-${row.by}-${i}`} className="bg-white rounded-2xl border border-[#EBE3D5] p-3.5 sm:p-4 shadow-[0_2px_12px_rgba(44,24,16,0.06)] hover:shadow-md transition-shadow flex flex-col justify-between gap-3">
+          {!isLoading && !isError && filteredRows.map((row) => (
+            <div key={row._id} className="bg-white rounded-2xl border border-[#EBE3D5] p-3.5 sm:p-4 shadow-[0_2px_12px_rgba(44,24,16,0.06)] hover:shadow-md transition-shadow flex flex-col justify-between gap-3">
               <div>
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, lineHeight: 1.3 }}>

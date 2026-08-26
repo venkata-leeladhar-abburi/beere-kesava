@@ -31,7 +31,7 @@ export function SectionBFiltered({ isMobile, isDesktop, isTablet }: { isMobile?:
   const [toast, setToast] = useState("");
   const [filterStaff, setFilterStaff] = useState("all");
   const [filterBatch, setFilterBatch] = useState("all");
-  const [filterType, setFilterType] = useState("all");
+  const [filterType, _setFilterType] = useState("all");
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [groupMode, setGroupMode] = useState<GroupMode>("list");
   const [drilldown, setDrilldown] = useState<string | null>(null);
@@ -51,7 +51,7 @@ export function SectionBFiltered({ isMobile, isDesktop, isTablet }: { isMobile?:
   }, [awaiting]);
 
   // Get unique saree types from awaiting
-  const uniqueTypes = useMemo(() => {
+  const _uniqueTypes = useMemo(() => {
     const tSet = new Set(awaiting.map(a => a.sareeTypeCode || a.sareeType).filter(Boolean));
     return Array.from(tSet);
   }, [awaiting]);

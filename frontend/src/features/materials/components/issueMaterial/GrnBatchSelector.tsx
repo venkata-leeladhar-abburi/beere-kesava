@@ -182,6 +182,7 @@ export function GrnBatchSelector({ grnBatches, materialType, value, selectedLine
             <div style={{ position: "absolute" as const, top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 50, background: "#FFF", border: `1px solid ${T.royalBurgundy}`, borderRadius: 12, boxShadow: "0 8px 28px rgba(74,6,27,0.16)", overflow: "hidden" }}>
               <div style={{ padding: 8, borderBottom: `1px solid ${T.borderDef}` }}>
                 <SearchInput
+                  aria-label="Scan barcode, or search GRN, item code, or vendor"
                   // eslint-disable-next-line jsx-a11y/no-autofocus -- popover opens on user action; focusing the search box it contains is expected keyboard behavior, and a barcode scan types straight into it
                   autoFocus
                   value={q}

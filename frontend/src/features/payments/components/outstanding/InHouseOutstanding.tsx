@@ -1,13 +1,18 @@
 import React, { useMemo, useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import { ChevronDown, ChevronRight, Users, Factory } from "lucide-react";
-import { T, F } from "../../theme";
-import { UnifiedSaree, SareeOrigin, isOutstanding, isSold, ageBucket } from "@/features/customers";
-import { Empty, ExportBtn, SectionCard, exportCsv, inr } from "./primitives";
-import type { AgeKey } from "./primitives";
-import { DrilldownTabs } from "./SareeDetailTable";
-import { Button } from "../../../../shared/ui/primitives";
 
+import { motion, AnimatePresence } from "motion/react";
+
+import { ChevronDown, ChevronRight, Users, Factory } from "lucide-react";
+
+import { T, F } from "../../theme";
+
+import { UnifiedSaree, SareeOrigin, isOutstanding, isSold, ageBucket } from "@/features/customers";
+
+import { Empty, ExportBtn, SectionCard, exportCsv, inr } from "./primitives";
+
+import type { AgeKey } from "./primitives";
+
+import { DrilldownTabs } from "./SareeDetailTable";
 // ── In-house outstanding (weavers or factory looms) ──────────────────────────
 export function InHouseOutstanding({
   origin, sarees, search, ageFilter,

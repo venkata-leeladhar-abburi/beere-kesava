@@ -16,7 +16,7 @@ import { weaversApi } from "../../../../shared/api/weavers";
 import { vendorPaymentsApi, weaverPaymentsApi, supplierPaymentsApi } from "../../../../shared/api/payments";
 import { invoicesApi } from "../../../../shared/api/invoices";
 import { Button, IconButton, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
-import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { DataTable, exportTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money, StatusPill, EntityCode } from "@/shared/ui/domain";
 import type { PaymentStatus } from "@/lib/domain/status";
@@ -235,6 +235,7 @@ export function PaymentHistorySection() {
         actions={
           <DownloadGate>
             <Button variant="secondary" size="md" iconLeft={Download}
+              onClick={() => exportTable({ columns: tableColumns, rows: filtered, filename: "payment-history" })}
               className="flex-shrink-0 rounded-[9px] border border-[rgba(200,155,71,0.22)] bg-[#F5E8D0] text-[#3B2314]">
               Download All Transactions
             </Button>
@@ -291,7 +292,7 @@ export function PaymentHistorySection() {
 
             {/* Search */}
             <div style={{ flex: 1, minWidth: 200 }}>
-              <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search party, ref no, description..." size="sm" />
+              <SearchInput aria-label="Search party, ref no, description" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search party, ref no, description..." size="sm" />
             </div>
 
             {/* Clear */}

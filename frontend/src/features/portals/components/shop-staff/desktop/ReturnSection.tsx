@@ -1,5 +1,5 @@
 import React from "react";
-import { BarChart2, RotateCcw, ShoppingBag } from "lucide-react";
+import { RotateCcw, ShoppingBag } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { salesApi } from "../../../../../shared/api/sales";
 import { C, F, ShopDesktopHero, SILK_BG, PortalStatsStrip, type PortalStat } from "../theme";

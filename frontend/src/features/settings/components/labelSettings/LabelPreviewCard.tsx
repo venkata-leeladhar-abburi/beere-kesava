@@ -1,5 +1,6 @@
 import React from "react";
 import { Printer } from "lucide-react";
+import { toast } from "sonner";
 import { BarcodePreview, F, T } from "./primitives";
 import { Button } from "../../../../shared/ui/primitives";
 
@@ -215,7 +216,7 @@ export function LabelPreviewCard({ fields }: {
 
         {/* Print test label button */}
         <div style={{ marginTop: 16, display: "flex", justifyContent: "center" }}>
-          <Button variant="secondary" size="sm" iconLeft={Printer}>
+          <Button variant="secondary" size="sm" iconLeft={Printer} onClick={() => toast.success("Test label sent to printer")}>
             Print Test Label
           </Button>
         </div>

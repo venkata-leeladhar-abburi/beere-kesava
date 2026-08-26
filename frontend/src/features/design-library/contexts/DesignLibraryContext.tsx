@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { BackendDesign, designLibraryApi } from "../../../shared/api/design-library";
+import { BackendDesign, UpdateDesignPayload, designLibraryApi } from "../../../shared/api/design-library";
 import { designDispatchesApi, BackendDesignDispatch } from "../../../shared/api/design-dispatches";
+import { resolveAssetUrl, toStoredAssetPath } from "../../../shared/api/uploads";
 
 function backendDesignToEntry(d: BackendDesign): DesignEntry {
   return {
@@ -14,8 +15,8 @@ function backendDesignToEntry(d: BackendDesign): DesignEntry {
     color: d.color ?? "",
     weaverName: "",
     notesForWeaver: d.notesForWeaver ?? "",
-    colorSlipPhoto: d.colorSlipPhotoUrl,
-    designGraph: d.designGraphUrl,
+    colorSlipPhoto: resolveAssetUrl(d.colorSlipPhotoUrl),
+    designGraph: resolveAssetUrl(d.designGraphUrl),
     batches: 0,
     total: 0,
     hasColorSlip: Boolean(d.colorSlipPhotoUrl),
@@ -31,8 +32,8 @@ function backendDispatchToRecord(d: BackendDesignDispatch): DispatchRecord {
     recipientName: d.recipientName,
     batches: d.batches,
     instructions: d.instructions,
-    colorSlipImage: d.colorSlipImageUrl,
-    designGraphImage: d.designGraphImageUrl,
+    colorSlipImage: resolveAssetUrl(d.colorSlipImageUrl),
+    designGraphImage: resolveAssetUrl(d.designGraphImageUrl),
     sentAt: new Date(d.sentAt).toLocaleString("en-US", {
       day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true,
     }),
@@ -113,6 +114,8 @@ export function DesignLibraryProvider({ children }: { children: React.ReactNode 
         description: d.desc || undefined,
         color: d.color || undefined,
         notesForWeaver: d.notesForWeaver || undefined,
+        colorSlipPhotoUrl: toStoredAssetPath(d.colorSlipPhoto) ?? undefined,
+        designGraphUrl: toStoredAssetPath(d.designGraph) ?? undefined,
       }),
     onSuccess: (created) => {
       queryClient.setQueryData<DesignEntry[]>(DESIGNS_KEY, prev => {
@@ -128,17 +131,39 @@ export function DesignLibraryProvider({ children }: { children: React.ReactNode 
     },
   });
 
-  // Local-only: notesForWeaver/weaverName patches used for the design-detail
-  // UI don't have a backend PATCH surface wired yet, so keep this optimistic
-  // and client-side (matches the previous mock behaviour) rather than
-  // silently failing against the API.
+  // DesignEntry carries display-only fields (batches, total, hasColorSlip,
+  // weaverName) alongside the persisted ones. Map across only what the API
+  // accepts; a patch touching nothing else stays a pure cache update rather
+  // than sending an empty PATCH.
+  const toUpdatePayload = (patch: Partial<DesignEntry>): UpdateDesignPayload => {
+    const payload: UpdateDesignPayload = {};
+    if (patch.name !== undefined) payload.name = patch.name;
+    if (patch.typeCode !== undefined) payload.typeCode = patch.typeCode;
+    if (patch.typeName !== undefined) payload.typeName = patch.typeName;
+    if (patch.desc !== undefined) payload.description = patch.desc;
+    if (patch.color !== undefined) payload.color = patch.color;
+    if (patch.notesForWeaver !== undefined) payload.notesForWeaver = patch.notesForWeaver;
+    if (patch.colorSlipPhoto) payload.colorSlipPhotoUrl = toStoredAssetPath(patch.colorSlipPhoto) ?? undefined;
+    if (patch.designGraph) payload.designGraphUrl = toStoredAssetPath(patch.designGraph) ?? undefined;
+    return payload;
+  };
+
   const updateDesignMutation = useMutation({
-    mutationFn: (args: { code: string; patch: Partial<DesignEntry> }) => Promise.resolve(args),
+    mutationFn: async (args: { code: string; patch: Partial<DesignEntry> }) => {
+      const payload = toUpdatePayload(args.patch);
+      if (Object.keys(payload).length > 0) {
+        await designLibraryApi.update(args.code, payload);
+      }
+      return args;
+    },
     onSuccess: ({ code, patch }) => {
       queryClient.setQueryData<DesignEntry[]>(DESIGNS_KEY, prev =>
         (prev ?? []).map(d => d.code === code ? { ...d, ...patch } : d)
       );
       toast.success("Design updated");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to update design");
     },
   });
 
@@ -149,8 +174,8 @@ export function DesignLibraryProvider({ children }: { children: React.ReactNode 
         recipientId: d.recipientId,
         recipientName: d.recipientName,
         instructions: d.instructions,
-        colorSlipImageUrl: d.colorSlipImage,
-        designGraphImageUrl: d.designGraphImage,
+        colorSlipImageUrl: toStoredAssetPath(d.colorSlipImage),
+        designGraphImageUrl: toStoredAssetPath(d.designGraphImage),
         batches: d.batches,
       }),
     onSuccess: (created: BackendDesignDispatch) => {

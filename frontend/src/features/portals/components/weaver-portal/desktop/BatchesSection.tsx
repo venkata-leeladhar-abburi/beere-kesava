@@ -1,22 +1,37 @@
 import React from "react";
-import { AlertCircle, AlertTriangle, CheckCircle2, ClipboardCheck, CreditCard, History, ListChecks, Package, ArrowRight, RotateCcw } from "lucide-react";
+
+import { AlertCircle, AlertTriangle, CheckCircle2, History, ListChecks, Package, RotateCcw } from "lucide-react";
+
 import { C, F, BG_IMAGE, MyBatchEntry, Tab5 } from "../theme";
+
 import { SectionHeading } from "@/shared/ui/portal/PortalChrome";
+
 import { BatchHistoryPage } from "../BatchHistoryPage";
+
 import { DesktopHero } from "./DesktopHero";
+
 import { WeaverHero } from "./WeaverHero";
+
 import { WeaverMetricsBar } from "./WeaverMetricsBar";
+
 import { DesktopActiveBatchCard } from "./DesktopActiveBatchCard";
+
 import { DesktopCompletedBatchCard } from "./DesktopCompletedBatchCard";
+
 import { GeneralDispatchInstructionsBlock } from "./batchCardHelpers";
-import { Button } from "../../../../../shared/ui/primitives";
 import { useAuth } from "../../../../../contexts/AuthContext";
 import { useBatches } from "@/features/production";
+
 import { useQc } from "@/features/qc";
+
 import { useWeaverPayments } from "@/features/weavers";
+
 import { useCurrentWeaver } from "../useCurrentWeaver";
+
 import { rupees, formatMoney } from "@/lib/domain/money";
+
 import { Money } from "@/shared/ui/domain";
+
 
 /** House rule: a weaver may hold at most this many batches at once. */
 const MAX_ACTIVE_BATCHES = 2;

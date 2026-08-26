@@ -6,7 +6,7 @@ import {
   type JariUnit, type SareeTypeRecord,
 } from "@/features/pricing";
 import { useRatesPricing } from "@/features/pricing";
-import { Button, Input } from "../../../../../shared/ui/primitives";
+import { Button, NumberInput } from "../../../../../shared/ui/primitives";
 
 // ─── Material weight split (warp / resham / jari) ────────────────────────────
 // Proportions come from the Rates & Pricing page: each saree type carries a
@@ -90,8 +90,9 @@ export function MaterialSplitPanel({ typeCode, weight, edits, onEdit }: Material
             <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>
               {f.label} (g)
             </div>
-            <Input type="number" value={val(f.key)}
-              onChange={e => onEdit({ ...edits, [f.key]: e.target.value })}
+            <NumberInput value={val(f.key) === "" ? "" : Number(val(f.key))}
+              onValueChange={v => onEdit({ ...edits, [f.key]: v === "" ? "0" : String(v) })}
+              step={0.01}
               className="font-mono px-2" />
             <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 3 }}>auto {auto[f.key]}g</div>
           </div>
@@ -111,8 +112,9 @@ export function MaterialSplitPanel({ typeCode, weight, edits, onEdit }: Material
               ))}
             </div>
           </div>
-          <Input type="number" value={trimNum(jariFromReels(jariReels, jariUnit))}
-            onChange={e => onEdit({ ...edits, jari: trimNum(jariToReels(parseFloat(e.target.value) || 0, jariUnit)) })}
+          <NumberInput value={Number(trimNum(jariFromReels(jariReels, jariUnit)))}
+            onValueChange={v => onEdit({ ...edits, jari: trimNum(jariToReels(v === "" ? 0 : v, jariUnit)) })}
+            step={0.01}
             className="font-mono px-2" />
           <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 3 }}>
             {trimNum(jariReels)} reels · {trimNum(jariFromReels(jariReels, "buns"))} buns · {trimNum(jariG, 0)}g

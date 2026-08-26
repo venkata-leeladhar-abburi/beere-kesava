@@ -1,7 +1,7 @@
 import React from "react";
 import { motion } from "motion/react";
 import { Bell, AlertTriangle, CheckCircle2, Inbox, Zap } from "lucide-react";
-import { UnifiedNotif, Priority, T, F } from "./notifTypes";
+import { UnifiedNotif, Priority } from "./notifTypes";
 import { LuxuryStatsCard } from "../../../shared/ui/LuxuryStatsCard";
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];

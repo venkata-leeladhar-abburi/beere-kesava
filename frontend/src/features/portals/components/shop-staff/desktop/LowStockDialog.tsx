@@ -16,6 +16,7 @@ export function LowStockDialog({
   return (
     <Modal open={open} onOpenChange={o => { if (!o) onClose(); }} size="sm">
       <Dialog.Title className="sr-only">Report Low Stock</Dialog.Title>
+      <Dialog.Description className="sr-only">Notify Admin and Superadmin of low stock</Dialog.Description>
       <div style={{ display: "flex", flexDirection: "column", overflow: "hidden", borderTopLeftRadius: "var(--radius-xl)", borderTopRightRadius: "var(--radius-xl)" }}>
         {/* Header */}
         <div style={{ background: `linear-gradient(135deg, ${C.dark} 0%, #4A061B 100%)`, padding: "28px 32px 24px" }}>

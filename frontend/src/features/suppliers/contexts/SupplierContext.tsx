@@ -6,6 +6,7 @@ import { useAuth } from "../../../contexts/AuthContext";
 export * from "./supplier-types";
 import { Supplier, Purchase, SareeTag, SupplierPayment, PurchaseRequest, initialsOf, totalPieces, purchaseTotals, parseINR } from "./supplier-types";
 import { BackendSupplier, suppliersApi } from "../../../shared/api/suppliers";
+import { resolveAssetUrl, toStoredAssetPath } from "../../../shared/api/uploads";
 import { supplierPaymentsApi } from "../../../shared/api/payments";
 import { BackendPurchaseRequest, purchaseRequestsApi, STOPGAP_ACTING_USER_ID } from "../../../shared/api/purchase-requests";
 import {
@@ -42,6 +43,7 @@ function toSupplier(s: BackendSupplier): Supplier {
     accountNo: s.accountNo ?? undefined,
     ifscCode: s.ifscCode ?? undefined,
     notes: s.notes ?? undefined,
+    visitingCard: resolveAssetUrl(s.visitingCardUrl) ?? undefined,
     status: s.status === "ACTIVE" ? "active" : s.status === "INACTIVE" ? "inactive" : "overdue",
     rating: s.rating ?? 0,
   };
@@ -59,7 +61,7 @@ function toSareeTag(l: BackendPurchaseSareeLine): SareeTag {
     quantity: l.quantity,
     finalAmount: Number(l.finalAmount),
     notes: l.notes ?? "",
-    imageUrl: l.imageUrl ?? undefined,
+    imageUrl: resolveAssetUrl(l.imageUrl) ?? undefined,
     returnedQuantity: l.returnedQuantity ?? 0,
   };
 }
@@ -103,7 +105,7 @@ function toSareeLinePayload(s: SareeTag): CreatePurchaseSareeLinePayload {
     quantity: s.quantity,
     finalAmount: s.finalAmount,
     notes: s.notes || undefined,
-    imageUrl: s.imageUrl,
+    imageUrl: toStoredAssetPath(s.imageUrl) ?? undefined,
     returnedQuantity: s.returnedQuantity ?? 0,
   };
 }
@@ -276,6 +278,7 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
         city: s.city, state: s.state, address: s.address, gstCode: s.gstCode,
         specialty: s.specialty, terms: s.terms, bankName: s.bankName, accountNo: s.accountNo, ifscCode: s.ifscCode,
         notes: s.notes, rating: s.rating,
+        visitingCardUrl: toStoredAssetPath(s.visitingCard) ?? undefined,
       }),
     onSuccess: (created) => {
       setSuppliers(prev => [toSupplier(created), ...prev]);
@@ -294,6 +297,7 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
         address: args.patch.address, gstCode: args.patch.gstCode, specialty: args.patch.specialty,
         terms: args.patch.terms, bankName: args.patch.bankName, accountNo: args.patch.accountNo, ifscCode: args.patch.ifscCode,
         notes: args.patch.notes, rating: args.patch.rating,
+        visitingCardUrl: toStoredAssetPath(args.patch.visitingCard) ?? undefined,
         status: args.patch.status ? args.patch.status.toUpperCase() : undefined,
       }),
     onSuccess: (updated) => {

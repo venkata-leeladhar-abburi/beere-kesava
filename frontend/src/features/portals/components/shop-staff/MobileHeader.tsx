@@ -33,7 +33,7 @@ function formatRelativeTime(iso: string): string {
 type TabId = "home" | "sale" | "inventory" | "customers" | "reports";
 
 export function MobileHeader({
-  title, onBack, activeTab, setActive, setShowReturn, showProfile, setShowProfile, setShowProfileModal, handleLogout, selectRole, routerNavigate,
+  title, onBack: _onBack, activeTab, setActive, setShowReturn, showProfile, setShowProfile, setShowProfileModal, handleLogout, selectRole, routerNavigate,
 }: {
   title: string;
   onBack?: () => void;
@@ -102,7 +102,7 @@ export function MobileHeader({
     setMarkedRead(true);
     for (const n of notifRes?.items ?? []) {
       if (!n.readAt) {
-        try { await notificationsApi.markRead(n.id); } catch (e) { /* ignore single error */ }
+        try { await notificationsApi.markRead(n.id); } catch { /* ignore single error */ }
       }
     }
   };
@@ -186,12 +186,19 @@ export function MobileHeader({
             <DropdownMenuContent align="end" className="!w-[300px] !max-w-[300px] !p-0 !rounded-[14px] !overflow-hidden" style={{ background: "#FFFDF9", border: `1px solid rgba(110,15,45,0.12)`, zIndex: 2000 }}>
               <div style={{ padding: "12px 16px", borderBottom: `1px solid rgba(110,15,45,0.08)`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontFamily: F.d, fontSize: 14, fontWeight: 600, color: C.dark }}>Notifications</span>
-                <span
-                  style={{ fontFamily: F.u, fontSize: 12, color: unreadCount > 0 ? C.gold : C.muted, cursor: unreadCount > 0 ? "pointer" : "default" }}
+                <button
+                  type="button"
+                  disabled={unreadCount === 0}
+                  style={{
+                    fontFamily: F.u, fontSize: 12,
+                    color: unreadCount > 0 ? C.gold : C.muted,
+                    cursor: unreadCount > 0 ? "pointer" : "default",
+                    background: "none", border: "none", padding: 0,
+                  }}
                   onClick={handleMarkAllRead}
                 >
                   Mark all read
-                </span>
+                </button>
               </div>
               {liveNotifications.length === 0 || markedRead ? (
                 <div style={{ padding: "20px 16px", textAlign: "center" as const, fontFamily: F.u, fontSize: 13, color: C.muted }}>
@@ -286,6 +293,7 @@ export function MobileHeader({
                 <Dialog.Title asChild>
                   <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 14, color: "#FFFDF9", lineHeight: 1.1 }}>Beere Kesava</div>
                 </Dialog.Title>
+                <Dialog.Description className="sr-only">Shop staff portal navigation menu</Dialog.Description>
                 <div style={{ fontFamily: F.u, fontWeight: 500, fontSize: 11, color: "rgba(231,201,131,0.85)", letterSpacing: "2px", textTransform: "uppercase" }}>SHOP STAFF</div>
               </div>
             </div>

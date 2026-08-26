@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, Search, Star, Users, ShoppingBag } from "lucide-react";
 import { C, F, PageHero, PortalStatsStrip, type PortalStat } from "../theme";
 import { Button, Input } from "../../../../../shared/ui/primitives";
+import { TableSkeleton, TableEmpty, TableError } from "../../../../../shared/ui/data";
 import { customersApi } from "../../../../../shared/api/customers";
 import { salesApi, type BackendSaleRecord } from "../../../../../shared/api/sales";
 import { rupees, formatMoney } from "@/lib/domain/money";
@@ -11,12 +12,12 @@ import { rupees, formatMoney } from "@/lib/domain/money";
 type ShopCustomer = { id: string; name: string; phone: string; purchases: number; total: string; lastPurchase?: string; last?: string; initials: string; regular?: boolean };
 
 export function CustomersSection({
-  bp, isTablet, canSeePrices, setSelectedCustomer,
+  bp: _bp, isTablet, canSeePrices, setSelectedCustomer,
 }: {
   bp: "tablet" | "desktop"; isTablet: boolean; canSeePrices: boolean;
   setSelectedCustomer: (c: ShopCustomer) => void;
 }) {
-  const { data: custRes } = useQuery({
+  const { data: custRes, isLoading: custLoading, isError: custError, refetch: refetchCust } = useQuery({
     queryKey: ["shop-staff-customers"],
     queryFn: () => customersApi.list(),
   });
@@ -97,6 +98,13 @@ export function CustomersSection({
           ))}
         </div>
 
+        {custLoading ? (
+          <TableSkeleton columns={3} rows={4} />
+        ) : custError ? (
+          <TableError onRetry={() => refetchCust()} />
+        ) : customers.length === 0 ? (
+          <TableEmpty title="No customers recorded yet" description="Customers appear here once a sale is recorded at the counter." />
+        ) : (
         <div style={{ display: "grid", gridTemplateColumns: isTablet ? "repeat(2, 1fr)" : "repeat(3, 1fr)", gap: 22 }}>
           {customers.map((c) => (
             <motion.div key={c.id}
@@ -134,6 +142,7 @@ export function CustomersSection({
             </motion.div>
           ))}
         </div>
+        )}
       </div>
     </>
   );

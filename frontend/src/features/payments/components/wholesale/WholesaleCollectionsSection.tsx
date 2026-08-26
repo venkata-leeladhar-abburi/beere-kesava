@@ -283,7 +283,7 @@ export function WholesaleCollectionsSection() {
           <DropBtn value={filterCust} options={["All Customers", "Lakshmi Silks", "Padmavathi Textiles", "Vijaya Silk House", "Narayana Silk Emporium", "Meenakshi Silks"]} onChange={setFilterCust} />
           <DropBtn value={filterType} options={["All Invoice Types", "Wholesale", "Retail", "Export"]} onChange={setFilterType} />
           <div style={{ flex: 1, minWidth: 200 }}>
-            <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search invoice or customer..." size="sm" />
+            <SearchInput aria-label="Search invoice or customer" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search invoice or customer..." size="sm" />
           </div>
         </div>
 

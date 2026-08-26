@@ -1,5 +1,7 @@
 import React from "react";
+
 import { motion, AnimatePresence } from "motion/react";
+
 import {
   UserPlus, CheckCircle2, Shield, Phone, Mail,
   Lock, Hash, ShieldCheck, ShieldHalf, Sparkles, X, Layers
@@ -9,10 +11,10 @@ import {
   ROLE_TO_PORTAL, ROLES, ACCESS_LEVELS, AccessLevel, ACCESS_LEVEL_META,
 } from "./theme";
 import { SectionCard, RoleBadge, AccessBadge } from "./UserBadges";
-import { Button, Field, Input, Textarea, Select, SelectItem } from "../../../shared/ui/primitives";
-import { PhotoUploadField } from "../../../shared/ui/PhotoUploadField";
-import { MobileFormActionBar } from "../../../shared/ui/MobileFormActionBar";
 
+import { Button, Field, Input, Textarea, Select, SelectItem } from "../../../shared/ui/primitives";
+
+import { PhotoUploadField } from "../../../shared/ui/PhotoUploadField";
 export interface WeaverFieldsState {
   photoUrl: string;
   village: string;

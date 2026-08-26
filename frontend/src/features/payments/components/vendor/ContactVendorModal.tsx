@@ -74,7 +74,7 @@ export function ContactVendorModal({ vendors, onClose }: { vendors: VendorPaymen
 
   const MESSAGE_PREVIEW = `Dear ${contact.contactPerson},
 
-This is a payment reminder from Beers Keshara & Brothers Silks regarding PO ${vp?.poNumber}.
+This is a payment reminder from Beere Kesava & Brothers Silks regarding PO ${vp?.poNumber}.
 
 Outstanding Balance: ${formatMoney(rupees(balance))}
 Original Due Date: ${vp?.dueDate ?? "—"}${vp?.daysOverdue ? `\nDays Overdue: ${vp.daysOverdue} days` : ""}
@@ -94,7 +94,7 @@ Thank you.`;
             </div>
             <div>
               <Dialog.Title style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#FFFDF9", margin: 0 }}>Contact Vendor</Dialog.Title>
-              <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.65)", marginTop: 2 }}>{vendors.length} overdue vendor{vendors.length > 1 ? "s" : ""} need attention</div>
+              <Dialog.Description asChild><div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.65)", marginTop: 2 }}>{vendors.length} overdue vendor{vendors.length > 1 ? "s" : ""} need attention</div></Dialog.Description>
             </div>
           </div>
           <Dialog.Close asChild>

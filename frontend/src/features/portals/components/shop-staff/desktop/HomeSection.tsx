@@ -1,13 +1,14 @@
 import React from "react";
-import { AlertTriangle, ArrowRight, ArrowUpRight, BarChart2, Check, ChevronRight, Package, RotateCcw, Send, ShoppingBag, Users } from "lucide-react";
+import { AlertTriangle, ArrowUpRight, BarChart2, Check, ChevronRight, Package, RotateCcw, Send, ShoppingBag } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { salesApi } from "../../../../../shared/api/sales";
 import { inventoryApi } from "../../../../../shared/api/inventory";
 import { customersApi } from "../../../../../shared/api/customers";
 import { useAuth } from "../../../../../contexts/AuthContext";
-import { C, F, PageHero, PortalStatsStrip, SectionTitle, type PortalStat } from "../theme";
+import { C, F, PageHero, PortalStatsStrip, type PortalStat } from "../theme";
 import { DSH } from "./DSH";
 import { Button } from "../../../../../shared/ui/primitives";
+import { TableSkeleton, TableError } from "../../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
 
 type TabId = "home" | "sale" | "inventory" | "customers" | "reports";
@@ -22,14 +23,14 @@ function dateLabel(iso: string) {
 }
 
 export function HomeSection({
-  bp, isTablet, canSeePrices, setActive, setShowReturn, invLowStockSent, setShowInvLowStockDialog,
+  bp: _bp, isTablet, canSeePrices, setActive, setShowReturn: _setShowReturn, invLowStockSent, setShowInvLowStockDialog,
 }: {
   bp: "tablet" | "desktop"; isTablet: boolean; canSeePrices: boolean;
   setActive: (tab: TabId) => void; setShowReturn: (v: boolean) => void;
   invLowStockSent: boolean; setShowInvLowStockDialog: (v: boolean) => void;
 }) {
   const { user } = useAuth();
-  const { data: salesRes } = useQuery({
+  const { data: salesRes, isLoading: salesLoading, isError: salesError, refetch: refetchSales } = useQuery({
     queryKey: ["sales-list-homesection"],
     queryFn: () => salesApi.list(100),
   });
@@ -141,7 +142,11 @@ export function HomeSection({
                     ))}
                   </div>
                 </div>
-                {recentSales.length === 0 ? (
+                {salesLoading ? (
+                  <TableSkeleton columns={canSeePrices ? 5 : 4} rows={3} />
+                ) : salesError ? (
+                  <TableError onRetry={() => refetchSales()} />
+                ) : recentSales.length === 0 ? (
                   <div style={{ padding: "24px 16px", textAlign: "center", fontFamily: F.u, fontSize: 14, color: C.muted }}>
                     No sales recorded today yet.
                   </div>

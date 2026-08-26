@@ -54,7 +54,7 @@ export function RecipientSelector({
         !selectedWeaver ? (
           <div style={{ position: "relative" as const, marginBottom: 8 }}>
             <div style={{ position: "relative" as const }}>
-              <SearchInput value={weaverSearch} onChange={e => { setWeaverSearch(e.target.value); setShowWeaverList(true); }} onFocus={() => setShowWeaverList(true)} onSearch={setWeaverSearch}
+              <SearchInput aria-label="Search weaver by name or ID" value={weaverSearch} onChange={e => { setWeaverSearch(e.target.value); setShowWeaverList(true); }} onFocus={() => setShowWeaverList(true)} onSearch={setWeaverSearch}
                 placeholder="Search weaver by name or ID…" size="lg" />
             </div>
             {showWeaverList && (

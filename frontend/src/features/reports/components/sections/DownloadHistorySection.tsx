@@ -9,6 +9,8 @@ import { Button } from "../../../../shared/ui/primitives";
 // recorded via POST /reports/history whenever a report is generated/downloaded.
 import { useQuery } from "@tanstack/react-query";
 import { reportsApi } from "../../../../shared/api/reports";
+import { resolveAssetUrl } from "../../../../shared/api/uploads";
+import { toast } from "sonner";
 
 export function DownloadHistorySection() {
   const downloadsAllowed = useDownloadsAllowed();
@@ -95,7 +97,17 @@ export function DownloadHistorySection() {
                 </div>
 
                 {/* Download button */}
-                <Button variant="primary" size="lg" iconLeft={Download} fullWidth>
+                <Button
+                  variant="primary"
+                  size="lg"
+                  iconLeft={Download}
+                  fullWidth
+                  onClick={() => {
+                    const url = resolveAssetUrl(r.downloadUrl);
+                    if (url) window.open(url, "_blank", "noopener");
+                    else toast.error("This report was recorded before file storage was added — regenerate it from the report's own Download button instead.");
+                  }}
+                >
                   Download Again
                 </Button>
               </div>

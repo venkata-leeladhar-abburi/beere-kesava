@@ -1,6 +1,5 @@
 import { XAxis, YAxis, Tooltip, Cell } from "recharts";
-import { SectionNavigator, PAGE_SECTIONS } from "../../../../shared/ui/SectionNavigator";
-const SHOP_MOBILE_HEADER_H = 60;
+const _SHOP_MOBILE_HEADER_H = 60;
 import { BarChart, Bar, ResponsiveContainer } from "recharts";
 import { SectionTitle } from "./theme";
 import { FileText, Check } from "lucide-react";
@@ -19,7 +18,7 @@ import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { useQuery } from "@tanstack/react-query";
 import { salesApi } from "../../../../shared/api/sales";
 import { customersApi } from "../../../../shared/api/customers";
-import { ChartFigure } from "../../../../shared/ui/data";
+import { ChartFigure, TableSkeleton, TableEmpty, TableError } from "../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
 
 function dateLabel(iso: string) {
@@ -41,7 +40,7 @@ function SalesReport() {
   const [exportFormat, setExportFormat] = useState<"pdf" | "csv" | "excel">("pdf");
   const [exportDone, setExportDone] = useState(false);
 
-  const { data: salesRes } = useQuery({
+  const { data: salesRes, isLoading: salesLoading, isError: salesError, refetch: refetchSales } = useQuery({
     queryKey: ["sales-list-report"],
     queryFn: () => salesApi.list(100),
   });
@@ -84,17 +83,17 @@ function SalesReport() {
   const totalMonthSales = salesList.filter(s => new Date(s.saleDate).getMonth() === currentMonth);
   const totalMonthReturns = returnsList.filter(r => new Date(r.returnDate).getMonth() === currentMonth);
   const monthRevenue = totalMonthSales.reduce((acc, curr) => acc + Number(curr.amount), 0);
-  const avgSale = totalMonthSales.length > 0 ? Math.round(monthRevenue / totalMonthSales.length) : 0;
-  const monthReturnsAmount = totalMonthReturns.reduce((acc, curr) => acc + Number(curr.refundAmount || 0), 0);
+  const _avgSale = totalMonthSales.length > 0 ? Math.round(monthRevenue / totalMonthSales.length) : 0;
+  const _monthReturnsAmount = totalMonthReturns.reduce((acc, curr) => acc + Number(curr.refundAmount || 0), 0);
 
   const designMap = new Map<string, number>();
   totalMonthSales.forEach(s => {
       designMap.set(s.sareeId, (designMap.get(s.sareeId) || 0) + 1);
   });
-  let topDesign = "None";
+  let _topDesign = "None";
   let maxCount = 0;
   designMap.forEach((count, id) => {
-      if (count > maxCount) { maxCount = count; topDesign = id; }
+      if (count > maxCount) { maxCount = count; _topDesign = id; }
   });
 
   const topCustomers = useMemo(() => {
@@ -174,6 +173,14 @@ function SalesReport() {
       <div id="shoprep-today-sales" style={{ margin: "24px 20px 0" }}>
         <SectionTitle title={`Today's Sales — ${new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`} link="Export →" onLink={() => { setExportDone(false); setShowExport(true); }} />
         <Card style={{ margin: 0, overflow: "hidden", padding: 0 }}>
+          {salesLoading ? (
+            <TableSkeleton columns={canSeePrices ? 3 : 2} rows={3} />
+          ) : salesError ? (
+            <TableError onRetry={() => refetchSales()} />
+          ) : dailySales.length === 0 ? (
+            <TableEmpty title="No sales recorded today yet" />
+          ) : (
+          <>
           {dailySales.map((s, i) => (
             <div key={s.saleId} style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, padding: "16px", borderBottom: i < dailySales.length - 1 ? `1px solid ${C.bdr}` : "none" }}>
               <div style={{ minWidth: 0, flex: 1 }}>
@@ -187,6 +194,8 @@ function SalesReport() {
               {canSeePrices && <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 16, color: C.gold, flexShrink: 0, textAlign: "right" as const }}>{s.amt}</div>}
             </div>
           ))}
+          </>
+          )}
           {/* Total row */}
           {canSeePrices && (
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px", background: C.cream }}>
@@ -276,7 +285,7 @@ function SalesReport() {
                   <Dialog.Title asChild>
                     <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: "#FFF" }}>Export Report</div>
                   </Dialog.Title>
-                  <div style={{ fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.55)", marginTop: 2 }}>Today's Sales</div>
+                  <Dialog.Description asChild><div style={{ fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.55)", marginTop: 2 }}>Today's Sales</div></Dialog.Description>
                 </div>
                 <Dialog.Close asChild>
                   <IconButton

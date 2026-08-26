@@ -1,5 +1,5 @@
 import React from "react";
-import { T, F } from "./tokens";
+import { T } from "./tokens";
 import { formatMoney, rupees } from "@/lib/domain/money";
 
 import { LuxuryStatsCard } from "../../../../shared/ui/LuxuryStatsCard";

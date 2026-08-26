@@ -186,6 +186,7 @@ export function AllPurchasesPage({ onBack }: { onBack: () => void }) {
           ))}
 
           <SearchInput
+            aria-label="Search vendor, PO number, material"
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search vendor, PO number, material…"

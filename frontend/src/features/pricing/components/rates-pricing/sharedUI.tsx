@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Plus, type LucideIcon } from "lucide-react";
-import { Button, Input } from "../../../../shared/ui/primitives";
+import { Button, Input, NumberInput } from "../../../../shared/ui/primitives";
 import { T, F, labelStyle } from "./theme";
 import { JariUnit, jariFromReels, jariToReels, jariGrams, trimNum } from "./jariUtils";
 
@@ -30,10 +30,9 @@ export function JariWeightField({ reels, onChange }: { reels: string; onChange: 
           ))}
         </div>
       </div>
-      <Input aria-label="0" type="number" value={shown} placeholder="0"
-        onChange={e => {
-          const v = e.target.value;
-          onChange(v === "" ? "" : trimNum(jariToReels(parseFloat(v) || 0, unit)));
+      <NumberInput aria-label="0" value={shown === "" ? "" : Number(shown)} placeholder="0" step={0.01}
+        onValueChange={v => {
+          onChange(v === "" ? "" : trimNum(jariToReels(v, unit)));
         }}
         className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
       <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, marginTop: 4 }}>

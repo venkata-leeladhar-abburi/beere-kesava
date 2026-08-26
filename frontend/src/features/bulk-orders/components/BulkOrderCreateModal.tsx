@@ -4,9 +4,11 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { X as LucideX } from "lucide-react";
 import { BulkOrder } from "../contexts/BulkOrderContext";
 import { WholesaleCustomerSelectSection, useAllWholesaleCustomers } from "./WholesaleCustomerSelectSection";
-import { Button, IconButton, Field, Input, Textarea } from "../../../shared/ui/primitives";
+import { Button, IconButton, Field, Input, NumberInput, Textarea } from "../../../shared/ui/primitives";
 import { Modal } from "../../../shared/ui/overlay";
 import { DatePicker, formatDate } from "../../../shared/ui/date";
+import { resolveAssetUrl } from "@/shared/api/uploads";
+import { useImageUpload } from "@/shared/hooks/useImageUpload";
 
 // Validation schema for the raw string form fields (inputs are all `type="text"`-shaped
 // under the hood, so numeric/date fields are validated as strings and coerced on submit).
@@ -54,7 +56,12 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
   const [priority, setPriority] = useState<"Normal" | "Urgent">("Normal");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const [photos, setPhotos] = useState<File[]>([]);
+  // Uploaded order photos, held as { stored path, original filename }. These
+  // used to be File objects turned into URL.createObjectURL() blobs at submit
+  // time — blob: URLs are scoped to the tab that made them, so what landed in
+  // the database was dead the moment the page reloaded.
+  const [photos, setPhotos] = useState<{ url: string; name: string }[]>([]);
+  const { upload: uploadPhoto, uploading: photoUploading, error: photoError } = useImageUpload();
 
   const wholesaleCustomersList = useAllWholesaleCustomers();
 
@@ -111,9 +118,12 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
       address: address || undefined,
       phone: phone || undefined,
       gstCode: gstCode || undefined,
-      visitingCardUrl: visitingCard ? URL.createObjectURL(visitingCard) : undefined,
+      // No visiting-card picker is wired into this modal yet, so this stays
+      // unset. When one is added, upload through useImageUpload like the photos
+      // below — never URL.createObjectURL, which does not survive a reload.
+      visitingCardUrl: undefined,
       visitingCardName: visitingCard ? visitingCard.name : undefined,
-      photoUrls: photos.map(p => URL.createObjectURL(p)),
+      photoUrls: photos.map(p => p.url),
     };
     onSubmit(order);
     setCustomerId(""); setAddress(""); setPhone(""); setVisitingCard(null); setGstCode("");
@@ -148,9 +158,11 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
                     Create Bulk Order
                   </div>
                 </Dialog.Title>
-                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.antiqueGold, marginTop: 4 }}>
-                  New wholesale customer order · {nextRef}
-                </div>
+                <Dialog.Description asChild>
+                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.antiqueGold, marginTop: 4 }}>
+                    New wholesale customer order · {nextRef}
+                  </div>
+                </Dialog.Description>
               </div>
               <Dialog.Close asChild>
                 <span style={{ display: "inline-block", border: "1px solid rgba(255,255,255,0.22)", background: "rgba(255,255,255,0.12)", color: "#fff", borderRadius: 8 }}>
@@ -191,15 +203,23 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
                         accept="image/*"
                         id="bulk-order-photos-upload"
                         containerClassName="hidden"
+                        disabled={photoUploading}
                         onChange={e => {
                           const files = Array.from(e.target.files || []);
-                          setPhotos(prev => [...prev, ...files]);
+                          e.target.value = "";
+                          void (async () => {
+                            for (const file of files) {
+                              const url = await uploadPhoto(file);
+                              if (url) setPhotos(prev => [...prev, { url, name: file.name }]);
+                            }
+                          })();
                         }}
                       />
+                      {photoError && <div style={{ fontFamily: F.ui, fontSize: 12, color: "#C0392B" }}>{photoError}</div>}
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-                        {photos.map((file, idx) => (
-                          <div key={`${file.name}-${file.size}-${file.lastModified}`} style={{ position: "relative", width: 72, height: 72, borderRadius: 10, overflow: "hidden", border: `1px solid ${T.borderDef}` }}>
-                            <img src={URL.createObjectURL(file)} alt={file.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        {photos.map((photo, idx) => (
+                          <div key={photo.url} style={{ position: "relative", width: 72, height: 72, borderRadius: 10, overflow: "hidden", border: `1px solid ${T.borderDef}` }}>
+                            <img src={resolveAssetUrl(photo.url) ?? undefined} alt={photo.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                             <span style={{ position: "absolute", top: 4, right: 4, width: 18, height: 18, borderRadius: "50%", background: "rgba(61,14,26,0.8)", color: "#FFF", display: "inline-flex" }}>
                               <IconButton
                                 type="button"
@@ -214,18 +234,17 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
                         ))}
                         <label htmlFor="bulk-order-photos-upload" style={{ width: 72, height: 72, borderRadius: 10, border: `1.5px dashed ${T.borderDef}`, background: "rgba(110,15,45,0.02)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
                           <span style={{ fontSize: 20, color: T.royalBurgundy, fontWeight: 300 }}>+</span>
-                          <span style={{ fontSize: 12, color: T.taupe, fontWeight: 600 }}>Add Photo</span>
+                          <span style={{ fontSize: 12, color: T.taupe, fontWeight: 600 }}>{photoUploading ? "Uploading…" : "Add Photo"}</span>
                         </label>
                       </div>
                     </div>
                   </div>
 
                   <Field label="Quantity (sarees)" error={errors.quantity} id="quantity-sarees">
-                    <Input id="quantity-sarees"
-                      type="number"
-                      min="1"
-                      value={quantity}
-                      onChange={e => setQuantity(e.target.value)}
+                    <NumberInput id="quantity-sarees"
+                      min={1}
+                      value={quantity === "" ? "" : Number(quantity)}
+                      onValueChange={v => setQuantity(v === "" ? "" : String(v))}
                       placeholder="e.g. 40"
                       invalid={!!errors.quantity}
                     />
@@ -241,12 +260,12 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
                   </Field>
 
                   <div style={{ gridColumn: "1 / -1" }}>
-                    <Field label="Estimated Value (INR)" id="estimated-value">
-                      <Input id="estimated-value"
-                        type="number"
-                        min="0"
-                        value={estimatedValue}
-                        onChange={e => setEstimatedValue(e.target.value)}
+                    <Field label="Estimated Value (₹)" id="estimated-value">
+                      <NumberInput id="estimated-value"
+                        min={0}
+                        step={0.01}
+                        value={estimatedValue === "" ? "" : Number(estimatedValue)}
+                        onValueChange={v => setEstimatedValue(v === "" ? "" : String(v))}
                         placeholder="Enter estimated value"
                       />
                     </Field>

@@ -13,14 +13,9 @@ import {
 } from "lucide-react";
 
 // ─── Design Tokens ─────────────────────────────────────────────────────────
-import {
-  C, F, SectionTitle, Card, ProgressBar, StatusBadge, HeroHeader,
-} from './theme';
+import { C, F, HeroHeader } from './theme';
 import { SectionHeading } from "@/shared/ui/portal/PortalChrome";
-import { Button, Input, Textarea } from '../../../../shared/ui/primitives';
-import { DataTable, type ColumnDef } from '../../../../shared/ui/data';
-
-const MATERIAL_TO_WARP_TYPE: Record<"warp" | "resham" | "jari", string> = {
+import { Button, Input, Textarea } from '../../../../shared/ui/primitives';const MATERIAL_TO_WARP_TYPE: Record<"warp" | "resham" | "jari", string> = {
   warp: "WARP", resham: "RESHAM", jari: "JARI",
 };
 
@@ -30,7 +25,7 @@ import { LuxuryStatsCard, type StatItem } from "@/shared/ui/LuxuryStatsCard";
 import { IcoResourceMgmt, IcoFabricRoll, IcoQualityCheck } from "@/features/dashboards";
 
 export function WarpRequestPage() {
-  const { isMobile, isTablet } = useResponsive();
+  const { isMobile: _isMobile, isTablet: _isTablet } = useResponsive();
   const { batches } = useBatches();
   const { weaver, weaverId, weaverCode, isLoading: weaverLoading, isError: weaverError } = useCurrentWeaver();
   const { user } = useAuth();

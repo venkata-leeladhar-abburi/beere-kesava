@@ -132,7 +132,7 @@ export function SupplierSection({
           <Input
             value={form.billAmount}
             onChange={(e) => set("billAmount", e.target.value)}
-            placeholder="e.g. INR 34,000"
+            placeholder="e.g. ₹34,000"
           />
         </Field>
         <div>

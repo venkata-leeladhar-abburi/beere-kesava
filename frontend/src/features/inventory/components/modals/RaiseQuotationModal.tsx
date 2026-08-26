@@ -69,6 +69,7 @@ export function RaiseQuotationModal({ sarees, available, onConfirm, onClose, ini
               <Dialog.Title asChild>
                 <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: "#FFF" }}>Raise Quotation</span>
               </Dialog.Title>
+              <Dialog.Description className="sr-only">Create a quotation for a customer</Dialog.Description>
               {selectedCustomer && <span style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.65)" }}>→ {selectedCustomer.name}</span>}
             </div>
             <Dialog.Close asChild>
@@ -101,7 +102,7 @@ export function RaiseQuotationModal({ sarees, available, onConfirm, onClose, ini
             <div>
               <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginBottom: 14 }}>Select the customer for this quotation.</div>
               <div style={{ marginBottom: 14 }}>
-                <SearchInput value={customerSearch} onChange={e => setCustomerSearch(e.target.value)} placeholder="Search customers…" />
+                <SearchInput aria-label="Search customers" value={customerSearch} onChange={e => setCustomerSearch(e.target.value)} placeholder="Search customers…" />
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {filteredCustomers.map(c => (

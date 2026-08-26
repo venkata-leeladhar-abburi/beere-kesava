@@ -234,7 +234,7 @@ export function SupplierPaymentsSection() {
             {["All Bill Status", "Paid", "Pending", "Overdue"].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
           </Select>
           <div style={{ flex: 1, minWidth: 200 }}>
-            <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search supplier..." size="sm" />
+            <SearchInput aria-label="Search supplier" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search supplier..." size="sm" />
           </div>
         </div>
 

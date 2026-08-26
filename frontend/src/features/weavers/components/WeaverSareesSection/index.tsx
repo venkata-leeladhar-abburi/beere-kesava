@@ -261,6 +261,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
       }}>
         <div style={{ flex: "1 1 280px" }}>
           <SearchInput
+            aria-label="Search saree ID, batch, type, colour, weaver"
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search Saree ID, batch, type, colour, weaver…"

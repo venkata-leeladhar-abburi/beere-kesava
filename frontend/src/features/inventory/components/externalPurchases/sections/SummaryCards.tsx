@@ -1,8 +1,8 @@
 import React from "react";
-import { ShoppingCart, Tag, FileText, Calendar } from "lucide-react";
-import { Purchase } from "@/features/suppliers";
-import { T, F } from "../theme";
 
+import { ShoppingCart, Tag, FileText, Calendar } from "lucide-react";
+
+import { Purchase } from "@/features/suppliers";
 import { LuxuryStatsCard } from "@/shared/ui/LuxuryStatsCard";
 
 /** Floating stat strip — total purchases, sarees tagged, pending payments, this month. */

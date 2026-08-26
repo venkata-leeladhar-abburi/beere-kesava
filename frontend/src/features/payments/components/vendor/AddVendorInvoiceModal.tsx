@@ -109,6 +109,7 @@ export function AddVendorInvoiceModal({ vp, matchedPO, onClose, onSaved }: { vp:
           <Dialog.Title asChild>
             <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: "#FFFDF9" }}>{isEdit ? "Edit Invoice" : "Add Invoice"} — {vp.vendor}</div>
           </Dialog.Title>
+          <Dialog.Description className="sr-only">{isEdit ? "Edit vendor invoice" : "Add a new vendor invoice"} for {vp.vendor}</Dialog.Description>
           <Dialog.Close asChild>
             <IconButton icon={X} label="Close" variant="ghost" size="sm"
               className="absolute right-4 top-4 rounded-[8px] bg-[rgba(255,255,255,0.12)] text-[rgba(255,255,255,0.85)] hover:bg-[rgba(255,255,255,0.20)]" />

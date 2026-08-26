@@ -149,7 +149,7 @@ export function LoomAnalytics({ looms, batches, materials, sarees }: {
       .slice(0, 5);
   }, [doneSarees]);
 
-  const card: React.CSSProperties = {
+  const _card: React.CSSProperties = {
     background: "#FFF", borderRadius: 20, border: `1px solid ${T.borderDef}`,
     padding: "24px 28px", boxShadow: "0 2px 12px rgba(74,6,27,0.05)",
   };

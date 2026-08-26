@@ -1,15 +1,12 @@
 
-import React, { useRef } from 'react';
+import React from 'react';
 import { motion } from 'motion/react';
 import {
-  ChevronRight, ArrowRight,
-  Facebook, Instagram, Youtube, Linkedin,
+  ChevronRight,
   CheckCircle2,
   Package, IndianRupee, Users,
   Layers
-, Flower2 as Lotus } from 'lucide-react';
-import { useInView } from 'motion/react';
-import { imgBKLogo, imgSareeFooter, imgShowroom } from '../../../../shared/constants/weaverImages';
+, Flower2 as Lotus } from 'lucide-react';import { imgBKLogo, imgSareeFooter, imgShowroom } from '../../../../shared/constants/weaverImages';
 import { T, F, G, NUM, DARK_MAROON, EASE } from './theme';
 import { FadeUp, AnimatedNumber, AnimatedBar, Donut } from './ui';
 import { useDashboardMetrics } from './hooks/useDashboardMetrics';
@@ -265,14 +262,6 @@ function MobileFooter() {
               <p style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: "rgba(245,232,208,0.88)", lineHeight: 1.75, margin: "8px 0 10px", letterSpacing: "0.05px" }}>
                 Four generations of passion, woven into every creation.
               </p>
-              <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} style={{ alignSelf: "flex-start", borderRadius: 12 }}>
-                <Button
-                  variant="tertiary"
-                  className="!gap-1.5 !py-[7px] !px-3.5 !rounded-xl !border !border-[rgba(200,155,71,0.28)] !bg-[rgba(200,155,71,0.09)] !text-xs !font-medium !text-[#E7C983] hover:!bg-[rgba(200,155,71,0.14)] hover:!text-[#E7C983]"
-                >
-                  Know Our Story <ArrowRight size={11} color={T.goldLight} />
-                </Button>
-              </motion.div>
             </div>
           </div>
         </div>
@@ -286,30 +275,6 @@ function MobileFooter() {
             <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 14, color: T.luxuryBrown, letterSpacing: "0.1px" }}>Beere Kesava &amp; Brothers Silks</div>
             <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: T.antiqueGold, letterSpacing: "2px", textTransform: "uppercase" }}>Est. 1999</div>
           </div>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 0, borderTop: `1px solid ${T.borderDef}` }}>
-          {["About Us","Our Legacy","Sustainability","Careers","Contact Us"].map((l, i, arr) => (
-            <motion.div
-              key={l}
-              whileHover={{ x: 4 }}
-              style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 0", borderBottom: i < arr.length - 1 ? `1px solid ${T.borderDef}` : "none", cursor: "pointer" }}
-            >
-              <span style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13, color: T.luxuryBrown, letterSpacing: "0.1px" }}>{l}</span>
-              <ChevronRight size={13} color={T.taupe} />
-            </motion.div>
-          ))}
-        </div>
-        <div style={{ display: "flex", gap: 10, paddingTop: 20, paddingBottom: 16 }}>
-          {([Facebook, Instagram, Youtube, Linkedin] as const).map((Icon) => (
-            <motion.div
-              key={Icon.displayName}
-              whileHover={{ scale: 1.14, y: -3 }}
-              whileTap={{ scale: 0.92 }}
-              style={{ width: 40, height: 40, borderRadius: 12, border: `1px solid ${T.borderDef}`, background: T.warmIvory, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
-            >
-              <Icon size={15} color={T.luxuryBrown} />
-            </motion.div>
-          ))}
         </div>
         <div style={{ borderTop: `1px solid ${T.borderDef}`, paddingTop: 16, paddingBottom: 24, display: "flex", flexDirection: "column", gap: 8 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -332,3 +297,25 @@ function MobileFooter() {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export { MobileMenuDrawer, MobileTopNav, MobileHero, MobileMetrics, MobilePerformance, MobileFeaturedProduct, MobileActivity, MobileWeavers, MobileRawMaterial, MobileFooter };
+
+/**
+ * The mobile counterpart of DesktopOverview.tsx — lazily imported by
+ * BeereDashboard.tsx so a phone never fetches the desktop bundle (and a
+ * desktop browser never fetches this one). MobileMenuDrawer/MobileTopNav
+ * are imported separately, directly from ./MobileNavDrawer, since those
+ * render on every mobile tab and must stay in the eager bundle.
+ */
+export function MobileOverview({ onNavigate }: { onNavigate: (tab: string, ctx?: { weaverId: string; mode: "view" | "edit" }) => void }) {
+  return (
+    <>
+      <MobileHero />
+      <MobileMetrics />
+      <MobilePerformance />
+      <MobileFeaturedProduct />
+      <MobileActivity onNavigate={onNavigate} />
+      <MobileWeavers onNavigate={onNavigate} />
+      <MobileRawMaterial onNavigate={onNavigate} />
+      <MobileFooter />
+    </>
+  );
+}

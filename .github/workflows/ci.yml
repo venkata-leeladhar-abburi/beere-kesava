@@ -128,3 +128,84 @@ jobs:
           name: dist
           path: frontend/dist
           retention-days: 7
+
+  # ───────────────────────────────────────────────────────────────────────
+  # Backend gate. Until this existed the backend never ran in CI at all: a
+  # broken Nest build, a bad Prisma schema, or a regressed auth guard could
+  # merge to main with zero signal.
+  #
+  # No Postgres service here on purpose — every current backend spec mocks
+  # PrismaService, so a database would sit idle and slow the job down. A
+  # real Postgres arrives with the Testcontainers integration suite.
+  #
+  # `prisma generate` is mandatory, not optional: src/generated/prisma is
+  # gitignored, so nothing typechecks or compiles on a fresh checkout until
+  # the client is emitted.
+  # ───────────────────────────────────────────────────────────────────────
+  backend:
+    name: Backend (typecheck, lint, test, build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - name: Generate Prisma client
+        run: npx prisma generate
+      - name: Validate Prisma schema
+        run: npx prisma validate
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run test
+      - run: npm run build
+
+  # ───────────────────────────────────────────────────────────────────────
+  # Supply chain and secrets. Both are cheap and catch a class of problem no
+  # amount of unit testing will: a vulnerable transitive dependency, or a
+  # credential pasted into a commit.
+  # ───────────────────────────────────────────────────────────────────────
+  audit:
+    # Informational, not yet a gate: the tree currently carries a backlog of
+    # pre-existing advisories (see docs/TESTING_PLAN.md Â§ Phase 0 findings).
+    # Landing this job red would train people to ignore a red X, which is
+    # worse than no job. Flip continue-on-error off once the backlog is
+    # cleared â that flip is the Phase-0 exit criterion for supply chain.
+    name: Dependency audit (informational)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        workspace: [backend, frontend]
+    defaults:
+      run:
+        working-directory: ${{ matrix.workspace }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: npm audit (high and critical only)
+        run: npm audit --audit-level=high
+
+  secret-scan:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # gitleaks needs history to scan commits, not just the tree.
+          fetch-depth: 0
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

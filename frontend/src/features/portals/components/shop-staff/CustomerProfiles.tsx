@@ -15,6 +15,7 @@ import { useQuery } from '@tanstack/react-query';
 import { customersApi } from '../../../../shared/api/customers';
 import { salesApi } from '../../../../shared/api/sales';
 import { rupees, formatMoney } from "@/lib/domain/money";
+import { TableSkeleton, TableEmpty, TableError } from "../../../../shared/ui/data";
 
 function CustomerProfiles() {
   const canSeePrices = useCanSeePrices();
@@ -22,7 +23,7 @@ function CustomerProfiles() {
   const [sort, setSort] = useState("All");
   const [selected, setSelected] = useState<number | null>(null);
 
-  const { data: customersRes } = useQuery({
+  const { data: customersRes, isLoading: custLoading, isError: custError, refetch: refetchCust } = useQuery({
     queryKey: ["shop-customers-list"],
     queryFn: () => customersApi.list(100),
   });
@@ -128,6 +129,13 @@ function CustomerProfiles() {
         </div>
       </div>
 
+      {custLoading ? (
+        <div style={{ padding: "8px 20px 0" }}><TableSkeleton columns={2} rows={4} /></div>
+      ) : custError ? (
+        <TableError onRetry={() => refetchCust()} />
+      ) : filtered.length === 0 ? (
+        <TableEmpty title="No customers found" description={search ? "Try a different search." : "Customers appear here once a sale is recorded."} />
+      ) : (
       <div style={{ padding: "8px 20px 0", display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 }}>
         {filtered.map((c, i) => (
           <Card key={c.id} style={{ padding: 20 }}>
@@ -155,6 +163,7 @@ function CustomerProfiles() {
           </Card>
         ))}
       </div>
+      )}
 
       {/* ══════ MODAL: CUSTOMER PROFILE ══════ */}
       <Modal open={!!activeCustomer} onOpenChange={o => !o && setSelected(null)} size="sm">
@@ -173,7 +182,7 @@ function CustomerProfiles() {
                       </Dialog.Title>
                       {activeCustomer.regular && <Star size={16} fill={C.gold} color={C.gold} />}
                     </div>
-                    <div style={{ fontFamily: F.m, fontSize: 13, color: "rgba(255,255,255,0.55)" }}>{activeCustomer.phone}</div>
+                    <Dialog.Description asChild><div style={{ fontFamily: F.m, fontSize: 13, color: "rgba(255,255,255,0.55)" }}>{activeCustomer.phone}</div></Dialog.Description>
                   </div>
                   <Dialog.Close asChild>
                     <IconButton

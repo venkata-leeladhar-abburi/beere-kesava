@@ -1,18 +1,17 @@
 import { useState } from "react";
-import {
-  ChevronDown, Download, Eye, Edit, Plus,
-  LayoutGrid, AlignJustify, Table as TableIcon, MapPin,
-  Building2, Users, AlertTriangle,
-} from "lucide-react";
+import { ChevronDown, Download, Eye, Edit, Plus, LayoutGrid, Table as TableIcon, MapPin, Building2, Users, AlertTriangle } from "lucide-react";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { T, F } from "../theme";
 import { SectionCard, Pill, FadeUp } from "../common/primitives";
+import { downloadDataAsCSV } from "../utils";
 import { WholesaleCustomer, ViewMode } from "../types";
-import { Button, IconButton, Field, Input, SearchInput, Select, SelectItem, Textarea } from "../../../../shared/ui/primitives";
+import { Button, Field, Input, SearchInput, Select, SelectItem, Textarea } from "../../../../shared/ui/primitives";
 import { useCustomers } from "../../contexts/CustomersContext";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees, formatMoney, paise } from "@/lib/domain/money";
 import { Money } from "../../../../shared/ui/domain/Money";
+import { resolveAssetUrl } from "@/shared/api/uploads";
+import { useImageUpload } from "@/shared/hooks/useImageUpload";
 
 interface WholesaleFormState {
   name: string;
@@ -28,6 +27,8 @@ interface WholesaleFormState {
   ifscCode: string;
   gstNumber: string;
   notes: string;
+  /** Stored path of the uploaded visiting card (POST /uploads/photo), or "". */
+  visitingCardUrl: string;
 }
 
 const EMPTY_WHOLESALE_FORM: WholesaleFormState = {
@@ -44,6 +45,7 @@ const EMPTY_WHOLESALE_FORM: WholesaleFormState = {
   ifscCode: "",
   gstNumber: "",
   notes: "",
+  visitingCardUrl: "",
 };
 
 export interface WholesaleCustomersSectionProps {
@@ -62,6 +64,7 @@ export function WholesaleCustomersSection({
 }: WholesaleCustomersSectionProps) {
   const { addCustomer } = useCustomers();
   const [form, setForm] = useState<WholesaleFormState>(EMPTY_WHOLESALE_FORM);
+  const { upload, uploading, error: uploadError } = useImageUpload();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -126,6 +129,7 @@ export function WholesaleCustomersSection({
         state: form.state || undefined,
         paymentTerms: form.paymentTerms || undefined,
         notes: form.notes.trim() || undefined,
+        visitingCardUrl: form.visitingCardUrl || undefined,
       });
       closeAddWholesale();
     } catch (err) {
@@ -197,7 +201,20 @@ export function WholesaleCustomersSection({
                   <Field label="GST Number"><Input aria-label="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" type="text" placeholder="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" value={form.gstNumber} onChange={e => updateField("gstNumber", e.target.value)} /></Field>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
-                  <Field label="Visiting Card Photo"><Input type="file" accept="image/*" /></Field>
+                  <Field label="Visiting Card Photo">
+                    <Input type="file" accept="image/png,image/jpeg" disabled={uploading} onChange={e => {
+                      const file = e.target.files?.[0];
+                      e.target.value = "";
+                      if (!file) return;
+                      void upload(file).then(url => { if (url) updateField("visitingCardUrl", url); });
+                    }} />
+                    {uploading && <div style={{ fontSize: 12, color: T.taupe, marginTop: 4 }}>Uploading…</div>}
+                    {uploadError && <div style={{ fontSize: 12, color: T.crimson, marginTop: 4 }}>{uploadError}</div>}
+                    {form.visitingCardUrl && (
+                      <img src={resolveAssetUrl(form.visitingCardUrl) ?? undefined} alt="Visiting card"
+                        style={{ marginTop: 8, width: "100%", maxWidth: 240, height: 120, objectFit: "cover", borderRadius: 8, border: `1px solid ${T.borderDef}` }} />
+                    )}
+                  </Field>
                 </div>
                 <Field label="Notes"><Input aria-label="Any special instructions..." type="text" placeholder="Any special instructions..." value={form.notes} onChange={e => updateField("notes", e.target.value)} /></Field>
               </div>
@@ -286,7 +303,16 @@ export function WholesaleCustomersSection({
             </button>
           </div>
           <DownloadGate>
-            <Button variant="tertiary" size="sm" iconLeft={Download}>Download</Button>
+            <Button
+              variant="tertiary"
+              size="sm"
+              iconLeft={Download}
+              onClick={() => downloadDataAsCSV(
+                "wholesale_customers.csv",
+                ["Code", "Name", "City", "Status", "Orders", "Spend", "Outstanding", "Last Order"],
+                wholesaleList.map(w => [w.displayCode || w.id, w.name, w.city, w.status, w.orders, w.spend, w.out, w.lastOrder]),
+              )}
+            >Download</Button>
           </DownloadGate>
         </div>
       </div>

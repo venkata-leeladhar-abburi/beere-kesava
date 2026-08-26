@@ -175,7 +175,7 @@ export function ActiveBatchesSection({ onNavigate, onOpenTally }: { onNavigate?:
 
         <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 mb-6 w-full max-w-full">
           <div className="w-full sm:flex-1 sm:min-w-[220px]">
-            <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by batch number, weaver name, or design code..." className="h-[44px] w-full" />
+            <SearchInput aria-label="Search by batch number, weaver name, or design code" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by batch number, weaver name, or design code..." className="h-[44px] w-full" />
           </div>
           
           <div className="flex items-center justify-between sm:justify-start gap-2 flex-wrap w-full sm:w-auto">

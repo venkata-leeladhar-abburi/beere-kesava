@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { useRatesPricing } from "@/features/pricing";
 import { useResponsive } from "../../../../hooks/useResponsive";
-import { C, F, Chip, useCanSeePrices, HeroHeader, PageHero, ShopDesktopHero, SILK_BG } from './theme';
+import { C, F, Chip, useCanSeePrices, ShopDesktopHero, SILK_BG } from './theme';
 import {
   Stepper, StepHeader, StepBody, FlowActions, SummaryPanel, OptionCard,
   ConsequenceNote, ACCENT_SALE, type FlowStep, type SummaryRow,

@@ -1,8 +1,8 @@
 import React from "react";
-import { ChevronDown, Facebook, Instagram, Youtube, Linkedin, Phone, type LucideIcon } from "lucide-react";
+import { ChevronDown, Phone } from "lucide-react";
+import { useNavigate } from "react-router";
 import { ImageWithFallback } from "../../../shared/ui/ImageWithFallback";
 import { imgBKLogo } from "../../../shared/constants/weaverImages";
-import { IconButton } from "../../../shared/ui/primitives";
 
 const T = {
   darkBurgundy:  "#3D0E1A",
@@ -16,9 +16,25 @@ const F = {
   mono:    "'JetBrains Mono', monospace",
 };
 
-const QUICK_LINKS = ["Dashboard", "Weavers", "Saree / Inventory", "Payments", "Design Library"];
-const PROD_SHORTCUTS = ["Create New Batch", "Assign Saree Types", "Assign Weavers", "Setup Printing Plans", "Upload New Design", "Design Library"];
-const NEED_HELP = ["User Guide", "Support Center", "Quality Process"];
+// Each entry must resolve to a real /admin/:tab route. Labels that named no
+// destination were removed rather than left as decoration: "Assign Saree
+// Types", "Assign Weavers" and "Setup Printing Plans" are steps inside batch
+// creation, not pages, and the whole "Need Help" column (User Guide, Support
+// Centre, Quality Process) had nothing behind it.
+const QUICK_LINKS: { label: string; tab: string }[] = [
+  { label: "Dashboard",        tab: "overview" },
+  { label: "Weavers",          tab: "weavers" },
+  { label: "Saree / Inventory", tab: "inventory" },
+  { label: "Payments",         tab: "payments" },
+  { label: "Design Library",   tab: "designs" },
+];
+const PROD_SHORTCUTS: { label: string; tab: string }[] = [
+  { label: "Create New Batch",   tab: "batches" },
+  { label: "Production History", tab: "production-history" },
+  { label: "Finishing",          tab: "finishing" },
+  { label: "QC History",         tab: "qc-history" },
+  { label: "Design Library",     tab: "designs" },
+];
 const COMMITMENTS = ["200+ Skilled Weavers", "Authentic Banarasi Patterns", "Premium Quality Assurance", "Traditional Silk Heritage"];
 
 function FooterCol({ title, children }: { title: string; children: React.ReactNode }) {
@@ -32,16 +48,21 @@ function FooterCol({ title, children }: { title: string; children: React.ReactNo
   );
 }
 
-function FooterLink({ label }: { label: string }) {
+function FooterLink({ label, onClick }: { label: string; onClick: () => void }) {
   return (
-    <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.65)", marginBottom: 9, cursor: "pointer", display: "flex", alignItems: "center", gap: 5, transition: "color 0.2s" }}>
+    <button
+      type="button"
+      onClick={onClick}
+      style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.65)", marginBottom: 9, cursor: "pointer", display: "flex", alignItems: "center", gap: 5, transition: "color 0.2s", background: "none", border: "none", padding: 0, textAlign: "left", width: "100%" }}
+    >
       <ChevronDown size={10} style={{ transform: "rotate(-90deg)", color: T.antiqueGold, flexShrink: 0 }} />
       {label}
-    </div>
+    </button>
   );
 }
 
 export function ProductionHistoryFooter() {
+  const navigate = useNavigate();
   return (
     <footer style={{ background: T.darkBurgundy, paddingTop: 48, borderTop: `3px solid ${T.antiqueGold}` }}>
       {/* eslint-disable-next-line no-restricted-syntax -- block-level div is already 100% wide by default; maxWidth only caps growth on large screens, no overflow risk */}
@@ -52,11 +73,11 @@ export function ProductionHistoryFooter() {
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
               <ImageWithFallback
                 src={imgBKLogo}
-                alt="Beers Keshara & Brothers Silks logo"
+                alt="Beere Kesava & Brothers Silks logo"
                 style={{ width: 48, height: 48, borderRadius: 8, objectFit: "cover", border: `2px solid ${T.antiqueGold}` }}
               />
               <div>
-                <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: "#FFFDF9", lineHeight: 1.2 }}>Beers Keshara</div>
+                <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: "#FFFDF9", lineHeight: 1.2 }}>Beere Kesava</div>
                 <div style={{ fontFamily: F.display, fontSize: 14, color: T.antiqueGold, lineHeight: 1.2 }}>&amp; Brothers Silks</div>
               </div>
             </div>
@@ -64,27 +85,21 @@ export function ProductionHistoryFooter() {
             <p style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.55)", lineHeight: 1.7, marginBottom: 20 }}>
               Generating self-employment, we are traditional banarasi silk weaving manufacturers.
             </p>
-            <div style={{ display: "flex", gap: 10 }}>
-              {([["Facebook", Facebook], ["Instagram", Instagram], ["Youtube", Youtube], ["Linkedin", Linkedin]] as [string, LucideIcon][]).map(([name, Icon]) => (
-                <IconButton key={name} variant="secondary" size="sm" label={name} icon={Icon} />
-              ))}
-            </div>
           </div>
 
           {/* Quick Links */}
           <FooterCol title="Quick Links">
-            {QUICK_LINKS.map((l) => <FooterLink key={l} label={l} />)}
+            {QUICK_LINKS.map((l) => <FooterLink key={l.label} label={l.label} onClick={() => navigate(`/admin/${l.tab}`)} />)}
           </FooterCol>
 
           {/* Production Shortcuts */}
           <FooterCol title="Production Shortcut">
-            {PROD_SHORTCUTS.map((l) => <FooterLink key={l} label={l} />)}
+            {PROD_SHORTCUTS.map((l) => <FooterLink key={l.label} label={l.label} onClick={() => navigate(`/admin/${l.tab}`)} />)}
           </FooterCol>
 
           {/* Need Help */}
           <FooterCol title="Need Help">
-            {NEED_HELP.map((l) => <FooterLink key={l} label={l} />)}
-            <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 7 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
               <Phone size={13} style={{ color: T.antiqueGold }} />
               <span style={{ fontFamily: F.ui, fontVariantNumeric: "tabular-nums", fontSize: 12, color: T.goldLight, fontWeight: 600 }}>+91 98400 32045</span>
             </div>
@@ -104,16 +119,11 @@ export function ProductionHistoryFooter() {
         {/* Bottom bar */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 0", flexWrap: "wrap", gap: 12 }}>
           <span style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.40)" }}>
-            © 2025 Beers Keshara &amp; Brothers Silks. All rights reserved.
+            © 2025 Beere Kesava &amp; Brothers Silks. All rights reserved.
           </span>
           <span style={{ fontFamily: F.display, fontSize: 13, fontStyle: "italic", color: T.antiqueGold, opacity: 0.8 }}>
             Tradition Woven From Quality Creates Legacy
           </span>
-          <div style={{ display: "flex", gap: 8 }}>
-            {[Facebook, Instagram, Youtube, Linkedin].map((Icon) => (
-              <Icon key={Icon.displayName || Icon.name} size={13} style={{ color: "rgba(255,253,249,0.30)", cursor: "pointer" }} />
-            ))}
-          </div>
         </div>
       </div>
     </footer>

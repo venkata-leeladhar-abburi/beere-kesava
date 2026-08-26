@@ -8,6 +8,8 @@ import { T } from "../theme";
 import { inp, lbl } from "../common/primitives";
 import { SupplierFormValues } from "../types";
 import { Field, Input, IconButton } from "../../../../shared/ui/primitives";
+import { resolveAssetUrl } from "@/shared/api/uploads";
+import { useImageUpload } from "@/shared/hooks/useImageUpload";
 
 export function SupplierFormFields({
   form, setForm, errors, cardPreview, onCardChange,
@@ -16,8 +18,10 @@ export function SupplierFormFields({
   setForm: (f: SupplierFormValues) => void;
   errors: Record<string, string>;
   cardPreview: string | null;
-  onCardChange: (dataUrl: string | null) => void;
+  /** Receives the stored path of the uploaded card, or null when cleared. */
+  onCardChange: (url: string | null) => void;
 }) {
+  const { upload, uploading, error: uploadError } = useImageUpload();
   const set = (k: keyof SupplierFormValues, v: string) => setForm({ ...form, [k]: v });
   const setRating = (v: number) => setForm({ ...form, rating: v });
 
@@ -91,18 +95,19 @@ export function SupplierFormFields({
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
           <Field label="Visiting Card Photo" id="visiting-card-photo">
-            <Input type="file" accept="image/*" onChange={e => {
+            <Input type="file" accept="image/png,image/jpeg" disabled={uploading} onChange={e => {
               const file = e.target.files?.[0];
+              e.target.value = "";
               if (!file) return;
-              const reader = new FileReader();
-              reader.onload = ev => onCardChange(ev.target?.result as string);
-              reader.readAsDataURL(file);
+              void upload(file).then(url => { if (url) onCardChange(url); });
             }} />
           </Field>
         </div>
+        {uploading && <div style={{ fontSize: 12, color: T.taupe }}>Uploading…</div>}
+        {uploadError && <div style={{ fontSize: 12, color: "#C0392B" }}>{uploadError}</div>}
         {cardPreview && (
           <div style={{ borderRadius: 10, overflow: "hidden", border: `1px solid ${T.borderDef}`, position: "relative" }}>
-            <img src={cardPreview} alt="Visiting card" style={{ width: "100%", height: 120, objectFit: "cover", display: "block" }} />
+            <img src={resolveAssetUrl(cardPreview) ?? undefined} alt="Visiting card" style={{ width: "100%", height: 120, objectFit: "cover", display: "block" }} />
             <IconButton
               label="Remove visiting card photo"
               icon={X}

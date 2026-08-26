@@ -10,7 +10,7 @@ import {
 import type { DuplicateMatch } from "./duplicateEntries";
 import { T, F, EASE, INCOME_CATS, EXPENSE_CATS } from "./theme";
 import { fmtFull, today } from "./utils";
-import { Button, IconButton, Input, Select, SelectItem } from "../../../shared/ui/primitives";
+import { Button, IconButton, Input, NumberInput, Select, SelectItem } from "../../../shared/ui/primitives";
 import { DatePicker, formatDate } from "../../../shared/ui/date";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { toPaise, fromPaise } from "@/lib/gst";
@@ -108,7 +108,7 @@ export function AddEntryForm({ type, onSave, onCancel, initial, saveLabel }: {
       style={{ background: "#FFF", border: `1.5px solid ${T.royalBurgundy}`, borderRadius: 12, padding: "16px 18px", marginBottom: 12 }}>
       <div className={isOther ? "grid grid-cols-1 md:grid-cols-[1fr_130px_140px_160px_200px]" : "grid grid-cols-1 md:grid-cols-[1fr_130px_140px_160px]"} style={{ gap: 10, marginBottom: 10 }}>
         <div><FLabel req>Description</FLabel><Inp value={desc} onChange={setDesc} placeholder="Enter description…" /></div>
-        <div><FLabel req>Amount (₹)</FLabel><Inp value={amount} onChange={setAmount} placeholder="0" type="number" mono /></div>
+        <div><FLabel req>Amount (₹)</FLabel><NumberInput value={amount === "" ? "" : Number(amount)} onValueChange={v => setAmount(v === "" ? "" : String(v))} placeholder="0" className="font-mono" /></div>
         <div><FLabel req>Date</FLabel>
           <DatePicker value={date ? new Date(date) : null} onChange={d => setDate(d ? formatDate(d, "iso") : "")} />
         </div>

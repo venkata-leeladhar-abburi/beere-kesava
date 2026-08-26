@@ -248,7 +248,7 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
             <HistoryDropBtn label="All Orders" />
           </div>
           <div className="w-full sm:flex-1 sm:min-w-[180px]">
-            <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search batches..." />
+            <SearchInput aria-label="Search batches" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search batches..." />
           </div>
         </div>
 

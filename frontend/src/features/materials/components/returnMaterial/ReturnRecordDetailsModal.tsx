@@ -55,7 +55,7 @@ export function ReturnRecordDetailsModal({ record, onClose }: { record: Material
             <Dialog.Title style={{ marginBottom: 4 }}>
               <EntityCode type="goodsReceipt" value={record.id} size="md" />
             </Dialog.Title>
-            <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.65)" }}>{record.weaverName ?? record.factoryLoomNumber}{record.weaverId ? ` · ${record.weaverId}` : ""}{record.loomNumber ? ` · Loom ${record.loomNumber}` : ""}</div>
+            <Dialog.Description asChild><div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.65)" }}>{record.weaverName ?? record.factoryLoomNumber}{record.weaverId ? ` · ${record.weaverId}` : ""}{record.loomNumber ? ` · Loom ${record.loomNumber}` : ""}</div></Dialog.Description>
           </div>
           <Dialog.Close asChild>
             <IconButton

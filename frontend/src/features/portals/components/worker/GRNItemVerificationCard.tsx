@@ -2,7 +2,7 @@ import React from "react";
 import { CheckCircle2, AlertTriangle, TrendingUp } from "lucide-react";
 import { C, F, card } from "./tokens";
 import { POItem } from "@/features/purchasing";
-import { Button, Input, Checkbox, Textarea } from "../../../../shared/ui/primitives";
+import { Button, Checkbox, NumberInput, Textarea } from "../../../../shared/ui/primitives";
 
 const MAT_TAG: Record<string, { col: string; bg: string }> = {
   Warp:   { col: "#7A5010", bg: "rgba(196,146,58,0.14)" },
@@ -108,10 +108,10 @@ export function GRNItemVerificationCard({
 
             {/* Input Field */}
             <div style={{ position: "relative" }}>
-              <Input
-                type="number"
-                value={receivedQty ?? ""}
-                onChange={e => setReceivedQty(prev => ({ ...prev, [i]: e.target.value }))}
+              <NumberInput
+                value={receivedQty === "" || receivedQty == null ? "" : Number(receivedQty)}
+                onValueChange={v => setReceivedQty(prev => ({ ...prev, [i]: v === "" ? "" : String(v) }))}
+                step={0.01}
                 placeholder="0"
                 className="font-mono pr-12"
               />

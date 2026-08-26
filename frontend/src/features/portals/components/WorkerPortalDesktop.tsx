@@ -9,13 +9,11 @@ import { WorkerQC } from "./worker/WorkerQC";
 import { WorkerFinishing } from "./worker/WorkerFinishing";
 import { WorkerDispatch } from "./worker/WorkerDispatch";
 import { WorkerTopNav } from "./worker/WorkerTopNav";
-import { PageHero, SectionHeading, GUTTER_X, GUTTER_X_TABLET } from "./worker/primitives";
-import {
-  SectionNavigator, PAGE_SECTIONS, WORKER_TOPNAV_H, WORKER_SECTION_NAV_H,
-} from "../../../shared/ui/SectionNavigator";
+import { PageHero, SectionHeading } from "./worker/primitives";
+import { SectionNavigator, PAGE_SECTIONS } from "../../../shared/ui/SectionNavigator";
 
 import { LogOut } from "lucide-react";
-import { Button, IconButton } from "../../../shared/ui/primitives";
+import { Button } from "../../../shared/ui/primitives";
 
 type Tab = "home" | "qc" | "weavers" | "finishing" | "dispatch" | "profile";
 type WeaversSubPage = "menu" | "design" | "issue" | "receive-sarees";

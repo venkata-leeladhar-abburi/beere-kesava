@@ -137,7 +137,7 @@ export function BulkOrderSareesTab({
     <div>
       <div style={{ background: "#FFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, padding: "16px 20px", marginBottom: 20, display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" as const }}>
         <div style={{ flex: "1 1 240px" }}>
-          <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search saree ID, design, or weaver…" />
+          <SearchInput aria-label="Search saree ID, design, or weaver" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search saree ID, design, or weaver…" />
         </div>
         <Select size="sm" value={statusFilter} onValueChange={setStatusFilter}>
           {["All", "QC Passed", "Finishing complete", "Dispatched", "Damaged — Review Needed"].map(s => <SelectItem key={s} value={s}>{s === "All" ? "All Statuses" : s}</SelectItem>)}

@@ -1,19 +1,21 @@
 import React from "react";
-import { C, F } from "./theme";
+import { C, F, type TabId } from "./theme";
 import { MobileNav, type MobileNavItem } from "../../../../shared/ui/nav/MobileNav";
 import { Home, ShoppingBag, Package, Users, RotateCcw } from "lucide-react";
 
-type TabId = "home" | "sale" | "inventory" | "customers" | "reports" | "return";
+// "return" is a tab visually but not a TabId — it toggles showReturn instead of
+// changing the active tab, so it is kept out of the union setActive accepts.
+type MobileTabId = TabId | "return";
 
 export function MobileTabBar({
   active, showReturn, setActive, setShowReturn,
 }: {
   active: string;
   showReturn: boolean;
-  setActive: (tab: any) => void;
+  setActive: (tab: TabId) => void;
   setShowReturn: (v: boolean) => void;
 }) {
-  const MOBILE_TABS = [
+  const MOBILE_TABS: Array<{ id: MobileTabId; label: string; icon: React.ReactElement }> = [
     { id: "home", label: "Home", icon: <Home size={20} /> },
     { id: "sale", label: "New Sale", icon: <ShoppingBag size={20} /> },
     { id: "inventory", label: "Inventory", icon: <Package size={20} /> },

@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { PaginatedResult } from "../common/pagination";
+import type { AuthenticatedUser } from "../auth/strategies/jwt.strategy";
 import { NotificationTargetType, Prisma } from "../generated/prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateNotificationDto } from "./dto/create-notification.dto";
@@ -55,8 +56,33 @@ export class NotificationsService {
     return { items, total, page: query.page, pageSize: query.pageSize };
   }
 
-  async markRead(id: string) {
-    const notification = await this.prisma.notification.findUnique({ where: { id } });
+  /**
+   * Marks a notification read on behalf of `user`.
+   *
+   * The lookup is scoped to notifications actually addressed to the caller -
+   * either directly (targetType USER, matching userId) or via their role
+   * (targetType ROLE, matching role). Without that scope this was a plain
+   * IDOR: any authenticated user could mark any other user's notification
+   * read simply by guessing an id.
+   *
+   * A notification that exists but belongs to someone else returns 404 rather
+   * than 403, so the response cannot be used to probe which ids exist.
+   */
+  async markRead(id: string, user: AuthenticatedUser) {
+    // `userId: undefined` would make Prisma drop the condition entirely and
+    // match every USER-targeted row, so the personal branch is only added
+    // when there actually is an id to match on. AuthenticatedUser.id is
+    // optional - PermissionsGuard guards against the same thing with `?? ""`.
+    const addressedToCaller: Prisma.NotificationWhereInput[] = [
+      { targetType: NotificationTargetType.ROLE, role: user.role },
+    ];
+    if (user.id) {
+      addressedToCaller.push({ targetType: NotificationTargetType.USER, userId: user.id });
+    }
+
+    const notification = await this.prisma.notification.findFirst({
+      where: { id, OR: addressedToCaller },
+    });
     if (!notification) {
       throw new NotFoundException(`Notification ${id} not found`);
     }

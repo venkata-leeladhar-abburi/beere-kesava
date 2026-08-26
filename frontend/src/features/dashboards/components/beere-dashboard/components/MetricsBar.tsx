@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { T, F, EASE } from '../theme';
+import { T, EASE } from '../theme';
 import { IcoResourceMgmt, IcoFabricRoll, IcoInvoice, IcoQualityCheck, IcoTruck } from '../ui';
 import { AnimatedNumber } from '../ui';
 import { useDashboardMetrics } from '../hooks/useDashboardMetrics';

@@ -1,15 +1,22 @@
 import React, { useState } from "react";
-import { AnimatePresence } from "motion/react";
-import { Layers as Stack, ArrowRight, Trash2 } from "lucide-react";
-import { BatchRecord, useBatches } from "../../contexts/BatchContext";
-import { DateFilterBar, DateFilterState, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
-import { ConfirmDialog } from "../../../../shared/ui/ConfirmDialog";
-import { ApiError } from "../../../../shared/api/client";
-import { T, F } from "./constants";
-import { Button, IconButton } from "../../../../shared/ui/primitives";
-import { SectionCard } from "../common/primitives";
-import { EntityCode } from "@/shared/ui/domain";
 
+import { AnimatePresence } from "motion/react";
+
+import { Layers as Stack, ArrowRight, Trash2 } from "lucide-react";
+
+import { BatchRecord, useBatches } from "../../contexts/BatchContext";
+
+import { DateFilterBar, DateFilterState, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
+
+import { ConfirmDialog } from "../../../../shared/ui/ConfirmDialog";
+
+import { ApiError } from "../../../../shared/api/client";
+
+import { T, F } from "./constants";
+
+import { Button, IconButton } from "../../../../shared/ui/primitives";
+
+import { SectionCard } from "../common/primitives";
 export function DraftsTab({
   batches, batchDateFilter, setBatchDateFilter, setTab, openDraft,
 }: {

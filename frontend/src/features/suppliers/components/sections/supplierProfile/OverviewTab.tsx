@@ -162,7 +162,7 @@ export function OverviewTab({
           })()}
           <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
             <div style={{ flex: "1 1 240px" }}>
-              <SearchInput value={sareeSearch} onChange={e => setSareeSearch(e.target.value)} placeholder="Search saree ID, type, colour…" />
+              <SearchInput aria-label="Search saree ID, type, colour" value={sareeSearch} onChange={e => setSareeSearch(e.target.value)} placeholder="Search saree ID, type, colour…" />
             </div>
             <div style={{ width: "auto", minWidth: 150 }}>
               <Select value={typeFilter} onValueChange={setTypeFilter} size="sm">

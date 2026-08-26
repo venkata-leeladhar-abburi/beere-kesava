@@ -1,23 +1,29 @@
 import { materialTypeIcon } from "./MyBatchesPage";
 
+
 import React, { useState, useRef, useMemo } from "react";
-import { motion, AnimatePresence } from "motion/react";
+
+import { AnimatePresence } from "motion/react";
+
 import { useResponsive } from "../../../../hooks/useResponsive";
+
 import { useBatches } from "@/features/production";
+
 import { useDesignLibrary, DesignEntry } from "@/features/design-library";
+
 import { DesignCodeCard } from "@/features/design-library";
+
 import { useMaterialIssue, MaterialIssueRecord, JARI_REEL_GRAMS, materialItemToGrams, BUNS_PER_REEL } from "@/features/materials";
+
 import { Bell, Check } from "lucide-react";
+
 
 import {
   C, F, SectionTitle, Card, SignatureCanvas, SignatureCanvasHandle, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid
 } from './theme';
 import { useCurrentWeaver } from "./useCurrentWeaver";
-import { ReferenceHistorySection } from "./ReferenceHistorySection";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { BG_IMAGE } from "./WeaverBatchNotifData";
-import { Button } from "../../../../shared/ui/primitives";
-
 export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => void } = {}) {
   const { isMobile, isTablet, cols } = useResponsive();
   const { user } = useAuth();
@@ -41,10 +47,10 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
 
   const weaverRecords = weaverId ? getRecordsForWeaver(weaverId) : [];
   const pendingRecords = weaverRecords.filter(r => r.status === "pending-signature");
-  const signedRecords = weaverRecords.filter(r => r.status === "signed");
+  const _signedRecords = weaverRecords.filter(r => r.status === "signed");
   const pending = pendingRecords[0] ?? null;
 
-  const mySarees = useMemo(() => {
+  const _mySarees = useMemo(() => {
     return batches
       .filter(b => b.status !== "draft")
       .flatMap(b =>
@@ -62,7 +68,7 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
     );
   }, [batches, weaverId]);
 
-  const myWeavingBatches = useMemo(() => {
+  const _myWeavingBatches = useMemo(() => {
     return batches
       .filter(b => b.status !== "draft")
       .map(b => {

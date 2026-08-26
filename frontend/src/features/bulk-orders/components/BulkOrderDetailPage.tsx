@@ -553,9 +553,11 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
                 <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown }}>Tally this order</div>
               </Dialog.Title>
             </div>
+            <Dialog.Description asChild>
             <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, lineHeight: 1.6, margin: "0 0 16px" }}>
               Confirms the physical saree count for {live.ref} matches the {linkedSarees.length} saree{linkedSarees.length === 1 ? "" : "s"} listed against it.
             </p>
+            </Dialog.Description>
             <div style={{ position: "relative", width: "100%", height: 50, background: "rgba(110,15,45,0.06)", borderRadius: 12, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", marginTop: 20 }}>
               <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.taupe }}>
                 Swipe to confirm tally

@@ -6,6 +6,8 @@ import { Vendor } from "./types";
 import { PAYMENT_TERMS, STATES } from "./data";
 import { Button, Field, Input, Textarea, Select, SelectItem, CheckboxField } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
+import { resolveAssetUrl } from "@/shared/api/uploads";
+import { useImageUpload } from "@/shared/hooks/useImageUpload";
 
 export function AddVendorModal({ onSave, onCancel }: { onSave: (v: Vendor) => void; onCancel: () => void }) {
   const [form, setForm] = useState({
@@ -16,6 +18,7 @@ export function AddVendorModal({ onSave, onCancel }: { onSave: (v: Vendor) => vo
     rating: 3,
   });
   const [cardPreview, setCardPreview] = useState<string | null>(null);
+  const { upload, uploading, error: uploadError } = useImageUpload();
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const set = (k: string, v: string) => setForm(p => ({ ...p, [k]: v }));
@@ -56,7 +59,7 @@ export function AddVendorModal({ onSave, onCancel }: { onSave: (v: Vendor) => vo
             <Dialog.Title asChild>
               <h3 style={{ fontFamily: F.display, fontSize: 20, color: T.luxuryBrown, margin: "0 0 6px 0" }}>Add a New Vendor</h3>
             </Dialog.Title>
-            <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, margin: 0 }}>Fill in the business and contact details. Payment terms can be set here and changed later.</p>
+            <Dialog.Description asChild><p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, margin: 0 }}>Fill in the business and contact details. Payment terms can be set here and changed later.</p></Dialog.Description>
           </div>
           <div style={{ padding: "4px 12px", background: T.silkCream, borderRadius: 20, fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, flexShrink: 0 }}>ID assigned on save</div>
         </div>
@@ -148,19 +151,18 @@ export function AddVendorModal({ onSave, onCancel }: { onSave: (v: Vendor) => vo
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
               <Field label="Visiting Card Photo" id="visiting-card-photo">
-                <Input type="file" accept="image/*" onChange={e => {
+                <Input type="file" accept="image/png,image/jpeg" disabled={uploading} onChange={e => {
                   const file = e.target.files?.[0];
-                  if (file) {
-                    const reader = new FileReader();
-                    reader.onload = ev => setCardPreview(ev.target?.result as string);
-                    reader.readAsDataURL(file);
-                  }
+                  e.target.value = "";
+                  if (!file) return;
+                  void upload(file).then(url => { if (url) setCardPreview(url); });
                 }} />
               </Field>
             </div>
+            {uploadError && <div style={{ fontSize: 12, color: "#C0392B" }}>{uploadError}</div>}
             {cardPreview && (
               <div style={{ borderRadius: 10, overflow: "hidden", border: `1px solid rgba(110,15,45,0.12)`, maxHeight: 120 }}>
-                <img src={cardPreview} alt="Visiting Card" style={{ width: "100%", height: 120, objectFit: "cover" }} />
+                <img src={resolveAssetUrl(cardPreview) ?? undefined} alt="Visiting Card" style={{ width: "100%", height: 120, objectFit: "cover" }} />
               </div>
             )}
             <Field label="Notes" id="notes">

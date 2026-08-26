@@ -17,7 +17,7 @@ export function FilterBar({
     <Card pad={16}>
       <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
         <div className="flex-1 min-w-[260px]">
-          <SearchInput value={search} onChange={e => setSearch(e.target.value)}
+          <SearchInput aria-label="Search saree code, weaver, loom, supplier, invoice, saree type" value={search} onChange={e => setSearch(e.target.value)}
             placeholder="Search saree code, weaver, loom, supplier, invoice, saree type…" />
         </div>
 

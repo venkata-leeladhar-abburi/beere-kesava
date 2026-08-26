@@ -221,7 +221,7 @@ export function DesignLibraryPage() {
                 <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                   {/* Search bar */}
                   <div style={{ position: "relative" }}>
-                    <SearchInput value={historySearch} onChange={e => setHistorySearch(e.target.value)} placeholder="Search sent history by design code, recipient, or text…" />
+                    <SearchInput aria-label="Search sent history by design code, recipient, or text" value={historySearch} onChange={e => setHistorySearch(e.target.value)} placeholder="Search sent history by design code, recipient, or text…" />
                   </div>
 
                   <h3 style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, marginTop: 4, display: "flex", alignItems: "center", gap: 8 }}>

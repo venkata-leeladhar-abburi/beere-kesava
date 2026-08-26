@@ -181,7 +181,7 @@ export function useInventoryPageState() {
     show(`Selected ${match.sareeId}`);
   }, [mirroredRows, selected]);
 
-  const handleShopConfirm = (transport: TransportData, opts?: { skipped?: boolean; picked?: FinishingReturn[] }) => {
+  const handleShopConfirm = (transport: TransportData, opts?: { skipped?: boolean; picked?: FinishingReturn[]; receiptUrl?: string | null }) => {
     const sareeIds = opts?.picked?.length
       ? opts.picked.map(s => s.sareeId || s.id)
       : dispatchableSelected.map(r => r.id);
@@ -189,7 +189,9 @@ export function useInventoryPageState() {
       type: "shop", sareeIds, dispatchDate: transport.dispatchDate || new Date().toISOString().slice(0, 10),
       lrNumber: transport.lrNumber, transportCompany: transport.transportCompany, vehicleNumber: transport.vehicleNumber, driverName: transport.driverName, notes: transport.notes,
       pendingTransport: !!opts?.skipped && !(transport.lrNumber && transport.transportCompany && transport.vehicleNumber),
-      pendingReceipt: !!opts?.skipped,
+      // A receipt uploaded here settles the requirement, even on a "skip for now" dispatch.
+      pendingReceipt: !!opts?.skipped && !opts?.receiptUrl,
+      receiptUrl: opts?.receiptUrl ?? undefined,
     });
     setModal(null);
     setSelected(new Set());

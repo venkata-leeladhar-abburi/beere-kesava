@@ -102,7 +102,7 @@ export function BatchTable({
     >
       {/* Filters */}
       <div className="-mx-2.5 sm:-mx-5 md:-mx-6 -mt-2.5 sm:-mt-5 md:-mt-6 px-3.5 sm:px-5 md:px-6 py-3.5 sm:py-4 flex flex-wrap gap-2.5 border-b border-[#E8DCC4]">
-        <SearchInput value={searchFilter} onChange={e => setSearchFilter(e.target.value)} placeholder="Search Saree ID, Weaver..." className="flex-1 min-w-[150px] sm:min-w-[200px]" />
+        <SearchInput aria-label="Search saree ID or weaver" value={searchFilter} onChange={e => setSearchFilter(e.target.value)} placeholder="Search Saree ID, Weaver..." className="flex-1 min-w-[150px] sm:min-w-[200px]" />
         <Select value={weaverFilter} onValueChange={setWeaverFilter} size="sm" className="w-auto min-w-[120px] sm:min-w-[140px]">
           {weaverOptions.map(w => <SelectItem key={w as string} value={w as string}>{w === "All" ? "All Weavers" : w as string}</SelectItem>)}
         </Select>

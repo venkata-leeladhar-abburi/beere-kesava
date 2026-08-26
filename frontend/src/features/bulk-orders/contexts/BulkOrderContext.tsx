@@ -11,6 +11,7 @@ import {
 import { customersApi } from "../../../shared/api/customers";
 import { useRatesPricing } from "@/features/pricing";
 import { type SareeTypeRecord } from "@/features/pricing";
+import { resolveAssetUrl, toStoredAssetPath } from "../../../shared/api/uploads";
 
 // ─── BulkOrder Interface ──────────────────────────────────────────────────────
 export interface BulkOrder {
@@ -103,8 +104,8 @@ function backendOrderToFrontend(
     address: o.address ?? undefined,
     phone: o.phone ?? undefined,
     gstCode: o.gstCode ?? undefined,
-    visitingCardUrl: o.visitingCardUrl ?? undefined,
-    photoUrls: o.photoUrls,
+    visitingCardUrl: resolveAssetUrl(o.visitingCardUrl) ?? undefined,
+    photoUrls: o.photoUrls?.map(u => resolveAssetUrl(u) ?? u),
     tallied: o.tallied,
     talliedBy: o.talliedBy ?? undefined,
     talliedDate: o.talliedDate ?? undefined,
@@ -162,8 +163,8 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
         gstCode: order.gstCode,
         address: order.address,
         phone: order.phone,
-        visitingCardUrl: order.visitingCardUrl,
-        photoUrls: order.photoUrls,
+        visitingCardUrl: toStoredAssetPath(order.visitingCardUrl) ?? undefined,
+        photoUrls: order.photoUrls?.map(u => toStoredAssetPath(u) ?? u),
       });
     },
     onSuccess: () => {

@@ -12,7 +12,7 @@ import { ChartFigure } from "../../../../shared/ui/data";
 
 const laQcColor = (r: number) => (r >= 95 ? T.green : r >= 85 ? "#8B6018" : T.crimson);
 
-const card: React.CSSProperties = {
+const _card: React.CSSProperties = {
   background: "#FFF", borderRadius: 20, border: `1px solid ${T.borderDef}`,
   padding: "24px 28px", boxShadow: "0 2px 12px rgba(74,6,27,0.05)",
 };

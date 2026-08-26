@@ -397,7 +397,7 @@ export function VendorPaymentsSection() {
             {["All Bill Status","Paid","Partial","Overdue","Pending"].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
           </Select>
           <div style={{ flex: 1, minWidth: 200 }}>
-            <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search vendor, PO number, bill number..." size="sm" />
+            <SearchInput aria-label="Search vendor, PO number, bill number" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search vendor, PO number, bill number..." size="sm" />
           </div>
         </div>
 

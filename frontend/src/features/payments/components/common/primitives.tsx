@@ -57,6 +57,7 @@ export function ActionModal({ open, onClose, title, desc, actionLabel, icon: Ico
       {done ? (
         <div style={{ padding: 48, textAlign: "center" }}>
           <Dialog.Title className="sr-only">Success</Dialog.Title>
+          <Dialog.Description className="sr-only">Action completed successfully</Dialog.Description>
           <CheckCircle2 size={48} color={T.green} style={{ margin: "0 auto 16px" }} />
           <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.luxuryBrown, marginBottom: 10 }}>Success</div>
           <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, lineHeight: 1.6, marginBottom: 24 }}>

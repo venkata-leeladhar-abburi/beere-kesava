@@ -116,7 +116,7 @@ export function IssuanceHistorySection({
     <SectionCard icon={History} title="Material Issuance History" subtitle="Every material issued to a weaver or factory loom, with signature status.">
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap" as const, marginBottom: 20 }}>
         <div style={{ flex: "1 1 260px" }}>
-          <SearchInput value={histSearch} onChange={e => setHistSearch(e.target.value)} placeholder="Search weaver, MIR ID, or GRN batch…" className="w-full" />
+          <SearchInput aria-label="Search weaver, MIR ID, or GRN batch" value={histSearch} onChange={e => setHistSearch(e.target.value)} placeholder="Search weaver, MIR ID, or GRN batch…" className="w-full" />
         </div>
         <Select value={histWeaverFilter} onValueChange={setHistWeaverFilter}>
           {weaverNames.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}

@@ -58,9 +58,9 @@ export function PaymentRemindersModal({ open, onClose, overdueInvoices }: { open
               Set Payment Reminders
             </div>
           </Dialog.Title>
-          <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.70)", marginTop: 4 }}>
+          <Dialog.Description asChild><div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.70)", marginTop: 4 }}>
             Send a WhatsApp reminder for any of {overdueInvoices.length} overdue invoices
-          </div>
+          </div></Dialog.Description>
           <Dialog.Close asChild>
             <IconButton icon={X} label="Close" variant="ghost" size="sm"
               className="absolute right-4 top-4 rounded-[8px] bg-[rgba(255,255,255,0.12)] text-[rgba(255,255,255,0.85)] hover:bg-[rgba(255,255,255,0.20)]" />

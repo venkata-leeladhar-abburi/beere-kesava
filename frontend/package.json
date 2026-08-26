@@ -18,7 +18,9 @@
     "check-bundle-size": "node scripts/check-bundle-size.mjs",
     "check:contrast": "node scripts/check-contrast.mjs",
     "check:tokens": "node scripts/check-tokens.mjs",
-    "ratchet": "node scripts/ratchet.mjs"
+    "ratchet": "node scripts/ratchet.mjs",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -65,7 +67,7 @@
     "react-dom": "18.3.1",
     "react-hook-form": "7.55.0",
     "react-resizable-panels": "2.1.7",
-    "react-router": "7.13.0",
+    "react-router": "7.18.2",
     "recharts": "2.15.2",
     "socket.io-client": "^4.8.3",
     "sonner": "2.0.3",
@@ -76,6 +78,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/vite": "4.1.12",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",

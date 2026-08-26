@@ -52,6 +52,7 @@ export function DispatchDetailPanel({ dispatch, onClose }: DispatchDetailPanelPr
             <Dialog.Title asChild>
               <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: "#FFF" }}>Dispatch Details</span>
             </Dialog.Title>
+            <Dialog.Description className="sr-only">Transport and receipt details for this dispatch</Dialog.Description>
           </div>
           <span style={{ display: "inline-block", background: "rgba(255,255,255,0.14)", color: "#FFF", borderRadius: 8 }}>
             <Dialog.Close asChild>

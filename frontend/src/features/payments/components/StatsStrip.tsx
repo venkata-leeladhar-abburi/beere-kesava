@@ -5,7 +5,7 @@ import { AlertTriangle, FileText, IndianRupee, TrendingUp, Users } from "lucide-
 
 import { weaverPaymentsApi, vendorPaymentsApi, supplierPaymentsApi } from "../../../shared/api/payments";
 import { invoicesApi } from "../../../shared/api/invoices";
-import { EASE, F, T } from "../theme";
+import { EASE } from "../theme";
 import { AnimCount } from "./common/motion";
 import { useMoneyVisible } from "../../../shared/ui/MoneyValue";
 import { rupees, formatMoney } from "@/lib/domain/money";
@@ -32,8 +32,8 @@ export function StatsStrip() {
     queryFn: () => invoicesApi.list(),
   });
 
-  const isLoading = weaverPaymentsLoading || vendorPaymentsLoading || supplierPaymentsLoading || invoicesLoading;
-  const isError = weaverPaymentsError || vendorPaymentsError || supplierPaymentsError || invoicesError;
+  const _isLoading = weaverPaymentsLoading || vendorPaymentsLoading || supplierPaymentsLoading || invoicesLoading;
+  const _isError = weaverPaymentsError || vendorPaymentsError || supplierPaymentsError || invoicesError;
 
   const paidToWeavers = (weaverPaymentsRes?.items ?? []).reduce((s, p) => s + Number(p.amountPaid), 0);
   const totalVendorPayments = (vendorPaymentsRes?.items ?? []).reduce((s, p) => s + Number(p.amount), 0);

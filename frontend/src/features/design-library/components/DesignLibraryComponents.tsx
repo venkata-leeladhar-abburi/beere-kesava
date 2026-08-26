@@ -12,6 +12,8 @@ import { T, F } from "./theme";
 import { Button, IconButton, Input } from "../../../shared/ui/primitives";
 import { Modal } from "../../../shared/ui/overlay";
 import { EntityCode } from "@/shared/ui/domain";
+import { resolveAssetUrl } from "@/shared/api/uploads";
+import { useImageUpload } from "@/shared/hooks/useImageUpload";
 
 export { AddDesignModal, SlipModal } from "./DesignModals";
 
@@ -123,17 +125,34 @@ export const labelStyle: React.CSSProperties = {
   color: T.luxuryBrown, display: "block", marginBottom: 6,
 };
 
+/**
+ * Colour-slip / design-graph dropzone. `preview` is the server-relative path
+ * already stored (or null) and `onFile` receives the new one once the upload
+ * lands in object storage — these images are persisted on DesignLibrary and
+ * DesignDispatch rows, so they must be real URLs, not base64 blobs.
+ */
 export function UploadZone({ label, hint, icon: Icon, preview, onFile }: {
   label: string; hint: string; icon: React.ElementType;
   preview: string | null; onFile: (url: string | null) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+  const { upload, uploading, error } = useImageUpload();
+  // Object URL for the picked file, shown immediately so the zone does not sit
+  // empty during the round-trip; dropped once the stored path takes over.
+  const [localPreview, setLocalPreview] = useState<string | null>(null);
+  const displaySrc = localPreview ?? resolveAssetUrl(preview);
+
+  async function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
+    e.target.value = "";
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => onFile(ev.target?.result as string);
-    reader.readAsDataURL(file);
+    setLocalPreview(URL.createObjectURL(file));
+    const url = await upload(file);
+    if (url) {
+      onFile(url);
+    } else {
+      setLocalPreview(null);
+    }
   }
   return (
     <div>
@@ -142,12 +161,12 @@ export function UploadZone({ label, hint, icon: Icon, preview, onFile }: {
         onClick={() => inputRef.current?.click()} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => inputRef.current?.click())?.(); } }}
         style={{ height: 100, border: `2px dashed rgba(110,15,45,0.22)`, borderRadius: 12, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, cursor: "pointer", background: T.warmIvory, overflow: "hidden", position: "relative" }}
       >
-        {preview ? (
+        {displaySrc ? (
           <>
-            <img src={preview} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.7 }} />
+            <img src={displaySrc} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.7 }} />
             <div style={{ position: "relative", zIndex: 1, background: "rgba(61,14,26,0.65)", borderRadius: 8, padding: "4px 12px", display: "flex", alignItems: "center", gap: 6 }}>
               <UploadSimple size={13} color={T.goldLight} />
-              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.goldLight, fontWeight: 600 }}>Replace</span>
+              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.goldLight, fontWeight: 600 }}>{uploading ? "Uploading…" : "Replace"}</span>
             </div>
           </>
         ) : (
@@ -160,7 +179,8 @@ export function UploadZone({ label, hint, icon: Icon, preview, onFile }: {
           </>
         )}
       </div>
-      <Input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleChange} />
+      {error && <div style={{ fontFamily: F.ui, fontSize: 12, color: "#C0392B", marginTop: 6 }}>{error}</div>}
+      <Input ref={inputRef} type="file" accept="image/png,image/jpeg" className="hidden" onChange={e => void handleChange(e)} />
     </div>
   );
 }
@@ -176,6 +196,7 @@ export function DesignCodeCard({ design, onClose }: { design: DesignEntry; onClo
             <Dialog.Title asChild>
               <div style={{ position: "absolute", bottom: 16, left: 20, fontFamily: "var(--font-mono)", fontSize: 16, fontWeight: 700, color: T.goldLight, letterSpacing: "0.5px" }}>{design.code}</div>
             </Dialog.Title>
+            <Dialog.Description className="sr-only">Design {design.code} preview</Dialog.Description>
             <Dialog.Close asChild>
               <IconButton label="Close" icon={PhX} variant="secondary" size="sm" shape="circle"
                 className="absolute top-[14px] right-[14px] bg-[rgba(61,14,26,0.55)] text-white/85 border-none" />

@@ -272,6 +272,7 @@ export function BatchesSection({ onAddNewStock }: { onAddNewStock: () => void })
         <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
           <div style={{ flex: isMobile ? 1 : "none", width: isMobile ? "100%" : 240 }}>
             <SearchInput
+              aria-label="Search by batch number or vendor name"
               value={search}
               onChange={e => setSearch(e.target.value)}
               onSearch={setSearch}

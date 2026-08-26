@@ -77,13 +77,10 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
   };
 
   const handleVerify = useCallback(async (otp: string) => {
-    if (otp !== "123456") {
-      digitsRef.current = Array(6).fill("");
-      setErrorMessage("Incorrect code. Please check and try again. You have 2 more attempts.");
-      setShake(true); setError(true); setDigits(Array(6).fill(""));
-      setTimeout(() => { setShake(false); inputRefs.current[0]?.focus(); setFocused(0); }, 600);
-      return;
-    }
+    // The code is validated server-side only. This used to short-circuit on a
+    // hardcoded "123456" from the fixed-OTP demo era, which rejected every
+    // real WhatsApp OTP before the request was ever made — and, worse, would
+    // have let anyone in with 123456 had the backend check ever been relaxed.
     setLoading(true);
     try {
       const res = await authApi.verifyOtp(phone, otp);

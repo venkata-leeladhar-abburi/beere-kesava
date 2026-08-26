@@ -11,9 +11,16 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
   constructor(configService: ConfigService) {
     const connectionString = configService.getOrThrow<string>("DATABASE_URL");
+    // Supabase requires TLS; a local Postgres (used by the integration suite,
+    // see test/utils/test-app.ts) generally isn't built with SSL support at
+    // all and rejects the handshake outright. Honour the standard
+    // `sslmode=disable` in the URL rather than forcing TLS unconditionally,
+    // which previously made it impossible to point this app at any local
+    // database.
+    const sslDisabled = /[?&]sslmode=disable/.test(connectionString);
     const pool = new Pool({
       connectionString,
-      ssl: { rejectUnauthorized: false },
+      ssl: sslDisabled ? false : { rejectUnauthorized: false },
       max: 15,
       // Supabase's pooler (pgbouncer) can silently drop idle connections on
       // its own schedule (~10-15s). Proactively recycling them after 5s ensures

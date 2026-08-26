@@ -8,7 +8,7 @@ import {
 import { C, F, card } from "../tokens";
 import { FieldLabel, SectionLabel, PageHeader, type IssueSource } from "./shared";
 import { weaversApi } from "../../../../../shared/api/weavers";
-import { Button, Input, Select, SelectItem } from "../../../../../shared/ui/primitives";
+import { Button, Input, NumberInput, Select, SelectItem } from "../../../../../shared/ui/primitives";
 
 export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
   const { data: weaversRes } = useQuery({
@@ -176,7 +176,7 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
                 ))}
               </div>
               <div style={{ position: "relative" }}>
-                <Input type="number" value={warpQty} onChange={e => setWarpQty(e.target.value)} placeholder="0"
+                <NumberInput value={warpQty === "" ? "" : Number(warpQty)} onValueChange={v => setWarpQty(v === "" ? "" : String(v))} step={0.01} placeholder="0"
                   className="font-mono pr-9" />
                 <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.burg }}>{warpUnit}</span>
               </div>
@@ -204,7 +204,7 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
                 ))}
               </div>
               <div style={{ position: "relative" }}>
-                <Input type="number" value={reshamQty} onChange={e => setReshamQty(e.target.value)} placeholder="0"
+                <NumberInput value={reshamQty === "" ? "" : Number(reshamQty)} onValueChange={v => setReshamQty(v === "" ? "" : String(v))} step={0.01} placeholder="0"
                   className="font-mono pr-9" />
                 <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.u, fontSize: 12, fontWeight: 700, color: "#7A5E1C" }}>{reshamUnit}</span>
               </div>
@@ -266,7 +266,7 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
             <div>
               <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 500, color: C.text, marginBottom: 5 }}>Qty ({jariUnit})</div>
               <div style={{ position: "relative" }}>
-                <Input type="number" value={jariQty} onChange={e => setJariQty(e.target.value)} placeholder="0"
+                <NumberInput value={jariQty === "" ? "" : Number(jariQty)} onValueChange={v => setJariQty(v === "" ? "" : String(v))} step={0.01} placeholder="0"
                   size="lg" className="font-mono pr-11" />
                 <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.gold }}>{jariUnit}</span>
               </div>

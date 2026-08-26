@@ -61,6 +61,7 @@ export function FilterBar({
       }}>
         <div style={{ flex: "1 1 280px" }}>
           <SearchInput
+            aria-label="Search by supplier, ID, location, GST, invoice"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onSearch={setSearch}

@@ -26,6 +26,7 @@ export function Avatar({ photo, initials, bg, size = 44 }: { photo: string | nul
   return (
     <div style={{ width: size, height: size, borderRadius: "50%", overflow: "hidden", flexShrink: 0, border: `2px solid ${T.borderGold}` }}>
       {showPhoto ? (
+        // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-load event, not a user interaction; it drives the initials fallback when the photo 404s.
         <img
           src={photo}
           alt={initials}
@@ -93,8 +94,9 @@ export function ActionDialog({ open, title, children, tone = "gold", onClose }: 
       <div style={{ display: "flex", flexDirection: "column", overflow: "hidden", background: "#FFFFFF", borderTopLeftRadius: "var(--radius-xl)", borderTopRightRadius: "var(--radius-xl)" }}>
         <div style={{ padding: "20px 24px", background: `linear-gradient(100deg, ${color}, ${T.deepWine})`, display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
           <Dialog.Title style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#FFFDF9", margin: 0 }}>{title}</Dialog.Title>
+          <Dialog.Description className="sr-only">{title}</Dialog.Description>
           <Dialog.Close asChild>
-            <IconButton icon={X} label="Close" onClick={onClose} variant="ghost" className="rounded-[10px] bg-white/15 border border-white/20 text-[#FFFDF9]" />
+            <IconButton icon={X} label="Close" onClick={onClose} variant="ghost" className="rounded-[10px] bg-white/15 border border-white/20 text-[#FFFDF9] hover:bg-white/25 hover:text-white" />
           </Dialog.Close>
         </div>
         <div style={{ padding: 26, overflowY: "auto" }}>{children}</div>

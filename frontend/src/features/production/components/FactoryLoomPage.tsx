@@ -267,7 +267,7 @@ export function FactoryLoomPage() {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, gap: 16, flexWrap: "wrap" }}>
                 <div style={{ display: "flex", gap: 12, alignItems: "center", flex: 1, minWidth: 280 }}>
                   <div style={{ width: 280 }}>
-                    <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search loom #, operator..." />
+                    <SearchInput aria-label="Search loom number or operator" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search loom #, operator..." />
                   </div>
                   {(["all", "active", "idle", "maintenance"] as const).map(st => (
                     <Button

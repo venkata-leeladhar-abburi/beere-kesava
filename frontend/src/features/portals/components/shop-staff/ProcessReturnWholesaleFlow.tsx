@@ -1,8 +1,10 @@
 import React from "react";
 import { motion } from "motion/react";
-import { Camera, QrCode, Check, ImagePlus } from "lucide-react";
+import { Camera, QrCode, Check, ImagePlus, X, Loader2 } from "lucide-react";
+import { uploadsApi } from "@/shared/api/uploads";
+import { ApiError } from "@/shared/api/client";
 import { C, F } from "./theme";
-import { Button, Input, Select, SelectItem } from "../../../../shared/ui/primitives";
+import { Button, Input, NumberInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import {
   Stepper, StepHeader, StepBody, FlowActions, SummaryPanel,
   ConsequenceNote, ACCENT_WHOLESALE, type FlowStep, type SummaryRow,
@@ -38,6 +40,9 @@ interface ProcessReturnWholesaleFlowProps {
   canSeePrices: boolean;
   canProceedWsStep1: boolean;
   setReturnType: (t: MyReturnType) => void;
+  /** Reports the uploaded condition photo's server-relative path up to the
+   *  parent, which sends it with the return. Null clears it. */
+  setPhotoUrl: (u: string | null) => void;
   onConfirm: () => void;
 }
 
@@ -67,8 +72,51 @@ export function ProcessReturnWholesaleFlow({
   canSeePrices,
   canProceedWsStep1,
   setReturnType,
+  setPhotoUrl,
   onConfirm,
 }: ProcessReturnWholesaleFlowProps) {
+  // Camera / gallery pickers, mirroring WorkerQCInspectionScreen. The chosen
+  // file is uploaded straight away (POST /uploads/photo) so the return is saved
+  // with a real photoUrl rather than a preview that dies with the component.
+  const cameraInputRef = React.useRef<HTMLInputElement>(null);
+  const galleryInputRef = React.useRef<HTMLInputElement>(null);
+  const [photoPreview, setPhotoPreview] = React.useState<string | null>(null);
+  const [photoUploading, setPhotoUploading] = React.useState(false);
+  const [photoError, setPhotoError] = React.useState<string | null>(null);
+
+  const handlePhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setPhotoError(null);
+    if (!["image/png", "image/jpeg"].includes(file.type)) {
+      setPhotoError("Photo must be a JPG or PNG image.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setPhotoError("Photo must be under 5MB.");
+      return;
+    }
+    const objectUrl = URL.createObjectURL(file);
+    setPhotoPreview(objectUrl);
+    setPhotoUploading(true);
+    try {
+      const { url } = await uploadsApi.uploadPhoto(file);
+      setPhotoUrl(url);
+    } catch (err) {
+      setPhotoError(err instanceof ApiError ? err.message : "Could not upload photo. Please try again.");
+      setPhotoPreview(null);
+    } finally {
+      setPhotoUploading(false);
+    }
+  };
+
+  const clearPhoto = () => {
+    setPhotoPreview(null);
+    setPhotoError(null);
+    setPhotoUrl(null);
+  };
+
   const steps: FlowStep[] = [
     { label: "Saree Details",    summary: wsVendor.trim() || undefined },
     { label: "Generate Barcode", summary: wsNewId || undefined },
@@ -128,12 +176,12 @@ export function ProcessReturnWholesaleFlow({
                 <label htmlFor="ws-weight" style={labelStyle}>
                   Weight in grams <span style={{ color: "#AB3832" }}>*</span>
                 </label>
-                <Input id="ws-weight" value={wsWeight} onChange={e => setWsWeight(e.target.value)} placeholder="e.g. 840" type="number" size="lg" className="w-full font-mono" />
+                <NumberInput id="ws-weight" value={wsWeight === "" ? "" : Number(wsWeight)} onValueChange={v => setWsWeight(v === "" ? "" : String(v))} placeholder="e.g. 840" size="lg" className="w-full font-mono" />
               </div>
               {canSeePrices && (
                 <div>
                   <label htmlFor="ws-price" style={labelStyle}>Original purchase price (₹)</label>
-                  <Input id="ws-price" value={wsPrice} onChange={e => setWsPrice(e.target.value)} placeholder="e.g. 6500" type="number" size="lg" className="w-full font-mono" />
+                  <NumberInput id="ws-price" value={wsPrice === "" ? "" : Number(wsPrice)} onValueChange={v => setWsPrice(v === "" ? "" : String(v))} step={0.01} placeholder="e.g. 6500" size="lg" className="w-full font-mono" />
                 </div>
               )}
             </div>
@@ -162,14 +210,32 @@ export function ProcessReturnWholesaleFlow({
 
             <div>
               <span style={{ ...labelStyle, marginBottom: 10 }}>Photo of the saree <span style={{ color: C.muted, fontWeight: 400 }}>(optional)</span></span>
-              <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                <Button variant="secondary" iconLeft={Camera} onClick={() => {}} className="h-11 rounded-xl border border-dashed border-[rgba(110,15,45,0.28)] bg-transparent px-5 text-[14px] text-[#4F4A45]">
-                  Take photo
-                </Button>
-                <Button variant="secondary" iconLeft={ImagePlus} onClick={() => {}} className="h-11 rounded-xl border border-dashed border-[rgba(110,15,45,0.28)] bg-transparent px-5 text-[14px] text-[#4F4A45]">
-                  Choose from gallery
-                </Button>
-              </div>
+              <input type="file" accept="image/*" capture="environment" ref={cameraInputRef} style={{ display: "none" }} onChange={e => { void handlePhotoSelect(e); }} aria-label="Camera photo input" />
+              <input type="file" accept="image/*" ref={galleryInputRef} style={{ display: "none" }} onChange={e => { void handlePhotoSelect(e); }} aria-label="Gallery photo input" />
+              {!photoPreview ? (
+                <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                  <Button variant="secondary" iconLeft={Camera} onClick={() => cameraInputRef.current?.click()} className="h-11 rounded-xl border border-dashed border-[rgba(110,15,45,0.28)] bg-transparent px-5 text-[14px] text-[#4F4A45]">
+                    Take photo
+                  </Button>
+                  <Button variant="secondary" iconLeft={ImagePlus} onClick={() => galleryInputRef.current?.click()} className="h-11 rounded-xl border border-dashed border-[rgba(110,15,45,0.28)] bg-transparent px-5 text-[14px] text-[#4F4A45]">
+                    Choose from gallery
+                  </Button>
+                </div>
+              ) : (
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <img src={photoPreview} alt="Saree being returned" style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 10, border: "1px solid rgba(110,15,45,0.16)" }} />
+                  {photoUploading ? (
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: C.muted }}>
+                      <Loader2 size={14} className="animate-spin" /> Uploading…
+                    </span>
+                  ) : (
+                    <Button variant="tertiary" iconLeft={X} onClick={clearPhoto} className="h-9 px-3 text-[13px] text-[#C0392B]">
+                      Remove photo
+                    </Button>
+                  )}
+                </div>
+              )}
+              {photoError && <div style={{ marginTop: 8, fontSize: 12, color: "#C0392B" }}>{photoError}</div>}
             </div>
           </StepBody>
 

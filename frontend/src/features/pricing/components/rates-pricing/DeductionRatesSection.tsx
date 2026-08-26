@@ -57,8 +57,8 @@ export function DeductionRatesSection() {
                 <div style={{ background: "#fff", border: `1px solid ${T.borderDef}`, borderTop: "none", borderRadius: "0 0 16px 16px", padding: 20 }}>
                   <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 14 }}>
                     <div>
-                      <label style={labelStyle} htmlFor="deduction-rate-per-gram">Deduction Rate (INR per gram) *</label>
-                      <NumberInput id="deduction-rate-per-gram" addonLeft="INR" step={0.01} defaultValue={5.2} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
+                      <label style={labelStyle} htmlFor="deduction-rate-per-gram">Deduction Rate (₹ per gram) *</label>
+                      <NumberInput id="deduction-rate-per-gram" addonLeft="₹" step={0.01} defaultValue={5.2} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
                     </div>
                     <div>
                       <label style={labelStyle} htmlFor="applies-after-variance-grams">Applies After Variance (grams) *</label>
@@ -128,8 +128,8 @@ export function DeductionRatesSection() {
               >
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                   <div>
-                    <label style={labelStyle} htmlFor="deduction-rate-per-gram-2">Deduction Rate (INR per gram) *</label>
-                    <NumberInput id="deduction-rate-per-gram-2" addonLeft="INR" step={0.01} defaultValue={15} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
+                    <label style={labelStyle} htmlFor="deduction-rate-per-gram-2">Deduction Rate (₹ per gram) *</label>
+                    <NumberInput id="deduction-rate-per-gram-2" addonLeft="₹" step={0.01} defaultValue={15} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
                   </div>
                   <div>
                     <label style={labelStyle} htmlFor="applies-after-variance-grams-2">Applies After Variance (grams) *</label>
@@ -200,8 +200,8 @@ export function DeductionRatesSection() {
               >
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                   <div>
-                    <label style={labelStyle} htmlFor="deduction-rate-per-reel">Deduction Rate (INR per reel) *</label>
-                    <NumberInput id="deduction-rate-per-reel" addonLeft="INR" step={0.01} defaultValue={42} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
+                    <label style={labelStyle} htmlFor="deduction-rate-per-reel">Deduction Rate (₹ per reel) *</label>
+                    <NumberInput id="deduction-rate-per-reel" addonLeft="₹" step={0.01} defaultValue={42} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
                   </div>
                   <div>
                     <label style={labelStyle} htmlFor="applies-after-variance-reels">Applies After Variance (reels) *</label>

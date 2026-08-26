@@ -44,6 +44,7 @@ export function DetailDrawer({
                   Purchase Details
                 </span>
               </Dialog.Title>
+              <Dialog.Description className="sr-only">Full details for this external purchase</Dialog.Description>
               <Dialog.Close asChild>
                 <IconButton
                   icon={X}

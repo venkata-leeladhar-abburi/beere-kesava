@@ -458,7 +458,7 @@ export function FirmsPage() {
         }
       >
         <div className="max-w-[380px]" style={{ marginBottom: 20 }}>
-          <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by firm name, GST, or contact..." />
+          <SearchInput aria-label="Search by firm name, GST, or contact" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by firm name, GST, or contact..." />
         </div>
 
         {filtered.length === 0 ? (

@@ -2,7 +2,7 @@ import React, { useEffect, useState, lazy, Suspense } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useNavigate, useParams } from "react-router";
 import { motion } from "motion/react";
-import { IndianRupee, Building2, FileBarChart2, Tags, LogOut, UserRound, Users, UserRound as UserIcon, Truck, Store, Factory, Package, ChevronDown, ChevronLeft, Menu, X } from "lucide-react";
+import { IndianRupee, Building2, FileBarChart2, Tags, LogOut, UserRound, Users, UserRound as UserIcon, Truck, Store, Factory, Package, ChevronDown, Menu, X } from "lucide-react";
 import { useAuth } from "../../../contexts/AuthContext";
 import { useResponsive } from "../../../hooks/useResponsive";
 import { PaymentsPage } from "@/features/payments";
@@ -80,7 +80,7 @@ const NAV: NavItem[] = [
 const SLUG_TO_KEY: Record<string, string> = NAV.reduce((acc, n) => { acc[n.slug] = n.key; return acc; }, {} as Record<string, string>);
 
 // ── Top navigation bar ──────────────────────────────────────────────────────────
-function TopNav({ active, set, onBack, onLogout, onProfile }: {
+function TopNav({ active, set, onBack: _onBack, onLogout, onProfile }: {
   active: string; set: (slug: string) => void; onBack?: () => void; onLogout?: () => void; onProfile?: () => void;
 }) {
   const { user } = useAuth();
@@ -226,6 +226,7 @@ export function AcctMobileMenuDrawer({ open, onClose, active, setTab }: {
               <Dialog.Title asChild>
                 <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 14, color: T.warmCream, lineHeight: 1.1 }}>Beere Kesava</div>
               </Dialog.Title>
+              <Dialog.Description className="sr-only">Accountant portal navigation menu</Dialog.Description>
               <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 11, color: "rgba(231,201,131,0.85)", letterSpacing: "2px", textTransform: "uppercase" }}>ACCOUNTANT</div>
             </div>
           </div>

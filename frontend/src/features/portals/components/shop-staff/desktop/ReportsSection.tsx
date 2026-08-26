@@ -8,7 +8,7 @@ import { C, F, PageHero, PortalStatsStrip, type PortalStat } from "../theme";
 import { DSH } from "./DSH";
 import { Button } from "../../../../../shared/ui/primitives";
 import { semantic } from "../../../../../design-system/tokens";
-import { ChartFigure } from "../../../../../shared/ui/data";
+import { ChartFigure, TableSkeleton, TableError } from "../../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
 
@@ -18,12 +18,12 @@ function timeLabel(iso: string) {
 }
 
 export function ReportsSection({
-  bp, isTablet, canSeePrices, setExportDone, setExportDialog,
+  bp: _bp, isTablet, canSeePrices, setExportDone, setExportDialog,
 }: {
   bp: "tablet" | "desktop"; isTablet: boolean; canSeePrices: boolean;
   setExportDone: (v: boolean) => void; setExportDialog: (v: { label: string } | null) => void;
 }) {
-  const { data: salesRes } = useQuery({
+  const { data: salesRes, isLoading: salesLoading, isError: salesError, refetch: refetchSales } = useQuery({
     queryKey: ["sales-list-desktop-report"],
     queryFn: () => salesApi.list(100),
   });
@@ -124,7 +124,11 @@ export function ReportsSection({
                   <div key={h} style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted, letterSpacing: 0.4 }}>{h}</div>
                 ))}
               </div>
-              {salesRows.length === 0 ? (
+              {salesLoading ? (
+                <TableSkeleton columns={canSeePrices ? 6 : 5} rows={3} />
+              ) : salesError ? (
+                <TableError onRetry={() => refetchSales()} />
+              ) : salesRows.length === 0 ? (
                 <div style={{ padding: "24px 16px", textAlign: "center", fontFamily: F.u, fontSize: 14, color: C.muted }}>
                   No sales recorded today yet.
                 </div>

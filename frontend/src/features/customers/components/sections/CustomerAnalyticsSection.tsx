@@ -556,7 +556,16 @@ export function CustomerAnalyticsSection({ analyticsDateFilter, setAnalyticsDate
           </div>
 
           <DownloadGate>
-            <Button variant="tertiary" iconLeft={Download} className="mt-8">
+            <Button
+              variant="tertiary"
+              iconLeft={Download}
+              className="mt-8"
+              onClick={() => downloadDataAsCSV(
+                "customer_list_with_locations.csv",
+                ["Customer Name", "Type", "City", "Total Spend"],
+                custRows.map(c => [c.name, c.type, c.city, c.spend]),
+              )}
+            >
               Download Customer List with Locations
             </Button>
           </DownloadGate>

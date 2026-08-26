@@ -8,6 +8,7 @@ import { factoryLoomsApi, BackendFactoryLoom } from "../../../shared/api/factory
 import { batchesApi, BackendBatch, BackendBatchSareeRow } from "../../../shared/api/batches";
 import { STOPGAP_ACTING_USER_ID } from "../../../shared/api/purchase-requests";
 import { useAuth } from "../../../contexts/AuthContext";
+import { resolveAssetUrl, toStoredAssetPath } from "../../../shared/api/uploads";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 /**
@@ -157,7 +158,7 @@ function backendRecordToFrontend(
     receivedDate: r.receivedDate,
     qcDate: r.qcDate,
     notes: r.notes ?? undefined,
-    photoUrl: r.photoUrl,
+    photoUrl: resolveAssetUrl(r.photoUrl),
     inspectedBy: "Worker Staff",
   };
 }
@@ -202,7 +203,7 @@ export function QcProvider({ children }: { children: React.ReactNode }) {
         defects: input.defects,
         semiDeduction: input.result === "semi" ? (input.semiDeduction ?? 0) : undefined,
         notes: input.notes,
-        photoUrl: input.photoUrl ?? undefined,
+        photoUrl: toStoredAssetPath(input.photoUrl) ?? undefined,
         inspectedById: user?.id ?? STOPGAP_ACTING_USER_ID,
       }),
     onSuccess: () => {

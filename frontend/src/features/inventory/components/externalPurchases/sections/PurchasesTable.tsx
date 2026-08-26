@@ -24,6 +24,7 @@ export function PurchasesTable({
   onViewSarees,
   onEdit,
   onDelete,
+  onClearFilters,
 }: {
   filtered: Purchase[];
   totalCount: number;
@@ -34,6 +35,7 @@ export function PurchasesTable({
   onViewSarees: (row: Purchase) => void;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
+  onClearFilters: () => void;
 }) {
   const mono = (color: string, extra?: React.CSSProperties): React.CSSProperties => ({
     fontFamily: "var(--font-mono)", fontSize: 12, color, whiteSpace: "nowrap", ...extra,
@@ -131,7 +133,7 @@ export function PurchasesTable({
           onRowClick={onView}
           rowClassName={row => (hoveredRow === row.id ? "bk-purchases-row-hovered" : undefined)}
           isFiltered={totalCount !== filtered.length}
-          onClearFilters={() => {}}
+          onClearFilters={onClearFilters}
           emptyTitle={totalCount === 0 ? "No external purchases recorded yet" : "No purchases match your filters"}
         />
         <style>{`.bk-purchases-row-hovered { background: #F0E8D0 !important; }`}</style>

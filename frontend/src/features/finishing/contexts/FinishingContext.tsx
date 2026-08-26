@@ -106,6 +106,7 @@ function backendDispatchToFrontend(d: BackendDispatchRecord): DispatchRecord {
     bulkOrderRef: d.bulkOrderRef ?? undefined,
     pendingTransport: d.pendingTransport,
     pendingReceipt: d.pendingReceipt,
+    receiptUrl: d.receiptUrl,
     quotationRef: d.quotationRef ?? undefined,
     expectedDelivery: d.expectedDelivery ?? undefined,
     specialInstructions: d.specialInstructions ?? undefined,
@@ -324,6 +325,7 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
         quotationRef: args.record.quotationRef,
         pendingTransport: args.record.pendingTransport,
         pendingReceipt: args.record.pendingReceipt,
+        receiptUrl: args.record.receiptUrl ?? undefined,
         customerId: args.record.customerId,
         // Wholesale dispatches always raise an invoice; the number comes back
         // from the server rather than being sent up.
@@ -371,6 +373,7 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
         specialInstructions: args.patch.specialInstructions,
         pendingTransport: args.patch.pendingTransport,
         pendingReceipt: args.patch.pendingReceipt,
+        receiptUrl: args.patch.receiptUrl ?? undefined,
       }).then(() => args),
     onMutate: async ({ id, patch }) => {
       await qc.cancelQueries({ queryKey: DISPATCHES_KEY });

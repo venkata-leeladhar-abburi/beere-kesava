@@ -19,6 +19,8 @@ import { retailData, inactiveData, wholesaleData } from "./data";
 import { WholesaleCustomer, RetailCustomer, WholesaleTab } from "./types";
 import { useCustomers } from "../contexts/CustomersContext";
 import { useUrlFilters } from "../../../shared/ui/filter";
+import { imgVisitingCardPlaceholder } from "@/shared/constants/mockImages";
+import { resolveAssetUrl, toStoredAssetPath } from "@/shared/api/uploads";
 
 /**
  * Composition root for the Customers feature (Wholesale + Retail + Analytics
@@ -72,7 +74,7 @@ export function CustomersPage() {
         activeOrder,
         duesMsg: outstanding > 0 ? `${formatMoney(rupees(outstanding))} outstanding` : "✓ All Payments Clear",
         gstNumber: c.gstCode || "—",
-        visitingCard: c.visitingCardUrl || "https://images.unsplash.com/photo-1589758438368-0ad531db3366?w=400&fit=crop&q=80",
+        visitingCard: resolveAssetUrl(c.visitingCardUrl) || imgVisitingCardPlaceholder,
         contactName: c.contactName || "",
         phone: c.phone || "",
         address: c.address || "",
@@ -231,6 +233,12 @@ export function CustomersPage() {
                 state: updated.state || undefined,
                 paymentTerms: updated.terms || undefined,
                 notes: updated.notes || undefined,
+                // Skip the shared placeholder: it is display-only filler for a
+                // customer with no card, not something to persist.
+                visitingCardUrl:
+                  updated.visitingCard && updated.visitingCard !== imgVisitingCardPlaceholder
+                    ? toStoredAssetPath(updated.visitingCard) ?? undefined
+                    : undefined,
               });
             }
             setSelectedWholesaleCust(updated);

@@ -1,5 +1,6 @@
 import React from "react";
 import { T, F, ExtItem } from "./POTypesAndVendors";
+import { rupees, formatMoney } from "@/lib/domain/money";
 
 interface PODocPreviewProps {
   vendor: string;
@@ -106,7 +107,7 @@ export function PODocPreview({
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, wordBreak: "break-word" }}>{m.description || "—"}</span>
               <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{m.quantity || 0} {m.unit}</span>
               <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.antiqueGold, fontWeight: 600 }}>
-                {m.pricePerUnit > 0 ? `INR ${((m.pricePerUnit || 0) * (m.quantity || 0)).toLocaleString("en-IN")}` : "—"}
+                {m.pricePerUnit > 0 ? formatMoney(rupees((m.pricePerUnit || 0) * (m.quantity || 0))) : "—"}
               </span>
             </div>
           ))}
@@ -114,7 +115,7 @@ export function PODocPreview({
             <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 10px", borderTop: `1px solid ${T.borderDef}`, background: T.silkCream }}>
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600 }}>Total</span>
               <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.royalBurgundy, fontWeight: 700 }}>
-                INR {materials.reduce((sum, m) => sum + (m.pricePerUnit || 0) * (m.quantity || 0), 0).toLocaleString("en-IN")}
+                {formatMoney(rupees(materials.reduce((sum, m) => sum + (m.pricePerUnit || 0) * (m.quantity || 0), 0)))}
               </span>
             </div>
           )}

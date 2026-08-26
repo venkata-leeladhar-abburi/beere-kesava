@@ -1,15 +1,31 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { randomInt } from "crypto";
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Optional,
+  ServiceUnavailableException,
+  UnauthorizedException,
+} from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
+import * as bcrypt from "bcryptjs";
 import { PrismaService } from "../prisma/prisma.service";
+import { WhatsAppService } from "../whatsapp/whatsapp.service";
 import { RequestOtpDto } from "./dto/request-otp.dto";
 import { VerifyOtpDto } from "./dto/verify-otp.dto";
-import { UserRole, AccessLevel } from "../generated/prisma/client";
+import { OtpInspectorService } from "./testing/otp-inspector.service";
+import { UserRole, AccessLevel, WhatsAppMessageKind, WhatsAppMessageStatus } from "../generated/prisma/client";
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly whatsapp: WhatsAppService,
+    // Only actually provided when isE2eTestModeEnabled() (see auth.module.ts);
+    // @Optional() means this resolves to undefined everywhere else, so every
+    // call site below is a no-op in production.
+    @Optional() private readonly otpInspector?: OtpInspectorService,
   ) {}
 
   private cleanPhone(phone: string): string {
@@ -19,6 +35,14 @@ export class AuthService {
 
   private readonly otpTtlMs = 5 * 60 * 1000;
   private readonly maxOtpAttempts = 5;
+  private readonly resendCooldownMs = 60 * 1000;
+  private readonly maxOtpRequestsPerHour = 5;
+
+  private generateOtp(): string {
+    // crypto.randomInt is uniform; an OTP is a login credential and must
+    // never be generated with Math.random.
+    return String(randomInt(100_000, 1_000_000));
+  }
 
   async requestOtp(dto: RequestOtpDto) {
     const phone = this.cleanPhone(dto.phone);
@@ -26,41 +50,85 @@ export class AuthService {
     // Seed default SuperAdmin and Admin if requested or missing
     await this.ensureDefaultUsers();
 
-    // Look for user by mobile number or weaver by phone
     const user = await this.prisma.user.findFirst({
       where: { mobile: { contains: phone } },
     });
-
     const weaver = !user
       ? await this.prisma.weaver.findFirst({ where: { phone: { contains: phone } } })
       : null;
 
-    // Persist the OTP so verifyOtp has a real row to validate against
-    // (code is always fixed to "123456" for now, per product decision — no
-    // SMS/WhatsApp sending yet — but the OtpCode table is now actually used).
-    const expiresAt = new Date(Date.now() + this.otpTtlMs);
-    const existing = await this.prisma.otpCode.findFirst({
-      where: { phoneNumber: phone, consumedAt: null },
-      orderBy: { createdAt: "desc" },
-    });
-
-    if (existing) {
-      await this.prisma.otpCode.update({
-        where: { id: existing.id },
-        data: { code: "123456", expiresAt, attempts: 0 },
-      });
-    } else {
-      await this.prisma.otpCode.create({
-        data: { phoneNumber: phone, code: "123456", expiresAt },
-      });
+    // Only registered numbers get an OTP — sending to unknown numbers burns
+    // billable authentication conversations and is an open relay for abuse.
+    if (!user && !weaver) {
+      throw new UnauthorizedException("This mobile number is not registered.");
     }
 
-    // For fixed OTP demo mode, any valid phone number registered or default can receive OTP 123456
+    // Resend throttle: one OTP per 60s, max 5 per hour per number.
+    const recent = await this.prisma.otpCode.findMany({
+      where: {
+        phoneNumber: phone,
+        createdAt: { gte: new Date(Date.now() - 60 * 60 * 1000) },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    if (recent[0] && Date.now() - recent[0].createdAt.getTime() < this.resendCooldownMs) {
+      throw new HttpException(
+        "Please wait a minute before requesting another OTP.",
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+    if (recent.length >= this.maxOtpRequestsPerHour) {
+      throw new HttpException(
+        "Too many OTP requests. Please try again in an hour.",
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+
+    const code = this.generateOtp();
+    const expiresAt = new Date(Date.now() + this.otpTtlMs);
+
+    // Invalidate any outstanding OTPs, then issue exactly one. Updating an
+    // existing row in place would leave stale rows usable if two requests race.
+    await this.prisma.otpCode.updateMany({
+      where: { phoneNumber: phone, consumedAt: null },
+      data: { consumedAt: new Date() },
+    });
+
+    // Recorded before hashing so an E2E test can retrieve it via
+    // GET /auth/testing/otp — the database only ever stores the bcrypt hash.
+    this.otpInspector?.record(phone, code);
+
+    const hashedCode = await bcrypt.hash(code, 10);
+    const otpRow = await this.prisma.otpCode.create({
+      data: { phoneNumber: phone, code: hashedCode, expiresAt },
+    });
+
+    const result = await this.whatsapp.sendTemplate({
+      campaignName: "bk_login_otp",
+      destination: phone,
+      recipientName: user ? `${user.firstName} ${user.lastName}` : (weaver?.name ?? "Customer"),
+      templateParams: [code],
+      // Same code again for the template's copy-code button — Meta rejects
+      // the message outright if the button component has no parameter.
+      copyCode: code,
+      kind: WhatsAppMessageKind.OTP,
+    });
+
+    if (result.status === WhatsAppMessageStatus.FAILED) {
+      await this.prisma.otpCode.update({
+        where: { id: otpRow.id },
+        data: { consumedAt: new Date() },
+      });
+      throw new ServiceUnavailableException(
+        "Could not send the OTP on WhatsApp. Please try again shortly.",
+      );
+    }
+
     return {
       success: true,
-      message: "OTP sent successfully",
+      message: "OTP sent on WhatsApp",
       phone,
-      exists: !!(user || weaver),
+      exists: true,
     };
   }
 
@@ -81,18 +149,16 @@ export class AuthService {
     }
 
     if (otpRow.attempts >= this.maxOtpAttempts) {
-      throw new UnauthorizedException(
-        "Too many incorrect attempts. Please request a new OTP.",
-      );
+      throw new UnauthorizedException("Too many incorrect attempts. Please request a new OTP.");
     }
 
-    // OTP validation - fixed to 123456
-    if (dto.code !== "123456" || dto.code !== otpRow.code) {
+    const matches = await bcrypt.compare(dto.code, otpRow.code);
+    if (!matches) {
       await this.prisma.otpCode.update({
         where: { id: otpRow.id },
         data: { attempts: { increment: 1 } },
       });
-      throw new UnauthorizedException("Invalid OTP code. Please use 123456.");
+      throw new UnauthorizedException("Invalid OTP code.");
     }
 
     await this.prisma.otpCode.update({
@@ -102,7 +168,7 @@ export class AuthService {
 
     await this.ensureDefaultUsers();
 
-    let user = await this.prisma.user.findFirst({
+    const user = await this.prisma.user.findFirst({
       where: { mobile: { contains: phone } },
     });
 
@@ -124,40 +190,25 @@ export class AuthService {
       const weaver = await this.prisma.weaver.findFirst({
         where: { phone: { contains: phone } },
       });
-      if (weaver) {
-        role = UserRole.WEAVER;
-        userId = weaver.id;
-        name = weaver.name;
-        email = weaver.email;
-        accessLevel = AccessLevel.FULL_ACCESS;
-        empId = weaver.code;
-        dateAdded = weaver.createdAt;
-        // No User row at all in this fallback path — the Weaver's own id
-        // doubles as both the session identity and the weaver-portal id.
-        weaverId = weaver.id;
-      } else {
-        // Fallback: If unknown phone number, auto-create a standard Admin or return SuperAdmin
-        if (phone === "9999999999") {
-          user = await this.prisma.user.findUnique({ where: { empId: "EMP-001" } });
-        } else if (phone === "8888888888") {
-          user = await this.prisma.user.findUnique({ where: { empId: "EMP-002" } });
-        }
 
-        if (!user) {
-          // Default to SuperAdmin / Admin fallback for testing convenience
-          user = await this.prisma.user.findFirst({ where: { role: UserRole.SUPERADMIN } });
-        }
-
-        if (user) {
-          role = user.role;
-          userId = user.id;
-          name = `${user.firstName} ${user.lastName}`;
-          email = user.email || "";
-          accessLevel = user.accessLevel;
-          empId = user.empId;
-          dateAdded = user.dateAdded;
-        }
+      // requestOtp already rejects unregistered numbers, so this can only
+      // fail to resolve if the weaver/user was deleted between request and
+      // verify. There is no "fall back to SuperAdmin" branch here anymore —
+      // an unresolved identity means the session is denied, full stop.
+      if (!weaver) {
+        throw new UnauthorizedException("Account not found for this phone number.");
       }
+
+      role = UserRole.WEAVER;
+      userId = weaver.id;
+      name = weaver.name;
+      email = weaver.email;
+      accessLevel = AccessLevel.FULL_ACCESS;
+      empId = weaver.code;
+      dateAdded = weaver.createdAt;
+      // No User row at all in this fallback path — the Weaver's own id
+      // doubles as both the session identity and the weaver-portal id.
+      weaverId = weaver.id;
     }
 
     // weaverId must travel in the token, not just the response body: every

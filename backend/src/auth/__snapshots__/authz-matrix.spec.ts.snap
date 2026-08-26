@@ -1,0 +1,1816 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`authz matrix / route inventory matches the committed authorization snapshot 1`] = `
+[
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "GET /analytics/cash-flow",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "GET /analytics/cash-flow-monthly",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "GET /analytics/production-trends",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "GET /analytics/production-trend-monthly",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "GET /analytics/revenue-split",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "GET /analytics/top-weavers",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "GET /analytics/customers-new-vs-returning-monthly",
+  },
+  {
+    "permissions": [],
+    "public": true,
+    "roles": [],
+    "route": "GET /health",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+    ],
+    "route": "GET /approvals",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+    ],
+    "route": "GET /audit-log",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+    ],
+    "route": "GET /audit-log/actions",
+  },
+  {
+    "permissions": [],
+    "public": true,
+    "roles": [],
+    "route": "POST /auth/request-otp",
+  },
+  {
+    "permissions": [],
+    "public": true,
+    "roles": [],
+    "route": "POST /auth/verify-otp",
+  },
+  {
+    "permissions": [],
+    "public": true,
+    "roles": [],
+    "route": "GET /auth/testing/otp",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "POST /batches",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WEAVER",
+      "WORKER",
+    ],
+    "route": "GET /batches",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WEAVER",
+      "WORKER",
+    ],
+    "route": "GET /batches/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "PATCH /batches/:id/rows/:serial",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "PATCH /batches/:id/rows",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "PATCH /batches/:id/rows/:serial/receive",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "PATCH /batches/:id/rows/:serial/tally",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "POST /batches/:id/finalize",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "DELETE /batches/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SHOP",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "POST /bulk-orders",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SHOP",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "GET /bulk-orders",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SHOP",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "GET /bulk-orders/:ref",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SHOP",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "PATCH /bulk-orders/:ref",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SHOP",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "DELETE /bulk-orders/:ref",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SHOP",
+      "SUPERADMIN",
+    ],
+    "route": "POST /customers",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SHOP",
+      "SUPERADMIN",
+    ],
+    "route": "GET /customers",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SHOP",
+      "SUPERADMIN",
+    ],
+    "route": "GET /customers/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SHOP",
+      "SUPERADMIN",
+    ],
+    "route": "PATCH /customers/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SHOP",
+      "SUPERADMIN",
+    ],
+    "route": "DELETE /customers/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "POST /design-dispatches",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [],
+    "route": "GET /design-dispatches",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [],
+    "route": "GET /design-dispatches/weaver/:weaverId",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "POST /design-library",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "WEAVER",
+      "WORKER",
+    ],
+    "route": "GET /design-library",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "WEAVER",
+      "WORKER",
+    ],
+    "route": "GET /design-library/:code",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "PATCH /design-library/:code",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "POST /design-library/:code/dispatch",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "POST /dispatch",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "SHOP",
+      "WORKER",
+    ],
+    "route": "GET /dispatch",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "SHOP",
+      "WORKER",
+    ],
+    "route": "GET /dispatch/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "PATCH /dispatch/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "DELETE /dispatch/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "POST /factory-looms",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "GET /factory-looms",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "GET /factory-looms/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "PATCH /factory-looms/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "POST /finance-jobs/overdue-payments/run",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "POST /finishing/assignments",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SHOP",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "GET /finishing/assignments",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SHOP",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "GET /finishing/assignments/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "POST /finishing/assignments/:id/receive",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "POST /finishing/staff",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "GET /finishing/staff",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "GET /finishing/staff/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "PATCH /finishing/staff/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "DELETE /finishing/staff/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "SUPERADMIN",
+    ],
+    "route": "POST /firms",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [],
+    "route": "GET /firms",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [],
+    "route": "GET /firms/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "SUPERADMIN",
+    ],
+    "route": "PATCH /firms/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "SUPERADMIN",
+    ],
+    "route": "DELETE /firms/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "SUPERADMIN",
+    ],
+    "route": "POST /firms/:id/entries",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [],
+    "route": "GET /firms/:id/entries",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "SUPERADMIN",
+    ],
+    "route": "PATCH /firms/:id/entries/:entryId",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "SUPERADMIN",
+    ],
+    "route": "DELETE /firms/:id/entries/:entryId",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [],
+    "route": "GET /firms/:id/ledger-summary",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [],
+    "route": "GET /firms/:id/activity",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SHOP",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "GET /inventory",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SHOP",
+      "SUPERADMIN",
+    ],
+    "route": "POST /invoices",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SHOP",
+      "SUPERADMIN",
+    ],
+    "route": "GET /invoices",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SHOP",
+      "SUPERADMIN",
+    ],
+    "route": "GET /invoices/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SHOP",
+      "SUPERADMIN",
+    ],
+    "route": "POST /invoices/:id/payments",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [],
+    "route": "GET /labels/settings",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "SUPERADMIN",
+    ],
+    "route": "PATCH /labels/settings",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [],
+    "route": "GET /labels/barcode",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [],
+    "route": "GET /labels/qrcode",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "POST /material-issues",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "WEAVER",
+      "WORKER",
+    ],
+    "route": "GET /material-issues",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "GET /material-issues/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WEAVER",
+      "WORKER",
+    ],
+    "route": "POST /material-issues/:id/sign",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "POST /material-issues/:id/cancel",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "DELETE /material-issues/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+    ],
+    "route": "POST /material-returns",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+    ],
+    "route": "GET /material-returns",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+    ],
+    "route": "GET /material-returns/outstanding",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+    ],
+    "route": "GET /material-returns/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+    ],
+    "route": "POST /material-returns/:id/sign",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+    ],
+    "route": "POST /material-returns/:id/cancel",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+    ],
+    "route": "DELETE /material-returns/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SHOP",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "POST /notifications",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [],
+    "route": "GET /notifications",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [],
+    "route": "PATCH /notifications/:id/read",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "GET /payments/summary",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "POST /payments/weavers",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "WEAVER",
+    ],
+    "route": "GET /payments/weavers",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "WEAVER",
+    ],
+    "route": "GET /payments/weavers/earnings",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "GET /payments/weavers/production-rows",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "POST /payments/weavers/import",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "POST /payments/vendors",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "GET /payments/vendors",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "POST /payments/suppliers",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "GET /payments/suppliers",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SUPERADMIN",
+    ],
+    "route": "POST /purchase-orders",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "WORKER",
+    ],
+    "route": "GET /purchase-orders",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "WORKER",
+    ],
+    "route": "GET /purchase-orders/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "POST /purchase-orders/:id/approve",
+  },
+  {
+    "permissions": [
+      "procurement.po.reject",
+    ],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "POST /purchase-orders/:id/reject",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "WORKER",
+    ],
+    "route": "POST /purchase-orders/:id/grn",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "DELETE /purchase-orders/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "POST /purchase-requests",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "GET /purchase-requests",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "GET /purchase-requests/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+    ],
+    "route": "POST /purchase-requests/:id/decide",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "POST /purchases",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "GET /purchases",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "GET /purchases/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "PATCH /purchases/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "DELETE /purchases/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "POST /qc",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WEAVER",
+      "WORKER",
+    ],
+    "route": "GET /qc",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SHOP",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "GET /qc/ready-for-finishing",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WEAVER",
+      "WORKER",
+    ],
+    "route": "GET /qc/:sareeId",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "POST /quotations",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "GET /quotations",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "GET /quotations/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "POST /quotations/:id/assign-finishing",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "POST /quotations/:id/receive",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "POST /quotations/:id/dispatch",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "WEAVER",
+    ],
+    "route": "GET /rate-requests",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "WEAVER",
+    ],
+    "route": "POST /rate-requests",
+  },
+  {
+    "permissions": [
+      "rate_requests.approve",
+    ],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "WEAVER",
+    ],
+    "route": "PATCH /rate-requests/:id/approve",
+  },
+  {
+    "permissions": [
+      "rate_requests.reject",
+    ],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "WEAVER",
+    ],
+    "route": "PATCH /rate-requests/:id/reject",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "SUPERADMIN",
+    ],
+    "route": "POST /rates",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [],
+    "route": "GET /rates",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [],
+    "route": "GET /rates/:code",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "SUPERADMIN",
+    ],
+    "route": "PATCH /rates/:code",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "GET /materials/stock",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "GET /materials/grn",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "POST /materials/grn",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SUPERADMIN",
+      "WORKER",
+    ],
+    "route": "PATCH /materials/reorder-levels",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "GET /reports/outstanding-payments",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "GET /reports/production-summary",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "GET /reports/sales-summary",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "GET /reports/schedules",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "POST /reports/schedules",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "PATCH /reports/schedules/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "DELETE /reports/schedules/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "GET /reports/history",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "POST /reports/history",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SHOP",
+      "SUPERADMIN",
+    ],
+    "route": "POST /sales",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SHOP",
+      "SUPERADMIN",
+    ],
+    "route": "GET /sales",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SHOP",
+      "SUPERADMIN",
+    ],
+    "route": "GET /sales/:saleRef",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SHOP",
+      "SUPERADMIN",
+    ],
+    "route": "POST /sales/returns",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SHOP",
+      "SUPERADMIN",
+    ],
+    "route": "POST /sales/returns/untracked",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SHOP",
+      "SUPERADMIN",
+    ],
+    "route": "GET /sales/returns/all",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SHOP",
+      "SUPERADMIN",
+    ],
+    "route": "GET /sales/returns/:returnRef",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [],
+    "route": "GET /scan/:sareeId",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "POST /supplier-returns",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "GET /supplier-returns",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "GET /supplier-returns/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ADMIN",
+      "SUPERADMIN",
+    ],
+    "route": "POST /supplier-returns/:id/decide",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SUPERADMIN",
+    ],
+    "route": "POST /suppliers",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SUPERADMIN",
+    ],
+    "route": "GET /suppliers",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SUPERADMIN",
+    ],
+    "route": "GET /suppliers/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SUPERADMIN",
+    ],
+    "route": "PATCH /suppliers/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SUPERADMIN",
+    ],
+    "route": "DELETE /suppliers/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [],
+    "route": "POST /uploads/photo",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [],
+    "route": "POST /uploads/receipt",
+  },
+  {
+    "permissions": [],
+    "public": true,
+    "roles": [],
+    "route": "GET /uploads/:folder/:filename",
+  },
+  {
+    "permissions": [
+      "users.create",
+    ],
+    "public": false,
+    "roles": [],
+    "route": "POST /users",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [],
+    "route": "GET /users",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [],
+    "route": "GET /users/:id",
+  },
+  {
+    "permissions": [
+      "users.update",
+    ],
+    "public": false,
+    "roles": [],
+    "route": "PATCH /users/:id",
+  },
+  {
+    "permissions": [
+      "users.roles.manage",
+    ],
+    "public": false,
+    "roles": [],
+    "route": "PATCH /users/:id/access-level",
+  },
+  {
+    "permissions": [
+      "users.delete",
+    ],
+    "public": false,
+    "roles": [],
+    "route": "DELETE /users/:id",
+  },
+  {
+    "permissions": [
+      "vendor_bills.create",
+    ],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "POST /vendor-bills",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "GET /vendor-bills",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "GET /vendor-bills/:id",
+  },
+  {
+    "permissions": [
+      "vendor_bills.create",
+    ],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "PATCH /vendor-bills/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SUPERADMIN",
+    ],
+    "route": "POST /vendors",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SUPERADMIN",
+    ],
+    "route": "GET /vendors",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SUPERADMIN",
+    ],
+    "route": "GET /vendors/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SUPERADMIN",
+    ],
+    "route": "PATCH /vendors/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SUPERADMIN",
+    ],
+    "route": "DELETE /vendors/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "WEAVER",
+      "WORKER",
+    ],
+    "route": "GET /warp-requests",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "WEAVER",
+      "WORKER",
+    ],
+    "route": "POST /warp-requests",
+  },
+  {
+    "permissions": [
+      "warp_requests.approve",
+    ],
+    "public": false,
+    "roles": [
+      "WEAVER",
+      "WORKER",
+    ],
+    "route": "PATCH /warp-requests/:id/approve",
+  },
+  {
+    "permissions": [
+      "warp_requests.reject",
+    ],
+    "public": false,
+    "roles": [
+      "WEAVER",
+      "WORKER",
+    ],
+    "route": "PATCH /warp-requests/:id/reject",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SUPERADMIN",
+    ],
+    "route": "POST /weavers",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [],
+    "route": "GET /weavers",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [],
+    "route": "GET /weavers/leaderboard",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [],
+    "route": "GET /weavers/production-leaderboard",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [],
+    "route": "GET /weavers/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [],
+    "route": "GET /weavers/:id/stats",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SUPERADMIN",
+    ],
+    "route": "PATCH /weavers/:id",
+  },
+  {
+    "permissions": [
+      "weavers.delete",
+    ],
+    "public": false,
+    "roles": [],
+    "route": "DELETE /weavers/:id",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [],
+    "route": "GET /whatsapp/messages",
+  },
+]
+`;

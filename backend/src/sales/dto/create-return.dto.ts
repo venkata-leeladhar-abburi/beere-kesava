@@ -24,4 +24,9 @@ export class CreateReturnDto {
   @IsOptional()
   @IsBoolean()
   restocked?: boolean;
+
+  /** Server-relative path to a condition photo (POST /uploads/photo). */
+  @IsOptional()
+  @IsString()
+  photoUrl?: string;
 }

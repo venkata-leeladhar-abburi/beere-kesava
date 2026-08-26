@@ -9,8 +9,7 @@ import { rowComplete, weaverBreakdown, bulkOrderBreakdown } from "./sections/bat
 import { SareeWeightTallyList, type TallyRowItem, type TallyCorrection } from "./sections/batches/SareeWeightTallyList";
 import { Button, IconButton, SearchInput, Select, SelectItem } from "../../../shared/ui/primitives";
 import { EntityCode } from "@/shared/ui/domain";
-
-const imgSaree = "https://images.unsplash.com/photo-1588140686379-1b76a52103dc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
+import { imgSareeMock as imgSaree } from "@/shared/constants/mockImages";
 
 /**
  * Batch Tally as its own full page (same pattern as BulkOrderDetailPage —
@@ -227,7 +226,7 @@ export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: s
 
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 16 }}>
             <div style={{ flex: "1 1 200px" }}>
-              <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search Saree ID, Weaver..." className="w-full" />
+              <SearchInput aria-label="Search saree ID or weaver" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search Saree ID, Weaver..." className="w-full" />
             </div>
             <Select value={weaverFilter} onValueChange={setWeaverFilter} size="sm" className="w-auto min-w-[130px]">
               {weaverOptions.map(w => <SelectItem key={w as string} value={w as string}>{w === "All" ? "All Weavers" : w as string}</SelectItem>)}

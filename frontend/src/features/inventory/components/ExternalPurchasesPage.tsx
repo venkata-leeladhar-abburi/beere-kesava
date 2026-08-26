@@ -232,6 +232,7 @@ export function ExternalPurchasesPage() {
           onViewSarees={setSareeListPurchase}
           onEdit={(id) => setFormModal({ mode: "edit", editId: id })}
           onDelete={handleDelete}
+          onClearFilters={clearFilters}
         />
       </FilterBar>
 

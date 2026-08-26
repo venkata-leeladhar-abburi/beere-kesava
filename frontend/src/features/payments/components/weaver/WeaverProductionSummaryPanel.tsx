@@ -430,8 +430,10 @@ export function WeaverProductionSummaryPanel({ refreshKey }: { refreshKey: numbe
 
           {prodViewMode === "card" ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-4">
-              {grouped.map((row, idx) => (
-                <WeaverProductionCard key={`${row.weaverId}-${row.batchId}-${row.loomNumber}-${idx}`} row={row} />
+              {/* weaverId|batchId|loomNumber is already the row's unique identity —
+                  it's what paymentByKey is keyed on — so no index tiebreaker is needed. */}
+              {grouped.map((row) => (
+                <WeaverProductionCard key={`${row.weaverId}-${row.batchId}-${row.loomNumber}`} row={row} />
               ))}
             </div>
           ) : (

@@ -24,7 +24,12 @@ const HISTORY_STATUS_TO_PRODUCTION: Record<ReceivedSareeLog["status"], StatusVal
 
 type HistoryRow = ReceivedSareeLog & { sareeType?: string; isoDate?: string };
 
-export function HistorySection({ liveRecords = [] }: { liveRecords?: ReceivedSareeLog[] }) {
+// Module-level so the default is referentially stable. An inline `= []`
+// default allocates a new array on every render, which would defeat the
+// memoisation of everything downstream of allData.
+const NO_LIVE_RECORDS: ReceivedSareeLog[] = [];
+
+export function HistorySection({ liveRecords = NO_LIVE_RECORDS }: { liveRecords?: ReceivedSareeLog[] }) {
   const [view, setView] = useState<"day" | "weaver">("day");
   const [search, setSearch] = useState("");
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
@@ -57,10 +62,10 @@ export function HistorySection({ liveRecords = [] }: { liveRecords?: ReceivedSar
     })),
   [qcRecords]);
 
-  const allData: HistoryRow[] = [
+  const allData: HistoryRow[] = useMemo(() => [
     ...liveRecords.map(r => ({ ...r, sareeType: "—" })),
     ...qcHistory,
-  ];
+  ], [liveRecords, qcHistory]);
 
   const uniqueEntities = useMemo(() => Array.from(new Set(allData.map(h => h.weaver))).sort(), [allData]);
   const uniqueBatches = useMemo(() => Array.from(new Set(allData.map(h => h.batch))).filter(b => b !== "—").sort(), [allData]);
@@ -156,7 +161,9 @@ export function HistorySection({ liveRecords = [] }: { liveRecords?: ReceivedSar
           {details.length > 0 && (
             <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 3, flexWrap: "wrap" }}>
               {details.map((item, idx) => (
-                <React.Fragment key={idx}>
+                // Each detail was pushed with its own stable key ("type",
+                // "weight", "batch", ...) — reuse it rather than the index.
+                <React.Fragment key={React.isValidElement(item) ? String(item.key) : `detail-${idx}`}>
                   {idx > 0 && <span style={{ opacity: 0.5 }}>·</span>}
                   {item}
                 </React.Fragment>

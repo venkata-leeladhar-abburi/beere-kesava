@@ -74,4 +74,9 @@ export class UpdatePartyDto {
   @IsOptional()
   @IsString()
   notes?: string;
+
+  /** Server-relative path from POST /uploads/photo — never a base64 data URL. */
+  @IsOptional()
+  @IsString()
+  visitingCardUrl?: string;
 }

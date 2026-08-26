@@ -18,6 +18,7 @@ export interface BackendSupplier {
   accountNo: string | null;
   ifscCode: string | null;
   notes: string | null;
+  visitingCardUrl: string | null;
   status: "ACTIVE" | "INACTIVE" | "OVERDUE";
   rating: number | null;
   createdAt: string;
@@ -39,6 +40,8 @@ export interface CreateSupplierPayload {
   accountNo?: string;
   ifscCode?: string;
   notes?: string;
+  /** Server-relative path from POST /uploads/photo — never a base64 data URL. */
+  visitingCardUrl?: string;
   rating?: number;
 }
 

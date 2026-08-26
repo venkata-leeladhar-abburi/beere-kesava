@@ -61,9 +61,11 @@ export function EditWholesaleCustomerModal({ customer, onClose }: { customer: Cu
               <Dialog.Title asChild>
                 <h3 style={{ fontFamily: F.display, fontSize: 19, color: T.luxuryBrown, margin: 0 }}>Edit Wholesale Customer</h3>
               </Dialog.Title>
-              <p style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, margin: "3px 0 0" }}>
-                Changes apply to this customer everywhere, not just this dispatch.
-              </p>
+              <Dialog.Description asChild>
+                <p style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, margin: "3px 0 0" }}>
+                  Changes apply to this customer everywhere, not just this dispatch.
+                </p>
+              </Dialog.Description>
             </div>
           </div>
           <Dialog.Close asChild>

@@ -2,17 +2,18 @@ import React, { useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { Truck, Clock, CheckCircle2, Package } from "lucide-react";
 import { C, F } from "./tokens";
-import { PageHero, StatsStrip, SectionHeading, GUTTER_X, type WorkerStat } from "./primitives";
+import { PageHero, StatsStrip, SectionHeading, type WorkerStat } from "./primitives";
 import { useFinishing, DispatchRecord } from "@/features/finishing";
 import { useFirms } from "@/features/firms";
 // The admin Inventory page's own section and form — reused as-is so the worker
 // screen stays identical to what admin sees.
-import { DispatchHistorySection, ResumeDispatchModal } from "@/features/inventory";
+import { DispatchHistorySection, ResumeDispatchModal, DispatchInvoiceModal } from "@/features/inventory";
 
-export function WorkerDispatch({ isDesktop = false }: { isDesktop?: boolean }) {
+export function WorkerDispatch({ isDesktop: _isDesktop = false }: { isDesktop?: boolean }) {
   const { dispatches, updateDispatch, returns, deleteDispatch } = useFinishing();
   const { firms } = useFirms();
   const [resume, setResume] = useState<DispatchRecord | null>(null);
+  const [viewingInvoice, setViewingInvoice] = useState<DispatchRecord | null>(null);
   const [toast, setToast] = useState("");
 
   const pending = dispatches.filter(d => d.pendingTransport || d.pendingReceipt);
@@ -77,7 +78,7 @@ export function WorkerDispatch({ isDesktop = false }: { isDesktop?: boolean }) {
         firms={firms} 
         onResume={setResume} 
         onDelete={(d) => deleteDispatch(d.id, "worker-staff")}
-        onViewInvoice={(_d) => alert("Invoice viewing coming soon")}
+        onViewInvoice={setViewingInvoice}
       />
 
       </div>
@@ -93,6 +94,15 @@ export function WorkerDispatch({ isDesktop = false }: { isDesktop?: boolean }) {
               setTimeout(() => setToast(""), 2600);
             }}
             onClose={() => setResume(null)}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {viewingInvoice && (
+          <DispatchInvoiceModal
+            dispatch={viewingInvoice}
+            onClose={() => setViewingInvoice(null)}
           />
         )}
       </AnimatePresence>

@@ -19,8 +19,10 @@ import { useFinishing } from "@/features/finishing";
 import { DefectPhotoPrompt } from "./DefectPhotoPrompt";
 import { OwnFactoryReceiveTab } from "./OwnFactoryReceiveTab";
 import { SareeSelectionTable } from "./SareeSelectionTable";
-import { Button, Input, Select, SelectItem } from "../../../../../shared/ui/primitives";
+import { Button, Input, NumberInput, Select, SelectItem } from "../../../../../shared/ui/primitives";
 import { toPaise, fromPaise } from "../../../../../lib/gst";
+import { resolveAssetUrl } from "@/shared/api/uploads";
+import { useImageUpload } from "@/shared/hooks/useImageUpload";
 
 interface RejectedSaree {
   id: string;
@@ -117,11 +119,14 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
   const setHasPhoto = (v: boolean) => { if (!v) setPhotoUrl(null); };
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
-  const handlePhotoFile = (file: File | undefined) => {
+  // The received-saree photo is evidence kept on the batch row, so it goes to
+  // object storage and we hold the stored path — not a base64 data URL, which
+  // never reached the server at all before.
+  const { upload: uploadPhoto, uploading: photoUploading, error: photoError } = useImageUpload();
+  const handlePhotoFile = async (file: File | undefined) => {
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => setPhotoUrl(typeof reader.result === "string" ? reader.result : null);
-    reader.readAsDataURL(file);
+    const url = await uploadPhoto(file);
+    if (url) setPhotoUrl(url);
   };
   const [matEdits, setMatEdits] = useState<Partial<MatSplit>>({});
   const [showTagPrint, setShowTagPrint] = useState(false);
@@ -204,6 +209,7 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
         await receiveRow(currentBatch.id, no, {
           weight: parseFloat(sareeWeight),
           color: sareeColor,
+          photoUrl: photoUrl ?? undefined,
           warpG: Number.isFinite(warpG) ? warpG : undefined,
           reshamG: Number.isFinite(reshamG) ? reshamG : undefined,
           jariReels: Number.isFinite(jariReels) ? jariReels : undefined,
@@ -340,7 +346,7 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
                   <div>
                     <FieldLabel>Weight (grams)</FieldLabel>
                     <div style={{ position: "relative" }}>
-                      <Input type="number" value={sareeWeight} onChange={e => setSareeWeight(e.target.value)} placeholder="0"
+                      <NumberInput value={sareeWeight === "" ? "" : Number(sareeWeight)} onValueChange={v => setSareeWeight(v === "" ? "" : String(v))} placeholder="0"
                         size="lg" className="font-mono text-lg" />
                     </div>
                     {weightNum !== null && (
@@ -360,7 +366,7 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
                       accept="image/*"
                       capture="environment"
                       style={{ display: "none" }}
-                      onChange={e => { handlePhotoFile(e.target.files?.[0]); e.target.value = ""; }}
+                      onChange={e => { void handlePhotoFile(e.target.files?.[0]); e.target.value = ""; }}
                       aria-label="Camera photo input"
                     />
                     <input
@@ -368,20 +374,21 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
                       type="file"
                       accept="image/*"
                       style={{ display: "none" }}
-                      onChange={e => { handlePhotoFile(e.target.files?.[0]); e.target.value = ""; }}
+                      onChange={e => { void handlePhotoFile(e.target.files?.[0]); e.target.value = ""; }}
                       aria-label="Gallery photo input"
                     />
                     {!hasPhoto ? (
                       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                        <Button variant="primary" size="sm" iconLeft={Camera} onClick={() => cameraInputRef.current?.click()} className="h-11 rounded-[12px] bg-[#6E0F2D] hover:bg-[#4A061B]">
-                          Camera
+                        <Button variant="primary" size="sm" iconLeft={Camera} disabled={photoUploading} onClick={() => cameraInputRef.current?.click()} className="h-11 rounded-[12px] bg-[#6E0F2D] hover:bg-[#4A061B]">
+                          {photoUploading ? "Uploading…" : "Camera"}
                         </Button>
-                        <Button variant="secondary" size="sm" iconLeft={UploadCloud} onClick={() => galleryInputRef.current?.click()} className="h-11 rounded-[12px] border-[#6E0F2D] text-[#6E0F2D]">
+                        <Button variant="secondary" size="sm" iconLeft={UploadCloud} disabled={photoUploading} onClick={() => galleryInputRef.current?.click()} className="h-11 rounded-[12px] border-[#6E0F2D] text-[#6E0F2D]">
                           Gallery
                         </Button>
+                        {photoError && <span style={{ fontSize: 11, color: "#C0392B" }}>{photoError}</span>}
                       </div>
                     ) : (
-                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 82, backgroundImage: `url(${photoUrl})`, backgroundSize: "cover", backgroundPosition: "center", borderRadius: 8, border: `1px solid ${C.bdr}`, position: "relative" }}>
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 82, backgroundImage: `url(${resolveAssetUrl(photoUrl)})`, backgroundSize: "cover", backgroundPosition: "center", borderRadius: 8, border: `1px solid ${C.bdr}`, position: "relative" }}>
                         <div style={{ position: "absolute", top: -4, right: -4, width: 18, height: 18, background: C.green, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
                           <CheckCircle2 size={10} color="#FFF" />
                         </div>

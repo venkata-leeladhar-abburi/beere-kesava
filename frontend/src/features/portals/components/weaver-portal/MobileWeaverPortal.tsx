@@ -1,21 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ClipboardList, CheckSquare, Package, Wallet, Menu, Bell, UserRound, ChevronLeft, LogOut, X, Home } from 'lucide-react';
+import { ClipboardList, CheckSquare, Package, Wallet, Menu, Bell, UserRound, LogOut, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import * as Dialog from "@radix-ui/react-dialog";
 
-import { useAuth } from '../../../../contexts/AuthContext';
-import type { Role } from '../../../../contexts/AuthContext';
-import { useMaterialIssue } from '@/features/materials';
+import { useAuth } from '../../../../contexts/AuthContext';import { useMaterialIssue } from '@/features/materials';
 import { C, F, Tab5 } from './theme';
 import { useCurrentWeaver } from './useCurrentWeaver';
 import { Button, IconButton } from '../../../../shared/ui/primitives';
-import { Drawer, Popover } from '../../../../shared/ui/overlay';
+import { Drawer } from '../../../../shared/ui/overlay';
 import { MobileNav, type MobileNavItem } from '../../../../shared/ui/nav/MobileNav';
-import { imgBKLogo } from '../../../../shared/constants/weaverImages';
-import { BackendNotification, notificationsApi } from '../../../../shared/api/notifications';
-
-import { MyBatchesPage } from './MyBatchesPage';
+import { imgBKLogo } from '../../../../shared/constants/weaverImages';import { MyBatchesPage } from './MyBatchesPage';
 import { ConfirmMaterialPage } from './ConfirmMaterialPage';
 import { WarpRequestPage } from './WarpRequestPage';
 import { PaymentLedgerPage } from './PaymentLedgerPage';
@@ -58,6 +53,7 @@ function WeaverHamburgerMenu({
               <Dialog.Title asChild>
                 <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 14, color: "#FFFDF9", lineHeight: 1.1 }}>Beere Kesava</div>
               </Dialog.Title>
+              <Dialog.Description className="sr-only">Weaver portal navigation menu</Dialog.Description>
               <div style={{ fontFamily: F.u, fontWeight: 500, fontSize: 11, color: "rgba(231,201,131,0.85)", letterSpacing: "2px", textTransform: "uppercase" }}>WEAVER PORTAL</div>
             </div>
           </div>
@@ -129,8 +125,8 @@ function WeaverHamburgerMenu({
   );
 }
 
-export function MobileWeaverPortal({ onBack, active, setActive, onProfile }: { onBack?: () => void; active: Tab5; setActive: (t: Tab5) => void; onProfile?: () => void }) {
-  const { selectRole, user, logout } = useAuth();
+export function MobileWeaverPortal({ onBack: _onBack, active, setActive, onProfile }: { onBack?: () => void; active: Tab5; setActive: (t: Tab5) => void; onProfile?: () => void }) {
+  const { selectRole: _selectRole, user, logout } = useAuth();
   const name = user?.name || "—";
   const initials = name === "—" ? "—" : name.split(" ").filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase();
   const navigate = useNavigate();
@@ -255,7 +251,7 @@ export function MobileWeaverPortal({ onBack, active, setActive, onProfile }: { o
             </motion.div>
           ) : (
             <motion.div key={active} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>
-              {active === 'batches' && (<MyBatchesPage />)}
+              {active === 'batches' && (<MyBatchesPage onGoToPayments={() => setActive('payments')} />)}
               {active === 'confirm' && (<ConfirmMaterialPage onGoToBatches={() => setActive('batches')} />)}
               {active === 'warp'    && (<WarpRequestPage />)}
               {active === 'payments' && (<PaymentLedgerPage />)}

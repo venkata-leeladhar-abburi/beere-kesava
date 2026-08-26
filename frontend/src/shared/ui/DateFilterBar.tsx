@@ -78,9 +78,9 @@ function MonthField({ value, onChange }: { value: string; onChange: (v: string) 
           style={{ zIndex: "var(--z-popover)", background: "var(--surface-overlay)", borderColor: "var(--border-default)" }}
         >
           <div className="flex items-center justify-center gap-3 pb-1">
-            <button type="button" onClick={() => setPickerYear(y2 => y2 - 1)} className="text-[13px]" style={{ color: "var(--text-tertiary)" }}>‹</button>
+            <button type="button" onClick={() => setPickerYear(y2 => y2 - 1)} aria-label="Previous year" className="text-[13px]" style={{ color: "var(--text-tertiary)" }}>‹</button>
             <span className="text-[13px] font-medium tabular-nums" style={{ color: "var(--text-primary)" }}>{pickerYear}</span>
-            <button type="button" onClick={() => setPickerYear(y2 => y2 + 1)} className="text-[13px]" style={{ color: "var(--text-tertiary)" }}>›</button>
+            <button type="button" onClick={() => setPickerYear(y2 => y2 + 1)} aria-label="Next year" className="text-[13px]" style={{ color: "var(--text-tertiary)" }}>›</button>
           </div>
           <MonthPicker
             year={pickerYear}

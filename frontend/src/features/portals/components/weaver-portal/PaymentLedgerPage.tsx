@@ -1,32 +1,36 @@
 
 import React, { useMemo } from "react";
+
 import { useResponsive } from "../../../../hooks/useResponsive";
+
 import { useBatches } from "@/features/production";
+
 import { useWeaverPayments } from "@/features/weavers";
+
 import { rupees, formatMoney } from "@/lib/domain/money";
-import { Money } from "@/shared/ui/domain";
 import { useCurrentWeaver } from "./useCurrentWeaver";
-import {
-  Check,
-  AlertTriangle,
-  Clock,
-} from "lucide-react";
+import { Check, AlertTriangle } from "lucide-react";
+
 
 // ─── Design Tokens ─────────────────────────────────────────────────────────
-import {
-  C, F, SectionTitle, Card, HeroHeader
-} from './theme';
+import { C, F, HeroHeader } from './theme';
 import { SectionHeading } from "@/shared/ui/portal/PortalChrome";
 
 
+
 import { useQc } from "@/features/qc";
+
 import { useAuth } from "../../../../contexts/AuthContext";
+
 import { BG_IMAGE } from "./WeaverBatchNotifData";
+
 import { LuxuryStatsCard, type StatItem } from "@/shared/ui/LuxuryStatsCard";
+
 import { IcoResourceMgmt, IcoFabricRoll, IcoQualityCheck, IcoInvoice } from "@/features/dashboards";
 
+
 export function PaymentLedgerPage() {
-  const { isMobile } = useResponsive();
+  const { isMobile: _isMobile } = useResponsive();
   const { getPaymentsForWeaver } = useWeaverPayments();
   const { getQcForWeaver } = useQc();
   useBatches();
@@ -90,7 +94,7 @@ export function PaymentLedgerPage() {
   const isPaid = currentPayment !== null;
 
   // Last 6 months of this weaver's real payments, bar-scaled to the biggest.
-  const earningTrend = useMemo(() => {
+  const _earningTrend = useMemo(() => {
     const byMonth = new Map<string, number>();
     for (const p of myPayments) {
       const d = new Date(p.paymentDate || p.uploadedAt);

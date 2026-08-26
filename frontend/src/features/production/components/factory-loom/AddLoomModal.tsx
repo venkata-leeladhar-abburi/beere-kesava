@@ -50,9 +50,9 @@ export function AddLoomModal({ open, onClose, onAdd, editLoom, saving = false, s
             <Dialog.Title asChild>
               <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFF" }}>{editLoom ? "Edit Factory Loom" : "Add Factory Loom"}</div>
             </Dialog.Title>
-            <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.6)", marginTop: 4 }}>
+            <Dialog.Description asChild><div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.6)", marginTop: 4 }}>
               {editLoom ? "Update details for this loom" : "Its loom code is assigned automatically"}
-            </div>
+            </div></Dialog.Description>
           </div>
           <Dialog.Close asChild>
             <IconButton icon={X} label="Close" variant="ghost" size="sm" className="bg-white/12 text-white hover:bg-white/20" />
