@@ -347,7 +347,7 @@ export function AddUserPage() {
                 &amp; Portal Role Management
               </span>
             </div>
-            <p style={{ fontFamily: F.ui, fontWeight: 400, fontSize: "clamp(13px, 2vw, 15px)", color: "rgba(255,253,249,0.70)", lineHeight: 1.6, maxWidth: 640, margin: 0 }}>
+            <p className="max-w-[640px]" style={{ fontFamily: F.ui, fontWeight: 400, fontSize: "clamp(13px, 2vw, 15px)", color: "rgba(255,253,249,0.70)", lineHeight: 1.6, margin: 0 }}>
               Create login accounts for staff across all 5 system portals. Each user logs in securely using their mobile number and a one-time OTP sent directly via WhatsApp.
             </p>
           </div>

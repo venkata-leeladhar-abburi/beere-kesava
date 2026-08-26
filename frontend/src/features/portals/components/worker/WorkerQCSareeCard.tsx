@@ -26,7 +26,6 @@ interface WorkerQCSareeCardProps {
 
 export function WorkerQCSareeCard({
   saree: s,
-  isDesktop,
   onMarkPassed,
   onStartSemiApproved,
   onStartDefect,

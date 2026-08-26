@@ -6,7 +6,6 @@ import { UnifiedSaree, SareeOrigin, isOutstanding, isSold, ageBucket } from "@/f
 import { Empty, ExportBtn, SectionCard, exportCsv, inr } from "./primitives";
 import type { AgeKey } from "./primitives";
 import { DrilldownTabs } from "./SareeDetailTable";
-
 // ── In-house outstanding (weavers or factory looms) ──────────────────────────
 export function InHouseOutstanding({
   origin, sarees, search, ageFilter,

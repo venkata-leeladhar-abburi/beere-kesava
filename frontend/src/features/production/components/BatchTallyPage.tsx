@@ -1,6 +1,5 @@
 import React, { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, Scale, ChevronLeft, UserRound, Layers, TrendingUp } from "lucide-react";
-import { useDesignLibrary } from "@/features/design-library";
 import { useBatches, type SareeRow } from "../contexts/BatchContext";
 import { useRatesPricing } from "@/features/pricing";
 import { useAuth } from "../../../contexts/AuthContext";
@@ -11,8 +10,8 @@ import { Button, SearchInput, Select, SelectItem } from "../../../shared/ui/prim
 import { LoadingState, ErrorState } from "../../../shared/ui/state";
 import { EntityCode } from "@/shared/ui/domain";
 import { Breadcrumbs } from "../../../shared/ui/nav/Breadcrumbs";
-import { BG_IMAGE } from "@/features/portals/components/weaver-portal/WeaverBatchNotifData";
-import { SectionCard } from "@/features/weavers/components/common/primitives";
+import { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
+import { SectionCard } from "@/shared/ui/SectionCard";
 
 /**
  * Batch Tally as its own full page (same pattern as BulkOrderDetailPage —
@@ -76,10 +75,12 @@ export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: s
       qcPassed: !!r.qcPassed,
       sareeTypeCode: r.sareeTypeCode,
       receivedPhotoUrl: r.receivedPhotoUrl,
+      /* eslint-disable no-restricted-syntax -- saree weights (g) and jari reel counts, not currency */
       actualWeight: r.receivedWeight ? parseFloat(r.receivedWeight) : null,
       actualWarpG: r.receivedWarpG ? parseFloat(r.receivedWarpG) : null,
       actualReshamG: r.receivedReshamG ? parseFloat(r.receivedReshamG) : null,
       actualJariReels: r.receivedJariReels ? parseFloat(r.receivedJariReels) : null,
+      /* eslint-enable no-restricted-syntax */
       tallied: r.tallied,
       talliedBy: r.talliedBy,
       talliedAt: r.talliedAt,
@@ -316,7 +317,7 @@ export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: s
           </div>
 
           <div className="flex flex-col md:flex-row md:items-center gap-2.5 mb-4">
-            <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search Saree ID, Weaver..." className="w-full md:w-[240px] shrink-0" />
+            <SearchInput aria-label="Search saree ID or weaver" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search Saree ID, Weaver..." className="w-full md:w-[240px] shrink-0" />
             <div className="flex items-center gap-2.5 flex-nowrap overflow-x-auto shrink-0 w-full md:w-auto pb-1 md:pb-0">
               <Select value={weaverFilter} onValueChange={setWeaverFilter} size="sm" className="w-auto min-w-[130px] shrink-0">
                 {weaverOptions.map(w => <SelectItem key={w as string} value={w as string}>{w === "All" ? "All Weavers" : w as string}</SelectItem>)}

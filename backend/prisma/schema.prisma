@@ -330,6 +330,7 @@ model User {
   linkedWeaver   Weaver? @relation(fields: [linkedWeaverId], references: [id])
 
   permissionOverrides  UserPermissionOverride[]
+  whatsappMessages     WhatsAppMessage[]
   auditLogs            AuditLog[]
   actionLogs           ActionLog[]
   notifications        Notification[]
@@ -363,6 +364,51 @@ model OtpCode {
   createdAt   DateTime  @default(now())
 
   @@index([phoneNumber])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// WhatsApp (AiSensy)
+// ─────────────────────────────────────────────────────────────────────────
+
+enum WhatsAppMessageStatus {
+  QUEUED
+  SENT
+  DELIVERED
+  READ
+  FAILED
+}
+
+enum WhatsAppMessageKind {
+  OTP
+  DOCUMENT
+  REPORT
+  RETAIL_BILL
+  MANUAL
+}
+
+model WhatsAppMessage {
+  id             String                @id @default(uuid())
+  kind           WhatsAppMessageKind
+  campaignName   String
+  destination    String
+  templateParams Json?
+  mediaUrl       String?
+  status         WhatsAppMessageStatus @default(QUEUED)
+  providerId     String?
+  errorMessage   String?
+  attempts       Int                   @default(0)
+
+  relatedType String?
+  relatedId   String?
+  sentById    String?
+  sentBy      User?   @relation(fields: [sentById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([destination])
+  @@index([status])
+  @@index([relatedType, relatedId])
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -857,6 +903,9 @@ model DispatchRecord {
   // later" — matches the frontend's ResumeDispatchModal / DispatchDetailsModal flow.
   pendingTransport Boolean      @default(false)
   pendingReceipt   Boolean      @default(false)
+  // Server-relative path to the uploaded LR receipt (POST /uploads/receipt).
+  // Null while pendingReceipt is still true.
+  receiptUrl       String?
   notes            String?
   // Wholesale-only fields from TransportForm — expectedDelivery mirrors
   // dispatchDate's shape (a plain date), specialInstructions replaces
@@ -951,6 +1000,9 @@ model ReturnRecord {
   reason       String?
   refundAmount Decimal? @db.Decimal(12, 2)
   restocked    Boolean  @default(false)
+  // Server-relative path to the condition photo taken at return time
+  // (POST /uploads/photo). Optional — the operator may skip it.
+  photoUrl     String?
   createdAt    DateTime @default(now())
 
   @@index([sareeId])
@@ -981,6 +1033,8 @@ model Supplier {
   accountNo   String?
   ifscCode    String?
   notes       String?
+  // Stored path of the visiting-card photo (POST /uploads/photo),
+  // matching Customer.visitingCardUrl. Never a base64 data URL.
   visitingCardUrl String?
   status      PartyStatus @default(ACTIVE)
   rating      Int?
@@ -1027,6 +1081,8 @@ model Vendor {
   accountNo   String?
   ifscCode    String?
   notes       String?
+  // Stored path of the visiting-card photo (POST /uploads/photo),
+  // matching Customer.visitingCardUrl. Never a base64 data URL.
   visitingCardUrl String?
   status      PartyStatus @default(ACTIVE)
   rating      Int?

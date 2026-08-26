@@ -1,27 +1,31 @@
 import { Body, Controller, Get, Param, Patch, Post, Query } from "@nestjs/common";
 import { CurrentUser } from "../auth/decorators/current-user.decorator";
+import { RequireRoles } from "../auth/decorators/require-roles.decorator";
 import type { AuthenticatedUser } from "../auth/strategies/jwt.strategy";
+import { UserRole } from "../generated/prisma/client";
 import { CreateNotificationDto } from "./dto/create-notification.dto";
 import { ListNotificationsQueryDto } from "./dto/list-notifications-query.dto";
 import { NotificationsService } from "./notifications.service";
 
-/**
- * Every route here is authenticated — JwtAuthGuard and PermissionsGuard are
- * registered globally as APP_GUARDs (auth.module.ts), so there is no
- * unauthenticated path in. What was missing was *scoping*: `findAll` and
- * `markRead` took the target userId/role straight from the client, so any
- * signed-in user could list, and mark read, any other user's or role's
- * notifications by editing a query string. The caller's identity is now
- * passed to the service, which derives the scope itself.
- *
- * `create` stays open to any authenticated user by design — portals raise
- * notifications for other roles as part of normal operation (e.g. a SHOP
- * user recording a sale notifies ADMIN, see ShopHome.tsx).
- */
+// Notification fan-out. Creating one is role-gated (see the handler);
+// reading and marking-read stay open to every authenticated role because
+// the bell UI is present in every portal.
 @Controller("notifications")
 export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
 
+  // Raising a notification is a push to other people, so it is role-gated.
+  // WEAVER is excluded deliberately: the weaver portal only ever reads its
+  // notification feed. Note the DTO still lets a caller choose its own
+  // targetType/role, so a permitted role can address any other role - that is
+  // a separate, service-level constraint still to be added.
+  @RequireRoles(
+    UserRole.SHOP,
+    UserRole.WORKER,
+    UserRole.ACCOUNTANT,
+    UserRole.ADMIN,
+    UserRole.SUPERADMIN,
+  )
   @Post()
   create(@Body() dto: CreateNotificationDto) {
     return this.notificationsService.create(dto);
@@ -32,6 +36,10 @@ export class NotificationsController {
     return this.notificationsService.findAll(query, user);
   }
 
+  // Left open to every authenticated role on purpose: the notification bell
+  // appears in the shop, weaver, worker and admin surfaces alike. Ownership,
+  // not role, is the right control here - the service scopes the update to
+  // notifications actually addressed to the caller.
   @Patch(":id/read")
   markRead(@Param("id") id: string, @CurrentUser() user: AuthenticatedUser) {
     return this.notificationsService.markRead(id, user);

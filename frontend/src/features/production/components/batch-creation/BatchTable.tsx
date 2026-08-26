@@ -128,7 +128,7 @@ export function BatchTable({
     >
       {/* Filters — side-by-side single row */}
       <div className="-mx-2.5 sm:-mx-5 md:-mx-6 -mt-2.5 sm:-mt-5 md:-mt-6 px-3.5 sm:px-5 md:px-6 py-3.5 sm:py-4 flex flex-col md:flex-row md:items-center gap-2.5 border-b border-[#E8DCC4]">
-        <SearchInput value={searchFilter} onChange={e => setSearchFilter(e.target.value)} placeholder="Search Saree ID, Weaver..." className="w-full md:w-[240px] shrink-0" />
+        <SearchInput aria-label="Search saree ID or weaver" value={searchFilter} onChange={e => setSearchFilter(e.target.value)} placeholder="Search Saree ID, Weaver..." className="w-full md:w-[240px] shrink-0" />
         <div className="flex items-center gap-2 flex-nowrap overflow-x-auto shrink-0 w-[calc(100%+0.5rem)] md:w-auto -mx-1 px-1 md:mx-0 md:px-0 pb-1 md:pb-0 scrollbar-none">
           <Select value={weaverFilter} onValueChange={setWeaverFilter} size="sm" className="w-auto min-w-[125px] shrink-0">
             {weaverOptions.map(w => <SelectItem key={w as string} value={w as string}>{w === "All" ? "All Weavers" : w as string}</SelectItem>)}

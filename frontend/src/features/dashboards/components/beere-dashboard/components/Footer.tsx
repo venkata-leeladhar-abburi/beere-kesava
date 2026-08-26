@@ -1,10 +1,9 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { ArrowRight, Facebook, Instagram, Youtube, Linkedin, Flower2 as Lotus } from 'lucide-react';
+import { Flower2 as Lotus } from 'lucide-react';
 import { imgBKLogo, imgSareeFooter } from '../../../../../shared/constants/weaverImages';
 import { T, F, G } from '../theme';
 import { FadeUp } from '../ui';
-import { Button } from '../../../../../shared/ui/primitives';
 
 export function Footer() {
   return (
@@ -28,15 +27,7 @@ export function Footer() {
             <p style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13, color: "rgba(245,232,208,0.88)", lineHeight: 1.85, margin: "0 0 18px", letterSpacing: "0.05px" }}>
               Four generations of passion,<br />woven into every creation.
             </p>
-            <motion.div initial={{ backgroundColor: "rgba(200,155,71,0.09)" }} whileHover={{ scale: 1.04, backgroundColor: "rgba(200,155,71,0.16)" }} whileTap={{ scale: 0.97 }} style={{ alignSelf: "flex-start", borderRadius: 16 }}>
-              <Button
-                variant="tertiary"
-                className="!gap-2 !py-[9px] !px-[18px] !rounded-2xl !border !border-[rgba(200,155,71,0.32)] !bg-[rgba(200,155,71,0.09)] !text-xs !font-medium !text-[#E7C983] hover:!bg-[rgba(200,155,71,0.16)] hover:!text-[#E7C983]"
-              >
-                Know Our Story <ArrowRight size={12} color={T.goldLight} />
-              </Button>
-            </motion.div>
-          </div>
+                      </div>
           <div style={{ flex: 1, position: "relative" }}>
             <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "60%", background: `linear-gradient(to right, #2C0913 0%, rgba(44,9,19,0.7) 35%, rgba(44,9,19,0) 100%)`, zIndex: 1 }} />
             <motion.img
@@ -60,29 +51,6 @@ export function Footer() {
               <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: T.taupe, letterSpacing: "0.1px" }}>&amp; Brothers Silks</div>
               <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: T.antiqueGold, letterSpacing: "2.5px", textTransform: "uppercase" }}>Est. 1999</div>
             </div>
-          </div>
-          <div style={{ display: "flex", gap: 32 }}>
-            {["About Us", "Our Legacy", "Sustainability", "Careers", "Contact Us"].map(l => (
-              <motion.span
-                key={l}
-                whileHover={{ opacity: 1 }}
-                style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13, color: T.luxuryBrown, cursor: "pointer", opacity: 0.70, letterSpacing: "0.1px" }}
-              >
-                {l}
-              </motion.span>
-            ))}
-          </div>
-          <div style={{ display: "flex", gap: 10 }}>
-            {([Facebook, Instagram, Youtube, Linkedin] as const).map((Icon) => (
-              <motion.div
-                key={Icon.displayName ?? Icon.name}
-                whileHover={{ scale: 1.14, y: -3, boxShadow: "0px 6px 20px rgba(74,6,27,0.14)" }}
-                whileTap={{ scale: 0.93 }}
-                style={{ width: 38, height: 38, borderRadius: 12, border: `1px solid ${T.borderDef}`, background: T.warmIvory, boxShadow: "0px 0px 0px rgba(0,0,0,0)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
-              >
-                <Icon size={14} color={T.luxuryBrown} />
-              </motion.div>
-            ))}
           </div>
         </div>
       </FadeUp>

@@ -44,7 +44,9 @@ export function SupplierReturnsPage() {
     queryFn: () => supplierReturnsApi.list({ pageSize: 100 }),
   });
 
-  const allItems = data?.items ?? [];
+  // Memoised so the `?? []` fallback doesn't mint a fresh array on every
+  // render and re-run the two memos below with it.
+  const allItems = useMemo(() => data?.items ?? [], [data]);
 
   const rows = useMemo(() => {
     let result = allItems;
@@ -190,7 +192,7 @@ export function SupplierReturnsPage() {
               <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(32px, 6vw, 52px)", fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Supplier Returns</h1>
               <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(20px, 4.5vw, 32px)", fontStyle: "italic", color: T.antiqueGold, fontWeight: 400 }}>&amp; Stock Return Oversight</span>
             </div>
-            <p style={{ fontFamily: F.ui, fontWeight: 400, fontSize: "clamp(13px, 2vw, 15px)", color: "rgba(255,253,249,0.70)", lineHeight: 1.6, maxWidth: 640, margin: 0 }}>
+            <p className="max-w-[640px]" style={{ fontFamily: F.ui, fontWeight: 400, fontSize: "clamp(13px, 2vw, 15px)", color: "rgba(255,253,249,0.70)", lineHeight: 1.6, margin: 0 }}>
               Review and approve sarees sent back to suppliers from External Purchases. Approving a return request automatically removes the pieces from available stock and updates vendor ledger records.
             </p>
           </div>
@@ -222,7 +224,7 @@ export function SupplierReturnsPage() {
         }}>
           <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 w-full">
             <div className="flex-1 min-w-0">
-              <SearchInput
+              <SearchInput aria-label="Search supplier returns"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 onSearch={setSearch}

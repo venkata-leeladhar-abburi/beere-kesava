@@ -186,7 +186,7 @@ function CustomerProfiles() {
                       </Dialog.Title>
                       {activeCustomer.regular && <Star size={16} fill={C.gold} color={C.gold} />}
                     </div>
-                    <div style={{ fontFamily: F.m, fontSize: 13, color: "rgba(255,255,255,0.55)" }}>{activeCustomer.phone}</div>
+                    <Dialog.Description asChild><div style={{ fontFamily: F.m, fontSize: 13, color: "rgba(255,255,255,0.55)" }}>{activeCustomer.phone}</div></Dialog.Description>
                   </div>
                   <Dialog.Close asChild>
                     <IconButton

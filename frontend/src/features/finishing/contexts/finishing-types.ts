@@ -128,6 +128,8 @@ export interface DispatchRecord {
   // first step) and transport / receipt details were skipped to be filled in later.
   pendingTransport?: boolean;
   pendingReceipt?: boolean;
+  /** Server-relative path to the uploaded LR receipt, once one is attached. */
+  receiptUrl?: string | null;
   quotationRef?: string;
 }
 

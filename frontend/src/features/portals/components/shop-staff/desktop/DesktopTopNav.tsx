@@ -170,6 +170,7 @@ export function DesktopTopNav({
         {/* Right Actions: Notifications Bell & User Profile Capsule */}
         <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0, justifySelf: "end" }}>
           <SearchInput
+            aria-label="Search"
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search..."

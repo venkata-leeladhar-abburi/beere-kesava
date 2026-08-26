@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent, within } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Select, SelectItem } from "./Select";
 import { Combobox } from "./Combobox";
@@ -8,7 +8,11 @@ import { MultiSelect } from "./MultiSelect";
 import { Slider } from "./Slider";
 
 describe("Select", () => {
-  it("opens on trigger click and commits a value on item click", async () => {
+  // Select is a native <select> (see the component header): there is no
+  // popup listbox to open, and the browser renders the option list itself.
+  // Drive it the way a user actually does rather than reaching for a
+  // Radix-style trigger/listbox pair.
+  it("commits a value when the user picks an option", async () => {
     const user = userEvent.setup();
     const onValueChange = vi.fn();
     render(
@@ -17,10 +21,21 @@ describe("Select", () => {
         <SelectItem value="cotton">Cotton</SelectItem>
       </Select>
     );
-    await user.click(screen.getByRole("combobox"));
-    const listbox = await screen.findByRole("listbox");
-    await user.click(within(listbox).getByText("Cotton"));
+    await user.selectOptions(screen.getByRole("combobox"), "cotton");
     expect(onValueChange).toHaveBeenCalledWith("cotton");
+  });
+
+  it("renders the placeholder as a disabled option so it cannot be re-picked", () => {
+    render(
+      <Select placeholder="Choose a type" onValueChange={() => {}}>
+        <SelectItem value="silk">Silk</SelectItem>
+      </Select>
+    );
+    // The placeholder carries `hidden`, so it is deliberately absent from the
+    // accessibility tree and has to be asserted against the DOM directly.
+    const placeholder = screen.getByRole("combobox").querySelector("option[value='']");
+    expect(placeholder).toHaveTextContent("Choose a type");
+    expect(placeholder).toBeDisabled();
   });
 });
 

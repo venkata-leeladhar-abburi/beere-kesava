@@ -43,6 +43,7 @@ export function AllOrdersFilterBar({
         <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
           <div style={{ flex: 1, minWidth: 280 }}>
             <SearchInput
+              aria-label="Search by order ref, customer, saree type, or design"
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search by order ref, customer, saree type, or design..."

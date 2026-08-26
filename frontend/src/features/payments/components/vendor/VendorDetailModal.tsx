@@ -4,7 +4,8 @@ import { X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 import { PurchaseOrder } from "@/features/purchasing";
-import { F, T, useFirms } from "../../theme";
+import { F, T } from "../../theme";
+import { useFirms } from "@/features/firms";
 import { VendorPayment } from "../../types";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
@@ -38,7 +39,7 @@ export function VendorDetailModal({ vp, matchedPO, onClose }: { vp: VendorPaymen
       <div style={{ display: "flex", flexDirection: "column", overflowY: "auto", maxHeight: "calc(100dvh - 96px)", background: T.warmIvory, borderTopLeftRadius: "var(--radius-xl)", borderTopRightRadius: "var(--radius-xl)" }}>
         <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "24px 28px", position: "relative", flexShrink: 0 }}>
           <Dialog.Title style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#FFFDF9", margin: 0 }}>{vendorName}</Dialog.Title>
-          <div style={{ marginTop: 4 }}><EntityCode type="purchaseOrder" value={vp.poNumber} size="sm" /></div>
+          <Dialog.Description asChild><div style={{ marginTop: 4 }}><EntityCode type="purchaseOrder" value={vp.poNumber} size="sm" /></div></Dialog.Description>
           <Dialog.Close asChild>
             <IconButton icon={X} label="Close" variant="ghost" size="sm" onClick={onClose}
               className="absolute right-4 top-4 rounded-[8px] bg-[rgba(255,255,255,0.12)] text-[rgba(255,255,255,0.85)] hover:bg-[rgba(255,255,255,0.20)]" />

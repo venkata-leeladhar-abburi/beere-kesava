@@ -507,7 +507,7 @@ export function WeaverMakingChargesSection() {
           <DropBtn value={filterVillage} options={["All Villages", ...villageOptions]} onChange={setFilterVillage} />
           <DropBtn value={filterStatus} options={["All Payment Status", "Pending", "Paid"]} onChange={setFilterStatus} />
           <div style={{ flex: 1, minWidth: 200 }}>
-            <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search weaver name, ID, or village..." size="sm" />
+            <SearchInput aria-label="Search weaver name, ID, or village" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search weaver name, ID, or village..." size="sm" />
           </div>
         </div>
 

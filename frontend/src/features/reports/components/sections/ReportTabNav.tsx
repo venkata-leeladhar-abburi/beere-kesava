@@ -1,7 +1,11 @@
 import React, { useState } from "react";
+
 import { motion, AnimatePresence } from "motion/react";
+
 import { Calendar, AlertTriangle, FileText, Download, Package, Scissors, Boxes, Users, Store, BarChart3, UsersRound, BellRing, Wallet, ChevronDown } from "lucide-react";
+
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
+
 import { T, F } from "../theme";
 import { Button, Select, SelectItem } from "../../../../shared/ui/primitives";
 import type { ReportTabKey, ReportTab } from "../types";

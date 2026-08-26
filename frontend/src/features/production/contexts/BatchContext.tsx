@@ -10,7 +10,7 @@ import type { QcResult } from "@/features/qc";
 import { weaversApi } from "../../../shared/api/weavers";
 import { factoryLoomsApi } from "../../../shared/api/factory-looms";
 import { ratesApi } from "../../../shared/api/rates";
-import { useAuth } from "../../../contexts/AuthContext";
+import { useAuth, useAuthGate } from "../../../contexts/AuthContext";
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 export interface SareeRow {
@@ -202,9 +202,11 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
   const { role } = useAuth();
   const canReadFactoryLooms = role === "worker" || role === "admin" || role === "superadmin";
   const canReadRates = role === "accountant" || role === "admin" || role === "superadmin";
+  const enabled = useAuthGate();
 
   const { data: batches = [], isError, error, isLoading, refetch } = useQuery({
     queryKey: QUERY_KEY,
+    enabled,
     // Retry transient failures (429 burst on a hard refresh, network blip)
     // a couple of times before surfacing an error — but never retry an auth
     // failure (401/403), which won't resolve itself no matter how many

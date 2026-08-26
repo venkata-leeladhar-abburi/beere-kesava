@@ -1,26 +1,31 @@
 
 import React, { useMemo } from "react";
 import { useBatches } from "@/features/production";
+
 import { useWeaverPayments } from "@/features/weavers";
+
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { useCurrentWeaver } from "./useCurrentWeaver";
-import {
-  Check,
-  AlertTriangle } from "lucide-react";
+import { Check, AlertTriangle } from "lucide-react";
+
 
 // ─── Design Tokens ─────────────────────────────────────────────────────────
-import {
-  C, F, HeroHeader
-} from './theme';
+import { C, F, HeroHeader } from './theme';
 import { SectionHeading } from "@/shared/ui/portal/PortalChrome";
 
 
+
 import { useQc } from "@/features/qc";
+
 import { useAuth } from "../../../../contexts/AuthContext";
+
 import { BG_IMAGE } from "./WeaverBatchNotifData";
+
 import { LuxuryStatsCard, type StatItem } from "@/shared/ui/LuxuryStatsCard";
+
 import { IcoResourceMgmt, IcoFabricRoll, IcoQualityCheck, IcoInvoice } from "@/features/dashboards";
 import { LoadingState, ErrorState } from "@/shared/ui/state";
+
 
 export function PaymentLedgerPage() {
   const { getPaymentsForWeaver, isLoading: paymentsLoading, isError: paymentsError, error: paymentsErrorObj, refetch: refetchPayments } = useWeaverPayments();

@@ -371,11 +371,11 @@ export function WeaverProductionSummaryPanel({ refreshKey }: { refreshKey: numbe
             </div>
           </div>
 
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", flexDirection: "column" }} className="sm:flex-row">
-            <Button variant="secondary" size="md" iconLeft={Download} onClick={handleDownloadTemplate} disabled={unpaidRows.length === 0} className="w-full sm:w-auto">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <Button variant="secondary" size="md" iconLeft={Download} onClick={handleDownloadTemplate} disabled={unpaidRows.length === 0} className="w-auto shrink-0">
               Download Payment Template
             </Button>
-            <Button variant="tertiary" size="md" iconLeft={Download} onClick={handleDownloadSaved} disabled={savedRows.length === 0} className="w-full sm:w-auto">
+            <Button variant="tertiary" size="md" iconLeft={Download} onClick={handleDownloadSaved} disabled={savedRows.length === 0} className="w-auto shrink-0">
               Download Confirmation Report
             </Button>
           </div>
@@ -427,7 +427,9 @@ export function WeaverProductionSummaryPanel({ refreshKey }: { refreshKey: numbe
 
           {prodViewMode === "card" ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-4">
-              {grouped.map(row => (
+              {/* weaverId|batchId|loomNumber is already the row's unique identity —
+                  it's what paymentByKey is keyed on — so no index tiebreaker is needed. */}
+              {grouped.map((row) => (
                 <WeaverProductionCard key={`${row.weaverId}-${row.batchId}-${row.loomNumber}`} row={row} />
               ))}
             </div>

@@ -337,6 +337,7 @@ export function SareeInventoryTable({
 
       <Modal open={!!preview} onOpenChange={o => { if (!o) setPreview(null); }} size="xl">
         <Dialog.Title className="sr-only">Saree photo preview</Dialog.Title>
+        <Dialog.Description className="sr-only">Full-size saree photo</Dialog.Description>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
           {preview && (
             <motion.img initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}

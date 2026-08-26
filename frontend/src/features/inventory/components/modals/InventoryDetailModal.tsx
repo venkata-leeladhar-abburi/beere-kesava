@@ -37,6 +37,7 @@ export function InventoryDetailModal({
             <Dialog.Title asChild>
               <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: '#FFF' }}>Saree Record</span>
             </Dialog.Title>
+            <Dialog.Description className="sr-only">Inventory record details</Dialog.Description>
           </div>
           <Dialog.Close asChild>
             <IconButton

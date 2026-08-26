@@ -72,7 +72,7 @@ export function PerformancePanel({ onNavigate }: { onNavigate?: (tab: string) =>
           subtitle="Rankings by sarees produced · Quality check results"
           actions={
             <DownloadGate>
-              <Button onClick={() => setReportOpen(true)} variant="secondary" iconLeft={Download} className="bg-white/10 text-[#FFFDF9] border-white/20">
+              <Button onClick={() => setReportOpen(true)} variant="secondary" iconLeft={Download} className="bg-white/10 text-[#FFFDF9] border-white/20 hover:bg-white/20 hover:text-white hover:border-white/30">
                 Download Full Report
               </Button>
             </DownloadGate>
@@ -112,7 +112,7 @@ export function PerformancePanel({ onNavigate }: { onNavigate?: (tab: string) =>
                     </div>
 
                     {/* Avatar */}
-                    <Avatar photo={resolveAssetUrl(l.photoUrl)} initials={l.initials} bg={T.royalBurgundy} size={44} />
+                    <Avatar photo={resolveAssetUrl(l.photoUrl)} name={l.name} initials={l.initials} bg={T.royalBurgundy} size={44} />
 
                     {/* Name + ID */}
                     <div style={{ flex: 1, minWidth: 0 }}>

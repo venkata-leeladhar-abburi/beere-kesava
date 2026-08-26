@@ -5,7 +5,8 @@ import { toast } from "sonner";
 
 import { useSuppliers } from "@/features/suppliers";
 import { Supplier } from "@/features/suppliers";
-import { F, T, DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../theme";
+import { F, T } from "../../theme";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { FadeUp } from "../common/motion";
 import { DropBtn, SectionCard } from "../common/primitives";
 import { SupplierPayNowModal } from "./SupplierPayNowModal";
@@ -234,8 +235,8 @@ export function SupplierPaymentsSection() {
           <Select value={statusFilter} onValueChange={setStatusFilter} size="sm" containerClassName="w-auto shrink-0" className="w-[145px] font-semibold">
             {["All Bill Status", "Paid", "Pending", "Overdue"].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
           </Select>
-          <div style={{ flex: 1, minWidth: 180 }}>
-            <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search supplier..." size="sm" />
+          <div style={{ flex: 1, minWidth: 200 }}>
+            <SearchInput aria-label="Search supplier" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search supplier..." size="sm" />
           </div>
         </div>
 

@@ -2,6 +2,7 @@ import React, { createContext, useContext } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { BackendCustomer, CreateCustomerPayload, customersApi, UpdateCustomerPayload } from "../../../shared/api/customers";
+import { useAuthGate } from "../../../contexts/AuthContext";
 
 // Thin real-backend directory of Customer{id,name,type,...} records — the
 // FK target for BulkOrder.customerId, Quotation.customerId, and
@@ -32,9 +33,12 @@ const QUERY_KEY = ["customers"] as const;
 export function CustomersProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
 
+  const enabled = useAuthGate();
+
   const { data: customers = [], isLoading, error, refetch } = useQuery({
     queryKey: QUERY_KEY,
     queryFn: async () => (await customersApi.list()).items,
+    enabled,
   });
 
   const addCustomerMutation = useMutation({

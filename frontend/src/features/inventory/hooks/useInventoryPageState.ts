@@ -225,7 +225,7 @@ export function useInventoryPageState() {
   // server rejects the dispatch, so firing and forgetting made a failed shop
   // dispatch look like it had worked — the row flashed into Dispatch History
   // and vanished, with the reason only ever reaching the console.
-  const handleShopConfirm = async (transport: TransportData, opts?: { skipped?: boolean; picked?: FinishingReturn[] }) => {
+  const handleShopConfirm = async (transport: TransportData, opts?: { skipped?: boolean; picked?: FinishingReturn[]; receiptUrl?: string | null }) => {
     const sareeIds = opts?.picked?.length
       ? opts.picked.map(s => s.sareeId || s.id)
       : dispatchableSelected.map(r => r.id);
@@ -234,7 +234,9 @@ export function useInventoryPageState() {
         type: "shop", sareeIds, dispatchDate: transport.dispatchDate || new Date().toISOString().slice(0, 10),
         lrNumber: transport.lrNumber, transportCompany: transport.transportCompany, vehicleNumber: transport.vehicleNumber, driverName: transport.driverName, notes: transport.notes,
         pendingTransport: !!opts?.skipped && !(transport.lrNumber && transport.transportCompany && transport.vehicleNumber),
-        pendingReceipt: !!opts?.skipped,
+        // A receipt uploaded here settles the requirement, even on a "skip for now" dispatch.
+        pendingReceipt: !!opts?.skipped && !opts?.receiptUrl,
+        receiptUrl: opts?.receiptUrl ?? undefined,
       });
     } catch (err) {
       setToast(toastMessageForError(err));

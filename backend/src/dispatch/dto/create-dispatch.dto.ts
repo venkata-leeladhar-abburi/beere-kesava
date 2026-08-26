@@ -58,6 +58,11 @@ export class CreateDispatchDto {
   @IsBoolean()
   pendingReceipt?: boolean;
 
+  // Server-relative path returned by POST /uploads/receipt.
+  @IsOptional()
+  @IsString()
+  receiptUrl?: string;
+
   @IsOptional()
   @IsString()
   notes?: string;

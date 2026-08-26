@@ -24,7 +24,7 @@ export function ExportReportDialog({
                 </div>
                 <div style={{ flex: 1 }}>
                   <Dialog.Title style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: "#FFF" }}>Export Report</Dialog.Title>
-                  <div style={{ fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.55)", marginTop: 2 }}>{dialog.label}</div>
+                  <Dialog.Description asChild><div style={{ fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.55)", marginTop: 2 }}>{dialog.label}</div></Dialog.Description>
                 </div>
                 <Dialog.Close asChild>
                   <IconButton

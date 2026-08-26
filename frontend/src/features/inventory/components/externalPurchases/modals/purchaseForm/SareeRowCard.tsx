@@ -9,6 +9,8 @@ import { T, F } from "../../theme";
 import { SareeRow } from "../../types";
 import { inputStyle, labelStyle } from "../../common/primitives";
 import { Field, Input, NumberInput, Textarea, IconButton } from "../../../../../../shared/ui/primitives";
+import { resolveAssetUrl } from "@/shared/api/uploads";
+import { useImageUpload } from "@/shared/hooks/useImageUpload";
 
 /** One editable saree line within the Add/Edit Purchase form's "Saree Details" list. */
 export function SareeRowCard({
@@ -26,6 +28,7 @@ export function SareeRowCard({
   updateSareeRow: (uid: string, patch: Partial<SareeRow>) => void;
   removeSareeRow: (uid: string) => void;
 }) {
+  const { upload, uploading, error: uploadError } = useImageUpload();
   const price = Number(s.price) || 0;
   const sellPercent = Number(s.sellPercent) || 0;
   const quantity = Number(s.quantity) || 1;
@@ -94,7 +97,8 @@ export function SareeRowCard({
       </div>
       {/* Price per quantity × quantity = buying price */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 0.75fr 1fr", gap: 10, marginBottom: 10 }}>
-        <Field label="Price / Quantity (INR)">
+        {/* eslint-disable-next-line no-restricted-syntax -- input adornment / field label unit annotation, not a rendered money value */}
+        <Field label="Price / Quantity (₹)">
           <NumberInput
             size="sm"
             value={s.price || ""}
@@ -191,7 +195,7 @@ export function SareeRowCard({
           <span style={labelStyle}>Saree Photo (optional)</span>
           {s.imageUrl ? (
             <div style={{ position: "relative", borderRadius: 8, overflow: "hidden", border: `1px solid ${T.borderDef}` }}>
-              <img src={s.imageUrl} alt="Saree" style={{ width: "100%", height: 68, objectFit: "cover", display: "block" }} />
+              <img src={resolveAssetUrl(s.imageUrl) ?? undefined} alt="Saree" style={{ width: "100%", height: 68, objectFit: "cover", display: "block" }} />
               <IconButton
                 icon={X}
                 label="Remove photo"
@@ -206,17 +210,20 @@ export function SareeRowCard({
               style={{ height: 68, border: `1.5px dashed ${T.borderGold}`, borderRadius: 8, background: T.silkCream, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, cursor: "pointer", color: T.taupe }}
             >
               <UploadCloud size={16} />
-              <span style={{ fontFamily: F.ui, fontSize: 12 }}>Upload photo</span>
+              <span style={{ fontFamily: F.ui, fontSize: 12 }}>{uploading ? "Uploading…" : "Upload photo"}</span>
+              {uploadError && <span style={{ fontFamily: F.ui, fontSize: 11, color: "#C0392B" }}>{uploadError}</span>}
               <Input
                 id={`saree-photo-${s._uid}`}
                 type="file"
                 accept="image/*"
+                disabled={uploading}
                 onChange={(e) => {
                   const file = e.target.files?.[0];
+                  e.target.value = "";
                   if (!file) return;
-                  const reader = new FileReader();
-                  reader.onload = (ev) => updateSareeRow(s._uid, { imageUrl: ev.target?.result as string });
-                  reader.readAsDataURL(file);
+                  void upload(file).then(url => {
+                    if (url) updateSareeRow(s._uid, { imageUrl: url });
+                  });
                 }}
                 containerClassName="hidden"
               />

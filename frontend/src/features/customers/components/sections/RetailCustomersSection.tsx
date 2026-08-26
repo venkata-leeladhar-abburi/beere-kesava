@@ -238,6 +238,7 @@ export function RetailCustomersSection({
         <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" as const }}>
           <div style={{ width: 300 }}>
             <SearchInput
+              aria-label="Search by customer name or phone"
               value={retailSearch}
               onChange={e => setRetailSearch(e.target.value)}
               placeholder="Search by customer name or phone..."

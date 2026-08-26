@@ -1,5 +1,7 @@
 import React from "react";
+
 import { motion, AnimatePresence } from "motion/react";
+
 import {
   UserPlus, CheckCircle2, Shield, Phone, Mail,
   Lock, Hash, ShieldCheck, ShieldHalf, Sparkles, X, Layers
@@ -11,6 +13,7 @@ import {
 import { SectionCard, RoleBadge, AccessBadge } from "./UserBadges";
 import { Button, Field, Input, Textarea, Select, SelectItem } from "../../../shared/ui/primitives";
 import { PhotoUploadField } from "../../../shared/ui/PhotoUploadField";
+
 
 export interface WeaverFieldsState {
   photoUrl: string;

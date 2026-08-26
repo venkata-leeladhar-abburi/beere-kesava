@@ -4,8 +4,14 @@ import { useLocation, useNavigate, useParams } from "react-router";
 import { imgWarp as _imgWarpLocal, imgResham as _imgReshamLocal, imgJari as _imgJariLocal } from "../../../shared/constants/imageData";
 import { useAuth } from "../../../contexts/AuthContext";
 import { useResponsive } from "../../../hooks/useResponsive";
-import { WorkerGRN, INITIAL_HISTORY as GRN_INITIAL_HISTORY } from "@/features/portals";
-import type { ReceiptRecord } from "@/features/portals";
+// Direct paths, not the @/features/portals barrel — that barrel also
+// re-exports ShopStaffPortal/WeaverPortal/WorkerPortal (each its own large
+// subtree), which pulled all three into BeereDashboard.tsx's chunk even
+// though only WorkerGRN is used here.
+// eslint-disable-next-line import/no-restricted-paths -- see comment above; this bypasses the barrel deliberately.
+import { WorkerGRN, INITIAL_HISTORY as GRN_INITIAL_HISTORY } from "../../portals/components/worker/WorkerGRN";
+// eslint-disable-next-line import/no-restricted-paths -- see comment above; this bypasses the barrel deliberately.
+import type { ReceiptRecord } from "../../portals/components/worker/ReceiptHistoryTable";
 import { useQuery } from "@tanstack/react-query";
 import { rawMaterialsApi } from "../../../shared/api/rawMaterials";
 import { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
@@ -73,10 +79,7 @@ import {
   SectionNavigator, PAGE_SECTIONS, SECTION_NAV_GLOBAL_STYLE,
   MOBILE_NAV_H,
 } from "../../../shared/ui/SectionNavigator";
-import { ChevronLeft, UserRound, PackageCheck, History } from "lucide-react";
-import { Button } from "../../../shared/ui/primitives";
-import { EntityCode } from "../../../shared/ui/domain";
-import { Breadcrumbs } from "../../../shared/ui/nav/Breadcrumbs";
+import { PackageCheck, History } from "lucide-react";
 import { AnimatePresence } from "motion/react";
 import { UserProfileModal } from "../../../shared/ui/UserProfileModal";
 
@@ -85,8 +88,13 @@ import { UserProfileModal } from "../../../shared/ui/UserProfileModal";
 // ═══════════════════════════════════════════════════════════════════════════════
 import { T, F, GLOBAL_STYLE } from './beere-dashboard/theme';
 import { SectionCard } from './beere-dashboard/primitives';
-import { TopNav, Hero, MetricsBar, ThreeCol, ActivityStrip, WeaverSection, RawMaterial, Footer } from './beere-dashboard/desktop';
-import { MobileMenuDrawer, MobileTopNav, MobileHero, MobileMetrics, MobilePerformance, MobileFeaturedProduct, MobileActivity, MobileWeavers, MobileRawMaterial, MobileFooter } from './beere-dashboard/mobile';
+import { TopNav } from './beere-dashboard/components/TopNav';
+import { MobileMenuDrawer, MobileTopNav } from './beere-dashboard/MobileNavDrawer';
+// Lazily loaded, same reasoning as the tab pages above: only one of these two
+// ever renders in a given session (desktop vs mobile), so neither should be
+// in the bundle every visitor pays for on first load.
+const DesktopOverview = lazy(() => import('./beere-dashboard/DesktopOverview').then(m => ({ default: m.DesktopOverview })));
+const MobileOverview = lazy(() => import('./beere-dashboard/mobile').then(m => ({ default: m.MobileOverview })));
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // ROOT
@@ -202,14 +210,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
       <Suspense fallback={<TabLoadingFallback />}>
       {mobileTab === "Overview" ? (
         <>
-          <MobileHero />
-          <MobileMetrics />
-          <MobilePerformance />
-          <MobileFeaturedProduct />
-          <MobileActivity onNavigate={navigateMobile} />
-          <MobileWeavers onNavigate={navigateMobile} />
-          <MobileRawMaterial onNavigate={navigateMobile} />
-          <MobileFooter />
+          <MobileOverview onNavigate={navigateMobile} />
         </>
       ) : mobileTab === "Materials" ? (
         <MaterialsPage onNavigate={navigateMobile} />
@@ -500,13 +501,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
         <ReturnMaterialPage />
       ) : (
         <>
-          <Hero />
-          <MetricsBar />
-          <ThreeCol onNavigate={navigate} />
-          <ActivityStrip onNavigate={navigate} />
-          <WeaverSection onNavigate={navigate} />
-          <RawMaterial onNavigate={navigate} />
-          <Footer />
+          <DesktopOverview onNavigate={navigate} />
         </>
       )}
       </Suspense>

@@ -190,6 +190,7 @@ export function POCreateModal({ open, onClose, onSubmit, nextPONumber }: POCreat
                     Create Purchase Order
                   </div>
                 </Dialog.Title>
+                <Dialog.Description className="sr-only">Create a new purchase order</Dialog.Description>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.antiqueGold, letterSpacing: "0.5px" }}>
                   New material request to vendor — requires Superadmin approval
                 </div>

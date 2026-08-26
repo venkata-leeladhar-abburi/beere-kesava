@@ -57,13 +57,6 @@ export function MaterialsFooter() {
           <p style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 15, color: "rgba(245,232,208,0.6)", lineHeight: 1.7, margin: "0 0 32px" }}>
             Four generations of master weavers crafting heritage silk sarees. A legacy built on tradition, trust, and timeless quality.
           </p>
-          <div style={{ display: "flex", gap: 12 }}>
-            {["f", "in", "yt", "li"].map((s) => (
-              <motion.div key={s} whileHover={{ scale: 1.12, y: -2, backgroundColor: T.warmCream, borderColor: "transparent", color: T.darkBurgundy }} style={{ width: 40, height: 40, borderRadius: 12, border: `1px solid rgba(245,232,208,0.2)`, background: "rgba(245,232,208,0.04)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "all 0.3s ease", color: "rgba(245,232,208,0.7)" }}>
-                <span style={{ fontFamily: F.ui, fontSize: 14 }}>{s}</span>
-              </motion.div>
-            ))}
-          </div>
         </div>
 
         {/* Links Grid */}

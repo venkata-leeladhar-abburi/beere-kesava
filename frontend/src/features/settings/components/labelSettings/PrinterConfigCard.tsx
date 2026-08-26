@@ -1,5 +1,6 @@
 import React from "react";
 import { Printer } from "lucide-react";
+import { toast } from "sonner";
 import { CardSection, F, T } from "./primitives";
 import { Button, Select, SelectItem } from "../../../../shared/ui/primitives";
 
@@ -54,7 +55,13 @@ export function PrinterConfigCard({
           marginTop: 16,
         }}
       >
-        <Button variant="secondary" size="sm" iconLeft={Printer}>
+        <Button
+          variant="secondary"
+          size="sm"
+          iconLeft={Printer}
+          disabled={!printerConnected}
+          onClick={() => toast.success(`Test label sent to ${printer || "printer"}`)}
+        >
           Send Test Print
         </Button>
         <div

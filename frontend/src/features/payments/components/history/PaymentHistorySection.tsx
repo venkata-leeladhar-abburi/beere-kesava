@@ -4,7 +4,8 @@ import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
-import { EASE, F, T, DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../theme";
+import { EASE, F, T } from "../../theme";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { PayHistRecord } from "../../types";
 import { FadeUp } from "../common/motion";
 import { SectionCard } from "../common/primitives";
@@ -16,7 +17,7 @@ import { weaversApi } from "../../../../shared/api/weavers";
 import { vendorPaymentsApi, weaverPaymentsApi, supplierPaymentsApi } from "../../../../shared/api/payments";
 import { invoicesApi } from "../../../../shared/api/invoices";
 import { Button, IconButton, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
-import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { DataTable, exportTable, type ColumnDef } from "../../../../shared/ui/data";
 import { LoadingState, ErrorState } from "../../../../shared/ui/state";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money, StatusPill, EntityCode } from "@/shared/ui/domain";
@@ -233,7 +234,7 @@ export function PaymentHistorySection() {
   ];
 
   return (
-    <div id="pay-history" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 36 }}>
+    <div id="pay-history" className="px-4 md:px-7 xl:px-10 pb-10 md:pb-12" style={{ paddingTop: 36, paddingBottom: 48 }}>
       <FadeUp>
       <SectionCard
         icon={History}
@@ -242,6 +243,7 @@ export function PaymentHistorySection() {
         actions={
           <DownloadGate>
             <Button variant="secondary" size="md" iconLeft={Download}
+              onClick={() => exportTable({ columns: tableColumns, rows: filtered, filename: "payment-history" })}
               className="flex-shrink-0 rounded-[9px] border border-[rgba(200,155,71,0.22)] bg-[#F5E8D0] text-[#3B2314]">
               Download All Transactions
             </Button>
@@ -299,8 +301,8 @@ export function PaymentHistorySection() {
             </Select>
 
             {/* Search */}
-            <div style={{ flex: 1, minWidth: 180 }}>
-              <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search party, ref no, description..." size="sm" />
+            <div style={{ flex: 1, minWidth: 200 }}>
+              <SearchInput aria-label="Search party, ref no, description" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search party, ref no, description..." size="sm" />
             </div>
 
             {/* Clear */}

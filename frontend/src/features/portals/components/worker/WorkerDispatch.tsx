@@ -7,7 +7,7 @@ import { useFinishing, DispatchRecord } from "@/features/finishing";
 import { useFirms } from "@/features/firms";
 // The admin Inventory page's own section and form — reused as-is so the worker
 // screen stays identical to what admin sees.
-import { DispatchHistorySection, ResumeDispatchModal } from "@/features/inventory";
+import { DispatchHistorySection, ResumeDispatchModal, DispatchInvoiceModal } from "@/features/inventory";
 
 // `isDesktop` is still passed by WorkerPortalDesktop but this view renders the
 // same either way, so the prop is accepted and deliberately unread.
@@ -15,6 +15,7 @@ export function WorkerDispatch(_props: { isDesktop?: boolean }) {
   const { dispatches, updateDispatch, returns, deleteDispatch } = useFinishing();
   const { firms } = useFirms();
   const [resume, setResume] = useState<DispatchRecord | null>(null);
+  const [viewingInvoice, setViewingInvoice] = useState<DispatchRecord | null>(null);
   const [toast, setToast] = useState("");
 
   const pending = dispatches.filter(d => d.pendingTransport || d.pendingReceipt);
@@ -79,7 +80,7 @@ export function WorkerDispatch(_props: { isDesktop?: boolean }) {
         firms={firms} 
         onResume={setResume} 
         onDelete={(d) => deleteDispatch(d.id, "worker-staff")}
-        onViewInvoice={(_d) => alert("Invoice viewing coming soon")}
+        onViewInvoice={setViewingInvoice}
       />
 
       </div>
@@ -95,6 +96,15 @@ export function WorkerDispatch(_props: { isDesktop?: boolean }) {
               setTimeout(() => setToast(""), 2600);
             }}
             onClose={() => setResume(null)}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {viewingInvoice && (
+          <DispatchInvoiceModal
+            dispatch={viewingInvoice}
+            onClose={() => setViewingInvoice(null)}
           />
         )}
       </AnimatePresence>

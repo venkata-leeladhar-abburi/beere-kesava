@@ -30,6 +30,7 @@ export function ViewStockDialog({ saree, onClose }: { saree: StockSaree; onClose
           <div>
             <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(255,253,249,0.55)", letterSpacing: "1px", marginBottom: 4 }}>SAREE DETAILS</div>
             <Dialog.Title style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#FFFDF9", margin: 0 }}>{saree.id}</Dialog.Title>
+            <Dialog.Description className="sr-only">Stock details for saree {saree.id}</Dialog.Description>
           </div>
           <Dialog.Close asChild>
             <IconButton

@@ -36,6 +36,7 @@ function PickerShell({ title, onClose, children, width = 480 }: { title: string;
         <Dialog.Title asChild>
           <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{title}</div>
         </Dialog.Title>
+        <Dialog.Description className="sr-only">{title}</Dialog.Description>
         <Dialog.Close asChild>
           <IconButton icon={X} label="Close" variant="ghost" size="sm" />
         </Dialog.Close>

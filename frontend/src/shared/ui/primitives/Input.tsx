@@ -69,7 +69,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(function Inp
   return (
     <div
       className={cn(
-        "relative flex items-center gap-2 rounded-[var(--radius-md)] border transition-colors",
+        "relative flex items-center gap-2 rounded-[10px] border transition-colors",
         "duration-[var(--duration-fast)] ease-[var(--ease-standard)]",
         "bg-[var(--surface-raised)]",
         invalid ? "border-[var(--border-danger)]" : "border-[var(--border-default)]",

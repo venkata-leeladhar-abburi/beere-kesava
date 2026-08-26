@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { BackendPurchaseOrder, purchaseOrdersApi } from "../../../shared/api/purchase-orders";
 import { vendorsApi } from "../../../shared/api/vendors";
-import { useAuth } from "../../../contexts/AuthContext";
+import { useAuth, useAuthGate } from "../../../contexts/AuthContext";
 import type { DocumentStatus } from "@/lib/domain/status";
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
@@ -102,10 +102,12 @@ const QUERY_KEY = ["purchaseOrders"] as const;
 export function POProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const enabled = useAuthGate();
 
   const { data: pos = [], isError, error, isLoading, refetch } = useQuery({
     queryKey: QUERY_KEY,
     queryFn: async () => (await purchaseOrdersApi.list()).items.map(po => toPurchaseOrder(po)),
+    enabled,
   });
 
   const setPos = (updater: (prev: PurchaseOrder[]) => PurchaseOrder[]) => {

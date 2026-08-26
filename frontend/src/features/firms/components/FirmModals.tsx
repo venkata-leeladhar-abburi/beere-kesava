@@ -57,6 +57,7 @@ export function FirmFormModal({ initial, onSave, onClose, title }: { initial: Fo
             <Dialog.Title asChild>
               <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFF" }}>{title}</div>
             </Dialog.Title>
+            <Dialog.Description className="sr-only">{title} form</Dialog.Description>
           </div>
           <Dialog.Close asChild>
             <IconButton icon={X} label="Close" variant="secondary" size="sm" />

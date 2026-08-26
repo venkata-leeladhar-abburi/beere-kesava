@@ -1,0 +1,24 @@
+{
+  "name": "beere-kesava",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Repo-root tooling only. The application lives in backend/ and frontend/, each with its own package.json and lockfile; this file exists so git hooks have a single home rather than being duplicated per workspace.",
+  "scripts": {
+    "prepare": "husky",
+    "verify": "npm run verify:backend && npm run verify:frontend",
+    "verify:backend": "cd backend && npm run typecheck && npm run lint && npm run test",
+    "verify:frontend": "cd frontend && npm run typecheck && npm run lint && npm run test"
+  },
+  "lint-staged": {
+    "backend/**/*.ts": [
+      "bash -c 'cd backend && npx eslint --fix --no-warn-ignored \"$@\"' --"
+    ],
+    "frontend/**/*.{ts,tsx}": [
+      "bash -c 'cd frontend && npx eslint --fix --no-warn-ignored \"$@\"' --"
+    ]
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.2"
+  }
+}

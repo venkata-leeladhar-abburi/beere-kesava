@@ -88,7 +88,7 @@ export function SectionDownloadAction({ label, onClick }: { label: string; onCli
   const dlAllowed = useDownloadsAllowed();
   if (!dlAllowed) return null;
   return (
-    <Button variant="secondary" size="md" onClick={onClick} className="bg-white/10 text-[#FFFDF9] border-white/20">
+    <Button variant="secondary" size="md" onClick={onClick} className="bg-white/10 text-[#FFFDF9] border-white/20 hover:bg-white/20 hover:text-white hover:border-white/30">
       {label}
     </Button>
   );

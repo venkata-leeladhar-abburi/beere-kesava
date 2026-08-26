@@ -9,7 +9,9 @@ import { PurchaseOrder, usePO } from "@/features/purchasing";
 import { PODocumentModal } from "@/features/purchasing";
 import { vendorPaymentsApi } from "../../../../shared/api/payments";
 import { vendorBillsApi } from "../../../../shared/api/vendor-bills";
-import { EASE, F, T, useFirms, DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../theme";
+import { EASE, F, T } from "../../theme";
+import { useFirms } from "@/features/firms";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { VendorMatchedRow, VendorPayment, VendorStatus } from "../../types";
 import { AnimCount, FadeUp } from "../common/motion";
 import { ActionModal, DropBtn, SectionCard } from "../common/primitives";
@@ -397,8 +399,8 @@ export function VendorPaymentsSection() {
           <Select value={statusFilter} onValueChange={setStatusFilter} size="sm" containerClassName="w-auto shrink-0" className="w-[145px] font-semibold">
             {["All Bill Status","Paid","Partial","Overdue","Pending"].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
           </Select>
-          <div style={{ flex: 1, minWidth: 180 }}>
-            <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search vendor, PO number, bill number..." size="sm" />
+          <div style={{ flex: 1, minWidth: 200 }}>
+            <SearchInput aria-label="Search vendor, PO number, bill number" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search vendor, PO number, bill number..." size="sm" />
           </div>
         </div>
 

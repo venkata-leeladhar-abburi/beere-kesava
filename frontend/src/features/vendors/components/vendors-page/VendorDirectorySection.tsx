@@ -71,6 +71,7 @@ export function VendorDirectorySection({ vendors, onSelectVendor, onAddClick, lo
         <div style={{ background: "#FFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, padding: "16px 20px", marginBottom: 24, display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap", boxShadow: "0 2px 10px rgba(74,6,27,0.05)" }}>
           <div style={{ flex: "1 1 280px" }}>
             <SearchInput
+              aria-label="Search by vendor name, city, or contact"
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search by vendor name, city, or contact…"

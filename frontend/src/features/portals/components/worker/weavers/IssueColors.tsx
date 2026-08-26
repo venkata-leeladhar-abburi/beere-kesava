@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Plus } from "lucide-react";
 import { C, F } from "../tokens";
 import { FieldLabel } from "./shared";
-import { Button, Input } from "../../../../../shared/ui/primitives";
+import { Button, NumberInput } from "../../../../../shared/ui/primitives";
 
 export function IssueColors({ label, compact }: { label: string; compact?: boolean }) {
   const [selected, setSelected] = useState<string[]>([]);
@@ -30,7 +30,7 @@ export function IssueColors({ label, compact }: { label: string; compact?: boole
           <div style={{ width: 10, height: 10, borderRadius: "50%", background: colors.find(c => c.name === cl)?.hex, flexShrink: 0 }} />
           <span style={{ fontFamily: F.u, fontSize: compact ? 10 : 12, color: C.muted, flexShrink: 0, width: compact ? 36 : 48 }}>{cl}:</span>
           <div style={{ position: "relative", flex: 1 }}>
-            <Input type="number" value={qty[cl] || ""} onChange={e => setQty(p => ({ ...p, [cl]: e.target.value }))} placeholder="0"
+            <NumberInput value={qty[cl] ? Number(qty[cl]) : ""} onValueChange={v => setQty(p => ({ ...p, [cl]: v === "" ? "" : String(v) }))} step={0.01} placeholder="0"
               size={compact ? "sm" : "md"} className="font-mono pr-8" />
             <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontFamily: F.u, fontSize: 12, color: C.muted }}>kg</span>
           </div>

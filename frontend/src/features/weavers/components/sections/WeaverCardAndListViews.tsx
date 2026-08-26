@@ -6,7 +6,7 @@ import { Clock, Rows3 as Rows, Eye as PhEye, MapPin as PhMapPin } from "lucide-r
 import { T, F } from "../theme";
 import { STATUS_CFG } from "../types";
 import { WEAVERS } from "../data";
-import { FadeUp, qcColor } from "../common/primitives";
+import { FadeUp, qcColor, getTwoLetterInitials } from "../common/primitives";
 import { weaversApi, BackendWeaverStats } from "../../../../shared/api/weavers";
 import { Button } from "../../../../shared/ui/primitives";
 import { resolveAssetUrl } from "../../../../shared/api/uploads";
@@ -33,7 +33,7 @@ export function useRealWeavers() {
       id: w.id,
       code: w.code,
       name: w.name,
-      initials: w.initials || `${w.firstName.charAt(0)}${w.lastName.charAt(0)}`,
+      initials: getTwoLetterInitials(w.name),
       bg: T.royalBurgundy,
       village: w.village || "—",
       cluster: w.cluster || "—",

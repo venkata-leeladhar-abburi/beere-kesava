@@ -108,6 +108,7 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
   const [wsNewId, setWsNewId] = useState("");
   const [wsBarcodeGenerated, setWsBarcodeGenerated] = useState(false);
   const [wsError, setWsError] = useState<string | null>(null);
+  const [wsPhotoUrl, setWsPhotoUrl] = useState<string | null>(null);
 
   const returnReasons = [
     { id: "defective", label: "Defective", sub: "Damaged or faulty item", Icon: AlertTriangle, color: "#C0392B", bg: "rgba(192,57,43,0.08)" },
@@ -125,6 +126,7 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
     setRetailManualId(""); setReason(null); setOtherReason("");
     setWsVendor(""); setWsDesign(""); setWsColor(""); setWsType("Self Brocade");
     setWsWeight(""); setWsPrice(""); setWsReason(null); setWsNewId(""); setWsBarcodeGenerated(false);
+    setWsPhotoUrl(null);
   };
 
   const canProceedWsStep1 = wsVendor.trim() !== "" && wsWeight.trim() !== "" && wsReason !== null;
@@ -372,6 +374,7 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
         canSeePrices={canSeePrices}
         canProceedWsStep1={canProceedWsStep1}
         setReturnType={setReturnType}
+        setPhotoUrl={setWsPhotoUrl}
         wsError={wsError}
         // The piece has no prior record, so this registers the saree from the
         // details above under the tag id being attached, and books the return
@@ -389,6 +392,7 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
               designCode: wsDesign.trim() || undefined,
               sareeType: wsType || undefined,
               color: wsColor.trim() || undefined,
+              photoUrl: wsPhotoUrl ?? undefined,
             });
             refetch();
             setStep("success");

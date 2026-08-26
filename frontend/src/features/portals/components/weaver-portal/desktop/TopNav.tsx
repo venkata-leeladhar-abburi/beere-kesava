@@ -82,6 +82,7 @@ export function TopNav({
         </nav>
         <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
           <SearchInput
+            aria-label="Search"
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search..."

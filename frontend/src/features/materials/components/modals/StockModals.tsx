@@ -4,7 +4,7 @@ import { T, F } from "../theme";
 import { STATUS_CFG, MAT_TAG } from "../materialConfig";
 import type { BatchRow } from "../types";
 import { ModalOverlay, ModalHeader } from "../common/primitives";
-import { Button, Field, Input, Textarea } from "../../../../shared/ui/primitives";
+import { Button, Field, Input, NumberInput, Textarea } from "../../../../shared/ui/primitives";
 import { DatePicker, formatDate } from "../../../../shared/ui/date";
 import { useDocument } from "../../../../shared/ui/document";
 import { rupees } from "@/lib/domain/money";
@@ -127,7 +127,7 @@ export function AddNewStockModal({ open, onClose }: { open: boolean; onClose: ()
                       ))}
                     </div>
                     <div style={{ position: "relative" }}>
-                      <Input type="number" value={form.quantity} onChange={e => set("quantity", e.target.value)} placeholder="0" className="pr-[52px]" />
+                      <NumberInput value={form.quantity === "" ? "" : Number(form.quantity)} onValueChange={v => set("quantity", v === "" ? "" : String(v))} step={0.01} placeholder="0" className="pr-[52px]" />
                       <span style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{form.jariUnit}</span>
                     </div>
                     {form.quantity && (
@@ -144,7 +144,7 @@ export function AddNewStockModal({ open, onClose }: { open: boolean; onClose: ()
                       ))}
                     </div>
                     <div style={{ position: "relative" }}>
-                      <Input type="number" value={form.quantity} onChange={e => set("quantity", e.target.value)} placeholder="0" className="pr-9" />
+                      <NumberInput value={form.quantity === "" ? "" : Number(form.quantity)} onValueChange={v => set("quantity", v === "" ? "" : String(v))} step={0.01} placeholder="0" className="pr-9" />
                       <span style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{form.warpReshamUnit || "kg"}</span>
                     </div>
                     {form.quantity && (
@@ -158,7 +158,7 @@ export function AddNewStockModal({ open, onClose }: { open: boolean; onClose: ()
             </div>
 
             <Field label="Price Per Kg">
-              <Input type="number" value={form.pricePerKg} onChange={e => set("pricePerKg", e.target.value)} placeholder="e.g. 280" />
+              <NumberInput value={form.pricePerKg === "" ? "" : Number(form.pricePerKg)} onValueChange={v => set("pricePerKg", v === "" ? "" : String(v))} step={0.01} placeholder="e.g. 280" />
               {form.quantity && form.pricePerKg && (
                 <div style={{ marginTop: 8, fontFamily: F.ui, fontSize: 13, color: T.antiqueGold, fontWeight: 600 }}>
                   Total value: <Money value={rupees(fromPaise(lineAmountPaise(Number(form.pricePerKg), Number(form.quantity))))} />

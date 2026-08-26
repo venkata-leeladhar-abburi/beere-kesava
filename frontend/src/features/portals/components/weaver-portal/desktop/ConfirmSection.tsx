@@ -1,13 +1,19 @@
 import React from "react";
+
 import { Check, CheckCircle2, Clock } from "lucide-react";
+
 import { JARI_REEL_GRAMS, MaterialIssueRecord, BatchMaterialSummary, WeaverMaterialSummary, materialItemToGrams, BUNS_PER_REEL } from "@/features/materials";
+
 import { C, F, FABRIC_BG, MaterialHistoryCard, Tab5 } from "../theme";
+
 import { SectionHeading } from "@/shared/ui/portal/PortalChrome";
+
 import { DesktopHero } from "./DesktopHero";
 import { useAuth } from "../../../../../contexts/AuthContext";
 import { useCurrentWeaver } from "../useCurrentWeaver";
 import { useMaterialIssue } from "@/features/materials";
 import { LoadingState, ErrorState } from "@/shared/ui/state";
+
 
 /** Thin wrapper on the shared portal heading — see PaymentsSection. */
 function DSectionHeader({ label }: { label: string }) {

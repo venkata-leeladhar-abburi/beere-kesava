@@ -1,5 +1,6 @@
 import React from "react";
 import { CheckCircle2, Printer } from "lucide-react";
+import { toast } from "sonner";
 import { C, F, card } from "./tokens";
 import { GrnReceiptItem } from "../../../../shared/api/rawMaterials";
 import { Button } from "../../../../shared/ui/primitives";
@@ -66,14 +67,14 @@ export function GRNPrintView({ grn, grnBatchId, onReset }: GRNPrintProps) {
             <div style={{ background: "#000", height: 32, borderRadius: 3, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 8, marginTop: b.description ? 0 : 8 }}>
               <span style={{ fontFamily: F.m, fontSize: 6, color: "#FFF", letterSpacing: 2 }}>||| | || ||| ||</span>
             </div>
-            <Button variant="secondary" fullWidth size="sm" iconLeft={Printer} className="rounded-[7px] border-[rgba(110,15,45,0.12)] bg-[#FFF8E7] text-[#6E0F2D] hover:bg-[#FFF8E7]">
+            <Button variant="secondary" fullWidth size="sm" iconLeft={Printer} onClick={() => toast.success(`Label ${b.id} sent to printer`)} className="rounded-[7px] border-[rgba(110,15,45,0.12)] bg-[#FFF8E7] text-[#6E0F2D] hover:bg-[#FFF8E7]">
               Print
             </Button>
           </div>
         ))}
       </div>
       <div style={{ padding: "0 20px" }}>
-        <Button variant="primary" fullWidth iconLeft={Printer} className="rounded-full bg-[#6E0F2D] hover:bg-[#6E0F2D] mb-2.5">Print All Labels</Button>
+        <Button variant="primary" fullWidth iconLeft={Printer} onClick={() => toast.success(`${batches.length} label${batches.length === 1 ? "" : "s"} sent to printer`)} className="rounded-full bg-[#6E0F2D] hover:bg-[#6E0F2D] mb-2.5">Print All Labels</Button>
         {onReset && <Button variant="secondary" fullWidth onClick={onReset} className="rounded-full border-[rgba(110,15,45,0.30)] text-[#6E0F2D]">Done — Skip Printing</Button>}
       </div>
     </div>

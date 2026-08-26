@@ -106,7 +106,8 @@ export function MakingChargesSection({
     <SectionCard
       icon={Tags}
       title="Making Charge Rates — Per Saree Type"
-      subtitle="Applied to each saree during production billing. Making charge is the amount paid to the weaver per saree woven. All prices in Indian Rupees (INR)."
+      // eslint-disable-next-line no-restricted-syntax -- prose currency note in a section subtitle, not a rendered money value
+      subtitle="Applied to each saree during production billing. Making charge is the amount paid to the weaver per saree woven. All prices in Indian Rupees (₹)."
       actions={<GoldLink><BarChart2 size={13} /> View Rate Change History →</GoldLink>}
     >
       {/* Rates Table */}
@@ -163,16 +164,19 @@ export function MakingChargesSection({
                     {/* Col 2 — Pricing */}
                     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                       <div>
-                        <label style={labelStyle} htmlFor="making-charge">Making Charge (INR) *</label>
-                        <NumberInput id="making-charge" addonLeft="INR" value={Number(editVals.charge ?? row.charge)} onValueChange={v => setEditVals(p => ({ ...p, charge: String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
+                        <label style={labelStyle} htmlFor="making-charge">Making Charge (₹) *</label>
+                        {/* eslint-disable-next-line no-restricted-syntax -- ₹ input adornment on an entry field, not a rendered money value */}
+                        <NumberInput id="making-charge" addonLeft="₹" value={Number(editVals.charge ?? row.charge)} onValueChange={v => setEditVals(p => ({ ...p, charge: String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
                       </div>
                       <div>
-                        <label style={labelStyle} htmlFor="retail-price">Retail Price (INR)</label>
-                        <NumberInput id="retail-price" addonLeft="INR" value={Number(editVals.retail ?? row.retail)} onValueChange={v => setEditVals(p => ({ ...p, retail: String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
+                        <label style={labelStyle} htmlFor="retail-price">Retail Price (₹)</label>
+                        {/* eslint-disable-next-line no-restricted-syntax -- ₹ input adornment on an entry field, not a rendered money value */}
+                        <NumberInput id="retail-price" addonLeft="₹" value={Number(editVals.retail ?? row.retail)} onValueChange={v => setEditVals(p => ({ ...p, retail: String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
                       </div>
                       <div>
-                        <label style={labelStyle} htmlFor="wholesale-price">Wholesale Price (INR)</label>
-                        <NumberInput id="wholesale-price" addonLeft="INR" value={Number(editVals.wholesale ?? row.wholesale)} onValueChange={v => setEditVals(p => ({ ...p, wholesale: String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
+                        <label style={labelStyle} htmlFor="wholesale-price">Wholesale Price (₹)</label>
+                        {/* eslint-disable-next-line no-restricted-syntax -- ₹ input adornment on an entry field, not a rendered money value */}
+                        <NumberInput id="wholesale-price" addonLeft="₹" value={Number(editVals.wholesale ?? row.wholesale)} onValueChange={v => setEditVals(p => ({ ...p, wholesale: String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
                       </div>
                     </div>
                     {/* Col 3 — Weights */}
@@ -271,16 +275,19 @@ export function MakingChargesSection({
                 {/* Col 2 — Pricing */}
                 <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                   <div>
-                    <label style={labelStyle} htmlFor="making-charge-2">Making Charge (INR) *</label>
-                    <NumberInput id="making-charge-2" addonLeft="INR" value={newVals.charge ? Number(newVals.charge) : ""} onValueChange={v => setNewVals(p => ({ ...p, charge: v === "" ? "" : String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" placeholder="0" />
+                    <label style={labelStyle} htmlFor="making-charge-2">Making Charge (₹) *</label>
+                    {/* eslint-disable-next-line no-restricted-syntax -- ₹ input adornment on an entry field, not a rendered money value */}
+                    <NumberInput id="making-charge-2" addonLeft="₹" value={newVals.charge ? Number(newVals.charge) : ""} onValueChange={v => setNewVals(p => ({ ...p, charge: v === "" ? "" : String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" placeholder="0" />
                   </div>
                   <div>
-                    <label style={labelStyle} htmlFor="retail-price-2">Retail Price (INR)</label>
-                    <NumberInput id="retail-price-2" addonLeft="INR" value={newVals.retail ? Number(newVals.retail) : ""} onValueChange={v => setNewVals(p => ({ ...p, retail: v === "" ? "" : String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" placeholder="0" />
+                    <label style={labelStyle} htmlFor="retail-price-2">Retail Price (₹)</label>
+                    {/* eslint-disable-next-line no-restricted-syntax -- ₹ input adornment on an entry field, not a rendered money value */}
+                    <NumberInput id="retail-price-2" addonLeft="₹" value={newVals.retail ? Number(newVals.retail) : ""} onValueChange={v => setNewVals(p => ({ ...p, retail: v === "" ? "" : String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" placeholder="0" />
                   </div>
                   <div>
-                    <label style={labelStyle} htmlFor="wholesale-price-2">Wholesale Price (INR)</label>
-                    <NumberInput id="wholesale-price-2" addonLeft="INR" value={newVals.wholesale ? Number(newVals.wholesale) : ""} onValueChange={v => setNewVals(p => ({ ...p, wholesale: v === "" ? "" : String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" placeholder="0" />
+                    <label style={labelStyle} htmlFor="wholesale-price-2">Wholesale Price (₹)</label>
+                    {/* eslint-disable-next-line no-restricted-syntax -- ₹ input adornment on an entry field, not a rendered money value */}
+                    <NumberInput id="wholesale-price-2" addonLeft="₹" value={newVals.wholesale ? Number(newVals.wholesale) : ""} onValueChange={v => setNewVals(p => ({ ...p, wholesale: v === "" ? "" : String(v) }))} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" placeholder="0" />
                   </div>
                 </div>
                 {/* Col 3 — Weights */}

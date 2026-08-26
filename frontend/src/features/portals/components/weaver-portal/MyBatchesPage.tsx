@@ -14,10 +14,10 @@ import {
 
 import { useAuth } from "../../../../contexts/AuthContext";
 import { MobileWeaverHeroSection } from "./MobileWeaverHeroSection";
+import { BatchHistoryPage } from "./BatchHistoryPage";
 import { SectionHeading } from "@/shared/ui/portal/PortalChrome";
 import { LoadingState, ErrorState } from "@/shared/ui/state";
 import { AlertCircle, History, ListChecks } from "lucide-react";
-import { BatchHistoryPage } from "./BatchHistoryPage";
 import {
   C, F, HeroHeader, MobileBatchCard, CompletedBatchCard, MyBatchEntry } from './theme';
 
@@ -121,6 +121,7 @@ export function MyBatchesPage({ onGoToPayments }: { onGoToPayments?: () => void 
       </div>
     );
   }
+
 
   return (
     <div style={{ paddingBottom: 32 }}>

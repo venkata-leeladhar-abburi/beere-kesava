@@ -6,6 +6,7 @@ import { AppController } from "./app.controller";
 import { AuditLogModule } from "./audit-log/audit-log.module";
 import { BatchesModule } from "./batches/batches.module";
 import { BulkOrdersModule } from "./bulk-orders/bulk-orders.module";
+import { StorageModule } from "./common/storage/storage.module";
 import { validateEnv } from "./config/env.validation";
 import { CustomersModule } from "./customers/customers.module";
 import { DesignLibraryModule } from "./design-library/design-library.module";
@@ -46,15 +47,18 @@ import { VendorBillsModule } from "./vendor-bills/vendor-bills.module";
 import { DesignDispatchesModule } from "./design-dispatches/design-dispatches.module";
 
 import { AuthModule } from "./auth/auth.module";
+import { WhatsAppModule } from "./whatsapp/whatsapp.module";
 
 @Module({
   imports: [
+    WhatsAppModule,
     AuthModule,
     ConfigModule.forRoot({
       isGlobal: true,
       validate: validateEnv,
     }),
     ScheduleModule.forRoot(),
+    StorageModule,
     PrismaModule,
     IdGeneratorModule,
     UsersModule,

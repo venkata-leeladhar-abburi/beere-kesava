@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { PaginatedResult } from "../common/pagination";
-import { signatureFileToUrl } from "../common/storage/upload.config";
+import { StorageService } from "../common/storage/storage.service";
 import { fromGrams, toGrams } from "../common/weight-units.util";
 import { MaterialIssueStatus, Prisma } from "../generated/prisma/client";
 import { IdGeneratorService, businessSegment, nameSegment } from "../id-generator/id-generator.service";
@@ -34,6 +34,7 @@ export class MaterialIssuesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly idGenerator: IdGeneratorService,
+    private readonly storage: StorageService,
   ) {}
 
   async create(dto: CreateMaterialIssueDto) {
@@ -197,7 +198,7 @@ export class MaterialIssuesService {
         status: MaterialIssueStatus.SIGNED,
         signatureCaptured: true,
         signatureTimestamp: new Date(),
-        signatureUrl: signatureFileToUrl(signature),
+        signatureUrl: await this.storage.upload(signature, "signatures"),
       },
       include: includeItems,
     });

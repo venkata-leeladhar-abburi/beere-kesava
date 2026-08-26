@@ -61,7 +61,7 @@ export function FilterBar({
         {/* Top Row: Search Input + Status Filter Pills */}
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 w-full">
           <div className="flex-1 min-w-0">
-            <SearchInput
+            <SearchInput aria-label="Search by supplier, ID, location, GST, invoice"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onSearch={setSearch}

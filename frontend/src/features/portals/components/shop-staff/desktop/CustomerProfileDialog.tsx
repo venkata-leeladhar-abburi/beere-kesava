@@ -45,7 +45,7 @@ export function CustomerProfileDialog({
                     <Dialog.Title style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: "#FFF", lineHeight: 1.1, margin: 0 }}>{customer.name}</Dialog.Title>
                     {customer.regular && <Star size={18} fill={C.gold} color={C.gold} />}
                   </div>
-                  <div style={{ fontFamily: F.m, fontSize: 14, color: "rgba(255,255,255,0.55)" }}>{customer.phone}</div>
+                  <Dialog.Description asChild><div style={{ fontFamily: F.m, fontSize: 14, color: "rgba(255,255,255,0.55)" }}>{customer.phone}</div></Dialog.Description>
                   {customer.regular && <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(200,155,71,0.20)", border: "1px solid rgba(200,155,71,0.40)", borderRadius: 999, padding: "3px 12px", marginTop: 8 }}><Star size={11} fill={C.gold} color={C.gold} /><span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.gold }}>Regular Customer</span></div>}
                 </div>
                 <Dialog.Close asChild>

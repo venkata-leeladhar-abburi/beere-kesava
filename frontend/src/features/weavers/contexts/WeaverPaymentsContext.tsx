@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { BackendWeaverPayment, weaverPaymentsApi, WeaverEarnings } from "../../../shared/api/payments";
 import { weaversApi } from "../../../shared/api/weavers";
 import { firmsApi, BackendFirm } from "../../../shared/api/firms";
-import { useAuth } from "../../../contexts/AuthContext";
+import { useAuth, useAuthGate } from "../../../contexts/AuthContext";
 
 export interface WeaverPaymentRecord {
   id: string;
@@ -73,8 +73,11 @@ export function WeaverPaymentsProvider({ children }: { children: React.ReactNode
   const { role } = useAuth();
   const canReadFirms = role === "accountant" || role === "admin" || role === "superadmin";
 
+  const enabled = useAuthGate();
+
   const { data: payments = [], isError, error, isLoading, refetch } = useQuery({
     queryKey: QUERY_KEY,
+    enabled,
     queryFn: async () => {
       const [paymentsRes, weaversRes, firmsRes] = await Promise.all([
         weaverPaymentsApi.list(),
@@ -135,6 +138,7 @@ export function WeaverPaymentsProvider({ children }: { children: React.ReactNode
   const { data: earnings = [] } = useQuery({
     queryKey: EARNINGS_QUERY_KEY,
     queryFn: () => weaverPaymentsApi.earnings(),
+    enabled,
   });
 
   const getEarningsForWeaver = useMemo(() => {

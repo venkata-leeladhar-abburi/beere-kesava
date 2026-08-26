@@ -1,5 +1,6 @@
 import React from "react";
-import { F, T, imgSareeFooter } from "../theme";
+import { F, T } from "../theme";
+import { imgSareeFooter } from "@/shared/constants/weaverImages";
 
 export function PaymentsHeader() {
   return (

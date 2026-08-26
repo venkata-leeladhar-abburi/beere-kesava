@@ -1,11 +1,9 @@
 import { useState } from "react";
-import {
-  ChevronDown, Download, Eye, Edit, Plus,
-  LayoutGrid, Table as TableIcon, MapPin,
-  Building2, Users, AlertTriangle } from "lucide-react";
+import { ChevronDown, Download, Eye, Edit, Plus, LayoutGrid, Table as TableIcon, MapPin, Building2, Users, AlertTriangle } from "lucide-react";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { T, F } from "../theme";
 import { SectionCard, Pill, FadeUp } from "../common/primitives";
+import { downloadDataAsCSV } from "../utils";
 import { WholesaleCustomer, ViewMode } from "../types";
 import { Button, Field, Input, SearchInput, Select, SelectItem, Textarea } from "../../../../shared/ui/primitives";
 import { useCustomers } from "../../contexts/CustomersContext";
@@ -29,6 +27,8 @@ interface WholesaleFormState {
   ifscCode: string;
   gstNumber: string;
   notes: string;
+  /** Stored path of the uploaded visiting card (POST /uploads/photo), or "". */
+  visitingCardUrl: string;
 }
 
 const EMPTY_WHOLESALE_FORM: WholesaleFormState = {
@@ -45,6 +45,7 @@ const EMPTY_WHOLESALE_FORM: WholesaleFormState = {
   ifscCode: "",
   gstNumber: "",
   notes: "",
+  visitingCardUrl: "",
 };
 
 export interface WholesaleCustomersSectionProps {
@@ -288,7 +289,16 @@ export function WholesaleCustomersSection({
             </button>
           </div>
           <DownloadGate>
-            <Button variant="tertiary" size="sm" iconLeft={Download}>Download</Button>
+            <Button
+              variant="tertiary"
+              size="sm"
+              iconLeft={Download}
+              onClick={() => downloadDataAsCSV(
+                "wholesale_customers.csv",
+                ["Code", "Name", "City", "Status", "Orders", "Spend", "Outstanding", "Last Order"],
+                wholesaleList.map(w => [w.displayCode || w.id, w.name, w.city, w.status, w.orders, w.spend, w.out, w.lastOrder]),
+              )}
+            >Download</Button>
           </DownloadGate>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useAuthGate } from "../../../contexts/AuthContext";
 import {
   firmsApi,
   type BackendFinancialEntry,
@@ -153,8 +154,11 @@ const FINANCIALS_KEY = ["firms", "financials"] as const;
 export function FirmsProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
 
+  const enabled = useAuthGate();
+
   const { data: backendFirms = [], isLoading, error, refetch } = useQuery({
     queryKey: FIRMS_KEY,
+    enabled,
     queryFn: () => firmsApi.list().then((res) => res.items),
   });
   const firms = backendFirms.map(toFirm);
@@ -170,7 +174,7 @@ export function FirmsProvider({ children }: { children: React.ReactNode }) {
       );
       return results;
     },
-    enabled: backendFirms.length > 0,
+    enabled: enabled && backendFirms.length > 0,
   });
 
   const addFirmMutation = useMutation({

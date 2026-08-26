@@ -15,6 +15,7 @@ export function ViewProfileModal({ member, onClose, onEdit }: {
   return (
     <Modal open onOpenChange={o => { if (!o) onClose(); }} size="sm">
       <Dialog.Title className="sr-only">{member.firstName} {member.lastName} — profile</Dialog.Title>
+      <Dialog.Description className="sr-only">User profile details</Dialog.Description>
       <div style={{ display: "flex", flexDirection: "column", overflow: "hidden", borderTopLeftRadius: "var(--radius-xl)", borderTopRightRadius: "var(--radius-xl)" }}>
         {/* Header band */}
         <div style={{ background: T.darkBurgundy, padding: "22px 28px 20px", display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>

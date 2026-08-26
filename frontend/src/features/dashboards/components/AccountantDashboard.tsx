@@ -227,6 +227,7 @@ export function AcctMobileMenuDrawer({ open, onClose, active, setTab }: {
               <Dialog.Title asChild>
                 <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 14, color: T.warmCream, lineHeight: 1.1 }}>Beere Kesava</div>
               </Dialog.Title>
+              <Dialog.Description className="sr-only">Accountant portal navigation menu</Dialog.Description>
               <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 11, color: "rgba(231,201,131,0.85)", letterSpacing: "2px", textTransform: "uppercase" }}>ACCOUNTANT</div>
             </div>
           </div>

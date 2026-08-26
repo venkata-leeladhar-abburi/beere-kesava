@@ -33,8 +33,9 @@ export function GRNPODropdown({
         Firm: {selectedPO.firmName ?? "—"} · City: {selectedPO.vendorCity}
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 4 }}>
-        {selectedPO.materials.map((m, idx) => (
-          <span key={`${m.materialType}-${m.unit}-${idx}`} style={{
+        {selectedPO.materials.map((m) => (
+          // POItem.id is only set once persisted; fall back to the full line content (never the array index, which shifts on reorder).
+          <span key={m.id ?? `${m.materialType}-${m.subtype || m.description || "item"}-${m.quantity}-${m.unit}`} style={{
             fontFamily: F.u,
             fontSize: 12,
             fontWeight: 700,
@@ -103,13 +104,14 @@ export function GRNPODropdown({
               </div>
             ) : (
               approvedPOs.map(po => (
-                <div
+                <button
                   key={po.id}
+                  type="button"
                   onClick={() => {
                     handleSelectPO(po);
                     setShowPODrop(false);
                   }}
-                  className="p-3.5 hover:bg-[rgba(110,15,45,0.04)] active:bg-[rgba(110,15,45,0.08)] cursor-pointer transition-colors text-left"
+                  className="w-full block p-3.5 hover:bg-[rgba(110,15,45,0.04)] active:bg-[rgba(110,15,45,0.08)] cursor-pointer transition-colors text-left"
                 >
                   <div className="flex items-center justify-between gap-2 mb-1">
                     <span style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }} className="break-all">
@@ -130,8 +132,9 @@ export function GRNPODropdown({
                     </div>
                   )}
                   <div className="flex flex-wrap gap-1 mt-1">
-                    {po.materials.map((m, idx) => (
-                      <span key={`${m.materialType}-${idx}`} style={{
+                    {po.materials.map((m) => (
+                      // POItem.id is only set once persisted; fall back to the full line content (never the array index, which shifts on reorder).
+                      <span key={m.id ?? `${m.materialType}-${m.subtype || m.description || "item"}-${m.quantity}-${m.unit}`} style={{
                         fontFamily: F.u, fontSize: 11, fontWeight: 600,
                         color: m.materialType === "Warp" ? "#7A5010" : m.materialType === "Resham" ? "#7A5E1C" : C.burg,
                         background: m.materialType === "Warp" ? "rgba(196,146,58,0.1)" : m.materialType === "Resham" ? "rgba(200,155,71,0.1)" : "rgba(110,15,45,0.05)",
@@ -141,7 +144,7 @@ export function GRNPODropdown({
                       </span>
                     ))}
                   </div>
-                </div>
+                </button>
               ))
             )}
           </div>
@@ -203,8 +206,9 @@ export function GRNPODropdown({
                 </div>
               )}
               <div className="flex flex-wrap gap-1 mt-1">
-                {po.materials.map((m, idx) => (
-                  <span key={`${m.materialType}-${idx}`} style={{
+                {po.materials.map((m) => (
+                  // POItem.id is only set once persisted; fall back to the full line content (never the array index, which shifts on reorder).
+                  <span key={m.id ?? `${m.materialType}-${m.subtype || m.description || "item"}-${m.quantity}-${m.unit}`} style={{
                     fontFamily: F.u, fontSize: 11, fontWeight: 600,
                     color: m.materialType === "Warp" ? "#7A5010" : m.materialType === "Resham" ? "#7A5E1C" : C.burg,
                     background: m.materialType === "Warp" ? "rgba(196,146,58,0.1)" : m.materialType === "Resham" ? "rgba(200,155,71,0.1)" : "rgba(110,15,45,0.05)",

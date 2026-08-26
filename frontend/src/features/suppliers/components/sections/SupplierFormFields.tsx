@@ -17,7 +17,8 @@ export function SupplierFormFields({
   setForm: (f: SupplierFormValues) => void;
   errors: Record<string, string>;
   cardPreview: string | null;
-  onCardChange: (dataUrl: string | null) => void;
+  /** Receives the stored path of the uploaded card, or null when cleared. */
+  onCardChange: (url: string | null) => void;
 }) {
   const set = (k: keyof SupplierFormValues, v: string) => setForm({ ...form, [k]: v });
   const setRating = (v: number) => setForm({ ...form, rating: v });

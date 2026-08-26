@@ -208,3 +208,40 @@ export function useAuth(): AuthContextValue {
   if (!ctx) throw new Error("useAuth must be used within <AuthProvider>");
   return ctx;
 }
+
+/**
+ * Gate for every data query in the app: `enabled: useAuthGate()`.
+ *
+ * The 15 shared data providers in App.tsx are mounted ABOVE <BrowserRouter>,
+ * so they mount on /login too — before RequireRole has run, and with no token
+ * in storage. Any query without this gate fires the moment the app boots and
+ * comes back 401 AUTH_REQUIRED from the globally-registered JwtAuthGuard,
+ * painting error states over the login screen.
+ *
+ * Requires a token as well as the flag: `isAuthenticated` is restored from
+ * localStorage, and the two can disagree for a tick (or permanently, if the
+ * token was cleared by handleUnauthorized while the state blob survived).
+ * The request needs the token, so the token is what's checked.
+ *
+ * Pass roles to narrow further — a query hitting a role-scoped endpoint
+ * should stay quiet for roles that would only ever get a 403:
+ *
+ *   enabled: useAuthGate("accountant", "admin", "superadmin")
+ */
+export function useAuthGate(...allowedRoles: Role[]): boolean {
+  const { isAuthenticated, role, token } = useAuth();
+  // Read from context, not straight from storage: `token` is set
+  // synchronously by login(), while the localStorage write happens in an
+  // effect one tick later. A storage-only check would leave every query
+  // disabled on the render that signs the user in, with no state change left
+  // to re-enable them. Storage is only the fallback for a session restored
+  // before `token` was part of the persisted blob.
+  const hasToken =
+    !!token ||
+    (typeof window !== "undefined" &&
+      !!(localStorage.getItem("token") || sessionStorage.getItem("token")));
+
+  if (!isAuthenticated || !hasToken) return false;
+  if (allowedRoles.length === 0) return true;
+  return role !== null && allowedRoles.includes(role);
+}

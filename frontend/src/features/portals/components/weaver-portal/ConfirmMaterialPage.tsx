@@ -3,11 +3,17 @@ import { materialTypeIcon } from "./MyBatchesPage";
 import React, { useState, useRef } from "react";
 import { AnimatePresence } from "motion/react";
 import { useResponsive } from "../../../../hooks/useResponsive";
+
 import { useBatches } from "@/features/production";
+
 import { useDesignLibrary, DesignEntry } from "@/features/design-library";
+
 import { DesignCodeCard } from "@/features/design-library";
+
 import { useMaterialIssue, MaterialIssueRecord, JARI_REEL_GRAMS, materialItemToGrams, BUNS_PER_REEL } from "@/features/materials";
+
 import { Bell, Check } from "lucide-react";
+
 
 import {
   C, F, SectionTitle, Card, SignatureCanvas, SignatureCanvasHandle, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid

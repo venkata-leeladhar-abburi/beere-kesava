@@ -51,6 +51,7 @@ export function WorkerQCWeaverGrid({
             key={wg.name}
             type="button"
             onClick={() => setSelectedWeaverQC(wg.name)}
+            aria-label={`Open QC for weaver ${wg.name}`}
             className="group relative flex flex-col justify-between gap-5 rounded-[24px] bg-[#FFFDFB] border border-[#F0E5D8] p-5 sm:p-6 min-h-[170px] text-left shadow-[0_4px_24px_rgba(74,6,27,0.05)] hover:shadow-[0_10px_32px_rgba(74,6,27,0.10)] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer overflow-hidden max-w-full"
           >
             {/* Top Row: Burgundy Initials Box + Code + Name + Arrow */}

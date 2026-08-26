@@ -41,6 +41,7 @@ export function PickerShell({ title, onClose, children, width = 480 }: { title: 
         <Dialog.Title asChild>
           <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{title}</div>
         </Dialog.Title>
+        <Dialog.Description className="sr-only">{title}</Dialog.Description>
         <Dialog.Close asChild>
           <IconButton icon={X} label="Close" variant="ghost" size="sm" />
         </Dialog.Close>
@@ -165,7 +166,7 @@ export function DesignCodePickerModal({ onClose, onSelect }: { onClose: () => vo
       {mode === "search" ? (
         <>
           <div style={{ padding: "0 24px 12px" }}>
-            <SearchInput value={q} onChange={e => setQ(e.target.value)} placeholder="Search design code or name…" />
+            <SearchInput aria-label="Search design code or name" value={q} onChange={e => setQ(e.target.value)} placeholder="Search design code or name…" />
           </div>
           <div style={{ padding: "0 24px", maxHeight: 280, overflowY: "auto", display: "flex", flexDirection: "column", gap: 6 }}>
             {filtered.map(d => (

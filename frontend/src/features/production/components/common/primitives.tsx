@@ -91,6 +91,7 @@ export function ProductionDialog({ open, title, children, onClose }: { open: boo
       <div style={{ display: "flex", flexDirection: "column", overflow: "hidden", background: "#FFFFFF", borderTopLeftRadius: "var(--radius-xl)", borderTopRightRadius: "var(--radius-xl)" }}>
         <div style={{ padding: "20px 24px", background: `linear-gradient(100deg, ${T.deepWine}, ${T.royalBurgundy})`, display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
           <Dialog.Title style={{ fontFamily: F.display, fontSize: 20, color: "#FFFDF9", fontWeight: 700, margin: 0 }}>{title}</Dialog.Title>
+          <Dialog.Description className="sr-only">{title}</Dialog.Description>
           <Dialog.Close asChild>
             <IconButton icon="close" label="Close" variant="ghost" size="sm" onClick={onClose} className="text-white hover:bg-white/15" />
           </Dialog.Close>

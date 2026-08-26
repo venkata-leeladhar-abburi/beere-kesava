@@ -7,7 +7,11 @@ import { toast } from "sonner";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { useFinishing } from "@/features/finishing";
 import { invoicesApi, BackendInvoice } from "../../../../shared/api/invoices";
-import { EASE, F, T, useBulkOrders, BulkOrder, useFirms, DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../theme";
+import { EASE, F, T } from "../../theme";
+import { useBulkOrders } from "@/features/bulk-orders";
+import { BulkOrder } from "@/features/production";
+import { useFirms } from "@/features/firms";
+import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { Invoice } from "../../types";
 import { AnimCount, FadeUp } from "../common/motion";
 import { ActionModal, DropBtn, SectionCard } from "../common/primitives";
@@ -283,8 +287,8 @@ export function WholesaleCollectionsSection() {
           <DropBtn value={filterState} options={["All States", "Varanasi", "Surat", "Mumbai", "Hyderabad", "Chennai", "Bengaluru"]} onChange={setFilterState} />
           <DropBtn value={filterCust} options={["All Customers", "Lakshmi Silks", "Padmavathi Textiles", "Vijaya Silk House", "Narayana Silk Emporium", "Meenakshi Silks"]} onChange={setFilterCust} />
           <DropBtn value={filterType} options={["All Invoice Types", "Wholesale", "Retail", "Export"]} onChange={setFilterType} />
-          <div style={{ flex: 1, minWidth: 180 }}>
-            <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search invoice or customer..." size="sm" />
+          <div style={{ flex: 1, minWidth: 200 }}>
+            <SearchInput aria-label="Search invoice or customer" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search invoice or customer..." size="sm" />
           </div>
         </div>
 

@@ -419,7 +419,9 @@ export function LuxuryStatsCard({ stats, className = "", style }: LuxuryStatsCar
       >
         {rows.map((row, rIdx) => (
           <div
-            key={row.map(s => s.label).join("|")}
+            // Rows are chunks of `stats`, so the labels they contain identify
+            // the row stably even when the stats list changes length.
+            key={row.map((s) => s.label).join("|")}
             style={{
               display: "flex",
               borderBottom: rIdx < rows.length - 1 ? "1px solid rgba(245,232,208,0.12)" : "none",

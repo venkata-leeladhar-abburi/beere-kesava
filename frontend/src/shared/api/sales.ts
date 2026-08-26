@@ -97,6 +97,8 @@ export interface RegisterReturnedSareePayload {
   designCode?: string;
   sareeType?: string;
   color?: string;
+  /** Server-relative path from POST /uploads/photo. */
+  photoUrl?: string;
 }
 
 export const salesApi = {

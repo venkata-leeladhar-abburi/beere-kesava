@@ -1,10 +1,17 @@
 import React, { useMemo, useState } from "react";
+
 import { motion, AnimatePresence } from "motion/react";
+
 import { ChevronDown, ChevronRight, Layers } from "lucide-react";
+
 import { T, F } from "../../theme";
+
 import { UnifiedSaree, isOutstanding, isSold, ageBucket } from "@/features/customers";
+
 import { Empty, ExportBtn, SectionCard, exportCsv, inr } from "./primitives";
+
 import type { AgeKey } from "./primitives";
+
 import { DrilldownTabs, sareeOriginName, sareeOriginSub } from "./SareeDetailTable";
 import { EntityCode } from "@/shared/ui/domain";
 

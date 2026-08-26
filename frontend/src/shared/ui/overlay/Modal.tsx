@@ -81,10 +81,16 @@ function Header({ title, subtitle, onClose }: { title: string; subtitle?: string
     <div className="flex items-start justify-between gap-4 px-6 pt-6 pb-4 flex-shrink-0">
       <div className="min-w-0">
         <Dialog.Title className="bk-title-md" style={{ color: "var(--text-primary)" }}>{title}</Dialog.Title>
-        {subtitle && (
+        {subtitle ? (
           <Dialog.Description className="mt-1 bk-body-sm" style={{ color: "var(--text-secondary)" }}>
             {subtitle}
           </Dialog.Description>
+        ) : (
+          // Radix requires a Dialog.Description to wire aria-describedby;
+          // without one it logs a console warning on every modal that has
+          // no subtitle. Falling back to the title itself (screen-reader-only,
+          // no visual change) satisfies that without inventing filler copy.
+          <Dialog.Description className="sr-only">{title}</Dialog.Description>
         )}
       </div>
       <Dialog.Close asChild>

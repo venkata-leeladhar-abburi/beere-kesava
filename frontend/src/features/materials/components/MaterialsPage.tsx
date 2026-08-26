@@ -65,7 +65,7 @@ export function MaterialsPage({ onNavigate }: { onNavigate?: (tab: string, ctx?:
       <div style={{ fontFamily: F.ui }}>
         <PageHeader />
         <MetricsBar />
-        <div style={{ background: "#F7F2EA" }}>
+        <div style={{ background: "#F7F2EA", paddingBottom: 48 }}>
           {successPOId && (
             <div style={{ padding: `16px ${px}px 0` }}>
               <div style={{

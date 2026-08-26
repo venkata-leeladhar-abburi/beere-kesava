@@ -270,6 +270,7 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
           {/* Search */}
           <div style={{ marginLeft: "auto", width: 240 }}>
             <SearchInput
+              aria-label="Search by name, village, ID"
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search by name, village, ID…"

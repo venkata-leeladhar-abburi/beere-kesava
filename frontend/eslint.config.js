@@ -40,6 +40,11 @@ export default tseslint.config(
       // custom components) is real, imported code and must be linted like any
       // other source file.
       "src/shared/ui/_legacy/**",
+      // Playwright E2E specs and fixtures are a separate toolchain, not React
+      // components - this repo's React-specific rules (react-hooks chief among
+      // them) misfire on Playwright's own APIs, e.g. flagging a fixture's `use`
+      // callback parameter as an illegally-placed React Hook.
+      "e2e/**",
     ],
   },
 
