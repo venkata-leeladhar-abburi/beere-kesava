@@ -22,6 +22,7 @@ describe("BatchesService", () => {
   let prisma: any;
   let idGenerator: any;
   let auditLog: any;
+  let materialReturns: any;
   let service: BatchesService;
 
   const row = (overrides: Record<string, unknown> = {}) => ({
@@ -87,7 +88,8 @@ describe("BatchesService", () => {
     };
     idGenerator = { nextFormatted: jest.fn().mockResolvedValue("BATCH-0007") };
     auditLog = { recordAction: jest.fn() };
-    service = new BatchesService(prisma, idGenerator, auditLog);
+    materialReturns = { createAutoReturnForReceipt: jest.fn().mockResolvedValue(null) };
+    service = new BatchesService(prisma, idGenerator, auditLog, materialReturns);
   });
 
   describe("create", () => {
@@ -291,6 +293,69 @@ describe("BatchesService", () => {
       // qcPassed back to null is what puts the reworked saree in the QC queue again.
       expect(prisma.batchSareeRow.update.mock.calls[0][0].data).toEqual(
         expect.objectContaining({ receivedWeight: 820, qcPassed: null }),
+      );
+    });
+
+    it("skips the outstanding-material check when no material weight is declared", async () => {
+      await service.receiveRow("BATCH-0007", 1, { weight: 800, actorId: "u-1" });
+
+      expect(materialReturns.createAutoReturnForReceipt).not.toHaveBeenCalled();
+      expect(prisma.batchSareeRow.update).toHaveBeenCalled();
+    });
+
+    it("skips the check entirely for a factory-loom row", async () => {
+      prisma.batchSareeRow.findUnique.mockResolvedValue(row({ weaverId: null }));
+
+      await service.receiveRow("BATCH-0007", 1, { weight: 800, warpG: 500 });
+
+      expect(materialReturns.createAutoReturnForReceipt).not.toHaveBeenCalled();
+    });
+
+    it("requires an actorId when material weight is declared, to attribute the auto-return", async () => {
+      await expect(
+        service.receiveRow("BATCH-0007", 1, { weight: 1200, warpG: 500 } as any),
+      ).rejects.toThrow(BadRequestException);
+      expect(prisma.batchSareeRow.update).not.toHaveBeenCalled();
+    });
+
+    it("draws down outstanding material and receives the saree when enough is outstanding", async () => {
+      await service.receiveRow("BATCH-0007", 1, {
+        weight: 1200,
+        warpG: 500,
+        actorId: "u-1",
+      });
+
+      expect(materialReturns.createAutoReturnForReceipt).toHaveBeenCalledWith({
+        weaverId: "w-1",
+        batchId: "BATCH-0007",
+        receivedById: "u-1",
+        requests: [{ materialType: "WARP", grams: 500 }],
+      });
+      expect(prisma.batchSareeRow.update).toHaveBeenCalled();
+    });
+
+    it("refuses the saree and does not touch the row when the weaver lacks enough outstanding material", async () => {
+      materialReturns.createAutoReturnForReceipt.mockRejectedValue(
+        new BadRequestException(
+          "Weaver does not have enough outstanding WARP material to return (has 400g, saree requires 500g) — request material from admin.",
+        ),
+      );
+
+      await expect(
+        service.receiveRow("BATCH-0007", 1, { weight: 1200, warpG: 500, actorId: "u-1" } as any),
+      ).rejects.toThrow(/request material from admin/);
+      expect(prisma.batchSareeRow.update).not.toHaveBeenCalled();
+    });
+
+    it("converts jari reels to grams before checking outstanding", async () => {
+      await service.receiveRow("BATCH-0007", 1, {
+        weight: 1200,
+        jariReels: 2,
+        actorId: "u-1",
+      });
+
+      expect(materialReturns.createAutoReturnForReceipt).toHaveBeenCalledWith(
+        expect.objectContaining({ requests: [{ materialType: "JARI", grams: 460 }] }),
       );
     });
   });

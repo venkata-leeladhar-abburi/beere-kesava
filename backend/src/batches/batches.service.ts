@@ -1,8 +1,10 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
-import { BatchStatus, Prisma, QcResult, RecipientType } from "../generated/prisma/client";
+import { toGrams } from "../common/weight-units.util";
+import { BatchStatus, MaterialType, Prisma, QcResult, RecipientType } from "../generated/prisma/client";
 import { IdGeneratorService } from "../id-generator/id-generator.service";
+import { MaterialReturnsService } from "../material-returns/material-returns.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { ActorOnlyDto } from "./dto/actor-only.dto";
 import { AssignBatchRowDto } from "./dto/assign-batch-row.dto";
@@ -40,6 +42,7 @@ export class BatchesService {
     private readonly prisma: PrismaService,
     private readonly idGenerator: IdGeneratorService,
     private readonly auditLog: AuditLogService,
+    private readonly materialReturns: MaterialReturnsService,
   ) {}
 
   async create(dto: CreateBatchDto) {
@@ -337,6 +340,34 @@ export class BatchesService {
       throw new ConflictException(
         `Saree ${row.sareeId} has already passed QC and cannot be received again`,
       );
+    }
+
+    // The material weight Worker Staff declares as still embedded in the
+    // saree (warp/resham grams, jari reels) can only be accepted if that much
+    // material is still outstanding against the weaver — otherwise the saree
+    // is refused and staff is told to request material from admin instead of
+    // silently recording a receipt the material ledger can't back up.
+    // Factory-loom rows have no weaver outstanding to check against.
+    if (row.weaverId) {
+      const materialRequests = [
+        { materialType: MaterialType.WARP, grams: dto.warpG ?? 0 },
+        { materialType: MaterialType.RESHAM, grams: dto.reshamG ?? 0 },
+        { materialType: MaterialType.JARI, grams: toGrams(dto.jariReels ?? 0, "REEL") },
+      ].filter((r) => r.grams > 0);
+
+      if (materialRequests.length > 0) {
+        if (!dto.actorId) {
+          throw new BadRequestException(
+            "actorId is required to verify and deduct outstanding material against the weaver",
+          );
+        }
+        await this.materialReturns.createAutoReturnForReceipt({
+          weaverId: row.weaverId,
+          batchId,
+          receivedById: dto.actorId,
+          requests: materialRequests,
+        });
+      }
     }
 
     const updatedRow = await this.prisma.batchSareeRow.update({

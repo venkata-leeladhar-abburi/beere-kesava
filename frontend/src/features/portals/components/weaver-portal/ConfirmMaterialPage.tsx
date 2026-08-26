@@ -19,6 +19,7 @@ import {
   C, F, SectionTitle, Card, SignatureCanvas, SignatureCanvasHandle, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid
 } from './theme';
 import { useCurrentWeaver } from "./useCurrentWeaver";
+import { useMyMaterialReturns } from "./useMyMaterialReturns";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { BG_IMAGE } from "./WeaverBatchNotifData";
 import { LoadingState, ErrorState } from "../../../../shared/ui/state";
@@ -30,6 +31,7 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
   const { batches } = useBatches();
   const { getDesign } = useDesignLibrary();
   const { weaverId, isLoading: weaverLoading, isError: weaverError } = useCurrentWeaver();
+  const { confirmedRecords: confirmedReturns } = useMyMaterialReturns();
 
   const weaverName = user?.name ?? "Weaver";
   const weaverCode = user?.empId ?? (weaverId ? weaverId.slice(0, 10) : "Weaver");
@@ -460,6 +462,53 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
           </div>
         );
       })()}
+
+      {/* Material Returns — admin-confirmed handovers back, signature included */}
+      {confirmedReturns.length > 0 && (
+        <div style={{ marginTop: 28 }}>
+          <SectionTitle title="Material Returns Confirmed by Admin" />
+          <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, margin: "-4px 20px 12px", lineHeight: 1.5 }}>
+            Material you returned that Admin has verified and signed off — this amount has already been removed from your outstanding balance above.
+          </div>
+          <div style={{ margin: "0 20px", display: "flex", flexDirection: "column" as const, gap: 10 }}>
+            {confirmedReturns.map(r => (
+              <div key={r.id} style={{ background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "14px 16px" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" as const, gap: 8, marginBottom: 10 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{r.id}</span>
+                    {r.batchId && <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Batch {r.batchId}</span>}
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(30,102,64,0.12)", borderRadius: 999, padding: "4px 12px" }}>
+                    <Check size={13} color={C.green} />
+                    <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.green }}>Confirmed & Signed</span>
+                  </div>
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 8, marginBottom: r.signatureUrl ? 10 : 0 }}>
+                  {r.items.map((item, i) => (
+                    // eslint-disable-next-line react/no-array-index-key -- return items have no stable id and material type can repeat.
+                    <span key={`${item.materialType}-${i}`} style={{ fontFamily: F.u, fontSize: 12.5, color: C.text, background: C.cream, borderRadius: 999, padding: "5px 12px" }}>
+                      {item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari"}: {item.quantity} {item.unit}
+                    </span>
+                  ))}
+                </div>
+                <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, display: "flex", flexWrap: "wrap" as const, gap: 14 }}>
+                  <span>Returned {new Date(r.receivedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>
+                  {r.signatureTimestamp && (
+                    <span>Signed {new Date(r.signatureTimestamp).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>
+                  )}
+                </div>
+                {r.signatureUrl && (
+                  <img
+                    src={r.signatureUrl}
+                    alt={`Confirmation signature for ${r.id}`}
+                    style={{ marginTop: 10, height: 44, objectFit: "contain" as const, background: C.cream, borderRadius: 8, padding: "4px 10px" }}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
     </div>
   );

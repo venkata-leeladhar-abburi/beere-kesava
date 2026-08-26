@@ -827,6 +827,7 @@ exports[`authz matrix / route inventory matches the committed authorization snap
     "roles": [
       "ADMIN",
       "SUPERADMIN",
+      "WEAVER",
     ],
     "route": "GET /material-returns",
   },
@@ -836,6 +837,7 @@ exports[`authz matrix / route inventory matches the committed authorization snap
     "roles": [
       "ADMIN",
       "SUPERADMIN",
+      "WEAVER",
     ],
     "route": "GET /material-returns/outstanding",
   },
@@ -845,6 +847,7 @@ exports[`authz matrix / route inventory matches the committed authorization snap
     "roles": [
       "ADMIN",
       "SUPERADMIN",
+      "WEAVER",
     ],
     "route": "GET /material-returns/:id",
   },
