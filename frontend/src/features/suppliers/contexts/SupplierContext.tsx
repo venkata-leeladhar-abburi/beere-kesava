@@ -1,11 +1,12 @@
 import React, { createContext, useCallback, useContext } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useAuth } from "../../../contexts/AuthContext";
+import { useAuth, useAuthGate } from "../../../contexts/AuthContext";
 
 export * from "./supplier-types";
 import { Supplier, Purchase, SareeTag, SupplierPayment, PurchaseRequest, initialsOf, totalPieces, purchaseTotals, parseINR } from "./supplier-types";
 import { BackendSupplier, suppliersApi } from "../../../shared/api/suppliers";
+import { resolveAssetUrl, toStoredAssetPath } from "../../../shared/api/uploads";
 import { supplierPaymentsApi } from "../../../shared/api/payments";
 import { BackendPurchaseRequest, purchaseRequestsApi, STOPGAP_ACTING_USER_ID } from "../../../shared/api/purchase-requests";
 import {
@@ -42,7 +43,7 @@ function toSupplier(s: BackendSupplier): Supplier {
     accountNo: s.accountNo ?? undefined,
     ifscCode: s.ifscCode ?? undefined,
     notes: s.notes ?? undefined,
-    visitingCard: s.visitingCardUrl ?? undefined,
+    visitingCard: resolveAssetUrl(s.visitingCardUrl) ?? undefined,
     status: s.status === "ACTIVE" ? "active" : s.status === "INACTIVE" ? "inactive" : "overdue",
     rating: s.rating ?? 0,
   };
@@ -60,7 +61,7 @@ function toSareeTag(l: BackendPurchaseSareeLine): SareeTag {
     quantity: l.quantity,
     finalAmount: Number(l.finalAmount),
     notes: l.notes ?? "",
-    imageUrl: l.imageUrl ?? undefined,
+    imageUrl: resolveAssetUrl(l.imageUrl) ?? undefined,
     pieceImageUrls: l.pieceImageUrls,
     returnedQuantity: l.returnedQuantity ?? 0,
   };
@@ -105,8 +106,7 @@ function toSareeLinePayload(s: SareeTag): CreatePurchaseSareeLinePayload {
     quantity: s.quantity,
     finalAmount: s.finalAmount,
     notes: s.notes || undefined,
-    imageUrl: s.imageUrl,
-    pieceImageUrls: s.pieceImageUrls,
+    imageUrl: toStoredAssetPath(s.imageUrl) ?? undefined,
     returnedQuantity: s.returnedQuantity ?? 0,
   };
 }
@@ -224,8 +224,8 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
   // to ACCOUNTANT (ADMIN/SUPERADMIN bypass every role check there) — skip
   // the fetch for every other role rather than firing a request that's
   // guaranteed to 403.
-  const { role, user } = useAuth();
-  const enabled = role === "accountant" || role === "admin" || role === "superadmin";
+  const { user } = useAuth();
+  const enabled = useAuthGate("accountant", "admin", "superadmin");
   const actingUserId = user?.id ?? STOPGAP_ACTING_USER_ID;
 
   const { data: suppliers = [], isError: isSuppliersError, error: suppliersError, isLoading: isSuppliersLoading, refetch: refetchSuppliers } = useQuery({
@@ -281,7 +281,6 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
         name: s.name, contactName: s.contactName, phone: s.phone, whatsapp: s.whatsapp,
         city: s.city, state: s.state, address: s.address, gstCode: s.gstCode,
         specialty: s.specialty, terms: s.terms, bankName: s.bankName, accountNo: s.accountNo, ifscCode: s.ifscCode,
-        notes: s.notes, visitingCardUrl: s.visitingCard, rating: s.rating,
       }),
     onSuccess: (created) => {
       setSuppliers(prev => [toSupplier(created), ...prev]);
@@ -299,7 +298,8 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
         whatsapp: args.patch.whatsapp, city: args.patch.city, state: args.patch.state,
         address: args.patch.address, gstCode: args.patch.gstCode, specialty: args.patch.specialty,
         terms: args.patch.terms, bankName: args.patch.bankName, accountNo: args.patch.accountNo, ifscCode: args.patch.ifscCode,
-        notes: args.patch.notes, visitingCardUrl: args.patch.visitingCard, rating: args.patch.rating,
+        notes: args.patch.notes, rating: args.patch.rating,
+        visitingCardUrl: toStoredAssetPath(args.patch.visitingCard) ?? undefined,
         status: args.patch.status ? args.patch.status.toUpperCase() : undefined,
       }),
     onSuccess: (updated) => {

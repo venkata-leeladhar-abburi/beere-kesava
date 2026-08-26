@@ -103,7 +103,7 @@ export function ReturnHistorySection({
     <SectionCard icon={History} title="Material Return History" subtitle="Every material received back from a weaver or factory loom, with signature and deduction status.">
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap" as const, marginBottom: 20 }}>
         <div style={{ flex: "1 1 260px" }}>
-          <SearchInput value={histSearch} onChange={e => setHistSearch(e.target.value)} placeholder="Search weaver or MRR ID…" className="w-full" />
+          <SearchInput aria-label="Search weaver or MRR ID" value={histSearch} onChange={e => setHistSearch(e.target.value)} placeholder="Search weaver or MRR ID…" className="w-full" />
         </div>
         <Select value={histWeaverFilter} onValueChange={setHistWeaverFilter}>
           {weaverNames.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}

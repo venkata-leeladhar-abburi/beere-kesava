@@ -172,7 +172,7 @@ export function MovementHistorySection({ onDownloadMovementReport }: { onDownloa
   }, [rawGrns, rawIssues, rawStock]);
 
   return (
-    <section id="mat-movement" style={{ padding: `44px ${px}px 0` }}>
+    <section id="mat-movement" style={{ padding: `44px ${px}px 48px` }}>
     <SectionCard
       icon={ArrowLeftRight}
       title="Full Movement History — Stock Coming In and Going Out"

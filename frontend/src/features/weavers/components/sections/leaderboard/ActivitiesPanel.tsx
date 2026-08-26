@@ -27,7 +27,7 @@ export function ActivitiesPanel({ onActivities }: { onActivities: () => void }) 
                 <Bell size={14} /> {activitiesNeedingAction} need{activitiesNeedingAction === 1 ? "s" : ""} your action
               </span>
             )}
-            <Button onClick={onActivities} variant="secondary" iconLeft={Bell} className="bg-white/10 text-[#FFFDF9] border-white/20">
+            <Button onClick={onActivities} variant="secondary" iconLeft={Bell} className="bg-white/10 text-[#FFFDF9] border-white/20 hover:bg-white/20 hover:text-white hover:border-white/30">
               View All Activities
             </Button>
           </>

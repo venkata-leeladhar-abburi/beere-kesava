@@ -85,6 +85,7 @@ export function PODocumentModal({ open, onClose, po, isApproved }: PODocumentMod
                 Purchase Order Document
               </div>
             </Dialog.Title>
+            <Dialog.Description className="sr-only">Purchase order document preview</Dialog.Description>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <span style={{ fontFamily: F.mono, fontSize: 12, color: T.antiqueGold }}>{po.poNumber}</span>
               <StatusBadge status={po.status} />

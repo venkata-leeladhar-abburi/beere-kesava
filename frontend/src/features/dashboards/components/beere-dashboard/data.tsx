@@ -10,30 +10,23 @@ import { imgWarp as imgWarp, imgResham as imgResham, imgJari as imgJari } from "
 // those three exports anymore; they were leftover scaffolding.
 
 // Base descriptive metadata for the three raw material types — name, image,
-// and description are fixed facts, not mock figures. The desktop RawMaterial
-// widget overwrites `stock` with real numbers from rawMaterialsApi; the
-// mobile widget has no backend wiring yet for pct/note/badge/green (tracked
-// as a documented gap), so those stay as placeholders there only.
+// and description are fixed facts, not mock figures. Both the desktop
+// RawMaterial widget and MobileRawMaterial overwrite `stock` with real
+// numbers from rawMaterialsApi.
 export const MATS = [
   {
     name: "Warp", desc: "Base Thread used for weaving · Cotton and Silk types",
-    stock: "— kg in stock", note: "Stock breakdown not yet available on mobile",
-    pct: 0, barColor: T.royalBurgundy, stockColor: T.antiqueGold,
-    badge: "Stock levels shown on desktop", green: true, img: imgWarp,
+    stock: "— kg in stock", stockColor: T.antiqueGold, img: imgWarp,
     extra: null as React.ReactNode,
   },
   {
     name: "Resham", desc: "Silk Thread used for design and colour · Multiple colours",
-    stock: "— kg in stock", note: "Stock breakdown not yet available on mobile",
-    pct: 0, barColor: T.antiqueGold, stockColor: T.antiqueGold,
-    badge: "Stock levels shown on desktop", green: true, img: imgResham,
+    stock: "— kg in stock", stockColor: T.antiqueGold, img: imgResham,
     extra: null as React.ReactNode,
   },
   {
     name: "Jari", desc: "Metallic Thread for borders and designs · Polyester and Silk Fast types",
-    stock: "— Buns in stock", note: "Stock breakdown not yet available on mobile",
-    pct: 0, barColor: T.crimson, stockColor: T.crimson,
-    badge: "Stock levels shown on desktop", green: true, img: imgJari,
+    stock: "— Buns in stock", stockColor: T.crimson, img: imgJari,
     extra: null as React.ReactNode,
   },
 ];

@@ -2,9 +2,7 @@
 
 import React from "react";
 import suppliersHero from "../../../../assets/inline/suppliersHero.jpg";
-import {
-  Send, Plus, Building2, Package, IndianRupee, CheckCircle2,
-  AlertTriangle } from "lucide-react";
+import { Send, Plus, Building2, Package, IndianRupee, CheckCircle2, AlertTriangle } from "lucide-react";
 import { T, F } from "../theme";
 import { Purchase } from "../../contexts/SupplierContext";
 import { Button } from "../../../../shared/ui/primitives";

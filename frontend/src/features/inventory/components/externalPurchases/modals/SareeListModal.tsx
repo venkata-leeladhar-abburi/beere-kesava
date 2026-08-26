@@ -207,9 +207,11 @@ export function SareeListModal({
               <Dialog.Title style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: "#FFF", margin: 0 }}>
                 {purchase.id} — Saree Details
               </Dialog.Title>
-              <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(200,155,71,0.8)" }}>
-                {purchase.supplier}
-              </div>
+              <Dialog.Description asChild>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(200,155,71,0.8)" }}>
+                  {purchase.supplier}
+                </div>
+              </Dialog.Description>
             </div>
             <Dialog.Close asChild>
               <IconButton

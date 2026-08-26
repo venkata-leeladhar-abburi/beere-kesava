@@ -6,9 +6,10 @@ import {
 import {
   T, F, baseCard, SareeItem, InspectionResult, DEFECT_TYPES, variance,
 } from "./WorkerQCTypes";
-import { Button, IconButton, Input, Textarea } from "../../../../shared/ui/primitives";
+import { Button, IconButton, NumberInput, Textarea } from "../../../../shared/ui/primitives";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
+import { useImageUpload } from "@/shared/hooks/useImageUpload";
 
 interface WorkerQCInspectionScreenProps {
   inspecting: SareeItem;
@@ -17,6 +18,7 @@ interface WorkerQCInspectionScreenProps {
   defectSubmitted: boolean;
   defectTypes: string[];
   setDefectTypes: React.Dispatch<React.SetStateAction<string[]>>;
+  /** Stored path of the defect photo (from POST /uploads/photo), or null. */
   photoUrl: string | null;
   setPhotoUrl: React.Dispatch<React.SetStateAction<string | null>>;
   notes: string;
@@ -50,27 +52,20 @@ export function WorkerQCInspectionScreen({
   const v = variance(inspecting.weight, inspecting.std);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const cameraInputRef = React.useRef<HTMLInputElement>(null);
-  const hasPhoto = !!photoUrl;
+  // The defect photo is the evidence behind a Defective/Semi verdict, so it is
+  // uploaded to object storage and its stored path travels with the QC record.
+  const { upload, uploading, error: uploadError } = useImageUpload();
+  const hasPhoto = photoUrl !== null;
 
-  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        // Data URL for now — this is what gets saved as the QC record's
-        // photoUrl. Once cloud storage is wired up, swap this for an
-        // upload call that resolves to the hosted URL; the rest of the
-        // pipeline (QC payload, DB column, detail-view <img>) already
-        // just treats photoUrl as an opaque string.
-        setPhotoUrl(ev.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
+  const handlePhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    const url = await upload(file);
+    if (url) setPhotoUrl(url);
   };
 
-  const handleRetake = () => {
-    setPhotoUrl(null);
-  };
+  const handleRetake = () => setPhotoUrl(null);
 
   return (
     <AnimatePresence mode="wait">
@@ -175,13 +170,14 @@ export function WorkerQCInspectionScreen({
               </div>
 
               <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: T.brown, marginBottom: 8 }}>Photo of defect</div>
+              {uploadError && <div style={{ fontSize: 11, color: "#C0392B", marginBottom: 6 }}>{uploadError}</div>}
               {!hasPhoto ? (
                 <div style={{ border: "1px dashed rgba(110,15,45,0.25)", borderRadius: 10, padding: "14px 12px", marginBottom: 14 }}>
-                  <input type="file" accept="image/*" capture="environment" ref={cameraInputRef} style={{ display: 'none' }} onChange={handlePhotoSelect} aria-label="Camera photo input" />
-                  <input type="file" accept="image/*" ref={fileInputRef} style={{ display: 'none' }} onChange={handlePhotoSelect} aria-label="Gallery photo input" />
+                  <input type="file" accept="image/*" capture="environment" ref={cameraInputRef} style={{ display: 'none' }} onChange={e => void handlePhotoSelect(e)} aria-label="Camera photo input" />
+                  <input type="file" accept="image/*" ref={fileInputRef} style={{ display: 'none' }} onChange={e => void handlePhotoSelect(e)} aria-label="Gallery photo input" />
                   <div style={{ display: "flex", gap: 8 }}>
                     <Button variant="primary" fullWidth size="sm" iconLeft={Camera} onClick={() => cameraInputRef.current?.click()} className="h-11 rounded-full bg-[#6E0F2D] hover:bg-[#6E0F2D]">
-                      Take Photo
+                      {uploading ? "Uploading…" : "Take Photo"}
                     </Button>
                     <Button variant="secondary" fullWidth size="sm" iconLeft={UploadCloud} onClick={() => fileInputRef.current?.click()} className="h-11 rounded-full border-[#6E0F2D] text-[#6E0F2D]">
                       Gallery
@@ -213,7 +209,7 @@ export function WorkerQCInspectionScreen({
               {result === "semi_approved" && (
                 <div style={{ marginBottom: 14 }}>
                   <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: T.brown, marginBottom: 8 }}>Deduction Amount (₹)</div>
-                  <Input type="number" value={deductionAmount} onChange={e => setDeductionAmount(e.target.value ? Number(e.target.value) : "")}
+                  <NumberInput value={deductionAmount} onValueChange={v => setDeductionAmount(v)} step={0.01}
                     placeholder="Enter deduction amount"
                     className="w-full font-mono" />
                 </div>

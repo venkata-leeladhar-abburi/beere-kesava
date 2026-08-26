@@ -1,8 +1,7 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "motion/react";
-import { Settings, ClipboardList, ChevronRight,
-  CheckCircle2, Building2 } from "lucide-react";
+import { Settings, ClipboardList, ChevronRight, CheckCircle2, Building2 } from "lucide-react";
 import { imgHero } from "../../../../shared/constants/imageData";
 import { T, F, NUM, EASE } from "./theme";
 import { MATS } from "./data";

@@ -92,7 +92,7 @@ export function ScheduledReportsSection() {
             size="sm"
             iconLeft={Plus}
             onClick={() => setShowForm(!showForm)}
-            className="bg-[rgba(255,255,255,0.14)] hover:bg-[rgba(255,255,255,0.25)] active:bg-[rgba(255,255,255,0.35)] text-[#FFFDF9] hover:text-[#FFFDF9] border border-[rgba(255,255,255,0.25)] rounded-xl font-bold shadow-sm transition-all"
+            className="bg-[rgba(255,255,255,0.14)] hover:bg-[rgba(255,255,255,0.25)] active:bg-[rgba(255,255,255,0.35)] text-[#FFFDF9] hover:text-[#FFFDF9] border border-[rgba(255,255,255,0.25)] rounded-[10px] font-bold shadow-sm transition-all"
           >
             Add New Schedule
           </Button>

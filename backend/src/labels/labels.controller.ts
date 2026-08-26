@@ -1,10 +1,13 @@
 import { BadRequestException, Body, Controller, Get, Patch, Query, Res } from "@nestjs/common";
 import type { Response } from "express";
+import { RequireRoles } from "../auth/decorators/require-roles.decorator";
+import { UserRole } from "../generated/prisma/client";
 import { UpdateLabelSettingsDto } from "./dto/update-label-settings.dto";
 import { LabelsService } from "./labels.service";
 
-// NOTE: RBAC guards intentionally not yet applied — see the same note in
-// src/users/users.controller.ts.
+// Label settings are edited only from LabelSettingsPage, which the frontend
+// mounts exclusively in the superadmin dashboard. Barcode/QR rendering and
+// reading the settings stay open - they are needed wherever labels print.
 @Controller("labels")
 export class LabelsController {
   constructor(private readonly labelsService: LabelsService) {}
@@ -14,6 +17,7 @@ export class LabelsController {
     return this.labelsService.getSettings();
   }
 
+  @RequireRoles(UserRole.SUPERADMIN)
   @Patch("settings")
   updateSettings(@Body() dto: UpdateLabelSettingsDto) {
     return this.labelsService.updateSettings(dto);

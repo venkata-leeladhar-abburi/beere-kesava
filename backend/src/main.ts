@@ -14,6 +14,7 @@ import { AppModule } from "./app.module";
 import { AllExceptionsFilter } from "./common/filters/all-exceptions.filter";
 import { validationExceptionFactory } from "./common/errors/validation-exception.factory";
 import { ResponseInterceptor } from "./common/interceptors/response.interceptor";
+import { StorageService } from "./common/storage/storage.service";
 import { UPLOADS_ROOT } from "./common/storage/upload.config";
 
 async function bootstrap() {
@@ -27,7 +28,11 @@ async function bootstrap() {
   app.enableCors({ origin: corsOrigin ? corsOrigin.split(",").map((o) => o.trim()) : true });
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
-  app.use("/uploads", express.static(UPLOADS_ROOT));
+  // Local-disk driver only: with R2 the same paths are answered by
+  // UploadsController's GET handler, which redirects to the bucket.
+  if (!app.get(StorageService).isRemote) {
+    app.use("/uploads", express.static(UPLOADS_ROOT));
+  }
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

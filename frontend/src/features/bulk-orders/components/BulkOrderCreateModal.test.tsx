@@ -56,12 +56,13 @@ describe("BulkOrderCreateModal validation", () => {
     fireEvent.change(deadlineInput, { target: { value: "2027-01-01" } });
     fireEvent.keyDown(deadlineInput, { key: "Enter" });
 
-    const customerSelect = screen.getByLabelText("Select Wholesale Customer");
-    fireEvent.keyDown(customerSelect, { key: "ArrowDown", code: "ArrowDown" });
-
-    const optionText = new RegExp(MOCK_WHOLESALE_CUSTOMERS[0].name);
-    const option = await screen.findByText(optionText);
-    fireEvent.click(option);
+    // Select is a native <select>: clicking an <option> node does not commit a
+    // value, so pick it the way the browser does. The old ArrowDown-then-click
+    // sequence was left over from the Radix implementation and silently
+    // selected nothing.
+    fireEvent.change(screen.getByLabelText("Select Wholesale Customer"), {
+      target: { value: MOCK_WHOLESALE_CUSTOMERS[0].id },
+    });
 
     fireEvent.click(screen.getByText("✓ Create Bulk Order"));
 
@@ -79,12 +80,13 @@ describe("BulkOrderCreateModal validation", () => {
 
     fireEvent.change(screen.getByLabelText("Quantity (sarees)"), { target: { value: "10" } });
     fireEvent.change(screen.getByLabelText("Delivery Deadline"), { target: { value: "2027-01-01" } });
-    const customerSelect = screen.getByLabelText("Select Wholesale Customer");
-    fireEvent.keyDown(customerSelect, { key: "ArrowDown", code: "ArrowDown" });
-
-    const optionText = new RegExp(MOCK_WHOLESALE_CUSTOMERS[0].name);
-    const option = await screen.findByText(optionText);
-    fireEvent.click(option);
+    // Select is a native <select>: clicking an <option> node does not commit a
+    // value, so pick it the way the browser does. The old ArrowDown-then-click
+    // sequence was left over from the Radix implementation and silently
+    // selected nothing.
+    fireEvent.change(screen.getByLabelText("Select Wholesale Customer"), {
+      target: { value: MOCK_WHOLESALE_CUSTOMERS[0].id },
+    });
 
     fireEvent.click(screen.getByText("✓ Create Bulk Order"));
     expect(screen.queryByText("Quantity must be at least 1")).not.toBeInTheDocument();

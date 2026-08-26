@@ -32,6 +32,7 @@ export interface BackendDispatchRecord {
   quotationRef: string | null;
   pendingTransport: boolean;
   pendingReceipt: boolean;
+  receiptUrl: string | null;
   notes: string | null;
   expectedDelivery: string | null;
   specialInstructions: string | null;
@@ -57,6 +58,7 @@ export interface CreateDispatchPayload {
   driverName?: string;
   pendingTransport?: boolean;
   pendingReceipt?: boolean;
+  receiptUrl?: string;
   notes?: string;
   expectedDelivery?: string;
   specialInstructions?: string;
@@ -85,6 +87,7 @@ export interface UpdateDispatchPayload {
   specialInstructions?: string;
   pendingTransport?: boolean;
   pendingReceipt?: boolean;
+  receiptUrl?: string;
 }
 
 export const dispatchApi = {

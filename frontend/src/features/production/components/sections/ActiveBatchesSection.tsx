@@ -165,7 +165,7 @@ export function ActiveBatchesSection({ onNavigate, onOpenTally }: { onNavigate?:
           </div>
 
         <div className="p-3.5 sm:p-6 md:p-7">
-        <div className="flex items-center gap-2 mb-4 overflow-x-auto max-w-full pb-1 scrollbar-none whitespace-nowrap">
+        <div className="flex items-center gap-2 mt-2 sm:mt-3.5 mb-4 overflow-x-auto max-w-full pb-1 scrollbar-none whitespace-nowrap">
           {FILTER_PILLS.map(f => (
             <Button key={f.label} onClick={() => setFilter(f.stage)} variant={filter === f.stage ? "primary" : "tertiary"} size="sm"
               className={`rounded-full shrink-0 whitespace-nowrap text-[12px] ${filter === f.stage ? "" : "border border-[rgba(110,15,45,0.18)] text-[var(--text-tertiary)]"}`}>
@@ -176,7 +176,7 @@ export function ActiveBatchesSection({ onNavigate, onOpenTally }: { onNavigate?:
 
         <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 mb-6 w-full max-w-full">
           <div className="w-full sm:flex-1 sm:min-w-[220px]">
-            <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by batch number, weaver name, or design code..." className="h-[44px] w-full" />
+            <SearchInput aria-label="Search by batch number, weaver name, or design code" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by batch number, weaver name, or design code..." className="h-[44px] w-full" />
           </div>
           
           <div className="flex items-center justify-between sm:justify-start gap-2 flex-wrap w-full sm:w-auto">

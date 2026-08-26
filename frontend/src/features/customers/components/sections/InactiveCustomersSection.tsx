@@ -109,6 +109,7 @@ export function InactiveCustomersSection({
         <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" as const }}>
           <div style={{ width: 260 }}>
             <SearchInput
+              aria-label="Search by customer name"
               value={inactiveSearch}
               onChange={e => setInactiveSearch(e.target.value)}
               placeholder="Search by customer name..."

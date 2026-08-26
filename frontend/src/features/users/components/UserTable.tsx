@@ -164,7 +164,7 @@ export function UserTable({
             ))}
           </div>
           {/* Search */}
-          <SearchInput value={searchQ} onChange={e => { setSearchQ(e.target.value); setPage(1); }} placeholder="Search users…" containerClassName="w-[220px]" />
+          <SearchInput aria-label="Search users" value={searchQ} onChange={e => { setSearchQ(e.target.value); setPage(1); }} placeholder="Search users…" containerClassName="w-[220px]" />
           {/* Role filter dropdown */}
           <Select value={roleFilter} onValueChange={v => { setRoleFilter(v); setPage(1); }} className="w-[170px]">
             <SelectItem value="All Roles">All Roles</SelectItem>

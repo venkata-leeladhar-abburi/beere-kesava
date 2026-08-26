@@ -5,7 +5,7 @@
  */
 
 // NEW — Auth with localStorage persistence
-export { AuthProvider, useAuth } from "./AuthContext";
+export { AuthProvider, useAuth, useAuthGate } from "./AuthContext";
 export type { Role } from "./AuthContext";
 
 // Existing contexts (forward-compatible re-exports from their current locations)

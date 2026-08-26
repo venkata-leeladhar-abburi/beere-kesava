@@ -27,7 +27,12 @@ const HISTORY_STATUS_TO_PRODUCTION: Record<ReceivedSareeLog["status"], StatusVal
 
 type HistoryRow = ReceivedSareeLog & { isoDate?: string };
 
-export function HistorySection({ liveRecords = [] }: { liveRecords?: ReceivedSareeLog[] }) {
+// Module-level so the default is referentially stable. An inline `= []`
+// default allocates a new array on every render, which would defeat the
+// memoisation of everything downstream of allData.
+const NO_LIVE_RECORDS: ReceivedSareeLog[] = [];
+
+export function HistorySection({ liveRecords = NO_LIVE_RECORDS }: { liveRecords?: ReceivedSareeLog[] }) {
   const [view, setView] = useState<"day" | "weaver">("day");
   const [search, setSearch] = useState("");
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
@@ -77,12 +82,10 @@ export function HistorySection({ liveRecords = [] }: { liveRecords?: ReceivedSar
     }),
   [qcRecords, rowLookup]);
 
-  // Memoised because two useMemos below take it as a dependency — rebuilt on
-  // every render it made both of them recompute every render.
-  const allData: HistoryRow[] = useMemo(
-    () => [...liveRecords, ...qcHistory],
-    [liveRecords, qcHistory],
-  );
+  const allData: HistoryRow[] = useMemo(() => [
+    ...liveRecords.map(r => ({ ...r, sareeType: "—" })),
+    ...qcHistory,
+  ], [liveRecords, qcHistory]);
 
   const uniqueEntities = useMemo(() => Array.from(new Set(allData.map(h => h.weaver))).sort(), [allData]);
   const uniqueBatches = useMemo(() => Array.from(new Set(allData.map(h => h.batch))).filter(b => b !== "—").sort(), [allData]);

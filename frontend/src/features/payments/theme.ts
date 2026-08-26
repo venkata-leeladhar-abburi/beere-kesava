@@ -1,3 +1,12 @@
+import { brand, fonts, semantic } from '@/design-system/tokens';
+import { imgBKLogo, imgSareeFooter } from "../../shared/constants/weaverImages";
+
+// NOTE: Do not add cross-feature or hook re-exports here (e.g.
+// @/features/bulk-orders, @/features/firms, shared/ui/DateFilterBar).
+// This module is imported at module-evaluation time by primitives whose
+// top-level constants depend on T/F; re-exporting hooks from here creates
+// circular imports (theme -> bulk-orders -> payments -> theme) and crashes
+// with "Cannot access 'T' before initialization". Import those directly.
 
 
 // ── Design Tokens ─────────────────────────────────────────────────────────────
@@ -30,15 +39,4 @@ export const F = {
 
 export const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
-import { imgBKLogo, imgSareeFooter } from "../../shared/constants/weaverImages";
 export { imgBKLogo, imgSareeFooter };
-import { useBulkOrders } from "@/features/bulk-orders";
-import { BulkOrder } from "@/features/production";
-export { useBulkOrders };
-export type { BulkOrder };
-import { useFirms } from "@/features/firms";
-export { useFirms };
-import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../shared/ui/DateFilterBar";
-import { brand, fonts, semantic } from '@/design-system/tokens';
-export { DateFilterBar, DEFAULT_DATE_FILTER, matchesDateFilter };
-export type { DateFilterState };

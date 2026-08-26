@@ -91,10 +91,6 @@ export function TextInput({ value, onChange, placeholder, mono }: { value: strin
   );
 }
 
-export function NumInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
-  return <Input type="number" value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} />;
-}
-
 export function SelectInput({ value, onChange, children }: { value: string; onChange: (v: string) => void; children: React.ReactNode }) {
   // Radix SelectItem forbids value="" (reserved for "no selection"), but the
   // native select markup this replaces commonly used an empty-value option

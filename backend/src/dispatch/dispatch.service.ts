@@ -138,6 +138,7 @@ export class DispatchService {
         quotationRef: dto.quotationRef,
         pendingTransport: dto.pendingTransport ?? false,
         pendingReceipt: dto.pendingReceipt ?? false,
+        receiptUrl: dto.receiptUrl,
         notes: dto.notes,
         expectedDelivery: dto.expectedDelivery ? new Date(dto.expectedDelivery) : undefined,
         specialInstructions: dto.specialInstructions,
@@ -211,6 +212,7 @@ export class DispatchService {
         specialInstructions: dto.specialInstructions,
         pendingTransport: dto.pendingTransport,
         pendingReceipt: dto.pendingReceipt,
+        receiptUrl: dto.receiptUrl,
       },
     });
 

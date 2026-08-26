@@ -49,13 +49,15 @@ function SareeSelectionCard({
 
   return (
     <div
-      onClick={() => { if (isPending) onSelect(); }}
+      // A selection control that is inert unless the saree is still pending.
+      // The role/tabIndex are static so the a11y tooling can actually see them;
+      // aria-disabled (not removal from the tab order) carries the inert state,
+      // which keeps a non-pending card discoverable to screen readers.
       role="button"
       tabIndex={0}
       aria-pressed={isSel}
-      // A saree that is not awaiting selection stays focusable and announced,
-      // but is marked disabled rather than silently doing nothing on click.
       aria-disabled={!isPending}
+      onClick={() => { if (isPending) onSelect(); }}
       onKeyDown={e => { if (isPending && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); onSelect(); } }}
       style={{
         background: isSel ? "linear-gradient(135deg, #FFFDF9 0%, #FDF7ED 100%)" : "#FFFFFF",

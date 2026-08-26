@@ -145,6 +145,7 @@ export function ImportWeaversModal({ open, onClose, onImported }: {
           <Dialog.Title asChild>
             <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0 }}>Import Weavers from Excel</h2>
           </Dialog.Title>
+          <Dialog.Description className="sr-only">Import multiple weavers from an Excel file</Dialog.Description>
           <Dialog.Close asChild>
             <IconButton onClick={() => reset()} variant="ghost" icon={X} label="Close" className="text-[var(--text-tertiary)]" />
           </Dialog.Close>

@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { useSearchParams } from "react-router";
+import { Navigate, useLocation, useSearchParams } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Copy, Check } from "lucide-react";
 import { IconButton } from "../../../shared/ui/primitives";
 import { scanApi, ScanLookupResult } from "../../../shared/api/scan";
 import { LoadingState, ErrorState, EmptyState } from "../../../shared/ui/state";
+import { useAuthGate } from "../../../contexts/AuthContext";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // DESIGN TOKENS
@@ -82,12 +83,19 @@ function detailRows(saree: SareeData) {
 export function MobileScanView({ saree }: { saree?: SareeData }) {
   const [copied, setCopied] = useState(false);
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const sareeId = searchParams.get("id") ?? searchParams.get("sareeId");
+  // /scan is the QR-code landing route and sits outside every role guard, but
+  // GET /scan/:sareeId is not @Public — scanning a tag while signed out used
+  // to fire the lookup anyway and 401. Send them to sign in first and come
+  // straight back to the same tag.
+  const isSignedIn = useAuthGate();
+  const needsLogin = !saree && !isSignedIn;
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["scan", sareeId],
     queryFn: () => scanApi.lookup(sareeId!),
-    enabled: !saree && !!sareeId,
+    enabled: !saree && !!sareeId && isSignedIn,
   });
 
   const resolved: SareeData | null = saree ?? (data ? resultToSareeData(data) : null);
@@ -98,6 +106,11 @@ export function MobileScanView({ saree }: { saree?: SareeData }) {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  if (needsLogin) {
+    const returnTo = `${location.pathname}${location.search}`;
+    return <Navigate to={`/login?returnTo=${encodeURIComponent(returnTo)}`} replace />;
+  }
 
   if (!saree && !sareeId) {
     return (

@@ -44,8 +44,8 @@ export function SupplierReturnsPage() {
     queryFn: () => supplierReturnsApi.list({ pageSize: 100 }),
   });
 
-  // Two useMemos below depend on this — a fresh [] each render made both of
-  // them recompute every render.
+  // Memoised so the `?? []` fallback doesn't mint a fresh array on every
+  // render and re-run the two memos below with it.
   const allItems = useMemo(() => data?.items ?? [], [data]);
 
   const rows = useMemo(() => {
@@ -224,7 +224,7 @@ export function SupplierReturnsPage() {
         }}>
           <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 w-full">
             <div className="flex-1 min-w-0">
-              <SearchInput
+              <SearchInput aria-label="Search supplier returns"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 onSearch={setSearch}

@@ -1,6 +1,6 @@
 /**
  * BK LOOM DESIGN SYSTEM — PHASE 1 FOUNDATION TOKENS (TypeScript mirror)
- * Beere Keshava & Brothers
+ * Beere Kesava & Brothers
  *
  * WHY THIS FILE EXISTS
  * 412 of 507 components in this codebase use inline `style={{}}`. Those cannot

@@ -47,6 +47,7 @@ export function UserProfileModal({ onClose }: { onClose: () => void }) {
         {/* Banner */}
         <div style={{ background: "linear-gradient(135deg, #4A061B 0%, #6B1A2A 100%)", padding: "32px 24px 28px", position: "relative", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" as const }}>
           <Dialog.Title className="sr-only">User Profile</Dialog.Title>
+          <Dialog.Description className="sr-only">Your account profile</Dialog.Description>
           <Dialog.Close asChild>
             <IconButton
               icon={X}

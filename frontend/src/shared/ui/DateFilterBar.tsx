@@ -63,7 +63,7 @@ function MonthField({ value, onChange }: { value: string; onChange: (v: string) 
       <Popover.Trigger asChild>
         <button
           type="button"
-          className="flex h-10 items-center gap-2 rounded-[var(--radius-md)] border px-3 text-[13px]"
+          className="flex h-10 items-center gap-2 rounded-[10px] border px-3 text-[13px]"
           style={{ borderColor: "var(--border-default)", background: "var(--surface-raised)", color: "var(--text-primary)" }}
         >
           {label}
@@ -74,13 +74,13 @@ function MonthField({ value, onChange }: { value: string; onChange: (v: string) 
         <Popover.Content
           align="start"
           sideOffset={8}
-          className="rounded-[var(--radius-lg)] border shadow-[var(--shadow-lg)] p-2"
+          className="rounded-[10px] border shadow-[var(--shadow-lg)] p-2"
           style={{ zIndex: "var(--z-popover)", background: "var(--surface-overlay)", borderColor: "var(--border-default)" }}
         >
           <div className="flex items-center justify-center gap-3 pb-1">
-            <button type="button" onClick={() => setPickerYear(y2 => y2 - 1)} className="text-[13px]" style={{ color: "var(--text-tertiary)" }}>‹</button>
+            <button type="button" onClick={() => setPickerYear(y2 => y2 - 1)} aria-label="Previous year" className="text-[13px]" style={{ color: "var(--text-tertiary)" }}>‹</button>
             <span className="text-[13px] font-medium tabular-nums" style={{ color: "var(--text-primary)" }}>{pickerYear}</span>
-            <button type="button" onClick={() => setPickerYear(y2 => y2 + 1)} className="text-[13px]" style={{ color: "var(--text-tertiary)" }}>›</button>
+            <button type="button" onClick={() => setPickerYear(y2 => y2 + 1)} aria-label="Next year" className="text-[13px]" style={{ color: "var(--text-tertiary)" }}>›</button>
           </div>
           <MonthPicker
             year={pickerYear}
@@ -105,7 +105,7 @@ function YearField({ value, onChange }: { value: string; onChange: (v: string) =
       <Popover.Trigger asChild>
         <button
           type="button"
-          className="flex h-10 items-center gap-2 rounded-[var(--radius-md)] border px-3 text-[13px] tabular-nums"
+          className="flex h-10 items-center gap-2 rounded-[10px] border px-3 text-[13px] tabular-nums"
           style={{ borderColor: "var(--border-default)", background: "var(--surface-raised)", color: "var(--text-primary)" }}
         >
           {value || "Select year"}

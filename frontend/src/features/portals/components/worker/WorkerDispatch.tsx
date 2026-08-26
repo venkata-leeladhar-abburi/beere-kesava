@@ -111,6 +111,15 @@ export function WorkerDispatch(_props: { isDesktop?: boolean }) {
         )}
       </AnimatePresence>
 
+      <AnimatePresence>
+        {viewingDoc && viewingDoc.type === "shop" && (
+          <DispatchChallanModal dispatch={viewingDoc} onClose={() => setViewingDoc(null)} />
+        )}
+        {viewingDoc && viewingDoc.type !== "shop" && (
+          <DispatchInvoiceModal dispatch={viewingDoc} onClose={() => setViewingDoc(null)} />
+        )}
+      </AnimatePresence>
+
       {toast && (
         <div style={{ position: "fixed", bottom: 84, left: "50%", transform: "translateX(-50%)", zIndex: 600, background: C.green, color: "#FFF", borderRadius: 999, padding: "11px 22px", fontFamily: F.u, fontSize: 13, fontWeight: 600, boxShadow: "0 8px 28px rgba(30,102,64,0.32)", display: "flex", alignItems: "center", gap: 8 }}>
           <CheckCircle2 size={15} /> {toast}

@@ -161,6 +161,7 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
           <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, padding: "18px 22px", boxShadow: "0 4px 20px rgba(74,6,27,0.07)", display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
             <div style={{ flex: "1 1 280px" }}>
               <SearchInput
+                aria-label="Search by saree ID, weaver, supplier, invoice, or design code"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Search by saree ID, weaver, supplier, invoice, or design code..."

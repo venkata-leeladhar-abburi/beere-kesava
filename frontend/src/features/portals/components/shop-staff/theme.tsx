@@ -4,6 +4,7 @@ import { brand, fonts, semantic } from '@/design-system/tokens';
 import React from 'react';
 import { useResponsive } from "../../../../hooks/useResponsive";
 import { Button } from "../../../../shared/ui/primitives";
+import { imgShopBg, imgSilkBg } from "@/shared/constants/mockImages";
 
 const ShopPriceContext = React.createContext<boolean>(false);
 export function useCanSeePrices() { return React.useContext(ShopPriceContext); }
@@ -21,8 +22,8 @@ const F = { d: fonts.display, u: fonts.ui, m: fonts.code };
 const TEAL = "#0F766E";
 
 // ─── Desktop Hero Background Images ─────────────────────────────────────────
-const SHOP_BG = "https://images.unsplash.com/photo-1569909115134-a0426936c879?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400";
-const SILK_BG = "https://images.unsplash.com/photo-1588140686379-1b76a52103dc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400";
+const SHOP_BG = imgShopBg;
+const SILK_BG = imgSilkBg;
 
 // ─── Shop Desktop Hero ───────────────────────────────────────────────────────
 interface ShopHeroStat { label: string; val: string; sub: string; highlight?: boolean; crimson?: boolean }

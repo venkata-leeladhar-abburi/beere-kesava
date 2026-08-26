@@ -315,7 +315,7 @@ export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: s
           </div>
 
           <div className="flex flex-col md:flex-row md:items-center gap-2.5 mb-4">
-            <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search Saree ID, Weaver..." className="w-full md:w-[240px] shrink-0" />
+            <SearchInput aria-label="Search saree ID or weaver" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search Saree ID, Weaver..." className="w-full md:w-[240px] shrink-0" />
             <div className="flex items-center gap-2.5 flex-nowrap overflow-x-auto shrink-0 w-full md:w-auto pb-1 md:pb-0">
               <Select value={weaverFilter} onValueChange={setWeaverFilter} size="sm" className="w-auto min-w-[130px] shrink-0">
                 {weaverOptions.map(w => <SelectItem key={w as string} value={w as string}>{w === "All" ? "All Weavers" : w as string}</SelectItem>)}

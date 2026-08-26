@@ -2,7 +2,8 @@ import React, { useCallback, useRef, useState } from "react";
 import { AlertTriangle, CheckCircle2, FileText, UploadCloud, X } from "lucide-react";
 import { motion } from "motion/react";
 
-import { EASE, F, T, useFirms } from "../../theme";
+import { EASE, F, T } from "../../theme";
+import { useFirms } from "@/features/firms";
 import { VendorExcelRow, VendorMatchedRow, VendorPayment, VendorUnmatchedRow, VendorUploadResult } from "../../types";
 import { vendorPaymentsApi } from "../../../../shared/api/payments";
 import { Button, Input } from "../../../../shared/ui/primitives";

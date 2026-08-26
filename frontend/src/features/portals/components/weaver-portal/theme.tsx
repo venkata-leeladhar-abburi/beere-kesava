@@ -20,6 +20,8 @@ import {
   BatchCard, FadeUpBatch, BG_IMAGE, FABRIC_BG,
 } from "./WeaverBatchNotifData";
 export type { WNPriority, WNCategory, WNFilter, WeaverNotif, WeaverBatch } from "./WeaverBatchNotifData";
+import { imgDesignSlipPlaceholder } from "@/shared/constants/mockImages";
+
 export { SignatureCanvas };
 
 // ─── Design Tokens ─────────────────────────────────────────────────────────
@@ -60,7 +62,7 @@ const SAREE_TYPE_RATES: Record<string, { type: string; description: string; char
 function DesignDetailCard({ designCode, onClose }: { designCode: string; onClose: () => void }) {
   const { getDesign } = useDesignLibrary();
   const d = getDesign(designCode);
-  const BG = d?.colorSlipPhoto || "https://images.unsplash.com/photo-1619239635762-8132f6dba51c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=800";
+  const BG = d?.colorSlipPhoto || imgDesignSlipPlaceholder;
   const [showGraphModal, setShowGraphModal] = useState(false);
 
   return (
@@ -138,6 +140,7 @@ function DesignDetailCard({ designCode, onClose }: { designCode: string; onClose
       {/* Graph Modal overlay if clicked */}
       <Modal open={showGraphModal && !!d?.designGraph} onOpenChange={o => { if (!o) setShowGraphModal(false); }} size="lg">
         <Dialog.Title className="sr-only">{d?.code} · {d?.name} — Design Graph Drawing</Dialog.Title>
+        <Dialog.Description className="sr-only">Full-size design graph drawing</Dialog.Description>
         <div style={{ padding: 20 }}>
           {d?.designGraph && (
             <>

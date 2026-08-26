@@ -14,6 +14,10 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
     css: false,
+    // e2e/ holds Playwright specs, run only by `npm run test:e2e` — without
+    // this, Vitest's default *.spec.ts glob also picks them up and fails
+    // immediately on Playwright-only APIs like test.describe.configure().
+    exclude: ['**/node_modules/**', '**/dist/**', 'e2e/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],

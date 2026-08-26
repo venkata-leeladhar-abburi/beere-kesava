@@ -9,6 +9,7 @@ import { SEED_PURCHASE_SUMMARIES } from "./sales-seed";
 
 import { inventoryApi } from "../../../shared/api/inventory";
 import { salesApi } from "../../../shared/api/sales";
+import { useAuthGate } from "../../../contexts/AuthContext";
 
 const SalesContext = createContext<SalesContextValue | null>(null);
 
@@ -17,19 +18,24 @@ const QUERY_KEY = ["sales", "sarees"] as const;
 export function SalesProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
 
+  const enabled = useAuthGate();
+
   const { data: rawInventory = [], isError: isInventoryError, error: inventoryError, isLoading: isInventoryLoading, refetch: refetchInventory } = useQuery({
     queryKey: ["backend-inventory-list"],
     queryFn: () => inventoryApi.list(),
+    enabled,
   });
 
   const { data: rawSales, isError: isSalesError, error: salesError, isLoading: isSalesLoading, refetch: refetchSales } = useQuery({
     queryKey: ["backend-sales-list"],
     queryFn: () => salesApi.list(100),
+    enabled,
   });
 
   const { data: rawReturns, isError: isReturnsError, error: returnsError, isLoading: isReturnsLoading, refetch: refetchReturns } = useQuery({
     queryKey: ["backend-returns-list"],
     queryFn: () => salesApi.listReturns(100),
+    enabled,
   });
 
   const isError = isInventoryError || isSalesError || isReturnsError;

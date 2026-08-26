@@ -19,6 +19,12 @@ const PERMISSIONS: PermissionSeed[] = [
   { key: "users.delete", description: "Deactivate or delete user accounts" },
   { key: "users.roles.manage", description: "Assign or modify user roles" },
 
+  // Weaver roster
+  // Deleting a weaver hard-deletes the linked User row too, so it carries the
+  // same restriction as users.delete: SUPERADMIN only, withheld from ADMIN in
+  // ROLE_PERMISSIONS below.
+  { key: "weavers.delete", description: "Delete a weaver and its linked user account" },
+
   // Saree Production
   { key: "production.batches.create", description: "Issue new saree production batches" },
   { key: "production.batches.read", description: "View production batches and status" },
@@ -59,7 +65,11 @@ const PERMISSIONS: PermissionSeed[] = [
 
 const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
   SUPERADMIN: PERMISSIONS.map(p => p.key),
-  ADMIN: PERMISSIONS.map(p => p.key).filter(k => k !== "users.delete"),
+  // Destructive account deletions are withheld from ADMIN by design; both of
+  // these remove a User row outright.
+  ADMIN: PERMISSIONS.map(p => p.key).filter(
+    k => k !== "users.delete" && k !== "weavers.delete",
+  ),
   WORKER: [
     "production.batches.read",
     "production.batches.create",

@@ -34,4 +34,4 @@ export const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 export const INCOME_CATS: IncomeCategory[]   = ["Wholesale Sale", "Retail Sale", "Other"];
 export const EXPENSE_CATS: ExpenseCategory[] = ["Weaver Payments", "Material Purchase", "Shop Maintenance", "Factory Maintenance", "Salaries", "Other"];
 
-export const imgFirmsHero = "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
+export { imgFirmsHero } from "@/shared/constants/mockImages";

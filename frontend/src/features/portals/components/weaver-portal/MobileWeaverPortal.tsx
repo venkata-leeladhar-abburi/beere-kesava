@@ -56,6 +56,7 @@ function WeaverHamburgerMenu({
               <Dialog.Title asChild>
                 <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 14, color: "#FFFDF9", lineHeight: 1.1 }}>Beere Kesava</div>
               </Dialog.Title>
+              <Dialog.Description className="sr-only">Weaver portal navigation menu</Dialog.Description>
               <div style={{ fontFamily: F.u, fontWeight: 500, fontSize: 11, color: "rgba(231,201,131,0.85)", letterSpacing: "2px", textTransform: "uppercase" }}>WEAVER PORTAL</div>
             </div>
           </div>

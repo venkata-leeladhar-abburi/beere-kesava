@@ -50,14 +50,18 @@ function SectionShell({ title, subtitle, icon: Icon, right, children }: {
   right?: React.ReactNode; children: React.ReactNode;
 }) {
   return (
-    <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 16, overflow: "hidden", marginBottom: 20, background: "#FFF" }}>
-      <div className="flex flex-wrap items-center gap-3 px-4 py-3.5 sm:px-5" style={{ background: T.bgGold, borderBottom: `1px solid ${T.borderGold}` }}>
-        <Icon size={17} color={T.antiqueGold} style={{ flexShrink: 0 }} />
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>{title}</div>
-          {subtitle && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{subtitle}</div>}
+    <div className="mb-6 rounded-2xl border border-[#E8DCC4] overflow-hidden bg-white shadow-sm">
+      <div className="bg-[#6E0F2D] p-5 sm:px-6 sm:py-5 text-white flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center shrink-0">
+            <Icon size={20} className="text-[#F5E8D0]" />
+          </div>
+          <div>
+            <h3 className="font-serif text-lg sm:text-xl font-bold text-[#FFFDF9] leading-snug">{title}</h3>
+            {subtitle && <p className="text-xs sm:text-sm text-white/70 mt-0.5">{subtitle}</p>}
+          </div>
         </div>
-        {right}
+        {right && <div className="text-xs text-white/80">{right}</div>}
       </div>
       {children}
     </div>
@@ -65,9 +69,6 @@ function SectionShell({ title, subtitle, icon: Icon, right, children }: {
 }
 
 // ── Summary: realized vs committed ────────────────────────────────────────────
-// Realized (money that actually moved) drives the net balance; committed
-// (documents naming this firm that aren't settled) is reported separately so
-// an unpaid purchase order can never quietly distort the firm's real position.
 function SummaryStrip({ income, expense, net, pendingIncome, pendingExpense, quoted }: {
   income: number; expense: number; net: number;
   pendingIncome: number; pendingExpense: number; quoted: number;
@@ -121,12 +122,8 @@ export function FirmDetailPage({ firm, onBack, onEdit, onGoToPayments }: {
     bulkAddIncome, bulkAddExpenses, updateEntry, deleteEntry,
   } = useFirms();
   const confirm = useConfirm();
-  // `totals` from the API is deliberately unused — the summary strip is
-  // recomputed from the filtered rows below so it always agrees with what's
-  // on screen; the server's unfiltered figures would contradict it.
   const { documents, payments, isLoading, isError, error, refetch } = useFirmActivity(firm.id);
   const fin = getFirmFinancials(firm.id);
-  const color = cardColor(firm.id);
 
   const [tab, setTab] = useState<"finance" | "info">("finance");
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
@@ -147,9 +144,6 @@ export function FirmDetailPage({ firm, onBack, onEdit, onGoToPayments }: {
     [payments, dateFilter, direction],
   );
 
-  // Manual entries respect the same date + direction filters, so every number
-  // on the page answers to one filter bar rather than each section having its
-  // own idea of the period.
   const manualIncome = useMemo(
     () => fin.income.filter(e => matchesDateFilter(e.date, dateFilter) && direction !== "EXPENSE"),
     [fin.income, dateFilter, direction],
@@ -164,8 +158,6 @@ export function FirmDetailPage({ firm, onBack, onEdit, onGoToPayments }: {
     [fin.misc, dateFilter, direction],
   );
 
-  // Totals are recomputed from the filtered rows so the summary always matches
-  // what's on screen — the backend's unfiltered totals are only the default.
   const filtered = useMemo(() => {
     const inc = visiblePayments.filter(p => p.direction === "INCOME").reduce((s, p) => s + p.amount, 0)
       + manualIncome.reduce((s, e) => s + e.amount, 0)
@@ -185,9 +177,6 @@ export function FirmDetailPage({ firm, onBack, onEdit, onGoToPayments }: {
 
   const filtersActive = dateFilter.mode !== "all" || direction !== "all" || status !== "all";
 
-  // Manual rows that look like they restate a now-auto-tracked payment. Matched
-  // against the FULL payment list, not the filtered one — a duplicate doesn't
-  // stop being a duplicate because the date filter hid its counterpart.
   const incomeDuplicates = useMemo(
     () => findDuplicateEntries(fin.income, payments, "INCOME"),
     [fin.income, payments],
@@ -320,159 +309,255 @@ export function FirmDetailPage({ firm, onBack, onEdit, onGoToPayments }: {
   }
 
   return (
-    <div style={{ minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui }}>
-      {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <header style={{ background: `linear-gradient(135deg, ${T.darkBurgundy} 0%, ${color} 100%)`, position: "relative", overflow: "hidden" }}>
-        <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 24, paddingBottom: 28 }}>
-          <Button variant="ghost" size="sm" iconLeft={ArrowLeft} onClick={onBack} className="text-white/85 hover:bg-white/10 hover:text-white -ml-2 mb-4">
+    <div className="min-h-screen bg-[#F7F2EA] font-sans pb-16">
+      <div className="px-4 md:px-7 xl:px-14 pt-5 sm:pt-7">
+        {/* Top Back & Meta Card */}
+        <div className="bg-white rounded-2xl border border-[#E8DCC4] p-3.5 sm:p-4 mb-5 flex items-center justify-between gap-3 flex-wrap shadow-xs">
+          <Button
+            variant="ghost"
+            onClick={onBack}
+            iconLeft={ArrowLeft}
+            className="rounded-full border border-[#E8DCC4] px-4 py-2 text-[13px] font-bold text-[#6E0F2D] hover:bg-[#F7F2EA] hover:text-[#6E0F2D]"
+          >
             Back to Firms
           </Button>
 
-          <div className="flex flex-wrap items-start gap-4">
-            <div style={{ width: 56, height: 56, borderRadius: 16, background: "rgba(255,255,255,0.16)", border: "1.5px solid rgba(255,255,255,0.28)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFF" }}>{initials(firm.firmName)}</span>
-            </div>
-            <div style={{ flex: 1, minWidth: 220 }}>
-              <h1 style={{ fontFamily: F.display, fontWeight: 700, fontSize: "clamp(22px, 4vw, 30px)", color: "#FFFDF9", margin: 0, lineHeight: 1.15 }}>
-                {firm.firmName}
-              </h1>
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2">
-                <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(255,255,255,0.75)", wordBreak: "break-all" as const }}>{firm.id}</span>
-                {firm.gstNumber && (
-                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.goldLight }}>GST {firm.gstNumber}</span>
-                )}
-                {firm.createdAt && (
-                  <span style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,255,255,0.6)" }}>
-                    Added {firm.createdAt.includes("T") ? firm.createdAt.split("T")[0] : firm.createdAt}
-                  </span>
-                )}
-              </div>
-            </div>
-            <Button variant="secondary" iconLeft={Edit} onClick={onEdit} className="bg-white/12 text-white border-white/25 hover:bg-white/22 shrink-0">
-              Edit Firm
-            </Button>
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+            <span className="h-9 px-3.5 rounded-full bg-[rgba(110,15,45,0.06)] border border-[rgba(110,15,45,0.18)] text-[#6E0F2D] font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 whitespace-nowrap">
+              <Building2 size={14} className="text-[#6E0F2D]" />
+              <span>Registered Firm</span>
+            </span>
+            <span className="h-9 px-3.5 rounded-full bg-[#FFFDF9] border border-[#E8DCC4] text-[#3B2314] font-mono font-bold text-xs flex items-center whitespace-nowrap">
+              {firm.id}
+            </span>
           </div>
         </div>
-      </header>
 
-      {/* ── Tabs ───────────────────────────────────────────────────────────── */}
-      <div className="px-4 md:px-7 xl:px-14" style={{ background: "#FFF", borderBottom: `1px solid ${T.borderDef}`, display: "flex", gap: 4 }}>
-        {([{ key: "finance", label: "Financial Tracking" }, { key: "info", label: "Firm Info" }] as const).map(t => (
-          <button
-            key={t.key}
-            type="button"
-            onClick={() => setTab(t.key)}
-            aria-current={tab === t.key ? "page" : undefined}
-            style={{
-              padding: "14px 18px", background: "none", border: "none", cursor: "pointer",
-              borderBottom: tab === t.key ? `2px solid ${T.royalBurgundy}` : "2px solid transparent",
-              fontFamily: F.ui, fontSize: 13.5, fontWeight: tab === t.key ? 700 : 500,
-              color: tab === t.key ? T.royalBurgundy : T.taupe,
-            }}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
+        {/* Profile Header Card */}
+        <div className="mb-6">
+          <div className="relative bg-[#6E0F2D] rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl border border-[rgba(200,155,71,0.25)]">
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(110,15,45,0.95) 0%, rgba(74,6,27,0.98) 100%)", pointerEvents: "none" }} />
+
+            <div className="relative z-10 p-5 sm:p-8 flex flex-col lg:flex-row gap-5 lg:gap-7 items-start lg:items-center justify-between">
+              <div className="flex items-center gap-4 sm:gap-6 flex-wrap sm:flex-nowrap w-full lg:w-auto">
+                <div className="relative shrink-0">
+                  <div style={{
+                    width: 76, height: 76, borderRadius: "50%",
+                    background: `linear-gradient(135deg, ${T.antiqueGold}, ${T.goldLight})`,
+                    color: T.darkBurgundy, display: "flex", alignItems: "center", justifyContent: "center",
+                    fontFamily: F.display, fontSize: 24, fontWeight: 700, border: "2px solid rgba(200,155,71,0.45)"
+                  }}>
+                    {initials(firm.firmName)}
+                  </div>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 mb-2 flex-wrap">
+                    <span style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: T.antiqueGold, letterSpacing: "1.4px", textTransform: "uppercase", background: "rgba(200,155,71,0.14)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 99, padding: "2px 10px" }}>
+                      REGISTERED FIRM
+                    </span>
+                    {firm.gstNumber && (
+                      <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.75)", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 99, padding: "2px 10px" }}>
+                        GST: {firm.gstNumber}
+                      </span>
+                    )}
+                  </div>
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl text-[#FFFDF9] font-bold font-serif leading-tight truncate">
+                    {firm.firmName}
+                  </h1>
+                  {firm.createdAt && (
+                    <div className="mt-2 flex items-center gap-2 text-xs sm:text-sm text-white/70">
+                      Added {firm.createdAt.includes("T") ? firm.createdAt.split("T")[0] : firm.createdAt}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Luxury Metrics & Edit */}
+              <div className="flex items-center gap-3.5 w-full lg:w-auto justify-start lg:justify-end flex-wrap sm:flex-nowrap">
+                <div className="flex items-center gap-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-3.5 sm:px-5 sm:py-4 min-w-[160px]">
+                  <div className="w-10 h-10 rounded-lg bg-[rgba(200,155,71,0.16)] flex items-center justify-center shrink-0">
+                    <TrendingUp size={20} color={T.antiqueGold} />
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-bold text-white/50 uppercase tracking-wider">Net Balance</div>
+                    <div className={`text-sm sm:text-base font-bold mt-0.5 truncate ${filtered.net >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+                      {fmtFull(filtered.net)}
+                    </div>
+                  </div>
+                </div>
+
+                <Button
+                  variant="secondary"
+                  iconLeft={Edit}
+                  onClick={onEdit}
+                  className="bg-white/12 text-white border-white/25 hover:bg-white/22 shrink-0 h-12 px-5 font-bold"
+                >
+                  Edit Firm
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Sub-tab Navigation Strip Card */}
+        <div className="bg-white rounded-[10px] border border-[#E8DCC4] px-3 sm:px-5 pt-2 pb-0 mb-6 shadow-sm overflow-x-auto section-nav-scroll">
+          <div className="flex items-center gap-1 min-w-max">
+            {[
+              { key: "finance" as const, label: "Financial Tracking", icon: <CreditCard size={18} /> },
+              { key: "info" as const, label: "Firm Info", icon: <Building2 size={18} /> },
+            ].map(t => {
+              const isActive = tab === t.key;
+              return (
+                <Button
+                  key={t.key}
+                  variant="tertiary"
+                  onClick={() => setTab(t.key)}
+                  className={
+                    "rounded-none px-4 sm:px-6 py-3 shrink-0 text-sm sm:text-base cursor-pointer flex items-center gap-2.5 transition-all " +
+                    (isActive
+                      ? "border-b-[3px] border-[#6E0F2D] text-[#6E0F2D] font-bold"
+                      : "border-b-[3px] border-transparent text-[#9C8672] hover:text-[#6E0F2D] font-medium")
+                  }
+                >
+                  {t.icon}
+                  <span>{t.label}</span>
+                </Button>
+              );
+            })}
+          </div>
+        </div>
 
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25 }}
-        className="px-4 md:px-7 xl:px-14"
+        className="w-full"
         style={{ paddingTop: 24, paddingBottom: 72 }}
       >
         {tab === "info" ? (
-          <div className="max-w-[720px]" style={{ background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 16, padding: "22px 24px" }}>
-            <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, letterSpacing: "2px", color: T.taupe, textTransform: "uppercase" as const, marginBottom: 6, display: "flex", alignItems: "center", gap: 8 }}>
-              <Building2 size={14} color={T.royalBurgundy} /> Firm Details
-            </div>
-            <InfoRow label="Firm Name" value={firm.firmName} />
-            <InfoRow label="GST Number" value={firm.gstNumber} mono />
-            <InfoRow label="Address" value={firm.address} />
-
-            {(firm.bankName || firm.accountNumber || firm.ifscCode) && (
-              <>
-                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, letterSpacing: "2px", color: T.taupe, textTransform: "uppercase" as const, marginBottom: 6, marginTop: 22, display: "flex", alignItems: "center", gap: 8 }}>
-                  <CreditCard size={14} color={T.royalBurgundy} /> Bank Details
+          <div className="w-full mb-6 rounded-2xl border border-[#E8DCC4] overflow-hidden bg-white shadow-sm">
+            <div className="bg-[#6E0F2D] p-5 sm:px-6 sm:py-5 text-white flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center shrink-0">
+                  <Building2 size={20} className="text-[#F5E8D0]" />
                 </div>
-                <InfoRow label="Bank Name" value={firm.bankName} />
-                <InfoRow label="Account Number" value={firm.accountNumber} mono />
-                <InfoRow label="IFSC Code" value={firm.ifscCode} mono />
-              </>
-            )}
-
-            {(firm.contactPersonName || firm.contactPersonPhone) && (
-              <>
-                <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, letterSpacing: "2px", color: T.taupe, textTransform: "uppercase" as const, marginBottom: 6, marginTop: 22, display: "flex", alignItems: "center", gap: 8 }}>
-                  <User size={14} color={T.royalBurgundy} /> Contact Person
+                <div>
+                  <h3 className="font-serif text-lg sm:text-xl font-bold text-[#FFFDF9] leading-snug">Firm Details & Contact Information</h3>
+                  <p className="text-xs sm:text-sm text-white/70 mt-0.5">Registration, banking, and primary contact details</p>
                 </div>
-                <InfoRow label="Name" value={firm.contactPersonName} />
-                <InfoRow label="Phone" value={firm.contactPersonPhone} mono />
-              </>
-            )}
-
-            {!firm.gstNumber && !firm.address && !firm.bankName && !firm.contactPersonName && (
-              <div style={{ padding: "22px 0 4px", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
-                Only a firm name is on record. Use <strong>Edit Firm</strong> to add GST, address, bank and contact details.
               </div>
-            )}
+            </div>
 
-            <div style={{ marginTop: 24, display: "flex", gap: 10, flexWrap: "wrap" as const }}>
-              <Button variant="primary" iconLeft={Edit} onClick={onEdit}>Edit Firm</Button>
-              <Button variant="secondary" onClick={() => setTab("finance")}>View Financial Tracking</Button>
+            <div className="p-5 sm:p-7">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-6">
+                {/* Firm Details Card */}
+                <div className="bg-[#FFFDF9] border border-[#E8DCC4] rounded-xl p-4 sm:p-5 flex flex-col gap-3">
+                  <div className="flex items-center gap-2 text-xs font-bold text-[#6E0F2D] uppercase tracking-wider border-b border-[#E8DCC4] pb-2.5">
+                    <Building2 size={14} /> Firm Overview
+                  </div>
+                  <InfoRow label="Firm Name" value={firm.firmName} />
+                  <InfoRow label="GST Number" value={firm.gstNumber} mono />
+                  <InfoRow label="Address" value={firm.address} />
+                </div>
+
+                {/* Bank Details Card */}
+                <div className="bg-[#FFFDF9] border border-[#E8DCC4] rounded-xl p-4 sm:p-5 flex flex-col gap-3">
+                  <div className="flex items-center gap-2 text-xs font-bold text-[#6E0F2D] uppercase tracking-wider border-b border-[#E8DCC4] pb-2.5">
+                    <CreditCard size={14} /> Bank Account
+                  </div>
+                  <InfoRow label="Bank Name" value={firm.bankName} />
+                  <InfoRow label="Account Number" value={firm.accountNumber} mono />
+                  <InfoRow label="IFSC Code" value={firm.ifscCode} mono />
+                </div>
+
+                {/* Contact Person Card */}
+                <div className="bg-[#FFFDF9] border border-[#E8DCC4] rounded-xl p-4 sm:p-5 flex flex-col gap-3">
+                  <div className="flex items-center gap-2 text-xs font-bold text-[#6E0F2D] uppercase tracking-wider border-b border-[#E8DCC4] pb-2.5">
+                    <User size={14} /> Contact Person
+                  </div>
+                  <InfoRow label="Name" value={firm.contactPersonName} />
+                  <InfoRow label="Phone" value={firm.contactPersonPhone} mono />
+                </div>
+              </div>
+
+              {!firm.gstNumber && !firm.address && !firm.bankName && !firm.contactPersonName && (
+                <div className="mb-6 p-4 rounded-xl bg-[rgba(110,15,45,0.04)] border border-[rgba(110,15,45,0.12)] text-xs sm:text-sm text-[#3B2314]">
+                  Only a firm name is on record. Use <strong>Edit Firm</strong> to add GST, address, bank and contact details.
+                </div>
+              )}
+
+              <div className="flex items-center gap-3 flex-wrap border-t border-[#E8DCC4] pt-5">
+                <Button variant="primary" iconLeft={Edit} onClick={onEdit}>Edit Firm</Button>
+                <Button variant="secondary" onClick={() => setTab("finance")}>View Financial Tracking</Button>
+              </div>
             </div>
           </div>
         ) : (
           <>
-            {/* How it works */}
-            <div style={{ background: "linear-gradient(135deg, rgba(30,102,64,0.06), rgba(200,155,71,0.06))", border: `1px solid ${T.borderGold}`, borderRadius: 12, padding: "13px 16px", marginBottom: 18, display: "flex", gap: 12, alignItems: "flex-start" }}>
-              <AlertTriangle size={15} color={T.antiqueGold} style={{ flexShrink: 0, marginTop: 1 }} />
-              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, lineHeight: 1.65 }}>
-                <strong style={{ color: T.antiqueGold }}>How this firm&rsquo;s ledger works:</strong>{" "}
-                Purchase orders, goods receipts, quotations and dispatch invoices that name this firm appear automatically under{" "}
-                <strong style={{ color: T.luxuryBrown }}>Linked Documents</strong> as soon as they&rsquo;re raised — as <em>committed</em>, not yet spent or earned.
-                When a payment is recorded against one, it moves into <strong style={{ color: T.luxuryBrown }}>Recorded Payments</strong> under its category and counts toward the net balance.
-                Anything outside that flow can still be captured by hand below.
+            {/* Unified Financial Overview Card */}
+            <div className="mb-6 rounded-2xl border border-[#E8DCC4] overflow-hidden bg-white shadow-sm">
+              <div className="bg-[#6E0F2D] p-5 sm:px-6 sm:py-5 text-white flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center shrink-0">
+                    <CreditCard size={20} className="text-[#F5E8D0]" />
+                  </div>
+                  <div>
+                    <h3 className="font-serif text-lg sm:text-xl font-bold text-[#FFFDF9] leading-snug">Firm Financial Overview</h3>
+                    <p className="text-xs sm:text-sm text-white/70 mt-0.5">Live ledger position, filters, and financial metrics</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-5 sm:p-6 flex flex-col gap-5">
+                {/* How it works callout */}
+                <div style={{ background: "linear-gradient(135deg, rgba(30,102,64,0.06), rgba(200,155,71,0.06))", border: `1px solid ${T.borderGold}`, borderRadius: 12, padding: "13px 16px", display: "flex", gap: 12, alignItems: "flex-start" }}>
+                  <AlertTriangle size={15} color={T.antiqueGold} style={{ flexShrink: 0, marginTop: 1 }} />
+                  <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, lineHeight: 1.65 }}>
+                    <strong style={{ color: T.antiqueGold }}>How this firm&rsquo;s ledger works:</strong>{" "}
+                    Purchase orders, goods receipts, quotations and dispatch invoices that name this firm appear automatically under{" "}
+                    <strong style={{ color: T.luxuryBrown }}>Linked Documents</strong> as soon as they&rsquo;re raised — as <em>committed</em>, not yet spent or earned.
+                    When a payment is recorded against one, it moves into <strong style={{ color: T.luxuryBrown }}>Recorded Payments</strong> under its category and counts toward the net balance.
+                    Anything outside that flow can still be captured by hand below.
+                  </div>
+                </div>
+
+                {/* Filter Bar */}
+                <div className="bg-[#FFFDF9] border border-[#E8DCC4] rounded-xl p-3.5 flex flex-wrap items-center gap-3">
+                  <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+                  <Select value={direction} onValueChange={v => setDirection(v as DirectionFilter)} size="sm" containerClassName="w-auto shrink-0" className="w-[155px] font-semibold text-[13px]">
+                    <SelectItem value="all">All money flow</SelectItem>
+                    <SelectItem value="INCOME">Income only</SelectItem>
+                    <SelectItem value="EXPENSE">Expenses only</SelectItem>
+                  </Select>
+                  <Select value={status} onValueChange={v => setStatus(v as "all" | FirmActivityStatus)} size="sm" containerClassName="w-auto shrink-0" className="w-[170px] font-semibold text-[13px]">
+                    <SelectItem value="all">Any document status</SelectItem>
+                    <SelectItem value="PENDING">Pending</SelectItem>
+                    <SelectItem value="PARTIAL">Part paid</SelectItem>
+                    <SelectItem value="PAID">Settled</SelectItem>
+                  </Select>
+                  {filtersActive && (
+                    <Button
+                      variant="tertiary"
+                      size="sm"
+                      className="ml-auto"
+                      onClick={() => { setDateFilter(DEFAULT_DATE_FILTER); setDirection("all"); setStatus("all"); }}
+                    >
+                      Clear filters
+                    </Button>
+                  )}
+                </div>
+
+                {/* Summary Strip */}
+                <SummaryStrip
+                  income={filtered.income}
+                  expense={filtered.expense}
+                  net={filtered.net}
+                  pendingIncome={filtered.pendingIncome}
+                  pendingExpense={filtered.pendingExpense}
+                  quoted={filtered.quoted}
+                />
               </div>
             </div>
-
-            {/* Filters */}
-            <div style={{ background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 16, padding: "12px 18px", marginBottom: 18 }}>
-              <div className="flex flex-wrap items-center gap-3">
-                <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
-                <Select value={direction} onValueChange={v => setDirection(v as DirectionFilter)} size="sm" containerClassName="w-auto shrink-0" className="w-[155px] font-semibold text-[13px]">
-                  <SelectItem value="all">All money flow</SelectItem>
-                  <SelectItem value="INCOME">Income only</SelectItem>
-                  <SelectItem value="EXPENSE">Expenses only</SelectItem>
-                </Select>
-                <Select value={status} onValueChange={v => setStatus(v as "all" | FirmActivityStatus)} size="sm" containerClassName="w-auto shrink-0" className="w-[170px] font-semibold text-[13px]">
-                  <SelectItem value="all">Any document status</SelectItem>
-                  <SelectItem value="PENDING">Pending</SelectItem>
-                  <SelectItem value="PARTIAL">Part paid</SelectItem>
-                  <SelectItem value="PAID">Settled</SelectItem>
-                </Select>
-                {filtersActive && (
-                  <Button
-                    variant="tertiary"
-                    size="sm"
-                    className="ml-auto"
-                    onClick={() => { setDateFilter(DEFAULT_DATE_FILTER); setDirection("all"); setStatus("all"); }}
-                  >
-                    Clear filters
-                  </Button>
-                )}
-              </div>
-            </div>
-
-            <SummaryStrip
-              income={filtered.income}
-              expense={filtered.expense}
-              net={filtered.net}
-              pendingIncome={filtered.pendingIncome}
-              pendingExpense={filtered.pendingExpense}
-              quoted={filtered.quoted}
-            />
 
             {error && (
               <div style={{ marginBottom: 18, padding: "12px 16px", borderRadius: 12, background: T.crimsonBg, border: `1px solid ${T.crimson}33`, fontFamily: F.ui, fontSize: 13, color: T.crimson }}>
@@ -567,6 +652,7 @@ export function FirmDetailPage({ firm, onBack, onEdit, onGoToPayments }: {
           </>
         )}
       </motion.div>
+      </div>
     </div>
   );
 }

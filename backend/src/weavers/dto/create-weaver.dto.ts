@@ -1,8 +1,10 @@
 import { IsEmail, IsInt, IsOptional, IsString, IsUUID, Length, Matches, Min } from "class-validator";
 
 export class CreateWeaverDto {
-  // No auth yet — the acting user's id is supplied explicitly for the action
-  // feed until JWT/OTP auth exists and req.user is available.
+  // The acting user's id, for the action feed. Still passed explicitly by
+  // the client rather than read off the authenticated request (req.user) -
+  // that consolidation is separate cleanup, not part of the RBAC guards
+  // this controller now carries (see weavers.controller.ts).
   @IsOptional()
   @IsUUID()
   actorId?: string;

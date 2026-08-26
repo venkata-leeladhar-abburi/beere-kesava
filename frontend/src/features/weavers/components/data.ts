@@ -1,16 +1,12 @@
-// ── Cross-section mock data ────────────────────────────────────────────────
-// MOCK-BACKED (partial): WEAVERS, TABLE_ROWS, LEADERBOARD, ACTIVITIES,
-// BATCH_HISTORY, WARP_REQUESTS, HEADER_CHIPS, STATS, remain
-// static/empty mock scaffolding. They mix WV-XXX-style ids with
-// production/QC/payments numbers that have no backend endpoint yet.
-// WeaverDirectory (WeaverTableAndDirectory.tsx), PerformancePanel
-// (leaderboard/PerformancePanel.tsx) and WeaverAnalytics.tsx have all been
-// rewired to read live data from weaversApi (GET /weavers, GET
-// /weavers/:id/stats, GET /weavers/leaderboard) instead of the arrays below
-// — untangling identity from historical production/payments data here would
-// still need either the WV-XXX-id migration or a real dated production
-// ledger endpoint, both out of scope. Leave the remaining exports mock until
-// batches/QC/payments are wired to real weaver ids.
+// ── Cross-section scaffolding ─────────────────────────────────────────────
+// WEAVERS, TABLE_ROWS and ACTIVITIES stay as empty arrays: WeaverDirectory
+// (WeaverTableAndDirectory.tsx), PerformancePanel (leaderboard/PerformancePanel.tsx)
+// and WeaverAnalytics.tsx all read live data from weaversApi (GET /weavers,
+// GET /weavers/:id/stats, GET /weavers/leaderboard) instead — these exports
+// only supply the shared TypeScript shape a couple of components still key
+// off of (typeof WEAVERS[0]). The LEADERBOARD/BATCH_HISTORY/HEADER_CHIPS/
+// STATS/WARP_REQUESTS/TABLE_COLS/ImportedWeaver mock exports that used to
+// live here had no remaining importers and were removed.
 import type React from "react";
 import { Package, CheckCircle2 as CheckCircle, AlertCircle as WarningCircle, Medal, BarChart3 as ChartBar, LayoutGrid as SquaresFour, List as PhList, Table2 as PhTable } from "lucide-react";
 import { T } from "./theme";
@@ -44,9 +40,7 @@ export interface WeaverCardEntry {
 }
 
 export const WEAVERS: WeaverCardEntry[] = [];
-export type ImportedWeaver = typeof WEAVERS[0];
 export const TABLE_ROWS: unknown[] = [];
-export const LEADERBOARD: unknown[] = [];
 // Each row is one thing that happened. `needsAction` marks the ones that sit
 // in your queue rather than just being FYI — that's the distinction that was
 // missing before: everything looked the same regardless of whether it wanted
@@ -62,25 +56,6 @@ export interface WeaverActivity {
   time: string;
 }
 export const ACTIVITIES: WeaverActivity[] = [];
-export const BATCH_HISTORY: unknown[] = [];
-
-export const HEADER_CHIPS = [
-  { value: "0", label: "Active Weavers", crimson: false },
-  { value: "0", label: "Sarees Produced This Month", crimson: false },
-  { value: "0%", label: "Quality Check Pass Rate", crimson: false },
-  { value: "0", label: "Warp Requests Pending", crimson: true },
-  { value: "₹0", label: "Total Paid to Weavers This Month", crimson: false },
-];
-
-export const STATS = [
-  { label: "TOTAL ACTIVE WEAVERS", value: "0", sub: "All currently working with the firm", gold: false, crimson: false },
-  { label: "SAREES PRODUCED THIS MONTH", value: "0", sub: "This month", gold: false, crimson: false },
-  { label: "QUALITY CHECK PASS RATE", value: "0%", sub: "Pass rate", gold: true, crimson: false },
-  { label: "WARP REQUESTS PENDING", value: "0", sub: "Pending approval", gold: false, crimson: true },
-  { label: "TOTAL PAID TO WEAVERS", value: "₹0", sub: "This month's making charges", gold: false, crimson: false },
-];
-
-export const WARP_REQUESTS: unknown[] = [];
 
 export const FILTER_PILLS = ["All Weavers", "Currently Working", "Submitted — Waiting Quality Check", "Idle — No Active Batch"];
 export const VIEW_OPTIONS = [
@@ -88,8 +63,6 @@ export const VIEW_OPTIONS = [
   { key: "list", label: "List", PhIcon: PhList },
   { key: "table", label: "Table", PhIcon: PhTable },
 ];
-
-export const TABLE_COLS = ["Weaver Code", "Full Name", "Village / Area", "Mobile", "Looms", "Status", "Sarees This Month", "QC Pass Rate", "Total Sarees", "Total Paid", "Last Active", "Action"];
 
 // NOTE: the old ANALYTICS_WEAVERS / PRODUCTION_LEDGER fabricated-history
 // exports (which derived a fake monthly production ledger by seeding random

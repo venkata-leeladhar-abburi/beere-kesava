@@ -115,6 +115,9 @@ export function PurchaseFormModal({
             {mode === "add" ? "Add External Purchase" : `Edit Purchase — ${initial.supplier}`}
           </div>
         </Dialog.Title>
+        <Dialog.Description className="sr-only">
+          {mode === "add" ? "Record a new external purchase" : `Edit external purchase from ${initial.supplier}`}
+        </Dialog.Description>
         <Dialog.Close asChild>
           <IconButton
             icon={X}

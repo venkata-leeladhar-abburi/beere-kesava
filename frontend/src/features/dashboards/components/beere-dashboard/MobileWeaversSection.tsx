@@ -1,11 +1,12 @@
 import React, { useRef } from 'react';
 import { motion, useInView } from 'motion/react';
 import { MapPin, Phone, Eye, Edit3, Layers3, Activity, AlertTriangle } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { Rows3 as Rows } from "lucide-react";
 import { T, F, G, EASE } from './theme';
 import { MATS } from './data';
-import { AnimatedBar } from './ui';
 import { useDashboardWeavers } from './hooks/useDashboardWeavers';
+import { rawMaterialsApi } from '../../../../shared/api/rawMaterials';
 import { Button } from "../../../../shared/ui/primitives";
 
 export function MobileWeavers({ onNavigate }: { onNavigate: (tab: string, ctx?: { weaverId: string; mode: "view" | "edit" }) => void }) {
@@ -177,12 +178,30 @@ export function MobileWeavers({ onNavigate }: { onNavigate: (tab: string, ctx?: 
   );
 }
 
-// NOTE: raw-material stock has no backend module (documented gap, same as
-// desktop RawMaterial.tsx and SAOverviewPage's SARawMaterial). MATS stays
-// static mock data below.
+// Same live query as desktop's RawMaterial.tsx / SAOverviewPage's
+// SARawMaterial - this used to render static "not available on mobile"
+// placeholders even though the data was one query away.
 export function MobileRawMaterial({ onNavigate }: { onNavigate: (tab: string) => void }) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-60px 0px" });
+  const { data: stockRes, isLoading: stockLoading, isError: stockError } = useQuery({
+    queryKey: ["raw-material-stock-list"],
+    queryFn: () => rawMaterialsApi.listStock(),
+  });
+  const stockItems = stockRes?.items ?? [];
+  const warpStock = stockItems.filter(i => i.materialType === "WARP").reduce((s, i) => s + Number(i.currentStock), 0);
+  const reshamStock = stockItems.filter(i => i.materialType === "RESHAM").reduce((s, i) => s + Number(i.currentStock), 0);
+  const jariStock = stockItems.filter(i => i.materialType === "JARI").reduce((s, i) => s + Number(i.currentStock), 0);
+  // No max-capacity field exists on raw material stock (only a reorder
+  // threshold, which is a floor, not a ceiling) - there is no honest basis
+  // for a "% of storage capacity" figure, so unlike the removed mock data
+  // that bar and badge are dropped rather than backed by an invented number.
+  const mats = MATS.map(m => {
+    if (m.name === "Warp") return { ...m, stock: `${warpStock} kg in stock` };
+    if (m.name === "Resham") return { ...m, stock: `${reshamStock} kg in stock` };
+    if (m.name === "Jari") return { ...m, stock: `${jariStock} Buns in stock` };
+    return m;
+  });
   return (
     <div style={{ padding: "24px 16px 0" }}>
       <div ref={ref} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
@@ -192,8 +211,16 @@ export function MobileRawMaterial({ onNavigate }: { onNavigate: (tab: string) =>
         </div>
         <Button onClick={() => onNavigate("Materials")} variant="link" className="!p-0 !h-auto !text-xs !font-semibold !text-[#6E0F2D] !tracking-[0.1px]">View All →</Button>
       </div>
+      {stockError && (
+        <div style={{ padding: "12px 16px", marginBottom: 16, borderRadius: 10, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)", fontFamily: F.ui, fontSize: 13, color: "#C0392B" }}>
+          Failed to load raw material stock.
+        </div>
+      )}
+      {stockLoading && (
+        <div style={{ padding: "12px 0", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Loading stock...</div>
+      )}
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        {MATS.map((m, i) => (
+        {mats.map((m, i) => (
           <motion.div
             key={m.name}
             onClick={() => onNavigate("Materials")}
@@ -217,12 +244,6 @@ export function MobileRawMaterial({ onNavigate }: { onNavigate: (tab: string) =>
               <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 13, color: T.taupe, lineHeight: 1.5, marginBottom: 4 }}>{m.desc}</div>
               {m.extra && <div style={{ marginBottom: 4 }}>{m.extra}</div>}
               <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 30, color: m.stockColor, lineHeight: 1, margin: "12px 0 6px" }}>{m.stock}</div>
-              <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: m.green ? T.taupe : T.crimson, lineHeight: 1.5, marginBottom: 12 }}>{m.note}</div>
-              <AnimatedBar pct={m.pct} color={m.barColor} height={5} />
-              <div style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 12, color: T.taupe, margin: "8px 0 12px" }}>{m.pct}% of storage capacity</div>
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: m.green ? "rgba(30,102,64,0.09)" : "rgba(192,57,43,0.08)", border: `1px solid ${m.green ? "rgba(30,102,64,0.20)" : "rgba(192,57,43,0.20)"}`, borderRadius: 8, padding: "5px 12px" }}>
-                <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 500, color: m.green ? T.green : T.crimson }}>{m.badge}</span>
-              </div>
             </div>
           </motion.div>
         ))}

@@ -1,5 +1,5 @@
 import React from "react";
-import { Factory } from "lucide-react";
+import { Factory, ChevronDown } from "lucide-react";
 import { FactoryLoom } from "@/features/production";
 import { BatchRecord } from "@/features/production";
 import { F, STATUS_CFG, T, WeaverLite } from "./theme";
@@ -54,27 +54,48 @@ export function RecipientSelector({
         !selectedWeaver ? (
           <div style={{ position: "relative" as const, marginBottom: 8 }}>
             <div style={{ position: "relative" as const }}>
-              <SearchInput value={weaverSearch} onChange={e => { setWeaverSearch(e.target.value); setShowWeaverList(true); }} onFocus={() => setShowWeaverList(true)} onSearch={setWeaverSearch}
+              <SearchInput aria-label="Search weaver by name or ID" value={weaverSearch} onChange={e => { setWeaverSearch(e.target.value); setShowWeaverList(true); }} onFocus={() => setShowWeaverList(true)} onSearch={setWeaverSearch}
                 placeholder="Search weaver by name or ID…" size="lg" />
             </div>
             {showWeaverList && (
-              <div style={{ position: "absolute" as const, top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 40, background: "#FFF", border: `1px solid ${T.royalBurgundy}`, borderRadius: 10, boxShadow: "0 8px 28px rgba(74,6,27,0.16)", maxHeight: 320, overflowY: "auto" as const, padding: 4 }}>
-                {filteredWeavers.length === 0 ? (
-                  <div style={{ padding: 16, textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No weavers found</div>
-                ) : filteredWeavers.map(w => (
-                  <Button key={w.id} onClick={() => { setSelectedWeaverId(w.id); setSelectedBatchId(null); setShowWeaverList(false); setWeaverSearch(""); }}
-                    variant="ghost" size="lg" fullWidth
-                    className="justify-start rounded-[10px] border-b border-[var(--border-default)] last:border-b-0 hover:bg-[rgba(110,15,45,0.06)]">
-                    <div style={{ width: 38, height: 38, borderRadius: "50%", background: w.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 12, color: "#FFF" }}>{w.initials}</span>
-                    </div>
-                    <div style={{ flex: 1, textAlign: "left" }}>
-                      <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 6 }}>{w.name} <EntityCode type="weaver" value={w.code} size="sm" /></div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{w.village} · {w.looms} active loom{w.looms !== 1 ? "s" : ""}</div>
-                    </div>
-                    <span style={{ background: STATUS_CFG[w.status].bg, color: STATUS_CFG[w.status].color, borderRadius: 999, padding: "3px 10px", fontFamily: F.ui, fontSize: 12, fontWeight: 600 }}>{STATUS_CFG[w.status].label}</span>
-                  </Button>
-                ))}
+              <div style={{ position: "absolute" as const, top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 9999, background: "#FFF", border: "1px solid rgba(110,15,45,0.14)", borderRadius: 10, boxShadow: "0 10px 30px rgba(74,6,27,0.12)", overflow: "hidden" }}>
+                <div style={{ padding: 8, borderBottom: `1px solid ${T.borderDef}` }}>
+                  <SearchInput
+                    aria-label="Filter weaver search"
+                    autoFocus
+                    value={weaverSearch}
+                    onChange={e => setWeaverSearch(e.target.value)}
+                    onSearch={setWeaverSearch}
+                    placeholder="Search weaver by name or ID…"
+                    size="sm"
+                    className="w-full"
+                  />
+                </div>
+                <div style={{ maxHeight: 300, overflowY: "auto" as const }}>
+                  {filteredWeavers.length === 0 ? (
+                    <div style={{ padding: 16, textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No weavers found</div>
+                  ) : filteredWeavers.map(w => {
+                    const isSelected = selectedWeaver?.id === w.id;
+                    return (
+                      <button type="button" key={w.id} onClick={() => { setSelectedWeaverId(w.id); setSelectedBatchId(null); setShowWeaverList(false); setWeaverSearch(""); }}
+                        style={{
+                          width: "100%", textAlign: "left", padding: "10px 14px", borderBottom: `1px solid ${T.borderDef}`,
+                          display: "flex", alignItems: "center", gap: 12, cursor: "pointer"
+                        }}
+                        className={`transition-colors ${isSelected ? "bg-[#F8EFE0]" : "bg-white hover:bg-[#F9F0E1]/70"}`}
+                      >
+                        <div style={{ width: 38, height: 38, borderRadius: "50%", background: w.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 12, color: "#FFF" }}>{w.initials.slice(0, 2)}</span>
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: isSelected ? "#2C0913" : T.luxuryBrown, display: "flex", alignItems: "center", gap: 6 }}>{w.name} <EntityCode type="weaver" value={w.code} size="sm" /></div>
+                          <div style={{ fontFamily: F.ui, fontSize: 12, color: isSelected ? "#3B2314" : T.taupe, marginTop: 2 }}>{w.village} · {w.looms} active loom{w.looms !== 1 ? "s" : ""}</div>
+                        </div>
+                        <span style={{ background: STATUS_CFG[w.status].bg, color: STATUS_CFG[w.status].color, borderRadius: 999, padding: "3px 10px", fontFamily: F.ui, fontSize: 11, fontWeight: 600, flexShrink: 0 }}>{STATUS_CFG[w.status].label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>
@@ -82,7 +103,7 @@ export function RecipientSelector({
           <>
             <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: 16, display: "flex", alignItems: "center", gap: 14, marginBottom: 12 }}>
               <div style={{ width: 46, height: 46, borderRadius: "50%", background: selectedWeaver.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: "#FFF" }}>{selectedWeaver.initials}</span>
+                <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: "#FFF" }}>{selectedWeaver.initials.slice(0, 2)}</span>
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 6 }}>{selectedWeaver.name} <EntityCode type="weaver" value={selectedWeaver.code} size="sm" /></div>

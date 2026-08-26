@@ -1,7 +1,7 @@
 import { useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import {
-  ShoppingBag, X, CheckCircle2, Upload, ArrowRight, Package, Zap,
+  ShoppingBag, X, CheckCircle2, ArrowRight, Package, Zap,
 } from "lucide-react";
 import { FinishingReturn } from "@/features/finishing";
 import { T, F } from "../theme";
@@ -12,18 +12,23 @@ import { TransportForm } from "./shared/TransportForm";
 import { SareePicker } from "./shared/SareePicker";
 import { NoSareesNotice } from "./shared/NoSareesNotice";
 import { Modal } from "../../../../shared/ui/overlay";
+import { ReceiptUploadField } from "../../../../shared/ui/ReceiptUploadField";
 
 // ── Dispatch to Shop modal ────────────────────────────────────────────────────
 export function DispatchShopModal({ sarees, available, onConfirm, onClose }: {
   sarees: FinishingReturn[];
   available: FinishingReturn[];
-  onConfirm: (transport: TransportData, opts: { skipped?: boolean; picked: FinishingReturn[] }) => void;
+  onConfirm: (transport: TransportData, opts: { skipped?: boolean; picked: FinishingReturn[]; receiptUrl?: string | null }) => void;
   onClose: () => void;
 }) {
   const today = new Date().toISOString().slice(0, 10);
   const [step, setStep] = useState(1);
   const [picked, setPicked] = useState<FinishingReturn[]>(sarees);
   const [transport, setTransport] = useState<TransportData>({ lrNumber: "", transportCompany: "", vehicleNumber: "", driverName: "", dispatchDate: today, notes: "" });
+
+  // Same LR-receipt upload as ResumeDispatchModal — a dispatch completed here
+  // and one completed there attach the receipt the same way.
+  const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
 
   const canNext2 = transport.lrNumber.trim() && transport.transportCompany.trim() && transport.vehicleNumber.trim() && transport.dispatchDate;
   // Nothing can be dispatched until at least one saree is on the docket.
@@ -41,6 +46,7 @@ export function DispatchShopModal({ sarees, available, onConfirm, onClose }: {
               <Dialog.Title asChild>
                 <span className="truncate" style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: "#FFF" }}>Dispatch to Shop</span>
               </Dialog.Title>
+              <Dialog.Description className="sr-only">Dispatch sarees to a shop</Dialog.Description>
             </div>
             <Dialog.Close asChild>
               <IconButton
@@ -104,12 +110,7 @@ export function DispatchShopModal({ sarees, available, onConfirm, onClose }: {
           {step === 3 && (
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Upload the LR receipt document (photo or PDF).</div>
-              <div style={{ border: `2px dashed rgba(110,15,45,0.20)`, borderRadius: 14, padding: "40px 24px", textAlign: "center" as const, cursor: "pointer", background: T.silkCream }}
-                onClick={() => {}} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => {})?.(); } }}>
-                <Upload size={32} color={T.taupe} style={{ margin: "0 auto 12px" }} />
-                <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown, marginBottom: 6 }}>Click to upload LR receipt</div>
-                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>JPG, PNG or PDF — max 10 MB</div>
-              </div>
+              <ReceiptUploadField receiptUrl={receiptUrl} onChange={setReceiptUrl} />
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>You can skip this step and upload later from Dispatch Records.</div>
             </div>
           )}
@@ -144,7 +145,7 @@ export function DispatchShopModal({ sarees, available, onConfirm, onClose }: {
           )}
           {step < 4 && (
             <Button
-              onClick={() => onConfirm(transport, { skipped: true, picked })}
+              onClick={() => onConfirm(transport, { skipped: true, picked, receiptUrl })}
               disabled={noSarees}
               title={noSarees ? "Select at least one saree first" : "Dispatch now — fill remaining details later from Dispatch History"}
               variant="secondary"
@@ -173,7 +174,7 @@ export function DispatchShopModal({ sarees, available, onConfirm, onClose }: {
             );
           })() : (
             <Button
-              onClick={() => onConfirm(transport, { picked })}
+              onClick={() => onConfirm(transport, { picked, receiptUrl })}
               disabled={noSarees}
               variant="primary"
               size="lg"

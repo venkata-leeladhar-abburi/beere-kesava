@@ -16,7 +16,7 @@ import { BackendQuotation, quotationsApi } from "../../../shared/api/quotations"
 import { batchesApi, BackendBatchSareeRow } from "../../../shared/api/batches";
 import { weaversApi } from "../../../shared/api/weavers";
 import { STOPGAP_ACTING_USER_ID } from "../../../shared/api/purchase-requests";
-import { useAuth } from "../../../contexts/AuthContext";
+import { useAuth, useAuthGate } from "../../../contexts/AuthContext";
 
 const FinishingContext = createContext<FinishingContextValue | null>(null);
 
@@ -110,6 +110,7 @@ function backendDispatchToFrontend(d: BackendDispatchRecord): DispatchRecord {
     bulkOrderRef: d.bulkOrderRef ?? undefined,
     pendingTransport: d.pendingTransport,
     pendingReceipt: d.pendingReceipt,
+    receiptUrl: d.receiptUrl,
     quotationRef: d.quotationRef ?? undefined,
     expectedDelivery: d.expectedDelivery ?? undefined,
     specialInstructions: d.specialInstructions ?? undefined,
@@ -180,10 +181,10 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
   // this same InventoryPage component and needs to show the identical
   // Total/Pending/Ready/Dispatched stats as the admin portal, not zeros.
   // Skip the fetch for roles that would just get a 403.
-  const { role, user } = useAuth();
-  const workerScoped = role === "worker" || role === "admin" || role === "superadmin";
-  const readScoped = workerScoped || role === "shop";
-  const dispatchEnabled = workerScoped || role === "shop";
+  const { user } = useAuth();
+  const workerScoped = useAuthGate("worker", "admin", "superadmin");
+  const readScoped = useAuthGate("worker", "admin", "superadmin", "shop");
+  const dispatchEnabled = readScoped;
   const actingUserId = user?.id ?? STOPGAP_ACTING_USER_ID;
   const { getSareeTypeByCode } = useRatesPricing();
 
@@ -336,6 +337,7 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
         quotationRef: args.record.quotationRef,
         pendingTransport: args.record.pendingTransport,
         pendingReceipt: args.record.pendingReceipt,
+        receiptUrl: args.record.receiptUrl ?? undefined,
         customerId: args.record.customerId,
         // Wholesale dispatches always raise an invoice; the number comes back
         // from the server rather than being sent up.
@@ -387,6 +389,7 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
         specialInstructions: args.patch.specialInstructions,
         pendingTransport: args.patch.pendingTransport,
         pendingReceipt: args.patch.pendingReceipt,
+        receiptUrl: args.patch.receiptUrl ?? undefined,
       }).then(() => args),
     onMutate: async ({ id, patch }) => {
       await qc.cancelQueries({ queryKey: DISPATCHES_KEY });

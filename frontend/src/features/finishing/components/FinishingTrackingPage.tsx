@@ -147,7 +147,7 @@ export function FinishingTrackingPage() {
               </div>
               <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
                 <div style={{ flex: "1 1 260px" }}>
-                  <SearchInput value={search} onChange={e => setSearch(e.target.value)}
+                  <SearchInput aria-label="Search saree code, weaver, saree type, finishing staff" value={search} onChange={e => setSearch(e.target.value)}
                     placeholder="Search saree code, weaver, saree type, finishing staff…" />
                 </div>
                 <div style={{ display: "flex", gap: 7, alignItems: "center", flexWrap: "wrap" }}>

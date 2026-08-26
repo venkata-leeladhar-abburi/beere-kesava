@@ -67,7 +67,7 @@ describe("SearchInput", () => {
   it("debounces onSearch and does not fire on every keystroke", async () => {
     vi.useFakeTimers();
     const onSearch = vi.fn();
-    render(<SearchInput onSearch={onSearch} debounceMs={300} />);
+    render(<SearchInput aria-label="Search" onSearch={onSearch} debounceMs={300} />);
     const input = screen.getByRole("searchbox");
     fireEvent.change(input, { target: { value: "Ravi" } });
     expect(onSearch).not.toHaveBeenCalled();

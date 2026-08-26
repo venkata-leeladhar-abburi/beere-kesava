@@ -9,3 +9,4 @@ export * from "./components/AllStockPage";
 export * from "./components/ExternalPurchasesPage";
 export * from "./components/InventoryPage";
 export * from "./components/SupplierReturnsPage";
+export { DispatchInvoiceModal } from "./components/modals/DispatchInvoiceModal";

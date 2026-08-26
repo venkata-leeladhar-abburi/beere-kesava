@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { ratesApi, backendRateToDisplayRecord } from "../../../shared/api/rates";
+import { useAuthGate } from "../../../contexts/AuthContext";
 import type { SareeTypeRecord } from "../components/rates-pricing/sareeTypeData";
 
 interface RatesContextValue {
@@ -17,6 +18,10 @@ export function RatesProvider({ children }: { children: ReactNode }) {
   const [rates, setRates] = useState<SareeTypeRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
+  // /rates is ACCOUNTANT-only (ADMIN/SUPERADMIN bypass every role check),
+  // and this provider mounts above the router — so without the gate it fired
+  // on /login, before anyone had a token, and 401'd.
+  const canReadRates = useAuthGate("accountant", "admin", "superadmin");
 
   function loadRates() {
     setIsLoading(true);
@@ -32,8 +37,14 @@ export function RatesProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
+    if (!canReadRates) {
+      // Not a skeleton forever: with no permission to read rates there is
+      // nothing coming, so consumers get an empty-but-settled state.
+      setIsLoading(false);
+      return;
+    }
     loadRates();
-  }, []);
+  }, [canReadRates]);
 
   const getSareeTypeByCode = (code: string) => rates.find((r) => r.code === code);
   const getSareeTypeByName = (name: string) => rates.find((r) => r.type === name);

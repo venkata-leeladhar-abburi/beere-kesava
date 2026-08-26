@@ -36,6 +36,7 @@ export function DispatchInvoiceModal({ dispatch, onClose }: { dispatch: Dispatch
       <div style={{ display: "flex", flexDirection: "column", height: "85vh" }}>
         <div style={{ display: "flex", justifyContent: "flex-end", padding: "8px 8px 0", flexShrink: 0 }}>
           <Dialog.Title className="sr-only">Invoice {dispatch.invoiceNumber || dispatch.id}</Dialog.Title>
+          <Dialog.Description className="sr-only">Invoice details for dispatch {dispatch.id}</Dialog.Description>
           <Dialog.Close asChild>
             <IconButton icon={X} label="Close" variant="ghost" size="sm" />
           </Dialog.Close>

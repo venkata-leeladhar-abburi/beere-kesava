@@ -57,7 +57,7 @@ export function AddVendorModal({ onSave, onCancel }: { onSave: (v: Vendor) => vo
             <Dialog.Title asChild>
               <h3 style={{ fontFamily: F.display, fontSize: 20, color: T.luxuryBrown, margin: "0 0 6px 0" }}>Add a New Vendor</h3>
             </Dialog.Title>
-            <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, margin: 0 }}>Fill in the business and contact details. Payment terms can be set here and changed later.</p>
+            <Dialog.Description asChild><p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, margin: 0 }}>Fill in the business and contact details. Payment terms can be set here and changed later.</p></Dialog.Description>
           </div>
           <div style={{ padding: "4px 12px", background: T.silkCream, borderRadius: 20, fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, flexShrink: 0 }}>ID assigned on save</div>
         </div>

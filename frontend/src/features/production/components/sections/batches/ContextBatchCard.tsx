@@ -6,8 +6,7 @@ import { type BatchRecord, type SareeRow } from "../../../contexts/BatchContext"
 import { T, F } from "../../theme";
 import { Button } from "../../../../../shared/ui/primitives";
 import { EntityCode } from "@/shared/ui/domain";
-
-const imgSaree = "https://images.unsplash.com/photo-1588140686379-1b76a52103dc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
+import { imgSareeMock as imgSaree } from "@/shared/constants/mockImages";
 
 export function rowComplete(r: SareeRow) {
   return !!(r.weaverId && r.sareeId && r.designCode && r.sareeTypeCode);

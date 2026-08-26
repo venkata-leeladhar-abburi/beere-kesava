@@ -6,6 +6,8 @@ import { FinishingAssignment } from "@/features/finishing";
 import { EASE } from "./shared";
 import { Button, IconButton, Input, Textarea, Select, SelectItem } from "../../../../../shared/ui/primitives";
 import { Modal } from "../../../../../shared/ui/overlay";
+import { resolveAssetUrl } from "@/shared/api/uploads";
+import { useImageUpload } from "@/shared/hooks/useImageUpload";
 
 export interface VerifData {
   condition: "perfect" | "damaged" | null;
@@ -17,13 +19,14 @@ export interface VerifData {
 
 // Attached photo preview + retake/remove — shared look between bulk and
 // per-saree damage panels.
-function DamagePhotoField({ photoUrl, onCamera, onGallery, onRemove, compact }: {
+function DamagePhotoField({ photoUrl, onCamera, onGallery, onRemove, compact, uploading, error }: {
   photoUrl?: string; onCamera: () => void; onGallery: () => void; onRemove: () => void; compact?: boolean;
+  uploading?: boolean; error?: string | null;
 }) {
   if (photoUrl) {
     return (
       <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", border: `1px solid rgba(30,102,64,0.20)`, borderRadius: 10, background: "rgba(30,102,64,0.05)" }}>
-        <div style={{ width: compact ? 32 : 36, height: compact ? 32 : 36, borderRadius: 7, overflow: "hidden", flexShrink: 0, backgroundImage: `url(${photoUrl})`, backgroundSize: "cover", backgroundPosition: "center" }} />
+        <div style={{ width: compact ? 32 : 36, height: compact ? 32 : 36, borderRadius: 7, overflow: "hidden", flexShrink: 0, backgroundImage: `url(${resolveAssetUrl(photoUrl)})`, backgroundSize: "cover", backgroundPosition: "center" }} />
         <span style={{ fontFamily: F.u, fontSize: 12, color: C.green, fontWeight: 600, flex: 1 }}>Photo attached</span>
         <Button variant="link" onClick={onCamera} className="p-0 text-xs text-[#6E0F2D] underline">Retake</Button>
         <IconButton icon={X} label="Remove photo" variant="ghost" onClick={onRemove} className="w-6 h-6 flex-shrink-0 text-[#69635E]" />
@@ -31,15 +34,18 @@ function DamagePhotoField({ photoUrl, onCamera, onGallery, onRemove, compact }: 
     );
   }
   return (
-    <div style={{ display: "flex", gap: 8 }}>
-      <Button variant="secondary" size={compact ? "sm" : "md"} fullWidth iconLeft={Camera} onClick={onCamera}
-        className={`${compact ? "h-[38px] text-xs" : "h-10 text-[13px]"} justify-center rounded-[10px] border-[1.5px] border-dashed border-[#C0392B] bg-[rgba(192,57,43,0.04)] text-[#C0392B] hover:bg-[rgba(192,57,43,0.04)]`}>
-        Camera
-      </Button>
-      <Button variant="secondary" size={compact ? "sm" : "md"} fullWidth iconLeft={UploadCloud} onClick={onGallery}
-        className={`${compact ? "h-[38px] text-xs" : "h-10 text-[13px]"} justify-center rounded-[10px] border-[1.5px] border-dashed border-[#C0392B] bg-[rgba(192,57,43,0.04)] text-[#C0392B] hover:bg-[rgba(192,57,43,0.04)]`}>
-        Gallery
-      </Button>
+    <div>
+      <div style={{ display: "flex", gap: 8 }}>
+        <Button variant="secondary" size={compact ? "sm" : "md"} fullWidth iconLeft={Camera} disabled={uploading} onClick={onCamera}
+          className={`${compact ? "h-[38px] text-xs" : "h-10 text-[13px]"} justify-center rounded-[10px] border-[1.5px] border-dashed border-[#C0392B] bg-[rgba(192,57,43,0.04)] text-[#C0392B] hover:bg-[rgba(192,57,43,0.04)]`}>
+          {uploading ? "Uploading…" : "Camera"}
+        </Button>
+        <Button variant="secondary" size={compact ? "sm" : "md"} fullWidth iconLeft={UploadCloud} disabled={uploading} onClick={onGallery}
+          className={`${compact ? "h-[38px] text-xs" : "h-10 text-[13px]"} justify-center rounded-[10px] border-[1.5px] border-dashed border-[#C0392B] bg-[rgba(192,57,43,0.04)] text-[#C0392B] hover:bg-[rgba(192,57,43,0.04)]`}>
+          Gallery
+        </Button>
+      </div>
+      {error && <div style={{ fontFamily: F.u, fontSize: 11, color: "#C0392B", marginTop: 4 }}>{error}</div>}
     </div>
   );
 }
@@ -78,14 +84,12 @@ export function VerificationModal({ assignments, onSave, onClose, isMobile }: {
   const openGallery = (target: "bulk" | string) => { photoTargetRef.current = target; galleryInputRef.current?.click(); };
   const removePhoto = (target: "bulk" | string) => applyPhoto(target, undefined);
 
-  const handlePhotoFile = (file: File | undefined) => {
+  const { upload: uploadPhoto, uploading: photoUploading, error: photoError } = useImageUpload();
+  const handlePhotoFile = async (file: File | undefined) => {
     const target = photoTargetRef.current;
     if (!file || !target) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === "string") applyPhoto(target, reader.result);
-    };
-    reader.readAsDataURL(file);
+    const url = await uploadPhoto(file);
+    if (url) applyPhoto(target, url);
   };
 
   const isBulkReady = bulkCondition === "perfect" || (bulkCondition === "damaged" && bulkDamageType.trim() && !!bulkDamagePhotoUrl);
@@ -183,6 +187,8 @@ export function VerificationModal({ assignments, onSave, onClose, isMobile }: {
                           onCamera={() => openCamera("bulk")}
                           onGallery={() => openGallery("bulk")}
                           onRemove={() => removePhoto("bulk")}
+                          uploading={photoUploading}
+                          error={photoError}
                         />
                       </div>
                     </div>
@@ -226,6 +232,8 @@ export function VerificationModal({ assignments, onSave, onClose, isMobile }: {
                           onCamera={() => openCamera(a.id)}
                           onGallery={() => openGallery(a.id)}
                           onRemove={() => removePhoto(a.id)}
+                          uploading={photoUploading}
+                          error={photoError}
                         />
                       </div>
                     )}
@@ -256,7 +264,7 @@ export function VerificationModal({ assignments, onSave, onClose, isMobile }: {
         accept="image/*"
         capture="environment"
         style={{ display: "none" }}
-        onChange={e => { handlePhotoFile(e.target.files?.[0]); e.target.value = ""; }}
+        onChange={e => { void handlePhotoFile(e.target.files?.[0]); e.target.value = ""; }}
         aria-label="Camera photo input"
       />
       <input
@@ -264,7 +272,7 @@ export function VerificationModal({ assignments, onSave, onClose, isMobile }: {
         type="file"
         accept="image/*"
         style={{ display: "none" }}
-        onChange={e => { handlePhotoFile(e.target.files?.[0]); e.target.value = ""; }}
+        onChange={e => { void handlePhotoFile(e.target.files?.[0]); e.target.value = ""; }}
         aria-label="Gallery photo input"
       />
     </Modal>

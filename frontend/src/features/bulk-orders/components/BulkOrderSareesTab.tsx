@@ -137,7 +137,7 @@ export function BulkOrderSareesTab({
     <div>
       <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 bg-white p-3.5 sm:p-4 rounded-2xl border border-[var(--border-default)] shadow-sm mb-5 flex-wrap">
         <div className="flex-1 min-w-[220px]">
-          <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search saree ID, design, or weaver…" />
+          <SearchInput aria-label="Search saree ID, design, or weaver" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search saree ID, design, or weaver…" />
         </div>
         <div className="flex items-center gap-2.5 flex-wrap">
           <Select size="sm" containerClassName="w-auto shrink-0" className="w-auto font-medium" value={statusFilter} onValueChange={setStatusFilter}>

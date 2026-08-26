@@ -3,6 +3,13 @@ dist
 coverage
 # Keep environment variables out of version control
 .env
+.env.test
+.env.*.local
+
+# Disposable local Postgres cluster used for integration tests (see
+# test/README.md) — never committed, always throwaway.
+.pgdata-test/
+.pgdata-test.log
 
 /src/generated/prisma
 
@@ -11,3 +18,8 @@ coverage
 
 # Local DB backups - may contain real user data
 /db-backups
+
+# Compiled output from running a scripts/*.ts tool directly with ts-node.
+scripts/*.js
+scripts/*.js.map
+scripts/*.d.ts

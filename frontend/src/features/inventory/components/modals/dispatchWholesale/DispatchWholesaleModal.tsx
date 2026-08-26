@@ -122,6 +122,7 @@ export function DispatchWholesaleModal({ sarees, available, onConfirm, onClose, 
               <Dialog.Title asChild>
                 <span className="truncate" style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: "#FFF" }}>Dispatch to Wholesale</span>
               </Dialog.Title>
+              <Dialog.Description className="sr-only">Dispatch sarees to a wholesale customer</Dialog.Description>
               {selectedCustomer && <span className="hidden sm:inline truncate" style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,255,255,0.65)" }}>→ {selectedCustomer.name}</span>}
             </div>
             <Dialog.Close asChild>
@@ -156,7 +157,7 @@ export function DispatchWholesaleModal({ sarees, available, onConfirm, onClose, 
             <div>
               <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginBottom: 14 }}>Select the wholesale customer for this dispatch.</div>
               <div style={{ marginBottom: 14 }}>
-                <SearchInput value={customerSearch} onChange={e => setCustomerSearch(e.target.value)} placeholder="Search customers…" />
+                <SearchInput aria-label="Search customers" value={customerSearch} onChange={e => setCustomerSearch(e.target.value)} placeholder="Search customers…" />
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {filteredCustomers.map(c => (

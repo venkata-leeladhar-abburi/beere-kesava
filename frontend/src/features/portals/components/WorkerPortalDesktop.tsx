@@ -10,8 +10,7 @@ import { WorkerFinishing } from "./worker/WorkerFinishing";
 import { WorkerDispatch } from "./worker/WorkerDispatch";
 import { WorkerTopNav } from "./worker/WorkerTopNav";
 import { PageHero, SectionHeading } from "./worker/primitives";
-import {
-  SectionNavigator, PAGE_SECTIONS } from "../../../shared/ui/SectionNavigator";
+import { SectionNavigator, PAGE_SECTIONS } from "../../../shared/ui/SectionNavigator";
 
 import { LogOut } from "lucide-react";
 import { Button } from "../../../shared/ui/primitives";

@@ -5,11 +5,21 @@
 import * as React from "react";
 import { Input, type InputProps } from "./Input";
 
-export interface SearchInputProps extends Omit<InputProps, "type" | "iconLeft" | "clearable" | "onClear" | "onChange"> {
+export interface SearchInputProps extends Omit<InputProps, "type" | "iconLeft" | "clearable" | "onClear" | "onChange" | "aria-label"> {
   /** Fires `debounceMs` after the user stops typing (default 300ms). */
   onSearch?: (value: string) => void;
   debounceMs?: number;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  /**
+   * REQUIRED. A search box is almost never wrapped in <Field>, and its
+   * placeholder ("Search…", or an example value) is deliberately not a real
+   * label (design-system/03-PRIMITIVES.md Part G) — so with no `aria-label`
+   * there was no accessible name at all. Same enforcement as IconButton's
+   * `label`: this turns the gap into a compile error instead of a silent
+   * WCAG 4.1.2 failure. Omit only when this input is genuinely inside a
+   * <Field> that already supplies the name.
+   */
+  "aria-label": string;
 }
 
 export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(function SearchInput(

@@ -240,7 +240,7 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
                   <Dialog.Title asChild>
                     <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.text }}>Report Low Stock</div>
                   </Dialog.Title>
-                  <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginTop: 2 }}>Notify Admin & Superadmin</div>
+                  <Dialog.Description asChild><div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginTop: 2 }}>Notify Admin & Superadmin</div></Dialog.Description>
                 </div>
                 <Dialog.Close asChild>
                   <IconButton

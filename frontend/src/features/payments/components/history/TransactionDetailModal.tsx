@@ -42,7 +42,7 @@ export function TransactionDetailModal({ record, onClose }: { record: PayHistRec
             </div>
             <div>
               <Dialog.Title style={{ fontFamily: F.display, fontSize: 17, fontWeight: 700, color: "#FFFDF9" }}>{record.party}</Dialog.Title>
-              <span style={{ display: "inline-block", marginTop: 3, padding: "2px 8px", borderRadius: 6, fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: typeCfg.bg, color: typeCfg.color }}>{record.type}</span>
+              <Dialog.Description asChild><span style={{ display: "inline-block", marginTop: 3, padding: "2px 8px", borderRadius: 6, fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: typeCfg.bg, color: typeCfg.color }}>{record.type}</span></Dialog.Description>
             </div>
           </div>
           <Dialog.Close asChild>

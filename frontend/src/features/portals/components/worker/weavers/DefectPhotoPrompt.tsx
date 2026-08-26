@@ -14,9 +14,9 @@ export function DefectPhotoPrompt({ onCapture, onCancel }: { onCapture: () => vo
             <span style={{ fontFamily: F.d, fontSize: 14, fontWeight: 700, color: C.text }}>Photo Required</span>
           </Dialog.Title>
         </div>
-        <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginBottom: 16, lineHeight: 1.5 }}>
+        <Dialog.Description asChild><div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginBottom: 16, lineHeight: 1.5 }}>
           Take a photo of the defect as proof. This is required to complete the rejection.
-        </div>
+        </div></Dialog.Description>
         <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
           <Button variant="primary" fullWidth size="sm" iconLeft={Camera} onClick={onCapture} className="h-11 rounded-full bg-[#6E0F2D] hover:bg-[#6E0F2D]">
             Take Photo

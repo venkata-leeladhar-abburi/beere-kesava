@@ -218,6 +218,7 @@ export function DesignCodeCard({ design, onClose }: { design: DesignEntry; onClo
             <Dialog.Title asChild>
               <div style={{ position: "absolute", bottom: 16, left: 20, fontFamily: "var(--font-mono)", fontSize: 16, fontWeight: 700, color: T.goldLight, letterSpacing: "0.5px" }}>{design.code}</div>
             </Dialog.Title>
+            <Dialog.Description className="sr-only">Design {design.code} preview</Dialog.Description>
             <Dialog.Close asChild>
               <IconButton label="Close" icon={PhX} variant="secondary" size="sm" shape="circle"
                 className="absolute top-[14px] right-[14px] bg-[rgba(61,14,26,0.55)] text-white/85 border-none" />

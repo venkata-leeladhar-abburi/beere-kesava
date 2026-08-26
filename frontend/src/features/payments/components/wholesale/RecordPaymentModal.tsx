@@ -2,7 +2,8 @@ import { useState } from "react";
 import { CalendarClock, Receipt, X } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
 
-import { F, T, useFirms } from "../../theme";
+import { F, T } from "../../theme";
+import { useFirms } from "@/features/firms";
 import { Invoice } from "../../types";
 import { Button, CurrencyInput, Field, IconButton, Input, Select, SelectItem, Textarea } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
@@ -38,11 +39,11 @@ export function RecordPaymentModal({ inv, onClose, onSave }: { inv: Invoice; onC
       <div style={{ background: T.silkCream, borderRadius: 20, overflow: "hidden", border: `1.5px solid ${T.borderGold}` }}>
         <div style={{ background: "linear-gradient(135deg, #6E0F2D 0%, #4A061B 100%)", padding: "20px 28px", display: "flex", justifyContent: "space-between", alignItems: "center", position: "relative" }}>
           <Dialog.Title asChild>
-            <div>
-              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: "#FFFFFF" }}>Record Payment Received</div>
-              <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(231,201,131,0.85)", marginTop: 2 }}>{inv.customer}</div>
-            </div>
+            <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: "#FFFFFF" }}>Record Payment Received</div>
           </Dialog.Title>
+          <Dialog.Description asChild>
+            <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(231,201,131,0.85)", marginTop: 2 }}>{inv.customer}</div>
+          </Dialog.Description>
           <Dialog.Close asChild>
             <IconButton icon={X} label="Close" variant="ghost" size="sm"
               className="absolute right-4 top-4 rounded-[8px] bg-[rgba(255,255,255,0.12)] text-[rgba(255,255,255,0.85)] hover:bg-[rgba(255,255,255,0.20)]" />

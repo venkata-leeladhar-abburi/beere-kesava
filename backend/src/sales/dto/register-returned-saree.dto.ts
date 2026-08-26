@@ -52,4 +52,9 @@ export class RegisterReturnedSareeDto {
   @IsOptional()
   @IsString()
   color?: string;
+
+  /** Server-relative path to a condition photo (POST /uploads/photo). */
+  @IsOptional()
+  @IsString()
+  photoUrl?: string;
 }

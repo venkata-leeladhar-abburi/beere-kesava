@@ -375,7 +375,7 @@ model OtpCode {
 /// with it — and refused to run at all without --accept-data-loss. Declaring it
 /// is what makes the schema and the database agree again.
 model WhatsAppMessage {
-  id             String                @id
+  id             String                @id @default(uuid())
   kind           WhatsAppMessageKind
   campaignName   String
   destination    String
@@ -397,6 +397,26 @@ model WhatsAppMessage {
   @@index([destination])
   @@index([status])
   @@index([relatedType, relatedId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// WhatsApp (AiSensy)
+// ─────────────────────────────────────────────────────────────────────────
+
+enum WhatsAppMessageStatus {
+  QUEUED
+  SENT
+  DELIVERED
+  READ
+  FAILED
+}
+
+enum WhatsAppMessageKind {
+  OTP
+  DOCUMENT
+  REPORT
+  RETAIL_BILL
+  MANUAL
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -896,6 +916,9 @@ model DispatchRecord {
   // later" — matches the frontend's ResumeDispatchModal / DispatchDetailsModal flow.
   pendingTransport    Boolean      @default(false)
   pendingReceipt      Boolean      @default(false)
+  // Server-relative path to the uploaded LR receipt (POST /uploads/receipt).
+  // Null while pendingReceipt is still true.
+  receiptUrl          String?
   notes               String?
   // Wholesale-only fields from TransportForm — expectedDelivery mirrors
   // dispatchDate's shape (a plain date), specialInstructions replaces
@@ -990,6 +1013,9 @@ model ReturnRecord {
   reason       String?
   refundAmount Decimal? @db.Decimal(12, 2)
   restocked    Boolean  @default(false)
+  // Server-relative path to the condition photo taken at return time
+  // (POST /uploads/photo). Optional — the operator may skip it.
+  photoUrl     String?
   createdAt    DateTime @default(now())
 
   @@index([sareeId])
@@ -1020,6 +1046,8 @@ model Supplier {
   accountNo       String?
   ifscCode        String?
   notes           String?
+  // Stored path of the visiting-card photo (POST /uploads/photo),
+  // matching Customer.visitingCardUrl. Never a base64 data URL.
   visitingCardUrl String?
   status          PartyStatus @default(ACTIVE)
   rating          Int?
@@ -1066,6 +1094,8 @@ model Vendor {
   accountNo       String?
   ifscCode        String?
   notes           String?
+  // Stored path of the visiting-card photo (POST /uploads/photo),
+  // matching Customer.visitingCardUrl. Never a base64 data URL.
   visitingCardUrl String?
   status          PartyStatus @default(ACTIVE)
   rating          Int?
@@ -1652,20 +1682,4 @@ model ReportDownloadHistory {
   filtersUsed    Json?
 
   @@index([downloadedAt])
-}
-
-enum WhatsAppMessageKind {
-  OTP
-  DOCUMENT
-  REPORT
-  RETAIL_BILL
-  MANUAL
-}
-
-enum WhatsAppMessageStatus {
-  QUEUED
-  SENT
-  DELIVERED
-  READ
-  FAILED
 }

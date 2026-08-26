@@ -18,7 +18,7 @@ import { LoadingState, ErrorState } from "../../../../shared/ui/state";
 import { useQuery } from "@tanstack/react-query";
 import { salesApi } from "../../../../shared/api/sales";
 import { customersApi } from "../../../../shared/api/customers";
-import { ChartFigure } from "../../../../shared/ui/data";
+import { ChartFigure, TableSkeleton, TableEmpty, TableError } from "../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
 
 function dateLabel(iso: string) {
@@ -156,6 +156,14 @@ function SalesReport() {
       <div id="shoprep-today-sales" style={{ margin: "24px 20px 0" }}>
         <SectionTitle title={`Today's Sales — ${new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`} link="Export →" onLink={() => { setExportDone(false); setShowExport(true); }} />
         <Card style={{ margin: 0, overflow: "hidden", padding: 0 }}>
+          {salesLoading ? (
+            <TableSkeleton columns={canSeePrices ? 3 : 2} rows={3} />
+          ) : salesError ? (
+            <TableError onRetry={() => refetchSales()} />
+          ) : dailySales.length === 0 ? (
+            <TableEmpty title="No sales recorded today yet" />
+          ) : (
+          <>
           {dailySales.map((s, i) => (
             <div key={s.saleId} style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, padding: "16px", borderBottom: i < dailySales.length - 1 ? `1px solid ${C.bdr}` : "none" }}>
               <div style={{ minWidth: 0, flex: 1 }}>
@@ -169,6 +177,8 @@ function SalesReport() {
               {canSeePrices && <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 16, color: C.gold, flexShrink: 0, textAlign: "right" as const }}>{s.amt}</div>}
             </div>
           ))}
+          </>
+          )}
           {/* Total row */}
           {canSeePrices && (
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px", background: C.cream }}>
@@ -266,7 +276,7 @@ function SalesReport() {
                   <Dialog.Title asChild>
                     <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: "#FFF" }}>Export Report</div>
                   </Dialog.Title>
-                  <div style={{ fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.55)", marginTop: 2 }}>Today's Sales</div>
+                  <Dialog.Description asChild><div style={{ fontFamily: F.u, fontSize: 13, color: "rgba(255,255,255,0.55)", marginTop: 2 }}>Today's Sales</div></Dialog.Description>
                 </div>
                 <Dialog.Close asChild>
                   <IconButton

@@ -6,6 +6,7 @@ describe("SalesService.registerReturnedSaree", () => {
   let prisma: any;
   let idGenerator: any;
   let auditLog: any;
+  let whatsapp: any;
   let service: SalesService;
 
   const dto = (overrides: Partial<RegisterReturnedSareeDto> = {}): RegisterReturnedSareeDto => ({
@@ -27,7 +28,8 @@ describe("SalesService.registerReturnedSaree", () => {
     };
     idGenerator = { nextNamed: jest.fn().mockResolvedValue("RET-SreeKesava-001") };
     auditLog = { recordAction: jest.fn() };
-    service = new SalesService(prisma, idGenerator, auditLog);
+    whatsapp = { sendTemplate: jest.fn(), sanitiseParam: jest.fn((v) => v) };
+    service = new SalesService(prisma, idGenerator, auditLog, whatsapp);
   });
 
   it("registers the saree, the return and the stock row in a single transaction", async () => {
@@ -126,6 +128,7 @@ describe("SalesService.createReturn", () => {
   let prisma: any;
   let idGenerator: any;
   let auditLog: any;
+  let whatsapp: any;
   let service: SalesService;
 
   beforeEach(() => {
@@ -141,7 +144,8 @@ describe("SalesService.createReturn", () => {
     };
     idGenerator = { nextNamed: jest.fn().mockResolvedValue("RET-SreeGaneshSilks-001") };
     auditLog = { recordAction: jest.fn() };
-    service = new SalesService(prisma, idGenerator, auditLog);
+    whatsapp = { sendTemplate: jest.fn(), sanitiseParam: jest.fn((v) => v) };
+    service = new SalesService(prisma, idGenerator, auditLog, whatsapp);
   });
 
   it("reads the id segment off the wholesale customer's business name", async () => {

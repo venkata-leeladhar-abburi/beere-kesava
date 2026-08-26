@@ -27,9 +27,25 @@ services:
         sync: false
       - key: CORS_ORIGIN
         sync: false
-    # NOTE: free-tier Render services don't support persistent disks, so the
-    # 'uploads' disk mount is removed here. backend/uploads/ (signature +
-    # photo files) will be wiped on every deploy and on free-tier spin-down.
-    # This is fine for testing, but move uploads to object storage (S3 /
-    # Supabase Storage) before relying on this in real production use — or
-    # switch back to plan: starter with a disk mount (see git history).
+      # Cloudflare R2 object storage. Without these four the backend silently
+      # falls back to local-disk uploads, which this plan cannot persist (see
+      # the note below) — every uploaded photo, signature and receipt would be
+      # lost on the next deploy. R2_ACCOUNT_ID and R2_BUCKET are not secret,
+      # but they stay dashboard-managed so all four move together.
+      - key: R2_ACCOUNT_ID
+        sync: false
+      - key: R2_BUCKET
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      # Optional: public bucket / custom-domain origin (e.g. https://cdn.example.com).
+      # Unset, reads are served as 1-hour presigned URLs instead.
+      - key: R2_PUBLIC_BASE_URL
+        sync: false
+    # NOTE: free-tier Render services don't support persistent disks, so there
+    # is no 'uploads' disk mount here and backend/uploads/ is wiped on every
+    # deploy and on free-tier spin-down. That no longer matters as long as the
+    # R2_* vars above are set: uploads go to Cloudflare R2 and local disk is
+    # only the fallback for local development (see common/storage/storage.service.ts).

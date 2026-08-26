@@ -30,24 +30,23 @@ function LineRow({ line, selectable, selected, onSelect }: {
       type="button"
       disabled={disabled}
       onClick={onSelect}
-      className="w-full text-left border-0 border-b"
+      className={`w-full text-left border-0 border-b transition-colors ${selected ? "bg-[#F8EFE0]" : "bg-white hover:bg-[#F9F0E1]/70"}`}
       style={{
         padding: "9px 14px 9px 30px",
         borderBottomColor: T.borderDef,
-        background: selected ? "rgba(110,15,45,0.07)" : "#FFF",
         cursor: disabled ? "default" : "pointer",
         opacity: disabled ? 0.55 : 1,
       }}
     >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
-        <span style={{ fontFamily: F.ui, fontVariantNumeric: "tabular-nums lining-nums" as const, fontSize: 11.5, fontWeight: 700, color: T.royalBurgundy }}>{line.itemCode}</span>
+        <span style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: selected ? "#2C0913" : T.royalBurgundy }}>{line.itemCode}</span>
         <span style={{ fontFamily: F.ui, fontSize: 11.5, fontWeight: 700, color: depleted ? T.crimson : T.green, whiteSpace: "nowrap" }}>
           {depleted ? "none left" : `${fmt(line.availableQty)} ${line.unit} left`}
         </span>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 3, flexWrap: "wrap" }}>
         <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: MAT_COLOR[line.materialType] }}>{line.materialType}</span>
-        <span style={{ fontFamily: F.ui, fontSize: 11.5, color: T.luxuryBrown }}>{line.name}</span>
+        <span style={{ fontFamily: F.ui, fontSize: 11.5, color: selected ? "#2C0913" : T.luxuryBrown }}>{line.name}</span>
         {line.description && <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>· {line.description}</span>}
       </div>
       <div style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe, marginTop: 2 }}>
@@ -179,9 +178,10 @@ export function GrnBatchSelector({ grnBatches, materialType, value, selectedLine
           </button>
 
           {open && (
-            <div style={{ position: "absolute" as const, top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 50, background: "#FFF", border: `1px solid ${T.royalBurgundy}`, borderRadius: 12, boxShadow: "0 8px 28px rgba(74,6,27,0.16)", overflow: "hidden" }}>
+            <div style={{ position: "absolute" as const, top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 9999, background: "#FFF", border: "1px solid rgba(110,15,45,0.14)", borderRadius: 10, boxShadow: "0 10px 30px rgba(74,6,27,0.12)", overflow: "hidden" }}>
               <div style={{ padding: 8, borderBottom: `1px solid ${T.borderDef}` }}>
                 <SearchInput
+                  aria-label="Scan barcode, or search GRN, item code, or vendor"
                   // eslint-disable-next-line jsx-a11y/no-autofocus -- popover opens on user action; focusing the search box it contains is expected keyboard behavior, and a barcode scan types straight into it
                   autoFocus
                   value={q}
@@ -199,22 +199,23 @@ export function GrnBatchSelector({ grnBatches, materialType, value, selectedLine
                 ) : filtered.map(batch => {
                   const isExpanded = expanded === batch.grnBatchId;
                   const issuableCount = batch.lines.filter(l => l.materialType === materialType && l.availableQty > 0).length;
+                  const isSelected = value === batch.grnBatchId;
                   return (
                     <div key={batch.grnBatchId}>
                       <button
                         type="button"
                         onClick={() => setExpanded(isExpanded ? null : batch.grnBatchId)}
-                        className="w-full text-left cursor-pointer border-0 border-b"
-                        style={{ padding: "10px 14px", borderBottomColor: T.borderDef, background: value === batch.grnBatchId ? "rgba(110,15,45,0.04)" : "#FFF" }}
+                        className={`w-full text-left cursor-pointer border-0 border-b transition-colors ${isSelected ? "bg-[#F8EFE0]" : "bg-white hover:bg-[#F9F0E1]/70"}`}
+                        style={{ padding: "10px 14px", borderBottomColor: T.borderDef }}
                       >
                         <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
                           {isExpanded ? <ChevronDown size={13} color={T.royalBurgundy} /> : <ChevronRight size={13} color={T.taupe} />}
                           <EntityCode type="goodsReceipt" value={batch.grnBatchId} size="sm" />
-                          <span style={{ marginLeft: "auto", fontFamily: F.ui, fontSize: 11.5, color: T.taupe, whiteSpace: "nowrap" }}>
+                          <span style={{ marginLeft: "auto", fontFamily: F.ui, fontSize: 11.5, color: isSelected ? "#2C0913" : T.taupe, fontWeight: isSelected ? 600 : 400, whiteSpace: "nowrap" }}>
                             {batch.lines.length} item{batch.lines.length === 1 ? "" : "s"} · {issuableCount} {materialType}
                           </span>
                         </div>
-                        <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginTop: 3, paddingLeft: 20 }}>
+                        <div style={{ fontFamily: F.ui, fontSize: 11.5, color: isSelected ? "#3B2314" : T.taupe, marginTop: 3, paddingLeft: 20 }}>
                           {batch.vendor} · {batch.dateReceived}
                           {batch.poNumber && <> · PO {batch.poNumber}</>}
                         </div>

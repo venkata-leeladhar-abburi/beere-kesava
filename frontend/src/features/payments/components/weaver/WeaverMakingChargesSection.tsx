@@ -398,55 +398,141 @@ export function WeaverMakingChargesSection() {
           </>
         }
       >
-        {/* ── 4 stat cards ────────────────────────────────────── */}
-        <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 16, marginTop: 24, marginBottom: 22, alignItems: "stretch" }}>
+        {/* ── 4 stat cards — Premium Silk Saree Design ─────── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4" style={{ gap: 22, marginTop: 32, marginBottom: 28, alignItems: "stretch" }}>
           {[
             {
-              icon: <UserCheck size={22} color={T.royalBurgundy} />,
-              iconBg: "rgba(110,15,45,0.08)",
+              icon: <UserCheck size={22} color={T.antiqueGold} />,
               label: "Total Weavers",
               value: String(totalWeavers),
               sub: "All active weavers this month",
-              hi: false,
+              gid: "tw",
             },
             {
-              icon: <Wallet size={22} color={T.royalBurgundy} />,
-              iconBg: "rgba(110,15,45,0.08)",
+              icon: <Wallet size={22} color={T.antiqueGold} />,
               label: "Total Making Charges",
               value: formatMoney(rupees(totalGross)),
               sub: "Gross charges for May 2026",
-              hi: false,
+              gid: "mc",
             },
             {
-              icon: <MinusCircle size={22} color={T.crimson} />,
-              iconBg: "rgba(192,57,43,0.08)",
+              icon: <MinusCircle size={22} color={T.antiqueGold} />,
               label: "Total Deductions Applied",
               value: formatMoney(rupees(totalDeductions)),
               sub: "Advance amount deducted",
-              hi: false,
+              gid: "td",
             },
             {
               icon: <BadgeCheck size={22} color={T.antiqueGold} />,
-              iconBg: "rgba(200,155,71,0.16)",
               label: "Net Amount to Pay",
               value: formatMoney(rupees(totalNet)),
               sub: "After all deductions",
-              hi: true,
+              gid: "np",
             },
           ].map((s) => (
-            <div key={s.label} style={{ background: s.hi ? "linear-gradient(135deg,rgba(200,155,71,0.14),rgba(200,155,71,0.04))" : "#FFFFFF", borderRadius: 14, border: `1px solid ${s.hi ? T.borderGold : T.borderDef}`, padding: "20px 20px 18px", boxShadow: "0 2px 14px rgba(74,6,27,0.07)", position: "relative", overflow: "hidden", display: "flex", flexDirection: "column", gap: 10 }}>
-              {s.hi && <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg,${T.antiqueGold},${T.goldLight})` }} />}
-              {/* Icon + label row */}
-              <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                <div style={{ width: 44, height: 44, borderRadius: 12, background: s.iconBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <div key={s.label} style={{ position: "relative", borderRadius: 14, border: `1px solid ${T.borderDef}`, background: "#FFFDF9", boxShadow: "0 2px 16px rgba(0,0,0,0.06), 0 6px 30px rgba(0,0,0,0.04)", overflow: "visible", display: "flex", flexDirection: "column" as const, alignItems: "center", minHeight: 236 }}>
+
+              {/* ── Header — royal burgundy gradient ── */}
+              <svg
+                viewBox="0 0 300 90"
+                preserveAspectRatio="none"
+                style={{ width: "100%", height: 44, display: "block", borderRadius: "12px 12px 0 0", flexShrink: 0 }}
+              >
+                <defs>
+                  <linearGradient id={`bk-head-${s.gid}`} x1="0" y1="0" x2="0.3" y2="1">
+                    <stop offset="0%" stopColor="#7A1232" />
+                    <stop offset="40%" stopColor={T.royalBurgundy} />
+                    <stop offset="100%" stopColor={T.deepWine} />
+                  </linearGradient>
+                </defs>
+                {/* Band shape: full top, deep elegant curve embracing the center badge */}
+                <path
+                  d="M0,0 L300,0 L300,32 C230,36 190,85 150,88 C110,85 70,36 0,32 Z"
+                  fill={`url(#bk-head-${s.gid})`}
+                />
+                {/* Subtle silk shimmer */}
+                <path
+                  d="M0,0 L300,0 L300,32 C230,36 190,85 150,88 C110,85 70,36 0,32 Z"
+                  fill={`url(#bk-shim-${s.gid})`}
+                  opacity="0.4"
+                />
+                <defs>
+                  <linearGradient id={`bk-shim-${s.gid}`} x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="rgba(200,155,71,0)" />
+                    <stop offset="50%" stopColor="rgba(200,155,71,0.08)" />
+                    <stop offset="100%" stopColor="rgba(200,155,71,0)" />
+                  </linearGradient>
+                </defs>
+                {/* Accent line along curved edge */}
+                <path
+                  d="M0,32 C70,36 110,85 150,88 C190,85 230,36 300,32"
+                  fill="none"
+                  stroke="rgba(200,155,71,0.30)"
+                  strokeWidth="0.7"
+                />
+                {/* Tiny gold ornament at centre of curve */}
+                <g transform="translate(150,86)" opacity="0.45">
+                  <path d="M-6,0 C-8,-3 -11,-2 -10,0" fill="none" stroke={T.antiqueGold} strokeWidth="0.8" strokeLinecap="round" />
+                  <path d="M6,0 C8,-3 11,-2 10,0" fill="none" stroke={T.antiqueGold} strokeWidth="0.8" strokeLinecap="round" />
+                  <rect x="-2" y="-2" width="4" height="4" rx="0.3" fill={T.antiqueGold} transform="rotate(45)" />
+                </g>
+              </svg>
+
+              {/* ── Circular icon badge ── */}
+              <div style={{ position: "absolute", top: 20, left: "50%", transform: "translateX(-50%)", zIndex: 4 }}>
+                <div style={{ width: 56, height: 56, borderRadius: "50%", background: "linear-gradient(155deg, #7A1232 0%, #6E0F2D 40%, #4A061B 100%)", border: `2.5px solid rgba(200,155,71,0.45)`, boxShadow: "0 4px 14px rgba(74,6,27,0.25), 0 0 0 3px rgba(255,253,249,0.6)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   {s.icon}
                 </div>
-                <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: s.hi ? T.antiqueGold : T.taupe, lineHeight: 1.35, paddingTop: 2 }}>{s.label}</div>
               </div>
-              {/* Value */}
-              <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 700, color: s.hi ? T.antiqueGold : T.luxuryBrown, lineHeight: 1 }}>{s.value}</div>
-              {/* Sub */}
-              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{s.sub}</div>
+
+              {/* ── Card body content ── */}
+              <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", flex: 1, padding: "34px 20px 0", width: "100%" }}>
+                {/* Label */}
+                <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.royalBurgundy, letterSpacing: 1, textTransform: "uppercase" as const, textAlign: "center" as const, lineHeight: 1.45 }}>{s.label}</div>
+
+                {/* Value */}
+                <div style={{ fontFamily: F.display, fontSize: 36, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1, marginTop: 14, textAlign: "center" as const }}>{s.value}</div>
+
+                {/* ── Thin divider with diamond ── */}
+                <div style={{ width: "45%", display: "flex", alignItems: "center", justifyContent: "center", margin: "16px 0 12px" }}>
+                  <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, transparent, rgba(110,15,45,0.14), transparent)` }} />
+                  <div style={{ width: 5, height: 5, background: "rgba(110,15,45,0.22)", transform: "rotate(45deg)", flexShrink: 0, margin: "0 4px" }} />
+                  <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, transparent, rgba(110,15,45,0.14), transparent)` }} />
+                </div>
+
+                {/* Sub text */}
+                <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, textAlign: "center" as const, lineHeight: 1.4 }}>{s.sub}</div>
+              </div>
+
+              {/* ── Footer strip — royal burgundy ── */}
+              <div style={{ width: "100%", marginTop: "auto", position: "relative", overflow: "hidden", borderRadius: "0 0 12px 12px", height: 30, flexShrink: 0 }}>
+                <svg
+                  viewBox="0 0 300 40"
+                  preserveAspectRatio="none"
+                  style={{ width: "100%", height: "100%", display: "block", position: "absolute", top: 0, left: 0 }}
+                >
+                  <defs>
+                    <linearGradient id={`bk-foot-${s.gid}`} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={T.royalBurgundy} />
+                      <stop offset="50%" stopColor="#5A0A22" />
+                      <stop offset="100%" stopColor={T.deepWine} />
+                    </linearGradient>
+                  </defs>
+                  {/* Footer band with smooth wave top edge */}
+                  <path
+                    d="M0,28 C60,28 100,10 150,8 C200,10 240,28 300,28 L300,40 L0,40 Z"
+                    fill={`url(#bk-foot-${s.gid})`}
+                  />
+                </svg>
+                {/* Elegant gold fleur-de-lis motif at centre */}
+                <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "flex-end", justifyItems: "center", justifyContent: "center", paddingBottom: 0 }}>
+                  <img 
+                    src="/assets/gold-fleur-footer.png" 
+                    alt="Ornament"
+                    style={{ height: 26, maxWidth: "100%", objectFit: "contain", opacity: 0.9, transform: "translateY(1px)" }} 
+                  />
+                </div>
+              </div>
             </div>
           ))}
         </div>
@@ -507,7 +593,7 @@ export function WeaverMakingChargesSection() {
           <DropBtn value={filterVillage} options={["All Villages", ...villageOptions]} onChange={setFilterVillage} />
           <DropBtn value={filterStatus} options={["All Payment Status", "Pending", "Paid"]} onChange={setFilterStatus} />
           <div style={{ flex: 1, minWidth: 200 }}>
-            <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search weaver name, ID, or village..." size="sm" />
+            <SearchInput aria-label="Search weaver name, ID, or village" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search weaver name, ID, or village..." size="sm" />
           </div>
         </div>
 

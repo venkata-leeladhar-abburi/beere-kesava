@@ -12,7 +12,7 @@ import {
 import { BackendWeaver, weaversApi } from "../../../shared/api/weavers";
 import { BackendFactoryLoom, factoryLoomsApi } from "../../../shared/api/factory-looms";
 import { STOPGAP_ACTING_USER_ID } from "../../../shared/api/purchase-requests";
-import { useAuth } from "../../../contexts/AuthContext";
+import { useAuth, useAuthGate } from "../../../contexts/AuthContext";
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 export interface IssuedMaterialItem {
@@ -279,8 +279,11 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
   const canReadFactoryLooms = role === "worker" || role === "admin" || role === "superadmin";
   const actingUserId = user?.id ?? STOPGAP_ACTING_USER_ID;
 
+  const enabled = useAuthGate();
+
   const { data: issueRecords = [], isError, error, isLoading, refetch } = useQuery({
     queryKey: ISSUE_RECORDS_KEY,
+    enabled,
     queryFn: async () => {
       const [issuesRes, weaversRes, loomsRes] = await Promise.all([
         materialIssuesApi.list(),

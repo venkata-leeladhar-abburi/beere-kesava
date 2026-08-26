@@ -10,6 +10,14 @@ import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { SectionCard } from "../common/primitives";
 import { LoadingState, ErrorState } from "../../../../shared/ui/state";
 
+
+
+
+
+
+
+
+
 export function DraftsTab({
   batches, batchDateFilter, setBatchDateFilter, setTab, openDraft,
 }: {

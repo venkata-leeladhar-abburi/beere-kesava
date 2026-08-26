@@ -23,6 +23,7 @@ export function MobileMenuDrawer({ open, onClose, activeTab, setTab }: {
               <Dialog.Title asChild>
                 <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 14, color: T.warmCream, lineHeight: 1.1 }}>Beere Kesava</div>
               </Dialog.Title>
+              <Dialog.Description className="sr-only">Admin dashboard navigation menu</Dialog.Description>
               <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: "rgba(231,201,131,0.85)", letterSpacing: "2px", textTransform: "uppercase" }}>Est. 1999</div>
             </div>
           </div>

@@ -7,7 +7,7 @@ import type { PurchaseOrder } from "@/features/purchasing";
 import { T, F } from "../theme";
 import { PO_STATUS_CFG } from "../materialConfig";
 import { ModalOverlay, ModalHeader } from "../common/primitives";
-import { Button, IconButton, Input } from "../../../../shared/ui/primitives";
+import { Button, IconButton, NumberInput } from "../../../../shared/ui/primitives";
 import { materialIssuesApi } from "../../../../shared/api/material-issues";
 import { rawMaterialsApi, RawMaterialStockItem } from "../../../../shared/api/rawMaterials";
 import { toast } from "sonner";
@@ -316,7 +316,7 @@ export function ThresholdsModal({ open, onClose, stockItems, onSave }: {
                   </span>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-                  <Input type="number" value={levels[agg.type] ?? ""} onChange={e => setLevels(prev => ({ ...prev, [agg.type]: Number(e.target.value) || 0 }))} className="w-[90px]" />
+                  <NumberInput value={levels[agg.type] ?? ""} onValueChange={v => setLevels(prev => ({ ...prev, [agg.type]: v === "" ? 0 : v }))} step={0.01} className="w-[90px]" />
                   <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{agg.unit}</span>
                 </div>
               </div>
@@ -364,6 +364,8 @@ export function POVendorDetailModal({ po, onClose }: { po: PurchaseOrder | null;
                 <Dialog.Title asChild>
                   <div style={{ fontFamily: F.display, fontWeight: 800, fontSize: 20, color: "#FFFDF9", letterSpacing: "-0.3px" }}>{po.poNumber}</div>
                 </Dialog.Title>
+                {/* Radix requires a Description to wire aria-describedby — screen-reader-only, no visual change. */}
+                <Dialog.Description className="sr-only">Purchase order {po.poNumber} preview</Dialog.Description>
               </div>
               <Dialog.Close asChild>
                 <IconButton icon={X} label="Close" size="md" variant="secondary" className="bg-white/10 text-white border-white/22 hover:bg-white/18" />

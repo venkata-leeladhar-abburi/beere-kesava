@@ -2,7 +2,7 @@ import { X } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
 
 import { useFinishing } from "@/features/finishing";
-import { BulkOrder } from "../../theme";
+import type { BulkOrder } from "@/features/production";
 import { Invoice } from "../../types";
 import { IconButton } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
@@ -41,6 +41,7 @@ export function ViewInvoiceModal({ inv, bulkOrderData, onClose }: { inv: Invoice
         {/* Slim close bar — the document's own Letterhead carries the title */}
         <div style={{ display: "flex", justifyContent: "flex-end", padding: "8px 8px 0", flexShrink: 0 }}>
           <Dialog.Title className="sr-only">Invoice {inv.id}</Dialog.Title>
+          <Dialog.Description className="sr-only">Invoice details for {inv.customer}</Dialog.Description>
           <Dialog.Close asChild>
             <IconButton icon={X} label="Close" variant="ghost" size="sm" />
           </Dialog.Close>

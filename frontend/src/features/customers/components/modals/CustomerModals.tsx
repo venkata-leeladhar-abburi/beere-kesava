@@ -40,13 +40,14 @@ export function CustomerModals({
                 <Dialog.Title asChild>
                   <h2 style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#FFF", margin: "0 0 6px 0" }}>{modalWholesale.name}</h2>
                 </Dialog.Title>
+                <Dialog.Description className="sr-only">Wholesale customer profile for {modalWholesale.name}</Dialog.Description>
                 <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                   <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.antiqueGold, background: "rgba(200,155,71,0.18)", padding: "3px 10px", borderRadius: 999, border: "1px solid rgba(200,155,71,0.30)" }}>Wholesale Customer</span>
                   <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(255,255,255,0.50)" }}>{modalWholesale.displayCode || modalWholesale.id}</span>
                 </div>
               </div>
               <Dialog.Close asChild>
-                <IconButton icon={X} label="Close" variant="ghost" className="ml-auto shrink-0 rounded-full bg-white/10 text-white" />
+                <IconButton icon={X} label="Close" variant="ghost" className="ml-auto shrink-0 rounded-full bg-white/10 text-white hover:bg-white/20 hover:text-white" />
               </Dialog.Close>
             </div>
             <div style={{ display: "flex", borderBottom: `1px solid ${T.borderDef}`, background: T.silkCream, padding: "0 32px" }}>
