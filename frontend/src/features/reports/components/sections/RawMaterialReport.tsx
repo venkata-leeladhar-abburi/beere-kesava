@@ -39,17 +39,17 @@ interface RawMaterialReceiptRow {
 }
 
 export function RawMaterialReport() {
-  const { data: rawGrns, isLoading: grnLoading, isError: grnError } = useQuery({
+  const { data: rawGrns, isLoading: grnLoading, isError: grnError, refetch: refetchGrns } = useQuery({
     queryKey: ["grn-receipts"],
     queryFn: () => rawMaterialsApi.listGrns(),
   });
 
-  const { data: issuesRes, isLoading: issuesLoading, isError: _issuesError } = useQuery({
+  const { data: issuesRes, isLoading: issuesLoading, isError: issuesError, refetch: refetchIssues } = useQuery({
     queryKey: ["reports", "material-issues"],
     queryFn: () => materialIssuesApi.list(200),
   });
 
-  const { data: stockRes, isLoading: stockLoading, isError: _stockError } = useQuery({
+  const { data: stockRes, isLoading: stockLoading, isError: stockError, refetch: refetchStock } = useQuery({
     queryKey: ["reports", "raw-materials-stock"],
     queryFn: () => rawMaterialsApi.listStock(),
   });
@@ -182,6 +182,8 @@ export function RawMaterialReport() {
   }, [rawReceivedData, rawGivenData, rawMaterialRows]);
 
   const isLoading = grnLoading || issuesLoading || stockLoading;
+  const isError = grnError || issuesError || stockError;
+  const refetchAll = () => { void refetchGrns(); void refetchIssues(); void refetchStock(); };
 
   const stockColumns: ColumnDef<RawMaterialStockRow>[] = [
     {
@@ -326,6 +328,8 @@ export function RawMaterialReport() {
               data={rawMaterialRows}
               getRowId={(r) => `${r.type}-${r.sub}`}
               loading={isLoading}
+              error={isError}
+              onRetry={refetchAll}
               emptyTitle="No raw material items in stock database yet."
             />
           </div>
@@ -351,6 +355,7 @@ export function RawMaterialReport() {
                 getRowId={(r) => `${r.batchId}-${r.description}-${r.poReference}`}
                 loading={grnLoading}
                 error={grnError}
+                onRetry={refetchGrns}
                 emptyTitle="No material receipts recorded yet."
               />
             </div>

@@ -1,5 +1,5 @@
 
-import React, { useRef } from 'react';
+import React  from 'react';
 import { motion } from 'motion/react';
 import {
   ChevronRight, ArrowRight,
@@ -8,7 +8,6 @@ import {
   Package, IndianRupee, Users,
   Layers
 , Flower2 as Lotus } from 'lucide-react';
-import { useInView } from 'motion/react';
 import { imgBKLogo, imgSareeFooter, imgShowroom } from '../../../../shared/constants/weaverImages';
 import { T, F, G, NUM, DARK_MAROON, EASE } from './theme';
 import { FadeUp, AnimatedNumber, AnimatedBar, Donut } from './ui';

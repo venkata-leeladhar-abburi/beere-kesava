@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
 import { Building2 } from "lucide-react";
-import { T, F } from "./theme";
+import { T } from "./theme";
 import { Vendor } from "./types";
 import { MATERIAL_TYPES } from "./data";
 import { FadeUp } from "./FadeUp";
@@ -10,6 +10,7 @@ import { Pagination, usePagination } from "../../../../shared/ui/DataPagination"
 import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { VendorCard, type VendorCardProps } from "@/shared/ui/domain";
 import { rupees } from "@/lib/domain/money";
+import { LoadingState, ErrorState, EmptyState, FilteredEmptyState } from "../../../../shared/ui/state";
 
 // Vendor.status (types.ts) is the overloaded-field pattern the design
 // system audit calls out (design-system/06-DOMAIN.md Part A.3/D.1): it
@@ -22,10 +23,13 @@ const VENDOR_STATUS: Record<Vendor["status"], Pick<VendorCardProps, "status" | "
   overdue: { status: "active", paymentStatus: "overdue" },
 };
 
-export function VendorDirectorySection({ vendors, onSelectVendor, onAddClick }: {
+export function VendorDirectorySection({ vendors, onSelectVendor, onAddClick, loading = false, error = null, onRetry }: {
   vendors: Vendor[];
   onSelectVendor: (v: Vendor) => void;
   onAddClick: () => void;
+  loading?: boolean;
+  error?: unknown;
+  onRetry?: () => void;
 }) {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("All Types");
@@ -103,6 +107,11 @@ export function VendorDirectorySection({ vendors, onSelectVendor, onAddClick }: 
           </Select>
         </div>
 
+        {loading ? (
+          <LoadingState variant="skeleton" rows={4} />
+        ) : error ? (
+          <ErrorState error={error} onRetry={onRetry} />
+        ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {pag.pageItems.map((v, i) => (
             <FadeUp key={v.id} delay={i * 0.06}>
@@ -118,12 +127,16 @@ export function VendorDirectorySection({ vendors, onSelectVendor, onAddClick }: 
             </FadeUp>
           ))}
           {filtered.length === 0 && (
-            <div style={{ gridColumn: "1 / -1", background: "#FFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, padding: "60px 24px", textAlign: "center" }}>
-              <Building2 size={44} color={T.taupe} style={{ marginBottom: 12 }} />
-              <div style={{ fontFamily: F.display, fontSize: 18, color: T.taupe }}>No vendors match your search or filter.</div>
+            <div style={{ gridColumn: "1 / -1" }}>
+              {search.trim() || typeFilter !== "All Types" || statusFilter !== "All" || ratingFilter !== "All Ratings" ? (
+                <FilteredEmptyState onClearFilters={() => { setSearch(""); setTypeFilter("All Types"); setStatusFilter("All"); setRatingFilter("All Ratings"); }} />
+              ) : (
+                <EmptyState title="No vendors yet" description="Vendors added here will show up in purchases and payments." />
+              )}
             </div>
           )}
         </div>
+        )}
         <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start}
           onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="vendors" />
       </SectionCard>

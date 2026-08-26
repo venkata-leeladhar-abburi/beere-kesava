@@ -8,6 +8,7 @@ import { T, F } from "./theme";
 import { rowComplete, weaverBreakdown, bulkOrderBreakdown } from "./sections/batches/ContextBatchCard";
 import { SareeWeightTallyList, type TallyRowItem, type TallyCorrection } from "./sections/batches/SareeWeightTallyList";
 import { Button, SearchInput, Select, SelectItem } from "../../../shared/ui/primitives";
+import { LoadingState, ErrorState } from "../../../shared/ui/state";
 import { EntityCode } from "@/shared/ui/domain";
 import { Breadcrumbs } from "../../../shared/ui/nav/Breadcrumbs";
 import { BG_IMAGE } from "@/features/portals/components/weaver-portal/WeaverBatchNotifData";
@@ -20,7 +21,7 @@ import { SectionCard } from "@/features/weavers/components/common/primitives";
  * directly instead of being buried inside a dialog.
  */
 export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: string; onBack: () => void; onOpenCreation: () => void }) {
-  const { batches, tallyRow } = useBatches();
+  const { batches, tallyRow, isLoading, isError, error, refetch } = useBatches();
   const b = batches.find(br => br.batchId === batchId);
 
   const { getSareeTypeByCode } = useRatesPricing();
@@ -103,6 +104,22 @@ export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: s
       setBusyKey(null);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div style={{ minHeight: "60vh", padding: 24 }}>
+        <LoadingState variant="skeleton" rows={6} />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <ErrorState error={error} onRetry={refetch} />
+      </div>
+    );
+  }
 
   if (!b) {
     return (

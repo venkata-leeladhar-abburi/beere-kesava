@@ -115,6 +115,8 @@ interface BatchContextValue {
   /** True when the batch list failed to load — distinct from "no batches". */
   isError: boolean;
   error: unknown;
+  isLoading: boolean;
+  refetch: () => void;
   nextBatchId: string;
   // Cross-page navigation: set to open a specific batch in BatchCreationPage
   pendingOpenBatchId: string | null;
@@ -201,7 +203,7 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
   const canReadFactoryLooms = role === "worker" || role === "admin" || role === "superadmin";
   const canReadRates = role === "accountant" || role === "admin" || role === "superadmin";
 
-  const { data: batches = [], isError, error } = useQuery({
+  const { data: batches = [], isError, error, isLoading, refetch } = useQuery({
     queryKey: QUERY_KEY,
     // Retry transient failures (429 burst on a hard refresh, network blip)
     // a couple of times before surfacing an error — but never retry an auth
@@ -406,7 +408,7 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
   const safeBatches = Array.isArray(batches) ? batches : [];
 
   return (
-    <BatchContext.Provider value={{ batches: safeBatches, saveDraft, isSaving: saveDraftMutation.isPending, updateBatch, receiveRow, tallyRow, finalizeBatch, isFinalizing: finalizeBatchMutation.isPending, deleteBatch, isError, error, nextBatchId, pendingOpenBatchId, setPendingOpenBatchId }}>
+    <BatchContext.Provider value={{ batches: safeBatches, saveDraft, isSaving: saveDraftMutation.isPending, updateBatch, receiveRow, tallyRow, finalizeBatch, isFinalizing: finalizeBatchMutation.isPending, deleteBatch, isError, error, isLoading, refetch: () => void refetch(), nextBatchId, pendingOpenBatchId, setPendingOpenBatchId }}>
       {children}
     </BatchContext.Provider>
   );
@@ -424,6 +426,8 @@ const FALLBACK_BATCHES: BatchContextValue = {
   deleteBatch: async () => {},
   isError: false,
   error: null,
+  isLoading: false,
+  refetch: () => {},
   nextBatchId: "BATCH-2026-001",
   pendingOpenBatchId: null,
   setPendingOpenBatchId: () => {},

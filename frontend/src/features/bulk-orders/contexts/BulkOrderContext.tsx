@@ -123,6 +123,8 @@ interface BulkOrderContextValue {
   deleteBulkOrder: (ref: string) => Promise<void>;
   isError: boolean;
   error: unknown;
+  isLoading: boolean;
+  refetch: () => void;
 }
 
 const BulkOrderContext = createContext<BulkOrderContextValue | null>(null);
@@ -133,7 +135,7 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
   const { getSareeTypeByCode } = useRatesPricing();
 
-  const { data: bulkOrders = [], isError, error } = useQuery({
+  const { data: bulkOrders = [], isError, error, isLoading, refetch } = useQuery({
     queryKey: QUERY_KEY,
     queryFn: async () => {
       const [ordersRes, customersRes] = await Promise.all([bulkOrdersApi.list(), customersApi.list()]);
@@ -291,7 +293,7 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
   }, [bulkOrders]);
 
   return (
-    <BulkOrderContext.Provider value={{ bulkOrders, addBulkOrder, updateBulkOrder, nextOrderRef, markDispatched, recordPayment, tallyOrder, deleteBulkOrder, isError, error }}>
+    <BulkOrderContext.Provider value={{ bulkOrders, addBulkOrder, updateBulkOrder, nextOrderRef, markDispatched, recordPayment, tallyOrder, deleteBulkOrder, isError, error, isLoading, refetch: () => void refetch() }}>
       {children}
     </BulkOrderContext.Provider>
   );
@@ -308,6 +310,8 @@ const FALLBACK_BULK_ORDERS: BulkOrderContextValue = {
   deleteBulkOrder: async () => {},
   isError: false,
   error: null,
+  isLoading: false,
+  refetch: () => {},
 };
 
 export function useBulkOrders(): BulkOrderContextValue {

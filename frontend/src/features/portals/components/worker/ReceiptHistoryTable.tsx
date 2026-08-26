@@ -161,7 +161,7 @@ export function ReceiptHistoryTable({ receiptHistory: propReceiptHistory, compac
     {
       id: "materials", header: "Materials", accessor: r => r.materials.map(m => m.itemCode).join(" "),
       cell: (_v, r) => (
-        <div style={{ minWidth: 260, maxWidth: 420, paddingTop: 4, paddingBottom: 4 }}>
+        <div className="max-w-[420px]" style={{ minWidth: 260, paddingTop: 4, paddingBottom: 4 }}>
           {renderMaterialsSummary(r.materials)}
         </div>
       ),

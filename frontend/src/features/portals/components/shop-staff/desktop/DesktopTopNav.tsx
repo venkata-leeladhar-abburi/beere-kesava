@@ -1,5 +1,6 @@
+import { formatMoney, rupees } from "@/lib/domain/money";
 import React, { useState } from "react";
-import { Bell, ChevronLeft, LogOut, RotateCcw, UserRound, Package, ShoppingBag } from "lucide-react";
+import { Bell, ChevronLeft, LogOut, RotateCcw, UserRound } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { imgBKLogo } from "../../../../../shared/constants/weaverImages";
 import { C, F } from "../theme";
@@ -33,7 +34,7 @@ type TabId = "home" | "sale" | "inventory" | "customers" | "reports";
 export function DesktopTopNav({
   isTablet, TABS, active, showReturn, setActive, setShowReturn,
   search, setSearch, showProfile, setShowProfile, setShowProfileModal,
-  onBack, handleLogout, selectRole, routerNavigate,
+  handleLogout, selectRole, routerNavigate,
 }: {
   isTablet: boolean;
   TABS: { id: TabId; label: string; icon: React.ReactNode }[];
@@ -84,7 +85,7 @@ export function DesktopTopNav({
     id: `return-${r.returnRef}`,
     type: "return",
     title: `Return: ${r.sareeId}`,
-    desc: `Reason: ${r.reason || "Customer return"}${r.refundAmount ? ` · Refund: ₹${Number(r.refundAmount).toLocaleString("en-IN")}` : ""}`,
+    desc: `Reason: ${r.reason || "Customer return"}${r.refundAmount ? ` · Refund: ${formatMoney(rupees(Number(r.refundAmount)))}` : ""}`,
     time: formatRelativeTime(r.returnDate),
     unread: true,
   }));
@@ -105,7 +106,7 @@ export function DesktopTopNav({
     setMarkedRead(true);
     for (const n of notifRes?.items ?? []) {
       if (!n.readAt) {
-        try { await notificationsApi.markRead(n.id); } catch (e) { /* ignore single error */ }
+        try { await notificationsApi.markRead(n.id); } catch { /* ignore single error */ }
       }
     }
   };
@@ -189,12 +190,15 @@ export function DesktopTopNav({
             <DropdownMenuContent align="end" className="!w-[300px] !max-w-[300px] !p-0 !rounded-[14px] !overflow-hidden" style={{ background: "#FFFDF9", border: `1px solid rgba(110,15,45,0.12)`, zIndex: 2000 }}>
               <div style={{ padding: "12px 16px", borderBottom: `1px solid rgba(110,15,45,0.08)`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontFamily: F.d, fontSize: 14, fontWeight: 600, color: C.dark }}>Notifications</span>
-                <span
-                  style={{ fontFamily: F.u, fontSize: 12, color: unreadCount > 0 ? C.gold : C.muted, cursor: unreadCount > 0 ? "pointer" : "default" }}
+                <Button
+                  variant="link"
+                  size="sm"
                   onClick={handleMarkAllRead}
+                  disabled={unreadCount === 0}
+                  className={`p-0 h-auto text-[12px] ${unreadCount > 0 ? "text-[#C89B47]" : "text-[#69635E]"}`}
                 >
                   Mark all read
-                </span>
+                </Button>
               </div>
               {liveNotifications.length === 0 || markedRead ? (
                 <div style={{ padding: "20px 16px", textAlign: "center" as const, fontFamily: F.u, fontSize: 13, color: C.muted }}>

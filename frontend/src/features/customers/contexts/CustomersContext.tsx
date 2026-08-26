@@ -17,6 +17,9 @@ interface CustomersContextValue {
   customers: Customer[];
   wholesaleCustomers: Customer[];
   retailCustomers: Customer[];
+  isLoading: boolean;
+  error: unknown;
+  refetch: () => void;
   addCustomer: (payload: CreateCustomerPayload) => Promise<Customer>;
   updateCustomer: (id: string, payload: UpdateCustomerPayload) => void;
   deleteCustomer: (id: string) => Promise<void>;
@@ -29,7 +32,7 @@ const QUERY_KEY = ["customers"] as const;
 export function CustomersProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
 
-  const { data: customers = [] } = useQuery({
+  const { data: customers = [], isLoading, error, refetch } = useQuery({
     queryKey: QUERY_KEY,
     queryFn: async () => (await customersApi.list()).items,
   });
@@ -77,7 +80,7 @@ export function CustomersProvider({ children }: { children: React.ReactNode }) {
   const retailCustomers = customers.filter(c => c.type === "RETAIL");
 
   return (
-    <CustomersContext.Provider value={{ customers, wholesaleCustomers, retailCustomers, addCustomer, updateCustomer, deleteCustomer }}>
+    <CustomersContext.Provider value={{ customers, wholesaleCustomers, retailCustomers, isLoading, error, refetch: () => void refetch(), addCustomer, updateCustomer, deleteCustomer }}>
       {children}
     </CustomersContext.Provider>
   );
@@ -87,6 +90,9 @@ const FALLBACK_CUSTOMERS: CustomersContextValue = {
   customers: [],
   wholesaleCustomers: [],
   retailCustomers: [],
+  isLoading: false,
+  error: null,
+  refetch: () => {},
   addCustomer: async () => ({ id: "", name: "", type: "WHOLESALE" } as Customer),
   updateCustomer: () => {},
   deleteCustomer: async () => {},

@@ -1,19 +1,19 @@
 import { useState } from "react";
 import {
   ChevronDown, Download, Eye, Edit, Plus,
-  LayoutGrid, AlignJustify, Table as TableIcon, MapPin,
-  Building2, Users, AlertTriangle,
-} from "lucide-react";
+  LayoutGrid, Table as TableIcon, MapPin,
+  Building2, Users, AlertTriangle } from "lucide-react";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { T, F } from "../theme";
 import { SectionCard, Pill, FadeUp } from "../common/primitives";
 import { WholesaleCustomer, ViewMode } from "../types";
-import { Button, IconButton, Field, Input, SearchInput, Select, SelectItem, Textarea } from "../../../../shared/ui/primitives";
+import { Button, Field, Input, SearchInput, Select, SelectItem, Textarea } from "../../../../shared/ui/primitives";
 import { useCustomers } from "../../contexts/CustomersContext";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees, formatMoney, paise } from "@/lib/domain/money";
 import { Money } from "../../../../shared/ui/domain/Money";
 import { VisitingCardUploadField } from "../../../../shared/ui/VisitingCardUploadField";
+import { LoadingState, ErrorState, EmptyState } from "../../../../shared/ui/state";
 
 interface WholesaleFormState {
   name: string;
@@ -61,7 +61,7 @@ export interface WholesaleCustomersSectionProps {
 export function WholesaleCustomersSection({
   wholesaleList, wholesaleView, setWholesaleView, showAddWholesale, setShowAddWholesale, onView, onEdit,
 }: WholesaleCustomersSectionProps) {
-  const { addCustomer } = useCustomers();
+  const { addCustomer, isLoading, error: loadError, refetch } = useCustomers();
   const [form, setForm] = useState<WholesaleFormState>(EMPTY_WHOLESALE_FORM);
   const [cardUrl, setCardUrl] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -294,7 +294,12 @@ export function WholesaleCustomersSection({
       </div>
 
       {/* Wholesale Cards View */}
-      {wholesaleView === "card" && (
+      {wholesaleView === "card" && isLoading && <LoadingState variant="skeleton" rows={4} />}
+      {wholesaleView === "card" && !isLoading && loadError && <ErrorState error={loadError} onRetry={refetch} />}
+      {wholesaleView === "card" && !isLoading && !loadError && wholesaleList.length === 0 && (
+        <EmptyState title="No wholesale customers yet" description="Customers added here appear across bulk orders, quotations, and dispatch." />
+      )}
+      {wholesaleView === "card" && !isLoading && !loadError && wholesaleList.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 items-stretch">
           {wholesaleList.map((w, i) => {
             return (
@@ -387,7 +392,7 @@ export function WholesaleCustomersSection({
       {/* Wholesale List View */}
       {wholesaleView === "list" && (
         <div style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
-          <DataTable columns={listColumns} data={wholesaleList} getRowId={w => w.id} emptyTitle="No wholesale customers yet" />
+          <DataTable columns={listColumns} data={wholesaleList} getRowId={w => w.id} loading={isLoading} error={!!loadError} onRetry={refetch} emptyTitle="No wholesale customers yet" />
         </div>
       )}
 
@@ -395,7 +400,7 @@ export function WholesaleCustomersSection({
       {wholesaleView === "table" && (
         <div style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}` }} className="w-full overflow-x-auto section-nav-scroll p-2">
           <div className="min-w-[850px]">
-            <DataTable columns={tableColumns} data={wholesaleList} getRowId={w => w.id} emptyTitle="No wholesale customers yet" />
+            <DataTable columns={tableColumns} data={wholesaleList} getRowId={w => w.id} loading={isLoading} error={!!loadError} onRetry={refetch} emptyTitle="No wholesale customers yet" />
           </div>
         </div>
       )}

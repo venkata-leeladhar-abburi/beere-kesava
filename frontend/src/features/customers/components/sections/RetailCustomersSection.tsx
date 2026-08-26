@@ -9,7 +9,7 @@ import { DateFilterBar, DateFilterState } from "../../../../shared/ui/DateFilter
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { T, F } from "../theme";
 import { SectionCard, Pill, FadeUp } from "../common/primitives";
-import { Button, IconButton, Field, Input, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
+import { Button, Field, Input, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { RetailCustomer } from "../types";
 import { RetailChartsRow1, RetailChartsRow2 } from "./RetailCharts";
 import { useCustomers } from "../../contexts/CustomersContext";

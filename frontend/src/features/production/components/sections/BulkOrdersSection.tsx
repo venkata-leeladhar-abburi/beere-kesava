@@ -15,6 +15,7 @@ import { ORDER_CFG, STATUS_LABELS } from "../data";
 import type { BulkOrder } from "../types";
 import { FadeUp } from "../common/primitives";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
+import { LoadingState, ErrorState, EmptyState } from "../../../../shared/ui/state";
 import { rupees } from "@/lib/domain/money";
 import { EntityCode, Money } from "@/shared/ui/domain";
 
@@ -156,7 +157,7 @@ export function BulkOrderCard({ o, onView, onSlip, superadmin = false }: { o: Bu
 export function BulkOrdersSection({ onNavigate, superadmin = false, onOpenOrder }: { onNavigate?: (tab: string) => void; superadmin?: boolean; onOpenOrder: (order: BulkOrder, tab: "overview" | "payments") => void }) {
   const [showCreate, setShowCreate] = useState(false);
   const [successRef, setSuccessRef] = useState<string | null>(null);
-  const { bulkOrders, addBulkOrder, nextOrderRef } = useBulkOrders();
+  const { bulkOrders, addBulkOrder, nextOrderRef, isLoading, isError, error, refetch } = useBulkOrders();
   const atRiskCount = bulkOrders.filter(o => o.status === "at-risk" || o.status === "overdue").length;
   return (
     <div id="prod-bulk-orders" className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 36 }}>
@@ -207,13 +208,21 @@ export function BulkOrdersSection({ onNavigate, superadmin = false, onOpenOrder 
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5 sm:gap-5 p-2.5 sm:p-5 md:p-6 items-stretch">
-            {bulkOrders.map((o, i) => (
-              <FadeUp key={o.ref} delay={i * 0.07} style={{ height: "100%" }}>
-                <BulkOrderCard o={o} superadmin={superadmin} onView={(order) => onOpenOrder(order, "overview")} onSlip={(order) => onOpenOrder(order, "payments")} />
-              </FadeUp>
-            ))}
-          </div>
+          {isLoading ? (
+            <div style={{ padding: 20 }}><LoadingState variant="skeleton" rows={4} /></div>
+          ) : isError ? (
+            <ErrorState error={error} onRetry={refetch} />
+          ) : bulkOrders.length === 0 ? (
+            <EmptyState title="No bulk orders yet" description="Bulk orders raised for wholesale customers will show up here." />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5 sm:gap-5 p-2.5 sm:p-5 md:p-6 items-stretch">
+              {bulkOrders.map((o, i) => (
+                <FadeUp key={o.ref} delay={i * 0.07} style={{ height: "100%" }}>
+                  <BulkOrderCard o={o} superadmin={superadmin} onView={(order) => onOpenOrder(order, "overview")} onSlip={(order) => onOpenOrder(order, "payments")} />
+                </FadeUp>
+              ))}
+            </div>
+          )}
 
         </div>
       </FadeUp>

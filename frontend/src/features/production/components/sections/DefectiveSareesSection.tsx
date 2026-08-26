@@ -9,6 +9,7 @@ import { T, F } from "../theme";
 import type { CodeCallbacks } from "../types";
 import { FadeUp, ProductionDialog } from "../common/primitives";
 import { Button, Select, SelectItem } from "../../../../shared/ui/primitives";
+import { LoadingState, ErrorState } from "../../../../shared/ui/state";
 import { qcApi } from "../../../../shared/api/qc";
 import { weaversApi } from "../../../../shared/api/weavers";
 import { useBatches } from "@/features/production";
@@ -57,7 +58,7 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
   const [dlPeriod, setDlPeriod] = useState("This Month");
   const [zoomImage, setZoomImage] = useState<ZoomImage | null>(null);
 
-  const { data: qcRecords = [], isLoading: qcLoading, isError: qcError } = useQuery({
+  const { data: qcRecords = [], isLoading: qcLoading, isError: qcError, refetch: refetchQc } = useQuery({
     queryKey: ["qc", "all"],
     queryFn: () => qcApi.list().then(r => r.items),
   });
@@ -271,9 +272,9 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
             <div className="block md:hidden">
               {viewMode === "card" ? (
                 qcLoading ? (
-                  <div style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: "32px 16px", textAlign: "center" }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Loading defective sarees...</div>
-                  </div>
+                  <LoadingState variant="skeleton" rows={3} />
+                ) : qcError ? (
+                  <ErrorState error={undefined} onRetry={() => void refetchQc()} />
                 ) : filteredData.length === 0 ? (
                   <div style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: "32px 16px", textAlign: "center" }}>
                     <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No defective sarees recorded yet.</div>

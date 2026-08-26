@@ -2,6 +2,7 @@ import React from "react";
 import { ChevronLeft, RotateCcw } from "lucide-react";
 import { C, F } from "./theme";
 import { IconButton } from "../../../../shared/ui/primitives";
+import { LoadingState, ErrorState, EmptyState } from "../../../../shared/ui/state";
 
 export interface ReturnRecord {
   id: string;
@@ -56,16 +57,25 @@ export function ProcessReturnHeader({ step, onBack, setStep, setReturnType }: Pr
 interface ReturnHistorySectionProps {
   returnLog: ReturnRecord[];
   canSeePrices: boolean;
+  isLoading?: boolean;
+  isError?: boolean;
+  onRetry?: () => void;
 }
 
-export function ReturnHistorySection({ returnLog, canSeePrices }: ReturnHistorySectionProps) {
+export function ReturnHistorySection({ returnLog, canSeePrices, isLoading, isError, onRetry }: ReturnHistorySectionProps) {
   return (
     <div style={{ margin: "20px 20px 0" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
         <div style={{ width: 4, height: 20, background: C.crim, borderRadius: 2 }} />
         <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 16, color: C.text }}>Return History</span>
       </div>
-      {returnLog.map((r) => (
+      {isLoading ? (
+        <LoadingState variant="skeleton" rows={3} />
+      ) : isError ? (
+        <ErrorState error={undefined} onRetry={onRetry} />
+      ) : returnLog.length === 0 ? (
+        <EmptyState title="No returns processed yet" description="Returns recorded here will show up in this history." compact />
+      ) : returnLog.map((r) => (
         <div key={r.id} style={{ background: C.white, border: `1px solid ${C.bdr}`, borderLeft: `3px solid ${r.type === "retail" ? C.crim : C.gold}`, borderRadius: 12, padding: "12px 14px", marginBottom: 8 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
             <span style={{ background: r.type === "retail" ? "rgba(192,57,43,0.10)" : "rgba(200,155,71,0.15)", color: r.type === "retail" ? C.crim : "#8B6520", borderRadius: 999, padding: "2px 8px", fontFamily: F.m, fontSize: 12, fontWeight: 600 }}>{r.id}</span>

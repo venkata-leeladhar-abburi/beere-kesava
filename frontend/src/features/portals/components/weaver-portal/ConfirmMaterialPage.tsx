@@ -1,7 +1,7 @@
 import { materialTypeIcon } from "./MyBatchesPage";
 
-import React, { useState, useRef, useMemo } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import React, { useState, useRef } from "react";
+import { AnimatePresence } from "motion/react";
 import { useResponsive } from "../../../../hooks/useResponsive";
 import { useBatches } from "@/features/production";
 import { useDesignLibrary, DesignEntry } from "@/features/design-library";
@@ -13,15 +13,14 @@ import {
   C, F, SectionTitle, Card, SignatureCanvas, SignatureCanvasHandle, MaterialHistoryCard, HeroHeader, DesignCodeTileGrid
 } from './theme';
 import { useCurrentWeaver } from "./useCurrentWeaver";
-import { ReferenceHistorySection } from "./ReferenceHistorySection";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { BG_IMAGE } from "./WeaverBatchNotifData";
-import { Button } from "../../../../shared/ui/primitives";
+import { LoadingState, ErrorState } from "../../../../shared/ui/state";
 
 export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => void } = {}) {
   const { isMobile, isTablet, cols } = useResponsive();
   const { user } = useAuth();
-  const { getRecordsForWeaver, updateSignatureStatus, getMaterialSummaryForWeaver, getMaterialSummaryByBatch } = useMaterialIssue();
+  const { getRecordsForWeaver, updateSignatureStatus, getMaterialSummaryForWeaver, getMaterialSummaryByBatch, isLoading: materialsLoading, isError: materialsError, error: materialsErrorObj, refetch: refetchMaterials } = useMaterialIssue();
   const { batches } = useBatches();
   const { getDesign } = useDesignLibrary();
   const { weaverId, isLoading: weaverLoading, isError: weaverError } = useCurrentWeaver();
@@ -41,42 +40,9 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
 
   const weaverRecords = weaverId ? getRecordsForWeaver(weaverId) : [];
   const pendingRecords = weaverRecords.filter(r => r.status === "pending-signature");
-  const signedRecords = weaverRecords.filter(r => r.status === "signed");
   const pending = pendingRecords[0] ?? null;
 
-  const mySarees = useMemo(() => {
-    return batches
-      .filter(b => b.status !== "draft")
-      .flatMap(b =>
-      b.rows
-        .filter(r => r.weaverId === weaverId)
-        .map(r => ({
-          batchId: b.batchId,
-          sareeId: r.sareeId || "Pending Setup",
-          designCode: r.designCode || "—",
-          sareeTypeCode: r.sareeTypeCode || "—",
-          sareeTypeName: r.sareeTypeName || "—",
-          loom: r.weaverLoom || "—",
-          qcPassed: r.qcPassed
-        }))
-    );
-  }, [batches, weaverId]);
 
-  const myWeavingBatches = useMemo(() => {
-    return batches
-      .filter(b => b.status !== "draft")
-      .map(b => {
-        const rows = b.rows.filter(r => r.weaverId === weaverId);
-        return {
-          batchId: b.batchId,
-          status: b.status,
-          dueDate: b.dueDate,
-          rowsCount: rows.length,
-          passedCount: rows.filter(r => r.qcPassed === true).length
-        };
-      })
-      .filter(b => b.rowsCount > 0);
-  }, [batches, weaverId]);
 
   const myDesignCodes = Array.from(new Set(
     batches
@@ -106,11 +72,24 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
     setHasSig(false);
   };
 
-  if (weaverLoading) {
+  if (weaverLoading || materialsLoading) {
     return (
       <div style={{ paddingBottom: 32 }}>
         <HeroHeader eyebrow="SINCE 1999 · MATERIAL RECEIPT" title="Confirm Materials" sub="Sign to confirm receipt" />
-        <div style={{ margin: "40px 20px", textAlign: "center" as const, fontFamily: F.u, fontSize: 14, color: C.muted }}>Loading your material receipts…</div>
+        <div style={{ margin: "20px" }}>
+          <LoadingState variant="skeleton" rows={4} />
+        </div>
+      </div>
+    );
+  }
+
+  if (materialsError) {
+    return (
+      <div style={{ paddingBottom: 32 }}>
+        <HeroHeader eyebrow="SINCE 1999 · MATERIAL RECEIPT" title="Confirm Materials" sub="Sign to confirm receipt" />
+        <div style={{ margin: "20px" }}>
+          <ErrorState error={materialsErrorObj} onRetry={refetchMaterials} />
+        </div>
       </div>
     );
   }

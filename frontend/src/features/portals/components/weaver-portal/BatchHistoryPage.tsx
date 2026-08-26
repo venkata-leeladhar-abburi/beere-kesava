@@ -5,16 +5,15 @@ import { useCurrentWeaver } from "./useCurrentWeaver";
 import {
   ChevronLeft,
   Search,
-  Clock, Layers,
-  CheckCircle2, ListChecks,
-  AlertTriangle,
-} from "lucide-react";
+  Layers,
+  AlertTriangle } from "lucide-react";
 
 // ─── Design Tokens ─────────────────────────────────────────────────────────
 import {
   C, F, MobileBatchCard, CompletedBatchCard, FadeUpBatch, MyBatchEntry
 } from './theme';
 import { Button, Input } from '../../../../shared/ui/primitives';
+import { LoadingState, ErrorState } from "../../../../shared/ui/state";
 import { BG_IMAGE } from "./WeaverBatchNotifData";
 import { LuxuryStatsCard, type StatItem } from "@/shared/ui/LuxuryStatsCard";
 import { IcoResourceMgmt, IcoFabricRoll, IcoQualityCheck, IcoInvoice } from "@/features/dashboards";
@@ -22,8 +21,8 @@ import { IcoResourceMgmt, IcoFabricRoll, IcoQualityCheck, IcoInvoice } from "@/f
 export function BatchHistoryPage({ onBack, defaultFilter = "all" }: { onBack: () => void; defaultFilter?: "all" | "active" | "completed" }) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "completed">(defaultFilter);
-  const { batches } = useBatches();
-  const { weaver, weaverId, isLoading: weaverLoading, isError: weaverError } = useCurrentWeaver();
+  const { batches, isLoading: batchesLoading, isError: batchesError, error: batchesErrorObj, refetch: refetchBatches } = useBatches();
+  const { weaverId, isLoading: weaverLoading, isError: weaverError } = useCurrentWeaver();
 
   // A batch only becomes visible to its assigned weaver once it's finalized
   // (status leaves "draft") — matches the same rule in MyBatchesPage.tsx.
@@ -86,10 +85,18 @@ export function BatchHistoryPage({ onBack, defaultFilter = "all" }: { onBack: ()
     },
   ], [myWeaverBatches.length, totalSarees, activeCount, completedCount, statIcons]);
 
-  if (weaverLoading) {
+  if (weaverLoading || batchesLoading) {
+    return (
+      <div style={{ minHeight: "calc(100dvh - 64px)", background: T2.silkCream, padding: 24 }}>
+        <LoadingState variant="skeleton" rows={5} />
+      </div>
+    );
+  }
+
+  if (batchesError) {
     return (
       <div style={{ minHeight: "calc(100dvh - 64px)", background: T2.silkCream, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <span style={{ fontFamily: F.u, fontSize: 14, color: T2.taupe }}>Loading your batch history…</span>
+        <ErrorState error={batchesErrorObj} onRetry={refetchBatches} />
       </div>
     );
   }

@@ -172,5 +172,7 @@ export function FadeUpBatch({ children, delay = 0 }: { children: React.ReactNode
   );
 }
 
-export const BG_IMAGE = "https://images.unsplash.com/photo-1707978932202-751b08324daf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400";
+// Moved to shared/ui/heroBackgrounds — re-exported so this feature's own
+// modules keep importing it from here.
+export { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
 export const FABRIC_BG = "https://images.unsplash.com/photo-1569909115134-a0426936c879?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400";

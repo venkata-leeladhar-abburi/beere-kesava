@@ -28,6 +28,12 @@ export class CreateDispatchDto {
   @IsString({ each: true })
   sareeIds!: string[];
 
+  /** Date the goods physically left, as entered on the dispatch form. Left off
+   *  the payload before, so every record was stamped with the server's clock. */
+  @IsOptional()
+  @IsString()
+  dispatchDate?: string;
+
   @IsOptional()
   @IsString()
   lrNumber?: string;

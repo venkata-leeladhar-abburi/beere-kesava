@@ -9,12 +9,12 @@ import { Send as PaperPlaneTilt } from "lucide-react";
 import { T, F } from "../theme";
 import { STATUS_CFG } from "../types";
 import { WEAVERS } from "../data";
-import { Avatar, SectionPill, SectionCard } from "../common/primitives";
+import { Avatar, SectionCard } from "../common/primitives";
 import { WeaverSareesSection } from "../WeaverSareesSection";
 import { useWeaverPayments } from "../../contexts/WeaverPaymentsContext";
 import { useMaterialIssue } from "@/features/materials";
 import { rupees, formatMoney } from "@/lib/domain/money";
-import { BG_IMAGE } from "@/features/portals/components/weaver-portal/WeaverBatchNotifData";
+import { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
 import { useBatches } from "@/features/production";
 import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { useDesignLibrary, DispatchRecord } from "@/features/design-library";
@@ -426,8 +426,8 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
                               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{new Date(r.issuedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>
                             </div>
                             <div style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 8 }}>
-                              {r.materials.map((m, idx: number) => (
-                                <div key={`${m.materialType}-${m.warpSubtype ?? m.jariType ?? ""}-${idx}`} style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>
+                              {r.materials.map(m => (
+                                <div key={`${m.materialType}-${m.warpSubtype ?? m.jariType ?? ""}`} style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>
                                   • {m.materialType}: <b>{m.quantity} {m.unit}</b> {m.warpSubtype || m.jariType || ""}
                                 </div>
                               ))}

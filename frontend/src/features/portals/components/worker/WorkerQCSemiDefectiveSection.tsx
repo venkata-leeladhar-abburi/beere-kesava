@@ -35,6 +35,7 @@ function SemiDefectiveCard({ d, onView, onViewPhoto }: { d: DefectiveLogItem; on
             type="button"
             onClick={() => onViewPhoto({ url: d.photoUrl!, label: `Defect photo — ${d.id}` })}
             title="View defect photo"
+            aria-label={`View defect photo for ${d.id}`}
             style={{ width: 40, height: 40, flexShrink: 0, borderRadius: 8, border: `1px solid ${T.bdr}`, padding: 0, cursor: "pointer", backgroundImage: `url(${d.photoUrl})`, backgroundSize: "cover", backgroundPosition: "center" }}
           />
         ) : (

@@ -4,6 +4,7 @@ import { C, F, BG_IMAGE } from "../theme";
 import { SectionHeading } from "@/shared/ui/portal/PortalChrome";
 import { DesktopHero } from "./DesktopHero";
 import { Button, Input, Textarea } from "../../../../../shared/ui/primitives";
+import { LoadingState, ErrorState } from "../../../../../shared/ui/state";
 import { useBatches } from "@/features/production";
 import { useCurrentWeaver } from "../useCurrentWeaver";
 import { useAuth } from "../../../../../contexts/AuthContext";
@@ -70,7 +71,7 @@ export function WarpSection({
 
   const isLocked = batchProgress.pct < 50;
 
-  const { data: warpRequestsData } = useQuery({
+  const { data: warpRequestsData, isLoading: warpLoading, isError: warpError, refetch: refetchWarp } = useQuery({
     queryKey: ["warpRequests"],
     queryFn: () => warpRequestsApi.list(),
   });
@@ -267,7 +268,15 @@ export function WarpSection({
                   </div>
                 </div>
 
-                {myPrevRequests.length === 0 ? (
+                {warpLoading ? (
+                  <div style={{ padding: 20 }}>
+                    <LoadingState variant="skeleton" rows={3} />
+                  </div>
+                ) : warpError ? (
+                  <div style={{ padding: 20 }}>
+                    <ErrorState error={undefined} onRetry={() => void refetchWarp()} />
+                  </div>
+                ) : myPrevRequests.length === 0 ? (
                   <div style={{ padding: "28px 24px", textAlign: "center" as const }}>
                     <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>No previous warp requests recorded.</div>
                   </div>

@@ -9,7 +9,7 @@ import {
 import { PackageCheck, History, ChevronLeft, UserRound } from "lucide-react";
 import { T, F, EASE } from "./superadmin-dashboard/theme";
 import { TabLoadingFallback } from "./superadmin-dashboard/atoms";
-import { BG_IMAGE } from "@/features/portals/components/weaver-portal/WeaverBatchNotifData";
+import { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
 import { SectionCard } from "./beere-dashboard/primitives";
 import { Button } from "../../../shared/ui/primitives";
 import { EntityCode } from "../../../shared/ui/domain";

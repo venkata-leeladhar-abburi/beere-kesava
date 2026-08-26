@@ -430,6 +430,97 @@ const METRICS = [
       return total;
     },
   },
+
+  // ── Phase S: UI states rollout ─────────────────────────────────────────
+  // Per design-system/10-UI-STATES.md §S0.7. These are approximations, not
+  // exact counts — same spirit as the "manual"/custom metrics above (e.g.
+  // hand-rolled-breakpoints, fixed-width-px). A `useQuery` call that isn't
+  // destructured with `const { ... } =` (e.g. assigned whole to a variable
+  // then accessed as `q.isError` later) isn't seen by the error-path metric;
+  // that's a known undercount, not a bug in the regex.
+  {
+    id: "query-sites-no-error-path",
+    label: "useQuery sites w/o isError|error",
+    phase: 10,
+    baseline: 75,
+    target: 0,
+    measure: () => {
+      const re = /const\s*\{([^}]*)\}\s*=\s*useQuery\(/g;
+      let total = 0;
+      let withError = 0;
+      for (const { content } of featureTs) {
+        let m;
+        re.lastIndex = 0;
+        while ((m = re.exec(content))) {
+          total++;
+          if (/\bisError\b|\berror\b/.test(m[1])) withError++;
+        }
+      }
+      return total - withError;
+    },
+  },
+  {
+    id: "hand-rolled-loading-jsx",
+    label: 'raw "isLoading &&" JSX renders',
+    phase: 10,
+    baseline: 61,
+    target: 0,
+    // Counts inline `isLoading && (...)`/`isLoading ? ... :` renders — i.e.
+    // hand-rolled loading UI instead of the shared LoadingState/StateView
+    // components from shared/ui/state. Does not distinguish "hand-rolled but
+    // otherwise correct" from "actually broken" — see design-system/
+    // 10-UI-STATES.md §10 for the real bugs found by manual sweep.
+    measure: () => countMatchesIn(featureTsx, "isLoading\\s*&&\\s*\\(?\\s*<|isLoading\\s*\\?"),
+  },
+  {
+    id: "toast-in-query-error",
+    label: "toast.error inside useQuery onError",
+    phase: 10,
+    baseline: 0,
+    target: 0,
+    // Per §S0.6's toast policy: mutations toast, queries render inline
+    // ErrorState. A useQuery block with an onError that calls toast.error is
+    // a policy violation, not a style nit — it means a fetch failure pops a
+    // toast the user can dismiss and forget instead of a persistent inline
+    // error. Scans each `useQuery({ ... })` call by brace-depth so it isn't
+    // fooled by an unrelated toast.error elsewhere in the same file.
+    measure: () => {
+      let total = 0;
+      for (const { content } of featureTs) {
+        let i = 0;
+        while ((i = content.indexOf("useQuery(", i)) !== -1) {
+          const start = content.indexOf("{", i);
+          if (start === -1) break;
+          let depth = 0;
+          let end = start;
+          for (; end < content.length; end++) {
+            if (content[end] === "{") depth++;
+            else if (content[end] === "}") {
+              depth--;
+              if (depth === 0) break;
+            }
+          }
+          const block = content.slice(start, end + 1);
+          if (/onError[^]*toast\.(error|warning)/.test(block)) total++;
+          i = end + 1;
+        }
+      }
+      return total;
+    },
+  },
+  {
+    id: "useappform-adoption",
+    label: "forms on useAppForm",
+    phase: 10,
+    baseline: 0,
+    target: 5,
+    higherIsBetter: true,
+    // Known un-migrated forms per design-system/10-UI-STATES.md §10:
+    // AddUserPage, BatchCreationPage, ReturnMaterialPage/IssueMaterialPage,
+    // LabelSettingsPage. Target tracks that flagged set, not a repo-wide
+    // form count — raise it if more forms are identified.
+    measure: () => countFilesIn(featureTsx, "useAppForm\\("),
+  },
 ];
 
 function bar(pct, width = 10) {

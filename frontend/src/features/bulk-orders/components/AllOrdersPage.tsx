@@ -8,6 +8,7 @@ import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../.
 import { AllOrdersFilterBar } from "./AllOrdersFilterBar";
 import { AllOrdersAnalyticsSection } from "./AllOrdersAnalyticsSection";
 import { Button } from "../../../shared/ui/primitives";
+import { LoadingState, ErrorState, EmptyState, FilteredEmptyState } from "../../../shared/ui/state";
 import { Breadcrumbs } from "../../../shared/ui/nav/Breadcrumbs";
 
 const T = {
@@ -21,7 +22,7 @@ const T = {
 const F = { display: "'Plus Jakarta Sans', sans-serif", ui: "'Inter', sans-serif" };
 
 export function AllOrdersPage({ onBack, superadmin = false }: { onBack?: () => void; superadmin?: boolean }) {
-  const { bulkOrders } = useBulkOrders();
+  const { bulkOrders, isLoading, isError, error, refetch } = useBulkOrders();
   const [viewingOrder, setViewingOrder] = useState<{ order: BulkOrder; tab: "overview" | "payments" } | null>(null);
 
   const [search, setSearch] = useState("");
@@ -133,12 +134,16 @@ export function AllOrdersPage({ onBack, superadmin = false }: { onBack?: () => v
 
       {/* Orders Grid */}
       <div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 12, paddingBottom: 48 }}>
-        {filteredOrders.length === 0 ? (
-          <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1.5px solid ${T.borderDef}`, padding: "48px 24px", textAlign: "center", boxShadow: "0 4px 18px rgba(74,6,27,0.03)" }}>
-            <span style={{ fontSize: 30, display: "block", marginBottom: 12 }}>🔍</span>
-            <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown, marginBottom: 4 }}>No wholesale orders found</div>
-            <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Try adjusting your filters or search keywords.</div>
-          </div>
+        {isLoading ? (
+          <LoadingState variant="skeleton" rows={4} />
+        ) : isError ? (
+          <ErrorState error={error} onRetry={refetch} />
+        ) : filteredOrders.length === 0 ? (
+          bulkOrders.length === 0 ? (
+            <EmptyState title="No wholesale orders yet" description="Bulk orders raised for wholesale customers will show up here." />
+          ) : (
+            <FilteredEmptyState onClearFilters={resetFilters} />
+          )
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 22 }}>
             {filteredOrders.map((o, i) => (

@@ -1,7 +1,6 @@
 import React from "react";
 import { ShoppingCart, Tag, FileText, Calendar } from "lucide-react";
 import { Purchase } from "@/features/suppliers";
-import { T, F } from "../theme";
 
 import { LuxuryStatsCard } from "@/shared/ui/LuxuryStatsCard";
 

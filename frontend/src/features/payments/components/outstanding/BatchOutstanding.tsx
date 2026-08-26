@@ -6,7 +6,6 @@ import { UnifiedSaree, isOutstanding, isSold, ageBucket } from "@/features/custo
 import { Empty, ExportBtn, SectionCard, exportCsv, inr } from "./primitives";
 import type { AgeKey } from "./primitives";
 import { DrilldownTabs, sareeOriginName, sareeOriginSub } from "./SareeDetailTable";
-import { Button } from "../../../../shared/ui/primitives";
 import { EntityCode } from "@/shared/ui/domain";
 
 // ── Outstanding by batch (in-house batches across weavers + factory looms) ───

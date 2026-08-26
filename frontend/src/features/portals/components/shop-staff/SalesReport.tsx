@@ -1,6 +1,4 @@
 import { XAxis, YAxis, Tooltip, Cell } from "recharts";
-import { SectionNavigator, PAGE_SECTIONS } from "../../../../shared/ui/SectionNavigator";
-const SHOP_MOBILE_HEADER_H = 60;
 import { BarChart, Bar, ResponsiveContainer } from "recharts";
 import { SectionTitle } from "./theme";
 import { FileText, Check } from "lucide-react";
@@ -16,6 +14,7 @@ import {
 
 import { C, F, Card, Chip, useCanSeePrices, PageHero, PortalStatsStrip, type PortalStat } from './theme';
 import { Button, IconButton } from "../../../../shared/ui/primitives";
+import { LoadingState, ErrorState } from "../../../../shared/ui/state";
 import { useQuery } from "@tanstack/react-query";
 import { salesApi } from "../../../../shared/api/sales";
 import { customersApi } from "../../../../shared/api/customers";
@@ -41,17 +40,17 @@ function SalesReport() {
   const [exportFormat, setExportFormat] = useState<"pdf" | "csv" | "excel">("pdf");
   const [exportDone, setExportDone] = useState(false);
 
-  const { data: salesRes } = useQuery({
+  const { data: salesRes, isLoading: salesLoading, isError: salesError, refetch: refetchSales } = useQuery({
     queryKey: ["sales-list-report"],
     queryFn: () => salesApi.list(100),
   });
 
-  const { data: returnsRes } = useQuery({
+  const { data: returnsRes, isLoading: returnsLoading, isError: returnsError, refetch: refetchReturns } = useQuery({
     queryKey: ["returns-list-report"],
     queryFn: () => salesApi.listReturns(100),
   });
 
-  const { data: customersRes } = useQuery({
+  const { data: customersRes, isLoading: customersLoading, isError: customersError, refetch: refetchCustomers } = useQuery({
     queryKey: ["customers-list-report"],
     queryFn: () => customersApi.list(100),
   });
@@ -79,23 +78,6 @@ function SalesReport() {
     { design: "Wholesale Sales", count: salesList.filter(s => s.channel === "WHOLESALE").length },
     { design: "Returns", count: returnsList.length },
   ];
-
-  const currentMonth = new Date().getMonth();
-  const totalMonthSales = salesList.filter(s => new Date(s.saleDate).getMonth() === currentMonth);
-  const totalMonthReturns = returnsList.filter(r => new Date(r.returnDate).getMonth() === currentMonth);
-  const monthRevenue = totalMonthSales.reduce((acc, curr) => acc + Number(curr.amount), 0);
-  const avgSale = totalMonthSales.length > 0 ? Math.round(monthRevenue / totalMonthSales.length) : 0;
-  const monthReturnsAmount = totalMonthReturns.reduce((acc, curr) => acc + Number(curr.refundAmount || 0), 0);
-
-  const designMap = new Map<string, number>();
-  totalMonthSales.forEach(s => {
-      designMap.set(s.sareeId, (designMap.get(s.sareeId) || 0) + 1);
-  });
-  let topDesign = "None";
-  let maxCount = 0;
-  designMap.forEach((count, id) => {
-      if (count > maxCount) { maxCount = count; topDesign = id; }
-  });
 
   const topCustomers = useMemo(() => {
     const map = new Map<string, { custId: string; name: string; purchases: number; total: number }>();
@@ -201,7 +183,11 @@ function SalesReport() {
       {/* Returns Summary */}
       <div id="shoprep-returns" style={{ margin: "24px 20px 0" }}>
         <SectionTitle title="Returns This Month" />
-        {returns.length === 0 ? (
+        {returnsLoading ? (
+          <LoadingState variant="skeleton" rows={3} />
+        ) : returnsError ? (
+          <ErrorState error={undefined} onRetry={() => void refetchReturns()} />
+        ) : returns.length === 0 ? (
           <Card style={{ margin: 0, padding: "20px 16px", textAlign: "center" as const }}>
             <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>No returns recorded this month.</div>
           </Card>
@@ -247,7 +233,11 @@ function SalesReport() {
       <div id="shoprep-top-customers" style={{ margin: "24px 20px 0" }}>
         <SectionTitle title="Top Customers" />
         <Card style={{ margin: 0, padding: 0, overflow: "hidden" }}>
-          {topCustomers.length === 0 ? (
+          {salesLoading || customersLoading ? (
+            <div style={{ padding: 16 }}><LoadingState variant="skeleton" rows={3} /></div>
+          ) : salesError || customersError ? (
+            <ErrorState error={undefined} onRetry={() => { void refetchSales(); void refetchCustomers(); }} />
+          ) : topCustomers.length === 0 ? (
             <div style={{ padding: "20px 16px", textAlign: "center" as const, fontFamily: F.u, fontSize: 14, color: C.muted }}>
               No customer sales recorded yet.
             </div>

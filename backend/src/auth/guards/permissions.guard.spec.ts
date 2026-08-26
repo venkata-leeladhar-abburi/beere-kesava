@@ -1,4 +1,4 @@
-import { ExecutionContext, ForbiddenException } from "@nestjs/common";
+import { ExecutionContext } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { UserRole } from "../../generated/prisma/client";
 import { PermissionsGuard } from "./permissions.guard";
@@ -37,13 +37,17 @@ describe("PermissionsGuard", () => {
     await expect(guard.canActivate(buildContext(user(UserRole.WORKER)))).resolves.toBe(true);
   });
 
-  it("throws ForbiddenException when a guarded route is hit with no user on the request", async () => {
+  it("throws AUTH_REQUIRED when a guarded route is hit with no user on the request", async () => {
     jest
       .spyOn(reflector, "getAllAndOverride")
       .mockReturnValueOnce(["some.permission"]) // requiredPermissions
       .mockReturnValueOnce(undefined); // requiredRoles
 
-    await expect(guard.canActivate(buildContext(undefined))).rejects.toThrow(ForbiddenException);
+    // Asserting the code, not the class: the code is what the frontend
+    // switches its UI state on, so it is the part that must not regress.
+    await expect(guard.canActivate(buildContext(undefined))).rejects.toMatchObject({
+      code: "AUTH_REQUIRED",
+    });
   });
 
   it("lets SUPERADMIN bypass a @RequirePermissions check", async () => {
@@ -75,9 +79,9 @@ describe("PermissionsGuard", () => {
       { id: "p1", key: "inventory.write", rolePermissions: [], userOverrides: [] },
     ]);
 
-    await expect(guard.canActivate(buildContext(user(UserRole.WORKER)))).rejects.toThrow(
-      ForbiddenException,
-    );
+    await expect(guard.canActivate(buildContext(user(UserRole.WORKER)))).rejects.toMatchObject({
+      code: "FORBIDDEN_ROLE",
+    });
   });
 
   it("allows when the role has a matching RolePermission row for every required key", async () => {
@@ -106,9 +110,9 @@ describe("PermissionsGuard", () => {
       },
     ]);
 
-    await expect(guard.canActivate(buildContext(user(UserRole.WORKER)))).rejects.toThrow(
-      ForbiddenException,
-    );
+    await expect(guard.canActivate(buildContext(user(UserRole.WORKER)))).rejects.toMatchObject({
+      code: "FORBIDDEN_ROLE",
+    });
   });
 
   it("denies a role not present in @RequireRoles", async () => {
@@ -117,9 +121,9 @@ describe("PermissionsGuard", () => {
       .mockReturnValueOnce(undefined)
       .mockReturnValueOnce([UserRole.WEAVER]);
 
-    await expect(guard.canActivate(buildContext(user(UserRole.WORKER)))).rejects.toThrow(
-      ForbiddenException,
-    );
+    await expect(guard.canActivate(buildContext(user(UserRole.WORKER)))).rejects.toMatchObject({
+      code: "FORBIDDEN_ROLE",
+    });
   });
 
   it("allows a role that is present in @RequireRoles", async () => {

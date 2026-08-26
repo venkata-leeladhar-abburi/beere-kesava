@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from "react";
-import { Scan, Camera, Package, ChevronDown, ChevronUp } from "lucide-react";
+import { Scan, Package, ChevronDown, ChevronUp } from "lucide-react";
 import { FinishingReturn } from "@/features/finishing";
 import { WeaverSareesSection, WeaverSareeRow } from "@/features/weavers";
 import { T, F } from "../../theme";
@@ -95,8 +95,16 @@ export function SareePicker({ available, picked, onChange, label, onBrowseChange
         <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown, textTransform: "uppercase" as const, letterSpacing: "0.05em", flex: 1 }}>
           {label} <span style={{ color: T.royalBurgundy }}>({picked.length})</span>
         </span>
+        {/* One Scan button covers both routes: with an ID in the field it adds
+            that saree, and with the field empty it opens the camera for
+            devices with no hardware scanner attached. */}
         <form
-          onSubmit={e => { e.preventDefault(); scan(scanValue); setScanValue(""); }}
+          onSubmit={e => {
+            e.preventDefault();
+            if (!scanValue.trim()) { setCameraOpen(true); return; }
+            scan(scanValue);
+            setScanValue("");
+          }}
           style={{ display: "flex", alignItems: "center", gap: 8 }}
         >
           <Input
@@ -104,6 +112,7 @@ export function SareePicker({ available, picked, onChange, label, onBrowseChange
             onChange={e => setScanValue(e.target.value)}
             placeholder="Scan or type saree ID"
             aria-label="Saree ID to scan"
+            title="Type an ID and press Scan, or press Scan with the box empty to use the camera"
             className="w-[210px] font-mono"
           />
           <Button
@@ -116,16 +125,6 @@ export function SareePicker({ available, picked, onChange, label, onBrowseChange
             Scan Saree
           </Button>
         </form>
-        <Button
-          type="button"
-          variant="secondary"
-          size="sm"
-          iconLeft={Camera}
-          onClick={() => setCameraOpen(true)}
-          className="rounded-[10px]"
-        >
-          Open Camera
-        </Button>
         <CameraScannerModal
           open={cameraOpen}
           onClose={() => setCameraOpen(false)}

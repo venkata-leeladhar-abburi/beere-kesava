@@ -11,7 +11,7 @@ import { weaversApi } from "../../../../../shared/api/weavers";
 import { Button, Input, Select, SelectItem } from "../../../../../shared/ui/primitives";
 
 export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
-  const { data: weaversRes } = useQuery({
+  const { data: weaversRes, isLoading: weaversLoading } = useQuery({
     queryKey: ["worker-issue-weavers"],
     queryFn: () => weaversApi.list(),
   });
@@ -112,7 +112,10 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
                 iconLeft={Search} size="lg" />
               {showWeaverList && (
                 <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 10, boxShadow: "0 8px 24px rgba(110,15,45,0.12)", zIndex: 50, marginTop: 4 }}>
-                  {WEAVERS.filter(w => w.name.toLowerCase().includes(weaverSearch.toLowerCase())).map(w => (
+                  {weaversLoading && (
+                    <div style={{ padding: "12px 16px", fontFamily: F.u, fontSize: 13, color: C.muted, textAlign: "center" }}>Loading weavers…</div>
+                  )}
+                  {!weaversLoading && WEAVERS.filter(w => w.name.toLowerCase().includes(weaverSearch.toLowerCase())).map(w => (
                     <Button key={w.code} variant="tertiary" fullWidth
                       onClick={() => { setSelectedWeaver(w); setWeaverSearch(w.name); setShowWeaverList(false); }}
                       className="justify-start gap-2.5 rounded-none border-0 border-b px-3.5 py-2.5 border-[rgba(110,15,45,0.12)]">

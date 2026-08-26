@@ -27,7 +27,6 @@ function TagCard({ r }: { r: WeaverSareeRow }) {
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "1mm" }}>
-        {/* eslint-disable-next-line no-restricted-syntax -- printable tag, not app UI */}
         <img
           src={labelsApi.barcodeUrl(r.sareeId)}
           alt={`Barcode for ${r.sareeId}`}

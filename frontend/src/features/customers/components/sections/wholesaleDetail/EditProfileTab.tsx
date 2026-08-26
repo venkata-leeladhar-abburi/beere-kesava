@@ -1,5 +1,5 @@
 import React from "react";
-import { T, F } from "../../theme";
+import { T } from "../../theme";
 import { WholesaleCustomer, WholesaleTab } from "../../types";
 import { Button, Field, Input, Textarea } from "../../../../../shared/ui/primitives";
 import { VisitingCardUploadField } from "../../../../../shared/ui/VisitingCardUploadField";

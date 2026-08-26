@@ -7,6 +7,7 @@ import { SectionCard, GoldLink } from "./sharedUI";
 import { Button, NumberInput, Textarea } from "../../../../shared/ui/primitives";
 import { customersApi, BackendCustomer } from "../../../../shared/api/customers";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { LoadingState, ErrorState, EmptyState } from "../../../../shared/ui/state";
 
 interface CustomerTermsState {
   termsDays: number;
@@ -22,7 +23,7 @@ export function WholesaleTermsSection() {
   const [customerTerms, setCustomerTerms] = useState<Record<string, CustomerTermsState>>({});
   const [editForm, setEditForm] = useState<{ days: number; notes: string }>({ days: 30, notes: "" });
 
-  const { data: customersRes, isLoading } = useQuery({
+  const { data: customersRes, isLoading, isError, refetch } = useQuery({
     queryKey: ["wholesale-terms-customers"],
     queryFn: () => customersApi.list(),
   });
@@ -144,13 +145,11 @@ export function WholesaleTermsSection() {
       {/* Payment Terms Table */}
       <div style={cardStyle}>
         {isLoading ? (
-          <div style={{ padding: "40px 20px", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
-            Loading wholesale customers…
-          </div>
+          <LoadingState variant="skeleton" rows={4} />
+        ) : isError ? (
+          <ErrorState error={undefined} onRetry={() => void refetch()} />
         ) : wholesaleCustomers.length === 0 ? (
-          <div style={{ padding: "40px 20px", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
-            No wholesale customers registered in the system yet.
-          </div>
+          <EmptyState title="No wholesale customers yet" description="Wholesale customers registered in the system will show up here." />
         ) : (
           <DataTable
             columns={columns}

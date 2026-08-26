@@ -304,7 +304,12 @@ export function ScanPanel({
   accent: FlowAccent;
   busy?: boolean;
 }) {
-  const canSubmit = value.trim().length > 2 && !busy;
+  const typed = value.trim();
+  // One button does both jobs — it opens the camera while the field is empty
+  // and looks up whatever has been typed once there is something to look up.
+  // There used to be a separate "Open Camera" button competing with it.
+  const cameraMode = typed.length === 0;
+  const canSubmit = (cameraMode || typed.length > 2) && !busy;
   const [scannerOpen, setScannerOpen] = useState(false);
 
   // A decoded barcode is a real value, not a keystroke — so it goes straight
@@ -340,31 +345,22 @@ export function ScanPanel({
           <div style={{ fontFamily: F.d, fontWeight: 400, fontSize: 24, color: "#FFFDF9", marginBottom: 6 }}>{title}</div>
           <div style={{ fontFamily: F.u, fontSize: 14, color: "rgba(255,253,249,0.72)", lineHeight: 1.55, maxWidth: "min(380px, 100%)" }}>{hint}</div>
         </div>
-        <Button
-          variant="secondary"
-          onClick={() => setScannerOpen(true)}
-          iconLeft={Camera}
-          className="relative z-10 h-11 rounded-full border-[rgba(255,255,255,0.32)] bg-[rgba(255,255,255,0.14)] px-6 text-[14px] font-semibold !text-white hover:!bg-[rgba(255,255,255,0.22)]"
-        >
-          Open Camera
-        </Button>
-      </div>
-
-      <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 18 }}>
-        <div style={{ flex: 1, height: 1, background: C.bdr }} />
-        <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>or enter the ID by hand</span>
-        <div style={{ flex: 1, height: 1, background: C.bdr }} />
       </div>
 
       <label htmlFor="flow-scan-id" style={{ fontFamily: F.u, fontWeight: 500, fontSize: 14, color: C.text, display: "block", marginBottom: 8 }}>
         {inputLabel}
       </label>
+      <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginBottom: 8, lineHeight: 1.5 }}>
+        Type or scan the ID and press Find — or leave it empty and press Scan to use the camera.
+      </div>
       <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
         <Input
           id="flow-scan-id"
           value={value}
           onChange={e => onValueChange(e.target.value)}
-          onKeyDown={e => { if (e.key === "Enter" && canSubmit) { e.preventDefault(); onSubmit(); } }}
+          // Enter only ever looks up typed text — it must not fire the camera,
+          // which `canSubmit` now also allows through the button.
+          onKeyDown={e => { if (e.key === "Enter" && !cameraMode && canSubmit) { e.preventDefault(); onSubmit(); } }}
           placeholder={placeholder}
           size="lg"
           className="flex-1 font-mono"
@@ -375,11 +371,12 @@ export function ScanPanel({
           <Button
             variant="primary"
             size="lg"
-            onClick={() => onSubmit()}
+            iconLeft={cameraMode ? Camera : undefined}
+            onClick={() => { if (cameraMode) { setScannerOpen(true); return; } onSubmit(); }}
             disabled={!canSubmit}
             className="h-12 rounded-xl bg-[var(--cta-bg)] px-6 hover:bg-[var(--cta-bg-hover)] disabled:cursor-not-allowed disabled:opacity-45"
           >
-            {busy ? "Finding…" : "Find"}
+            {busy ? "Finding…" : cameraMode ? "Scan" : "Find"}
           </Button>
         </div>
       </div>

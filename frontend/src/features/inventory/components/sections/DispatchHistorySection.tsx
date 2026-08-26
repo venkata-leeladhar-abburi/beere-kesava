@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { Truck, Users, ShoppingBag, Clock, CheckCircle2, Trash2, FileText, Pencil, LayoutGrid, LayoutList } from "lucide-react";
-import { DispatchRecord } from "@/features/finishing";
+import { DispatchRecord, useFinishing } from "@/features/finishing";
 import { useCustomers } from "@/features/customers";
 import { T, F } from "../theme";
 import { Button } from "../../../../shared/ui/primitives";
@@ -9,6 +9,7 @@ import { SectionCard } from "../common/primitives";
 import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 import { EntityCode } from "@/shared/ui/domain";
 import { EditWholesaleCustomerModal } from "../modals/EditWholesaleCustomerModal";
+import { LoadingState, ErrorState } from "../../../../shared/ui/state";
 
 function formatDateStr(s?: string): string {
   if (!s) return "—";
@@ -68,6 +69,7 @@ function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { row
   const [view, setView] = useState<"card" | "table">("card");
   const pag = usePagination(rows, 25);
   const { customers } = useCustomers();
+  const { isLoading, isError, error, refetch } = useFinishing();
   const [editingCustomerId, setEditingCustomerId] = useState<string | null>(null);
   const editingCustomer = editingCustomerId ? customers.find(c => c.id === editingCustomerId) ?? null : null;
   const columns: ColumnDef<DispatchRecord>[] = [
@@ -303,7 +305,9 @@ function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { row
               </div>
             );
           })}
-          {pag.pageItems.length === 0 && (
+          {isLoading && <LoadingState variant="skeleton" rows={4} />}
+          {!isLoading && isError && <ErrorState error={error} onRetry={refetch} />}
+          {!isLoading && !isError && pag.pageItems.length === 0 && (
             <div style={{ padding: 32, textAlign: "center", color: T.taupe, fontFamily: F.ui, fontSize: 14 }}>
               No dispatches yet.
             </div>
@@ -319,6 +323,9 @@ function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { row
             columns={columns}
             data={pag.pageItems}
             getRowId={d => d.id}
+            loading={isLoading}
+            error={isError}
+            onRetry={refetch}
             emptyTitle="No dispatches yet."
           />
         </div>

@@ -44,7 +44,7 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const { batches } = useBatches();
-  const { data: qcRecords = [], isLoading: qcLoading } = useQuery({
+  const { data: qcRecords = [], isLoading: qcLoading, isError: qcError, refetch: refetchQc } = useQuery({
     queryKey: ["qc", "all"],
     queryFn: () => qcApi.list().then(r => r.items),
   });
@@ -303,6 +303,8 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
             data={filteredBatches}
             getRowId={b => b.id}
             loading={qcLoading}
+            error={qcError}
+            onRetry={() => void refetchQc()}
             emptyTitle="No completed batches yet."
           />
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 sm:px-6 border-t border-[rgba(110,15,45,0.10)]">

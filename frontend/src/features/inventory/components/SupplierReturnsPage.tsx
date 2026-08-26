@@ -8,6 +8,7 @@ import { STOPGAP_ACTING_USER_ID } from "@/shared/api/purchase-requests";
 import { BackendSupplierReturnStatus, supplierReturnsApi } from "@/shared/api/supplier-returns";
 import { Button, SearchInput } from "../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../shared/ui/data";
+import { LoadingState, ErrorState, EmptyState, FilteredEmptyState } from "../../../shared/ui/state";
 import { Modal } from "../../../shared/ui/overlay";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
 import { LuxuryStatsCard } from "@/shared/ui/LuxuryStatsCard";
@@ -34,7 +35,11 @@ export function SupplierReturnsPage() {
   const [error, setError] = useState("");
   const [preview, setPreview] = useState<string | null>(null);
 
-  const { data, isLoading, isError } = useQuery({
+  // pageSize is capped at 100 server-side (ListSupplierReturnRequestsQueryDto);
+  // requesting more than that 400s. isError is surfaced below rather than
+  // left silent, since an unnoticed fetch failure here looks identical to
+  // "no return requests exist" — which is exactly what masked this once already.
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["supplier-returns", "list"],
     queryFn: () => supplierReturnsApi.list({ pageSize: 100 }),
   });
@@ -288,108 +293,110 @@ export function SupplierReturnsPage() {
 
         {/* Mobile View (Card Grid or Table View) */}
         <div className="block md:hidden">
-          {viewMode === "card" ? (
-            isLoading ? (
-              <div style={{ textAlign: "center", padding: "40px 20px", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Loading supplier returns…</div>
-            ) : rows.length === 0 ? (
-              <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: "32px 16px", textAlign: "center" }}>
-                <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No return requests match your filters</div>
-              </div>
+          {isLoading ? (
+            <LoadingState variant="skeleton" rows={4} />
+          ) : isError ? (
+            <ErrorState error={undefined} onRetry={() => void refetch()} />
+          ) : rows.length === 0 ? (
+            statusFilter !== "ALL" ? (
+              <FilteredEmptyState onClearFilters={() => setStatusFilter("ALL")} />
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                {rows.map(r => {
-                  const s = STATUS_STYLE[r.status];
-                  return (
-                    <div
-                      key={r.id}
-                      style={{
-                        background: "#FFFFFF",
-                        borderRadius: 16,
-                        border: `1px solid ${T.borderDef}`,
-                        boxShadow: "0 2px 12px rgba(74,6,27,0.06)",
-                        padding: "16px 18px",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 12,
-                      }}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 13, color: T.royalBurgundy }}>{r.id}</span>
-                        <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: s.color, background: s.bg, borderRadius: 6, padding: "2.5px 8px" }}>{s.label}</span>
-                      </div>
+              <EmptyState title="No return requests yet" description="Sarees returned to suppliers will show up here." />
+            )
+          ) : viewMode === "card" ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+              {rows.map(r => {
+                const s = STATUS_STYLE[r.status];
+                return (
+                  <div
+                    key={r.id}
+                    style={{
+                      background: "#FFFFFF",
+                      borderRadius: 16,
+                      border: `1px solid ${T.borderDef}`,
+                      boxShadow: "0 2px 12px rgba(74,6,27,0.06)",
+                      padding: "16px 18px",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 12,
+                    }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 13, color: T.royalBurgundy }}>{r.id}</span>
+                      <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: s.color, background: s.bg, borderRadius: 6, padding: "2.5px 8px" }}>{s.label}</span>
+                    </div>
 
-                      <div className="flex items-start gap-3">
-                        {r.sareeLine.imageUrl ? (
-                          <button type="button" onClick={() => setPreview(r.sareeLine.imageUrl)} className="p-0 border-0 bg-transparent cursor-pointer shrink-0">
-                            <img src={r.sareeLine.imageUrl} alt={r.sareeLine.code} style={{ width: 50, height: 50, borderRadius: 10, objectFit: "cover", border: `1px solid ${T.borderDef}` }} />
-                          </button>
-                        ) : (
-                          <div style={{ width: 50, height: 50, borderRadius: 10, background: T.silkCream, border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                            <ImageIcon size={18} color={T.taupe} />
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{r.supplier.name}</div>
-                          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy, fontWeight: 600 }}>{r.sareeLine.code}</div>
-                          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{[r.sareeLine.sareeType, r.sareeLine.color].filter(Boolean).join(" · ") || "—"}</div>
-                        </div>
-                      </div>
-
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, background: T.silkCream, borderRadius: 10, padding: "10px 12px" }}>
-                        <div>
-                          <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>From Purchase</div>
-                          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{r.purchaseId}</div>
-                        </div>
-                        <div>
-                          <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>Pieces</div>
-                          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{r.quantity}</div>
-                        </div>
-                      </div>
-
-                      {r.reason && (
-                        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontStyle: "italic" }}>
-                          "{r.reason}"
+                    <div className="flex items-start gap-3">
+                      {r.sareeLine.imageUrl ? (
+                        <button type="button" onClick={() => setPreview(r.sareeLine.imageUrl)} className="p-0 border-0 bg-transparent cursor-pointer shrink-0">
+                          <img src={r.sareeLine.imageUrl} alt={r.sareeLine.code} style={{ width: 50, height: 50, borderRadius: 10, objectFit: "cover", border: `1px solid ${T.borderDef}` }} />
+                        </button>
+                      ) : (
+                        <div style={{ width: 50, height: 50, borderRadius: 10, background: T.silkCream, border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <ImageIcon size={18} color={T.taupe} />
                         </div>
                       )}
-
-                      <div className="flex items-center justify-between pt-1 border-t border-[rgba(110,15,45,0.06)]" style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-                        <span>Req: {r.requestedBy.firstName} {r.requestedBy.lastName}</span>
-                        {r.status !== "PENDING" && r.decidedBy && (
-                          <span>Decided: {r.decidedBy.firstName} {r.decidedBy.lastName}</span>
-                        )}
+                      <div className="flex-1 min-w-0">
+                        <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{r.supplier.name}</div>
+                        <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy, fontWeight: 600 }}>{r.sareeLine.code}</div>
+                        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{[r.sareeLine.sareeType, r.sareeLine.color].filter(Boolean).join(" · ") || "—"}</div>
                       </div>
+                    </div>
 
-                      {r.status === "PENDING" && (
-                        <div className="flex gap-2 pt-1">
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            fullWidth
-                            iconLeft={CheckCircle2}
-                            disabled={decidingId === r.id}
-                            onClick={() => decide(r.id, "APPROVED")}
-                            className="rounded-[10px]"
-                          >
-                            Approve
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            fullWidth
-                            iconLeft={X}
-                            disabled={decidingId === r.id}
-                            onClick={() => decide(r.id, "REJECTED")}
-                            className="rounded-[10px]"
-                          >
-                            Reject
-                          </Button>
-                        </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, background: T.silkCream, borderRadius: 10, padding: "10px 12px" }}>
+                      <div>
+                        <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>From Purchase</div>
+                        <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, color: T.luxuryBrown }}>{r.purchaseId}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>Pieces</div>
+                        <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{r.quantity}</div>
+                      </div>
+                    </div>
+
+                    {r.reason && (
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontStyle: "italic" }}>
+                        "{r.reason}"
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between pt-1 border-t border-[rgba(110,15,45,0.06)]" style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
+                      <span>Req: {r.requestedBy.firstName} {r.requestedBy.lastName}</span>
+                      {r.status !== "PENDING" && r.decidedBy && (
+                        <span>Decided: {r.decidedBy.firstName} {r.decidedBy.lastName}</span>
                       )}
                     </div>
-                  );
-                })}
-              </div>
-            )
+
+                    {r.status === "PENDING" && (
+                      <div className="flex gap-2 pt-1">
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          fullWidth
+                          iconLeft={CheckCircle2}
+                          disabled={decidingId === r.id}
+                          onClick={() => decide(r.id, "APPROVED")}
+                          className="rounded-[10px]"
+                        >
+                          Approve
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          fullWidth
+                          iconLeft={X}
+                          disabled={decidingId === r.id}
+                          onClick={() => decide(r.id, "REJECTED")}
+                          className="rounded-[10px]"
+                        >
+                          Reject
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           ) : (
             <DataTable responsive columns={columns} data={rows} getRowId={r => r.id} />
           )}
@@ -398,15 +405,15 @@ export function SupplierReturnsPage() {
         {/* Desktop Table View */}
         <div className="hidden md:block">
           {isLoading ? (
-            <div style={{ textAlign: "center", padding: "60px 20px", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Loading supplier returns…</div>
+            <LoadingState variant="skeleton" rows={4} />
           ) : isError ? (
-            <div style={{ textAlign: "center", padding: "60px 20px", fontFamily: F.ui, fontSize: 14, color: "#C0392B" }}>
-              Could not load supplier returns. Please refresh the page.
-            </div>
+            <ErrorState error={undefined} onRetry={() => void refetch()} />
           ) : rows.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "60px 20px", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
-              No {statusFilter === "ALL" ? "" : STATUS_STYLE[statusFilter as BackendSupplierReturnStatus]?.label.toLowerCase() + " "}return requests.
-            </div>
+            statusFilter !== "ALL" ? (
+              <FilteredEmptyState onClearFilters={() => setStatusFilter("ALL")} />
+            ) : (
+              <EmptyState title="No return requests yet" description="Sarees returned to suppliers will show up here." />
+            )
           ) : (
             <DataTable responsive columns={columns} data={rows} getRowId={r => r.id} />
           )}

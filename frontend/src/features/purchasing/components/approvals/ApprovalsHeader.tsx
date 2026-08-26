@@ -1,5 +1,4 @@
 import React from "react";
-import { Package, ShoppingCart, TrendingUp } from "lucide-react";
 import { T, F } from "./tokens";
 
 // ─── 1. PAGE HEADER ─────────────────────────────────────────────────────────

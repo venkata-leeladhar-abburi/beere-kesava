@@ -33,7 +33,7 @@ function MoneyChartTip({ active, payload, label, moneyVisible }: TooltipProps<Va
 }
 
 export function ProfitLossReport() {
-  const { firms, financials } = useFirms();
+  const { firms, financials, isLoading, error, refetch } = useFirms();
   const moneyVisible = useMoneyVisible();
   const inr = (n: number) => (moneyVisible ? formatMoney(rupees(n)) : "—");
 
@@ -305,6 +305,9 @@ export function ProfitLossReport() {
               getRowId={r => r.id}
               caption="Profit & Loss Summary — All Firms"
               rowClassName={ledgerRowClassName}
+              loading={isLoading}
+              error={!!error}
+              onRetry={refetch}
             />
           </div>
 
@@ -324,7 +327,7 @@ export function ProfitLossReport() {
           <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: T.luxuryBrown, marginBottom: 12 }}>Per-Firm Breakdown</div>
           <div className="w-full overflow-x-auto section-nav-scroll border border-[#E8DCC4] rounded-xl bg-white p-2">
             <div className="min-w-[650px]">
-              <DataTable columns={perFirmColumns} data={perFirm} getRowId={f => f.name} />
+              <DataTable columns={perFirmColumns} data={perFirm} getRowId={f => f.name} loading={isLoading} error={!!error} onRetry={refetch} />
             </div>
           </div>
         </div>

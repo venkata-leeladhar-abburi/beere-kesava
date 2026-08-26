@@ -124,6 +124,9 @@ function groupEntriesIntoFinancials(firmId: string, entries: BackendFinancialEnt
 
 interface FirmsContextValue {
   firms: Firm[];
+  isLoading: boolean;
+  error: unknown;
+  refetch: () => void;
   financials: FirmFinancials[];
   addFirm: (firm: Omit<Firm, "id" | "createdAt">) => void;
   updateFirm: (id: string, updates: Omit<Firm, "id" | "createdAt">) => void;
@@ -150,7 +153,7 @@ const FINANCIALS_KEY = ["firms", "financials"] as const;
 export function FirmsProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
 
-  const { data: backendFirms = [] } = useQuery({
+  const { data: backendFirms = [], isLoading, error, refetch } = useQuery({
     queryKey: FIRMS_KEY,
     queryFn: () => firmsApi.list().then((res) => res.items),
   });
@@ -361,6 +364,9 @@ export function FirmsProvider({ children }: { children: React.ReactNode }) {
     <FirmsContext.Provider
       value={{
         firms,
+        isLoading,
+        error,
+        refetch: () => void refetch(),
         financials,
         addFirm,
         updateFirm,
@@ -382,6 +388,9 @@ export function FirmsProvider({ children }: { children: React.ReactNode }) {
 
 const FALLBACK_FIRMS: FirmsContextValue = {
   firms: [],
+  isLoading: false,
+  error: null,
+  refetch: () => {},
   financials: [],
   addFirm: () => {},
   updateFirm: () => {},

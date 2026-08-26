@@ -40,7 +40,7 @@ function LineRow({ line, selectable, selected, onSelect }: {
       }}
     >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
-        <span style={{ fontFamily: F.mono, fontSize: 11.5, fontWeight: 700, color: T.royalBurgundy }}>{line.itemCode}</span>
+        <span style={{ fontFamily: F.ui, fontVariantNumeric: "tabular-nums lining-nums" as const, fontSize: 11.5, fontWeight: 700, color: T.royalBurgundy }}>{line.itemCode}</span>
         <span style={{ fontFamily: F.ui, fontSize: 11.5, fontWeight: 700, color: depleted ? T.crimson : T.green, whiteSpace: "nowrap" }}>
           {depleted ? "none left" : `${fmt(line.availableQty)} ${line.unit} left`}
         </span>
@@ -272,7 +272,7 @@ export function GrnBatchSelector({ grnBatches, materialType, value, selectedLine
               {siblings.map(s => (
                 <div key={s.id} style={{ display: "flex", justifyContent: "space-between", gap: 10, padding: "1px 0" }}>
                   <span style={{ minWidth: 0 }}>
-                    <span style={{ fontFamily: F.mono, fontSize: 11, color: T.royalBurgundy }}>{s.itemCode}</span>
+                    <span style={{ fontFamily: F.ui, fontVariantNumeric: "tabular-nums lining-nums" as const, fontSize: 11, color: T.royalBurgundy }}>{s.itemCode}</span>
                     {" · "}{s.materialType} — {s.name}{s.description ? ` (${s.description})` : ""}
                   </span>
                   <strong style={{ color: s.availableQty > 0 ? T.luxuryBrown : T.taupe, whiteSpace: "nowrap" }}>

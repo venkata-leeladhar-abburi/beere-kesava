@@ -24,13 +24,19 @@ import { WorkerQCHistorySection } from "./WorkerQCHistorySection";
 import { WorkerQCQueueHeader } from "./WorkerQCQueueHeader";
 import { WorkerQCWeaverGrid, WorkerQCBatchGrid } from "./WorkerQCGridCards";
 import { IconButton, Input } from "../../../../shared/ui/primitives";
+import { LoadingState, ErrorState } from "../../../../shared/ui/state";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { type DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 
 export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTablet?: boolean }) {
-  const { batches } = useBatches();
+  const { batches, isLoading: batchesLoading, isError: batchesError, error: batchesErrorObj, refetch: refetchBatches } = useBatches();
   const { addReadySaree, dispatches } = useFinishing();
-  const { recordQc, qcRecords } = useQc();
+  const { recordQc, qcRecords, isLoading: qcLoading, isError: qcError, error: qcErrorObj, refetch: refetchQc } = useQc();
+
+  const isLoading = batchesLoading || qcLoading;
+  const isError = batchesError || qcError;
+  const loadError = batchesErrorObj ?? qcErrorObj ?? null;
+  const refetchAll = () => { refetchBatches(); refetchQc(); };
   // A saree already on a dispatch record has left the premises — it has no
   // business sitting in the inspection queue even if its receipt/QC fields
   // say otherwise (mis-sequenced dispatch, or a late-entered QC result).
@@ -382,7 +388,11 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
           )}
         </div>
 
-        {wSarees.length === 0 ? (
+        {isLoading ? (
+          <LoadingState variant="skeleton" rows={4} />
+        ) : isError ? (
+          <ErrorState error={loadError} onRetry={refetchAll} />
+        ) : wSarees.length === 0 ? (
           <div style={{ padding: "40px 20px", textAlign: "center" }}>
             <CheckCircle2 size={36} color={T.green} style={{ margin: "0 auto 10px" }} />
             <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: T.brown }}>All done for this weaver!</div>
@@ -459,7 +469,11 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
             </span>
           }
         >
-          {pending.length === 0 ? (
+          {isLoading ? (
+            <LoadingState variant="skeleton" rows={4} />
+          ) : isError ? (
+            <ErrorState error={loadError} onRetry={refetchAll} />
+          ) : pending.length === 0 ? (
             <div style={{ padding: "36px 20px", textAlign: "center" }}>
               <CheckCircle2 size={36} color={T.green} style={{ margin: "0 auto 10px" }} />
               <div style={{ fontFamily: F.u, fontSize: 15, fontWeight: 600, color: T.brown }}>All sarees inspected!</div>

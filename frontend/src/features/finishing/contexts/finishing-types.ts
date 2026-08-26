@@ -162,4 +162,6 @@ export interface FinishingContextValue {
   markQuotationDispatched: (quotationId: string) => void;
   isError: boolean;
   error: unknown;
+  isLoading: boolean;
+  refetch: () => void;
 }

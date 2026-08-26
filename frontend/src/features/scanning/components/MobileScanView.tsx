@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Copy, Check } from "lucide-react";
 import { IconButton } from "../../../shared/ui/primitives";
 import { scanApi, ScanLookupResult } from "../../../shared/api/scan";
+import { LoadingState, ErrorState, EmptyState } from "../../../shared/ui/state";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // DESIGN TOKENS
@@ -83,7 +84,7 @@ export function MobileScanView({ saree }: { saree?: SareeData }) {
   const [searchParams] = useSearchParams();
   const sareeId = searchParams.get("id") ?? searchParams.get("sareeId");
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["scan", sareeId],
     queryFn: () => scanApi.lookup(sareeId!),
     enabled: !saree && !!sareeId,
@@ -108,16 +109,24 @@ export function MobileScanView({ saree }: { saree?: SareeData }) {
 
   if (!saree && isLoading) {
     return (
-      <div style={{ minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.ui, color: T.taupe }}>
-        Looking up {sareeId}…
+      <div style={{ minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+        <LoadingState variant="spinner" label={`Looking up ${sareeId}…`} />
       </div>
     );
   }
 
-  if (!saree && (isError || !resolved)) {
+  if (!saree && isError) {
     return (
-      <div style={{ minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.ui, color: T.crimson, textAlign: "center", padding: 24 }}>
-        Couldn't find a saree with code "{sareeId}".
+      <div style={{ minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+        <ErrorState error={undefined} onRetry={() => void refetch()} />
+      </div>
+    );
+  }
+
+  if (!saree && !resolved) {
+    return (
+      <div style={{ minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+        <EmptyState title="Saree not found" description={`Couldn't find a saree with code "${sareeId}".`} />
       </div>
     );
   }

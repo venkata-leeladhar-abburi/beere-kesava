@@ -11,7 +11,6 @@ import {
 import { SectionCard, RoleBadge, AccessBadge } from "./UserBadges";
 import { Button, Field, Input, Textarea, Select, SelectItem } from "../../../shared/ui/primitives";
 import { PhotoUploadField } from "../../../shared/ui/PhotoUploadField";
-import { MobileFormActionBar } from "../../../shared/ui/MobileFormActionBar";
 
 export interface WeaverFieldsState {
   photoUrl: string;

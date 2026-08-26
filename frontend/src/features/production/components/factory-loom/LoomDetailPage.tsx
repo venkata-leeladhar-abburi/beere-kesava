@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  Edit2, ArrowLeft, FileText, Factory, Package, Layers, Sparkles,
-  CheckCircle2, ChevronLeft, UserRound,
-} from "lucide-react";
-import { BG_IMAGE } from "@/features/portals/components/weaver-portal/WeaverBatchNotifData";
-import { SectionCard } from "@/features/weavers/components/common/primitives";
+  Edit2, FileText, Factory, Package, Layers, Sparkles,
+  CheckCircle2, ChevronLeft, UserRound } from "lucide-react";
+import { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
+import { SectionCard } from "@/shared/ui/SectionCard";
 import { useBatches } from "../../contexts/BatchContext";
 import { useDesignLibrary, DispatchRecord } from "@/features/design-library";
 import { useMaterialIssue } from "@/features/materials";

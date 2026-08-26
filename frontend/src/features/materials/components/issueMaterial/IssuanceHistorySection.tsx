@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { CheckCircle2, Clock, History, LayoutGrid, List } from "lucide-react";
-import { MaterialIssueRecord } from "../../contexts/MaterialIssueContext";
+import { MaterialIssueRecord, useMaterialIssue } from "../../contexts/MaterialIssueContext";
 import { DateFilterBar, DateFilterState } from "../../../../shared/ui/DateFilterBar";
 import { F, T } from "./theme";
 import { SectionCard } from "./primitives";
@@ -8,6 +8,7 @@ import { renderIssuedMaterials } from "./materialFormatters";
 import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { EntityCode } from "@/shared/ui/domain";
+import { LoadingState, ErrorState, EmptyState, FilteredEmptyState } from "../../../../shared/ui/state";
 
 const STATUS_BADGE: Record<string, { label: string; color: string; bg: string }> = {
   signed: { label: "Signed", color: T.green, bg: "rgba(30,102,64,0.10)" },
@@ -30,6 +31,7 @@ export function IssuanceHistorySection({
   setViewRecord: (r: MaterialIssueRecord) => void;
 }) {
   const [viewMode, setViewMode] = useState<"card" | "table">("card");
+  const { isLoading, isError, error, refetch } = useMaterialIssue();
 
   const columns: ColumnDef<MaterialIssueRecord>[] = [
     {
@@ -155,10 +157,16 @@ export function IssuanceHistorySection({
       {/* Mobile View (Card View or Table View based on viewMode toggle) */}
       <div className="block md:hidden">
         {viewMode === "card" ? (
-          pagedHistory.length === 0 ? (
-            <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: "32px 16px", textAlign: "center" }}>
-              <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No issuance records match your filters</div>
-            </div>
+          isLoading ? (
+            <LoadingState variant="skeleton" rows={4} />
+          ) : isError ? (
+            <ErrorState error={error} onRetry={refetch} />
+          ) : pagedHistory.length === 0 ? (
+            histSearch.trim() || histWeaverFilter !== "All Weavers" ? (
+              <FilteredEmptyState onClearFilters={() => { setHistSearch(""); setHistWeaverFilter("All Weavers"); }} />
+            ) : (
+              <EmptyState title="No issuance records yet" description="Materials issued to weavers or looms will show up here." />
+            )
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
               {pagedHistory.map(r => {
@@ -230,6 +238,11 @@ export function IssuanceHistorySection({
               columns={columns}
               data={pagedHistory}
               getRowId={r => r.id}
+              loading={isLoading}
+              error={isError}
+              onRetry={refetch}
+              isFiltered={!!(histSearch.trim() || histWeaverFilter !== "All Weavers")}
+              onClearFilters={() => { setHistSearch(""); setHistWeaverFilter("All Weavers"); }}
               emptyTitle="No issuance records match your filters"
             />
           </div>
@@ -242,6 +255,11 @@ export function IssuanceHistorySection({
           columns={columns}
           data={pagedHistory}
           getRowId={r => r.id}
+          loading={isLoading}
+          error={isError}
+          onRetry={refetch}
+          isFiltered={!!(histSearch.trim() || histWeaverFilter !== "All Weavers")}
+          onClearFilters={() => { setHistSearch(""); setHistWeaverFilter("All Weavers"); }}
           emptyTitle="No issuance records match your filters"
         />
       </div>

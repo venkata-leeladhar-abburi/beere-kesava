@@ -14,6 +14,7 @@ import { weaversApi } from "../../../../shared/api/weavers";
 import { weaverPaymentsApi, vendorPaymentsApi, supplierPaymentsApi } from "../../../../shared/api/payments";
 import { invoicesApi } from "../../../../shared/api/invoices";
 import { Button } from "../../../../shared/ui/primitives";
+import { LoadingState, ErrorState } from "../../../../shared/ui/state";
 import { ChartFigure } from "../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
@@ -39,11 +40,11 @@ export function PaymentAnalyticsSection() {
 
   // Top-5 weaver making-charges distribution, computed live from
   // GET /payments/weavers grouped by weaverId + GET /weavers for names.
-  const { data: weaversRes } = useQuery({
+  const { data: weaversRes, isLoading: weaversLoading, isError: weaversError, refetch: refetchWeavers } = useQuery({
     queryKey: ["analytics-weavers-roster"],
     queryFn: () => weaversApi.list(),
   });
-  const { data: weaverPaymentsRes } = useQuery({
+  const { data: weaverPaymentsRes, isLoading: weaverPaymentsLoading, isError: weaverPaymentsError, refetch: refetchWeaverPayments } = useQuery({
     queryKey: ["analytics-weaver-payments"],
     queryFn: () => weaverPaymentsApi.list(),
   });
@@ -83,7 +84,7 @@ export function PaymentAnalyticsSection() {
   // Customer payment compliance (paid/partial/overdue counts), derived live
   // from GET /invoices status field. Falls back to the static demo split
   // only when there are no invoices yet.
-  const { data: invoicesRes } = useQuery({
+  const { data: invoicesRes, isLoading: invoicesLoading, isError: invoicesError, refetch: refetchInvoices } = useQuery({
     queryKey: ["analytics-invoices"],
     queryFn: () => invoicesApi.list(),
   });
@@ -287,7 +288,11 @@ export function PaymentAnalyticsSection() {
             </div>
             {/* Chart body */}
             <div style={{ flex: 1, padding: "18px 10px 16px", display: "flex", flexDirection: "column", alignItems: "center" }}>
-              {complianceData.length === 0 ? (
+              {invoicesLoading ? (
+                <LoadingState variant="skeleton" rows={3} />
+              ) : invoicesError ? (
+                <ErrorState error={undefined} onRetry={() => void refetchInvoices()} />
+              ) : complianceData.length === 0 ? (
                 <div style={{ padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
                   No invoices recorded yet.
                 </div>
@@ -343,12 +348,16 @@ export function PaymentAnalyticsSection() {
             </div>
             {/* Weaver list */}
             <div style={{ flex: 1, padding: "20px 22px" }}>
-              {weaverDistData.length === 0 && (
+              {(weaversLoading || weaverPaymentsLoading) ? (
+                <LoadingState variant="skeleton" rows={3} />
+              ) : (weaversError || weaverPaymentsError) ? (
+                <ErrorState error={undefined} onRetry={() => { void refetchWeavers(); void refetchWeaverPayments(); }} />
+              ) : weaverDistData.length === 0 ? (
                 <div style={{ padding: "20px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
                   No weaver payments recorded yet.
                 </div>
-              )}
-              {weaverDistData.map((d, i) => (
+              ) : null}
+              {!weaversLoading && !weaverPaymentsLoading && !weaversError && !weaverPaymentsError && weaverDistData.map((d, i) => (
                 <div key={d.name} style={{ marginBottom: i < weaverDistData.length - 1 ? 18 : 0 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 7 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>

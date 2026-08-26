@@ -148,6 +148,8 @@ interface MaterialReturnContextValue {
   getOutstandingForRecipient: (weaverId?: string, factoryLoomId?: string) => Promise<WeaverOutstandingLine[]>;
   isError: boolean;
   error: unknown;
+  isLoading: boolean;
+  refetch: () => void;
 }
 
 const MaterialReturnContext = createContext<MaterialReturnContextValue | null>(null);
@@ -159,7 +161,7 @@ export function MaterialReturnProvider({ children }: { children: React.ReactNode
   const { user } = useAuth();
   const actingUserId = user?.id ?? STOPGAP_ACTING_USER_ID;
 
-  const { data: returnRecords = [], isError, error } = useQuery({
+  const { data: returnRecords = [], isError, error, isLoading, refetch } = useQuery({
     queryKey: RETURN_RECORDS_KEY,
     queryFn: async () => {
       const [returnsRes, weaversRes, loomsRes] = await Promise.all([
@@ -232,7 +234,7 @@ export function MaterialReturnProvider({ children }: { children: React.ReactNode
   }, []);
 
   return (
-    <MaterialReturnContext.Provider value={{ returnRecords, addReturnRecord, deleteReturnRecord, getRecordsForWeaver, getOutstandingForRecipient, isError, error }}>
+    <MaterialReturnContext.Provider value={{ returnRecords, addReturnRecord, deleteReturnRecord, getRecordsForWeaver, getOutstandingForRecipient, isError, error, isLoading, refetch: () => void refetch() }}>
       {children}
     </MaterialReturnContext.Provider>
   );
@@ -254,6 +256,8 @@ const FALLBACK_MATERIAL_RETURN: MaterialReturnContextValue = {
   getOutstandingForRecipient: async () => [],
   isError: false,
   error: null,
+  isLoading: false,
+  refetch: () => {},
 };
 
 export function useMaterialReturn(): MaterialReturnContextValue {

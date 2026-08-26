@@ -36,15 +36,15 @@ function RetailWeeklyTooltip({ active, payload, label }: TooltipProps<ValueType,
 }
 
 export function RetailSalesReport() {
-  const { data: salesRes, isLoading: salesLoading, isError: salesError } = useQuery({
+  const { data: salesRes, isLoading: salesLoading, isError: salesError, refetch: refetchSales } = useQuery({
     queryKey: ["reports", "sales"],
     queryFn: () => salesApi.list(),
   });
-  const { data: returnsRes, isError: returnsError } = useQuery({
+  const { data: returnsRes, isError: returnsError, refetch: refetchReturns } = useQuery({
     queryKey: ["reports", "sale-returns"],
     queryFn: () => salesApi.listReturns(),
   });
-  const { data: customersRes, isError: customersError } = useQuery({
+  const { data: customersRes, isError: customersError, refetch: refetchCustomers } = useQuery({
     queryKey: ["reports", "customers-roster"],
     queryFn: () => customersApi.list(),
   });
@@ -54,6 +54,7 @@ export function RetailSalesReport() {
   });
 
   const isError = salesError || returnsError || customersError;
+  const refetchAll = () => { void refetchSales(); void refetchReturns(); void refetchCustomers(); };
 
   const retailSales = useMemo(() => {
     return (salesRes?.items ?? []).filter(s => s.channel === "RETAIL");
@@ -298,6 +299,7 @@ export function RetailSalesReport() {
                 getRowId={r => r.id + r.sarId}
                 loading={salesLoading}
                 error={!!isError}
+                onRetry={refetchAll}
                 emptyTitle="No retail sales recorded yet."
               />
             </div>

@@ -29,33 +29,35 @@ export function SubAlert({ label, color }: { label: string; color: string }) {
 }
 
 export function OverdueAlertsReport() {
-  const { data: invoicesRes, isLoading: invoicesLoading, isError: invoicesError } = useQuery({
+  const { data: invoicesRes, isLoading: invoicesLoading, isError: invoicesError, refetch: refetchInvoices } = useQuery({
     queryKey: ["reports", "invoices"],
     queryFn: () => invoicesApi.list(),
   });
-  const { data: customersRes, isError: customersError } = useQuery({
+  const { data: customersRes, isError: customersError, refetch: refetchCustomers } = useQuery({
     queryKey: ["reports", "customers-roster"],
     queryFn: () => customersApi.list(),
   });
-  const { data: bulkOrdersRes, isLoading: bulkOrdersLoading, isError: bulkOrdersError } = useQuery({
+  const { data: bulkOrdersRes, isLoading: bulkOrdersLoading, isError: bulkOrdersError, refetch: refetchBulkOrders } = useQuery({
     queryKey: ["reports", "bulk-orders"],
     queryFn: () => bulkOrdersApi.list(),
   });
-  const { data: stockRes } = useQuery({
+  const { data: stockRes, isLoading: stockLoading, isError: stockError, refetch: refetchStock } = useQuery({
     queryKey: ["reports", "raw-stock-low"],
     queryFn: () => rawMaterialsApi.listStock(),
   });
-  const { data: batchesRes } = useQuery({
+  const { data: batchesRes, isLoading: batchesLoading, isError: batchesError, refetch: refetchBatches } = useQuery({
     queryKey: ["reports", "batches-overdue"],
     queryFn: () => batchesApi.list(),
   });
-  const { data: weaversRes } = useQuery({
+  const { data: weaversRes, isLoading: weaversLoading, isError: weaversError, refetch: refetchWeavers } = useQuery({
     queryKey: ["reports", "weavers-overdue"],
     queryFn: () => weaversApi.list(),
   });
 
   const invoicesTableError = invoicesError || customersError;
   const bulkOrdersTableError = bulkOrdersError || customersError;
+  const refetchInvoicesTable = () => { void refetchInvoices(); void refetchCustomers(); };
+  const refetchBulkOrdersTable = () => { void refetchBulkOrders(); void refetchCustomers(); };
 
   const customerNameById = useMemo(() => new Map((customersRes?.items ?? []).map(c => [c.id, c.name])), [customersRes]);
   const weaverMap = useMemo(() => new Map((weaversRes?.items ?? []).map(w => [w.id, w])), [weaversRes]);
@@ -179,6 +181,7 @@ export function OverdueAlertsReport() {
                 getRowId={r => r.inv}
                 loading={invoicesLoading}
                 error={!invoicesLoading && !!invoicesTableError}
+                onRetry={refetchInvoicesTable}
                 emptyTitle="No overdue invoices — everything is on track."
                 responsive={false}
               />
@@ -206,6 +209,9 @@ export function OverdueAlertsReport() {
                 ]}
                 data={lowStockMaterials}
                 getRowId={r => r.batch}
+                loading={stockLoading}
+                error={stockError}
+                onRetry={refetchStock}
                 emptyTitle="No materials currently low in stock."
                 responsive={false}
               />
@@ -233,6 +239,9 @@ export function OverdueAlertsReport() {
                 ]}
                 data={lateWeavers}
                 getRowId={r => r.code + r.batch}
+                loading={batchesLoading || weaversLoading}
+                error={batchesError || weaversError}
+                onRetry={() => { void refetchBatches(); void refetchWeavers(); }}
                 emptyTitle="No weavers running behind schedule."
                 responsive={false}
               />
@@ -263,6 +272,7 @@ export function OverdueAlertsReport() {
                 getRowId={r => r.order}
                 loading={bulkOrdersLoading}
                 error={!bulkOrdersLoading && !!bulkOrdersTableError}
+                onRetry={refetchBulkOrdersTable}
                 emptyTitle="No bulk orders at risk right now."
                 responsive={false}
               />

@@ -1,12 +1,10 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import * as Dialog from "@radix-ui/react-dialog";
-import {
-  ArrowLeft, MapPin, Phone, Package,
+import { MapPin, Phone, Package,
   CheckCircle2, FileText, ClipboardCheck,
   Send, ArrowRight, Truck, Scale, AlertTriangle, Trash2,
-  ChevronLeft, UserRound, Boxes, Layers, CreditCard, TrendingUp,
-} from "lucide-react";
+  ChevronLeft, Boxes, Layers, CreditCard } from "lucide-react";
 import type { BulkOrder } from "../contexts/BulkOrderContext";
 import { useBulkOrders } from "../contexts/BulkOrderContext";
 import { useFinishing, DispatchRecord, Quotation } from "@/features/finishing";
@@ -20,14 +18,14 @@ import { INVOICES } from "@/features/payments";
 import { resolveBulkOrderRef, resolveOrderMoney } from "../utils/BulkOrderLinking";
 import { DispatchDetailPanel } from "./DispatchDetailPanel";
 import { BulkOrderSareesTab, LinkedSaree } from "./BulkOrderSareesTab";
-import { BulkOrderOverviewTab, BulkOrderPaymentsTab } from "./BulkOrderOverviewPaymentsTabs";
+import { BulkOrderOverviewTab } from "./BulkOrderOverviewPaymentsTabs";
 import { Button } from "../../../shared/ui/primitives";
 import { Modal } from "../../../shared/ui/overlay";
 import { Breadcrumbs } from "../../../shared/ui/nav/Breadcrumbs";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money, EntityCode } from "@/shared/ui/domain";
-import { BG_IMAGE } from "@/features/portals/components/weaver-portal/WeaverBatchNotifData";
-import { SectionCard } from "@/features/weavers/components/common/primitives";
+import { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
+import { SectionCard } from "@/shared/ui/SectionCard";
 
 const T = {
   silkCream: "#F7F2EA", royalBurgundy: "#6E0F2D",
@@ -276,7 +274,7 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
   }, [linkedSarees, sareeReceiptById, getSareeTypeByCode, live.sareeType, live.total]);
 
   const money = resolveOrderMoney(live, INVOICES);
-  const { amountDue, amountPaid, balance, payments } = money;
+  const { amountDue, amountPaid, balance } = money;
   const matchedInvoice = money.invoiceId ? { id: money.invoiceId } : null;
 
   const inr = (n: number) => formatMoney(rupees(n));

@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate, Navigate } from "react-router";
+import { useNavigate, useSearchParams, Navigate } from "react-router";
 import { LoginPage as LoginPageComponent } from "../../features/auth/components/LoginPage";
 import { useAuth } from "../../contexts/AuthContext";
 import { ROLE_ROUTES } from "../roleRoutes";
@@ -7,12 +7,16 @@ import { ROLE_ROUTES } from "../roleRoutes";
 export function LoginPage() {
   const { isAuthenticated, role } = useAuth();
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  // Set by SessionExpiredState / AccessDeniedState flows so re-login returns
+  // the user to the page they were on instead of always the portal root.
+  const returnTo = params.get("returnTo");
 
   // Already logged in — go straight to that phone number's one portal.
   // A role that doesn't map to a known portal (backend returned something
   // unexpected, or genuinely has none) falls through to /select-role, which
   // now only ever shows an access-denied message — never a picker.
-  if (isAuthenticated) return <Navigate to={role ? ROLE_ROUTES[role] : "/select-role"} replace />;
+  if (isAuthenticated) return <Navigate to={returnTo ?? (role ? ROLE_ROUTES[role] : "/select-role")} replace />;
 
   return (
     <LoginPageComponent
@@ -20,7 +24,7 @@ export function LoginPage() {
         // login() (called by the OTP step before this fires) has already set
         // the real, backend-verified role — this component re-renders with
         // it, so by the time this callback runs `role` below is current.
-        navigate(role ? ROLE_ROUTES[role] : "/select-role");
+        navigate(returnTo ?? (role ? ROLE_ROUTES[role] : "/select-role"));
       }}
     />
   );

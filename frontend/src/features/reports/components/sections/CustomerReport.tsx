@@ -64,19 +64,20 @@ export function CustomerReport() {
   const [filter, setFilter] = useState("All Customers");
   const filters = ["All Customers", "Retail Only", "Wholesale Only", "Has Outstanding Dues", "No Purchases This Month"];
 
-  const { data: customersRes, isLoading, isError: customersError } = useQuery({
+  const { data: customersRes, isLoading, isError: customersError, refetch: refetchCustomers } = useQuery({
     queryKey: ["reports", "customers-roster"],
     queryFn: () => customersApi.list(),
   });
-  const { data: invoicesRes, isError: invoicesError } = useQuery({
+  const { data: invoicesRes, isError: invoicesError, refetch: refetchInvoices } = useQuery({
     queryKey: ["reports", "invoices"],
     queryFn: () => invoicesApi.list(),
   });
-  const { data: salesRes, isError: salesError } = useQuery({
+  const { data: salesRes, isError: salesError, refetch: refetchSales } = useQuery({
     queryKey: ["reports", "sales"],
     queryFn: () => salesApi.list(),
   });
   const isError = customersError || invoicesError || salesError;
+  const refetchAll = () => { void refetchCustomers(); void refetchInvoices(); void refetchSales(); };
 
   const custRows: CustomerRow[] = useMemo(() => {
     const customers = customersRes?.items ?? [];
@@ -198,7 +199,10 @@ export function CustomerReport() {
         <ChartCard title="Top Customers by Total Purchase Value" sub="All-time wholesale + retail combined">
           <div style={{ display: "flex", flexDirection: "column", gap: 11, padding: "8px 0" }}>
             {isError && (
-              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.crimson, padding: "8px 0" }}>Failed to load customer purchases.</div>
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.crimson, padding: "8px 0", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                <span>Failed to load customer purchases.</span>
+                <Button variant="danger-subtle" size="sm" onClick={refetchAll}>Retry</Button>
+              </div>
             )}
             {!isError && topCustomers.length === 0 && (
               <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, padding: "8px 0" }}>No customer purchases recorded yet.</div>
@@ -301,6 +305,7 @@ export function CustomerReport() {
                 getRowId={r => r.id}
                 loading={isLoading}
                 error={!!isError}
+                onRetry={refetchAll}
                 emptyTitle="No customers on record yet."
               />
             </div>

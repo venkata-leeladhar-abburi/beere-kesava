@@ -9,6 +9,7 @@ import { PaginationBtn, SectionCard } from "./shared";
 import { Button } from "../../../../shared/ui/primitives";
 import { auditLogApi, ActionLogEntry } from "../../../../shared/api/audit-log";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { LoadingState, ErrorState, EmptyState, FilteredEmptyState } from "../../../../shared/ui/state";
 
 type ActionEntry = {
   id: string;
@@ -78,16 +79,20 @@ export function ActionLogSection({
   moduleFilter = "All Modules",
   actionFilter = "All Actions",
   periodFilter = "All Time",
+  isFiltered = false,
+  onClearFilters,
 }: {
   search?: string;
   roleFilter?: string;
   moduleFilter?: string;
   actionFilter?: string;
   periodFilter?: string;
+  isFiltered?: boolean;
+  onClearFilters?: () => void;
 } = {}) {
   const [actionView, setActionView] = useState<"timeline"|"table">("timeline");
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["audit-log", "actions", moduleFilter],
     queryFn: () => auditLogApi.listActions({ pageSize: 200, module: moduleFilter }),
   });
@@ -224,21 +229,17 @@ export function ActionLogSection({
               borderRadius: 1,
             }} />
 
-            {isLoading && (
-              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, padding: "24px 0" }}>
-                Loading action log…
-              </div>
-            )}
-            {isError && (
-              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.crimson, padding: "24px 0" }}>
-                Could not load the action log. Please try again later.
-              </div>
-            )}
+            {isLoading && <LoadingState variant="skeleton" rows={4} />}
+            {isError && <ErrorState error={error} onRetry={() => refetch()} />}
             {!isLoading && !isError && entries.length === 0 && (
-              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, padding: "24px 0" }}>
-                No actions recorded yet. As weavers, invoices, and purchase orders are created or
-                updated, they'll show up here.
-              </div>
+              isFiltered ? (
+                <FilteredEmptyState onClearFilters={onClearFilters ?? (() => {})} />
+              ) : (
+                <EmptyState
+                  title="No actions recorded yet"
+                  description="As weavers, invoices, and purchase orders are created or updated, they'll show up here."
+                />
+              )
             )}
 
             {entries.map(entry => (
@@ -358,7 +359,11 @@ export function ActionLogSection({
                 getRowId={e => e.id}
                 loading={isLoading && entries.length === 0}
                 error={isError && entries.length === 0}
-                emptyTitle="No actions recorded yet."
+                onRetry={() => refetch()}
+                isFiltered={isFiltered}
+                onClearFilters={onClearFilters}
+                emptyTitle="No actions recorded yet"
+                emptyDescription="As weavers, invoices, and purchase orders are created or updated, they'll show up here."
               />
 
               {/* Pagination */}

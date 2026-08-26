@@ -23,6 +23,7 @@ interface CustomerSelectStepProps {
   selectedCustomer: Customer | null;
   setSelectedCustomer: (c: Customer | null) => void;
   filteredCustomers: Customer[];
+  customersLoading?: boolean;
   isEditingCustomer: boolean;
   setIsEditingCustomer: (v: boolean) => void;
   isNewCustomer: boolean;
@@ -48,6 +49,7 @@ export function CustomerSelectStep({
   selectedCustomer,
   setSelectedCustomer,
   filteredCustomers,
+  customersLoading,
   isEditingCustomer,
   setIsEditingCustomer,
   isNewCustomer,
@@ -97,10 +99,12 @@ export function CustomerSelectStep({
             }}>
               <div style={{ padding: "8px 14px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${C.bdr}` }}>
                 <span style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 1.5, color: C.muted, textTransform: "uppercase" as const }}>
-                  {custSearch.length >= 2 ? `${filteredCustomers.length} result${filteredCustomers.length !== 1 ? "s" : ""} for "${custSearch}"` : "Recent Customers"}
+                  {customersLoading ? "Loading…" : custSearch.length >= 2 ? `${filteredCustomers.length} result${filteredCustomers.length !== 1 ? "s" : ""} for "${custSearch}"` : "Recent Customers"}
                 </span>
               </div>
-              {filteredCustomers.length > 0 ? filteredCustomers.slice(0, 4).map((c, i) => (
+              {customersLoading ? (
+                <div style={{ padding: "16px 14px", fontFamily: F.u, fontSize: 13, color: C.muted, textAlign: "center" as const }}>Loading customers…</div>
+              ) : filteredCustomers.length > 0 ? filteredCustomers.slice(0, 4).map((c, i) => (
                 <Button key={c.id} variant="tertiary" fullWidth onClick={() => handleSelectCustomer(c)}
                   className={`justify-start gap-3 rounded-none border-0 px-3.5 py-3 ${i < Math.min(filteredCustomers.length, 4) - 1 ? "border-b border-[rgba(110,15,45,0.12)]" : ""}`}>
                   <div style={{ width: 38, height: 38, borderRadius: "50%", background: `linear-gradient(135deg, ${C.burg}, ${C.dark})`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>

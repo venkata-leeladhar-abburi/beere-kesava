@@ -228,7 +228,7 @@ export function ReturnMaterialPage() {
           <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 8 }}>
             <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(32px, 6vw, 56px)", fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>Receive Materials Back from Weaver</h1>
           </div>
-          <p style={{ fontFamily: F.ui, fontWeight: 400, fontSize: "clamp(14px, 2.2vw, 16px)", color: "rgba(255,253,249,0.70)", lineHeight: 1.6, maxWidth: 640, margin: 0 }}>
+          <p className="max-w-[640px]" style={{ fontFamily: F.ui, fontWeight: 400, fontSize: "clamp(14px, 2.2vw, 16px)", color: "rgba(255,253,249,0.70)", lineHeight: 1.6, margin: 0 }}>
             See what's outstanding, record what's actually coming back, note any deduction, and collect the weaver's signature.
           </p>
         </div>

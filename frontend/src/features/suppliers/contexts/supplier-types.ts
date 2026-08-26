@@ -21,9 +21,11 @@ export interface SareeTag {
   notes: string;
   /** Optional photo of the saree, stored as a data URL. */
   imageUrl?: string;
-  /** Optional per-physical-piece photo override, indexed by piece position
-   * (pieceImageUrls[0] is piece 1 of `quantity`) — a piece with nothing here
-   * just falls back to `imageUrl`. */
+  /** Optional per-physical-piece photo, indexed by piece position
+   * (pieceImageUrls[0] is piece 1 of `quantity`). Independent of the line's
+   * own `imageUrl` — a piece with nothing here shows no photo rather than
+   * borrowing the serial's, since each physical saree is photographed
+   * separately. */
   pieceImageUrls?: string[];
   /** How many of this line's `quantity` pieces have been returned to the supplier. */
   returnedQuantity?: number;
@@ -218,7 +220,10 @@ export function expandSareePieces<T extends SareeTag>(sarees: T[]): (T & SareePi
       quantity: 1,
       price,
       finalAmount: computeFinalAmount(price, sellPercent, 1),
-      imageUrl: s.pieceImageUrls?.[i] || s.imageUrl,
+      // Deliberately NOT falling back to the line's `imageUrl` — the serial's
+      // photo is not this physical piece's photo. Each piece is uploaded on
+      // its own, and an un-photographed piece shows the empty placeholder.
+      imageUrl: s.pieceImageUrls?.[i] || undefined,
       // The line only tracks *how many* pieces came back, not which — treat
       // the first `returnedQuantity` pieces of the line as the returned ones.
       returned: i + 1 <= returnedQty,

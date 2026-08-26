@@ -91,6 +91,8 @@ interface POContextValue {
   nextPONumber: string;
   isError: boolean;
   error: unknown;
+  isLoading: boolean;
+  refetch: () => void;
 }
 
 const POContext = createContext<POContextValue | null>(null);
@@ -101,7 +103,7 @@ export function POProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
-  const { data: pos = [], isError, error } = useQuery({
+  const { data: pos = [], isError, error, isLoading, refetch } = useQuery({
     queryKey: QUERY_KEY,
     queryFn: async () => (await purchaseOrdersApi.list()).items.map(po => toPurchaseOrder(po)),
   });
@@ -208,7 +210,7 @@ export function POProvider({ children }: { children: React.ReactNode }) {
   }, [pos]);
 
   return (
-    <POContext.Provider value={{ pos, addPO, approvePO, rejectPO, deletePO, nextPONumber, isError, error }}>
+    <POContext.Provider value={{ pos, addPO, approvePO, rejectPO, deletePO, nextPONumber, isError, error, isLoading, refetch: () => void refetch() }}>
       {children}
     </POContext.Provider>
   );
@@ -223,6 +225,8 @@ const FALLBACK_PO: POContextValue = {
   nextPONumber: "PO-2026-001",
   isError: false,
   error: null,
+  isLoading: false,
+  refetch: () => {},
 };
 
 export function usePO(): POContextValue {

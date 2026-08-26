@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { BackendDesign, designLibraryApi } from "../../../shared/api/design-library";
 import { designDispatchesApi, BackendDesignDispatch } from "../../../shared/api/design-dispatches";
+import { resolveAssetUrl } from "../../../shared/api/uploads";
 
 function backendDesignToEntry(d: BackendDesign): DesignEntry {
   return {
@@ -14,8 +15,8 @@ function backendDesignToEntry(d: BackendDesign): DesignEntry {
     color: d.color ?? "",
     weaverName: "",
     notesForWeaver: d.notesForWeaver ?? "",
-    colorSlipPhoto: d.colorSlipPhotoUrl,
-    designGraph: d.designGraphUrl,
+    colorSlipPhoto: resolveAssetUrl(d.colorSlipPhotoUrl),
+    designGraph: resolveAssetUrl(d.designGraphUrl),
     batches: 0,
     total: 0,
     hasColorSlip: Boolean(d.colorSlipPhotoUrl),
@@ -31,8 +32,10 @@ function backendDispatchToRecord(d: BackendDesignDispatch): DispatchRecord {
     recipientName: d.recipientName,
     batches: d.batches,
     instructions: d.instructions,
-    colorSlipImage: d.colorSlipImageUrl,
-    designGraphImage: d.designGraphImageUrl,
+    // Stored as a server-relative upload path; resolveAssetUrl prefixes the API
+    // origin (and passes through legacy inline data: URLs untouched).
+    colorSlipImage: resolveAssetUrl(d.colorSlipImageUrl),
+    designGraphImage: resolveAssetUrl(d.designGraphImageUrl),
     sentAt: new Date(d.sentAt).toLocaleString("en-US", {
       day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true,
     }),
@@ -79,6 +82,8 @@ interface DesignLibraryContextValue {
   getDispatchesForWeaver: (weaverId: string) => DispatchRecord[];
   isError: boolean;
   error: unknown;
+  isLoading: boolean;
+  refetch: () => void;
 }
 
 // ─── Context ──────────────────────────────────────────────────────────────────
@@ -90,7 +95,7 @@ const DISPATCHES_KEY = ["designLibrary", "dispatches"] as const;
 export function DesignLibraryProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
 
-  const { data: designs = [], isError, error } = useQuery({
+  const { data: designs = [], isError, error, isLoading, refetch } = useQuery({
     queryKey: DESIGNS_KEY,
     queryFn: async () => (await designLibraryApi.list()).items.map(backendDesignToEntry),
   });
@@ -187,7 +192,7 @@ export function DesignLibraryProvider({ children }: { children: React.ReactNode 
   );
 
   return (
-    <DesignLibraryContext.Provider value={{ designs, addDesign, updateDesign, getDesign, dispatches, addDispatch, getDispatchesForWeaver, isError, error }}>
+    <DesignLibraryContext.Provider value={{ designs, addDesign, updateDesign, getDesign, dispatches, addDispatch, getDispatchesForWeaver, isError, error, isLoading, refetch: () => void refetch() }}>
       {children}
     </DesignLibraryContext.Provider>
   );
@@ -203,6 +208,8 @@ const FALLBACK_DESIGN_LIBRARY: DesignLibraryContextValue = {
   getDispatchesForWeaver: () => [],
   isError: false,
   error: null,
+  isLoading: false,
+  refetch: () => {},
 };
 
 export function useDesignLibrary(): DesignLibraryContextValue {

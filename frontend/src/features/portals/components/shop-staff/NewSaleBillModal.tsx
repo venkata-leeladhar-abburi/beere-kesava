@@ -2,13 +2,14 @@ import React from "react";
 import { ChevronLeft, Flower2, Printer, MessageSquare } from "lucide-react";
 import { C, F, Btn, Chip } from "./theme";
 import { IconButton } from "../../../../shared/ui/primitives";
+import type { SaleLine } from "./sale-cart";
 
 interface NewSaleBillModalProps {
-  saree: { id: string; design: string; name: string };
+  lines: SaleLine[];
   custName: string;
   phone: string;
   payment: "cash" | "upi" | "card" | "other" | null;
-  soldPrice: number;
+  total: number;
   canSeePrices: boolean;
   isMobile?: boolean;
   isTablet?: boolean;
@@ -17,11 +18,11 @@ interface NewSaleBillModalProps {
 }
 
 export function NewSaleBillModal({
-  saree,
+  lines,
   custName,
   phone,
   payment,
-  soldPrice,
+  total,
   canSeePrices,
   isMobile,
   isTablet: _isTablet,
@@ -49,23 +50,44 @@ export function NewSaleBillModal({
         <div style={{ padding: "18px 20px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
             <span style={{ fontFamily: F.m, fontSize: 12, color: C.burg }}>Bill No: BKB-2026-1842</span>
-            <span style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>13 Jun 2026 · 11:42 AM</span>
+            <span style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>
+              {new Date().toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+            </span>
           </div>
           <div style={{ borderTop: `1px solid ${C.bdr}`, paddingTop: 12, marginBottom: 12 }}>
-            {[
-              ["Saree ID", saree.id], ["Design Code", saree.design], ["Description", saree.name],
-              ["Customer", custName || "Smt. Annapurna"], ["Phone", `+91 ${phone || "98765 43210"}`],
-            ].map(([k, v]) => (
+            {[["Customer", custName || "—"], ["Phone", phone ? `+91 ${phone}` : "—"]].map(([k, v]) => (
               <div key={k} style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
                 <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{k}</span>
                 <span style={{ fontFamily: F.m, fontSize: 12, color: C.text, fontWeight: 500 }}>{v}</span>
               </div>
             ))}
           </div>
+          {/* Itemised lines — one row per saree on the bill. */}
+          <div style={{ borderTop: `1px solid ${C.bdr}`, paddingTop: 12, marginBottom: 12 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+              <span style={{ fontFamily: F.m, fontSize: 11, letterSpacing: 1.2, color: C.muted, textTransform: "uppercase" as const }}>Item</span>
+              {canSeePrices && (
+                <span style={{ fontFamily: F.m, fontSize: 11, letterSpacing: 1.2, color: C.muted, textTransform: "uppercase" as const }}>Amount</span>
+              )}
+            </div>
+            {lines.map(l => (
+              <div key={l.id} style={{ display: "flex", justifyContent: "space-between", gap: 12, marginBottom: 8 }}>
+                <span style={{ minWidth: 0 }}>
+                  <span style={{ fontFamily: F.m, fontSize: 12, color: C.burg, fontWeight: 600 }}>{l.id}</span>
+                  <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>
+                    {" "}· {l.name}{l.design && l.design !== "—" ? ` · ${l.design}` : ""}
+                  </span>
+                </span>
+                {canSeePrices && (
+                  <span style={{ fontFamily: F.m, fontSize: 12, color: C.text, fontWeight: 500, flexShrink: 0 }}>{fmtPrice(l.soldPrice)}</span>
+                )}
+              </div>
+            ))}
+          </div>
           {canSeePrices && (
             <div style={{ borderTop: `1px solid ${C.bdr}`, paddingTop: 12, display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
-              <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text }}>Total Amount:</span>
-              <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 30, color: C.gold }}>{fmtPrice(soldPrice)}</span>
+              <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text }}>Total Amount ({lines.length} saree{lines.length !== 1 ? "s" : ""}):</span>
+              <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 30, color: C.gold }}>{fmtPrice(total)}</span>
             </div>
           )}
           <div style={{ textAlign: "center" as const, marginBottom: 8 }}>

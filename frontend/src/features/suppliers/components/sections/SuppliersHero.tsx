@@ -4,8 +4,7 @@ import React from "react";
 import suppliersHero from "../../../../assets/inline/suppliersHero.jpg";
 import {
   Send, Plus, Building2, Package, IndianRupee, CheckCircle2,
-  AlertTriangle, TrendingUp,
-} from "lucide-react";
+  AlertTriangle } from "lucide-react";
 import { T, F } from "../theme";
 import { Purchase } from "../../contexts/SupplierContext";
 import { Button } from "../../../../shared/ui/primitives";
@@ -14,7 +13,7 @@ import { rupees, formatMoney } from "@/lib/domain/money";
 import { LuxuryStatsCard } from "../../../../shared/ui/LuxuryStatsCard";
 
 export function SuppliersHero({
-  suppliersCount, purchases, totals, onAddExternalPurchase, onAddSupplier,
+  suppliersCount, totals, onAddExternalPurchase, onAddSupplier,
 }: {
   suppliersCount: number;
   purchases: Purchase[];

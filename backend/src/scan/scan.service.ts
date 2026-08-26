@@ -25,26 +25,46 @@ export class ScanService {
       throw new NotFoundException(`No saree found for scanned code "${sareeId}"`);
     }
 
-    const [inventory, dispatched, sold] = await Promise.all([
+    const [inventory, dispatches, sold] = await Promise.all([
       this.prisma.inventoryRecord.findUnique({ where: { sareeId } }),
-      this.prisma.dispatchSaree.findFirst({ where: { sareeId } }),
+      this.prisma.dispatchSaree.findMany({
+        where: { sareeId },
+        include: { dispatch: { select: { type: true, dispatchDate: true } } },
+        orderBy: { dispatch: { dispatchDate: "desc" } },
+      }),
       this.prisma.saleRecord.findFirst({ where: { sareeId } }),
     ]);
     const latestQc = row.qcRecords[0];
 
-    // Same eligibility rule as InventoryService.findAll() / SalesService.createSale
-    // — a clean QC pass, not dispatched, not already sold, not damaged.
-    // NOT gated on finishing: a saree counts as "in stock" as soon as QC
-    // passes, whether or not it's separately gone through finishing.
-    let saleEligible: "PASSED" | "QC_NOT_PASSED" | "DISPATCHED" | "SOLD" | "DAMAGED_REVIEW_NEEDED";
-    if (dispatched) {
-      saleEligible = "DISPATCHED";
-    } else if (sold) {
+    // Where the saree physically is. A SHOP dispatch delivers it to the shop
+    // floor — that is what *makes* it counter stock, not what removes it from
+    // sale. A WHOLESALE dispatch is the opposite: those goods left the
+    // business. Treating both as "dispatched" meant every saree the shop was
+    // sent became unsellable the moment it arrived.
+    const latestDispatch = dispatches[0]?.dispatch ?? null;
+    const atShop = latestDispatch?.type === "SHOP";
+    const goneToWholesale = latestDispatch?.type === "WHOLESALE";
+
+    // NOT gated on finishing: a saree counts as saleable as soon as QC passes
+    // and it has reached the shop, whether or not it separately went through
+    // the finishing department.
+    let saleEligible:
+      | "PASSED"
+      | "QC_NOT_PASSED"
+      | "NOT_IN_SHOP"
+      | "WHOLESALE_DISPATCHED"
+      | "SOLD"
+      | "DAMAGED_REVIEW_NEEDED";
+    if (sold) {
       saleEligible = "SOLD";
+    } else if (goneToWholesale) {
+      saleEligible = "WHOLESALE_DISPATCHED";
     } else if (inventory?.status === "DAMAGED_REVIEW_NEEDED") {
       saleEligible = "DAMAGED_REVIEW_NEEDED";
     } else if (!row.qcPassed) {
       saleEligible = "QC_NOT_PASSED";
+    } else if (!atShop) {
+      saleEligible = "NOT_IN_SHOP";
     } else {
       saleEligible = "PASSED";
     }
@@ -73,6 +93,8 @@ export class ScanService {
         : null,
       inventoryStatus: inventory?.status ?? null,
       saleEligibility: saleEligible,
+      /** True once a SHOP dispatch has delivered this saree to the shop floor. */
+      atShop,
       // Worker Staff's per-saree price entered at receipt — takes priority
       // over the saree type's shared SareeTypeRate.retailPrice when set.
       // Null for a saree received before this field existed.

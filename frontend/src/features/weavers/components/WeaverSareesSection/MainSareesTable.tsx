@@ -4,7 +4,7 @@ import { Pagination, UsePaginationReturn } from "../../../../shared/ui/DataPagin
 import { ageBucket } from "@/features/customers";
 import { T, F } from "./theme";
 import { WeaverSareeRow, TabKey, tabDate } from "./types";
-import { inr, fmtDate, AGE_COLOR, QC_CFG, FIN_CFG, DISPATCH_CFG } from "./utils";
+import { inr, fmtDate, isSareePickable, pickBlockedReason, AGE_COLOR, QC_CFG, FIN_CFG, DISPATCH_CFG } from "./utils";
 import { Checkbox, IconButton } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { ImageZoomModal, type ZoomImage } from "../../../../shared/ui/ImageZoomModal";
@@ -85,7 +85,7 @@ function MainSareeCard({
   onPrintTag?: (r: WeaverSareeRow) => void;
   onViewPhoto: (image: ZoomImage) => void;
 }) {
-  const isPickable = r.qcStatus !== "defective" && r.qcStatus !== "semi" && !r.dispatched;
+  const isPickable = isSareePickable(r);
   const qc = QC_CFG[r.qcStatus];
   const fin = FIN_CFG[r.finishingStatus];
 
@@ -102,6 +102,7 @@ function MainSareeCard({
                   checked={!!selectedIds?.has(r.sareeId)}
                   onCheckedChange={() => isPickable && onToggleRow?.(r.sareeId)}
                   disabled={!isPickable}
+                  title={pickBlockedReason(r)}
                 />
               )}
               <PhotoThumb url={r.receivedPhotoUrl} sareeId={r.sareeId} onView={onViewPhoto} />
@@ -233,15 +234,13 @@ export function MainSareesTable({
   isAll, isLoom, tab, dateHeader, showQcMoney, showMoney, pag, responsive = false, onPrintTag,
 }: MainSareesTableProps) {
   const mono = (color: string, extra?: React.CSSProperties): React.CSSProperties => ({ fontFamily: "var(--font-mono)", fontSize: 12, color, ...extra });
-  const isPickable = (r: WeaverSareeRow) =>
-    r.qcStatus !== "defective" && r.qcStatus !== "semi" && !r.dispatched;
   const [zoomImage, setZoomImage] = useState<ZoomImage | null>(null);
 
   const columns: ColumnDef<WeaverSareeRow>[] = [
     ...(selectable ? [{
       id: "select",
       header: (() => {
-        const dispatchableVisible = visible.filter(isPickable).map(r => r.sareeId);
+        const dispatchableVisible = visible.filter(isSareePickable).map(r => r.sareeId);
         return (
           <Checkbox
             checked={dispatchableVisible.length > 0 && dispatchableVisible.every(id => selectedIds?.has(id))}
@@ -251,12 +250,13 @@ export function MainSareesTable({
       })(),
       accessor: () => null,
       cell: (_v: unknown, r: WeaverSareeRow) => {
-        const dispatchable = isPickable(r);
+        const dispatchable = isSareePickable(r);
         return (
           <Checkbox
             checked={!!selectedIds?.has(r.sareeId)}
             onCheckedChange={() => dispatchable && onToggleRow?.(r.sareeId)}
             disabled={!dispatchable}
+            title={pickBlockedReason(r)}
           />
         );
       },

@@ -205,8 +205,8 @@ export function HistorySection({
               No approval decisions recorded for this filter yet.
             </div>
           )}
-          {!isLoading && !isError && filteredRows.map((row, i) => (
-            <div key={`${row.date}-${row.by}-${i}`} className="bg-white rounded-2xl border border-[#EBE3D5] p-3.5 sm:p-4 shadow-[0_2px_12px_rgba(44,24,16,0.06)] hover:shadow-md transition-shadow flex flex-col justify-between gap-3">
+          {!isLoading && !isError && filteredRows.map(row => (
+            <div key={`${row.date}-${row.by}-${row.details}`} className="bg-white rounded-2xl border border-[#EBE3D5] p-3.5 sm:p-4 shadow-[0_2px_12px_rgba(44,24,16,0.06)] hover:shadow-md transition-shadow flex flex-col justify-between gap-3">
               <div>
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, lineHeight: 1.3 }}>
