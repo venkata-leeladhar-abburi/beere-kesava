@@ -229,17 +229,14 @@ export function SupplierPaymentsSection() {
               </Button>
             ))}
           </div>
+          <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
           <DropBtn value={supplierFilter} options={["All Suppliers", ...suppliers.map(s => s.name)]} onChange={setSupplierFilter} />
-          <Select value={statusFilter} onValueChange={setStatusFilter} size="sm">
+          <Select value={statusFilter} onValueChange={setStatusFilter} size="sm" containerClassName="w-auto shrink-0" className="w-[145px] font-semibold">
             {["All Bill Status", "Paid", "Pending", "Overdue"].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
           </Select>
-          <div style={{ flex: 1, minWidth: 200 }}>
+          <div style={{ flex: 1, minWidth: 180 }}>
             <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search supplier..." size="sm" />
           </div>
-        </div>
-
-        <div style={{ marginBottom: 14 }}>
-          <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
         </div>
 
         <div className="flex md:hidden items-center justify-between gap-3 mb-4 flex-wrap">

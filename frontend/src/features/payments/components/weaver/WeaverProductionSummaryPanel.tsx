@@ -382,11 +382,8 @@ export function WeaverProductionSummaryPanel({ refreshKey }: { refreshKey: numbe
         </div>
       </div>
 
-      <div style={{ marginBottom: 14 }}>
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" as const, alignItems: "center", marginBottom: 14 }}>
         <DateFilterBar filter={filter} onChange={setFilter} />
-      </div>
-
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" as const, marginBottom: 14 }}>
         <DropBtn value={weaverFilter} options={weaverOptions} onChange={setWeaverFilter} />
         <DropBtn value={batchFilter} options={batchOptions} onChange={setBatchFilter} />
       </div>

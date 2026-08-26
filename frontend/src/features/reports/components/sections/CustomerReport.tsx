@@ -6,7 +6,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { T, F } from "../theme";
 import { FadeUp, ChartCard, SumCard, SectionCard, ReportDLBar, ChartTip, AnimBar, TablePager, StatusPill } from "../common/primitives";
-import { Button, SearchInput } from "../../../../shared/ui/primitives";
+import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { customersApi, BackendCustomer } from "../../../../shared/api/customers";
 import { invoicesApi } from "../../../../shared/api/invoices";
 import { salesApi } from "../../../../shared/api/sales";
@@ -274,11 +274,17 @@ export function CustomerReport() {
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, flexWrap: "wrap" as const }}>
-        {filters.map(f => (
-          <Button key={f} variant={filter === f ? "primary" : "secondary"} size="sm" onClick={() => setFilter(f)}>
-            {f}
-          </Button>
-        ))}
+        <Select
+          size="sm"
+          value={filter}
+          onValueChange={setFilter}
+          containerClassName="w-auto shrink-0"
+          className="w-[185px] font-semibold text-[13px]"
+        >
+          {filters.map(f => (
+            <SelectItem key={f} value={f}>{f}</SelectItem>
+          ))}
+        </Select>
         <div style={{ flex: 1, minWidth: 200 }}>
           <SearchInput aria-label="Search by customer name or phone number..." placeholder="Search by customer name or phone number..." />
         </div>

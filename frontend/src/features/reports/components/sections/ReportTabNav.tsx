@@ -3,21 +3,21 @@ import { motion, AnimatePresence } from "motion/react";
 import { Calendar, AlertTriangle, FileText, Download, Package, Scissors, Boxes, Users, Store, BarChart3, UsersRound, BellRing, Wallet, ChevronDown } from "lucide-react";
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
 import { T, F } from "../theme";
-import { Button } from "../../../../shared/ui/primitives";
+import { Button, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "../../../../shared/ui/overlay";
 import type { ReportTabKey, ReportTab } from "../types";
 
 const REPORT_TABS: ReportTab[] = [
-  { key: "raw-material",   Icon: Package,       label: "Raw Material",     desc: "Stock & flow",      iconColor: "#8B6018",        iconBg: "rgba(200,155,71,0.22)"  },
-  { key: "production",     Icon: Scissors,      label: "Saree Production", desc: "Output & batches",  iconColor: "#FFFDF9",        iconBg: "rgba(245,232,208,0.16)" },
-  { key: "outstanding",    Icon: Boxes,         label: "Outstanding Stock", desc: "Unsold by source", iconColor: "#E67E22",        iconBg: "rgba(230,126,34,0.20)"  },
-  { key: "outstanding-payments", Icon: Wallet,  label: "Outstanding Payments", desc: "Unpaid invoices & orders", iconColor: "#E05252", iconBg: "rgba(224,82,82,0.20)" },
-  { key: "weaver-payment", Icon: Users,         label: "Weaver Payments",  desc: "Making charges",    iconColor: "#2D9158",        iconBg: "rgba(45,145,88,0.20)"   },
-  { key: "retail",         Icon: Store,         label: "Retail Sales",     desc: "Walk-in & direct",  iconColor: "#4A7FB5",        iconBg: "rgba(74,127,181,0.20)"  },
-  { key: "wholesale",      Icon: Boxes,         label: "Wholesale Sales",  desc: "Bulk & exports",    iconColor: "#9B4DCA",        iconBg: "rgba(155,77,202,0.20)"  },
-  { key: "pnl",            Icon: BarChart3,     label: "Profit & Loss",    desc: "Net income",        iconColor: "#2D9158",        iconBg: "rgba(45,145,88,0.20)"   },
-  { key: "customers",      Icon: UsersRound,    label: "Customers",        desc: "Collections & dues",iconColor: T.antiqueGold,    iconBg: "rgba(200,155,71,0.22)"  },
-  { key: "overdue",        Icon: BellRing,      label: "Overdue & Alerts", desc: "Pending actions",   iconColor: "#E05252",        iconBg: "rgba(224,82,82,0.20)"   },
+  { key: "raw-material",   Icon: Package,       label: "Raw Material",     desc: "Stock & flow",      iconColor: "#FFFDF9",        iconBg: "rgba(224,82,82,0.20)"  },
+  { key: "production",     Icon: Scissors,      label: "Saree Production", desc: "Output & batches",  iconColor: "#FFFDF9",        iconBg: "rgba(224,82,82,0.20)" },
+  { key: "outstanding",    Icon: Boxes,         label: "Outstanding Stock", desc: "Unsold by source", iconColor: "#FFFDF9",        iconBg: "rgba(224,82,82,0.20)"  },
+  { key: "outstanding-payments", Icon: Wallet,  label: "Outstanding Payments", desc: "Unpaid invoices & orders", iconColor: "#FFFDF9", iconBg: "rgba(224,82,82,0.20)" },
+  { key: "weaver-payment", Icon: Users,         label: "Weaver Payments",  desc: "Making charges",    iconColor: "#FFFDF9",        iconBg: "rgba(224,82,82,0.20)"   },
+  { key: "retail",         Icon: Store,         label: "Retail Sales",     desc: "Walk-in & direct",  iconColor: "#FFFDF9",        iconBg: "rgba(224,82,82,0.20)"  },
+  { key: "wholesale",      Icon: Boxes,         label: "Wholesale Sales",  desc: "Bulk & exports",    iconColor: "#FFFDF9",        iconBg: "rgba(224,82,82,0.20)"  },
+  { key: "pnl",            Icon: BarChart3,     label: "Profit & Loss",    desc: "Net income",        iconColor: "#FFFDF9",        iconBg: "rgba(224,82,82,0.20)"   },
+  { key: "customers",      Icon: UsersRound,    label: "Customers",        desc: "Collections & dues",iconColor: "#FFFDF9",        iconBg: "rgba(224,82,82,0.20)"  },
+  { key: "overdue",        Icon: BellRing,      label: "Overdue & Alerts", desc: "Pending actions",   iconColor: "#FFFDF9",        iconBg: "rgba(224,82,82,0.20)"   },
 ];
 
 const PERIODS = ["Today", "This Week", "This Month", "This Quarter", "This Year", "Custom Dates"];
@@ -126,7 +126,7 @@ export function ReportTabNav({ activeTab, setActiveTab, activePeriod, setActiveP
                           background: active ? tab.iconBg : "rgba(110,15,45,0.06)",
                           display: "flex", alignItems: "center", justifyContent: "center",
                         }}>
-                          <tab.Icon size={18} color={active ? (tab.key === "production" ? "#6E0F2D" : tab.iconColor) : "#6E0F2D"} />
+                          <tab.Icon size={18} color="#6E0F2D" />
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: active ? 700 : 600, color: active ? "#6E0F2D" : "#3B2314" }}>
@@ -166,7 +166,11 @@ export function ReportTabNav({ activeTab, setActiveTab, activePeriod, setActiveP
                 key={tab.key}
                 variant={active ? "tertiary" : "ghost"}
                 onClick={() => setActiveTab(tab.key)}
-                className={`min-w-[175px] shrink-0 h-[120px] flex-col justify-center gap-[11px] rounded-none px-4 border-0 border-b-[3px] ${active ? "border-[var(--bk-gold-500)] bg-[rgba(200,155,71,0.10)]" : "border-transparent bg-transparent"} hover:bg-[rgba(200,155,71,0.10)]`}
+                className={`min-w-[175px] shrink-0 h-[120px] flex-col justify-center gap-[11px] rounded-none px-4 border-0 border-b-[3px] ${
+                  active
+                    ? "border-[var(--bk-gold-500)] bg-[rgba(200,155,71,0.12)] hover:bg-[rgba(200,155,71,0.18)] active:bg-[rgba(200,155,71,0.25)]"
+                    : "border-transparent bg-transparent hover:bg-[rgba(200,155,71,0.10)] active:bg-[rgba(200,155,71,0.20)]"
+                }`}
               >
                 {/* Icon box */}
                 <div style={{
@@ -235,28 +239,24 @@ export function ReportTabNav({ activeTab, setActiveTab, activePeriod, setActiveP
           flexWrap: "wrap" as const,
         }}>
 
-          {/* Period label */}
+          {/* Period dropdown */}
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
             <div style={{ width: 36, height: 36, borderRadius: 9, background: "rgba(200,155,71,0.12)", border: `1px solid ${T.borderGold}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
               <Calendar size={18} color={T.antiqueGold} />
             </div>
-            <span style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 700, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>Period:</span>
-          </div>
-
-          {/* Period pills */}
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" as const }}>
-            {PERIODS.map(p => {
-              const active = activePeriod === p;
-              const disabled = activeTab === "overdue";
-              return (
-                <Button key={p} variant={active ? "primary" : "secondary"} size="md"
-                  disabled={disabled}
-                  onClick={() => !disabled && setActivePeriod(p)}
-                  className="rounded-[10px] whitespace-nowrap">
-                  {p}
-                </Button>
-              );
-            })}
+            <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown, whiteSpace: "nowrap" as const }}>Period:</span>
+            <Select
+              size="sm"
+              value={activePeriod}
+              onValueChange={setActivePeriod}
+              disabled={activeTab === "overdue"}
+              containerClassName="w-auto shrink-0"
+              className="w-[145px] font-semibold text-[13px] rounded-[10px] bg-white border-[rgba(110,15,45,0.18)] shadow-xs"
+            >
+              {PERIODS.map(p => (
+                <SelectItem key={p} value={p}>{p}</SelectItem>
+              ))}
+            </Select>
           </div>
 
           {activeTab === "overdue" && (

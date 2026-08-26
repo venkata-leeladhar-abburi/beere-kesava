@@ -437,24 +437,20 @@ export function FirmDetailPage({ firm, onBack, onEdit, onGoToPayments }: {
             </div>
 
             {/* Filters */}
-            <div style={{ background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 16, padding: "14px 18px 6px", marginBottom: 18 }}>
-              <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
-              <div className="flex flex-wrap items-center gap-3 pb-3">
-                <div style={{ minWidth: 170 }}>
-                  <Select value={direction} onValueChange={v => setDirection(v as DirectionFilter)}>
-                    <SelectItem value="all">All money flow</SelectItem>
-                    <SelectItem value="INCOME">Income only</SelectItem>
-                    <SelectItem value="EXPENSE">Expenses only</SelectItem>
-                  </Select>
-                </div>
-                <div style={{ minWidth: 170 }}>
-                  <Select value={status} onValueChange={v => setStatus(v as "all" | FirmActivityStatus)}>
-                    <SelectItem value="all">Any document status</SelectItem>
-                    <SelectItem value="PENDING">Pending</SelectItem>
-                    <SelectItem value="PARTIAL">Part paid</SelectItem>
-                    <SelectItem value="PAID">Settled</SelectItem>
-                  </Select>
-                </div>
+            <div style={{ background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 16, padding: "12px 18px", marginBottom: 18 }}>
+              <div className="flex flex-wrap items-center gap-3">
+                <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+                <Select value={direction} onValueChange={v => setDirection(v as DirectionFilter)} size="sm" containerClassName="w-auto shrink-0" className="w-[155px] font-semibold text-[13px]">
+                  <SelectItem value="all">All money flow</SelectItem>
+                  <SelectItem value="INCOME">Income only</SelectItem>
+                  <SelectItem value="EXPENSE">Expenses only</SelectItem>
+                </Select>
+                <Select value={status} onValueChange={v => setStatus(v as "all" | FirmActivityStatus)} size="sm" containerClassName="w-auto shrink-0" className="w-[170px] font-semibold text-[13px]">
+                  <SelectItem value="all">Any document status</SelectItem>
+                  <SelectItem value="PENDING">Pending</SelectItem>
+                  <SelectItem value="PARTIAL">Part paid</SelectItem>
+                  <SelectItem value="PAID">Settled</SelectItem>
+                </Select>
                 {filtersActive && (
                   <Button
                     variant="tertiary"

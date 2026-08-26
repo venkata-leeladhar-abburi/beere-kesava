@@ -43,7 +43,7 @@ export function DownloadHistorySection() {
           <Button
             variant="ghost"
             size="sm"
-            className="bg-[rgba(255,255,255,0.14)] hover:bg-[rgba(255,255,255,0.25)] text-[#FFFDF9] hover:text-[#FFFDF9] border border-[rgba(255,255,255,0.25)] rounded-xl font-bold shadow-sm transition-all"
+            className="bg-[rgba(255,255,255,0.14)] hover:bg-[rgba(255,255,255,0.25)] active:bg-[rgba(255,255,255,0.35)] text-[#FFFDF9] hover:text-[#FFFDF9] border border-[rgba(255,255,255,0.25)] rounded-xl font-bold shadow-sm transition-all"
           >
             Clear History
           </Button>

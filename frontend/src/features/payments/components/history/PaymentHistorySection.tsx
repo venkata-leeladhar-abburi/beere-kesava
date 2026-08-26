@@ -279,18 +279,20 @@ export function PaymentHistorySection() {
               ))}
             </div>
 
+            <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+
             {/* Type dropdown */}
-            <Select value={typeFilter} onValueChange={setTypeFilter} size="sm">
+            <Select value={typeFilter} onValueChange={setTypeFilter} size="sm" containerClassName="w-auto shrink-0" className="w-[165px] font-semibold">
               {["All Payment Types","Vendor Payment","Weaver Payment","Supplier Payment","Customer Receipt"].map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
             </Select>
 
             {/* Status dropdown */}
-            <Select value={statusFilter} onValueChange={setStatusFilter} size="sm">
+            <Select value={statusFilter} onValueChange={setStatusFilter} size="sm" containerClassName="w-auto shrink-0" className="w-[130px] font-semibold">
               {["All Statuses","Paid","Partial","Pending"].map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
             </Select>
 
             {/* Search */}
-            <div style={{ flex: 1, minWidth: 200 }}>
+            <div style={{ flex: 1, minWidth: 180 }}>
               <SearchInput value={search} onChange={e => setSearch(e.target.value)} placeholder="Search party, ref no, description..." size="sm" />
             </div>
 
@@ -299,10 +301,6 @@ export function PaymentHistorySection() {
               className="whitespace-nowrap rounded-[8px] bg-[var(--surface-canvas)] text-[var(--text-tertiary)]">
               Clear
             </Button>
-          </div>
-
-          <div style={{ marginBottom: 14 }}>
-            <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
           </div>
 
           <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
