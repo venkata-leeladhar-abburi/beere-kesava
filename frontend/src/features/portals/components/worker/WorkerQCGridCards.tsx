@@ -1,6 +1,6 @@
 import React from "react";
 import { ChevronRight, Package, User, Factory } from "lucide-react";
-import { T, F, initials, type SareeItem } from "./WorkerQCTypes";
+import { F, initials, type SareeItem } from "./WorkerQCTypes";
 
 interface WeaverGroup {
   name: string;
