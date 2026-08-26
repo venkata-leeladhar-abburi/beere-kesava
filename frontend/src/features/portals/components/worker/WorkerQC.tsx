@@ -377,7 +377,9 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
             <div style={{ fontFamily: F.u, fontSize: isDesktop ? 15 : 13, fontWeight: 700, color: "#FFF" }}>{selectedWeaverQC}</div>
             <div style={{ fontFamily: F.u, fontSize: isDesktop ? 12 : 10, color: "rgba(255,255,255,0.65)" }}>{wSarees.length} saree{wSarees.length !== 1 ? "s" : ""} pending QC</div>
           </div>
-          {wg?.code && <span style={{ fontFamily: F.m, fontSize: 12, color: T.goldL, background: "rgba(200,155,71,0.20)", padding: "3px 9px", borderRadius: 999 }}>{wg.code}</span>}
+          {wg?.code && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(wg.code) && (
+            <span style={{ fontFamily: F.m, fontSize: 12, color: T.goldL, background: "rgba(200,155,71,0.20)", padding: "3px 9px", borderRadius: 999 }}>{wg.code}</span>
+          )}
         </div>
 
         {wSarees.length === 0 ? (
