@@ -20,6 +20,7 @@ import * as React from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { toast } from "sonner";
 import { useDownloadsAllowed } from "../DownloadAccess";
+import { exportDocumentPdf, type ExportPdfOptions } from "./exportPdf";
 
 const ASSET_TIMEOUT_MS = 3000;
 
@@ -111,29 +112,42 @@ export function useDocument() {
   }, []);
 
   /**
-   * Same render path as print(), but GATED — this is the PrintGate/L.3 half
-   * of Phase 7: "an accountant blocked from exporting can still Print → Save
-   * as PDF" is exactly the bypass this closes for the direct Download
-   * button. It is a partial fix, not a complete one, and that's worth being
-   * honest about: because download() and print() still share one
-   * window.print() call (no backend PDF service exists yet — Part L is
-   * deferred), a blocked user can still reach the identical output by
-   * clicking Print and choosing "Save as PDF" from the OS dialog, since
-   * nothing in the browser lets JS distinguish that choice from sending to
-   * a physical printer. Closing that path for real needs Part L's
-   * server-rendered PDF, gated at the backend endpoint instead of in the
-   * browser. Until then this stops the direct, one-click bypass and leaves
-   * an honest audit trail (the toast) for the indirect one.
+   * Download — a REAL PDF file, not "Print → Save as PDF".
+   *
+   * This no longer shares window.print() with print(). The browser's print
+   * pipeline re-lays the document out against its own page box and strips
+   * background graphics unless the user happens to tick a checkbox, which
+   * is why downloaded documents never matched the on-screen preview.
+   * exportDocumentPdf() instead rasterises the identical React tree at true
+   * A4 width and writes the bitmap straight into a 210×297mm PDF page, so
+   * the file is a pixel-exact copy of the preview.
+   *
+   * The gate is unchanged in intent (Part L.3) but is now meaningfully
+   * stronger: a blocked user can still reach a PDF via Print → Save as PDF,
+   * but that path produces the browser's rendering, not this file, and
+   * closing it properly still needs Part L's server-rendered PDF.
    */
-  const download = React.useCallback((node: React.ReactNode) => {
-    if (!downloadsAllowed) {
-      toast.error("Your account can't download documents.", {
-        description: "Contact an admin if you need this file exported.",
-      });
-      return;
-    }
-    void renderAndPrint(node);
-  }, [downloadsAllowed]);
+  const download = React.useCallback(
+    (node: React.ReactNode, options?: ExportPdfOptions) => {
+      if (!downloadsAllowed) {
+        toast.error("Your account can't download documents.", {
+          description: "Contact an admin if you need this file exported.",
+        });
+        return;
+      }
+      const toastId = toast.loading("Preparing your PDF…");
+      exportDocumentPdf(node, options)
+        .then(() => toast.success("Downloaded.", { id: toastId }))
+        .catch((err: unknown) => {
+          console.error("[document] PDF export failed", err);
+          toast.error("Couldn't build the PDF.", {
+            id: toastId,
+            description: "Use Print → Save as PDF as a fallback.",
+          });
+        });
+    },
+    [downloadsAllowed]
+  );
 
   return { print, download, downloadsAllowed };
 }

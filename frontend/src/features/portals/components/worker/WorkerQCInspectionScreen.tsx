@@ -9,7 +9,6 @@ import {
 import { Button, IconButton, NumberInput, Textarea } from "../../../../shared/ui/primitives";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
-import { resolveAssetUrl } from "@/shared/api/uploads";
 import { useImageUpload } from "@/shared/hooks/useImageUpload";
 
 interface WorkerQCInspectionScreenProps {
@@ -57,7 +56,6 @@ export function WorkerQCInspectionScreen({
   // uploaded to object storage and its stored path travels with the QC record.
   const { upload, uploading, error: uploadError } = useImageUpload();
   const hasPhoto = photoUrl !== null;
-  const photoPreview = resolveAssetUrl(photoUrl);
 
   const handlePhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -189,8 +187,8 @@ export function WorkerQCInspectionScreen({
               ) : (
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
                   <div style={{ width: 60, height: 60, background: "#F5E8D0", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", border: `1px solid ${T.bdr}`, position: "relative", overflow: "hidden" }}>
-                    {photoPreview ? (
-                      <img src={photoPreview} alt="Defect" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    {photoUrl ? (
+                      <img src={photoUrl} alt="Defect" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     ) : (
                       <Camera size={22} color={T.muted} />
                     )}

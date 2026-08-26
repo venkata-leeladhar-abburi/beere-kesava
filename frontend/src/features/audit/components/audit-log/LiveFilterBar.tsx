@@ -119,7 +119,7 @@ export function LiveFilterBar({
                 key={p}
                 variant={periodFilter === p ? "primary" : "secondary"}
                 size="sm"
-                className="rounded-full text-xs px-2.5 sm:px-3"
+                className="rounded-[10px] text-xs px-2.5 sm:px-3"
                 onClick={() => setPeriodFilter(p)}
               >
                 {p}
@@ -128,7 +128,7 @@ export function LiveFilterBar({
           </div>
           {/* Apply / Clear */}
           <div className="flex items-center gap-2.5 shrink-0 self-start sm:self-auto">
-            <Button variant="primary" size="sm" iconLeft={Search} className="rounded-full text-xs">
+            <Button variant="primary" size="sm" iconLeft={Search} className="rounded-[10px] text-xs">
               Apply Filters
             </Button>
             <Button variant="ghost" size="sm" iconLeft={X} className="text-xs">

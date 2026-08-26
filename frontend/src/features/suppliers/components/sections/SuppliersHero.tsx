@@ -11,7 +11,7 @@ import { rupees, formatMoney } from "@/lib/domain/money";
 import { LuxuryStatsCard } from "../../../../shared/ui/LuxuryStatsCard";
 
 export function SuppliersHero({
-  suppliersCount, purchases: _purchases, totals, onAddExternalPurchase, onAddSupplier,
+  suppliersCount, totals, onAddExternalPurchase, onAddSupplier,
 }: {
   suppliersCount: number;
   purchases: Purchase[];

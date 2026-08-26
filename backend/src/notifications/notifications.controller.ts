@@ -32,8 +32,8 @@ export class NotificationsController {
   }
 
   @Get()
-  findAll(@Query() query: ListNotificationsQueryDto) {
-    return this.notificationsService.findAll(query);
+  findAll(@Query() query: ListNotificationsQueryDto, @CurrentUser() user: AuthenticatedUser) {
+    return this.notificationsService.findAll(query, user);
   }
 
   // Left open to every authenticated role on purpose: the notification bell

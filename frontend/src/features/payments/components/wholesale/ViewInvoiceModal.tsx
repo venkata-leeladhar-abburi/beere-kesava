@@ -51,7 +51,7 @@ export function ViewInvoiceModal({ inv, bulkOrderData, onClose }: { inv: Invoice
             Failed to load dispatch details — some fields below may be showing fallback values.
           </div>
         )}
-        <DocumentViewer>
+        <DocumentViewer fileName={inv.id} documentTitle={`Tax Invoice ${inv.id}`}>
           <InvoiceDocument
             invoiceNumber={inv.id}
             invoiceDate={inv.invoiceDate}

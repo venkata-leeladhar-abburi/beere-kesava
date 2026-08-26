@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router";
 import { motion } from "motion/react";
 import { IndianRupee, Building2, FileBarChart2, Tags, LogOut, UserRound, Users, UserRound as UserIcon, Truck, Store, Factory, Package, ChevronDown, Menu, X } from "lucide-react";
 import { useAuth } from "../../../contexts/AuthContext";
+import { ErrorBoundary } from "../../../components/ErrorBoundary";
 import { useResponsive } from "../../../hooks/useResponsive";
 import { PaymentsPage } from "@/features/payments";
 import { DownloadAccessProvider } from "../../../shared/ui/DownloadAccess";
@@ -80,7 +81,7 @@ const NAV: NavItem[] = [
 const SLUG_TO_KEY: Record<string, string> = NAV.reduce((acc, n) => { acc[n.slug] = n.key; return acc; }, {} as Record<string, string>);
 
 // ── Top navigation bar ──────────────────────────────────────────────────────────
-function TopNav({ active, set, onBack: _onBack, onLogout, onProfile }: {
+function TopNav({ active, set, onLogout, onProfile }: {
   active: string; set: (slug: string) => void; onBack?: () => void; onLogout?: () => void; onProfile?: () => void;
 }) {
   const { user } = useAuth();
@@ -182,7 +183,7 @@ function TopNav({ active, set, onBack: _onBack, onLogout, onProfile }: {
                 </div>
                 <div>
                   <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>{userName}</div>
-                  <div style={{ fontFamily: F.mono, fontSize: 12, color: "#7A6B63", marginTop: 2 }}>Accountant · Finance & Ledger</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 12, color: "#7A6B63", marginTop: 2 }}>Accountant · Finance &amp; Ledger</div>
                 </div>
               </div>
               <div style={{ padding: "6px 0" }}>
@@ -347,7 +348,7 @@ export function AcctMobileTopNav({ onMenuOpen, onProfile, onLogout }: {
           <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: "var(--z-tooltip)", background: "#FFFDF9", borderRadius: 14, border: `1px solid rgba(110,15,45,0.14)`, boxShadow: "0 8px 32px rgba(44,24,16,0.14)", minWidth: 210, overflow: "hidden" }}>
             <div style={{ padding: "14px 16px", background: "rgba(196,146,58,0.06)", borderBottom: "1px solid rgba(110,15,45,0.10)" }}>
               <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>{userName}</div>
-              <div style={{ fontFamily: F.mono, fontSize: 12, color: "#7A6B63", marginTop: 2 }}>Accountant · Finance & Ledger</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: "#7A6B63", marginTop: 2 }}>Accountant · Finance &amp; Ledger</div>
             </div>
             <div style={{ padding: "6px 0" }}>
               <Button onClick={() => { setShowProfile(false); onProfile?.(); }} variant="tertiary" fullWidth
@@ -416,6 +417,7 @@ export function AccountantDashboard({ onBack }: { onBack?: () => void } = {}) {
       {/* Accountants read everything but export nothing — every download and
           export control inside these pages is hidden by this provider. */}
       <DownloadAccessProvider allowed={false}>
+        <ErrorBoundary variant="inline" resetKeys={[active]}>
         <Suspense fallback={<TabLoadingFallback />}>
         {active === "Payments" ? (
           <PaymentsPage />
@@ -441,6 +443,7 @@ export function AccountantDashboard({ onBack }: { onBack?: () => void } = {}) {
           <PaymentsPage />
         )}
         </Suspense>
+        </ErrorBoundary>
       </DownloadAccessProvider>
 
       {showProfileModal && (

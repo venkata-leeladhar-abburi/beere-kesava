@@ -16,13 +16,16 @@ import { BackendQuotation, quotationsApi } from "../../../shared/api/quotations"
 import { batchesApi, BackendBatchSareeRow } from "../../../shared/api/batches";
 import { weaversApi } from "../../../shared/api/weavers";
 import { STOPGAP_ACTING_USER_ID } from "../../../shared/api/purchase-requests";
-import { useAuth } from "../../../contexts/AuthContext";
+import { useAuth, useAuthGate } from "../../../contexts/AuthContext";
 
 const FinishingContext = createContext<FinishingContextValue | null>(null);
 
 const READY_KEY = ["finishing", "readySarees"] as const;
 const ASSIGNMENTS_KEY = ["finishing", "assignments"] as const;
 const DISPATCHES_KEY = ["finishing", "dispatches"] as const;
+/** Shop-floor stock (GET /inventory/shop) — owned by the shop portal, but a
+ *  dispatch from here is what changes it, so it is invalidated from here too. */
+const SHOP_STOCK_KEY = ["shop-stock"] as const;
 const QUOTATIONS_KEY = ["finishing", "quotations"] as const;
 
 const DAMAGE_SEVERITY_TO_BACKEND: Record<"Minor" | "Moderate" | "Severe", BackendDamageSeverity> = {
@@ -177,14 +180,14 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
   // this same InventoryPage component and needs to show the identical
   // Total/Pending/Ready/Dispatched stats as the admin portal, not zeros.
   // Skip the fetch for roles that would just get a 403.
-  const { role, user } = useAuth();
-  const workerScoped = role === "worker" || role === "admin" || role === "superadmin";
-  const readScoped = workerScoped || role === "shop";
-  const dispatchEnabled = workerScoped || role === "shop";
+  const { user } = useAuth();
+  const workerScoped = useAuthGate("worker", "admin", "superadmin");
+  const readScoped = useAuthGate("worker", "admin", "superadmin", "shop");
+  const dispatchEnabled = readScoped;
   const actingUserId = user?.id ?? STOPGAP_ACTING_USER_ID;
   const { getSareeTypeByCode } = useRatesPricing();
 
-  const { data: readySarees = [], isError: isReadyError, error: readyError } = useQuery({
+  const { data: readySarees = [], isError: isReadyError, error: readyError, isLoading: isReadyLoading, refetch: refetchReady } = useQuery({
     queryKey: READY_KEY,
     enabled: readScoped,
     queryFn: async () => {
@@ -203,17 +206,17 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
       }));
     },
   });
-  const { data: backendAssignments = [], isError: isAssignmentsError, error: assignmentsError } = useQuery({
+  const { data: backendAssignments = [], isError: isAssignmentsError, error: assignmentsError, isLoading: isAssignmentsLoading, refetch: refetchAssignments } = useQuery({
     queryKey: ASSIGNMENTS_KEY,
     enabled: readScoped,
     queryFn: async () => (await finishingAssignmentsApi.list()).items,
   });
-  const { data: dispatches = [], isError: isDispatchesError, error: dispatchesError } = useQuery({
+  const { data: dispatches = [], isError: isDispatchesError, error: dispatchesError, isLoading: isDispatchesLoading, refetch: refetchDispatches } = useQuery({
     queryKey: DISPATCHES_KEY,
     enabled: dispatchEnabled,
     queryFn: async () => (await dispatchApi.list()).items.map(backendDispatchToFrontend),
   });
-  const { data: quotations = [], isError: isQuotationsError, error: quotationsError } = useQuery({
+  const { data: quotations = [], isError: isQuotationsError, error: quotationsError, isLoading: isQuotationsLoading, refetch: refetchQuotations } = useQuery({
     queryKey: QUOTATIONS_KEY,
     enabled: workerScoped,
     queryFn: async () => {
@@ -231,6 +234,13 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
   });
   const isError = isReadyError || isAssignmentsError || isDispatchesError || isQuotationsError;
   const error = readyError ?? assignmentsError ?? dispatchesError ?? quotationsError ?? null;
+  const isLoading = isReadyLoading || isAssignmentsLoading || isDispatchesLoading || isQuotationsLoading;
+  const refetch = () => {
+    void refetchReady();
+    void refetchAssignments();
+    void refetchDispatches();
+    void refetchQuotations();
+  };
 
   const assignments = useMemo(
     () => backendAssignments
@@ -314,6 +324,7 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
       return dispatchApi.create({
         type,
         sareeIds: args.sareeIds,
+        dispatchDate: args.record.dispatchDate || undefined,
         lrNumber: args.record.lrNumber || undefined,
         transportCompany: args.record.transportCompany || undefined,
         vehicleNumber: args.record.vehicleNumber || undefined,
@@ -357,6 +368,10 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
       void qc.invalidateQueries({ queryKey: DISPATCHES_KEY });
       void qc.invalidateQueries({ queryKey: READY_KEY });
       void qc.invalidateQueries({ queryKey: ASSIGNMENTS_KEY });
+      // A SHOP dispatch is what puts stock on the shop floor, so the shop
+      // portal's inventory and its New Sale picker both have to pick it up
+      // rather than waiting out their own staleTime.
+      void qc.invalidateQueries({ queryKey: SHOP_STOCK_KEY });
     },
   });
 
@@ -502,7 +517,7 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
   const deleteDispatch = (id: string, actorId: string) => deleteDispatchMutation.mutate({ id, actorId });
 
   return (
-    <FinishingContext.Provider value={{ readySarees, assignments, returns, dispatches, assignSarees, addReadySaree, receiveReturn, dispatchSarees, updateDispatch, deleteDispatch, quotations, raiseQuotation, assignQuotationFinishing, receiveQuotationSarees, markQuotationDispatched, isError, error }}>
+    <FinishingContext.Provider value={{ readySarees, assignments, returns, dispatches, assignSarees, addReadySaree, receiveReturn, dispatchSarees, updateDispatch, deleteDispatch, quotations, raiseQuotation, assignQuotationFinishing, receiveQuotationSarees, markQuotationDispatched, isError, error, isLoading, refetch }}>
       {children}
     </FinishingContext.Provider>
   );

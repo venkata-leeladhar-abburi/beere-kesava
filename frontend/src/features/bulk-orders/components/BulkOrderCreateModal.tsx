@@ -260,6 +260,7 @@ export function BulkOrderCreateModal({ open, onClose, onSubmit, nextRef, onAddCu
                   </Field>
 
                   <div style={{ gridColumn: "1 / -1" }}>
+                    {/* eslint-disable-next-line no-restricted-syntax -- input adornment / field label unit annotation, not a rendered money value */}
                     <Field label="Estimated Value (₹)" id="estimated-value">
                       <NumberInput id="estimated-value"
                         min={0}

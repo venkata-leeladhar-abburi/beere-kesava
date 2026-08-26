@@ -382,11 +382,8 @@ export function WeaverProductionSummaryPanel({ refreshKey }: { refreshKey: numbe
         </div>
       </div>
 
-      <div style={{ marginBottom: 14 }}>
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" as const, alignItems: "center", marginBottom: 14 }}>
         <DateFilterBar filter={filter} onChange={setFilter} />
-      </div>
-
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" as const, marginBottom: 14 }}>
         <DropBtn value={weaverFilter} options={weaverOptions} onChange={setWeaverFilter} />
         <DropBtn value={batchFilter} options={batchOptions} onChange={setBatchFilter} />
       </div>
@@ -439,7 +436,7 @@ export function WeaverProductionSummaryPanel({ refreshKey }: { refreshKey: numbe
           ) : (
             <div style={{ border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden" }} className="w-full">
               <div style={{ overflowX: "auto" }} className="w-full">
-                <div style={{ minWidth: 1450 }}>
+                <div className="min-w-[1450px]">
                   <DataTable responsive={false} columns={displayColumns} data={grouped} getRowId={r => `${r.weaverId}-${r.batchId}-${r.loomNumber}`} emptyTitle="No production in this period." />
                 </div>
               </div>

@@ -1,28 +1,28 @@
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useBatches } from "@/features/production";
 import { useCurrentWeaver } from "./useCurrentWeaver";
 import {
   ChevronLeft,
   Search,
-  Clock, Layers,
-  CheckCircle2, ListChecks,
-  AlertTriangle,
-} from "lucide-react";
+  Layers,
+  AlertTriangle } from "lucide-react";
 
 // ─── Design Tokens ─────────────────────────────────────────────────────────
 import {
-  F, MobileBatchCard, CompletedBatchCard, FadeUpBatch, MyBatchEntry
+  C, F, MobileBatchCard, CompletedBatchCard, FadeUpBatch, MyBatchEntry
 } from './theme';
 import { Button, Input } from '../../../../shared/ui/primitives';
-import { Breadcrumbs } from '../../../../shared/ui/nav/Breadcrumbs';
-
+import { LoadingState, ErrorState } from "../../../../shared/ui/state";
+import { BG_IMAGE } from "./WeaverBatchNotifData";
+import { LuxuryStatsCard, type StatItem } from "@/shared/ui/LuxuryStatsCard";
+import { IcoResourceMgmt, IcoFabricRoll, IcoQualityCheck, IcoInvoice } from "@/features/dashboards";
 
 export function BatchHistoryPage({ onBack, defaultFilter = "all" }: { onBack: () => void; defaultFilter?: "all" | "active" | "completed" }) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "completed">(defaultFilter);
-  const { batches } = useBatches();
-  const { weaver, weaverId, isLoading: weaverLoading, isError: weaverError } = useCurrentWeaver();
+  const { batches, isLoading: batchesLoading, isError: batchesError, error: batchesErrorObj, refetch: refetchBatches } = useBatches();
+  const { weaverId, isLoading: weaverLoading, isError: weaverError } = useCurrentWeaver();
 
   // A batch only becomes visible to its assigned weaver once it's finalized
   // (status leaves "draft") — matches the same rule in MyBatchesPage.tsx.
@@ -49,10 +49,54 @@ export function BatchHistoryPage({ onBack, defaultFilter = "all" }: { onBack: ()
     borderDef: "rgba(110,15,45,0.10)",
   };
 
-  if (weaverLoading) {
+  const statIcons = useMemo(() => [
+    <IcoResourceMgmt key="r" sz={22} col="#F5E8D0" />,
+    <IcoFabricRoll key="f" sz={22} col="#F5E8D0" />,
+    <IcoQualityCheck key="q" sz={22} col="#F5E8D0" />,
+    <IcoInvoice key="i" sz={22} col="#F5E8D0" />,
+  ], []);
+
+  const statItems: StatItem[] = useMemo(() => [
+    {
+      label: "TOTAL BATCHES",
+      value: `${myWeaverBatches.length}`,
+      sub: "All time records",
+      icon: statIcons[0],
+    },
+    {
+      label: "SAREES PRODUCED",
+      value: `${totalSarees}`,
+      sub: "Across all batches",
+      icon: statIcons[1],
+      highlight: true,
+      goldVal: true,
+    },
+    {
+      label: "ACTIVE NOW",
+      value: `${activeCount}`,
+      sub: "Currently weaving",
+      icon: statIcons[2],
+    },
+    {
+      label: "COMPLETED",
+      value: `${completedCount}`,
+      sub: "Fully finished",
+      icon: statIcons[3],
+    },
+  ], [myWeaverBatches.length, totalSarees, activeCount, completedCount, statIcons]);
+
+  if (weaverLoading || batchesLoading) {
+    return (
+      <div style={{ minHeight: "calc(100dvh - 64px)", background: T2.silkCream, padding: 24 }}>
+        <LoadingState variant="skeleton" rows={5} />
+      </div>
+    );
+  }
+
+  if (batchesError) {
     return (
       <div style={{ minHeight: "calc(100dvh - 64px)", background: T2.silkCream, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <span style={{ fontFamily: F.u, fontSize: 14, color: T2.taupe }}>Loading your batch history…</span>
+        <ErrorState error={batchesErrorObj} onRetry={refetchBatches} />
       </div>
     );
   }
@@ -69,113 +113,132 @@ export function BatchHistoryPage({ onBack, defaultFilter = "all" }: { onBack: ()
 
   return (
     <div style={{ minHeight: "calc(100dvh - 64px)", background: T2.silkCream, fontFamily: F.u }}>
-      {/* Hero */}
-      <section className="px-4 md:px-7 xl:px-12" style={{ background: "linear-gradient(135deg, #5D1027 0%, #2C0913 100%)", paddingTop: 56, position: "relative" as const, overflow: "hidden" }}>
-        <div style={{ position: "absolute", inset: 0, backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(200,155,71,0.025) 60px, rgba(200,155,71,0.025) 61px)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", inset: 0, backgroundImage: "repeating-linear-gradient(90deg, transparent, transparent 80px, rgba(200,155,71,0.012) 80px, rgba(200,155,71,0.012) 81px)", pointerEvents: "none" }} />
-        <div style={{ position: "relative", zIndex: 2 }}>
-          <Button onClick={onBack} variant="ghost" className="flex items-center gap-2 h-auto bg-white/10 border border-white/[0.18] rounded-full px-[18px] py-2 text-[13px] text-white/80 mb-7 font-medium hover:bg-white/10">
+      {/* ── HERO BANNER MATCHING WEAVER PORTAL HERO ── */}
+      <section style={{ position: "relative", overflow: "hidden", background: "#0D0207", padding: "28px 16px 76px" }}>
+        <div style={{
+          position: "absolute", inset: 0,
+          backgroundImage: `url(${BG_IMAGE})`,
+          backgroundSize: "cover", backgroundPosition: "center",
+          opacity: 0.22, pointerEvents: "none"
+        }} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(13,2,7,0.7) 0%, #0D0207 100%)", pointerEvents: "none" }} />
+
+        <div style={{ position: "relative", zIndex: 5, display: "flex", flexDirection: "column", gap: 12 }}>
+          <Button onClick={onBack} variant="ghost" className="flex items-center gap-2 h-auto bg-white/10 border border-white/[0.18] rounded-full px-[18px] py-2 text-[13px] text-white/80 mb-1 w-fit font-medium hover:bg-white/10">
             <ChevronLeft size={15} color="rgba(255,255,255,0.80)" /> Back to My Batches
           </Button>
-          <div style={{ marginBottom: 16 }}>
-            <Breadcrumbs
-              items={[
-                { key: "my-batches", label: "My Batches", onClick: onBack },
-                { key: "batches", label: "Batches", onClick: onBack },
-                { key: "batch-history", label: defaultFilter === "completed" ? "Completed Batches" : "Batch History" },
-              ]}
-            />
+
+          <div style={{ fontFamily: F.m, fontSize: 11, letterSpacing: "1.8px", color: "rgba(255,253,249,0.50)", textTransform: "uppercase" }}>
+            SINCE 1999 · WEAVER PORTAL · HISTORY
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-            <div style={{ width: 20, height: 1, background: T2.antiqueGold, opacity: 0.6 }} />
-            <span style={{ fontFamily: F.m, fontWeight: 600, fontSize: 12, color: "rgba(200,155,71,0.80)", letterSpacing: "3px", textTransform: "uppercase" as const }}>{weaver?.name ?? "Weaver"} · Weaver History</span>
-          </div>
-          <h1 style={{ fontFamily: F.d, fontWeight: 400, fontSize: "clamp(32px, 3vw, 52px)", color: T2.warmCream, margin: "0 0 12px", lineHeight: 1.1 }}>
+
+          <div style={{ fontFamily: F.d, fontWeight: 400, fontSize: 28, color: "#FFFDF9", lineHeight: 1.15 }}>
             {defaultFilter === "completed" ? "Completed Batches" : "Batch History"}{" "}
-            <span style={{ fontStyle: "italic", color: T2.antiqueGold }}>{defaultFilter === "completed" ? "& Payment Records" : "& All Work"}</span>
-          </h1>
-          <p className="max-w-[540px]" style={{ fontFamily: F.u, fontSize: 14, color: "rgba(245,232,208,0.72)", margin: "0 0 24px", lineHeight: 1.7 }}>
+            <span style={{ fontFamily: F.d, fontStyle: "italic", fontWeight: 400, fontSize: 22, color: C.gold }}>
+              {defaultFilter === "completed" ? "& Payment Records" : "& All Work"}
+            </span>
+          </div>
+
+          <div style={{ fontFamily: F.u, fontSize: 13.5, color: "rgba(255,253,249,0.75)", lineHeight: 1.6 }}>
             {defaultFilter === "completed"
               ? "A full record of all the batches you have completed — sarees produced, quality results, and amounts earned."
               : "See all your batches — active and completed. A full history of all your weaving work with Beere Kesava."}
-          </p>
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" as const }}>
-            {[
-              { label: `${myWeaverBatches.length} Total Batches`, color: T2.antiqueGold, bg: "rgba(200,155,71,0.15)", border: "rgba(200,155,71,0.30)" },
-              { label: `${activeCount} Currently Active`, color: T2.warmCream, bg: "rgba(30,102,64,0.18)", border: "rgba(30,102,64,0.35)" },
-              { label: `${completedCount} Completed`, color: T2.warmCream, bg: "rgba(29,78,216,0.15)", border: "rgba(29,78,216,0.30)" },
-            ].map(p => (
-              <span key={p.label} style={{ fontFamily: F.u, fontWeight: 500, fontSize: 13, color: p.color, background: p.bg, border: `1px solid ${p.border}`, borderRadius: 999, padding: "6px 16px" }}>{p.label}</span>
-            ))}
           </div>
-          {/* Metrics bar */}
-          <div style={{ display: "flex", gap: 0, marginTop: 40, borderTop: "1px solid rgba(245,232,208,0.08)" }}>
+
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {[
-              { label: "Total Batches",    val: `${myWeaverBatches.length}`, sub: "All time",             Icon: Layers,       hi: false },
-              { label: "Sarees Produced",  val: `${totalSarees}`,       sub: "Across all batches",   Icon: CheckCircle2, hi: true  },
-              { label: "Active Now",       val: `${activeCount}`,       sub: "Currently weaving",    Icon: Clock,        hi: false },
-              { label: "Completed",        val: `${completedCount}`,    sub: "Fully finished",       Icon: ListChecks,   hi: false },
-            ].map((m, i) => (
-              <div key={m.label} style={{ flex: 1, padding: "20px 22px", borderRight: i < 3 ? "1px solid rgba(245,232,208,0.07)" : "none", display: "flex", alignItems: "center", gap: 14 }}>
-                <div style={{ width: 44, height: 44, borderRadius: 13, flexShrink: 0, background: m.hi ? "rgba(200,155,71,0.18)" : "rgba(245,232,208,0.07)", border: `1px solid ${m.hi ? "rgba(200,155,71,0.35)" : "rgba(245,232,208,0.09)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <m.Icon size={19} color={m.hi ? T2.antiqueGold : "rgba(245,232,208,0.70)"} />
-                </div>
-                <div>
-                  <div style={{ fontFamily: F.m, fontWeight: 600, fontSize: 12, letterSpacing: "1.8px", textTransform: "uppercase" as const, color: m.hi ? "rgba(200,155,71,0.85)" : "rgba(245,232,208,0.55)", marginBottom: 4 }}>{m.label}</div>
-                  <div style={{ fontFamily: F.d, fontWeight: 400, fontSize: 30, color: m.hi ? T2.goldLight : T2.warmCream, lineHeight: 1 }}>{m.val}</div>
-                  <div style={{ fontFamily: F.u, fontSize: 12, color: "rgba(245,232,208,0.60)", marginTop: 3 }}>{m.sub}</div>
-                </div>
+              { text: `${myWeaverBatches.length} Total Batches`, color: C.gold },
+              { text: `${activeCount} Currently Active` },
+              { text: `${completedCount} Completed` },
+            ].map(p => (
+              <div key={p.text} style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 999, padding: "5px 14px" }}>
+                <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: p.color || "#FFF" }}>{p.text}</span>
               </div>
             ))}
           </div>
         </div>
       </section>
 
+      {/* ── FLOATING LUXURY STATS CARD ── */}
+      <div style={{ padding: "0 16px", marginTop: -56, position: "relative", zIndex: 20 }}>
+        <LuxuryStatsCard stats={statItems} />
+      </div>
+
       {/* Filter bar */}
-      <div className="px-4 md:px-7 xl:px-12" style={{ background: T2.warmIvory, borderBottom: `1px solid ${T2.borderDef}`, position: "sticky" as const, top: 64, zIndex: 50, boxShadow: "0 4px 24px rgba(74,6,27,0.05)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, height: 60 }}>
-          {([
-            { key: "all",       label: "All Batches", count: myWeaverBatches.length },
-            { key: "active",    label: "Active",      count: activeCount },
-            { key: "completed", label: "Completed",   count: completedCount },
-          ] as const).map(f => (
-            <Button
-              key={f.key}
-              onClick={() => setStatusFilter(f.key)}
-              variant="ghost"
-              className={
-                "h-full px-[18px] border-none bg-transparent rounded-none flex items-center gap-1.5 border-b-2 " +
-                (statusFilter === f.key ? "border-b-[#6E0F2D] hover:bg-transparent" : "border-b-transparent hover:bg-transparent")
-              }
-            >
-              <span style={{ fontFamily: F.u, fontWeight: statusFilter === f.key ? 600 : 400, fontSize: 13, color: statusFilter === f.key ? T2.royalBurgundy : T2.taupe }}>{f.label}</span>
-              <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, padding: "2px 7px", borderRadius: 999, background: statusFilter === f.key ? "rgba(110,15,45,0.08)" : "rgba(139,112,96,0.08)", color: statusFilter === f.key ? T2.royalBurgundy : T2.taupe }}>{f.count}</span>
-            </Button>
-          ))}
-          <Input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search batch ID or design…"
-            iconLeft={Search}
-            size="sm"
-            containerClassName="ml-auto rounded-xl h-[38px] w-[240px] bg-[#F7F2EA] border-[rgba(110,15,45,0.10)]"
-          />
-          <span style={{ fontFamily: F.m, fontSize: 12, color: T2.taupe }}>{filtered.length} batch{filtered.length !== 1 ? "es" : ""}</span>
+      <div className="px-4 md:px-7 xl:px-12 py-3" style={{ background: T2.warmIvory, borderBottom: `1px solid ${T2.borderDef}`, boxShadow: "0 4px 24px rgba(74,6,27,0.05)", marginTop: 24 }}>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          {/* Filter Pills */}
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1 sm:pb-0">
+            {([
+              { key: "all",       label: "All Batches", count: myWeaverBatches.length },
+              { key: "active",    label: "Active",      count: activeCount },
+              { key: "completed", label: "Completed",   count: completedCount },
+            ] as const).map(f => (
+              <button
+                key={f.key}
+                onClick={() => setStatusFilter(f.key)}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "6px 14px",
+                  borderRadius: 999,
+                  border: statusFilter === f.key ? "1.5px solid #6E0F2D" : `1px solid ${T2.borderDef}`,
+                  background: statusFilter === f.key ? "rgba(110,15,45,0.08)" : "transparent",
+                  color: statusFilter === f.key ? T2.royalBurgundy : T2.taupe,
+                  fontFamily: F.u,
+                  fontWeight: statusFilter === f.key ? 700 : 500,
+                  fontSize: 13,
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                <span>{f.label}</span>
+                <span style={{
+                  fontFamily: F.m,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  padding: "2px 7px",
+                  borderRadius: 999,
+                  background: statusFilter === f.key ? "#6E0F2D" : "rgba(139,112,96,0.12)",
+                  color: statusFilter === f.key ? "#FFFFFF" : T2.taupe
+                }}>
+                  {f.count}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {/* Search Bar + Batch Count */}
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+            <Input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search batch ID or design…"
+              iconLeft={Search}
+              size="sm"
+              containerClassName="rounded-xl h-[38px] w-full sm:w-[240px] bg-[#F7F2EA] border-[rgba(110,15,45,0.10)]"
+            />
+            <span style={{ fontFamily: F.m, fontSize: 12, color: T2.taupe, whiteSpace: "nowrap" }}>
+              {filtered.length} batch{filtered.length !== 1 ? "es" : ""}
+            </span>
+          </div>
         </div>
       </div>
 
       {/* Grid */}
-      <div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 40, paddingBottom: 80 }}>
+      <div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 32, paddingBottom: 80 }}>
         {filtered.length === 0 ? (
-          <div style={{ textAlign: "center" as const, padding: "80px 40px" }}>
-            <div style={{ width: 72, height: 72, borderRadius: 22, background: "rgba(110,15,45,0.06)", border: `1px solid ${T2.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
-              <Layers size={28} color={T2.taupe} />
+          <div style={{ textAlign: "center" as const, padding: "60px 20px" }}>
+            <div style={{ width: 64, height: 64, borderRadius: 20, background: "rgba(110,15,45,0.06)", border: `1px solid ${T2.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+              <Layers size={26} color={T2.taupe} />
             </div>
-            <div style={{ fontFamily: F.d, fontWeight: 400, fontSize: 20, color: T2.luxuryBrown, marginBottom: 8 }}>No batches found</div>
-            <div style={{ fontFamily: F.u, fontSize: 14, color: T2.taupe }}>Try adjusting your search or filter.</div>
+            <div style={{ fontFamily: F.d, fontWeight: 400, fontSize: 20, color: T2.luxuryBrown, marginBottom: 6 }}>No batches found</div>
+            <div style={{ fontFamily: F.u, fontSize: 13.5, color: T2.taupe }}>Try adjusting your search or filter.</div>
           </div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 22 }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" style={{ gap: 20 }}>
             {filtered.map((b, i) => (
               <FadeUpBatch key={b.batchId} delay={i * 0.04}>
                 {b.derivedStatus === "completed"

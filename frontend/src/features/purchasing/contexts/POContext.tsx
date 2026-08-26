@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { BackendPurchaseOrder, purchaseOrdersApi } from "../../../shared/api/purchase-orders";
 import { vendorsApi } from "../../../shared/api/vendors";
-import { useAuth } from "../../../contexts/AuthContext";
+import { useAuth, useAuthGate } from "../../../contexts/AuthContext";
 import type { DocumentStatus } from "@/lib/domain/status";
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
@@ -91,6 +91,8 @@ interface POContextValue {
   nextPONumber: string;
   isError: boolean;
   error: unknown;
+  isLoading: boolean;
+  refetch: () => void;
 }
 
 const POContext = createContext<POContextValue | null>(null);
@@ -100,10 +102,12 @@ const QUERY_KEY = ["purchaseOrders"] as const;
 export function POProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const enabled = useAuthGate();
 
-  const { data: pos = [], isError, error } = useQuery({
+  const { data: pos = [], isError, error, isLoading, refetch } = useQuery({
     queryKey: QUERY_KEY,
     queryFn: async () => (await purchaseOrdersApi.list()).items.map(po => toPurchaseOrder(po)),
+    enabled,
   });
 
   const setPos = (updater: (prev: PurchaseOrder[]) => PurchaseOrder[]) => {
@@ -208,7 +212,7 @@ export function POProvider({ children }: { children: React.ReactNode }) {
   }, [pos]);
 
   return (
-    <POContext.Provider value={{ pos, addPO, approvePO, rejectPO, deletePO, nextPONumber, isError, error }}>
+    <POContext.Provider value={{ pos, addPO, approvePO, rejectPO, deletePO, nextPONumber, isError, error, isLoading, refetch: () => void refetch() }}>
       {children}
     </POContext.Provider>
   );
@@ -223,6 +227,8 @@ const FALLBACK_PO: POContextValue = {
   nextPONumber: "PO-2026-001",
   isError: false,
   error: null,
+  isLoading: false,
+  refetch: () => {},
 };
 
 export function usePO(): POContextValue {

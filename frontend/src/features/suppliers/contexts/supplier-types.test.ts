@@ -11,6 +11,7 @@ import {
   lineSelling,
   lineProfit,
   expandSareePieces,
+  withPieceImage,
   purchaseTotals,
   initialsOf,
   type SareeTag,
@@ -122,6 +123,44 @@ describe("expandSareePieces", () => {
       expect(p.finalAmount).toBe(600); // 500 + 20%
       expect(p.lineQuantity).toBe(3);
     });
+  });
+
+  it("gives each piece its own photo and never the line's", () => {
+    const line: SareeTag = {
+      id: "RAVI-34-001",
+      weight: "800g",
+      date: "01 Jun 2026",
+      sareeType: "Plain Silk",
+      color: "Cream",
+      price: 500,
+      sellPercent: 20,
+      quantity: 3,
+      finalAmount: 1800,
+      notes: "",
+      imageUrl: "data:image/png;base64,LINE",
+      pieceImageUrls: ["data:image/png;base64,PC1", ""],
+    };
+    const pieces = expandSareePieces([line]);
+    expect(pieces[0].imageUrl).toBe("data:image/png;base64,PC1");
+    // Piece 2 has an empty slot and piece 3 none at all — both stay blank
+    // rather than inheriting the serial's photo.
+    expect(pieces[1].imageUrl).toBeUndefined();
+    expect(pieces[2].imageUrl).toBeUndefined();
+  });
+});
+
+describe("withPieceImage", () => {
+  it("sets a piece's photo, padding the array out to its position", () => {
+    const line = { id: "RAVI-34-001", quantity: 3 } as SareeTag;
+    const next = withPieceImage(line, 3, "data:image/png;base64,PC3");
+    expect(next.pieceImageUrls).toEqual(["", "", "data:image/png;base64,PC3"]);
+    // The line's own photo is untouched — the two are independent.
+    expect(next.imageUrl).toBeUndefined();
+  });
+
+  it("replaces an existing piece photo without disturbing its siblings", () => {
+    const line = { id: "RAVI-34-001", quantity: 2, pieceImageUrls: ["a", "b"] } as SareeTag;
+    expect(withPieceImage(line, 1, "c").pieceImageUrls).toEqual(["c", "b"]);
   });
 });
 

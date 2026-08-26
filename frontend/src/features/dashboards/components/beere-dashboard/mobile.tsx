@@ -6,7 +6,8 @@ import {
   CheckCircle2,
   Package, IndianRupee, Users,
   Layers
-, Flower2 as Lotus } from 'lucide-react';import { imgBKLogo, imgSareeFooter, imgShowroom } from '../../../../shared/constants/weaverImages';
+, Flower2 as Lotus } from 'lucide-react';
+import { imgBKLogo, imgSareeFooter, imgShowroom } from '../../../../shared/constants/weaverImages';
 import { T, F, G, NUM, DARK_MAROON, EASE } from './theme';
 import { FadeUp, AnimatedNumber, AnimatedBar, Donut } from './ui';
 import { useDashboardMetrics } from './hooks/useDashboardMetrics';

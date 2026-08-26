@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, Tag } from "lucide-react";
+import { Tag } from "lucide-react";
 import { toast } from "sonner";
 import { F, T, SectionCard } from "./labelSettings/primitives";
 import { LabelPreviewCard } from "./labelSettings/LabelPreviewCard";
@@ -13,6 +13,7 @@ import { ScanPageSettingsCard } from "./labelSettings/ScanPageSettingsCard";
 import type { ScanFields } from "./labelSettings/ScanPageSettingsCard";
 import { StickyFooter } from "./labelSettings/StickyFooter";
 import { labelsApi, LabelSettings } from "../../../shared/api/labels";
+import { LoadingState, ErrorState } from "../../../shared/ui/state";
 
 const DEFAULT_LABEL_SIZE = "100mm × 50mm (Default)";
 const DEFAULT_FIELDS: LabelFields = {
@@ -63,7 +64,7 @@ function toLocalState(settings: LabelSettings) {
 export function LabelSettingsPage() {
   const queryClient = useQueryClient();
 
-  const { data: settings, isLoading, isError } = useQuery({
+  const { data: settings, isLoading, isError, refetch } = useQuery({
     queryKey: ["label-settings"],
     queryFn: () => labelsApi.getSettings(),
     staleTime: 60_000,
@@ -205,50 +206,12 @@ export function LabelSettingsPage() {
       </header>
 
       {isLoading ? (
-        <div
-          className="px-4 md:px-7 xl:px-10"
-          style={{
-            textAlign: "center",
-            paddingTop: 80,
-            paddingBottom: 80,
-            fontFamily: F.ui,
-            fontSize: 14,
-            color: T.taupe,
-          }}
-        >
-          Loading label settings…
+        <div className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 40, paddingBottom: 40 }}>
+          <LoadingState variant="skeleton" rows={4} />
         </div>
       ) : isError ? (
-        <div className="px-4 md:px-7 xl:px-10" style={{ textAlign: "center", paddingTop: 80, paddingBottom: 80 }}>
-          <div
-            style={{
-              width: 72,
-              height: 72,
-              borderRadius: 22,
-              background: "rgba(192,57,43,0.08)",
-              border: "1px solid rgba(192,57,43,0.2)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              margin: "0 auto 20px",
-            }}
-          >
-            <AlertTriangle size={28} color="#C0392B" />
-          </div>
-          <div
-            style={{
-              fontFamily: F.display,
-              fontWeight: 400,
-              fontSize: 20,
-              color: T.luxuryBrown,
-              marginBottom: 8,
-            }}
-          >
-            Couldn't load label settings
-          </div>
-          <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
-            Please try refreshing the page.
-          </div>
+        <div className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 40, paddingBottom: 40 }}>
+          <ErrorState error={undefined} onRetry={() => void refetch()} />
         </div>
       ) : (
         <>

@@ -37,8 +37,8 @@ import { Icons, type IconName, type LucideIcon } from "./icons";
 const buttonVariants = cva(
   [
     "relative inline-flex items-center justify-center gap-2",
-    "whitespace-nowrap select-none rounded-[var(--radius-md)]",
-    "font-medium",
+    "whitespace-nowrap select-none rounded-[10px]",
+    "font-semibold",
     "transition-[background-color,border-color,color,box-shadow]",
     "duration-[var(--duration-fast)] ease-[var(--ease-standard)]",
     "focus-visible:outline-none focus-visible:shadow-[var(--shadow-focus)]",
@@ -89,7 +89,7 @@ const buttonVariants = cva(
       size: {
         sm: "h-8 px-3 text-[13px] [&_svg]:size-3.5",
         md: "h-10 px-4 text-[14px] [&_svg]:size-4",
-        lg: "h-12 px-5 text-[16px] rounded-[var(--radius-md)] [&_svg]:size-5",
+        lg: "h-12 px-6 text-[16px] rounded-[10px] [&_svg]:size-5",
       },
       fullWidth: { true: "w-full" },
     },

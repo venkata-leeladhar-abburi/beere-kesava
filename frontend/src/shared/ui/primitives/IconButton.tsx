@@ -44,9 +44,9 @@ const iconButtonVariants = cva(
       },
     },
     compoundVariants: [
-      { shape: "square", size: "sm", class: "rounded-[var(--radius-sm)]" },
-      { shape: "square", size: "md", class: "rounded-[var(--radius-md)]" },
-      { shape: "square", size: "lg", class: "rounded-[var(--radius-md)]" },
+      { shape: "square", size: "sm", class: "rounded-[10px]" },
+      { shape: "square", size: "md", class: "rounded-[10px]" },
+      { shape: "square", size: "lg", class: "rounded-[10px]" },
     ],
     defaultVariants: { variant: "ghost", size: "md", shape: "square" },
   }

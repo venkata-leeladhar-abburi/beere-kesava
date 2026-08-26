@@ -15,7 +15,7 @@ import { RetailCustomersSection } from "./sections/RetailCustomersSection";
 import { InactiveCustomersSection } from "./sections/InactiveCustomersSection";
 import { CustomerModals } from "./modals/CustomerModals";
 import { monthsSinceLabel } from "./utils";
-import { retailData, inactiveData, wholesaleData } from "./data";
+import { retailData, inactiveData } from "./data";
 import { WholesaleCustomer, RetailCustomer, WholesaleTab } from "./types";
 import { useCustomers } from "../contexts/CustomersContext";
 import { useUrlFilters } from "../../../shared/ui/filter";
@@ -86,7 +86,7 @@ export function CustomersPage() {
         notes: c.notes || "",
       };
     });
-    return [...mapped, ...wholesaleData];
+    return mapped;
   }, [customers, bulkOrders]);
 
   useEffect(() => {

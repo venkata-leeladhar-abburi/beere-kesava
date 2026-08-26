@@ -17,6 +17,7 @@ import { vendorPaymentsApi, weaverPaymentsApi, supplierPaymentsApi } from "../..
 import { invoicesApi } from "../../../../shared/api/invoices";
 import { Button, IconButton, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { DataTable, exportTable, type ColumnDef } from "../../../../shared/ui/data";
+import { LoadingState, ErrorState } from "../../../../shared/ui/state";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money, StatusPill, EntityCode } from "@/shared/ui/domain";
 import type { PaymentStatus } from "@/lib/domain/status";
@@ -47,25 +48,31 @@ export function PaymentHistorySection() {
   const { data: vendorsRes } = useQuery({ queryKey: ["history-vendors"], queryFn: () => vendorsApi.list() });
   const { data: suppliersRes } = useQuery({ queryKey: ["history-suppliers"], queryFn: () => suppliersApi.list() });
   const { data: weaversRes } = useQuery({ queryKey: ["history-weavers"], queryFn: () => weaversApi.list() });
-  const { data: vendorPaymentsRes, isLoading: vendorPayLoading, isError: vendorPayError } = useQuery({
+  const { data: vendorPaymentsRes, isLoading: vendorPayLoading, isError: vendorPayError, refetch: refetchVendorPay } = useQuery({
     queryKey: ["history-vendor-payments"],
     queryFn: () => vendorPaymentsApi.list(),
   });
-  const { data: supplierPaymentsRes, isLoading: supplierPayLoading, isError: supplierPayError } = useQuery({
+  const { data: supplierPaymentsRes, isLoading: supplierPayLoading, isError: supplierPayError, refetch: refetchSupplierPay } = useQuery({
     queryKey: ["history-supplier-payments"],
     queryFn: () => supplierPaymentsApi.list(),
   });
-  const { data: weaverPaymentsRes, isLoading: weaverPayLoading, isError: weaverPayError } = useQuery({
+  const { data: weaverPaymentsRes, isLoading: weaverPayLoading, isError: weaverPayError, refetch: refetchWeaverPay } = useQuery({
     queryKey: ["history-weaver-payments"],
     queryFn: () => weaverPaymentsApi.list(),
   });
-  const { data: invoicesRes, isLoading: invoicesLoading, isError: invoicesError } = useQuery({
+  const { data: invoicesRes, isLoading: invoicesLoading, isError: invoicesError, refetch: refetchInvoices } = useQuery({
     queryKey: ["history-invoices"],
     queryFn: () => invoicesApi.list(),
   });
 
   const isLoading = vendorPayLoading || weaverPayLoading || supplierPayLoading || invoicesLoading;
   const isError = vendorPayError || weaverPayError || supplierPayError || invoicesError;
+  const refetchAll = () => {
+    void refetchVendorPay();
+    void refetchSupplierPay();
+    void refetchWeaverPay();
+    void refetchInvoices();
+  };
 
   const PAY_HISTORY_LIVE: PayHistRecord[] = useMemo(() => {
     const vendorNameById = new Map((vendorsRes?.items ?? []).map(v => [v.id, v.name]));
@@ -280,13 +287,15 @@ export function PaymentHistorySection() {
               ))}
             </div>
 
+            <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+
             {/* Type dropdown */}
-            <Select value={typeFilter} onValueChange={setTypeFilter} size="sm">
+            <Select value={typeFilter} onValueChange={setTypeFilter} size="sm" containerClassName="w-auto shrink-0" className="w-[165px] font-semibold">
               {["All Payment Types","Vendor Payment","Weaver Payment","Supplier Payment","Customer Receipt"].map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
             </Select>
 
             {/* Status dropdown */}
-            <Select value={statusFilter} onValueChange={setStatusFilter} size="sm">
+            <Select value={statusFilter} onValueChange={setStatusFilter} size="sm" containerClassName="w-auto shrink-0" className="w-[130px] font-semibold">
               {["All Statuses","Paid","Partial","Pending"].map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
             </Select>
 
@@ -302,19 +311,15 @@ export function PaymentHistorySection() {
             </Button>
           </div>
 
-          <div style={{ marginBottom: 14 }}>
-            <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
-          </div>
-
-          <div className="flex md:hidden items-center justify-between gap-3 mb-4 flex-wrap">
-            <div className="flex items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0">
+          <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+            <div className="flex items-center gap-1 border border-[#E8DCC4] rounded-[10px] p-1 bg-white shrink-0">
               <Button
                 onClick={() => setView("card")}
                 variant="ghost"
-                className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
+                className={`h-auto rounded-[8px] gap-1.5 py-1.5 px-3 text-[12px] sm:text-[13px] font-bold ${
                   view === "card"
                     ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
-                    : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+                    : "bg-transparent text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
                 }`}
               >
                 <LayoutGrid size={14} /> Card View
@@ -322,10 +327,10 @@ export function PaymentHistorySection() {
               <Button
                 onClick={() => setView("table")}
                 variant="ghost"
-                className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
+                className={`h-auto rounded-[8px] gap-1.5 py-1.5 px-3 text-[12px] sm:text-[13px] font-bold ${
                   view === "table"
                     ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
-                    : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+                    : "bg-transparent text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
                 }`}
               >
                 <AlignJustify size={14} /> Table View
@@ -336,13 +341,9 @@ export function PaymentHistorySection() {
 
         {/* ── Loading / error states ──────────────────────────── */}
         {isLoading ? (
-          <div style={{ textAlign: "center", padding: "60px 0", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
-            Loading payment history…
-          </div>
+          <LoadingState variant="skeleton" rows={4} />
         ) : isError ? (
-          <div style={{ textAlign: "center", padding: "60px 0", fontFamily: F.ui, fontSize: 14, color: T.crimson }}>
-            Couldn't load vendor/weaver payment history. Please try refreshing the page.
-          </div>
+          <ErrorState error={undefined} onRetry={refetchAll} />
         ) : (
         <>
         {/* ── CARD VIEW ───────────────────────────────────────── */}
@@ -453,7 +454,7 @@ export function PaymentHistorySection() {
         {view === "table" && (
           <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
             <div className="overflow-x-auto w-full">
-              <div style={{ minWidth: 1600 }}>
+              <div className="min-w-[1600px]">
                 <DataTable responsive={false} columns={tableColumns} data={filtered} getRowId={r => r.id} emptyTitle="No transactions match your filters" />
               </div>
             </div>

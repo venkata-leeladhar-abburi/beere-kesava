@@ -1,12 +1,19 @@
 import React from "react";
-import { Outlet, Navigate } from "react-router";
-import { useAuth } from "../../contexts/AuthContext";
+import { Outlet } from "react-router";
+import { RequireRole } from "../guards/RequireRole";
 import { composeProviders } from "../../lib/composeProviders";
 import { ErrorBoundary } from "../../components/ErrorBoundary";
 import {
-  POProvider, BulkOrderProvider, DesignLibraryProvider,
-  BatchProvider, MaterialIssueProvider, MaterialReturnProvider, FirmsProvider,
-  WeaverPaymentsProvider, SalesProvider, CustomersProvider,
+  POProvider,
+  BulkOrderProvider,
+  DesignLibraryProvider,
+  BatchProvider,
+  MaterialIssueProvider,
+  MaterialReturnProvider,
+  FirmsProvider,
+  WeaverPaymentsProvider,
+  SalesProvider,
+  CustomersProvider,
 } from "../../contexts";
 
 // FinishingProvider / FinishingStaffProvider are mounted once in App.tsx so
@@ -25,17 +32,13 @@ const SuperadminContexts = composeProviders([
 ]);
 
 export function SuperadminLayout() {
-  const { isAuthenticated, role } = useAuth();
-
-  // Auth guard
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (role !== "superadmin") return <Navigate to="/login" replace />;
-
   return (
-    <SuperadminContexts>
-      <ErrorBoundary resetTo="/superadmin">
-        <Outlet />
-      </ErrorBoundary>
-    </SuperadminContexts>
+    <RequireRole allow="superadmin">
+      <SuperadminContexts>
+        <ErrorBoundary resetTo="/superadmin">
+          <Outlet />
+        </ErrorBoundary>
+      </SuperadminContexts>
+    </RequireRole>
   );
 }

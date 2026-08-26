@@ -13,6 +13,8 @@ export interface WeaverSareeRow {
   designCode: string | null;
   /** Body colour, resolved from the design library via designCode. */
   color: string | null;
+  /** Photo captured by Worker Staff at Receive Sarees — same source as the worker portal's Received History. */
+  receivedPhotoUrl: string | null;
 
   /** true when the saree comes from a production batch assigned to this weaver */
   isAssigned: boolean;

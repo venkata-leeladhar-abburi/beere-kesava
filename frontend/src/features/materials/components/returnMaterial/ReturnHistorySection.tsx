@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { CheckCircle2, Clock, History, LayoutGrid, List } from "lucide-react";
-import { MaterialReturnRecord } from "../../contexts/MaterialReturnContext";
+import { MaterialReturnRecord, useMaterialReturn } from "../../contexts/MaterialReturnContext";
 import { DateFilterBar, DateFilterState } from "../../../../shared/ui/DateFilterBar";
 import { F, T } from "../issueMaterial/theme";
 import { SectionCard } from "../issueMaterial/primitives";
@@ -9,6 +9,7 @@ import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/p
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees } from "@/lib/domain/money";
 import { Money, EntityCode } from "@/shared/ui/domain";
+import { LoadingState, ErrorState, EmptyState, FilteredEmptyState } from "../../../../shared/ui/state";
 
 const STATUS_BADGE: Record<string, { label: string; color: string; bg: string }> = {
   approved: { label: "Approved", color: T.green, bg: "rgba(30,102,64,0.10)" },
@@ -31,6 +32,7 @@ export function ReturnHistorySection({
   setViewRecord: (r: MaterialReturnRecord) => void;
 }) {
   const [viewMode, setViewMode] = useState<"card" | "table">("card");
+  const { isLoading, isError, error, refetch } = useMaterialReturn();
 
   const columns: ColumnDef<MaterialReturnRecord>[] = [
     {
@@ -118,8 +120,8 @@ export function ReturnHistorySection({
           variant="ghost"
           className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
             viewMode === "card"
-              ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
-              : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+              ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D] hover:text-[#FFFDF9]"
+              : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA] hover:text-[#6E0F2D]"
           }`}
         >
           <LayoutGrid size={14} /> Card View
@@ -129,8 +131,8 @@ export function ReturnHistorySection({
           variant="ghost"
           className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
             viewMode === "table"
-              ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
-              : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+              ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D] hover:text-[#FFFDF9]"
+              : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA] hover:text-[#6E0F2D]"
           }`}
         >
           <List size={14} /> Table View
@@ -140,10 +142,16 @@ export function ReturnHistorySection({
       {/* Mobile View (Card View or Table View based on viewMode toggle) */}
       <div className="block md:hidden">
         {viewMode === "card" ? (
-          pagedHistory.length === 0 ? (
-            <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: "32px 16px", textAlign: "center" }}>
-              <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No return records match your filters</div>
-            </div>
+          isLoading ? (
+            <LoadingState variant="skeleton" rows={4} />
+          ) : isError ? (
+            <ErrorState error={error} onRetry={refetch} />
+          ) : pagedHistory.length === 0 ? (
+            histSearch.trim() || histWeaverFilter !== "All Weavers" ? (
+              <FilteredEmptyState onClearFilters={() => { setHistSearch(""); setHistWeaverFilter("All Weavers"); }} />
+            ) : (
+              <EmptyState title="No return records yet" description="Materials returned by weavers or looms will show up here." />
+            )
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
               {pagedHistory.map(r => {
@@ -224,6 +232,11 @@ export function ReturnHistorySection({
               columns={columns}
               data={pagedHistory}
               getRowId={r => r.id}
+              loading={isLoading}
+              error={isError}
+              onRetry={refetch}
+              isFiltered={!!(histSearch.trim() || histWeaverFilter !== "All Weavers")}
+              onClearFilters={() => { setHistSearch(""); setHistWeaverFilter("All Weavers"); }}
               emptyTitle="No return records match your filters"
             />
           </div>
@@ -236,6 +249,11 @@ export function ReturnHistorySection({
           columns={columns}
           data={pagedHistory}
           getRowId={r => r.id}
+          loading={isLoading}
+          error={isError}
+          onRetry={refetch}
+          isFiltered={!!(histSearch.trim() || histWeaverFilter !== "All Weavers")}
+          onClearFilters={() => { setHistSearch(""); setHistWeaverFilter("All Weavers"); }}
           emptyTitle="No return records match your filters"
         />
       </div>

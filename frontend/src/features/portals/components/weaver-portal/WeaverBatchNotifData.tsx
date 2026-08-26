@@ -4,7 +4,6 @@ import { useRef } from "react";
 import { Flower2, ChevronRight } from "lucide-react";
 import { AlertTriangle, AlertCircle, Info, CheckCircle2, Package, Wallet, ArrowUpRight } from "lucide-react";
 import { resolveStatus, type StatusValueOf } from "@/lib/domain/status";
-import { imgShopBg, imgWeaverPortalBg } from "@/shared/constants/mockImages";
 
 // ─── Shared tokens (local copy for this file) ────────────────────────────────
 const C = {
@@ -173,5 +172,7 @@ export function FadeUpBatch({ children, delay = 0 }: { children: React.ReactNode
   );
 }
 
-export const BG_IMAGE = imgWeaverPortalBg;
-export const FABRIC_BG = imgShopBg;
+// Moved to shared/ui/heroBackgrounds — re-exported so this feature's own
+// modules keep importing it from here.
+export { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
+export const FABRIC_BG = "https://images.unsplash.com/photo-1569909115134-a0426936c879?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400";

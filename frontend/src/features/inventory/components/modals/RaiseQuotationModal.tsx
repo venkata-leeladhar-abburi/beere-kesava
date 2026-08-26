@@ -171,7 +171,10 @@ export function RaiseQuotationModal({ sarees, available, onConfirm, onClose, ini
               sees, not a summary of it. */}
           {step === 3 && (
             <div style={{ height: "60vh", border: `1px solid ${T.borderDef}`, borderRadius: 12, overflow: "hidden" }}>
-              <DocumentViewer>
+              <DocumentViewer
+                fileName={inv.invoiceNumber || "Quotation"}
+                documentTitle={`Quotation ${inv.invoiceNumber || ""}`.trim()}
+              >
                 <QuotationDocument
                   quotationNumber={inv.invoiceNumber}
                   quotationDate={inv.invoiceDate || today}

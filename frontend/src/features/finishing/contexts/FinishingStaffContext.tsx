@@ -6,7 +6,7 @@ import {
   BackendFinishingStaff,
   finishingStaffApi,
 } from "../../../shared/api/finishing";
-import { useAuth } from "../../../contexts/AuthContext";
+import { useAuthGate } from "../../../contexts/AuthContext";
 
 export interface FinishingStaffMember {
   id: string;
@@ -35,6 +35,10 @@ interface FinishingStaffContextValue {
   toggleStatus: (id: string) => void;
   deleteMember: (id: string) => Promise<void>;
   activeMembers: FinishingStaffMember[];
+  isLoading: boolean;
+  isError: boolean;
+  error: unknown;
+  refetch: () => void;
 }
 
 const FinishingStaffContext = createContext<FinishingStaffContextValue | null>(null);
@@ -65,10 +69,9 @@ export function FinishingStaffProvider({ children }: { children: React.ReactNode
   const queryClient = useQueryClient();
   // Mounted globally (App.tsx) for every role, but /finishing/staff is
   // WORKER-only on the backend (ADMIN/SUPERADMIN bypass every role check).
-  const { role } = useAuth();
-  const enabled = role === "worker" || role === "admin" || role === "superadmin";
+  const enabled = useAuthGate("worker", "admin", "superadmin");
 
-  const { data: members = [] } = useQuery({
+  const { data: members = [], isLoading, isError, error, refetch } = useQuery({
     queryKey: QUERY_KEY,
     enabled,
     queryFn: async () => {
@@ -150,7 +153,7 @@ export function FinishingStaffProvider({ children }: { children: React.ReactNode
   const activeMembers = useMemo(() => members.filter(m => m.status === "Active"), [members]);
 
   return (
-    <FinishingStaffContext.Provider value={{ members, addMember, updateMember, toggleStatus, deleteMember, activeMembers }}>
+    <FinishingStaffContext.Provider value={{ members, addMember, updateMember, toggleStatus, deleteMember, activeMembers, isLoading, isError, error, refetch: () => void refetch() }}>
       {children}
     </FinishingStaffContext.Provider>
   );

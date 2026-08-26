@@ -46,6 +46,9 @@ interface PaginatedResponse<T> {
 export interface CreateDispatchPayload {
   type: BackendDispatchType;
   sareeIds: string[];
+  /** Date the goods physically left, as entered on the dispatch form. Without
+   *  it every record was stamped with the server's clock instead. */
+  dispatchDate?: string;
   lrNumber?: string;
   transportCompany?: string;
   vehicleNumber?: string;

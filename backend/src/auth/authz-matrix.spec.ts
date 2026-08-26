@@ -24,7 +24,8 @@
  * actual decision, including the ADMIN/SUPERADMIN bypass and the
  * fail-closed-on-unseeded-key path.
  */
-import { ExecutionContext, ForbiddenException } from "@nestjs/common";
+import { ExecutionContext } from "@nestjs/common";
+import { AppException, ForbiddenRoleError } from "../common/errors";
 import { Reflector } from "@nestjs/core";
 import * as path from "path";
 import {
@@ -262,7 +263,7 @@ describe("authz matrix / PermissionsGuard decisions", () => {
     try {
       return await guardFor(route, role).canActivate(contextFor(route, role));
     } catch (error) {
-      if (error instanceof ForbiddenException) return false;
+      if (error instanceof AppException) return false;
       throw error;
     }
   };
@@ -353,7 +354,7 @@ describe("authz matrix / PermissionsGuard decisions", () => {
 
     const denied = guardFor(route, UserRole.WEAVER);
     await expect(denied.canActivate(contextFor(route, UserRole.WEAVER))).rejects.toThrow(
-      ForbiddenException,
+      ForbiddenRoleError,
     );
 
     const allowed = guardFor(route, UserRole.WEAVER, { "users.create": true });
@@ -379,7 +380,7 @@ describe("authz matrix / PermissionsGuard decisions", () => {
 
     const revoked = guardFor(route, UserRole.WEAVER, { "qc.read": false });
     await expect(revoked.canActivate(contextFor(route, UserRole.WEAVER))).rejects.toThrow(
-      ForbiddenException,
+      ForbiddenRoleError,
     );
   });
 
@@ -400,6 +401,6 @@ describe("authz matrix / PermissionsGuard decisions", () => {
       switchToHttp: () => ({ getRequest: () => ({}) }),
     } as unknown as ExecutionContext;
 
-    await expect(guard.canActivate(context)).rejects.toThrow(ForbiddenException);
+    await expect(guard.canActivate(context)).rejects.toThrow(AppException);
   });
 });

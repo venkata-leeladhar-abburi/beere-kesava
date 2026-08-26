@@ -34,17 +34,17 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [vendorViewMode, setVendorViewMode] = useState<"card" | "table">("card");
 
-  const { data: rawGrns } = useQuery({
+  const { data: rawGrns, isLoading: grnsLoading, isError: grnsError, refetch: refetchGrns } = useQuery({
     queryKey: ["grn-receipts"],
     queryFn: () => rawMaterialsApi.listGrns(),
   });
 
-  const { data: rawPos } = useQuery({
+  const { data: rawPos, isLoading: posLoading, isError: posError, refetch: refetchPos } = useQuery({
     queryKey: ["purchase-orders"],
     queryFn: () => purchaseOrdersApi.list(100),
   });
 
-  const { data: rawVendors } = useQuery({
+  const { data: rawVendors, isLoading: vendorsLoading, isError: vendorsError, refetch: refetchVendors } = useQuery({
     queryKey: ["vendors"],
     queryFn: () => vendorsApi.list(100),
   });
@@ -54,10 +54,19 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
   // time. Actual payment amounts live here, against a VendorBill raised
   // separately (Payments → vendor invoices), so "Total Paid" has to come
   // from this, not from PO totals.
-  const { data: rawVendorPayments } = useQuery({
+  const { data: rawVendorPayments, isLoading: paymentsLoading, isError: paymentsError, refetch: refetchPayments } = useQuery({
     queryKey: ["vendor-payments"],
     queryFn: () => vendorPaymentsApi.list(),
   });
+
+  const historyLoading = grnsLoading || posLoading || vendorsLoading || paymentsLoading;
+  const historyError = grnsError || posError || vendorsError || paymentsError;
+  const refetchHistory = () => {
+    void refetchGrns();
+    void refetchPos();
+    void refetchVendors();
+    void refetchPayments();
+  };
 
   const stats = useMemo(() => {
     const grns = rawGrns?.items ?? [];
@@ -407,6 +416,9 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
               columns={vendorColumns}
               data={stats.vendorRows}
               getRowId={v => v.name}
+              loading={historyLoading}
+              error={historyError}
+              onRetry={refetchHistory}
               emptyTitle="No purchase history found across vendors."
             />
           </div>

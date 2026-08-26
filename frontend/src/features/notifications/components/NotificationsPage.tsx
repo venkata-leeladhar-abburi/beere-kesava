@@ -8,6 +8,8 @@ import { NotificationStatStrip } from "./NotificationStatStrip";
 import { NotificationDetailPanel } from "./NotificationDetailPanel";
 import { SectionCard } from "./common/primitives";
 import { BackendNotification, connectNotificationsSocket, notificationsApi } from "../../../shared/api/notifications";
+import type { Socket } from "socket.io-client";
+import { useSocketStatus } from "../../../shared/hooks";
 import { useAuth, Role } from "../../../contexts/AuthContext";
 import { rupees, formatMoney } from "@/lib/domain/money";
 
@@ -53,15 +55,44 @@ function formatRelativeTime(iso: string): string {
   return `${diffDays} days ago`;
 }
 
+function humanizeType(type: string): string {
+  return type.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function inferCategory(type: string): UnifiedNotif["category"] {
+  const t = type.toUpperCase();
+  if (t.includes("PAYMENT") || t.includes("INVOICE") || t.includes("BILL")) return "payment";
+  if (t.includes("WARP") || t.includes("MATERIAL") || t.includes("STOCK") || t.includes("GRN")) return "material";
+  if (t.includes("BATCH") || t.includes("SAREE") || t.includes("QC") || t.includes("FINISHING")) return "production";
+  if (t.includes("WEAVER") || t.includes("LOOM")) return "weaver";
+  if (t.includes("DISPATCH") || t.includes("ORDER") || t.includes("SALE")) return "dispatch";
+  return "production";
+}
+
+function inferPriority(type: string): Priority {
+  const t = type.toUpperCase();
+  if (t.includes("REJECT") || t.includes("FAIL") || t.includes("DEFECT") || t.includes("OVERDUE") || t.includes("CRITICAL")) return "critical";
+  if (t.includes("PENDING") || t.includes("WARN") || t.includes("RISK")) return "warning";
+  if (t.includes("APPROVE") || t.includes("PAID") || t.includes("SUCCESS") || t.includes("COMPLETE") || t.includes("SIGNED")) return "success";
+  return "info";
+}
+
+function formatPayloadBody(payload?: Record<string, unknown> | null): string {
+  if (!payload || Object.keys(payload).length === 0) return "No details provided.";
+  return Object.entries(payload)
+    .map(([k, v]) => `${humanizeType(k)}: ${v}`)
+    .join(" · ");
+}
+
 function toUnifiedNotif(n: BackendNotification): UnifiedNotif {
   const cfg = TYPE_CONFIG[n.type];
   const payload = n.payload ?? {};
   return {
     id: n.id,
-    priority: cfg?.priority ?? "info",
-    category: cfg?.category ?? "payment",
-    title: cfg ? cfg.title(payload) : n.type,
-    body: cfg ? cfg.body(payload) : JSON.stringify(payload),
+    priority: cfg?.priority ?? inferPriority(n.type),
+    category: cfg?.category ?? inferCategory(n.type),
+    title: cfg ? cfg.title(payload) : humanizeType(n.type),
+    body: cfg ? cfg.body(payload) : formatPayloadBody(payload),
     time: formatRelativeTime(n.createdAt),
     read: n.readAt !== null,
   };
@@ -129,8 +160,9 @@ export function NotificationsPage() {
   const [dateFilter, setDateFilter]         = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [isLoading, setIsLoading]           = useState(true);
   const [isError, setIsError]               = useState(false);
+  const [socket, setSocket]                 = useState<Socket | null>(null);
 
-  useEffect(() => {
+  const loadNotifications = useCallback(() => {
     setIsLoading(true);
     setIsError(false);
     notificationsApi.list({ role: backendRole }).then(res => {
@@ -141,16 +173,21 @@ export function NotificationsPage() {
     }).finally(() => setIsLoading(false));
   }, [backendRole]);
 
+  useEffect(() => { loadNotifications(); }, [loadNotifications]);
+
   // Live push — backend gateway emits to `role:<ROLE>` rooms (no per-user
   // auth yet, so we can only reliably subscribe by role).
   useEffect(() => {
     if (!backendRole) return;
-    const socket = connectNotificationsSocket({ role: backendRole });
-    socket.on("notification", (raw: BackendNotification) => {
+    const s = connectNotificationsSocket({ role: backendRole });
+    setSocket(s);
+    s.on("notification", (raw: BackendNotification) => {
       setNotifications(prev => prev.some(n => n.id === raw.id) ? prev : [toUnifiedNotif(raw), ...prev]);
     });
-    return () => { socket.disconnect(); };
+    return () => { s.disconnect(); setSocket(null); };
   }, [backendRole]);
+
+  const socketStatus = useSocketStatus(socket);
 
   const markRead = useCallback((id: string) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
@@ -216,8 +253,13 @@ export function NotificationsPage() {
                 {unread} new
               </span>
             )}
+            {socketStatus !== "connected" && (
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.65)", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.14)", borderRadius: 999, padding: "3px 10px" }}>
+                {socketStatus === "disconnected" ? "Live updates paused — reconnecting" : "Connecting…"}
+              </span>
+            )}
           </div>
-          <p style={{ fontFamily: F.ui, fontSize: "clamp(13px, 2vw, 16px)", color: "rgba(255,253,249,0.70)", margin: 0, maxWidth: 600, lineHeight: 1.5, wordBreak: "break-word" }}>
+          <p className="max-w-[600px]" style={{ fontFamily: F.ui, fontSize: "clamp(13px, 2vw, 16px)", color: "rgba(255,253,249,0.70)", margin: 0, lineHeight: 1.5, wordBreak: "break-word" }}>
             Live operational alerts, stock updates, payment reminders, and production activity.
           </p>
           {unread > 0 && (
@@ -272,8 +314,20 @@ export function NotificationsPage() {
       </div>
 
       {/* PRIORITY FILTER BAR */}
-      <div className="px-3 sm:px-4 md:px-7 xl:px-14" style={{ background: T.warmIvory, borderBottom: `1px solid ${T.borderDef}`, position: "relative", zIndex: 10, marginTop: 20, overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 0, height: 52, minWidth: "max-content" }}>
+      <div className="px-4 md:px-7 xl:px-14" style={{ marginTop: 24, marginBottom: 12, position: "relative", zIndex: 10 }}>
+        <div style={{
+          background: "#FFFFFF",
+          borderRadius: 16,
+          border: `1px solid ${T.borderDef}`,
+          boxShadow: "0 2px 12px rgba(74,6,27,0.05)",
+          padding: "0 16px",
+          display: "flex",
+          alignItems: "center",
+          gap: 0,
+          height: 52,
+          overflowX: "auto",
+          WebkitOverflowScrolling: "touch",
+        }}>
           {FILTERS.map(f => {
             const active = filter === f.key;
             const count = f.key === "all" ? categoryFiltered.length : categoryFiltered.filter(n => n.priority === f.key).length;
@@ -299,7 +353,7 @@ export function NotificationsPage() {
       </div>
 
       {/* MAIN CONTENT GRID */}
-      <div className="px-3 sm:px-4 md:px-7 xl:px-14 flex flex-col lg:flex-row gap-6 md:gap-7 items-start" style={{ paddingTop: 28, paddingBottom: 80 }}>
+      <div className="px-4 md:px-7 xl:px-14 flex flex-col lg:flex-row gap-6 md:gap-7 items-start" style={{ paddingTop: 20, paddingBottom: 80 }}>
         {/* Left list */}
         <div className="w-full flex-1 min-w-0">
         <SectionCard
@@ -331,7 +385,7 @@ export function NotificationsPage() {
                     const isRead = n.read;
                     const isSelected = selected?.id === n.id;
                     const PriorityIcon = cfg.Icon;
-                    const catCfg = CATEGORIES.find(c => c.key === n.category)!;
+                    const catCfg = CATEGORIES.find(c => c.key === n.category) || CATEGORIES[0];
                     const CatIcon = catCfg.Icon;
 
                     return (
@@ -433,7 +487,8 @@ export function NotificationsPage() {
                 <Inbox size={28} color="#C0392B" />
               </div>
               <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#C0392B", marginBottom: 8 }}>Failed to load notifications</div>
-              <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Please try refreshing the page.</div>
+              <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginBottom: 20 }}>Please check your connection and try again.</div>
+              <Button variant="primary" size="md" onClick={loadNotifications}>Retry</Button>
             </div>
           )}
 

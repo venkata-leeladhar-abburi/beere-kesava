@@ -1,8 +1,6 @@
 
 import React, { useState, useMemo } from "react";
-import { useResponsive } from "../../../../hooks/useResponsive";
 import { useBatches } from "@/features/production";
-import { useWeaverPayments } from "@/features/weavers";
 import { rupees } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
 import { useCurrentWeaver } from "./useCurrentWeaver";
@@ -15,84 +13,19 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "../../../../contexts/AuthContext";
-import { useQc } from "@/features/qc";
 import { MobileWeaverHeroSection } from "./MobileWeaverHeroSection";
 import { BatchHistoryPage } from "./BatchHistoryPage";
 import { SectionHeading } from "@/shared/ui/portal/PortalChrome";
+import { LoadingState, ErrorState } from "@/shared/ui/state";
 import { AlertCircle, History, ListChecks } from "lucide-react";
-import { C, F, HeroHeader, MobileBatchCard, CompletedBatchCard, BatchQuickFilter, MyBatchEntry } from './theme';
+import {
+  C, F, HeroHeader, MobileBatchCard, CompletedBatchCard, MyBatchEntry } from './theme';
 
 export function MyBatchesPage({ onGoToPayments }: { onGoToPayments?: () => void } = {}) {
-  const { isMobile: _isMobile, cols: _cols } = useResponsive();
-  // Mirrors the desktop twin (desktop/BatchesSection.tsx), which swaps the whole
-  // section out for BatchHistoryPage rather than pushing a route.
-  const [subPage, setSubPage] = useState<"main" | "history" | "completed">("main");
   const { user } = useAuth();
-  const { batches } = useBatches();
+  const { batches, isLoading: batchesLoading, isError: batchesError, error: batchesErrorObj, refetch: refetchBatches } = useBatches();
   const { weaver, weaverId, isLoading: weaverLoading, isError: weaverError } = useCurrentWeaver();
-  const { getPaymentsForWeaver } = useWeaverPayments();
-  const { getQcForWeaver } = useQc();
-  const [quickFilter, _setQuickFilter] = useState<BatchQuickFilter>("all");
-
-  const weaverQcRecords = weaverId ? getQcForWeaver(weaverId) : [];
-  const now = new Date();
-  const thisMonthQc = weaverQcRecords.filter(q => {
-    const d = new Date(q.qcDate);
-    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
-  });
-  const myRows = weaverId ? batches.flatMap(b => b.rows.filter(r => r.weaverId === weaverId)) : [];
-  const isSameMonth = (iso: string) => {
-    const d = new Date(iso);
-    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
-  };
-  const qcPassDateBySaree = new Map(
-    weaverQcRecords.filter(q => q.result === "passed").map(q => [q.sareeId, q.qcDate]),
-  );
-  const producedThisMonth = myRows.filter(r => {
-    if (r.finished === true && r.finishedAt) return isSameMonth(r.finishedAt);
-    const passedAt = r.sareeId ? qcPassDateBySaree.get(r.sareeId) : undefined;
-    return passedAt ? isSameMonth(passedAt) : false;
-  });
-  const _sareesThisMonth = producedThisMonth.length;
-  const passedCount = weaverQcRecords.filter(q => q.result === "passed").length;
-  const _qcPassPct = weaverQcRecords.length > 0 ? Math.round((passedCount / weaverQcRecords.length) * 100) : 100;
-  const rejectedThisMonth = thisMonthQc.filter(q => q.result === "defective").length;
-  const _qcPassSub = weaverQcRecords.length === 0 ? "No inspections yet" : `${rejectedThisMonth} rejected this month`;
-
-  const payments = weaverId ? getPaymentsForWeaver(weaverId) : [];
-  const thisMonthPayments = payments.filter(p => {
-    const d = new Date(p.paymentDate || p.uploadedAt);
-    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
-  });
-  const _earnedThisMonth = thisMonthPayments.reduce((s, p) => s + p.amountPaid, 0);
-
-  const isMyRow = (r: { weaverId?: string | null }) => {
-    if (!r.weaverId) return false;
-    if (weaverId && r.weaverId.toLowerCase() === weaverId.toLowerCase()) return true;
-    if (!weaver) return false;
-    const wId = weaver.id.toLowerCase();
-    const wCode = weaver.code.toLowerCase();
-    const rId = r.weaverId.toLowerCase();
-    return rId === wId || rId === wCode;
-  };
-
-  const myWeaverBatches: MyBatchEntry[] = batches
-    .map(b => ({ ...b, myRows: b.rows.filter(isMyRow) }))
-    .filter(b => b.myRows.length > 0);
-
-  const isBatchDone = (b: MyBatchEntry) => {
-    if (b.status === "completed") return true;
-    if (b.myRows.length === 0) return false;
-    return b.myRows.every(r => r.finished === true);
-  };
-
-  const completedBatches: MyBatchEntry[] = myWeaverBatches.filter(isBatchDone);
-  const myActiveBatches: MyBatchEntry[] = myWeaverBatches.filter(b => !isBatchDone(b));
-  const totalMyActive = myActiveBatches.length;
-
-  const hour = new Date().getHours();
-  const _greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
-  const _weaverFirstName = user?.name ? user.name.split(" ")[0] : "Weaver";
+  const [batchesSubPage, setBatchesSubPage] = useState<"main" | "history" | "completed">("main");
 
   const myDefectiveSarees = useMemo(() => {
     return batches.flatMap(b =>
@@ -119,20 +52,59 @@ export function MyBatchesPage({ onGoToPayments }: { onGoToPayments?: () => void 
     );
   }, [batches, weaverId]);
 
-  const _showActiveSection = quickFilter === "all" || quickFilter === "active" || quickFilter === "qc-pending" || quickFilter === "draft";
-  const _showCompletedSection = quickFilter === "all" || quickFilter === "completed";
-  const _visibleActiveBatches = myActiveBatches.filter(b => {
-    if (quickFilter === "draft") return b.status === "draft";
-    if (quickFilter === "active") return b.status === "active";
-    if (quickFilter === "qc-pending") return b.myRows.some(r => r.qcPassed !== true);
-    return true;
-  });
+  if (batchesSubPage === "history") {
+    return <BatchHistoryPage onBack={() => setBatchesSubPage("main")} defaultFilter="all" />;
+  }
+  if (batchesSubPage === "completed") {
+    return <BatchHistoryPage onBack={() => setBatchesSubPage("main")} defaultFilter="completed" />;
+  }
 
-  if (weaverLoading) {
+
+
+  const isMyRow = (r: { weaverId?: string | null }) => {
+    if (!r.weaverId) return false;
+    if (weaverId && r.weaverId.toLowerCase() === weaverId.toLowerCase()) return true;
+    if (!weaver) return false;
+    const wId = weaver.id.toLowerCase();
+    const wCode = weaver.code.toLowerCase();
+    const rId = r.weaverId.toLowerCase();
+    return rId === wId || rId === wCode;
+  };
+
+  const myWeaverBatches: MyBatchEntry[] = batches
+    .map(b => ({ ...b, myRows: b.rows.filter(isMyRow) }))
+    .filter(b => b.myRows.length > 0);
+
+  const isBatchDone = (b: MyBatchEntry) => {
+    if (b.status === "completed") return true;
+    if (b.myRows.length === 0) return false;
+    return b.myRows.every(r => r.finished === true);
+  };
+
+  const completedBatches: MyBatchEntry[] = myWeaverBatches.filter(isBatchDone);
+  const myActiveBatches: MyBatchEntry[] = myWeaverBatches.filter(b => !isBatchDone(b));
+  const totalMyActive = myActiveBatches.length;
+
+
+
+  if (weaverLoading || batchesLoading) {
     return (
       <div style={{ paddingBottom: 32 }}>
         <HeroHeader eyebrow="SINCE 1999 · MY WORK" title="My Batches" sub="Active and completed work" />
-        <div style={{ margin: "40px 20px", textAlign: "center" as const, fontFamily: F.u, fontSize: 14, color: C.muted }}>Loading your batches…</div>
+        <div style={{ margin: "20px" }}>
+          <LoadingState variant="skeleton" rows={4} />
+        </div>
+      </div>
+    );
+  }
+
+  if (batchesError) {
+    return (
+      <div style={{ paddingBottom: 32 }}>
+        <HeroHeader eyebrow="SINCE 1999 · MY WORK" title="My Batches" sub="Active and completed work" />
+        <div style={{ margin: "20px" }}>
+          <ErrorState error={batchesErrorObj} onRetry={refetchBatches} />
+        </div>
       </div>
     );
   }
@@ -150,12 +122,6 @@ export function MyBatchesPage({ onGoToPayments }: { onGoToPayments?: () => void 
     );
   }
 
-  if (subPage === "history") {
-    return <BatchHistoryPage onBack={() => setSubPage("main")} defaultFilter="all" />;
-  }
-  if (subPage === "completed") {
-    return <BatchHistoryPage onBack={() => setSubPage("main")} defaultFilter="completed" />;
-  }
 
   return (
     <div style={{ paddingBottom: 32 }}>
@@ -208,7 +174,7 @@ export function MyBatchesPage({ onGoToPayments }: { onGoToPayments?: () => void 
             subtitle="You can have a maximum of 2 active batches at a time. Complete one before a new batch is assigned."
             right={
               <button
-                onClick={() => setSubPage("history")}
+                onClick={() => setBatchesSubPage("history")}
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
@@ -258,7 +224,7 @@ export function MyBatchesPage({ onGoToPayments }: { onGoToPayments?: () => void 
             accent="#1F774E"
             right={
               <button
-                onClick={() => setSubPage("completed")}
+                onClick={() => setBatchesSubPage("completed")}
                 style={{
                   display: "inline-flex",
                   alignItems: "center",

@@ -37,8 +37,8 @@ function FadeUp({ children, delay = 0, style }: { children: React.ReactNode; del
 
 export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
   const { user } = useAuth();
-  const { batches } = useBatches();
-  const { qcRecords } = useQc();
+  const { batches, isLoading: batchesLoading, isError: batchesError, refetch: refetchBatches } = useBatches();
+  const { qcRecords, isLoading: qcLoading, isError: qcError, refetch: refetchQc } = useQc();
 
   const firstName = user?.name ? user.name.split(" ")[0] : "Staff";
 
@@ -52,22 +52,6 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
     .flatMap(b => b.rows)
     .filter(r => r.sareeId && r.receivedAt && r.qcPassed == null).length;
 
-  const _tasks = [
-    {
-      icon: Package, iconBg: "#B8860B", accentColor: "#B8860B",
-      title: "Sarees Received — Record Them",
-      badge: `${pendingReceiptCount} sarees`, badgeColor: C.burg,
-      sub: "Completed sarees submitted by weavers — enter weight and details",
-      tab: "weavers" as Tab, sub2: "receive-sarees" as WeaversSubPage,
-    },
-    {
-      icon: Shield, iconBg: C.crim, accentColor: C.crim,
-      title: "Sarees Awaiting Quality Check",
-      badge: `${pendingQcCount} pending`, badgeColor: C.crim,
-      sub: "Inspect sarees submitted by weavers before they move to stock",
-      tab: "qc" as Tab,
-    },
-  ];
 
   const totalTasks = (pendingReceiptCount > 0 ? 1 : 0) + (pendingQcCount > 0 ? 1 : 0);
 
@@ -84,11 +68,40 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
+  const batchesUnavailable = batchesLoading || batchesError;
+  const qcUnavailable = qcLoading || qcError;
+
   const stats: WorkerStat[] = [
-    { label: "Active tasks today", value: totalTasks, sub: totalTasks > 0 ? "Waiting on you right now" : "All caught up", icon: ClipboardList, highlight: totalTasks > 0 },
-    { label: "Sarees to record", value: pendingReceiptCount, sub: "Submitted by weavers", icon: Package },
-    { label: "Awaiting quality check", value: pendingQcCount, sub: pendingQcCount > 0 ? "⚠ Need inspection" : "All inspected", icon: Shield, alert: pendingQcCount > 0 },
-    { label: "Recent QC activity", value: qcRecords.length, sub: "Inspections on record", icon: CheckCircle2 },
+    {
+      label: "Active tasks today",
+      value: batchesUnavailable || qcUnavailable ? (batchesLoading || qcLoading ? "…" : "Error") : totalTasks,
+      sub: batchesError || qcError ? "Tap to retry" : totalTasks > 0 ? "Waiting on you right now" : "All caught up",
+      icon: ClipboardList,
+      highlight: totalTasks > 0,
+      onClick: (batchesError || qcError) ? () => { if (batchesError) refetchBatches(); if (qcError) refetchQc(); } : undefined,
+    },
+    {
+      label: "Sarees to record",
+      value: batchesUnavailable ? (batchesLoading ? "…" : "Error") : pendingReceiptCount,
+      sub: batchesError ? "Tap to retry" : "Submitted by weavers",
+      icon: Package,
+      onClick: batchesError ? () => refetchBatches() : undefined,
+    },
+    {
+      label: "Awaiting quality check",
+      value: batchesUnavailable ? (batchesLoading ? "…" : "Error") : pendingQcCount,
+      sub: batchesError ? "Tap to retry" : pendingQcCount > 0 ? "⚠ Need inspection" : "All inspected",
+      icon: Shield,
+      alert: pendingQcCount > 0,
+      onClick: batchesError ? () => refetchBatches() : undefined,
+    },
+    {
+      label: "Recent QC activity",
+      value: qcUnavailable ? (qcLoading ? "…" : "Error") : qcRecords.length,
+      sub: qcError ? "Tap to retry" : "Inspections on record",
+      icon: CheckCircle2,
+      onClick: qcError ? () => refetchQc() : undefined,
+    },
   ];
 
   return (
@@ -128,7 +141,7 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
 
       {/* ── MAIN CONTENT ─────────────────────────────────────────────────── */}
       <div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 40, paddingBottom: 64 }}>
-        <div style={{ maxWidth: 800 }}>
+        <div className="max-w-[800px]">
           {/* Recent Activity */}
           <FadeUp delay={0.2}>
             <SectionHeading

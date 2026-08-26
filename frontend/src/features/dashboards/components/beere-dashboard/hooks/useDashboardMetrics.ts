@@ -49,6 +49,13 @@ export function useDashboardMetrics() {
   const isError =
     outstanding.isError || production.isError || dispatches.isError || weavers.isError;
 
+  const refetch = () => {
+    void outstanding.refetch();
+    void production.refetch();
+    void dispatches.refetch();
+    void weavers.refetch();
+  };
+
   const activeWeavers = weavers.data ?? 0;
   const totalProduced = production.data?.totalSareesProduced ?? 0;
   const pendingPaymentsTotal = outstanding.data?.totalOutstanding ?? 0;
@@ -78,6 +85,7 @@ export function useDashboardMetrics() {
   return {
     isLoading,
     isError,
+    refetch,
     metrics: [
       {
         label: "Active Weavers",

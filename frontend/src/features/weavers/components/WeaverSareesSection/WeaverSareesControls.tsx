@@ -38,7 +38,7 @@ export function TabsBar({ TABS, tab, setTab, counts, dateFilter, setDateFilter }
         {TABS.map(t => {
           const on = tab === t.key;
           return (
-            <Button key={t.key} onClick={() => setTab(t.key)} variant={on ? "primary" : "secondary"} size="sm" className="rounded-full">
+            <Button key={t.key} onClick={() => setTab(t.key)} variant={on ? "primary" : "secondary"} size="sm" className="rounded-[10px]">
               {t.label}
               <span style={{
                 fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, padding: "1px 7px", borderRadius: 99,

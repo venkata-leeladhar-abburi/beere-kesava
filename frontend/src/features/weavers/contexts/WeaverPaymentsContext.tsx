@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { BackendWeaverPayment, weaverPaymentsApi, WeaverEarnings } from "../../../shared/api/payments";
 import { weaversApi } from "../../../shared/api/weavers";
 import { firmsApi, BackendFirm } from "../../../shared/api/firms";
-import { useAuth } from "../../../contexts/AuthContext";
+import { useAuth, useAuthGate } from "../../../contexts/AuthContext";
 
 export interface WeaverPaymentRecord {
   id: string;
@@ -34,6 +34,8 @@ interface WeaverPaymentsContextValue {
   getEarningsForWeaver: (weaverId: string) => WeaverEarnings | undefined;
   isError: boolean;
   error: unknown;
+  isLoading: boolean;
+  refetch: () => void;
 }
 
 const WeaverPaymentsContext = createContext<WeaverPaymentsContextValue | null>(null);
@@ -71,8 +73,11 @@ export function WeaverPaymentsProvider({ children }: { children: React.ReactNode
   const { role } = useAuth();
   const canReadFirms = role === "accountant" || role === "admin" || role === "superadmin";
 
-  const { data: payments = [], isError, error } = useQuery({
+  const enabled = useAuthGate();
+
+  const { data: payments = [], isError, error, isLoading, refetch } = useQuery({
     queryKey: QUERY_KEY,
+    enabled,
     queryFn: async () => {
       const [paymentsRes, weaversRes, firmsRes] = await Promise.all([
         weaverPaymentsApi.list(),
@@ -133,6 +138,7 @@ export function WeaverPaymentsProvider({ children }: { children: React.ReactNode
   const { data: earnings = [] } = useQuery({
     queryKey: EARNINGS_QUERY_KEY,
     queryFn: () => weaverPaymentsApi.earnings(),
+    enabled,
   });
 
   const getEarningsForWeaver = useMemo(() => {
@@ -141,7 +147,7 @@ export function WeaverPaymentsProvider({ children }: { children: React.ReactNode
   }, [earnings]);
 
   return (
-    <WeaverPaymentsContext.Provider value={{ payments, addPayments, getPaymentsForWeaver, earnings, getEarningsForWeaver, isError, error }}>
+    <WeaverPaymentsContext.Provider value={{ payments, addPayments, getPaymentsForWeaver, earnings, getEarningsForWeaver, isError, error, isLoading, refetch: () => void refetch() }}>
       {children}
     </WeaverPaymentsContext.Provider>
   );
@@ -155,6 +161,8 @@ const FALLBACK_WEAVER_PAYMENTS: WeaverPaymentsContextValue = {
   getEarningsForWeaver: () => undefined,
   isError: false,
   error: null,
+  isLoading: false,
+  refetch: () => {},
 };
 
 export function useWeaverPayments(): WeaverPaymentsContextValue {

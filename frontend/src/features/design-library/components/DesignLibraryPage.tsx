@@ -16,11 +16,12 @@ import {
   DesignCodeCard, AddDesignModal, SlipModal,
 } from "./DesignLibraryComponents";
 import { Button, SearchInput, Textarea, Select, SelectItem } from "../../../shared/ui/primitives";
+import { LoadingState, ErrorState, EmptyState, FilteredEmptyState } from "../../../shared/ui/state";
 
 export { DesignCodeCard };
 
 export function DesignLibraryPage() {
-  const { designs, addDesign, updateDesign, dispatches: dispatchHistory, addDispatch } = useDesignLibrary();
+  const { designs, addDesign, updateDesign, dispatches: dispatchHistory, addDispatch, isLoading, isError, error, refetch } = useDesignLibrary();
   const [search] = useState("");
   const [filter] = useState("All Designs");
   const [showAdd, setShowAdd] = useState(false);
@@ -239,11 +240,19 @@ export function DesignLibraryPage() {
                         return h.recipientName.toLowerCase().includes(q) || h.instructions.toLowerCase().includes(q);
                       });
 
+                      if (isLoading) {
+                        return <LoadingState variant="skeleton" rows={4} />;
+                      }
+
+                      if (isError) {
+                        return <ErrorState error={error} onRetry={refetch} />;
+                      }
+
                       if (filtered.length === 0) {
-                        return (
-                          <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, padding: "48px 24px", textAlign: "center" }}>
-                            <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No dispatches recorded yet. Use the control center to send design specs.</div>
-                          </div>
+                        return dispatchHistory.length === 0 ? (
+                          <EmptyState title="No dispatches recorded yet" description="Use the control center above to send design specs to weavers or looms." />
+                        ) : (
+                          <FilteredEmptyState onClearFilters={() => { setHistorySearch(""); setHistoryDateFilter(DEFAULT_DATE_FILTER); }} />
                         );
                       }
 

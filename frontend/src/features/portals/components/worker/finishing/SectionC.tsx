@@ -1,5 +1,5 @@
 import { useState, useMemo, type CSSProperties } from "react";
-import { Users, ChevronDown, Camera, Search, LayoutGrid, List } from "lucide-react";
+import { Users, ChevronDown, Camera, Search, LayoutGrid, List, ImageOff } from "lucide-react";
 import { C, F } from "../tokens";
 import { useFinishing, FinishingAssignment, FinishingReturn } from "@/features/finishing";
 import { SectionCard } from "../primitives";
@@ -8,6 +8,7 @@ import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
 import { DateFilterBar, type DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../../shared/ui/DateFilterBar";
 import { Pagination, usePagination } from "../../../../../shared/ui/DataPagination";
 import { ImageZoomModal, type ZoomImage } from "../../../../../shared/ui/ImageZoomModal";
+import { LoadingState, ErrorState } from "../../../../../shared/ui/state";
 
 // ── Section C — Assignment History & Tracking ─────────────────────────────────
 
@@ -95,7 +96,7 @@ function StaffAssignmentsMobileList({ data, returns, onViewPhoto }: { data: Fini
 }
 
 export function SectionC({ isMobile }: { isMobile?: boolean }) {
-  const { assignments, returns } = useFinishing();
+  const { assignments, returns, isLoading, isError, error, refetch } = useFinishing();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
@@ -166,6 +167,20 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
   const assignmentColumns: ColumnDef<FinishingAssignment>[] = [
     { id: "sareeId", header: "Saree ID", accessor: a => a.sareeId, cell: v => <span style={{ fontFamily: F.m, fontSize: 12, color: C.burg, fontWeight: 600 }}>{v as string}</span> },
     {
+      id: "weaver", header: "Weaver / Loom", accessor: a => a.weaverName,
+      cell: v => v ? <span style={{ fontFamily: F.u, fontSize: 12, color: C.text }}>{v as string}</span> : <span style={{ color: C.muted, fontSize: 12 }}>—</span>,
+    },
+    {
+      id: "sareeType", header: "Saree Type", accessor: a => a.sareeType,
+      cell: v => v ? (
+        <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 500, color: "#845E04", background: "rgba(200,155,71,0.12)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 8, padding: "4px 9px", whiteSpace: "nowrap" }}>{v as string}</span>
+      ) : <span style={{ color: C.muted, fontSize: 12 }}>—</span>,
+    },
+    {
+      id: "batch", header: "Batch", accessor: a => a.batchId,
+      cell: v => <span style={{ fontFamily: F.u, fontSize: 12, color: v ? C.burg : C.muted }}>{(v as string) || "—"}</span>,
+    },
+    {
       id: "quotation", header: "Quotation", accessor: a => a.quotationRef,
       cell: v => v ? (
         <span style={{ fontFamily: F.u, fontSize: 11, fontWeight: 700, color: "#8B6018", background: "rgba(200,146,58,0.14)", borderRadius: 999, padding: "2px 8px", display: "inline-block", wordBreak: "break-all" }}>{v as string}</span>
@@ -201,7 +216,9 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
           <Camera size={12} color="rgba(255,255,255,0.85)" />
         </button>
       ) : (
-        <span style={{ color: C.muted, fontSize: 12 }}>—</span>
+        <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 28, height: 28, borderRadius: 6, border: `1px dashed ${C.bdr}`, color: C.muted }} title="No photo on file">
+          <ImageOff size={12} />
+        </span>
       ),
     },
   ];
@@ -260,7 +277,11 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
         </div>
       )}
 
-      {rows.length === 0 ? (
+      {isLoading ? (
+        <LoadingState variant="skeleton" rows={4} />
+      ) : isError ? (
+        <ErrorState error={error} onRetry={refetch} />
+      ) : rows.length === 0 ? (
         <div style={{ padding: "24px 0", textAlign: "center", fontFamily: F.u, fontSize: 13, color: C.muted }}>
           {assignments.length === 0 ? "No finishing staff assignments yet." : "No results for selected filters."}
         </div>
@@ -271,7 +292,7 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
             const isOpen = expanded === r.name;
             return (
               <div key={r.name} style={{ border: `1.5px solid rgba(110,15,45,0.12)`, borderRadius: 16, overflow: "hidden", background: "#FFF", boxShadow: "0 2px 10px rgba(74,6,27,0.05)" }}>
-                <div onClick={() => setExpanded(isOpen ? null : r.name)} role="button" tabIndex={0} aria-expanded={isOpen} aria-label={r.name} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setExpanded(isOpen ? null : r.name); } }} style={{ padding: "14px 16px", cursor: "pointer", background: isOpen ? "rgba(110,15,45,0.03)" : "#FFF" }}>
+                <div onClick={() => setExpanded(isOpen ? null : r.name)} role="button" aria-label={`${isOpen ? "Collapse" : "Expand"} ${r.name}`} aria-expanded={isOpen} tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setExpanded(isOpen ? null : r.name); } }} style={{ padding: "14px 16px", cursor: "pointer", background: isOpen ? "rgba(110,15,45,0.03)" : "#FFF" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
                     <div>
                       <span style={{ fontFamily: F.u, fontSize: 15, fontWeight: 700, color: C.wine }}>{r.name}</span>

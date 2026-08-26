@@ -1,7 +1,7 @@
 import React, { createContext, useCallback, useContext } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useAuth } from "../../../contexts/AuthContext";
+import { useAuth, useAuthGate } from "../../../contexts/AuthContext";
 
 export * from "./supplier-types";
 import { Supplier, Purchase, SareeTag, SupplierPayment, PurchaseRequest, initialsOf, totalPieces, purchaseTotals, parseINR } from "./supplier-types";
@@ -62,6 +62,7 @@ function toSareeTag(l: BackendPurchaseSareeLine): SareeTag {
     finalAmount: Number(l.finalAmount),
     notes: l.notes ?? "",
     imageUrl: resolveAssetUrl(l.imageUrl) ?? undefined,
+    pieceImageUrls: l.pieceImageUrls,
     returnedQuantity: l.returnedQuantity ?? 0,
   };
 }
@@ -180,6 +181,8 @@ interface SupplierContextValue {
 
   isError: boolean;
   error: unknown;
+  isLoading: boolean;
+  refetch: () => void;
 }
 
 const SupplierContext = createContext<SupplierContextValue | null>(null);
@@ -221,11 +224,11 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
   // to ACCOUNTANT (ADMIN/SUPERADMIN bypass every role check there) — skip
   // the fetch for every other role rather than firing a request that's
   // guaranteed to 403.
-  const { role, user } = useAuth();
-  const enabled = role === "accountant" || role === "admin" || role === "superadmin";
+  const { user } = useAuth();
+  const enabled = useAuthGate("accountant", "admin", "superadmin");
   const actingUserId = user?.id ?? STOPGAP_ACTING_USER_ID;
 
-  const { data: suppliers = [], isError: isSuppliersError, error: suppliersError } = useQuery({
+  const { data: suppliers = [], isError: isSuppliersError, error: suppliersError, isLoading: isSuppliersLoading, refetch: refetchSuppliers } = useQuery({
     queryKey: SUPPLIERS_KEY,
     queryFn: async () => (await suppliersApi.list()).items.map(toSupplier),
     enabled,
@@ -258,6 +261,7 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
 
   const isError = isSuppliersError || isPaymentsError || isRequestsError;
   const error = suppliersError ?? paymentsError ?? requestsError ?? null;
+  const isLoading = isSuppliersLoading;
   const requests = rawRequests.map((r) =>
     toPurchaseRequest(r, suppliers.find((s) => s.id === r.supplierId)?.name ?? "")
   );
@@ -277,8 +281,6 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
         name: s.name, contactName: s.contactName, phone: s.phone, whatsapp: s.whatsapp,
         city: s.city, state: s.state, address: s.address, gstCode: s.gstCode,
         specialty: s.specialty, terms: s.terms, bankName: s.bankName, accountNo: s.accountNo, ifscCode: s.ifscCode,
-        notes: s.notes, rating: s.rating,
-        visitingCardUrl: toStoredAssetPath(s.visitingCard) ?? undefined,
       }),
     onSuccess: (created) => {
       setSuppliers(prev => [toSupplier(created), ...prev]);
@@ -474,7 +476,8 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
     addSupplier, updateSupplier, deleteSupplier, getSupplier,
     addPurchase, updatePurchase, deletePurchase,
     addPayment, raiseRequest, decideRequest, statsFor,
-    isError, error,
+    isError, error, isLoading,
+    refetch: () => void refetchSuppliers(),
   };
 
   return <SupplierContext.Provider value={value}>{children}</SupplierContext.Provider>;

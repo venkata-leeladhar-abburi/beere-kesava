@@ -55,63 +55,68 @@ export function FilterBar({
         padding: "18px 22px",
         marginBottom: 24,
         display: "flex",
+        flexDirection: "column",
         gap: 14,
-        alignItems: "center",
-        flexWrap: "wrap"
       }}>
-        <div style={{ flex: "1 1 280px" }}>
-          <SearchInput
-            aria-label="Search by supplier, ID, location, GST, invoice"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            onSearch={setSearch}
-            placeholder="Search by supplier, ID, location, GST, invoice…"
-          />
+        {/* Top Row: Search Input + Status Filter Pills */}
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 w-full">
+          <div className="flex-1 min-w-0">
+            <SearchInput aria-label="Search by supplier, ID, location, GST, invoice"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onSearch={setSearch}
+              placeholder="Search by supplier, ID, location, GST, invoice…"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0 overflow-x-auto scrollbar-none">
+            {[
+              { key: "All Status", label: "All Status" },
+              { key: "Paid", label: "Paid" },
+              { key: "Pending", label: "Pending" },
+              { key: "Partial", label: "Partial" },
+            ].map(f => (
+              <Button
+                key={f.key}
+                onClick={() => setStatusFilter(f.key)}
+                size="sm"
+                className={
+                  statusFilter === f.key
+                    ? "rounded-[10px] bg-[var(--surface-brand)] text-[#FFFDF9] border-none shadow-none"
+                    : "rounded-[10px] bg-transparent text-[var(--text-tertiary)] border border-[rgba(110,15,45,0.18)] shadow-none"
+                }
+              >
+                {f.label}
+              </Button>
+            ))}
+          </div>
         </div>
 
-        <div style={{ display: "flex", gap: 8 }}>
-          {[
-            { key: "All Status", label: "All Status" },
-            { key: "Paid", label: "Paid" },
-            { key: "Pending", label: "Pending" },
-            { key: "Partial", label: "Partial" },
-          ].map(f => (
+        {/* Bottom Row: Dropdown Filters below search bar line */}
+        <div className="flex flex-wrap items-center gap-2.5 w-full pt-2 border-t border-[rgba(110,15,45,0.08)]">
+          <Select value={fSupplier} options={opts.supplier} containerClassName="w-full sm:w-auto" className="w-full sm:w-auto"
+            onChange={v => { setFSupplier(v); setFPurchaseOrder("All Purchase Orders"); setFSerial("All Serial No.s"); }} />
+
+          <Select value={fPurchaseOrder} options={opts.po} containerClassName="w-full sm:w-auto" className="w-full sm:w-auto"
+            onChange={v => { setFPurchaseOrder(v); setFSerial("All Serial No.s"); }} />
+
+          <Select value={fSerial} options={poSerialOpts} containerClassName="w-full sm:w-auto" className="w-full sm:w-auto" onChange={setFSerial} />
+
+          <Select value={fType} options={opts.type} containerClassName="w-full sm:w-auto" className="w-full sm:w-auto" onChange={setFType} />
+
+          <Select value={fColor} options={opts.color} containerClassName="w-full sm:w-auto" className="w-full sm:w-auto" onChange={setFColor} />
+
+          {filtersActive && (
             <Button
-              key={f.key}
-              onClick={() => setStatusFilter(f.key)}
+              onClick={clearFilters}
+              variant="secondary"
               size="sm"
-              className={
-                statusFilter === f.key
-                  ? "rounded-full bg-[var(--surface-brand)] text-[#FFFDF9] border-none shadow-none"
-                  : "rounded-full bg-transparent text-[var(--text-tertiary)] border border-[rgba(110,15,45,0.18)] shadow-none"
-              }
+              className="w-full sm:w-auto sm:ml-auto shadow-none rounded-[10px]"
             >
-              {f.label}
+              Clear filters
             </Button>
-          ))}
+          )}
         </div>
-
-        <Select value={fSupplier} options={opts.supplier}
-          onChange={v => { setFSupplier(v); setFPurchaseOrder("All Purchase Orders"); setFSerial("All Serial No.s"); }} />
-
-        <Select value={fPurchaseOrder} options={opts.po}
-          onChange={v => { setFPurchaseOrder(v); setFSerial("All Serial No.s"); }} />
-
-        <Select value={fSerial} options={poSerialOpts} onChange={setFSerial} />
-
-        <Select value={fType} options={opts.type} onChange={setFType} />
-
-        <Select value={fColor} options={opts.color} onChange={setFColor} />
-
-        {filtersActive && (
-          <Button
-            onClick={clearFilters}
-            variant="secondary"
-            className="ml-auto shadow-none"
-          >
-            Clear filters
-          </Button>
-        )}
       </div>
 
       <div style={{ marginBottom: 16 }}>

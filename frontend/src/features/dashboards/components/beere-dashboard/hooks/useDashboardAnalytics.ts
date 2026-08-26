@@ -57,6 +57,16 @@ export function useDashboardAnalytics() {
   const isError =
     batches.isError && weavers.isError;
 
+  const refetch = () => {
+    void production.refetch();
+    void batches.refetch();
+    void weavers.refetch();
+    void designs.refetch();
+    void outstanding.refetch();
+    void purchaseRequests.refetch();
+    void dispatches.refetch();
+  };
+
   const qc = production.data?.qcByResult;
   const qcTotal = (qc?.PASSED ?? 0) + (qc?.SEMI ?? 0) + (qc?.DEFECTIVE ?? 0);
   const qcPassRate = qcTotal > 0 ? Math.round(((qc?.PASSED ?? 0) / qcTotal) * 100) : 0;
@@ -110,6 +120,7 @@ export function useDashboardAnalytics() {
   return {
     isLoading,
     isError,
+    refetch,
     qcPassRate,
     totalSareesProduced,
     activeBatchesCount,

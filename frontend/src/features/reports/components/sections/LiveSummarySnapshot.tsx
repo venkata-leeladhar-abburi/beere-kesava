@@ -11,18 +11,21 @@ import { rupees, formatMoney } from "@/lib/domain/money";
 // sections still run on richer mocked datasets; this is the honest live
 // subset available today, not a replacement for them.
 export function LiveSummarySnapshot() {
-  const { data: production } = useQuery({
+  const { data: production, isError: productionError, refetch: refetchProduction } = useQuery({
     queryKey: ["reports", "production-summary"],
     queryFn: () => reportsApi.productionSummary(),
   });
-  const { data: sales } = useQuery({
+  const { data: sales, isError: salesError, refetch: refetchSales } = useQuery({
     queryKey: ["reports", "sales-summary"],
     queryFn: () => reportsApi.salesSummary(),
   });
-  const { data: outstanding } = useQuery({
+  const { data: outstanding, isError: outstandingError, refetch: refetchOutstanding } = useQuery({
     queryKey: ["reports", "outstanding-payments"],
     queryFn: () => reportsApi.outstandingPayments(),
   });
+
+  const hasError = productionError || salesError || outstandingError;
+  const refetchAll = () => { void refetchProduction(); void refetchSales(); void refetchOutstanding(); };
 
   const cards = [
     {
@@ -73,6 +76,16 @@ export function LiveSummarySnapshot() {
           </div>
         ))}
       </div>
+      {hasError && (
+        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 6 }}>
+          <button
+            onClick={refetchAll}
+            style={{ background: "none", border: "none", padding: 0, fontFamily: F.ui, fontSize: 12, color: T.crimson, textDecoration: "underline", cursor: "pointer" }}
+          >
+            Some live figures failed to load — retry
+          </button>
+        </div>
+      )}
     </div>
   );
 }

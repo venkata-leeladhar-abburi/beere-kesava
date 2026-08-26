@@ -6,6 +6,7 @@ import type { ValueType, NameType } from "recharts/types/component/DefaultToolti
 import { useBulkOrders } from "@/features/bulk-orders";
 import { T, F } from "../theme";
 import { FadeUp, ChartCard, SumCard, SectionCard, ReportDLBar, AnimBar, TablePager } from "../common/primitives";
+import { LoadingState, ErrorState } from "../../../../shared/ui/state";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { semantic } from "../../../../design-system/tokens";
 import type { BulkOrder } from "@/features/bulk-orders";
@@ -55,7 +56,7 @@ function MoneyChartTip({ active, payload, label }: TooltipProps<ValueType, NameT
 }
 
 export function WholesaleSalesReport() {
-  const { bulkOrders, isError } = useBulkOrders();
+  const { bulkOrders, isError, isLoading, refetch } = useBulkOrders();
 
   // Dynamic calculation for wholesale weekly breakdown
   const wholesaleWeeklyData = useMemo(() => {
@@ -103,13 +104,21 @@ export function WholesaleSalesReport() {
     return activeMonths.map(m => ({ month: m, rev: monthsMap[m] || 0 }));
   }, [bulkOrders]);
 
+  if (isLoading) {
+    return (
+      <div id="rep-wholesale" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 32 }}>
+        <SectionCard icon={Boxes} title="Wholesale Sales Report" subtitle="Track all wholesale dispatches, invoices raised, payments received, and outstanding dues from every wholesale customer.">
+          <LoadingState variant="skeleton" rows={4} />
+        </SectionCard>
+      </div>
+    );
+  }
+
   if (isError) {
     return (
       <div id="rep-wholesale" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 32 }}>
         <SectionCard icon={Boxes} title="Wholesale Sales Report" subtitle="Track all wholesale dispatches, invoices raised, payments received, and outstanding dues from every wholesale customer.">
-          <div style={{ padding: "24px", borderRadius: 12, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.22)", color: T.crimson, fontFamily: F.ui, fontSize: 14, fontWeight: 600 }}>
-            Failed to load wholesale sales data. Please try again.
-          </div>
+          <ErrorState error={undefined} onRetry={() => void refetch()} />
         </SectionCard>
       </div>
     );

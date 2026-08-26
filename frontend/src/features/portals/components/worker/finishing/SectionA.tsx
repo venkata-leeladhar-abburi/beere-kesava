@@ -8,6 +8,7 @@ import { StaffPickerModal } from "./StaffPickerModal";
 import { AssignWeaverGrid, AssignBatchGrid } from "./AssignSareeGridCards";
 import { Button, IconButton, Select, SelectItem } from "../../../../../shared/ui/primitives";
 import { DateFilterBar, type DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../../shared/ui/DateFilterBar";
+import { LoadingState, ErrorState } from "../../../../../shared/ui/state";
 
 // ── Section A — Assign sarees ─────────────────────────────────────────────────
 
@@ -25,7 +26,7 @@ function formatDateShort(dateStr?: string) {
 }
 
 export function SectionA({ isMobile, isDesktop, isTablet }: { isMobile?: boolean; isDesktop?: boolean; isTablet?: boolean }) {
-  const { readySarees, assignSarees } = useFinishing();
+  const { readySarees, assignSarees, isLoading, isError, error, refetch } = useFinishing();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [showPicker, setShowPicker] = useState(false);
   const [toast, setToast] = useState("");
@@ -199,7 +200,11 @@ export function SectionA({ isMobile, isDesktop, isTablet }: { isMobile?: boolean
               <ChevronLeft size={15} /> {groupLabel}: {drilldown}
             </button>
           )}
-          {displaySarees.length === 0 ? (
+          {isLoading ? (
+            <LoadingState variant="skeleton" rows={4} />
+          ) : isError ? (
+            <ErrorState error={error} onRetry={refetch} />
+          ) : displaySarees.length === 0 ? (
             <div style={{ padding: "28px 0", textAlign: "center", fontFamily: F.u, fontSize: 13, color: C.muted }}>
               {readySarees.length === 0 ? "No QC-passed sarees awaiting finishing." : "No results for selected filters."}
             </div>

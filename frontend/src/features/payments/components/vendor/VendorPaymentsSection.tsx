@@ -34,11 +34,11 @@ export function VendorPaymentsSection() {
   const { firms, addExpenseEntry } = useFirms();
   const queryClient = useQueryClient();
 
-  const { data: vendorPaymentsRes, refetch: refetchVendorPayments } = useQuery({
+  const { data: vendorPaymentsRes, isLoading: paymentsLoading, isError: paymentsError, refetch: refetchVendorPayments } = useQuery({
     queryKey: ["vendor-payments-section-totals"],
     queryFn: () => vendorPaymentsApi.list(),
   });
-  const { data: vendorBillsRes, refetch: refetchVendorBills } = useQuery({
+  const { data: vendorBillsRes, isLoading: billsLoading, isError: billsError, refetch: refetchVendorBills } = useQuery({
     queryKey: ["vendor-payments-bills"],
     queryFn: () => vendorBillsApi.list(),
   });
@@ -392,17 +392,14 @@ export function VendorPaymentsSection() {
               </Button>
             ))}
           </div>
+          <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
           <DropBtn value={vendorFilter} options={vendorFilterOptions} onChange={setVendorFilter} />
-          <Select value={statusFilter} onValueChange={setStatusFilter} size="sm">
+          <Select value={statusFilter} onValueChange={setStatusFilter} size="sm" containerClassName="w-auto shrink-0" className="w-[145px] font-semibold">
             {["All Bill Status","Paid","Partial","Overdue","Pending"].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
           </Select>
           <div style={{ flex: 1, minWidth: 200 }}>
             <SearchInput aria-label="Search vendor, PO number, bill number" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search vendor, PO number, bill number..." size="sm" />
           </div>
-        </div>
-
-        <div style={{ marginBottom: 14 }}>
-          <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
         </div>
 
         <div className="flex md:hidden items-center justify-between gap-3 mb-4 flex-wrap">
@@ -444,7 +441,7 @@ export function VendorPaymentsSection() {
 
         {view === "list" && (
           <div className="overflow-x-auto w-full mb-8">
-            <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", minWidth: 600 }}>
+            <div className="min-w-[600px]" style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
               {filtered.map((vp, i) => {
                 const balance = vp.invoiceAmt - vp.paidAmt;
                 const cfg = VENDOR_STATUS_CFG[vp.status];
@@ -479,12 +476,15 @@ export function VendorPaymentsSection() {
             <div className="w-full lg:flex-1 min-w-0">
               <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
                 <div style={{ overflowX: "auto" }} className="w-full">
-                  <div style={{ minWidth: 1350 }}>
+                  <div className="min-w-[1350px]">
                     <DataTable
                       responsive={false}
                       columns={vendorTableColumns}
                       data={filtered}
                       getRowId={vp => vp.id}
+                      loading={paymentsLoading || billsLoading}
+                      error={paymentsError || billsError}
+                      onRetry={() => { void refetchVendorPayments(); void refetchVendorBills(); }}
                       emptyTitle="No vendor bills match your filters"
                     />
                   </div>

@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, Search, Star, Users, ShoppingBag } from "lucide-react";
 import { C, F, PageHero, PortalStatsStrip, type PortalStat } from "../theme";
 import { Button, Input } from "../../../../../shared/ui/primitives";
-import { TableSkeleton, TableEmpty, TableError } from "../../../../../shared/ui/data";
+import { LoadingState, ErrorState, EmptyState } from "../../../../../shared/ui/state";
 import { customersApi } from "../../../../../shared/api/customers";
 import { salesApi, type BackendSaleRecord } from "../../../../../shared/api/sales";
 import { rupees, formatMoney } from "@/lib/domain/money";
@@ -12,7 +12,7 @@ import { rupees, formatMoney } from "@/lib/domain/money";
 type ShopCustomer = { id: string; name: string; phone: string; purchases: number; total: string; lastPurchase?: string; last?: string; initials: string; regular?: boolean };
 
 export function CustomersSection({
-  bp: _bp, isTablet, canSeePrices, setSelectedCustomer,
+  isTablet, canSeePrices, setSelectedCustomer,
 }: {
   bp: "tablet" | "desktop"; isTablet: boolean; canSeePrices: boolean;
   setSelectedCustomer: (c: ShopCustomer) => void;
@@ -22,7 +22,7 @@ export function CustomersSection({
     queryFn: () => customersApi.list(),
   });
 
-  const { data: salesRes } = useQuery({
+  const { data: salesRes, isLoading: salesLoading, isError: salesError, refetch: refetchSales } = useQuery({
     queryKey: ["shop-sales-list-customers-desktop"],
     queryFn: () => salesApi.list(100),
   });
@@ -98,12 +98,12 @@ export function CustomersSection({
           ))}
         </div>
 
-        {custLoading ? (
-          <TableSkeleton columns={3} rows={4} />
-        ) : custError ? (
-          <TableError onRetry={() => refetchCust()} />
+        {custLoading || salesLoading ? (
+          <LoadingState variant="skeleton" rows={4} />
+        ) : custError || salesError ? (
+          <ErrorState error={undefined} onRetry={() => { void refetchCust(); void refetchSales(); }} />
         ) : customers.length === 0 ? (
-          <TableEmpty title="No customers recorded yet" description="Customers appear here once a sale is recorded at the counter." />
+          <EmptyState title="No customers yet" description="Customers who make a purchase will show up here." />
         ) : (
         <div style={{ display: "grid", gridTemplateColumns: isTablet ? "repeat(2, 1fr)" : "repeat(3, 1fr)", gap: 22 }}>
           {customers.map((c) => (

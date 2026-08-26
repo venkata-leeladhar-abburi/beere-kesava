@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { BackendDesign, UpdateDesignPayload, designLibraryApi } from "../../../shared/api/design-library";
 import { designDispatchesApi, BackendDesignDispatch } from "../../../shared/api/design-dispatches";
 import { resolveAssetUrl, toStoredAssetPath } from "../../../shared/api/uploads";
+import { useAuthGate } from "../../../contexts/AuthContext";
 
 function backendDesignToEntry(d: BackendDesign): DesignEntry {
   return {
@@ -32,6 +33,8 @@ function backendDispatchToRecord(d: BackendDesignDispatch): DispatchRecord {
     recipientName: d.recipientName,
     batches: d.batches,
     instructions: d.instructions,
+    // Stored as a server-relative upload path; resolveAssetUrl prefixes the API
+    // origin (and passes through legacy inline data: URLs untouched).
     colorSlipImage: resolveAssetUrl(d.colorSlipImageUrl),
     designGraphImage: resolveAssetUrl(d.designGraphImageUrl),
     sentAt: new Date(d.sentAt).toLocaleString("en-US", {
@@ -80,6 +83,8 @@ interface DesignLibraryContextValue {
   getDispatchesForWeaver: (weaverId: string) => DispatchRecord[];
   isError: boolean;
   error: unknown;
+  isLoading: boolean;
+  refetch: () => void;
 }
 
 // ─── Context ──────────────────────────────────────────────────────────────────
@@ -90,15 +95,18 @@ const DISPATCHES_KEY = ["designLibrary", "dispatches"] as const;
 
 export function DesignLibraryProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
+  const enabled = useAuthGate();
 
-  const { data: designs = [], isError, error } = useQuery({
+  const { data: designs = [], isError, error, isLoading, refetch } = useQuery({
     queryKey: DESIGNS_KEY,
     queryFn: async () => (await designLibraryApi.list()).items.map(backendDesignToEntry),
+    enabled,
   });
 
   const { data: dispatches = [] } = useQuery({
     queryKey: DISPATCHES_KEY,
     queryFn: async () => (await designDispatchesApi.list()).items.map(backendDispatchToRecord),
+    enabled,
   });
 
   // Real backend create — the design library is a real Phase 2 module, so
@@ -212,7 +220,7 @@ export function DesignLibraryProvider({ children }: { children: React.ReactNode 
   );
 
   return (
-    <DesignLibraryContext.Provider value={{ designs, addDesign, updateDesign, getDesign, dispatches, addDispatch, getDispatchesForWeaver, isError, error }}>
+    <DesignLibraryContext.Provider value={{ designs, addDesign, updateDesign, getDesign, dispatches, addDispatch, getDispatchesForWeaver, isError, error, isLoading, refetch: () => void refetch() }}>
       {children}
     </DesignLibraryContext.Provider>
   );
@@ -228,6 +236,8 @@ const FALLBACK_DESIGN_LIBRARY: DesignLibraryContextValue = {
   getDispatchesForWeaver: () => [],
   isError: false,
   error: null,
+  isLoading: false,
+  refetch: () => {},
 };
 
 export function useDesignLibrary(): DesignLibraryContextValue {

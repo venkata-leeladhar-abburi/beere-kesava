@@ -54,7 +54,7 @@ export function renderIssuedMaterials(items: IssuedMaterialItem[]) {
               <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{m.quantity} {m.unit}</span>
             </div>
             {m.grnItemCode && (
-              <span style={{ fontFamily: F.mono, fontSize: 10.5, color: T.taupe }}>{m.grnItemCode}</span>
+              <span style={{ fontFamily: F.ui, fontVariantNumeric: "tabular-nums lining-nums" as const, fontSize: 10.5, color: T.taupe }}>{m.grnItemCode}</span>
             )}
           </div>
         );

@@ -4,13 +4,16 @@ import { ClipboardList, CheckSquare, Package, Wallet, Menu, Bell, UserRound, Log
 import { motion, AnimatePresence } from 'motion/react';
 import * as Dialog from "@radix-ui/react-dialog";
 
-import { useAuth } from '../../../../contexts/AuthContext';import { useMaterialIssue } from '@/features/materials';
+import { useAuth } from '../../../../contexts/AuthContext';
+import { useMaterialIssue } from '@/features/materials';
 import { C, F, Tab5 } from './theme';
 import { useCurrentWeaver } from './useCurrentWeaver';
 import { Button, IconButton } from '../../../../shared/ui/primitives';
 import { Drawer } from '../../../../shared/ui/overlay';
 import { MobileNav, type MobileNavItem } from '../../../../shared/ui/nav/MobileNav';
-import { imgBKLogo } from '../../../../shared/constants/weaverImages';import { MyBatchesPage } from './MyBatchesPage';
+import { imgBKLogo } from '../../../../shared/constants/weaverImages';
+
+import { MyBatchesPage } from './MyBatchesPage';
 import { ConfirmMaterialPage } from './ConfirmMaterialPage';
 import { WarpRequestPage } from './WarpRequestPage';
 import { PaymentLedgerPage } from './PaymentLedgerPage';
@@ -125,8 +128,8 @@ function WeaverHamburgerMenu({
   );
 }
 
-export function MobileWeaverPortal({ onBack: _onBack, active, setActive, onProfile }: { onBack?: () => void; active: Tab5; setActive: (t: Tab5) => void; onProfile?: () => void }) {
-  const { selectRole: _selectRole, user, logout } = useAuth();
+export function MobileWeaverPortal({ active, setActive, onProfile }: { onBack?: () => void; active: Tab5; setActive: (t: Tab5) => void; onProfile?: () => void }) {
+  const { user, logout } = useAuth();
   const name = user?.name || "—";
   const initials = name === "—" ? "—" : name.split(" ").filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase();
   const navigate = useNavigate();
@@ -235,17 +238,22 @@ export function MobileWeaverPortal({ onBack: _onBack, active, setActive, onProfi
         open={menuOpen}
         onOpenChange={setMenuOpen}
         onProfile={() => onProfile?.()}
-        activeTab={active}
+        activeTab={showNotifs ? ("notifications" as Tab5) : active}
         onSelectTab={t => {
-          setActive(t);
-          setShowNotifs(false);
+          if (t === "notifications") {
+            setShowNotifs(true);
+            setActive(t);
+          } else {
+            setActive(t);
+            setShowNotifs(false);
+          }
         }}
       />
 
       {/* Content */}
       <div style={{ flex: 1, overflowY: 'auto' as const, paddingBottom: 'calc(68px + env(safe-area-inset-bottom, 0px))' }}>
         <AnimatePresence mode="wait">
-          {showNotifs ? (
+          {showNotifs || active === 'notifications' ? (
             <motion.div key="notifs" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
               <NotificationsPage />
             </motion.div>

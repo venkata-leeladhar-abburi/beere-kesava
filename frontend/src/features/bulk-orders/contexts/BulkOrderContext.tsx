@@ -9,6 +9,7 @@ import {
   bulkOrdersApi,
 } from "../../../shared/api/bulk-orders";
 import { customersApi } from "../../../shared/api/customers";
+import { useAuthGate } from "../../../contexts/AuthContext";
 import { useRatesPricing } from "@/features/pricing";
 import { type SareeTypeRecord } from "@/features/pricing";
 import { resolveAssetUrl, toStoredAssetPath } from "../../../shared/api/uploads";
@@ -124,6 +125,8 @@ interface BulkOrderContextValue {
   deleteBulkOrder: (ref: string) => Promise<void>;
   isError: boolean;
   error: unknown;
+  isLoading: boolean;
+  refetch: () => void;
 }
 
 const BulkOrderContext = createContext<BulkOrderContextValue | null>(null);
@@ -133,9 +136,11 @@ const QUERY_KEY = ["bulkOrders"] as const;
 export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
   const { getSareeTypeByCode } = useRatesPricing();
+  const enabled = useAuthGate();
 
-  const { data: bulkOrders = [], isError, error } = useQuery({
+  const { data: bulkOrders = [], isError, error, isLoading, refetch } = useQuery({
     queryKey: QUERY_KEY,
+    enabled,
     queryFn: async () => {
       const [ordersRes, customersRes] = await Promise.all([bulkOrdersApi.list(), customersApi.list()]);
       const customerLookup = new Map(customersRes.items.map(c => [c.id, c.name]));
@@ -292,7 +297,7 @@ export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
   }, [bulkOrders]);
 
   return (
-    <BulkOrderContext.Provider value={{ bulkOrders, addBulkOrder, updateBulkOrder, nextOrderRef, markDispatched, recordPayment, tallyOrder, deleteBulkOrder, isError, error }}>
+    <BulkOrderContext.Provider value={{ bulkOrders, addBulkOrder, updateBulkOrder, nextOrderRef, markDispatched, recordPayment, tallyOrder, deleteBulkOrder, isError, error, isLoading, refetch: () => void refetch() }}>
       {children}
     </BulkOrderContext.Provider>
   );
@@ -309,6 +314,8 @@ const FALLBACK_BULK_ORDERS: BulkOrderContextValue = {
   deleteBulkOrder: async () => {},
   isError: false,
   error: null,
+  isLoading: false,
+  refetch: () => {},
 };
 
 export function useBulkOrders(): BulkOrderContextValue {

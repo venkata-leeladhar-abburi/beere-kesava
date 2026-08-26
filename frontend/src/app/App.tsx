@@ -94,6 +94,7 @@ const AccountantLayout = lazy(() => import("./layouts/AccountantLayout").then(m 
 // Auth / Role pages — needed on first paint, kept eager.
 import { LoginPage }      from "./pages/LoginPage";
 import { RoleSelectPage } from "./pages/RoleSelectPage";
+import { SessionExpiredState, OfflineBanner } from "../shared/ui/state";
 
 // Dashboards / Portals wrappers
 const AdminDashboardPage      = lazy(() => import("./pages/admin/DashboardPage").then(m => ({ default: m.AdminDashboardPage })));
@@ -116,6 +117,7 @@ export default function App() {
       <ConfirmProvider>
       <BrowserRouter>
         <SkipLink />
+        <OfflineBanner />
         <GlobalCommandPalette />
         <ErrorBoundary>
           <Suspense fallback={<RouteLoadingFallback />}>
@@ -162,6 +164,9 @@ export default function App() {
               <Route index element={<Navigate to="payments" replace />} />
               <Route path=":tab" element={<AccountantHomePage />} />
             </Route>
+
+            {/* Session state routes — reachable regardless of role/auth */}
+            <Route path="/session-expired" element={<SessionExpiredState />} />
 
             {/* Mobile Scanner */}
             <Route path="/scan" element={<MobileScanView />} />

@@ -1,4 +1,5 @@
-import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from "@nestjs/common";
+import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
+import { AppException, ForbiddenRoleError } from "../../common/errors";
 import { Reflector } from "@nestjs/core";
 import { UserRole } from "../../generated/prisma/client";
 import { PrismaService } from "../../prisma/prisma.service";
@@ -55,7 +56,7 @@ export class PermissionsGuard implements CanActivate {
     const user = request.user;
 
     if (!user) {
-      throw new ForbiddenException("Authentication required.");
+      throw new AppException(401, "AUTH_REQUIRED", "Authentication required.");
     }
 
     if (user.role === UserRole.SUPERADMIN || user.role === UserRole.ADMIN) {
@@ -65,14 +66,14 @@ export class PermissionsGuard implements CanActivate {
     if (hasPermissionCheck) {
       const allowed = await this.hasAllPermissions(user, requiredPermissions);
       if (!allowed) {
-        throw new ForbiddenException(
+        throw new ForbiddenRoleError(
           `You do not have permission to perform this action (requires: ${requiredPermissions.join(", ")}).`,
         );
       }
     }
 
     if (hasRoleCheck && !requiredRoles.includes(user.role)) {
-      throw new ForbiddenException(
+      throw new ForbiddenRoleError(
         `Your role (${user.role}) is not permitted to perform this action.`,
       );
     }

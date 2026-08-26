@@ -1,16 +1,15 @@
 import React from "react";
-import { T, F } from "../../theme";
+import { T } from "../../theme";
 import { WholesaleCustomer, WholesaleTab } from "../../types";
 import { Button, Field, Input, Textarea } from "../../../../../shared/ui/primitives";
-import { resolveAssetUrl } from "@/shared/api/uploads";
-import { useImageUpload } from "@/shared/hooks/useImageUpload";
-import { imgVisitingCardPlaceholder } from "@/shared/constants/mockImages";
+import { VisitingCardUploadField } from "../../../../../shared/ui/VisitingCardUploadField";
 
 export function EditProfileTab({ customer, setWholesaleTab, onSave }: {
   customer: WholesaleCustomer;
   setWholesaleTab: (t: WholesaleTab) => void;
   onSave: (updated: WholesaleCustomer) => void;
 }) {
+  const [cardUrl, setCardUrl] = React.useState<string | null>(customer.visitingCard || null);
   const [name, setName] = React.useState(customer.name);
   const [contactName, setContactName] = React.useState(customer.contactName);
   const [phone, setPhone] = React.useState(customer.phone);
@@ -24,12 +23,6 @@ export function EditProfileTab({ customer, setWholesaleTab, onSave }: {
   const [ifscCode, setIfscCode] = React.useState(customer.ifscCode);
   const [gstNumber, setGstNumber] = React.useState(customer.gstNumber || "");
   const [notes, setNotes] = React.useState(customer.notes || "");
-  // customer.visitingCard is already a displayable URL (or the shared
-  // placeholder when the customer has none) — see CustomersPage's row mapping.
-  const [visitingCard, setVisitingCard] = React.useState<string | null>(
-    customer.visitingCard && customer.visitingCard !== imgVisitingCardPlaceholder ? customer.visitingCard : null,
-  );
-  const { upload, uploading, error: uploadError } = useImageUpload();
 
   const handleSave = () => {
     onSave({
@@ -47,14 +40,13 @@ export function EditProfileTab({ customer, setWholesaleTab, onSave }: {
       ifscCode,
       gstNumber,
       notes,
-      visitingCard: visitingCard ?? "",
+      visitingCard: cardUrl || "",
     });
     setWholesaleTab("Overview");
   };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-      <h3 style={{ fontFamily: F.display, fontSize: 18, color: T.luxuryBrown, margin: 0 }}>Edit Customer Profile</h3>
 
       <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 32 }}>
         {/* Col 1 */}
@@ -107,22 +99,7 @@ export function EditProfileTab({ customer, setWholesaleTab, onSave }: {
               <Input type="text" value={gstNumber} onChange={e => setGstNumber(e.target.value)} placeholder="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" />
             </Field>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
-            <Field label="Visiting Card Photo">
-              <Input type="file" accept="image/png,image/jpeg" disabled={uploading} onChange={e => {
-                const file = e.target.files?.[0];
-                e.target.value = "";
-                if (!file) return;
-                void upload(file).then(url => { if (url) setVisitingCard(url); });
-              }} />
-              {uploading && <div style={{ fontSize: 12, color: T.taupe, marginTop: 4 }}>Uploading…</div>}
-              {uploadError && <div style={{ fontSize: 12, color: "#C0392B", marginTop: 4 }}>{uploadError}</div>}
-              {visitingCard && (
-                <img src={resolveAssetUrl(visitingCard) ?? undefined} alt="Visiting card"
-                  style={{ marginTop: 8, width: "100%", maxWidth: 240, height: 120, objectFit: "cover", borderRadius: 8, border: `1px solid ${T.borderDef}` }} />
-              )}
-            </Field>
-          </div>
+          <VisitingCardUploadField cardUrl={cardUrl} onChange={setCardUrl} />
           <Field label="Notes">
             <Input type="text" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Any special instructions..." />
           </Field>

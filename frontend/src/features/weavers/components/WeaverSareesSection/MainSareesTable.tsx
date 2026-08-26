@@ -1,12 +1,29 @@
-import React from "react";
-import { Printer } from "lucide-react";
+import React, { useState } from "react";
+import { Printer, ImageOff } from "lucide-react";
 import { Pagination, UsePaginationReturn } from "../../../../shared/ui/DataPagination";
 import { ageBucket } from "@/features/customers";
 import { T, F } from "./theme";
 import { WeaverSareeRow, TabKey, tabDate } from "./types";
-import { inr, fmtDate, AGE_COLOR, QC_CFG, FIN_CFG, DISPATCH_CFG } from "./utils";
+import { inr, fmtDate, isSareePickable, pickBlockedReason, AGE_COLOR, QC_CFG, FIN_CFG, DISPATCH_CFG } from "./utils";
 import { Checkbox, IconButton } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { ImageZoomModal, type ZoomImage } from "../../../../shared/ui/ImageZoomModal";
+
+function PhotoThumb({ url, sareeId, onView }: { url: string | null; sareeId: string; onView: (image: ZoomImage) => void }) {
+  return url ? (
+    <button
+      type="button"
+      onClick={() => onView({ url, label: `Saree photo — ${sareeId}` })}
+      title="View saree photo"
+      aria-label={`View photo for ${sareeId}`}
+      style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${T.borderDef}`, padding: 0, cursor: "pointer", backgroundImage: `url(${url})`, backgroundSize: "cover", backgroundPosition: "center", flexShrink: 0 }}
+    />
+  ) : (
+    <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 32, height: 32, borderRadius: 8, border: `1px dashed ${T.borderDef}`, color: "rgba(139,112,96,0.55)", flexShrink: 0 }} title="No photo on file">
+      <ImageOff size={13} />
+    </span>
+  );
+}
 
 function Chip({ label, color }: { label: string; color: string }) {
   return (
@@ -53,6 +70,7 @@ function MainSareeCard({
   showQcMoney,
   showMoney,
   onPrintTag,
+  onViewPhoto,
 }: {
   r: WeaverSareeRow;
   selectable: boolean;
@@ -65,8 +83,9 @@ function MainSareeCard({
   showQcMoney: boolean;
   showMoney: boolean;
   onPrintTag?: (r: WeaverSareeRow) => void;
+  onViewPhoto: (image: ZoomImage) => void;
 }) {
-  const isPickable = r.qcStatus !== "defective" && r.qcStatus !== "semi" && !r.dispatched;
+  const isPickable = isSareePickable(r);
   const qc = QC_CFG[r.qcStatus];
   const fin = FIN_CFG[r.finishingStatus];
 
@@ -83,8 +102,10 @@ function MainSareeCard({
                   checked={!!selectedIds?.has(r.sareeId)}
                   onCheckedChange={() => isPickable && onToggleRow?.(r.sareeId)}
                   disabled={!isPickable}
+                  title={pickBlockedReason(r)}
                 />
               )}
+              <PhotoThumb url={r.receivedPhotoUrl} sareeId={r.sareeId} onView={onViewPhoto} />
               <div>
                 <div style={{ fontFamily: "var(--font-mono)", fontSize: 15, fontWeight: 700, color: T.royalBurgundy, wordBreak: "break-word" }}>
                   {r.sareeId}
@@ -213,14 +234,13 @@ export function MainSareesTable({
   isAll, isLoom, tab, dateHeader, showQcMoney, showMoney, pag, responsive = false, onPrintTag,
 }: MainSareesTableProps) {
   const mono = (color: string, extra?: React.CSSProperties): React.CSSProperties => ({ fontFamily: "var(--font-mono)", fontSize: 12, color, ...extra });
-  const isPickable = (r: WeaverSareeRow) =>
-    r.qcStatus !== "defective" && r.qcStatus !== "semi" && !r.dispatched;
+  const [zoomImage, setZoomImage] = useState<ZoomImage | null>(null);
 
   const columns: ColumnDef<WeaverSareeRow>[] = [
     ...(selectable ? [{
       id: "select",
       header: (() => {
-        const dispatchableVisible = visible.filter(isPickable).map(r => r.sareeId);
+        const dispatchableVisible = visible.filter(isSareePickable).map(r => r.sareeId);
         return (
           <Checkbox
             checked={dispatchableVisible.length > 0 && dispatchableVisible.every(id => selectedIds?.has(id))}
@@ -230,12 +250,13 @@ export function MainSareesTable({
       })(),
       accessor: () => null,
       cell: (_v: unknown, r: WeaverSareeRow) => {
-        const dispatchable = isPickable(r);
+        const dispatchable = isSareePickable(r);
         return (
           <Checkbox
             checked={!!selectedIds?.has(r.sareeId)}
             onCheckedChange={() => dispatchable && onToggleRow?.(r.sareeId)}
             disabled={!dispatchable}
+            title={pickBlockedReason(r)}
           />
         );
       },
@@ -243,6 +264,10 @@ export function MainSareesTable({
     {
       id: "sareeId", header: "Saree ID", accessor: r => r.sareeId, priority: 1,
       cell: (_v, r) => <span style={mono(T.royalBurgundy)}>{r.sareeId}</span>,
+    },
+    {
+      id: "photo", header: "Photo", accessor: r => r.receivedPhotoUrl,
+      cell: (_v, r) => <PhotoThumb url={r.receivedPhotoUrl} sareeId={r.sareeId} onView={setZoomImage} />,
     },
     {
       id: "batch", header: "Batch", accessor: r => r.batchId, priority: 3,
@@ -391,6 +416,7 @@ export function MainSareesTable({
                   showQcMoney={showQcMoney}
                   showMoney={showMoney}
                   onPrintTag={onPrintTag}
+                  onViewPhoto={setZoomImage}
                 />
               ))}
             </div>
@@ -413,6 +439,7 @@ export function MainSareesTable({
           </div>
         )}
       </div>
+      <ImageZoomModal image={zoomImage} onClose={() => setZoomImage(null)} />
     </>
   );
 }

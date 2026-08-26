@@ -10,8 +10,8 @@ import { useCustomers } from "../../contexts/CustomersContext";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees, formatMoney, paise } from "@/lib/domain/money";
 import { Money } from "../../../../shared/ui/domain/Money";
-import { resolveAssetUrl } from "@/shared/api/uploads";
-import { useImageUpload } from "@/shared/hooks/useImageUpload";
+import { VisitingCardUploadField } from "../../../../shared/ui/VisitingCardUploadField";
+import { LoadingState, ErrorState, EmptyState } from "../../../../shared/ui/state";
 
 interface WholesaleFormState {
   name: string;
@@ -62,9 +62,9 @@ export interface WholesaleCustomersSectionProps {
 export function WholesaleCustomersSection({
   wholesaleList, wholesaleView, setWholesaleView, showAddWholesale, setShowAddWholesale, onView, onEdit,
 }: WholesaleCustomersSectionProps) {
-  const { addCustomer } = useCustomers();
+  const { addCustomer, isLoading, error: loadError, refetch } = useCustomers();
   const [form, setForm] = useState<WholesaleFormState>(EMPTY_WHOLESALE_FORM);
-  const { upload, uploading, error: uploadError } = useImageUpload();
+  const [cardUrl, setCardUrl] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -103,6 +103,7 @@ export function WholesaleCustomersSection({
   const closeAddWholesale = () => {
     setShowAddWholesale(false);
     setForm(EMPTY_WHOLESALE_FORM);
+    setCardUrl(null);
     setError(null);
   };
 
@@ -129,7 +130,7 @@ export function WholesaleCustomersSection({
         state: form.state || undefined,
         paymentTerms: form.paymentTerms || undefined,
         notes: form.notes.trim() || undefined,
-        visitingCardUrl: form.visitingCardUrl || undefined,
+        visitingCardUrl: cardUrl || undefined,
       });
       closeAddWholesale();
     } catch (err) {
@@ -200,22 +201,7 @@ export function WholesaleCustomersSection({
                   <Field label="IFSC Code"><Input aria-label="Bank IFSC code" type="text" placeholder="e.g. HDFC0001842" value={form.ifscCode} onChange={e => updateField("ifscCode", e.target.value)} /></Field>
                   <Field label="GST Number"><Input aria-label="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" type="text" placeholder="15-digit GSTIN (e.g. 36AAAAA1111A1Z1)" value={form.gstNumber} onChange={e => updateField("gstNumber", e.target.value)} /></Field>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
-                  <Field label="Visiting Card Photo">
-                    <Input type="file" accept="image/png,image/jpeg" disabled={uploading} onChange={e => {
-                      const file = e.target.files?.[0];
-                      e.target.value = "";
-                      if (!file) return;
-                      void upload(file).then(url => { if (url) updateField("visitingCardUrl", url); });
-                    }} />
-                    {uploading && <div style={{ fontSize: 12, color: T.taupe, marginTop: 4 }}>Uploading…</div>}
-                    {uploadError && <div style={{ fontSize: 12, color: T.crimson, marginTop: 4 }}>{uploadError}</div>}
-                    {form.visitingCardUrl && (
-                      <img src={resolveAssetUrl(form.visitingCardUrl) ?? undefined} alt="Visiting card"
-                        style={{ marginTop: 8, width: "100%", maxWidth: 240, height: 120, objectFit: "cover", borderRadius: 8, border: `1px solid ${T.borderDef}` }} />
-                    )}
-                  </Field>
-                </div>
+                <VisitingCardUploadField cardUrl={cardUrl} onChange={setCardUrl} />
                 <Field label="Notes"><Input aria-label="Any special instructions..." type="text" placeholder="Any special instructions..." value={form.notes} onChange={e => updateField("notes", e.target.value)} /></Field>
               </div>
             </div>
@@ -318,7 +304,12 @@ export function WholesaleCustomersSection({
       </div>
 
       {/* Wholesale Cards View */}
-      {wholesaleView === "card" && (
+      {wholesaleView === "card" && isLoading && <LoadingState variant="skeleton" rows={4} />}
+      {wholesaleView === "card" && !isLoading && loadError && <ErrorState error={loadError} onRetry={refetch} />}
+      {wholesaleView === "card" && !isLoading && !loadError && wholesaleList.length === 0 && (
+        <EmptyState title="No wholesale customers yet" description="Customers added here appear across bulk orders, quotations, and dispatch." />
+      )}
+      {wholesaleView === "card" && !isLoading && !loadError && wholesaleList.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 items-stretch">
           {wholesaleList.map((w, i) => {
             return (
@@ -411,7 +402,7 @@ export function WholesaleCustomersSection({
       {/* Wholesale List View */}
       {wholesaleView === "list" && (
         <div style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
-          <DataTable columns={listColumns} data={wholesaleList} getRowId={w => w.id} emptyTitle="No wholesale customers yet" />
+          <DataTable columns={listColumns} data={wholesaleList} getRowId={w => w.id} loading={isLoading} error={!!loadError} onRetry={refetch} emptyTitle="No wholesale customers yet" />
         </div>
       )}
 
@@ -419,7 +410,7 @@ export function WholesaleCustomersSection({
       {wholesaleView === "table" && (
         <div style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}` }} className="w-full overflow-x-auto section-nav-scroll p-2">
           <div className="min-w-[850px]">
-            <DataTable columns={tableColumns} data={wholesaleList} getRowId={w => w.id} emptyTitle="No wholesale customers yet" />
+            <DataTable columns={tableColumns} data={wholesaleList} getRowId={w => w.id} loading={isLoading} error={!!loadError} onRetry={refetch} emptyTitle="No wholesale customers yet" />
           </div>
         </div>
       )}

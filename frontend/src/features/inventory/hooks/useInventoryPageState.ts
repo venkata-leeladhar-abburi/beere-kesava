@@ -8,7 +8,8 @@ import { useRatesPricing } from "@/features/pricing";
 import { useCustomers } from "@/features/customers";
 import { TransportData, InvoiceData, InventoryRecord } from "../components/types";
 import { rowToDispatchSaree } from "../components/modals/shared/SareePicker";
-import { WeaverSareeRow } from "@/features/weavers";
+import { toastMessageForError } from "@/shared/ui/state";
+import { WeaverSareeRow, isSareePickable } from "@/features/weavers";
 
 export function useInventoryPageState() {
   const { returns, dispatches, dispatchSarees, updateDispatch, deleteDispatch, readySarees, raiseQuotation, quotations, markQuotationDispatched } = useFinishing();
@@ -28,6 +29,12 @@ export function useInventoryPageState() {
   // ── Selection States ────────────────────────────────────────────────────────
   const [selected, setSelected]               = useState<Set<string>>(new Set());
   const [mirroredRows, setMirroredRows]       = useState<WeaverSareeRow[]>([]);
+  // The table only ever reports the rows its current tab + filters show, but a
+  // selection outlives a tab switch — so every row that has been on screen is
+  // remembered here, keyed by saree id. Without this, ticking two sarees on
+  // "Assigned" and then changing tab emptied the dispatch modals of the very
+  // sarees the action bar still counted as selected.
+  const [seenRows, setSeenRows]               = useState<Map<string, WeaverSareeRow>>(new Map());
   const [viewingItem, setViewingItem]         = useState<InventoryRecord | null>(null);
   const [modal,    setModal]                  = useState<"shop" | "wholesale" | "quotation" | null>(null);
   const [toast,    setToast]                  = useState("");
@@ -109,39 +116,65 @@ export function useInventoryPageState() {
   }).reduce((acc, d) => acc + d.sareeIds.length, 0);
 
   // ── Selection helpers ──
-  const dispatchableSelected = useMemo(() => {
-    return mirroredRows.filter(r => selected.has(r.sareeId)).map(r => ({
-      id: r.sareeId,
-      originalId: r.sareeId,
-      designCode: r.designCode || "",
-      sareeType: r.sareeTypeName || r.sareeTypeCode || "—",
-      weaverName: r.ownerLabel || "—",
-      date: r.finishingCompletedDate || r.qcDate || r.assignedDate || "",
-      status: r.finishingStatus === "completed" ? "Finishing complete" : r.qcStatus === "passed" ? "QC Passed" : "In Production",
-      bulkOrderRef: undefined as string | undefined,
-    }));
-  }, [mirroredRows, selected]);
+  // Every row the table has shown, remembered so a selection survives the tab
+  // switch, filter or search that scrolls it out of `mirroredRows`.
+  const rememberRows = useCallback((rows: WeaverSareeRow[]) => {
+    setMirroredRows(rows);
+    setSeenRows(prev => {
+      const next = new Map(prev);
+      let changed = false;
+      rows.forEach(r => { if (next.get(r.sareeId) !== r) { next.set(r.sareeId, r); changed = true; } });
+      return changed ? next : prev;
+    });
+  }, []);
 
-  // A saree already on a dispatch record (including one dispatched via a
-  // previously raised quotation) is gone from the shelf — it must not be
-  // offered again as a pick for a *new* quotation/dispatch, even though the
-  // underlying table still lists it (under its Dispatched tab) for audit.
-  // `mirroredRows` mirrors whatever the "All Sarees" table currently has
-  // visible — which, with no status filter selected, includes sarees still
-  // in production or awaiting QC. Those aren't eligible to be quoted or
-  // dispatched (finishing/dispatch both require a QC pass first), so this
-  // must gate on qcStatus itself rather than trust the table's own filter
-  // state. qcStatus stays "passed" permanently once set (PASSED is terminal
-  // — see BatchesService), so this doesn't exclude anything that's since
-  // moved on to finishing/dispatch.
-  const availableSarees = useMemo<FinishingReturn[]>(
-    () => mirroredRows.filter(r => !r.dispatched && r.qcStatus === "passed").map(rowToDispatchSaree),
-    [mirroredRows],
+  // The one resolution of "what is currently ticked", shared by the action bar,
+  // the three dispatch modals and the confirm handlers. It runs the same
+  // `isSareePickable` rule the table's own checkboxes use, so a saree that
+  // could be ticked always reaches the modal it was ticked for — previously the
+  // page re-derived this twice with two different rules, and the stricter one
+  // (QC-passed only) silently emptied the modals of sarees the action bar was
+  // still counting, while the confirm path dispatched them anyway.
+  // A remembered row is a snapshot: once its saree is dispatched it is dropped
+  // from every pick tab, so nothing ever re-reports it and its cached copy
+  // still reads `dispatched: false`. `dispatchedSareeIds` is the live record,
+  // so it decides that half of the rule.
+  const isPickableNow = useCallback(
+    (r: WeaverSareeRow) => isSareePickable(r) && !dispatchedSareeIds.has(r.sareeId),
+    [dispatchedSareeIds],
   );
 
-  const selectedSarees = useMemo(
-    () => availableSarees.filter(s => selected.has(s.sareeId)),
-    [availableSarees, selected]
+  const selectedRows = useMemo(
+    () => [...selected]
+      .map(id => seenRows.get(id))
+      .filter((r): r is WeaverSareeRow => !!r && isPickableNow(r)),
+    [selected, seenRows, isPickableNow],
+  );
+
+  const dispatchableSelected = useMemo(() => selectedRows.map(r => ({
+    id: r.sareeId,
+    originalId: r.sareeId,
+    designCode: r.designCode || "",
+    sareeType: r.sareeTypeName || r.sareeTypeCode || "—",
+    weaverName: r.ownerLabel || "—",
+    date: r.finishingCompletedDate || r.qcDate || r.assignedDate || "",
+    status: r.finishingStatus === "completed" ? "Finishing complete" : r.qcStatus === "passed" ? "QC Passed" : "In Production",
+    bulkOrderRef: undefined as string | undefined,
+  })), [selectedRows]);
+
+  // Pool the modals scan and pick against. A saree already on a dispatch record
+  // (including one dispatched via a previously raised quotation) is gone from
+  // the shelf, and a QC reject needs a decision before it can be sold — both are
+  // excluded by `isSareePickable`. Drawn from every row seen rather than only
+  // the current tab, so scanning an ID inside a modal finds it either way.
+  const availableSarees = useMemo<FinishingReturn[]>(
+    () => [...seenRows.values()].filter(isPickableNow).map(rowToDispatchSaree),
+    [seenRows, isPickableNow],
+  );
+
+  const selectedSarees = useMemo<FinishingReturn[]>(
+    () => selectedRows.map(rowToDispatchSaree),
+    [selectedRows],
   );
 
   const toggleSareeRow = useCallback((id: string) => {
@@ -175,24 +208,40 @@ export function useInventoryPageState() {
 
     const match = mirroredRows.find(r => r.sareeId.toLowerCase() === id.toLowerCase());
     if (!match) return show(`No saree "${id}" in this list.`);
+    // Same rule as the checkboxes — scanning must not slip a saree past a gate
+    // the table would have blocked, or it would vanish again downstream.
+    if (!isPickableNow(match)) {
+      return show(match.dispatched || dispatchedSareeIds.has(match.sareeId)
+        ? `${match.sareeId} is already dispatched.`
+        : `${match.sareeId} needs a QC decision before it can be dispatched.`);
+    }
     if (selected.has(match.sareeId)) return show(`${match.sareeId} is already selected.`);
 
     setSelected(prev => new Set(prev).add(match.sareeId));
     show(`Selected ${match.sareeId}`);
-  }, [mirroredRows, selected]);
+  }, [mirroredRows, selected, isPickableNow, dispatchedSareeIds]);
 
-  const handleShopConfirm = (transport: TransportData, opts?: { skipped?: boolean; picked?: FinishingReturn[]; receiptUrl?: string | null }) => {
+  // Awaited, unlike before: the mutation rolls its optimistic row back when the
+  // server rejects the dispatch, so firing and forgetting made a failed shop
+  // dispatch look like it had worked — the row flashed into Dispatch History
+  // and vanished, with the reason only ever reaching the console.
+  const handleShopConfirm = async (transport: TransportData, opts?: { skipped?: boolean; picked?: FinishingReturn[]; receiptUrl?: string | null }) => {
     const sareeIds = opts?.picked?.length
       ? opts.picked.map(s => s.sareeId || s.id)
       : dispatchableSelected.map(r => r.id);
-    dispatchSarees(sareeIds, {
-      type: "shop", sareeIds, dispatchDate: transport.dispatchDate || new Date().toISOString().slice(0, 10),
-      lrNumber: transport.lrNumber, transportCompany: transport.transportCompany, vehicleNumber: transport.vehicleNumber, driverName: transport.driverName, notes: transport.notes,
-      pendingTransport: !!opts?.skipped && !(transport.lrNumber && transport.transportCompany && transport.vehicleNumber),
-      // A receipt uploaded here settles the requirement, even on a "skip for now" dispatch.
-      pendingReceipt: !!opts?.skipped && !opts?.receiptUrl,
-      receiptUrl: opts?.receiptUrl ?? undefined,
-    });
+    try {
+      await dispatchSarees(sareeIds, {
+        type: "shop", sareeIds, dispatchDate: transport.dispatchDate || new Date().toISOString().slice(0, 10),
+        lrNumber: transport.lrNumber, transportCompany: transport.transportCompany, vehicleNumber: transport.vehicleNumber, driverName: transport.driverName, notes: transport.notes,
+        pendingTransport: !!opts?.skipped && !(transport.lrNumber && transport.transportCompany && transport.vehicleNumber),
+        // A receipt uploaded here settles the requirement, even on a "skip for now" dispatch.
+        pendingReceipt: !!opts?.skipped && !opts?.receiptUrl,
+        receiptUrl: opts?.receiptUrl ?? undefined,
+      });
+    } catch (err) {
+      setToast(toastMessageForError(err));
+      return;
+    }
     setModal(null);
     setSelected(new Set());
     setToast(opts?.skipped
@@ -212,22 +261,28 @@ export function useInventoryPageState() {
     const customer = wholesaleCustomers.find(c => c.id === customerId);
     const subtotal = sareeIds.reduce((sum, id) => sum + (parseFloat(inv.prices[id]) || 0), 0);
     const gstAmount = inv.applyGst ? subtotal * (parseFloat(inv.gstPct) || 0) / 100 : 0;
-    const created = await dispatchSarees(sareeIds, {
-      type: "wholesale", sareeIds, dispatchDate: transport.dispatchDate || new Date().toISOString().slice(0, 10),
-      lrNumber: transport.lrNumber, transportCompany: transport.transportCompany, vehicleNumber: transport.vehicleNumber, driverName: transport.driverName, notes: transport.notes,
-      customerId, customerName: customer?.name, customerPhone: customer?.phone,
-      expectedDelivery: transport.expectedDelivery, specialInstructions: transport.specialInstructions,
-      invoiceDate: inv.invoiceDate,
-      pricePerSaree: sareeIds.length ? Math.round(subtotal / sareeIds.length) : 0,
-      totalAmount: subtotal,
-      gstPct: inv.applyGst ? parseFloat(inv.gstPct) || 0 : 0,
-      grandTotal: subtotal + gstAmount,
-      firmId: inv.firmId, paymentDueDate: inv.paymentDueDate, invoiceNotes: inv.invoiceNotes,
-      bulkOrderRef,
-      quotationRef: opts?.quotationRef ?? quotationDispatch?.quotationNumber,
-      pendingTransport: !!opts?.skipped && !(transport.lrNumber && transport.transportCompany && transport.vehicleNumber),
-      pendingReceipt: !!opts?.skipped,
-    });
+    let created: { id: string; invoiceNumber?: string };
+    try {
+      created = await dispatchSarees(sareeIds, {
+        type: "wholesale", sareeIds, dispatchDate: transport.dispatchDate || new Date().toISOString().slice(0, 10),
+        lrNumber: transport.lrNumber, transportCompany: transport.transportCompany, vehicleNumber: transport.vehicleNumber, driverName: transport.driverName, notes: transport.notes,
+        customerId, customerName: customer?.name, customerPhone: customer?.phone,
+        expectedDelivery: transport.expectedDelivery, specialInstructions: transport.specialInstructions,
+        invoiceDate: inv.invoiceDate,
+        pricePerSaree: sareeIds.length ? Math.round(subtotal / sareeIds.length) : 0,
+        totalAmount: subtotal,
+        gstPct: inv.applyGst ? parseFloat(inv.gstPct) || 0 : 0,
+        grandTotal: subtotal + gstAmount,
+        firmId: inv.firmId, paymentDueDate: inv.paymentDueDate, invoiceNotes: inv.invoiceNotes,
+        bulkOrderRef,
+        quotationRef: opts?.quotationRef ?? quotationDispatch?.quotationNumber,
+        pendingTransport: !!opts?.skipped && !(transport.lrNumber && transport.transportCompany && transport.vehicleNumber),
+        pendingReceipt: !!opts?.skipped,
+      });
+    } catch (err) {
+      setToast(toastMessageForError(err));
+      return;
+    }
     if (bulkOrderRef) {
       markDispatched(bulkOrderRef, created.invoiceNumber ?? "");
     }
@@ -306,7 +361,7 @@ export function useInventoryPageState() {
     selected,
     setSelected,
     mirroredRows,
-    setMirroredRows,
+    rememberVisibleRows: rememberRows,
     viewingItem,
     setViewingItem,
     modal,

@@ -8,6 +8,7 @@ import { VerificationModal, VerifData } from "./VerificationModal";
 import { ReceiveStaffGrid, ReceiveBatchGrid } from "./ReceiveSareeGridCards";
 import { Button, IconButton, Select, SelectItem } from "../../../../../shared/ui/primitives";
 import { DateFilterBar, type DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../../shared/ui/DateFilterBar";
+import { LoadingState, ErrorState } from "../../../../../shared/ui/state";
 
 // ── Section B with filters — Receive returns ──────────────────────────────────
 
@@ -25,13 +26,13 @@ function formatDateShort(dateStr?: string) {
 type GroupMode = "list" | "staff" | "batch";
 
 export function SectionBFiltered({ isMobile, isDesktop, isTablet }: { isMobile?: boolean; isDesktop?: boolean; isTablet?: boolean }) {
-  const { assignments, receiveReturn } = useFinishing();
+  const { assignments, receiveReturn, isLoading, isError, error, refetch } = useFinishing();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [showVerif, setShowVerif] = useState(false);
   const [toast, setToast] = useState("");
   const [filterStaff, setFilterStaff] = useState("all");
   const [filterBatch, setFilterBatch] = useState("all");
-  const [filterType, _setFilterType] = useState("all");
+  const [filterType] = useState("all");
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [groupMode, setGroupMode] = useState<GroupMode>("list");
   const [drilldown, setDrilldown] = useState<string | null>(null);
@@ -51,10 +52,6 @@ export function SectionBFiltered({ isMobile, isDesktop, isTablet }: { isMobile?:
   }, [awaiting]);
 
   // Get unique saree types from awaiting
-  const _uniqueTypes = useMemo(() => {
-    const tSet = new Set(awaiting.map(a => a.sareeTypeCode || a.sareeType).filter(Boolean));
-    return Array.from(tSet);
-  }, [awaiting]);
 
   const filteredAwaiting = useMemo(() => awaiting.filter(a => {
     const staffOk = filterStaff === "all" || a.finishingStaffName === filterStaff;
@@ -222,7 +219,11 @@ export function SectionBFiltered({ isMobile, isDesktop, isTablet }: { isMobile?:
           <ChevronLeft size={15} /> {groupLabel}: {drilldown}
         </button>
       )}
-      {displayAwaiting.length === 0 ? (
+      {isLoading ? (
+        <LoadingState variant="skeleton" rows={4} />
+      ) : isError ? (
+        <ErrorState error={error} onRetry={refetch} />
+      ) : displayAwaiting.length === 0 ? (
         <div style={{ padding: "28px 0", textAlign: "center", fontFamily: F.u, fontSize: 13, color: C.muted }}>
           {awaiting.length === 0 ? "No sarees currently awaiting return." : "No results for selected filters."}
         </div>

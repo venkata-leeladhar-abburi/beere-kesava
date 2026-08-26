@@ -199,6 +199,8 @@ export function OwnFactoryReceiveTab({ onSareeReceived }: { onSareeReceived?: (r
           id: s.sareeId, weaver: loomLabel, wcode: "", batch: currentBatch.id,
           weight: `${sareeWeight}g`, date: dateStr,
           color: sareeColor, status: "Pending QC",
+          photoUrl, loomNumber: selectedLoom.loomNumber,
+          sareeType: currentBatch.sareeTypeCode, bulkOrder: currentBatch.bulkOrderLabel ?? null,
         });
       }
       setSelectedSareeNos(new Set());
@@ -440,6 +442,8 @@ export function OwnFactoryReceiveTab({ onSareeReceived }: { onSareeReceived?: (r
                   id: s.sareeId, weaver: loomLabel, wcode: "", batch: currentBatch.id,
                   weight: sareeWeight ? `${sareeWeight}g` : "—", date: dateStr,
                   color: sareeColor || "—", status: "Defective",
+                  photoUrl, loomNumber: selectedLoom.loomNumber,
+                  sareeType: currentBatch.sareeTypeCode, bulkOrder: currentBatch.bulkOrderLabel ?? null,
                 });
               });
             }

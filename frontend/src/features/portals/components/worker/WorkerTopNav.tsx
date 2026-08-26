@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { motion } from "motion/react";
 import {
@@ -56,9 +55,8 @@ function initialsOf(name: string): string {
   return name.split(" ").filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase() || "—";
 }
 
-export function WorkerTopNav({ active, onSelect, onBack: _onBack, bp, pendingQcCount = 0 }: WorkerTopNavProps) {
-  const { selectRole: _selectRole, user, logout } = useAuth();
-  const _navigate = useNavigate();
+export function WorkerTopNav({ active, onSelect, bp, pendingQcCount = 0 }: WorkerTopNavProps) {
+  const { user, logout } = useAuth();
   const [showNotif, setShowNotif] = useState(false);
   const [showUser, setShowUser] = useState(false);
   const [notifications, setNotifications] = useState<BackendNotification[]>([]);

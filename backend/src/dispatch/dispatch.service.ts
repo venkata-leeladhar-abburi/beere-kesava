@@ -35,11 +35,6 @@ export class DispatchService {
     const records = await this.prisma.inventoryRecord.findMany({
       where: { sareeId: { in: dto.sareeIds } },
     });
-    const foundIds = new Set(records.map((r) => r.sareeId));
-    const missing = dto.sareeIds.filter((id) => !foundIds.has(id));
-    if (missing.length > 0) {
-      throw new NotFoundException(`Saree(s) not found in inventory: ${missing.join(", ")}`);
-    }
     // Finishing no longer gates dispatch (product decision — a saree can be
     // sent to shop or wholesale before finishing wraps up); only sarees
     // already dispatched, sold, or flagged for damage review are blocked.
@@ -50,6 +45,47 @@ export class DispatchService {
           `Saree ${record.sareeId} is not ready for dispatch (status: ${record.status})`,
         );
       }
+    }
+
+    // An InventoryRecord is only written when a saree passes through finishing,
+    // a quotation or a sale (see FinishingAssignmentsService.receiveReturn) —
+    // so a saree that went straight from QC to the shop has none, and requiring
+    // one here made every such dispatch 404. Since finishing no longer gates
+    // dispatch, the woven row is the real source of truth: if it exists and QC
+    // passed it, the inventory row is opened here on demand.
+    const foundIds = new Set(records.map((r) => r.sareeId));
+    const unrecorded = dto.sareeIds.filter((id) => !foundIds.has(id));
+    if (unrecorded.length > 0) {
+      const wovenRows = await this.prisma.batchSareeRow.findMany({
+        where: { sareeId: { in: unrecorded } },
+        select: { sareeId: true, batchId: true, bulkOrderRef: true, qcPassed: true },
+      });
+      const wovenById = new Map(wovenRows.map((r) => [r.sareeId!, r]));
+
+      const missing = unrecorded.filter((id) => !wovenById.has(id));
+      if (missing.length > 0) {
+        throw new NotFoundException(`Saree(s) not found in inventory: ${missing.join(", ")}`);
+      }
+      const notQcPassed = unrecorded.filter((id) => !wovenById.get(id)!.qcPassed);
+      if (notQcPassed.length > 0) {
+        throw new BadRequestException(
+          `Saree(s) have not passed QC and cannot be dispatched: ${notQcPassed.join(", ")}`,
+        );
+      }
+
+      await this.prisma.inventoryRecord.createMany({
+        data: unrecorded.map((sareeId) => {
+          const row = wovenById.get(sareeId)!;
+          return {
+            sareeId,
+            status: "QC_PASSED" as const,
+            rawType: "READY_SAREE" as const,
+            batchId: row.batchId,
+            bulkOrderRef: row.bulkOrderRef,
+          };
+        }),
+        skipDuplicates: true,
+      });
     }
 
     const pricePerSaree = dto.pricePerSaree ?? 0;
@@ -74,6 +110,7 @@ export class DispatchService {
     const created = await this.prisma.dispatchRecord.create({
       data: {
         type: dto.type,
+        dispatchDate: dto.dispatchDate ? new Date(dto.dispatchDate) : undefined,
         lrNumber: dto.lrNumber,
         transportCompany: dto.transportCompany,
         vehicleNumber: dto.vehicleNumber,
@@ -185,12 +222,30 @@ export class DispatchService {
     const record = await this.findOne(id);
     const sareeIds = record.sarees.map((s) => s.sareeId);
 
-    // Revert inventory status for all associated sarees
+    // Revert inventory status for all associated sarees. Not a blanket
+    // FINISHING_COMPLETE: a saree can now be dispatched straight from QC
+    // without ever entering finishing, and marking those "finishing complete"
+    // on undo invented a step they never went through.
     if (sareeIds.length > 0) {
-      await this.prisma.inventoryRecord.updateMany({
-        where: { sareeId: { in: sareeIds } },
-        data: { status: "FINISHING_COMPLETE" },
+      const finished = await this.prisma.finishingAssignment.findMany({
+        where: { sareeId: { in: sareeIds }, status: "RETURNED" },
+        select: { sareeId: true },
       });
+      const finishedIds = finished.map((f) => f.sareeId);
+      const qcOnlyIds = sareeIds.filter((id) => !finishedIds.includes(id));
+
+      if (finishedIds.length > 0) {
+        await this.prisma.inventoryRecord.updateMany({
+          where: { sareeId: { in: finishedIds } },
+          data: { status: "FINISHING_COMPLETE" },
+        });
+      }
+      if (qcOnlyIds.length > 0) {
+        await this.prisma.inventoryRecord.updateMany({
+          where: { sareeId: { in: qcOnlyIds } },
+          data: { status: "QC_PASSED" },
+        });
+      }
     }
 
     // A dispatch raised from a quotation moves that quotation to DISPATCHED

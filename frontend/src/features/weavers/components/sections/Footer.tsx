@@ -66,7 +66,7 @@ export function Footer() {
             </div>
           </div>
         ))}
-        <div style={{ minWidth: 240 }}>
+        <div className="min-w-[240px]">
           <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.antiqueGold, letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 20 }}>Need Help?</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 24 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}><Phone size={16} color={T.antiqueGold} /><span style={{ fontFamily: "var(--font-mono)", fontSize: 14, color: "rgba(255,253,249,0.70)" }}>+91 70428 78199</span></div>

@@ -4,6 +4,7 @@ import { CheckCircle2, type LucideIcon } from "lucide-react";
 
 import { F, T } from "../../theme";
 import { Button, Select, SelectItem } from "../../../../shared/ui/primitives";
+import { cn } from "../../../../shared/ui/utils";
 import { Modal } from "../../../../shared/ui/overlay";
 import { StatusPill } from "@/shared/ui/domain";
 import type { PaymentStatus } from "@/lib/domain/status";
@@ -134,9 +135,9 @@ export function SectionCard({
 }
 
 // helper: dropdown button
-export function DropBtn({ value, options, onChange }: { value?: string, options: string[], onChange?: (v: string) => void }) {
+export function DropBtn({ value, options, onChange, className }: { value?: string; options: string[]; onChange?: (v: string) => void; className?: string }) {
   return (
-    <Select value={value} onValueChange={onChange}>
+    <Select value={value} onValueChange={onChange} size="sm" containerClassName="w-auto shrink-0" className={cn("w-auto min-w-[130px] font-semibold text-[13px]", className)}>
       {options.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
     </Select>
   );

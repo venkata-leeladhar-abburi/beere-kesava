@@ -7,6 +7,7 @@ import { T, F, cardStyle } from "./theme";
 import { SectionCard, GoldLink } from "./sharedUI";
 import { rateRequestsApi, type BackendRateChangeRequest } from "../../../../shared/api/rateRequests";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { LoadingState, ErrorState } from "../../../../shared/ui/state";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { useDataAccess } from "@/shared/ui/domain";
 
@@ -107,19 +108,9 @@ export function RateHistorySection() {
       </div>
 
       {isLoading ? (
-        <div style={{ ...cardStyle, padding: "32px 20px", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
-          Loading rate change history…
-        </div>
+        <div style={cardStyle}><LoadingState variant="skeleton" rows={4} /></div>
       ) : isError ? (
-        <div style={{
-          ...cardStyle, padding: "16px 20px", display: "flex", alignItems: "center",
-          justifyContent: "space-between", gap: 16, borderLeft: `4px solid ${T.crimson}`,
-        }}>
-          <span style={{ fontFamily: F.ui, fontSize: 13, color: T.crimson }}>Failed to load rate change history.</span>
-          <Button onClick={loadHistory} variant="primary" size="sm">
-            Retry
-          </Button>
-        </div>
+        <div style={cardStyle}><ErrorState error={undefined} onRetry={loadHistory} /></div>
       ) : (
       <div style={cardStyle}>
         <div className="w-full overflow-x-auto">

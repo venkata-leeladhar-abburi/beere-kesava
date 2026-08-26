@@ -44,7 +44,7 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const { batches } = useBatches();
-  const { data: qcRecords = [], isLoading: qcLoading } = useQuery({
+  const { data: qcRecords = [], isLoading: qcLoading, isError: qcError, refetch: refetchQc } = useQuery({
     queryKey: ["qc", "all"],
     queryFn: () => qcApi.list().then(r => r.items),
   });
@@ -240,8 +240,9 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2.5 p-3.5 sm:px-6 bg-white border-x border-[rgba(110,15,45,0.10)] w-full">
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
+        <div className="flex flex-col md:flex-row md:items-center gap-2.5 p-3.5 sm:px-6 bg-white border-x border-[rgba(110,15,45,0.10)] w-full overflow-x-auto">
+          <SearchInput aria-label="Search batches" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search batches..." className="w-full md:w-[240px] shrink-0" />
+          <div className="flex items-center gap-2.5 flex-nowrap overflow-x-auto shrink-0 w-full md:w-auto pb-1 md:pb-0">
             <HistoryDropBtn label="30 Apr 2026 – 30 Apr 2026" icon={<Calendar size={14} style={{ color: T.royalBurgundy }} />} />
             <HistoryDropBtn label="All Saree Types" />
             <HistoryDropBtn label="All Weavers" icon={<Users size={14} style={{ color: T.royalBurgundy }} />} />
@@ -260,8 +261,8 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
               variant="ghost"
               className={`h-auto rounded-none gap-1.5 py-2 px-3 text-[12px] sm:text-[13px] font-bold ${
                 viewMode === "card"
-                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
-                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D] hover:text-[#FFFDF9]"
+                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA] hover:text-[#6E0F2D]"
               }`}
             >
               <LayoutGrid size={15} /> Card View
@@ -271,8 +272,8 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
               variant="ghost"
               className={`h-auto rounded-none gap-1.5 py-2 px-3 text-[12px] sm:text-[13px] font-bold ${
                 viewMode === "table"
-                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
-                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
+                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D] hover:text-[#FFFDF9]"
+                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA] hover:text-[#6E0F2D]"
               }`}
             >
               <List size={15} /> Table View
@@ -305,6 +306,8 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
             data={filteredBatches}
             getRowId={b => b.id}
             loading={qcLoading}
+            error={qcError}
+            onRetry={() => void refetchQc()}
             emptyTitle="No completed batches yet."
           />
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 sm:px-6 border-t border-[rgba(110,15,45,0.10)]">

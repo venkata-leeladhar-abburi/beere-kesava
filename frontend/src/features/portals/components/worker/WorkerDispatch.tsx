@@ -9,7 +9,9 @@ import { useFirms } from "@/features/firms";
 // screen stays identical to what admin sees.
 import { DispatchHistorySection, ResumeDispatchModal, DispatchInvoiceModal } from "@/features/inventory";
 
-export function WorkerDispatch({ isDesktop: _isDesktop = false }: { isDesktop?: boolean }) {
+// `isDesktop` is still passed by WorkerPortalDesktop but this view renders the
+// same either way, so the prop is accepted and deliberately unread.
+export function WorkerDispatch(_props: { isDesktop?: boolean }) {
   const { dispatches, updateDispatch, returns, deleteDispatch } = useFinishing();
   const { firms } = useFirms();
   const [resume, setResume] = useState<DispatchRecord | null>(null);

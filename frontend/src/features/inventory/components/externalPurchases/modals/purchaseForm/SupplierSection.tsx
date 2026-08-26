@@ -132,6 +132,7 @@ export function SupplierSection({
           <Input
             value={form.billAmount}
             onChange={(e) => set("billAmount", e.target.value)}
+            // eslint-disable-next-line no-restricted-syntax -- input adornment / field label unit annotation, not a rendered money value
             placeholder="e.g. ₹34,000"
           />
         </Field>

@@ -4,7 +4,6 @@ import {
   totalPieces,
 } from "@/features/suppliers";
 import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
-import { SariTagPrintModal } from "@/features/production";
 
 import { T } from "./externalPurchases/theme";
 import { FormState } from "./externalPurchases/types";
@@ -37,7 +36,7 @@ export type { FormState };
 export function ExternalPurchasesPage() {
   // Purchases live in the shared supplier context so the Suppliers page sees the
   // same inventory, spend and payment history that gets entered here.
-  const { purchases, addPurchase, updatePurchase, deletePurchase } = useSuppliers();
+  const { purchases, addPurchase, updatePurchase, deletePurchase, isLoading, isError, refetch } = useSuppliers();
   const confirm = useConfirm();
   const [detailRow, setDetailRow] = useState<Purchase | null>(null);
   const [search, setSearch] = useState("");
@@ -48,8 +47,6 @@ export function ExternalPurchasesPage() {
 
   const [formModal, setFormModal] = useState<{ mode: "add" | "edit" | "request" | "request"; editId?: string } | null>(null);
   const [sareeListPurchase, setSareeListPurchase] = useState<Purchase | null>(null);
-  const [printSaree, setPrintSaree] = useState<SareeTag | null>(null);
-  const [printSareeSupplier, setPrintSareeSupplier] = useState<string>("");
 
   const [fSupplier, setFSupplier] = useState("All Suppliers");
   const [fPurchaseOrder, setFPurchaseOrder] = useState("All Purchase Orders");
@@ -232,6 +229,9 @@ export function ExternalPurchasesPage() {
           onViewSarees={setSareeListPurchase}
           onEdit={(id) => setFormModal({ mode: "edit", editId: id })}
           onDelete={handleDelete}
+          loading={isLoading}
+          loadError={isError}
+          onRetry={refetch}
           onClearFilters={clearFilters}
         />
       </FilterBar>
@@ -268,29 +268,6 @@ export function ExternalPurchasesPage() {
         <SareeListModal
           purchase={purchases.find((p) => p.id === sareeListPurchase.id) || sareeListPurchase}
           onClose={() => setSareeListPurchase(null)}
-          onPrint={(saree) => {
-            setPrintSareeSupplier(sareeListPurchase.supplier);
-            setPrintSaree(saree);
-            setSareeListPurchase(null);
-          }}
-        />
-      )}
-
-      {/* SAREE TAG PRINT MODAL */}
-      {printSaree && (
-        <SariTagPrintModal
-          saree={{
-            id: printSaree.id,
-            weaver: null,
-            design: printSaree.id,
-            sareeType: printSaree.sareeType,
-            weight: printSaree.weight,
-            qcDate: printSaree.date,
-            source: "external",
-            loom: 0,
-            supplier: printSareeSupplier,
-          }}
-          onClose={() => setPrintSaree(null)}
         />
       )}
     </div>

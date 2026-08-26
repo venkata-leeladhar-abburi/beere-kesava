@@ -58,6 +58,7 @@ export function DeductionRatesSection() {
                   <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 14 }}>
                     <div>
                       <label style={labelStyle} htmlFor="deduction-rate-per-gram">Deduction Rate (₹ per gram) *</label>
+                      {/* eslint-disable-next-line no-restricted-syntax -- ₹ input adornment on an entry field, not a rendered money value */}
                       <NumberInput id="deduction-rate-per-gram" addonLeft="₹" step={0.01} defaultValue={5.2} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
                     </div>
                     <div>
@@ -129,6 +130,7 @@ export function DeductionRatesSection() {
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                   <div>
                     <label style={labelStyle} htmlFor="deduction-rate-per-gram-2">Deduction Rate (₹ per gram) *</label>
+                    {/* eslint-disable-next-line no-restricted-syntax -- ₹ input adornment on an entry field, not a rendered money value */}
                     <NumberInput id="deduction-rate-per-gram-2" addonLeft="₹" step={0.01} defaultValue={15} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
                   </div>
                   <div>
@@ -201,6 +203,7 @@ export function DeductionRatesSection() {
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                   <div>
                     <label style={labelStyle} htmlFor="deduction-rate-per-reel">Deduction Rate (₹ per reel) *</label>
+                    {/* eslint-disable-next-line no-restricted-syntax -- ₹ input adornment on an entry field, not a rendered money value */}
                     <NumberInput id="deduction-rate-per-reel" addonLeft="₹" step={0.01} defaultValue={42} className="bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
                   </div>
                   <div>

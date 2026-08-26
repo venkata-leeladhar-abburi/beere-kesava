@@ -16,6 +16,7 @@ import { rupees, formatMoney } from "@/lib/domain/money";
 import inventoryHero from "../../../assets/inline/inventoryHero.jpg";
 
 import { LuxuryStatsCard } from "@/shared/ui/LuxuryStatsCard";
+import { LoadingState, ErrorState } from "../../../shared/ui/state";
 
 const inr = (n: number) => formatMoney(rupees(n));
 
@@ -31,7 +32,7 @@ const OUT_TABS: { key: OutTab; label: string; desc: string; Icon: IconComponent 
 ];
 
 export function OutstandingPage({ embedded = false }: { embedded?: boolean }) {
-  const { sarees } = useSales();
+  const { sarees, isLoading: salesLoading, isError: salesError, error: salesErrorObj, refetch: refetchSales } = useSales();
   const [tab, setTab] = useState<OutTab>("weaver");
   const [search, setSearch] = useState("");
   const [ageFilter, setAgeFilter] = useState<AgeKey>("all");
@@ -164,19 +165,27 @@ export function OutstandingPage({ embedded = false }: { embedded?: boolean }) {
           />
         )}
 
-        {tab === "weaver" && (
-          <InHouseOutstanding origin="weaver" sarees={sarees} search={search} ageFilter={ageFilter} />
+        {salesLoading ? (
+          <LoadingState variant="skeleton" rows={4} />
+        ) : salesError ? (
+          <ErrorState error={salesErrorObj} onRetry={refetchSales} />
+        ) : (
+          <>
+            {tab === "weaver" && (
+              <InHouseOutstanding origin="weaver" sarees={sarees} search={search} ageFilter={ageFilter} />
+            )}
+            {tab === "factoryLoom" && (
+              <InHouseOutstanding origin="factoryLoom" sarees={sarees} search={search} ageFilter={ageFilter} />
+            )}
+            {tab === "external" && (
+              <ExternalOutstanding sarees={sarees} search={search} ageFilter={ageFilter} />
+            )}
+            {tab === "batch" && (
+              <BatchOutstanding sarees={sarees} search={search} ageFilter={ageFilter} />
+            )}
+            {tab === "ranking" && <TopSellers sarees={sarees} />}
+          </>
         )}
-        {tab === "factoryLoom" && (
-          <InHouseOutstanding origin="factoryLoom" sarees={sarees} search={search} ageFilter={ageFilter} />
-        )}
-        {tab === "external" && (
-          <ExternalOutstanding sarees={sarees} search={search} ageFilter={ageFilter} />
-        )}
-        {tab === "batch" && (
-          <BatchOutstanding sarees={sarees} search={search} ageFilter={ageFilter} />
-        )}
-        {tab === "ranking" && <TopSellers sarees={sarees} />}
       </div>
     </div>
   );

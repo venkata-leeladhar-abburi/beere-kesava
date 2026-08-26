@@ -279,16 +279,13 @@ export function WholesaleCollectionsSection() {
               </Button>
             ))}
           </div>
+          <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
           <DropBtn value={filterState} options={["All States", "Varanasi", "Surat", "Mumbai", "Hyderabad", "Chennai", "Bengaluru"]} onChange={setFilterState} />
           <DropBtn value={filterCust} options={["All Customers", "Lakshmi Silks", "Padmavathi Textiles", "Vijaya Silk House", "Narayana Silk Emporium", "Meenakshi Silks"]} onChange={setFilterCust} />
           <DropBtn value={filterType} options={["All Invoice Types", "Wholesale", "Retail", "Export"]} onChange={setFilterType} />
           <div style={{ flex: 1, minWidth: 200 }}>
             <SearchInput aria-label="Search invoice or customer" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search invoice or customer..." size="sm" />
           </div>
-        </div>
-
-        <div style={{ marginBottom: 14 }}>
-          <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
         </div>
 
         <div className="flex md:hidden items-center justify-between gap-3 mb-4 flex-wrap">

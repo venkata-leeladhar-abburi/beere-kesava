@@ -97,6 +97,7 @@ export function SareeRowCard({
       </div>
       {/* Price per quantity × quantity = buying price */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 0.75fr 1fr", gap: 10, marginBottom: 10 }}>
+        {/* eslint-disable-next-line no-restricted-syntax -- input adornment / field label unit annotation, not a rendered money value */}
         <Field label="Price / Quantity (₹)">
           <NumberInput
             size="sm"

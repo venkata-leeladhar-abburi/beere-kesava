@@ -93,7 +93,7 @@ export function POTrackerSection({
             onClick={() => setFilter(p.key)}
             variant={filter === p.key ? "primary" : "secondary"}
             size="sm"
-            className="rounded-full"
+            className="rounded-[10px]"
           >
             {p.label}
           </Button>

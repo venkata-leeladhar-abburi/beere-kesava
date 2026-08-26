@@ -7,8 +7,9 @@ import { customersApi } from "../../../../../shared/api/customers";
 import { C, F, PageHero, PortalStatsStrip, type PortalStat } from "../theme";
 import { DSH } from "./DSH";
 import { Button } from "../../../../../shared/ui/primitives";
+import { LoadingState, ErrorState } from "../../../../../shared/ui/state";
 import { semantic } from "../../../../../design-system/tokens";
-import { ChartFigure, TableSkeleton, TableError } from "../../../../../shared/ui/data";
+import { ChartFigure } from "../../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
 
@@ -18,7 +19,7 @@ function timeLabel(iso: string) {
 }
 
 export function ReportsSection({
-  bp: _bp, isTablet, canSeePrices, setExportDone, setExportDialog,
+  isTablet, canSeePrices, setExportDone, setExportDialog,
 }: {
   bp: "tablet" | "desktop"; isTablet: boolean; canSeePrices: boolean;
   setExportDone: (v: boolean) => void; setExportDialog: (v: { label: string } | null) => void;
@@ -28,12 +29,12 @@ export function ReportsSection({
     queryFn: () => salesApi.list(100),
   });
 
-  const { data: returnsRes } = useQuery({
+  const { data: returnsRes, isLoading: returnsLoading, isError: returnsError, refetch: refetchReturns } = useQuery({
     queryKey: ["returns-list-desktop-report"],
     queryFn: () => salesApi.listReturns(100),
   });
 
-  const { data: customersRes } = useQuery({
+  const { data: customersRes, isLoading: customersLoading, isError: customersError, refetch: refetchCustomers } = useQuery({
     queryKey: ["customers-list-desktop-report"],
     queryFn: () => customersApi.list(100),
   });
@@ -125,9 +126,9 @@ export function ReportsSection({
                 ))}
               </div>
               {salesLoading ? (
-                <TableSkeleton columns={canSeePrices ? 6 : 5} rows={3} />
+                <div style={{ padding: 16 }}><LoadingState variant="skeleton" rows={3} /></div>
               ) : salesError ? (
-                <TableError onRetry={() => refetchSales()} />
+                <ErrorState error={undefined} onRetry={() => void refetchSales()} />
               ) : salesRows.length === 0 ? (
                 <div style={{ padding: "24px 16px", textAlign: "center", fontFamily: F.u, fontSize: 14, color: C.muted }}>
                   No sales recorded today yet.
@@ -154,7 +155,11 @@ export function ReportsSection({
 
             <DSH label="Returns This Month" />
             <div style={{ background: "#FFF", borderRadius: 18, border: `1px solid ${C.bdr}`, overflow: "hidden", boxShadow: "0 4px 20px rgba(44,24,16,0.07)" }}>
-              {returnsList.length === 0 ? (
+              {returnsLoading ? (
+                <div style={{ padding: 16 }}><LoadingState variant="skeleton" rows={3} /></div>
+              ) : returnsError ? (
+                <ErrorState error={undefined} onRetry={() => void refetchReturns()} />
+              ) : returnsList.length === 0 ? (
                 <div style={{ padding: "24px 16px", textAlign: "center", fontFamily: F.u, fontSize: 14, color: C.muted }}>
                   No returns recorded this month.
                 </div>
@@ -204,7 +209,11 @@ export function ReportsSection({
                 <div style={{ width: 5, height: 22, background: C.gold, borderRadius: 3 }} />
                 <span style={{ fontFamily: F.u, fontSize: 16, fontWeight: 700, color: C.text }}>Top Customers</span>
               </div>
-              {topCustomers.length === 0 ? (
+              {salesLoading || customersLoading ? (
+                <div style={{ padding: 16 }}><LoadingState variant="skeleton" rows={3} /></div>
+              ) : salesError || customersError ? (
+                <ErrorState error={undefined} onRetry={() => { void refetchSales(); void refetchCustomers(); }} />
+              ) : topCustomers.length === 0 ? (
                 <div style={{ padding: "24px 16px", textAlign: "center", fontFamily: F.u, fontSize: 14, color: C.muted }}>
                   No customer sales recorded yet.
                 </div>

@@ -48,14 +48,6 @@ const TABS: { id: Tab; Icon: IconComponent; label: string; badge?: string }[] = 
   { id: "dispatch",  Icon: Truck,      label: "Dispatch"      },
 ];
 
-const _PAGE_TITLES: Record<Tab, string> = {
-  home:      "Worker Dashboard",
-  qc:        "Quality Check",
-  weavers:   "Receive Sarees",
-  finishing: "Finishing",
-  dispatch:  "Dispatch Details",
-  profile:   "My Profile",
-};
 
 interface WorkerPortalProps { onBack?: () => void }
 
@@ -269,7 +261,7 @@ function MobileProfile({ onClose }: { onClose?: () => void }) {
   );
 }
 
-function HamburgerMenu({ open, onOpenChange, onProfile, onBack: _onBack, activeTab, onSelectTab }: { open: boolean; onOpenChange: (open: boolean) => void; onProfile: () => void; onBack?: () => void; activeTab?: Tab; onSelectTab?: (t: Tab) => void }) {
+function HamburgerMenu({ open, onOpenChange, onProfile, activeTab, onSelectTab }: { open: boolean; onOpenChange: (open: boolean) => void; onProfile: () => void; onBack?: () => void; activeTab?: Tab; onSelectTab?: (t: Tab) => void }) {
   const { logout } = useAuth();
   const onClose = () => onOpenChange(false);
 

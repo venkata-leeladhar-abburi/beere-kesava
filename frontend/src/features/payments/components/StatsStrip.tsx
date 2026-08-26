@@ -32,8 +32,8 @@ export function StatsStrip() {
     queryFn: () => invoicesApi.list(),
   });
 
-  const _isLoading = weaverPaymentsLoading || vendorPaymentsLoading || supplierPaymentsLoading || invoicesLoading;
-  const _isError = weaverPaymentsError || vendorPaymentsError || supplierPaymentsError || invoicesError;
+  const isLoading = weaverPaymentsLoading || vendorPaymentsLoading || supplierPaymentsLoading || invoicesLoading;
+  const isError = weaverPaymentsError || vendorPaymentsError || supplierPaymentsError || invoicesError;
 
   const paidToWeavers = (weaverPaymentsRes?.items ?? []).reduce((s, p) => s + Number(p.amountPaid), 0);
   const totalVendorPayments = (vendorPaymentsRes?.items ?? []).reduce((s, p) => s + Number(p.amount), 0);
@@ -47,7 +47,15 @@ export function StatsStrip() {
   }, [supplierPaymentsRes, collectedFromCustomers, totalVendorPayments, paidToWeavers]);
 
   const moneyVisible = useMoneyVisible();
-  const fmt = (n: number) => (moneyVisible ? formatMoney(rupees(n)) : "—");
+  // Until every source has answered, each figure below would total to ₹0 — a
+  // number the reader has no reason to disbelieve. `isLoading`/`isError` were
+  // already derived here but never consulted, so that is exactly what the strip
+  // used to show while its four queries were still in flight.
+  const fmt = (n: number) => {
+    if (isError) return "—";
+    if (isLoading) return "…";
+    return moneyVisible ? formatMoney(rupees(n)) : "—";
+  };
 
   const STATS = [
     {

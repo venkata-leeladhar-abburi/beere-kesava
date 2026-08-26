@@ -1,22 +1,23 @@
 import React, { useState } from "react";
-
 import { AnimatePresence } from "motion/react";
-
 import { Layers as Stack, ArrowRight, Trash2 } from "lucide-react";
-
 import { BatchRecord, useBatches } from "../../contexts/BatchContext";
-
 import { DateFilterBar, DateFilterState, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
-
 import { ConfirmDialog } from "../../../../shared/ui/ConfirmDialog";
-
 import { ApiError } from "../../../../shared/api/client";
-
 import { T, F } from "./constants";
-
 import { Button, IconButton } from "../../../../shared/ui/primitives";
-
 import { SectionCard } from "../common/primitives";
+import { LoadingState, ErrorState } from "../../../../shared/ui/state";
+
+
+
+
+
+
+
+
+
 export function DraftsTab({
   batches, batchDateFilter, setBatchDateFilter, setTab, openDraft,
 }: {
@@ -26,7 +27,7 @@ export function DraftsTab({
   setTab: (t: "new" | "drafts") => void;
   openDraft: (b: BatchRecord) => void;
 }) {
-  const { deleteBatch } = useBatches();
+  const { deleteBatch, isLoading, isError, error, refetch } = useBatches();
   const [deletingBatch, setDeletingBatch] = useState<BatchRecord | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -57,7 +58,11 @@ export function DraftsTab({
   return (
     <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 28, paddingBottom: 64 }}>
     <SectionCard icon={Stack} title="All Batches" subtitle="Every batch created so far — drafts, active, and completed.">
-      {batches.length === 0 ? (
+      {isLoading ? (
+        <LoadingState variant="skeleton" rows={4} />
+      ) : isError ? (
+        <ErrorState error={error} onRetry={refetch} />
+      ) : batches.length === 0 ? (
         <div style={{ background: "#fff", borderRadius: 18, border: `1.5px solid ${T.borderDef}`, padding: "56px 24px", textAlign: "center" }}>
           <Stack size={40} color={T.taupe} style={{ marginBottom: 12 }} />
           <div style={{ fontFamily: F.display, fontSize: 18, color: T.taupe }}>No batches yet.</div>

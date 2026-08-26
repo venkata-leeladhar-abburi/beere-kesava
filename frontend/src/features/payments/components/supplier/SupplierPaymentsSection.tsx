@@ -41,7 +41,7 @@ function SupplierStatusBadge({ status }: { status: SupplierStatusKey }) {
 }
 
 export function SupplierPaymentsSection() {
-  const { suppliers, payments, addPayment, statsFor } = useSuppliers();
+  const { suppliers, payments, addPayment, statsFor, isLoading, isError, refetch } = useSuppliers();
 
   const [view, setView] = useState<"card" | "table">("card");
   const [statusFilter, setStatusFilter] = useState("All Bill Status");
@@ -229,17 +229,14 @@ export function SupplierPaymentsSection() {
               </Button>
             ))}
           </div>
+          <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
           <DropBtn value={supplierFilter} options={["All Suppliers", ...suppliers.map(s => s.name)]} onChange={setSupplierFilter} />
-          <Select value={statusFilter} onValueChange={setStatusFilter} size="sm">
+          <Select value={statusFilter} onValueChange={setStatusFilter} size="sm" containerClassName="w-auto shrink-0" className="w-[145px] font-semibold">
             {["All Bill Status", "Paid", "Pending", "Overdue"].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
           </Select>
           <div style={{ flex: 1, minWidth: 200 }}>
             <SearchInput aria-label="Search supplier" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search supplier..." size="sm" />
           </div>
-        </div>
-
-        <div style={{ marginBottom: 14 }}>
-          <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
         </div>
 
         <div className="flex md:hidden items-center justify-between gap-3 mb-4 flex-wrap">
@@ -311,12 +308,15 @@ export function SupplierPaymentsSection() {
         {view === "table" && (
           <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)", marginBottom: 32 }}>
             <div style={{ overflowX: "auto" }} className="w-full">
-              <div style={{ minWidth: 1100 }}>
+              <div className="min-w-[1100px]">
                 <DataTable
                   responsive={false}
                   columns={supplierTableColumns}
                   data={filtered}
                   getRowId={r => r.supplier.id}
+                  loading={isLoading}
+                  error={isError}
+                  onRetry={refetch}
                   emptyTitle="No suppliers match your filters"
                 />
               </div>

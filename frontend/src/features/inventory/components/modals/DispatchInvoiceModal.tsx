@@ -40,7 +40,10 @@ export function DispatchInvoiceModal({ dispatch, onClose }: { dispatch: Dispatch
             <IconButton icon={X} label="Close" variant="ghost" size="sm" />
           </Dialog.Close>
         </div>
-        <DocumentViewer>
+        <DocumentViewer
+          fileName={dispatch.invoiceNumber || dispatch.id}
+          documentTitle={`Tax Invoice ${dispatch.invoiceNumber || dispatch.id}`}
+        >
           <InvoiceDocument
             invoiceNumber={dispatch.invoiceNumber || dispatch.id}
             invoiceDate={dispatch.invoiceDate || dispatch.dispatchDate}

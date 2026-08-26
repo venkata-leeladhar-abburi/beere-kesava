@@ -4,10 +4,10 @@
 // can be expanded to list every physical saree under that serial with a
 // barcode "Print" action per piece, plus a "Print All" for the whole line.
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { motion } from "motion/react";
-import { ChevronRight, ChevronDown, Image as ImageIcon, Printer } from "lucide-react";
+import { ChevronRight, ChevronDown, Image as ImageIcon, Printer, Camera } from "lucide-react";
 import { T, F } from "../theme";
 import { SareeTag, expandSareePieces } from "../../contexts/SupplierContext";
 import { formatMoney, rupees } from "@/lib/domain/money";
@@ -17,13 +17,66 @@ import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { SariTagPrintModal } from "@/features/production";
 import { useDocument } from "../../../../shared/ui/document";
 
-type SareeRow = SareeTag & { purchaseId: string; invoiceNumber: string; supplier: string };
+export type SareeRow = SareeTag & { purchaseId: string; invoiceNumber: string; supplier: string };
 
-export function SareeInventoryTable({ rows }: { rows: SareeRow[] }) {
+/** Optional per-piece badge/selection, supplied by callers that track
+ * return-request state (e.g. the External Purchases saree list) — Order
+ * History omits this and gets the plain piece list it always has. */
+export interface PieceExtra {
+  badge?: { label: string; color: string; bg: string };
+  selectable?: boolean;
+}
+
+type UploadTarget = { kind: "line"; row: SareeRow } | { kind: "piece"; row: SareeRow; pieceNo: number };
+
+export function SareeInventoryTable({
+  rows,
+  onUploadPhoto,
+  onUploadPieceImage,
+  pieceExtra,
+  selectedPieceIds,
+  onTogglePieceSelect,
+}: {
+  rows: SareeRow[];
+  /** When provided, a small upload badge appears on every line's photo cell. */
+  onUploadPhoto?: (row: SareeRow, dataUrl: string) => void;
+  /** When provided, each individual piece under an expanded line also gets
+   * its own upload badge — for a photo distinct from the line's own. */
+  onUploadPieceImage?: (row: SareeRow, pieceNo: number, dataUrl: string) => void;
+  pieceExtra?: (pieceId: string) => PieceExtra | undefined;
+  selectedPieceIds?: Set<string>;
+  onTogglePieceSelect?: (pieceId: string) => void;
+}) {
   const [preview, setPreview] = useState<string | null>(null);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [printSaree, setPrintSaree] = useState<{ row: SareeRow; pieceId: string } | null>(null);
   const { print } = useDocument();
+  const uploadInputRef = useRef<HTMLInputElement>(null);
+  const uploadTargetRef = useRef<UploadTarget | null>(null);
+
+  const triggerLineUpload = (row: SareeRow) => {
+    uploadTargetRef.current = { kind: "line", row };
+    uploadInputRef.current?.click();
+  };
+
+  const triggerPieceUpload = (row: SareeRow, pieceNo: number) => {
+    uploadTargetRef.current = { kind: "piece", row, pieceNo };
+    uploadInputRef.current?.click();
+  };
+
+  const handleUploadChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    const target = uploadTargetRef.current;
+    e.target.value = "";
+    if (!file || !target) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result as string;
+      if (target.kind === "line") onUploadPhoto?.(target.row, dataUrl);
+      else onUploadPieceImage?.(target.row, target.pieceNo, dataUrl);
+    };
+    reader.readAsDataURL(file);
+  };
 
   if (rows.length === 0) {
     return <div style={{ padding: "40px 24px", textAlign: "center", fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No sarees match this filter.</div>;
@@ -89,14 +142,32 @@ export function SareeInventoryTable({ rows }: { rows: SareeRow[] }) {
     },
     {
       id: "photo", header: "Photo", accessor: s => s.imageUrl,
-      cell: (_v, s) => s.imageUrl ? (
-        <button type="button" onClick={() => setPreview(s.imageUrl!)} className="p-0 border-0 bg-transparent cursor-pointer">
-          <img src={s.imageUrl} alt={s.id}
-            style={{ width: 40, height: 40, borderRadius: 8, objectFit: "cover", border: `1px solid ${T.borderDef}` }} />
-        </button>
-      ) : (
-        <div style={{ width: 40, height: 40, borderRadius: 8, background: T.silkCream, border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <ImageIcon size={14} color={T.taupe} />
+      cell: (_v, s) => (
+        <div style={{ position: "relative", width: 40, height: 40 }}>
+          {s.imageUrl ? (
+            <button type="button" onClick={() => setPreview(s.imageUrl!)} className="p-0 border-0 bg-transparent cursor-pointer">
+              <img src={s.imageUrl} alt={s.id}
+                style={{ width: 40, height: 40, borderRadius: 8, objectFit: "cover", border: `1px solid ${T.borderDef}` }} />
+            </button>
+          ) : (
+            <div style={{ width: 40, height: 40, borderRadius: 8, background: T.silkCream, border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <ImageIcon size={14} color={T.taupe} />
+            </div>
+          )}
+          {onUploadPhoto && (
+            <button
+              type="button"
+              onClick={() => triggerLineUpload(s)}
+              title={s.imageUrl ? "Replace photo" : "Upload photo"}
+              style={{
+                position: "absolute", bottom: -4, right: -4, width: 18, height: 18, borderRadius: "50%",
+                background: T.royalBurgundy, border: "1.5px solid #FFF", display: "flex", alignItems: "center",
+                justifyContent: "center", cursor: "pointer", padding: 0,
+              }}
+            >
+              <Camera size={9} color="#FFF" />
+            </button>
+          )}
         </div>
       ),
     },
@@ -179,22 +250,90 @@ export function SareeInventoryTable({ rows }: { rows: SareeRow[] }) {
                 </Button>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                {pieces.map(p => (
-                  <div key={p.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 8, padding: "8px 12px" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <span style={mono(T.royalBurgundy, { fontWeight: 700 })}>{p.id}</span>
-                      <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>pc {p.pieceNo}/{p.lineQuantity}</span>
+                {pieces.map(p => {
+                  const extra = pieceExtra?.(p.id);
+                  const checked = selectedPieceIds?.has(p.id) ?? false;
+                  return (
+                    <div key={p.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#FFF", border: `1px solid ${T.borderDef}`, borderRadius: 8, padding: "8px 12px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        {(p.imageUrl || onUploadPieceImage) && (
+                          <div style={{ position: "relative", width: 36, height: 36, flexShrink: 0 }}>
+                            {p.imageUrl ? (
+                              <button type="button" onClick={() => setPreview(p.imageUrl!)} title={`View photo of ${p.id}`} className="p-0 border-0 bg-transparent cursor-pointer">
+                                <img src={p.imageUrl} alt={p.id}
+                                  style={{ width: 36, height: 36, borderRadius: 8, objectFit: "cover", border: `1px solid ${T.borderDef}` }} />
+                              </button>
+                            ) : onUploadPieceImage ? (
+                              // No photo yet — the whole tile is the upload target, so the
+                              // designer isn't hunting for a 14px badge.
+                              <button
+                                type="button"
+                                onClick={() => triggerPieceUpload(s, p.pieceNo)}
+                                title={`Upload photo for ${p.id}`}
+                                style={{ width: 36, height: 36, borderRadius: 8, background: T.silkCream, border: `1px dashed ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0 }}
+                              >
+                                <Camera size={13} color={T.royalBurgundy} />
+                              </button>
+                            ) : (
+                              <div style={{ width: 36, height: 36, borderRadius: 8, background: T.silkCream, border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                <ImageIcon size={13} color={T.taupe} />
+                              </div>
+                            )}
+                            {onUploadPieceImage && p.imageUrl && (
+                              <button
+                                type="button"
+                                onClick={() => triggerPieceUpload(s, p.pieceNo)}
+                                title={`Replace photo for ${p.id}`}
+                                style={{
+                                  position: "absolute", bottom: -4, right: -4, width: 16, height: 16, borderRadius: "50%",
+                                  background: T.royalBurgundy, border: "1.5px solid #FFF", display: "flex", alignItems: "center",
+                                  justifyContent: "center", cursor: "pointer", padding: 0,
+                                }}
+                              >
+                                <Camera size={8} color="#FFF" />
+                              </button>
+                            )}
+                          </div>
+                        )}
+                        {onTogglePieceSelect && extra?.selectable && (
+                          <input
+                            type="checkbox"
+                            aria-label={`Select ${p.id} for return`}
+                            checked={checked}
+                            onChange={() => onTogglePieceSelect(p.id)}
+                            style={{ width: 15, height: 15, accentColor: T.royalBurgundy, cursor: "pointer" }}
+                          />
+                        )}
+                        <span style={mono(T.royalBurgundy, { fontWeight: 700 })}>{p.id}</span>
+                        <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>pc {p.pieceNo}/{p.lineQuantity}</span>
+                        {extra?.badge && (
+                          <span style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 700, color: extra.badge.color, background: extra.badge.bg, borderRadius: 6, padding: "2px 7px", whiteSpace: "nowrap" as const }}>
+                            {extra.badge.label}
+                          </span>
+                        )}
+                      </div>
+                      <Button variant="secondary" size="sm" iconLeft={Printer} onClick={() => setPrintSaree({ row: s, pieceId: p.id })}>
+                        Print
+                      </Button>
                     </div>
-                    <Button variant="secondary" size="sm" iconLeft={Printer} onClick={() => setPrintSaree({ row: s, pieceId: p.id })}>
-                      Print
-                    </Button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           );
         }}
       />
+
+      {(onUploadPhoto || onUploadPieceImage) && (
+        <input
+          type="file"
+          accept="image/*"
+          ref={uploadInputRef}
+          style={{ display: "none" }}
+          onChange={handleUploadChange}
+          aria-label="Upload saree photo"
+        />
+      )}
 
       <Modal open={!!preview} onOpenChange={o => { if (!o) setPreview(null); }} size="xl">
         <Dialog.Title className="sr-only">Saree photo preview</Dialog.Title>

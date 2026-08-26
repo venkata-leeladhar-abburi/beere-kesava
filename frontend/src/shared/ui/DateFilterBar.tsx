@@ -152,14 +152,14 @@ export function DateFilterBar({ filter, onChange }: { filter: DateFilterState; o
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-2.5 mb-4 max-w-full overflow-hidden">
-      <div className="flex items-center gap-1 rounded-[var(--radius-md)] p-1 overflow-x-auto w-full sm:w-auto max-w-full scrollbar-none whitespace-nowrap" style={{ background: "var(--surface-sunken)", WebkitOverflowScrolling: "touch" }}>
+    <div className="inline-flex flex-wrap items-center gap-2 max-w-full shrink-0">
+      <div className="inline-flex items-center gap-1 rounded-[10px] p-1 overflow-x-auto max-w-full scrollbar-none whitespace-nowrap shrink-0" style={{ background: "var(--surface-sunken)", WebkitOverflowScrolling: "touch" }}>
         {modes.map(m => (
           <button
             key={m.key}
             onClick={() => selectMode(m.key)}
             className={cn(
-              "shrink-0 whitespace-nowrap rounded-[calc(var(--radius-md)-2px)] px-3 py-1.5 text-[12px] sm:text-[13px] font-semibold transition-colors",
+              "shrink-0 whitespace-nowrap rounded-[10px] px-3.5 py-1.5 text-[12px] sm:text-[13px] font-semibold transition-colors",
               filter.mode === m.key ? "bg-[var(--surface-brand)] text-[var(--text-on-brand)]" : "text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
             )}
           >

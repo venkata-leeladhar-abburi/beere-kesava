@@ -48,7 +48,7 @@ function MoneyChartTip({ active, payload, label, canSeePayroll }: {
 export function WeaverPaymentReport() {
   const canSeePayroll = useDataAccess("payroll");
   const { payments } = useWeaverPayments();
-  const { data: weaversRes, isLoading: weaversLoading, isError: weaversError } = useQuery({
+  const { data: weaversRes, isLoading: weaversLoading, isError: weaversError, refetch: refetchWeavers } = useQuery({
     queryKey: ["reports", "weavers-roster"],
     queryFn: () => weaversApi.list(),
   });
@@ -235,6 +235,7 @@ export function WeaverPaymentReport() {
                 getRowId={r => r.code}
                 loading={weaversLoading}
                 error={!!weaversError}
+                onRetry={() => void refetchWeavers()}
                 emptyTitle="No weavers on record yet."
               />
             </div>

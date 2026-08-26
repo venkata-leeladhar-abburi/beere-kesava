@@ -16,7 +16,7 @@ export function PageHeader({ onAdd }: { onAdd: () => void }) {
             <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(32px, 6vw, 56px)", fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>External Purchases</h1>
             <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(22px, 5vw, 36px)", fontStyle: "italic", color: T.antiqueGold, fontWeight: 400 }}>&amp; Branch Inventory Oversight</span>
           </div>
-          <p style={{ fontFamily: F.ui, fontWeight: 400, fontSize: "clamp(14px, 2.2vw, 16px)", color: "rgba(255,253,249,0.70)", lineHeight: 1.6, maxWidth: 600, margin: 0 }}>
+          <p className="max-w-[600px]" style={{ fontFamily: F.ui, fontWeight: 400, fontSize: "clamp(14px, 2.2vw, 16px)", color: "rgba(255,253,249,0.70)", lineHeight: 1.6, margin: 0 }}>
             Track every saree purchased from external suppliers — with GST, invoice details, and an auto-generated printable barcode for each saree. Visible across all branches.
           </p>
         </div>

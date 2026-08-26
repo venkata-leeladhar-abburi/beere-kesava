@@ -12,7 +12,7 @@ import {
 import { BackendWeaver, weaversApi } from "../../../shared/api/weavers";
 import { BackendFactoryLoom, factoryLoomsApi } from "../../../shared/api/factory-looms";
 import { STOPGAP_ACTING_USER_ID } from "../../../shared/api/purchase-requests";
-import { useAuth } from "../../../contexts/AuthContext";
+import { useAuth, useAuthGate } from "../../../contexts/AuthContext";
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 export interface IssuedMaterialItem {
@@ -259,6 +259,8 @@ interface MaterialIssueContextValue {
   finalizeReceivedWeight: (id: string, finalWeightGrams: number) => void;
   isError: boolean;
   error: unknown;
+  isLoading: boolean;
+  refetch: () => void;
 }
 
 const MaterialIssueContext = createContext<MaterialIssueContextValue | null>(null);
@@ -277,8 +279,11 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
   const canReadFactoryLooms = role === "worker" || role === "admin" || role === "superadmin";
   const actingUserId = user?.id ?? STOPGAP_ACTING_USER_ID;
 
-  const { data: issueRecords = [], isError, error } = useQuery({
+  const enabled = useAuthGate();
+
+  const { data: issueRecords = [], isError, error, isLoading, refetch } = useQuery({
     queryKey: ISSUE_RECORDS_KEY,
+    enabled,
     queryFn: async () => {
       const [issuesRes, weaversRes, loomsRes] = await Promise.all([
         materialIssuesApi.list(),
@@ -437,7 +442,7 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
     updateSignatureStatusMutation.mutateAsync({ recordId, signatureBlob }).then(() => undefined);
 
   return (
-    <MaterialIssueContext.Provider value={{ issueRecords, receivedSarees, addIssueRecord, deleteIssueRecord, addReceivedSaree, getRecordsForWeaver, getRecordsForBatch, getReceivedForWeaver, getReceivedForBatch, getMaterialSummaryForWeaver, getMaterialSummaryByBatch, updateSignatureStatus, finalizeReceivedWeight, isError, error }}>
+    <MaterialIssueContext.Provider value={{ issueRecords, receivedSarees, addIssueRecord, deleteIssueRecord, addReceivedSaree, getRecordsForWeaver, getRecordsForBatch, getReceivedForWeaver, getReceivedForBatch, getMaterialSummaryForWeaver, getMaterialSummaryByBatch, updateSignatureStatus, finalizeReceivedWeight, isError, error, isLoading, refetch: () => void refetch() }}>
       {children}
     </MaterialIssueContext.Provider>
   );
@@ -483,6 +488,8 @@ const FALLBACK_MATERIAL_ISSUE: MaterialIssueContextValue = {
   finalizeReceivedWeight: () => {},
   isError: false,
   error: null,
+  isLoading: false,
+  refetch: () => {},
 };
 
 export function useMaterialIssue(): MaterialIssueContextValue {

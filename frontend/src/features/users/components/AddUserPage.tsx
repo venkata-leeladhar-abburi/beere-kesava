@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { useFinishingStaff, FinishingStaffMember } from "@/features/finishing";
 import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
+import { LuxuryStatsCard } from "@/shared/ui/LuxuryStatsCard";
 import {
   T, F, EASE, cardStyle, inputStyle,
   ROLE_TO_PORTAL, ROLE_COLORS, ROLES, AccessLevel,
@@ -19,7 +20,6 @@ import { ConfirmDialog } from "../../../shared/ui/ConfirmDialog";
 import { UserTable } from "./UserTable";
 import { AddUserForm, WeaverFieldsState } from "./AddUserForm";
 import { ApiError } from "../../../shared/api/client";
-import { Button } from "../../../shared/ui/primitives";
 import {
   BackendUser, FRONTEND_TO_BACKEND_ROLE, BACKEND_TO_FRONTEND_ROLE,
   backendAccessLevelToFrontend, frontendAccessLevelToBackend, usersApi,
@@ -332,97 +332,122 @@ export function AddUserPage() {
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: EASE }}
-        className="flex-col xl:flex-row"
         style={{ background: "#0D0207", position: "relative", overflow: "hidden", display: "flex", alignItems: "center" }}
       >
-        <div className="pl-4 md:pl-7 xl:pl-14 w-full xl:flex-1" style={{ paddingTop: 48, paddingBottom: 24, zIndex: 10, position: "relative", maxWidth: "100%" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
-            <div style={{ width: 28, height: 1, background: T.antiqueGold }} />
-            <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: `${T.antiqueGold}80`, letterSpacing: "1.5px", textTransform: "uppercase" as const }}>
-              SINCE 1999 · USER MANAGEMENT
-            </span>
+        <div className="px-4 md:px-7 xl:px-14 flex-col xl:flex-row" style={{ position: "relative", zIndex: 2, paddingTop: 48, paddingBottom: 86, width: "100%", display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 20 }}>
+          <div>
+            <div style={{ fontFamily: F.ui, fontSize: "clamp(11px, 1.4vw, 13px)", color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase", marginBottom: 10 }}>
+              Since 1999 · User Management &amp; Access Security
+            </div>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" as const, marginBottom: 8 }}>
+              <h1 style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontSize: "clamp(32px, 6vw, 52px)", color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>
+                Add New User
+              </h1>
+              <span style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontStyle: "italic", fontSize: "clamp(20px, 4.5vw, 32px)", color: T.antiqueGold, lineHeight: 1.1 }}>
+                &amp; Portal Role Management
+              </span>
+            </div>
+            <p className="max-w-[640px]" style={{ fontFamily: F.ui, fontWeight: 400, fontSize: "clamp(13px, 2vw, 15px)", color: "rgba(255,253,249,0.70)", lineHeight: 1.6, margin: 0 }}>
+              Create login accounts for staff across all 5 system portals. Each user logs in securely using their mobile number and a one-time OTP sent directly via WhatsApp.
+            </p>
           </div>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" as const, marginBottom: 10 }}>
-            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontSize: "clamp(32px, 8vw, 56px)", color: "#fff", margin: 0, lineHeight: 1.1 }}>
-              Add New User
-            </h1>
-            <div style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontStyle: "italic", fontSize: "clamp(22px, 6vw, 36px)", color: T.antiqueGold, lineHeight: 1.1 }}>
-              &amp; User Management
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignSelf: "flex-start", marginTop: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 18px", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 12, fontFamily: F.ui, fontSize: 13, color: "#FFF", whiteSpace: "nowrap" as const }}>
+              <div style={{ width: 8, height: 8, borderRadius: "50%", background: T.antiqueGold, flexShrink: 0 }} />
+              {totalAll} Total Active Accounts
             </div>
           </div>
-          <p className="max-w-[600px]" style={{ fontFamily: F.ui, fontSize: "clamp(15px, 3.5vw, 18px)", fontWeight: 400, color: "rgba(255,255,255,0.70)", margin: 0, lineHeight: 1.65 }}>
-            Create login accounts for staff across all portals. Each user logs in using their mobile number and a one-time OTP sent via WhatsApp.
-          </p>
-        </div>
-        <div className="pl-4 pr-4 md:pl-7 md:pr-7 xl:pl-0 xl:pr-14 w-full xl:w-auto flex-row xl:flex-col flex-wrap xl:flex-nowrap items-start xl:items-end justify-start xl:justify-center" style={{ flexShrink: 0, display: "flex", gap: 10, paddingBottom: 32, paddingTop: 4, zIndex: 10, position: "relative" }}>
-          {[
-            { label: `${totalAll} Total Users`, dot: T.antiqueGold },
-            { label: "5 Portals Covered", dot: "#E7C983" },
-            { label: "OTP Login via WhatsApp", dot: T.green },
-          ].map((chip) => (
-            <div key={chip.label} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 18px", backdropFilter: "blur(8px)", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 12, fontFamily: F.ui, fontSize: 13, color: "#fff", whiteSpace: "nowrap" as const }}>
-              <div style={{ width: 8, height: 8, borderRadius: "50%", background: chip.dot, flexShrink: 0 }} />
-              {chip.label}
-            </div>
-          ))}
         </div>
       </motion.div>
 
+      {/* ── FLOATING STATS STRIP ───────────────────────────────────────────── */}
+      <div className="px-4 md:px-7 xl:px-14 -mt-6 md:-mt-8 xl:-mt-[36px]" style={{ zIndex: 20, position: "relative" }}>
+        <LuxuryStatsCard
+          stats={[
+            { label: "TOTAL USERS", value: String(totalAll), sub: "Across all 5 portals", icon: <Users size={20} color="rgba(245,232,208,0.90)" />, highlight: false },
+            { label: "ACTIVE USERS", value: String(totalActive), sub: "Currently able to log in", icon: <CheckCircle2 size={20} color="rgba(245,232,208,0.90)" />, highlight: true },
+            { label: "INACTIVE USERS", value: String(totalInactive), sub: "Deactivated accounts", icon: <XCircle size={20} color="rgba(245,232,208,0.90)" />, highlight: false },
+            { label: "AUTHENTICATION", value: "WhatsApp OTP", sub: "Secure 1-click login", icon: <Shield size={20} color="rgba(245,232,208,0.90)" />, highlight: false },
+          ]}
+        />
+      </div>
+
       {/* ── BODY ─────────────────────────────────────────────────────────────── */}
-      <div style={{ padding: "40px 56px 80px", width: "100%" }}>
+      <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 36, paddingBottom: 80, width: "100%" }}>
 
-        {/* STAT STRIP — overview */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1, ease: EASE }}
-          className="grid grid-cols-1 md:grid-cols-3"
-          style={{ gap: 16, marginBottom: 20 }}
-        >
-          {[
-            { icon: <Users size={20} color={T.royalBurgundy} />,  val: String(totalAll),      label: "Total Users",    sub: "Across all portals",     accent: T.royalBurgundy, bg: "rgba(110,15,45,0.05)", border: T.borderDef },
-            { icon: <CheckCircle2 size={20} color={T.green} />,   val: String(totalActive),   label: "Active Users",   sub: "Currently able to log in", accent: T.green,        bg: T.greenBg,               border: "rgba(30,102,64,0.16)" },
-            { icon: <XCircle size={20} color={T.crimson} />,      val: String(totalInactive), label: "Inactive Users", sub: "Deactivated accounts",    accent: T.crimson,       bg: T.crimsonBg,             border: "rgba(192,57,43,0.16)" },
-          ].map((s) => (
-            <div key={s.label} style={{ background: "#fff", border: `1px solid ${s.border}`, borderRadius: 16, padding: "22px 24px", boxShadow: "0 2px 12px rgba(44,24,16,0.06)", display: "flex", alignItems: "center", gap: 16 }}>
-              <div style={{ width: 48, height: 48, borderRadius: 14, background: s.bg, border: `1px solid ${s.border}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                {s.icon}
-              </div>
-              <div>
-                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 38, color: s.accent, lineHeight: 1.1, letterSpacing: "-0.5px" }}>{s.val}</div>
-                <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 13, color: T.luxuryBrown, marginTop: 2 }}>{s.label}</div>
-                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 1 }}>{s.sub}</div>
-              </div>
-            </div>
-          ))}
-        </motion.div>
-
-        {/* STAT STRIP — staff by role, computed live from allRows.
-            xl:grid-cols-6 matches ROLES.length (theme.ts) — update together if roles change. */}
+        {/* STAFF BY ROLE GRID */}
         <motion.div
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.14, ease: EASE }}
-          className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-6"
-          style={{ gap: 16, marginBottom: 40 }}
+          className="flex flex-wrap md:flex-nowrap items-stretch w-full"
+          style={{ gap: 16, marginBottom: 36 }}
         >
           {roleStats.map((s, _i) => {
             const c = ROLE_COLORS[s.role] ?? { bg: "rgba(139,112,96,0.10)", text: T.taupe, border: "rgba(139,112,96,0.15)" };
             const Icon = ROLE_ICONS[s.role] ?? Users;
             return (
-              <div key={s.role} style={{ background: "#fff", border: `1px solid ${c.border}`, borderRadius: 16, padding: "20px 20px", boxShadow: "0 2px 12px rgba(44,24,16,0.06)" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
-                  <div style={{ width: 40, height: 40, borderRadius: 12, background: c.bg, border: `1px solid ${c.border}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <Icon size={18} color={c.text} />
-                  </div>
-                  <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 30, color: c.text, lineHeight: 1 }}>{s.count}</div>
+              <div
+                key={s.role}
+                className="flex-1 min-w-[150px]"
+                style={{
+                  background: "#FFF",
+                  border: `1px solid ${c.border}`,
+                  borderRadius: 16,
+                  padding: "18px 20px",
+                  boxShadow: "0 2px 12px rgba(44,24,16,0.05)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 14,
+                }}
+              >
+                {/* Left: Icon Box */}
+                <div style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 13,
+                  background: c.bg,
+                  border: `1px solid ${c.border}`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}>
+                  <Icon size={20} color={c.text} />
                 </div>
-                <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 12, color: T.luxuryBrown }}>{s.role}</div>
-                {s.role === "Admin" ? (
-                  <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>
-                    {s.fullAccess} Full · {s.semiAccess} Semi
+
+                {/* Right Column: Role Label -> Large Count -> Subtext */}
+                <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
+                  <div style={{
+                    fontFamily: F.ui,
+                    fontWeight: 700,
+                    fontSize: 12,
+                    color: T.luxuryBrown,
+                    letterSpacing: "0.4px",
+                    lineHeight: 1.2,
+                  }}>
+                    {s.role}
                   </div>
-                ) : (
-                  <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{s.active} active</div>
-                )}
+
+                  <div style={{
+                    fontFamily: F.display,
+                    fontWeight: 700,
+                    fontSize: 28,
+                    color: c.text,
+                    lineHeight: 1.05,
+                  }}>
+                    {s.count}
+                  </div>
+
+                  {s.role === "Admin" ? (
+                    <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, whiteSpace: "nowrap" }}>
+                      {s.fullAccess} Full · {s.semiAccess} Semi
+                    </div>
+                  ) : (
+                    <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, whiteSpace: "nowrap" }}>
+                      {s.active} active
+                    </div>
+                  )}
+                </div>
               </div>
             );
           })}
@@ -472,16 +497,6 @@ export function AddUserPage() {
           />
         </motion.div>
 
-        {loadError && (
-          <div style={{ background: T.crimsonBg, border: "1px solid rgba(192,57,43,0.25)", borderRadius: 12, padding: "12px 18px", marginBottom: 16, fontFamily: F.ui, fontSize: 13, color: T.crimson, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span>Could not load users from the server: {loadError}</span>
-            <Button variant="danger-subtle" size="sm" onClick={() => void loadUsers()}>Retry</Button>
-          </div>
-        )}
-        {loading && !loadError && (
-          <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 16 }}>Loading users…</div>
-        )}
-
         {/* ── ALL USERS TABLE ──────────────────────────────────────────────── */}
         <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.26, ease: EASE }}>
           <UserTable
@@ -504,6 +519,11 @@ export function AddUserPage() {
             setViewingMember={setViewingMember}
             cardStyle={cardStyle}
             inputStyle={inputStyle}
+            loading={loading}
+            loadError={!!loadError}
+            onRetry={() => void loadUsers()}
+            isFiltered={searchQ.trim() !== "" || roleFilter !== "All Roles"}
+            onClearFilters={() => { setSearchQ(""); setRoleFilter("All Roles"); }}
           />
         </motion.div>
 

@@ -34,7 +34,7 @@ interface RejectedSaree {
 
 export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onSareeReceived?: (rec: ReceivedSareeLog) => void }) {
   const { getSareeTypeByCode } = useRatesPricing();
-  const { data: weaversRes } = useQuery({
+  const { data: weaversRes, isLoading: weaversLoading } = useQuery({
     queryKey: ["worker-receive-weavers"],
     queryFn: () => weaversApi.list(),
   });
@@ -219,6 +219,8 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
           id: s.sareeId, weaver: selectedWeaver.name, wcode: selectedWeaver.code, batch: currentBatch.id,
           weight: `${sareeWeight}g`, date: dateStr,
           color: sareeColor, status: "Pending QC",
+          photoUrl, loomNumber: s.weaverLoom ?? currentBatch.loomNumber ?? null,
+          sareeType: currentBatch.sareeTypeCode, bulkOrder: currentBatch.bulkOrderLabel ?? null,
         });
       }
       setSelectedSareeNos(new Set()); setSareeColor(""); setSareeWeight(""); setSareePrice(""); setHasPhoto(false); setMatEdits({});
@@ -256,7 +258,13 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
           <>
             <div style={{ margin: "10px 16px 0" }}>
               <FieldLabel>Select Weaver</FieldLabel>
-              <Select value={selectedWeaver?.code ?? ""} onValueChange={pickWeaver} size="lg">
+              <Select
+                value={selectedWeaver?.code ?? ""}
+                onValueChange={pickWeaver}
+                size="lg"
+                disabled={weaversLoading}
+                placeholder={weaversLoading ? "Loading weavers…" : undefined}
+              >
                 {WEAVERS.map(w => <SelectItem key={w.code} value={w.code}>{w.name}</SelectItem>)}
               </Select>
             </div>
@@ -459,6 +467,8 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
                         id: s.sareeId, weaver: selectedWeaver.name, wcode: selectedWeaver.code, batch: currentBatch.id,
                         weight: sareeWeight ? `${sareeWeight}g` : "—", date: dateStr,
                         color: sareeColor || "—", status: "Defective",
+                        photoUrl, loomNumber: s.weaverLoom ?? currentBatch.loomNumber ?? null,
+                        sareeType: currentBatch.sareeTypeCode, bulkOrder: currentBatch.bulkOrderLabel ?? null,
                       });
                     });
                   }

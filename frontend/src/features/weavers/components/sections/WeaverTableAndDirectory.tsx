@@ -10,6 +10,7 @@ import { WeaverCardGrid, WeaverListView, useRealWeavers } from "./WeaverCardAndL
 import { weaversApi, BackendWeaverStats } from "../../../../shared/api/weavers";
 import { Button } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { LoadingState, ErrorState, EmptyState } from "../../../../shared/ui/state";
 
 interface WeaverTableRow {
   id: string;
@@ -30,12 +31,12 @@ interface WeaverTableRow {
 // The stats endpoint has no monthly breakdown, total-paid, or last-active
 // timestamp yet, so those columns show "—" rather than an invented number.
 function useRealTableRows() {
-  const { data: weaversRes, isLoading: rosterLoading, isError: rosterError } = useQuery({
+  const { data: weaversRes, isLoading: rosterLoading, isError: rosterError, refetch: refetchRoster } = useQuery({
     queryKey: ["weavers-table-roster"],
     queryFn: () => weaversApi.list(),
   });
   const roster = weaversRes?.items ?? [];
-  const { data: statsList, isLoading: statsLoading, isError: statsError } = useQuery({
+  const { data: statsList, isLoading: statsLoading, isError: statsError, refetch: refetchStats } = useQuery({
     queryKey: ["weavers-table-stats", roster.map(w => w.id)],
     queryFn: () => Promise.all(roster.map(w => weaversApi.getStats(w.id))),
     enabled: roster.length > 0,
@@ -62,12 +63,13 @@ function useRealTableRows() {
     rows,
     isLoading: rosterLoading || (roster.length > 0 && statsLoading),
     isError: rosterError || statsError,
+    refetch: () => { void refetchRoster(); void refetchStats(); },
   };
 }
 
 export function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }) {
   const [showAll, setShowAll] = useState(true);
-  const { rows: TABLE_ROWS, isLoading, isError } = useRealTableRows();
+  const { rows: TABLE_ROWS, isLoading, isError, refetch } = useRealTableRows();
   const visible = showAll ? TABLE_ROWS : TABLE_ROWS.slice(0, 5);
 
   const columns: ColumnDef<WeaverTableRow>[] = [
@@ -149,22 +151,22 @@ export function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }
 
   if (isLoading) {
     return (
-      <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, padding: "60px 20px", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
-        Loading weavers…
+      <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, padding: "20px" }}>
+        <LoadingState variant="skeleton" rows={5} />
       </div>
     );
   }
   if (isError) {
     return (
-      <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, padding: "60px 20px", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.crimson }}>
-        Couldn't load weavers.
+      <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}` }}>
+        <ErrorState error={undefined} onRetry={refetch} />
       </div>
     );
   }
   if (TABLE_ROWS.length === 0) {
     return (
-      <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, padding: "60px 20px", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe, fontStyle: "italic" }}>
-        No weavers yet.
+      <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}` }}>
+        <EmptyState title="No weavers yet" description="Weavers added to the roster will show up here." />
       </div>
     );
   }

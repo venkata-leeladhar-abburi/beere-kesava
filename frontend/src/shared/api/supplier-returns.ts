@@ -9,7 +9,7 @@ export interface BackendSupplierReturnRequest {
   supplierId: string;
   supplier: { id: string; name: string; code: string | null };
   sareeLineId: string;
-  sareeLine: { id: string; code: string; sareeType: string | null; color: string | null; quantity: number; returnedQuantity: number };
+  sareeLine: { id: string; code: string; sareeType: string | null; color: string | null; quantity: number; returnedQuantity: number; imageUrl: string | null };
   quantity: number;
   reason: string | null;
   status: BackendSupplierReturnStatus;

@@ -8,7 +8,7 @@ import { useAuth } from "../../../../../contexts/AuthContext";
 import { C, F, PageHero, PortalStatsStrip, type PortalStat } from "../theme";
 import { DSH } from "./DSH";
 import { Button } from "../../../../../shared/ui/primitives";
-import { TableSkeleton, TableError } from "../../../../../shared/ui/data";
+import { LoadingState, ErrorState } from "../../../../../shared/ui/state";
 import { rupees, formatMoney } from "@/lib/domain/money";
 
 type TabId = "home" | "sale" | "inventory" | "customers" | "reports";
@@ -23,7 +23,7 @@ function dateLabel(iso: string) {
 }
 
 export function HomeSection({
-  bp: _bp, isTablet, canSeePrices, setActive, setShowReturn: _setShowReturn, invLowStockSent, setShowInvLowStockDialog,
+  isTablet, canSeePrices, setActive, invLowStockSent, setShowInvLowStockDialog,
 }: {
   bp: "tablet" | "desktop"; isTablet: boolean; canSeePrices: boolean;
   setActive: (tab: TabId) => void; setShowReturn: (v: boolean) => void;
@@ -35,12 +35,15 @@ export function HomeSection({
     queryFn: () => salesApi.list(100),
   });
 
-  const { data: inventoryRes } = useQuery({
-    queryKey: ["inventory-list-homesection"],
-    queryFn: () => inventoryApi.list(),
+  const { data: inventoryRes, isError: inventoryError, refetch: refetchInventory } = useQuery({
+    // Shop stock, not factory stock — these tiles are labelled "Shop
+    // inventory" but counted every QC-passed saree in the factory, including
+    // ones that had never been dispatched here.
+    queryKey: ["shop-stock"],
+    queryFn: () => inventoryApi.shopStock(),
   });
 
-  const { data: returnsRes } = useQuery({
+  const { data: returnsRes, isError: returnsError, refetch: refetchReturns } = useQuery({
     queryKey: ["returns-list-homesection"],
     queryFn: () => salesApi.listReturns(100),
   });
@@ -51,7 +54,8 @@ export function HomeSection({
   });
 
   const salesList = salesRes?.items ?? [];
-  const inventoryList = inventoryRes ?? [];
+  // Sold pieces are still delivered stock, but they are not what "in stock" means.
+  const inventoryList = (inventoryRes ?? []).filter(s => s.status !== "sold");
   const returnsList = returnsRes?.items ?? [];
   const customerMap = new Map((customersRes?.items ?? []).map(c => [c.id, c.name]));
 
@@ -78,10 +82,10 @@ export function HomeSection({
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
   const stats: PortalStat[] = [
-    { label: "Today's sales", value: todaySales.length, sub: "Recorded today", icon: ShoppingBag, highlight: true },
-    ...(canSeePrices ? [{ label: "Today's revenue", value: formatMoney(rupees(todayRevenue)), sub: `From ${todaySales.length} sales`, icon: BarChart2 }] : []),
-    { label: "Shop inventory", value: inventoryList.length, sub: "Sarees currently in stock", icon: Package },
-    { label: "Returns today", value: todayReturns.length, sub: "Processed and recorded", icon: RotateCcw, alert: todayReturns.length > 0 },
+    { label: "Today's sales", value: salesError ? "Error" : todaySales.length, sub: salesError ? "Tap to retry" : "Recorded today", icon: ShoppingBag, highlight: true, onClick: salesError ? () => refetchSales() : undefined },
+    ...(canSeePrices ? [{ label: "Today's revenue", value: salesError ? "Error" : formatMoney(rupees(todayRevenue)), sub: salesError ? "Tap to retry" : `From ${todaySales.length} sales`, icon: BarChart2, onClick: salesError ? () => refetchSales() : undefined }] : []),
+    { label: "Shop inventory", value: inventoryError ? "Error" : inventoryList.length, sub: inventoryError ? "Tap to retry" : "Sarees currently in stock", icon: Package, onClick: inventoryError ? () => refetchInventory() : undefined },
+    { label: "Returns today", value: returnsError ? "Error" : todayReturns.length, sub: returnsError ? "Tap to retry" : "Processed and recorded", icon: RotateCcw, alert: todayReturns.length > 0, onClick: returnsError ? () => refetchReturns() : undefined },
   ];
 
   return (
@@ -143,9 +147,9 @@ export function HomeSection({
                   </div>
                 </div>
                 {salesLoading ? (
-                  <TableSkeleton columns={canSeePrices ? 5 : 4} rows={3} />
+                  <div style={{ padding: 16 }}><LoadingState variant="skeleton" rows={4} /></div>
                 ) : salesError ? (
-                  <TableError onRetry={() => refetchSales()} />
+                  <ErrorState error={undefined} onRetry={() => void refetchSales()} />
                 ) : recentSales.length === 0 ? (
                   <div style={{ padding: "24px 16px", textAlign: "center", fontFamily: F.u, fontSize: 14, color: C.muted }}>
                     No sales recorded today yet.

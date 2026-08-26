@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { AlertTriangle, Camera } from "lucide-react";
 import { T, F, DefectiveLogItem } from "./WorkerQCTypes";
 import { Modal } from "../../../../shared/ui/overlay/Modal";
 import { Button } from "../../../../shared/ui/primitives";
+import { ImageZoomModal, type ZoomImage } from "../../../../shared/ui/ImageZoomModal";
 
 interface WorkerQCDefectiveDetailModalProps {
   item: DefectiveLogItem;
@@ -20,7 +21,15 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
 
 export function WorkerQCDefectiveDetailModal({ item, onClose }: WorkerQCDefectiveDetailModalProps) {
   const isSemi = item.result === "semi";
+  const [zoomImage, setZoomImage] = useState<ZoomImage | null>(null);
+  // ImageZoomModal must be a sibling of <Modal>, not a child — Radix
+  // Dialog.Content is translated (transform: translate(-50%,-50%)), and a
+  // `position: fixed` descendant of a transformed ancestor is positioned
+  // relative to that ancestor instead of the viewport, which would clip the
+  // full-screen zoom overlay to the small dialog box instead of covering
+  // the screen.
   return (
+    <>
     <Modal open onOpenChange={o => !o && onClose()} size="sm">
       <Modal.Header
         title={item.id}
@@ -36,7 +45,14 @@ export function WorkerQCDefectiveDetailModal({ item, onClose }: WorkerQCDefectiv
         </div>
 
         {item.photoUrl ? (
-          <img src={item.photoUrl} alt="Defect proof" style={{ width: "100%", height: 160, objectFit: "cover", borderRadius: 8, marginBottom: 14, border: `1px solid ${T.bdr}` }} />
+          <button
+            type="button"
+            onClick={() => setZoomImage({ url: item.photoUrl!, label: `Defect photo — ${item.id}` })}
+            title="Click to view full size"
+            style={{ display: "block", width: "100%", padding: 0, border: `1px solid ${T.bdr}`, borderRadius: 8, marginBottom: 14, cursor: "zoom-in", background: "none" }}
+          >
+            <img src={item.photoUrl} alt="Defect proof" style={{ width: "100%", height: 160, objectFit: "cover", borderRadius: 8, display: "block" }} />
+          </button>
         ) : (
           <div style={{ width: "100%", height: 100, borderRadius: 8, marginBottom: 14, border: `1px dashed ${T.bdrMed}`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, color: T.muted }}>
             <Camera size={18} />
@@ -75,5 +91,7 @@ export function WorkerQCDefectiveDetailModal({ item, onClose }: WorkerQCDefectiv
         <Button variant="secondary" onClick={onClose}>Close</Button>
       </Modal.Footer>
     </Modal>
+    <ImageZoomModal image={zoomImage} onClose={() => setZoomImage(null)} />
+    </>
   );
 }

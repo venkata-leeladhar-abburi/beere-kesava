@@ -1,7 +1,8 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
-import { PaginatedResult } from "../common/pagination";
+import { Injectable } from "@nestjs/common";
 import type { AuthenticatedUser } from "../auth/strategies/jwt.strategy";
-import { NotificationTargetType, Prisma } from "../generated/prisma/client";
+import { ForbiddenScopeError, NotFoundError } from "../common/errors";
+import { PaginatedResult } from "../common/pagination";
+import { NotificationTargetType, Prisma, UserRole } from "../generated/prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateNotificationDto } from "./dto/create-notification.dto";
 import { ListNotificationsQueryDto } from "./dto/list-notifications-query.dto";
@@ -34,12 +35,24 @@ export class NotificationsService {
     return notification;
   }
 
+  /**
+   * Scoped to the caller. A non-admin sees exactly two things: notifications
+   * addressed to them personally, and notifications broadcast to their role.
+   * The query's userId/role filters are ignored for them — previously they
+   * were trusted, so changing `?role=ADMIN` in the URL returned another
+   * role's feed.
+   *
+   * ADMIN/SUPERADMIN keep the ability to filter by any userId/role, since
+   * the admin console's notifications tab is an operational view over
+   * everyone's traffic. That mirrors PermissionsGuard, which already
+   * bypasses both roles unconditionally.
+   */
   async findAll(
     query: ListNotificationsQueryDto,
+    user: AuthenticatedUser,
   ): Promise<PaginatedResult<Prisma.NotificationGetPayload<object>>> {
     const where: Prisma.NotificationWhereInput = {
-      userId: query.userId,
-      role: query.role,
+      ...this.scopeFor(query, user),
       readAt: query.unreadOnly ? null : undefined,
     };
 
@@ -56,36 +69,39 @@ export class NotificationsService {
     return { items, total, page: query.page, pageSize: query.pageSize };
   }
 
-  /**
-   * Marks a notification read on behalf of `user`.
-   *
-   * The lookup is scoped to notifications actually addressed to the caller -
-   * either directly (targetType USER, matching userId) or via their role
-   * (targetType ROLE, matching role). Without that scope this was a plain
-   * IDOR: any authenticated user could mark any other user's notification
-   * read simply by guessing an id.
-   *
-   * A notification that exists but belongs to someone else returns 404 rather
-   * than 403, so the response cannot be used to probe which ids exist.
-   */
-  async markRead(id: string, user: AuthenticatedUser) {
-    // `userId: undefined` would make Prisma drop the condition entirely and
-    // match every USER-targeted row, so the personal branch is only added
-    // when there actually is an id to match on. AuthenticatedUser.id is
-    // optional - PermissionsGuard guards against the same thing with `?? ""`.
-    const addressedToCaller: Prisma.NotificationWhereInput[] = [
-      { targetType: NotificationTargetType.ROLE, role: user.role },
-    ];
-    if (user.id) {
-      addressedToCaller.push({ targetType: NotificationTargetType.USER, userId: user.id });
+  private isAdmin(user: AuthenticatedUser): boolean {
+    return user.role === UserRole.ADMIN || user.role === UserRole.SUPERADMIN;
+  }
+
+  private scopeFor(
+    query: ListNotificationsQueryDto,
+    user: AuthenticatedUser,
+  ): Prisma.NotificationWhereInput {
+    if (this.isAdmin(user)) {
+      return { userId: query.userId, role: query.role };
     }
 
-    const notification = await this.prisma.notification.findFirst({
-      where: { id, OR: addressedToCaller },
-    });
+    return {
+      OR: [
+        ...(user.id ? [{ userId: user.id }] : []),
+        { role: user.role },
+      ],
+    };
+  }
+
+  async markRead(id: string, user: AuthenticatedUser) {
+    const notification = await this.prisma.notification.findUnique({ where: { id } });
     if (!notification) {
-      throw new NotFoundException(`Notification ${id} not found`);
+      throw new NotFoundError("Notification", id);
     }
+
+    // Same scope rule as findAll: you may only mark read what you could read.
+    const isOwn =
+      (!!user.id && notification.userId === user.id) || notification.role === user.role;
+    if (!this.isAdmin(user) && !isOwn) {
+      throw new ForbiddenScopeError("This notification is addressed to someone else.");
+    }
+
     return this.prisma.notification.update({ where: { id }, data: { readAt: new Date() } });
   }
 }

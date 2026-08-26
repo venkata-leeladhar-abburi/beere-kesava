@@ -11,6 +11,8 @@ import { SectionHeading } from "@/shared/ui/portal/PortalChrome";
 import { DesktopHero } from "./DesktopHero";
 import { useAuth } from "../../../../../contexts/AuthContext";
 import { useCurrentWeaver } from "../useCurrentWeaver";
+import { useMaterialIssue } from "@/features/materials";
+import { LoadingState, ErrorState } from "@/shared/ui/state";
 
 
 /** Thin wrapper on the shared portal heading — see PaymentsSection. */
@@ -39,6 +41,7 @@ export function ConfirmSection({
 }) {
   const { user } = useAuth();
   const { weaverCode } = useCurrentWeaver();
+  const { isLoading: materialsLoading, isError: materialsError, error: materialsErrorObj, refetch: refetchMaterials } = useMaterialIssue();
   const name = user?.name || "—";
   const initials = name === "—" ? "—" : name.split(" ").filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase();
   const identityBadge = user?.name ? (weaverCode ? `${user.name} · ${weaverCode}` : user.name) : "—";
@@ -267,7 +270,17 @@ export function ConfirmSection({
           );
         })()}
 
-        {matByBatch.length === 0 && (
+        {materialsLoading ? (
+          <div style={{ marginTop: 48 }}>
+            <DSectionHeader label="Materials Received History" />
+            <LoadingState variant="skeleton" rows={4} />
+          </div>
+        ) : materialsError ? (
+          <div style={{ marginTop: 48 }}>
+            <DSectionHeader label="Materials Received History" />
+            <ErrorState error={materialsErrorObj} onRetry={refetchMaterials} />
+          </div>
+        ) : matByBatch.length === 0 && (
           <div style={{ marginTop: 48 }}>
             <DSectionHeader label="Materials Received History" />
             <div style={{ padding: "40px 20px", textAlign: "center" as const, background: "#FFF", borderRadius: 20, border: `1px solid ${C.bdr}` }}>

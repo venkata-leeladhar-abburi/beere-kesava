@@ -28,6 +28,11 @@ interface UserTableProps {
   setViewingMember: (m: FinishingStaffMember | null) => void;
   cardStyle: React.CSSProperties;
   inputStyle: React.CSSProperties;
+  loading?: boolean;
+  loadError?: boolean;
+  onRetry?: () => void;
+  isFiltered?: boolean;
+  onClearFilters?: () => void;
 }
 
 export const userTableColumns = ({
@@ -136,7 +141,8 @@ export function UserTable({
   allRows, searchQ, setSearchQ, roleFilter, setRoleFilter,
   dateFilter, setDateFilter, page, setPage, pagedRows, filtered,
   totalPages, ROWS_PER_PAGE, onToggleStatus, onDelete,
-  setEditingMember, setViewingMember
+  setEditingMember, setViewingMember,
+  loading, loadError, onRetry, isFiltered, onClearFilters,
 }: UserTableProps) {
   const [userView, setUserView] = useState<"card" | "table">("card");
 
@@ -275,7 +281,13 @@ export function UserTable({
             columns={userTableColumns({ setEditingMember, onToggleStatus, onDelete, setViewingMember })}
             data={pagedRows}
             getRowId={(u) => u.empId}
-            emptyTitle="No users found matching your filters."
+            loading={loading}
+            error={loadError}
+            onRetry={onRetry}
+            isFiltered={isFiltered}
+            onClearFilters={onClearFilters}
+            emptyTitle={isFiltered ? "No users match your filters" : "No users yet"}
+            emptyDescription={isFiltered ? undefined : "Employees added here will show up in this table."}
           />
         </div>
       </div>

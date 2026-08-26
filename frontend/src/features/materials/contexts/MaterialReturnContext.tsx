@@ -10,7 +10,7 @@ import {
 import { BackendWeaver, weaversApi } from "../../../shared/api/weavers";
 import { BackendFactoryLoom, factoryLoomsApi } from "../../../shared/api/factory-looms";
 import { STOPGAP_ACTING_USER_ID } from "../../../shared/api/purchase-requests";
-import { useAuth } from "../../../contexts/AuthContext";
+import { useAuth, useAuthGate } from "../../../contexts/AuthContext";
 import {
   JARI_GRADE_FROM_BACKEND,
   JARI_GRADE_TO_BACKEND,
@@ -148,6 +148,8 @@ interface MaterialReturnContextValue {
   getOutstandingForRecipient: (weaverId?: string, factoryLoomId?: string) => Promise<WeaverOutstandingLine[]>;
   isError: boolean;
   error: unknown;
+  isLoading: boolean;
+  refetch: () => void;
 }
 
 const MaterialReturnContext = createContext<MaterialReturnContextValue | null>(null);
@@ -159,8 +161,11 @@ export function MaterialReturnProvider({ children }: { children: React.ReactNode
   const { user } = useAuth();
   const actingUserId = user?.id ?? STOPGAP_ACTING_USER_ID;
 
-  const { data: returnRecords = [], isError, error } = useQuery({
+  const enabled = useAuthGate();
+
+  const { data: returnRecords = [], isError, error, isLoading, refetch } = useQuery({
     queryKey: RETURN_RECORDS_KEY,
+    enabled,
     queryFn: async () => {
       const [returnsRes, weaversRes, loomsRes] = await Promise.all([
         materialReturnsApi.list(),
@@ -232,7 +237,7 @@ export function MaterialReturnProvider({ children }: { children: React.ReactNode
   }, []);
 
   return (
-    <MaterialReturnContext.Provider value={{ returnRecords, addReturnRecord, deleteReturnRecord, getRecordsForWeaver, getOutstandingForRecipient, isError, error }}>
+    <MaterialReturnContext.Provider value={{ returnRecords, addReturnRecord, deleteReturnRecord, getRecordsForWeaver, getOutstandingForRecipient, isError, error, isLoading, refetch: () => void refetch() }}>
       {children}
     </MaterialReturnContext.Provider>
   );
@@ -254,6 +259,8 @@ const FALLBACK_MATERIAL_RETURN: MaterialReturnContextValue = {
   getOutstandingForRecipient: async () => [],
   isError: false,
   error: null,
+  isLoading: false,
+  refetch: () => {},
 };
 
 export function useMaterialReturn(): MaterialReturnContextValue {

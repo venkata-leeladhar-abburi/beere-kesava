@@ -57,7 +57,7 @@ export function EntityCode({ type, value, link, copyable, icon, truncate, size =
     <span
       aria-label={accessibleName}
       className={cn(
-        "inline-flex items-center gap-1 whitespace-nowrap rounded-[var(--radius-xs)] px-1.5 py-0.5",
+        "inline-flex items-center gap-1 whitespace-nowrap rounded-[var(--radius-xs)] px-1.5 py-0.5 max-w-full overflow-hidden text-ellipsis",
         "bg-[var(--surface-sunken)] text-[var(--text-primary)]",
         link && "hover:underline hover:text-[var(--text-brand)]",
         className

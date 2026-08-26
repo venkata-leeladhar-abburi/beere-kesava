@@ -9,12 +9,12 @@ import { RateHistorySection } from "./rates-pricing/RateHistorySection";
 import { SareeTypeCard } from "./rates-pricing/SareeTypeCard";
 import type { SareeTypeRecord } from "./rates-pricing/sareeTypeData";
 import { ratesApi, backendRateToDisplayRecord } from "../../../shared/api/rates";
-import { Button } from "../../../shared/ui/primitives";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { useDataAccess } from "@/shared/ui/domain";
 
 import { Tags, History, TrendingUp, TrendingDown } from "lucide-react";
 import { LuxuryStatsCard } from "../../../shared/ui/LuxuryStatsCard";
+import { LoadingState, ErrorState } from "../../../shared/ui/state";
 const toRecord = backendRateToDisplayRecord;
 // ═══════════════════════════════════════════════════════════════════════════
 // RE-EXPORTS — preserved for external consumers of this module's public API
@@ -140,22 +140,12 @@ export function RatesPricingPage() {
 
       {/* 3. SECTION A — MAKING CHARGE RATES */}
       {isLoading ? (
-        <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 96, paddingBottom: 48, fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
-          Loading rate catalog…
+        <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 96, paddingBottom: 48 }}>
+          <LoadingState variant="skeleton" rows={4} />
         </div>
       ) : isError ? (
         <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 96, paddingBottom: 48 }}>
-          <div style={{
-            fontFamily: F.ui, fontSize: 14, color: T.crimson,
-            background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.22)",
-            borderRadius: 12, padding: "16px 20px", display: "flex", alignItems: "center",
-            justifyContent: "space-between", gap: 16,
-          }}>
-            <span>Failed to load the rate catalog. Please check your connection and try again.</span>
-            <Button onClick={loadRates} variant="primary" size="sm">
-              Retry
-            </Button>
-          </div>
+          <ErrorState error={undefined} onRetry={loadRates} />
         </div>
       ) : (
         <MakingChargesSection

@@ -45,7 +45,7 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("Incorrect code. Please check and try again. You have 2 more attempts.");
   const [shake, setShake] = useState(false);
-  const [, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   // Mirrors `digits` synchronously — the focus-jump-to-first-empty check on
   // each box needs the value at the instant of focus, and `digits` state
@@ -227,12 +227,12 @@ export function StepOTP({ phone, onVerify, onBack }: { phone: string; onVerify: 
         variant="primary"
         size="lg"
         fullWidth
-        disabled={otp.length !== 6}
+        disabled={otp.length !== 6 || loading}
         onClick={() => otp.length === 6 && handleVerify(otp)}
         iconLeft={Check}
         className="!h-[58px] !rounded-[14px] !text-[16px] !font-semibold shadow-[0_8px_22px_rgba(74,10,22,0.28)] ring-1 ring-[rgba(196,146,58,0.65)]"
       >
-        Verify and Login
+        {loading ? "Verifying…" : "Verify and Login"}
       </Button>
 
       <div style={{ textAlign: "center" as const, marginTop: 16, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>

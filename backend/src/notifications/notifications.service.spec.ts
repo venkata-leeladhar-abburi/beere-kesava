@@ -1,17 +1,19 @@
-import { NotFoundException } from "@nestjs/common";
-import type { AuthenticatedUser } from "../auth/strategies/jwt.strategy";
 import { NotificationTargetType, UserRole } from "../generated/prisma/client";
+import type { AuthenticatedUser } from "../auth/strategies/jwt.strategy";
+import { ListNotificationsQueryDto } from "./dto/list-notifications-query.dto";
 import { NotificationsService } from "./notifications.service";
 
 /**
- * markRead() used to look a notification up by id alone, which let any
- * authenticated user mark any other user's notification read by guessing an
- * id. These tests pin the ownership scope that replaced it.
+ * findAll/markRead used to trust the caller's query/id unscoped, which let
+ * any authenticated user read or mark-read another user's or role's
+ * notifications. These tests pin the ownership scope that replaced it.
  */
-describe("NotificationsService.markRead", () => {
+describe("NotificationsService", () => {
   let prisma: {
     notification: {
-      findFirst: jest.Mock;
+      findMany: jest.Mock;
+      count: jest.Mock;
+      findUnique: jest.Mock;
       update: jest.Mock;
     };
   };
@@ -28,56 +30,102 @@ describe("NotificationsService.markRead", () => {
   beforeEach(() => {
     prisma = {
       notification: {
-        findFirst: jest.fn().mockResolvedValue({ id: "n1" }),
+        findMany: jest.fn().mockResolvedValue([]),
+        count: jest.fn().mockResolvedValue(0),
+        findUnique: jest.fn().mockResolvedValue({ id: "n1", userId: "user-1", role: UserRole.SHOP }),
         update: jest.fn().mockResolvedValue({ id: "n1", readAt: new Date() }),
       },
     };
-    service = new NotificationsService(prisma as never, { } as never);
+    service = new NotificationsService(prisma as never, {} as never);
   });
 
-  /** The OR branches the service asked Prisma to match on. */
-  const whereOr = () =>
-    prisma.notification.findFirst.mock.calls[0][0].where.OR as Array<Record<string, unknown>>;
+  describe("findAll", () => {
+    const baseQuery: ListNotificationsQueryDto = { page: 1, pageSize: 20, unreadOnly: false };
 
-  it("scopes the lookup to the caller's own id and role", async () => {
-    await service.markRead("n1", asUser());
+    it("scopes a non-admin to their own id and role, ignoring the query's userId/role", async () => {
+      await service.findAll({ ...baseQuery, userId: "someone-else", role: UserRole.ADMIN }, asUser());
 
-    const where = prisma.notification.findFirst.mock.calls[0][0].where;
-    expect(where.id).toBe("n1");
-    expect(whereOr()).toEqual(
-      expect.arrayContaining([
-        { targetType: NotificationTargetType.ROLE, role: UserRole.SHOP },
-        { targetType: NotificationTargetType.USER, userId: "user-1" },
-      ]),
-    );
+      const where = prisma.notification.findMany.mock.calls[0][0].where;
+      expect(where.OR).toEqual(
+        expect.arrayContaining([{ userId: "user-1" }, { role: UserRole.SHOP }]),
+      );
+    });
+
+    it("omits the per-user branch when the session carries no user id", async () => {
+      await service.findAll(baseQuery, asUser({ id: undefined }));
+
+      const where = prisma.notification.findMany.mock.calls[0][0].where;
+      expect(where.OR).toEqual([{ role: UserRole.SHOP }]);
+    });
+
+    it("lets an admin filter by any userId/role from the query", async () => {
+      await service.findAll(
+        { ...baseQuery, userId: "someone-else", role: UserRole.WEAVER },
+        asUser({ role: UserRole.ADMIN }),
+      );
+
+      const where = prisma.notification.findMany.mock.calls[0][0].where;
+      expect(where).toMatchObject({ userId: "someone-else", role: UserRole.WEAVER });
+    });
   });
 
-  it("omits the per-user branch when the session carries no user id", async () => {
-    // `userId: undefined` would make Prisma drop the condition and match every
-    // USER-targeted notification, re-opening the hole this scope closed.
-    await service.markRead("n1", asUser({ id: undefined }));
+  describe("markRead", () => {
+    it("marks an owned notification (matching userId) read", async () => {
+      await service.markRead("n1", asUser());
 
-    expect(whereOr()).toEqual([
-      { targetType: NotificationTargetType.ROLE, role: UserRole.SHOP },
-    ]);
-    expect(JSON.stringify(whereOr())).not.toContain("userId");
-  });
+      expect(prisma.notification.update).toHaveBeenCalledWith({
+        where: { id: "n1" },
+        data: { readAt: expect.any(Date) },
+      });
+    });
 
-  it("reports a notification addressed to someone else as not found", async () => {
-    // The scoped query simply returns nothing; the caller must not be able to
-    // tell "exists but not yours" apart from "does not exist".
-    prisma.notification.findFirst.mockResolvedValue(null);
+    it("marks a role-targeted notification addressed to the caller's role read", async () => {
+      prisma.notification.findUnique.mockResolvedValue({
+        id: "n2",
+        userId: null,
+        role: UserRole.SHOP,
+        targetType: NotificationTargetType.ROLE,
+      });
 
-    await expect(service.markRead("someone-elses", asUser())).rejects.toThrow(NotFoundException);
-    expect(prisma.notification.update).not.toHaveBeenCalled();
-  });
+      await service.markRead("n2", asUser());
 
-  it("marks an owned notification read", async () => {
-    await service.markRead("n1", asUser());
+      expect(prisma.notification.update).toHaveBeenCalledWith({
+        where: { id: "n2" },
+        data: { readAt: expect.any(Date) },
+      });
+    });
 
-    expect(prisma.notification.update).toHaveBeenCalledWith({
-      where: { id: "n1" },
-      data: { readAt: expect.any(Date) },
+    it("throws NOT_FOUND when the notification does not exist", async () => {
+      prisma.notification.findUnique.mockResolvedValue(null);
+
+      await expect(service.markRead("missing", asUser())).rejects.toMatchObject({ code: "NOT_FOUND" });
+      expect(prisma.notification.update).not.toHaveBeenCalled();
+    });
+
+    it("throws FORBIDDEN_SCOPE for a notification addressed to someone else", async () => {
+      prisma.notification.findUnique.mockResolvedValue({
+        id: "n1",
+        userId: "someone-else",
+        role: UserRole.WEAVER,
+      });
+
+      await expect(service.markRead("n1", asUser())).rejects.toMatchObject({ code: "FORBIDDEN_SCOPE" });
+      expect(prisma.notification.update).not.toHaveBeenCalled();
+    });
+
+    it("lets an admin mark any notification read regardless of ownership", async () => {
+      prisma.notification.findUnique.mockResolvedValue({
+        id: "n1",
+        userId: "someone-else",
+        role: UserRole.WEAVER,
+      });
+
+      await service.markRead("n1", asUser({ role: UserRole.ADMIN }));
+
+      expect(prisma.notification.update).toHaveBeenCalledWith({
+        where: { id: "n1" },
+        data: { readAt: expect.any(Date) },
+      });
     });
   });
 });

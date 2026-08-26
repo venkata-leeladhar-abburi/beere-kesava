@@ -6,7 +6,6 @@ import { Home, ShoppingBag, Package, Users, BarChart2 } from "lucide-react";
 import { SECTION_NAV_GLOBAL_STYLE } from "../../../shared/ui/SectionNavigator";
 import { useResponsive } from "../../../hooks/useResponsive";
 import { Button } from "../../../shared/ui/primitives";
-import { InventoryPage as AdminInventoryPage } from "@/features/inventory";
 
 // ─── Price Visibility Context ────────────────────────────────────────────────
 // Shop staff (role="shop") cannot see monetary values.
@@ -14,6 +13,7 @@ import { InventoryPage as AdminInventoryPage } from "@/features/inventory";
 import { DataAccessProvider } from "@/shared/ui/domain";
 import { ShopPriceContext, F } from "./shop-staff/theme";
 import { ShopHome } from "./shop-staff/ShopHome";
+import { ShopInventory } from "./shop-staff/ShopInventory";
 import { NewSaleFlow } from "./shop-staff/NewSaleFlow";
 import { ProcessReturn } from "./shop-staff/ProcessReturn";
 import { CustomerProfiles } from "./shop-staff/CustomerProfiles";
@@ -115,14 +115,10 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
     switch (active) {
       case "home": return <ShopHome onNavigate={(t) => { if (t === "return") setShowReturn(true); else setActive(t as TabId); }} />;
       case "sale": return <NewSaleFlow />;
-      case "inventory": return (
-        // Same Inventory page the admin portal uses — quotations and wholesale
-        // dispatch (both inherently about pricing) stay off the shop floor, and
-        // every money figure follows the same canSeePrices rule as the rest of
-        // this portal, so an admin/superadmin previewing the shop portal still
-        // sees real figures while genuine shop staff never do.
-        <AdminInventoryPage canRaiseQuotation={false} canDispatchWholesale={false} canDispatchShop={false} canSeeMoney={canSeePrices} showQuickDispatch={false} showCategorySplit={false} showQuotationsSection={false} showDispatchHistory={false} />
-      );
+      // Shop stock only — the sarees an admin actually dispatched here. This
+      // used to render the admin's whole Finished Goods table, which showed the
+      // shop every saree in the factory, including ones still on the loom.
+      case "inventory": return <ShopInventory />;
       case "customers": return <CustomerProfiles />;
       case "reports": return <SalesReport />;
     }
@@ -157,12 +153,9 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
               <SaleSection bp={bp} isTablet={isTablet} />
             )}
 
-            {/* Same InventoryPage component the admin portal uses — see the
-                mobile-layout "inventory" case above for the reasoning on the
-                props (no quotations/wholesale dispatch on the shop floor, money
-                follows the same canSeePrices rule as the rest of this portal). */}
+            {/* Shop stock only — see the mobile-layout "inventory" case above. */}
             {!showReturn && active === "inventory" && (
-              <AdminInventoryPage canRaiseQuotation={false} canDispatchWholesale={false} canDispatchShop={false} canSeeMoney={canSeePrices} showQuickDispatch={false} showCategorySplit={false} showQuotationsSection={false} showDispatchHistory={false} />
+              <ShopInventory />
             )}
 
             {!showReturn && active === "customers" && (

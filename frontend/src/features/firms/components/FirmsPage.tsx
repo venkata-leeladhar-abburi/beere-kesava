@@ -19,6 +19,7 @@ import { Money } from "../../../shared/ui/domain";
 import { rupees } from "@/lib/domain/money";
 import { DataTable, type ColumnDef } from "../../../shared/ui/data";
 import { useConfirm } from "../../../shared/ui/overlay";
+import { LoadingState, ErrorState, EmptyState } from "../../../shared/ui/state";
 
 
 
@@ -100,7 +101,7 @@ function overviewColumns(onGoToFirm?: (firmId: string) => void): ColumnDef<Overv
 
 // ─── Business Overview section (redesigned premium table) ─────────────────────
 function BusinessOverview({ onGoToFirm }: { onGoToFirm?: (firmId: string) => void }) {
-  const { firms, getFirmFinancials } = useFirms();
+  const { firms, getFirmFinancials, isLoading, error, refetch } = useFirms();
   const [open, setOpen] = useState(true);
 
   const FIRM_COLORS = ["#6E0F2D","#1E6640","#C89B47","#4A061B","#1565C0"];
@@ -163,12 +164,20 @@ function BusinessOverview({ onGoToFirm }: { onGoToFirm?: (firmId: string) => voi
       <AnimatePresence>
         {open && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.22, ease: EASE }} style={{ overflow: "hidden" }}>
-            <DataTable<OverviewRow>
-              responsive
-              columns={overviewColumns(onGoToFirm)}
-              data={rows.map(r => ({ ...r, color: FIRM_COLORS[parseInt(r.firm.id.replace("FIRM-",""), 10) % FIRM_COLORS.length] }))}
-              getRowId={r => r.firm.id}
-            />
+            {isLoading ? (
+              <div style={{ padding: 20 }}><LoadingState variant="skeleton" rows={4} /></div>
+            ) : error ? (
+              <ErrorState error={error} onRetry={refetch} />
+            ) : rows.length === 0 ? (
+              <EmptyState title="No firms yet" description="Firms added here appear across income, expenses, and reporting." />
+            ) : (
+              <DataTable<OverviewRow>
+                responsive
+                columns={overviewColumns(onGoToFirm)}
+                data={rows.map(r => ({ ...r, color: FIRM_COLORS[parseInt(r.firm.id.replace("FIRM-",""), 10) % FIRM_COLORS.length] }))}
+                getRowId={r => r.firm.id}
+              />
+            )}
             {/* Totals row */}
             <div className="grid grid-cols-1 md:grid-cols-[2fr_130px_130px_150px_80px_130px]" style={{ gap: 0, padding: "16px 28px", background: T.bgGold, borderTop: `1.5px solid ${T.borderGold}`, borderLeft: `4px solid ${T.antiqueGold}` }}>
               <div>

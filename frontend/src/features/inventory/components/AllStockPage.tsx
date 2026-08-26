@@ -7,6 +7,7 @@ import { ViewStockDialog } from "./ViewStockDialog";
 import { Pagination, usePagination } from "../../../shared/ui/DataPagination";
 import { Button, SearchInput } from "../../../shared/ui/primitives";
 import { inventoryApi, BackendStockItem } from "../../../shared/api/inventory";
+import { ErrorState, EmptyState, FilteredEmptyState } from "../../../shared/ui/state";
 
 const T = {
   silkCream:     "#F7F2EA",
@@ -79,7 +80,7 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
   const [sourceFilter, setSourceFilter] = useState<"all" | StockSource>("all");
   const [viewSaree, setViewSaree] = useState<StockSaree | null>(null);
 
-  const { data: raw, isLoading, isError } = useQuery({
+  const { data: raw, isLoading, isError, refetch } = useQuery({
     queryKey: ["stock-list"],
     queryFn: () => inventoryApi.list(),
   });
@@ -229,13 +230,7 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
             </div>
           </FadeUp>
         ) : isError ? (
-          <FadeUp>
-            <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid rgba(192,57,43,0.20)`, padding: "64px 32px", textAlign: "center" }}>
-              <Package size={48} color="#C0392B" style={{ marginBottom: 16, opacity: 0.5 }} />
-              <div style={{ fontFamily: F.display, fontSize: 20, color: "#C0392B", marginBottom: 8 }}>Couldn't load inventory</div>
-              <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Please try refreshing the page.</div>
-            </div>
-          </FadeUp>
+          <ErrorState error={undefined} onRetry={() => void refetch()} />
         ) : filtered.length > 0 ? (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3" style={{ gap: 20, alignItems: "stretch" }}>
@@ -250,10 +245,11 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
           </>
         ) : (
           <FadeUp>
-            <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, padding: "64px 32px", textAlign: "center" }}>
-              <Package size={48} color={T.taupe} style={{ marginBottom: 16, opacity: 0.5 }} />
-              <div style={{ fontFamily: F.display, fontSize: 20, color: T.taupe }}>No sarees match your search or filter.</div>
-            </div>
+            {search.trim() || statusFilter !== "all" || sourceFilter !== "all" ? (
+              <FilteredEmptyState onClearFilters={() => { setSearch(""); setStatusFilter("all"); setSourceFilter("all"); }} />
+            ) : (
+              <EmptyState title="No stock recorded yet" description="Sarees received from weavers or purchases will show up here." />
+            )}
           </FadeUp>
         )}
       </section>

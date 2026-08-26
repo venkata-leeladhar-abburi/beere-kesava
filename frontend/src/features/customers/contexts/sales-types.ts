@@ -113,4 +113,6 @@ export interface SalesContextValue {
   recordReturn: (sareeId: string, ret: ReturnInfo) => void;
   isError: boolean;
   error: unknown;
+  isLoading: boolean;
+  refetch: () => void;
 }

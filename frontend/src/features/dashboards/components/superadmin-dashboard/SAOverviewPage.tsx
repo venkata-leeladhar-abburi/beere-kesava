@@ -105,24 +105,26 @@ const SA_ICONS = [
 ];
 
 function SAMetricsBar() {
-  const { metrics, isLoading: metricsLoading, isError: metricsError } = useDashboardMetrics();
-  const { pendingApprovalsCount, isLoading: analyticsLoading, isError: analyticsError } = useDashboardAnalytics();
+  const { metrics, isLoading: metricsLoading, isError: metricsError, refetch: refetchMetrics } = useDashboardMetrics();
+  const { pendingApprovalsCount, isLoading: analyticsLoading, isError: analyticsError, refetch: refetchAnalytics } = useDashboardAnalytics();
 
   const statItems: StatItem[] = [
     ...metrics.map((m, i) => ({
       label: m.label,
       value: metricsError ? "Error" : metricsLoading ? "—" : <AnimatedNumber raw={m.val} />,
-      sub: metricsError ? "Failed to load" : m.sub,
+      sub: metricsError ? "Tap to retry" : m.sub,
       icon: SA_ICONS[i],
       highlight: m.hi,
+      onClick: metricsError ? refetchMetrics : undefined,
     })),
     {
       label: "Pending Approvals",
       value: analyticsError ? "Error" : analyticsLoading ? "—" : <AnimatedNumber raw={String(pendingApprovalsCount)} />,
-      sub: analyticsError ? "Failed to load" : "Require review",
+      sub: analyticsError ? "Tap to retry" : "Require review",
       icon: <Clock size={22} color={T.warmCream} />,
       highlight: false,
       crimson: !analyticsError && pendingApprovalsCount > 0,
+      onClick: analyticsError ? refetchAnalytics : undefined,
     },
   ];
 

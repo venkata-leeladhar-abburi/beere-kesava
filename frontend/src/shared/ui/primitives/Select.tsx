@@ -10,9 +10,9 @@ import { useFieldContext } from "./Field";
 import { Icon } from "./Icon";
 
 const SIZE_CLASS = {
-  sm: "h-8 text-[13px] px-2.5",
-  md: "h-10 text-[14px] px-3",
-  lg: "h-12 text-[16px] px-4",
+  sm: "h-8 text-[13px] pl-3 pr-8",
+  md: "h-10 text-[13px] sm:text-[14px] pl-3.5 pr-8.5",
+  lg: "h-12 text-[16px] pl-4 pr-10",
 } as const;
 
 export interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "size" | "onChange"> {
@@ -50,8 +50,10 @@ export function Select({
     onValueChange?.(e.target.value);
   };
 
+  const defaultContainerClass = className?.includes("w-auto") ? "w-auto shrink-0" : "w-full";
+
   return (
-    <div className={cn("relative inline-flex items-center", containerClassName || "w-full")}>
+    <div className={cn("relative inline-flex items-center", containerClassName || defaultContainerClass)}>
       <select
         id={field?.inputId}
         value={value}
@@ -62,7 +64,7 @@ export function Select({
         aria-describedby={describedBy}
         aria-required={field?.required || undefined}
         className={cn(
-          "w-full appearance-none flex items-center justify-between gap-2 rounded-[var(--radius-md)] border transition-colors pr-8 cursor-pointer truncate",
+          "w-full appearance-none flex items-center justify-between gap-2 rounded-[10px] border transition-colors cursor-pointer truncate",
           "duration-[var(--duration-fast)] ease-[var(--ease-standard)]",
           "bg-[var(--surface-raised)] text-[var(--text-primary)] font-medium",
           invalid ? "border-[var(--border-danger)]" : "border-[var(--border-default)]",
@@ -77,7 +79,7 @@ export function Select({
         {placeholder && <option value="" disabled hidden>{placeholder}</option>}
         {children}
       </select>
-      <div className="pointer-events-none absolute right-2.5 flex items-center justify-center">
+      <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center justify-center">
         <Icon name="expandDown" size="sm" className="text-[var(--text-tertiary)]" />
       </div>
     </div>

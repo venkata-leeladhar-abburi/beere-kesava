@@ -149,10 +149,6 @@ export function LoomAnalytics({ looms, batches, materials, sarees }: {
       .slice(0, 5);
   }, [doneSarees]);
 
-  const _card: React.CSSProperties = {
-    background: "#FFF", borderRadius: 20, border: `1px solid ${T.borderDef}`,
-    padding: "24px 28px", boxShadow: "0 2px 12px rgba(74,6,27,0.05)",
-  };
   const cardTitle: React.CSSProperties = { fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown };
   const cardSub: React.CSSProperties = { fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3 };
   const tip = { fontFamily: F.ui, fontSize: 12, borderRadius: 10, border: `1px solid ${T.borderDef}`, boxShadow: "0 8px 24px rgba(74,6,27,0.12)" };

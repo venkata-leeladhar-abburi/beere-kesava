@@ -2,6 +2,7 @@ import React, { createContext, useContext } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { BackendCustomer, CreateCustomerPayload, customersApi, UpdateCustomerPayload } from "../../../shared/api/customers";
+import { useAuthGate } from "../../../contexts/AuthContext";
 
 // Thin real-backend directory of Customer{id,name,type,...} records — the
 // FK target for BulkOrder.customerId, Quotation.customerId, and
@@ -17,6 +18,9 @@ interface CustomersContextValue {
   customers: Customer[];
   wholesaleCustomers: Customer[];
   retailCustomers: Customer[];
+  isLoading: boolean;
+  error: unknown;
+  refetch: () => void;
   addCustomer: (payload: CreateCustomerPayload) => Promise<Customer>;
   updateCustomer: (id: string, payload: UpdateCustomerPayload) => void;
   deleteCustomer: (id: string) => Promise<void>;
@@ -29,9 +33,12 @@ const QUERY_KEY = ["customers"] as const;
 export function CustomersProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
 
-  const { data: customers = [] } = useQuery({
+  const enabled = useAuthGate();
+
+  const { data: customers = [], isLoading, error, refetch } = useQuery({
     queryKey: QUERY_KEY,
     queryFn: async () => (await customersApi.list()).items,
+    enabled,
   });
 
   const addCustomerMutation = useMutation({
@@ -77,7 +84,7 @@ export function CustomersProvider({ children }: { children: React.ReactNode }) {
   const retailCustomers = customers.filter(c => c.type === "RETAIL");
 
   return (
-    <CustomersContext.Provider value={{ customers, wholesaleCustomers, retailCustomers, addCustomer, updateCustomer, deleteCustomer }}>
+    <CustomersContext.Provider value={{ customers, wholesaleCustomers, retailCustomers, isLoading, error, refetch: () => void refetch(), addCustomer, updateCustomer, deleteCustomer }}>
       {children}
     </CustomersContext.Provider>
   );
@@ -87,6 +94,9 @@ const FALLBACK_CUSTOMERS: CustomersContextValue = {
   customers: [],
   wholesaleCustomers: [],
   retailCustomers: [],
+  isLoading: false,
+  error: null,
+  refetch: () => {},
   addCustomer: async () => ({ id: "", name: "", type: "WHOLESALE" } as Customer),
   updateCustomer: () => {},
   deleteCustomer: async () => {},

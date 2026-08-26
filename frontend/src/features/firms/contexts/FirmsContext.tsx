@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useAuthGate } from "../../../contexts/AuthContext";
 import {
   firmsApi,
   type BackendFinancialEntry,
@@ -124,6 +125,9 @@ function groupEntriesIntoFinancials(firmId: string, entries: BackendFinancialEnt
 
 interface FirmsContextValue {
   firms: Firm[];
+  isLoading: boolean;
+  error: unknown;
+  refetch: () => void;
   financials: FirmFinancials[];
   addFirm: (firm: Omit<Firm, "id" | "createdAt">) => void;
   updateFirm: (id: string, updates: Omit<Firm, "id" | "createdAt">) => void;
@@ -150,8 +154,11 @@ const FINANCIALS_KEY = ["firms", "financials"] as const;
 export function FirmsProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
 
-  const { data: backendFirms = [] } = useQuery({
+  const enabled = useAuthGate();
+
+  const { data: backendFirms = [], isLoading, error, refetch } = useQuery({
     queryKey: FIRMS_KEY,
+    enabled,
     queryFn: () => firmsApi.list().then((res) => res.items),
   });
   const firms = backendFirms.map(toFirm);
@@ -167,7 +174,7 @@ export function FirmsProvider({ children }: { children: React.ReactNode }) {
       );
       return results;
     },
-    enabled: backendFirms.length > 0,
+    enabled: enabled && backendFirms.length > 0,
   });
 
   const addFirmMutation = useMutation({
@@ -361,6 +368,9 @@ export function FirmsProvider({ children }: { children: React.ReactNode }) {
     <FirmsContext.Provider
       value={{
         firms,
+        isLoading,
+        error,
+        refetch: () => void refetch(),
         financials,
         addFirm,
         updateFirm,
@@ -382,6 +392,9 @@ export function FirmsProvider({ children }: { children: React.ReactNode }) {
 
 const FALLBACK_FIRMS: FirmsContextValue = {
   firms: [],
+  isLoading: false,
+  error: null,
+  refetch: () => {},
   financials: [],
   addFirm: () => {},
   updateFirm: () => {},

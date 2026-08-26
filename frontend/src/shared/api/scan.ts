@@ -11,7 +11,18 @@ export interface ScanLookupResult {
   qc: { result: string; payable: number; date: string } | null;
   finishing: { status: string; staffName: string | null; condition: string | null } | null;
   inventoryStatus: string | null;
-  saleEligibility: "PASSED" | "QC_NOT_PASSED" | "DISPATCHED" | "SOLD" | "DAMAGED_REVIEW_NEEDED";
+  /** Whether this saree can be sold at the shop counter right now.
+   *  "NOT_IN_SHOP" — QC-passed but still in the factory, never dispatched to the shop.
+   *  "WHOLESALE_DISPATCHED" — sent to a wholesale customer, gone from the business. */
+  saleEligibility:
+    | "PASSED"
+    | "QC_NOT_PASSED"
+    | "NOT_IN_SHOP"
+    | "WHOLESALE_DISPATCHED"
+    | "SOLD"
+    | "DAMAGED_REVIEW_NEEDED";
+  /** True once a SHOP dispatch has delivered this saree to the shop floor. */
+  atShop: boolean;
   /** Worker-entered per-saree retail price from receipt, if set — overrides the type's shared rate. */
   sellingPrice: number | null;
 }

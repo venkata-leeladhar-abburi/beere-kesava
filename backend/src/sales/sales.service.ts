@@ -52,13 +52,30 @@ export class SalesService {
     if (!row.qcPassed) {
       throw new BadRequestException(`Saree ${dto.sareeId} has not passed QC yet`);
     }
-    const [dispatched, alreadySold, inventory] = await Promise.all([
-      this.prisma.dispatchSaree.findFirst({ where: { sareeId: dto.sareeId } }),
+    const [dispatches, alreadySold, inventory] = await Promise.all([
+      this.prisma.dispatchSaree.findMany({
+        where: { sareeId: dto.sareeId },
+        include: { dispatch: { select: { type: true, dispatchDate: true } } },
+        orderBy: { dispatch: { dispatchDate: "desc" } },
+      }),
       this.prisma.saleRecord.findFirst({ where: { sareeId: dto.sareeId } }),
       this.prisma.inventoryRecord.findUnique({ where: { sareeId: dto.sareeId } }),
     ]);
-    if (dispatched) {
-      throw new BadRequestException(`Saree ${dto.sareeId} has already been dispatched`);
+    // A SHOP dispatch is what puts the saree on the shop floor, so it is a
+    // precondition of a counter sale rather than a bar to one; only a
+    // WHOLESALE dispatch takes the goods out of the business. Blocking on any
+    // dispatch at all made every saree unsellable the moment it reached the
+    // shop it was sent to.
+    const latestDispatch = dispatches[0]?.dispatch ?? null;
+    if (latestDispatch?.type === "WHOLESALE") {
+      throw new BadRequestException(
+        `Saree ${dto.sareeId} has already been dispatched to a wholesale customer`,
+      );
+    }
+    if (dto.channel === SalesChannel.RETAIL && latestDispatch?.type !== "SHOP") {
+      throw new BadRequestException(
+        `Saree ${dto.sareeId} has not been dispatched to the shop yet — it cannot be sold at the counter`,
+      );
     }
     if (alreadySold) {
       throw new BadRequestException(`Saree ${dto.sareeId} has already been sold`);

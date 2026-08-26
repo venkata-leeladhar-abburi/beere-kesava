@@ -7,7 +7,7 @@ import { weaversApi, BackendWeaver } from "../../../shared/api/weavers";
 import { factoryLoomsApi, BackendFactoryLoom } from "../../../shared/api/factory-looms";
 import { batchesApi, BackendBatch, BackendBatchSareeRow } from "../../../shared/api/batches";
 import { STOPGAP_ACTING_USER_ID } from "../../../shared/api/purchase-requests";
-import { useAuth } from "../../../contexts/AuthContext";
+import { useAuth, useAuthGate } from "../../../contexts/AuthContext";
 import { resolveAssetUrl, toStoredAssetPath } from "../../../shared/api/uploads";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -125,6 +125,8 @@ interface QcContextValue {
   getQcForLoom: (factoryLoomId: string) => QcRecord[];
   isError: boolean;
   error: unknown;
+  isLoading: boolean;
+  refetch: () => void;
 }
 
 const QcContext = createContext<QcContextValue | null>(null);
@@ -175,8 +177,11 @@ export function QcProvider({ children }: { children: React.ReactNode }) {
   const canReadFactoryLooms = role === "worker" || role === "admin" || role === "superadmin";
   const { getSareeTypeByCode } = useRatesPricing();
 
-  const { data: qcRecords = [], isError, error } = useQuery({
+  const enabled = useAuthGate();
+
+  const { data: qcRecords = [], isError, error, isLoading, refetch } = useQuery({
     queryKey: QUERY_KEY,
+    enabled,
     queryFn: async () => {
       const [qcRes, weaversRes, loomsRes, batchesRes] = await Promise.all([
         qcApi.list(),
@@ -236,7 +241,7 @@ export function QcProvider({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <QcContext.Provider value={{ qcRecords, recordQc, getQcForSaree, getQcForWeaver, getQcForLoom, isError, error }}>
+    <QcContext.Provider value={{ qcRecords, recordQc, getQcForSaree, getQcForWeaver, getQcForLoom, isError, error, isLoading, refetch: () => void refetch() }}>
       {children}
     </QcContext.Provider>
   );
@@ -250,6 +255,8 @@ const FALLBACK: QcContextValue = {
   getQcForLoom: () => [],
   isError: false,
   error: null,
+  isLoading: false,
+  refetch: () => {},
 };
 
 export function useQc(): QcContextValue {
