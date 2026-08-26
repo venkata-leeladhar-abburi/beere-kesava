@@ -9,7 +9,7 @@ import { SareeTypeCard } from "@/features/pricing";
 import { useRatesPricing } from "@/features/pricing";
 import { AnimatePresence } from "motion/react";
 import {
-  ChevronLeft, CheckCircle2, Search, AlertTriangle, ClipboardCheck,
+  ChevronLeft, CheckCircle2, Search, AlertTriangle, ClipboardCheck, User, Package,
 } from "lucide-react";
 import {
   T, F, SareeItem, InspectionResult, DefectiveLogItem, PassedLogItem, initials, splitDesignField,
@@ -163,6 +163,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
   const [selectedWeaverQC, setSelectedWeaverQC] = useState<string | null>(null);
   const [selectedBatchQC, setSelectedBatchQC] = useState<string | null>(null);
   const [weaverSearch, setWeaverSearch] = useState("");
+  const [qcPage, setQcPage] = useState(1);
 
   const pending = ALL_QUEUE.filter(s => !inspected.has(s.id) && matchesDateFilter(s.isoDate, qcDateFilter));
 
@@ -357,7 +358,8 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
   }
 
   const pad = isDesktop ? "0 0" : "0 16px";
-  const cols = isDesktop ? "repeat(4, 1fr)" : isTablet ? "repeat(3, 1fr)" : "1fr 1fr";
+  const cols = isDesktop ? "repeat(4, 1fr)" : isTablet ? "repeat(2, 1fr)" : "1fr";
+  const ITEMS_PER_PAGE = isDesktop ? 20 : isTablet ? 10 : 5;
 
   const renderCard = (s: SareeItem) => (
     <WorkerQCSareeCard
@@ -375,33 +377,93 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
   if (selectedWeaverQC !== null) {
     const wg = weaverGroups.find(w => w.name === selectedWeaverQC);
     const wSarees = wg?.sarees ?? [];
-    return (
-      <div style={{ paddingBottom: 28 }}>
-        <div style={{ background: T.gradHero, padding: isDesktop ? "10px 4px" : "10px 16px", marginBottom: 12, borderRadius: isDesktop ? 10 : 0, display: "flex", alignItems: "center", gap: 10 }}>
-          <IconButton icon={ChevronLeft} label="Back" variant="ghost" onClick={() => setSelectedWeaverQC(null)} className="w-8 h-8 flex-shrink-0 rounded-lg bg-white/12 text-white" />
-          <div style={{ flex: 1 }}>
-            <div style={{ fontFamily: F.u, fontSize: isDesktop ? 15 : 13, fontWeight: 700, color: "#FFF" }}>{selectedWeaverQC}</div>
-            <div style={{ fontFamily: F.u, fontSize: isDesktop ? 12 : 10, color: "rgba(255,255,255,0.65)" }}>{wSarees.length} saree{wSarees.length !== 1 ? "s" : ""} pending QC</div>
-          </div>
-          {wg?.code && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(wg.code) && (
-            <span style={{ fontFamily: F.m, fontSize: 12, color: T.goldL, background: "rgba(200,155,71,0.20)", padding: "3px 9px", borderRadius: 999 }}>{wg.code}</span>
-          )}
-        </div>
+    const totalPages = Math.ceil(wSarees.length / ITEMS_PER_PAGE);
+    const pageSarees = wSarees.slice((qcPage - 1) * ITEMS_PER_PAGE, qcPage * ITEMS_PER_PAGE);
 
-        {isLoading ? (
-          <LoadingState variant="skeleton" rows={4} />
-        ) : isError ? (
-          <ErrorState error={loadError} onRetry={refetchAll} />
-        ) : wSarees.length === 0 ? (
-          <div style={{ padding: "40px 20px", textAlign: "center" }}>
-            <CheckCircle2 size={36} color={T.green} style={{ margin: "0 auto 10px" }} />
-            <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: T.brown }}>All done for this weaver!</div>
-          </div>
-        ) : (
-          <div style={{ display: "grid", gridTemplateColumns: cols, gap: isDesktop ? 14 : 10, padding: pad }}>
-            {wSarees.map(renderCard)}
-          </div>
-        )}
+    return (
+      <div className={`${isDesktop ? "" : "px-4"} mt-8 sm:mt-10`} style={{ paddingBottom: 28 }}>
+        <SectionCard
+          backButton={
+            <IconButton
+              icon={ChevronLeft}
+              label="Back to weavers"
+              variant="ghost"
+              onClick={() => {
+                setSelectedWeaverQC(null);
+                setQcPage(1);
+              }}
+              className="w-10 h-10 flex-shrink-0 rounded-xl bg-white/12 text-white hover:bg-white/20"
+            />
+          }
+          icon={User}
+          title={selectedWeaverQC}
+          subtitle={`${wSarees.length} saree${wSarees.length !== 1 ? "s" : ""} pending QC`}
+          actions={
+            <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: "#FFFDF9", background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.20)", padding: "5px 14px", borderRadius: 999 }}>
+              {wSarees.length} pending
+            </span>
+          }
+        >
+          {isLoading ? (
+            <LoadingState variant="skeleton" rows={4} />
+          ) : isError ? (
+            <ErrorState error={loadError} onRetry={refetchAll} />
+          ) : wSarees.length === 0 ? (
+            <div style={{ padding: "40px 20px", textAlign: "center" }}>
+              <CheckCircle2 size={36} color={T.green} style={{ margin: "0 auto 10px" }} />
+              <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: T.brown }}>All done for this weaver!</div>
+            </div>
+          ) : (
+            <>
+              <div style={{ display: "grid", gridTemplateColumns: cols, gap: isDesktop ? 14 : 10, padding: pad }}>
+                {pageSarees.map(renderCard)}
+              </div>
+
+              {totalPages > 1 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-6 pt-4 border-t border-[#EAE5E1]">
+                  <div style={{ fontFamily: F.u }} className="text-[13px] text-[#69635E]">
+                    Showing <span className="font-semibold text-[#1D1814]">{(qcPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(qcPage * ITEMS_PER_PAGE, wSarees.length)}</span> of <span className="font-semibold text-[#1D1814]">{wSarees.length}</span> sarees
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      disabled={qcPage <= 1}
+                      onClick={() => setQcPage(p => Math.max(1, p - 1))}
+                      className="px-3 py-1.5 rounded-lg border border-[#EAE5E1] bg-white text-[12px] font-semibold text-[#4F4A45] hover:bg-[#FAF8F6] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                    >
+                      ‹ Prev
+                    </button>
+
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => setQcPage(p)}
+                        className={`w-8 h-8 rounded-lg text-[12px] font-bold cursor-pointer transition-colors ${
+                          qcPage === p
+                            ? "bg-[#6E0F2D] text-white"
+                            : "border border-[#EAE5E1] bg-white text-[#4F4A45] hover:bg-[#FAF8F6]"
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    ))}
+
+                    <button
+                      type="button"
+                      disabled={qcPage >= totalPages}
+                      onClick={() => setQcPage(p => Math.min(totalPages, p + 1))}
+                      className="px-3 py-1.5 rounded-lg border border-[#EAE5E1] bg-white text-[12px] font-semibold text-[#4F4A45] hover:bg-[#FAF8F6] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                    >
+                      Next ›
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </SectionCard>
       </div>
     );
   }
@@ -409,37 +471,89 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
   if (selectedBatchQC !== null) {
     const bg = batchGroups.find(b => b.id === selectedBatchQC);
     const bSarees = bg?.sarees ?? [];
-    const bWeaverGroups = Object.values(
-      bSarees.reduce((acc, s) => {
-        if (!acc[s.weaver]) acc[s.weaver] = { name: s.weaver, sarees: [] as SareeItem[] };
-        acc[s.weaver].sarees.push(s);
-        return acc;
-      }, {} as Record<string, { name: string; sarees: SareeItem[] }>)
-    );
-    return (
-      <div style={{ paddingBottom: 28 }}>
-        <div style={{ background: T.gradHero, padding: isDesktop ? "10px 4px" : "10px 16px", marginBottom: 16, borderRadius: isDesktop ? 10 : 0, display: "flex", alignItems: "center", gap: 10 }}>
-          <IconButton icon={ChevronLeft} label="Back" variant="ghost" onClick={() => setSelectedBatchQC(null)} className="w-8 h-8 flex-shrink-0 rounded-lg bg-white/12 text-white" />
-          <div style={{ flex: 1 }}>
-            <div style={{ fontFamily: F.m, fontSize: isDesktop ? 15 : 13, fontWeight: 700, color: T.goldL }}>{selectedBatchQC}</div>
-            <div style={{ fontFamily: F.u, fontSize: isDesktop ? 12 : 10, color: "rgba(255,255,255,0.65)" }}>{bSarees.length} saree{bSarees.length !== 1 ? "s" : ""} · {bWeaverGroups.length} weaver{bWeaverGroups.length !== 1 ? "s" : ""}</div>
-          </div>
-        </div>
+    const totalPages = Math.ceil(bSarees.length / ITEMS_PER_PAGE);
+    const pageSarees = bSarees.slice((qcPage - 1) * ITEMS_PER_PAGE, qcPage * ITEMS_PER_PAGE);
 
-        {bWeaverGroups.map(wg => (
-          <div key={wg.name} style={{ marginBottom: 20 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: isDesktop ? "0 0 8px" : "0 16px 8px" }}>
-              <div style={{ width: 28, height: 28, borderRadius: "50%", background: T.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 12, color: "#FFF" }}>{initials(wg.name)}</span>
+    return (
+      <div className={`${isDesktop ? "" : "px-4"} mt-8 sm:mt-10`} style={{ paddingBottom: 28 }}>
+        <SectionCard
+          backButton={
+            <IconButton
+              icon={ChevronLeft}
+              label="Back to batches"
+              variant="ghost"
+              onClick={() => {
+                setSelectedBatchQC(null);
+                setQcPage(1);
+              }}
+              className="w-10 h-10 flex-shrink-0 rounded-xl bg-white/12 text-white hover:bg-white/20"
+            />
+          }
+          icon={Package}
+          title={`Batch: ${selectedBatchQC}`}
+          subtitle={`${bSarees.length} saree${bSarees.length !== 1 ? "s" : ""} waiting inspection`}
+          actions={
+            <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: "#FFFDF9", background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.20)", padding: "5px 14px", borderRadius: 999 }}>
+              {bSarees.length} pending
+            </span>
+          }
+        >
+          {bSarees.length === 0 ? (
+            <div style={{ padding: "40px 20px", textAlign: "center" }}>
+              <CheckCircle2 size={36} color={T.green} style={{ margin: "0 auto 10px" }} />
+              <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: T.brown }}>All done for this batch!</div>
+            </div>
+          ) : (
+            <>
+              <div style={{ display: "grid", gridTemplateColumns: cols, gap: isDesktop ? 14 : 10, padding: pad }}>
+                {pageSarees.map(renderCard)}
               </div>
-              <span style={{ fontFamily: F.u, fontSize: isDesktop ? 14 : 12, fontWeight: 600, color: T.brown }}>{wg.name}</span>
-              <span style={{ fontFamily: F.u, fontSize: 12, color: T.muted, background: T.bgGold, border: `1px solid rgba(200,155,71,0.25)`, padding: "2px 8px", borderRadius: 999 }}>{wg.sarees.length} sarees</span>
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: cols, gap: isDesktop ? 14 : 10, padding: pad }}>
-              {wg.sarees.map(renderCard)}
-            </div>
-          </div>
-        ))}
+
+              {totalPages > 1 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-6 pt-4 border-t border-[#EAE5E1]">
+                  <div style={{ fontFamily: F.u }} className="text-[13px] text-[#69635E]">
+                    Showing <span className="font-semibold text-[#1D1814]">{(qcPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(qcPage * ITEMS_PER_PAGE, bSarees.length)}</span> of <span className="font-semibold text-[#1D1814]">{bSarees.length}</span> sarees
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      disabled={qcPage <= 1}
+                      onClick={() => setQcPage(p => Math.max(1, p - 1))}
+                      className="px-3 py-1.5 rounded-lg border border-[#EAE5E1] bg-white text-[12px] font-semibold text-[#4F4A45] hover:bg-[#FAF8F6] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                    >
+                      ‹ Prev
+                    </button>
+
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => setQcPage(p)}
+                        className={`w-8 h-8 rounded-lg text-[12px] font-bold cursor-pointer transition-colors ${
+                          qcPage === p
+                            ? "bg-[#6E0F2D] text-white"
+                            : "border border-[#EAE5E1] bg-white text-[#4F4A45] hover:bg-[#FAF8F6]"
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    ))}
+
+                    <button
+                      type="button"
+                      disabled={qcPage >= totalPages}
+                      onClick={() => setQcPage(p => Math.min(totalPages, p + 1))}
+                      className="px-3 py-1.5 rounded-lg border border-[#EAE5E1] bg-white text-[12px] font-semibold text-[#4F4A45] hover:bg-[#FAF8F6] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                    >
+                      Next ›
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </SectionCard>
       </div>
     );
   }
@@ -458,7 +572,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
         isDesktop={isDesktop}
       />
 
-      <div className={isDesktop ? "" : "px-4"}>
+      <div className={`${isDesktop ? "" : "px-4"} mt-8 sm:mt-10`}>
         <SectionCard
           icon={ClipboardCheck}
           title="Pending Quality Check"
@@ -483,28 +597,116 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
             <>
               <div style={{ paddingBottom: 16 }}>
                 <Input
-                  value={weaverSearch} onChange={e => setWeaverSearch(e.target.value)}
+                  value={weaverSearch} onChange={e => { setWeaverSearch(e.target.value); setQcPage(1); }}
                   placeholder="Search weavers or looms..."
                   iconLeft={Search}
                   className="w-full"
                 />
               </div>
               <WorkerQCWeaverGrid
-                filteredWeavers={filteredWeavers}
+                filteredWeavers={filteredWeavers.slice((qcPage - 1) * ITEMS_PER_PAGE, qcPage * ITEMS_PER_PAGE)}
                 setSelectedWeaverQC={setSelectedWeaverQC}
                 isDesktop={isDesktop}
                 isTablet={isTablet}
                 pad="0"
               />
+
+              {Math.ceil(filteredWeavers.length / ITEMS_PER_PAGE) > 1 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-6 pt-4 border-t border-[#EAE5E1]">
+                  <div style={{ fontFamily: F.u }} className="text-[13px] text-[#69635E]">
+                    Showing <span className="font-semibold text-[#1D1814]">{(qcPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(qcPage * ITEMS_PER_PAGE, filteredWeavers.length)}</span> of <span className="font-semibold text-[#1D1814]">{filteredWeavers.length}</span> weavers
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      disabled={qcPage <= 1}
+                      onClick={() => setQcPage(p => Math.max(1, p - 1))}
+                      className="px-3 py-1.5 rounded-lg border border-[#EAE5E1] bg-white text-[12px] font-semibold text-[#4F4A45] hover:bg-[#FAF8F6] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                    >
+                      ‹ Prev
+                    </button>
+
+                    {Array.from({ length: Math.ceil(filteredWeavers.length / ITEMS_PER_PAGE) }, (_, i) => i + 1).map(p => (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => setQcPage(p)}
+                        className={`w-8 h-8 rounded-lg text-[12px] font-bold cursor-pointer transition-colors ${
+                          qcPage === p
+                            ? "bg-[#6E0F2D] text-white"
+                            : "border border-[#EAE5E1] bg-white text-[#4F4A45] hover:bg-[#FAF8F6]"
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    ))}
+
+                    <button
+                      type="button"
+                      disabled={qcPage >= Math.ceil(filteredWeavers.length / ITEMS_PER_PAGE)}
+                      onClick={() => setQcPage(p => Math.min(Math.ceil(filteredWeavers.length / ITEMS_PER_PAGE), p + 1))}
+                      className="px-3 py-1.5 rounded-lg border border-[#EAE5E1] bg-white text-[12px] font-semibold text-[#4F4A45] hover:bg-[#FAF8F6] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                    >
+                      Next ›
+                    </button>
+                  </div>
+                </div>
+              )}
             </>
           ) : (
-            <WorkerQCBatchGrid
-              batchGroups={batchGroups}
-              setSelectedBatchQC={setSelectedBatchQC}
-              isDesktop={isDesktop}
-              isTablet={isTablet}
-              pad="0"
-            />
+            <>
+              <WorkerQCBatchGrid
+                batchGroups={batchGroups.slice((qcPage - 1) * ITEMS_PER_PAGE, qcPage * ITEMS_PER_PAGE)}
+                setSelectedBatchQC={setSelectedBatchQC}
+                isDesktop={isDesktop}
+                isTablet={isTablet}
+                pad="0"
+              />
+
+              {Math.ceil(batchGroups.length / ITEMS_PER_PAGE) > 1 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-6 pt-4 border-t border-[#EAE5E1]">
+                  <div style={{ fontFamily: F.u }} className="text-[13px] text-[#69635E]">
+                    Showing <span className="font-semibold text-[#1D1814]">{(qcPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(qcPage * ITEMS_PER_PAGE, batchGroups.length)}</span> of <span className="font-semibold text-[#1D1814]">{batchGroups.length}</span> batches
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      disabled={qcPage <= 1}
+                      onClick={() => setQcPage(p => Math.max(1, p - 1))}
+                      className="px-3 py-1.5 rounded-lg border border-[#EAE5E1] bg-white text-[12px] font-semibold text-[#4F4A45] hover:bg-[#FAF8F6] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                    >
+                      ‹ Prev
+                    </button>
+
+                    {Array.from({ length: Math.ceil(batchGroups.length / ITEMS_PER_PAGE) }, (_, i) => i + 1).map(p => (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => setQcPage(p)}
+                        className={`w-8 h-8 rounded-lg text-[12px] font-bold cursor-pointer transition-colors ${
+                          qcPage === p
+                            ? "bg-[#6E0F2D] text-white"
+                            : "border border-[#EAE5E1] bg-white text-[#4F4A45] hover:bg-[#FAF8F6]"
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    ))}
+
+                    <button
+                      type="button"
+                      disabled={qcPage >= Math.ceil(batchGroups.length / ITEMS_PER_PAGE)}
+                      onClick={() => setQcPage(p => Math.min(Math.ceil(batchGroups.length / ITEMS_PER_PAGE), p + 1))}
+                      className="px-3 py-1.5 rounded-lg border border-[#EAE5E1] bg-white text-[12px] font-semibold text-[#4F4A45] hover:bg-[#FAF8F6] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                    >
+                      Next ›
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </SectionCard>
       </div>

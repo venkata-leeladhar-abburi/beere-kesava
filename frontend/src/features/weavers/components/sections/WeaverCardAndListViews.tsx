@@ -11,6 +11,7 @@ import { weaversApi, BackendWeaverStats } from "../../../../shared/api/weavers";
 import { Button } from "../../../../shared/ui/primitives";
 import { resolveAssetUrl } from "../../../../shared/api/uploads";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { WeaverCardMockupStyle } from "./WeaverCardMockupStyle";
 
 export function useRealWeavers() {
   const { data: weaversRes, isLoading: rosterLoading, isError: rosterError } = useQuery({
@@ -91,137 +92,25 @@ export function WeaverCardGrid({ onSelect, onEdit, onBatches }: { onSelect: (w: 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24, alignItems: "stretch" }}>
         {visible.map((w, i) => {
           return (
-            <FadeUp key={w.id} delay={i * 0.05} style={{ height: "100%" }}>
-              <motion.div
-                whileHover={{ y: -6, boxShadow: "0 30px 70px rgba(74,6,27,0.12)" }}
-                transition={{ type: "spring", stiffness: 240, damping: 22 }}
-                style={{ background: "#FFFFFF", borderRadius: 24, border: `1px solid ${T.borderDef}`, overflow: "hidden", display: "flex", flexDirection: "column", height: "100%" }}
-              >
-                {/* Header Banner - Full Image Height 170px */}
-                <div style={{ height: 170, position: "relative", overflow: "hidden", background: T.silkCream, flexShrink: 0 }}>
-                  {w.photo ? (
-                    <motion.img
-                      whileHover={{ scale: 1.05 }}
-                      transition={{ duration: 0.5 }}
-                      src={w.photo}
-                      alt={w.name}
-                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                    />
-                  ) : (
-                    <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, ${w.bg} 0%, ${T.luxuryBrown} 100%)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <span style={{ fontFamily: F.display, fontSize: 48, fontWeight: 700, color: "#FFFDF9", letterSpacing: "1px" }}>{w.initials}</span>
-                    </div>
-                  )}
-
-                  {/* Dark gradient overlay for modern look */}
-                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.4) 100%)", pointerEvents: "none" }} />
-
-                  {/* Floating ID badge in top left */}
-                  <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(26,10,15,0.65)", backdropFilter: "blur(6px)", color: "#FFFDF9", fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, letterSpacing: "0.5px", padding: "4px 10px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.15)" }}>
-                    {w.code ?? w.id}
-                  </div>
-
-                  {/* Floating gentle status pill overlay at the bottom left of the image banner */}
-                  <div style={{
-                    position: "absolute",
-                    bottom: 12,
-                    left: 12,
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 6,
-                    padding: "4px 8px"
-                  }}>
-                    {w.status === "active" ? (
-                      <Activity size={13} color="#2ECC71" style={{ flexShrink: 0 }} />
-                    ) : w.status === "qc" ? (
-                      <Clock size={13} color="#F1C40F" style={{ flexShrink: 0 }} />
-                    ) : (
-                      <AlertTriangle size={13} color="#BDC3C7" style={{ flexShrink: 0 }} />
-                    )}
-                    <span style={{
-                      fontFamily: F.ui,
-                      fontSize: 12,
-                      fontWeight: 700,
-                      color: "#FFFFFF",
-                      textTransform: "uppercase" as const,
-                      letterSpacing: "0.5px",
-                      textShadow: "0 1px 4px rgba(0,0,0,0.6)"
-                    }}>
-                      {w.status === "active" ? "Currently Weaving" : w.status === "qc" ? "Pending QC" : "Idle"}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Content Area */}
-                <div style={{ padding: "20px", display: "flex", flexDirection: "column", flex: 1 }}>
-                  {/* Name and Batch beside it */}
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" as const, marginBottom: 8 }}>
-                    <div style={{ fontFamily: F.display, fontSize: 20, color: T.luxuryBrown, fontWeight: 800, lineHeight: 1.25 }}>
-                      {w.name}
-                    </div>
-                    {w.batch && (
-                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: T.royalBurgundy, background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 6, padding: "3px 8px", textTransform: "uppercase" }}>
-                        {w.batch}
-                      </span>
-                    )}
-                  </div>
-
-                  <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 14 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
-                      <MapPin size={14} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
-                      <span>{w.village}</span>
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
-                      <Phone size={14} color={T.royalBurgundy} style={{ flexShrink: 0 }} />
-                      <span>{w.mobile}</span>
-                    </div>
-                  </div>
-
-                  <div style={{ height: 1, background: "rgba(110,15,45,0.06)", margin: "4px 0 12px 0" }} />
-
-                  {/* Looms stat */}
-                  <div style={{ marginBottom: 12 }}>
-                    <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "10px 12px", display: "flex", alignItems: "center", gap: 8 }}>
-                      <div style={{ width: 26, height: 26, borderRadius: 6, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <Rows size={14} color={T.royalBurgundy} />
-                      </div>
-                      <div style={{ display: "flex", flexDirection: "column" }}>
-                        <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, letterSpacing: "0.5px", textTransform: "uppercase" }}>Looms</span>
-                        <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{w.looms} Looms</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Action buttons */}
-                  <div style={{ display: "flex", gap: 8, marginTop: "auto", paddingTop: 8 }}>
-                    <Button
-                      onClick={() => onSelect(w)}
-                      variant="secondary"
-                      size="sm"
-                      className="flex-1 rounded-xl bg-[rgba(110,15,45,0.04)] text-[#6E0F2D] border-[1.5px] border-[rgba(110,15,45,0.15)]"
-                    >
-                      <Eye size={14} /> Details
-                    </Button>
-                    <Button
-                      onClick={() => onEdit(w)}
-                      variant="secondary"
-                      size="sm"
-                      className="flex-1 rounded-xl bg-transparent text-[#6E0F2D] border border-[#6E0F2D]"
-                    >
-                      <Edit3 size={13} /> Edit
-                    </Button>
-                    <Button
-                      onClick={() => onBatches(w)}
-                      variant="secondary"
-                      size="sm"
-                      className="flex-1 rounded-xl bg-[rgba(110,15,45,0.04)] text-[#6E0F2D] border-[1.5px] border-[rgba(110,15,45,0.15)]"
-                    >
-                      <Layers3 size={14} /> Batches
-                    </Button>
-                  </div>
-                </div>
-              </motion.div>
-            </FadeUp>
+            <div key={w.id}>
+              <WeaverCardMockupStyle
+                weaver={{
+                  id: w.id,
+                  name: w.name,
+                  initials: w.initials,
+                  code: w.code,
+                  village: w.village || undefined,
+                  mobile: w.mobile,
+                  looms: w.looms,
+                  status: w.status,
+                  photo: w.photo,
+                }}
+                index={i}
+                onNavigateDetails={() => onSelect(w)}
+                onNavigateEdit={() => onEdit(w)}
+                onNavigateBatches={() => onBatches(w)}
+              />
+            </div>
           );
         })}
       </div>

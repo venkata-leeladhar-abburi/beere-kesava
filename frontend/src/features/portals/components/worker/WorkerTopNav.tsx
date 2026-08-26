@@ -105,7 +105,7 @@ export function WorkerTopNav({ active, onSelect, bp, pendingQcCount = 0 }: Worke
       </div>
 
       {/* Nav tabs */}
-      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: isTablet ? 2 : 6, overflowX: "auto", minWidth: 0 }}>
+      <div className="scrollbar-none" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: isTablet ? 2 : 6, overflowX: isTablet ? "auto" : "hidden", minWidth: 0, scrollbarWidth: "none", msOverflowStyle: "none" }}>
         {topNavItems(pendingQcCount).map(item => {
           const isActive = active === item.id;
           return (
@@ -114,8 +114,6 @@ export function WorkerTopNav({ active, onSelect, bp, pendingQcCount = 0 }: Worke
               variant="tertiary"
               onClick={() => onSelect(item.id)}
               aria-current={isActive ? "page" : undefined}
-              // `!` overrides Button's tertiary hover, which is a near-white
-              // neutral-50 — it flashed white against this dark nav bar.
               className={`flex-shrink-0 gap-2 rounded-[10px] border-0 relative hover:!text-[#E7C983] ${isTablet ? "px-3 py-2" : "px-4 py-2.5"} ${isActive ? "bg-[rgba(200,155,71,0.16)] hover:!bg-[rgba(200,155,71,0.22)]" : "bg-transparent hover:!bg-[rgba(245,232,208,0.10)]"}`}
             >
               <item.Icon size={isTablet ? 15 : 16} color={isActive ? C.goldL : "rgba(245,232,208,0.80)"} />
@@ -183,7 +181,6 @@ export function WorkerTopNav({ active, onSelect, bp, pendingQcCount = 0 }: Worke
                 <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 12, color: "#FFF" }}>{initials}</span>
               </div>
               <span style={{ fontFamily: F.u, fontWeight: 500, fontSize: 13, color: C.cream }}>{name}</span>
-              <ChevronDown size={12} color="rgba(245,232,208,0.70)" />
             </motion.div>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="!min-w-[210px] !p-0 !rounded-[14px] !overflow-hidden" style={{ background: "#FFFDF9", border: `1px solid rgba(110,15,45,0.12)`, zIndex: "var(--z-tooltip)" }}>
