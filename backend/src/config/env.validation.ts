@@ -15,13 +15,13 @@ class EnvironmentVariables {
   @Max(65535)
   PORT!: number;
 
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  AISENSY_API_KEY!: string;
+  AISENSY_API_KEY?: string;
 
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  AISENSY_SENDER_NAME!: string;
+  AISENSY_SENDER_NAME?: string;
 
   @IsOptional()
   @IsString()

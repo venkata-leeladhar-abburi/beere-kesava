@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { motion } from "motion/react";
 import {
-  User, Bell, ChevronDown, LogOut,
+  User, Bell, LogOut,
   Home, Search, Users, Sparkles, Truck,
 } from "lucide-react";
 import { C, F } from "./tokens";
