@@ -31,5 +31,5 @@ export const MATS = [
   },
 ];
 
-type ActItem = { icon: React.ReactNode; bg: string; text: string; time: string; glow: string };
+type ActItem = { id?: string; icon: React.ReactNode; bg: string; text: string; time: string; glow: string };
 export const ACT: ActItem[] = [];

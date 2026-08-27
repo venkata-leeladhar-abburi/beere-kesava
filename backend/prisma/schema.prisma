@@ -339,6 +339,7 @@ model User {
   addedPurchases           Purchase[]               @relation("PurchaseAddedBy")
   inspectedQcRecords       QcRecord[]               @relation("InspectedBy")
   assignedFinishings       FinishingAssignment[]    @relation("AssignedBy")
+  dispatchedRecords        DispatchRecord[]         @relation("DispatchedBy")
   raisedQuotations         Quotation[]              @relation("RaisedBy")
   requestedPurchases       PurchaseRequest[]        @relation("RequestedBy")
   decidedPurchases         PurchaseRequest[]        @relation("DecidedBy")
@@ -943,6 +944,12 @@ model DispatchRecord {
   // `notes` in that form's UI (retail dispatch uses `notes` instead).
   expectedDelivery    DateTime?
   specialInstructions String?
+  // Which user actually raised this dispatch — multiple users can share the
+  // role that's allowed to dispatch, so the role alone isn't enough to
+  // attribute the action to a person. Nullable: dispatches recorded before
+  // this attribution existed have no value here.
+  dispatchedById String?
+  dispatchedBy   User?   @relation("DispatchedBy", fields: [dispatchedById], references: [id])
 
   sarees  DispatchSaree[]
   invoice Invoice?

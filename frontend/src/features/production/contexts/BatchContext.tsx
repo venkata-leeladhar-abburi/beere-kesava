@@ -337,6 +337,12 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
       batchesApi.receiveRow(args.batchId, args.serial, args.payload),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      // Receiving a saree auto-draws its weight down from the weaver's
+      // outstanding material (BatchesService.receiveRow ->
+      // MaterialReturnsService.createAutoReturnForReceipt(ByWeight)) — refetch
+      // so the weaver portal's "Material Still With You" balance reflects it
+      // immediately instead of only after some unrelated refetch.
+      void queryClient.invalidateQueries({ queryKey: ["materialIssue", "receivedSarees"] });
     },
     onError: (err) => {
        

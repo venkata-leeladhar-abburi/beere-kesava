@@ -20,6 +20,10 @@ import { resolveAssetUrl, toStoredAssetPath } from "../../../shared/api/uploads"
 export type QcResult = "passed" | "semi" | "defective";
 
 export interface QcRecord {
+  /** The QC record's own id — distinct from sareeId, which repeats across a
+   *  saree's inspection history (fail, rework, re-inspect). Use this as the
+   *  React list key wherever a saree can appear more than once. */
+  id: string;
   sareeId: string;
   /** Set when the saree was woven by an outsourced weaver. */
   weaverId: string | null;
@@ -142,6 +146,7 @@ function backendRecordToFrontend(
 ): QcRecord {
   const row = rowLookup.get(r.sareeId);
   return {
+    id: r.id,
     sareeId: r.sareeId,
     weaverId: r.weaverId,
     weaverName: r.weaverId ? (weaverLookup.get(r.weaverId) ?? null) : null,
@@ -161,7 +166,10 @@ function backendRecordToFrontend(
     qcDate: r.qcDate,
     notes: r.notes ?? undefined,
     photoUrl: resolveAssetUrl(r.photoUrl),
-    inspectedBy: "Worker Staff",
+    // Real name of whoever performed the check — joined server-side onto
+    // QcRecord.inspectedById. Falls back to a generic label only when that
+    // relation is genuinely missing (legacy record with no resolvable user).
+    inspectedBy: r.inspectedBy ? `${r.inspectedBy.firstName} ${r.inspectedBy.lastName}`.trim() : "Worker Staff",
   };
 }
 

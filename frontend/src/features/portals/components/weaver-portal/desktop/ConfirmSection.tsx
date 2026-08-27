@@ -41,6 +41,7 @@ export function ConfirmSection({
   setRequestSent: (v: boolean) => void;
 }) {
   const { user } = useAuth();
+  const { weaverCode } = useCurrentWeaver();
   const { isLoading: materialsLoading, isError: materialsError, error: materialsErrorObj, refetch: refetchMaterials, updateSignatureStatus } = useMaterialIssue();
   const { confirmedRecords: confirmedReturns } = useMyMaterialReturns();
   const [hasSig, setHasSigLocal] = useState(false);

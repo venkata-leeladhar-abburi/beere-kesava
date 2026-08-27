@@ -186,6 +186,10 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
         <span style={{ fontFamily: F.u, fontSize: 11, fontWeight: 700, color: "#8B6018", background: "rgba(200,146,58,0.14)", borderRadius: 999, padding: "2px 8px", display: "inline-block", wordBreak: "break-all" }}>{v as string}</span>
       ) : <span style={{ color: C.muted, fontSize: 12 }}>—</span>,
     },
+    {
+      id: "assignedBy", header: "Assigned By", accessor: a => a.assignedBy,
+      cell: v => <span style={{ fontFamily: F.u, fontSize: 12, color: C.text, whiteSpace: "nowrap" }}>{(v as string) || "—"}</span>,
+    },
     { id: "assignedDate", header: "Assigned Date", accessor: a => formatDateStr(a.assignedDate), cell: v => <span style={{ fontFamily: F.m, fontSize: 12 }}>{v as string}</span> },
     {
       id: "returnedDate", header: "Returned Date", accessor: a => returns.find(rt => rt.sareeId === a.sareeId)?.receivedDate,

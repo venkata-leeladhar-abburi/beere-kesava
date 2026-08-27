@@ -72,7 +72,10 @@ const VendorsPage = lazy(() => import("../../vendors/components/VendorsPage").th
 const SuppliersPage = lazy(() => import("../../suppliers/components/SuppliersPage").then(m => ({ default: m.SuppliersPage })));
 // eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 const FactoryLoomPage = lazy(() => import("../../production/components/FactoryLoomPage").then(m => ({ default: m.FactoryLoomPage })));
+// eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
+const StaffDirectoryPage = lazy(() => import("../../users/components/staff-directory/StaffDirectoryPage").then(m => ({ default: m.StaffDirectoryPage })));
 
+import { WORKER_SCOPE, SHOP_SCOPE } from "../../users/components/staff-directory/portalScopes";
 import { TabLoadingFallback } from './TabLoadingFallback';
 import { ErrorBoundary } from '../../../components/ErrorBoundary';
 import {
@@ -109,11 +112,19 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
   const { state } = useLocation();
   const { tab } = useParams();
   const routerNavigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, enterStaffView } = useAuth();
 
   const handleLogout = () => {
     logout();
     routerNavigate("/login");
+  };
+
+  // Open a staff portal as this admin. Not impersonation — the session and
+  // identity are unchanged, so anything recorded in there is attributed to
+  // the admin, and the portal shows a banner plus a way back.
+  const viewAsStaff = (target: "worker" | "shop") => {
+    enterStaffView(target);
+    routerNavigate(target === "worker" ? "/worker" : "/shop");
   };
 
   // Map path to active tab
@@ -138,6 +149,8 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
   else if (tab === "audit-log") nav = "AuditLog";
   else if (tab === "receive-stock") nav = "ReceiveStock";
   else if (tab === "add-user") nav = "AddUser";
+  else if (tab === "worker-staff") nav = "WorkerStaff";
+  else if (tab === "shop-staff") nav = "ShopStaff";
   else if (tab === "external-purchases") nav = "ExternalPurchases";
   else if (tab === "supplier-returns") nav = "SupplierReturns";
   else if (tab === "batches") nav = "Batches";
@@ -183,6 +196,8 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
       AuditLog: "/admin/audit-log",
       ReceiveStock: "/admin/receive-stock",
       AddUser: "/admin/add-user",
+      WorkerStaff: "/admin/worker-staff",
+      ShopStaff: "/admin/shop-staff",
       ExternalPurchases: "/admin/external-purchases",
       SupplierReturns: "/admin/supplier-returns",
       Batches: "/admin/batches",
@@ -246,6 +261,10 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
         <AuditLogPage />
       ) : mobileTab === "AddUser" ? (
         <AddUserPage />
+      ) : mobileTab === "WorkerStaff" ? (
+        <StaffDirectoryPage scope={WORKER_SCOPE} />
+      ) : mobileTab === "ShopStaff" ? (
+        <StaffDirectoryPage scope={SHOP_SCOPE} />
       ) : mobileTab === "ExternalPurchases" ? (
         <ExternalPurchasesPage />
       ) : mobileTab === "SupplierReturns" ? (
@@ -353,7 +372,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
     </div>
   ) : (
     <div id="main-content" style={{ width: "100%", minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui, display: "flex", flexDirection: "column" }}>
-      <TopNav active={nav} set={navigate} onBack={onBack} onLogout={handleLogout} sections={PAGE_SECTIONS[nav]} onProfile={() => setShowProfileModal(true)} />
+      <TopNav active={nav} set={navigate} onBack={onBack} onLogout={handleLogout} sections={PAGE_SECTIONS[nav]} onProfile={() => setShowProfileModal(true)} onViewAs={viewAsStaff} />
       <ErrorBoundary variant="inline" resetKeys={[nav]}>
       <Suspense fallback={<TabLoadingFallback />}>
       {nav === "Materials" ? (
@@ -483,6 +502,10 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
         <AuditLogPage />
       ) : nav === "AddUser" ? (
         <AddUserPage />
+      ) : nav === "WorkerStaff" ? (
+        <StaffDirectoryPage scope={WORKER_SCOPE} />
+      ) : nav === "ShopStaff" ? (
+        <StaffDirectoryPage scope={SHOP_SCOPE} />
       ) : nav === "ExternalPurchases" ? (
         <ExternalPurchasesPage />
       ) : nav === "SupplierReturns" ? (

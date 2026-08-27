@@ -9,6 +9,7 @@ import {
   CreateMaterialIssuePayload,
   materialIssuesApi,
 } from "../../../shared/api/material-issues";
+import { BackendMaterialReturnRecord, materialReturnsApi } from "../../../shared/api/material-returns";
 import { BackendWeaver, weaversApi } from "../../../shared/api/weavers";
 import { BackendFactoryLoom, factoryLoomsApi } from "../../../shared/api/factory-looms";
 import { STOPGAP_ACTING_USER_ID } from "../../../shared/api/purchase-requests";
@@ -164,10 +165,13 @@ export function materialItemToGrams(m: IssuedMaterialItem): number {
 }
 
 // ─── Received sarees (returned by weaver, weighed by worker staff) ─────────────
-// NOTE(backend gap): there is no backend model for tracking returned/weighed
-// sarees yet — MaterialIssuesModule only covers the outbound issuance record.
-// This stays local/mock (like the remote-signature confirmation flow below)
-// until that's built; wiring it here would just be a differently-shaped mock.
+// Backed by MaterialReturnRecord: BatchesService.receiveRow auto-creates an
+// APPROVED return record (drawn from the weaver's outstanding material) the
+// moment a saree is received, whether Worker Staff entered a full warp/
+// resham/jari split or just the plain saree weight. Each return record here
+// stands in for one "received saree" line for the outstanding-balance math
+// below — it isn't literally one row per saree (a saree can span several
+// material-type items on the same record), but the weight is what matters.
 export interface ReceivedSareeRecord {
   id: string;          // Saree ID e.g. "RAVI-L2-004"
   weaverId: string;
@@ -188,6 +192,34 @@ export interface ReceivedSareeRecord {
 }
 
 const INITIAL_RECEIVED_SAREES: ReceivedSareeRecord[] = [];
+
+/** Grams for one MaterialReturnItem — auto-created returns always store
+ *  quantity in grams (unit "G"); a manually-created return can use kg or,
+ *  for Jari, Reels/Buns. */
+function returnItemToGrams(item: { materialType: string; quantity: string; unit: string }): number {
+  const qty = Number(item.quantity) || 0;
+  const unit = (item.unit || "").toLowerCase();
+  if (item.materialType === "JARI") {
+    if (unit.startsWith("bun")) return qty * (JARI_REEL_GRAMS / BUNS_PER_REEL);
+    if (unit.startsWith("reel")) return qty * JARI_REEL_GRAMS;
+    return qty; // already grams
+  }
+  if (unit === "kg" || unit === "kgs") return qty * 1000;
+  return qty; // "g" / "G"
+}
+
+function backendReturnToReceivedSaree(r: BackendMaterialReturnRecord): ReceivedSareeRecord | null {
+  if (r.status === "CANCELLED" || !r.weaverId) return null;
+  const weightGrams = r.items.reduce((sum, item) => sum + returnItemToGrams(item), 0);
+  return {
+    id: r.id,
+    weaverId: r.weaverId,
+    batchId: r.batchId ?? undefined,
+    weightGrams,
+    receivedAt: r.receivedAt,
+    status: "received",
+  };
+}
 
 // ─── Outstanding material summary ─────────────────────────────────────────────
 export interface WeaverMaterialSummary {
@@ -304,8 +336,13 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
 
   const { data: receivedSarees = INITIAL_RECEIVED_SAREES } = useQuery({
     queryKey: RECEIVED_SAREES_KEY,
-    queryFn: () => Promise.resolve(INITIAL_RECEIVED_SAREES),
-    initialData: INITIAL_RECEIVED_SAREES,
+    enabled,
+    queryFn: async () => {
+      const res = await materialReturnsApi.list();
+      return res.items
+        .map(backendReturnToReceivedSaree)
+        .filter((r): r is ReceivedSareeRecord => r !== null);
+    },
   });
 
   const addIssueRecordMutation = useMutation({

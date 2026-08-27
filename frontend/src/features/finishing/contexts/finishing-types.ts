@@ -130,6 +130,8 @@ export interface DispatchRecord {
   // first step) and transport / receipt details were skipped to be filled in later.
   pendingTransport?: boolean;
   pendingReceipt?: boolean;
+  /** Full name of who actually raised this dispatch — undefined for records predating this attribution. */
+  dispatchedByName?: string;
   /** Server-relative path to the uploaded LR receipt, once one is attached. */
   receiptUrl?: string | null;
   quotationRef?: string;

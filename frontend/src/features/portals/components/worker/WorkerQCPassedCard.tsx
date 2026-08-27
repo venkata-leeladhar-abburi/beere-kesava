@@ -28,7 +28,7 @@ export function WorkerQCPassedCard({
             </div>
 
             <div className="min-w-0 flex-1">
-              <div style={{ fontFamily: F.m }} className="text-[13.5px] font-bold text-[#6E0F2D] truncate">
+              <div title={id} style={{ fontFamily: F.m }} className="text-[13.5px] font-bold text-[#6E0F2D] break-all">
                 {id}
               </div>
               <div style={{ fontFamily: F.u }} className="text-[13.5px] font-medium text-[#4F4A45] mt-0.5 truncate">

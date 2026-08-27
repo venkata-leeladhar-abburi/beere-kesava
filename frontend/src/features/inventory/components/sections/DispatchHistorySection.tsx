@@ -125,6 +125,12 @@ function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { row
       },
     },
     {
+      id: "dispatchedBy", header: "Dispatched By", accessor: d => d.dispatchedByName ?? "", width: 150, priority: 3,
+      cell: (_v, d) => d.dispatchedByName
+        ? <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, whiteSpace: "nowrap" }}>{d.dispatchedByName}</span>
+        : <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>—</span>,
+    },
+    {
       id: "status", header: "Status", accessor: d => (d.pendingTransport || d.pendingReceipt) ? "incomplete" : "complete", type: "status", width: 160,
       cell: (_v, d) => {
         const incomplete = d.pendingTransport || d.pendingReceipt;
@@ -255,6 +261,11 @@ function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { row
                     <div style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 600, color: T.taupe, textTransform: "uppercase" }}>Sarees & Firm</div>
                     <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, marginTop: 2 }}>{d.sareeIds.length} sarees</div>
                     <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>{d.firmName || firm?.firmName || "—"}</div>
+                  </div>
+
+                  <div>
+                    <div style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 600, color: T.taupe, textTransform: "uppercase" }}>Dispatched By</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, marginTop: 2 }}>{d.dispatchedByName || "—"}</div>
                   </div>
                 </div>
 

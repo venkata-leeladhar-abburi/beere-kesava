@@ -36,6 +36,8 @@ export interface BackendDispatchRecord {
   notes: string | null;
   expectedDelivery: string | null;
   specialInstructions: string | null;
+  /** Who actually raised this dispatch — null for records predating this attribution. */
+  dispatchedBy: { id: string; firstName: string; lastName: string } | null;
   sarees: BackendDispatchSaree[];
 }
 

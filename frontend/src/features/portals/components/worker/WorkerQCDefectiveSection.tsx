@@ -88,6 +88,9 @@ function DefectiveCard({ d, onView, onViewPhoto }: { d: DefectiveLogItem; onView
               <Calendar size={15} className="text-[#C89B47] flex-shrink-0" />
               <span style={{ fontFamily: F.u }}>{d.date}</span>
             </div>
+            <div style={{ fontFamily: F.u }} className="mt-0.5 truncate text-[11.5px] font-medium text-[#89837E]">
+              by {d.inspectedBy || "Worker Staff"}
+            </div>
           </div>
 
           {/* Deduction */}

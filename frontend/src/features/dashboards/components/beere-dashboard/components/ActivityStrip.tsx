@@ -33,6 +33,7 @@ export function ActivityStrip({ onNavigate }: { onNavigate: (tab: string) => voi
       const isMaterial = a.module?.toLowerCase().includes("material") || a.module?.toLowerCase().includes("yarn");
       const isPayment = a.module?.toLowerCase().includes("payment") || a.module?.toLowerCase().includes("invoice");
       return {
+        id: a.id,
         bg: isWeaver ? G.gold : isMaterial ? G.button : isPayment ? G.gold : G.hero,
         glow: isWeaver ? "rgba(200,155,71,0.25)" : isMaterial ? "rgba(110,15,45,0.25)" : isPayment ? "rgba(30,102,64,0.25)" : "rgba(74,6,27,0.25)",
         icon: isWeaver ? <Users size={20} color="#FFF" /> : isMaterial ? <Package size={20} color="#FFF" /> : isPayment ? <IndianRupee size={20} color="#FFF" /> : <Scissors size={20} color="#FFF" />,
@@ -72,9 +73,12 @@ export function ActivityStrip({ onNavigate }: { onNavigate: (tab: string) => voi
         </div>
         <div style={{ display: "flex", gap: 14 }}>
           {liveActions.map((a, i) => (
-            // No stable id on activity entries (static fallback or derived text/time); composite key avoids index-only key.
+            // Real audit-log entries carry a stable id; only the (always-empty)
+            // static ACT fallback needs the composite key. Two distinct real
+            // actions can share the same text+time-bucket (e.g. two QC passes
+            // in the same minute), which duplicated this key before.
             <motion.div
-              key={`${a.text}-${a.time}`}
+              key={a.id ?? `${a.text}-${a.time}-${i}`}
               initial={{ opacity: 0, y: 36, scale: 0.88, filter: "blur(7px)", boxShadow: "0px 0px 0px rgba(0,0,0,0)", backgroundColor: "rgba(255,255,255,0.04)" }}
               animate={inView ? { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", boxShadow: "0px 0px 0px rgba(0,0,0,0)", backgroundColor: "rgba(255,255,255,0.04)" } : undefined}
               whileHover={{ y: -7, scale: 1.025, boxShadow: `0px 22px 56px ${a.glow}`, backgroundColor: "rgba(255,255,255,0.08)" }}

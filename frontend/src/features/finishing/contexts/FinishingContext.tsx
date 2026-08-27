@@ -117,6 +117,7 @@ function backendDispatchToFrontend(d: BackendDispatchRecord): DispatchRecord {
     quotationRef: d.quotationRef ?? undefined,
     expectedDelivery: d.expectedDelivery ?? undefined,
     specialInstructions: d.specialInstructions ?? undefined,
+    dispatchedByName: d.dispatchedBy ? `${d.dispatchedBy.firstName} ${d.dispatchedBy.lastName}`.trim() : undefined,
   };
 }
 
