@@ -1,6 +1,7 @@
 import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { BulkOrderCreateModal } from "./BulkOrderCreateModal";
 
 const MOCK_WHOLESALE_CUSTOMERS = [
@@ -47,6 +48,7 @@ describe("BulkOrderCreateModal validation", () => {
   });
 
   it("submits successfully once all required fields are valid", async () => {
+    const user = userEvent.setup();
     const { onSubmit } = setup();
 
     fireEvent.change(screen.getByLabelText("Quantity (sarees)"), { target: { value: "40" } });
@@ -56,13 +58,9 @@ describe("BulkOrderCreateModal validation", () => {
     fireEvent.change(deadlineInput, { target: { value: "2027-01-01" } });
     fireEvent.keyDown(deadlineInput, { key: "Enter" });
 
-    // Select is a native <select>: clicking an <option> node does not commit a
-    // value, so pick it the way the browser does. The old ArrowDown-then-click
-    // sequence was left over from the Radix implementation and silently
-    // selected nothing.
-    fireEvent.change(screen.getByLabelText("Select Wholesale Customer"), {
-      target: { value: MOCK_WHOLESALE_CUSTOMERS[0].id },
-    });
+    // Select uses Radix DropdownMenu trigger and menu items.
+    await user.click(screen.getByLabelText("Select Wholesale Customer"));
+    await user.click(screen.getByRole("menuitem", { name: new RegExp(MOCK_WHOLESALE_CUSTOMERS[0].name) }));
 
     fireEvent.click(screen.getByText("✓ Create Bulk Order"));
 
@@ -74,19 +72,16 @@ describe("BulkOrderCreateModal validation", () => {
   });
 
   it("clears previous errors once the form becomes valid", async () => {
+    const user = userEvent.setup();
     setup();
     fireEvent.click(screen.getByText("✓ Create Bulk Order"));
     expect(screen.getByText("Quantity must be at least 1")).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText("Quantity (sarees)"), { target: { value: "10" } });
     fireEvent.change(screen.getByLabelText("Delivery Deadline"), { target: { value: "2027-01-01" } });
-    // Select is a native <select>: clicking an <option> node does not commit a
-    // value, so pick it the way the browser does. The old ArrowDown-then-click
-    // sequence was left over from the Radix implementation and silently
-    // selected nothing.
-    fireEvent.change(screen.getByLabelText("Select Wholesale Customer"), {
-      target: { value: MOCK_WHOLESALE_CUSTOMERS[0].id },
-    });
+    // Select uses Radix DropdownMenu trigger and menu items.
+    await user.click(screen.getByLabelText("Select Wholesale Customer"));
+    await user.click(screen.getByRole("menuitem", { name: new RegExp(MOCK_WHOLESALE_CUSTOMERS[0].name) }));
 
     fireEvent.click(screen.getByText("✓ Create Bulk Order"));
     expect(screen.queryByText("Quantity must be at least 1")).not.toBeInTheDocument();

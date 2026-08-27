@@ -59,11 +59,13 @@ export function Select({
   onValueChange,
   onChange,
   disabled,
+  id: idProp,
   name,
   align = "end",
 }: SelectProps) {
   const field = useFieldContext();
   const invalid = invalidProp ?? field?.invalid ?? false;
+  const id = idProp ?? field?.inputId;
   const [internalValue, setInternalValue] = React.useState<string>(defaultValue || "");
   const value = valueProp !== undefined ? valueProp : internalValue;
 
@@ -123,6 +125,7 @@ export function Select({
       <DropdownMenu open={open} onOpenChange={setOpen}>
         <div className={cn("relative inline-flex items-center shrink-0", containerClassName || (className?.includes("w-full") ? "w-full" : "w-auto shrink-0"))}>
           <DropdownMenuTrigger
+            id={id}
             disabled={disabled}
             className={cn(
               "appearance-none flex items-center justify-between font-semibold rounded-[10px] border transition-all cursor-pointer truncate outline-none select-none",

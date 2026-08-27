@@ -1,6 +1,6 @@
 import React from "react";
 import { ChevronRight, Package, User, Factory } from "lucide-react";
-import { F, initials, type SareeItem } from "./WorkerQCTypes";
+import { F, T, initials, type SareeItem } from "./WorkerQCTypes";
 
 interface WeaverGroup {
   name: string;
@@ -43,7 +43,6 @@ export function WorkerQCWeaverGrid({
     >
       {filteredWeavers.map((wg) => {
         const isWeaverCodeUuid = isUuid(wg.code);
-        const avatarInitials = initials(wg.name);
         const displayCode = (!isWeaverCodeUuid && wg.code) ? wg.code : (wg.sarees[0]?.id || "PENDING-QC");
 
         return (
@@ -83,7 +82,6 @@ export function WorkerQCWeaverGrid({
                     {wg.name}
                   </div>
                 </div>
-              </div>
 
               {/* Arrow Button */}
               <div className="w-11 h-11 rounded-[16px] bg-[#FFFDFB] border border-[#F0E5D8] flex items-center justify-center text-[#4F4A45] group-hover:text-[#6E0F2D] group-hover:bg-[#FEF4F5] group-hover:border-[#FEE8EB] transition-all flex-shrink-0">
