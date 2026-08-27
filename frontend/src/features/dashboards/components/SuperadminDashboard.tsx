@@ -4,7 +4,7 @@ import { useAuth } from "../../../contexts/AuthContext";
 import { AnimatePresence, motion } from "motion/react";
 import { useIsMobile } from "../../../hooks/useResponsive";
 import {
-  SectionNavigator, PAGE_SECTIONS, SECTION_NAV_GLOBAL_STYLE, MOBILE_NAV_H,
+  SectionNavigator, PAGE_SECTIONS, SECTION_NAV_GLOBAL_STYLE, MOBILE_NAV_H, getSectionsForPage,
 } from "../../../shared/ui/SectionNavigator";
 
 import { PackageCheck, History } from "lucide-react";
@@ -35,7 +35,7 @@ export { UserProfileModal };
 export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
   const { tab } = useParams();
   const routerNavigate = useNavigate();
-  const { enterStaffView } = useAuth();
+  const { enterStaffView, logout } = useAuth();
 
   // Map path to active tab
   let nav = "Overview";
@@ -256,12 +256,12 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
         <>
           <SAMobileMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} activeTab={nav} setTab={navigate} />
           <SAMobileTopNav onMenuOpen={() => setMenuOpen(true)} onBack={onBack} onProfile={() => setShowProfileModal(true)} onNotifications={() => navigate("Notifications")} />
-          {sections && <SectionNavigator sections={sections} stickyTop={MOBILE_NAV_H} padding="0 18px" />}
+          {getSectionsForPage(nav).length > 0 && <SectionNavigator sections={getSectionsForPage(nav)} stickyTop={MOBILE_NAV_H} padding="0 18px" />}
           <Suspense fallback={<TabLoadingFallback />}>{renderPage(navigate)}</Suspense>
         </>
       ) : (
         <>
-          <SATopNav active={nav} set={navigate} onBack={onBack} sections={sections} onProfile={() => setShowProfileModal(true)} onViewAs={viewAsStaff} />
+          <SATopNav active={nav} set={navigate} onBack={onBack} onLogout={logout} sections={getSectionsForPage(nav)} onProfile={() => setShowProfileModal(true)} onViewAs={viewAsStaff} />
           <AnimatePresence mode="wait">
             <motion.div key={nav}
               initial={{ opacity: 0, y: 12 }}

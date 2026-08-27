@@ -3,7 +3,7 @@ import { motion } from "motion/react";
 import { Search, Bell, ChevronDown, ChevronLeft, UserRound, LogOut, Users, Store, Eye } from "lucide-react";
 import { useResponsive } from "../../../../hooks/useResponsive";
 import {
-  SectionNavigator, MAIN_NAV_H, SUB_NAV_H, SectionNavItem,
+  SectionNavigator, MAIN_NAV_H, SUB_NAV_H, SectionNavItem, getSectionsForPage,
 } from "../../../../shared/ui/SectionNavigator";
 import { imgBKLogo } from "../../../../shared/constants/weaverImages";
 import { T, F, EASE } from "./theme";
@@ -11,31 +11,22 @@ import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "../../../../shared/ui/overlay";
 import { NAV_GROUPS, findNavGroup } from "./data";
 
-// Deliberately NOT built on shared/ui/nav's Topbar+Groupbar — same decision
-// and reasoning as the admin dashboard's TopNav.tsx (see its comment): a
-// mocked two-row version was compared side-by-side and rejected as a real
-// visual-hierarchy regression, not a restyle. Permanent exception.
-
-export function SATopNav({ active, set, onBack, sections, onProfile, onViewAs }: { active: string; set: (v: string) => void; onBack?: () => void; sections?: SectionNavItem[]; onProfile?: () => void; /** Open a staff portal as this superadmin — see AuthContext.enterStaffView. */ onViewAs?: (role: "worker" | "shop") => void }) {
+export function SATopNav({ active, set, onBack, onLogout, sections, onProfile, onViewAs }: { active: string; set: (v: string) => void; onBack?: () => void; onLogout?: () => void; sections?: SectionNavItem[]; onProfile?: () => void; onViewAs?: (role: "worker" | "shop") => void }) {
   const { w } = useResponsive();
   const compact = w < 1320;
   const [showProfile, setShowProfile] = useState(false);
-  // Groups with >1 page open a DropdownMenu on click (design-system/05-OVERLAYS.md
-  // Part O.2) — this replaces the previous mouseenter + 140ms-timer hover pattern,
-  // which had no aria-expanded/aria-haspopup and didn't work on touch.
   const [openGroup, setOpenGroup] = useState<string | null>(null);
 
   const activeGroup = findNavGroup(active);
-  const showSubNav = activeGroup.pages.length > 1;
+  const resolvedSections = (sections && sections.length > 0) ? sections : getSectionsForPage(active);
+  const showSubNav = activeGroup.pages.length > 1 || (resolvedSections && resolvedSections.length > 0);
 
   return (
-    <motion.div
-      initial={{ y: -90, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.7, ease: EASE }}
-      style={{ position: "sticky", top: 0, zIndex: "var(--z-nav)" }}
-    >
-      <nav
+    <>
+      <motion.nav
+        initial={{ y: -90, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.7, ease: EASE }}
         style={{
           height: MAIN_NAV_H,
           display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -44,6 +35,9 @@ export function SATopNav({ active, set, onBack, sections, onProfile, onViewAs }:
           background: T.darkBurgundy,
           borderBottom: `1px solid rgba(200,155,71,0.14)`,
           boxShadow: "0 4px 40px rgba(0,0,0,0.28)",
+          position: showSubNav ? "relative" : "sticky",
+          top: 0,
+          zIndex: showSubNav ? 10 : 100,
         }}
       >
         {/* Logo + Brand */}
@@ -225,7 +219,7 @@ export function SATopNav({ active, set, onBack, sections, onProfile, onViewAs }:
                 <ChevronDown size={13} color="rgba(245,232,208,0.75)" style={{ transform: showProfile ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
               </motion.div>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="!min-w-[250px] !p-0 !rounded-[14px] !overflow-hidden" style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, zIndex: "var(--z-tooltip)" }}>
+            <DropdownMenuContent align="end" className="!min-w-[250px] !max-h-none !p-0 !rounded-[14px] !overflow-hidden" style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, zIndex: "var(--z-tooltip)" }}>
               <div style={{ padding: "16px 18px", background: "rgba(196,146,58,0.06)", borderBottom: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", gap: 12 }}>
                 <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#C4923A", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 3px 12px rgba(196,146,58,0.35)" }}>
                   <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 16, color: "#FFF" }}>SA</span>
@@ -261,69 +255,81 @@ export function SATopNav({ active, set, onBack, sections, onProfile, onViewAs }:
                 <DropdownMenuItem onClick={() => onBack?.()} className="!h-auto !py-[11px] !px-[18px] !text-[#3B2314]">
                   <ChevronLeft size={15} color={T.taupe} /> Switch Portal
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onBack?.()} destructive className="!h-auto !py-[11px] !px-[18px]">
+                <DropdownMenuItem onClick={() => (onLogout ? onLogout() : onBack?.())} destructive className="!h-auto !py-[11px] !px-[18px]">
                   <LogOut size={15} color="#C0392B" /> Logout
                 </DropdownMenuItem>
               </div>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-      </nav>
+      </motion.nav>
 
-      {/* Sub-nav bar — pages within the active group */}
+      {/* Sub-nav bar — native sticky top */}
       {showSubNav && (
-        <div
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, ease: EASE }}
           style={{
+            position: "sticky",
+            top: 0,
+            zIndex: 100,
             height: SUB_NAV_H,
             display: "flex", alignItems: "center", justifyContent: "flex-start", gap: 20,
             padding: compact ? "0 16px" : "0 28px",
-            background: T.warmIvory,
+            background: "rgba(255, 253, 249, 0.94)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
             borderBottom: `1px solid ${T.borderDef}`,
+            boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
           }}
         >
-          <div className="sa-topnav-groups" style={{ display: "flex", alignItems: "center", gap: 4, background: "#F3EEE8", border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: 5, overflowX: "auto", flexShrink: 0 } as React.CSSProperties}>
-            {activeGroup.pages.map(p => {
-              const isActive = active === p.key;
-              return (
-                <Button
-                  key={p.key}
-                  onClick={() => set(p.key)}
-                  variant="tertiary"
-                  className={`!relative !gap-1.5 !rounded-[10px] !py-[9px] !px-[22px] !whitespace-nowrap !border-none !bg-transparent !text-[13px] ${
-                    isActive
-                      ? "!text-white !font-semibold hover:!bg-transparent hover:!text-white"
-                      : "!text-[#3B2314] !font-medium hover:!bg-[rgba(110,15,45,0.06)] hover:!text-[#3B2314]"
-                  }`}
-                >
-                  {isActive && (
-                    <motion.div
-                      layoutId="sa-subnav-active-pill"
-                      transition={{ type: "spring", stiffness: 420, damping: 32 }}
-                      style={{ position: "absolute", inset: 0, background: T.royalBurgundy, borderRadius: 10, boxShadow: "0 4px 14px rgba(110,15,45,0.28)", zIndex: 0 }}
-                    />
-                  )}
-                  <span style={{ position: "relative", zIndex: 1, display: "flex", alignItems: "center", gap: 7 }}>
-                    {p.label}
-                    {p.sa && (
-                      <span
-                        title="Superadmin-only"
-                        style={{ width: 6, height: 6, borderRadius: "50%", background: isActive ? T.goldLight : T.antiqueGold, flexShrink: 0 }}
+          {activeGroup.pages.length > 1 && (
+            <div className="sa-topnav-groups" style={{ display: "flex", alignItems: "center", gap: 4, background: "#F3EEE8", border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: 5, overflowX: "auto", flexShrink: 0 } as React.CSSProperties}>
+              {activeGroup.pages.map(p => {
+                const isActive = active === p.key;
+                return (
+                  <Button
+                    key={p.key}
+                    onClick={() => set(p.key)}
+                    variant="tertiary"
+                    className={`!relative !gap-1.5 !rounded-[10px] !py-[9px] !px-[22px] !whitespace-nowrap !border-none !bg-transparent !text-[13px] ${
+                      isActive
+                        ? "!text-white !font-semibold hover:!bg-transparent hover:!text-white"
+                        : "!text-[#3B2314] !font-medium hover:!bg-[rgba(110,15,45,0.06)] hover:!text-[#3B2314]"
+                    }`}
+                  >
+                    {isActive && (
+                      <motion.div
+                        layoutId="sa-subnav-active-pill"
+                        transition={{ type: "spring", stiffness: 420, damping: 32 }}
+                        style={{ position: "absolute", inset: 0, background: T.royalBurgundy, borderRadius: 10, boxShadow: "0 4px 14px rgba(110,15,45,0.28)", zIndex: 0 }}
                       />
                     )}
-                  </span>
-                </Button>
-              );
-            })}
-          </div>
-
-          {sections && (
-            <>
-              <div style={{ width: 1, height: 24, background: T.borderDef, flexShrink: 0 }} />
-              <SectionNavigator inline sections={sections} />
-            </>
+                    <span style={{ position: "relative", zIndex: 1, display: "flex", alignItems: "center", gap: 7 }}>
+                      {p.label}
+                      {p.sa && (
+                        <span
+                          title="Superadmin-only"
+                          style={{ width: 6, height: 6, borderRadius: "50%", background: isActive ? T.goldLight : T.antiqueGold, flexShrink: 0 }}
+                        />
+                      )}
+                    </span>
+                  </Button>
+                );
+              })}
+            </div>
           )}
-        </div>
+
+          {activeGroup.pages.length > 1 && resolvedSections && resolvedSections.length > 0 && (
+            <div style={{ width: 1, height: 24, background: T.borderDef, flexShrink: 0 }} />
+          )}
+
+          {resolvedSections && resolvedSections.length > 0 && (
+            <SectionNavigator inline sections={resolvedSections} />
+          )}
+        </motion.div>
       )}
-    </motion.div>
+    </>
   );
 }

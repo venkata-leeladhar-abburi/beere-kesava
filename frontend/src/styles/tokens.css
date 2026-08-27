@@ -501,7 +501,7 @@ html {
    nothing on any page is expected to overflow, so this has no visible effect
    on desktop rendering. */
 html, body {
-  overflow-x: hidden;
+  overflow-x: clip;
   max-width: 100%;
 }
 

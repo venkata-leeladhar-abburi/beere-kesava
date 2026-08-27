@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { useResponsive } from "../../../../../hooks/useResponsive";
 import { imgBKLogo } from '../../../../../shared/constants/weaverImages';
-import { SectionNavigator, MAIN_NAV_H, SUB_NAV_H } from '../../../../../shared/ui/SectionNavigator';
+import { SectionNavigator, MAIN_NAV_H, SUB_NAV_H, getSectionsForPage } from '../../../../../shared/ui/SectionNavigator';
 import { T, F, G, EASE, findNavGroup, NAV_GROUPS } from '../theme';
 import { Button, IconButton } from '../../../../../shared/ui/primitives';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, Popover } from '../../../../../shared/ui/overlay';
@@ -54,16 +54,15 @@ export function TopNav({
   const unreadCount = 0;
 
   const activeGroup = findNavGroup(active);
-  const showSubNav = activeGroup.pages.length > 1;
+  const resolvedSections = (sections && sections.length > 0) ? sections : getSectionsForPage(active);
+  const showSubNav = activeGroup.pages.length > 1 || (resolvedSections && resolvedSections.length > 0);
 
   return (
-    <motion.div
-      initial={{ y: -90, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.7, ease: EASE }}
-      style={{ position: "sticky", top: 0, zIndex: "var(--z-nav)" }}
-    >
-      <nav
+    <>
+      <motion.nav
+        initial={{ y: -90, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.7, ease: EASE }}
         style={{
           height: MAIN_NAV_H,
           display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -72,6 +71,9 @@ export function TopNav({
           background: T.darkBurgundy,
           borderBottom: `1px solid rgba(200,155,71,0.14)`,
           boxShadow: "0 4px 40px rgba(0,0,0,0.28)",
+          position: showSubNav ? "relative" : "sticky",
+          top: 0,
+          zIndex: showSubNav ? 10 : 100,
         }}
       >
         {/* Logo + Brand */}
@@ -283,7 +285,7 @@ export function TopNav({
                 <ChevronDown size={13} color="rgba(245,232,208,0.75)" style={{ transform: showProfile ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
               </motion.div>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="!min-w-[240px] !p-0 !rounded-[14px] !overflow-hidden" style={{ background: "#FFFDF9", border: `1px solid ${T.borderDef}`, zIndex: "var(--z-tooltip)" }}>
+            <DropdownMenuContent align="end" className="!min-w-[240px] !max-h-none !p-0 !rounded-[14px] !overflow-hidden" style={{ background: "#FFFDF9", border: `1px solid ${T.borderDef}`, zIndex: "var(--z-tooltip)" }}>
               <div style={{ padding: "16px 18px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", gap: 12 }}>
                 <div style={{ width: 42, height: 42, borderRadius: "50%", background: G.button, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: `0 3px 10px rgba(110,15,45,0.25)` }}>
                   <span style={{ fontFamily: F.display, fontWeight: 400, fontSize: 14, color: T.warmCream }}>BK</span>
@@ -326,54 +328,66 @@ export function TopNav({
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-      </nav>
+      </motion.nav>
 
-      {/* Sub-nav bar */}
+      {/* Sub-nav bar — native sticky top */}
       {showSubNav && (
-        <div
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, ease: EASE }}
           style={{
+            position: "sticky",
+            top: 0,
+            zIndex: 100,
             height: SUB_NAV_H,
             display: "flex", alignItems: "center", justifyContent: "flex-start", gap: 20,
             padding: compact ? "0 16px" : "0 28px",
-            background: "#FFFDF9",
+            background: "rgba(255, 253, 249, 0.94)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
             borderBottom: `1px solid ${T.borderDef}`,
+            boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
           }}
         >
-          <div className="admin-topnav-groups" style={{ display: "flex", alignItems: "center", gap: 4, background: "#F3EEE8", border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: 5, overflowX: "auto", flexShrink: 0 } as React.CSSProperties}>
-            {activeGroup.pages.map(p => {
-              const isActive = active === p.key;
-              return (
-                <Button
-                  key={p.key}
-                  onClick={() => set(p.key)}
-                  variant="tertiary"
-                  className={`!relative !rounded-[10px] !py-[9px] !px-[22px] !whitespace-nowrap !border-none !bg-transparent !text-[13px] ${
-                    isActive
-                      ? "!text-white !font-semibold hover:!bg-transparent hover:!text-white"
-                      : "!text-[#3B2314] !font-medium hover:!bg-[rgba(110,15,45,0.06)] hover:!text-[#3B2314]"
-                  }`}
-                >
-                  {isActive && (
-                    <motion.div
-                      layoutId="subnav-active-pill"
-                      transition={{ type: "spring", stiffness: 420, damping: 32 }}
-                      style={{ position: "absolute", inset: 0, background: T.royalBurgundy, borderRadius: 10, boxShadow: "0 4px 14px rgba(110,15,45,0.28)", zIndex: 0 }}
-                    />
-                  )}
-                  <span style={{ position: "relative", zIndex: 1 }}>{p.label}</span>
-                </Button>
-              );
-            })}
-          </div>
-
-          {sections && sections.length > 0 && (
-            <>
-              <div style={{ width: 1, height: 24, background: T.borderDef, flexShrink: 0 }} />
-              <SectionNavigator inline sections={sections} />
-            </>
+          {activeGroup.pages.length > 1 && (
+            <div className="admin-topnav-groups" style={{ display: "flex", alignItems: "center", gap: 4, background: "#F3EEE8", border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: 5, overflowX: "auto", flexShrink: 0 } as React.CSSProperties}>
+              {activeGroup.pages.map(p => {
+                const isActive = active === p.key;
+                return (
+                  <Button
+                    key={p.key}
+                    onClick={() => set(p.key)}
+                    variant="tertiary"
+                    className={`!relative !rounded-[10px] !py-[9px] !px-[22px] !whitespace-nowrap !border-none !bg-transparent !text-[13px] ${
+                      isActive
+                        ? "!text-white !font-semibold hover:!bg-transparent hover:!text-white"
+                        : "!text-[#3B2314] !font-medium hover:!bg-[rgba(110,15,45,0.06)] hover:!text-[#3B2314]"
+                    }`}
+                  >
+                    {isActive && (
+                      <motion.div
+                        layoutId="subnav-active-pill"
+                        transition={{ type: "spring", stiffness: 420, damping: 32 }}
+                        style={{ position: "absolute", inset: 0, background: T.royalBurgundy, borderRadius: 10, boxShadow: "0 4px 14px rgba(110,15,45,0.28)", zIndex: 0 }}
+                      />
+                    )}
+                    <span style={{ position: "relative", zIndex: 1 }}>{p.label}</span>
+                  </Button>
+                );
+              })}
+            </div>
           )}
-        </div>
+
+          {activeGroup.pages.length > 1 && resolvedSections && resolvedSections.length > 0 && (
+            <div style={{ width: 1, height: 24, background: T.borderDef, flexShrink: 0 }} />
+          )}
+
+          {resolvedSections && resolvedSections.length > 0 && (
+            <SectionNavigator inline sections={resolvedSections} />
+          )}
+        </motion.div>
       )}
-    </motion.div>
+    </>
   );
 }
