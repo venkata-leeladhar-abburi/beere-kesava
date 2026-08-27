@@ -6,7 +6,7 @@ import { useWeaverPayments } from "@/features/weavers";
 import { weaversApi } from "../../../../shared/api/weavers";
 import { qcApi } from "../../../../shared/api/qc";
 import { T, F } from "../theme";
-import { FadeUp, ChartCard, SumCard, SectionCard, ReportDLBar, AnimBar, TablePager } from "../common/primitives";
+import { FadeUp, ChartCard, SilkSumCard, SectionCard, ReportDLBar, AnimBar, TablePager } from "../common/primitives";
 import { DataTable } from "../../../../shared/ui/data";
 import { semantic } from "../../../../design-system/tokens";
 import { rupees, formatMoney } from "@/lib/domain/money";
@@ -199,11 +199,11 @@ export function WeaverPaymentReport() {
         </ChartCard>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 16, marginBottom: 24, alignItems: "stretch" }}>
-        <SumCard icon={<Users size={22} color={T.royalBurgundy} />} label="Total Weavers Paid" value={`${paidWeaverIds.size} of ${weavers.length}`} sub={`${Math.max(weavers.length - paidWeaverIds.size, 0)} with no payments on record`} />
-        <SumCard icon={<IndianRupee size={22} color={T.antiqueGold} />} label="Total Making Charges" value={canSeePayroll ? formatMoney(rupees(totalMakingCharges)) : "••••"} sub="All recorded payments" hi />
-        <SumCard icon={<TrendingDown size={22} color={T.crimson} />} label="Total Deductions" value={canSeePayroll ? formatMoney(rupees(totalDeductions)) : "••••"} sub="Deducted from making charges" crimsonHi />
-        <SumCard icon={<CheckCircle2 size={22} color={T.green} />} label="Total Net Paid" value={canSeePayroll ? formatMoney(rupees(totalNetPaid)) : "••••"} sub="After all deductions" greenHi />
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4" style={{ gap: 22, marginBottom: 28, alignItems: "stretch" }}>
+        <SilkSumCard icon={<Users size={22} color={T.antiqueGold} />} label="Total Weavers Paid" value={`${paidWeaverIds.size} of ${weavers.length}`} sub={`${Math.max(weavers.length - paidWeaverIds.size, 0)} with no payments on record`} gid="wpr-w" />
+        <SilkSumCard icon={<IndianRupee size={22} color={T.antiqueGold} />} label="Total Making Charges" value={canSeePayroll ? formatMoney(rupees(totalMakingCharges)) : "••••"} sub="All recorded payments" gid="wpr-c" />
+        <SilkSumCard icon={<TrendingDown size={22} color={T.antiqueGold} />} label="Total Deductions" value={canSeePayroll ? formatMoney(rupees(totalDeductions)) : "••••"} sub="Deducted from making charges" gid="wpr-d" />
+        <SilkSumCard icon={<CheckCircle2 size={22} color={T.antiqueGold} />} label="Total Net Paid" value={canSeePayroll ? formatMoney(rupees(totalNetPaid)) : "••••"} sub="After all deductions" gid="wpr-n" />
       </div>
 
       <div style={{ background: "rgba(200,155,71,0.08)", border: `1px solid ${T.borderGold}`, borderRadius: 10, padding: "12px 18px", marginBottom: 18, display: "flex", alignItems: "center", gap: 10 }}>

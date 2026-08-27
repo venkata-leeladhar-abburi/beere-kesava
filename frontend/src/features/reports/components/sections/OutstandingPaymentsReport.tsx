@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Wallet, Receipt, ShoppingBag, Clock, LayoutGrid, List } from "lucide-react";
 import { T, F } from "../theme";
-import { FadeUp, SumCard, SectionCard } from "../common/primitives";
+import { FadeUp, SilkSumCard, SectionCard } from "../common/primitives";
 import { reportsApi, OutstandingPaymentItem } from "../../../../shared/api/reports";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { Button } from "../../../../shared/ui/primitives";
@@ -64,10 +64,10 @@ export function OutstandingPaymentsReport() {
         title="Outstanding Payments Report"
         subtitle="Every unpaid or partially-paid invoice and bulk order across all wholesale customers, pulled live from the backend."
       >
-        <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 16, marginBottom: 32, alignItems: "stretch" }}>
-          <SumCard icon={<Wallet size={22} color={T.crimson} />} label="Total Outstanding" value={formatMoney(rupees(data?.totalOutstanding ?? 0))} sub={`${data?.count ?? 0} records`} crimsonHi />
-          <SumCard icon={<Receipt size={22} color={T.royalBurgundy} />} label="Unpaid Invoices" value={`${invoiceCount}`} sub="From /invoices" />
-          <SumCard icon={<ShoppingBag size={22} color={T.antiqueGold} />} label="Unpaid Bulk Orders" value={`${bulkOrderCount}`} sub="From /bulk-orders" hi />
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3" style={{ gap: 22, marginBottom: 32, alignItems: "stretch" }}>
+          <SilkSumCard icon={<Wallet size={22} color={T.antiqueGold} />} label="Total Outstanding" value={formatMoney(rupees(data?.totalOutstanding ?? 0))} sub={`${data?.count ?? 0} records`} gid="opr-o" />
+          <SilkSumCard icon={<Receipt size={22} color={T.antiqueGold} />} label="Unpaid Invoices" value={`${invoiceCount}`} sub="From /invoices" gid="opr-i" />
+          <SilkSumCard icon={<ShoppingBag size={22} color={T.antiqueGold} />} label="Unpaid Bulk Orders" value={`${bulkOrderCount}`} sub="From /bulk-orders" gid="opr-b" />
         </div>
 
         {/* Mobile View Toggle */}
