@@ -213,7 +213,11 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
   const { role } = useAuth();
   const canReadFactoryLooms = role === "worker" || role === "admin" || role === "superadmin";
   const canReadRates = role === "accountant" || role === "admin" || role === "superadmin";
-  const enabled = useAuthGate();
+  // /batches itself is WORKER/WEAVER-only on the backend (ADMIN/SUPERADMIN
+  // bypass every check). This provider is mounted globally (App.tsx's
+  // SharedContexts), so SHOP and ACCOUNTANT sessions would otherwise fire
+  // it unconditionally and 403 every time.
+  const enabled = useAuthGate("worker", "weaver", "admin", "superadmin");
 
   const { data: batches = [], isError, error, isLoading, refetch } = useQuery({
     queryKey: QUERY_KEY,

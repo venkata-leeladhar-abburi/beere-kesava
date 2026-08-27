@@ -2,6 +2,13 @@ import { plainToInstance } from "class-transformer";
 import { IsInt, IsNotEmpty, IsOptional, IsString, Max, Min, validateSync } from "class-validator";
 
 class EnvironmentVariables {
+  // Gates production-only hardening in main.ts (CORS fails closed instead of
+  // open when CORS_ORIGIN is unset) — declared here so it's validated and
+  // documented like every other env var this app depends on.
+  @IsOptional()
+  @IsString()
+  NODE_ENV?: string;
+
   @IsString()
   @IsNotEmpty()
   DATABASE_URL!: string;

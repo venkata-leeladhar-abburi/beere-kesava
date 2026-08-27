@@ -9,6 +9,7 @@ import { WorkerQC } from "./worker/WorkerQC";
 import { WorkerFinishing } from "./worker/WorkerFinishing";
 import { WorkerDispatch } from "./worker/WorkerDispatch";
 import { WorkerTopNav } from "./worker/WorkerTopNav";
+import { AdminViewingBanner } from "@/shared/ui/portal/AdminStaffView";
 import { PageHero, SectionHeading } from "./worker/primitives";
 import { SectionNavigator, PAGE_SECTIONS } from "../../../shared/ui/SectionNavigator";
 
@@ -132,6 +133,7 @@ export function WorkerPortalDesktop({ onBack, bp = "desktop", activeTab, setActi
         bp={bp}
         pendingQcCount={pendingQcCount}
       />
+      <AdminViewingBanner portalLabel="Worker Staff" />
 
       <div style={{ flex: 1 }}>
         <AnimatePresence mode="wait">

@@ -141,6 +141,22 @@ export function PaymentsSection({ bp, isTablet }: { bp: "tablet" | "desktop"; is
       cell: (_v, p) => <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 18, color: C.gold }}><Money value={rupees(p.amountPaid)} /></span>,
     },
     {
+      id: "deduction", header: "Deduction", accessor: p => p.deduction ?? 0,
+      cell: (_v, p) => p.deduction ? <span style={{ fontFamily: F.m, fontSize: 14, color: C.crim }}><Money value={rupees(p.deduction)} /></span> : <span style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>—</span>,
+    },
+    {
+      id: "batchNo", header: "Batch No.", accessor: p => p.batchNo ?? "",
+      cell: (_v, p) => <span style={{ fontFamily: F.m, fontSize: 13, color: C.text }}>{p.batchNo || "—"}</span>,
+    },
+    {
+      id: "loomNumber", header: "Loom", accessor: p => p.loomNumber ?? "",
+      cell: (_v, p) => <span style={{ fontFamily: F.m, fontSize: 13, color: C.text }}>{p.loomNumber || "—"}</span>,
+    },
+    {
+      id: "firm", header: "Firm", accessor: p => p.firmName,
+      cell: (_v, p) => <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{p.firmName || "Beere Kesava Silks"}</span>,
+    },
+    {
       id: "utr", header: "UTR Reference", accessor: p => p.utrNumber,
       cell: (_v, p) => (
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>

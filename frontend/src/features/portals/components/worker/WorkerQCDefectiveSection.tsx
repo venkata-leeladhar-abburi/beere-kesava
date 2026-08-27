@@ -180,7 +180,7 @@ export function WorkerQCDefectiveSection({
           <>
             <div style={{ display: "grid", gridTemplateColumns: cols, gap: 16 }}>
               {pageItems.map((d) => (
-                <DefectiveCard key={d.id} d={d} onView={() => setViewing(d)} onViewPhoto={setZoomImage} />
+                <DefectiveCard key={d.recordId || d.id} d={d} onView={() => setViewing(d)} onViewPhoto={setZoomImage} />
               ))}
             </div>
 

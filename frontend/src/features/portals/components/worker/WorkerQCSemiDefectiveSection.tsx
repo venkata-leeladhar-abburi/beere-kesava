@@ -183,7 +183,7 @@ export function WorkerQCSemiDefectiveSection({
           <>
             <div style={{ display: "grid", gridTemplateColumns: cols, gap: 16 }}>
               {pageItems.map((d) => (
-                <SemiDefectiveCard key={d.id} d={d} onView={() => setViewing(d)} onViewPhoto={setZoomImage} />
+                <SemiDefectiveCard key={d.recordId || d.id} d={d} onView={() => setViewing(d)} onViewPhoto={setZoomImage} />
               ))}
             </div>
 

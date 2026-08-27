@@ -3,6 +3,7 @@ import { AnimatePresence } from "motion/react";
 import { Layers, Package, RotateCcw } from "lucide-react";
 import { C, F, SareeTypeDetailCard, ProgressBar, MyBatchEntry } from "../theme";
 import { DispatchInstructionsBlock, MaterialsGivenBlock } from "./batchCardHelpers";
+import { formatDueDate, isRowProduced } from "../batchCompletion";
 import { Button } from "../../../../../shared/ui/primitives";
 import { WeaverBatchSareesModal } from "../WeaverBatchSareesModal";
 
@@ -17,37 +18,42 @@ export function DesktopActiveBatchCard({ b, idx, bp = "desktop" }: { b: MyBatchE
   const generalStock   = b.myRows.filter(r => !r.bulkOrderLabel).length;
   const qcPassedCount  = b.myRows.filter(r => r.qcPassed === true).length;
   // Produced = QC-passed OR finished via the Raise Quotation receive flow —
-  // either milestone alone counts a saree as produced. A semi-approved saree
-  // meets neither: it is back with the weaver for rework.
-  const producedCount  = b.myRows.filter(r => r.qcPassed === true || r.finished === true).length;
+  // the same rule that decides whether this batch is still active at all.
+  const producedCount  = b.myRows.filter(isRowProduced).length;
   const reworkCount    = b.myRows.filter(r => r.awaitingRework === true).length;
 
   return (
-    <div style={{ background: "#FFFDF9", borderRadius: 24, border: `1px solid rgba(110,15,45,0.10)`, borderLeft: `4px solid ${borderColor}`, boxShadow: "0px 4px 18px rgba(74,6,27,0.07)", overflow: "hidden", display: "flex", flexDirection: "column" as const }}>
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={() => setShowSarees(true)}
+      onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setShowSarees(true); } }}
+      style={{ background: "#FFFDF9", borderRadius: 24, border: `1px solid rgba(110,15,45,0.10)`, borderLeft: `4px solid ${borderColor}`, boxShadow: "0px 4px 18px rgba(74,6,27,0.07)", overflow: "hidden", display: "flex", flexDirection: "column" as const, cursor: "pointer" }}
+    >
       <div style={{ padding: "22px 24px 20px", display: "flex", flexDirection: "column" as const, gap: 14 }}>
 
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <button
-            onClick={() => setShowSarees(true)}
-            style={{ fontFamily: F.m, fontWeight: 700, fontSize: 18, color: C.burg, background: "none", border: "none", padding: 0, cursor: "pointer", textDecoration: "underline", textDecorationColor: "transparent" }}
-            onMouseEnter={(e) => { e.currentTarget.style.textDecorationColor = C.burg; }}
-            onMouseLeave={(e) => { e.currentTarget.style.textDecorationColor = "transparent"; }}
-          >
+          <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 18, color: C.burg }}>
             {b.batchId}
-          </button>
+          </span>
           <span style={{ fontFamily: F.u, fontSize: 12, color: b.status === "active" ? C.green : C.gold, background: b.status === "active" ? "rgba(30,102,64,0.10)" : "rgba(200,155,71,0.15)", borderRadius: 999, padding: "4px 12px", fontWeight: 600 }}>
             {b.status === "active" ? "🟢 Weaving in Progress" : "🟡 Draft"}
           </span>
         </div>
-        <WeaverBatchSareesModal batch={b} open={showSarees} onOpenChange={setShowSarees} />
+        {/* Wrapped so a click inside the modal's Radix portal — which still
+            bubbles through the React tree, not the DOM tree it's rendered
+            into — doesn't reach the card's own onClick and reopen it. */}
+        <div onClick={e => e.stopPropagation()}>
+          <WeaverBatchSareesModal batch={b} open={showSarees} onOpenChange={setShowSarees} />
+        </div>
 
         {/* Saree count + Produced/QC progress: side by side on desktop, stacked on tablet */}
         <div style={{ display: "flex", flexDirection: isTablet ? "column" as const : "row" as const, gap: 14, alignItems: isTablet ? "stretch" : "center" }}>
           <div style={{ background: C.cream, borderRadius: 12, padding: "14px 18px", textAlign: "center" as const, flex: isTablet ? undefined : "0 0 auto", minWidth: isTablet ? undefined : 160 }}>
             <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 4 }}>Sarees assigned to you</div>
             <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 38, color: C.text, lineHeight: 1 }}>{b.myRows.length}</div>
-            {b.dueDate && <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 4 }}>Due by <span style={{ color: C.text, fontWeight: 600 }}>{b.dueDate}</span></div>}
+            {formatDueDate(b.dueDate) && <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 4 }}>Due by <span style={{ color: C.text, fontWeight: 600 }}>{formatDueDate(b.dueDate)}</span></div>}
           </div>
 
           <div style={{ flex: 1, display: "flex", flexDirection: "column" as const, gap: 10 }}>
@@ -90,9 +96,10 @@ export function DesktopActiveBatchCard({ b, idx, bp = "desktop" }: { b: MyBatchE
         <MaterialsGivenBlock batchId={b.batchId} />
 
 
-        {/* Clickable saree type chips */}
+        {/* Clickable saree type chips — stop propagation so this doesn't also
+            trigger the card's own click-to-open-batch handler above. */}
         {sareeTypePairs.length > 0 && (
-          <div>
+          <div onClick={e => e.stopPropagation()}>
             <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 7 }}>CLICK TO VIEW SAREE TYPE DETAILS</div>
             <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 7 }}>
               {sareeTypePairs.map(([code, name]) => (

@@ -18,12 +18,16 @@ import { CustomerSelectStep, Customer } from './CustomerSelectStep';
 import { ScanSareeStep } from './ScanSareeStep';
 import { cartTotal, cartOriginalTotal, type SaleLine } from './sale-cart';
 import { ApiError } from "../../../../shared/api/client";
+import { useAuth } from "../../../../contexts/AuthContext";
 import { scanApi } from "../../../../shared/api/scan";
 import { salesApi } from "../../../../shared/api/sales";
 import { Input, CurrencyInput } from '../../../../shared/ui/primitives';
 import { rupees, formatMoney } from "@/lib/domain/money";
 
 export function NewSaleFlow() {
+  // The real signed-in person — an admin working inside the Shop portal is
+  // recorded as themselves, not as generic shop staff.
+  const { user } = useAuth();
   const canSeePrices = useCanSeePrices();
   const { isMobile, isTablet } = useResponsive();
   const { getSareeTypeByCode } = useRatesPricing();
@@ -531,6 +535,7 @@ export function NewSaleFlow() {
                       phone: phone.trim() || undefined,
                       address: custAddress.trim() || undefined,
                       type: "RETAIL",
+                      actorId: user?.id,
                     })).id;
                 // The backend records one SaleRecord per saree, so a basket
                 // is submitted line by line. Sequential, not parallel: each
@@ -539,7 +544,7 @@ export function NewSaleFlow() {
                 const recorded: string[] = [];
                 try {
                   for (const line of cart) {
-                    await salesApi.create({ sareeId: line.id, channel: "RETAIL", amount: line.soldPrice, customerId });
+                    await salesApi.create({ sareeId: line.id, channel: "RETAIL", amount: line.soldPrice, customerId, actorId: user?.id });
                     recorded.push(line.id);
                   }
                 } catch (err) {

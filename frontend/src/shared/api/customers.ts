@@ -51,6 +51,9 @@ export interface CreateCustomerPayload {
   state?: string;
   paymentTerms?: string;
   notes?: string;
+  /** User who performed this — recorded on the action log so the history
+   *  names the real person, including an admin working inside a staff portal. */
+  actorId?: string;
 }
 
 export interface UpdateCustomerPayload {
@@ -68,6 +71,9 @@ export interface UpdateCustomerPayload {
   state?: string;
   paymentTerms?: string;
   notes?: string;
+  /** User who performed this — recorded on the action log so the history
+   *  names the real person, including an admin working inside a staff portal. */
+  actorId?: string;
 }
 
 export const customersApi = {

@@ -20,6 +20,9 @@ import { resolveAssetUrl, toStoredAssetPath } from "../../../shared/api/uploads"
 export type QcResult = "passed" | "semi" | "defective";
 
 export interface QcRecord {
+  /** The QC record's own id — distinct from sareeId, which repeats across a
+   * saree's inspection history (e.g. semi/defective, reworked, re-inspected). */
+  id: string;
   sareeId: string;
   /** Set when the saree was woven by an outsourced weaver. */
   weaverId: string | null;
@@ -142,6 +145,7 @@ function backendRecordToFrontend(
 ): QcRecord {
   const row = rowLookup.get(r.sareeId);
   return {
+    id: r.id,
     sareeId: r.sareeId,
     weaverId: r.weaverId,
     weaverName: r.weaverId ? (weaverLookup.get(r.weaverId) ?? null) : null,
@@ -161,7 +165,10 @@ function backendRecordToFrontend(
     qcDate: r.qcDate,
     notes: r.notes ?? undefined,
     photoUrl: resolveAssetUrl(r.photoUrl),
-    inspectedBy: "Worker Staff",
+    // Real name, joined server-side (QcService.findAll/findOne) from
+    // QcRecord.inspectedById — previously hardcoded to a generic label
+    // regardless of who actually performed the inspection.
+    inspectedBy: r.inspectedBy ? `${r.inspectedBy.firstName} ${r.inspectedBy.lastName}`.trim() : "Worker Staff",
   };
 }
 
@@ -177,7 +184,11 @@ export function QcProvider({ children }: { children: React.ReactNode }) {
   const canReadFactoryLooms = role === "worker" || role === "admin" || role === "superadmin";
   const { getSareeTypeByCode } = useRatesPricing();
 
-  const enabled = useAuthGate();
+  // /qc is WORKER/WEAVER-only on the backend (ADMIN/SUPERADMIN bypass every
+  // check). This provider is mounted globally (App.tsx's SharedContexts), so
+  // SHOP and ACCOUNTANT sessions would otherwise fire this unconditionally
+  // and 403 every time.
+  const enabled = useAuthGate("worker", "weaver", "admin", "superadmin");
 
   const { data: qcRecords = [], isError, error, isLoading, refetch } = useQuery({
     queryKey: QUERY_KEY,

@@ -229,6 +229,9 @@ export function WeaverPaymentReport() {
                   },
                   { id: "utr", header: "UTR Number", accessor: r => r.latest?.utrNumber, cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: r.latest ? T.green : T.taupe }}>{r.latest?.utrNumber || "—"}</span> },
                   { id: "firmName", header: "Firm Name", accessor: r => r.latest?.firmName, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{r.latest?.firmName || "—"}</span> },
+                  { id: "batchNo", header: "Batch No.", accessor: r => r.latest?.batchNo, cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{r.latest?.batchNo || "—"}</span> },
+                  { id: "loomNumber", header: "Loom", accessor: r => r.latest?.loomNumber, cell: (_v, r) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{r.latest?.loomNumber || "—"}</span> },
+                  { id: "deduction", header: "Deduction", accessor: r => r.latest?.deduction ?? 0, align: "end", cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, color: r.latest?.deduction ? T.crimson : T.taupe }}>{r.latest?.deduction ? (canSeePayroll ? formatMoney(rupees(r.latest.deduction)) : "••••") : "—"}</span> },
                   { id: "paymentDate", header: "Payment Date", accessor: r => r.latest?.paymentDate, cell: (_v, r) => <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{r.latest?.paymentDate ?? "—"}</span> },
                 ]}
                 data={weaverPayRows}

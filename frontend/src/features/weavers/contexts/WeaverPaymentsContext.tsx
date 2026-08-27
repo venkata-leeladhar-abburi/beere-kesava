@@ -73,7 +73,10 @@ export function WeaverPaymentsProvider({ children }: { children: React.ReactNode
   const { role } = useAuth();
   const canReadFirms = role === "accountant" || role === "admin" || role === "superadmin";
 
-  const enabled = useAuthGate();
+  // /payments/weavers and /payments/weavers/earnings are ACCOUNTANT/WEAVER-only
+  // on the backend — a WORKER caller (this provider is also mounted in
+  // WorkerLayout) would always 403 on both.
+  const enabled = useAuthGate("accountant", "weaver", "admin", "superadmin");
 
   const { data: payments = [], isError, error, isLoading, refetch } = useQuery({
     queryKey: QUERY_KEY,

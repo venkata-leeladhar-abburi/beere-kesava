@@ -28,7 +28,7 @@ const TEST_AUTH_VALUE = {
   selectRole: () => {},
   logout: () => {},
   adminViewingAs: null,
-  clearAdminView: () => {},
+  clearAdminView: () => {}, enterStaffView: () => {},
 };
 
 /** Fresh QueryClient per test so cache state never leaks between tests. */

@@ -6,6 +6,13 @@ import { PrismaService } from "../prisma/prisma.service";
 import { CreateQcRecordDto } from "./dto/create-qc-record.dto";
 import { ListQcQueryDto } from "./dto/list-qc-query.dto";
 
+// Real name of who performed the check — QcRecord.inspectedById was always
+// stored, but findAll never joined it, so every QC record looked the same
+// ("Worker Staff") in the frontend regardless of who actually inspected it.
+const qcRecordInclude = {
+  inspectedBy: { select: { firstName: true, lastName: true } },
+} satisfies Prisma.QcRecordInclude;
+
 // Mirrors the frontend's computeQcPayment exactly (QcContext.tsx):
 // - passed    -> deduction 0, payable = makingCharge
 // - semi      -> deduction = semiDeduction clamped to [0, makingCharge], payable = makingCharge - deduction
@@ -143,7 +150,7 @@ export class QcService {
   async findAll(
     query: ListQcQueryDto,
     weaverScope?: string,
-  ): Promise<PaginatedResult<Prisma.QcRecordGetPayload<object>>> {
+  ): Promise<PaginatedResult<Prisma.QcRecordGetPayload<{ include: typeof qcRecordInclude }>>> {
     const where: Prisma.QcRecordWhereInput = {
       result: query.result,
       weaverId: weaverScope ?? query.weaverId,
@@ -152,6 +159,7 @@ export class QcService {
     const [items, total] = await Promise.all([
       this.prisma.qcRecord.findMany({
         where,
+        include: qcRecordInclude,
         skip: (query.page - 1) * query.pageSize,
         take: query.pageSize,
         orderBy: { qcDate: "desc" },
@@ -167,6 +175,7 @@ export class QcService {
   async findOne(sareeId: string, weaverScope?: string) {
     const record = await this.prisma.qcRecord.findFirst({
       where: { sareeId },
+      include: qcRecordInclude,
       orderBy: { qcDate: "desc" },
     });
     if (!record) {

@@ -3,6 +3,7 @@ import React, { useState, useMemo } from "react";
 import { useBatches } from "@/features/production";
 import { rupees } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
+import { isBatchDoneForWeaver } from "./batchCompletion";
 import { useCurrentWeaver } from "./useCurrentWeaver";
 import { GeneralDispatchInstructionsBlock } from "./desktop/batchCardHelpers";
 import {
@@ -75,14 +76,9 @@ export function MyBatchesPage({ onGoToPayments }: { onGoToPayments?: () => void 
     .map(b => ({ ...b, myRows: b.rows.filter(isMyRow) }))
     .filter(b => b.myRows.length > 0);
 
-  const isBatchDone = (b: MyBatchEntry) => {
-    if (b.status === "completed") return true;
-    if (b.myRows.length === 0) return false;
-    return b.myRows.every(r => r.finished === true);
-  };
 
-  const completedBatches: MyBatchEntry[] = myWeaverBatches.filter(isBatchDone);
-  const myActiveBatches: MyBatchEntry[] = myWeaverBatches.filter(b => !isBatchDone(b));
+  const completedBatches: MyBatchEntry[] = myWeaverBatches.filter(isBatchDoneForWeaver);
+  const myActiveBatches: MyBatchEntry[] = myWeaverBatches.filter(b => !isBatchDoneForWeaver(b));
   const totalMyActive = myActiveBatches.length;
 
 

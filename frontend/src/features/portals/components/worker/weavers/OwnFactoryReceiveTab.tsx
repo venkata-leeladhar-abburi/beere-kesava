@@ -18,7 +18,7 @@ import { useBatches } from "@/features/production";
 import { useFinishing } from "@/features/finishing";
 import { DefectPhotoPrompt } from "./DefectPhotoPrompt";
 import { SareeSelectionTable } from "./SareeSelectionTable";
-import { Button, Input, NumberInput, Select, SelectItem, Combobox } from "../../../../../shared/ui/primitives";
+import { Button, Input, NumberInput, Combobox } from "../../../../../shared/ui/primitives";
 import { resolveAssetUrl } from "@/shared/api/uploads";
 import { useImageUpload } from "@/shared/hooks/useImageUpload";
 import { useAuth } from "../../../../../contexts/AuthContext";
@@ -48,7 +48,10 @@ export function OwnFactoryReceiveTab({ onSareeReceived }: { onSareeReceived?: (r
     if (!loomsRes?.items) return [];
     return loomsRes.items.map(l => ({
       id: l.id,
+      // Human-facing loom id ("Loom-003"); `id` stays the database key.
+      displayCode: l.code,
       loomNumber: l.loomNumber,
+      location: l.location,
       operatorName: l.operatorName,
       avatar: l.loomNumber.replace(/[^0-9A-Za-z]/g, "").slice(-2).toUpperCase() || "FL",
     }));
@@ -233,22 +236,41 @@ export function OwnFactoryReceiveTab({ onSareeReceived }: { onSareeReceived?: (r
           size="lg"
           value={selectedLoom?.id ?? ""}
           onValueChange={pickLoom}
-          placeholder="Select a loom…"
-          searchPlaceholder="Search looms…"
-          emptyMessage="No factory looms found"
-          options={LOOMS.map(l => ({ value: l.id, label: `${l.loomNumber}${l.operatorName ? ` · ${l.operatorName}` : ""}` }))}
+          placeholder="Search or select a loom…"
+          searchPlaceholder="Search by loom number, ID or operator…"
+          emptyMessage="No loom matches that search"
+          options={LOOMS.map(l => {
+            const pending = (batches[l.id] ?? []).reduce((n, b) => n + b.sarees.filter(x => x.status === "pending").length, 0);
+            return {
+              value: l.id,
+              label: l.displayCode ? `${l.loomNumber} · ${l.displayCode}` : l.loomNumber,
+              keywords: [l.loomNumber, l.displayCode ?? "", l.operatorName ?? "", l.location ?? ""].filter(Boolean) as string[],
+              hint: `${l.operatorName ? `${l.operatorName} · ` : ""}${pending > 0 ? `${pending} saree${pending > 1 ? "s" : ""} awaiting receipt` : "No pending sarees"}`,
+            };
+          })}
         />
       </div>
 
       {selectedLoom && loomBatches.length > 0 && (
         <div style={{ margin: "10px 16px 0" }}>
           <FieldLabel>Select Batch</FieldLabel>
-          <Select value={selectedBatchId ?? ""} onValueChange={pickBatch} size="lg">
-            {loomBatches.map(b => {
+          <Combobox
+            value={selectedBatchId ?? ""}
+            onValueChange={pickBatch}
+            size="lg"
+            placeholder="Search or select a batch…"
+            searchPlaceholder="Search by batch number or saree type…"
+            emptyMessage="No batch matches that search"
+            options={loomBatches.map(b => {
               const bDone = b.sarees.filter(s => s.status !== "pending").length;
-              return <SelectItem key={b.id} value={b.id}>{b.id} · {bDone}/{b.total} sarees done</SelectItem>;
+              return {
+                value: b.id,
+                label: b.id,
+                keywords: [b.id, b.sareeTypeCode, b.bulkOrderLabel ?? ""].filter(Boolean) as string[],
+                hint: `${b.sareeTypeCode} · ${bDone}/${b.total} sarees done${b.bulkOrderLabel ? ` · ${b.bulkOrderLabel}` : ""}`,
+              };
             })}
-          </Select>
+          />
 
           {currentBatch && (
             <div style={{ ...card, padding: "10px 14px", marginTop: 8 }}>
@@ -297,6 +319,8 @@ export function OwnFactoryReceiveTab({ onSareeReceived }: { onSareeReceived?: (r
           currentBatch={currentBatch}
           entityName={loomLabel}
           entityAvatar={selectedLoom.avatar}
+          entityCode={selectedLoom.displayCode ?? undefined}
+          loomLabel={selectedLoom.loomNumber}
           columnHeader="Loom / Operator"
           doneCount={doneCount}
           sareeSort={sareeSort}

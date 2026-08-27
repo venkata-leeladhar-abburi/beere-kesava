@@ -74,6 +74,9 @@ export interface CreateDispatchPayload {
   gstPct?: number;
   firmId?: string;
   paymentDueDate?: string;
+  /** User who performed this — recorded on the action log so the history
+   *  names the real person, including an admin working inside a staff portal. */
+  actorId?: string;
 }
 
 export interface UpdateDispatchPayload {

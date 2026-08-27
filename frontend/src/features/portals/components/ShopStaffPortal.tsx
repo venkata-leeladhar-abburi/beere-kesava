@@ -22,6 +22,7 @@ import { UserProfileModal } from "../../../shared/ui/UserProfileModal";
 import { MobileHeader } from "./shop-staff/MobileHeader";
 import { MobileTabBar } from "./shop-staff/MobileTabBar";
 import { DesktopTopNav } from "./shop-staff/desktop/DesktopTopNav";
+import { AdminViewingBanner } from "@/shared/ui/portal/AdminStaffView";
 import { HomeSection } from "./shop-staff/desktop/HomeSection";
 import { SaleSection } from "./shop-staff/desktop/SaleSection";
 import { CustomersSection } from "./shop-staff/desktop/CustomersSection";
@@ -139,6 +140,7 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
           showProfile={showProfile} setShowProfile={setShowProfile} setShowProfileModal={setShowProfileModal}
           onBack={onBack} handleLogout={handleLogout} selectRole={selectRole} routerNavigate={routerNavigate}
         />
+        <AdminViewingBanner portalLabel="Shop Staff" />
 
         {/* ── Page Content ── */}
         <AnimatePresence mode="wait">
@@ -226,6 +228,7 @@ export function ShopStaffPortal({ onBack }: ShopStaffPortalProps) {
         setShowProfileModal={setShowProfileModal}
         handleLogout={handleLogout} selectRole={selectRole} routerNavigate={routerNavigate}
       />
+      <AdminViewingBanner portalLabel="Shop Staff" />
 
       {/* Content — extra bottom padding on Home/Inventory so the floating "New Sale"
           button never covers the last row of a list */}

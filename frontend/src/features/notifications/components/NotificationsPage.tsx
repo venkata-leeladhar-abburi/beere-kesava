@@ -11,7 +11,7 @@ import { BackendNotification, connectNotificationsSocket, notificationsApi } fro
 import type { Socket } from "socket.io-client";
 import { useSocketStatus } from "../../../shared/hooks";
 import { useAuth, Role } from "../../../contexts/AuthContext";
-import { rupees, formatMoney } from "@/lib/domain/money";
+import { toUnifiedNotif } from "./notifFormat";
 
 const ROLE_TO_BACKEND: Record<Role, string> = {
   admin: "ADMIN",
@@ -21,84 +21,6 @@ const ROLE_TO_BACKEND: Record<Role, string> = {
   shop: "SHOP",
   accountant: "ACCOUNTANT",
 };
-
-// Backend Notification rows only carry a `type` string + free-form JSON
-// payload (no title/body/priority/category) — this table is the only place
-// that turns a real backend event into the rich display shape below. Only
-// "invoice_overdue" (from the Day-45 overdue-payment job) is emitted by any
-// backend module today; unknown types fall back to a generic info card so
-// new notification types never disappear silently.
-const TYPE_CONFIG: Record<string, {
-  category: UnifiedNotif["category"];
-  priority: Priority;
-  title: (payload: Record<string, unknown>) => string;
-  body: (payload: Record<string, unknown>) => string;
-}> = {
-  invoice_overdue: {
-    category: "payment",
-    priority: "critical",
-    title: p => `Invoice Overdue${p.invoiceNumber ? ` — ${String(p.invoiceNumber)}` : ""}`,
-    body: p => `Outstanding amount ${formatMoney(rupees(Number(p.outstandingAmount ?? 0)))} is more than 45 days overdue.`,
-  },
-};
-
-function formatRelativeTime(iso: string): string {
-  const now = Date.now();
-  const then = new Date(iso).getTime();
-  const diffMin = Math.round((now - then) / 60000);
-  if (diffMin < 1) return "Just now";
-  if (diffMin < 60) return `${diffMin} min ago`;
-  const diffHrs = Math.round(diffMin / 60);
-  if (diffHrs < 24) return `${diffHrs}h ago`;
-  const diffDays = Math.round(diffHrs / 24);
-  if (diffDays === 1) return "Yesterday";
-  return `${diffDays} days ago`;
-}
-
-function humanizeType(type: string): string {
-  return type.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
-}
-
-function inferCategory(type: string): UnifiedNotif["category"] {
-  const t = type.toUpperCase();
-  if (t.includes("PAYMENT") || t.includes("INVOICE") || t.includes("BILL")) return "payment";
-  if (t.includes("WARP") || t.includes("MATERIAL") || t.includes("STOCK") || t.includes("GRN")) return "material";
-  if (t.includes("BATCH") || t.includes("SAREE") || t.includes("QC") || t.includes("FINISHING")) return "production";
-  if (t.includes("WEAVER") || t.includes("LOOM")) return "weaver";
-  if (t.includes("DISPATCH") || t.includes("ORDER") || t.includes("SALE")) return "dispatch";
-  return "production";
-}
-
-function inferPriority(type: string): Priority {
-  const t = type.toUpperCase();
-  if (t.includes("REJECT") || t.includes("FAIL") || t.includes("DEFECT") || t.includes("OVERDUE") || t.includes("CRITICAL")) return "critical";
-  if (t.includes("PENDING") || t.includes("WARN") || t.includes("RISK")) return "warning";
-  if (t.includes("APPROVE") || t.includes("PAID") || t.includes("SUCCESS") || t.includes("COMPLETE") || t.includes("SIGNED")) return "success";
-  return "info";
-}
-
-function formatPayloadBody(payload?: Record<string, unknown> | null): string {
-  if (!payload || Object.keys(payload).length === 0) return "No details provided.";
-  return Object.entries(payload)
-    .map(([k, v]) => `${humanizeType(k)}: ${v}`)
-    .join(" · ");
-}
-
-function toUnifiedNotif(n: BackendNotification): UnifiedNotif {
-  const cfg = TYPE_CONFIG[n.type];
-  const payload = n.payload ?? {};
-  return {
-    id: n.id,
-    priority: cfg?.priority ?? inferPriority(n.type),
-    category: cfg?.category ?? inferCategory(n.type),
-    title: cfg ? cfg.title(payload) : humanizeType(n.type),
-    body: cfg ? cfg.body(payload) : formatPayloadBody(payload),
-    time: formatRelativeTime(n.createdAt),
-    read: n.readAt !== null,
-  };
-}
-
-
 
 function relativeTimeToDate(time: string): string {
   const now = new Date();
@@ -165,21 +87,28 @@ export function NotificationsPage() {
   const loadNotifications = useCallback(() => {
     setIsLoading(true);
     setIsError(false);
-    notificationsApi.list({ role: backendRole }).then(res => {
+    // No `role` filter: the server already scopes a non-admin to their own
+    // feed (personal + their role), and passing one made ADMIN/SUPERADMIN —
+    // for whom the server *honours* the filter — miss every notification
+    // addressed to them personally (targetType USER rows have role = null).
+    // It also disagreed with the socket, which joins admins to every role
+    // room, so live-pushed items vanished on the next refresh.
+    notificationsApi.list().then(res => {
       setNotifications(res.items.map(toUnifiedNotif));
     }).catch(() => {
       setNotifications([]);
       setIsError(true);
     }).finally(() => setIsLoading(false));
-  }, [backendRole]);
+  }, []);
 
   useEffect(() => { loadNotifications(); }, [loadNotifications]);
 
-  // Live push — backend gateway emits to `role:<ROLE>` rooms (no per-user
-  // auth yet, so we can only reliably subscribe by role).
+  // Live push — the gateway derives room membership from the socket's own
+  // JWT (personal room + role room, plus every role room for an admin), so
+  // there is nothing to subscribe to by hand; this only waits for a session.
   useEffect(() => {
     if (!backendRole) return;
-    const s = connectNotificationsSocket({ role: backendRole });
+    const s = connectNotificationsSocket();
     setSocket(s);
     s.on("notification", (raw: BackendNotification) => {
       setNotifications(prev => prev.some(n => n.id === raw.id) ? prev : [toUnifiedNotif(raw), ...prev]);

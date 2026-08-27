@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { Flower2, Clock, Layers, Package, RotateCcw } from "lucide-react";
+import { formatDueDate } from "./batchCompletion";
 import { SareeRow } from "@/features/production";
 import { Card, ProgressBar, StatusBadge, SareeTypeDetailCard } from "./theme";
 import { Button } from "../../../../shared/ui/primitives";
@@ -42,23 +43,25 @@ export function MobileBatchCard({ b, idx }: { b: MyBatchEntry; idx: number }) {
 
   return (
     <div style={{ margin: "0 20px 14px" }}>
-      <Card leftBorder={borderColor} style={{ padding: 18 }}>
+      <Card leftBorder={borderColor} style={{ padding: 18 }} onClick={() => setShowSarees(true)}>
 
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-          <button
-            onClick={() => setShowSarees(true)}
-            style={{ fontFamily: F.m, fontWeight: 700, fontSize: 16, color: C.burg, background: "none", border: "none", padding: 0, cursor: "pointer" }}
-          >
+          <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 16, color: C.burg }}>
             {b.batchId}
-          </button>
+          </span>
           <StatusBadge
             label={isActive ? "🟢 Open — Weaving" : "🟡 Draft"}
             color={isActive ? C.green : C.gold}
             bg={isActive ? "rgba(30,102,64,0.10)" : "rgba(200,155,71,0.15)"}
           />
         </div>
-        <WeaverBatchSareesModal batch={b} open={showSarees} onOpenChange={setShowSarees} />
+        {/* Wrapped so a click inside the modal's Radix portal — which still
+            bubbles through the React tree, not the DOM tree it's rendered
+            into — doesn't reach the card's own onClick and reopen it. */}
+        <div onClick={e => e.stopPropagation()}>
+          <WeaverBatchSareesModal batch={b} open={showSarees} onOpenChange={setShowSarees} />
+        </div>
 
         {/* Saree count */}
         <div style={{ background: C.cream, borderRadius: 12, padding: "12px 16px", marginBottom: 12, textAlign: "center" as const }}>
@@ -101,9 +104,10 @@ export function MobileBatchCard({ b, idx }: { b: MyBatchEntry; idx: number }) {
           </div>
         )}
 
-        {/* Clickable saree type chips */}
+        {/* Clickable saree type chips — stop propagation so this doesn't also
+            trigger the card's own click-to-open-batch handler above. */}
         {sareeTypePairs.length > 0 && (
-          <div style={{ marginBottom: 10 }}>
+          <div style={{ marginBottom: 10 }} onClick={e => e.stopPropagation()}>
             <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 6 }}>TAP TO VIEW SAREE TYPE DETAILS</div>
             <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 6 }}>
               {sareeTypePairs.map(([code, name]) => (
@@ -155,10 +159,10 @@ export function MobileBatchCard({ b, idx }: { b: MyBatchEntry; idx: number }) {
           </div>
         )}
 
-        {b.dueDate && (
+        {formatDueDate(b.dueDate) && (
           <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 4 }}>
             <Clock size={14} color={C.muted} />
-            <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>Due by <span style={{ color: C.text, fontWeight: 600 }}>{b.dueDate}</span></span>
+            <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>Due by <span style={{ color: C.text, fontWeight: 600 }}>{formatDueDate(b.dueDate)}</span></span>
           </div>
         )}
 
@@ -175,20 +179,28 @@ export function CompletedBatchCard({ b }: { b: MyBatchEntry }) {
   const [showSarees, setShowSarees] = useState(false);
   const produced = b.myRows.filter(r => r.qcPassed === true || r.finished === true).length;
   return (
-    <div style={{ margin: "0 16px 12px", background: C.white, borderRadius: 18, border: `1px solid ${C.bdr}`, overflow: "hidden", boxShadow: "0 2px 16px rgba(44,24,16,0.07)" }}>
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={() => setShowSarees(true)}
+      onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setShowSarees(true); } }}
+      style={{ margin: "0 16px 12px", background: C.white, borderRadius: 18, border: `1px solid ${C.bdr}`, overflow: "hidden", boxShadow: "0 2px 16px rgba(44,24,16,0.07)", cursor: "pointer" }}
+    >
       {/* Color band + batch id */}
       <div style={{ height: 56, background: "linear-gradient(135deg, #1E6640 0%, #2D9640 100%)", display: "flex", alignItems: "center", padding: "0 16px", gap: 10, position: "relative" as const }}>
         <div style={{ position: "absolute" as const, inset: 0, background: "linear-gradient(to right, rgba(26,5,12,0.45) 0%, transparent 70%)" }} />
-        <button
-          onClick={() => setShowSarees(true)}
-          style={{ position: "relative" as const, display: "flex", alignItems: "center", gap: 10, flex: 1, background: "none", border: "none", padding: 0, cursor: "pointer" }}
-        >
+        <div style={{ position: "relative" as const, display: "flex", alignItems: "center", gap: 10, flex: 1 }}>
           <Flower2 size={18} color="rgba(255,255,255,0.70)" />
           <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 14, color: "#FFF" }}>{b.batchId}</span>
-        </button>
+        </div>
         <span style={{ position: "relative" as const, fontFamily: F.u, fontSize: 12, color: "#1D4ED8", background: "rgba(255,255,255,0.92)", borderRadius: 999, padding: "3px 10px", fontWeight: 600 }}>✓ Completed</span>
       </div>
-      <WeaverBatchSareesModal batch={b} open={showSarees} onOpenChange={setShowSarees} />
+      {/* Wrapped so a click inside the modal's Radix portal — which still
+          bubbles through the React tree, not the DOM tree it's rendered
+          into — doesn't reach the card's own onClick and reopen it. */}
+      <div onClick={e => e.stopPropagation()}>
+        <WeaverBatchSareesModal batch={b} open={showSarees} onOpenChange={setShowSarees} />
+      </div>
 
       <div style={{ padding: "14px 16px" }}>
         {/* Stats grid */}
@@ -205,10 +217,10 @@ export function CompletedBatchCard({ b }: { b: MyBatchEntry }) {
           </div>
         </div>
 
-        {b.dueDate && (
+        {formatDueDate(b.dueDate) && (
           <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
             <Clock size={13} color={C.muted} />
-            <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Due by <span style={{ color: C.text, fontWeight: 600 }}>{b.dueDate}</span></span>
+            <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Due by <span style={{ color: C.text, fontWeight: 600 }}>{formatDueDate(b.dueDate)}</span></span>
           </div>
         )}
 

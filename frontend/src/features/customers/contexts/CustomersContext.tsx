@@ -2,7 +2,7 @@ import React, { createContext, useContext } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { BackendCustomer, CreateCustomerPayload, customersApi, UpdateCustomerPayload } from "../../../shared/api/customers";
-import { useAuthGate } from "../../../contexts/AuthContext";
+import { useAuth, useAuthGate } from "../../../contexts/AuthContext";
 
 // Thin real-backend directory of Customer{id,name,type,...} records — the
 // FK target for BulkOrder.customerId, Quotation.customerId, and
@@ -33,7 +33,15 @@ const QUERY_KEY = ["customers"] as const;
 export function CustomersProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
 
-  const enabled = useAuthGate();
+  // /customers is SHOP/ACCOUNTANT/ADMIN/SUPERADMIN-only on the backend
+  // (customers.controller.ts) — WEAVER and WORKER have no access. This
+  // provider is mounted globally (App.tsx's SharedContexts), so without
+  // this restriction the query fired unconditionally for every role and
+  // 403'd for the ones the backend doesn't allow.
+  const enabled = useAuthGate("shop", "accountant", "admin", "superadmin");
+  // Stamped on every mutation so the action log names the real person —
+  // including an admin working inside the Shop portal.
+  const { user } = useAuth();
 
   const { data: customers = [], isLoading, error, refetch } = useQuery({
     queryKey: QUERY_KEY,
@@ -42,7 +50,8 @@ export function CustomersProvider({ children }: { children: React.ReactNode }) {
   });
 
   const addCustomerMutation = useMutation({
-    mutationFn: (payload: CreateCustomerPayload) => customersApi.create(payload),
+    mutationFn: (payload: CreateCustomerPayload) =>
+      customersApi.create({ actorId: user?.id, ...payload }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       toast.success("Customer added");
@@ -54,7 +63,7 @@ export function CustomersProvider({ children }: { children: React.ReactNode }) {
 
   const updateCustomerMutation = useMutation({
     mutationFn: (args: { id: string; payload: UpdateCustomerPayload }) =>
-      customersApi.update(args.id, args.payload),
+      customersApi.update(args.id, { actorId: user?.id, ...args.payload }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       toast.success("Customer updated");

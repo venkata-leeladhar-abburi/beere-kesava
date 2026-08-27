@@ -1,5 +1,6 @@
 import React, { useState, Suspense, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
+import { useAuth } from "../../../contexts/AuthContext";
 import { AnimatePresence, motion } from "motion/react";
 import { useIsMobile } from "../../../hooks/useResponsive";
 import {
@@ -15,13 +16,14 @@ import { SATopNav } from "./superadmin-dashboard/SATopNav";
 import { SAMobileMenuDrawer, SAMobileTopNav } from "./superadmin-dashboard/SAMobileNav";
 import { SAOverviewPage } from "./superadmin-dashboard/SAOverviewPage";
 import { UserProfileModal } from "../../../shared/ui/UserProfileModal";
+import { SHOP_SCOPE, WORKER_SCOPE } from "@/features/users";
 import {
   RatesPricingPage, DesignLibraryPage, BatchCreationPage, ApprovalsPage, AuditLogPage,
   LabelSettingsPage, ExternalPurchasesPage, SupplierReturnsPage, AddUserPage, IssueMaterialPage, ReturnMaterialPage, MaterialsPage,
   WeaversPage, ProductionPage, PaymentsPage, ReportsPage, CustomersPage, VendorsPage,
   SuppliersPage, FactoryLoomPage, FirmsPage, InventoryPage, QcHistoryPage, NotificationsPage,
   WorkerGRN, AllWeaversPage, AllStockPage, AllOrdersPage, ProductionHistoryPage,
-  FinishingTrackingPage,
+  FinishingTrackingPage, StaffDirectoryPage,
 } from "./superadmin-dashboard/lazyPages";
 
 export { UserProfileModal };
@@ -33,6 +35,7 @@ export { UserProfileModal };
 export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
   const { tab } = useParams();
   const routerNavigate = useNavigate();
+  const { enterStaffView } = useAuth();
 
   // Map path to active tab
   let nav = "Overview";
@@ -55,6 +58,8 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
   else if (tab === "notifications") nav = "Notifications";
   else if (tab === "receive-stock") nav = "ReceiveStock";
   else if (tab === "add-user") nav = "AddUser";
+  else if (tab === "worker-staff") nav = "WorkerStaff";
+  else if (tab === "shop-staff") nav = "ShopStaff";
   else if (tab === "external-purchases") nav = "ExternalPurchases";
   else if (tab === "supplier-returns") nav = "SupplierReturns";
   else if (tab === "batches") nav = "Batches";
@@ -81,6 +86,14 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
     }
   }, [nav]);
 
+  // Open a staff portal as this admin. Not impersonation — the session and
+  // identity are unchanged, so anything recorded in there is attributed to
+  // the admin, and the portal shows a banner plus a way back.
+  const viewAsStaff = (target: "worker" | "shop") => {
+    enterStaffView(target);
+    routerNavigate(target === "worker" ? "/worker" : "/shop");
+  };
+
   const navigate = (tab: string, ctx?: unknown) => {
     const routeMap: Record<string, string> = {
       Overview: "/superadmin/overview",
@@ -102,6 +115,8 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
       Notifications: "/superadmin/notifications",
       ReceiveStock: "/superadmin/receive-stock",
       AddUser: "/superadmin/add-user",
+      WorkerStaff: "/superadmin/worker-staff",
+      ShopStaff: "/superadmin/shop-staff",
       ExternalPurchases: "/superadmin/external-purchases",
       SupplierReturns: "/superadmin/supplier-returns",
       Batches: "/superadmin/batches",
@@ -144,6 +159,8 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
       case "Approvals": return <ApprovalsPage />;
       case "AuditLog": return <AuditLogPage />;
       case "AddUser": return <AddUserPage />;
+      case "WorkerStaff": return <StaffDirectoryPage scope={WORKER_SCOPE} />;
+      case "ShopStaff": return <StaffDirectoryPage scope={SHOP_SCOPE} />;
       case "LabelSettings": return <LabelSettingsPage />;
       case "ExternalPurchases": return <ExternalPurchasesPage />;
       case "SupplierReturns": return <SupplierReturnsPage />;
@@ -244,7 +261,7 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
         </>
       ) : (
         <>
-          <SATopNav active={nav} set={navigate} onBack={onBack} sections={sections} onProfile={() => setShowProfileModal(true)} />
+          <SATopNav active={nav} set={navigate} onBack={onBack} sections={sections} onProfile={() => setShowProfileModal(true)} onViewAs={viewAsStaff} />
           <AnimatePresence mode="wait">
             <motion.div key={nav}
               initial={{ opacity: 0, y: 12 }}

@@ -311,7 +311,14 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
   const canReadFactoryLooms = role === "worker" || role === "admin" || role === "superadmin";
   const actingUserId = user?.id ?? STOPGAP_ACTING_USER_ID;
 
-  const enabled = useAuthGate();
+  // GET /material-issues is WORKER/WEAVER-only on the backend (ADMIN/
+  // SUPERADMIN bypass every check) — this provider is mounted globally
+  // (App.tsx's SharedContexts), so SHOP/ACCOUNTANT sessions would otherwise
+  // 403 here. /material-returns (the receivedSarees query further down) is
+  // narrower still — WEAVER/ADMIN/SUPERADMIN only, no WORKER — so it needs
+  // its own, stricter gate rather than reusing this one.
+  const enabled = useAuthGate("worker", "weaver", "admin", "superadmin");
+  const canReadMaterialReturns = useAuthGate("weaver", "admin", "superadmin");
 
   const { data: issueRecords = [], isError, error, isLoading, refetch } = useQuery({
     queryKey: ISSUE_RECORDS_KEY,
@@ -332,7 +339,7 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
 
   const { data: receivedSarees = INITIAL_RECEIVED_SAREES } = useQuery({
     queryKey: RECEIVED_SAREES_KEY,
-    enabled,
+    enabled: canReadMaterialReturns,
     queryFn: async () => {
       const res = await materialReturnsApi.list();
       return res.items

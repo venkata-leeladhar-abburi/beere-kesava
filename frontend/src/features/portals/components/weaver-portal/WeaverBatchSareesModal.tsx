@@ -1,5 +1,8 @@
 import { Layers, RotateCcw } from "lucide-react";
 import { Modal } from "@/shared/ui/overlay/Modal";
+import { Money } from "@/shared/ui/domain";
+import { rupees } from "@/lib/domain/money";
+import { useRatesPricing } from "@/features/pricing";
 import type { MyBatchEntry } from "./WeaverMobileBatchCard";
 
 const C = {
@@ -39,6 +42,15 @@ export function WeaverBatchSareesModal({
   onOpenChange: (open: boolean) => void;
 }) {
   const rows = batch?.myRows ?? [];
+  const { getSareeTypeByCode } = useRatesPricing();
+
+  // Only a produced (QC-passed or finished) saree has actually earned its
+  // making charge — a saree still in progress or reworking hasn't yet.
+  const producedRows = rows.filter(r => r.qcPassed === true || r.finished === true);
+  const totalEarned = producedRows.reduce((sum, r) => {
+    const charge = r.sareeTypeCode ? getSareeTypeByCode(r.sareeTypeCode)?.charge : undefined;
+    return sum + (charge ? Number(charge) : 0);
+  }, 0);
 
   return (
     <Modal open={open} onOpenChange={onOpenChange} size="lg">
@@ -55,6 +67,7 @@ export function WeaverBatchSareesModal({
           )}
           {rows.map((r, i) => {
             const stage = sareeStage(r);
+            const charge = r.sareeTypeCode ? getSareeTypeByCode(r.sareeTypeCode)?.charge : undefined;
             return (
               <div
                 key={r.sareeId ?? `pending-${i}`}
@@ -78,20 +91,41 @@ export function WeaverBatchSareesModal({
                     </div>
                   </div>
                 </div>
-                <span
-                  style={{
-                    display: "inline-flex", alignItems: "center", gap: 5, flexShrink: 0,
-                    fontFamily: F.u, fontWeight: 600, fontSize: 12, color: stage.color,
-                    background: stage.bg, borderRadius: 999, padding: "5px 12px", whiteSpace: "nowrap" as const,
-                  }}
-                >
-                  {r.awaitingRework && <RotateCcw size={11} color={stage.color} />}
-                  {stage.label}
-                </span>
+                <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "flex-end", gap: 5, flexShrink: 0 }}>
+                  <span
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: 5,
+                      fontFamily: F.u, fontWeight: 600, fontSize: 12, color: stage.color,
+                      background: stage.bg, borderRadius: 999, padding: "5px 12px", whiteSpace: "nowrap" as const,
+                    }}
+                  >
+                    {r.awaitingRework && <RotateCcw size={11} color={stage.color} />}
+                    {stage.label}
+                  </span>
+                  <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted, whiteSpace: "nowrap" as const }}>
+                    {charge ? <Money value={rupees(Number(charge))} /> : "—"} making charge
+                  </span>
+                </div>
               </div>
             );
           })}
         </div>
+
+        {rows.length > 0 && (
+          <div style={{
+            display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
+            marginTop: 4, padding: "14px 16px", borderRadius: 14,
+            background: "rgba(200,155,71,0.10)", border: "1px solid rgba(200,155,71,0.25)",
+          }}>
+            <div>
+              <div style={{ fontFamily: F.m, fontSize: 11, color: C.gold, letterSpacing: "0.8px", textTransform: "uppercase" as const }}>Earned so far</div>
+              <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>{producedRows.length} of {rows.length} produced sarees</div>
+            </div>
+            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.gold }}>
+              <Money value={rupees(totalEarned)} />
+            </div>
+          </div>
+        )}
       </Modal.Body>
     </Modal>
   );

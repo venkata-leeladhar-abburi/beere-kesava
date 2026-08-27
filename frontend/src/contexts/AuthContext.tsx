@@ -32,6 +32,16 @@ interface AuthContextValue extends AuthState {
   adminViewingAs: Role | null;
   /** Drops the admin-viewing flag — used when a role is chosen fresh. */
   clearAdminView: () => void;
+  /**
+   * Opens a staff portal as the signed-in admin/superadmin, remembering the
+   * role to come back to. This is what writes ADMIN_VIEW_KEY — the flag that
+   * `adminViewingAs` and every portal's "Return to Admin" button read.
+   *
+   * Deliberately NOT impersonation: the session, token and user identity are
+   * untouched, so anything recorded while in here is attributed to the admin
+   * themselves. Callers must gate this to admin/superadmin.
+   */
+  enterStaffView: (role: Role) => void;
 }
 
 // Exported (in addition to useAuth) so dev-only harnesses that render a
@@ -41,31 +51,6 @@ interface AuthContextValue extends AuthState {
 export const AuthContext = createContext<AuthContextValue | null>(null);
 
 const STORAGE_KEY = "bk_auth_state";
-/**
- * Timestamp (ms) of the last recorded user activity, refreshed on
- * mount/interaction while the tab is visible. Used to distinguish "reopened
- * the app a few seconds later — resume where I was" from "came back after 5+
- * idle minutes — treat the stored session as stale and require login again",
- * per product decision: a stale `isAuthenticated: true` in localStorage
- * shouldn't let a navigation land straight on an authenticated page after a
- * real gap away.
- */
-const LAST_ACTIVITY_KEY = "bk_last_activity";
-const IDLE_TIMEOUT_MS = 5 * 60 * 1000;
-
-function touchActivity() {
-  try { localStorage.setItem(LAST_ACTIVITY_KEY, String(Date.now())); } catch { /* ignore */ }
-}
-
-function isSessionStale(): boolean {
-  try {
-    const raw = localStorage.getItem(LAST_ACTIVITY_KEY);
-    if (!raw) return false; // no recorded activity yet (e.g. first-ever login) — don't punish that
-    return Date.now() - Number(raw) > IDLE_TIMEOUT_MS;
-  } catch {
-    return false;
-  }
-}
 /** Written by the admin/superadmin dashboards just before entering a staff portal. */
 export const ADMIN_VIEW_KEY = "bk_original_admin_role";
 /**
@@ -91,19 +76,7 @@ function loadState(): AuthState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
-      const parsed = JSON.parse(raw) as AuthState;
-      // A session that's been idle for 5+ minutes doesn't get to resume just
-      // because the browser still has it in storage — this is what makes
-      // "opened this link again after a while" bounce to /login instead of
-      // landing straight on whatever page was linked.
-      if (parsed.isAuthenticated && isSessionStale()) {
-        try {
-          localStorage.removeItem(STORAGE_KEY);
-          localStorage.removeItem("token");
-        } catch { /* ignore */ }
-        return { isAuthenticated: false, role: null, phone: null, token: null, user: null };
-      }
-      return parsed;
+      return JSON.parse(raw) as AuthState;
     }
   } catch {
     // ignore
@@ -132,37 +105,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     saveState(state);
   }, [state]);
 
-  // Idle-timeout: keep the activity clock moving while the user is actually
-  // doing something, and check it periodically + whenever the tab regains
-  // focus/visibility (the common "switched away, came back later" case a
-  // page-load-only check would miss since this is a long-lived SPA session,
-  // not a fresh mount per navigation).
-  useEffect(() => {
-    if (!state.isAuthenticated) return;
-
-    touchActivity();
-    const onActivity = () => touchActivity();
-    const events: (keyof DocumentEventMap)[] = ["click", "keydown", "mousemove", "touchstart"];
-    events.forEach(e => document.addEventListener(e, onActivity, { passive: true }));
-
-    const checkIdle = () => {
-      if (isSessionStale()) logout();
-    };
-    const onVisibility = () => { if (document.visibilityState === "visible") checkIdle(); };
-    document.addEventListener("visibilitychange", onVisibility);
-    const interval = setInterval(checkIdle, 30_000);
-
-    return () => {
-      events.forEach(e => document.removeEventListener(e, onActivity));
-      document.removeEventListener("visibilitychange", onVisibility);
-      clearInterval(interval);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- logout is stable (useCallback, no deps)
-  }, [state.isAuthenticated]);
-
   const clearAdminView = useCallback(() => {
     try { localStorage.removeItem(ADMIN_VIEW_KEY); } catch { /* ignore */ }
     setAdminViewingAs(null);
+  }, []);
+
+  const enterStaffView = useCallback((target: Role) => {
+    setState(prev => {
+      // Remember the role being left, not whatever is in storage already —
+      // re-entering from a staff portal must not overwrite the original
+      // admin role with a staff one and strand the way back.
+      if (prev.role === "admin" || prev.role === "superadmin") {
+        try { localStorage.setItem(ADMIN_VIEW_KEY, prev.role); } catch { /* ignore */ }
+        setAdminViewingAs(prev.role);
+      }
+      return { ...prev, role: target };
+    });
   }, []);
 
   const login = useCallback((phone: string, token?: string, user?: AuthState["user"]) => {
@@ -197,7 +155,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ ...state, login, selectRole, logout, adminViewingAs, clearAdminView }}>
+    <AuthContext.Provider value={{ ...state, login, selectRole, logout, adminViewingAs, clearAdminView, enterStaffView }}>
       {children}
     </AuthContext.Provider>
   );

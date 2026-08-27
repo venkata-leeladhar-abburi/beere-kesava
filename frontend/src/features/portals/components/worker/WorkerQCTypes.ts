@@ -59,6 +59,10 @@ export interface SareeItem {
 export type InspectionResult = "defective" | "semi_approved" | null;
 
 export interface DefectiveLogItem {
+  /** The underlying QC record's own id — use this as the React list key.
+   * `id` below is the saree code shown to the user, and repeats across a
+   * saree's inspection history (fail, rework, re-inspect). */
+  recordId: string;
   id: string;
   weaver: string;
   defects: string[];
@@ -77,12 +81,19 @@ export interface DefectiveLogItem {
 }
 
 export interface PassedLogItem {
+  /** The underlying QC record's own id — use this as the React list key.
+   * `id` below is the saree code shown to the user, and repeats across a
+   * saree's inspection history (fail, rework, re-inspect). */
+  recordId: string;
   id: string;
   weaver: string;
   sareeType: string;
   date: string;
   payable: string;
   isoDate: string;
+  /** Who performed this QC check — same field already carried by the
+   * defective/semi log, just previously dropped when building this one. */
+  inspectedBy?: string;
 }
 
 // NOTE: the QUEUE and DEFECTIVE_LOG fixtures that used to live here held

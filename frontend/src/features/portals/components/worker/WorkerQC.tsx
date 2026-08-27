@@ -115,6 +115,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
   const qcLog = useMemo<DefectiveLogItem[]>(() => qcRecords
     .filter(r => r.result === "defective" || r.result === "semi")
     .map(r => ({
+      recordId: r.id,
       id: r.sareeId,
       weaver: r.weaverName ?? r.factoryLoomNumber ?? "—",
       defects: r.defects,
@@ -139,12 +140,14 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
   const passedLog = useMemo<PassedLogItem[]>(() => qcRecords
     .filter(r => r.result === "passed")
     .map(r => ({
+      recordId: r.id,
       id: r.sareeId,
       weaver: r.weaverName ?? r.factoryLoomNumber ?? "—",
       sareeType: r.sareeTypeName ?? "",
       date: new Date(r.qcDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short" }),
       payable: formatMoney(rupees(r.payable)),
       isoDate: r.qcDate,
+      inspectedBy: r.inspectedBy,
     }))
     .sort((a, b) => b.isoDate.localeCompare(a.isoDate)),
   [qcRecords]);

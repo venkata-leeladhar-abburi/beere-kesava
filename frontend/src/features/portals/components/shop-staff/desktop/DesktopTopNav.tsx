@@ -4,6 +4,7 @@ import { Bell, ChevronLeft, LogOut, RotateCcw, UserRound } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { imgBKLogo } from "../../../../../shared/constants/weaverImages";
 import { C, F } from "../theme";
+import { staffIdentitySubtitle, useAdminStaffView } from "@/shared/ui/portal/AdminStaffView";
 import { useAuth } from "../../../../../contexts/AuthContext";
 import { Button, IconButton, SearchInput } from "../../../../../shared/ui/primitives";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "../../../../../shared/ui/overlay";
@@ -53,13 +54,17 @@ export function DesktopTopNav({
   routerNavigate: (path: string) => void;
 }) {
   const { user } = useAuth();
+  const { adminViewingAs } = useAdminStaffView();
   const name = user?.name || "Naidu PAVAN";
   const initials = name.split(" ").filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase() || "NP";
   const [markedRead, setMarkedRead] = useState(false);
 
   const { data: notifRes } = useQuery({
     queryKey: ["notifications-list-shop-desktop"],
-    queryFn: () => notificationsApi.list({ role: "SHOP", pageSize: 20 }),
+    // No `role` filter — the server scopes this to the caller's own feed.
+    // Sending role: "SHOP" excluded every personally-addressed notification,
+    // whose rows carry role = null.
+    queryFn: () => notificationsApi.list({ pageSize: 20 }),
   });
 
   const { data: returnsRes } = useQuery({
@@ -253,7 +258,7 @@ export function DesktopTopNav({
                 </div>
                 <div>
                   <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>{name}</div>
-                  <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>Shop Staff</div>
+                  <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>{staffIdentitySubtitle({ adminViewingAs, portalLabel: "Shop Staff", fallback: "Shop Staff" })}</div>
                 </div>
               </div>
               <div style={{ padding: "6px 0" }}>

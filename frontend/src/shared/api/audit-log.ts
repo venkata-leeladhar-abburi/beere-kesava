@@ -45,10 +45,17 @@ export const auditLogApi = {
   list: (pageSize = 100) =>
     apiClient.get<PaginatedResponse<BackendAuditLog>>(`/audit-log?pageSize=${pageSize}`),
 
-  listActions: (params: { pageSize?: number; module?: string } = {}) => {
-    const { pageSize = 100, module } = params;
+  listActions: (
+    params: { pageSize?: number; page?: number; module?: string; userId?: string; modules?: string[] } = {},
+  ) => {
+    const { pageSize = 100, page, module, userId, modules } = params;
     const query = new URLSearchParams({ pageSize: String(pageSize) });
-    if (module && module !== "All Modules") query.set("module", module);
+    if (page) query.set("page", String(page));
+    if (userId) query.set("userId", userId);
+    // A portal's whole module set — used by the staff directories to scope a
+    // person's history to the portal they work in.
+    if (modules?.length) query.set("modules", modules.join(","));
+    else if (module && module !== "All Modules") query.set("module", module);
     return apiClient.get<PaginatedResponse<ActionLogEntry>>(`/audit-log/actions?${query.toString()}`);
   },
 };

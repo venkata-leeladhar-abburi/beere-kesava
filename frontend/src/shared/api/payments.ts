@@ -26,6 +26,9 @@ export interface CreateSupplierPaymentPayload {
   utr?: string;
   method?: string;
   firmId?: string;
+  /** User who performed this — recorded on the action log so the history
+   *  names the real person, including an admin working inside a staff portal. */
+  actorId?: string;
 }
 
 export interface BackendSupplierPayment {
@@ -91,6 +94,9 @@ export interface CreateWeaverPaymentPayload {
   loomNumber?: string;
   noOfSarees?: number;
   deduction?: number;
+  /** User who performed this — recorded on the action log so the history
+   *  names the real person, including an admin working inside a staff portal. */
+  actorId?: string;
 }
 
 export interface BackendWeaverPayment {
@@ -174,6 +180,9 @@ export interface CreateVendorPaymentPayload {
   method?: string;
   firmId?: string;
   billId?: string;
+  /** User who performed this — recorded on the action log so the history
+   *  names the real person, including an admin working inside a staff portal. */
+  actorId?: string;
 }
 
 export interface BackendVendorPayment {

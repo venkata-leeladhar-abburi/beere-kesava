@@ -15,6 +15,12 @@ export interface ComboboxOption {
   value: string;
   label: string;
   disabled?: boolean;
+  /** Extra terms the search should match on (an ID, a code, an operator name…)
+   *  without having to crowd them all into the visible label. */
+  keywords?: string[];
+  /** Secondary line rendered under the label — context that helps pick the
+   *  right option (batch progress, saree type, loom) but isn't the name. */
+  hint?: string;
 }
 
 const SIZE_CLASS = {
@@ -133,22 +139,26 @@ export function Combobox({
                 <CommandPrimitive.Item
                   key={option.value}
                   value={option.label}
+                  keywords={option.keywords}
                   disabled={option.disabled}
                   onSelect={() => {
                     onValueChange?.(option.value);
                     setOpen(false);
                   }}
                   className={cn(
-                    "relative flex h-10 items-center gap-2 rounded-[10px] px-3 pr-8 text-[14px] cursor-pointer select-none outline-none focus-visible:!outline-none",
+                    "relative flex min-h-10 flex-col justify-center gap-0.5 rounded-[10px] px-3 py-1.5 pr-8 text-[14px] cursor-pointer select-none outline-none focus-visible:!outline-none",
                     "text-[var(--text-primary)]",
                     "data-[selected=true]:bg-[rgba(110,15,45,0.06)]",
                     "data-[disabled=true]:opacity-50 data-[disabled=true]:cursor-not-allowed",
                     option.value === value && "bg-[rgba(110,15,45,0.08)] font-semibold text-[var(--text-brand)]"
                   )}
                 >
-                  {option.label}
+                  <span className="truncate">{option.label}</span>
+                  {option.hint && (
+                    <span className="truncate text-[12px] font-normal text-[var(--text-tertiary)]">{option.hint}</span>
+                  )}
                   {option.value === value && (
-                    <Icon name="check" size="sm" className="absolute right-2" />
+                    <Icon name="check" size="sm" className="absolute right-2 top-1/2 -translate-y-1/2" />
                   )}
                 </CommandPrimitive.Item>
               ))}

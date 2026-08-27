@@ -19,7 +19,7 @@ import { useFinishing } from "@/features/finishing";
 import { DefectPhotoPrompt } from "./DefectPhotoPrompt";
 import { OwnFactoryReceiveTab } from "./OwnFactoryReceiveTab";
 import { SareeSelectionTable } from "./SareeSelectionTable";
-import { Button, Input, NumberInput, Select, SelectItem } from "../../../../../shared/ui/primitives";
+import { Button, Input, NumberInput, Combobox } from "../../../../../shared/ui/primitives";
 import { toPaise, fromPaise } from "../../../../../lib/gst";
 import { resolveAssetUrl } from "@/shared/api/uploads";
 import { useImageUpload } from "@/shared/hooks/useImageUpload";
@@ -47,6 +47,11 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
     return weaversRes.items.map(w => ({
       name: w.name,
       code: w.id,
+      // Human-facing weaver ID ("Wea-001") — what Worker Staff reads off a
+      // tag or a passbook; `code` above is the opaque database id used for
+      // matching and must stay that way.
+      displayCode: w.code,
+      village: w.village,
       looms: w.looms,
       avatar: w.initials || `${w.firstName.charAt(0)}${w.lastName.charAt(0)}`,
     }));
@@ -281,26 +286,50 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
           <>
             <div style={{ margin: "10px 16px 0" }}>
               <FieldLabel>Select Weaver</FieldLabel>
-              <Select
+              <Combobox
                 value={selectedWeaver?.code ?? ""}
                 onValueChange={pickWeaver}
                 size="lg"
                 disabled={weaversLoading}
-                placeholder={weaversLoading ? "Loading weavers…" : undefined}
-              >
-                {WEAVERS.map(w => <SelectItem key={w.code} value={w.code}>{w.name}</SelectItem>)}
-              </Select>
+                placeholder={weaversLoading ? "Loading weavers…" : "Search or select a weaver…"}
+                searchPlaceholder="Search by weaver name or ID…"
+                emptyMessage="No weaver matches that name or ID"
+                options={WEAVERS.map(w => {
+                  const pending = (batches[w.code] ?? []).reduce((n, b) => n + b.sarees.filter(x => x.status === "pending").length, 0);
+                  return {
+                    value: w.code,
+                    label: w.displayCode ? `${w.name} · ${w.displayCode}` : w.name,
+                    // Typing an ID, a village or a bare surname all have to
+                    // land on the right weaver — the visible label alone is
+                    // too narrow a target on a shop floor.
+                    keywords: [w.name, w.displayCode, w.village ?? "", String(w.looms)].filter(Boolean) as string[],
+                    hint: pending > 0 ? `${pending} saree${pending > 1 ? "s" : ""} awaiting receipt` : "No pending sarees",
+                  };
+                })}
+              />
             </div>
 
             {selectedWeaver && weaverBatches.length > 0 && (
               <div style={{ margin: "10px 16px 0" }}>
                 <FieldLabel>Select Batch</FieldLabel>
-                <Select value={selectedBatchId ?? ""} onValueChange={pickBatch} size="lg">
-                  {weaverBatches.map(b => {
+                <Combobox
+                  value={selectedBatchId ?? ""}
+                  onValueChange={pickBatch}
+                  size="lg"
+                  placeholder="Search or select a batch…"
+                  searchPlaceholder="Search by batch number, saree type or loom…"
+                  emptyMessage="No batch matches that search"
+                  options={weaverBatches.map(b => {
                     const bDone = b.sarees.filter(s => s.status !== "pending").length;
-                    return <SelectItem key={b.id} value={b.id}>{b.id} · {bDone}/{b.total} sarees done</SelectItem>;
+                    const loomBit = b.loomNumber != null ? ` · Loom ${b.loomNumber}` : "";
+                    return {
+                      value: b.id,
+                      label: b.id,
+                      keywords: [b.id, b.sareeTypeCode, b.bulkOrderLabel ?? "", b.loomNumber != null ? `Loom ${b.loomNumber}` : ""].filter(Boolean) as string[],
+                      hint: `${b.sareeTypeCode}${loomBit} · ${bDone}/${b.total} sarees done${b.bulkOrderLabel ? ` · ${b.bulkOrderLabel}` : ""}`,
+                    };
                   })}
-                </Select>
+                />
 
                 {currentBatch && (
                   <div style={{ ...card, padding: "10px 14px", marginTop: 8 }}>
@@ -308,7 +337,9 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
                       <div>
                         <div style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, color: C.burg }}>{currentBatch.id}</div>
                         <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 1 }}>
-                          {currentBatch.sareeTypeCode}{currentBatch.bulkOrderLabel ? ` · ${currentBatch.bulkOrderLabel}` : ""}
+                          {currentBatch.sareeTypeCode}
+                          {currentBatch.loomNumber != null ? ` · Loom ${currentBatch.loomNumber}` : ""}
+                          {currentBatch.bulkOrderLabel ? ` · ${currentBatch.bulkOrderLabel}` : ""}
                         </div>
                         <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 1 }}>{doneCount} of {currentBatch.total} sarees done</div>
                       </div>
@@ -343,6 +374,7 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
                 currentBatch={currentBatch}
                 entityName={selectedWeaver.name}
                 entityAvatar={selectedWeaver.avatar}
+                entityCode={selectedWeaver.displayCode}
                 doneCount={doneCount}
                 sareeSort={sareeSort}
                 setSareeSort={setSareeSort}

@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "../../../../contexts/AuthContext";
 import { salesApi, BackendSaleRecord } from "../../../../shared/api/sales";
 import { 
   AlertTriangle, Palette, ThumbsDown, Scale, FileText, Building2, ShoppingBag, RotateCcw
@@ -18,6 +19,9 @@ type MyReturnType = "retail" | "wholesale" | "damage" | null;
 type ReturnStep = "type" | 1 | 2 | 3 | "success";
 
 function ProcessReturn({ onBack }: { onBack: () => void }) {
+  // The real signed-in person — an admin working inside the Shop portal is
+  // recorded as themselves, not as generic shop staff.
+  const { user } = useAuth();
   const canSeePrices = useCanSeePrices();
   const { isMobile } = useResponsive();
   const [returnType, setReturnType] = useState<MyReturnType>(null);
@@ -333,6 +337,7 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
                 reason: returnReasons.find(r => r.id === reason)?.label ?? (reason === "other" ? otherReason.trim() : reason) ?? "Other",
                 refundAmount: Number(foundSale.amount),
                 restocked: true,
+                actorId: user?.id,
               });
               refetch();
             } catch (err) {
@@ -393,6 +398,7 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
               sareeType: wsType || undefined,
               color: wsColor.trim() || undefined,
               photoUrl: wsPhotoUrl ?? undefined,
+              actorId: user?.id,
             });
             refetch();
             setStep("success");

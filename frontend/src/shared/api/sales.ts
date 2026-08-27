@@ -85,6 +85,9 @@ export interface CreateSalePayload {
   /** Required when channel === 'WHOLESALE' */
   customerId?: string;
   amount: number;
+  /** User who performed this — recorded on the action log so the history
+   *  names the real person, including an admin working inside a staff portal. */
+  actorId?: string;
 }
 
 export interface CreateReturnPayload {
@@ -92,6 +95,9 @@ export interface CreateReturnPayload {
   reason?: string;
   refundAmount?: number;
   restocked?: boolean;
+  /** User who performed this — recorded on the action log so the history
+   *  names the real person, including an admin working inside a staff portal. */
+  actorId?: string;
 }
 
 /**
@@ -110,6 +116,9 @@ export interface RegisterReturnedSareePayload {
   color?: string;
   /** Server-relative path from POST /uploads/photo. */
   photoUrl?: string;
+  /** User who performed this — recorded on the action log so the history
+   *  names the real person, including an admin working inside a staff portal. */
+  actorId?: string;
 }
 
 export const salesApi = {

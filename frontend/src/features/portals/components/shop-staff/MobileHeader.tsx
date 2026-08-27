@@ -1,6 +1,7 @@
 import { formatMoney, rupees } from "@/lib/domain/money";
 import React, { useState } from "react";
 import { Bell, ChevronLeft, LogOut, Menu, UserRound, Home, ShoppingBag, Package, Users, BarChart2, RotateCcw, X } from "lucide-react";
+import { staffIdentitySubtitle, useAdminStaffView } from "@/shared/ui/portal/AdminStaffView";
 import { useQuery } from "@tanstack/react-query";
 import { C, F } from "./theme";
 import { useAuth } from "../../../../contexts/AuthContext";
@@ -49,6 +50,7 @@ export function MobileHeader({
   routerNavigate: (path: string) => void;
 }) {
   const { user } = useAuth();
+  const { adminViewingAs } = useAdminStaffView();
   const name = user?.name || "Shop Staff";
   const initials = name === "Shop Staff" ? "SS" : name.split(" ").filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase();
   const [openDrawer, setOpenDrawer] = useState(false);
@@ -56,7 +58,10 @@ export function MobileHeader({
 
   const { data: notifRes } = useQuery({
     queryKey: ["notifications-list-shop-mobile"],
-    queryFn: () => notificationsApi.list({ role: "SHOP", pageSize: 20 }),
+    // No `role` filter — the server scopes this to the caller's own feed.
+    // Sending role: "SHOP" excluded every personally-addressed notification,
+    // whose rows carry role = null.
+    queryFn: () => notificationsApi.list({ pageSize: 20 }),
   });
 
   const { data: returnsRes } = useQuery({
@@ -250,7 +255,7 @@ export function MobileHeader({
             <DropdownMenuContent align="end" className="!min-w-[220px] !p-0 !rounded-[14px] !overflow-hidden" style={{ background: "#FFFDF9", border: `1px solid ${C.bdr}`, zIndex: 2000 }}>
               <div style={{ padding: "14px 16px", background: "rgba(110,15,45,0.04)", borderBottom: `1px solid ${C.bdr}` }}>
                 <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>{name}</div>
-                <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>{user?.empId ? `${user.empId} · Shop Staff` : "Shop Staff"}</div>
+                <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>{staffIdentitySubtitle({ adminViewingAs, portalLabel: "Shop Staff", fallback: user?.empId ? `${user.empId} · Shop Staff` : "Shop Staff" })}</div>
               </div>
               <div style={{ padding: "6px 0" }}>
                 <DropdownMenuItem onClick={() => setShowProfileModal(true)} className="!h-auto !py-2.5 !px-4 !text-[13px] !text-[#3B2314]">

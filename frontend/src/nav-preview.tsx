@@ -16,7 +16,7 @@ import { SATopNav } from "./features/dashboards/components/superadmin-dashboard/
 const fakeAuth = {
   isAuthenticated: true, role: "admin" as const, phone: "8888888888", token: "dev",
   user: { id: "dev", name: "Preview Admin", email: "", mobile: "", role: "admin", accessLevel: undefined },
-  login: () => {}, selectRole: () => {}, logout: () => {}, adminViewingAs: null, clearAdminView: () => {},
+  login: () => {}, selectRole: () => {}, logout: () => {}, adminViewingAs: null, clearAdminView: () => {}, enterStaffView: () => {},
 };
 
 const WHICH = new URLSearchParams(location.search).get("which") ?? "admin";

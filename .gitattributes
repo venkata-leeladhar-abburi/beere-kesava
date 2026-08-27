@@ -1,0 +1,7 @@
+# Shell scripts must always check out with LF line endings, regardless of a
+# contributor's core.autocrlf setting — a CRLF inside a bash script breaks
+# `set -o pipefail` and other shell builtins in a way that's hard to diagnose
+# from the error alone (Windows checked out backend/scripts/db-push.sh and
+# db-studio.sh with CRLF, corrupting `set -euo pipefail` into a garbled
+# "invalid option name" error).
+*.sh text eol=lf

@@ -1,6 +1,21 @@
-import { Module } from "@nestjs/common";
+import { Injectable, Module } from "@nestjs/common";
+import { APP_GUARD } from "@nestjs/core";
 import { ConfigModule } from "@nestjs/config";
 import { ScheduleModule } from "@nestjs/schedule";
+import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
+
+// Integration specs (test/integration/*, test/utils/test-app.ts) boot the
+// real AppModule and fire many requests in quick succession from the same
+// source IP — real rate limiting there would fail unrelated tests on request
+// volume, not on anything the test is actually asserting. Jest sets
+// NODE_ENV=test by default when nothing else does, so this only disables
+// enforcement under test; production and local dev both throttle for real.
+@Injectable()
+class AppThrottlerGuard extends ThrottlerGuard {
+  protected shouldSkip(): Promise<boolean> {
+    return Promise.resolve(process.env.NODE_ENV === "test");
+  }
+}
 import { ApprovalsModule } from "./approvals/approvals.module";
 import { AppController } from "./app.controller";
 import { AuditLogModule } from "./audit-log/audit-log.module";
@@ -57,6 +72,12 @@ import { WhatsAppModule } from "./whatsapp/whatsapp.module";
       isGlobal: true,
       validate: validateEnv,
     }),
+    // Baseline rate limit on every endpoint (100 req/min per IP) — applied
+    // globally via APP_GUARD below. Auth's OTP endpoints layer a much
+    // tighter, named limit on top (see AuthController) since they're the
+    // realistic brute-force target; this default just stops generic abuse
+    // everywhere else.
+    ThrottlerModule.forRoot([{ name: "default", ttl: 60_000, limit: 100 }]),
     ScheduleModule.forRoot(),
     StorageModule,
     PrismaModule,
@@ -102,6 +123,8 @@ import { WhatsAppModule } from "./whatsapp/whatsapp.module";
     DesignDispatchesModule,
   ],
   controllers: [AppController],
-  providers: [],
+  providers: [
+    { provide: APP_GUARD, useClass: AppThrottlerGuard },
+  ],
 })
 export class AppModule {}

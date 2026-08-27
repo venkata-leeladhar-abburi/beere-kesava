@@ -369,6 +369,11 @@ model OtpCode {
   consumedAt  DateTime?
   attempts    Int       @default(0)
   createdAt   DateTime  @default(now())
+  // Bumped by Prisma on every write, including the `attempts` increment on a
+  // wrong guess — this is what the wrong-attempt lockout in AuthService times
+  // itself from (lockout ends `attempts`-lockout-ms after the LAST wrong try,
+  // not from when the OTP was first created).
+  updatedAt   DateTime  @default(now()) @updatedAt
 
   @@index([phoneNumber])
 }

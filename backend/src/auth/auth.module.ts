@@ -27,9 +27,11 @@ const e2eTestMode = isE2eTestModeEnabled();
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: "jwt" }),
+    // No expiresIn: per product decision, a session lasts until the user
+    // explicitly logs out, not on a fixed clock — the frontend's own
+    // idle-timeout auto-logout was removed for the same reason.
     JwtModule.register({
       secret: process.env.JWT_SECRET || "beere-kesava-secret-key-2026",
-      signOptions: { expiresIn: "30d" },
     }),
   ],
   controllers: [AuthController, ...(e2eTestMode ? [TestOnlyAuthController] : [])],

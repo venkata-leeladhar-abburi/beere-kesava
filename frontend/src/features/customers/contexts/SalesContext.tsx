@@ -18,24 +18,32 @@ const QUERY_KEY = ["sales", "sarees"] as const;
 export function SalesProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
 
-  const enabled = useAuthGate();
+  // /inventory is SHOP/WORKER/ACCOUNTANT/ADMIN/SUPERADMIN-only on the backend
+  // (inventory.controller.ts); /sales and /sales/returns/all are narrower —
+  // SHOP/ACCOUNTANT/ADMIN/SUPERADMIN only (sales.controller.ts), WORKER has
+  // no access to either. This provider is mounted globally (App.tsx's
+  // SharedContexts) so it renders for weaver and worker sessions too;
+  // without these restrictions all three queries fired unconditionally for
+  // those roles and 403'd every time.
+  const inventoryEnabled = useAuthGate("shop", "worker", "accountant", "admin", "superadmin");
+  const salesEnabled = useAuthGate("shop", "accountant", "admin", "superadmin");
 
   const { data: rawInventory = [], isError: isInventoryError, error: inventoryError, isLoading: isInventoryLoading, refetch: refetchInventory } = useQuery({
     queryKey: ["backend-inventory-list"],
     queryFn: () => inventoryApi.list(),
-    enabled,
+    enabled: inventoryEnabled,
   });
 
   const { data: rawSales, isError: isSalesError, error: salesError, isLoading: isSalesLoading, refetch: refetchSales } = useQuery({
     queryKey: ["backend-sales-list"],
     queryFn: () => salesApi.list(100),
-    enabled,
+    enabled: salesEnabled,
   });
 
   const { data: rawReturns, isError: isReturnsError, error: returnsError, isLoading: isReturnsLoading, refetch: refetchReturns } = useQuery({
     queryKey: ["backend-returns-list"],
     queryFn: () => salesApi.listReturns(100),
-    enabled,
+    enabled: salesEnabled,
   });
 
   const isError = isInventoryError || isSalesError || isReturnsError;

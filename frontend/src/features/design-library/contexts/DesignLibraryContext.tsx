@@ -95,7 +95,13 @@ const DISPATCHES_KEY = ["designLibrary", "dispatches"] as const;
 
 export function DesignLibraryProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
-  const enabled = useAuthGate();
+  // /design-library is WORKER/WEAVER-only on the backend (ADMIN/SUPERADMIN
+  // bypass every check); /design-dispatches is narrower still — WORKER-only.
+  // This provider is mounted globally (App.tsx's SharedContexts), so SHOP
+  // and ACCOUNTANT sessions would otherwise fire both unconditionally and
+  // 403 every time, and a WEAVER session would 403 on dispatches too.
+  const enabled = useAuthGate("worker", "weaver", "admin", "superadmin");
+  const dispatchesEnabled = useAuthGate("worker", "admin", "superadmin");
 
   const { data: designs = [], isError, error, isLoading, refetch } = useQuery({
     queryKey: DESIGNS_KEY,
@@ -106,7 +112,7 @@ export function DesignLibraryProvider({ children }: { children: React.ReactNode 
   const { data: dispatches = [] } = useQuery({
     queryKey: DISPATCHES_KEY,
     queryFn: async () => (await designDispatchesApi.list()).items.map(backendDispatchToRecord),
-    enabled,
+    enabled: dispatchesEnabled,
   });
 
   // Real backend create — the design library is a real Phase 2 module, so

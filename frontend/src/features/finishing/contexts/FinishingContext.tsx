@@ -324,6 +324,7 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
       const type: BackendDispatchType = args.record.type === "wholesale" ? "WHOLESALE" : "SHOP";
       return dispatchApi.create({
         type,
+        actorId: user?.id,
         sareeIds: args.sareeIds,
         dispatchDate: args.record.dispatchDate || undefined,
         lrNumber: args.record.lrNumber || undefined,

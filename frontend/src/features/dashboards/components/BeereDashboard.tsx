@@ -15,6 +15,7 @@ import type { ReceiptRecord } from "../../portals/components/worker/ReceiptHisto
 import { useQuery } from "@tanstack/react-query";
 import { rawMaterialsApi } from "../../../shared/api/rawMaterials";
 import { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
+import { SHOP_SCOPE, WORKER_SCOPE } from "@/features/users";
 
 // Lazily loaded so the initial dashboard bundle doesn't pay for every tab's
 // page — only the active tab's chunk is fetched, on first navigation to it.
@@ -52,6 +53,8 @@ const ExternalPurchasesPage = lazy(() => import("../../inventory/components/Exte
 const SupplierReturnsPage = lazy(() => import("../../inventory/components/SupplierReturnsPage").then(m => ({ default: m.SupplierReturnsPage })));
 // eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 const AddUserPage = lazy(() => import("../../users/components/AddUserPage").then(m => ({ default: m.AddUserPage })));
+// eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
+const StaffDirectoryPage = lazy(() => import("../../users/components/staff-directory/StaffDirectoryPage").then(m => ({ default: m.StaffDirectoryPage })));
 // eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 const FirmsPage = lazy(() => import("../../firms/components/FirmsPage").then(m => ({ default: m.FirmsPage })));
 // eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
@@ -109,7 +112,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
   const { state } = useLocation();
   const { tab } = useParams();
   const routerNavigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, enterStaffView } = useAuth();
 
   const handleLogout = () => {
     logout();
@@ -138,6 +141,8 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
   else if (tab === "audit-log") nav = "AuditLog";
   else if (tab === "receive-stock") nav = "ReceiveStock";
   else if (tab === "add-user") nav = "AddUser";
+  else if (tab === "worker-staff") nav = "WorkerStaff";
+  else if (tab === "shop-staff") nav = "ShopStaff";
   else if (tab === "external-purchases") nav = "ExternalPurchases";
   else if (tab === "supplier-returns") nav = "SupplierReturns";
   else if (tab === "batches") nav = "Batches";
@@ -161,6 +166,14 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
     }
   }, [nav, mobileTab]);
 
+  // Open a staff portal as this admin. Not impersonation — the session and
+  // identity are unchanged, so anything recorded in there is attributed to
+  // the admin, and the portal shows a banner plus a way back.
+  const viewAsStaff = (target: "worker" | "shop") => {
+    enterStaffView(target);
+    routerNavigate(target === "worker" ? "/worker" : "/shop");
+  };
+
   const navigate = (tab: string, ctx?: unknown) => {
     const routeMap: Record<string, string> = {
       Overview: "/admin/overview",
@@ -183,6 +196,8 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
       AuditLog: "/admin/audit-log",
       ReceiveStock: "/admin/receive-stock",
       AddUser: "/admin/add-user",
+      WorkerStaff: "/admin/worker-staff",
+      ShopStaff: "/admin/shop-staff",
       ExternalPurchases: "/admin/external-purchases",
       SupplierReturns: "/admin/supplier-returns",
       Batches: "/admin/batches",
@@ -246,6 +261,10 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
         <AuditLogPage />
       ) : mobileTab === "AddUser" ? (
         <AddUserPage />
+      ) : mobileTab === "WorkerStaff" ? (
+        <StaffDirectoryPage scope={WORKER_SCOPE} />
+      ) : mobileTab === "ShopStaff" ? (
+        <StaffDirectoryPage scope={SHOP_SCOPE} />
       ) : mobileTab === "ExternalPurchases" ? (
         <ExternalPurchasesPage />
       ) : mobileTab === "SupplierReturns" ? (
@@ -353,7 +372,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
     </div>
   ) : (
     <div id="main-content" style={{ width: "100%", minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui }}>
-      <TopNav active={nav} set={navigate} onBack={onBack} onLogout={handleLogout} sections={PAGE_SECTIONS[nav]} onProfile={() => setShowProfileModal(true)} />
+      <TopNav active={nav} set={navigate} onBack={onBack} onLogout={handleLogout} sections={PAGE_SECTIONS[nav]} onProfile={() => setShowProfileModal(true)} onViewAs={viewAsStaff} />
       <ErrorBoundary variant="inline" resetKeys={[nav]}>
       <Suspense fallback={<TabLoadingFallback />}>
       {nav === "Materials" ? (
@@ -483,6 +502,10 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
         <AuditLogPage />
       ) : nav === "AddUser" ? (
         <AddUserPage />
+      ) : nav === "WorkerStaff" ? (
+        <StaffDirectoryPage scope={WORKER_SCOPE} />
+      ) : nav === "ShopStaff" ? (
+        <StaffDirectoryPage scope={SHOP_SCOPE} />
       ) : nav === "ExternalPurchases" ? (
         <ExternalPurchasesPage />
       ) : nav === "SupplierReturns" ? (
