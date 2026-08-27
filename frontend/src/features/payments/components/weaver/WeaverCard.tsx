@@ -44,7 +44,7 @@ export function WeaverCard({ w, onViewDetails, selected, onToggleSelect }: { w: 
       }}
     >
       {/* Top accent bar */}
-      <div style={{ height: 6, background: isPaid ? T.green : T.antiqueGold, flexShrink: 0 }} />
+      <div style={{ height: 6, background: T.royalBurgundy, flexShrink: 0 }} />
       
       <div style={{ padding: "20px 22px 18px", display: "flex", flexDirection: "column", gap: 14, flex: 1 }}>
         {/* Top Header Row: Checkbox + Weaver ID + Status */}

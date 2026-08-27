@@ -81,7 +81,7 @@ export function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoic
       }}
     >
       {/* Top accent bar */}
-      <div style={{ height: 6, background: cfg.color, flexShrink: 0 }} />
+      <div style={{ height: 6, background: T.royalBurgundy, flexShrink: 0 }} />
 
       <div style={{ padding: "20px 22px 22px", display: "flex", flexDirection: "column", flex: 1 }}>
         {/* Top row: PO number + Date */}
