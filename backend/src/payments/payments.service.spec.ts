@@ -32,6 +32,7 @@ describe("PaymentsService", () => {
   let prisma: any;
   let auditLog: any;
   let vendorBills: any;
+  let purchases: any;
   let service: PaymentsService;
 
   beforeEach(() => {
@@ -68,7 +69,8 @@ describe("PaymentsService", () => {
     };
     auditLog = { recordAction: jest.fn() };
     vendorBills = { recomputeStatus: jest.fn() };
-    service = new PaymentsService(prisma, auditLog, vendorBills);
+    purchases = { recomputeStatus: jest.fn() };
+    service = new PaymentsService(prisma, auditLog, vendorBills, purchases);
   });
 
   describe("createWeaverPayment", () => {
