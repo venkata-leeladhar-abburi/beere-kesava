@@ -75,12 +75,10 @@ export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: s
       qcPassed: !!r.qcPassed,
       sareeTypeCode: r.sareeTypeCode,
       receivedPhotoUrl: r.receivedPhotoUrl,
-      /* eslint-disable no-restricted-syntax -- saree weights (g) and jari reel counts, not currency */
-      actualWeight: r.receivedWeight ? parseFloat(r.receivedWeight) : null,
-      actualWarpG: r.receivedWarpG ? parseFloat(r.receivedWarpG) : null,
-      actualReshamG: r.receivedReshamG ? parseFloat(r.receivedReshamG) : null,
-      actualJariReels: r.receivedJariReels ? parseFloat(r.receivedJariReels) : null,
-      /* eslint-enable no-restricted-syntax */
+      actualWeight: r.receivedWeight ? Number(r.receivedWeight) : null,
+      actualWarpG: r.receivedWarpG ? Number(r.receivedWarpG) : null,
+      actualReshamG: r.receivedReshamG ? Number(r.receivedReshamG) : null,
+      actualJariReels: r.receivedJariReels ? Number(r.receivedJariReels) : null,
       tallied: r.tallied,
       talliedBy: r.talliedBy,
       talliedAt: r.talliedAt,

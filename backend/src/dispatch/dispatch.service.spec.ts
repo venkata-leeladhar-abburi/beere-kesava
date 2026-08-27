@@ -35,7 +35,7 @@ describe("DispatchService.create — sarees with no InventoryRecord yet", () => 
       dispatchSaree: { createMany: jest.fn() },
     };
     service = new DispatchService(prisma, { recordAction: jest.fn() } as any, {
-      nextScoped: jest.fn(),
+      nextScoped: jest.fn().mockResolvedValue("DC-2627-001"),
     } as any);
   });
 
@@ -143,6 +143,59 @@ describe("DispatchService.remove — reverting inventory status", () => {
     expect(prisma.inventoryRecord.updateMany).toHaveBeenCalledWith({
       where: { sareeId: { in: ["QC-ONLY-1"] } },
       data: { status: "QC_PASSED" },
+    });
+  });
+});
+
+/**
+ * A shop dispatch raises a Delivery Challan, not a tax invoice — so it gets a
+ * DC-<FY>-NNN allocated server-side, and never an invoice number.
+ */
+describe("DispatchService.create — challan numbering", () => {
+  let prisma: any;
+  let idGenerator: any;
+  let service: DispatchService;
+
+  beforeEach(() => {
+    prisma = {
+      customer: { findUnique: jest.fn().mockResolvedValue({ code: "Sree", name: "Sree Kesava" }) },
+      inventoryRecord: {
+        findMany: jest.fn().mockResolvedValue([{ sareeId: "S-1", status: "FINISHING_COMPLETE" }]),
+        createMany: jest.fn(),
+        updateMany: jest.fn(),
+      },
+      batchSareeRow: { findMany: jest.fn().mockResolvedValue([]) },
+      dispatchRecord: {
+        create: jest.fn().mockResolvedValue({ id: "d1" }),
+        findUnique: jest.fn().mockResolvedValue({ id: "d1", sarees: [] }),
+      },
+      dispatchSaree: { createMany: jest.fn() },
+    };
+    idGenerator = { nextScoped: jest.fn().mockResolvedValue("DC-2627-001") };
+    service = new DispatchService(prisma, { recordAction: jest.fn() } as any, idGenerator);
+  });
+
+  it("allocates a DC number scoped to the financial year for a shop dispatch", async () => {
+    await service.create({ type: DispatchType.SHOP, sareeIds: ["S-1"] });
+
+    expect(idGenerator.nextScoped).toHaveBeenCalledWith("DC", expect.stringMatching(/^\d{4}$/));
+    expect(prisma.dispatchRecord.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ challanNumber: "DC-2627-001", invoiceNumber: undefined }),
+    });
+  });
+
+  it("gives a wholesale dispatch an invoice number and no challan number", async () => {
+    idGenerator.nextScoped.mockResolvedValue("INV-Sree-001");
+
+    await service.create({
+      type: DispatchType.WHOLESALE,
+      sareeIds: ["S-1"],
+      customerId: "c1",
+      raiseInvoice: true,
+    });
+
+    expect(prisma.dispatchRecord.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ invoiceNumber: "INV-Sree-001", challanNumber: undefined }),
     });
   });
 });

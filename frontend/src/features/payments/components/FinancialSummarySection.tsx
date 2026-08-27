@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ArrowDownCircle, ArrowUpCircle, CalendarClock, Download, Wallet } from "lucide-react";
+import { ArrowDownCircle, ArrowUpCircle, CalendarClock, Download, Wallet, type LucideIcon } from "lucide-react";
 import { motion } from "motion/react";
 
 import { DownloadGate } from "../../../shared/ui/DownloadAccess";
@@ -9,11 +9,52 @@ import { AnimBar, FadeUp } from "./common/motion";
 import { ActionModal, SectionCard } from "./common/primitives";
 import { Button } from "../../../shared/ui/primitives";
 
+/* ── Financial Summary Card Template ─────────────────────────────────────────── */
+function ArchCard({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      style={{
+        position: "relative",
+        width: "100%",
+        borderRadius: 24, // perfectly rounds the bounding box so the hover shadow tightly hugs the template's curved corners
+        containerType: "inline-size",
+        aspectRatio: "938/1024",
+        backgroundImage: "url(/assets/finance-card-bg-4.png)",
+        backgroundSize: "100% 100%",
+        display: "flex",
+        flexDirection: "column",
+        padding: "26% 14% 16%", // carefully tuned to avoid overlapping top arch and bottom corner flourishes
+      }}
+    >
+      <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", height: "100%" }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function ArchCardHead({ label, icon: Icon }: { label: string; icon: LucideIcon }) {
+  return (
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", position: "relative", marginBottom: "6%" }}>
+      <span style={{ fontFamily: F.ui, fontSize: "clamp(12px, 5cqw, 17px)", fontWeight: 700, color: T.royalBurgundy, letterSpacing: "0.6px", textTransform: "uppercase", marginTop: 4 }}>{label}</span>
+      <div style={{ width: "clamp(26px, 14%, 40px)", aspectRatio: "1/1", borderRadius: "50%", border: `1px solid ${T.antiqueGold}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transform: "translateY(-20%)" }}>
+        <Icon size="50%" color={T.royalBurgundy} strokeWidth={1.5} />
+      </div>
+    </div>
+  );
+}
+
+function ArchCardValue({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{ fontFamily: F.display, fontSize: "clamp(22px, 10cqw, 36px)", fontWeight: 700, color: T.royalBurgundy, lineHeight: 1.1, marginBottom: "8%" }}>{children}</div>
+  );
+}
+
 export function SummaryLineItem({ label, value, color }: { label: string; value: string; color: string }) {
   return (
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "13px 0", borderBottom: `1px solid ${T.borderDef}` }}>
-      <span style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>{label}</span>
-      <span style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color }}>{value}</span>
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "11px 0", borderBottom: `1px solid ${T.borderDef}` }}>
+      <span style={{ fontFamily: F.ui, fontSize: "clamp(12px, 4.5cqw, 15px)", color: T.taupe }}>{label}</span>
+      <span style={{ fontFamily: F.ui, fontSize: "clamp(13px, 5cqw, 16px)", fontWeight: 700, color }}>{value}</span>
     </div>
   );
 }
@@ -80,102 +121,78 @@ export function FinancialSummarySection() {
         <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 20, marginTop: 24, alignItems: "stretch" }}>
 
           {/* Card 1 — Total Received This Month */}
-          <motion.div
-            whileHover={{ y: -6, boxShadow: "0 12px 30px rgba(30,102,64,0.15)" }}
-            transition={{ type: "spring", stiffness: 260, damping: 22 }}
-            style={{ background: "linear-gradient(135deg, rgba(30,102,64,0.06) 0%, rgba(30,102,64,0.01) 100%)", borderRadius: 20, border: `1px solid rgba(30,102,64,0.18)`, padding: "24px 22px 20px", display: "flex", flexDirection: "column", cursor: "pointer" }}
-          >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-              <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.green, letterSpacing: "0.5px", textTransform: "uppercase" }}>Received</span>
-              <div style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(30,102,64,0.10)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <ArrowDownCircle size={15} color={T.green} />
-              </div>
-            </div>
-            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 800, color: T.green, lineHeight: 1.1, marginBottom: 16 }}>{formatMoney(rupees(totalIn))}</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
+          <ArchCard>
+            <ArchCardHead label="Received" icon={ArrowDownCircle} />
+            <ArchCardValue>{formatMoney(rupees(totalIn))}</ArchCardValue>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 16 }}>
               {dynamicComingIn.map(item => (
-                <div key={item.label} style={{ display: "flex", alignItems: "center", gap: 7, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: T.green, flexShrink: 0 }} />
+                <div key={item.label} style={{ display: "flex", alignItems: "center", gap: "2cqw", fontFamily: F.ui, fontSize: "clamp(11px, 4cqw, 14px)", color: T.luxuryBrown }}>
+                  <span style={{ width: 5, height: 5, borderRadius: "50%", background: T.royalBurgundy, flexShrink: 0 }} />
                   <span style={{ flex: 1 }}>{item.label}</span>
-                  <span style={{ fontFamily: F.ui, color: T.luxuryBrown, fontWeight: 700 }}>{item.value}</span>
+                  <span style={{ fontFamily: F.ui, color: T.royalBurgundy, fontWeight: 700 }}>{item.value}</span>
                 </div>
               ))}
             </div>
             <div style={{ marginTop: "auto" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 6 }}>
+              {/* Elegant Gold Divider */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "8%" }}>
+                <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, transparent, ${T.antiqueGold}, transparent)`, opacity: 0.5 }} />
+                <div style={{ width: 4, height: 4, background: T.antiqueGold, transform: "rotate(45deg)", margin: "0 6px" }} />
+                <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, transparent, ${T.antiqueGold}, transparent)`, opacity: 0.5 }} />
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: "clamp(11px, 4cqw, 14px)", color: T.luxuryBrown, marginBottom: 8 }}>
                 <span>Collected Target</span>
                 <span style={{ fontWeight: 700 }}>{pctIn}%</span>
               </div>
-              <AnimBar pct={pctIn} color={T.green} height={5} trackBg="rgba(30,102,64,0.08)" />
+              <AnimBar pct={pctIn} color={T.royalBurgundy} height={6} trackBg="rgba(110,15,45,0.10)" />
             </div>
-          </motion.div>
+          </ArchCard>
 
           {/* Card 2 — Total Paid Out This Month */}
-          <motion.div
-            whileHover={{ y: -6, boxShadow: "0 12px 30px rgba(192,57,43,0.15)" }}
-            transition={{ type: "spring", stiffness: 260, damping: 22 }}
-            style={{ background: "linear-gradient(135deg, rgba(192,57,43,0.06) 0%, rgba(192,57,43,0.01) 100%)", borderRadius: 20, border: `1px solid rgba(192,57,43,0.18)`, padding: "24px 22px 20px", display: "flex", flexDirection: "column", cursor: "pointer" }}
-          >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-              <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.crimson, letterSpacing: "0.5px", textTransform: "uppercase" }}>Paid Out</span>
-              <div style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(192,57,43,0.10)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <ArrowUpCircle size={15} color={T.crimson} />
-              </div>
-            </div>
-            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 800, color: T.crimson, lineHeight: 1.1, marginBottom: 16 }}>{formatMoney(rupees(totalOut))}</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
+          <ArchCard>
+            <ArchCardHead label="Paid Out" icon={ArrowUpCircle} />
+            <ArchCardValue>{formatMoney(rupees(totalOut))}</ArchCardValue>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 16 }}>
               {dynamicGoingOut.map(item => (
-                <div key={item.label} style={{ display: "flex", alignItems: "center", gap: 7, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: T.crimson, flexShrink: 0 }} />
+                <div key={item.label} style={{ display: "flex", alignItems: "center", gap: "2cqw", fontFamily: F.ui, fontSize: "clamp(11px, 4cqw, 14px)", color: T.luxuryBrown }}>
+                  <span style={{ width: 5, height: 5, borderRadius: "50%", background: T.royalBurgundy, flexShrink: 0 }} />
                   <span style={{ flex: 1 }}>{item.label}</span>
-                  <span style={{ fontFamily: F.ui, color: T.luxuryBrown, fontWeight: 700 }}>{item.value}</span>
+                  <span style={{ fontFamily: F.ui, color: T.royalBurgundy, fontWeight: 700 }}>{item.value}</span>
                 </div>
               ))}
             </div>
             <div style={{ marginTop: "auto" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 6 }}>
+              {/* Elegant Gold Divider */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "8%" }}>
+                <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, transparent, ${T.antiqueGold}, transparent)`, opacity: 0.5 }} />
+                <div style={{ width: 4, height: 4, background: T.antiqueGold, transform: "rotate(45deg)", margin: "0 6px" }} />
+                <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, transparent, ${T.antiqueGold}, transparent)`, opacity: 0.5 }} />
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", fontFamily: F.ui, fontSize: "clamp(11px, 4cqw, 14px)", color: T.luxuryBrown, marginBottom: 8 }}>
                 <span>Expense Ratio</span>
                 <span style={{ fontWeight: 700 }}>{pctOut}%</span>
               </div>
-              <AnimBar pct={pctOut} color={T.crimson} height={5} trackBg="rgba(192,57,43,0.08)" />
+              <AnimBar pct={pctOut} color={T.royalBurgundy} height={6} trackBg="rgba(110,15,45,0.10)" />
             </div>
-          </motion.div>
+          </ArchCard>
 
           {/* Card 3 — Net Cash Flow */}
-          <motion.div
-            whileHover={{ y: -6, boxShadow: "0 12px 30px rgba(110,15,45,0.12)" }}
-            transition={{ type: "spring", stiffness: 260, damping: 22 }}
-            style={{ background: "linear-gradient(135deg, rgba(110,15,45,0.05) 0%, rgba(110,15,45,0.01) 100%)", borderRadius: 20, border: `1px solid rgba(110,15,45,0.18)`, padding: "24px 22px 20px", display: "flex", flexDirection: "column", cursor: "pointer" }}
-          >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-              <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.royalBurgundy, letterSpacing: "0.5px", textTransform: "uppercase" }}>Net Income</span>
-              <div style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <Wallet size={15} color={T.royalBurgundy} />
-              </div>
-            </div>
-            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 800, color: T.royalBurgundy, lineHeight: 1.1, marginBottom: 16 }}>{formatMoney(rupees(netCash))}</div>
-            <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, lineHeight: 1.6, margin: 0 }}>
+          <ArchCard>
+            <ArchCardHead label="Net Income" icon={Wallet} />
+            <ArchCardValue>{formatMoney(rupees(netCash))}</ArchCardValue>
+            <p style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, lineHeight: 1.8, margin: 0 }}>
               This is the remaining cash in hand after settling all weaver making charges and vendor raw material bills this month.
             </p>
-          </motion.div>
+          </ArchCard>
 
           {/* Card 4 — Outstanding (If All Collected) */}
-          <motion.div
-            whileHover={{ y: -6, boxShadow: "0 12px 30px rgba(200,155,71,0.15)" }}
-            transition={{ type: "spring", stiffness: 260, damping: 22 }}
-            style={{ background: "linear-gradient(135deg, rgba(200,155,71,0.08) 0%, rgba(200,155,71,0.02) 100%)", borderRadius: 20, border: `1px solid rgba(200,155,71,0.22)`, padding: "24px 22px 20px", display: "flex", flexDirection: "column", cursor: "pointer" }}
-          >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-              <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.antiqueGold, letterSpacing: "0.5px", textTransform: "uppercase" }}>Projected Total</span>
-              <div style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(200,155,71,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <CalendarClock size={15} color={T.antiqueGold} />
-              </div>
-            </div>
-            <div style={{ fontFamily: F.display, fontSize: 30, fontWeight: 800, color: T.antiqueGold, lineHeight: 1.1, marginBottom: 16 }}>{formatMoney(rupees(totalIn + (summary?.outstandingAmount ?? 0)))}</div>
-            <p style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, lineHeight: 1.6, margin: 0 }}>
+          <ArchCard>
+            <ArchCardHead label="Projected Total" icon={CalendarClock} />
+            <ArchCardValue>{formatMoney(rupees(totalIn + (summary?.outstandingAmount ?? 0)))}</ArchCardValue>
+            <p style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, lineHeight: 1.8, margin: 0 }}>
               The total potential revenue for this month, calculated if all outstanding wholesale invoices are paid in full.
             </p>
-          </motion.div>
+          </ArchCard>
 
         </div>
         </>

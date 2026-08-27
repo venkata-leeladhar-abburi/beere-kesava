@@ -1,10 +1,10 @@
-import React from "react";
+import React, { useRef, useState } from "react";
 
 import { Check, CheckCircle2, Clock } from "lucide-react";
 
 import { JARI_REEL_GRAMS, MaterialIssueRecord, BatchMaterialSummary, WeaverMaterialSummary, materialItemToGrams, BUNS_PER_REEL } from "@/features/materials";
 
-import { C, F, FABRIC_BG, MaterialHistoryCard, Tab5 } from "../theme";
+import { C, F, FABRIC_BG, MaterialHistoryCard, SignatureCanvas, SignatureCanvasHandle, Tab5 } from "../theme";
 
 import { SectionHeading } from "@/shared/ui/portal/PortalChrome";
 
@@ -41,10 +41,28 @@ export function ConfirmSection({
 }) {
   const { user } = useAuth();
   const { weaverCode } = useCurrentWeaver();
-  const { isLoading: materialsLoading, isError: materialsError, error: materialsErrorObj, refetch: refetchMaterials } = useMaterialIssue();
+  const { isLoading: materialsLoading, isError: materialsError, error: materialsErrorObj, refetch: refetchMaterials, updateSignatureStatus } = useMaterialIssue();
+  const [hasSig, setHasSigLocal] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const canvasRef = useRef<SignatureCanvasHandle | null>(null);
   const name = user?.name || "—";
   const initials = name === "—" ? "—" : name.split(" ").filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase();
   const identityBadge = user?.name ? (weaverCode ? `${user.name} · ${weaverCode}` : user.name) : "—";
+
+  const handleConfirm = async () => {
+    if (!pendingMaterialRecord || !hasSig || submitting) return;
+    const blob = await canvasRef.current?.toBlob();
+    if (!blob) return;
+    setSubmitting(true);
+    try {
+      await updateSignatureStatus(pendingMaterialRecord.id, blob);
+      setConfirmedRecord(pendingMaterialRecord);
+      setConfirmed(true);
+      setHasSigLocal(false);
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <>
@@ -138,7 +156,7 @@ export function ConfirmSection({
               </div>
             </div>
             <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, lineHeight: 1.7 }}>
-              The admin has issued your materials. Review the list below in Materials Received History, then sign to confirm receipt.
+              The admin has issued your materials. Review the list below in Materials Received History, then sign here to confirm receipt.
             </div>
             <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
               <div style={{ background: "rgba(30,102,64,0.10)", border: "1px solid rgba(30,102,64,0.22)", borderRadius: 8, padding: "8px 14px", display: "flex", alignItems: "center", gap: 6 }}>
@@ -148,6 +166,40 @@ export function ConfirmSection({
               <div style={{ background: "rgba(110,15,45,0.08)", border: `1px solid ${C.bdr}`, borderRadius: 8, padding: "8px 14px", display: "flex", alignItems: "center", gap: 6 }}>
                 <Clock size={14} color={C.muted} />
                 <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>Signature required</span>
+              </div>
+            </div>
+
+            {/* Sign directly on the alert — don't make the weaver hunt for
+                the pad further down in Materials Received History. */}
+            <div style={{ marginTop: 22, paddingTop: 20, borderTop: `1px dashed ${C.bdr}` }}>
+              <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 10 }}>Your Signature</div>
+              <div style={{ maxWidth: 480 }}>
+                <div style={{ border: `1.5px solid rgba(110,15,45,0.22)`, borderRadius: 14, overflow: "hidden", background: "#FFF", marginBottom: 14 }}>
+                  <SignatureCanvas ref={canvasRef} onSigned={setHasSigLocal} />
+                </div>
+                <button
+                  onClick={() => void handleConfirm()}
+                  disabled={!hasSig || submitting}
+                  style={{
+                    width: "100%",
+                    height: 52,
+                    borderRadius: 999,
+                    border: "none",
+                    background: hasSig && !submitting ? "#1E6640" : "#C8C0B8",
+                    color: "#FFFFFF",
+                    fontFamily: F.u,
+                    fontWeight: 700,
+                    fontSize: 15,
+                    cursor: hasSig && !submitting ? "pointer" : "not-allowed",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 8,
+                    transition: "all 0.2s ease",
+                  }}
+                >
+                  <Check size={18} color="#FFFFFF" /> {submitting ? "Confirming…" : "Confirm Material Receipt"}
+                </button>
               </div>
             </div>
           </div>

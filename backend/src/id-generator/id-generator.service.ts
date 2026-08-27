@@ -4,6 +4,16 @@ import { PrismaService } from "../prisma/prisma.service";
 /** Every business ID in the system pads its sequence to this many digits. */
 export const ID_PAD_LENGTH = 3;
 
+/**
+ * Indian financial year code for a date — "2627" for 1 Apr 2026 to 31 Mar 2027.
+ * Mirrors the frontend's financialYearCode (lib/domain/codes.ts) so a year-scoped
+ * id reads the same on both sides.
+ */
+export function financialYearCode(date: Date = new Date()): string {
+  const year = date.getMonth() >= 3 /* April */ ? date.getFullYear() : date.getFullYear() - 1;
+  return `${String(year).slice(2)}${String(year + 1).slice(2)}`;
+}
+
 /** Strips anything that can't appear in an id segment and capitalises the word. */
 function cleanWord(word: string): string {
   const stripped = word.replace(/[^A-Za-z0-9]/g, "");

@@ -107,6 +107,7 @@ export function GRNPODropdown({
                 <button
                   key={po.id}
                   type="button"
+                  aria-label={`Select purchase order ${po.poNumber ?? po.id}`}
                   onClick={() => {
                     handleSelectPO(po);
                     setShowPODrop(false);

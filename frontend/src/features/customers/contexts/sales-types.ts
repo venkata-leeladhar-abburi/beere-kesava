@@ -108,6 +108,10 @@ export interface PurchaseSummary {
 // ─── Context ──────────────────────────────────────────────────────────────────
 export interface SalesContextValue {
   sarees: UnifiedSaree[];
+  /** Sarees with a SaleRecord against them. `sarees` cannot answer this — the
+   *  stock list it is built from drops sold pieces server-side, so anything
+   *  needing to know "has this been sold" has no other signal. */
+  soldSareeIds: Set<string>;
   purchases: PurchaseSummary[];
   recordSale: (sareeId: string, sale: SaleInfo) => void;
   recordReturn: (sareeId: string, ret: ReturnInfo) => void;

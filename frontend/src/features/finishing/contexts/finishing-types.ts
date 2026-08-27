@@ -114,6 +114,8 @@ export interface DispatchRecord {
   expectedDelivery?: string;
   specialInstructions?: string;
   invoiceNumber?: string;
+  /** Delivery challan number for a shop dispatch (DC-<FY>-NNN). */
+  challanNumber?: string;
   invoiceDate?: string;
   pricePerSaree?: number;
   totalAmount?: number;

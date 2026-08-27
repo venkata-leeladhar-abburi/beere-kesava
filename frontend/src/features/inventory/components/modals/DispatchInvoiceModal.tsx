@@ -7,6 +7,7 @@ import { IconButton } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
 import { DocumentViewer, InvoiceDocument, DEFAULT_LETTERHEAD_FIRM, type InvoiceLineItem } from "../../../../shared/ui/document";
 import { toPaise } from "../../../../lib/gst";
+import { documentDate } from "./dispatchDocument";
 
 // ── Dispatch invoice viewer ─────────────────────────────────────────────────
 // Renders the real InvoiceDocument for a dispatch record's own invoice —
@@ -46,8 +47,8 @@ export function DispatchInvoiceModal({ dispatch, onClose }: { dispatch: Dispatch
         >
           <InvoiceDocument
             invoiceNumber={dispatch.invoiceNumber || dispatch.id}
-            invoiceDate={dispatch.invoiceDate || dispatch.dispatchDate}
-            dueDate={dispatch.paymentDueDate}
+            invoiceDate={documentDate(dispatch.invoiceDate || dispatch.dispatchDate)}
+            dueDate={dispatch.paymentDueDate ? documentDate(dispatch.paymentDueDate) : undefined}
             firm={firm ? { name: firm.firmName, address: firm.address, gstin: firm.gstNumber } : DEFAULT_LETTERHEAD_FIRM}
             customer={{
               name: dispatch.customerName ?? "—",
@@ -60,7 +61,7 @@ export function DispatchInvoiceModal({ dispatch, onClose }: { dispatch: Dispatch
               lrNumber: dispatch.lrNumber,
               transportCompany: dispatch.transportCompany,
               vehicleNumber: dispatch.vehicleNumber,
-              dispatchDate: dispatch.dispatchDate,
+              dispatchDate: documentDate(dispatch.dispatchDate),
             }}
             notes={dispatch.specialInstructions || dispatch.invoiceNotes}
           />

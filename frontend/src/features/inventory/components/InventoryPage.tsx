@@ -1,5 +1,6 @@
 import React from "react";
 import { AnimatePresence } from "motion/react";
+import { toast } from "sonner";
 import { DesignCodeCard } from "@/features/design-library";
 import { SareeTypeCard } from "@/features/pricing";
 import { WeaverSareesSection } from "@/features/weavers";
@@ -8,12 +9,12 @@ import { MoneyAccessProvider } from "../../../shared/ui/MoneyAccess";
 import { T, F, card } from "./theme";
 import { InventoryRecord } from "./types";
 import { getLoomForRecord, getSareeColor } from "./utils";
-import { Toast } from "./common/primitives";
 import { DispatchShopModal } from "./modals/DispatchShopModal";
 import { DispatchWholesaleModal } from "./modals/dispatchWholesale/DispatchWholesaleModal";
 import { RaiseQuotationModal } from "./modals/RaiseQuotationModal";
 import { ResumeDispatchModal } from "./modals/ResumeDispatchModal";
 import { DispatchInvoiceModal } from "./modals/DispatchInvoiceModal";
+import { DispatchChallanModal } from "./modals/DispatchChallanModal";
 import { InventoryDetailModal } from "./modals/InventoryDetailModal";
 import { DispatchHistorySection } from "./sections/DispatchHistorySection";
 import { QuotationsSection } from "./sections/QuotationsSection";
@@ -24,7 +25,7 @@ import { useInventoryPageState } from "../hooks/useInventoryPageState";
 
 // Re-exported so existing imports of `DispatchHistorySection` / `ResumeDispatchModal`
 // from this file (e.g. the Worker Staff portal) keep working unchanged.
-export { DispatchHistorySection, ResumeDispatchModal };
+export { DispatchHistorySection, ResumeDispatchModal, DispatchInvoiceModal, DispatchChallanModal };
 export { getLoomForRecord, getSareeColor };
 export type { InventoryRecord };
 
@@ -72,8 +73,6 @@ export function InventoryPage({
     setViewingItem,
     modal,
     setModal,
-    toast,
-    setToast,
     scanMsg,
     quotationDispatch,
     setQuotationDispatch,
@@ -260,14 +259,23 @@ export function InventoryPage({
             onSave={patch => {
               updateDispatch(resumeDispatch.id, patch);
               setResumeDispatch(null);
-              setToast("Dispatch details completed");
+              toast.success("Dispatch details completed");
             }}
             onClose={() => setResumeDispatch(null)}
           />
         )}
       </AnimatePresence>
       <AnimatePresence>
-        {viewingInvoice && (
+        {/* Wholesale bills a customer, so it prints a tax invoice. A shop
+            dispatch is our own stock moving to our own showroom — no sale, no
+            GST, no amount payable — so it prints a delivery challan instead. */}
+        {viewingInvoice && viewingInvoice.type === "shop" && (
+          <DispatchChallanModal
+            dispatch={viewingInvoice}
+            onClose={() => setViewingInvoice(null)}
+          />
+        )}
+        {viewingInvoice && viewingInvoice.type !== "shop" && (
           <DispatchInvoiceModal
             dispatch={viewingInvoice}
             onClose={() => setViewingInvoice(null)}
@@ -275,7 +283,6 @@ export function InventoryPage({
         )}
       </AnimatePresence>
       <AnimatePresence>
-        {toast && <Toast key="toast" msg={toast} onDone={() => setToast("")} />}
       </AnimatePresence>
       <AnimatePresence>
         {viewingItem && (

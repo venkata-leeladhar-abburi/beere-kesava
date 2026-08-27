@@ -16,7 +16,7 @@ export function useWeaverSareeRows({ weaverId, isLoom, isAll }: UseWeaverSareeRo
   const { batches } = useBatches();
   const { qcRecords: allQcRecords, getQcForWeaver, getQcForLoom } = useQc();
   const { readySarees, assignments, returns, dispatches } = useFinishing();
-  const { sarees: allStock } = useSales();
+  const { sarees: allStock, soldSareeIds } = useSales();
   const { getDesign } = useDesignLibrary();
 
   const qcRecords = isAll ? allQcRecords : isLoom ? getQcForLoom(weaverId!) : getQcForWeaver(weaverId!);
@@ -30,7 +30,7 @@ export function useWeaverSareeRows({ weaverId, isLoom, isAll }: UseWeaverSareeRo
       isAssigned: false, assignedDate: null, qcStatus: "pending",
       receivedDate: null, qcDate: null, defects: [], makingCharge: null, deduction: null,
       payable: null, finishingStatus: "none", finishingAssignedDate: null,
-      finishingCompletedDate: null, stock: null, dispatched: false,
+      finishingCompletedDate: null, stock: null, dispatched: false, sold: false,
       ownerKind: null, ownerId: null, ownerLabel: null,
     });
 
@@ -138,8 +138,11 @@ export function useWeaverSareeRows({ weaverId, isLoom, isAll }: UseWeaverSareeRo
     const dispatchedSareeIds = new Set(dispatches.flatMap(d => d.sareeIds));
     byId.forEach(row => {
       row.dispatched = dispatchedSareeIds.has(row.sareeId);
+      // A sold saree is off the shelf whether or not it was ever dispatched —
+      // and `stock` cannot report it, since the stock list excludes sold pieces.
+      row.sold = soldSareeIds.has(row.sareeId);
     });
 
     return [...byId.values()];
-  }, [batches, qcRecords, allStock, returns, assignments, readySarees, dispatches, weaverId, isLoom, isAll, getDesign]);
+  }, [batches, qcRecords, allStock, returns, assignments, readySarees, dispatches, soldSareeIds, weaverId, isLoom, isAll, getDesign]);
 }

@@ -48,7 +48,7 @@ export function ResumeDispatchModal({ record, onSave, onClose }: {
         </div>
         <div style={{ flex: 1, overflowY: "auto", padding: "24px 28px" }}>
           <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 16 }}>
-            {record.type === "wholesale" ? `Wholesale dispatch to ${record.customerName ?? "customer"}` : "Shop dispatch"} · {record.sareeIds.length} saree{record.sareeIds.length > 1 ? "s" : ""} · Invoice {record.invoiceNumber || "—"}
+            {record.type === "wholesale" ? `Wholesale dispatch to ${record.customerName ?? "customer"}` : "Shop dispatch"} · {record.sareeIds.length} saree{record.sareeIds.length > 1 ? "s" : ""}{record.type === "wholesale" ? ` · Invoice ${record.invoiceNumber || "—"}` : ""}
           </div>
           <TransportForm data={transport} onChange={setTransport} wholesale={record.type === "wholesale"} />
           {record.pendingReceipt && (

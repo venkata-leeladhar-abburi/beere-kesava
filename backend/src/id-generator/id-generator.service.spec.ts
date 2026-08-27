@@ -1,4 +1,4 @@
-import { IdGeneratorService, businessSegment, nameSegment } from "./id-generator.service";
+import { IdGeneratorService, businessSegment, nameSegment, financialYearCode } from "./id-generator.service";
 
 describe("nameSegment", () => {
   it("keeps only the first word", () => {
@@ -76,3 +76,20 @@ describe("IdGeneratorService", () => {
     await expect(service.next("WHL")).resolves.toBe(42);
   });
 });
+
+describe("financialYearCode", () => {
+  it("runs April to March — 1 Apr 2026 starts 2627", () => {
+    expect(financialYearCode(new Date("2026-04-01T00:00:00Z"))).toBe("2627");
+    expect(financialYearCode(new Date("2026-08-26T00:00:00Z"))).toBe("2627");
+    expect(financialYearCode(new Date("2027-03-31T00:00:00Z"))).toBe("2627");
+  });
+
+  it("rolls to the next series on 1 April", () => {
+    expect(financialYearCode(new Date("2027-04-01T00:00:00Z"))).toBe("2728");
+  });
+
+  it("counts January as the previous financial year", () => {
+    expect(financialYearCode(new Date("2026-01-15T00:00:00Z"))).toBe("2526");
+  });
+});
+
