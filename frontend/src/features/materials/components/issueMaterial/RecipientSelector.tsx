@@ -1,5 +1,5 @@
 import React from "react";
-import { Factory, ChevronDown } from "lucide-react";
+import { Factory } from "lucide-react";
 import { FactoryLoom, loomLabel } from "@/features/production";
 import { BatchRecord } from "@/features/production";
 import { F, STATUS_CFG, T, WeaverLite } from "./theme";

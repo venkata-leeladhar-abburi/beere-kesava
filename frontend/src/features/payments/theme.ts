@@ -1,4 +1,4 @@
-import { brand, fonts, semantic } from '@/design-system/tokens';
+import { brand, fonts, semantic } from "@/design-system/tokens";
 import { imgBKLogo, imgSareeFooter } from "../../shared/constants/weaverImages";
 
 // NOTE: Do not add cross-feature or hook re-exports here (e.g.
@@ -7,7 +7,6 @@ import { imgBKLogo, imgSareeFooter } from "../../shared/constants/weaverImages";
 // top-level constants depend on T/F; re-exporting hooks from here creates
 // circular imports (theme -> bulk-orders -> payments -> theme) and crashes
 // with "Cannot access 'T' before initialization". Import those directly.
-
 
 // ── Design Tokens ─────────────────────────────────────────────────────────────
 export const T = {

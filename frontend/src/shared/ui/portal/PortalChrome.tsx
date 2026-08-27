@@ -167,6 +167,7 @@ export function SectionCard({
   title,
   subtitle,
   actions,
+  backButton,
   children,
   id,
   bodyPadding,
@@ -175,6 +176,7 @@ export function SectionCard({
   title: string;
   subtitle?: string;
   actions?: React.ReactNode;
+  backButton?: React.ReactNode;
   children: React.ReactNode;
   id?: string;
   bodyPadding?: string;
@@ -182,16 +184,21 @@ export function SectionCard({
   return (
     <div id={id} style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${C.bdr}`, boxShadow: "0 6px 32px rgba(74,6,27,0.08)", overflow: "hidden" }}>
       <div className="p-4 sm:p-7" style={{ background: G.header }}>
-        <div className="flex items-start gap-3.5 sm:gap-4 w-full">
-          <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
+        <div className="flex items-center gap-3.5 sm:gap-4 w-full">
+          {backButton && (
+            <div className="flex-shrink-0 mr-0.5 sm:mr-1">
+              {backButton}
+            </div>
+          )}
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <Icon size={24} color="#FFFDF9" />
           </div>
-          <div className="flex flex-col items-start gap-3 flex-1 min-w-0">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 flex-1 min-w-0">
             <div>
               <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: "#FFFDF9", letterSpacing: "-0.2px", lineHeight: 1.2 }}>{title}</div>
               {subtitle && <div style={{ fontFamily: F.u, fontSize: 14, color: "rgba(255,253,249,0.70)", marginTop: 4, lineHeight: 1.5 }}>{subtitle}</div>}
             </div>
-            {actions && <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2.5 w-full sm:w-auto pt-1">{actions}</div>}
+            {actions && <div className="flex items-center gap-2 sm:gap-2.5 flex-shrink-0">{actions}</div>}
           </div>
         </div>
       </div>

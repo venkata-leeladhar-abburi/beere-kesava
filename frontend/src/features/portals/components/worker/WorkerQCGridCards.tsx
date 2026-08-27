@@ -1,6 +1,6 @@
 import React from "react";
 import { ChevronRight, Package, User, Factory } from "lucide-react";
-import { T, F, initials, type SareeItem } from "./WorkerQCTypes";
+import { F, T, initials, type SareeItem } from "./WorkerQCTypes";
 
 interface WeaverGroup {
   name: string;
@@ -36,13 +36,15 @@ export function WorkerQCWeaverGrid({
     <div
       style={{
         display: "grid",
-        gridTemplateColumns: isDesktop ? "repeat(3, 1fr)" : isTablet ? "repeat(2, 1fr)" : "1fr 1fr",
-        gap: isDesktop ? 14 : 10,
+        gridTemplateColumns: isDesktop ? "repeat(4, 1fr)" : isTablet ? "repeat(2, 1fr)" : "1fr",
+        gap: isDesktop ? 16 : 12,
         padding: pad,
       }}
     >
       {filteredWeavers.map((wg) => {
         const isWeaverCodeUuid = isUuid(wg.code);
+        const displayCode = (!isWeaverCodeUuid && wg.code) ? wg.code : (wg.sarees[0]?.id || "PENDING-QC");
+
         return (
           <button
             key={wg.name}
@@ -62,47 +64,53 @@ export function WorkerQCWeaverGrid({
                 </span>
               </div>
 
-              <div className="flex-1 min-w-0">
-                <div
-                  style={{ fontFamily: F.u }}
-                  className="text-[14px] font-bold text-[#1D1814] truncate group-hover:text-[#6E0F2D] transition-colors"
-                >
-                  {wg.name}
-                </div>
-                {!isWeaverCodeUuid && wg.code && (
-                  <div style={{ fontFamily: F.m }} className="text-[12px] font-medium text-[#69635E] mt-0.5">
-                    {wg.code}
-                  </div>
-                )}
-              </div>
+                {/* Vertical Divider Line */}
+                <div className="w-[1px] h-9 bg-[#EAE5E1] mx-4 flex-shrink-0" />
 
-              <div className="w-7 h-7 rounded-lg bg-[#FAF8F6] border border-[#EAE5E1] flex items-center justify-center text-[#69635E] group-hover:text-[#6E0F2D] group-hover:bg-[rgba(110,15,45,0.06)] group-hover:border-[rgba(110,15,45,0.15)] transition-all">
-                <ChevronRight size={15} className="group-hover:translate-x-0.5 transition-transform" />
+                {/* Saree Code + Weaver Name */}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <Package size={14} className="text-[#6E0F2D] flex-shrink-0" />
+                    <span style={{ fontFamily: F.m }} className="text-[12px] font-bold text-[#6E0F2D] tracking-wider uppercase truncate">
+                      {displayCode}
+                    </span>
+                  </div>
+                  <div
+                    style={{ fontFamily: F.d }}
+                    className="text-[20px] font-bold text-[#4A061B] truncate group-hover:text-[#6E0F2D] transition-colors leading-tight"
+                  >
+                    {wg.name}
+                  </div>
+                </div>
+
+              {/* Arrow Button */}
+              <div className="w-11 h-11 rounded-[16px] bg-[#FFFDFB] border border-[#F0E5D8] flex items-center justify-center text-[#4F4A45] group-hover:text-[#6E0F2D] group-hover:bg-[#FEF4F5] group-hover:border-[#FEE8EB] transition-all flex-shrink-0">
+                <ChevronRight size={18} className="group-hover:translate-x-0.5 transition-transform" />
               </div>
             </div>
 
-            <div className="flex items-center justify-between w-full pt-2 border-t border-[#EAE5E1]/60 mt-1">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[rgba(171,56,50,0.08)] border border-[rgba(171,56,50,0.20)]">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#AB3832] opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#AB3832]"></span>
-                </span>
-                <span style={{ fontFamily: F.u }} className="text-[12px] font-bold text-[#AB3832]">
+            {/* Bottom Row: Pending Count Badge + Source Pill */}
+            <div className="flex items-center justify-between w-full gap-2 flex-wrap">
+              <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-[#FEF5F3] border border-[#FED3CD]">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#AB3832]" />
+                <span style={{ fontFamily: F.u }} className="text-[13px] font-bold text-[#AB3832]">
                   {wg.sarees.length} pending
                 </span>
               </div>
 
-              <span
-                style={{ fontFamily: F.u }}
-                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold ${
-                  wg.source === "outsourced"
-                    ? "bg-[rgba(31,119,78,0.10)] border border-[rgba(31,119,78,0.22)] text-[#1F774E]"
-                    : "bg-[rgba(200,155,71,0.14)] border border-[rgba(200,155,71,0.28)] text-[#845E04]"
-                }`}
-              >
-                {wg.source === "outsourced" ? <User size={12} /> : <Factory size={12} />}
-                {wg.source === "outsourced" ? "Outsourced" : "Own Factory"}
-              </span>
+              <div className="flex items-center gap-2">
+                <span
+                  style={{ fontFamily: F.u }}
+                  className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[13px] font-medium ${
+                    wg.source === "outsourced"
+                      ? "bg-[#F0FAF4] border border-[#C9E8D4] text-[#1F774E]"
+                      : "bg-[#FEF6EC] border border-[#F6D9BA] text-[#8D5802]"
+                  }`}
+                >
+                  {wg.source === "outsourced" ? <User size={14} /> : <Factory size={14} />}
+                  {wg.source === "outsourced" ? "Outsourced" : "Own Factory"}
+                </span>
+              </div>
             </div>
           </button>
         );
@@ -130,8 +138,8 @@ export function WorkerQCBatchGrid({
     <div
       style={{
         display: "grid",
-        gridTemplateColumns: isDesktop ? "repeat(3, 1fr)" : isTablet ? "repeat(2, 1fr)" : "1fr 1fr",
-        gap: isDesktop ? 14 : 10,
+        gridTemplateColumns: isDesktop ? "repeat(4, 1fr)" : isTablet ? "repeat(2, 1fr)" : "1fr",
+        gap: isDesktop ? 16 : 12,
         padding: pad,
       }}
     >
@@ -142,49 +150,62 @@ export function WorkerQCBatchGrid({
             key={bg.id}
             type="button"
             onClick={() => setSelectedBatchQC(bg.id)}
-            className="group relative flex flex-col justify-between items-start gap-3 rounded-2xl border border-[rgba(110,15,45,0.12)] bg-white p-4 text-left shadow-[0_4px_16px_rgba(74,6,27,0.06)] hover:shadow-[0_8px_24px_rgba(74,6,27,0.12)] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer overflow-hidden"
-            style={{ borderTop: `3px solid ${T.burg}` }}
+            className="group relative flex flex-col justify-between gap-5 rounded-[24px] bg-[#FFFDFB] border border-[#F0E5D8] p-5 sm:p-6 min-h-[170px] text-left shadow-[0_4px_24px_rgba(74,6,27,0.05)] hover:shadow-[0_10px_32px_rgba(74,6,27,0.10)] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer overflow-hidden max-w-full"
           >
-            <div className="flex items-center gap-3 w-full">
-              <div className="w-11 h-11 rounded-xl bg-[rgba(200,155,71,0.14)] border border-[rgba(200,155,71,0.30)] flex items-center justify-center flex-shrink-0 text-[#845E04]">
-                <Package size={20} />
+            {/* Top Row: Package Box Icon + Batch ID + Arrow */}
+            <div className="flex items-center justify-between w-full gap-3">
+              <div className="flex items-center min-w-0 flex-1">
+                <div className="w-14 h-14 rounded-[18px] bg-[#FEF6EC] border border-[#F6D9BA] flex items-center justify-center text-[#8D5802] flex-shrink-0 shadow-2xs">
+                  <Package size={22} />
+                </div>
+
+                <div className="w-[1px] h-9 bg-[#EAE5E1] mx-4 flex-shrink-0" />
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <span style={{ fontFamily: F.m }} className="text-[12px] font-bold text-[#8D5802] tracking-wider uppercase truncate">
+                      BATCH GROUP
+                    </span>
+                  </div>
+                  <div
+                    style={{ fontFamily: F.m }}
+                    className="text-[18px] font-bold text-[#6E0F2D] truncate group-hover:text-[#4A061B] transition-colors leading-tight"
+                  >
+                    {bg.id}
+                  </div>
+                </div>
               </div>
 
-              <div className="flex-1 min-w-0">
-                <div
-                  style={{ fontFamily: F.m }}
-                  className="text-[14px] font-bold text-[#6E0F2D] truncate group-hover:text-[#4A061B] transition-colors"
-                >
-                  {bg.id}
-                </div>
-                <div style={{ fontFamily: F.u }} className="text-[12px] font-medium text-[#69635E] mt-0.5">
-                  {bg.sarees.length} sarees waiting
-                </div>
-              </div>
-
-              <div className="w-7 h-7 rounded-lg bg-[#FAF8F6] border border-[#EAE5E1] flex items-center justify-center text-[#69635E] group-hover:text-[#6E0F2D] group-hover:bg-[rgba(110,15,45,0.06)] group-hover:border-[rgba(110,15,45,0.15)] transition-all">
-                <ChevronRight size={15} className="group-hover:translate-x-0.5 transition-transform" />
+              <div className="w-11 h-11 rounded-[16px] bg-[#FFFDFB] border border-[#F0E5D8] flex items-center justify-center text-[#4F4A45] group-hover:text-[#6E0F2D] group-hover:bg-[#FEF6EC] group-hover:border-[#F6D9BA] transition-all flex-shrink-0">
+                <ChevronRight size={18} className="group-hover:translate-x-0.5 transition-transform" />
               </div>
             </div>
 
-            <div className="w-full pt-2 border-t border-[#EAE5E1]/60 flex items-center gap-1.5 flex-wrap">
-              <span style={{ fontFamily: F.u }} className="text-[11px] font-medium text-[#69635E]">
-                Weavers:
-              </span>
-              {bweavers.slice(0, 3).map((w) => (
-                <span
-                  key={w}
-                  style={{ fontFamily: F.u }}
-                  className="text-[11px] font-medium text-[#4F4A45] bg-[#FAF8F6] border border-[#EAE5E1] px-2 py-0.5 rounded-full"
-                >
-                  {w}
+            {/* Bottom Row: Pending Pill + Participating Weavers */}
+            <div className="flex items-center justify-between w-full gap-2 flex-wrap">
+              <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-[#FEF5F3] border border-[#FED3CD]">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#AB3832]" />
+                <span style={{ fontFamily: F.u }} className="text-[13px] font-bold text-[#AB3832]">
+                  {bg.sarees.length} pending
                 </span>
-              ))}
-              {bweavers.length > 3 && (
-                <span style={{ fontFamily: F.u }} className="text-[11px] font-semibold text-[#845E04]">
-                  +{bweavers.length - 3} more
-                </span>
-              )}
+              </div>
+
+              <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                {bweavers.slice(0, 2).map((w) => (
+                  <span
+                    key={w}
+                    style={{ fontFamily: F.u }}
+                    className="text-[12px] font-medium text-[#4F4A45] bg-[#FAF8F6] border border-[#EAE5E1] px-3 py-0.5 rounded-full"
+                  >
+                    {w}
+                  </span>
+                ))}
+                {bweavers.length > 2 && (
+                  <span style={{ fontFamily: F.u }} className="text-[12px] font-semibold text-[#8D5802]">
+                    +{bweavers.length - 2}
+                  </span>
+                )}
+              </div>
             </div>
           </button>
         );
@@ -192,4 +213,5 @@ export function WorkerQCBatchGrid({
     </div>
   );
 }
+
 

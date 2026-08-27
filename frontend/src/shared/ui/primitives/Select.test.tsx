@@ -8,10 +8,6 @@ import { MultiSelect } from "./MultiSelect";
 import { Slider } from "./Slider";
 
 describe("Select", () => {
-  // Select is a native <select> (see the component header): there is no
-  // popup listbox to open, and the browser renders the option list itself.
-  // Drive it the way a user actually does rather than reaching for a
-  // Radix-style trigger/listbox pair.
   it("commits a value when the user picks an option", async () => {
     const user = userEvent.setup();
     const onValueChange = vi.fn();
@@ -21,7 +17,8 @@ describe("Select", () => {
         <SelectItem value="cotton">Cotton</SelectItem>
       </Select>
     );
-    await user.selectOptions(screen.getByRole("combobox"), "cotton");
+    await user.click(screen.getByRole("button", { name: "Choose a type" }));
+    await user.click(screen.getByRole("menuitem", { name: "Cotton" }));
     expect(onValueChange).toHaveBeenCalledWith("cotton");
   });
 
@@ -31,11 +28,7 @@ describe("Select", () => {
         <SelectItem value="silk">Silk</SelectItem>
       </Select>
     );
-    // The placeholder carries `hidden`, so it is deliberately absent from the
-    // accessibility tree and has to be asserted against the DOM directly.
-    const placeholder = screen.getByRole("combobox").querySelector("option[value='']");
-    expect(placeholder).toHaveTextContent("Choose a type");
-    expect(placeholder).toBeDisabled();
+    expect(screen.getByRole("button")).toHaveTextContent("Choose a type");
   });
 });
 

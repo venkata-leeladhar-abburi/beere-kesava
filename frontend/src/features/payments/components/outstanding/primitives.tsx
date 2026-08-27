@@ -11,9 +11,19 @@ export const inr = (n: number) => formatMoney(rupees(n));
 export const AGE_BUCKETS = ["0-30", "31-60", "61-90", "90+"] as const;
 export type AgeKey = typeof AGE_BUCKETS[number] | "all";
 
-export const AGE_COLOR: Record<string, string> = {
-  "0-30": T.green, "31-60": T.antiqueGold, "61-90": T.orange, "90+": T.crimson,
+export const getAgeColor = (bucket: string) => {
+  switch (bucket) {
+    case "0-30": return T.green;
+    case "31-60": return T.antiqueGold;
+    case "61-90": return T.orange;
+    case "90+": return T.crimson;
+    default: return T.green;
+  }
 };
+
+export const AGE_COLOR: Record<string, string> = new Proxy({} as Record<string, string>, {
+  get: (_, prop: string) => getAgeColor(prop),
+});
 
 // ── Small building blocks ────────────────────────────────────────────────────
 export function StatChip({ label, value, tone = "plain" }: { label: string; value: string; tone?: "plain" | "gold" | "green" | "red" }) {
@@ -38,7 +48,7 @@ export function Pill({ label, color, bg }: { label: string; color: string; bg: s
 
 /** Shows only how many days the saree has been sitting in our inventory. */
 export function AgePill({ days }: { days: number }) {
-  const c = AGE_COLOR[ageBucket(days)];
+  const c = getAgeColor(ageBucket(days));
   return <Pill label={`${days} ${days === 1 ? "day" : "days"}`} color={c} bg={`${c}1A`} />;
 }
 
