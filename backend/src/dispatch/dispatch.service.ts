@@ -11,7 +11,6 @@ import { UpdateDispatchDto } from "./dto/update-dispatch.dto";
 const include = {
   sarees: true,
   customer: true,
-  dispatchedBy: true,
 } satisfies Prisma.DispatchRecordInclude;
 
 @Injectable()
@@ -143,7 +142,6 @@ export class DispatchService {
         notes: dto.notes,
         expectedDelivery: dto.expectedDelivery ? new Date(dto.expectedDelivery) : undefined,
         specialInstructions: dto.specialInstructions,
-        dispatchedById: dto.actorId,
       },
     });
 
