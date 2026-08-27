@@ -24,6 +24,7 @@ export interface PurchaseOrder {
   id: string;
   vendorId: string;
   vendor: string;
+  vendorCode?: string;
   vendorCity: string;
   vendorContact?: string;
   deliveryDate: string;
@@ -110,6 +111,7 @@ function toPurchaseOrder(po: BackendPurchaseOrder, materials: POItem[] = []): Pu
     firmName: po.firm?.firmName ?? undefined,
     vendorId: po.vendorId,
     vendor: po.vendor.name,
+    vendorCode: po.vendor.code ?? undefined,
     vendorCity: po.vendor.city ?? "",
     vendorContact: po.vendor.contactName ?? undefined,
     deliveryDate: po.deliveryDate ?? "",

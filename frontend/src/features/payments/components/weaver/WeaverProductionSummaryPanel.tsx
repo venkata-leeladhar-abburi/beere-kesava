@@ -119,6 +119,12 @@ const templateColumns: ColumnDef<GroupedRow>[] = [
   { id: "noOfSarees", header: "noOfSarees", accessor: r => r.noOfSarees, type: "number" },
   { id: "makingCharges", header: "makingCharges", accessor: r => r.makingCharges, type: "currency" },
   { id: "deduction", header: "deduction", accessor: r => r.deduction, type: "currency" },
+  // Reference-only, like makingCharges/deduction above — ignored on import.
+  // What's still owed on THIS row specifically as of this download (net of
+  // whatever's already been paid against it), same figure the "Remaining"
+  // column/card shows on screen — so whoever fills the sheet can see it
+  // before typing an amount into the blank amountPaid column next to it.
+  { id: "remainingAmount", header: "Remaining Amount", accessor: r => Math.max(0, r.makingCharges - r.deduction - (r.amountPaid ?? 0)), type: "currency" },
   // Blank — filled in by hand, then this same file is uploaded above.
   { id: "amountPaid", header: "amountPaid", accessor: () => null },
   { id: "utrNumber", header: "utrNumber", accessor: () => null },
@@ -339,17 +345,25 @@ export function WeaverProductionSummaryPanel({ refreshKey }: { refreshKey: numbe
       );
   }, [paymentsRes, filter, weaverNameById, weaverCodeById, weaverFilter, batchFilter]);
 
-  const unpaidRows = useMemo(() => grouped.filter(r => r.amountPaid == null), [grouped]);
+  // Everything still owed, not just rows with zero payments so far — a row
+  // with a partial payment already recorded (amountPaid !== null) but a real
+  // balance left (e.g. ₹10,000 paid of ₹70,000 owed) used to be excluded
+  // entirely just because `amountPaid` was non-null, so a weaver mid-way
+  // through being paid off silently dropped out of the template.
+  const unpaidRows = useMemo(
+    () => grouped.filter(r => (r.makingCharges - r.deduction - (r.amountPaid ?? 0)) > 0),
+    [grouped],
+  );
 
   const handleDownloadTemplate = async () => {
     if (unpaidRows.length === 0) {
       toast.error(grouped.length === 0
         ? "No production found for this date range."
-        : "Every row in this date range is already paid — nothing left to fill in.");
+        : "Every row in this date range is already paid in full — nothing left to fill in.");
       return;
     }
     await exportTable({ columns: templateColumns, rows: unpaidRows, filename: "Weaver_Payment_Template" });
-    toast.success(`Template downloaded for ${unpaidRows.length} unpaid row(s) — fill in Amount Paid, UTR Number, Firm ID, and Payment Date, then upload it above.`);
+    toast.success(`Template downloaded for ${unpaidRows.length} row(s) with a balance still owed — fill in Amount Paid, UTR Number, Firm ID, and Payment Date, then upload it above.`);
   };
 
   const handleDownloadSaved = async () => {

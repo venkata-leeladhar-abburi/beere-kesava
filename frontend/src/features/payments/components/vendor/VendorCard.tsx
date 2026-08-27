@@ -96,8 +96,13 @@ export function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoic
 
         {/* Vendor Details */}
         <div style={{ marginBottom: 16 }}>
-          <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 800, color: T.luxuryBrown, letterSpacing: "-0.2px", marginBottom: 4 }}>
-            {vendorName}
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
+            <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 800, color: T.luxuryBrown, letterSpacing: "-0.2px" }}>
+              {vendorName}
+            </div>
+            {matchedPO?.vendorCode && (
+              <EntityCode type="vendor" value={matchedPO.vendorCode} size="sm" />
+            )}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
             <span>{matchedPO?.vendorCity ?? "—"}</span>

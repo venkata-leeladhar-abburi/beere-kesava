@@ -4,7 +4,7 @@ export interface BackendPurchaseOrder {
   id: string;
   poNumber: string;
   vendorId: string;
-  vendor: { id: string; name: string; city: string | null; contactName: string | null };
+  vendor: { id: string; code: string | null; name: string; city: string | null; contactName: string | null };
   firmId: string | null;
   firm?: { id: string; firmName: string } | null;
   deliveryDate: string | null;

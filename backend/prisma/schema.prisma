@@ -1365,7 +1365,7 @@ model PurchaseRequest {
 // ─────────────────────────────────────────────────────────────────────────
 
 model Firm {
-  id                 String   @id @default(uuid())
+  id                 String   @id // FIRM-NNN
   firmName           String
   gstNumber          String?
   address            String?

@@ -8,7 +8,7 @@ import { WhatsAppService } from "./whatsapp.service";
  * "Share with Vendor" on the PO document modal. Resolves the vendor's phone
  * from the PO's vendor relation (never trusts a phone number handed up from
  * the client), stores the freshly-rasterised PDF the frontend just built
- * (see exportPdf.ts) in R2, and sends it through the `bk_document_share`
+ * (see exportPdf.ts) in R2, and sends it through the `bk_document_share_`
  * AiSensy template — see guidelines/WHATSAPP_AISENSY_INTEGRATION.md Part 5.
  */
 @Injectable()
@@ -39,7 +39,7 @@ export class WhatsAppDocumentsService {
     const mediaUrl = await this.storage.resolveUrl(key.replace(/^\/uploads\//, ""));
 
     return this.whatsapp.sendTemplate({
-      campaignName: "bk_document_share",
+      campaignName: "bk_document_share_",
       destination,
       recipientName: po.vendor.contactName || po.vendor.name,
       templateParams: [
@@ -47,6 +47,7 @@ export class WhatsAppDocumentsService {
         "Purchase Order",
         po.poNumber,
         new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+        "Beere Kesava Silks",
       ],
       media: { url: mediaUrl, filename: `${po.poNumber}.pdf` },
       kind: WhatsAppMessageKind.DOCUMENT,

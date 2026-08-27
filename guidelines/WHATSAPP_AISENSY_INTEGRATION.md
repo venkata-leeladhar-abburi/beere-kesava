@@ -104,7 +104,7 @@ For any queries, reply to this message.
 ```
 
 Variables: 1=recipient name, 2=document type ("Purchase Order", "Invoice",
-"Quotation"), 3=document number, 4=date.
+"Quotation"), 3=document number, 4=date, 5=your firm name.
 
 Used for: sending POs to suppliers, invoices to wholesale customers, vendor
 bills, quotations.

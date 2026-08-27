@@ -6,7 +6,7 @@ import { F, T } from "../../theme";
 import { PayHistRecord, PayHistStatus, PayHistType } from "../../types";
 import { Button } from "../../../../shared/ui/primitives";
 import { rupees } from "@/lib/domain/money";
-import { Money, EntityCode } from "@/shared/ui/domain";
+import { Money } from "@/shared/ui/domain";
 
 export const HIST_TYPE_CFG: Record<PayHistType, { bg: string; color: string; border: string }> = {
   "Vendor Payment":   { bg: "rgba(200,155,71,0.12)",  color: "#8B6018",       border: "#C89B47" },
@@ -83,8 +83,8 @@ export function HistoryCard({ r, onView }: { r: PayHistRecord; onView?: () => vo
       {/* Meta Grid */}
       <div style={{ padding: "16px 20px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px 14px", flexShrink: 0, borderBottom: `1px solid rgba(110,15,45,0.06)` }}>
         <div>
-          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 2 }}>Reference</div>
-          <EntityCode type="payment" value={r.refNo} size="sm" className="break-all whitespace-normal max-w-full" />
+          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 2 }}>UTR / Reference ID</div>
+          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.green, fontWeight: 700 }}>{r.utr ?? "—"}</span>
         </div>
         <div>
           <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 2 }}>Invoice / PO</div>
@@ -100,18 +100,12 @@ export function HistoryCard({ r, onView }: { r: PayHistRecord; onView?: () => vo
         </div>
       </div>
 
-      {/* UTR / Description info */}
+      {/* Description info */}
       <div style={{ padding: "14px 20px", flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
         <div>
           <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 3 }}>Description</div>
           <p style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, lineHeight: 1.5, margin: 0 }}>{r.description}</p>
         </div>
-        {r.utr && (
-          <div style={{ borderTop: `1px dashed rgba(110,15,45,0.08)`, paddingTop: 8, marginTop: 4 }}>
-            <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: 3 }}>UTR / Reference ID</div>
-            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.green, fontWeight: 700 }}>{r.utr}</span>
-          </div>
-        )}
       </div>
 
       {/* Actions */}
