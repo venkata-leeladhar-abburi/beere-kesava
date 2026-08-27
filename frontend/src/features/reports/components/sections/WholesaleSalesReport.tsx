@@ -5,7 +5,7 @@ import type { TooltipProps } from "recharts";
 import type { ValueType, NameType } from "recharts/types/component/DefaultTooltipContent";
 import { useBulkOrders } from "@/features/bulk-orders";
 import { T, F } from "../theme";
-import { FadeUp, ChartCard, SumCard, SectionCard, ReportDLBar, AnimBar, TablePager } from "../common/primitives";
+import { FadeUp, ChartCard, SilkSumCard, SectionCard, ReportDLBar, AnimBar, TablePager } from "../common/primitives";
 import { LoadingState, ErrorState } from "../../../../shared/ui/state";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { semantic } from "../../../../design-system/tokens";
@@ -291,11 +291,11 @@ export function WholesaleSalesReport() {
         </ChartCard>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 16, marginBottom: 24, alignItems: "stretch" }}>
-        <SumCard icon={<ReceiptText size={22} color={T.royalBurgundy} />} label="Total Bulk Orders" value={`${bulkOrders.length} orders`} sub="All-time" />
-        <SumCard icon={<Banknote size={22} color={T.royalBurgundy} />} label="Total Invoiced Amount" value={formatMoney(rupees(totalInvoiced))} sub="Across all customers" />
-        <SumCard icon={<CheckCircle2 size={22} color={T.green} />} label="Total Collected" value={formatMoney(rupees(totalCollected))} sub="Payments received" greenHi />
-        <SumCard icon={<BellRing size={22} color={T.crimson} />} label="Total Outstanding" value={formatMoney(rupees(Math.max(totalOutstanding, 0)))} sub="Yet to be collected" crimsonHi />
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4" style={{ gap: 22, marginBottom: 28, alignItems: "stretch" }}>
+        <SilkSumCard icon={<ReceiptText size={22} color={T.antiqueGold} />} label="Total Bulk Orders" value={`${bulkOrders.length} orders`} sub="All-time" gid="wsr-b" />
+        <SilkSumCard icon={<Banknote size={22} color={T.antiqueGold} />} label="Total Invoiced Amount" value={formatMoney(rupees(totalInvoiced))} sub="Across all customers" gid="wsr-i" />
+        <SilkSumCard icon={<CheckCircle2 size={22} color={T.antiqueGold} />} label="Total Collected" value={formatMoney(rupees(totalCollected))} sub="Payments received" gid="wsr-c" />
+        <SilkSumCard icon={<BellRing size={22} color={T.antiqueGold} />} label="Total Outstanding" value={formatMoney(rupees(Math.max(totalOutstanding, 0)))} sub="Yet to be collected" gid="wsr-o" />
       </div>
 
       <FadeUp>

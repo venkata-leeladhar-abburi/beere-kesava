@@ -6,7 +6,7 @@ import type { TooltipProps } from "recharts";
 import type { ValueType, NameType } from "recharts/types/component/DefaultTooltipContent";
 import { T, F } from "../theme";
 import { semantic } from "../../../../design-system/tokens";
-import { FadeUp, ChartCard, SumCard, SectionCard, ReportDLBar, AnimBar, TablePager } from "../common/primitives";
+import { FadeUp, ChartCard, SilkSumCard, SectionCard, ReportDLBar, AnimBar, TablePager } from "../common/primitives";
 import { salesApi } from "../../../../shared/api/sales";
 import { customersApi } from "../../../../shared/api/customers";
 import { batchesApi } from "../../../../shared/api/batches";
@@ -282,11 +282,11 @@ export function RetailSalesReport() {
         </ChartCard>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 16, marginBottom: 24, alignItems: "stretch" }}>
-        <SumCard icon={<Tag size={22} color={T.royalBurgundy} />} label="Total Sarees Sold at Shop" value={`${retailRows.length - returnsTotal} sarees`} sub="All recorded retail sales" />
-        <SumCard icon={<Banknote size={22} color={T.green} />} label="Total Retail Revenue" value={formatMoney(rupees(totalRevenue))} sub="All-time" greenHi />
-        <SumCard icon={<Percent size={22} color={T.antiqueGold} />} label="Average Sale Value" value={avgSale > 0 ? formatMoney(rupees(avgSale)) : "—"} sub="Per saree" hi />
-        <SumCard icon={<RefreshCcw size={22} color={T.crimson} />} label="Total Returns at Shop" value={`${returnsTotal} sarees`} sub="All-time" crimsonHi />
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4" style={{ gap: 22, marginBottom: 28, alignItems: "stretch" }}>
+        <SilkSumCard icon={<Tag size={22} color={T.antiqueGold} />} label="Total Sarees Sold at Shop" value={`${retailRows.length - returnsTotal} sarees`} sub="All recorded retail sales" gid="rsr-s" />
+        <SilkSumCard icon={<Banknote size={22} color={T.antiqueGold} />} label="Total Retail Revenue" value={formatMoney(rupees(totalRevenue))} sub="All-time" gid="rsr-r" />
+        <SilkSumCard icon={<Percent size={22} color={T.antiqueGold} />} label="Average Sale Value" value={avgSale > 0 ? formatMoney(rupees(avgSale)) : "—"} sub="Per saree" gid="rsr-a" />
+        <SilkSumCard icon={<RefreshCcw size={22} color={T.antiqueGold} />} label="Total Returns at Shop" value={`${returnsTotal} sarees`} sub="All-time" gid="rsr-t" />
       </div>
 
       <FadeUp>

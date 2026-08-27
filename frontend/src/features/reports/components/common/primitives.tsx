@@ -117,6 +117,115 @@ export function ChartCard({ title, sub, icon, children, summary, viewAsTable }: 
   );
 }
 
+// ── SilkSumCard ───────────────────────────────────────────────────────────────
+/** Premium silk-saree summary card — matches the payments stat cards. */
+export function SilkSumCard({ icon, label, value, sub, gid }: { icon: React.ReactNode; label: string; value: string; sub: string; gid: string }) {
+  return (
+    <div style={{ position: "relative", borderRadius: 14, border: `1px solid ${T.borderDef}`, background: "#FFFDF9", boxShadow: "0 2px 16px rgba(0,0,0,0.06), 0 6px 30px rgba(0,0,0,0.04)", overflow: "visible", display: "flex", flexDirection: "column" as const, alignItems: "center", minHeight: 236 }}>
+
+      {/* ── Header — royal burgundy gradient ── */}
+      <svg
+        viewBox="0 0 300 90"
+        preserveAspectRatio="none"
+        style={{ width: "100%", height: 44, display: "block", borderRadius: "12px 12px 0 0", flexShrink: 0 }}
+      >
+        <defs>
+          <linearGradient id={`bk-head-${gid}`} x1="0" y1="0" x2="0.3" y2="1">
+            <stop offset="0%" stopColor="#7A1232" />
+            <stop offset="40%" stopColor={T.royalBurgundy} />
+            <stop offset="100%" stopColor={T.deepWine} />
+          </linearGradient>
+          <linearGradient id={`bk-shim-${gid}`} x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="rgba(200,155,71,0)" />
+            <stop offset="50%" stopColor="rgba(200,155,71,0.08)" />
+            <stop offset="100%" stopColor="rgba(200,155,71,0)" />
+          </linearGradient>
+        </defs>
+        {/* Band shape: full top, deep elegant curve embracing the center badge */}
+        <path
+          d="M0,0 L300,0 L300,32 C230,36 190,85 150,88 C110,85 70,36 0,32 Z"
+          fill={`url(#bk-head-${gid})`}
+        />
+        {/* Subtle silk shimmer */}
+        <path
+          d="M0,0 L300,0 L300,32 C230,36 190,85 150,88 C110,85 70,36 0,32 Z"
+          fill={`url(#bk-shim-${gid})`}
+          opacity="0.4"
+        />
+        {/* Accent line along curved edge */}
+        <path
+          d="M0,32 C70,36 110,85 150,88 C190,85 230,36 300,32"
+          fill="none"
+          stroke="rgba(200,155,71,0.30)"
+          strokeWidth="0.7"
+        />
+        {/* Tiny gold ornament at centre of curve */}
+        <g transform="translate(150,86)" opacity="0.45">
+          <path d="M-6,0 C-8,-3 -11,-2 -10,0" fill="none" stroke={T.antiqueGold} strokeWidth="0.8" strokeLinecap="round" />
+          <path d="M6,0 C8,-3 11,-2 10,0" fill="none" stroke={T.antiqueGold} strokeWidth="0.8" strokeLinecap="round" />
+          <rect x="-2" y="-2" width="4" height="4" rx="0.3" fill={T.antiqueGold} transform="rotate(45)" />
+        </g>
+      </svg>
+
+      {/* ── Circular icon badge ── */}
+      <div style={{ position: "absolute", top: 20, left: "50%", transform: "translateX(-50%)", zIndex: 4 }}>
+        <div style={{ width: 56, height: 56, borderRadius: "50%", background: "linear-gradient(155deg, #7A1232 0%, #6E0F2D 40%, #4A061B 100%)", border: `2.5px solid rgba(200,155,71,0.45)`, boxShadow: "0 4px 14px rgba(74,6,27,0.25), 0 0 0 3px rgba(255,253,249,0.6)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          {icon}
+        </div>
+      </div>
+
+      {/* ── Card body content ── */}
+      <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", flex: 1, padding: "34px 20px 0", width: "100%" }}>
+        {/* Label */}
+        <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.royalBurgundy, letterSpacing: 1, textTransform: "uppercase" as const, textAlign: "center" as const, lineHeight: 1.45 }}>{label}</div>
+
+        {/* Value */}
+        <div style={{ fontFamily: F.display, fontSize: 36, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1, marginTop: 14, textAlign: "center" as const }}>{value}</div>
+
+        {/* ── Thin divider with diamond ── */}
+        <div style={{ width: "45%", display: "flex", alignItems: "center", justifyContent: "center", margin: "16px 0 12px" }}>
+          <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, transparent, rgba(110,15,45,0.14), transparent)` }} />
+          <div style={{ width: 5, height: 5, background: "rgba(110,15,45,0.22)", transform: "rotate(45deg)", flexShrink: 0, margin: "0 4px" }} />
+          <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, transparent, rgba(110,15,45,0.14), transparent)` }} />
+        </div>
+
+        {/* Sub text */}
+        <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, textAlign: "center" as const, lineHeight: 1.4 }}>{sub}</div>
+      </div>
+
+      {/* ── Footer strip — royal burgundy ── */}
+      <div style={{ width: "100%", marginTop: "auto", position: "relative", overflow: "hidden", borderRadius: "0 0 12px 12px", height: 30, flexShrink: 0 }}>
+        <svg
+          viewBox="0 0 300 40"
+          preserveAspectRatio="none"
+          style={{ width: "100%", height: "100%", display: "block", position: "absolute", top: 0, left: 0 }}
+        >
+          <defs>
+            <linearGradient id={`bk-foot-${gid}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={T.royalBurgundy} />
+              <stop offset="50%" stopColor="#5A0A22" />
+              <stop offset="100%" stopColor={T.deepWine} />
+            </linearGradient>
+          </defs>
+          {/* Footer band with smooth wave top edge */}
+          <path
+            d="M0,28 C60,28 100,10 150,8 C200,10 240,28 300,28 L300,40 L0,40 Z"
+            fill={`url(#bk-foot-${gid})`}
+          />
+        </svg>
+        {/* Elegant gold fleur-de-lis motif at centre */}
+        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "flex-end", justifyItems: "center", justifyContent: "center", paddingBottom: 0 }}>
+          <img
+            src="/assets/gold-fleur-footer.png"
+            alt="Ornament"
+            style={{ height: 26, maxWidth: "100%", objectFit: "contain", opacity: 0.9, transform: "translateY(1px)" }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── SumCard ───────────────────────────────────────────────────────────────────
 export function SumCard({ icon, label, value, sub, hi = false, crimsonHi = false, greenHi = false }: {
   icon: React.ReactNode; label: string; value: string; sub?: string;

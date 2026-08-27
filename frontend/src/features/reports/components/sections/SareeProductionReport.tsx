@@ -10,7 +10,7 @@ import {
 } from "recharts";
 import { T, F } from "../theme";
 import {
-  FadeUp, ChartCard, SumCard, SectionCard, ReportDLBar, ChartTip, AnimBar,
+  FadeUp, ChartCard, SumCard, SilkSumCard, SectionCard, ReportDLBar, ChartTip, AnimBar,
   TablePager, StatusPill,
 } from "../common/primitives";
 import { batchesApi } from "../../../../shared/api/batches";
@@ -425,11 +425,11 @@ export function SareeProductionReport() {
       </div>
 
       {/* 4 summary cards — live from GET /reports/production-summary */}
-      <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 16, marginBottom: 24, alignItems: "stretch" }}>
-        <SumCard icon={<Package size={22} color={T.royalBurgundy} />} label="Total Sarees Produced" value={`${production?.totalSareesProduced ?? 0}`} sub="All batches" />
-        <SumCard icon={<CheckCircle2 size={22} color={T.green} />} label="Total Passed Quality Check" value={`${qcDonutData[0].value}`} sub={totalQc > 0 ? `${passRatePct}% pass rate` : "No QC records yet"} greenHi />
-        <SumCard icon={<AlertTriangle size={22} color={T.crimson} />} label="Total Rejected" value={`${qcDonutData[2].value}`} sub={totalQc > 0 ? `${Math.round((qcDonutData[2].value / totalQc) * 100)}% rejection rate` : "No QC records yet"} crimsonHi />
-        <SumCard icon={<Truck size={22} color={T.antiqueGold} />} label="Total Dispatched" value={`${dispatchedCount}`} sub="To wholesale customers" hi />
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4" style={{ gap: 22, marginBottom: 28, alignItems: "stretch" }}>
+        <SilkSumCard icon={<Package size={22} color={T.antiqueGold} />} label="Total Sarees Produced" value={`${production?.totalSareesProduced ?? 0}`} sub="All batches" gid="spr-p" />
+        <SilkSumCard icon={<CheckCircle2 size={22} color={T.antiqueGold} />} label="Total Passed Quality Check" value={`${qcDonutData[0].value}`} sub={totalQc > 0 ? `${passRatePct}% pass rate` : "No QC records yet"} gid="spr-q" />
+        <SilkSumCard icon={<AlertTriangle size={22} color={T.antiqueGold} />} label="Total Rejected" value={`${qcDonutData[2].value}`} sub={totalQc > 0 ? `${Math.round((qcDonutData[2].value / totalQc) * 100)}% rejection rate` : "No QC records yet"} gid="spr-r" />
+        <SilkSumCard icon={<Truck size={22} color={T.antiqueGold} />} label="Total Dispatched" value={`${dispatchedCount}`} sub="To wholesale customers" gid="spr-d" />
       </div>
 
       {/* Production table — per-weaver, computed from live batch + QC data */}
