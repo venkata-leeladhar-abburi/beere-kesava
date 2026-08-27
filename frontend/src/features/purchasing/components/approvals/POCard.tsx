@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "motion/react";
-import { Check, X, Package } from "lucide-react";
+import { Check, X, Package, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { T, F } from "./tokens";
 import { GreenBtn, CrimsonBtn, InfoStrip } from "./SharedUI";
@@ -64,17 +64,20 @@ export function POCard({
         display: "flex", flexDirection: "column", gap: 12,
       }}
     >
-      {/* Top row: ID + raised */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <span style={{
-          fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy,
-          background: "rgba(110,15,45,0.07)", borderRadius: 6, padding: "3px 8px",
-        }}>
-          {item.id}
-        </span>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+        <div style={{ minWidth: 0, flex: 1, display: "flex" }}>
+          <span style={{
+            fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy,
+            background: "rgba(110,15,45,0.07)", borderRadius: 6, padding: "3px 8px",
+            whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"
+          }}>
+            {item.id}
+          </span>
+        </div>
         <span style={{
           fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe,
           background: T.cream, borderRadius: 6, padding: "3px 8px",
+          whiteSpace: "nowrap", flexShrink: 0
         }}>
           Raised {item.raised}
         </span>
@@ -159,8 +162,8 @@ export function POCard({
           <X size={14} /> Reject
         </CrimsonBtn>
         {onViewDoc && (
-          <Button onClick={() => onViewDoc(item.id)} variant="secondary" size="sm" className="shrink-0 px-3 text-[12px] whitespace-nowrap justify-center">
-            📄 View PO
+          <Button onClick={() => onViewDoc(item.id)} variant="secondary" size="sm" className="shrink-0 px-3 text-[12px] whitespace-nowrap justify-center flex items-center gap-1.5">
+            <FileText size={14} /> View PO
           </Button>
         )}
       </div>

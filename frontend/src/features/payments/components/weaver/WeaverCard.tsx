@@ -10,6 +10,56 @@ import { Button, Checkbox } from "../../../../shared/ui/primitives";
 import { rupees } from "@/lib/domain/money";
 import { EntityCode, Money } from "@/shared/ui/domain";
 
+const TopDivider = () => (
+  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 20, marginBottom: 12 }}>
+    <div style={{ display: "flex", gap: 3, paddingLeft: 4 }}>
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+    </div>
+    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginLeft: 8 }} />
+    <svg width="60" height="20" viewBox="0 0 60 20" style={{ margin: "0 8px", flexShrink: 0 }}>
+      <g transform="translate(30, 10)">
+        <polygon points="-16,0 -12,-3 -8,0 -12,3" fill={T.antiqueGold} />
+        <path d="M-5,0 L0,-5 L5,0 L0,5 Z" fill={T.antiqueGold} />
+        <circle cx="0" cy="0" r="1.5" fill="#FFFDF9" />
+        <polygon points="8,0 12,-3 16,0 12,3" fill={T.antiqueGold} />
+      </g>
+    </svg>
+    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginRight: 8 }} />
+    <div style={{ display: "flex", gap: 3, paddingRight: 4 }}>
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+    </div>
+  </div>
+);
+
+const BottomDivider = () => (
+  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 20, marginTop: 16 }}>
+    <div style={{ display: "flex", gap: 3, paddingLeft: 4 }}>
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+    </div>
+    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginLeft: 8 }} />
+    <svg width="60" height="20" viewBox="0 0 60 20" style={{ margin: "0 8px", flexShrink: 0 }}>
+      <g transform="translate(30, 10)">
+        <polygon points="-16,0 -12,-3 -8,0 -12,3" fill={T.antiqueGold} />
+        <path d="M-5,0 L0,-5 L5,0 L0,5 Z" fill={T.antiqueGold} />
+        <circle cx="0" cy="0" r="1.5" fill="#FFFDF9" />
+        <polygon points="8,0 12,-3 16,0 12,3" fill={T.antiqueGold} />
+      </g>
+    </svg>
+    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginRight: 8 }} />
+    <div style={{ display: "flex", gap: 3, paddingRight: 4 }}>
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+    </div>
+  </div>
+);
+
 // Weaver card (card view)
 export function WeaverCard({ w, onViewDetails, selected, onToggleSelect }: { w: WeaverRecord, onViewDetails?: () => void, selected: boolean, onToggleSelect: () => void }) {
   const charges = calcCharges(w);
@@ -29,13 +79,12 @@ export function WeaverCard({ w, onViewDetails, selected, onToggleSelect }: { w: 
 
   return (
     <motion.div
-      whileHover={{ y: -4, boxShadow: "0 18px 45px rgba(74,6,27,0.09)" }}
       transition={{ duration: 0.25 }}
       style={{
-        background: "#FFFFFF",
-        borderRadius: 20,
-        border: `1.5px solid ${T.borderDef}`,
-        boxShadow: "0 8px 30px rgba(74,6,27,0.04)",
+        background: "#FFFDF9",
+        borderRadius: 12,
+        border: `1.5px solid ${T.antiqueGold}`,
+        boxShadow: "0 4px 20px rgba(200,155,71,0.15)",
         overflow: "hidden",
         display: "flex",
         flexDirection: "column",
@@ -44,9 +93,13 @@ export function WeaverCard({ w, onViewDetails, selected, onToggleSelect }: { w: 
       }}
     >
       {/* Top accent bar */}
-      <div style={{ height: 6, background: isPaid ? T.green : T.antiqueGold, flexShrink: 0 }} />
-      
-      <div style={{ padding: "20px 22px 18px", display: "flex", flexDirection: "column", gap: 14, flex: 1 }}>
+      <div style={{ height: 4, background: T.royalBurgundy, width: "100%", opacity: 0.8 }} />
+
+      <div style={{ padding: "16px 20px 0" }}>
+        <TopDivider />
+      </div>
+
+      <div style={{ padding: "0 22px 18px", display: "flex", flexDirection: "column", gap: 14, flex: 1 }}>
         {/* Top Header Row: Checkbox + Weaver ID + Status */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", flex: 1, minWidth: 0, maxWidth: "100%" }}>
@@ -121,17 +174,19 @@ export function WeaverCard({ w, onViewDetails, selected, onToggleSelect }: { w: 
             </span>
           </div>
         </div>
+
+        <BottomDivider />
       </div>
 
       {/* Action Footer - Equal-Width 2-Button Grid */}
-      <div className="bg-[rgba(110,15,45,0.02)] border-t border-[rgba(110,15,45,0.08)] p-3 flex flex-col gap-2 flex-shrink-0 w-full">
-        <div className="grid grid-cols-2 gap-2 w-full">
+      <div className="flex flex-col gap-2 flex-shrink-0 w-full" style={{ padding: "0 20px 20px" }}>
+        <div className="flex flex-wrap gap-2 w-full">
           <Button
             variant="secondary"
             size="sm"
             iconLeft={Eye}
             onClick={onViewDetails}
-            className="w-full justify-center rounded-[8px] border-[1.5px] border-[rgba(110,15,45,0.12)] text-[#6E0F2D] text-[12px] font-bold py-2 whitespace-nowrap"
+            className="flex-1 min-w-[120px] justify-center rounded-[8px] border-[1.5px] border-[rgba(110,15,45,0.12)] text-[#6E0F2D] text-[12px] font-bold py-2 whitespace-nowrap"
           >
             Statement
           </Button>
@@ -140,7 +195,7 @@ export function WeaverCard({ w, onViewDetails, selected, onToggleSelect }: { w: 
               variant="primary"
               size="sm"
               onClick={onViewDetails}
-              className="w-full justify-center rounded-[8px] bg-[#6E0F2D] hover:bg-[#4A0A1D] text-[12px] font-bold py-2 whitespace-nowrap"
+              className="flex-1 min-w-[120px] justify-center rounded-[8px] bg-[#6E0F2D] hover:bg-[#4A0A1D] text-[12px] font-bold py-2 whitespace-nowrap"
             >
               Record Pay
             </Button>
@@ -149,7 +204,7 @@ export function WeaverCard({ w, onViewDetails, selected, onToggleSelect }: { w: 
               variant="secondary"
               size="sm"
               disabled
-              className="w-full justify-center rounded-[8px] bg-[#27AE60]/10 text-[#27AE60] border-none text-[12px] font-bold py-2 whitespace-nowrap"
+              className="flex-1 min-w-[120px] justify-center rounded-[8px] bg-[#27AE60]/10 text-[#27AE60] border-none text-[12px] font-bold py-2 whitespace-nowrap"
             >
               Paid ✓
             </Button>

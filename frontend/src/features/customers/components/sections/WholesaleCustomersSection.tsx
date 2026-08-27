@@ -217,91 +217,173 @@ export function WholesaleCustomersSection({
       )}
 
       {/* Wholesale stat cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 18, marginBottom: 28, alignItems: "stretch" }}>
+      <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 22, marginTop: 32, marginBottom: 28, alignItems: "stretch" }}>
         {[
-          { ico: <Building2 size={24} color={T.royalBurgundy} />, bg: "rgba(110,15,45,0.07)", l: "Total Wholesale Customers", v: String(wholesaleList.length), c: T.luxuryBrown, sub: "Active business relationships" },
-          { ico: <AlertTriangle size={24} color={T.crimson} />, bg: T.crimsonBg, l: "Total Outstanding", v: <Money value={paise(0)} />, c: T.crimson, sub: "Across all overdue accounts" },
-          { ico: <Eye size={24} color={T.antiqueGold} />, bg: "rgba(200,155,71,0.09)", l: "Active Orders Right Now", v: "0", c: T.antiqueGold, sub: "Bulk orders in production" },
-          { ico: <Users size={24} color={T.taupe} />, bg: "rgba(139,112,96,0.08)", l: "Inactive Customers", v: "0", c: T.taupe, sub: "No order in 6+ months" },
-        ].map((st) => (
-          <div key={st.l} style={{ background: "#FFF", padding: "22px 22px 20px", borderRadius: 14, border: `1px solid ${T.borderDef}`, display: "flex", flexDirection: "column", gap: 14, boxShadow: "0 2px 10px rgba(74,6,27,0.04)" }}>
-            <div style={{ width: 52, height: 52, borderRadius: 13, background: st.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              {st.ico}
+          {
+            icon: <Building2 size={22} color={T.antiqueGold} />,
+            label: "Total Wholesale Customers",
+            value: String(wholesaleList.length),
+            sub: "Active business relationships",
+            gid: "twc",
+          },
+          {
+            icon: <AlertTriangle size={22} color={T.antiqueGold} />,
+            label: "Total Outstanding",
+            value: <Money value={paise(0)} />,
+            sub: "Across all overdue accounts",
+            gid: "too",
+          },
+          {
+            icon: <Eye size={22} color={T.antiqueGold} />,
+            label: "Active Orders Right Now",
+            value: "0",
+            sub: "Bulk orders in production",
+            gid: "aor",
+          },
+          {
+            icon: <Users size={22} color={T.antiqueGold} />,
+            label: "Inactive Customers",
+            value: "0",
+            sub: "No order in 6+ months",
+            gid: "inc",
+          },
+        ].map((s) => (
+          <div key={s.label} style={{ position: "relative", borderRadius: 14, border: `1px solid ${T.borderDef}`, background: "#FFFDF9", boxShadow: "0 2px 16px rgba(0,0,0,0.06), 0 6px 30px rgba(0,0,0,0.04)", overflow: "visible", display: "flex", flexDirection: "column" as const, alignItems: "center", minHeight: 236 }}>
+            {/* ── Header — royal burgundy gradient ── */}
+            <svg viewBox="0 0 300 90" preserveAspectRatio="none" style={{ width: "100%", height: 44, display: "block", borderRadius: "12px 12px 0 0", flexShrink: 0 }}>
+              <defs>
+                <linearGradient id={`bk-head-${s.gid}`} x1="0" y1="0" x2="0.3" y2="1">
+                  <stop offset="0%" stopColor="#7A1232" />
+                  <stop offset="40%" stopColor={T.royalBurgundy} />
+                  <stop offset="100%" stopColor={T.deepWine} />
+                </linearGradient>
+              </defs>
+              <path d="M0,0 L300,0 L300,32 C230,36 190,85 150,88 C110,85 70,36 0,32 Z" fill={`url(#bk-head-${s.gid})`} />
+              <path d="M0,0 L300,0 L300,32 C230,36 190,85 150,88 C110,85 70,36 0,32 Z" fill={`url(#bk-shim-${s.gid})`} opacity="0.4" />
+              <defs>
+                <linearGradient id={`bk-shim-${s.gid}`} x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="rgba(200,155,71,0)" />
+                  <stop offset="50%" stopColor="rgba(200,155,71,0.08)" />
+                  <stop offset="100%" stopColor="rgba(200,155,71,0)" />
+                </linearGradient>
+              </defs>
+              <path d="M0,32 C70,36 110,85 150,88 C190,85 230,36 300,32" fill="none" stroke="rgba(200,155,71,0.30)" strokeWidth="0.7" />
+              <g transform="translate(150,86)" opacity="0.45">
+                <path d="M-6,0 C-8,-3 -11,-2 -10,0" fill="none" stroke={T.antiqueGold} strokeWidth="0.8" strokeLinecap="round" />
+                <path d="M6,0 C8,-3 11,-2 10,0" fill="none" stroke={T.antiqueGold} strokeWidth="0.8" strokeLinecap="round" />
+                <rect x="-2" y="-2" width="4" height="4" rx="0.3" fill={T.antiqueGold} transform="rotate(45)" />
+              </g>
+            </svg>
+
+            {/* ── Circular icon badge ── */}
+            <div style={{ position: "absolute", top: 20, left: "50%", transform: "translateX(-50%)", zIndex: 4 }}>
+              <div style={{ width: 56, height: 56, borderRadius: "50%", background: "linear-gradient(155deg, #7A1232 0%, #6E0F2D 40%, #4A061B 100%)", border: `2.5px solid rgba(200,155,71,0.45)`, boxShadow: "0 4px 14px rgba(74,6,27,0.25), 0 0 0 3px rgba(255,253,249,0.6)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                {s.icon}
+              </div>
             </div>
-            <div>
-              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 6 }}>{st.l}</div>
-              <div style={{ fontFamily: F.display, fontSize: 30, color: st.c, fontWeight: 700, lineHeight: 1.0 }}>{st.v}</div>
-              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 6 }}>{st.sub}</div>
+
+            {/* ── Card body content ── */}
+            <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", flex: 1, padding: "34px 20px 0", width: "100%" }}>
+              <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.royalBurgundy, letterSpacing: 1, textTransform: "uppercase" as const, textAlign: "center" as const, lineHeight: 1.45 }}>{s.label}</div>
+              <div style={{ fontFamily: F.display, fontSize: 36, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1, marginTop: 14, textAlign: "center" as const }}>{s.value}</div>
+              <div style={{ width: "45%", display: "flex", alignItems: "center", justifyContent: "center", margin: "16px 0 12px" }}>
+                <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, transparent, rgba(110,15,45,0.14), transparent)` }} />
+                <div style={{ width: 5, height: 5, background: "rgba(110,15,45,0.22)", transform: "rotate(45deg)", flexShrink: 0, margin: "0 4px" }} />
+                <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, transparent, rgba(110,15,45,0.14), transparent)` }} />
+              </div>
+              <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, textAlign: "center" as const, lineHeight: 1.4 }}>{s.sub}</div>
+            </div>
+
+            {/* ── Footer strip — royal burgundy ── */}
+            <div style={{ width: "100%", marginTop: "auto", position: "relative", overflow: "hidden", borderRadius: "0 0 12px 12px", height: 30, flexShrink: 0 }}>
+              <svg viewBox="0 0 300 40" preserveAspectRatio="none" style={{ width: "100%", height: "100%", display: "block", position: "absolute", top: 0, left: 0 }}>
+                <defs>
+                  <linearGradient id={`bk-foot-${s.gid}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={T.royalBurgundy} />
+                    <stop offset="50%" stopColor="#5A0A22" />
+                    <stop offset="100%" stopColor={T.deepWine} />
+                  </linearGradient>
+                </defs>
+                <path d="M0,28 C60,28 100,10 150,8 C200,10 240,28 300,28 L300,40 L0,40 Z" fill={`url(#bk-foot-${s.gid})`} />
+              </svg>
+              <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "flex-end", justifyItems: "center", justifyContent: "center", paddingBottom: 0 }}>
+                <img src="/assets/gold-fleur-footer.png" alt="Ornament" style={{ height: 26, maxWidth: "100%", objectFit: "contain", opacity: 0.9, transform: "translateY(1px)" }} />
+              </div>
             </div>
           </div>
         ))}
       </div>
 
       {/* Toolbar */}
-      <div className="flex flex-col md:flex-row gap-4 justify-between items-stretch md:items-center mb-6">
-        <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center w-full md:w-auto">
-          <div className="w-full sm:w-[280px]">
+      <div className="flex flex-col gap-5 mb-8">
+        {/* Top row: search + sort/view */}
+        <div className="flex flex-col md:flex-row gap-4 justify-between items-stretch md:items-center">
+          {/* Search bar */}
+          <div className="w-full md:w-[280px] lg:w-[400px] relative">
             <SearchInput aria-label="Search by business name, city..." placeholder="Search by business name, city..." />
           </div>
-          <div className="flex flex-wrap gap-2">
-            <Pill active={true}>All Wholesale ({wholesaleList.length})</Pill>
-            <Pill active={false}>Active ({wholesaleList.length})</Pill>
-            <Pill active={false}>Has Dues (0)</Pill>
-            <Pill active={false}>Inactive (0)</Pill>
+          <div className="flex flex-wrap items-center justify-between md:justify-end gap-3 w-full md:w-auto">
+            <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, display: "flex", alignItems: "center", gap: 4 }}>Sort By: Outstanding <ChevronDown size={14} /></span>
+            <div style={{ display: "inline-flex", alignItems: "center", background: "#FFFFFF", border: `1.5px solid ${T.borderDef}`, borderRadius: 999, padding: 3, gap: 2 }}>
+              <button
+                type="button"
+                onClick={() => setWholesaleView("card")}
+                style={{
+                  display: "flex", alignItems: "center", gap: 6, padding: "7px 16px", borderRadius: 999,
+                  fontFamily: F.ui, fontSize: 13, fontWeight: 600,
+                  background: wholesaleView === "card" ? "#6E0F2D" : "transparent",
+                  color: wholesaleView === "card" ? "#FFFFFF" : T.taupe,
+                  border: "none",
+                  boxShadow: wholesaleView === "card" ? "0 2px 8px rgba(110,15,45,0.25)" : "none",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                <LayoutGrid size={15} color={wholesaleView === "card" ? "#FFFFFF" : T.taupe} />
+                Card View
+              </button>
+              <button
+                type="button"
+                onClick={() => setWholesaleView("table")}
+                style={{
+                  display: "flex", alignItems: "center", gap: 6, padding: "7px 16px", borderRadius: 999,
+                  fontFamily: F.ui, fontSize: 13, fontWeight: 600,
+                  background: wholesaleView === "table" || wholesaleView === "list" ? "#6E0F2D" : "transparent",
+                  color: wholesaleView === "table" || wholesaleView === "list" ? "#FFFFFF" : T.taupe,
+                  border: "none",
+                  boxShadow: wholesaleView === "table" || wholesaleView === "list" ? "0 2px 8px rgba(110,15,45,0.25)" : "none",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                <TableIcon size={15} color={wholesaleView === "table" || wholesaleView === "list" ? "#FFFFFF" : T.taupe} />
+                Table View
+              </button>
+            </div>
+            <DownloadGate>
+              <Button
+                variant="tertiary"
+                size="sm"
+                iconLeft={Download}
+                onClick={() => downloadDataAsCSV(
+                  "wholesale_customers.csv",
+                  ["Code", "Name", "City", "Status", "Orders", "Spend", "Outstanding", "Last Order"],
+                  wholesaleList.map(w => [w.displayCode || w.id, w.name, w.city, w.status, w.orders, w.spend, w.out, w.lastOrder]),
+                )}
+              >Download</Button>
+            </DownloadGate>
           </div>
         </div>
-        <div className="flex flex-wrap items-center justify-between sm:justify-end gap-3 w-full md:w-auto">
-          <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, display: "flex", alignItems: "center", gap: 4 }}>Sort By: Outstanding <ChevronDown size={14} /></span>
-          <div style={{ display: "inline-flex", alignItems: "center", background: "#FFFFFF", border: `1.5px solid ${T.borderDef}`, borderRadius: 999, padding: 3, gap: 2 }}>
-            <button
-              type="button"
-              onClick={() => setWholesaleView("card")}
-              style={{
-                display: "flex", alignItems: "center", gap: 6, padding: "7px 16px", borderRadius: 999,
-                fontFamily: F.ui, fontSize: 13, fontWeight: 600,
-                background: wholesaleView === "card" ? "#6E0F2D" : "transparent",
-                color: wholesaleView === "card" ? "#FFFFFF" : T.taupe,
-                border: "none",
-                boxShadow: wholesaleView === "card" ? "0 2px 8px rgba(110,15,45,0.25)" : "none",
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-              }}
-            >
-              <LayoutGrid size={15} color={wholesaleView === "card" ? "#FFFFFF" : T.taupe} />
-              Card View
-            </button>
-            <button
-              type="button"
-              onClick={() => setWholesaleView("table")}
-              style={{
-                display: "flex", alignItems: "center", gap: 6, padding: "7px 16px", borderRadius: 999,
-                fontFamily: F.ui, fontSize: 13, fontWeight: 600,
-                background: wholesaleView === "table" || wholesaleView === "list" ? "#6E0F2D" : "transparent",
-                color: wholesaleView === "table" || wholesaleView === "list" ? "#FFFFFF" : T.taupe,
-                border: "none",
-                boxShadow: wholesaleView === "table" || wholesaleView === "list" ? "0 2px 8px rgba(110,15,45,0.25)" : "none",
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-              }}
-            >
-              <TableIcon size={15} color={wholesaleView === "table" || wholesaleView === "list" ? "#FFFFFF" : T.taupe} />
-              Table View
-            </button>
-          </div>
-          <DownloadGate>
-            <Button
-              variant="tertiary"
-              size="sm"
-              iconLeft={Download}
-              onClick={() => downloadDataAsCSV(
-                "wholesale_customers.csv",
-                ["Code", "Name", "City", "Status", "Orders", "Spend", "Outstanding", "Last Order"],
-                wholesaleList.map(w => [w.displayCode || w.id, w.name, w.city, w.status, w.orders, w.spend, w.out, w.lastOrder]),
-              )}
-            >Download</Button>
-          </DownloadGate>
+
+        {/* Filter pills row */}
+        <div className="flex flex-wrap gap-2.5 items-center">
+          <Pill active={true}>All Wholesale ({wholesaleList.length})</Pill>
+          <Pill active={false}>Active ({wholesaleList.length})</Pill>
+          <Pill active={false}>Has Dues (0)</Pill>
+          <Pill active={false}>Inactive (0)</Pill>
         </div>
       </div>
+
 
       {/* Wholesale Cards View */}
       {wholesaleView === "card" && isLoading && <LoadingState variant="skeleton" rows={4} />}

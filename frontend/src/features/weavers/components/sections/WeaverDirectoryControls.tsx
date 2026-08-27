@@ -81,7 +81,7 @@ export function AllWeaversControls({ view, setView, filter, setFilter, search, s
         </div>
 
         {/* Filter pills row */}
-        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", paddingBottom: 6 }}>
+        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", paddingBottom: 32 }}>
           {FILTER_PILLS.map(f => (
             <Button
               key={f} onClick={() => setFilter(f)}

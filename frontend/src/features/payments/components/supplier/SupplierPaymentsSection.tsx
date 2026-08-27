@@ -41,6 +41,56 @@ function SupplierStatusBadge({ status }: { status: SupplierStatusKey }) {
   );
 }
 
+const TopDivider = () => (
+  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 20, marginBottom: 12 }}>
+    <div style={{ display: "flex", gap: 3, paddingLeft: 4 }}>
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+    </div>
+    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginLeft: 8 }} />
+    <svg width="60" height="20" viewBox="0 0 60 20" style={{ margin: "0 8px", flexShrink: 0 }}>
+      <g transform="translate(30, 10)">
+        <polygon points="-16,0 -12,-3 -8,0 -12,3" fill={T.antiqueGold} />
+        <path d="M-5,0 L0,-5 L5,0 L0,5 Z" fill={T.antiqueGold} />
+        <circle cx="0" cy="0" r="1.5" fill="#FFFDF9" />
+        <polygon points="8,0 12,-3 16,0 12,3" fill={T.antiqueGold} />
+      </g>
+    </svg>
+    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginRight: 8 }} />
+    <div style={{ display: "flex", gap: 3, paddingRight: 4 }}>
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+    </div>
+  </div>
+);
+
+const BottomDivider = () => (
+  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 20, marginTop: 16 }}>
+    <div style={{ display: "flex", gap: 3, paddingLeft: 4 }}>
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+    </div>
+    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginLeft: 8 }} />
+    <svg width="60" height="20" viewBox="0 0 60 20" style={{ margin: "0 8px", flexShrink: 0 }}>
+      <g transform="translate(30, 10)">
+        <polygon points="-16,0 -12,-3 -8,0 -12,3" fill={T.antiqueGold} />
+        <path d="M-5,0 L0,-5 L5,0 L0,5 Z" fill={T.antiqueGold} />
+        <circle cx="0" cy="0" r="1.5" fill="#FFFDF9" />
+        <polygon points="8,0 12,-3 16,0 12,3" fill={T.antiqueGold} />
+      </g>
+    </svg>
+    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginRight: 8 }} />
+    <div style={{ display: "flex", gap: 3, paddingRight: 4 }}>
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+    </div>
+  </div>
+);
+
 export function SupplierPaymentsSection() {
   const { suppliers, purchases, payments, addPayment, statsFor, isLoading, isError, refetch } = useSuppliers();
 
@@ -361,36 +411,56 @@ export function SupplierPaymentsSection() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8 items-stretch">
             {filtered.map((r, i) => (
               <motion.div key={r.supplier.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.07 }}
-                style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, padding: 20, display: "flex", flexDirection: "column", gap: 12, boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <Store size={16} color={T.royalBurgundy} />
-                    </div>
-                    <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 15, color: T.luxuryBrown }}>{r.supplier.name}</span>
-                  </div>
-                  <SupplierStatusBadge status={r.status} />
+                style={{ background: "#FFFDF9", borderRadius: 12, border: `1.5px solid ${T.antiqueGold}`, display: "flex", flexDirection: "column", boxShadow: "0 4px 20px rgba(200,155,71,0.15)", overflow: "hidden", position: "relative" }}>
+                
+                {/* Top accent bar */}
+                <div style={{ height: 4, background: T.royalBurgundy, width: "100%", opacity: 0.8 }} />
+                
+                <div style={{ padding: "16px 20px 0" }}>
+                  <TopDivider />
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                  <div>
-                    <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 2 }}>Purchased</div>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}><Money value={rupees(r.totalPurchased)} /></div>
+                
+                <div style={{ padding: "0 20px 20px", display: "flex", flexDirection: "column", gap: 12, flex: 1 }}>
+                  <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <Store size={16} color={T.royalBurgundy} />
+                      </div>
+                      <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 15, color: T.luxuryBrown }}>{r.supplier.name}</span>
+                    </div>
+                    <SupplierStatusBadge status={r.status} />
                   </div>
-                  <div>
-                    <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 2 }}>Paid</div>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: T.green }}><Money value={rupees(r.totalPaid)} /></div>
-                  </div>
-                  <div style={{ gridColumn: "1 / 3" }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 2 }}>Balance Due</div>
-                    <div style={{ fontSize: 16, fontWeight: 700, color: r.outstanding === 0 ? T.green : r.status === "Overdue" ? T.crimson : T.antiqueGold }}>
-                      {r.outstanding === 0 && r.totalPurchased > 0 ? "Paid ✓" : <Money value={rupees(r.outstanding)} />}
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                    <div>
+                      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 2 }}>Purchased</div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}><Money value={rupees(r.totalPurchased)} /></div>
+                    </div>
+                    <div>
+                      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 2 }}>Paid</div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: T.green }}><Money value={rupees(r.totalPaid)} /></div>
+                    </div>
+                    <div style={{ gridColumn: "1 / 3" }}>
+                      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 2 }}>Balance Due</div>
+                      <div style={{ fontSize: 16, fontWeight: 700, color: r.outstanding === 0 ? T.green : r.status === "Overdue" ? T.crimson : T.antiqueGold }}>
+                        {r.outstanding === 0 && r.totalPurchased > 0 ? "Paid ✓" : <Money value={rupees(r.outstanding)} />}
+                      </div>
                     </div>
                   </div>
+                  <div style={{ padding: "10px 0 0" }}>
+                    <BottomDivider />
+                  </div>
                 </div>
-                <Button variant="secondary" size="sm" disabled={r.outstanding === 0} onClick={() => setPayForId(r.supplier.id)}
-                  className="rounded-[7px] border-[#6E0F2D] text-[#6E0F2D] disabled:opacity-50">
-                  {r.outstanding === 0 ? (r.totalPurchased > 0 ? "Paid" : "No Dues") : "Pay Now"}
-                </Button>
+
+                <div style={{ padding: "0 20px 20px" }}>
+                  <Button variant="secondary" size="sm" disabled={r.outstanding === 0} onClick={() => setPayForId(r.supplier.id)}
+                    className={`w-full justify-center rounded-[8px] border-[#6E0F2D] text-[#6E0F2D] disabled:opacity-50 font-bold text-[12px] py-2 ${
+                      r.outstanding === 0
+                        ? "border-[1.5px] border-[rgba(30,102,64,0.18)] bg-[rgba(30,102,64,0.07)] text-[#1E6640] disabled:bg-[rgba(30,102,64,0.07)] disabled:text-[#1E6640] disabled:opacity-100"
+                        : "border-[1.5px] border-[rgba(110,15,45,0.12)] text-[#6E0F2D]"
+                    }`}>
+                    {r.outstanding === 0 ? (r.totalPurchased > 0 ? "Paid" : "No Dues") : "Pay Now"}
+                  </Button>
+                </div>
               </motion.div>
             ))}
           </div>
