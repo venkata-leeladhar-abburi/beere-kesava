@@ -13,6 +13,8 @@ export interface CreateVendorBillPayload {
   amount: number;
   dueDate?: string;
   description?: string;
+  invoiceFileUrl?: string;
+  invoiceFileName?: string;
   materialAmounts?: VendorBillMaterialAmount[];
 }
 
@@ -24,6 +26,8 @@ export interface BackendVendorBill {
   dueDate: string | null;
   status: VendorBillStatus;
   description: string | null;
+  invoiceFileUrl: string | null;
+  invoiceFileName: string | null;
   createdAt: string;
 }
 
@@ -38,6 +42,8 @@ export interface UpdateVendorBillPayload {
   amount?: number;
   dueDate?: string;
   description?: string;
+  invoiceFileUrl?: string;
+  invoiceFileName?: string;
   materialAmounts?: VendorBillMaterialAmount[];
 }
 

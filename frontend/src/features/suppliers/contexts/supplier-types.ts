@@ -46,6 +46,8 @@ export interface Purchase {
   notes: string;
   addedBy?: string;
   invoiceFileName?: string;
+  /** Uploaded invoice file/photo, resolvable via shared/api/uploads resolveAssetUrl. */
+  invoiceFileUrl?: string;
   sarees: SareeTag[];
 }
 
@@ -59,6 +61,8 @@ export interface SupplierPayment {
   /** Purchase this payment settles, when it maps to a single bill. */
   purchaseId?: string;
   notes?: string;
+  /** Accountant / Admin who recorded this payment; undefined if unattributed. */
+  recordedBy?: { firstName: string; lastName: string; role: string } | null;
 }
 
 /** An external-purchase request raised by an admin, awaiting superadmin approval. */

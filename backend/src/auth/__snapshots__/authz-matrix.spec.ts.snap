@@ -966,6 +966,14 @@ exports[`authz matrix / route inventory matches the committed authorization snap
     "roles": [
       "ACCOUNTANT",
     ],
+    "route": "POST /payments/vendors/import",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
     "route": "GET /payments/vendors",
   },
   {

@@ -28,8 +28,16 @@ export interface BackendPurchaseOrder {
     /** Set once the vendor's real bill splits an amount to this material line. */
     invoicedAmount: string | null;
   }[];
-  grnReceipt?: { 
+  grnReceipt?: {
     receivedBy?: { id: string; firstName: string; lastName: string } | null;
+    /** Real prices actually paid at receipt — the fallback source when a PO
+     *  line was raised without a price entered. */
+    items?: {
+      materialType: string;
+      quantity: number;
+      unitPrice: string;
+      totalPrice: string;
+    }[];
   } | null;
 }
 

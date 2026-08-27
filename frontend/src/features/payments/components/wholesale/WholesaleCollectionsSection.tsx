@@ -36,6 +36,7 @@ function backendStatusToFrontend(status: BackendInvoice["status"]): Invoice["sta
 function backendInvoiceToFrontend(inv: BackendInvoice): Invoice {
   return {
     id: inv.id,
+    code: inv.code ?? inv.id,
     customer: inv.customer?.name ?? "Unknown Customer",
     city: inv.customer?.city ?? "—",
     customerPhone: inv.customer?.phone ?? undefined,
@@ -50,6 +51,7 @@ function backendInvoiceToFrontend(inv: BackendInvoice): Invoice {
       date: new Date(p.date).toLocaleDateString("en-IN"),
       utr: p.utr ?? "",
       method: p.method ?? "",
+      recordedBy: p.recordedBy ?? null,
     })),
   };
 }
@@ -271,6 +273,7 @@ export function WholesaleCollectionsSection() {
                 <g transform="translate(150,86)" opacity="0.45">
                   <path d="M-6,0 C-8,-3 -11,-2 -10,0" fill="none" stroke={T.antiqueGold} strokeWidth="0.8" strokeLinecap="round" />
                   <path d="M6,0 C8,-3 11,-2 10,0" fill="none" stroke={T.antiqueGold} strokeWidth="0.8" strokeLinecap="round" />
+                  {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament (a peacock-feather flourish), not a chart data mark */}
                   <rect x="-2" y="-2" width="4" height="4" rx="0.3" fill={T.antiqueGold} transform="rotate(45)" />
                 </g>
               </svg>

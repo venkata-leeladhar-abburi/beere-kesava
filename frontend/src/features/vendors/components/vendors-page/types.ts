@@ -28,4 +28,6 @@ export interface VendorBill {
 export interface VendorPaymentTxn {
   id: string; billId: string; date: string; amount: number;
   mode: string; reference: string; firm: string; notes: string;
+  /** Accountant / Admin who recorded this payment; undefined if unattributed. */
+  recordedBy?: { firstName: string; lastName: string; role: string } | null;
 }

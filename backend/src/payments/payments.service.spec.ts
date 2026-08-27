@@ -33,6 +33,7 @@ describe("PaymentsService", () => {
   let auditLog: any;
   let vendorBills: any;
   let purchases: any;
+  let idGenerator: any;
   let service: PaymentsService;
 
   beforeEach(() => {
@@ -70,7 +71,12 @@ describe("PaymentsService", () => {
     auditLog = { recordAction: jest.fn() };
     vendorBills = { recomputeStatus: jest.fn() };
     purchases = { recomputeStatus: jest.fn() };
-    service = new PaymentsService(prisma, auditLog, vendorBills, purchases);
+    let idCounter = 0;
+    idGenerator = {
+      nextFormatted: jest.fn().mockImplementation((prefix: string) => Promise.resolve(`${prefix}-${String(++idCounter).padStart(3, "0")}`)),
+      nextScoped: jest.fn().mockImplementation((prefix: string, parentCode: string) => Promise.resolve(`${prefix}-${parentCode}-${String(++idCounter).padStart(3, "0")}`)),
+    };
+    service = new PaymentsService(prisma, auditLog, vendorBills, purchases, idGenerator);
   });
 
   describe("createWeaverPayment", () => {
@@ -282,7 +288,7 @@ describe("PaymentsService", () => {
 
       const result = await service.importWeaverPaymentsFromExcel(buffer);
 
-      expect(result).toEqual({ created: 1, failed: 0, errors: [] });
+      expect(result).toEqual({ created: 1, failed: 0, errors: [], totalAmount: 4000 });
       expect(prisma.weaverPayment.createMany).toHaveBeenCalledWith({
         data: [expect.objectContaining({ weaverId: "w-1", amountPaid: 4000 })],
       });
@@ -358,7 +364,7 @@ describe("PaymentsService", () => {
 
       const result = await service.importWeaverPaymentsFromExcel(buffer);
 
-      expect(result).toEqual({ created: 2, failed: 0, errors: [] });
+      expect(result).toEqual({ created: 2, failed: 0, errors: [], totalAmount: 2000 });
       const saved = prisma.weaverPayment.createMany.mock.calls[0][0].data;
       expect(saved.map((r: any) => r.weaverId)).toEqual(["w-1", "w-2"]);
     });

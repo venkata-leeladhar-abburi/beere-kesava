@@ -24,6 +24,8 @@ export interface BackendInvoicePayment {
 
 export interface BackendInvoice {
   id: string;
+  /** Human-facing id (INV-<CustomerCode>-NNN); falls back to `id` if not generated. */
+  code?: string | null;
   customerId: string;
   invoiceDate: string;
   dueDate: string | null;

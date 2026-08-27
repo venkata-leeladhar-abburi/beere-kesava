@@ -1,4 +1,7 @@
 import { apiClient } from "./client";
+import type { BackendActorSummary } from "./invoices";
+
+export type { BackendActorSummary };
 
 export interface ImportRowError {
   row: number;
@@ -9,6 +12,8 @@ export interface ImportResult {
   created: number;
   failed: number;
   errors: ImportRowError[];
+  /** Sum of amountPaid across rows actually saved — 0 when nothing was created. */
+  totalAmount: number;
 }
 
 export interface CreateSupplierPaymentPayload {
@@ -30,6 +35,8 @@ export interface BackendSupplierPayment {
   method: string | null;
   firmId: string | null;
   purchaseId?: string | null;
+  /** Accountant / Shop Staff who recorded this payment. */
+  recordedBy?: BackendActorSummary | null;
 }
 
 interface PaginatedResponse<T> {
@@ -72,6 +79,8 @@ export interface BackendWeaverPayment {
   loomNumber: string | null;
   noOfSarees: number | null;
   deduction: string | null;
+  /** Accountant / Shop Staff who recorded this payment. */
+  recordedBy?: BackendActorSummary | null;
 }
 
 // Per-saree-type earnings breakdown: count of QC-passed sarees x that saree
@@ -148,9 +157,17 @@ export interface BackendVendorPayment {
   method: string | null;
   firmId: string | null;
   billId?: string | null;
+  /** Accountant / Shop Staff who recorded this payment. */
+  recordedBy?: BackendActorSummary | null;
 }
 
 export const vendorPaymentsApi = {
+  importExcel: (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    return apiClient.postForm<ImportResult>("/payments/vendors/import", formData);
+  },
+
   create: (payload: CreateVendorPaymentPayload) =>
     apiClient.post<BackendVendorPayment>("/payments/vendors", payload),
   list: (vendorId?: string) =>

@@ -75,7 +75,7 @@ const FactoryLoomPage = lazy(() => import("../../production/components/FactoryLo
 // eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 const StaffDirectoryPage = lazy(() => import("../../users/components/staff-directory/StaffDirectoryPage").then(m => ({ default: m.StaffDirectoryPage })));
 
-import { WORKER_SCOPE, SHOP_SCOPE } from "../../users/components/staff-directory/portalScopes";
+import { WORKER_SCOPE, SHOP_SCOPE } from "@/features/users";
 import { TabLoadingFallback } from './TabLoadingFallback';
 import { ErrorBoundary } from '../../../components/ErrorBoundary';
 import {

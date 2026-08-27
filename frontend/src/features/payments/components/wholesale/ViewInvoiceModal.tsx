@@ -7,7 +7,7 @@ import { Invoice } from "../../types";
 import { IconButton } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
 import { DocumentViewer, InvoiceDocument, DEFAULT_LETTERHEAD_FIRM, type InvoiceLineItem } from "../../../../shared/ui/document";
-import { toPaise } from "../../../../lib/gst";
+import { toPaise, hsnRate, DEFAULT_SAREE_HSN } from "../../../../lib/gst";
 
 // ── View Invoice Modal ────────────────────────────────────────────────────────
 // Renders the real InvoiceDocument (design-system/07-DOCUMENTS.md Part H.1)
@@ -15,33 +15,64 @@ import { toPaise } from "../../../../lib/gst";
 // tree — via the print-isolated #document-print-root, not the modal chrome.
 export function ViewInvoiceModal({ inv, bulkOrderData, onClose }: { inv: Invoice; bulkOrderData?: BulkOrder; onClose: () => void }) {
   const { dispatches, isError: dispatchesError } = useFinishing();
-  const dispatch = dispatches.find(d => d.invoiceNumber === inv.id);
+  // Matched by the real dispatch FK, not a string comparison against
+  // inv.id — dispatch.invoiceNumber holds the human invoice code
+  // ("INV-Sree-2-001"), so comparing it to inv.id (the UUID) never matched
+  // and this modal silently lost the dispatch's sarees, phone, GST and
+  // transport details on every invoice.
+  const dispatch = dispatches.find(d => d.id === inv.dispatchId);
+  // Whoever recorded the most recent payment — the one that matters most
+  // once the invoice is paid or partially paid. Not shown on the printed
+  // tax invoice itself (a customer-facing document has no business naming
+  // internal staff); shown in the modal chrome instead.
+  // Backend returns payments newest-first (orderBy date desc) — see
+  // invoices.service.ts's `include`.
+  const lastPayment = inv.payments?.[0];
+  const recordedByLabel = lastPayment?.recordedBy
+    ? `${lastPayment.recordedBy.firstName} ${lastPayment.recordedBy.lastName}`.trim()
+    : null;
 
-  // Try to determine the price per saree to display in the list.
-  // If not available, we just split the total amount evenly.
+  // The printed invoice must always foot to inv.total — the amount actually
+  // recorded and reconciled against on the card/ledger — never to
+  // dispatch.pricePerSaree, which can go stale after a manual total edit or
+  // late price change and silently diverge from what's owed. GST here is
+  // applied on top of the line items below, so when it's on, inv.total (the
+  // real, tax-inclusive invoiced amount) has to be backed down to a taxable
+  // base first or the document would foot higher than what's owed.
+  const applyGst = !!dispatch?.gstPct;
   const numSarees = dispatch?.sareeIds?.length || bulkOrderData?.total || 1;
-  const pricePerSaree = dispatch?.pricePerSaree || Math.round(inv.total / numSarees);
+  const taxableTotal = applyGst ? inv.total / (1 + hsnRate(DEFAULT_SAREE_HSN) / 100) : inv.total;
+  const pricePerSaree = Math.round(taxableTotal / numSarees);
 
   const items: InvoiceLineItem[] = dispatch?.sareeIds?.length
-    ? dispatch.sareeIds.map(sid => ({
+    ? dispatch.sareeIds.map((sid, i) => ({
         id: sid,
         description: `${bulkOrderData?.design || "Design"} · ${bulkOrderData?.sareeType || "Type"}`,
         batchLabel: bulkOrderData?.batches?.[0],
-        ratePaise: toPaise(pricePerSaree),
+        // Last row absorbs the rounding remainder so the line items always
+        // foot to exactly taxableTotal, not a few paise short/over.
+        ratePaise: i === dispatch.sareeIds.length - 1
+          ? toPaise(taxableTotal) - toPaise(pricePerSaree) * (dispatch.sareeIds.length - 1)
+          : toPaise(pricePerSaree),
       }))
     : [{
-        id: bulkOrderData ? "Bulk Order Production" : inv.id,
+        id: bulkOrderData ? "Bulk Order Production" : inv.code,
         description: bulkOrderData ? `${bulkOrderData.design || "Design"} · ${bulkOrderData.sareeType || "Sarees"}` : "Invoice",
-        ratePaise: toPaise(inv.total),
+        ratePaise: toPaise(taxableTotal),
       }];
 
   return (
     <Modal open onOpenChange={o => !o && onClose()} size="xl">
       <div style={{ display: "flex", flexDirection: "column", height: "85vh" }}>
         {/* Slim close bar — the document's own Letterhead carries the title */}
-        <div style={{ display: "flex", justifyContent: "flex-end", padding: "8px 8px 0", flexShrink: 0 }}>
-          <Dialog.Title className="sr-only">Invoice {inv.id}</Dialog.Title>
+        <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", padding: "8px 8px 0", flexShrink: 0 }}>
+          <Dialog.Title className="sr-only">Invoice {inv.code}</Dialog.Title>
           <Dialog.Description className="sr-only">Invoice details for {inv.customer}</Dialog.Description>
+          {recordedByLabel && (
+            <span style={{ fontFamily: "var(--font-ui, inherit)", fontSize: 12, color: "#69635E", marginRight: "auto", paddingLeft: 8 }}>
+              Payment recorded by <strong style={{ color: "#3B2314" }}>{recordedByLabel}</strong>
+            </span>
+          )}
           <Dialog.Close asChild>
             <IconButton icon={X} label="Close" variant="ghost" size="sm" />
           </Dialog.Close>
@@ -51,9 +82,9 @@ export function ViewInvoiceModal({ inv, bulkOrderData, onClose }: { inv: Invoice
             Failed to load dispatch details — some fields below may be showing fallback values.
           </div>
         )}
-        <DocumentViewer fileName={inv.id} documentTitle={`Tax Invoice ${inv.id}`}>
+        <DocumentViewer fileName={inv.code} documentTitle={`Tax Invoice ${inv.code}`}>
           <InvoiceDocument
-            invoiceNumber={inv.id}
+            invoiceNumber={inv.code}
             invoiceDate={inv.invoiceDate}
             dueDate={inv.dueDate}
             firm={DEFAULT_LETTERHEAD_FIRM}
@@ -63,7 +94,7 @@ export function ViewInvoiceModal({ inv, bulkOrderData, onClose }: { inv: Invoice
               phone: dispatch?.customerPhone,
             }}
             items={items}
-            applyGst={!!dispatch?.gstPct}
+            applyGst={applyGst}
             bulkOrderRef={bulkOrderData?.ref}
             dispatch={dispatch ? {
               lrNumber: dispatch.lrNumber,

@@ -2,7 +2,7 @@ import React from "react";
 import { AlertTriangle, CheckCircle2, Archive } from "lucide-react";
 import { imgWarp, imgResham, imgJari } from "../../../shared/constants/imageData";
 import { T } from "./theme";
-import { NAV_GROUPS } from "../../dashboards/components/superadmin-dashboard/data";
+import { NAV_GROUPS } from "@/features/dashboards";
 import type {
   StatusType, WeaverStatus, StatusCfgEntry, TagStyle, WeaverStatusCfgEntry,
 } from "./types";

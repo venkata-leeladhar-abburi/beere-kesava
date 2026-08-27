@@ -13,3 +13,4 @@ export { BeereDashboard } from "./components/BeereDashboard";
 export { SuperadminDashboard } from "./components/SuperadminDashboard";
 export * from "./components/beere-dashboard/theme";
 export * from "./components/beere-dashboard/ui";
+export { NAV_GROUPS } from "./components/superadmin-dashboard/data";

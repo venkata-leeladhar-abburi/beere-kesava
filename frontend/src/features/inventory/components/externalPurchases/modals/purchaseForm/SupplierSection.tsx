@@ -21,6 +21,8 @@ export function SupplierSection({
   pieceCount,
   sareeDetailsCount,
   handleInvoiceFile,
+  uploadingInvoice,
+  invoiceUploadError,
 }: {
   form: FormState;
   setForm: React.Dispatch<React.SetStateAction<FormState>>;
@@ -30,6 +32,8 @@ export function SupplierSection({
   pieceCount: number;
   sareeDetailsCount: number;
   handleInvoiceFile: (file: File | null) => void;
+  uploadingInvoice?: boolean;
+  invoiceUploadError?: string | null;
 }) {
   return (
     <>
@@ -63,7 +67,7 @@ export function SupplierSection({
       {selectedSupplier && (
         <div className="grid grid-cols-1 md:grid-cols-3" style={{ marginBottom: 16, background: T.silkCream, border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "12px 14px", gap: 10 }}>
           {[
-            ["Supplier ID", selectedSupplier.id],
+            ["Supplier ID", selectedSupplier.code || selectedSupplier.id],
             ["Contact", selectedSupplier.contactName],
             ["Phone", selectedSupplier.phone],
             ["Supplies", selectedSupplier.specialty],
@@ -150,23 +154,30 @@ export function SupplierSection({
           >
             <UploadCloud size={14} />
             <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {form.invoiceFileName || "Choose file from supplier..."}
+              {uploadingInvoice ? "Uploading…" : form.invoiceFileName || "Choose file from supplier..."}
             </span>
             <Input
               type="file"
               accept="application/pdf,image/*"
+              disabled={uploadingInvoice}
               onChange={(e) => handleInvoiceFile(e.target.files?.[0] ?? null)}
               containerClassName="hidden"
             />
           </label>
+          {invoiceUploadError && (
+            <div style={{ marginTop: 4, fontFamily: F.ui, fontSize: 11, color: "#C0392B" }}>{invoiceUploadError}</div>
+          )}
           {form.invoiceFileName && (
             <div style={{ marginTop: 6, display: "flex", alignItems: "center", gap: 6 }}>
               <FileText size={12} color={T.royalBurgundy} />
               <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{form.invoiceFileName}</span>
+              {!uploadingInvoice && !form.invoiceFileUrl && (
+                <span style={{ fontFamily: F.ui, fontSize: 11, color: "#C0392B" }}>Upload failed</span>
+              )}
               <Button
                 variant="link"
                 size="sm"
-                onClick={() => set("invoiceFileName", "")}
+                onClick={() => setForm((f) => ({ ...f, invoiceFileName: "", invoiceFileUrl: "" }))}
                 className="h-auto p-0 text-[12px] text-[var(--text-danger)]"
               >
                 Remove

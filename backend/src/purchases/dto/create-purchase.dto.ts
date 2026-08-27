@@ -66,6 +66,10 @@ export class CreatePurchaseDto {
   @IsString()
   invoiceFileName?: string;
 
+  @IsOptional()
+  @IsString()
+  invoiceFileUrl?: string;
+
   // No auth yet — the acting user's id is supplied explicitly for the action
   // feed until JWT/OTP auth exists and req.user is available.
   @IsOptional()

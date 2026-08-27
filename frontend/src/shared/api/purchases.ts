@@ -42,6 +42,8 @@ export interface BackendPurchase {
   status: PurchasePaymentStatus;
   notes: string | null;
   invoiceFileName: string | null;
+  /** Server-relative path in cloud storage ("/uploads/receipts/<uuid>.jpg"). */
+  invoiceFileUrl: string | null;
   addedById: string | null;
   sareeLines: BackendPurchaseSareeLine[];
 }
@@ -81,6 +83,7 @@ export interface CreatePurchasePayload {
   status?: PurchasePaymentStatus;
   notes?: string;
   invoiceFileName?: string;
+  invoiceFileUrl?: string;
   addedById?: string;
   sarees: CreatePurchaseSareeLinePayload[];
 }

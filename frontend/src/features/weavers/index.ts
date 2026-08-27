@@ -7,4 +7,5 @@
 export * from "./components/AllWeaversPage";
 export * from "./components/WeaverSareesSection";
 export * from "./components/WeaversPage";
+export * from "./components/sections/WeaverCardMockupStyle";
 export * from "./contexts/WeaverPaymentsContext";

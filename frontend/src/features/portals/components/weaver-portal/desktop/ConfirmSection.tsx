@@ -175,7 +175,7 @@ export function ConfirmSection({
                 the pad further down in Materials Received History. */}
             <div style={{ marginTop: 22, paddingTop: 20, borderTop: `1px dashed ${C.bdr}` }}>
               <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 10 }}>Your Signature</div>
-              <div style={{ maxWidth: 480 }}>
+              <div style={{ maxWidth: "min(480px, 100%)" }}>
                 <div style={{ border: `1.5px solid rgba(110,15,45,0.22)`, borderRadius: 14, overflow: "hidden", background: "#FFF", marginBottom: 14 }}>
                   <SignatureCanvas ref={canvasRef} onSigned={setHasSigLocal} />
                 </div>

@@ -26,7 +26,7 @@ export const MATS = [
   },
   {
     name: "Jari", desc: "Metallic Thread for borders and designs · Polyester and Silk Fast types",
-    stock: "— Buns in stock", stockColor: T.crimson, img: imgJari,
+    stock: "— Reels in stock", stockColor: T.crimson, img: imgJari,
     extra: null as React.ReactNode,
   },
 ];

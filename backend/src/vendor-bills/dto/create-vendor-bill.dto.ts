@@ -42,6 +42,14 @@ export class CreateVendorBillDto {
   @IsString()
   description?: string;
 
+  @IsOptional()
+  @IsString()
+  invoiceFileUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  invoiceFileName?: string;
+
   // Entry aid only — PurchaseOrderItem.invoicedAmount has no bearing on the
   // bill's own total (`amount` above is what's actually owed); this just
   // records how the admin split that total across the PO's material lines,

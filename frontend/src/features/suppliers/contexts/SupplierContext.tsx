@@ -81,6 +81,7 @@ function toPurchase(p: BackendPurchase): Purchase {
     status: p.status === "PAID" ? "Paid" : p.status === "PARTIAL" ? "Partial" : "Pending",
     notes: p.notes ?? "",
     invoiceFileName: p.invoiceFileName ?? undefined,
+    invoiceFileUrl: p.invoiceFileUrl ?? undefined,
     sarees: p.sareeLines.map(toSareeTag),
   };
 }
@@ -124,6 +125,7 @@ function toCreatePurchasePayload(p: Omit<Purchase, "id">, addedById: string): Cr
     status: toStatusPayload(p.status),
     notes: p.notes || undefined,
     invoiceFileName: p.invoiceFileName,
+    invoiceFileUrl: p.invoiceFileUrl,
     addedById,
     sarees: p.sarees.map(toSareeLinePayload),
   };
@@ -142,6 +144,7 @@ function toUpdatePurchasePayload(patch: Partial<Purchase>): UpdatePurchasePayloa
     status: patch.status ? toStatusPayload(patch.status) : undefined,
     notes: patch.notes,
     invoiceFileName: patch.invoiceFileName,
+    invoiceFileUrl: patch.invoiceFileUrl,
     sarees: patch.sarees?.map(toSareeLinePayload),
   };
 }
@@ -250,6 +253,7 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
         mode: (p.method as SupplierPayment["mode"]) ?? "Bank Transfer",
         reference: p.utr ?? "",
         purchaseId: p.purchaseId ?? undefined,
+        recordedBy: p.recordedBy ?? null,
       }));
     },
     enabled,
