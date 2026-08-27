@@ -31,4 +31,10 @@ export class CreateSupplierPaymentDto {
   @IsOptional()
   @IsUUID()
   firmId?: string;
+
+  // Links this payment to a specific Purchase it settles (partial or full).
+  // Purchase ids are human-facing codes (e.g. EXT-2026-NNN), not UUIDs.
+  @IsOptional()
+  @IsString()
+  purchaseId?: string;
 }

@@ -1,14 +1,30 @@
 import * as React from "react";
 import { useDocument } from "../../../../shared/ui/document";
 import { labelsApi } from "../../../../shared/api/labels";
-import { WeaverSareeRow } from "./types";
+import { formatMoney, rupees } from "@/lib/domain/money";
+
+/**
+ * The only fields a physical tag actually prints. Kept deliberately narrow so
+ * any stock list can print tags — `WeaverSareeRow` satisfies it structurally,
+ * and so does the shop portal's `ShopStockItem` once mapped.
+ */
+export interface SareeTagData {
+  sareeId: string;
+  batchId?: string | null;
+  designCode?: string | null;
+  sareeTypeCode?: string | null;
+  sareeTypeName?: string | null;
+  color?: string | null;
+  /** Printed on the tag when present — the shop's counter price. */
+  retailPrice?: number | null;
+}
 
 // ── Saree tag print sheet ─────────────────────────────────────────────────────
 // A grid of cut-apart tags (barcode + saree id + design/type/colour), printed
 // through the same isolated #document-print-root as invoices/quotations so it
 // never drags the rest of the app onto paper. Works for one row or many —
 // the sheet just wraps as many tags as it's given.
-function TagCard({ r }: { r: WeaverSareeRow }) {
+function TagCard({ r }: { r: SareeTagData }) {
   const typeLabel = r.sareeTypeCode ? `${r.sareeTypeCode}${r.sareeTypeName ? ` · ${r.sareeTypeName}` : ""}` : "—";
   return (
     <div
@@ -36,14 +52,16 @@ function TagCard({ r }: { r: WeaverSareeRow }) {
       </div>
 
       <div style={{ display: "flex", justifyContent: "space-between", gap: "3mm", fontFamily: "var(--font-ui)", fontSize: "7.5pt", color: "var(--doc-ink-soft)" }}>
-        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.designCode || "—"} · {typeLabel}</span>
-        <span style={{ flexShrink: 0 }}>{r.color || "—"}</span>
+        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.designCode ? `${r.designCode} · ` : ""}{typeLabel}</span>
+        <span style={{ flexShrink: 0 }}>
+          {r.retailPrice != null ? formatMoney(rupees(r.retailPrice)) : (r.color || "—")}
+        </span>
       </div>
     </div>
   );
 }
 
-function TagSheet({ rows }: { rows: WeaverSareeRow[] }) {
+function TagSheet({ rows }: { rows: SareeTagData[] }) {
   return (
     <div style={{ padding: "10mm 8mm", display: "flex", flexWrap: "wrap", gap: "4mm" }}>
       {rows.map(r => <TagCard key={r.sareeId} r={r} />)}
@@ -54,7 +72,7 @@ function TagSheet({ rows }: { rows: WeaverSareeRow[] }) {
 /** Prints one physical tag per row — pass a single row or many. */
 export function usePrintSareeTags() {
   const { print } = useDocument();
-  return React.useCallback((rows: WeaverSareeRow[]) => {
+  return React.useCallback((rows: SareeTagData[]) => {
     if (rows.length === 0) return;
     print(<TagSheet rows={rows} />);
   }, [print]);

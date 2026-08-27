@@ -44,7 +44,10 @@ export interface SareeItem {
   batch: string;
   source: "outsourced" | "own" | string;
   weaver: string;
+  /** Weaver UUID — identity for QC payloads, never displayed. */
   wcode: string;
+  /** Human-facing weaver code ("Ramarao-001") — the only weaver id shown in the UI. */
+  weaverCode?: string;
   design: string;
   weight: number;
   std: number;

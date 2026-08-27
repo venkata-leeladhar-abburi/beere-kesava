@@ -32,7 +32,7 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
   onBack: () => void;
   onRaiseRequest: (supplierId: string) => void;
 }) {
-  const { statsFor, payments, requests, updateSupplier, deleteSupplier, addPayment } = useSuppliers();
+  const { statsFor, purchases, payments, requests, updateSupplier, deleteSupplier, addPayment } = useSuppliers();
   const [tab, setTab] = useState<"overview" | "orders" | "payments" | "contact" | "edit">("overview");
   const confirm = useConfirm();
   const [payModalOpen, setPayModalOpen] = useState(false);
@@ -438,6 +438,7 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
         <SupplierPayNowModal
           supplier={supplier}
           outstanding={stats.outstanding}
+          openPurchases={purchases.filter(p => p.supplierId === supplier.id && p.status !== "Paid")}
           saving={savingPayment}
           onClose={() => setPayModalOpen(false)}
           onSave={payload => {
@@ -448,6 +449,7 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
               amount: payload.amount,
               mode: payload.mode,
               reference: payload.reference,
+              purchaseId: payload.purchaseId,
             });
             toast.success(`Payment of ${formatMoney(rupees(payload.amount))} recorded for ${supplier.name}`);
             setSavingPayment(false);

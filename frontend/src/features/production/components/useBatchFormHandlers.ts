@@ -6,9 +6,12 @@ import type { BulkOrder } from "@/features/bulk-orders";
 // Minimal shapes accepted by the row-mutation helpers below — real data now
 // comes from the backend (see WeaverOption/LoomOption in PickerModals.tsx),
 // not the old static WEAVERS/FACTORY_LOOMS_LIST mocks.
-export interface WeaverOption { id: string; name: string; initials: string; looms: number }
+export interface WeaverOption { id: string; /** Human-facing weaver code ("Ramarao-001") — the only weaver id shown in the UI. */ code: string; name: string; initials: string; looms: number }
 export interface LoomOption {
-  id: string; loomNumber: string; location: string; status: string;
+  id: string;
+  /** Human-facing loom code ("Loom-002") — the only loom id shown in the UI. */
+  displayCode: string | null;
+  loomNumber: string; location: string; status: string;
   operatorName: string; operatorPhone: string; installedYear: number | null; notes: string;
 }
 
@@ -51,7 +54,7 @@ export function useBatchFormHandlers(
     setRows(Array.from({ length: n }, (_, i) => ({
       serial: i + 1,
       sareeId: null, recipientType: undefined,
-      weaverId: null, weaverName: null, weaverInitials: null, weaverLoom: null,
+      weaverId: null, weaverCode: null, weaverName: null, weaverInitials: null, weaverLoom: null,
       factoryLoomId: null, factoryLoomNumber: null,
       designCode: null, sareeTypeCode: null, sareeTypeName: null,
       bulkOrderRef: null, bulkOrderLabel: null,
@@ -86,7 +89,7 @@ export function useBatchFormHandlers(
       seq++;
       return {
         ...r, recipientType: "weaver" as const,
-        weaverId: w.id, weaverName: w.name, weaverInitials: w.initials, weaverLoom: 1,
+        weaverId: w.id, weaverCode: w.code, weaverName: w.name, weaverInitials: w.initials, weaverLoom: 1,
         factoryLoomId: null, factoryLoomNumber: null,
         sareeId: generateSareeId(w.name, 1, seq),
       };
@@ -122,7 +125,7 @@ export function useBatchFormHandlers(
       seq++;
       return {
         ...r, recipientType: "factoryLoom" as const,
-        weaverId: null, weaverName: null, weaverInitials: null, weaverLoom: null,
+        weaverId: null, weaverCode: null, weaverName: null, weaverInitials: null, weaverLoom: null,
         factoryLoomId: loom.id, factoryLoomNumber: loom.loomNumber,
         // Matches backend buildSareeId(): {loomNumber}-B{batchSeq}-{seq3}. We don't have batchSeq yet so use B***.
         sareeId: `${loom.loomNumber}-B***-${String(seq).padStart(3, "0")}`,
@@ -243,7 +246,7 @@ export function useBatchFormHandlers(
       const extra: SareeRow[] = Array.from({ length: n }, (_, i) => ({
         serial: startSerial + i + 1,
         sareeId: null, recipientType: undefined,
-        weaverId: null, weaverName: null, weaverInitials: null, weaverLoom: null,
+        weaverId: null, weaverCode: null, weaverName: null, weaverInitials: null, weaverLoom: null,
         factoryLoomId: null, factoryLoomNumber: null,
         designCode: null, sareeTypeCode: null, sareeTypeName: null,
         bulkOrderRef: null, bulkOrderLabel: null,

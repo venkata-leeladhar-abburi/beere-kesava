@@ -29,10 +29,12 @@ export function ConfirmMaterialPage({ onGoToBatches }: { onGoToBatches?: () => v
   const { getRecordsForWeaver, updateSignatureStatus, getMaterialSummaryForWeaver, getMaterialSummaryByBatch, isLoading: materialsLoading, isError: materialsError, error: materialsErrorObj, refetch: refetchMaterials } = useMaterialIssue();
   const { batches } = useBatches();
   const { getDesign } = useDesignLibrary();
-  const { weaverId, isLoading: weaverLoading, isError: weaverError } = useCurrentWeaver();
+  const { weaverId, weaverCode: resolvedWeaverCode, isLoading: weaverLoading, isError: weaverError } = useCurrentWeaver();
 
   const weaverName = user?.name ?? "Weaver";
-  const weaverCode = user?.empId ?? (weaverId ? weaverId.slice(0, 10) : "Weaver");
+  // The real weaver code ("Ramarao-001") — never a slice of the UUID, which is
+  // what this used to fall back to and showed as a meaningless id on screen.
+  const weaverCode = resolvedWeaverCode ?? "Weaver";
 
   const matSummary = getMaterialSummaryForWeaver(weaverId ?? "");
   const matByBatch = weaverId ? getMaterialSummaryByBatch(weaverId) : [];

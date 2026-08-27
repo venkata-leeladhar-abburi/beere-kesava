@@ -183,7 +183,9 @@ export function VendorsPage() {
           />
         </>
       )}
-      <MaterialsFooter />
+      <div style={{ marginTop: "auto" }}>
+        <MaterialsFooter />
+      </div>
     </div>
   );
 }

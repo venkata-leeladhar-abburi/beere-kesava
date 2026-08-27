@@ -62,6 +62,7 @@ export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: u
   const navWeaverObj = navWeaver
     ? {
         id: navWeaver.id,
+        code: navWeaver.code,
         name: navWeaver.name,
         initials: navWeaver.initials || `${navWeaver.firstName.charAt(0)}${navWeaver.lastName.charAt(0)}`,
         bg: "#6E0F2D",
@@ -161,7 +162,9 @@ export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: u
         onClose={() => setImportOpen(false)}
         onImported={() => { void refetchWeavers(); }}
       />
-      <MaterialsFooter />
+      <div style={{ marginTop: "auto" }}>
+        <MaterialsFooter />
+      </div>
 
       <AnimatePresence>
         {batchDialog && (() => {

@@ -308,7 +308,7 @@ export { MobileMenuDrawer, MobileTopNav, MobileHero, MobileMetrics, MobilePerfor
  */
 export function MobileOverview({ onNavigate }: { onNavigate: (tab: string, ctx?: { weaverId: string; mode: "view" | "edit" }) => void }) {
   return (
-    <>
+    <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
       <MobileHero />
       <MobileMetrics />
       <MobilePerformance />
@@ -316,7 +316,9 @@ export function MobileOverview({ onNavigate }: { onNavigate: (tab: string, ctx?:
       <MobileActivity onNavigate={onNavigate} />
       <MobileWeavers onNavigate={onNavigate} />
       <MobileRawMaterial onNavigate={onNavigate} />
-      <MobileFooter />
-    </>
+      <div style={{ marginTop: "auto" }}>
+        <MobileFooter />
+      </div>
+    </div>
   );
 }

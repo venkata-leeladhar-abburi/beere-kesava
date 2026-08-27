@@ -25,9 +25,6 @@ interface WorkerQCSareeCardProps {
   onOpenSareeTypeCode: (typeCode: string) => void;
 }
 
-const isUuid = (str?: string | null) =>
-  !!str && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
-
 export function WorkerQCSareeCard({
   saree: s,
   onMarkPassed,
@@ -41,7 +38,6 @@ export function WorkerQCSareeCard({
 
   const { code: designCode, typeName } = splitDesignField(s.design);
   const typeRec = typeName ? getSareeTypeByName(typeName) : undefined;
-  const isWeaverUuid = isUuid(s.wcode);
 
   return (
     <div
@@ -140,12 +136,12 @@ export function WorkerQCSareeCard({
               {s.weaver}
             </div>
           </div>
-          {!isWeaverUuid && s.wcode && (
+          {s.weaverCode && (
             <span
               style={{ fontFamily: F.m }}
               className="ml-2 px-2 py-0.5 rounded bg-white border border-[#D8D2CE] text-[11px] font-semibold text-[#4F4A45] flex-shrink-0"
             >
-              {s.wcode}
+              {s.weaverCode}
             </span>
           )}
         </div>

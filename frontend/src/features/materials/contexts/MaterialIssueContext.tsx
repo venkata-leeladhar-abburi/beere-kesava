@@ -279,7 +279,11 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
   const canReadFactoryLooms = role === "worker" || role === "admin" || role === "superadmin";
   const actingUserId = user?.id ?? STOPGAP_ACTING_USER_ID;
 
-  const enabled = useAuthGate();
+  // GET /material-issues is overridden on the backend to WORKER/WEAVER only
+  // (ADMIN/SUPERADMIN bypass every check). This provider is shared across
+  // every portal, so an unscoped gate fired this for SHOP/ACCOUNTANT too and
+  // they got back nothing but a "your role is not permitted" 403.
+  const enabled = useAuthGate("worker", "weaver", "admin", "superadmin");
 
   const { data: issueRecords = [], isError, error, isLoading, refetch } = useQuery({
     queryKey: ISSUE_RECORDS_KEY,
@@ -293,7 +297,7 @@ export function MaterialIssueProvider({ children }: { children: React.ReactNode 
           : Promise.resolve({ items: [] as BackendFactoryLoom[] }),
       ]);
       const weaverLookup = new Map(weaversRes.items.map((w: BackendWeaver) => [w.id, w.name]));
-      const loomLookup = new Map(loomsRes.items.map((l: BackendFactoryLoom) => [l.id, l.loomNumber]));
+      const loomLookup = new Map(loomsRes.items.map((l: BackendFactoryLoom) => [l.id, l.code || l.loomNumber]));
       return issuesRes.items.map(r => backendRecordToFrontend(r, weaverLookup, loomLookup));
     },
   });

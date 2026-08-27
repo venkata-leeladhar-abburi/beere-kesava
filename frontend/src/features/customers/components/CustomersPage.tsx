@@ -325,7 +325,9 @@ export function CustomersPage() {
         setViewingCard={setViewingCard}
         saveSuccess={saveSuccess}
       />
-      <MaterialsFooter />
+      <div style={{ marginTop: "auto" }}>
+        <MaterialsFooter />
+      </div>
     </div>
   );
 }

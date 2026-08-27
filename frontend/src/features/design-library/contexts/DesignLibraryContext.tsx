@@ -95,7 +95,11 @@ const DISPATCHES_KEY = ["designLibrary", "dispatches"] as const;
 
 export function DesignLibraryProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
-  const enabled = useAuthGate();
+  // GET /design-library is WORKER/WEAVER-only on the backend (ADMIN/
+  // SUPERADMIN bypass every role check). This provider is shared across
+  // every portal, so an unscoped gate fired this for SHOP/ACCOUNTANT too and
+  // they got back nothing but a "your role is not permitted" 403.
+  const enabled = useAuthGate("worker", "weaver", "admin", "superadmin");
 
   const { data: designs = [], isError, error, isLoading, refetch } = useQuery({
     queryKey: DESIGNS_KEY,

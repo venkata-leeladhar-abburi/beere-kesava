@@ -18,6 +18,8 @@ export interface SareeRow {
   sareeId: string | null;        // null until weaver or factory loom is assigned
   recipientType?: "weaver" | "factoryLoom";
   weaverId: string | null;
+  /** Human-facing weaver code ("Ramarao-001") — the only weaver id shown in the UI. */
+  weaverCode: string | null;
   weaverName: string | null;
   weaverInitials: string | null;
   weaverLoom: number | null;     // which of the weaver's own looms (1..weaver's loom count)
@@ -135,7 +137,7 @@ const QC_RESULT_FROM_BACKEND: Record<BackendQcResult, QcResult> = {
 
 function backendBatchToRecord(
   b: BackendBatch,
-  weaverLookup: Map<string, { name: string; initials: string }>,
+  weaverLookup: Map<string, { code: string; name: string; initials: string }>,
   loomLookup: Map<string, string>,
   sareeTypeNameLookup: Map<string, string>,
 ): BatchRecord {
@@ -158,6 +160,7 @@ function backendBatchToRecord(
         sareeId: r.sareeId,
         recipientType: r.recipientType === "WEAVER" ? "weaver" : r.recipientType === "FACTORY_LOOM" ? "factoryLoom" : undefined,
         weaverId: r.weaverId,
+        weaverCode: weaver?.code ?? null,
         weaverName: weaver?.name ?? null,
         weaverInitials: weaver?.initials ?? null,
         weaverLoom: loomMatch ? parseInt(loomMatch[1], 10) : null,
@@ -202,7 +205,11 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
   const { role } = useAuth();
   const canReadFactoryLooms = role === "worker" || role === "admin" || role === "superadmin";
   const canReadRates = role === "accountant" || role === "admin" || role === "superadmin";
-  const enabled = useAuthGate();
+  // GET /batches is WORKER/WEAVER-only on the backend (ADMIN/SUPERADMIN
+  // bypass every role check). This provider is shared across every portal,
+  // so an unscoped gate fired this for SHOP/ACCOUNTANT too and they got back
+  // nothing but a "your role is not permitted" 403.
+  const enabled = useAuthGate("worker", "weaver", "admin", "superadmin");
 
   const { data: batches = [], isError, error, isLoading, refetch } = useQuery({
     queryKey: QUERY_KEY,
@@ -227,9 +234,9 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
         canReadRates ? ratesApi.list().catch(() => ({ items: [] })) : Promise.resolve({ items: [] }),
       ]);
       const weaverLookup = new Map(
-        (weaversRes?.items || []).map(w => [w.id, { name: w.name, initials: w.initials }]),
+        (weaversRes?.items || []).map(w => [w.id, { code: w.code, name: w.name, initials: w.initials }]),
       );
-      const loomLookup = new Map((loomsRes?.items || []).map(l => [l.id, l.loomNumber]));
+      const loomLookup = new Map((loomsRes?.items || []).map(l => [l.id, l.code || l.loomNumber]));
       const sareeTypeNameLookup = new Map((ratesRes?.items || []).map(r => [r.code, r.type]));
       return (batchesRes?.items || []).map(b => backendBatchToRecord(b, weaverLookup, loomLookup, sareeTypeNameLookup));
     },

@@ -96,10 +96,10 @@ export function FullIssueHistoryModal({ open, onClose }: { open: boolean; onClos
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
                   <div>
                     <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, marginBottom: 3 }}>
-                      {entry.weaver?.name ?? (entry.weaverId ? `Weaver ${entry.weaverId}` : "Factory Loom")}
+                      {entry.weaver?.name ?? (entry.weaver?.code ?? (entry.weaverId ? "Weaver" : "Factory Loom"))}
                     </div>
                     <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                      {entry.weaverId && <EntityCode type="weaver" value={entry.weaverId} size="sm" />}
+                      {entry.weaverId && <EntityCode type="weaver" value={entry.weaver?.code ?? entry.weaverId} size="sm" />}
                       <EntityCode type="goodsReceipt" value={entry.id} size="sm" />
                     </div>
                   </div>

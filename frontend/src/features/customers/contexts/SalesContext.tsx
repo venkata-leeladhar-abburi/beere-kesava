@@ -18,7 +18,12 @@ const QUERY_KEY = ["sales", "sarees"] as const;
 export function SalesProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
 
-  const enabled = useAuthGate();
+  // GET /inventory allows WORKER too, but GET /sales and GET
+  // /sales/returns/all (fetched below) are SHOP/ACCOUNTANT-only (ADMIN/
+  // SUPERADMIN bypass every role check) — WORKER/WEAVER would 403 on those.
+  // This provider is shared across every portal, so an unscoped gate fired
+  // all three for them too.
+  const enabled = useAuthGate("shop", "accountant", "admin", "superadmin");
 
   const { data: rawInventory = [], isError: isInventoryError, error: inventoryError, isLoading: isInventoryLoading, refetch: refetchInventory } = useQuery({
     queryKey: ["backend-inventory-list"],
@@ -66,9 +71,12 @@ export function SalesProvider({ children }: { children: React.ReactNode }) {
         origin,
         weaverId: item.weaverId,
         weaverName: item.weaverName,
-        weaverLoom: item.loomNumber ? parseInt(item.loomNumber, 10) : null,
-        factoryLoomId: origin === "factoryLoom" && item.loomNumber ? `FL-${item.loomNumber}` : null,
-        factoryLoomNumber: origin === "factoryLoom" && item.loomNumber ? `Loom F-${item.loomNumber}` : null,
+        // For a weaver saree, loomNumber is the weaver's own loom digit. For a
+        // factory-loom saree it's now the loom's display code ("Loom-002"),
+        // which is already the label — don't parse it or re-prefix it.
+        weaverLoom: origin === "weaver" && item.loomNumber ? (Number.parseInt(item.loomNumber, 10) || null) : null,
+        factoryLoomId: origin === "factoryLoom" && item.loomNumber ? item.loomNumber : null,
+        factoryLoomNumber: origin === "factoryLoom" && item.loomNumber ? item.loomNumber : null,
         operatorName: item.weaverName,
         loomLocation: "Factory Floor",
         purchaseId: isExt ? `EXT-${item.sareeId.slice(0, 6)}` : null,

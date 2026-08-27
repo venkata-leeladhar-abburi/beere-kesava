@@ -1,14 +1,39 @@
 import React from "react";
 import { motion } from "motion/react";
-import { RotateCcw, FileText, ChevronLeft, Check, QrCode, Printer } from "lucide-react";
+import { RotateCcw, ChevronLeft, Check, Printer, PackageCheck } from "lucide-react";
 import { C, F, Card, Btn } from "./theme";
+import { Money } from "@/shared/ui/domain/Money";
+import { rupees } from "@/lib/domain/money";
+
+/**
+ * Both views deliberately report what was actually written — the return refs
+ * the server generated, the real saree ids, the real customer. An earlier
+ * version printed a hardcoded saree id and return ref on every single return,
+ * which meant the confirmation screen was fiction.
+ */
+
+/** One saree that actually came back, with the ref the server generated. */
+export interface RetailReturnResult {
+  sareeId: string;
+  returnRef: string;
+  refundAmount: number;
+}
 
 interface RetailSuccessProps {
+  /** Every piece recorded on this return — one customer, one or many sarees. */
+  results: RetailReturnResult[];
+  customerName: string;
+  reason: string;
+  canSeePrices: boolean;
   resetReturn: () => void;
   onBack: () => void;
 }
 
-export function RetailReturnSuccessView({ resetReturn, onBack }: RetailSuccessProps) {
+export function RetailReturnSuccessView({
+  results, customerName, reason, canSeePrices, resetReturn, onBack,
+}: RetailSuccessProps) {
+  const many = results.length > 1;
+  const refundTotal = results.reduce((sum, r) => sum + r.refundAmount, 0);
   return (
     <div style={{ padding: "44px 20px", textAlign: "center" as const }}>
       <motion.div initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", stiffness: 200 }}>
@@ -16,14 +41,56 @@ export function RetailReturnSuccessView({ resetReturn, onBack }: RetailSuccessPr
           <RotateCcw size={36} color={C.crim} />
         </div>
       </motion.div>
-      <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.text, marginBottom: 8 }}>Return Processed</div>
-      <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, lineHeight: 1.65, marginBottom: 20 }}>
-        PADMA-L1-004 has been returned successfully.<br />Shop inventory updated. Customer profile updated.
+      <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.text, marginBottom: 8 }}>
+        {many ? `${results.length} Returns Recorded` : "Return Recorded"}
       </div>
-      <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(110,15,45,0.08)", color: C.burg, borderRadius: 999, padding: "8px 18px", fontFamily: F.m, fontSize: 12, marginBottom: 14 }}>
-        <FileText size={13} color={C.burg} /> RTN-2026-0041
+      <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, lineHeight: 1.65, marginBottom: 20, maxWidth: "min(460px, 100%)", marginLeft: "auto", marginRight: "auto" }}>
+        {many
+          ? <><strong style={{ color: C.text }}>{results.length} sarees</strong> have been taken back from {customerName}.</>
+          : <><strong style={{ color: C.text }}>{results[0]?.sareeId ?? "—"}</strong> has been taken back from {customerName}.</>}
+        {" "}They are held under <strong style={{ color: C.text }}>Retail returns</strong> in Shop Inventory — send them to
+        inventory from there once they have been checked, and they become available to sell again.
       </div>
-      <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginBottom: 8 }}>Customer: Smt. Meenakshi · PADMA-L1-004</div>
+
+      {/* Every ref the server generated, so the operator can write them on the
+          pieces before they go on the shelf. */}
+      <Card style={{ maxWidth: "min(520px, 100%)", margin: "0 auto 18px", overflow: "hidden", textAlign: "left" as const }}>
+        <div style={{ padding: "10px 16px", borderBottom: `1px solid ${C.bdr}`, background: "rgba(171,56,50,0.03)" }}>
+          <span style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 1.5, color: C.muted, textTransform: "uppercase" as const }}>
+            Return references
+          </span>
+        </div>
+        {results.map((r, i) => (
+          <div
+            key={r.returnRef}
+            style={{
+              display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12,
+              padding: "11px 16px",
+              borderBottom: i < results.length - 1 ? `1px solid ${C.bdr}` : "none",
+            }}
+          >
+            <span style={{ minWidth: 0 }}>
+              <span style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.crim }}>{r.sareeId}</span>
+              <span style={{ display: "block", fontFamily: F.m, fontSize: 11.5, color: C.muted, marginTop: 2 }}>{r.returnRef}</span>
+            </span>
+            {canSeePrices && (
+              <span style={{ fontFamily: F.u, fontSize: 13, color: C.text, fontVariantNumeric: "tabular-nums", flexShrink: 0 }}>
+                <Money value={rupees(r.refundAmount)} />
+              </span>
+            )}
+          </div>
+        ))}
+        {canSeePrices && (
+          <div style={{ padding: "12px 16px", borderTop: `1px solid ${C.bdr}`, background: "rgba(171,56,50,0.03)", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+            <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text }}>Total refund</span>
+            <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 22, color: C.crim }}><Money value={rupees(refundTotal)} /></span>
+          </div>
+        )}
+      </Card>
+
+      <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginBottom: 8 }}>
+        Reason: {reason}
+      </div>
       <div style={{ display: "flex", flexDirection: "column" as const, gap: 10, marginTop: 16 }}>
         <Btn label="Process Another Return" icon={<RotateCcw size={16} />} onClick={resetReturn} style={{ width: "100%", background: C.crim }} />
         <Btn label="Back to Home" icon={<ChevronLeft size={16} />} variant="ghost" onClick={onBack} style={{ width: "100%" }} />
@@ -32,23 +99,26 @@ export function RetailReturnSuccessView({ resetReturn, onBack }: RetailSuccessPr
   );
 }
 
+export interface WholesaleReturnResult {
+  sareeId: string;
+  returnRef: string;
+  sareeTypeLabel: string | null;
+  color: string | null;
+  weight: string;
+}
+
 interface WholesaleSuccessProps {
-  wsNewId: string;
-  wsVendor: string;
-  wsDesign: string;
-  wsColor: string;
-  wsWeight: string;
+  vendorName: string;
+  results: WholesaleReturnResult[];
+  onPrintTags: () => void;
   resetReturn: () => void;
+  onBack: () => void;
 }
 
 export function WholesaleReturnSuccessView({
-  wsNewId,
-  wsVendor,
-  wsDesign,
-  wsColor,
-  wsWeight,
-  resetReturn,
+  vendorName, results, onPrintTags, resetReturn, onBack,
 }: WholesaleSuccessProps) {
+  const many = results.length !== 1;
   return (
     <div>
       <div style={{ padding: "44px 20px 20px", textAlign: "center" as const }}>
@@ -57,43 +127,40 @@ export function WholesaleReturnSuccessView({
             <Check size={38} color={C.green} />
           </div>
         </motion.div>
-        <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.text, marginBottom: 8 }}>Return Processed — Added to Inventory</div>
-        <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(200,155,71,0.12)", color: "#8B6520", borderRadius: 999, padding: "8px 18px", fontFamily: F.m, fontSize: 12, marginBottom: 20 }}>
-          <QrCode size={13} color={C.gold} /> {wsNewId}
+        <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.text, marginBottom: 8 }}>
+          {results.length} saree{many ? "s" : ""} recorded
+        </div>
+        <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, lineHeight: 1.65, maxWidth: "min(460px, 100%)", margin: "0 auto 18px" }}>
+          Returned by <strong style={{ color: C.text }}>{vendorName}</strong>. {many ? "They are" : "It is"} held
+          under <strong style={{ color: C.text }}>Wholesale returns</strong> in Shop Inventory. Print and attach the
+          tags, then send {many ? "them" : "it"} to inventory to make {many ? "them" : "it"} sellable.
         </div>
       </div>
+
       <Card style={{ margin: "0 20px 16px", overflow: "hidden" }}>
         <div style={{ height: 4, background: `linear-gradient(90deg, ${C.gold}, rgba(200,155,71,0.3))` }} />
-        <div style={{ padding: 18 }}>
-          <div style={{ background: "#111", borderRadius: 8, padding: "14px 10px", marginBottom: 16, display: "flex", flexDirection: "column" as const, alignItems: "center", gap: 6 }}>
-            <div style={{ display: "flex", gap: 2, alignItems: "flex-end", height: 40 }}>
-              {[
-                { id: "b0", w: 6, h: 40 }, { id: "b1", w: 2, h: 38 }, { id: "b2", w: 8, h: 34 }, { id: "b3", w: 2, h: 40 },
-                { id: "b4", w: 4, h: 34 }, { id: "b5", w: 6, h: 38 }, { id: "b6", w: 2, h: 40 }, { id: "b7", w: 4, h: 38 },
-                { id: "b8", w: 8, h: 34 }, { id: "b9", w: 2, h: 40 }, { id: "b10", w: 6, h: 34 }, { id: "b11", w: 4, h: 38 },
-                { id: "b12", w: 2, h: 40 }, { id: "b13", w: 8, h: 38 }, { id: "b14", w: 4, h: 34 }, { id: "b15", w: 2, h: 40 },
-                { id: "b16", w: 6, h: 34 }, { id: "b17", w: 2, h: 38 }, { id: "b18", w: 4, h: 40 }, { id: "b19", w: 6, h: 38 },
-              ].map(bar => (
-                <div key={bar.id} style={{ width: bar.w, background: "#FFF", height: bar.h, borderRadius: 1 }} />
-              ))}
-            </div>
-            <div style={{ fontFamily: F.m, fontSize: 12, color: "#AAA", letterSpacing: 2 }}>{wsNewId}</div>
-          </div>
-          <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, textAlign: "center" as const, marginBottom: 14 }}>This saree has been added to shop inventory</div>
-          {[
-            ["Vendor", wsVendor || "—"], ["Design Code", wsDesign || "—"],
-            ["Color", wsColor || "—"], ["Weight", wsWeight ? `${wsWeight}g` : "—"],
-          ].map(([k, v], i) => (
-            <div key={k} style={{ display: "flex", justifyContent: "space-between", marginBottom: 10, paddingBottom: 10, borderBottom: i < 3 ? `1px solid ${C.bdr}` : "none" }}>
-              <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{k}</span>
-              <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, color: C.text }}>{v}</span>
+        <div style={{ padding: 4 }}>
+          {results.map((r, i) => (
+            <div key={r.sareeId} style={{
+              display: "flex", alignItems: "center", gap: 12, padding: "14px 16px",
+              borderBottom: i < results.length - 1 ? `1px solid ${C.bdr}` : "none",
+            }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 13, color: "#845E04" }}>{r.sareeId}</div>
+                <div style={{ fontFamily: F.u, fontSize: 12.5, color: C.muted, marginTop: 3 }}>
+                  {[r.sareeTypeLabel, r.color, r.weight ? `${r.weight} g` : null].filter(Boolean).join(" · ") || "—"}
+                </div>
+              </div>
+              <span style={{ fontFamily: F.m, fontSize: 11.5, color: C.muted, flexShrink: 0 }}>{r.returnRef}</span>
             </div>
           ))}
         </div>
       </Card>
+
       <div style={{ padding: "0 20px", display: "flex", flexDirection: "column" as const, gap: 10 }}>
-        <Btn label="Print Barcode Label" icon={<Printer size={16} />} style={{ width: "100%", background: C.burg }} />
-        <Btn label="Process Another Return" icon={<RotateCcw size={16} />} onClick={resetReturn} style={{ width: "100%", background: C.green }} />
+        <Btn label={`Print ${results.length} Barcode Tag${many ? "s" : ""}`} icon={<Printer size={16} />} onClick={onPrintTags} style={{ width: "100%", background: C.burg }} />
+        <Btn label="Process Another Return" icon={<PackageCheck size={16} />} onClick={resetReturn} style={{ width: "100%", background: C.green }} />
+        <Btn label="Back to Home" icon={<ChevronLeft size={16} />} variant="ghost" onClick={onBack} style={{ width: "100%" }} />
       </div>
     </div>
   );

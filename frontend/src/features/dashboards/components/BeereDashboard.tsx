@@ -200,7 +200,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
   const navigateMobile = navigate;
 
   const dashboardContent = isMobile ? (
-    <div id="main-content" style={{ width: "100%", minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui }}>
+    <div id="main-content" style={{ width: "100%", minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui, display: "flex", flexDirection: "column" }}>
       <MobileMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} activeTab={mobileTab} setTab={navigateMobile} />
       <MobileTopNav onMenuOpen={() => setMenuOpen(true)} onBack={onBack} onLogout={handleLogout} onProfile={() => setShowProfileModal(true)} onNotifications={() => navigateMobile("Notifications")} />
       {PAGE_SECTIONS[mobileTab] && (
@@ -352,7 +352,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
       </ErrorBoundary>
     </div>
   ) : (
-    <div id="main-content" style={{ width: "100%", minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui }}>
+    <div id="main-content" style={{ width: "100%", minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui, display: "flex", flexDirection: "column" }}>
       <TopNav active={nav} set={navigate} onBack={onBack} onLogout={handleLogout} sections={PAGE_SECTIONS[nav]} onProfile={() => setShowProfileModal(true)} />
       <ErrorBoundary variant="inline" resetKeys={[nav]}>
       <Suspense fallback={<TabLoadingFallback />}>

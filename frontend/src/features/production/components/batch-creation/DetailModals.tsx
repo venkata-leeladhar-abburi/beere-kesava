@@ -28,7 +28,7 @@ export function WeaverDetailsModal({ weaver, onClose }: { weaver: WeaverOption; 
                 <span style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown }}>{weaver.name}</span>
                 {activeBatch && <EntityCode type="batch" value={activeBatch.batchId} size="sm" />}
               </div>
-              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, display: "flex", alignItems: "center", gap: 4 }}>ID: <EntityCode type="weaver" value={weaver.id} size="sm" /></div>
+              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, display: "flex", alignItems: "center", gap: 4 }}>ID: <EntityCode type="weaver" value={weaver.code} size="sm" /></div>
             </div>
           </div>
           <span style={{ display: "flex", alignItems: "center", gap: 5, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: isWeaving ? T.green : T.taupe, background: isWeaving ? "rgba(30,102,64,0.10)" : "rgba(139,112,96,0.10)", borderRadius: 999, padding: "4px 10px", whiteSpace: "nowrap" as const }}>
@@ -80,7 +80,7 @@ export function FactoryLoomDetailsModal({ loom, onClose }: { loom: LoomOption; o
             </div>
             <div>
               <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown }}>{loom.loomNumber}</div>
-              <EntityCode type="loom" value={loom.id} size="sm" />
+              <EntityCode type="loom" value={loom.displayCode ?? loom.loomNumber} size="sm" />
             </div>
           </div>
           <span style={{ display: "flex", alignItems: "center", gap: 5, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: statusColor, background: statusBg, borderRadius: 999, padding: "4px 10px", whiteSpace: "nowrap" as const, textTransform: "capitalize" as const }}>

@@ -75,6 +75,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
             // row's identity above, so leave the code badge blank rather than
             // surface a UUID for factory-loom rows.
             wcode: r.weaverId ?? "",
+            weaverCode: r.weaverCode ?? undefined,
             design: [r.designCode, r.sareeTypeName].filter(Boolean).join(" · "),
             weight: 0,
             std: 850,
@@ -180,7 +181,7 @@ export function WorkerQC({ isDesktop, isTablet }: { isDesktop?: boolean; isTable
 
   const weaverGroups = Object.values(
     pending.reduce((acc, s) => {
-      if (!acc[s.weaver]) acc[s.weaver] = { name: s.weaver, code: s.wcode, source: s.source, sarees: [] as SareeItem[] };
+      if (!acc[s.weaver]) acc[s.weaver] = { name: s.weaver, code: s.weaverCode ?? "", source: s.source, sarees: [] as SareeItem[] };
       acc[s.weaver].sarees.push(s);
       return acc;
     }, {} as Record<string, { name: string; code: string; source: string; sarees: SareeItem[] }>)

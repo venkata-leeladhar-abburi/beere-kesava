@@ -46,6 +46,8 @@ export function OwnFactoryReceiveTab({ onSareeReceived }: { onSareeReceived?: (r
     if (!loomsRes?.items) return [];
     return loomsRes.items.map(l => ({
       id: l.id,
+      // Human-facing loom code ("Loom-002"); loomNumber is the legacy label.
+      displayCode: l.code,
       loomNumber: l.loomNumber,
       operatorName: l.operatorName,
       avatar: l.loomNumber.replace(/[^0-9A-Za-z]/g, "").slice(-2).toUpperCase() || "FL",
@@ -133,7 +135,7 @@ export function OwnFactoryReceiveTab({ onSareeReceived }: { onSareeReceived?: (r
   const selectedSarees = currentBatch ? currentBatch.sarees.filter(s => selectedSareeNos.has(s.no)) : [];
   const sareeId = selectedSarees[0]?.sareeId ?? "—";
 
-  const loomLabel = selectedLoom ? `${selectedLoom.loomNumber}${selectedLoom.operatorName ? ` · ${selectedLoom.operatorName}` : ""}` : "—";
+  const loomLabel = selectedLoom ? `${selectedLoom.displayCode || selectedLoom.loomNumber}${selectedLoom.operatorName ? ` · ${selectedLoom.operatorName}` : ""}` : "—";
 
   const resetEntryFields = () => {
     setSareeColor(""); setSareeWeight(""); setHasPhoto(false); setMatEdits({});

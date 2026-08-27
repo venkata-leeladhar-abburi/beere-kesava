@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException } from "@nestjs/common";
+import { BadRequestException, ConflictException, NotFoundException } from "@nestjs/common";
 import { SalesService } from "./sales.service";
 import { RegisterReturnedSareeDto } from "./dto/register-returned-saree.dto";
 
@@ -19,8 +19,7 @@ describe("SalesService.registerReturnedSaree", () => {
 
   beforeEach(() => {
     prisma = {
-      saree: { findUnique: jest.fn().mockResolvedValue(null), create: jest.fn() },
-      designLibrary: { findUnique: jest.fn() },
+      saree: { findUnique: jest.fn().mockResolvedValue(null), findFirst: jest.fn().mockResolvedValue(null), create: jest.fn() },
       sareeTypeRate: { findFirst: jest.fn() },
       returnRecord: { create: jest.fn(), findUnique: jest.fn().mockResolvedValue({ returnRef: "RET-SreeKesava-001" }) },
       inventoryRecord: { create: jest.fn() },
@@ -32,7 +31,7 @@ describe("SalesService.registerReturnedSaree", () => {
     service = new SalesService(prisma, idGenerator, auditLog, whatsapp);
   });
 
-  it("registers the saree, the return and the stock row in a single transaction", async () => {
+  it("registers the saree and its return in a single transaction, held out of stock", async () => {
     await service.registerReturnedSaree(dto());
 
     expect(prisma.$transaction).toHaveBeenCalledTimes(1);
@@ -42,42 +41,64 @@ describe("SalesService.registerReturnedSaree", () => {
         origin: "EXTERNAL",
         weightG: 840,
         sourceName: "Sree Kesava",
-        status: "UNSOLD",
+        // Held for inspection — sellable only once it is sent to inventory.
+        status: "RETURNED",
       }),
     });
     expect(prisma.returnRecord.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({ returnRef: "RET-SreeKesava-001", sareeId: "RTN-WS-014", restocked: true }),
+      data: expect.objectContaining({ returnRef: "RET-SreeKesava-001", sareeId: "RTN-WS-014", restocked: false }),
     });
-    // FINISHING_COMPLETE is what the inventory list treats as sellable stock.
-    expect(prisma.inventoryRecord.create).toHaveBeenCalledWith({
-      data: { sareeId: "RTN-WS-014", status: "FINISHING_COMPLETE", rawType: "RETURN" },
-    });
+    // No stock row yet: sendReturnToInventory writes that, not registration.
+    expect(prisma.inventoryRecord.create).not.toHaveBeenCalled();
   });
 
   it("rejects a tag id that is already in use rather than overwriting the saree", async () => {
-    prisma.saree.findUnique.mockResolvedValue({ id: "RTN-WS-014" });
+    prisma.saree.findFirst.mockResolvedValue({ id: "RTN-WS-014" });
 
     await expect(service.registerReturnedSaree(dto())).rejects.toThrow(ConflictException);
     expect(prisma.$transaction).not.toHaveBeenCalled();
   });
 
-  it("links a design code that exists in the library", async () => {
-    prisma.designLibrary.findUnique.mockResolvedValue({ code: "BKB-045" });
+  it("appends the operator's note to the reason so an \"Other\" return still says why", async () => {
+    await service.registerReturnedSarees({
+      sourceName: "Sree Kesava",
+      items: [{ sareeId: "RTN-WS-020", reason: "Other", reasonNote: "Zari tarnished", weightG: 800 }],
+    });
 
-    await service.registerReturnedSaree(dto({ designCode: "BKB-045" }));
-
-    expect(prisma.saree.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({ designCode: "BKB-045" }),
+    expect(prisma.returnRecord.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ reason: "Other — Zari tarnished" }),
     });
   });
 
-  it("rejects an unknown design code instead of silently dropping it", async () => {
-    prisma.designLibrary.findUnique.mockResolvedValue(null);
-
-    await expect(service.registerReturnedSaree(dto({ designCode: "NOPE-1" }))).rejects.toThrow(
-      BadRequestException,
-    );
+  it("rejects a consignment that uses the same tag id twice", async () => {
+    await expect(
+      service.registerReturnedSarees({
+        sourceName: "Sree Kesava",
+        items: [
+          { sareeId: "RTN-WS-030", reason: "Defective", weightG: 800 },
+          { sareeId: "RTN-WS-030", reason: "Defective", weightG: 820 },
+        ],
+      }),
+    ).rejects.toThrow(BadRequestException);
     expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it("writes every piece of a multi-saree consignment in one transaction", async () => {
+    idGenerator.nextNamed
+      .mockResolvedValueOnce("RET-SreeKesava-001")
+      .mockResolvedValueOnce("RET-SreeKesava-002");
+
+    await service.registerReturnedSarees({
+      sourceName: "Sree Kesava",
+      items: [
+        { sareeId: "RTN-WS-040", reason: "Overstock", weightG: 800 },
+        { sareeId: "RTN-WS-041", reason: "Overstock", weightG: 810 },
+      ],
+    });
+
+    expect(prisma.$transaction).toHaveBeenCalledTimes(1);
+    expect(prisma.saree.create).toHaveBeenCalledTimes(2);
+    expect(prisma.returnRecord.create).toHaveBeenCalledTimes(2);
   });
 
   it("resolves the saree type by its human name to a rate code", async () => {
@@ -102,10 +123,9 @@ describe("SalesService.registerReturnedSaree", () => {
   it("leaves optional master-data links unset when nothing was entered", async () => {
     await service.registerReturnedSaree(dto());
 
-    expect(prisma.designLibrary.findUnique).not.toHaveBeenCalled();
     expect(prisma.sareeTypeRate.findFirst).not.toHaveBeenCalled();
     expect(prisma.saree.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({ designCode: undefined, sareeTypeCode: undefined }),
+      data: expect.objectContaining({ sareeTypeCode: undefined }),
     });
   });
 
@@ -175,5 +195,69 @@ describe("SalesService.createReturn", () => {
       "No sale record found for saree SR-001",
     );
     expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+});
+
+describe("SalesService.sendReturnToInventory", () => {
+  let prisma: any;
+  let auditLog: any;
+  let service: SalesService;
+
+  const held = {
+    returnRef: "RET-SreeKesava-001",
+    sareeId: "RTN-WS-014",
+    restocked: false,
+    saree: { id: "RTN-WS-014", status: "RETURNED" },
+  };
+
+  beforeEach(() => {
+    prisma = {
+      returnRecord: {
+        findUnique: jest.fn().mockResolvedValue(held),
+        update: jest.fn(),
+      },
+      saree: { update: jest.fn() },
+      inventoryRecord: { upsert: jest.fn() },
+      $transaction: jest.fn().mockResolvedValue([]),
+    };
+    auditLog = { recordAction: jest.fn() };
+    service = new SalesService(
+      prisma,
+      { nextNamed: jest.fn() } as any,
+      auditLog,
+      { sendTemplate: jest.fn(), sanitiseParam: jest.fn() } as any,
+    );
+  });
+
+  it("flips the return, the saree and the stock row together", async () => {
+    await service.sendReturnToInventory("RET-SreeKesava-001");
+
+    expect(prisma.$transaction).toHaveBeenCalledTimes(1);
+    expect(prisma.returnRecord.update).toHaveBeenCalledWith({
+      where: { returnRef: "RET-SreeKesava-001" },
+      data: { restocked: true },
+    });
+    expect(prisma.saree.update).toHaveBeenCalledWith({
+      where: { id: "RTN-WS-014" },
+      data: { status: "UNSOLD" },
+    });
+    expect(prisma.inventoryRecord.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { sareeId: "RTN-WS-014" } }),
+    );
+  });
+
+  it("is a no-op on a return that is already in stock, so two staff can press it at once", async () => {
+    prisma.returnRecord.findUnique.mockResolvedValue({ ...held, restocked: true });
+
+    await service.sendReturnToInventory("RET-SreeKesava-001");
+
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+    expect(auditLog.recordAction).not.toHaveBeenCalled();
+  });
+
+  it("rejects an unknown return ref", async () => {
+    prisma.returnRecord.findUnique.mockResolvedValue(null);
+
+    await expect(service.sendReturnToInventory("RET-NOPE-001")).rejects.toThrow(NotFoundException);
   });
 });

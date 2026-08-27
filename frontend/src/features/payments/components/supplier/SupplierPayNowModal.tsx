@@ -3,7 +3,7 @@ import { X } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
 
 import { F, T } from "../../theme";
-import { Supplier } from "@/features/suppliers";
+import { Supplier, Purchase } from "@/features/suppliers";
 import { Button, CurrencyInput, Field, IconButton, Input, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
 import { DatePicker, formatDate } from "../../../../shared/ui/date";
@@ -12,18 +12,21 @@ import { Money } from "@/shared/ui/domain";
 import { toPaise, fromPaise } from "@/lib/gst";
 
 export function SupplierPayNowModal({
-  supplier, outstanding, onClose, onSave, saving,
+  supplier, outstanding, openPurchases, onClose, onSave, saving,
 }: {
   supplier: Supplier;
   outstanding: number;
+  /** This supplier's Pending/Partial purchases — lets the payment settle a specific bill. */
+  openPurchases: Purchase[];
   onClose: () => void;
-  onSave: (payload: { amount: number; date: string; mode: "Cash" | "Bank Transfer" | "UPI" | "Cheque"; reference: string }) => void;
+  onSave: (payload: { amount: number; date: string; mode: "Cash" | "Bank Transfer" | "UPI" | "Cheque"; reference: string; purchaseId?: string }) => void;
   saving: boolean;
 }) {
   const [amount, setAmount] = useState(String(outstanding > 0 ? outstanding : ""));
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [mode, setMode] = useState<"Cash" | "Bank Transfer" | "UPI" | "Cheque">("Bank Transfer");
   const [reference, setReference] = useState("");
+  const [purchaseId, setPurchaseId] = useState<string>("");
 
   const numericAmount = amount === "" || isNaN(Number(amount)) ? NaN : fromPaise(toPaise(Number(amount)));
   const canSave = !!amount && !isNaN(numericAmount) && numericAmount > 0 && !saving;
@@ -62,12 +65,22 @@ export function SupplierPayNowModal({
         <Field label="Reference / UTR (optional)" id="supplier-reference">
           <Input value={reference} onChange={e => setReference(e.target.value)} placeholder="e.g. UTR2026053012345" />
         </Field>
+        {openPurchases.length > 0 && (
+          <Field label="Apply to Purchase (optional)" id="supplier-apply-to-purchase" hint="Leave unset for a general payment not tied to one bill">
+            <Select value={purchaseId || "__none__"} onValueChange={v => setPurchaseId(v === "__none__" ? "" : v)}>
+              <SelectItem value="__none__">General payment (no specific purchase)</SelectItem>
+              {openPurchases.map(p => (
+                <SelectItem key={p.id} value={p.id}>{p.id} — {p.billAmount} ({p.status})</SelectItem>
+              ))}
+            </Select>
+          </Field>
+        )}
       </div>
 
       <div style={{ padding: "18px 28px 24px", display: "flex", gap: 10, justifyContent: "flex-end", borderTop: `1px solid ${T.borderDef}`, flexShrink: 0 }}>
         <Button variant="tertiary" onClick={onClose} className="rounded-full text-[var(--text-tertiary)]">Cancel</Button>
         <Button variant="primary" disabled={!canSave} loading={saving} className="rounded-full bg-[#6E0F2D]"
-          onClick={() => onSave({ amount: numericAmount, date, mode, reference: reference.trim() })}>
+          onClick={() => onSave({ amount: numericAmount, date, mode, reference: reference.trim(), purchaseId: purchaseId || undefined })}>
           Confirm Payment
         </Button>
       </div>

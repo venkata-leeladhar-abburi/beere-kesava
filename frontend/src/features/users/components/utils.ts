@@ -13,6 +13,7 @@ export function formatBackendDate(iso: string): string {
 export type TableRow = {
   empId: string; firstName: string; lastName: string; role: string;
   mobile: string; portal: string; dateAdded: string; status: string;
+  email?: string;
   accessLevel?: AccessLevel;
   finishingMember?: FinishingStaffMember;
   // Present only for rows sourced from the backend (not Finishing Staff) —

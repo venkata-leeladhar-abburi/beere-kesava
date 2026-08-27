@@ -2,6 +2,7 @@ import React from "react";
 import { Package, Layers, Sparkles } from "lucide-react";
 import { IssuedMaterialItem } from "../../contexts/MaterialIssueContext";
 import { F, T } from "./theme";
+import { EntityCode } from "@/shared/ui/domain";
 
 // ── Materials summary formatter (shared by history table + modal) ────────────
 export function summarizeMaterials(items: IssuedMaterialItem[]): string {
@@ -53,8 +54,15 @@ export function renderIssuedMaterials(items: IssuedMaterialItem[]) {
               {desc && <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{desc}</span>}
               <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.royalBurgundy }}>{m.quantity} {m.unit}</span>
             </div>
-            {m.grnItemCode && (
-              <span style={{ fontFamily: F.ui, fontVariantNumeric: "tabular-nums lining-nums" as const, fontSize: 10.5, color: T.taupe }}>{m.grnItemCode}</span>
+            {(m.grnBatchId || m.grnItemCode) && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 3, alignItems: "flex-start", marginTop: 2 }}>
+                {m.grnBatchId && <EntityCode type="goodsReceipt" value={m.grnBatchId} size="sm" />}
+                {m.grnItemCode && m.grnItemCode !== m.grnBatchId && (
+                  <span style={{ fontFamily: F.ui, fontSize: 10.5, fontWeight: 700, color: T.antiqueGold, background: "rgba(200,155,71,0.12)", border: `1px solid ${T.borderGold}`, borderRadius: 4, padding: "1px 6px" }}>
+                    Sub-GRN {m.grnItemCode.slice(m.grnBatchId ? m.grnBatchId.length : 0) || m.grnItemCode}
+                  </span>
+                )}
+              </div>
             )}
           </div>
         );

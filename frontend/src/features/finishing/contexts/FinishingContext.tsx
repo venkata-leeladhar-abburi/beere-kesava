@@ -52,7 +52,10 @@ function backendAssignmentToFrontend(
     assignedBy: a.assignedBy ? `${a.assignedBy.firstName} ${a.assignedBy.lastName}` : "—",
     batchId: a.batchSareeRow.batchId,
     status: a.status === "AWAITING_RETURN" ? "awaiting-return" : "returned",
-    quotationRef: a.quotationRef ?? undefined,
+    // `quotationRef` is the frontend's human-readable quotation number
+    // (matches DispatchRecord/InventoryRecord convention) — never the raw
+    // Quotation.id FK the backend calls `quotationRef` on this model.
+    quotationRef: a.quotation?.quotationNumber ?? undefined,
   };
 }
 
@@ -80,7 +83,7 @@ function assignmentToReturn(
     // Backend doesn't store a separate returned-at timestamp — assignedDate is the closest available.
     receivedDate: a.assignedDate,
     inventoryStatus: a.condition === "DAMAGED" ? "Damaged — Review Needed" : "Ready for Dispatch",
-    quotationRef: a.quotationRef ?? undefined,
+    quotationRef: a.quotation?.quotationNumber ?? undefined,
   };
 }
 

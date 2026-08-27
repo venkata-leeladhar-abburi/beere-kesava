@@ -5,7 +5,8 @@ export interface ScanLookupResult {
   batchId: string;
   recipientType: "WEAVER" | "FACTORY_LOOM";
   weaver: { id: string; name: string } | null;
-  factoryLoom: { id: string; loomNumber: string } | null;
+  /** `code` is the human-facing loom id ("Loom-002"); `loomNumber` is the legacy machine label. */
+  factoryLoom: { id: string; code: string | null; loomNumber: string } | null;
   design: { code: string; name: string | null } | null;
   sareeType: { code: string; type: string } | null;
   qc: { result: string; payable: number; date: string } | null;

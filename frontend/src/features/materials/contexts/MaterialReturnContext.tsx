@@ -161,7 +161,11 @@ export function MaterialReturnProvider({ children }: { children: React.ReactNode
   const { user } = useAuth();
   const actingUserId = user?.id ?? STOPGAP_ACTING_USER_ID;
 
-  const enabled = useAuthGate();
+  // /material-returns is ADMIN/SUPERADMIN-only on the backend — no other
+  // role has a route override there. This provider is shared across every
+  // portal, so an unscoped gate fired this for SHOP/WORKER/WEAVER/ACCOUNTANT
+  // too and they got back nothing but a "your role is not permitted" 403.
+  const enabled = useAuthGate("admin", "superadmin");
 
   const { data: returnRecords = [], isError, error, isLoading, refetch } = useQuery({
     queryKey: RETURN_RECORDS_KEY,
@@ -173,7 +177,7 @@ export function MaterialReturnProvider({ children }: { children: React.ReactNode
         factoryLoomsApi.list().catch(() => ({ items: [] as BackendFactoryLoom[] })),
       ]);
       const weaverLookup = new Map(weaversRes.items.map((w: BackendWeaver) => [w.id, w.name]));
-      const loomLookup = new Map(loomsRes.items.map((l: BackendFactoryLoom) => [l.id, l.loomNumber]));
+      const loomLookup = new Map(loomsRes.items.map((l: BackendFactoryLoom) => [l.id, l.code || l.loomNumber]));
       return returnsRes.items.map(r => backendRecordToFrontend(r, weaverLookup, loomLookup));
     },
   });

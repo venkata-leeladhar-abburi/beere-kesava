@@ -187,7 +187,9 @@ export function SuppliersPage() {
         </>
       )}
       <AnimatePresence>{toast && <Toast msg={toast} />}</AnimatePresence>
-      <MaterialsFooter />
+      <div style={{ marginTop: "auto" }}>
+        <MaterialsFooter />
+      </div>
     </div>
   );
 }

@@ -1,39 +1,24 @@
 import React from "react";
 import { motion } from "motion/react";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import { T, F } from "../theme";
 import { FOOTER_LINKS } from "../materialConfig";
 import { useResponsive } from "../../../../hooks/useResponsive";
 
-const LINK_PATHS: Record<string, string> = {
-  "Dashboard": "/admin",
-  "Analytics": "/admin",
-  "Performance": "/admin",
-  "Production": "/admin/production",
-  "Batches": "/admin/batches",
-  "Designs": "/admin/designs",
-  "Finishing": "/admin/finishing",
-  "Materials": "/admin/materials",
-  "Receive Stock": "/admin/receive-stock",
-  "Issue Material": "/admin/issue-material",
-  "External Purchases": "/admin/external-purchases",
-  "Payments": "/admin/payments",
-  "Firms": "/admin/firms",
-  "Reports": "/admin/reports",
-  "Weavers": "/admin/weavers",
-  "Customers": "/admin/customers",
-  "Vendors": "/admin/vendors",
-  "Suppliers": "/admin/suppliers",
-  "Factory Looms": "/admin/factory-looms",
-  "About Us": "/admin",
-  "Our Story": "/admin",
-  "Website": "/admin"
-};
+// NAV_GROUPS page keys are PascalCase and map 1:1 to kebab-case route slugs
+// (e.g. "ReceiveStock" -> "receive-stock"), matching the routeMap in
+// BeereDashboard.tsx / SuperadminDashboard.tsx.
+function keyToSlug(key: string): string {
+  return key.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+}
 
 export function MaterialsFooter() {
   const { isMobile, px } = useResponsive();
   const navigate = useNavigate();
-  
+  const location = useLocation();
+  const isSuperadmin = location.pathname.startsWith("/superadmin");
+  const basePath = isSuperadmin ? "/superadmin" : "/admin";
+
   return (
     <footer style={{ background: T.darkBurgundy, borderTop: `1px solid rgba(245,232,208,0.1)`, marginTop: "auto", position: "relative", overflow: "hidden", flexShrink: 0 }}>
       {/* Subtle Background Elements */}
@@ -61,27 +46,27 @@ export function MaterialsFooter() {
 
         {/* Links Grid */}
         <div style={{ flex: 1, display: "grid", gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(auto-fit, minmax(160px, 1fr))", gap: isMobile ? 32 : 48 }}>
-          {Object.entries(FOOTER_LINKS).map(([col, links]) => (
-            <div key={col}>
-              <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: 18, color: T.warmCream, marginBottom: 20 }}>{col}</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                {links.map(l => (
-                  <motion.span 
-                    key={l} 
-                    whileHover={{ x: 4, color: T.warmCream }} 
-                    transition={{ duration: 0.2 }} 
-                    onClick={() => {
-                      if (LINK_PATHS[l] && col !== "Company") {
-                        navigate(LINK_PATHS[l]);
-                      }
-                    }}
-                    style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 14, color: "rgba(245,232,208,0.6)", cursor: col !== "Company" ? "pointer" : "default", display: "inline-block" }}>
-                    {l}
-                  </motion.span>
-                ))}
+          {Object.entries(FOOTER_LINKS).map(([col, links]) => {
+            const visibleLinks = links.filter(l => !l.sa || isSuperadmin);
+            if (visibleLinks.length === 0) return null;
+            return (
+              <div key={col}>
+                <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: 18, color: T.warmCream, marginBottom: 20 }}>{col}</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                  {visibleLinks.map(l => (
+                    <motion.span
+                      key={l.key}
+                      whileHover={{ x: 4, color: T.warmCream }}
+                      transition={{ duration: 0.2 }}
+                      onClick={() => navigate(`${basePath}/${keyToSlug(l.key)}`)}
+                      style={{ fontFamily: F.ui, fontWeight: 400, fontSize: 14, color: "rgba(245,232,208,0.6)", cursor: "pointer", display: "inline-block" }}>
+                      {l.label}
+                    </motion.span>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
       </div>

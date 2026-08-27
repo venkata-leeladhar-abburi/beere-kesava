@@ -102,7 +102,12 @@ const QUERY_KEY = ["purchaseOrders"] as const;
 export function POProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const enabled = useAuthGate();
+  // GET /purchase-orders is overridden on the backend to WORKER/ACCOUNTANT
+  // only (ADMIN/SUPERADMIN bypass every role check). This provider is
+  // shared across every portal, so an unscoped gate fired this for
+  // SHOP/WEAVER too and they got back nothing but a "your role is not
+  // permitted" 403.
+  const enabled = useAuthGate("worker", "accountant", "admin", "superadmin");
 
   const { data: pos = [], isError, error, isLoading, refetch } = useQuery({
     queryKey: QUERY_KEY,

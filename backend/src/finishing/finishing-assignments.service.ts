@@ -17,6 +17,7 @@ const include = {
   },
   finishingStaff: true,
   assignedBy: { select: { id: true, firstName: true, lastName: true } },
+  quotation: { select: { quotationNumber: true } },
 } satisfies Prisma.FinishingAssignmentInclude;
 
 @Injectable()

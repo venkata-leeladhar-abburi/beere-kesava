@@ -61,7 +61,7 @@ export function ViewStockDialog({ saree, onClose }: { saree: StockSaree; onClose
               { label: "QC Date",    val: saree.qcDate },
               saree.source === "external"
                 ? { label: "Invoice No.", val: saree.invoiceNumber || "—" }
-                : { label: "Loom No.",    val: `Loom ${saree.loom}` },
+                : { label: "Loom No.",    val: saree.loom },
             ].map(r => (
               <div key={r.label} style={{ background: T.warmCream, borderRadius: 10, padding: "11px 14px" }}>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.8px" }}>{r.label}</div>
@@ -76,9 +76,9 @@ export function ViewStockDialog({ saree, onClose }: { saree: StockSaree; onClose
           <div style={{ background: "rgba(110,15,45,0.05)", border: `1px solid ${T.borderDef}`, borderRadius: 10, padding: "12px 16px", marginBottom: 16 }}>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 6 }}>Source</div>
             <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 600, color: T.luxuryBrown }}>
-              {saree.source === "factory"  ? `Own Factory · Loom ${saree.loom}`
+              {saree.source === "factory"  ? `Own Factory · ${saree.loom}`
              : saree.source === "external" ? `External Purchase · ${saree.supplier} (${saree.supplierLocation}) · ${saree.purchaseId}`
-             :                               `${saree.weaver} (${saree.weaverCode}) · Loom ${saree.loom}`}
+             :                               `${saree.weaver} (${saree.weaverCode}) · ${saree.loom}`}
             </div>
           </div>
           {saree.customer && (

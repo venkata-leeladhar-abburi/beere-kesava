@@ -10,7 +10,6 @@ interface NewSaleBillModalProps {
   phone: string;
   payment: "cash" | "upi" | "card" | "other" | null;
   total: number;
-  canSeePrices: boolean;
   isMobile?: boolean;
   isTablet?: boolean;
   fmtPrice: (n: number) => string;
@@ -23,7 +22,6 @@ export function NewSaleBillModal({
   phone,
   payment,
   total,
-  canSeePrices,
   isMobile,
   isTablet: _isTablet,
   fmtPrice,
@@ -66,9 +64,7 @@ export function NewSaleBillModal({
           <div style={{ borderTop: `1px solid ${C.bdr}`, paddingTop: 12, marginBottom: 12 }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
               <span style={{ fontFamily: F.m, fontSize: 11, letterSpacing: 1.2, color: C.muted, textTransform: "uppercase" as const }}>Item</span>
-              {canSeePrices && (
-                <span style={{ fontFamily: F.m, fontSize: 11, letterSpacing: 1.2, color: C.muted, textTransform: "uppercase" as const }}>Amount</span>
-              )}
+              <span style={{ fontFamily: F.m, fontSize: 11, letterSpacing: 1.2, color: C.muted, textTransform: "uppercase" as const }}>Amount</span>
             </div>
             {lines.map(l => (
               <div key={l.id} style={{ display: "flex", justifyContent: "space-between", gap: 12, marginBottom: 8 }}>
@@ -78,18 +74,14 @@ export function NewSaleBillModal({
                     {" "}· {l.name}{l.design && l.design !== "—" ? ` · ${l.design}` : ""}
                   </span>
                 </span>
-                {canSeePrices && (
-                  <span style={{ fontFamily: F.m, fontSize: 12, color: C.text, fontWeight: 500, flexShrink: 0 }}>{fmtPrice(l.soldPrice)}</span>
-                )}
+                <span style={{ fontFamily: F.m, fontSize: 12, color: C.text, fontWeight: 500, flexShrink: 0 }}>{fmtPrice(l.soldPrice)}</span>
               </div>
             ))}
           </div>
-          {canSeePrices && (
-            <div style={{ borderTop: `1px solid ${C.bdr}`, paddingTop: 12, display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
-              <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text }}>Total Amount ({lines.length} saree{lines.length !== 1 ? "s" : ""}):</span>
-              <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 30, color: C.gold }}>{fmtPrice(total)}</span>
-            </div>
-          )}
+          <div style={{ borderTop: `1px solid ${C.bdr}`, paddingTop: 12, display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
+            <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text }}>Total Amount ({lines.length} saree{lines.length !== 1 ? "s" : ""}):</span>
+            <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 30, color: C.gold }}>{fmtPrice(total)}</span>
+          </div>
           <div style={{ textAlign: "center" as const, marginBottom: 8 }}>
             <Chip label={`Payment: ${payment === "upi" ? "UPI" : payment === "card" ? "Card" : payment === "cash" ? "Cash" : "Other"}`} color={C.burg} bg="rgba(110,15,45,0.08)" />
           </div>

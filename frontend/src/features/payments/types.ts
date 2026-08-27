@@ -1,5 +1,11 @@
 export interface WeaverRecord {
-  id: string; name: string; initials: string; bg: string;
+  id: string;
+  /**
+   * Human-facing weaver code ("Ramarao-001") — the only weaver id ever shown in
+   * the UI. `id` stays the UUID used for joins and API calls.
+   */
+  code: string;
+  name: string; initials: string; bg: string;
   village: string; sb: number; hz: number; ps: number; bs: number; st: number;
   // A genuine PAYMENT_STATUS value ("Paid"→paid, "Pending"→unpaid — lib/domain/status.ts)
   // left untyped here rather than retyped to PaymentStatus: this literal union is

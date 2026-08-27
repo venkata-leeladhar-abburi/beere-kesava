@@ -13,6 +13,7 @@ import { C, F, Card, Btn, Chip, SectionTitle } from './theme';
 import { Button, IconButton, Textarea } from "../../../../shared/ui/primitives";
 import { LoadingState, ErrorState } from "../../../../shared/ui/state";
 import { rupees, formatMoney } from "@/lib/domain/money";
+import { sareeTypeText } from "./stock-format";
 
 function dateLabel(iso: string) {
   const d = new Date(iso);
@@ -92,7 +93,7 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
   const recentSales = salesList.slice(0, 5).map(s => ({
     id: s.sareeId,
     customer: s.customerId ? (customerMap.get(s.customerId) ?? `Customer ${s.customerId.slice(0, 6)}`) : "Retail Counter",
-    design: s.channel === "WHOLESALE" ? "Wholesale Sale" : "Retail Sale",
+    design: sareeTypeText({ sareeTypeCode: s.saree?.sareeTypeCode ?? null, sareeTypeLabel: s.saree?.sareeType?.type ?? null }),
     amt: formatMoney(rupees(Number(s.amount))),
     time: dateLabel(s.saleDate),
     color: "#6E0F2D",

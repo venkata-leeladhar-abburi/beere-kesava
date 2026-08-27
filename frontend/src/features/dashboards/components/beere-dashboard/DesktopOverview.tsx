@@ -10,14 +10,16 @@ import { Hero, MetricsBar, ThreeCol, ActivityStrip, WeaverSection, RawMaterial, 
  */
 export function DesktopOverview({ onNavigate }: { onNavigate: (tab: string) => void }) {
   return (
-    <>
+    <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
       <Hero />
       <MetricsBar />
       <ThreeCol onNavigate={onNavigate} />
       <ActivityStrip onNavigate={onNavigate} />
       <WeaverSection onNavigate={onNavigate} />
       <RawMaterial onNavigate={onNavigate} />
-      <Footer />
-    </>
+      <div style={{ marginTop: "auto" }}>
+        <Footer />
+      </div>
+    </div>
   );
 }

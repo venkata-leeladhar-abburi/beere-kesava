@@ -1,6 +1,6 @@
 import React from "react";
 import { Factory, ChevronDown } from "lucide-react";
-import { FactoryLoom } from "@/features/production";
+import { FactoryLoom, loomLabel } from "@/features/production";
 import { BatchRecord } from "@/features/production";
 import { F, STATUS_CFG, T, WeaverLite } from "./theme";
 import { Button, SearchInput } from "../../../../shared/ui/primitives";
@@ -161,7 +161,7 @@ export function RecipientSelector({
                   </div>
                   <div>
                     <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown }}>{loom.loomNumber}</div>
-                    <EntityCode type="loom" value={loom.id} size="sm" />
+                    <EntityCode type="loom" value={loomLabel(loom)} size="sm" />
                   </div>
                 </div>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{loom.location} · {loom.operatorName}</div>
@@ -178,7 +178,7 @@ export function RecipientSelector({
                 <Factory size={22} color="#FFF" />
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 6 }}>{selectedFactoryLoom.loomNumber} <EntityCode type="loom" value={selectedFactoryLoom.id} size="sm" /></div>
+                <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 6 }}>{selectedFactoryLoom.loomNumber} <EntityCode type="loom" value={loomLabel(selectedFactoryLoom)} size="sm" /></div>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{selectedFactoryLoom.location} · Operator: {selectedFactoryLoom.operatorName}</div>
               </div>
               <Button onClick={() => { setSelectedLoomId(null); setSelectedBatchId(null); }} variant="link" size="sm">Change</Button>

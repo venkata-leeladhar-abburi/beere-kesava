@@ -18,6 +18,7 @@ export interface CreateSupplierPaymentPayload {
   utr?: string;
   method?: string;
   firmId?: string;
+  purchaseId?: string;
 }
 
 export interface BackendSupplierPayment {
@@ -28,6 +29,7 @@ export interface BackendSupplierPayment {
   utr: string | null;
   method: string | null;
   firmId: string | null;
+  purchaseId?: string | null;
 }
 
 interface PaginatedResponse<T> {
@@ -99,6 +101,8 @@ export interface WeaverEarnings {
 export interface WeaverProductionRow {
   sareeId: string;
   weaverId: string;
+  /** Human-facing weaver code ("Ramarao-001") — what the UI displays. */
+  weaverCode: string;
   weaverName: string;
   batchId: string | null;
   loomNumber: string | null;

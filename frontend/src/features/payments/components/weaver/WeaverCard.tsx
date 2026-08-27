@@ -54,7 +54,7 @@ export function WeaverCard({ w, onViewDetails, selected, onToggleSelect }: { w: 
               checked={selected}
               onCheckedChange={() => onToggleSelect()}
             />
-            <EntityCode type="weaver" value={w.id} size="sm" className="break-all whitespace-normal max-w-full" />
+            <EntityCode type="weaver" value={w.code} size="sm" className="break-all whitespace-normal max-w-full" />
           </div>
           <StatusBadge status={w.status} />
         </div>

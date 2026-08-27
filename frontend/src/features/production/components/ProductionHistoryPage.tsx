@@ -406,12 +406,14 @@ function TableSection({ batches, isLoading, isError, onRetry }: { batches: Histo
 export function ProductionHistoryPage() {
   const { batches, isLoading, isError, refetch, totalMakingCharges } = useHistoryBatches();
   return (
-    <div style={{ minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui }}>
+    <div style={{ minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui, display: "flex", flexDirection: "column" }}>
       <PageHeader />
       <FilterBar />
       <StatsBar batches={batches} totalMakingCharges={totalMakingCharges} />
       <TableSection batches={batches} isLoading={isLoading} isError={isError} onRetry={refetch} />
-      <ProductionHistoryFooter />
+      <div style={{ marginTop: "auto" }}>
+        <ProductionHistoryFooter />
+      </div>
     </div>
   );
 }

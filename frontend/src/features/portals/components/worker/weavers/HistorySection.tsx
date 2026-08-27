@@ -68,6 +68,7 @@ export function HistorySection({ liveRecords = NO_LIVE_RECORDS }: { liveRecords?
         id: r.sareeId,
         weaver: r.weaverName ?? r.factoryLoomNumber ?? "Factory Loom",
         wcode: r.weaverId ?? "",
+        weaverCode: row?.weaverCode ?? undefined,
         batch: r.batchId ?? "—",
         weight: row?.receivedWeight ? `${row.receivedWeight}g` : "—",
         color: row?.receivedColor ?? "—",

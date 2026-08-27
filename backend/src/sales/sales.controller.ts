@@ -5,7 +5,9 @@ import { CreateReturnDto } from "./dto/create-return.dto";
 import { CreateSaleDto } from "./dto/create-sale.dto";
 import { ListReturnQueryDto } from "./dto/list-return-query.dto";
 import { ListSaleQueryDto } from "./dto/list-sale-query.dto";
+import { RegisterDispatchedReturnsDto } from "./dto/register-dispatched-returns.dto";
 import { RegisterReturnedSareeDto } from "./dto/register-returned-saree.dto";
+import { RegisterReturnedSareesDto } from "./dto/register-returned-sarees.dto";
 import { SalesService } from "./sales.service";
 
 // Retail/customer-facing module — SHOP, ACCOUNTANT, ADMIN, SUPERADMIN access.
@@ -40,6 +42,36 @@ export class SalesController {
   @Post("returns/untracked")
   registerReturnedSaree(@Body() dto: RegisterReturnedSareeDto) {
     return this.salesService.registerReturnedSaree(dto);
+  }
+
+  // A whole wholesale consignment in one write — the shop registers every
+  // piece a vendor sent back together, and they succeed or fail together.
+  @Post("returns/untracked/bulk")
+  registerReturnedSarees(@Body() dto: RegisterReturnedSareesDto) {
+    return this.salesService.registerReturnedSarees(dto);
+  }
+
+  // A wholesale buyer sending back pieces off a consignment we dispatched to
+  // them. Declared before the ":returnRef" routes for the same reason
+  // "untracked" is.
+  @Post("returns/dispatched")
+  registerDispatchedReturns(@Body() dto: RegisterDispatchedReturnsDto) {
+    return this.salesService.registerDispatchedReturns(dto);
+  }
+
+  /** Every returned saree, categorised, for the shop's Inventory screen. */
+  @Get("returns/stock")
+  listReturnStock() {
+    return this.salesService.listReturnStock();
+  }
+
+  /** Makes one held return sellable and puts it into shop stock. */
+  @Post("returns/:returnRef/restock")
+  sendReturnToInventory(
+    @Param("returnRef") returnRef: string,
+    @Body() body: { actorId?: string },
+  ) {
+    return this.salesService.sendReturnToInventory(returnRef, body?.actorId);
   }
 
   @Get("returns/all")

@@ -57,8 +57,10 @@ function toStockSaree(item: BackendStockItem, index: number): StockSaree {
     id: item.sareeId,
     source: item.source,
     weaver: item.weaverName,
-    weaverCode: item.weaverId,
-    loom: item.loomNumber ? parseInt(item.loomNumber.replace(/\D/g, ""), 10) || 0 : 0,
+    weaverCode: item.weaverCode ?? "—",
+    // Already a label from the backend: the factory loom's code ("Loom-002")
+    // or, for an outsourced saree, the weaver's own loom digit.
+    loom: item.loomNumber ? (/^\d+$/.test(item.loomNumber) ? `Loom ${item.loomNumber}` : item.loomNumber) : "—",
     weight: "—",                          // not in DB yet
     qcDate: formatQcDate(item.qcDate),
     design: item.designCode ?? "—",

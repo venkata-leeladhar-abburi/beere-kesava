@@ -177,7 +177,12 @@ export function QcProvider({ children }: { children: React.ReactNode }) {
   const canReadFactoryLooms = role === "worker" || role === "admin" || role === "superadmin";
   const { getSareeTypeByCode } = useRatesPricing();
 
-  const enabled = useAuthGate();
+  // GET /qc and GET /batches (also fetched below) are both WORKER/WEAVER-
+  // only on the backend (ADMIN/SUPERADMIN bypass every role check). This
+  // provider is shared across every portal, so an unscoped gate fired this
+  // for SHOP/ACCOUNTANT too and they got back nothing but a "your role is
+  // not permitted" 403.
+  const enabled = useAuthGate("worker", "weaver", "admin", "superadmin");
 
   const { data: qcRecords = [], isError, error, isLoading, refetch } = useQuery({
     queryKey: QUERY_KEY,
@@ -192,7 +197,7 @@ export function QcProvider({ children }: { children: React.ReactNode }) {
         batchesApi.list().catch(() => ({ items: [] as BackendBatch[] })),
       ]);
       const weaverLookup = new Map(weaversRes.items.map(w => [w.id, w.name]));
-      const loomLookup = new Map(loomsRes.items.map(l => [l.id, l.loomNumber]));
+      const loomLookup = new Map(loomsRes.items.map(l => [l.id, l.code || l.loomNumber]));
       const rowLookup = new Map(
         batchesRes.items.flatMap(b => b.rows.filter(r => r.sareeId).map(r => [r.sareeId as string, r] as const)),
       );

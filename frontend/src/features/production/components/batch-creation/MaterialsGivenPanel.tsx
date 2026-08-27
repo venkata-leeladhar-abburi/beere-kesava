@@ -81,7 +81,7 @@ function GroupCard({
             <Pip initials={weaverForRow?.initials ?? row.weaverInitials ?? "?"} bg={pipColor(row.weaverId)} size={30} />
             <div style={{ display: "flex", flexDirection: "column", gap: 1, minWidth: 0 }}>
               <span style={{ fontFamily: F.ui, fontSize: 13.5, fontWeight: 700, color: T.luxuryBrown }}>
-                {weaverForRow?.name ?? row.weaverName ?? row.weaverId}
+                {weaverForRow?.name ?? row.weaverName ?? row.weaverCode}
               </span>
               <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>
                 {records[0]?.weaverCode ? `${records[0].weaverCode} · ` : ""}Weaver

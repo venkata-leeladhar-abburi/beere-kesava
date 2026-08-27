@@ -7,7 +7,7 @@ import {
   Factory, CheckCircle2, AlertTriangle, Settings2
 } from "lucide-react";
 import factoryLoomsHero from "../../../assets/inline/factoryLoomsHero.jpg";
-import { FactoryLoom } from "../data/factoryLooms";
+import { FactoryLoom, loomLabel } from "../data/factoryLooms";
 import { T, F } from "./factory-loom/theme";
 import { LoomBatch, LoomMaterial, LoomSaree, LOOM_STATUS_TO_CONDITION } from "./factory-loom/types";
 import { StatusPill } from "../../../shared/ui/domain";
@@ -30,6 +30,10 @@ import { MaterialsFooter } from "@/features/materials";
 function backendLoomToFrontend(l: BackendFactoryLoom): FactoryLoom {
   return {
     id: l.id,
+    // The backend-generated display code ("Loom-002") — what loomLabel() and
+    // every loom badge in the UI show. Dropping it here made the detail page
+    // silently fall back to the raw loomNumber/UUID.
+    displayCode: l.code ?? undefined,
     loomNumber: l.loomNumber,
     location: l.location ?? "",
     operatorName: l.operatorName ?? "",
@@ -149,7 +153,7 @@ export function FactoryLoomPage() {
   useEffect(() => { void loadLooms(); }, [loadLooms]);
 
   const filtered = looms.filter(l => {
-    const ms = !search || l.loomNumber.toLowerCase().includes(search.toLowerCase()) || l.operatorName.toLowerCase().includes(search.toLowerCase()) || l.id.toLowerCase().includes(search.toLowerCase());
+    const ms = !search || loomLabel(l).toLowerCase().includes(search.toLowerCase()) || l.loomNumber.toLowerCase().includes(search.toLowerCase()) || l.operatorName.toLowerCase().includes(search.toLowerCase()) || l.id.toLowerCase().includes(search.toLowerCase());
     return ms && (sf === "all" || l.status === sf);
   });
 
@@ -354,8 +358,8 @@ export function FactoryLoomPage() {
                       responsive={false}
                       columns={[
                         {
-                          id: "loomNumber", header: "Loom #", accessor: l => l.loomNumber, priority: 1,
-                          cell: (_v, l) => <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{l.loomNumber}</span>,
+                          id: "loomNumber", header: "Loom #", accessor: l => loomLabel(l), priority: 1,
+                          cell: (_v, l) => <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{loomLabel(l)}</span>,
                         },
                         {
                           id: "operator", header: "Operator", accessor: l => l.operatorName,
@@ -374,7 +378,7 @@ export function FactoryLoomPage() {
                           cell: (_v, l) => (
                             <>
                               <Button onClick={() => setSelected(l)} variant="link" size="sm" className="mr-3">View Details</Button>
-                              <IconButton onClick={() => { setEditLoom(l); setShowModal(true); }} icon={Edit2} label={`Edit loom ${l.loomNumber}`} variant="ghost" size="sm" />
+                              <IconButton onClick={() => { setEditLoom(l); setShowModal(true); }} icon={Edit2} label={`Edit loom ${loomLabel(l)}`} variant="ghost" size="sm" />
                             </>
                           ),
                         },
@@ -398,7 +402,9 @@ export function FactoryLoomPage() {
         onAdd={handleAddOrEdit}
         editLoom={editLoom}
       />
-      <MaterialsFooter />
+      <div style={{ marginTop: "auto" }}>
+        <MaterialsFooter />
+      </div>
     </div>
   );
 }

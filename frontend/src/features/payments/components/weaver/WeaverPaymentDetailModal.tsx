@@ -78,7 +78,7 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
             <Dialog.Title asChild>
               <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#FFFDF9" }}>{weaver.name}</div>
             </Dialog.Title>
-            <Dialog.Description asChild><div style={{ marginTop: 2 }}><EntityCode type="weaver" value={weaver.id} size="sm" /></div></Dialog.Description>
+            <Dialog.Description asChild><div style={{ marginTop: 2 }}><EntityCode type="weaver" value={weaver.code} size="sm" /></div></Dialog.Description>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.70)", marginTop: 2 }}>📍 {weaver.village}</div>
           </div>
           <StatusBadge status={weaver.status} />

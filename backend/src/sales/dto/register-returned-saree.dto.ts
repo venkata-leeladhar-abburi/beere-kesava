@@ -14,10 +14,15 @@ export class RegisterReturnedSareeDto {
   @IsUUID()
   actorId?: string;
 
-  /** The tag id being attached to the piece — becomes Saree.id. */
+  /**
+   * The tag id being attached to the piece — becomes Saree.id. Omit when the
+   * piece has no physical tag (not in our records); the server generates one
+   * from `sareeType`, which is then required.
+   */
+  @IsOptional()
   @IsString()
   @Length(1, 100)
-  sareeId!: string;
+  sareeId?: string;
 
   /** Who the piece came back from. */
   @IsString()
@@ -39,12 +44,7 @@ export class RegisterReturnedSareeDto {
   @Min(0)
   costPrice?: number;
 
-  /** Must match an existing DesignLibrary code when supplied. */
-  @IsOptional()
-  @IsString()
-  designCode?: string;
-
-  /** Matched against SareeTypeRate.type (the human name) when supplied. */
+  /** Matched against SareeTypeRate.code, else its human name. */
   @IsOptional()
   @IsString()
   sareeType?: string;

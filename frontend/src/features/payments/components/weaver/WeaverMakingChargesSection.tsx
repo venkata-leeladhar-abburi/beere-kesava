@@ -47,6 +47,7 @@ function toWeaverRecord(
 ): WeaverRecord {
   return {
     id: w.id,
+    code: w.code,
     name: w.name,
     initials: w.initials,
     bg: AVATAR_PALETTE[index % AVATAR_PALETTE.length],
@@ -186,7 +187,7 @@ export function WeaverMakingChargesSection() {
           <div>
             <div className="font-bold text-[14px] text-[#3B2314] whitespace-nowrap">{w.name}</div>
             <div className="flex items-center gap-2 mt-1 whitespace-nowrap">
-              <EntityCode type="weaver" value={w.id} size="sm" className="whitespace-nowrap" />
+              <EntityCode type="weaver" value={w.code} size="sm" className="whitespace-nowrap" />
               <span className="text-[12px] text-[var(--text-tertiary)] shrink-0">📍 {w.village}</span>
             </div>
           </div>
@@ -282,7 +283,8 @@ export function WeaverMakingChargesSection() {
       const activeBatchesString = activeBatches.map(b => b.batchId).join(", ") || "None";
 
       return {
-        weaverId: w.id,
+        // Readable weaver code, not the UUID — the importer resolves either.
+        weaverId: w.code,
         name: w.name,
         batchNo: activeBatchesString,
         loomNumber,
@@ -343,7 +345,7 @@ export function WeaverMakingChargesSection() {
       const activeRow = activeBatches[0]?.rows.find(r => r.weaverId === w.id);
 
       return {
-        weaverId: w.id,
+        weaverId: w.code,
         weaverName: w.name,
         batches: w.uploadedBatchNo || activeBatches.map(b => b.batchId).join(", ") || "—",
         loomNumber: w.uploadedLoomNumber || activeRow?.weaverLoom?.toString() || "—",

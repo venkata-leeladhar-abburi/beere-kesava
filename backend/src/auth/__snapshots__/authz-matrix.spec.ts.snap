@@ -1470,6 +1470,50 @@ exports[`authz matrix / route inventory matches the committed authorization snap
       "SHOP",
       "SUPERADMIN",
     ],
+    "route": "POST /sales/returns/untracked/bulk",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SHOP",
+      "SUPERADMIN",
+    ],
+    "route": "POST /sales/returns/dispatched",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SHOP",
+      "SUPERADMIN",
+    ],
+    "route": "GET /sales/returns/stock",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SHOP",
+      "SUPERADMIN",
+    ],
+    "route": "POST /sales/returns/:returnRef/restock",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SHOP",
+      "SUPERADMIN",
+    ],
     "route": "GET /sales/returns/all",
   },
   {

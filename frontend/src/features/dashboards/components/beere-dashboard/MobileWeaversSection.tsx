@@ -69,7 +69,7 @@ export function MobileWeavers({ onNavigate }: { onNavigate: (tab: string, ctx?: 
 
               {/* Floating ID badge in top left */}
               <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(26,10,15,0.65)", backdropFilter: "blur(6px)", color: "#FFFDF9", fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, letterSpacing: "0.5px", padding: "4px 10px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.15)" }}>
-                {w.id.slice(0, 8).toUpperCase()}
+                {w.code}
               </div>
 
               {/* Floating status pill */}

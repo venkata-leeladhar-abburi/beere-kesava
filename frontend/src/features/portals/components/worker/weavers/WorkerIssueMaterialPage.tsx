@@ -19,7 +19,9 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
     if (!weaversRes?.items) return [];
     return weaversRes.items.map(w => ({
       name: w.name,
-      code: w.id,
+      // `id` is the UUID; `code` is the human-facing weaver id ("Ramarao-001").
+      id: w.id,
+      code: w.code,
       looms: w.looms,
       avatar: w.initials || `${w.firstName.charAt(0)}${w.lastName.charAt(0)}`,
     }));
@@ -116,7 +118,7 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
                     <div style={{ padding: "12px 16px", fontFamily: F.u, fontSize: 13, color: C.muted, textAlign: "center" }}>Loading weavers…</div>
                   )}
                   {!weaversLoading && WEAVERS.filter(w => w.name.toLowerCase().includes(weaverSearch.toLowerCase())).map(w => (
-                    <Button key={w.code} variant="tertiary" fullWidth
+                    <Button key={w.id} variant="tertiary" fullWidth
                       onClick={() => { setSelectedWeaver(w); setWeaverSearch(w.name); setShowWeaverList(false); }}
                       className="justify-start gap-2.5 rounded-none border-0 border-b px-3.5 py-2.5 border-[rgba(110,15,45,0.12)]">
                       <div style={{ width: 34, height: 34, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>

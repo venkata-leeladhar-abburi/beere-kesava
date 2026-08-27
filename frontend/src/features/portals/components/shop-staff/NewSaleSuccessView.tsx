@@ -9,7 +9,6 @@ interface NewSaleSuccessViewProps {
   custName: string;
   payment: "cash" | "upi" | "card" | "other" | null;
   total: number;
-  canSeePrices: boolean;
   fmtPrice: (n: number) => string;
   onShowBill: () => void;
   onResetSale: () => void;
@@ -20,7 +19,6 @@ export function NewSaleSuccessView({
   custName,
   payment,
   total,
-  canSeePrices,
   fmtPrice,
   onShowBill,
   onResetSale,
@@ -50,9 +48,7 @@ export function NewSaleSuccessView({
                   {l.id}
                   <span style={{ fontFamily: F.u, color: C.muted }}> · {l.name}</span>
                 </span>
-                {canSeePrices && (
-                  <span style={{ fontFamily: F.u, fontSize: 13, color: C.text, flexShrink: 0 }}>{fmtPrice(l.soldPrice)}</span>
-                )}
+                <span style={{ fontFamily: F.u, fontSize: 13, color: C.text, flexShrink: 0 }}>{fmtPrice(l.soldPrice)}</span>
               </div>
             ))}
             {[
@@ -65,12 +61,10 @@ export function NewSaleSuccessView({
                 <span style={{ fontFamily: mono ? F.m : F.u, fontSize: 13, color: C.text }}>{v as string}</span>
               </div>
             ))}
-            {canSeePrices && (
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", borderTop: `1px solid ${C.bdr}`, paddingTop: 10, marginTop: 4 }}>
-                <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text }}>Total ({lines.length} saree{lines.length !== 1 ? "s" : ""})</span>
-                <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.gold }}>{fmtPrice(total)}</span>
-              </div>
-            )}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", borderTop: `1px solid ${C.bdr}`, paddingTop: 10, marginTop: 4 }}>
+              <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 14, color: C.text }}>Total ({lines.length} saree{lines.length !== 1 ? "s" : ""})</span>
+              <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.gold }}>{fmtPrice(total)}</span>
+            </div>
           </div>
         </div>
       </Card>

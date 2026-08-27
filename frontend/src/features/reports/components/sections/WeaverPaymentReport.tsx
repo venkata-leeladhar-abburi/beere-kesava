@@ -114,7 +114,7 @@ export function WeaverPaymentReport() {
       const latest = list[list.length - 1];
       const totalSarees = list.reduce((s, p) => s + (p.noOfSarees ?? 0), 0);
       return {
-        code: w.id,
+        code: w.code,
         name: w.name,
         village: w.village ?? "—",
         totalSarees,

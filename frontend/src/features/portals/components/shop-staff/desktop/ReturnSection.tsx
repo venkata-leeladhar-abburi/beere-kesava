@@ -47,10 +47,10 @@ export function ReturnSection({
         breadcrumb="SINCE 1999 · SHOP STAFF PORTAL · PROCESS RETURN"
         titleMain="Process Return"
         titleSub="& Handle Customer Returns"
-        description="Find the original sale by scanning the barcode, select the return reason, and confirm. Inventory is updated automatically."
+        description="Find the original sale by scanning the barcode, select the return reason, and confirm. Returned sarees are held in Shop Inventory until you send them back on sale."
         pills={[
           { text: "3-Step Process" },
-          { text: "Auto Inventory Update" },
+          { text: "Checked Before Restocking" },
           { text: `${todayReturns.length} Return${todayReturns.length === 1 ? "" : "s"} Today Already` },
         ]}
         alertBadge="Handle with care"
@@ -68,7 +68,7 @@ export function ReturnSection({
               {[
                 { n: "1", title: "Find Original Sale", desc: "Scan the saree barcode or enter the Saree ID to find the original sale record" },
                 { n: "2", title: "Select Reason", desc: "Choose why the customer is returning — defective, wrong design, changed mind, etc." },
-                { n: "3", title: "Confirm Return", desc: "Review and confirm. Inventory +1, customer profile updated, admin notified" },
+                { n: "3", title: "Confirm Return", desc: "Review and confirm. The saree is held under Returns in Shop Inventory until you send it back into sellable stock" },
               ].map((s, i) => (
                 <div key={s.n} style={{ display: "flex", gap: 14, marginBottom: i < 2 ? 20 : 0, paddingBottom: i < 2 ? 20 : 0, borderBottom: i < 2 ? "1px solid rgba(255,255,255,0.08)" : "none" }}>
                   <div style={{ width: 34, height: 34, borderRadius: "50%", background: C.crim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>

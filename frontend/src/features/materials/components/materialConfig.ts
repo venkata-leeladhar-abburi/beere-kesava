@@ -2,6 +2,7 @@ import React from "react";
 import { AlertTriangle, CheckCircle2, Archive } from "lucide-react";
 import { imgWarp, imgResham, imgJari } from "../../../shared/constants/imageData";
 import { T } from "./theme";
+import { NAV_GROUPS } from "../../dashboards/components/superadmin-dashboard/data";
 import type {
   StatusType, WeaverStatus, StatusCfgEntry, TagStyle, WeaverStatusCfgEntry,
 } from "./types";
@@ -51,11 +52,10 @@ export const MAT_CARDS_TEMPLATE = [
   { name: "Jari",   desc: "Metallic Thread for borders and designs · Polyester and Silk Fast types", barColor: T.crimson, stockColor: T.crimson, img: imgJari, stock: "0 Buns" },
 ];
 
-export const FOOTER_LINKS = {
-  "Overview": ["Dashboard", "Analytics", "Performance"],
-  "Production": ["Production", "Batches", "Designs", "Finishing"],
-  "Materials": ["Materials", "Receive Stock", "Issue Material", "External Purchases"],
-  "Finance": ["Payments", "Firms", "Reports"],
-  "People": ["Weavers", "Customers", "Vendors"],
-  "Company": ["About Us", "Our Story", "Website"],
-};
+// Mirrors the superadmin top navbar's NAV_GROUPS exactly, so the footer
+// never drifts out of sync when pages are added/removed from Operations
+// (or any other group) — see superadmin-dashboard/data.tsx.
+export type FooterLink = { key: string; label: string; sa?: boolean };
+export const FOOTER_LINKS: Record<string, FooterLink[]> = Object.fromEntries(
+  NAV_GROUPS.map(g => [g.label, g.pages.map(p => ({ key: p.key, label: p.label, sa: p.sa }))])
+);

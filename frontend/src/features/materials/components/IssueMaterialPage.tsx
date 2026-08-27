@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Check, Plus, X, CheckCircle2, Send, Scissors } from "lucide-react";
 import { Button, IconButton } from "../../../shared/ui/primitives";
 import { useMaterialIssue, MaterialIssueRecord } from "../contexts/MaterialIssueContext";
-import { FactoryLoom } from "@/features/production";
+import { FactoryLoom, loomLabel } from "@/features/production";
 import { useBatches } from "@/features/production";
 import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
 import { weaversApi } from "../../../shared/api/weavers";
@@ -223,7 +223,7 @@ export function IssueMaterialPage() {
       const record = await addIssueRecord({
         ...(recipientType === "weaver"
           ? { weaverId: selectedWeaver!.id, weaverName: selectedWeaver!.name, loomNumber: selectedLoom || undefined }
-          : { factoryLoomId: selectedFactoryLoom!.id, factoryLoomNumber: selectedFactoryLoom!.loomNumber }),
+          : { factoryLoomId: selectedFactoryLoom!.id, factoryLoomNumber: loomLabel(selectedFactoryLoom!) }),
         batchId: selectedBatchId || undefined,
         warpRequestId: warpRequestId || undefined,
         materials,

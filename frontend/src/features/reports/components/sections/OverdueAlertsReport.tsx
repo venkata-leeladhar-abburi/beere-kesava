@@ -99,7 +99,7 @@ export function OverdueAlertsReport() {
             const days = daysBetween(now, new Date(b.dueDate));
             lateList.push({
               name,
-              code: r.weaverId,
+              code: weaver?.code ?? r.weaverId,
               batch: b.id,
               expected: new Date(b.dueDate).toLocaleDateString("en-IN"),
               days,

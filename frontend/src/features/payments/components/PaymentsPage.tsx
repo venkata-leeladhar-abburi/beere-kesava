@@ -16,7 +16,7 @@ export function PaymentsPage() {
     <div style={{ fontFamily: F.ui, minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
       <PaymentsHeader />
       <StatsStrip />
-      <div style={{ background: T.silkCream, paddingBottom: 48 }}>
+      <div style={{ background: T.silkCream, paddingBottom: 48, flex: 1 }}>
         <FinancialSummarySection />
         <WeaverMakingChargesSection />
         <WholesaleCollectionsSection />

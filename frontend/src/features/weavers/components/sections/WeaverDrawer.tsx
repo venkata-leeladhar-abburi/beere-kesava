@@ -247,7 +247,7 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
                     {weaver.name}
                   </h1>
                   <div className="mt-2 flex items-center gap-2 max-w-full">
-                    <EntityCode type="weaver" value={weaver.id} size="md" className="break-all !whitespace-normal max-w-full" />
+                    <EntityCode type="weaver" value={weaver.code ?? weaver.id} size="md" className="break-all !whitespace-normal max-w-full" />
                   </div>
                 </div>
               </div>

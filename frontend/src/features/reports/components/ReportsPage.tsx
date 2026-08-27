@@ -44,7 +44,7 @@ export function ReportsPage() {
   };
 
   return (
-    <div style={{ fontFamily: F.ui, background: T.silkCream, minHeight: "100dvh" }}>
+    <div style={{ fontFamily: F.ui, background: T.silkCream, minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
       <ReportsHeader />
       <div style={{ paddingBottom: 36, background: T.silkCream }}>
         <ReportsStatsStrip />
@@ -55,7 +55,7 @@ export function ReportsPage() {
         activePeriod={activePeriod} setActivePeriod={setActivePeriod}
         compareOn={compareOn} setCompareOn={setCompareOn}
       />
-      <div style={{ background: T.silkCream }}>
+      <div style={{ background: T.silkCream, flex: 1 }}>
         {TAB_CONTENT[activeTab]}
         <ScheduledReportsSection />
         <DownloadHistorySection />

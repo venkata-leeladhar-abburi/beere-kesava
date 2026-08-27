@@ -70,6 +70,7 @@ export interface BackendFinishingAssignment {
   damageNotes: string | null;
   damagePhotoUrl: string | null;
   quotationRef: string | null;
+  quotation: { quotationNumber: string } | null;
   batchSareeRow: {
     batchId: string;
     designCode: string | null;

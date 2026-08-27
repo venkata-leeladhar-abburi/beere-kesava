@@ -117,6 +117,7 @@ export function ProductionAnalyticsSection() {
   // BulkOrderCard and order detail page do, so this chart can't disagree.
   const ORDER_PROGRESS = useMemo(
     () => bulkOrders.map(o => ({
+      ref: o.ref,
       name: o.customer,
       done: computeBulkOrderProducedSareeIds(o.ref, bulkOrders, readySarees, returns, quotations).size,
       total: o.total,
@@ -325,7 +326,7 @@ export function ProductionAnalyticsSection() {
                 const pct = Math.round((o.done / o.total) * 100);
                 const color = pct > 80 ? T.green : pct >= 50 ? "#C4923A" : T.crimson;
                 return (
-                  <div key={o.name}>
+                  <div key={o.ref}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                       <span style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, fontWeight: 700 }}>{o.name}</span>
                       <div style={{ display: "flex", gap: 10, alignItems: "center" }}>

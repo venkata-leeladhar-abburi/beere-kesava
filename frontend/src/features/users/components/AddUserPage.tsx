@@ -16,6 +16,8 @@ import {
 import { formatBackendDate, TableRow } from "./utils";
 import { ViewProfileModal } from "./ViewProfileModal";
 import { EditModal } from "./EditModal";
+import { ViewUserModal } from "./ViewUserModal";
+import { EditUserModal, UserEditFields } from "./EditUserModal";
 import { ConfirmDialog } from "../../../shared/ui/ConfirmDialog";
 import { UserTable } from "./UserTable";
 import { AddUserForm, WeaverFieldsState } from "./AddUserForm";
@@ -37,6 +39,7 @@ function weaverToTableRow(w: BackendWeaver): TableRow {
     lastName: w.lastName,
     role: "Weaver",
     mobile: w.phone,
+    email: w.email || undefined,
     portal: ROLE_TO_PORTAL["Weaver"] ?? "",
     dateAdded: formatBackendDate(w.createdAt),
     status: w.status === "ACTIVE" ? "Active" : "Inactive",
@@ -52,6 +55,7 @@ function backendUserToTableRow(u: BackendUser): TableRow {
     lastName: u.lastName,
     role: frontendRole,
     mobile: u.mobile,
+    email: u.email || undefined,
     portal: ROLE_TO_PORTAL[frontendRole] ?? "",
     dateAdded: formatBackendDate(u.dateAdded),
     status: u.status === "ACTIVE" ? "Active" : "Inactive",
@@ -130,6 +134,12 @@ export function AddUserPage() {
   // ── Modal state ─────────────────────────────────────────────────────────
   const [viewingMember,  setViewingMember]  = useState<FinishingStaffMember | null>(null);
   const [editingMember,  setEditingMember]  = useState<FinishingStaffMember | null>(null);
+  // Generic view/edit for every non-Finishing-Staff row (Admin, Accountant,
+  // Shop Staff, Worker Staff, Weaver) — those have no FinishingStaffMember.
+  const [viewingRow,     setViewingRow]     = useState<TableRow | null>(null);
+  const [editingRow,     setEditingRow]     = useState<TableRow | null>(null);
+  const [rowSaveError,   setRowSaveError]   = useState<string | null>(null);
+  const [rowSaving,      setRowSaving]      = useState(false);
 
   const portal = role ? ROLE_TO_PORTAL[role] ?? "" : "";
   const isFinishing = role === "Finishing Staff";
@@ -252,6 +262,35 @@ export function AddUserPage() {
     } catch {
       // Non-fatal — the row simply won't reflect the change; a toast/error
       // banner here would be the next improvement once a notification system exists.
+    }
+  }
+
+  async function handleSaveRow(row: TableRow, updates: UserEditFields) {
+    setRowSaving(true);
+    setRowSaveError(null);
+    try {
+      if (row.weaverOnlyId) {
+        const updated = await weaversApi.update(row.weaverOnlyId, {
+          firstName: updates.firstName,
+          lastName: updates.lastName,
+          phone: updates.mobile,
+          email: updates.email || undefined,
+        });
+        setWeaverOnlyRows(prev => prev.map(w => (w.weaverOnlyId === updated.id ? weaverToTableRow(updated) : w)));
+      } else if (row.backendId) {
+        const updated = await usersApi.update(row.backendId, {
+          firstName: updates.firstName,
+          lastName: updates.lastName,
+          mobile: updates.mobile,
+          email: updates.email || undefined,
+        });
+        setBackendUsers(prev => prev.map(u => (u.backendId === updated.id ? backendUserToTableRow(updated) : u)));
+      }
+      setEditingRow(null);
+    } catch (err) {
+      setRowSaveError(err instanceof ApiError ? err.message : "Could not save changes. Please try again.");
+    } finally {
+      setRowSaving(false);
     }
   }
 
@@ -517,6 +556,8 @@ export function AddUserPage() {
             onDelete={handleDelete}
             setEditingMember={setEditingMember}
             setViewingMember={setViewingMember}
+            setEditingRow={row => { setRowSaveError(null); setEditingRow(row); }}
+            setViewingRow={setViewingRow}
             cardStyle={cardStyle}
             inputStyle={inputStyle}
             loading={loading}
@@ -545,6 +586,24 @@ export function AddUserPage() {
             member={editingMember}
             onClose={() => setEditingMember(null)}
             onSave={updates => { updateMember(editingMember.id, updates); setEditingMember(null); }}
+          />
+        )}
+        {viewingRow && (
+          <ViewUserModal
+            key="view-row"
+            row={viewingRow}
+            onClose={() => setViewingRow(null)}
+            onEdit={() => { setRowSaveError(null); setEditingRow(viewingRow); setViewingRow(null); }}
+          />
+        )}
+        {editingRow && (
+          <EditUserModal
+            key="edit-row"
+            row={editingRow}
+            saving={rowSaving}
+            error={rowSaveError}
+            onClose={() => { if (!rowSaving) { setEditingRow(null); setRowSaveError(null); } }}
+            onSave={updates => void handleSaveRow(editingRow, updates)}
           />
         )}
         {deletingRow && (

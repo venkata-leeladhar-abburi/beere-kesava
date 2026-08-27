@@ -16,6 +16,8 @@ import { T, F } from "../../theme";
 
 interface GroupedRow {
   weaverId: string;
+  /** Human-facing weaver code ("Ramarao-001") — the only weaver id shown/exported. */
+  weaverCode: string;
   weaverName: string;
   batchId: string;
   loomNumber: string;
@@ -35,7 +37,7 @@ interface GroupedRow {
 // payments are actually tracked (WeaverPayment.batchNo/loomNumber are per
 // row, not aggregated across a weaver's whole batch).
 function groupRows(
-  rows: { weaverId: string; weaverName: string; batchId: string | null; loomNumber: string | null; makingCharge: number; deduction: number; qcDate: string }[],
+  rows: { weaverId: string; weaverCode: string; weaverName: string; batchId: string | null; loomNumber: string | null; makingCharge: number; deduction: number; qcDate: string }[],
   filter: DateFilterState,
 ): GroupedRow[] {
   const filtered = rows.filter(r => matchesDateFilter(r.qcDate, filter));
@@ -51,7 +53,7 @@ function groupRows(
       existing.deduction += r.deduction;
     } else {
       byKey.set(key, {
-        weaverId: r.weaverId, weaverName: r.weaverName, batchId, loomNumber,
+        weaverId: r.weaverId, weaverCode: r.weaverCode, weaverName: r.weaverName, batchId, loomNumber,
         noOfSarees: 1, makingCharges: r.makingCharge, deduction: r.deduction,
         amountPaid: null, utrNumber: null, firmName: null, paymentDate: null,
       });
@@ -63,7 +65,7 @@ function groupRows(
 }
 
 const displayColumns: ColumnDef<GroupedRow>[] = [
-  { id: "weaverId", header: "Weaver ID", priority: 3, accessor: r => r.weaverId, type: "code" },
+  { id: "weaverId", header: "Weaver ID", priority: 3, accessor: r => r.weaverCode, type: "code" },
   { id: "weaverName", header: "Weaver Name", priority: 1, accessor: r => r.weaverName },
   { id: "batchId", header: "Batch", priority: 3, accessor: r => r.batchId, type: "code" },
   { id: "loomNumber", header: "Loom Number", accessor: r => r.loomNumber },
@@ -107,7 +109,10 @@ const displayColumns: ColumnDef<GroupedRow>[] = [
 // BankUploadPanel above with no format translation. weaverName/makingCharges
 // are extra reference columns the importer simply ignores.
 const templateColumns: ColumnDef<GroupedRow>[] = [
-  { id: "weaverId", header: "weaverId", accessor: r => r.weaverId, type: "code" },
+  // The importer resolves this column by UUID, weaver code, or name
+  // (PaymentsService.importWeaverPaymentsFromExcel), so the template carries
+  // the readable code the admin recognises rather than the raw UUID.
+  { id: "weaverId", header: "weaverId", accessor: r => r.weaverCode, type: "code" },
   { id: "weaverName", header: "weaverName", accessor: r => r.weaverName },
   { id: "batchNo", header: "batchNo", accessor: r => r.batchId, type: "code" },
   { id: "loomNumber", header: "loomNumber", accessor: r => r.loomNumber },
@@ -121,8 +126,8 @@ const templateColumns: ColumnDef<GroupedRow>[] = [
   { id: "paymentDate", header: "paymentDate", accessor: () => null },
 ];
 
-const savedColumns: ColumnDef<BackendWeaverPayment & { weaverName: string }>[] = [
-  { id: "weaverId", header: "weaverId", accessor: r => r.weaverId, type: "code" },
+const savedColumns: ColumnDef<BackendWeaverPayment & { weaverName: string; weaverCode: string }>[] = [
+  { id: "weaverId", header: "weaverId", accessor: r => r.weaverCode, type: "code" },
   { id: "weaverName", header: "weaverName", accessor: r => r.weaverName },
   { id: "batchNo", header: "batchNo", accessor: r => r.batchNo ?? "" },
   { id: "loomNumber", header: "loomNumber", accessor: r => r.loomNumber ?? "" },
@@ -159,7 +164,7 @@ function WeaverProductionCard({ row }: { row: GroupedRow }) {
       <div className="p-4 flex flex-col gap-3 flex-1">
         {/* Header: Weaver ID + Status Badge */}
         <div className="flex items-center justify-between gap-2 flex-wrap">
-          <EntityCode type="weaver" value={row.weaverId} size="sm" className="break-all whitespace-normal max-w-full" />
+          <EntityCode type="weaver" value={row.weaverCode} size="sm" className="break-all whitespace-normal max-w-full" />
           <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${isPaid ? "bg-[#27AE60]/10 text-[#27AE60]" : "bg-[#6E0F2D]/10 text-[#6E0F2D]"}`}>
             {isPaid ? "Paid ✓" : "Pending"}
           </span>
@@ -261,6 +266,10 @@ export function WeaverProductionSummaryPanel({ refreshKey }: { refreshKey: numbe
     () => new Map((weaversRes?.items ?? []).map(w => [w.id, w.name])),
     [weaversRes],
   );
+  const weaverCodeById = useMemo(
+    () => new Map((weaversRes?.items ?? []).map(w => [w.id, w.code])),
+    [weaversRes],
+  );
   const firmNameById = useMemo(
     () => new Map((firmsRes?.items ?? []).map(f => [f.id, f.firmName])),
     [firmsRes],
@@ -323,12 +332,12 @@ export function WeaverProductionSummaryPanel({ refreshKey }: { refreshKey: numbe
     const items = paymentsRes?.items ?? [];
     return items
       .filter(p => matchesDateFilter(p.paymentDate, filter))
-      .map(p => ({ ...p, weaverName: weaverNameById.get(p.weaverId) ?? p.weaverId }))
+      .map(p => ({ ...p, weaverName: weaverNameById.get(p.weaverId) ?? p.weaverId, weaverCode: weaverCodeById.get(p.weaverId) ?? p.weaverId }))
       .filter(p =>
         (weaverFilter === ALL_WEAVERS || p.weaverName === weaverFilter) &&
         (batchFilter === ALL_BATCHES || p.batchNo === batchFilter),
       );
-  }, [paymentsRes, filter, weaverNameById, weaverFilter, batchFilter]);
+  }, [paymentsRes, filter, weaverNameById, weaverCodeById, weaverFilter, batchFilter]);
 
   const unpaidRows = useMemo(() => grouped.filter(r => r.amountPaid == null), [grouped]);
 

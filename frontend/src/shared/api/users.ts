@@ -78,11 +78,22 @@ export interface CreateUserPayload {
   ifsc?: string;
 }
 
+export interface UpdateUserPayload {
+  firstName?: string;
+  lastName?: string;
+  mobile?: string;
+  email?: string;
+  status?: BackendStatus;
+}
+
 export const usersApi = {
   list: (pageSize = 100) =>
     apiClient.get<PaginatedResponse<BackendUser>>(`/users?pageSize=${pageSize}`),
 
   create: (payload: CreateUserPayload) => apiClient.post<BackendUser>("/users", payload),
+
+  update: (id: string, payload: UpdateUserPayload) =>
+    apiClient.patch<BackendUser>(`/users/${id}`, payload),
 
   updateStatus: (id: string, status: BackendStatus) =>
     apiClient.patch<BackendUser>(`/users/${id}`, { status }),

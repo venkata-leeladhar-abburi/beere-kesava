@@ -117,6 +117,9 @@ export function SareeProductionReport() {
     const batches = batchesRes?.items ?? [];
     const qcBySareeId = new Map((qcRes?.items ?? []).filter(q => q.sareeId).map(q => [q.sareeId, q]));
     const weaverNameById = new Map((weaversRes?.items ?? []).map(w => [w.id, w.name]));
+    // Human-facing weaver code ("Ramarao-001") — what the report shows; the
+    // UUID is only the grouping key.
+    const weaverCodeById = new Map((weaversRes?.items ?? []).map(w => [w.id, w.code]));
 
     interface Acc { batches: Set<string>; produced: number; passed: number; rejected: number; designs: Set<string>; charges: number }
     const byWeaver = new Map<string, Acc>();
@@ -137,7 +140,7 @@ export function SareeProductionReport() {
       }
     }
     return Array.from(byWeaver.entries()).map(([weaverId, acc]) => ({
-      code: weaverId,
+      code: weaverCodeById.get(weaverId) ?? weaverId,
       name: weaverNameById.get(weaverId) ?? "Unknown Weaver",
       batches: acc.batches.size,
       produced: acc.produced,

@@ -8,6 +8,8 @@ const BG_COLORS = ["#9B6B8A", "#5A3E6B", "#2D6B6B", "#4A6B4A", "#6B4A3E"];
 
 export interface DashboardWeaver {
   id: string;
+  /** Human-facing weaver code ("Ramarao-001") — the only weaver id shown in the UI. */
+  code: string;
   name: string;
   initials: string;
   img: string | null;
@@ -21,6 +23,7 @@ export interface DashboardWeaver {
 function backendToDashboardWeaver(w: BackendWeaver, idx: number): DashboardWeaver {
   return {
     id: w.id,
+    code: w.code,
     name: w.name,
     initials: w.initials,
     img: resolveAssetUrl(w.photoUrl),

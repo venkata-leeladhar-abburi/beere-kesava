@@ -33,7 +33,11 @@ const QUERY_KEY = ["customers"] as const;
 export function CustomersProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
 
-  const enabled = useAuthGate();
+  // GET /customers is SHOP/ACCOUNTANT-only on the backend (ADMIN/SUPERADMIN
+  // bypass every role check). This provider is shared across every portal,
+  // so an unscoped gate fired this for WORKER/WEAVER too and they got back
+  // nothing but a "your role is not permitted" 403.
+  const enabled = useAuthGate("shop", "accountant", "admin", "superadmin");
 
   const { data: customers = [], isLoading, error, refetch } = useQuery({
     queryKey: QUERY_KEY,

@@ -14,6 +14,8 @@ export interface BackendStockItem {
   status: StockStatus;
   weaverName: string | null;
   weaverId: string | null;
+  /** Human-facing weaver code ("Ramarao-001") — the only weaver id the UI shows. */
+  weaverCode: string | null;
   loomNumber: string | null;
   designCode: string | null;
   sareeTypeCode: string | null;
@@ -40,7 +42,20 @@ export interface ShopDispatchInfo {
  *  consignment that delivered it, which the shop groups and filters by. */
 export interface ShopStockItem extends BackendStockItem {
   retailPrice: number | null;
+  /** What it actually sold for, and when. Null until the saree is sold —
+   *  shown next to retailPrice so the counter can see the discount given. */
+  soldPrice: number | null;
+  soldDate: string | null;
   dispatch: ShopDispatchInfo;
+  /** How the saree came to be standing in the shop — a lorry, or a return. */
+  stockOrigin: "dispatch" | "retail-return" | "wholesale-return";
+  returnRef: string | null;
+  returnReason: string | null;
+  returnDate: string | null;
+  returnedFrom: string | null;
+  photoUrl: string | null;
+  color: string | null;
+  weightG: number | null;
 }
 
 export const inventoryApi = {

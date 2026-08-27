@@ -994,14 +994,20 @@ model Saree {
 }
 
 model SaleRecord {
-  saleRef    String       @id
-  sareeId    String
-  saree      Saree        @relation(fields: [sareeId], references: [id])
-  channel    SalesChannel
-  date       DateTime     @default(now())
-  customerId String
-  customer   Customer     @relation(fields: [customerId], references: [id])
-  amount     Decimal      @db.Decimal(12, 2)
+  saleRef       String       @id
+  sareeId       String
+  saree         Saree        @relation(fields: [sareeId], references: [id])
+  channel       SalesChannel
+  date          DateTime     @default(now())
+  customerId    String
+  customer      Customer     @relation(fields: [customerId], references: [id])
+  amount        Decimal      @db.Decimal(12, 2)
+  // How the customer paid at the counter — "cash" | "upi" | "card" | "other",
+  // captured in NewSaleFlow's payment step. Nullable: older rows predate this
+  // field, and wholesale sales (invoiced separately) never set it.
+  paymentMethod String?
+  // UPI transaction id or last-4 card digits, when the method has one.
+  paymentRef    String?
 
   @@index([sareeId])
 }
@@ -1069,8 +1075,15 @@ model SupplierPayment {
   method     String?
   firmId     String?
   firm       Firm?    @relation(fields: [firmId], references: [id])
+  // Optional: links this payment to a specific purchase it settles (partial
+  // or full). When absent, the payment is a "general" supplier payment not
+  // tied to any purchase — existing behavior is unaffected. Drives
+  // PurchasesService.recomputeStatus, mirroring VendorPayment/VendorBill.
+  purchaseId String?
+  purchase   Purchase? @relation(fields: [purchaseId], references: [id])
 
   @@index([supplierId])
+  @@index([purchaseId])
 }
 
 model Vendor {
@@ -1133,6 +1146,7 @@ model Purchase {
   sarees                 Saree[]
   sareeLines             PurchaseSareeLine[]
   supplierReturnRequests SupplierReturnRequest[]
+  payments               SupplierPayment[]
 
   @@index([supplierId])
 }

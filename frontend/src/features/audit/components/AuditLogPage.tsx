@@ -34,7 +34,7 @@ export function AuditLogPage() {
   };
 
   return (
-    <div style={{ background: T.silkCream, minHeight: "100dvh", fontFamily: "'Inter', sans-serif" }}>
+    <div style={{ background: T.silkCream, minHeight: "100dvh", fontFamily: "'Inter', sans-serif", display: "flex", flexDirection: "column" }}>
       <PageHeaderStats />
 
       {/* Section wrapper — clears stats strip */}
@@ -58,7 +58,9 @@ export function AuditLogPage() {
         onClearFilters={clearFilters}
       />
       <LoginHistorySection />
-      <NoticeFooter />
+      <div style={{ marginTop: "auto" }}>
+        <NoticeFooter />
+      </div>
     </div>
   );
 }

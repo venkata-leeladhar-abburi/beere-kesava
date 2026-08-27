@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { PaginatedResult } from "../common/pagination";
-import { Prisma } from "../generated/prisma/client";
+import { Prisma, PurchasePaymentStatus } from "../generated/prisma/client";
 import { IdGeneratorService, businessSegment } from "../id-generator/id-generator.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreatePurchaseDto } from "./dto/create-purchase.dto";
@@ -157,5 +157,39 @@ export class PurchasesService {
     await this.findOne(id);
     // sareeLines cascade with the purchase (onDelete: Cascade).
     await this.prisma.purchase.delete({ where: { id } });
+  }
+
+  /**
+   * Derives and persists a purchase's payment status from the sum of
+   * SupplierPayments linked to it vs its billAmount — mirrors
+   * VendorBillsService.recomputeStatus. Called whenever a supplier payment
+   * against a purchase is created, so status is never a manual/approval
+   * step; it always reflects what has actually been paid.
+   */
+  async recomputeStatus(purchaseId: string): Promise<void> {
+    const purchase = await this.prisma.purchase.findUnique({ where: { id: purchaseId } });
+    if (!purchase) {
+      throw new NotFoundException(`Purchase ${purchaseId} not found`);
+    }
+
+    const paidAggregate = await this.prisma.supplierPayment.aggregate({
+      where: { purchaseId },
+      _sum: { amount: true },
+    });
+    const paidTotal = Number(paidAggregate._sum.amount || 0);
+    const billAmount = Number(purchase.billAmount);
+
+    let status: PurchasePaymentStatus;
+    if (paidTotal >= billAmount) {
+      status = PurchasePaymentStatus.PAID;
+    } else if (paidTotal > 0) {
+      status = PurchasePaymentStatus.PARTIAL;
+    } else {
+      status = PurchasePaymentStatus.PENDING;
+    }
+
+    if (status !== purchase.status) {
+      await this.prisma.purchase.update({ where: { id: purchaseId }, data: { status } });
+    }
   }
 }

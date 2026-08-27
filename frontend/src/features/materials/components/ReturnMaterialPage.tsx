@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Check, Plus, X, CheckCircle2, Undo2 } from "lucide-react";
 import { Button, IconButton } from "../../../shared/ui/primitives";
 import { useMaterialReturn, MaterialReturnRecord, WeaverOutstandingLine } from "../contexts/MaterialReturnContext";
-import { FactoryLoom } from "@/features/production";
+import { FactoryLoom, loomLabel } from "@/features/production";
 import { useBatches } from "@/features/production";
 import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
 import { weaversApi } from "../../../shared/api/weavers";
@@ -185,7 +185,7 @@ export function ReturnMaterialPage() {
       const record = await addReturnRecord({
         ...(recipientType === "weaver"
           ? { weaverId: selectedWeaver!.id, weaverName: selectedWeaver!.name, loomNumber: selectedLoom || undefined }
-          : { factoryLoomId: selectedFactoryLoom!.id, factoryLoomNumber: selectedFactoryLoom!.loomNumber }),
+          : { factoryLoomId: selectedFactoryLoom!.id, factoryLoomNumber: loomLabel(selectedFactoryLoom!) }),
         batchId: selectedBatchId || undefined,
         materials,
         signatureMethod: sigMethod === "remote" ? "remote" : "here",

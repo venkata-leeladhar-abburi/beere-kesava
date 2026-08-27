@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { useRatesPricing } from "@/features/pricing";
 import { useResponsive } from "../../../../hooks/useResponsive";
-import { C, F, Card, Chip, useCanSeePrices, ShopDesktopHero, SILK_BG } from './theme';
+import { C, F, Card, Chip, ShopDesktopHero, SILK_BG } from './theme';
 import {
   Stepper, StepHeader, StepBody, FlowActions, SummaryPanel, OptionCard,
   ConsequenceNote, ACCENT_SALE, type FlowStep, type SummaryRow,
@@ -20,11 +20,10 @@ import { cartTotal, cartOriginalTotal, type SaleLine } from './sale-cart';
 import { ApiError } from "../../../../shared/api/client";
 import { scanApi } from "../../../../shared/api/scan";
 import { salesApi } from "../../../../shared/api/sales";
-import { Input, CurrencyInput } from '../../../../shared/ui/primitives';
+import { Button, Input } from '../../../../shared/ui/primitives';
 import { rupees, formatMoney } from "@/lib/domain/money";
 
 export function NewSaleFlow() {
-  const canSeePrices = useCanSeePrices();
   const { isMobile, isTablet } = useResponsive();
   const { getSareeTypeByCode } = useRatesPricing();
   const [step, setStep] = useState<1 | 2 | 3 | 4 | "success">(1);
@@ -104,7 +103,8 @@ export function NewSaleFlow() {
   const filteredSarees = manualId.trim().length >= 2
     ? availableSarees.filter(s =>
       s.sareeId.toLowerCase().includes(manualId.trim().toLowerCase()) ||
-      (s.designCode ?? "").toLowerCase().includes(manualId.trim().toLowerCase()) ||
+      (s.sareeTypeCode ?? "").toLowerCase().includes(manualId.trim().toLowerCase()) ||
+      (s.sareeTypeLabel ?? "").toLowerCase().includes(manualId.trim().toLowerCase()) ||
       (s.weaverName ?? "").toLowerCase().includes(manualId.trim().toLowerCase())
     )
     : availableSarees;
@@ -146,10 +146,12 @@ export function NewSaleFlow() {
         id: result.sareeId,
         design: result.design?.code ?? "—",
         name: result.design?.name ?? result.sareeType?.type ?? "—",
-        type: result.sareeType ? `${result.sareeType.type} · ${result.sareeType.code}` : "—",
+        // Same "CODE · Name" order the Inventory table uses, so a saree reads
+        // identically whether it is being checked in stock or sold.
+        type: result.sareeType ? `${result.sareeType.code} · ${result.sareeType.type}` : "—",
         typeCode,
         weight: "—",
-        weaver: result.weaver?.name ?? (result.factoryLoom ? `Factory Loom ${result.factoryLoom.loomNumber}` : "—"),
+        weaver: result.weaver?.name ?? (result.factoryLoom ? `Factory Loom ${result.factoryLoom.code ?? result.factoryLoom.loomNumber}` : "—"),
         originalPrice: price,
         soldPrice: price,
       };
@@ -221,7 +223,6 @@ export function NewSaleFlow() {
         phone={phone}
         payment={payment}
         total={total}
-        canSeePrices={canSeePrices}
         isMobile={isMobile}
         isTablet={isTablet}
         fmtPrice={fmtPrice}
@@ -237,7 +238,6 @@ export function NewSaleFlow() {
         custName={custName}
         payment={payment}
         total={total}
-        canSeePrices={canSeePrices}
         fmtPrice={fmtPrice}
         onShowBill={() => setShowBill(true)}
         onResetSale={resetSale}
@@ -249,8 +249,8 @@ export function NewSaleFlow() {
   // to step backwards just to remember who the customer was.
   const steps: FlowStep[] = [
     { label: "Customer",   summary: selectedCustomer?.name ?? (custName.trim() || undefined) },
-    { label: "Scan Saree", summary: cart.length === 1 ? cart[0].id : cart.length > 1 ? `${cart.length} sarees` : undefined },
-    { label: "Payment",    summary: payment ? payment.toUpperCase() : undefined },
+    { label: "Sarees & price", summary: cart.length === 1 ? cart[0].id : cart.length > 1 ? `${cart.length} sarees` : undefined },
+    { label: "Payment",    summary: payment ? `${payment.toUpperCase()} · ${fmtPrice(total)}` : undefined },
     { label: "Confirm" },
   ];
 
@@ -318,6 +318,7 @@ export function NewSaleFlow() {
           handleScan={handleScan}
           handleAddSarees={handleAddSarees}
           removeLine={removeLine}
+          setLinePrice={setLinePrice}
           scanError={scanError}
           availableSarees={filteredSarees}
           sareesLoading={inventoryLoading}
@@ -330,62 +331,74 @@ export function NewSaleFlow() {
         />
       )}
 
-      {/* ── Step 3 — Payment Method ── */}
+      {/* ── Step 3 — Payment ── */}
       {step === 3 && (
         <>
           <StepBody>
             <StepHeader
-              title="Price & payment"
-              subtitle="Set what each saree is actually selling for, then record how the customer is paying."
+              title="Payment"
+              subtitle="Confirm what the customer owes, then record how they are paying it."
             />
 
-            {/* ── Per-saree pricing ── the price lives here, not at the scan
-                step, so the operator sets every price and sees the basket
-                total in one place before choosing a payment method. */}
-            {canSeePrices && (
-              <Card style={{ marginBottom: 22, overflow: "hidden" }}>
-                <div style={{ height: 4, background: `linear-gradient(90deg, ${C.burg}, ${C.gold})` }} />
-                <div style={{ padding: "10px 16px", borderBottom: `1px solid ${C.bdr}`, background: "rgba(110,15,45,0.03)" }}>
-                  <span style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 1.5, color: C.muted, textTransform: "uppercase" as const }}>
-                    {cart.length} saree{cart.length !== 1 ? "s" : ""} · set selling price
-                  </span>
-                </div>
-                {cart.map((l, i) => (
-                  <div
-                    key={l.id}
-                    style={{
-                      display: isMobile ? "block" : "flex", alignItems: "center", gap: 16,
-                      padding: "14px 16px",
-                      borderBottom: i < cart.length - 1 ? `1px solid ${C.bdr}` : "none",
-                    }}
-                  >
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 13, color: C.burg }}>{l.id}</div>
-                      <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>
-                        {l.name}{l.design && l.design !== "—" ? ` · ${l.design}` : ""}
-                      </div>
-                    </div>
-                    <div style={{ width: isMobile ? "100%" : 200, flexShrink: 0, marginTop: isMobile ? 10 : 0 }}>
-                      <label htmlFor={`price-${l.id}`} className="sr-only">Selling price for {l.id}</label>
-                      <CurrencyInput
-                        id={`price-${l.id}`}
-                        value={l.soldPrice}
-                        onValueChange={v => setLinePrice(l.id, v === "" ? 0 : v)}
-                        size="lg"
-                        className="w-full font-['Plus_Jakarta_Sans'] text-xl font-bold"
-                      />
-                      <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 6 }}>
-                        Default: {fmtPrice(l.originalPrice)}
-                      </div>
+            {/* Amount due — read-only. Prices were set on the previous step,
+                where the sarees were picked; repeating the editors here gave
+                two places to change one number. "Edit prices" jumps back. */}
+            <Card style={{ marginBottom: 22, overflow: "hidden" }}>
+              <div style={{ height: 4, background: `linear-gradient(90deg, ${C.burg}, ${C.gold})` }} />
+              <div style={{ padding: "10px 16px", borderBottom: `1px solid ${C.bdr}`, background: "rgba(110,15,45,0.03)", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" as const }}>
+                <span style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 1.5, color: C.muted, textTransform: "uppercase" as const }}>
+                  {cart.length} saree{cart.length !== 1 ? "s" : ""} · amount due
+                </span>
+                <Button variant="link" size="sm" onClick={() => setStep(2)} className="p-0 text-xs underline text-[#69635E]">
+                  Edit prices
+                </Button>
+              </div>
+
+              {cart.map((l, i) => (
+                <div
+                  key={l.id}
+                  style={{
+                    display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12,
+                    padding: "12px 16px",
+                    borderBottom: i < cart.length - 1 ? `1px solid ${C.bdr}` : "none",
+                  }}
+                >
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 13, color: C.burg }}>{l.id}</div>
+                    <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>
+                      {l.type !== "—" ? l.type : l.name}
                     </div>
                   </div>
-                ))}
-                <div style={{ padding: "14px 16px", borderTop: `1px solid ${C.bdr}`, background: "rgba(110,15,45,0.03)", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-                  <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text }}>Total</span>
-                  <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 26, color: C.burg, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>{fmtPrice(total)}</span>
+                  <div style={{ textAlign: "right" as const, flexShrink: 0 }}>
+                    <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text, fontVariantNumeric: "tabular-nums" }}>
+                      {fmtPrice(l.soldPrice)}
+                    </div>
+                    {l.soldPrice !== l.originalPrice && (
+                      <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, textDecoration: "line-through", marginTop: 2 }}>
+                        {fmtPrice(l.originalPrice)}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </Card>
-            )}
+              ))}
+
+              <div style={{ padding: "14px 16px", borderTop: `1px solid ${C.bdr}`, background: "rgba(110,15,45,0.03)" }}>
+                {priceDiscount !== 0 && (
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
+                    <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>
+                      {priceDiscount > 0 ? "Discount" : "Mark-up"}
+                    </span>
+                    <span style={{ fontFamily: F.u, fontSize: 14, color: C.muted, fontVariantNumeric: "tabular-nums" }}>
+                      {fmtPrice(Math.abs(priceDiscount))}
+                    </span>
+                  </div>
+                )}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                  <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text }}>Total payable</span>
+                  <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 28, color: C.burg, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>{fmtPrice(total)}</span>
+                </div>
+              </div>
+            </Card>
 
             <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text, marginBottom: 12 }}>
               How is the customer paying?
@@ -434,7 +447,7 @@ export function NewSaleFlow() {
           <FlowActions
             accent={ACCENT_SALE}
             onBack={() => setStep(2)}
-            primaryLabel="Next — Confirm"
+            primaryLabel={`Next — Confirm ${fmtPrice(total)}`}
             onPrimary={() => setStep(4)}
             primaryDisabled={!payment}
             hint="Choose a payment method to continue"
@@ -456,44 +469,54 @@ export function NewSaleFlow() {
               rows={([
                 { label: "Customer", value: custName || selectedCustomer?.name || "—" },
                 { label: "Phone", value: phone ? `+91 ${phone}` : "—", mono: true },
+                ...(custAddress.trim() ? [{ label: "Address", value: custAddress.trim() }] : []),
                 { label: "Sarees", value: `${cart.length} piece${cart.length !== 1 ? "s" : ""}` },
-                { label: "Payment", value: payment ? payment.toUpperCase() : "—", mono: true },
+                { label: "Payment method", value: payment ? payment.toUpperCase() : "—", mono: true },
                 ...(payRef ? [{ label: payment === "upi" ? "UPI reference" : "Card ending", value: payRef, mono: true }] : []),
+                { label: "Amount payable", value: fmtPrice(total), mono: true },
               ] as SummaryRow[])}
               footer={
                 <div>
-                  {/* Every piece on the bill, itemised — on a multi-saree sale
-                      a single total is not enough to check against. */}
+                  {/* Every piece on the bill, itemised with its saree type and
+                      its retail price alongside what it is actually selling
+                      for — on a multi-saree sale a single total is not enough
+                      to check the bill against. */}
                   {cart.map(l => (
-                    <div key={l.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12, marginBottom: 8 }}>
+                    <div key={l.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12, marginBottom: 10 }}>
                       <span style={{ fontFamily: F.u, fontSize: 13, color: C.text, minWidth: 0 }}>
                         <span style={{ fontFamily: F.m, color: C.burg }}>{l.id}</span>
-                        <span style={{ color: C.muted }}> · {l.name}</span>
+                        <span style={{ color: C.muted }}> · {l.type !== "—" ? l.type : l.name}</span>
                       </span>
-                      {canSeePrices && (
-                        <span style={{ fontFamily: F.u, fontSize: 13, color: C.text, fontVariantNumeric: "tabular-nums", flexShrink: 0 }}>{fmtPrice(l.soldPrice)}</span>
-                      )}
+                      <span style={{ textAlign: "right" as const, flexShrink: 0 }}>
+                        <span style={{ fontFamily: F.u, fontSize: 13, color: C.text, fontVariantNumeric: "tabular-nums" }}>{fmtPrice(l.soldPrice)}</span>
+                        {l.soldPrice !== l.originalPrice && (
+                          <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted, textDecoration: "line-through", marginLeft: 8 }}>
+                            {fmtPrice(l.originalPrice)}
+                          </span>
+                        )}
+                      </span>
                     </div>
                   ))}
-                  {canSeePrices && (
-                    <div style={{ borderTop: `1px solid ${C.bdr}`, paddingTop: 12, marginTop: 6 }}>
-                      {priceDiscount !== 0 && (
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
-                          <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>Original total</span>
-                          <span style={{ fontFamily: F.u, fontSize: 14, color: C.muted, textDecoration: "line-through" }}>{fmtPrice(originalTotal)}</span>
-                        </div>
-                      )}
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-                        <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text }}>Total payable</span>
-                        <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 30, color: C.burg, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>{fmtPrice(total)}</span>
+                  <div style={{ borderTop: `1px solid ${C.bdr}`, paddingTop: 12, marginTop: 6 }}>
+                    {priceDiscount !== 0 && (
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
+                        <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>Retail total</span>
+                        <span style={{ fontFamily: F.u, fontSize: 14, color: C.muted, textDecoration: "line-through", fontVariantNumeric: "tabular-nums" }}>{fmtPrice(originalTotal)}</span>
                       </div>
+                    )}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                      <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text }}>Total payable</span>
+                      <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 30, color: C.burg, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>{fmtPrice(total)}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginTop: 10, flexWrap: "wrap" as const }}>
+                      <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>
+                        Paying by {payment ? payment.toUpperCase() : "—"}
+                      </span>
                       {priceDiscount > 0 && (
-                        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 10 }}>
-                          <Chip label={`Discount applied · ${fmtPrice(priceDiscount)}`} color="#845E04" bg="rgba(200,155,71,0.15)" />
-                        </div>
+                        <Chip label={`Discount applied · ${fmtPrice(priceDiscount)}`} color="#845E04" bg="rgba(200,155,71,0.15)" />
                       )}
                     </div>
-                  )}
+                  </div>
                 </div>
               }
             />
@@ -539,7 +562,14 @@ export function NewSaleFlow() {
                 const recorded: string[] = [];
                 try {
                   for (const line of cart) {
-                    await salesApi.create({ sareeId: line.id, channel: "RETAIL", amount: line.soldPrice, customerId });
+                    await salesApi.create({
+                      sareeId: line.id,
+                      channel: "RETAIL",
+                      amount: line.soldPrice,
+                      customerId,
+                      paymentMethod: payment ?? undefined,
+                      paymentRef: payRef.trim() || undefined,
+                    });
                     recorded.push(line.id);
                   }
                 } catch (err) {

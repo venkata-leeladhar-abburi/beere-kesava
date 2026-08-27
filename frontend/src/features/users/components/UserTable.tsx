@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Edit2, ShieldOff, Eye, Trash2, ChevronLeft, ChevronRight, Users, LayoutGrid, LayoutList } from "lucide-react";
+import { Edit2, ShieldOff, ShieldCheck, Eye, Trash2, ChevronLeft, ChevronRight, Users, LayoutGrid, LayoutList } from "lucide-react";
 import { DateFilterBar, DateFilterState } from "../../../shared/ui/DateFilterBar";
 import { T, F, ROLES } from "./theme";
 import { TableRow } from "./utils";
@@ -26,6 +26,8 @@ interface UserTableProps {
   onDelete: (row: TableRow) => void;
   setEditingMember: (m: FinishingStaffMember | null) => void;
   setViewingMember: (m: FinishingStaffMember | null) => void;
+  setEditingRow: (r: TableRow | null) => void;
+  setViewingRow: (r: TableRow | null) => void;
   cardStyle: React.CSSProperties;
   inputStyle: React.CSSProperties;
   loading?: boolean;
@@ -40,11 +42,15 @@ export const userTableColumns = ({
   onToggleStatus,
   onDelete,
   setViewingMember,
+  setEditingRow,
+  setViewingRow,
 }: {
   setEditingMember: (m: FinishingStaffMember | null) => void;
   onToggleStatus: (row: TableRow) => void;
   onDelete: (row: TableRow) => void;
   setViewingMember: (m: FinishingStaffMember | null) => void;
+  setEditingRow: (r: TableRow | null) => void;
+  setViewingRow: (r: TableRow | null) => void;
 }): ColumnDef<TableRow>[] => [
   {
     id: "employee",
@@ -119,15 +125,20 @@ export const userTableColumns = ({
     accessor: (row) => row.empId,
     cell: (_, row) => (
       <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
-        {row.role === "Finishing Staff" && row.finishingMember ? (
+        {row.finishingMember ? (
           <>
             <IconButton label="View profile" icon={Eye} size="sm" onClick={() => setViewingMember(row.finishingMember!)} />
             <IconButton label="Edit" icon={Edit2} size="sm" onClick={() => setEditingMember(row.finishingMember!)} />
           </>
-        ) : null}
+        ) : (
+          <>
+            <IconButton label="View profile" icon={Eye} size="sm" onClick={() => setViewingRow(row)} />
+            <IconButton label="Edit" icon={Edit2} size="sm" onClick={() => setEditingRow(row)} />
+          </>
+        )}
         <IconButton
           label={row.status === "Active" ? "Deactivate" : "Activate"}
-          icon={ShieldOff}
+          icon={row.status === "Active" ? ShieldOff : ShieldCheck}
           size="sm"
           onClick={() => onToggleStatus(row)}
         />
@@ -141,7 +152,7 @@ export function UserTable({
   allRows, searchQ, setSearchQ, roleFilter, setRoleFilter,
   dateFilter, setDateFilter, page, setPage, pagedRows, filtered,
   totalPages, ROWS_PER_PAGE, onToggleStatus, onDelete,
-  setEditingMember, setViewingMember,
+  setEditingMember, setViewingMember, setEditingRow, setViewingRow,
   loading, loadError, onRetry, isFiltered, onClearFilters,
 }: UserTableProps) {
   const [userView, setUserView] = useState<"card" | "table">("card");
@@ -249,15 +260,20 @@ export function UserTable({
               </div>
 
               <div style={{ borderTop: `1px solid ${T.borderDef}`, paddingTop: 12, display: "flex", justifyContent: "flex-end", gap: 8 }}>
-                {row.role === "Finishing Staff" && row.finishingMember ? (
+                {row.finishingMember ? (
                   <>
                     <IconButton label="View profile" icon={Eye} size="sm" onClick={() => setViewingMember(row.finishingMember!)} />
                     <IconButton label="Edit" icon={Edit2} size="sm" onClick={() => setEditingMember(row.finishingMember!)} />
                   </>
-                ) : null}
+                ) : (
+                  <>
+                    <IconButton label="View profile" icon={Eye} size="sm" onClick={() => setViewingRow(row)} />
+                    <IconButton label="Edit" icon={Edit2} size="sm" onClick={() => setEditingRow(row)} />
+                  </>
+                )}
                 <IconButton
                   label={row.status === "Active" ? "Deactivate" : "Activate"}
-                  icon={ShieldOff}
+                  icon={row.status === "Active" ? ShieldOff : ShieldCheck}
                   size="sm"
                   onClick={() => onToggleStatus(row)}
                 />
@@ -278,7 +294,7 @@ export function UserTable({
         <div className="min-w-[850px]">
           <DataTable
             responsive={false}
-            columns={userTableColumns({ setEditingMember, onToggleStatus, onDelete, setViewingMember })}
+            columns={userTableColumns({ setEditingMember, onToggleStatus, onDelete, setViewingMember, setEditingRow, setViewingRow })}
             data={pagedRows}
             getRowId={(u) => u.empId}
             loading={loading}

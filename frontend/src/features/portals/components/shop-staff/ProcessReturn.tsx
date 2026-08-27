@@ -1,14 +1,20 @@
 import React, { useMemo, useState } from 'react';
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { salesApi, BackendSaleRecord } from "../../../../shared/api/sales";
+import { customersApi } from "../../../../shared/api/customers";
+import { ratesApi } from "../../../../shared/api/rates";
+import { usePrintSareeTags, type SareeTagData } from "@/features/weavers";
 import { 
   AlertTriangle, Palette, ThumbsDown, Scale, FileText, Building2, ShoppingBag, RotateCcw
 } from 'lucide-react';
 import { C, F, useCanSeePrices, PageHero, PortalStatsStrip, type PortalStat } from './theme';
 import { ProcessReturnHeader, ReturnHistorySection, ReturnRecord } from './ProcessReturnHeaderHistory';
-import { RetailReturnSuccessView, WholesaleReturnSuccessView } from './ProcessReturnSuccessView';
+import { RetailReturnSuccessView, WholesaleReturnSuccessView, type RetailReturnResult } from './ProcessReturnSuccessView';
 import { ProcessReturnRetailFlow } from './ProcessReturnRetailFlow';
 import { ProcessReturnWholesaleFlow } from './ProcessReturnWholesaleFlow';
+import { ProcessReturnWholesaleConsignment } from './ProcessReturnWholesaleConsignment';
+import { emptyDraft, toItem, type WholesaleReturnDraft } from './wholesale-return-draft';
+import type { WholesaleReturnResult } from './ProcessReturnSuccessView';
 import { Button } from "../../../../shared/ui/primitives";
 import { useResponsive } from "../../../../hooks/useResponsive";
 import { StepHeader, StepBody } from "./flow-kit";
@@ -20,6 +26,8 @@ type ReturnStep = "type" | 1 | 2 | 3 | "success";
 function ProcessReturn({ onBack }: { onBack: () => void }) {
   const canSeePrices = useCanSeePrices();
   const { isMobile } = useResponsive();
+  const queryClient = useQueryClient();
+  const printTags = usePrintSareeTags();
   const [returnType, setReturnType] = useState<MyReturnType>(null);
   const [step, setStep] = useState<ReturnStep>("type");
 
@@ -30,14 +38,12 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
 
   // The real sales ledger — "Find the original sale" looks a scanned/typed/
   // browsed sareeId up in here rather than accepting anything the operator
-  // types, and "Return History" resolves the real buyer's name off it too
-  // (ReturnRecord itself has no customer/name field, only sareeId).
+  // types.
   const { data: salesRes } = useQuery({
     queryKey: ["sales-list-processreturn"],
     queryFn: () => salesApi.list(200),
   });
   const allSales = useMemo(() => salesRes?.items ?? [], [salesRes]);
-  const saleBySareeId = useMemo(() => new Map(allSales.map(s => [s.sareeId, s])), [allSales]);
 
   const returnedSareeIds = useMemo(
     () => new Set((returnsRes?.items ?? []).map(r => r.sareeId)),
@@ -51,26 +57,77 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
     [allSales, returnedSareeIds],
   );
 
-  const returnLog: ReturnRecord[] = (returnsRes?.items ?? []).map(r => ({
+  // Return History reads the categorised stock list rather than the raw
+  // ledger: only that knows whether a return was a counter return or a
+  // wholesale consignment, and who it actually came back from. The raw list
+  // has no customer field at all, so labelling every row "retail" and
+  // "Walk-in Customer" — as this once did — was fiction.
+  const { data: returnStock } = useQuery({
+    queryKey: ["return-stock"],
+    queryFn: () => salesApi.listReturnStock(),
+  });
+
+  const returnLog: ReturnRecord[] = (returnStock ?? []).map(r => ({
     id: r.returnRef,
-    type: "retail",
+    type: r.category,
     date: new Date(r.returnDate).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" }),
-    customer: saleBySareeId.get(r.sareeId)?.customer?.name ?? "Walk-in Customer",
-    // ReturnRecord has no saleRef FK — a return only ever references the
-    // sareeId, so that's the closest thing to an "original sale" identifier.
-    originalSaleId: r.sareeId,
+    customer: r.category === "retail" ? r.source ?? "Walk-in Customer" : undefined,
+    vendor: r.category === "wholesale" ? r.source ?? "—" : undefined,
+    originalSaleId: r.saleRef ?? r.sareeId,
     reason: r.reason ?? "—",
-    amount: r.refundAmount ? formatMoney(rupees(Number(r.refundAmount))) : formatMoney(rupees(0)),
+    color: r.color ?? undefined,
+    weight: r.weightG != null ? `${r.weightG} g` : undefined,
+    amount: formatMoney(rupees(r.refundAmount ?? 0)),
   }));
 
-  // Retail state
-  const [saleFound, setSaleFound] = useState(false);
-  const [foundSale, setFoundSale] = useState<BackendSaleRecord | null>(null);
+  // Retail state — a return is one customer bringing back one OR MORE of the
+  // pieces they bought, so the selection is a list, not a single sale.
+  const [selectedSales, setSelectedSales] = useState<BackendSaleRecord[]>([]);
   const [findError, setFindError] = useState<string | null>(null);
   const [showSaleList, setShowSaleList] = useState(false);
   const [retailManualId, setRetailManualId] = useState("");
   const [reason, setReason] = useState<string | null>(null);
   const [otherReason, setOtherReason] = useState("");
+  const [retailError, setRetailError] = useState<string | null>(null);
+  const [retailSubmitting, setRetailSubmitting] = useState(false);
+  const [retailResults, setRetailResults] = useState<RetailReturnResult[]>([]);
+  const [retailCustomerName, setRetailCustomerName] = useState("");
+  const [retailReasonLabel, setRetailReasonLabel] = useState("");
+
+  /** Identity of the customer a sale belongs to, used to keep one return to
+   *  one customer. Falls back to the name for a legacy row with no id. */
+  const customerKeyOf = (s: BackendSaleRecord): string =>
+    s.customer?.id ?? s.customerId ?? `name:${s.customer?.name ?? "Walk-in Customer"}`;
+
+  /** Adds a saree to the return, or removes it if it is already on. Rejects a
+   *  piece belonging to a different customer rather than silently mixing two
+   *  customers' refunds onto one return. */
+  const toggleSale = (sareeId: string) => {
+    setFindError(null);
+    setSelectedSales(prev => {
+      if (prev.some(s => s.sareeId === sareeId)) {
+        return prev.filter(s => s.sareeId !== sareeId);
+      }
+      const sale = eligibleSales.find(s => s.sareeId === sareeId);
+      if (!sale) {
+        setFindError(
+          returnedSareeIds.has(sareeId)
+            ? `Saree ${sareeId} has already been returned.`
+            : `No retail sale found for saree ${sareeId}.`,
+        );
+        return prev;
+      }
+      if (prev.length > 0 && customerKeyOf(prev[0]) !== customerKeyOf(sale)) {
+        setFindError(
+          `${sareeId} was sold to ${sale.customer?.name ?? "another customer"}, not ` +
+          `${prev[0].customer?.name ?? "this customer"}. One return covers one customer — ` +
+          `finish this one first, then start another.`,
+        );
+        return prev;
+      }
+      return [...prev, sale];
+    });
+  };
 
   const handleFindSale = (overrideId?: string) => {
     const id = (overrideId ?? retailManualId).trim();
@@ -78,37 +135,68 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
       setFindError("Enter a saree ID to look it up, or scan its barcode with the camera.");
       return;
     }
-    const sale = eligibleSales.find(s => s.sareeId === id);
-    if (!sale) {
-      const alreadyReturned = returnedSareeIds.has(id);
-      setFindError(alreadyReturned
-        ? `Saree ${id} has already been returned.`
-        : `No retail sale found for saree ${id}.`);
+    if (selectedSales.some(s => s.sareeId === id)) {
+      setFindError(`${id} is already on this return.`);
       return;
     }
-    setFindError(null);
-    setFoundSale(sale);
-    setRetailManualId(id);
-    setSaleFound(true);
-    setShowSaleList(false);
+    toggleSale(id);
+    setRetailManualId("");
   };
 
-  const handleSelectSale = (id: string) => {
-    handleFindSale(id);
-  };
-
-  // Wholesale state
-  const [wsVendor, setWsVendor] = useState("");
-  const [wsDesign, setWsDesign] = useState("");
-  const [wsColor, setWsColor] = useState("");
-  const [wsType, setWsType] = useState("Self Brocade");
-  const [wsWeight, setWsWeight] = useState("");
-  const [wsPrice, setWsPrice] = useState("");
-  const [wsReason, setWsReason] = useState<string | null>(null);
-  const [wsNewId, setWsNewId] = useState("");
-  const [wsBarcodeGenerated, setWsBarcodeGenerated] = useState(false);
+  // Wholesale returns come in two shapes, and they need different screens:
+  //   "consignment" — a buyer sending back part of something WE dispatched.
+  //                   We know the sarees and the price, so nothing is typed.
+  //   "untracked"   — a piece with no record here at all. Everything about it
+  //                   has to be described by hand, under a new tag.
+  // The first is the normal case, so it is the default.
+  const [wsMode, setWsMode] = useState<"consignment" | "untracked">("consignment");
+  const [wsVendorId, setWsVendorId] = useState("");
+  const [wsVendorName, setWsVendorName] = useState("");
+  const [wsDrafts, setWsDrafts] = useState<WholesaleReturnDraft[]>(() => [emptyDraft()]);
   const [wsError, setWsError] = useState<string | null>(null);
-  const [wsPhotoUrl, setWsPhotoUrl] = useState<string | null>(null);
+  const [wsSubmitting, setWsSubmitting] = useState(false);
+  const [wsResults, setWsResults] = useState<WholesaleReturnResult[]>([]);
+  // The success screen prints tags after the drafts have served their purpose,
+  // so it keeps its own snapshot of them.
+  const [confirmedTags, setConfirmedTags] = useState<SareeTagData[]>([]);
+
+  // The vendor picker lists wholesale customers, and the saree-type picker
+  // lists the configured rates — the backend validates against exactly these,
+  // so a hardcoded list here would be rejected on confirm.
+  const { data: wholesaleCustomers, isLoading: vendorsLoading } = useQuery({
+    queryKey: ["wholesale-customers-processreturn"],
+    queryFn: () => customersApi.list(100, "WHOLESALE"),
+  });
+  const vendors = useMemo(
+    () => (wholesaleCustomers?.items ?? []).map(c => ({ id: c.id, name: c.name, city: c.city })),
+    [wholesaleCustomers],
+  );
+
+  const { data: ratesRes } = useQuery({
+    queryKey: ["saree-types-processreturn"],
+    queryFn: () => ratesApi.list(100),
+  });
+  const sareeTypes = useMemo(
+    () => (ratesRes?.items ?? []).map(r => ({ code: r.code, name: r.type, retailPrice: Number(r.retailPrice) })),
+    [ratesRes],
+  );
+  const sareeTypeByCode = useMemo(() => new Map(sareeTypes.map(t => [t.code, t])), [sareeTypes]);
+
+  /** The drafted pieces as printable tags — used before and after confirming. */
+  const draftTags = (): SareeTagData[] => wsDrafts
+    .filter(d => d.sareeId.trim())
+    .map(d => {
+      const t = sareeTypeByCode.get(d.sareeType);
+      return {
+        sareeId: d.sareeId.trim(),
+        batchId: null,
+        designCode: null,
+        sareeTypeCode: t?.code ?? null,
+        sareeTypeName: t?.name ?? null,
+        color: d.color.trim() || null,
+        retailPrice: t?.retailPrice ?? null,
+      };
+    });
 
   const returnReasons = [
     { id: "defective", label: "Defective", sub: "Damaged or faulty item", Icon: AlertTriangle, color: "#C0392B", bg: "rgba(192,57,43,0.08)" },
@@ -118,18 +206,15 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
     { id: "other", label: "Other Reason", sub: "Describe in notes", Icon: FileText, color: C.muted, bg: "rgba(139,112,96,0.08)" },
   ];
 
-  const wsReasonOptions = ["Defective", "Quality Issue", "Overstock", "Wrong Design", "Damaged in Transit", "Other"];
-
   const resetReturn = () => {
     setReturnType(null); setStep("type");
-    setSaleFound(false); setFoundSale(null); setFindError(null); setShowSaleList(false);
-    setRetailManualId(""); setReason(null); setOtherReason("");
-    setWsVendor(""); setWsDesign(""); setWsColor(""); setWsType("Self Brocade");
-    setWsWeight(""); setWsPrice(""); setWsReason(null); setWsNewId(""); setWsBarcodeGenerated(false);
-    setWsPhotoUrl(null);
+    setSelectedSales([]); setFindError(null); setShowSaleList(false);
+    setRetailManualId(""); setReason(null); setOtherReason(""); setRetailError(null);
+    setRetailResults([]); setRetailCustomerName(""); setRetailReasonLabel("");
+    setWsMode("consignment");
+    setWsVendorId(""); setWsVendorName(""); setWsDrafts([emptyDraft()]);
+    setWsError(null); setWsResults([]); setConfirmedTags([]);
   };
-
-  const canProceedWsStep1 = wsVendor.trim() !== "" && wsWeight.trim() !== "" && wsReason !== null;
 
   const todayStr = new Date().toDateString();
   const todayReturnsCount = (returnsRes?.items ?? []).filter(r => new Date(r.returnDate).toDateString() === todayStr).length;
@@ -153,10 +238,10 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
               eyebrow="Shop Staff Portal · Beere Kesava & Brothers Silks"
               title="Process Return"
               titleAccent="& Handle Customer Returns"
-              description="Find the original sale by scanning the barcode, select the return reason, and confirm. Inventory is updated automatically."
+              description="Find the original sale by scanning the barcode, select the return reason, and confirm. Returned sarees are held in Shop Inventory until you send them back on sale."
               pills={[
                 { text: "3-Step Process" },
-                { text: "Auto Inventory Update" },
+                { text: "Checked Before Restocking" },
                 { text: `${todayReturnsCount} Return Today Already` },
               ]}
             />
@@ -218,7 +303,7 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
                 {[
                   { n: "1", title: "Find Original Sale", desc: "Scan the saree barcode or enter the Saree ID to find the original sale record" },
                   { n: "2", title: "Select Reason", desc: "Choose why the customer is returning — defective, wrong design, changed mind, etc." },
-                  { n: "3", title: "Confirm Return", desc: "Review and confirm. Inventory +1, customer profile updated, admin notified" },
+                  { n: "3", title: "Confirm Return", desc: "Review and confirm. The saree is held under Returns in Shop Inventory until you send it back into sellable stock" },
                 ].map((s, i) => (
                   <div key={s.n} style={{ display: "flex", gap: 12, marginBottom: i < 2 ? 16 : 0, paddingBottom: i < 2 ? 16 : 0, borderBottom: i < 2 ? "1px solid rgba(255,255,255,0.08)" : "none" }}>
                     <div style={{ width: 30, height: 30, borderRadius: "50%", background: C.crim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -277,7 +362,14 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
     return (
       <div style={{ paddingBottom: 32 }}>
         {isMobile && <ProcessReturnHeader step={step} onBack={onBack} setStep={setStep} setReturnType={setReturnType} />}
-        <RetailReturnSuccessView resetReturn={resetReturn} onBack={onBack} />
+        <RetailReturnSuccessView
+          results={retailResults}
+          customerName={retailCustomerName || "Walk-in Customer"}
+          reason={retailReasonLabel || "—"}
+          canSeePrices={canSeePrices}
+          resetReturn={resetReturn}
+          onBack={onBack}
+        />
       </div>
     );
   }
@@ -288,12 +380,11 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
       <div style={{ paddingBottom: 32 }}>
         {isMobile && <ProcessReturnHeader step={step} onBack={onBack} setStep={setStep} setReturnType={setReturnType} />}
         <WholesaleReturnSuccessView
-          wsNewId={wsNewId}
-          wsVendor={wsVendor}
-          wsDesign={wsDesign}
-          wsColor={wsColor}
-          wsWeight={wsWeight}
+          vendorName={wsVendorName}
+          results={wsResults}
+          onPrintTags={() => printTags(confirmedTags)}
           resetReturn={resetReturn}
+          onBack={onBack}
         />
       </div>
     );
@@ -308,37 +399,81 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
           step={step as 1 | 2 | 3}
           setStep={setStep}
           onBackToType={() => { setStep("type"); setReturnType(null); }}
-          saleFound={saleFound}
-          setSaleFound={setSaleFound}
-          foundSale={foundSale}
+          selectedSales={selectedSales}
+          toggleSale={toggleSale}
+          clearSelection={() => { setSelectedSales([]); setFindError(null); }}
           findError={findError}
           retailManualId={retailManualId}
           setRetailManualId={setRetailManualId}
           handleFindSale={handleFindSale}
           availableSales={eligibleSales}
+          sareeTypes={sareeTypes}
           showSaleList={showSaleList}
           setShowSaleList={setShowSaleList}
-          handleSelectSale={handleSelectSale}
           reason={reason}
           setReason={setReason}
           otherReason={otherReason}
           setOtherReason={setOtherReason}
           returnReasons={returnReasons}
-          canSeePrices={canSeePrices}
+          submitting={retailSubmitting}
+          submitError={retailError}
           onConfirm={async () => {
-            if (!foundSale) return;
+            if (selectedSales.length === 0 || retailSubmitting) return;
+            const label = returnReasons.find(r => r.id === reason)?.label ?? "Other";
+            const fullReason = reason === "other" && otherReason.trim()
+              ? `${label} — ${otherReason.trim()}`
+              : label;
+            const customerName = selectedSales[0].customer?.name ?? "Walk-in Customer";
+            setRetailSubmitting(true);
+            setRetailError(null);
+            // One ReturnRecord per saree, written one after another: each call
+            // mutates that saree's status, and a partial failure has to name
+            // exactly which pieces did go through.
+            const recorded: RetailReturnResult[] = [];
             try {
-              await salesApi.createReturn({
-                sareeId: foundSale.sareeId,
-                reason: returnReasons.find(r => r.id === reason)?.label ?? (reason === "other" ? otherReason.trim() : reason) ?? "Other",
-                refundAmount: Number(foundSale.amount),
-                restocked: true,
-              });
-              refetch();
+              for (const sale of selectedSales) {
+                // restocked stays false on purpose: the piece is held under
+                // "Retail returns" in Shop Inventory until someone inspects it
+                // and explicitly sends it back into sellable stock.
+                const record = await salesApi.createReturn({
+                  sareeId: sale.sareeId,
+                  reason: fullReason,
+                  refundAmount: Number(sale.amount),
+                  restocked: false,
+                });
+                recorded.push({
+                  sareeId: sale.sareeId,
+                  returnRef: record.returnRef,
+                  refundAmount: Number(sale.amount),
+                });
+              }
+              setRetailResults(recorded);
+              setRetailCustomerName(customerName);
+              setRetailReasonLabel(fullReason);
+              await refetch();
+              void queryClient.invalidateQueries({ queryKey: ["return-stock"] });
+              void queryClient.invalidateQueries({ queryKey: ["shop-stock"] });
+              void queryClient.invalidateQueries({ queryKey: ["sales-list-processreturn"] });
+              setStep("success");
             } catch (err) {
-              console.error("Failed to record return", err);
+              const detail = err instanceof Error ? err.message : "unknown error";
+              if (recorded.length > 0) {
+                // Drop the ones that succeeded so pressing Confirm again does
+                // not try to return them a second time.
+                const doneIds = new Set(recorded.map(r => r.sareeId));
+                setSelectedSales(prev => prev.filter(s => !doneIds.has(s.sareeId)));
+                setRetailError(
+                  `Recorded ${recorded.length} of ${recorded.length + selectedSales.length - recorded.length} returns ` +
+                  `(${recorded.map(r => r.sareeId).join(", ")}). The rest are still on this return — ${detail}`,
+                );
+                void queryClient.invalidateQueries({ queryKey: ["return-stock"] });
+                void queryClient.invalidateQueries({ queryKey: ["shop-stock"] });
+              } else {
+                setRetailError(`Could not record this return: ${detail}`);
+              }
+            } finally {
+              setRetailSubmitting(false);
             }
-            setStep("success");
           }}
         />
       </div>
@@ -349,52 +484,119 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
   return (
     <div style={{ paddingBottom: 32 }}>
       {isMobile && <ProcessReturnHeader step={step} onBack={onBack} setStep={setStep} setReturnType={setReturnType} />}
+
+      {/* Which of the two wholesale paths this is. Offered as a switch rather
+          than a separate entry on the return-type screen, because the operator
+          often does not know which one applies until they have looked the
+          buyer up. */}
+      <div style={{ display: "flex", justifyContent: "center", padding: "16px 20px 0" }}>
+        <div role="tablist" aria-label="Wholesale return path" style={{
+          display: "inline-flex", gap: 4, padding: 4, borderRadius: 999,
+          background: "rgba(200,155,71,0.10)", border: "1px solid rgba(200,155,71,0.30)",
+          maxWidth: "100%", overflowX: "auto" as const,
+        }}>
+          {([
+            { key: "consignment" as const, label: "From a consignment we sent" },
+            { key: "untracked" as const, label: "Not in our records" },
+          ]).map(m => {
+            const on = wsMode === m.key;
+            return (
+              <button
+                key={m.key}
+                type="button"
+                role="tab"
+                aria-selected={on}
+                onClick={() => { setWsMode(m.key); setStep(1); }}
+                style={{
+                  padding: "7px 16px", borderRadius: 999, border: "none", cursor: "pointer",
+                  whiteSpace: "nowrap" as const,
+                  background: on ? "#845E04" : "transparent",
+                  color: on ? "#FFFDF9" : C.muted,
+                  fontFamily: F.u, fontSize: 13, fontWeight: 700,
+                }}
+              >
+                {m.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {wsMode === "consignment" ? (
+        <ProcessReturnWholesaleConsignment
+          vendors={vendors}
+          vendorsLoading={vendorsLoading}
+          onBackToType={() => { setStep("type"); setReturnType(null); }}
+          onDone={(vendorName, results) => {
+            setWsVendorName(vendorName);
+            setWsResults(results.map(r => ({
+              sareeId: r.sareeId,
+              returnRef: r.returnRef,
+              sareeTypeLabel: r.sareeTypeLabel,
+              color: null,
+              weight: "",
+            })));
+            // These pieces already carry their own printed tags — they went out
+            // on them — so there is nothing new to print here.
+            setConfirmedTags([]);
+            void refetch();
+            void queryClient.invalidateQueries({ queryKey: ["return-stock"] });
+            void queryClient.invalidateQueries({ queryKey: ["shop-stock"] });
+            setStep("success");
+          }}
+        />
+      ) : (
       <ProcessReturnWholesaleFlow
         step={step as 1 | 2}
         setStep={setStep}
-        wsVendor={wsVendor}
-        setWsVendor={setWsVendor}
-        wsDesign={wsDesign}
-        setWsDesign={setWsDesign}
-        wsColor={wsColor}
-        setWsColor={setWsColor}
-        wsType={wsType}
-        setWsType={setWsType}
-        wsWeight={wsWeight}
-        setWsWeight={setWsWeight}
-        wsPrice={wsPrice}
-        setWsPrice={setWsPrice}
-        wsReason={wsReason}
-        setWsReason={setWsReason}
-        wsReasonOptions={wsReasonOptions}
-        wsNewId={wsNewId}
-        setWsNewId={setWsNewId}
-        wsBarcodeGenerated={wsBarcodeGenerated}
-        setWsBarcodeGenerated={setWsBarcodeGenerated}
+        vendorId={wsVendorId}
+        setVendorId={setWsVendorId}
+        vendorName={wsVendorName}
+        setVendorName={setWsVendorName}
+        vendors={vendors}
+        vendorsLoading={vendorsLoading}
+        sareeTypes={sareeTypes}
+        drafts={wsDrafts}
+        setDrafts={setWsDrafts}
         canSeePrices={canSeePrices}
-        canProceedWsStep1={canProceedWsStep1}
-        setReturnType={setReturnType}
-        setPhotoUrl={setWsPhotoUrl}
         wsError={wsError}
-        // The piece has no prior record, so this registers the saree from the
-        // details above under the tag id being attached, and books the return
-        // against it — POST /sales/returns/untracked. The plain /sales/returns
-        // endpoint cannot be used here: it requires a saree we already sold.
+        submitting={wsSubmitting}
+        setReturnType={setReturnType}
+        onPrintTags={() => printTags(draftTags())}
+        // These pieces have no prior record, so this registers each saree from
+        // the details above under the tag id being attached and books a return
+        // against it — POST /sales/returns/untracked/bulk, one transaction for
+        // the whole consignment. The plain /sales/returns endpoint cannot be
+        // used here: it requires a saree we already sold.
         onConfirm={async () => {
+          if (wsSubmitting) return;
+          setWsSubmitting(true);
           setWsError(null);
+          const tags = draftTags();
           try {
-            await salesApi.registerReturnedSaree({
-              sareeId: wsNewId.trim(),
-              sourceName: wsVendor.trim(),
-              reason: wsReason ?? "Wholesale Return",
-              weightG: Number(wsWeight) || 0,
-              costPrice: wsPrice ? Number(wsPrice) : undefined,
-              designCode: wsDesign.trim() || undefined,
-              sareeType: wsType || undefined,
-              color: wsColor.trim() || undefined,
-              photoUrl: wsPhotoUrl ?? undefined,
+            const records = await salesApi.registerReturnedSarees({
+              sourceName: wsVendorName.trim(),
+              sourceCustomerId: wsVendorId || undefined,
+              items: wsDrafts.map(toItem),
             });
-            refetch();
+            // records come back in the same order as the items were sent, which
+            // is the only reliable way to line them up for a no-tag draft: its
+            // sareeId is blank until the server generates one.
+            setWsResults(wsDrafts.map((d, i) => {
+              const t = sareeTypeByCode.get(d.sareeType);
+              const record = records[i];
+              return {
+                sareeId: record?.sareeId ?? d.sareeId.trim(),
+                returnRef: record?.returnRef ?? "—",
+                sareeTypeLabel: t ? `${t.code} · ${t.name}` : null,
+                color: d.color.trim() || null,
+                weight: d.weight,
+              };
+            }));
+            setConfirmedTags(tags);
+            await refetch();
+            void queryClient.invalidateQueries({ queryKey: ["return-stock"] });
+            void queryClient.invalidateQueries({ queryKey: ["shop-stock"] });
             setStep("success");
           } catch (err) {
             setWsError(
@@ -402,9 +604,12 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
                 ? `Could not record this return: ${err.message}`
                 : "Could not record this return.",
             );
+          } finally {
+            setWsSubmitting(false);
           }
         }}
       />
+      )}
     </div>
   );
 }

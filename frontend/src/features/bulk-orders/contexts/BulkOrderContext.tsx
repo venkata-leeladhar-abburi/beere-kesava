@@ -136,7 +136,12 @@ const QUERY_KEY = ["bulkOrders"] as const;
 export function BulkOrderProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
   const { getSareeTypeByCode } = useRatesPricing();
-  const enabled = useAuthGate();
+  // /bulk-orders itself is open to WORKER too, but this query also fetches
+  // GET /customers in the same Promise.all, which is SHOP/ACCOUNTANT-only
+  // (ADMIN/SUPERADMIN bypass every role check) — WORKER/WEAVER would 403 on
+  // that half. This provider is shared across every portal, so an unscoped
+  // gate fired the combined call for them too.
+  const enabled = useAuthGate("shop", "accountant", "admin", "superadmin");
 
   const { data: bulkOrders = [], isError, error, isLoading, refetch } = useQuery({
     queryKey: QUERY_KEY,

@@ -154,7 +154,12 @@ const FINANCIALS_KEY = ["firms", "financials"] as const;
 export function FirmsProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
 
-  const enabled = useAuthGate();
+  // GET /firms is ACCOUNTANT/SUPERADMIN-only on the backend (ADMIN bypasses
+  // every role check there too). This provider is mounted for every portal
+  // (see App.tsx's SharedContexts), so an unscoped gate fired this for
+  // SHOP/WORKER/WEAVER on every load and they got back nothing but a 403 —
+  // "Your role (SHOP) is not permitted to perform this action."
+  const enabled = useAuthGate("accountant", "admin", "superadmin");
 
   const { data: backendFirms = [], isLoading, error, refetch } = useQuery({
     queryKey: FIRMS_KEY,

@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
 
 import { useSuppliers } from "@/features/suppliers";
-import { Supplier } from "@/features/suppliers";
+import { Supplier, Purchase } from "@/features/suppliers";
 import { F, T } from "../../theme";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { FadeUp } from "../common/motion";
@@ -42,7 +42,7 @@ function SupplierStatusBadge({ status }: { status: SupplierStatusKey }) {
 }
 
 export function SupplierPaymentsSection() {
-  const { suppliers, payments, addPayment, statsFor, isLoading, isError, refetch } = useSuppliers();
+  const { suppliers, purchases, payments, addPayment, statsFor, isLoading, isError, refetch } = useSuppliers();
 
   const [view, setView] = useState<"card" | "table">("card");
   const [statusFilter, setStatusFilter] = useState("All Bill Status");
@@ -84,8 +84,11 @@ export function SupplierPaymentsSection() {
   });
 
   const payFor = payForId ? rows.find(r => r.supplier.id === payForId) ?? null : null;
+  const openPurchasesForPayFor: Purchase[] = payFor
+    ? purchases.filter(p => p.supplierId === payFor.supplier.id && p.status !== "Paid")
+    : [];
 
-  const handleSave = (payload: { amount: number; date: string; mode: "Cash" | "Bank Transfer" | "UPI" | "Cheque"; reference: string }) => {
+  const handleSave = (payload: { amount: number; date: string; mode: "Cash" | "Bank Transfer" | "UPI" | "Cheque"; reference: string; purchaseId?: string }) => {
     if (!payFor) return;
     setSaving(true);
     addPayment({
@@ -94,6 +97,7 @@ export function SupplierPaymentsSection() {
       amount: payload.amount,
       mode: payload.mode,
       reference: payload.reference,
+      purchaseId: payload.purchaseId,
     });
     toast.success(`Payment of ${formatMoney(rupees(payload.amount))} recorded for ${payFor.supplier.name}`);
     setSaving(false);
@@ -420,6 +424,7 @@ export function SupplierPaymentsSection() {
           <SupplierPayNowModal
             supplier={payFor.supplier}
             outstanding={payFor.outstanding}
+            openPurchases={openPurchasesForPayFor}
             saving={saving}
             onClose={() => setPayForId(null)}
             onSave={handleSave}

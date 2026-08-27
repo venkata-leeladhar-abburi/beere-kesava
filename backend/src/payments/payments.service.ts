@@ -4,6 +4,7 @@ import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
 import { Prisma } from "../generated/prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
+import { PurchasesService } from "../purchases/purchases.service";
 import { VendorBillsService } from "../vendor-bills/vendor-bills.service";
 import { CreateSupplierPaymentDto } from "./dto/create-supplier-payment.dto";
 import { CreateVendorPaymentDto } from "./dto/create-vendor-payment.dto";
@@ -29,6 +30,7 @@ export class PaymentsService {
     private readonly prisma: PrismaService,
     private readonly auditLog: AuditLogService,
     private readonly vendorBillsService: VendorBillsService,
+    private readonly purchasesService: PurchasesService,
   ) {}
 
   async createWeaverPayment(dto: CreateWeaverPaymentDto) {
@@ -87,6 +89,19 @@ export class PaymentsService {
     if (!supplier) {
       throw new NotFoundException(`Supplier ${dto.supplierId} not found`);
     }
+
+    if (dto.purchaseId) {
+      // Validates existence and supplier ownership up front so a payment is
+      // never recorded against a purchase that doesn't belong to this supplier.
+      const purchase = await this.prisma.purchase.findUnique({ where: { id: dto.purchaseId } });
+      if (!purchase) {
+        throw new NotFoundException(`Purchase ${dto.purchaseId} not found`);
+      }
+      if (purchase.supplierId !== dto.supplierId) {
+        throw new NotFoundException(`Purchase ${dto.purchaseId} does not belong to this supplier`);
+      }
+    }
+
     const payment = await this.prisma.supplierPayment.create({
       data: {
         supplierId: dto.supplierId,
@@ -95,13 +110,20 @@ export class PaymentsService {
         utr: dto.utr,
         method: dto.method,
         firmId: dto.firmId,
+        purchaseId: dto.purchaseId,
       },
     });
+
+    if (dto.purchaseId) {
+      await this.purchasesService.recomputeStatus(dto.purchaseId);
+    }
 
     await this.auditLog.recordAction({
       actorId: dto.actorId,
       module: "PAYMENTS",
-      action: `Recorded payment of ${dto.amount} to supplier ${supplier.name}`,
+      action: dto.purchaseId
+        ? `Recorded payment of ${dto.amount} to supplier ${supplier.name} against purchase ${dto.purchaseId}`
+        : `Recorded payment of ${dto.amount} to supplier ${supplier.name}`,
       entityType: "SupplierPayment",
       entityId: payment.id,
       recordLabel: supplier.name,
@@ -290,7 +312,7 @@ export class PaymentsService {
       select: {
         sareeId: true,
         weaverId: true,
-        weaver: { select: { firstName: true, lastName: true } },
+        weaver: { select: { code: true, firstName: true, lastName: true } },
         batchId: true,
         loomNumber: true,
         qcDate: true,
@@ -313,6 +335,9 @@ export class PaymentsService {
       return {
         sareeId: r.sareeId,
         weaverId: r.weaverId as string,
+        // Human-facing weaver code ("Ramarao-001") — the only weaver id the UI
+        // ever shows; weaverId (UUID) stays for joins and the Excel round-trip.
+        weaverCode: r.weaver?.code ?? (r.weaverId as string),
         weaverName: r.weaver ? `${r.weaver.firstName} ${r.weaver.lastName}`.trim() : (r.weaverId as string),
         batchId: r.batchId,
         loomNumber,

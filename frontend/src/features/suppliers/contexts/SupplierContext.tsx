@@ -249,6 +249,7 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
         amount: Number(p.amount),
         mode: (p.method as SupplierPayment["mode"]) ?? "Bank Transfer",
         reference: p.utr ?? "",
+        purchaseId: p.purchaseId ?? undefined,
       }));
     },
     enabled,
@@ -365,13 +366,21 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
     mutationFn: (p: Omit<SupplierPayment, "id">) =>
       supplierPaymentsApi.create({
         supplierId: p.supplierId, amount: p.amount, date: p.date, utr: p.reference, method: p.mode,
+        purchaseId: p.purchaseId,
       }),
     onSuccess: (created) => {
       setPayments(prev => [{
         id: created.id, supplierId: created.supplierId, date: created.date,
         amount: Number(created.amount), mode: (created.method as SupplierPayment["mode"]) ?? "Bank Transfer",
         reference: created.utr ?? "",
+        purchaseId: created.purchaseId ?? undefined,
       }, ...prev]);
+      // A payment linked to a purchase may have flipped that purchase's
+      // Pending/Partial/Paid status server-side (PurchasesService.
+      // recomputeStatus) — the cached purchase list doesn't know that yet.
+      if (created.purchaseId) {
+        void qc.invalidateQueries({ queryKey: PURCHASES_KEY });
+      }
       toast.success("Payment recorded");
     },
     onError: (err: unknown) => {

@@ -28,7 +28,9 @@ export type StockSource = "factory" | "outsourced" | "external";
 export interface StockSaree {
   id: string; source: StockSource;
   weaver: string | null; weaverCode: string | null;
-  loom: number; weight: string; qcDate: string;
+  /** Loom label as shown: the factory loom's code ("Loom-002"), or "Loom 3"
+   *  for a weaver's own loom. Already prefixed — never re-prefix it. */
+  loom: string; weight: string; qcDate: string;
   design: string; sareeType: string; status: StockStatus;
   saleRef: string | null; customer: string | null;
   assignedBy: string | null; assignedAt: string | null;
@@ -72,7 +74,7 @@ export function StockCard({ s, onView }: { s: StockSaree; onView: (s: StockSaree
           <div>
             <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, color: T.royalBurgundy, marginBottom: 3 }}>{s.id}</div>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-              {s.source === "factory"  ? `🏭 Factory · Loom ${s.loom}`
+              {s.source === "factory"  ? `🏭 Factory · ${s.loom}`
              : s.source === "external" ? `🚚 ${s.supplier} · ${s.invoiceNumber}`
              :                           `🪡 ${s.weaver} · ${s.weaverCode}`}
             </div>

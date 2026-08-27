@@ -13,7 +13,12 @@ export type IssueSource = "own" | "outsourced" | null;
 // HistorySection.tsx both compare/lookup against these exact literals and are outside
 // this pass's file list — retyping needs a follow-up touching those two call sites too.
 export interface ReceivedSareeLog {
-  id: string; weaver: string; wcode: string; batch: string;
+  id: string; weaver: string;
+  /** Weaver UUID — identity, used as the weaverId in QC/finishing payloads. Never displayed. */
+  wcode: string;
+  /** Human-facing weaver code ("Ramarao-001") — the only weaver id shown in the UI. */
+  weaverCode?: string;
+  batch: string;
   weight: string; date: string; color: string; status: "Passed QC" | "Defective" | "Pending QC";
   /** Photo captured at receipt (data URL or hosted URL) — shown as a thumbnail in Received History. */
   photoUrl?: string | null;

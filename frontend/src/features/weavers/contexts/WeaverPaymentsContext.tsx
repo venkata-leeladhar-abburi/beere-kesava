@@ -73,7 +73,11 @@ export function WeaverPaymentsProvider({ children }: { children: React.ReactNode
   const { role } = useAuth();
   const canReadFirms = role === "accountant" || role === "admin" || role === "superadmin";
 
-  const enabled = useAuthGate();
+  // GET /payments/weavers is ACCOUNTANT/WEAVER-only on the backend (ADMIN/
+  // SUPERADMIN bypass every role check). This provider is shared across
+  // every portal, so an unscoped gate fired this for SHOP/WORKER too and
+  // they got back nothing but a "your role is not permitted" 403.
+  const enabled = useAuthGate("accountant", "weaver", "admin", "superadmin");
 
   const { data: payments = [], isError, error, isLoading, refetch } = useQuery({
     queryKey: QUERY_KEY,

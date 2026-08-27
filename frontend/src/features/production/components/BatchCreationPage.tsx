@@ -52,9 +52,9 @@ export function BatchCreationPage() {
       const [weaversRes, loomsRes] = await Promise.all([
         weaversApi.list(), factoryLoomsApi.list(),
       ]);
-      setWeavers(weaversRes.items.map(w => ({ id: w.id, name: w.name, initials: w.initials, looms: w.looms })));
+      setWeavers(weaversRes.items.map(w => ({ id: w.id, code: w.code, name: w.name, initials: w.initials, looms: w.looms })));
       setLooms(loomsRes.items.map(l => ({
-        id: l.id, loomNumber: l.loomNumber, location: l.location ?? "", status: l.status,
+        id: l.id, displayCode: l.code, loomNumber: l.loomNumber, location: l.location ?? "", status: l.status,
         operatorName: l.operatorName ?? "", operatorPhone: l.operatorPhone ?? "",
         installedYear: l.installedYear, notes: l.notes ?? "",
       })));

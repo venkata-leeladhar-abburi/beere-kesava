@@ -75,7 +75,7 @@ export class ScanService {
       recipientType: row.recipientType,
       weaver: row.weaver ? { id: row.weaver.id, name: row.weaver.name } : null,
       factoryLoom: row.factoryLoom
-        ? { id: row.factoryLoom.id, loomNumber: row.factoryLoom.loomNumber }
+        ? { id: row.factoryLoom.id, code: row.factoryLoom.code, loomNumber: row.factoryLoom.loomNumber }
         : null,
       design: row.design ? { code: row.design.code, name: row.design.name } : null,
       sareeType: row.sareeType ? { code: row.sareeType.code, type: row.sareeType.type } : null,

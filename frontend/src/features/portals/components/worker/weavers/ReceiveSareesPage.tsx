@@ -42,7 +42,10 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
     if (!weaversRes?.items) return [];
     return weaversRes.items.map(w => ({
       name: w.name,
-      code: w.id,
+      // `id` is the UUID everything is keyed by; `code` is the human-facing
+      // weaver id ("Ramarao-001") and is the only one ever displayed.
+      id: w.id,
+      code: w.code,
       looms: w.looms,
       avatar: w.initials || `${w.firstName.charAt(0)}${w.lastName.charAt(0)}`,
     }));
@@ -137,7 +140,7 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
   const [remoteSent, setRemoteSent] = useState(false);
   const [remoteConfirmed, setRemoteConfirmed] = useState(false);
 
-  const weaverBatches = selectedWeaver ? (batches[selectedWeaver.code] ?? []) : [];
+  const weaverBatches = selectedWeaver ? (batches[selectedWeaver.id] ?? []) : [];
   const currentBatch = weaverBatches.find(b => b.id === selectedBatchId) ?? weaverBatches[0] ?? null;
   const doneCount = currentBatch ? currentBatch.sarees.filter(s => s.status !== "pending").length : 0;
   const allDone = currentBatch ? doneCount === currentBatch.total : false;
@@ -150,14 +153,14 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
   // selected saree — multi-select still supports these incidentally.
   const sareeId = selectedSarees[0]?.sareeId ?? "—";
 
-  const pickWeaver = (code: string) => {
-    // Matched on the weaver's unique id (aliased `code` here), never `name`
-    // -- two weavers can share a display name, and matching by name would
-    // silently resolve to whichever one happens to come first, showing the
-    // wrong weaver's looms/batches/details regardless of which was clicked.
-    const w = WEAVERS.find(w => w.code === code) || null;
+  const pickWeaver = (id: string) => {
+    // Matched on the weaver's unique id, never `name` -- two weavers can share
+    // a display name, and matching by name would silently resolve to whichever
+    // one happens to come first, showing the wrong weaver's
+    // looms/batches/details regardless of which was clicked.
+    const w = WEAVERS.find(w => w.id === id) || null;
     setSelectedWeaver(w);
-    setSelectedBatchId(w ? (batches[w.code]?.[0]?.id ?? null) : null);
+    setSelectedBatchId(w ? (batches[w.id]?.[0]?.id ?? null) : null);
     setSelectedSareeNos(new Set());
     setSareeColor(""); setSareeWeight(""); setSareePrice(""); setHasPhoto(false); setMatEdits({});
   };
@@ -216,7 +219,7 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
           sellingPrice: sareePrice ? fromPaise(toPaise(Number(sareePrice) || 0)) : undefined,
         });
         onSareeReceived?.({
-          id: s.sareeId, weaver: selectedWeaver.name, wcode: selectedWeaver.code, batch: currentBatch.id,
+          id: s.sareeId, weaver: selectedWeaver.name, wcode: selectedWeaver.id, weaverCode: selectedWeaver.code, batch: currentBatch.id,
           weight: `${sareeWeight}g`, date: dateStr,
           color: sareeColor, status: "Pending QC",
           photoUrl, loomNumber: s.weaverLoom ?? currentBatch.loomNumber ?? null,
@@ -259,13 +262,13 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
             <div style={{ margin: "10px 16px 0" }}>
               <FieldLabel>Select Weaver</FieldLabel>
               <Select
-                value={selectedWeaver?.code ?? ""}
+                value={selectedWeaver?.id ?? ""}
                 onValueChange={pickWeaver}
                 size="lg"
                 disabled={weaversLoading}
                 placeholder={weaversLoading ? "Loading weavers…" : undefined}
               >
-                {WEAVERS.map(w => <SelectItem key={w.code} value={w.code}>{w.name}</SelectItem>)}
+                {WEAVERS.map(w => <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>)}
               </Select>
             </div>
 
@@ -464,7 +467,7 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
                         ...prev,
                       ]);
                       onSareeReceived?.({
-                        id: s.sareeId, weaver: selectedWeaver.name, wcode: selectedWeaver.code, batch: currentBatch.id,
+                        id: s.sareeId, weaver: selectedWeaver.name, wcode: selectedWeaver.id, weaverCode: selectedWeaver.code, batch: currentBatch.id,
                         weight: sareeWeight ? `${sareeWeight}g` : "—", date: dateStr,
                         color: sareeColor || "—", status: "Defective",
                         photoUrl, loomNumber: s.weaverLoom ?? currentBatch.loomNumber ?? null,
