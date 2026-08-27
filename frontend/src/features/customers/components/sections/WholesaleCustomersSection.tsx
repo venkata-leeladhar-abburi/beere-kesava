@@ -396,82 +396,81 @@ export function WholesaleCustomersSection({
           {wholesaleList.map((w, i) => {
             return (
               <div key={w.id} style={{
-                background: `linear-gradient(135deg, ${T.warmIvory} 0%, ${T.silkCream} 100%)`,
-                borderRadius: 20,
-                border: `1.5px solid ${T.borderGold}`,
-                boxShadow: "0 10px 28px rgba(74,6,27,0.06)",
-                padding: "24px",
+                background: "#FFFDF9",
+                borderRadius: 12,
+                border: `1.5px solid ${T.antiqueGold}`,
+                boxShadow: "0 4px 20px rgba(200,155,71,0.15)",
+                overflow: "hidden",
                 display: "flex",
                 flexDirection: "column",
-                justifyContent: "space-between",
                 position: "relative",
-                overflow: "hidden",
-                minHeight: 300,
                 color: T.luxuryBrown,
               }}>
-                {/* Subtle Light Card Pattern */}
-                <div style={{ position: "absolute", top: "-50%", right: "-30%", width: "100%", height: "100%", background: "radial-gradient(circle, rgba(200,155,71,0.12) 0%, transparent 70%)", pointerEvents: "none" }} />
+                {/* Accent top */}
+                <div style={{ height: 4, background: T.royalBurgundy, width: "100%", opacity: 0.8, flexShrink: 0 }} />
 
                 {/* Card Header: Avatar & Short ID */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <div style={{ width: 44, height: 44, borderRadius: "50%", background: `linear-gradient(135deg, ${T.royalBurgundy}, ${T.darkBurgundy})`, color: "#FFFDF9", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 16, fontWeight: 700, boxShadow: "0 4px 10px rgba(110,15,45,0.15)" }}>
+                <div style={{ padding: "20px 22px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                    <div style={{ width: 64, height: 64, borderRadius: "50%", background: T.royalBurgundy, color: "#FFF", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 22, fontWeight: 700, border: `3px solid ${T.antiqueGold}`, flexShrink: 0 }}>
                       {w.code}
                     </div>
-                    <div>
-                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy, fontWeight: 700, letterSpacing: "1px" }}>{w.displayCode || w.id}</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>EST. {2020 + (i % 5)}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontFamily: F.display, fontSize: 20, color: T.luxuryBrown, fontWeight: 700, lineHeight: 1.2, marginBottom: 4 }}>{w.name}</div>
+                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.royalBurgundy, letterSpacing: "0.4px", marginBottom: 3 }}>{w.displayCode || w.id}</div>
+                      <div style={{ display: "inline-block", fontFamily: "var(--font-mono)", fontSize: 12, color: T.royalBurgundy, background: T.warmCream, border: `1px solid ${T.borderGold}`, borderRadius: 7, padding: "3px 10px" }}>EST. {2020 + (i % 5)}</div>
                     </div>
-                  </div>
-                  {/* Small Gold Chip Icon to mimic a credit card */}
-                  <div style={{ width: 34, height: 26, borderRadius: 6, background: `linear-gradient(135deg, ${T.goldLight}, ${T.antiqueGold})`, border: "1px solid rgba(255,255,255,0.4)", display: "flex", flexDirection: "column", gap: 3, padding: 4, justifyContent: "center", boxShadow: "0 2px 5px rgba(200,155,71,0.2)" }}>
-                    <div style={{ height: 2, background: "rgba(0,0,0,0.15)", borderRadius: 1 }} />
-                    <div style={{ height: 2, background: "rgba(0,0,0,0.15)", borderRadius: 1 }} />
-                    <div style={{ height: 2, background: "rgba(0,0,0,0.15)", borderRadius: 1 }} />
                   </div>
                 </div>
 
                 {/* Card Middle: Firm Name & City */}
-                <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", marginBottom: 20 }}>
-                  <h4 style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 6px 0", letterSpacing: "0.5px", lineHeight: 1.25 }}>{w.name}</h4>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, color: T.taupe }}>
-                    <MapPin size={13} color={T.antiqueGold} />
-                    <span style={{ fontFamily: F.ui, fontSize: 13 }}>{w.city}</span>
-                  </div>
-                </div>
-
-                {/* Card Bottom: GST, Credit Terms & Dues */}
-                <div style={{ borderTop: `1px solid ${T.borderDef}`, paddingTop: 16, display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-                  <div>
-                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 3 }}>GSTIN</div>
-                    <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.luxuryBrown, fontWeight: 600 }}>{w.gstNumber || "Unregistered"}</div>
-                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.royalBurgundy, marginTop: 6, fontWeight: 600 }}>Credit Terms: {w.terms}</div>
-                  </div>
-
-                  <div style={{ textAlign: "right" }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>Outstanding</div>
-                    <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: w.out === "0" ? T.greenMid : T.crimson }}>
-                      {w.out === "0" ? "Clear" : formatMoney(rupees(Number(w.out) || 0))}
+                <div style={{ padding: "8px 22px 18px", display: "flex", flexDirection: "column", gap: 14, flex: 1 }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 13 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <MapPin size={20} color={T.royalBurgundy} />
                     </div>
-                    <div style={{ fontFamily: F.ui, fontSize: 12, color: w.status === "overdue" ? T.crimson : T.taupe, marginTop: 4, fontWeight: 600 }}>
-                      {w.status === "clear" ? "✓ No Dues" : w.status === "overdue" ? "⚠ Overdue" : "◐ Pending"}
+                    <div>
+                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 500, color: T.taupe, letterSpacing: "1.6px", textTransform: "uppercase", marginBottom: 3 }}>Location</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{w.city}</div>
+                    </div>
+                  </div>
+
+                  {/* Card Bottom: GST, Credit Terms & Dues */}
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 13 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <Building2 size={20} color={T.royalBurgundy} />
+                    </div>
+                    <div>
+                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 500, color: T.taupe, letterSpacing: "1.6px", textTransform: "uppercase", marginBottom: 3 }}>Business Details</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, marginBottom: 2 }}>GSTIN: {w.gstNumber || "Unregistered"}</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, lineHeight: 1.45 }}>Credit Terms: {w.terms}</div>
+                    </div>
+                  </div>
+
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 13 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <AlertTriangle size={20} color={T.royalBurgundy} />
+                    </div>
+                    <div>
+                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 500, color: T.taupe, letterSpacing: "1.6px", textTransform: "uppercase", marginBottom: 3 }}>Outstanding</div>
+                      <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: w.out === "0" ? T.greenMid : T.crimson }}>
+                        {w.out === "0" ? "Clear" : formatMoney(rupees(Number(w.out) || 0))}
+                      </div>
+                      <div style={{ fontFamily: F.ui, fontSize: 13, color: w.status === "overdue" ? T.crimson : T.taupe, marginTop: 2, fontWeight: 600 }}>
+                        {w.status === "clear" ? "✓ No Dues" : w.status === "overdue" ? "⚠ Overdue" : "◐ Pending"}
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Card Actions Footer */}
-                <div style={{
-                  marginTop: 18,
-                  display: "flex",
-                  justifyContent: "space-between",
-                  gap: 10,
-                  borderTop: `1px solid ${T.borderDef}`,
-                  paddingTop: 12,
-                }}>
-                  <Button onClick={() => onView(w)} variant="secondary" size="sm" iconLeft={Eye} fullWidth>
+                <div style={{ padding: "18px 22px 22px", display: "flex", gap: 12 }}>
+                  <Button onClick={() => onView(w)} variant="secondary" className="flex-1 rounded-xl shadow-none border-[#E8DCC4] hover:bg-[#F7F2EA] hover:border-[#D4C3A3] text-[#4A2B1D]">
+                    <Eye size={20} className="mr-2" />
                     View Profile
                   </Button>
-                  <Button onClick={() => onEdit(w)} variant="tertiary" size="sm" iconLeft={Edit}>
+                  <Button onClick={() => onEdit(w)} variant="secondary" className="flex-1 rounded-xl shadow-none border-[#E8DCC4] hover:bg-[#F7F2EA] hover:border-[#D4C3A3] text-[#4A2B1D]">
+                    <Edit size={20} className="mr-2" />
                     Edit
                   </Button>
                 </div>

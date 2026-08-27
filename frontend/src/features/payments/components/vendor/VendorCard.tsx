@@ -18,6 +18,56 @@ function formatDisplayDate(dateStr?: string): string {
   return dateStr;
 }
 
+const TopDivider = () => (
+  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 20, marginBottom: 12 }}>
+    <div style={{ display: "flex", gap: 3, paddingLeft: 4 }}>
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+    </div>
+    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginLeft: 8 }} />
+    <svg width="60" height="20" viewBox="0 0 60 20" style={{ margin: "0 8px", flexShrink: 0 }}>
+      <g transform="translate(30, 10)">
+        <polygon points="-16,0 -12,-3 -8,0 -12,3" fill={T.antiqueGold} />
+        <path d="M-5,0 L0,-5 L5,0 L0,5 Z" fill={T.antiqueGold} />
+        <circle cx="0" cy="0" r="1.5" fill="#FFFDF9" />
+        <polygon points="8,0 12,-3 16,0 12,3" fill={T.antiqueGold} />
+      </g>
+    </svg>
+    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginRight: 8 }} />
+    <div style={{ display: "flex", gap: 3, paddingRight: 4 }}>
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+    </div>
+  </div>
+);
+
+const BottomDivider = () => (
+  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 20, marginTop: 16 }}>
+    <div style={{ display: "flex", gap: 3, paddingLeft: 4 }}>
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+    </div>
+    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginLeft: 8 }} />
+    <svg width="60" height="20" viewBox="0 0 60 20" style={{ margin: "0 8px", flexShrink: 0 }}>
+      <g transform="translate(30, 10)">
+        <polygon points="-16,0 -12,-3 -8,0 -12,3" fill={T.antiqueGold} />
+        <path d="M-5,0 L0,-5 L5,0 L0,5 Z" fill={T.antiqueGold} />
+        <circle cx="0" cy="0" r="1.5" fill="#FFFDF9" />
+        <polygon points="8,0 12,-3 16,0 12,3" fill={T.antiqueGold} />
+      </g>
+    </svg>
+    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginRight: 8 }} />
+    <div style={{ display: "flex", gap: 3, paddingRight: 4 }}>
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+    </div>
+  </div>
+);
+
 export function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoice, selected }: { vp: VendorPayment; matchedPO?: PurchaseOrder; onPay: (id: string) => void; onView?: () => void; onViewPO?: () => void; onAddInvoice?: () => void; selected: boolean }) {
   const balance = vp.invoiceAmt - vp.paidAmt;
   const isPaid = vp.status === "Paid";
@@ -66,22 +116,28 @@ export function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoic
 
   return (
     <motion.div
-      whileHover={{ y: -4, boxShadow: "0 18px 45px rgba(74,6,27,0.09)" }}
-      transition={{ duration: 0.25 }}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ type: "spring", stiffness: 260, damping: 22 }}
       style={{
-        background: "#FFFFFF",
-        borderRadius: 20,
-        border: `1.5px solid ${T.borderDef}`,
-        boxShadow: "0 8px 30px rgba(74,6,27,0.04)",
+        background: "#FFFDF9",
+        border: `1.5px solid ${T.antiqueGold}`,
+        borderRadius: 12,
+        boxShadow: "0 4px 20px rgba(200,155,71,0.15)",
         overflow: "hidden",
         display: "flex",
         flexDirection: "column",
-        width: "100%",
         position: "relative",
+        width: "100%",
+        color: T.luxuryBrown,
       }}
     >
       {/* Top accent bar */}
-      <div style={{ height: 6, background: T.royalBurgundy, flexShrink: 0 }} />
+      <div style={{ height: 4, background: T.royalBurgundy, width: "100%", opacity: 0.8, flexShrink: 0 }} />
+
+      <div style={{ padding: "16px 20px 0" }}>
+        <TopDivider />
+      </div>
 
       <div style={{ padding: "20px 22px 22px", display: "flex", flexDirection: "column", flex: 1 }}>
         {/* Top row: PO number + Date */}
@@ -129,7 +185,7 @@ export function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoic
               const materialKey = `${m.materialType}-${m.subtype ?? "none"}-${mi}`;
               return (
                 <div key={materialKey} style={{ display: "flex", flexDirection: "column", gap: 6, borderBottom: mi < matchedPO.materials.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", paddingBottom: mi < matchedPO.materials.length - 1 ? 12 : 0, paddingTop: mi > 0 ? 8 : 0 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
                     <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: mt.col, background: mt.bg, borderRadius: 6, padding: "2px 8px", minWidth: 50, textAlign: "center", flexShrink: 0 }}>
                       {m.materialType}
                     </span>
@@ -142,7 +198,7 @@ export function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoic
                       {m.pricePerUnit > 0 && <> · <Money value={rupees(m.pricePerUnit)} />/{m.unit}</>}
                     </span>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#FDFBF7", padding: "6px 10px", borderRadius: 6, border: `1px solid ${T.borderGold}40` }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8, background: "#FDFBF7", padding: "6px 10px", borderRadius: 6, border: `1px solid ${T.borderGold}40` }}>
                     <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Invoice Amount</span>
                     <span style={{ fontSize: 12, fontWeight: 700, color: m.invoiceAmount ? "#8B6018" : T.taupe }}>
                       {m.invoiceAmount ? <Money value={rupees(m.invoiceAmount)} /> : "Not yet invoiced"}
@@ -173,14 +229,18 @@ export function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoic
         </div>
       </div>
 
+      <div style={{ padding: "0 20px" }}>
+        <BottomDivider />
+      </div>
+
       {/* Footer / Actions */}
-      <div className="bg-[rgba(110,15,45,0.02)] border-t border-[rgba(110,15,45,0.08)] p-3 flex flex-col gap-2.5 flex-shrink-0 w-full">
-        <div className="flex items-center justify-between">
+      <div style={{ padding: "0 20px 20px", display: "flex", flexDirection: "column", gap: 10, flexShrink: 0, width: "100%" }}>
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <span className="text-[11px] font-bold text-[#8C7A6B] uppercase tracking-wider">Status & Actions</span>
           <VendorBadge status={vp.status} />
         </div>
 
-        <div className="grid grid-cols-2 gap-2 w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full">
           {actions.map(act => (
             <Button
               key={act.key}

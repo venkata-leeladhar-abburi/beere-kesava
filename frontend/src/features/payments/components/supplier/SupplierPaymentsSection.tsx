@@ -42,6 +42,56 @@ function SupplierStatusBadge({ status }: { status: SupplierStatusKey }) {
   );
 }
 
+const TopDivider = () => (
+  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 20, marginBottom: 12 }}>
+    <div style={{ display: "flex", gap: 3, paddingLeft: 4 }}>
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+    </div>
+    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginLeft: 8 }} />
+    <svg width="60" height="20" viewBox="0 0 60 20" style={{ margin: "0 8px", flexShrink: 0 }}>
+      <g transform="translate(30, 10)">
+        <polygon points="-16,0 -12,-3 -8,0 -12,3" fill={T.antiqueGold} />
+        <path d="M-5,0 L0,-5 L5,0 L0,5 Z" fill={T.antiqueGold} />
+        <circle cx="0" cy="0" r="1.5" fill="#FFFDF9" />
+        <polygon points="8,0 12,-3 16,0 12,3" fill={T.antiqueGold} />
+      </g>
+    </svg>
+    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginRight: 8 }} />
+    <div style={{ display: "flex", gap: 3, paddingRight: 4 }}>
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+    </div>
+  </div>
+);
+
+const BottomDivider = () => (
+  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 20, marginTop: 16 }}>
+    <div style={{ display: "flex", gap: 3, paddingLeft: 4 }}>
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+    </div>
+    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginLeft: 8 }} />
+    <svg width="60" height="20" viewBox="0 0 60 20" style={{ margin: "0 8px", flexShrink: 0 }}>
+      <g transform="translate(30, 10)">
+        <polygon points="-16,0 -12,-3 -8,0 -12,3" fill={T.antiqueGold} />
+        <path d="M-5,0 L0,-5 L5,0 L0,5 Z" fill={T.antiqueGold} />
+        <circle cx="0" cy="0" r="1.5" fill="#FFFDF9" />
+        <polygon points="8,0 12,-3 16,0 12,3" fill={T.antiqueGold} />
+      </g>
+    </svg>
+    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginRight: 8 }} />
+    <div style={{ display: "flex", gap: 3, paddingRight: 4 }}>
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+    </div>
+  </div>
+);
+
 export function SupplierPaymentsSection() {
   const { suppliers, purchases, payments, addPayment, statsFor, isLoading, isError, refetch } = useSuppliers();
 
@@ -381,29 +431,33 @@ export function SupplierPaymentsSection() {
               return (
               <motion.div
                 key={r.supplier.id}
-                initial={{ opacity: 0, y: 16 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: i * 0.05 }}
-                whileHover={{ y: -3, boxShadow: "0 14px 35px rgba(110,15,45,0.10)" }}
+                transition={{ type: "spring", stiffness: 260, damping: 22 }}
                 style={{
                   background: "#FFFDF9",
-                  borderRadius: 20,
-                  border: `1.5px solid ${T.borderDef}`,
-                  boxShadow: "0 4px 20px rgba(74,6,27,0.03)",
+                  border: `1.5px solid ${T.antiqueGold}`,
+                  borderRadius: 12,
+                  boxShadow: "0 4px 20px rgba(200,155,71,0.15)",
                   overflow: "hidden",
                   display: "flex",
                   flexDirection: "column",
-                  width: "100%",
                   position: "relative",
+                  width: "100%",
+                  color: T.luxuryBrown,
                 }}
               >
-                {/* Top accent bar — Royal Burgundy Brown */}
-                <div style={{ height: 6, background: T.royalBurgundy, flexShrink: 0 }} />
+                {/* Top accent bar */}
+                <div style={{ height: 4, background: T.royalBurgundy, width: "100%", opacity: 0.8, flexShrink: 0 }} />
+
+                <div style={{ padding: "16px 20px 0" }}>
+                  <TopDivider />
+                </div>
 
                 <div style={{ padding: "20px 22px 18px", display: "flex", flexDirection: "column", flex: 1, justifyContent: "space-between" }}>
                   {/* Top Header: Store Arch Icon + Supplier Name + Status Pill */}
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+                    <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 12, minWidth: 0 }}>
                       {/* Scalloped Arch Badge */}
                       <div style={{
                         width: 44,
@@ -453,7 +507,7 @@ export function SupplierPaymentsSection() {
                   </div>
 
                   {/* Row 1: Purchased & Paid Stats */}
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
                     {/* Purchased */}
                     <div style={{ flex: 1 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, color: "#886A58" }}>
@@ -465,7 +519,7 @@ export function SupplierPaymentsSection() {
                     </div>
 
                     {/* Vertical divider */}
-                    <div style={{ width: 1, height: 36, background: "rgba(200, 155, 71, 0.22)", margin: "0 16px", flexShrink: 0 }} />
+                    <div className="hidden sm:block" style={{ width: 1, height: 36, background: "rgba(200, 155, 71, 0.22)", margin: "0 16px", flexShrink: 0 }} />
 
                     {/* Paid */}
                     <div style={{ flex: 1 }}>
@@ -482,7 +536,7 @@ export function SupplierPaymentsSection() {
                   <div style={{ height: 1, background: "rgba(200, 155, 71, 0.2)", margin: "14px 0" }} />
 
                   {/* Row 2: Balance Due */}
-                  <div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, color: "#886A58" }}>
                       <span style={{ color: "#C89B47", fontSize: 10 }}>●</span> Balance Due
                     </div>
@@ -492,6 +546,10 @@ export function SupplierPaymentsSection() {
                   </div>
 
                   {/* Bottom Shield / Action Banner */}
+                  <div style={{ padding: "0 20px" }}>
+                    <BottomDivider />
+                  </div>
+                  
                   <div style={{
                     marginTop: 18,
                     background: "linear-gradient(180deg, #FAF4EB 0%, #FFF8F0 100%)",
@@ -516,12 +574,12 @@ export function SupplierPaymentsSection() {
                         No Dues
                       </div>
                     ) : (
-                      <div style={{ display: "flex", gap: 8, width: "100%", marginTop: 2 }}>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, width: "100%", marginTop: 2 }}>
                         <Button
                           variant="tertiary"
                           size="sm"
                           onClick={() => setDetailForId(r.supplier.id)}
-                          className="flex-1 justify-center rounded-[8px] border border-[rgba(110,15,45,0.15)] text-[#6E0F2D] text-[12px] font-bold py-1.5"
+                          className="flex-1 min-w-[100px] justify-center rounded-[8px] border border-[rgba(110,15,45,0.15)] text-[#6E0F2D] text-[12px] font-bold py-1.5"
                         >
                           Details
                         </Button>
@@ -529,7 +587,7 @@ export function SupplierPaymentsSection() {
                           variant="primary"
                           size="sm"
                           onClick={() => setPayForId(r.supplier.id)}
-                          className="flex-1 justify-center rounded-[8px] bg-[#6E0F2D] hover:bg-[#4A0A1D] text-[#FFFDF9] text-[12px] font-bold py-1.5"
+                          className="flex-1 min-w-[100px] justify-center rounded-[8px] bg-[#6E0F2D] hover:bg-[#4A0A1D] text-[#FFFDF9] text-[12px] font-bold py-1.5"
                         >
                           Pay Now
                         </Button>

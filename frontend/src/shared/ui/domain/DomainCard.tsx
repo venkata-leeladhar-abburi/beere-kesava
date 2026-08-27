@@ -143,44 +143,57 @@ export function DomainCard({
     <Root
       onClick={onClick}
       className={cn(
-        "flex w-full flex-col rounded-[var(--radius-lg)] bg-[var(--surface-raised)] text-left",
-        "shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)] transition-shadow",
+        "flex w-full flex-col text-left transition-shadow relative overflow-hidden",
         clickable && "cursor-pointer",
         className
       )}
-      style={{ padding: "var(--pad-card)", containerType: "inline-size" } as React.CSSProperties}
+      style={{ 
+        background: "#FFFDF9",
+        borderRadius: 12,
+        border: "1.5px solid #C89B47",
+        boxShadow: "0 4px 20px rgba(200,155,71,0.15)",
+        color: "#4A2B1D",
+        containerType: "inline-size" 
+      } as React.CSSProperties}
     >
-      <div className="flex items-start gap-3">
+      {/* Accent top */}
+      <div style={{ height: 4, background: "#6E0F2D", width: "100%", opacity: 0.8, flexShrink: 0 }} />
+
+      <div style={{ padding: "20px 22px 18px", display: "flex", gap: 16, alignItems: "flex-start" }}>
         <Avatar name={avatarName} src={avatarSrc} size="lg" />
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
-            <span className="font-semibold text-base text-[var(--text-primary)] leading-snug">{title}</span>
+            <span className="font-bold text-[20px] text-[#4A2B1D] leading-snug tracking-tight">{title}</span>
             <div className="shrink-0">{status}</div>
           </div>
-          {code && <div className="mt-0.5">{code}</div>}
-          {meta && <div className="mt-0.5 truncate text-[13px] text-[var(--text-secondary)]">{meta}</div>}
+          {code && <div className="mt-1 text-[13px] text-[#6E0F2D] font-mono tracking-wide">{code}</div>}
+          {meta && <div className="mt-2 text-[13px] text-[#8A7968] font-medium tracking-wide uppercase">{meta}</div>}
         </div>
       </div>
 
-      {stats && stats.length > 0 && (
-        <div className="mt-4 grid grid-cols-3 gap-2 border-t border-[var(--border-subtle)] pt-4">
-          {stats.map((s) => (
-            <div key={s.label} className="text-center">
-              <div className="text-[14px] font-semibold tabular-nums text-[var(--text-primary)]">{s.value}</div>
-              <div className="text-[11px] text-[var(--text-tertiary)]">{s.label}</div>
+      {(stats && stats.length > 0 || progress != null) && (
+        <div style={{ padding: "8px 22px 18px", display: "flex", flexDirection: "column", gap: 14, flex: 1 }}>
+          {stats && stats.length > 0 && (
+            <div className="grid grid-cols-2 gap-3" style={{ background: "rgba(110,15,45,0.03)", padding: 12, borderRadius: 10, border: "1px solid rgba(200,155,71,0.2)" }}>
+              {stats.map((s) => (
+                <div key={s.label}>
+                  <div className="text-[12px] font-medium text-[#8A7968] uppercase tracking-wider mb-1">{s.label}</div>
+                  <div className="text-[15px] font-bold text-[#6E0F2D]">{s.value}</div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      )}
+          )}
 
-      {progress != null && (
-        <div className="mt-4 border-t border-[var(--border-subtle)] pt-4">
-          <Progress value={progress} label={progressLabel} size="sm" />
+          {progress != null && (
+            <div>
+              <Progress value={progress} label={progressLabel} size="sm" />
+            </div>
+          )}
         </div>
       )}
 
       {actions && (
-        <div className="mt-4 flex items-center justify-between border-t border-[var(--border-subtle)] pt-3">
+        <div style={{ padding: "18px 22px 22px", display: "flex", gap: 12, borderTop: "1px solid rgba(200,155,71,0.2)" }}>
           {actions}
         </div>
       )}

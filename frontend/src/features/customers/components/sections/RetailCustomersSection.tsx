@@ -394,47 +394,83 @@ export function RetailCustomersSection({
       ) : retailView === "card" ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {filteredRetail.map(r => (
-            <div key={r.id} style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: 22, boxShadow: "0 2px 12px rgba(74,6,27,0.04)", display: "flex", flexDirection: "column", gap: 14 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                  <div style={{ width: 44, height: 44, borderRadius: "50%", background: T.silkCream, border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 16, color: T.royalBurgundy, fontWeight: 700 }}>
+            <div key={r.id} style={{
+              background: "#FFFDF9",
+              borderRadius: 12,
+              border: `1.5px solid ${T.antiqueGold}`,
+              boxShadow: "0 4px 20px rgba(200,155,71,0.15)",
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column",
+              position: "relative",
+              color: T.luxuryBrown,
+            }}>
+              {/* Accent top */}
+              <div style={{ height: 4, background: T.royalBurgundy, width: "100%", opacity: 0.8, flexShrink: 0 }} />
+
+              {/* Card Header */}
+              <div style={{ padding: "20px 22px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                  <div style={{ width: 64, height: 64, borderRadius: "50%", background: T.royalBurgundy, color: "#FFF", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 22, fontWeight: 700, border: `3px solid ${T.antiqueGold}`, flexShrink: 0 }}>
                     {r.name.replace("Smt. ", "").substring(0, 2).toUpperCase()}
                   </div>
-                  <div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <span style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{r.name}</span>
-                      {r.regular && <Star size={14} color="#C89B47" fill="#C89B47" />}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                      <div style={{ fontFamily: F.display, fontSize: 20, color: T.luxuryBrown, fontWeight: 700, lineHeight: 1.2 }}>{r.name}</div>
+                      {r.regular && <Star size={16} color="#C89B47" fill="#C89B47" />}
                     </div>
-                    <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 2, display: "flex", alignItems: "center", gap: 4 }}>
-                      <MapPin size={12} color={T.taupe} /> {r.city}
-                    </div>
+                    {r.inactive && (
+                      <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.crimson, background: T.crimsonBg, padding: "3px 8px", borderRadius: 6, display: "inline-block", marginBottom: 3 }}>Inactive</span>
+                    )}
+                    <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.royalBurgundy, letterSpacing: "0.4px" }}>{r.phone}</div>
                   </div>
                 </div>
-                {r.inactive && (
-                  <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.crimson, background: T.crimsonBg, padding: "3px 8px", borderRadius: 6 }}>Inactive</span>
-                )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 10, background: T.silkCream, padding: 12, borderRadius: 10, border: `1px solid ${T.borderDef}` }}>
-                <div>
-                  <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const }}>Total Spend</div>
-                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 15, fontWeight: 700, color: T.royalBurgundy, marginTop: 2 }}><Money value={rupees(r.totalSpend ?? 0)} /></div>
+              {/* Card Middle: Info */}
+              <div style={{ padding: "8px 22px 18px", display: "flex", flexDirection: "column", gap: 14, flex: 1 }}>
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 13 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <MapPin size={20} color={T.royalBurgundy} />
+                  </div>
+                  <div>
+                    <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 500, color: T.taupe, letterSpacing: "1.6px", textTransform: "uppercase", marginBottom: 3 }}>Location</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{r.city}</div>
+                  </div>
                 </div>
-                <div>
-                  <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const }}>Purchases</div>
-                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 15, fontWeight: 700, color: T.luxuryBrown, marginTop: 2 }}>{r.totalPurchases} sarees</div>
+
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 13 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <ShoppingBag size={20} color={T.royalBurgundy} />
+                  </div>
+                  <div>
+                    <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 500, color: T.taupe, letterSpacing: "1.6px", textTransform: "uppercase", marginBottom: 3 }}>Purchase History</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, marginBottom: 2 }}>{r.totalPurchases} sarees</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, lineHeight: 1.45 }}>Total Spend: <Money value={rupees(r.totalSpend ?? 0)} /></div>
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 13 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <Calendar size={20} color={T.royalBurgundy} />
+                  </div>
+                  <div>
+                    <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 500, color: T.taupe, letterSpacing: "1.6px", textTransform: "uppercase", marginBottom: 3 }}>Last Visit</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{r.lastVisit}</div>
+                  </div>
                 </div>
               </div>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: 4, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6 }}><Phone size={12} /> {r.phone}</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 6 }}><Calendar size={12} /> Last visit: {r.lastVisit}</div>
-              </div>
-
-              <div style={{ display: "flex", gap: 8, marginTop: "auto" }}>
-                <Button variant="secondary" size="sm" fullWidth onClick={() => onViewHistory(r)}>Purchase History</Button>
+              {/* Card Actions Footer */}
+              <div style={{ padding: "18px 22px 22px", display: "flex", gap: 12 }}>
+                <Button variant="secondary" className="flex-1 rounded-xl shadow-none border-[#E8DCC4] hover:bg-[#F7F2EA] hover:border-[#D4C3A3] text-[#4A2B1D]" onClick={() => onViewHistory(r)}>
+                  <LayoutGrid size={20} className="mr-2" />
+                  History
+                </Button>
                 <DownloadGate>
-                  <Button variant="tertiary" size="sm" iconLeft={Download} onClick={() => onDownloadConfirm(r)} />
+                  <Button variant="secondary" className="flex-none rounded-xl shadow-none border-[#E8DCC4] hover:bg-[#F7F2EA] hover:border-[#D4C3A3] text-[#4A2B1D] px-3" onClick={() => onDownloadConfirm(r)}>
+                    <Download size={20} />
+                  </Button>
                 </DownloadGate>
               </div>
             </div>
