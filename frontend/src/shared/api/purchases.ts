@@ -94,12 +94,16 @@ export type UpdatePurchasePayload = Partial<Omit<CreatePurchasePayload, "sarees"
 };
 
 export const purchasesApi = {
-  list: (pageSize = 100, page = 1, supplierId?: string, status?: PurchasePaymentStatus) => {
+  list: (pageSize = 100, page = 1, supplierId?: string, status?: PurchasePaymentStatus, view?: "full" | "summary") => {
     const params = new URLSearchParams({ pageSize: String(pageSize), page: String(page) });
     if (supplierId) params.set("supplierId", supplierId);
     if (status) params.set("status", status);
+    if (view) params.set("view", view);
     return apiClient.get<PaginatedResponse<BackendPurchase>>(`/purchases?${params.toString()}`);
   },
+
+  /** Always "full" — includes every sareeLine's photos, unlike list()'s "summary" view. */
+  getOne: (id: string) => apiClient.get<BackendPurchase>(`/purchases/${id}`),
 
   create: (payload: CreatePurchasePayload) => apiClient.post<BackendPurchase>("/purchases", payload),
 

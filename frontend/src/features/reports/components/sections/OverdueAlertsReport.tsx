@@ -85,32 +85,44 @@ export function OverdueAlertsReport() {
       });
   }, [stockRes]);
 
-  // Dynamic late weavers from active batches with overdue dueDates
+  // Dynamic late weavers from active batches with overdue dueDates. One
+  // batch commonly assigns several sarees to the same weaver, so rows are
+  // aggregated per weaver+batch (summing done/remaining) rather than pushed
+  // one per saree — pushing one per saree produced duplicate `code+batch`
+  // keys (e.g. two "Ramarao-005" rows for "BATCH-014") wherever a weaver had
+  // more than one saree in the same overdue batch.
   const lateWeavers = useMemo(() => {
     const batches = batchesRes?.items ?? [];
-    const lateList: { name: string; code: string; batch: string; expected: string; days: number; done: number; remaining: number }[] = [];
+    const lateMap = new Map<string, { name: string; code: string; batch: string; expected: string; days: number; done: number; remaining: number }>();
 
     for (const b of batches) {
       if (b.status === "ACTIVE" && new Date(b.dueDate).getTime() < now.getTime()) {
         for (const r of b.rows) {
           if (r.weaverId && r.recipientType === "WEAVER") {
             const weaver = weaverMap.get(r.weaverId);
-            const name = weaver?.name ?? "Weaver";
+            const code = weaver?.code ?? r.weaverId;
+            const key = `${code}::${b.id}`;
             const days = daysBetween(now, new Date(b.dueDate));
-            lateList.push({
-              name,
-              code: weaver?.code ?? r.weaverId,
-              batch: b.id,
-              expected: new Date(b.dueDate).toLocaleDateString("en-IN"),
-              days,
-              done: r.qcPassed ? 1 : 0,
-              remaining: r.qcPassed ? 0 : 1,
-            });
+            const existing = lateMap.get(key);
+            if (existing) {
+              if (r.qcPassed) existing.done += 1;
+              else existing.remaining += 1;
+            } else {
+              lateMap.set(key, {
+                name: weaver?.name ?? "Weaver",
+                code,
+                batch: b.id,
+                expected: new Date(b.dueDate).toLocaleDateString("en-IN"),
+                days,
+                done: r.qcPassed ? 1 : 0,
+                remaining: r.qcPassed ? 0 : 1,
+              });
+            }
           }
         }
       }
     }
-    return lateList.slice(0, 10);
+    return Array.from(lateMap.values()).slice(0, 10);
   }, [batchesRes, weaverMap, now]);
 
   const overdueCustomers = (invoicesRes?.items ?? [])

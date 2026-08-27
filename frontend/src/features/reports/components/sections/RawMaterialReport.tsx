@@ -26,6 +26,7 @@ interface RawMaterialStockRow {
 }
 
 interface RawMaterialReceiptRow {
+  itemId: string;
   batchId: string;
   dateReceived: string;
   vendor: string;
@@ -46,7 +47,7 @@ export function RawMaterialReport() {
 
   const { data: issuesRes, isLoading: issuesLoading, isError: issuesError, refetch: refetchIssues } = useQuery({
     queryKey: ["reports", "material-issues"],
-    queryFn: () => materialIssuesApi.list(200),
+    queryFn: () => materialIssuesApi.list(100),
   });
 
   const { data: stockRes, isLoading: stockLoading, isError: stockError, refetch: refetchStock } = useQuery({
@@ -61,6 +62,7 @@ export function RawMaterialReport() {
         const isJari = item.materialType === "JARI";
         const reels = isJari ? jariToReels(item.quantity, item.unit ?? "KG") : null;
         return {
+          itemId: item.id,
           batchId: g.id,
           dateReceived: g.receivedDate ? new Date(g.receivedDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "Recent",
           vendor: g.supplierName ?? "Vendor",
@@ -140,8 +142,12 @@ export function RawMaterialReport() {
       if (map[type]) {
         // Jari is always tallied in Reels regardless of the unit it was
         // recorded in (a GRN/stock row might store it as KG) — never sum
-        // raw quantities of mismatched units.
-        const qty = type === "JARI" ? jariToReels(item.currentStock, item.unit) : item.currentStock;
+        // raw quantities of mismatched units. currentStock arrives as a
+        // string (Prisma Decimal serialises over JSON as text), so it must
+        // be coerced to a number before jariToReels/arithmetic — otherwise
+        // `+=` silently concatenates strings instead of summing.
+        const stock = Number(item.currentStock);
+        const qty = type === "JARI" ? jariToReels(stock, item.unit) : stock;
         map[type].stock += qty;
         map[type].totalCount++;
         if (qty <= 0) map[type].outOfStockCount++;
@@ -156,7 +162,8 @@ export function RawMaterialReport() {
     return stockItems.map(item => {
       const sub = [item.name, item.color, item.grade].filter(Boolean).join(" - ");
       const isJari = item.materialType === "JARI";
-      const close = isJari ? jariToReels(item.currentStock, item.unit) : item.currentStock;
+      const stock = Number(item.currentStock);
+      const close = isJari ? jariToReels(stock, item.unit) : stock;
       const oos = close <= 0;
       return {
         type: item.materialType,
@@ -352,7 +359,7 @@ export function RawMaterialReport() {
               <DataTable
                 columns={receiptColumns}
                 data={receiptRows}
-                getRowId={(r) => `${r.batchId}-${r.description}-${r.poReference}`}
+                getRowId={(r) => r.itemId}
                 loading={grnLoading}
                 error={grnError}
                 onRetry={refetchGrns}

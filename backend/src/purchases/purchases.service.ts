@@ -11,6 +11,21 @@ import { UpdatePurchaseDto } from "./dto/update-purchase.dto";
 const EXT_PURCHASE_ID_PREFIX = "EXT";
 
 const include = { supplier: true, sareeLines: true } satisfies Prisma.PurchaseInclude;
+// "summary" list view (see ListPurchasesQueryDto.view) — keeps sareeLines
+// (callers like the External Purchases table derive buying/selling/profit
+// totals from price/sellPercent/quantity per line) but excludes the
+// base64 imageUrl/pieceImageUrls columns, which are what actually blow up
+// response size and stall past the frontend's request timeout. Callers that
+// need photos fetch the single purchase (GET /purchases/:id, always "full").
+const summarySareeLineSelect = {
+  id: true, purchaseId: true, code: true, weight: true, sareeDate: true,
+  sareeType: true, color: true, price: true, sellPercent: true, quantity: true,
+  finalAmount: true, notes: true, returnedQuantity: true,
+} satisfies Prisma.PurchaseSareeLineSelect;
+const summaryInclude = {
+  supplier: true,
+  sareeLines: { select: summarySareeLineSelect },
+} satisfies Prisma.PurchaseInclude;
 
 function lineData(l: CreatePurchaseSareeLineDto, idx: number) {
   const price = l.price;
@@ -89,6 +104,7 @@ export class PurchasesService {
       supplierId: query.supplierId,
       status: query.status,
     };
+    const summary = query.view === "summary";
 
     const [items, total] = await Promise.all([
       this.prisma.purchase.findMany({
@@ -96,12 +112,23 @@ export class PurchasesService {
         skip: (query.page - 1) * query.pageSize,
         take: query.pageSize,
         orderBy: { date: "desc" },
-        include,
+        include: summary ? summaryInclude : include,
       }),
       this.prisma.purchase.count({ where }),
     ]);
 
-    return { items, total, page: query.page, pageSize: query.pageSize };
+    // "summary" sareeLines are missing imageUrl/pieceImageUrls (see
+    // summarySareeLineSelect) — filled in with empty placeholders so the
+    // response shape matches "full" and BackendPurchase.sareeLines can stay
+    // a plain (non-optional) array on the frontend.
+    const shaped = summary
+      ? items.map((item) => ({
+          ...item,
+          sareeLines: item.sareeLines.map((l) => ({ ...l, imageUrl: null, pieceImageUrls: [] as string[] })),
+        }))
+      : (items as Prisma.PurchaseGetPayload<{ include: typeof include }>[]);
+
+    return { items: shaped, total, page: query.page, pageSize: query.pageSize };
   }
 
   async findOne(id: string) {
