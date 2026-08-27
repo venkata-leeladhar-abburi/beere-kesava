@@ -201,8 +201,8 @@ export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; 
           </div>
         )}
         <div style={{ padding: "18px 28px 24px", display: "flex", gap: 10, justifyContent: "flex-end", borderTop: `1px solid ${T.borderDef}`, flexShrink: 0 }}>
-          <Button variant="tertiary" onClick={onClose} className="rounded-full text-[var(--text-tertiary)]">Cancel</Button>
-          <Button variant="primary" onClick={handleSave} disabled={saving || !vp.billId} loading={saving} className="rounded-full bg-[#6E0F2D]">
+          <Button variant="tertiary" onClick={onClose} className="rounded-[14px] text-[var(--text-tertiary)]">Cancel</Button>
+          <Button variant="primary" onClick={handleSave} disabled={saving || !vp.billId} loading={saving} className="rounded-[14px] bg-[#6E0F2D]">
             Confirm Payment
           </Button>
         </div>

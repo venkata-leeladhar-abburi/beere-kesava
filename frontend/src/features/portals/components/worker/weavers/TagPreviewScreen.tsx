@@ -39,7 +39,7 @@ export function TagPreviewScreen({ sareeIds, entityLabel, entityValue, onBack, o
             <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>Copies:</span>
             <Input type="number" defaultValue={1} className="w-[65px] h-[38px] text-center font-mono" />
           </div>
-          <Button variant="primary" fullWidth iconLeft={Printer} onClick={onPrint} className="h-12 rounded-full bg-[#6E0F2D] hover:bg-[#4A061B] mb-3 text-[14px]">Print Now</Button>
+          <Button variant="primary" fullWidth iconLeft={Printer} onClick={onPrint} className="h-12 rounded-[14px] bg-[#6E0F2D] hover:bg-[#4A061B] mb-3 text-[14px]">Print Now</Button>
           <Button variant="link" fullWidth onClick={onBack} className="text-[13px] text-[#69635E] p-2.5">Skip Printing</Button>
         </div>
       </div>

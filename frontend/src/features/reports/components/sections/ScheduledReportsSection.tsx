@@ -115,8 +115,8 @@ export function ScheduledReportsSection() {
           ) : (
             schedules.map((s, i) => (
               <div key={s.id} style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, boxShadow: "0 2px 14px rgba(74,6,27,0.07)", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-                {/* Top color bar */}
-                <div style={{ height: 5, background: s.active ? T.green : T.taupe }} />
+                {/* Top color bar — Royal Burgundy Brown */}
+                <div style={{ height: 5, background: T.royalBurgundy }} />
 
                 {/* Card content */}
                 <div style={{ padding: "20px 22px", flex: 1, display: "flex", flexDirection: "column", gap: 14 }}>

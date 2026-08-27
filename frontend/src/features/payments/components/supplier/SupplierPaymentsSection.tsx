@@ -383,13 +383,13 @@ export function SupplierPaymentsSection() {
                 key={r.supplier.id}
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: i * 0.07 }}
-                whileHover={{ y: -4, boxShadow: "0 18px 45px rgba(74,6,27,0.09)" }}
+                transition={{ duration: 0.4, delay: i * 0.05 }}
+                whileHover={{ y: -3, boxShadow: "0 14px 35px rgba(110,15,45,0.10)" }}
                 style={{
-                  background: "#FFFFFF",
+                  background: "#FFFDF9",
                   borderRadius: 20,
                   border: `1.5px solid ${T.borderDef}`,
-                  boxShadow: "0 8px 30px rgba(74,6,27,0.04)",
+                  boxShadow: "0 4px 20px rgba(74,6,27,0.03)",
                   overflow: "hidden",
                   display: "flex",
                   flexDirection: "column",
@@ -397,79 +397,143 @@ export function SupplierPaymentsSection() {
                   position: "relative",
                 }}
               >
-                {/* Top accent bar */}
-                <div style={{ height: 6, background: isPaidRow ? T.green : r.status === "Overdue" ? T.crimson : T.antiqueGold, flexShrink: 0 }} />
+                {/* Top accent bar — Royal Burgundy Brown */}
+                <div style={{ height: 6, background: T.royalBurgundy, flexShrink: 0 }} />
 
-                <div style={{ padding: "20px 22px 18px", display: "flex", flexDirection: "column", gap: 14, flex: 1 }}>
-                  {/* Top row: code + status */}
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
-                    <EntityCode type="supplier" value={r.supplier.code || r.supplier.id} size="sm" className="break-all whitespace-normal max-w-full" />
-                    <SupplierStatusBadge status={r.status} />
-                  </div>
-
-                  {/* Supplier profile row */}
-                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <div style={{ width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(155deg, #7A1232 0%, #6E0F2D 40%, #4A061B 100%)", border: `2.5px solid rgba(200,155,71,0.45)`, boxShadow: "0 4px 14px rgba(74,6,27,0.20)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <Store size={18} color="#FFFDF9" />
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 800, color: T.luxuryBrown, letterSpacing: "-0.2px", marginBottom: 2 }}>
-                        {r.supplier.name}
+                <div style={{ padding: "20px 22px 18px", display: "flex", flexDirection: "column", flex: 1, justifyContent: "space-between" }}>
+                  {/* Top Header: Store Arch Icon + Supplier Name + Status Pill */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
+                      {/* Scalloped Arch Badge */}
+                      <div style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: "14px 14px 12px 12px",
+                        background: "rgba(110, 15, 45, 0.06)",
+                        border: "1px solid rgba(110, 15, 45, 0.12)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}>
+                        <Store size={20} color={T.royalBurgundy} />
                       </div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-                        Last purchase: {r.lastPurchaseDate || "—"}
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.2 }} className="truncate">
+                          {r.supplier.name}
+                        </div>
+                        <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 2 }}>
+                          {r.supplier.code ? `Code: ${r.supplier.code}` : `Last: ${r.lastPurchaseDate || "—"}`}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Status Pill */}
+                    <span style={{
+                      fontFamily: F.ui,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: r.status === "Paid" ? "#1E6640" : r.status === "Overdue" ? "#C0392B" : "#A06800",
+                      background: r.status === "Paid" ? "rgba(30,102,64,0.08)" : r.status === "Overdue" ? "rgba(192,57,43,0.08)" : "#FFF9EE",
+                      border: `1px solid ${r.status === "Paid" ? "rgba(30,102,64,0.3)" : r.status === "Overdue" ? "rgba(192,57,43,0.3)" : "#E6C687"}`,
+                      padding: "4px 14px",
+                      borderRadius: 999,
+                      whiteSpace: "nowrap",
+                      flexShrink: 0,
+                    }}>
+                      {r.status}
+                    </span>
+                  </div>
+
+                  {/* Diamond Line Separator */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", margin: "16px 0 14px" }}>
+                    <div style={{ flex: 1, height: 1, background: "rgba(200, 155, 71, 0.25)" }} />
+                    <div style={{ width: 6, height: 6, background: "rgba(200, 155, 71, 0.45)", transform: "rotate(45deg)", margin: "0 8px", flexShrink: 0 }} />
+                    <div style={{ flex: 1, height: 1, background: "rgba(200, 155, 71, 0.25)" }} />
+                  </div>
+
+                  {/* Row 1: Purchased & Paid Stats */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    {/* Purchased */}
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, color: "#886A58" }}>
+                        <span style={{ color: "#C89B47", fontSize: 10 }}>●</span> Purchased
+                      </div>
+                      <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown, marginTop: 4 }}>
+                        <Money value={rupees(r.totalPurchased)} />
+                      </div>
+                    </div>
+
+                    {/* Vertical divider */}
+                    <div style={{ width: 1, height: 36, background: "rgba(200, 155, 71, 0.22)", margin: "0 16px", flexShrink: 0 }} />
+
+                    {/* Paid */}
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, color: "#886A58" }}>
+                        <span style={{ color: "#C89B47", fontSize: 10 }}>●</span> Paid
+                      </div>
+                      <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown, marginTop: 4 }}>
+                        <Money value={rupees(r.totalPaid)} />
                       </div>
                     </div>
                   </div>
 
-                  {/* Financial Breakdown */}
-                  <div style={{ background: "linear-gradient(135deg, #FFFDF9 0%, #FDFBF7 100%)", border: `1.5px solid ${T.borderDef}`, borderRadius: 12, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8, marginTop: "auto" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontFamily: F.ui, color: T.taupe }}>
-                      <span>Total Purchased</span>
-                      <span style={{ fontWeight: 700, color: T.luxuryBrown }}><Money value={rupees(r.totalPurchased)} /></span>
+                  {/* Line between Purchased/Paid and Balance Due */}
+                  <div style={{ height: 1, background: "rgba(200, 155, 71, 0.2)", margin: "14px 0" }} />
+
+                  {/* Row 2: Balance Due */}
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, color: "#886A58" }}>
+                      <span style={{ color: "#C89B47", fontSize: 10 }}>●</span> Balance Due
                     </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontFamily: F.ui, color: T.green }}>
-                      <span>Amount Paid</span>
-                      <span style={{ fontWeight: 600 }}>−<Money value={rupees(r.totalPaid)} /></span>
-                    </div>
-                    <div style={{ borderTop: `1.5px dashed ${T.borderDef}`, paddingTop: 8, marginTop: 2, display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-                      <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 700, color: T.luxuryBrown }}>Balance Due</span>
-                      <span style={{ fontFamily: F.display, fontSize: 17, fontWeight: 800, color: isPaidRow ? T.green : r.status === "Overdue" ? T.crimson : T.royalBurgundy }}>
-                        {isPaidRow ? "Paid ✓" : <Money value={rupees(r.outstanding)} />}
-                      </span>
+                    <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: isPaidRow ? T.green : r.status === "Overdue" ? T.crimson : T.royalBurgundy, marginTop: 4 }}>
+                      {isPaidRow ? "Paid ✓" : <Money value={rupees(r.outstanding)} />}
                     </div>
                   </div>
-                </div>
 
-                {/* Action Footer */}
-                <div className="bg-[rgba(110,15,45,0.02)] border-t border-[rgba(110,15,45,0.08)] p-3 flex flex-col gap-2 flex-shrink-0 w-full">
-                  <div className="grid grid-cols-2 gap-2 w-full">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => setDetailForId(r.supplier.id)}
-                      className="w-full justify-center rounded-[8px] border-[1.5px] border-[rgba(110,15,45,0.12)] text-[#6E0F2D] text-[12px] font-bold py-2 whitespace-nowrap"
-                    >
-                      View Details
-                    </Button>
+                  {/* Bottom Shield / Action Banner */}
+                  <div style={{
+                    marginTop: 18,
+                    background: "linear-gradient(180deg, #FAF4EB 0%, #FFF8F0 100%)",
+                    border: "1px solid rgba(220, 190, 140, 0.4)",
+                    borderRadius: 14,
+                    padding: "12px 14px",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 8,
+                  }}>
+                    <div style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <div style={{ flex: 1, height: 1, background: "rgba(200, 155, 71, 0.3)" }} />
+                      <div style={{ padding: "0 10px", color: "#C89B47", display: "flex", alignItems: "center" }}>
+                        <BadgeCheck size={18} color="#C89B47" />
+                      </div>
+                      <div style={{ flex: 1, height: 1, background: "rgba(200, 155, 71, 0.3)" }} />
+                    </div>
+
                     {r.outstanding === 0 ? (
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        disabled
-                        className="w-full justify-center rounded-[8px] bg-[#27AE60]/10 text-[#27AE60] border-none text-[12px] font-bold py-2 whitespace-nowrap"
-                      >
-                        {r.totalPurchased > 0 ? "Paid ✓" : "No Dues"}
-                      </Button>
+                      <div style={{ fontFamily: F.display, fontSize: 13, fontWeight: 600, color: "#886A58", textAlign: "center" }}>
+                        No Dues
+                      </div>
                     ) : (
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={() => setPayForId(r.supplier.id)}
-                        className="w-full justify-center rounded-[8px] bg-[#6E0F2D] hover:bg-[#4A0A1D] text-[12px] font-bold py-2 whitespace-nowrap"
-                      >
-                        Pay Now
-                      </Button>
+                      <div style={{ display: "flex", gap: 8, width: "100%", marginTop: 2 }}>
+                        <Button
+                          variant="tertiary"
+                          size="sm"
+                          onClick={() => setDetailForId(r.supplier.id)}
+                          className="flex-1 justify-center rounded-[8px] border border-[rgba(110,15,45,0.15)] text-[#6E0F2D] text-[12px] font-bold py-1.5"
+                        >
+                          Details
+                        </Button>
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={() => setPayForId(r.supplier.id)}
+                          className="flex-1 justify-center rounded-[8px] bg-[#6E0F2D] hover:bg-[#4A0A1D] text-[#FFFDF9] text-[12px] font-bold py-1.5"
+                        >
+                          Pay Now
+                        </Button>
+                      </div>
                     )}
                   </div>
                 </div>

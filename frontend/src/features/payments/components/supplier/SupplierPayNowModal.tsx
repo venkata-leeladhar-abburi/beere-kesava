@@ -78,8 +78,8 @@ export function SupplierPayNowModal({
       </div>
 
       <div style={{ padding: "18px 28px 24px", display: "flex", gap: 10, justifyContent: "flex-end", borderTop: `1px solid ${T.borderDef}`, flexShrink: 0 }}>
-        <Button variant="tertiary" onClick={onClose} className="rounded-full text-[var(--text-tertiary)]">Cancel</Button>
-        <Button variant="primary" disabled={!canSave} loading={saving} className="rounded-full bg-[#6E0F2D]"
+        <Button variant="tertiary" onClick={onClose} className="rounded-[14px] text-[var(--text-tertiary)]">Cancel</Button>
+        <Button variant="primary" disabled={!canSave} loading={saving} className="rounded-[14px] bg-[#6E0F2D]"
           onClick={() => onSave({ amount: numericAmount, date, mode, reference: reference.trim(), purchaseId: purchaseId || undefined })}>
           Confirm Payment
         </Button>

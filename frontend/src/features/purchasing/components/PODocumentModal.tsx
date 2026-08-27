@@ -108,9 +108,9 @@ export function PODocumentModal({ open, onClose, po, isApproved }: PODocumentMod
 
   return (
     <Modal open={open} onOpenChange={o => !o && onClose()} size="xl">
-      <div style={{ display: "flex", flexDirection: "column", height: "85vh" }}>
+      <div className="flex flex-col h-[85vh] rounded-2xl overflow-hidden bg-[#FFFDF9]">
         {/* Header */}
-        <div style={{
+        <div className="rounded-t-2xl overflow-hidden" style={{
           background: T.darkBurgundy,
           padding: "16px 20px",
           display: "flex",
@@ -138,7 +138,7 @@ export function PODocumentModal({ open, onClose, po, isApproved }: PODocumentMod
               onClick={handleShare}
               disabled={sharing}
               variant="secondary" size="sm" iconLeft={Share2}
-              className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+              className="rounded-[10px] bg-white/10 border-white/20 text-white hover:bg-white/20 active:bg-white/30"
             >
               {sharing ? "Sending…" : "Share with Vendor"}
             </Button>
@@ -146,10 +146,9 @@ export function PODocumentModal({ open, onClose, po, isApproved }: PODocumentMod
               <IconButton
                 label="Close"
                 icon={X}
-                variant="secondary"
+                variant="ghost"
                 size="md"
-                shape="circle"
-                className="bg-white/10 border-white/20 text-white"
+                className="h-9 w-9 rounded-[10px] bg-white/10 text-white border border-white/20 hover:bg-white/25 hover:text-white active:bg-white/35 transition-all cursor-pointer shrink-0"
               />
             </Dialog.Close>
           </div>

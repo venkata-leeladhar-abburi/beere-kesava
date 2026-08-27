@@ -62,7 +62,7 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
           <div style={{ fontFamily: F.d, fontSize: 20, fontWeight: 700, color: C.text, textAlign: "center" }}>Batch Opened</div>
           <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, textAlign: "center" }}>Weaver notified on WhatsApp</div>
           <div style={{ fontFamily: F.m, fontSize: 20, fontWeight: 600, color: C.burg }}>{batchId}</div>
-          <Button variant="secondary" onClick={onBack} className="w-auto rounded-full px-7 border-[rgba(110,15,45,0.30)] text-[#6E0F2D]">Back to Weavers</Button>
+          <Button variant="secondary" onClick={onBack} className="w-auto rounded-[14px] px-7 border-[rgba(110,15,45,0.30)] text-[#6E0F2D]">Back to Weavers</Button>
         </div>
       </>
     );
@@ -369,7 +369,7 @@ export function WorkerIssueMaterialPage({ onBack }: { onBack: () => void }) {
                   <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginBottom: 3 }}>Sending to: {selectedWeaver ? selectedWeaver.name : "Weaver"}</div>
                   <div style={{ fontFamily: F.m, fontWeight: 600, fontSize: 13, color: C.text }}>+91 98765 43210</div>
                 </div>
-                <Button variant="primary" fullWidth iconLeft={Send} onClick={() => setRemoteSent(true)} className="h-11 rounded-full bg-[#6E0F2D] hover:bg-[#6E0F2D] text-[13px]">
+                <Button variant="primary" fullWidth iconLeft={Send} onClick={() => setRemoteSent(true)} className="h-11 rounded-[14px] bg-[#6E0F2D] hover:bg-[#6E0F2D] text-[13px]">
                   Send Signature Request
                 </Button>
               </>

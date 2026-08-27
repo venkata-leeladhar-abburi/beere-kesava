@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
+import { scrollToTop } from "@/shared/ui/ScrollToTop";
 import { useAuth } from "../../../contexts/AuthContext";
 import { motion, AnimatePresence } from "motion/react";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -380,6 +381,10 @@ interface MobilePortalProps extends WorkerPortalProps {
 function MobilePortal({ onBack, activeTab, setActiveTab }: MobilePortalProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+
+  useEffect(() => {
+    scrollToTop();
+  }, [activeTab]);
 
   const handleNavigate = (tab: Tab) => setActiveTab(tab);
 

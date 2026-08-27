@@ -347,7 +347,7 @@ export function SectionNavigator({
                 color: isActive ? "#FFFFFF" : mutedColor,
                 background: "transparent",
                 border: "none",
-                borderRadius: 8,
+                borderRadius: 10,
                 padding: "10px 18px",
                 cursor: "pointer",
                 whiteSpace: "nowrap",
@@ -360,7 +360,7 @@ export function SectionNavigator({
                 <motion.div
                   layoutId={layoutId}
                   transition={{ type: "spring", stiffness: 420, damping: 32 }}
-                  style={{ position: "absolute", inset: 0, background: activeColor, borderRadius: 8, zIndex: 0 }}
+                  style={{ position: "absolute", inset: 0, background: activeColor, borderRadius: 10, zIndex: 0 }}
                 />
               )}
               <span style={{ position: "relative", zIndex: 1 }}>{s.label}</span>

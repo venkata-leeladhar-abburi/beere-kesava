@@ -179,7 +179,7 @@ export function WarpRequestPage() {
         </div>
         <div style={{ fontFamily: F.d, fontWeight: 600, fontSize: 20, color: C.text, marginBottom: 12 }}>Request Sent!</div>
         <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, lineHeight: 1.6, marginBottom: 28 }}>Your request has been sent to the worker staff, admin, and superadmin. You will be notified when a decision is made.</div>
-        <Button onClick={() => { setSubmitted(false); setMaterials({ warp: false, resham: false, jari: false }); setAmounts({ warp: "", resham: "", jari: "" }); setReason(""); }} fullWidth className="h-[52px] bg-[#6E0F2D] border-none rounded-full font-semibold text-base text-white">
+        <Button onClick={() => { setSubmitted(false); setMaterials({ warp: false, resham: false, jari: false }); setAmounts({ warp: "", resham: "", jari: "" }); setReason(""); }} fullWidth className="h-[52px] bg-[#6E0F2D] border-none rounded-[14px] font-semibold text-base text-white">
           ← Back to Warp Requests
         </Button>
       </div>

@@ -304,14 +304,14 @@ export function InvoiceGenerator({
           fullWidth
           iconLeft={Send}
           onClick={onSend}
-          className="flex-1 rounded-full shadow-[0_4px_20px_rgba(110,15,45,0.25)]"
+          className="flex-1 rounded-[14px] shadow-[0_4px_20px_rgba(110,15,45,0.25)]"
         >
           {isQuotation ? "Send Quotation to Customer" : "Send Invoice to Customer"}
         </Button>
-        <Button variant="secondary" size="lg" iconLeft={Save} onClick={onDraft} className="rounded-full">
+        <Button variant="secondary" size="lg" iconLeft={Save} onClick={onDraft} className="rounded-[14px]">
           Save as Draft
         </Button>
-        <Button variant="tertiary" size="lg" onClick={onCancel} className="rounded-full">
+        <Button variant="tertiary" size="lg" onClick={onCancel} className="rounded-[14px]">
           Cancel
         </Button>
       </div>

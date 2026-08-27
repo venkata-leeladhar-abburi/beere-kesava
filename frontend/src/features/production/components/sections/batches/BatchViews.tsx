@@ -16,6 +16,56 @@ import { rupees } from "@/lib/domain/money";
 import { EntityCode, Money, StatusPill } from "@/shared/ui/domain";
 import type { StatusValueOf } from "@/lib/domain/status";
 
+const TopDivider = () => (
+  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 20, marginBottom: 12 }}>
+    <div style={{ display: "flex", gap: 3, paddingLeft: 4 }}>
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+    </div>
+    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginLeft: 8 }} />
+    <svg width="60" height="20" viewBox="0 0 60 20" style={{ margin: "0 8px", flexShrink: 0 }}>
+      <g transform="translate(30, 10)">
+        <polygon points="-16,0 -12,-3 -8,0 -12,3" fill={T.antiqueGold} />
+        <path d="M-5,0 L0,-5 L5,0 L0,5 Z" fill={T.antiqueGold} />
+        <circle cx="0" cy="0" r="1.5" fill="#FFFDF9" />
+        <polygon points="8,0 12,-3 16,0 12,3" fill={T.antiqueGold} />
+      </g>
+    </svg>
+    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginRight: 8 }} />
+    <div style={{ display: "flex", gap: 3, paddingRight: 4 }}>
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+    </div>
+  </div>
+);
+
+const BottomDivider = () => (
+  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 20, marginTop: 16 }}>
+    <div style={{ display: "flex", gap: 3, paddingLeft: 4 }}>
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+    </div>
+    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginLeft: 8 }} />
+    <svg width="60" height="20" viewBox="0 0 60 20" style={{ margin: "0 8px", flexShrink: 0 }}>
+      <g transform="translate(30, 10)">
+        <polygon points="-16,0 -12,-3 -8,0 -12,3" fill={T.antiqueGold} />
+        <path d="M-5,0 L0,-5 L5,0 L0,5 Z" fill={T.antiqueGold} />
+        <circle cx="0" cy="0" r="1.5" fill="#FFFDF9" />
+        <polygon points="8,0 12,-3 16,0 12,3" fill={T.antiqueGold} />
+      </g>
+    </svg>
+    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginRight: 8 }} />
+    <div style={{ display: "flex", gap: 3, paddingRight: 4 }}>
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+    </div>
+  </div>
+);
+
 // A batch's `stage` is this feature's own BatchStage union — "submitted"
 // (sarees submitted, waiting for QC) doesn't have its own key in the shared
 // production taxonomy, so it normalizes onto "qc-pending", the taxonomy's
@@ -54,13 +104,28 @@ export function BatchCard({ b, onView }: { b: Batch; expandedId: string | null; 
   return (
     <motion.div
       onClick={() => onView?.(b)}
-      whileHover={{ y: -6, scale: 1.008, boxShadow: "0 24px 60px rgba(110,15,45,0.12)" }}
       transition={{ type: "spring", stiffness: 240, damping: 22 }}
-      style={{ background: "#FFFFFF", borderRadius: 24, border: `1px solid ${T.borderDef}`, boxShadow: "0 6px 24px rgba(74,6,27,0.05)", overflow: "hidden", display: "flex", flexDirection: "column", height: "100%", position: "relative", cursor: "pointer" }}
+      style={{
+        background: "#FFFDF9",
+        borderRadius: 12,
+        border: `1.5px solid ${T.antiqueGold}`,
+        boxShadow: "0 4px 20px rgba(200,155,71,0.15)",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+        position: "relative",
+        cursor: "pointer"
+      }}
     >
-      <div style={{ width: 6, height: "100%", background: cfg.border, position: "absolute", left: 0, top: 0, bottom: 0 }} />
-      <div style={{ paddingLeft: 6, display: "flex", flexDirection: "column", height: "100%", flex: 1 }}>
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", padding: "18px 20px 14px" }}>
+      <div style={{ height: 4, background: T.royalBurgundy, width: "100%", opacity: 0.8 }} />
+
+      <div style={{ padding: "16px 20px 0" }}>
+        <TopDivider />
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", height: "100%", flex: 1 }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", padding: "0 20px 14px" }}>
           <div>
             <div style={{ marginBottom: 8 }}>
               <EntityCode type="batch" value={b.id} size="md" />
@@ -149,7 +214,11 @@ export function BatchCard({ b, onView }: { b: Batch; expandedId: string | null; 
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 sm:gap-2 p-4 sm:p-5 pt-0 w-full flex-nowrap min-w-0">
+        <div style={{ padding: "0 20px" }}>
+          <BottomDivider />
+        </div>
+
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 p-4 sm:p-5 pt-0 w-full min-w-0">
           <Button onClick={(e) => { e.stopPropagation(); onView?.(b); }} variant="secondary" className="flex-1 min-w-0 px-2 text-[12px] whitespace-nowrap justify-center">
             <PhEye size={15} /> Open Batch
           </Button>

@@ -125,7 +125,7 @@ export function VendorDetailModal({ vp, matchedPO, onClose }: { vp: VendorPaymen
         </div>
 
         <div style={{ padding: "18px 28px", borderTop: `1px solid ${T.borderDef}`, display: "flex", justifyContent: "flex-end", flexShrink: 0 }}>
-          <Button variant="primary" onClick={onClose} className="rounded-full bg-[#6E0F2D]">Close</Button>
+          <Button variant="primary" onClick={onClose} className="rounded-[14px] bg-[#6E0F2D]">Close</Button>
         </div>
       </div>
     </Modal>

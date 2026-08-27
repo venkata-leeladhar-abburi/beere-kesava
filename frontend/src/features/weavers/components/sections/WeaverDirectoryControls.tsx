@@ -81,7 +81,7 @@ export function AllWeaversControls({ view, setView, filter, setFilter, search, s
         </div>
 
         {/* Filter pills row */}
-        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", paddingBottom: 6 }}>
+        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", paddingBottom: 32 }}>
           {FILTER_PILLS.map(f => (
             <Button
               key={f} onClick={() => setFilter(f)}
@@ -96,10 +96,10 @@ export function AllWeaversControls({ view, setView, filter, setFilter, search, s
               {f}
             </Button>
           ))}
-          <Button variant="secondary" size="sm" className="rounded-full bg-white text-[var(--text-tertiary)] border-[1.5px] border-[rgba(110,15,45,0.16)]">
+          <Button variant="secondary" size="sm" className="rounded-[14px] bg-white text-[var(--text-tertiary)] border-[1.5px] border-[rgba(110,15,45,0.16)]">
             <PhMapPin size={16} /> Filter by Village <CaretDown size={14} />
           </Button>
-          <Button variant="secondary" size="sm" className="rounded-full bg-white text-[var(--text-tertiary)] border-[1.5px] border-[rgba(110,15,45,0.16)]">
+          <Button variant="secondary" size="sm" className="rounded-[14px] bg-white text-[var(--text-tertiary)] border-[1.5px] border-[rgba(110,15,45,0.16)]">
             Sort: Most Sarees This Month <CaretDown size={14} />
           </Button>
         </div>

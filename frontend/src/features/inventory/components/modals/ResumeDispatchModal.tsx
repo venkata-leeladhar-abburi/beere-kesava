@@ -59,7 +59,7 @@ export function ResumeDispatchModal({ record, onSave, onClose }: {
           )}
         </div>
         <div style={{ padding: "16px 28px 24px", borderTop: `1px solid ${T.borderDef}`, display: "flex", gap: 10, flexShrink: 0 }}>
-          <Button onClick={onClose} variant="secondary" size="lg" className="rounded-full">
+          <Button onClick={onClose} variant="secondary" size="lg" className="rounded-[14px]">
             Cancel
           </Button>
           <Button

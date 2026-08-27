@@ -11,6 +11,7 @@ import { PackageCheck, History } from "lucide-react";
 import { T, F, EASE } from "./superadmin-dashboard/theme";
 import { TabLoadingFallback } from "./superadmin-dashboard/atoms";
 import { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
+import { scrollToTop } from "@/shared/ui/ScrollToTop";
 import { SectionCard } from "./beere-dashboard/primitives";
 import { SATopNav } from "./superadmin-dashboard/SATopNav";
 import { SAMobileMenuDrawer, SAMobileTopNav } from "./superadmin-dashboard/SAMobileNav";
@@ -79,11 +80,7 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
 
   // Always scroll to top when navigating between pages
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
-    document.body.scrollTop = 0;
-    if (document.documentElement) {
-      document.documentElement.scrollTop = 0;
-    }
+    scrollToTop();
   }, [nav]);
 
   // Open a staff portal as this admin. Not impersonation — the session and

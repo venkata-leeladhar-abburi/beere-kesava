@@ -333,7 +333,7 @@ export function ActionLogSection({
 
             {/* Load More */}
             <div style={{ display: "flex", justifyContent: "center", marginTop: 24 }}>
-              <Button variant="secondary" size="md" iconLeft={ChevronDown} className="rounded-full">
+              <Button variant="secondary" size="md" iconLeft={ChevronDown} className="rounded-[14px]">
                 Load More Entries
               </Button>
             </div>

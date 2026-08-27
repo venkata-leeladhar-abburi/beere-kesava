@@ -89,7 +89,7 @@ export function TransactionDetailModal({ record, onClose }: { record: PayHistRec
         </div>
 
         <div style={{ padding: "16px 26px 22px", borderTop: `1px solid ${T.borderDef}`, display: "flex", justifyContent: "flex-end", flexShrink: 0 }}>
-          <Button variant="primary" onClick={onClose} className="rounded-full bg-[#6E0F2D]">Close</Button>
+          <Button variant="primary" onClick={onClose} className="rounded-[14px] bg-[#6E0F2D]">Close</Button>
         </div>
       </div>
     </Modal>

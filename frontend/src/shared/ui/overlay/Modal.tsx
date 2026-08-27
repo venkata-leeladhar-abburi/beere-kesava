@@ -60,7 +60,7 @@ export function Modal({ open, onOpenChange, size = "md", children, onBeforeClose
           className={cn(
             "fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
             "flex flex-col w-[calc(100vw-32px)]",
-            "bg-[var(--surface-overlay)] rounded-[var(--radius-xl)] shadow-[var(--shadow-xl)]",
+            "bg-[var(--surface-overlay)] rounded-2xl shadow-[var(--shadow-xl)]",
             "data-[state=open]:animate-in data-[state=open]:fade-in data-[state=open]:zoom-in-98",
             "data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=closed]:zoom-out-98",
             // Mobile: every size becomes a bottom sheet (Part D.1).
