@@ -9,6 +9,13 @@ interface SareeSelectionTableProps {
   currentBatch: WeaverBatchData;
   entityName: string;
   entityAvatar: string;
+  /** Human-facing id of the weaver/loom ("Wea-001", "Loom-003") — shown under
+   *  the name so a row is identifiable when two entities share a display name. */
+  entityCode?: string;
+  /** Loom label to fall back to when a row carries no weaver-loom number —
+   *  own-factory batches are keyed by the loom itself ("FACT-LOOM-1"), which
+   *  isn't one of the weaver's numbered looms. */
+  loomLabel?: string;
   columnHeader?: string;
   doneCount: number;
   sareeSort: "serial" | "status";
@@ -22,6 +29,8 @@ function SareeSelectionCard({
   s,
   entityName,
   entityAvatar,
+  entityCode,
+  loomLabel,
   currentBatch,
   isSel,
   onSelect,
@@ -35,12 +44,15 @@ function SareeSelectionCard({
   };
   entityName: string;
   entityAvatar: string;
+  entityCode?: string;
+  loomLabel?: string;
   currentBatch: WeaverBatchData;
   isSel: boolean;
   onSelect: () => void;
 }) {
   const isPending = s.status === "pending";
   const loom = s.weaverLoom ?? currentBatch.loomNumber;
+  const loomText = loom != null ? `Loom ${loom}` : loomLabel;
 
   const statusCfg = s.status === "received" ? { label: "Received", bg: "rgba(30,102,64,0.10)", col: C.green, border: "rgba(30,102,64,0.25)" }
     : s.status === "defective" ? { label: "Defective", bg: "rgba(220,53,69,0.10)", col: C.crim, border: "rgba(220,53,69,0.25)" }
@@ -119,6 +131,9 @@ function SareeSelectionCard({
               {entityName}
             </span>
           </div>
+          {entityCode && (
+            <div style={{ fontFamily: F.m, fontSize: 10, color: C.muted, marginTop: 2 }}>{entityCode}</div>
+          )}
         </div>
 
         <div>
@@ -126,7 +141,7 @@ function SareeSelectionCard({
             Saree Type / Loom
           </div>
           <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#845E04" }}>
-            {currentBatch.sareeTypeCode} {loom ? `· Loom ${loom}` : ""}
+            {currentBatch.sareeTypeCode}{loomText ? ` · ${loomText}` : ""}
           </div>
         </div>
       </div>
@@ -134,7 +149,8 @@ function SareeSelectionCard({
       {/* Status Footer */}
       <div style={{ marginTop: 10, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <span style={{ fontFamily: F.u, fontSize: 11, color: C.muted }}>
-          {currentBatch.bulkOrderLabel ? `Bulk Order: ${currentBatch.bulkOrderLabel}` : `Batch: ${currentBatch.id}`}
+          Batch: <span style={{ fontFamily: F.m, color: C.burg, fontWeight: 600 }}>{currentBatch.id}</span>
+          {currentBatch.bulkOrderLabel ? ` · Bulk Order: ${currentBatch.bulkOrderLabel}` : ""}
         </span>
         <span
           style={{
@@ -159,6 +175,8 @@ export function SareeSelectionTable({
   currentBatch,
   entityName,
   entityAvatar,
+  entityCode,
+  loomLabel,
   columnHeader = "Weaver / Loom",
   doneCount,
   sareeSort,
@@ -218,22 +236,34 @@ export function SareeSelectionTable({
       },
     },
     {
+      id: "batch", header: "Batch", accessor: () => currentBatch.id, priority: 2,
+      cell: () => (
+        <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, color: C.wine, background: "rgba(74,6,27,0.06)", border: `1px solid ${C.bdr}`, borderRadius: 8, padding: "4px 9px", whiteSpace: "nowrap" }}>
+          {currentBatch.id}
+        </span>
+      ),
+    },
+    {
       id: "weaverLoom", header: columnHeader, accessor: () => entityName, priority: 3,
       cell: () => (
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <div style={{ width: 26, height: 26, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#FFF", lineHeight: 1 }}>{entityAvatar}</span>
           </div>
-          <span style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{entityName}</span>
+          <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
+            <span style={{ fontFamily: F.u, fontSize: 13, color: C.text, whiteSpace: "nowrap" }}>{entityName}</span>
+            {entityCode && <span style={{ fontFamily: F.m, fontSize: 10, color: C.muted, whiteSpace: "nowrap" }}>{entityCode}</span>}
+          </div>
         </div>
       ),
     },
     {
-      id: "loomNo", header: "Loom No.", accessor: s => s.weaverLoom ?? currentBatch.loomNumber ?? "—", priority: 3,
+      id: "loomNo", header: "Loom No.", accessor: s => s.weaverLoom ?? currentBatch.loomNumber ?? loomLabel ?? "—", priority: 3,
       cell: (_v, s) => {
         const loom = s.weaverLoom ?? currentBatch.loomNumber;
-        return loom != null ? (
-          <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#845E04", background: "rgba(200,155,71,0.12)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 8, padding: "4px 9px" }}>Loom {loom}</span>
+        const label = loom != null ? `Loom ${loom}` : loomLabel;
+        return label ? (
+          <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#845E04", background: "rgba(200,155,71,0.12)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 8, padding: "4px 9px", whiteSpace: "nowrap" }}>{label}</span>
         ) : (
           <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>—</span>
         );
@@ -322,7 +352,7 @@ export function SareeSelectionTable({
 
         {/* Desktop View (md and up): Always Table View */}
         <div className="hidden md:block overflow-x-auto section-nav-scroll p-2">
-          <div className="min-w-[950px]">
+          <div className="min-w-[1080px]">
             <DataTable
               columns={columns}
               data={sortedSarees}
@@ -344,6 +374,8 @@ export function SareeSelectionTable({
                   s={s}
                   entityName={entityName}
                   entityAvatar={entityAvatar}
+                  entityCode={entityCode}
+                  loomLabel={loomLabel}
                   currentBatch={currentBatch}
                   isSel={selectedSareeNos.has(s.no)}
                   onSelect={() => selectSareeSlot(s.no)}
@@ -352,7 +384,7 @@ export function SareeSelectionTable({
             </div>
           ) : (
             <div className="overflow-x-auto section-nav-scroll p-1">
-              <div className="min-w-[950px]">
+              <div className="min-w-[1080px]">
                 <DataTable
                   columns={columns}
                   data={sortedSarees}

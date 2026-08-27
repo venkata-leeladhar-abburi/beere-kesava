@@ -1,17 +1,11 @@
-import { IsBoolean, IsNumber, IsOptional, IsString, IsUUID, Min } from "class-validator";
+import { IsBoolean, IsNumber, IsOptional, IsUUID, Min } from "class-validator";
 
 export class TallyBatchRowDto {
   @IsBoolean()
   tallied!: boolean;
 
-  // No auth yet — explicit name of the tallying user (matches
-  // UpdateBulkOrderDto.talliedBy).
-  @IsOptional()
-  @IsString()
-  talliedBy?: string;
-
-  // No auth yet — the acting user's id is supplied explicitly for the audit
-  // trail until JWT/OTP auth exists and req.user is available.
+  // Set server-side from the authenticated user (see BatchesController) —
+  // not read from the request body.
   @IsOptional()
   @IsUUID()
   actorId?: string;

@@ -5,3 +5,6 @@
 // warning while existing cross-feature imports are migrated over.
 
 export * from "./components/AddUserPage";
+// Admin/superadmin oversight views: everyone in a staff portal, and what
+// each of them has done there.
+export { StaffDirectoryPage, WORKER_SCOPE, SHOP_SCOPE } from "./components/staff-directory";

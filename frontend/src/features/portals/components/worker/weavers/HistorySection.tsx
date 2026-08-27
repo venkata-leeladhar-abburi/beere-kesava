@@ -4,7 +4,7 @@ import { C, F } from "../tokens";
 import { SectionCard } from "../primitives";
 import { type ReceivedSareeLog } from "./shared";
 import { TagPreviewScreen } from "./TagPreviewScreen";
-import { Button, Input, Select, SelectItem } from "../../../../../shared/ui/primitives";
+import { Button, Input, Combobox } from "../../../../../shared/ui/primitives";
 import { useQc } from "@/features/qc";
 import { useBatches, type SareeRow } from "@/features/production";
 import { StatusPill } from "../../../../../shared/ui/domain";
@@ -25,7 +25,11 @@ const HISTORY_STATUS_TO_PRODUCTION: Record<ReceivedSareeLog["status"], StatusVal
   "Defective": "qc-failed",
 };
 
-type HistoryRow = ReceivedSareeLog & { isoDate?: string };
+// `id` stays the saree ID (used for display and tag printing), but a saree
+// can pass through QC more than once via rework (SEMI/DEFECTIVE -> reworked
+// -> re-inspected), producing multiple qcHistory rows with the same `id`.
+// `key` disambiguates those for React/DataTable row identity and selection.
+type HistoryRow = ReceivedSareeLog & { isoDate?: string; key: string };
 
 // Module-level so the default is referentially stable. An inline `= []`
 // default allocates a new array on every render, which would defeat the
@@ -66,6 +70,7 @@ export function HistorySection({ liveRecords = NO_LIVE_RECORDS }: { liveRecords?
       const row = rowLookup.get(r.sareeId);
       return {
         id: r.sareeId,
+        key: `${r.sareeId}-${r.qcDate}`,
         weaver: r.weaverName ?? r.factoryLoomNumber ?? "Factory Loom",
         wcode: r.weaverId ?? "",
         weaverCode: row?.weaverCode ?? undefined,
@@ -79,17 +84,30 @@ export function HistorySection({ liveRecords = NO_LIVE_RECORDS }: { liveRecords?
         bulkOrder: r.bulkOrderLabel ?? undefined,
         loomNumber: row?.weaverLoom ?? undefined,
         photoUrl: row?.receivedPhotoUrl ?? undefined,
+        receivedBy: row?.receivedByName ?? undefined,
       };
     }),
   [qcRecords, rowLookup]);
 
   const allData: HistoryRow[] = useMemo(() => [
-    ...liveRecords.map(r => ({ ...r, sareeType: "—" })),
+    ...liveRecords.map(r => ({ ...r, sareeType: "—", key: `live-${r.id}` })),
     ...qcHistory,
   ], [liveRecords, qcHistory]);
 
   const uniqueEntities = useMemo(() => Array.from(new Set(allData.map(h => h.weaver))).sort(), [allData]);
   const uniqueBatches = useMemo(() => Array.from(new Set(allData.map(h => h.batch))).filter(b => b !== "—").sort(), [allData]);
+
+  // How many records sit behind each filter value, so the dropdowns say what
+  // picking one will actually yield instead of just listing names.
+  const countBy = useMemo(() => {
+    const entity = new Map<string, number>();
+    const batch = new Map<string, number>();
+    for (const h of allData) {
+      entity.set(h.weaver, (entity.get(h.weaver) ?? 0) + 1);
+      batch.set(h.batch, (batch.get(h.batch) ?? 0) + 1);
+    }
+    return { entity, batch };
+  }, [allData]);
 
   const filtered = allData.filter(h =>
     matchesDateFilter(h.isoDate || h.date, dateFilter) &&
@@ -99,7 +117,10 @@ export function HistorySection({ liveRecords = NO_LIVE_RECORDS }: { liveRecords?
     h.id.toLowerCase().includes(search.toLowerCase()) ||
     h.weaver.toLowerCase().includes(search.toLowerCase()) ||
     h.batch.toLowerCase().includes(search.toLowerCase()) ||
-    h.color.toLowerCase().includes(search.toLowerCase()))
+    h.color.toLowerCase().includes(search.toLowerCase()) ||
+    (h.sareeType ?? "").toLowerCase().includes(search.toLowerCase()) ||
+    (h.bulkOrder ?? "").toLowerCase().includes(search.toLowerCase()) ||
+    String(h.loomNumber ?? "").toLowerCase().includes(search.toLowerCase()))
   );
 
   // Group by date
@@ -117,11 +138,11 @@ export function HistorySection({ liveRecords = NO_LIVE_RECORDS }: { liveRecords?
   const allChecked = filtered.length > 0 && selected.size === filtered.length;
   const toggleAll = () => {
     if (allChecked) setSelected(new Set());
-    else setSelected(new Set(filtered.map(h => h.id)));
+    else setSelected(new Set(filtered.map(h => h.key)));
   };
 
   if (showTagPrint) {
-    const selectedRows = filtered.filter(h => selected.has(h.id));
+    const selectedRows = filtered.filter(h => selected.has(h.key));
     const uniqueSelWeavers = Array.from(new Set(selectedRows.map(h => h.weaver)));
     return (
       <TagPreviewScreen
@@ -144,6 +165,14 @@ export function HistorySection({ liveRecords = NO_LIVE_RECORDS }: { liveRecords?
           {h.id}
         </span>
       ),
+    },
+    {
+      id: "batch", header: "Batch", accessor: h => h.batch, priority: 2,
+      cell: (_v, h) => h.batch && h.batch !== "—" ? (
+        <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, color: C.wine, background: "rgba(74,6,27,0.06)", border: `1px solid ${C.bdr}`, borderRadius: 8, padding: "4px 9px", whiteSpace: "nowrap" }}>
+          {h.batch}
+        </span>
+      ) : muted,
     },
     {
       id: "weaver", header: "Weaver / Loom", accessor: h => h.weaver, priority: 2,
@@ -175,6 +204,10 @@ export function HistorySection({ liveRecords = NO_LIVE_RECORDS }: { liveRecords?
     {
       id: "bulkOrder", header: "Bulk Order", accessor: h => h.bulkOrder ?? "—", priority: 3,
       cell: (_v, h) => <span style={{ fontFamily: F.u, fontSize: 12, color: h.bulkOrder ? C.burg : C.muted }}>{h.bulkOrder || "—"}</span>,
+    },
+    {
+      id: "receivedBy", header: "Received By", accessor: h => h.receivedBy ?? "—", priority: 3,
+      cell: (_v, h) => <span style={{ fontFamily: F.u, fontSize: 12, color: h.receivedBy ? C.text : C.muted }}>{h.receivedBy || "—"}</span>,
     },
     {
       id: "color", header: "Color", accessor: h => h.color, priority: 2,
@@ -247,17 +280,41 @@ export function HistorySection({ liveRecords = NO_LIVE_RECORDS }: { liveRecords?
         </div>
 
         <div className="grid grid-cols-[3fr_2fr] md:flex items-center gap-2 w-full md:w-auto shrink-0">
-          <div className="w-full md:w-[200px]">
-            <Select value={filterEntity} onValueChange={setFilterEntity} size="sm" className="w-full">
-              <SelectItem value="all">All Weavers / Looms</SelectItem>
-              {uniqueEntities.map(w => <SelectItem key={w} value={w}>{w}</SelectItem>)}
-            </Select>
+          <div className="w-full md:w-[220px]">
+            <Combobox
+              size="sm"
+              className="w-full"
+              value={filterEntity}
+              onValueChange={setFilterEntity}
+              searchPlaceholder="Search weaver or loom…"
+              emptyMessage="No weaver or loom matches"
+              options={[
+                { value: "all", label: "All Weavers / Looms" },
+                ...uniqueEntities.map(w => ({
+                  value: w,
+                  label: w,
+                  hint: `${countBy.entity.get(w) ?? 0} saree${(countBy.entity.get(w) ?? 0) === 1 ? "" : "s"}`,
+                })),
+              ]}
+            />
           </div>
-          <div className="w-full md:w-[150px]">
-            <Select value={filterBatch} onValueChange={setFilterBatch} size="sm" className="w-full">
-              <SelectItem value="all">All Batches</SelectItem>
-              {uniqueBatches.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
-            </Select>
+          <div className="w-full md:w-[180px]">
+            <Combobox
+              size="sm"
+              className="w-full"
+              value={filterBatch}
+              onValueChange={setFilterBatch}
+              searchPlaceholder="Search batch number…"
+              emptyMessage="No batch matches"
+              options={[
+                { value: "all", label: "All Batches" },
+                ...uniqueBatches.map(b => ({
+                  value: b,
+                  label: b,
+                  hint: `${countBy.batch.get(b) ?? 0} saree${(countBy.batch.get(b) ?? 0) === 1 ? "" : "s"}`,
+                })),
+              ]}
+            />
           </div>
         </div>
 
@@ -283,8 +340,8 @@ export function HistorySection({ liveRecords = NO_LIVE_RECORDS }: { liveRecords?
                   <DataTable
                     columns={columns}
                     data={items}
-                    getRowId={h => h.id}
-                    onRowClick={h => toggleRow(h.id)}
+                    getRowId={h => h.key}
+                    onRowClick={h => toggleRow(h.key)}
                     selectedIds={selected}
                     onSelectionChange={setSelected}
                     responsive
@@ -309,8 +366,8 @@ export function HistorySection({ liveRecords = NO_LIVE_RECORDS }: { liveRecords?
                   <DataTable
                     columns={columns}
                     data={items}
-                    getRowId={h => h.id}
-                    onRowClick={h => toggleRow(h.id)}
+                    getRowId={h => h.key}
+                    onRowClick={h => toggleRow(h.key)}
                     selectedIds={selected}
                     onSelectionChange={setSelected}
                     responsive

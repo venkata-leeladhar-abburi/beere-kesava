@@ -87,8 +87,16 @@ export interface UpdateUserPayload {
 }
 
 export const usersApi = {
-  list: (pageSize = 100) =>
-    apiClient.get<PaginatedResponse<BackendUser>>(`/users?pageSize=${pageSize}`),
+  list: (params: number | { pageSize?: number; role?: BackendRole; search?: string } = 100) => {
+    // Historically this took a bare pageSize; kept working so existing call
+    // sites don't have to change, with an options object for the staff
+    // directories that need a role/search filter.
+    const opts = typeof params === "number" ? { pageSize: params } : params;
+    const query = new URLSearchParams({ pageSize: String(opts.pageSize ?? 100) });
+    if (opts.role) query.set("role", opts.role);
+    if (opts.search) query.set("search", opts.search);
+    return apiClient.get<PaginatedResponse<BackendUser>>(`/users?${query.toString()}`);
+  },
 
   create: (payload: CreateUserPayload) => apiClient.post<BackendUser>("/users", payload),
 

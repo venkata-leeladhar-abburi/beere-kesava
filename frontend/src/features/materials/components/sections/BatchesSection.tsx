@@ -292,7 +292,7 @@ export function BatchesSection({ onAddNewStock }: { onAddNewStock: () => void })
                 {statusFilter}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="!min-w-[160px] !p-0 !rounded-[10px] !overflow-hidden z-[99999]" style={{ zIndex: 99999, background: "#FFFFFF", border: `1px solid ${T.borderDef}` }}>
+            <DropdownMenuContent align="end" className="!min-w-[160px] !p-0 !rounded-[10px] !overflow-hidden" style={{ background: "#FFFFFF", border: `1px solid ${T.borderDef}` }}>
               {STATUS_FILTERS.map(f => {
                 const colors: Record<string, string> = { "In Stock": T.green, "Running Low": "#7A5E1C", "Very Low": T.crimson, "All Used Up": T.taupe, "All Status": T.luxuryBrown };
                 return (

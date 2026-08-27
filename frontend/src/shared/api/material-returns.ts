@@ -76,10 +76,27 @@ export interface OutstandingMaterialGroup {
 }
 
 export const materialReturnsApi = {
-  list: (pageSize = 100) =>
-    apiClient.get<PaginatedResponse<BackendMaterialReturnRecord>>(
-      `/material-returns?pageSize=${pageSize}`,
-    ),
+  // Same class of bug as batchesApi.list/materialIssuesApi.list: server caps
+  // pageSize at 100, and this now directly backs every weaver's "Material
+  // Still With You" outstanding balance (MaterialIssueContext.tsx) — a
+  // dropped page here would silently understate how much material has come
+  // back. Walk every page and merge.
+  list: async (pageSize = 100): Promise<PaginatedResponse<BackendMaterialReturnRecord>> => {
+    const first = await apiClient.get<PaginatedResponse<BackendMaterialReturnRecord>>(
+      `/material-returns?page=1&pageSize=${pageSize}`,
+    );
+    const items = [...first.items];
+    let page = 1;
+    while (items.length < first.total) {
+      page += 1;
+      const next = await apiClient.get<PaginatedResponse<BackendMaterialReturnRecord>>(
+        `/material-returns?page=${page}&pageSize=${pageSize}`,
+      );
+      if (next.items.length === 0) break;
+      items.push(...next.items);
+    }
+    return { items, total: first.total, page: 1, pageSize: items.length };
+  },
 
   create: (payload: CreateMaterialReturnPayload) =>
     apiClient.post<BackendMaterialReturnRecord>("/material-returns", payload),

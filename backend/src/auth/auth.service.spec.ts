@@ -1,4 +1,4 @@
-import { HttpException, ServiceUnavailableException, UnauthorizedException } from "@nestjs/common";
+import { ServiceUnavailableException, UnauthorizedException } from "@nestjs/common";
 import * as bcrypt from "bcryptjs";
 import {
   AccessLevel,
@@ -83,12 +83,12 @@ describe("AuthService", () => {
       );
     });
 
-    it("throttles a resend requested within the cooldown window", async () => {
+    it("allows a resend immediately — no cooldown or per-hour cap", async () => {
       prisma.user.findFirst.mockResolvedValue({ id: "u1" });
-      prisma.otpCode.findMany.mockResolvedValue([{ id: "otp-0", createdAt: new Date() }]);
+      prisma.otpCode.findFirst.mockResolvedValue({ id: "otp-0", createdAt: new Date(), attempts: 0, updatedAt: new Date() });
 
-      await expect(service.requestOtp({ phone: "9999999999" })).rejects.toThrow(HttpException);
-      expect(whatsapp.sendTemplate).not.toHaveBeenCalled();
+      await expect(service.requestOtp({ phone: "9999999999" })).resolves.toBeDefined();
+      expect(whatsapp.sendTemplate).toHaveBeenCalled();
     });
 
     it("consumes the OTP row and surfaces an error when the WhatsApp send fails", async () => {
@@ -234,7 +234,7 @@ describe("AuthService", () => {
       expect(prisma.user.create).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
-            mobile: "9999999999",
+            mobile: "9392757489",
             role: UserRole.SUPERADMIN,
             accessLevel: AccessLevel.FULL_ACCESS,
           }),

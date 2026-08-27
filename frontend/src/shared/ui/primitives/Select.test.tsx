@@ -8,6 +8,11 @@ import { MultiSelect } from "./MultiSelect";
 import { Slider } from "./Slider";
 
 describe("Select", () => {
+  // Select is a Radix DropdownMenu, not a native <select> (see the component
+  // header): the trigger is a button with aria-haspopup="menu" and the options
+  // only exist in the DOM once the menu is open. These tests drive it that
+  // way — clicking the trigger, then the item — rather than through
+  // selectOptions, which only works on a real <select>.
   it("commits a value when the user picks an option", async () => {
     const user = userEvent.setup();
     const onValueChange = vi.fn();
@@ -18,17 +23,27 @@ describe("Select", () => {
       </Select>
     );
     await user.click(screen.getByRole("button", { name: "Choose a type" }));
-    await user.click(screen.getByRole("menuitem", { name: "Cotton" }));
+    await user.click(await screen.findByText("Cotton"));
     expect(onValueChange).toHaveBeenCalledWith("cotton");
   });
 
-  it("renders the placeholder as a disabled option so it cannot be re-picked", () => {
+  it("shows the placeholder on the trigger until a value is chosen", async () => {
+    const user = userEvent.setup();
     render(
       <Select placeholder="Choose a type" onValueChange={() => {}}>
         <SelectItem value="silk">Silk</SelectItem>
       </Select>
     );
-    expect(screen.getByRole("button")).toHaveTextContent("Choose a type");
+    // With no native <option> list, the placeholder lives on the trigger and
+    // is replaced by the chosen item's label — it is never itself selectable.
+    const trigger = screen.getByRole("button", { name: "Choose a type" });
+    expect(trigger).toHaveTextContent("Choose a type");
+
+    await user.click(trigger);
+    await user.click(await screen.findByText("Silk"));
+
+    expect(screen.getByRole("button")).toHaveTextContent("Silk");
+    expect(screen.queryByText("Choose a type")).not.toBeInTheDocument();
   });
 });
 

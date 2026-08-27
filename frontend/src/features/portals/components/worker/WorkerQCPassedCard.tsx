@@ -8,12 +8,14 @@ export function WorkerQCPassedCard({
   date,
   sareeType,
   payable,
+  inspectedBy,
 }: {
   id: string;
   weaver: string;
   date: string;
   sareeType?: string;
   payable: string;
+  inspectedBy?: string;
 }) {
   return (
     <div className="group relative flex flex-col justify-between rounded-[20px] bg-[#FFFDFB] border border-[#F0E5D8] p-5 text-left shadow-[0_4px_20px_rgba(74,6,27,0.05)] hover:shadow-[0_8px_24px_rgba(74,6,27,0.09)] transition-all duration-200 overflow-hidden">
@@ -64,7 +66,7 @@ export function WorkerQCPassedCard({
             </div>
             <div className="flex items-center gap-2 mt-1.5 text-[13.5px] font-bold text-[#1D1814]">
               <Calendar size={15} className="text-[#C89B47] flex-shrink-0" />
-              <span style={{ fontFamily: F.u }}>{date}</span>
+              <span style={{ fontFamily: F.u }}>{date}{inspectedBy ? ` · ${inspectedBy}` : ""}</span>
             </div>
           </div>
 

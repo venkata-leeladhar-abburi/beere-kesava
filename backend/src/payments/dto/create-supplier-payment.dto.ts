@@ -8,6 +8,11 @@ export class CreateSupplierPaymentDto {
   @IsUUID()
   actorId?: string;
 
+  // Set server-side from the authenticated user (see PaymentsController).
+  @IsOptional()
+  @IsUUID()
+  recordedById?: string;
+
   @IsUUID()
   supplierId!: string;
 

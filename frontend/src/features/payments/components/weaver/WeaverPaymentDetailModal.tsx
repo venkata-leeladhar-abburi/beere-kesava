@@ -132,7 +132,7 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
                     </div>
                     <div>
                       <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>UTR Number</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, fontVariantNumeric: "tabular-nums" }}>{p.utrNumber}</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, fontVariantNumeric: "tabular-nums" }}>{p.utrNumber || "—"}</div>
                     </div>
                     <div>
                       <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>Firm</div>
@@ -141,6 +141,22 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
                     <div>
                       <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>Payment Date</div>
                       <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{p.paymentDate}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>Batch No.</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{p.batchNo || "—"}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>Loom Number</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{p.loomNumber || "—"}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>No. of Sarees</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{p.noOfSarees ?? "—"}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>Deduction</div>
+                      <div style={{ fontFamily: F.ui, fontSize: 12, color: p.deduction ? T.crimson : T.luxuryBrown }}>{p.deduction ? <Money value={rupees(p.deduction)} /> : "—"}</div>
                     </div>
                   </div>
                 ))}

@@ -58,9 +58,16 @@ describe("BulkOrderCreateModal validation", () => {
     fireEvent.change(deadlineInput, { target: { value: "2027-01-01" } });
     fireEvent.keyDown(deadlineInput, { key: "Enter" });
 
-    // Select uses Radix DropdownMenu trigger and menu items.
+    // Select is a Radix DropdownMenu (see Select.tsx): the options only exist
+    // once the trigger is open, and fireEvent.change on the trigger button is
+    // a no-op, so open it and click the item the way a user does.
     await user.click(screen.getByLabelText("Select Wholesale Customer"));
-    await user.click(screen.getByRole("menuitem", { name: new RegExp(MOCK_WHOLESALE_CUSTOMERS[0].name) }));
+    // The item label is "{name} ({code}, {city})", split across JSX
+    // expressions, so match the menu item by accessible name rather than by
+    // an exact text node.
+    await user.click(
+      await screen.findByRole("menuitem", { name: new RegExp(MOCK_WHOLESALE_CUSTOMERS[0].name) }),
+    );
 
     fireEvent.click(screen.getByText("✓ Create Bulk Order"));
 
@@ -79,9 +86,16 @@ describe("BulkOrderCreateModal validation", () => {
 
     fireEvent.change(screen.getByLabelText("Quantity (sarees)"), { target: { value: "10" } });
     fireEvent.change(screen.getByLabelText("Delivery Deadline"), { target: { value: "2027-01-01" } });
-    // Select uses Radix DropdownMenu trigger and menu items.
+    // Select is a Radix DropdownMenu (see Select.tsx): the options only exist
+    // once the trigger is open, and fireEvent.change on the trigger button is
+    // a no-op, so open it and click the item the way a user does.
     await user.click(screen.getByLabelText("Select Wholesale Customer"));
-    await user.click(screen.getByRole("menuitem", { name: new RegExp(MOCK_WHOLESALE_CUSTOMERS[0].name) }));
+    // The item label is "{name} ({code}, {city})", split across JSX
+    // expressions, so match the menu item by accessible name rather than by
+    // an exact text node.
+    await user.click(
+      await screen.findByRole("menuitem", { name: new RegExp(MOCK_WHOLESALE_CUSTOMERS[0].name) }),
+    );
 
     fireEvent.click(screen.getByText("✓ Create Bulk Order"));
     expect(screen.queryByText("Quantity must be at least 1")).not.toBeInTheDocument();

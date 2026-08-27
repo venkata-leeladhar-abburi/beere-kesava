@@ -10,6 +10,7 @@ import { Layers, ClipboardCheck, Package, CreditCard } from "lucide-react";
 
 // ─── Design Tokens ─────────────────────────────────────────────────────────
 import { F, MyBatchEntry, Tab5 } from "./theme";
+import { isBatchDoneForWeaver } from "./batchCompletion";
 import { useCurrentWeaver } from "./useCurrentWeaver";
 
 import { NotificationsPage } from "./NotificationsPage";
@@ -56,16 +57,11 @@ export function DesktopWeaverPortal({ onBack, bp = "desktop", active, setActive,
     .map(b => ({ ...b, myRows: b.rows.filter(isMyRow) }))
     .filter(b => b.myRows.length > 0);
 
-  const isBatchDone = (b: MyBatchEntry) => {
-    if (b.status === "completed") return true;
-    if (b.myRows.length === 0) return false;
-    return b.myRows.every(r => r.finished === true);
-  };
 
   // Completed: batch status is completed OR every saree assigned to this weaver is finished (produced)
-  const completedBatches: MyBatchEntry[] = myWeaverBatches.filter(isBatchDone);
+  const completedBatches: MyBatchEntry[] = myWeaverBatches.filter(isBatchDoneForWeaver);
   // Active: anything not yet completed
-  const myActiveBatches: MyBatchEntry[] = myWeaverBatches.filter(b => !isBatchDone(b));
+  const myActiveBatches: MyBatchEntry[] = myWeaverBatches.filter(b => !isBatchDoneForWeaver(b));
 
   const myDefectiveSarees = useMemo(() => {
     return batches.flatMap(b =>

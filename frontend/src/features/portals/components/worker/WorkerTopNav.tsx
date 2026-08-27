@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { motion } from "motion/react";
 import {
-  User, Bell, LogOut,
+  User, Bell, ChevronLeft, LogOut,
   Home, Search, Users, Sparkles, Truck,
 } from "lucide-react";
 import { C, F } from "./tokens";
@@ -10,7 +10,8 @@ import { imgBKLogo } from "../../../../shared/constants/weaverImages";
 import type { IconComponent } from "../../../../lib/icon";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, Popover } from "../../../../shared/ui/overlay";
-import { BackendNotification, notificationsApi } from "../../../../shared/api/notifications";
+import { formatRelativeTime, notificationBody, notificationTitle, useNotificationBell } from "@/features/notifications";
+import { roleLabel, staffIdentitySubtitle, useAdminStaffView } from "@/shared/ui/portal/AdminStaffView";
 
 type Tab = "home" | "qc" | "weavers" | "finishing" | "dispatch" | "profile";
 type NavTab = "home" | "qc" | "weavers" | "finishing" | "dispatch";
@@ -32,15 +33,6 @@ function notifEmoji(type: string): string {
   return "🔔";
 }
 
-function formatRelativeTime(iso: string): string {
-  const diffMin = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
-  if (diffMin < 1) return "Now";
-  if (diffMin < 60) return `${diffMin}m ago`;
-  const diffHrs = Math.round(diffMin / 60);
-  if (diffHrs < 24) return `${diffHrs}h ago`;
-  return `${Math.round(diffHrs / 24)}d ago`;
-}
-
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 interface WorkerTopNavProps {
@@ -59,18 +51,19 @@ export function WorkerTopNav({ active, onSelect, bp, pendingQcCount = 0 }: Worke
   const { user, logout } = useAuth();
   const [showNotif, setShowNotif] = useState(false);
   const [showUser, setShowUser] = useState(false);
-  const [notifications, setNotifications] = useState<BackendNotification[]>([]);
+  const { notifications, unreadCount, markRead, markAllRead } = useNotificationBell();
+  // An admin/superadmin can open this portal as themselves — the header must
+  // say so rather than presenting them as Worker Staff.
+  const { adminViewingAs, isAdminViewing, returnToAdmin } = useAdminStaffView();
   const isTablet = bp === "tablet";
-
-  useEffect(() => {
-    notificationsApi.list({ role: "WORKER", pageSize: 5 })
-      .then(res => setNotifications(res.items))
-      .catch(() => setNotifications([]));
-  }, []);
 
   const name = user?.name || "—";
   const initials = initialsOf(name);
-  const subtitle = user?.empId ? `${user.empId} · Worker Staff` : "Worker Staff";
+  const subtitle = staffIdentitySubtitle({
+    adminViewingAs,
+    portalLabel: "Worker Staff",
+    fallback: user?.empId ? `${user.empId} · Worker Staff` : "Worker Staff",
+  });
 
   return (
     <motion.nav
@@ -105,7 +98,13 @@ export function WorkerTopNav({ active, onSelect, bp, pendingQcCount = 0 }: Worke
       </div>
 
       {/* Nav tabs */}
-      <div className="scrollbar-none" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: isTablet ? 2 : 6, overflowX: isTablet ? "auto" : "hidden", minWidth: 0, scrollbarWidth: "none", msOverflowStyle: "none" }}>
+      <div
+        className="no-scrollbar scrollbar-none"
+        style={{
+          flex: 1, display: "flex", alignItems: "center", justifyContent: isTablet ? "flex-start" : "center",
+          flexWrap: "nowrap" as const, gap: isTablet ? 2 : 6, minWidth: 0,
+          overflowX: "auto", scrollbarWidth: "none" as const, msOverflowStyle: "none" as const,
+        }}>
         {topNavItems(pendingQcCount).map(item => {
           const isActive = active === item.id;
           return (
@@ -142,30 +141,55 @@ export function WorkerTopNav({ active, onSelect, bp, pendingQcCount = 0 }: Worke
             >
               <IconButton icon={Bell} label="Notifications" variant="secondary"
                 className="w-9 h-9 rounded-[10px] border-[rgba(200,155,71,0.22)] bg-transparent text-[#F5E8D0]" />
-              <div style={{ position: "absolute", top: 5, right: 5, width: 8, height: 8, borderRadius: "50%", background: "#F47B72", border: `1.5px solid ${C.dark}`, pointerEvents: "none" }} />
+              {unreadCount > 0 && (
+                <div style={{ position: "absolute", top: 5, right: 5, width: 8, height: 8, borderRadius: "50%", background: "#F47B72", border: `1.5px solid ${C.dark}`, pointerEvents: "none" }} />
+              )}
             </motion.div>
           </Popover.Trigger>
           <Popover.Content align="end" sideOffset={10} className="!w-[300px] !max-w-[300px] !p-0 !overflow-hidden">
             <div style={{ padding: "12px 16px", borderBottom: `1px solid rgba(110,15,45,0.08)`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontFamily: F.d, fontSize: 14, fontWeight: 600, color: C.dark }}>Notifications</span>
-              <span style={{ fontFamily: F.u, fontSize: 12, color: C.gold, cursor: "pointer" }}>Mark all read</span>
+              <span style={{ fontFamily: F.d, fontSize: 14, fontWeight: 600, color: C.dark }}>
+                Notifications{unreadCount > 0 ? ` · ${unreadCount} new` : ""}
+              </span>
+              <Button
+                variant="link"
+                size="sm"
+                onClick={markAllRead}
+                disabled={unreadCount === 0}
+                className={`h-auto p-0 text-[12px] ${unreadCount > 0 ? "text-[#C89B47]" : "text-[#69635E]"}`}
+              >
+                Mark all read
+              </Button>
             </div>
             {notifications.length === 0 ? (
               <div style={{ padding: "20px 16px", textAlign: "center" as const, fontFamily: F.u, fontSize: 13, color: C.muted }}>No notifications.</div>
-            ) : notifications.map((n, i) => (
-              <div key={n.id} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); } }} style={{ padding: "10px 16px", borderBottom: i < notifications.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", display: "flex", gap: 10, alignItems: "flex-start", cursor: "pointer" }}
-                onMouseEnter={e => e.currentTarget.style.background = "rgba(110,15,45,0.03)"}
-                onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                <span style={{ fontSize: 14, flexShrink: 0 }}>{notifEmoji(n.type)}</span>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.dark, marginBottom: 2 }}>{n.type.replace(/_/g, " ")}</div>
-                  {n.payload && Object.keys(n.payload).length > 0 && (
-                    <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{JSON.stringify(n.payload)}</div>
-                  )}
+            ) : notifications.map((n, i) => {
+              const isUnread = n.readAt === null;
+              return (
+                <div
+                  key={n.id}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${notificationTitle(n)}${isUnread ? " (unread)" : ""}`}
+                  onClick={() => markRead(n.id)}
+                  onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); markRead(n.id); } }}
+                  style={{ padding: "10px 16px", borderBottom: i < notifications.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", display: "flex", gap: 10, alignItems: "flex-start", cursor: "pointer", background: isUnread ? "rgba(200,155,71,0.07)" : "transparent" }}
+                  onMouseEnter={e => e.currentTarget.style.background = "rgba(110,15,45,0.03)"}
+                  onMouseLeave={e => e.currentTarget.style.background = isUnread ? "rgba(200,155,71,0.07)" : "transparent"}
+                >
+                  <span style={{ fontSize: 14, flexShrink: 0 }}>{notifEmoji(n.type)}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: isUnread ? 700 : 500, color: C.dark, marginBottom: 2 }}>
+                      {notificationTitle(n)}
+                    </div>
+                    <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, lineHeight: 1.4 }}>
+                      {notificationBody(n)}
+                    </div>
+                  </div>
+                  <span style={{ fontFamily: F.m, fontSize: 12, color: C.muted, flexShrink: 0 }}>{formatRelativeTime(n.createdAt)}</span>
                 </div>
-                <span style={{ fontFamily: F.m, fontSize: 12, color: C.muted, flexShrink: 0 }}>{formatRelativeTime(n.createdAt)}</span>
-              </div>
-            ))}
+              );
+            })}
           </Popover.Content>
         </Popover>
 
@@ -191,6 +215,11 @@ export function WorkerTopNav({ active, onSelect, bp, pendingQcCount = 0 }: Worke
             <DropdownMenuItem onClick={() => onSelect("profile")} className="!h-auto !rounded-none !py-2.5 !px-4 !text-[13px] !text-[#1A0A0F]">
               <User size={14} color={C.muted} /> My Profile
             </DropdownMenuItem>
+            {isAdminViewing && (
+              <DropdownMenuItem onClick={returnToAdmin} className="!h-auto !rounded-none !py-2.5 !px-4 !text-[13px] !text-[#1A0A0F]">
+                <ChevronLeft size={14} color={C.muted} /> Return to {roleLabel(adminViewingAs)}
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem onClick={() => logout()} destructive className="!h-auto !rounded-none !py-2.5 !px-4 !text-[13px]">
               <LogOut size={14} color="#C0392B" /> Logout
             </DropdownMenuItem>

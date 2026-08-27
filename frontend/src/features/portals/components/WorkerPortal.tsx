@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { useAuth } from "../../../contexts/AuthContext";
 import { motion, AnimatePresence } from "motion/react";
@@ -6,7 +6,8 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { Home, Users, Bell, ChevronLeft, Menu, Search, X, UserRound, Sparkles, UserCheck, Truck, LogOut } from "lucide-react";
 import { C, F } from "./worker/tokens";
 import { Drawer, Popover } from "../../../shared/ui/overlay";
-import { BackendNotification, notificationsApi } from "../../../shared/api/notifications";
+import { formatRelativeTime, notificationBody, notificationTitle, useNotificationBell } from "@/features/notifications";
+import { AdminViewingBanner, roleLabel, staffIdentitySubtitle, useAdminStaffView } from "@/shared/ui/portal/AdminStaffView";
 import { WorkerHome } from "./worker/WorkerHome";
 import { WorkerWeavers } from "./worker/WorkerWeavers";
 import { WorkerQC } from "./worker/WorkerQC";
@@ -31,15 +32,6 @@ function notifEmoji(type: string): string {
   return "🔔";
 }
 
-function formatRelativeTime(iso: string): string {
-  const diffMin = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
-  if (diffMin < 1) return "Now";
-  if (diffMin < 60) return `${diffMin}m ago`;
-  const diffHrs = Math.round(diffMin / 60);
-  if (diffHrs < 24) return `${diffHrs}h ago`;
-  return `${Math.round(diffHrs / 24)}d ago`;
-}
-
 const TABS: { id: Tab; Icon: IconComponent; label: string; badge?: string }[] = [
   { id: "home",      Icon: Home,       label: "Home"          },
   { id: "qc",        Icon: Search,     label: "QC", badge: "6" },
@@ -55,17 +47,18 @@ function WorkerMobileTopNav({ onMenuOpen, onProfile }: { onMenuOpen: () => void;
   const { user, logout } = useAuth();
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [showNotif, setShowNotif] = useState(false);
-  const [notifications, setNotifications] = useState<BackendNotification[]>([]);
-
-  useEffect(() => {
-    notificationsApi.list({ role: "WORKER", pageSize: 5 })
-      .then(res => setNotifications(res.items))
-      .catch(() => setNotifications([]));
-  }, []);
+  const { notifications, unreadCount, markRead, markAllRead } = useNotificationBell();
+  // An admin/superadmin can open this portal as themselves — say so instead
+  // of presenting them as Worker Staff.
+  const { adminViewingAs, isAdminViewing, returnToAdmin } = useAdminStaffView();
 
   const userName = user?.name || "Ravi Kumar";
   const initials = userName.split(" ").filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase() || "RK";
-  const subtitleText = user?.empId ? `Worker Staff · ${user.empId}` : "Worker Staff · Est. 1999";
+  const subtitleText = staffIdentitySubtitle({
+    adminViewingAs,
+    portalLabel: "Worker Staff",
+    fallback: user?.empId ? `Worker Staff · ${user.empId}` : "Worker Staff · Est. 1999",
+  });
 
   return (
     <nav
@@ -115,29 +108,54 @@ function WorkerMobileTopNav({ onMenuOpen, onProfile }: { onMenuOpen: () => void;
                 variant="ghost"
                 className="!size-9 !rounded-[10px] border border-[rgba(110,15,45,0.12)] bg-transparent hover:bg-[rgba(0,0,0,0.04)] text-[#1A0A0F]"
               />
-              <div style={{ position: "absolute", top: 4, right: 4, width: 8, height: 8, borderRadius: "50%", background: "#F47B72", border: `1.5px solid #FFFDF9`, pointerEvents: "none" }} />
+              {unreadCount > 0 && (
+                <div style={{ position: "absolute", top: 4, right: 4, width: 8, height: 8, borderRadius: "50%", background: "#F47B72", border: `1.5px solid #FFFDF9`, pointerEvents: "none" }} />
+              )}
             </div>
           </Popover.Trigger>
           <Popover.Content align="end" sideOffset={8} className="!w-[300px] !max-w-[calc(100vw-32px)] !p-0 !overflow-hidden !z-[200]">
             <div style={{ padding: "12px 16px", borderBottom: `1px solid rgba(110,15,45,0.08)`, display: "flex", justifyContent: "space-between", alignItems: "center", background: "#FFFDF9" }}>
-              <span style={{ fontFamily: F.d, fontSize: 14, fontWeight: 600, color: C.dark }}>Notifications</span>
-              <span style={{ fontFamily: F.u, fontSize: 12, color: C.gold, cursor: "pointer" }}>Mark all read</span>
+              <span style={{ fontFamily: F.d, fontSize: 14, fontWeight: 600, color: C.dark }}>
+                Notifications{unreadCount > 0 ? ` · ${unreadCount} new` : ""}
+              </span>
+              <Button
+                variant="link"
+                size="sm"
+                onClick={markAllRead}
+                disabled={unreadCount === 0}
+                className={`h-auto p-0 text-[12px] ${unreadCount > 0 ? "text-[#C89B47]" : "text-[#69635E]"}`}
+              >
+                Mark all read
+              </Button>
             </div>
             <div style={{ background: "#FFF" }}>
               {notifications.length === 0 ? (
                 <div style={{ padding: "20px 16px", textAlign: "center", fontFamily: F.u, fontSize: 13, color: C.muted }}>No notifications.</div>
-              ) : notifications.map((n, i) => (
-                <div key={n.id} style={{ padding: "10px 16px", borderBottom: i < notifications.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", display: "flex", gap: 10, alignItems: "flex-start" }}>
-                  <span style={{ fontSize: 14, flexShrink: 0 }}>{notifEmoji(n.type)}</span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.dark, marginBottom: 2 }}>{n.type.replace(/_/g, " ")}</div>
-                    {n.payload && Object.keys(n.payload).length > 0 && (
-                      <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{JSON.stringify(n.payload)}</div>
-                    )}
+              ) : notifications.map((n, i) => {
+                const isUnread = n.readAt === null;
+                return (
+                  <div
+                    key={n.id}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`${notificationTitle(n)}${isUnread ? " (unread)" : ""}`}
+                    onClick={() => markRead(n.id)}
+                    onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); markRead(n.id); } }}
+                    style={{ padding: "10px 16px", borderBottom: i < notifications.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", display: "flex", gap: 10, alignItems: "flex-start", cursor: "pointer", background: isUnread ? "rgba(200,155,71,0.07)" : "transparent" }}
+                  >
+                    <span style={{ fontSize: 14, flexShrink: 0 }}>{notifEmoji(n.type)}</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: isUnread ? 700 : 500, color: C.dark, marginBottom: 2 }}>
+                        {notificationTitle(n)}
+                      </div>
+                      <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, lineHeight: 1.4 }}>
+                        {notificationBody(n)}
+                      </div>
+                    </div>
+                    <span style={{ fontFamily: F.m, fontSize: 11, color: C.muted, flexShrink: 0 }}>{formatRelativeTime(n.createdAt)}</span>
                   </div>
-                  <span style={{ fontFamily: F.m, fontSize: 11, color: C.muted, flexShrink: 0 }}>{formatRelativeTime(n.createdAt)}</span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </Popover.Content>
         </Popover>
@@ -166,6 +184,12 @@ function WorkerMobileTopNav({ onMenuOpen, onProfile }: { onMenuOpen: () => void;
                   <UserRound size={14} color={C.muted} /> View Profile
                 </Button>
                 <div style={{ height: 1, background: "rgba(110,15,45,0.08)", margin: "4px 0" }} />
+                {isAdminViewing && (
+                  <Button onClick={() => { setShowProfileDropdown(false); returnToAdmin(); }} variant="tertiary" fullWidth
+                    className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#1A0A0F]">
+                    <ChevronLeft size={14} color={C.muted} /> Return to {roleLabel(adminViewingAs)}
+                  </Button>
+                )}
                 <Button onClick={() => { setShowProfileDropdown(false); logout(); }} variant="tertiary" fullWidth
                   className="!justify-start !gap-[9px] !rounded-none !border-none !bg-transparent !py-2.5 !px-4 !text-[13px] !font-normal !text-[#C0392B] hover:!text-[#C0392B]">
                   <LogOut size={14} color="#C0392B" /> Logout
@@ -376,6 +400,7 @@ function MobilePortal({ onBack, activeTab, setActiveTab }: MobilePortalProps) {
 
       {/* Global Header matching Superadmin mobile header */}
       <WorkerMobileTopNav onMenuOpen={() => setShowMenu(true)} onProfile={() => setShowProfile(true)} />
+      <AdminViewingBanner portalLabel="Worker Staff" />
 
       {/* Sticky Section Navigator — matching SuperadminDashboard layout */}
       {activeTab === "qc" && (

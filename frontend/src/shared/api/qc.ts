@@ -3,6 +3,7 @@ import { apiClient } from "./client";
 export type BackendQcResult = "PASSED" | "SEMI" | "DEFECTIVE";
 
 export interface BackendQcRecord {
+  id: string;
   sareeId: string;
   weaverId: string | null;
   factoryLoomId: string | null;
@@ -17,6 +18,8 @@ export interface BackendQcRecord {
   photoUrl: string | null;
   notes: string | null;
   inspectedById: string;
+  /** Real name of who performed the check — joined server-side from the User relation. */
+  inspectedBy?: { firstName: string; lastName: string } | null;
 }
 
 interface PaginatedResponse<T> {

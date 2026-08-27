@@ -18,10 +18,17 @@ export function RatesProvider({ children }: { children: ReactNode }) {
   const [rates, setRates] = useState<SareeTypeRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
-  // /rates is ACCOUNTANT-only (ADMIN/SUPERADMIN bypass every role check),
-  // and this provider mounts above the router — so without the gate it fired
-  // on /login, before anyone had a token, and 401'd.
-  const canReadRates = useAuthGate("accountant", "admin", "superadmin");
+  // GET /rates carries no role restriction on the backend (rates.controller.ts) —
+  // WORKER needs it too, since Worker Staff's saree-receive screen
+  // (MaterialSplitPanel) reads rate cards to auto-split warp/resham/jari, and
+  // WEAVER needs it since the weaver portal's Gross Charge metric
+  // (useWeaverDashboardMetrics) looks up each produced saree's making charge
+  // by type code. This provider mounts above the router, so without a gate
+  // at all it fired on /login before anyone had a token and 401'd; the gate
+  // must include every role that legitimately reads rate data, not just the
+  // ones that can edit it (accountant/admin/superadmin still own mutations,
+  // per the RequireRoles on POST/PATCH in rates.controller.ts).
+  const canReadRates = useAuthGate("accountant", "admin", "superadmin", "worker", "weaver");
 
   function loadRates() {
     setIsLoading(true);

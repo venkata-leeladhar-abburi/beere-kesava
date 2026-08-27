@@ -59,8 +59,8 @@ export function useBatchFormHandlers(
       designCode: null, sareeTypeCode: null, sareeTypeName: null,
       bulkOrderRef: null, bulkOrderLabel: null,
       receivedAt: null, receivedWeight: null, receivedColor: null, receivedPhotoUrl: null,
-      receivedWarpG: null, receivedReshamG: null, receivedJariReels: null,
-      tallied: false, talliedBy: null, talliedAt: null,
+      receivedWarpG: null, receivedReshamG: null, receivedJariReels: null, receivedByName: null,
+      tallied: false, talliedByName: null, talliedAt: null,
     })));
     setSelected(new Set());
     setGenerated(true);
@@ -251,8 +251,8 @@ export function useBatchFormHandlers(
         designCode: null, sareeTypeCode: null, sareeTypeName: null,
         bulkOrderRef: null, bulkOrderLabel: null,
         receivedAt: null, receivedWeight: null, receivedColor: null, receivedPhotoUrl: null,
-        receivedWarpG: null, receivedReshamG: null, receivedJariReels: null,
-        tallied: false, talliedBy: null, talliedAt: null,
+        receivedWarpG: null, receivedReshamG: null, receivedJariReels: null, receivedByName: null,
+        tallied: false, talliedByName: null, talliedAt: null,
       }));
       return [...prev, ...extra];
     });

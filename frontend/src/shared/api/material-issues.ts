@@ -90,10 +90,27 @@ export interface CreateMaterialIssuePayload {
 }
 
 export const materialIssuesApi = {
-  list: (pageSize = 100) =>
-    apiClient.get<PaginatedResponse<BackendMaterialIssueRecord>>(
-      `/material-issues?pageSize=${pageSize}`,
-    ),
+  // Server caps pageSize at 100 — a single page silently dropped older
+  // issuance records once the total crossed that cap, which zeroed out a
+  // weaver's "Material Still With You" balance even though material was
+  // genuinely still outstanding with them. Walk every page and merge, same
+  // fix as batchesApi.list/weaverPaymentsApi.list.
+  list: async (pageSize = 100): Promise<PaginatedResponse<BackendMaterialIssueRecord>> => {
+    const first = await apiClient.get<PaginatedResponse<BackendMaterialIssueRecord>>(
+      `/material-issues?page=1&pageSize=${pageSize}`,
+    );
+    const items = [...first.items];
+    let page = 1;
+    while (items.length < first.total) {
+      page += 1;
+      const next = await apiClient.get<PaginatedResponse<BackendMaterialIssueRecord>>(
+        `/material-issues?page=${page}&pageSize=${pageSize}`,
+      );
+      if (next.items.length === 0) break;
+      items.push(...next.items);
+    }
+    return { items, total: first.total, page: 1, pageSize: items.length };
+  },
 
   create: (payload: CreateMaterialIssuePayload) =>
     apiClient.post<BackendMaterialIssueRecord>("/material-issues", payload),

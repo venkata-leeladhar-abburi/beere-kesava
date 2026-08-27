@@ -46,7 +46,7 @@ export function WorkerQCHistorySection({ items, historyFilter, setHistoryFilter,
           <>
             <div style={{ display: "grid", gridTemplateColumns: cols, gap: 16 }}>
               {pageItems.map((p) => (
-                <WorkerQCPassedCard key={p.id} id={p.id} weaver={p.weaver} date={p.date} sareeType={p.sareeType} payable={p.payable} />
+                <WorkerQCPassedCard key={p.recordId || p.id} id={p.id} weaver={p.weaver} date={p.date} sareeType={p.sareeType} payable={p.payable} inspectedBy={p.inspectedBy} />
               ))}
             </div>
 

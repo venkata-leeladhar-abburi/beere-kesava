@@ -2,7 +2,6 @@ import React, { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, Scale, ChevronLeft, UserRound, Layers, TrendingUp } from "lucide-react";
 import { useBatches, type SareeRow } from "../contexts/BatchContext";
 import { useRatesPricing } from "@/features/pricing";
-import { useAuth } from "../../../contexts/AuthContext";
 import { T, F } from "./theme";
 import { rowComplete, weaverBreakdown, bulkOrderBreakdown } from "./sections/batches/ContextBatchCard";
 import { SareeWeightTallyList, type TallyRowItem, type TallyCorrection } from "./sections/batches/SareeWeightTallyList";
@@ -24,7 +23,6 @@ export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: s
   const b = batches.find(br => br.batchId === batchId);
 
   const { getSareeTypeByCode } = useRatesPricing();
-  const { user } = useAuth();
   const [busyKey, setBusyKey] = useState<string | null>(null);
 
   const [search, setSearch] = useState("");
@@ -80,7 +78,7 @@ export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: s
       actualReshamG: r.receivedReshamG ? Number(r.receivedReshamG) : null,
       actualJariReels: r.receivedJariReels ? Number(r.receivedJariReels) : null,
       tallied: r.tallied,
-      talliedBy: r.talliedBy,
+      talliedBy: r.talliedByName,
       talliedAt: r.talliedAt,
     }));
 
@@ -88,7 +86,7 @@ export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: s
     const key = `${item.batchId}-${item.serial}`;
     setBusyKey(key);
     try {
-      await tallyRow(item.batchId, item.serial, tallied, user?.name);
+      await tallyRow(item.batchId, item.serial, tallied);
     } finally {
       setBusyKey(null);
     }
@@ -98,7 +96,7 @@ export function BatchTallyPage({ batchId, onBack, onOpenCreation }: { batchId: s
     const key = `${item.batchId}-${item.serial}`;
     setBusyKey(key);
     try {
-      await tallyRow(item.batchId, item.serial, true, user?.name, correction);
+      await tallyRow(item.batchId, item.serial, true, correction);
     } finally {
       setBusyKey(null);
     }

@@ -49,6 +49,7 @@ export class PaymentsService {
         loomNumber: dto.loomNumber,
         noOfSarees: dto.noOfSarees,
         deduction: dto.deduction,
+        recordedById: dto.recordedById,
       },
     });
 
@@ -67,7 +68,7 @@ export class PaymentsService {
 
   async findAllWeaverPayments(
     query: ListWeaverPaymentsQueryDto,
-  ): Promise<PaginatedResult<Prisma.WeaverPaymentGetPayload<object>>> {
+  ): Promise<PaginatedResult<Prisma.WeaverPaymentGetPayload<{ include: { recordedBy: { select: { id: true; firstName: true; lastName: true; role: true } } } }>>> {
     const where: Prisma.WeaverPaymentWhereInput = {
       weaverId: query.weaverId,
       firmId: query.firmId,
@@ -78,6 +79,7 @@ export class PaymentsService {
         skip: (query.page - 1) * query.pageSize,
         take: query.pageSize,
         orderBy: { paymentDate: "desc" },
+        include: { recordedBy: { select: { id: true, firstName: true, lastName: true, role: true } } },
       }),
       this.prisma.weaverPayment.count({ where }),
     ]);
@@ -111,6 +113,7 @@ export class PaymentsService {
         method: dto.method,
         firmId: dto.firmId,
         purchaseId: dto.purchaseId,
+        recordedById: dto.recordedById,
       },
     });
 
@@ -135,7 +138,7 @@ export class PaymentsService {
 
   async findAllSupplierPayments(
     query: ListSupplierPaymentsQueryDto,
-  ): Promise<PaginatedResult<Prisma.SupplierPaymentGetPayload<object>>> {
+  ): Promise<PaginatedResult<Prisma.SupplierPaymentGetPayload<{ include: { recordedBy: { select: { id: true; firstName: true; lastName: true; role: true } } } }>>> {
     const where: Prisma.SupplierPaymentWhereInput = {
       supplierId: query.supplierId,
       firmId: query.firmId,
@@ -146,6 +149,7 @@ export class PaymentsService {
         skip: (query.page - 1) * query.pageSize,
         take: query.pageSize,
         orderBy: { date: "desc" },
+        include: { recordedBy: { select: { id: true, firstName: true, lastName: true, role: true } } },
       }),
       this.prisma.supplierPayment.count({ where }),
     ]);
@@ -179,6 +183,7 @@ export class PaymentsService {
         method: dto.method,
         firmId: dto.firmId,
         billId: dto.billId,
+        recordedById: dto.recordedById,
       },
     });
 
@@ -203,7 +208,7 @@ export class PaymentsService {
 
   async findAllVendorPayments(
     query: ListVendorPaymentsQueryDto,
-  ): Promise<PaginatedResult<Prisma.VendorPaymentGetPayload<object>>> {
+  ): Promise<PaginatedResult<Prisma.VendorPaymentGetPayload<{ include: { recordedBy: { select: { id: true; firstName: true; lastName: true; role: true } } } }>>> {
     const where: Prisma.VendorPaymentWhereInput = {
       vendorId: query.vendorId,
       firmId: query.firmId,
@@ -214,6 +219,7 @@ export class PaymentsService {
         skip: (query.page - 1) * query.pageSize,
         take: query.pageSize,
         orderBy: { date: "desc" },
+        include: { recordedBy: { select: { id: true, firstName: true, lastName: true, role: true } } },
       }),
       this.prisma.vendorPayment.count({ where }),
     ]);

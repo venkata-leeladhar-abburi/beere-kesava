@@ -192,7 +192,7 @@ const RESTRICTED = new URLSearchParams(location.search).has("restricted");
 const fakeAuth = {
   isAuthenticated: true, role: "admin" as const, phone: "9999999999", token: "dev",
   user: { id: "dev", name: "Preview User", email: "", mobile: "", role: "admin", accessLevel: RESTRICTED ? "DOWNLOAD_RESTRICTED" : undefined },
-  login: () => {}, selectRole: () => {}, logout: () => {}, adminViewingAs: null, clearAdminView: () => {},
+  login: () => {}, selectRole: () => {}, logout: () => {}, adminViewingAs: null, clearAdminView: () => {}, enterStaffView: () => {},
 };
 
 function App() {

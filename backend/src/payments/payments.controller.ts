@@ -38,8 +38,8 @@ export class PaymentsController {
   }
 
   @Post("weavers")
-  createWeaverPayment(@Body() dto: CreateWeaverPaymentDto) {
-    return this.paymentsService.createWeaverPayment(dto);
+  createWeaverPayment(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreateWeaverPaymentDto) {
+    return this.paymentsService.createWeaverPayment({ ...dto, recordedById: user.id });
   }
 
   @Get("weavers")
@@ -88,8 +88,8 @@ export class PaymentsController {
   }
 
   @Post("vendors")
-  createVendorPayment(@Body() dto: CreateVendorPaymentDto) {
-    return this.paymentsService.createVendorPayment(dto);
+  createVendorPayment(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreateVendorPaymentDto) {
+    return this.paymentsService.createVendorPayment({ ...dto, recordedById: user.id });
   }
 
   @Get("vendors")
@@ -98,8 +98,8 @@ export class PaymentsController {
   }
 
   @Post("suppliers")
-  createSupplierPayment(@Body() dto: CreateSupplierPaymentDto) {
-    return this.paymentsService.createSupplierPayment(dto);
+  createSupplierPayment(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreateSupplierPaymentDto) {
+    return this.paymentsService.createSupplierPayment({ ...dto, recordedById: user.id });
   }
 
   @Get("suppliers")

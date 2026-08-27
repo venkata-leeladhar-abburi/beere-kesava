@@ -82,8 +82,23 @@ export interface UpdateWeaverPayload extends Partial<CreateWeaverPayload> {
 }
 
 export const weaversApi = {
-  list: (pageSize = 100) =>
-    apiClient.get<PaginatedResponse<BackendWeaver>>(`/weavers?pageSize=${pageSize}`),
+  // Same class of bug as batchesApi.list/materialIssuesApi.list: a single
+  // capped page (server max 500) silently dropped weavers past it, which
+  // could make useCurrentWeaver.ts fail to resolve a real weaver (e.g. by
+  // name/code) purely because their record fell on a later page. Walk every
+  // page and merge.
+  list: async (pageSize = 500): Promise<PaginatedResponse<BackendWeaver>> => {
+    const first = await apiClient.get<PaginatedResponse<BackendWeaver>>(`/weavers?page=1&pageSize=${pageSize}`);
+    const items = [...first.items];
+    let page = 1;
+    while (items.length < first.total) {
+      page += 1;
+      const next = await apiClient.get<PaginatedResponse<BackendWeaver>>(`/weavers?page=${page}&pageSize=${pageSize}`);
+      if (next.items.length === 0) break;
+      items.push(...next.items);
+    }
+    return { items, total: first.total, page: 1, pageSize: items.length };
+  },
 
   findOne: (id: string) => apiClient.get<BackendWeaver>(`/weavers/${id}`),
 

@@ -317,6 +317,11 @@ export function FinSection({ title, icon, entries, color, bg: _bg, onAdd, onBulk
         className="bg-[#6E0F2D] p-4 sm:px-6 sm:py-4.5 text-white flex flex-wrap items-center justify-between gap-3 cursor-pointer select-none"
         onClick={() => setOpen(o => !o)}
         role="button"
+        // The section title is the accessible name; the rule can't see it
+        // through the nested heading, and aria-expanded tells a screen reader
+        // whether the panel below is currently open.
+        aria-label={title}
+        aria-expanded={open}
         tabIndex={0}
         onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setOpen(o => !o); } }}
       >
@@ -420,6 +425,11 @@ export function MiscSection({ entries, onAdd, onUpdate, onDelete }: {
         className="bg-[#6E0F2D] p-4 sm:px-6 sm:py-4.5 text-white flex flex-wrap items-center justify-between gap-3 cursor-pointer select-none"
         onClick={() => setOpen(o => !o)}
         role="button"
+        // The section title is the accessible name; the rule can't see it
+        // through the nested heading, and aria-expanded tells a screen reader
+        // whether the panel below is currently open.
+        aria-label="Extra / Miscellaneous Payments"
+        aria-expanded={open}
         tabIndex={0}
         onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setOpen(o => !o); } }}
       >

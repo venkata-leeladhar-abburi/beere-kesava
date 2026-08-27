@@ -61,6 +61,9 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
     dot: r.result === "passed" ? C.green : C.crim,
     desc: `Saree ${r.sareeId} ${r.result === "passed" ? "passed" : "failed"} quality check`,
     time: new Date(r.qcDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }),
+    // r.id (the QC record's own id) is the React key — batchId repeats
+    // across every saree in the same batch and isn't unique per row.
+    key: r.id,
     id: r.batchId || "QC",
   }));
 
@@ -151,7 +154,7 @@ export function WorkerHomeDesktop({ onNavigate }: WorkerHomeDesktopProps) {
             <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 20, overflow: "hidden", boxShadow: "0 6px 32px rgba(74,6,27,0.08)" }}>
               {activities.map((a, i) => (
                 <div
-                  key={a.id}
+                  key={a.key}
                   style={{ display: "flex", alignItems: "flex-start", gap: 14, padding: "16px 20px", borderBottom: i < activities.length - 1 ? `1px solid rgba(110,15,45,0.07)` : "none" }}
                 >
                   <div style={{ width: 10, height: 10, borderRadius: "50%", background: a.dot, marginTop: 5, flexShrink: 0, boxShadow: `0 0 8px ${a.dot}60` }} />

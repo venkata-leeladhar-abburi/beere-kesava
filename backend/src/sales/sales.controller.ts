@@ -1,5 +1,7 @@
 import { Body, Controller, Get, Param, Post, Query } from "@nestjs/common";
+import { CurrentUser } from "../auth/decorators/current-user.decorator";
 import { RequireRoles } from "../auth/decorators/require-roles.decorator";
+import type { AuthenticatedUser } from "../auth/strategies/jwt.strategy";
 import { UserRole } from "../generated/prisma/client";
 import { CreateReturnDto } from "./dto/create-return.dto";
 import { CreateSaleDto } from "./dto/create-sale.dto";
@@ -17,8 +19,8 @@ export class SalesController {
   constructor(private readonly salesService: SalesService) {}
 
   @Post()
-  createSale(@Body() dto: CreateSaleDto) {
-    return this.salesService.createSale(dto);
+  createSale(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreateSaleDto) {
+    return this.salesService.createSale({ ...dto, actorId: user.id });
   }
 
   @Get()

@@ -14,7 +14,7 @@ import { TransactionDetailModal } from "./TransactionDetailModal";
 import { vendorsApi } from "../../../../shared/api/vendors";
 import { suppliersApi } from "../../../../shared/api/suppliers";
 import { weaversApi } from "../../../../shared/api/weavers";
-import { vendorPaymentsApi, weaverPaymentsApi, supplierPaymentsApi } from "../../../../shared/api/payments";
+import { vendorPaymentsApi, weaverPaymentsApi, supplierPaymentsApi, type BackendActorSummary } from "../../../../shared/api/payments";
 import { invoicesApi } from "../../../../shared/api/invoices";
 import { Button, IconButton, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { DataTable, exportTable, type ColumnDef } from "../../../../shared/ui/data";
@@ -25,6 +25,13 @@ import type { PaymentStatus } from "@/lib/domain/status";
 
 function formatHistDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+// Real accountant/staff attribution when the record has it; "—" for record
+// types (e.g. invoice collections) that don't carry an actor yet, rather
+// than falsely attributing every entry to "Admin".
+function formatRecordedBy(actor?: BackendActorSummary | null): string {
+  return actor ? `${actor.firstName} ${actor.lastName}`.trim() : "—";
 }
 
 // PayHistRecord.status ("Paid"/"Partial"/"Pending", payments/types.ts) is a
@@ -91,7 +98,7 @@ export function PaymentHistorySection() {
       status: "Paid",
       mode: p.method ?? "—",
       utr: p.utr ?? undefined,
-      recordedBy: "Admin",
+      recordedBy: formatRecordedBy(p.recordedBy),
     }));
 
     const supplierRows: PayHistRecord[] = (supplierPaymentsRes?.items ?? []).map(p => ({
@@ -105,7 +112,7 @@ export function PaymentHistorySection() {
       status: "Paid",
       mode: p.method ?? "—",
       utr: p.utr ?? undefined,
-      recordedBy: "Admin",
+      recordedBy: formatRecordedBy(p.recordedBy),
     }));
 
     const weaverRows: PayHistRecord[] = (weaverPaymentsRes?.items ?? []).map(p => ({
@@ -119,7 +126,11 @@ export function PaymentHistorySection() {
       status: "Paid",
       mode: "Bank Transfer",
       utr: p.utrNumber ?? undefined,
-      recordedBy: "Admin",
+      recordedBy: formatRecordedBy(p.recordedBy),
+      batchNo: p.batchNo ?? undefined,
+      loomNumber: p.loomNumber ?? undefined,
+      noOfSarees: p.noOfSarees ?? undefined,
+      deduction: p.deduction ? Number(p.deduction) : undefined,
     }));
 
     const customerRows: PayHistRecord[] = (invoicesRes?.items ?? []).flatMap(inv =>
@@ -135,7 +146,7 @@ export function PaymentHistorySection() {
         status: inv.status === "PAID" ? ("Paid" as const) : inv.status === "PARTIAL" ? ("Partial" as const) : ("Pending" as const),
         mode: pay.method ?? "Bank Transfer",
         utr: pay.utr ?? undefined,
-        recordedBy: "Admin",
+        recordedBy: formatRecordedBy(pay.recordedBy),
       })),
     );
 

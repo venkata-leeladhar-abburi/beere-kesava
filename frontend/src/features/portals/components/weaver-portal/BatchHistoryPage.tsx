@@ -1,6 +1,7 @@
 
 import React, { useState, useMemo } from "react";
 import { useBatches } from "@/features/production";
+import { isBatchDoneForWeaver } from "./batchCompletion";
 import { useCurrentWeaver } from "./useCurrentWeaver";
 import {
   ChevronLeft,
@@ -30,7 +31,9 @@ export function BatchHistoryPage({ onBack, defaultFilter = "all" }: { onBack: ()
     .filter(b => b.status !== "draft")
     .map(b => ({ ...b, myRows: b.rows.filter(r => r.weaverId === weaverId) }))
     .filter(b => b.myRows.length > 0)
-    .map(b => ({ ...b, derivedStatus: b.myRows.every(r => r.finished === true) ? "completed" as const : "active" as const }));
+    // Shared with MyBatchesPage/DesktopWeaverPortal so all three views shelf a
+    // batch the same way — see isBatchDoneForWeaver.
+    .map(b => ({ ...b, derivedStatus: isBatchDoneForWeaver(b) ? "completed" as const : "active" as const }));
 
   const filtered = myWeaverBatches.filter(b => {
     const matchSearch = !search || b.batchId.toLowerCase().includes(search.toLowerCase());

@@ -21,6 +21,8 @@ export const SupplierReturnsPage = lazy(() => import("../../../inventory/compone
 // eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 export const AddUserPage = lazy(() => import("../../../users/components/AddUserPage").then(m => ({ default: m.AddUserPage })));
 // eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
+export const StaffDirectoryPage = lazy(() => import("../../../users/components/staff-directory/StaffDirectoryPage").then(m => ({ default: m.StaffDirectoryPage })));
+// eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 export const IssueMaterialPage = lazy(() => import("../../../materials/components/IssueMaterialPage").then(m => ({ default: m.IssueMaterialPage })));
 // eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 export const ReturnMaterialPage = lazy(() => import("../../../materials/components/ReturnMaterialPage").then(m => ({ default: m.ReturnMaterialPage })));

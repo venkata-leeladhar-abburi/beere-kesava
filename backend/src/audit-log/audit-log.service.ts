@@ -68,7 +68,12 @@ export class AuditLogService {
   async findAllActions(
     query: ListActionLogQueryDto,
   ): Promise<PaginatedResult<Prisma.ActionLogGetPayload<{ include: { user: true } }>>> {
-    const where: Prisma.ActionLogWhereInput = { userId: query.userId, module: query.module };
+    // `modules` (a portal's whole module set) wins over the single `module`
+    // filter when both are present.
+    const where: Prisma.ActionLogWhereInput = {
+      userId: query.userId,
+      module: query.modules?.length ? { in: query.modules } : query.module,
+    };
 
     const [items, total] = await Promise.all([
       this.prisma.actionLog.findMany({

@@ -34,9 +34,18 @@ export class AuthService {
   }
 
   private readonly otpTtlMs = 5 * 60 * 1000;
-  private readonly maxOtpAttempts = 5;
-  private readonly resendCooldownMs = 60 * 1000;
-  private readonly maxOtpRequestsPerHour = 5;
+  private readonly maxOtpAttempts = 3;
+  // How long a phone number is locked out of both verifying and requesting a
+  // new OTP after its 3rd wrong guess — timed from that wrong guess itself
+  // (OtpCode.updatedAt), not from when the OTP was first issued.
+  private readonly wrongAttemptLockoutMs = 30 * 60 * 1000;
+
+  private lockoutRemainingMinutes(lockedRow: { attempts: number; updatedAt: Date }): number | null {
+    if (lockedRow.attempts < this.maxOtpAttempts) return null;
+    const elapsed = Date.now() - lockedRow.updatedAt.getTime();
+    if (elapsed >= this.wrongAttemptLockoutMs) return null;
+    return Math.ceil((this.wrongAttemptLockoutMs - elapsed) / 60_000);
+  }
 
   private generateOtp(): string {
     // crypto.randomInt is uniform; an OTP is a login credential and must
@@ -63,23 +72,20 @@ export class AuthService {
       throw new UnauthorizedException("This mobile number is not registered.");
     }
 
-    // Resend throttle: one OTP per 60s, max 5 per hour per number.
-    const recent = await this.prisma.otpCode.findMany({
-      where: {
-        phoneNumber: phone,
-        createdAt: { gte: new Date(Date.now() - 60 * 60 * 1000) },
-      },
+    // No resend throttle: an OTP can be requested as often as the caller
+    // likes. The 60s cooldown and the 5-per-hour cap were removed on request.
+    //
+    // The wrong-guess lockout below is a different control and is kept: it
+    // stops a number that has burned its 3 verify attempts from routing
+    // around the lockout by asking for a fresh code.
+    const lastOtp = await this.prisma.otpCode.findFirst({
+      where: { phoneNumber: phone },
       orderBy: { createdAt: "desc" },
     });
-    if (recent[0] && Date.now() - recent[0].createdAt.getTime() < this.resendCooldownMs) {
+    const lockoutMinutes = lastOtp ? this.lockoutRemainingMinutes(lastOtp) : null;
+    if (lockoutMinutes !== null) {
       throw new HttpException(
-        "Please wait a minute before requesting another OTP.",
-        HttpStatus.TOO_MANY_REQUESTS,
-      );
-    }
-    if (recent.length >= this.maxOtpRequestsPerHour) {
-      throw new HttpException(
-        "Too many OTP requests. Please try again in an hour.",
+        `Too many incorrect attempts. Please try again in ${lockoutMinutes} minute${lockoutMinutes === 1 ? "" : "s"}.`,
         HttpStatus.TOO_MANY_REQUESTS,
       );
     }
@@ -148,8 +154,12 @@ export class AuthService {
       throw new UnauthorizedException("OTP has expired. Please request a new one.");
     }
 
-    if (otpRow.attempts >= this.maxOtpAttempts) {
-      throw new UnauthorizedException("Too many incorrect attempts. Please request a new OTP.");
+    const lockoutMinutes = this.lockoutRemainingMinutes(otpRow);
+    if (lockoutMinutes !== null) {
+      throw new HttpException(
+        `Too many incorrect attempts. Please try again in ${lockoutMinutes} minute${lockoutMinutes === 1 ? "" : "s"}.`,
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
     }
 
     const matches = await bcrypt.compare(dto.code, otpRow.code);
@@ -253,7 +263,7 @@ export class AuthService {
 
     // Seed SuperAdmin if not existing
     const superAdmin = await this.prisma.user.findFirst({
-      where: { mobile: "9999999999" },
+      where: { mobile: "9392757489" },
     });
     if (!superAdmin) {
       await this.prisma.user.create({
@@ -261,7 +271,7 @@ export class AuthService {
           empId: "SEED-SUPERADMIN",
           firstName: "Super",
           lastName: "Admin",
-          mobile: "9999999999",
+          mobile: "9392757489",
           email: "superadmin@beerekesava.com",
           role: UserRole.SUPERADMIN,
           accessLevel: AccessLevel.FULL_ACCESS,

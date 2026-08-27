@@ -25,10 +25,9 @@ import { photoUploadOptions, receiptUploadOptions } from "../common/storage/uplo
 const SERVABLE_FOLDERS = new Set(["signatures", "photos", "receipts", "mock"]);
 
 // General-purpose upload endpoints (weaver profile photos, LR receipts, ...).
-// Bytes go wherever StorageService is configured to put them — Cloudflare R2
-// in production, local disk when R2 env vars are absent. The response is a
-// server-relative path; callers resolve it against the API origin for display
-// (see frontend's resolveAssetUrl).
+// Bytes always go to Cloudflare R2 (see StorageService — local-disk storage
+// is not supported). The response is a server-relative path; callers resolve
+// it against the API origin for display (see frontend's resolveAssetUrl).
 @Controller("uploads")
 export class UploadsController {
   constructor(private readonly storage: StorageService) {}
@@ -56,10 +55,8 @@ export class UploadsController {
   }
 
   /**
-   * Serves a stored file by its "/uploads/<folder>/<file>" path when the R2
-   * driver is active, by redirecting to the object's public or presigned URL.
-   * Under the local driver this route is never reached: express.static is
-   * mounted on the same prefix in main.ts and answers first.
+   * Serves a stored file by its "/uploads/<folder>/<file>" path, redirecting
+   * to the object's public or presigned URL in the R2 bucket.
    *
    * Writes to the raw response rather than using @Redirect() because the
    * global ResponseInterceptor wraps every returned value in an envelope,
@@ -79,9 +76,6 @@ export class UploadsController {
       throw new NotFoundException("File not found");
     }
     const url = await this.storage.resolveUrl(`${folder}/${filename}`);
-    if (!url) {
-      throw new NotFoundException("File not found");
-    }
     res.redirect(HttpStatus.FOUND, url);
   }
 }

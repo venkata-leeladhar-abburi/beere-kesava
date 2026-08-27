@@ -26,6 +26,7 @@ import {
 const saleInclude = {
   saree: { include: { sareeType: true } },
   customer: true,
+  soldBy: { select: { id: true, firstName: true, lastName: true, role: true } },
 } satisfies Prisma.SaleRecordInclude;
 
 const returnInclude = {
@@ -178,6 +179,7 @@ export class SalesService {
           amount: dto.amount,
           paymentMethod: dto.paymentMethod,
           paymentRef: dto.paymentRef,
+          soldById: dto.actorId,
         },
       }),
       // Pulls the saree out of the shop-stock browse list
@@ -264,6 +266,7 @@ export class SalesService {
           amount: dto.amount,
           paymentMethod: dto.paymentMethod,
           paymentRef: dto.paymentRef,
+          soldById: dto.actorId,
         },
       }),
       this.prisma.inventoryRecord.upsert({

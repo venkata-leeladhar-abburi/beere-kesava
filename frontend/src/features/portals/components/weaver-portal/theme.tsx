@@ -6,9 +6,8 @@ import { Palette, X, Layers, Flower2 } from "lucide-react";
 import { Button, IconButton } from "../../../../shared/ui/primitives";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Modal } from "../../../../shared/ui/overlay";
-import { Money } from "@/shared/ui/domain";
-import { rupees } from "@/lib/domain/money";
 import { useDesignLibrary } from "@/features/design-library";
+import { useRatesPricing } from "@/features/pricing";
 import { MaterialHistoryCard, SignatureCanvas } from "./WeaverMaterialHistoryCard";
 export type { SignatureCanvasHandle } from "./WeaverMaterialHistoryCard";
 import {
@@ -49,14 +48,6 @@ const F = {
 };
 
 export type PageId = "batches" | "confirm" | "designs" | "warp" | "payments" | "notifications";
-
-// ─── Saree type rates (mirrors RatesPricingPage data) ───────────────────────
-const SAREE_TYPE_RATES: Record<string, { type: string; description: string; charge: string; retail: string; wholesale: string; stdWeight: string; warpWeight: string; reshamWeight: string; jariWeight: string }> = {
-  "SB-001": { type: "Self Brocade",   description: "Traditional brocade with self-woven patterns",     charge: "450",  retail: "8500",  wholesale: "7200",  stdWeight: "850", warpWeight: "480", reshamWeight: "240", jariWeight: "6"  },
-  "HZ-003": { type: "Heavy Zari",     description: "Rich gold zari work with heavy metallic detailing", charge: "680",  retail: "12000", wholesale: "10500", stdWeight: "920", warpWeight: "500", reshamWeight: "280", jariWeight: "10" },
-  "PS-002": { type: "Plain Silk",     description: "Classic plain silk with minimal ornamentation",     charge: "280",  retail: "5500",  wholesale: "4800",  stdWeight: "780", warpWeight: "450", reshamWeight: "200", jariWeight: "0"  },
-  "BS-004": { type: "Bridal Special", description: "Elaborate bridal weave with gold pallu and border", charge: "820",  retail: "15000", wholesale: "13200", stdWeight: "980", warpWeight: "520", reshamWeight: "300", jariWeight: "14" },
-};
 
 // ─── Inline design detail card (shown in dashboard, not modal) ───────────────
 function DesignDetailCard({ designCode, onClose }: { designCode: string; onClose: () => void }) {
@@ -158,8 +149,12 @@ function DesignDetailCard({ designCode, onClose }: { designCode: string; onClose
 }
 
 // ─── Inline saree type detail card ───────────────────────────────────────────
+// Weight-only — shows the standard total weight and its warp/resham/jari
+// split for this saree type. Pricing/making-charge lives on the batch's
+// "all sarees" page (WeaverBatchSareesModal) instead, not here.
 function SareeTypeDetailCard({ typeCode, typeName, onClose }: { typeCode: string; typeName: string; onClose: () => void }) {
-  const r = SAREE_TYPE_RATES[typeCode];
+  const { getSareeTypeByCode } = useRatesPricing();
+  const r = getSareeTypeByCode(typeCode);
   return (
     <motion.div
       initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
@@ -178,50 +173,19 @@ function SareeTypeDetailCard({ typeCode, typeName, onClose }: { typeCode: string
       <div style={{ padding: "14px 16px 16px" }}>
         {r?.description && <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, marginBottom: 14, lineHeight: 1.5 }}>{r.description}</div>}
 
-        {/* Making charge + weight */}
-        <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 10, marginBottom: 12 }}>
-          <div style={{ background: "rgba(200,155,71,0.08)", border: `1px solid rgba(200,155,71,0.22)`, borderRadius: 12, padding: "14px 16px" }}>
-            <div style={{ fontFamily: F.m, fontSize: 12, color: C.gold, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 4 }}>MAKING CHARGE</div>
-            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.gold }}>{r ? <Money value={rupees(Number(r.charge))} /> : "—"}</div>
-            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>per saree</div>
-          </div>
-          <div style={{ background: C.cream, borderRadius: 12, padding: "14px 16px" }}>
-            <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 4 }}>STANDARD WEIGHT</div>
-            <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: C.text }}>{r?.stdWeight ?? "—"}g</div>
-            <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>grams</div>
-          </div>
-        </div>
-
-        {/* Prices */}
-        <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 8, marginBottom: 12 }}>
-          <div style={{ background: "#FAFAF8", border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "10px 12px" }}>
-            <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 3 }}>RETAIL PRICE</div>
-            <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>{r ? <Money value={rupees(Number(r.retail))} /> : "—"}</div>
-          </div>
-          <div style={{ background: "#FAFAF8", border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "10px 12px" }}>
-            <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 3 }}>WHOLESALE PRICE</div>
-            <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>{r ? <Money value={rupees(Number(r.wholesale))} /> : "—"}</div>
-          </div>
-        </div>
-
-        {/* Material breakdown */}
-        {r && (
-          <div>
-            <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 8 }}>MATERIAL WEIGHT BREAKDOWN</div>
-            <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 8 }}>
-              {[
-                { label: "WARP",   val: `${r.warpWeight}g` },
-                { label: "RESHAM", val: `${r.reshamWeight}g` },
-                { label: "JARI",   val: `${r.jariWeight} reels` },
-              ].map(m => (
-                <div key={m.label} style={{ background: C.cream, borderRadius: 10, padding: "10px 12px", textAlign: "center" as const }}>
-                  <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, letterSpacing: "0.8px", textTransform: "uppercase" as const, marginBottom: 4 }}>{m.label}</div>
-                  <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 13, color: C.text }}>{m.val}</div>
-                </div>
-              ))}
+        <div className="grid grid-cols-2 md:grid-cols-4" style={{ gap: 8 }}>
+          {[
+            { label: "STANDARD WEIGHT", val: r ? `${r.stdWeight}g` : "—" },
+            { label: "WARP",            val: r ? `${r.warpWeight}g` : "—" },
+            { label: "RESHAM",          val: r ? `${r.reshamWeight}g` : "—" },
+            { label: "JARI",            val: r ? `${r.jariWeight} reels` : "—" },
+          ].map(m => (
+            <div key={m.label} style={{ background: C.cream, borderRadius: 10, padding: "12px 10px", textAlign: "center" as const }}>
+              <div style={{ fontFamily: F.m, fontSize: 11, color: C.muted, letterSpacing: "0.8px", textTransform: "uppercase" as const, marginBottom: 5 }}>{m.label}</div>
+              <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 17, color: C.text }}>{m.val}</div>
             </div>
-          </div>
-        )}
+          ))}
+        </div>
       </div>
     </motion.div>
   );
@@ -242,14 +206,20 @@ function SectionTitle({ title, link, onLink }: { title: string; link?: string; o
   );
 }
 
-function Card({ children, style, leftBorder }: { children: React.ReactNode; style?: React.CSSProperties; leftBorder?: string }) {
+function Card({ children, style, leftBorder, onClick }: { children: React.ReactNode; style?: React.CSSProperties; leftBorder?: string; onClick?: () => void }) {
   return (
-    <div style={{
-      background: C.white, borderRadius: 20, border: `1px solid ${C.bdr}`,
-      boxShadow: "0 6px 32px rgba(74,6,27,0.08)", padding: 24,
-      ...(leftBorder ? { borderLeft: `4px solid ${leftBorder}` } : {}),
-      ...style,
-    }}>
+    <div
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onClick={onClick}
+      onKeyDown={onClick ? (e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } }) : undefined}
+      style={{
+        background: C.white, borderRadius: 20, border: `1px solid ${C.bdr}`,
+        boxShadow: "0 6px 32px rgba(74,6,27,0.08)", padding: 24,
+        ...(leftBorder ? { borderLeft: `4px solid ${leftBorder}` } : {}),
+        ...(onClick ? { cursor: "pointer" } : {}),
+        ...style,
+      }}>
       {children}
     </div>
   );
@@ -357,7 +327,6 @@ export type { WorkerStat as PortalStat } from "@/shared/ui/portal/PortalChrome";
 export {
   C,
   F,
-  SAREE_TYPE_RATES,
   DesignDetailCard,
   SareeTypeDetailCard,
   SectionTitle,

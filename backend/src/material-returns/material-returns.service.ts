@@ -3,7 +3,14 @@ import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
 import { StorageService } from "../common/storage/storage.service";
 import { fromGrams, toGrams } from "../common/weight-units.util";
-import { MaterialReturnStatus, MaterialIssueStatus, Prisma } from "../generated/prisma/client";
+import {
+  JariGrade,
+  MaterialIssueStatus,
+  MaterialReturnStatus,
+  MaterialType,
+  Prisma,
+  WarpSubtype,
+} from "../generated/prisma/client";
 import { IdGeneratorService, businessSegment, nameSegment } from "../id-generator/id-generator.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateMaterialReturnDto } from "./dto/create-material-return.dto";
@@ -118,15 +125,21 @@ export class MaterialReturnsService {
     return record;
   }
 
+  // `scopedWeaverId` is passed by the controller only when the caller's role
+  // is WEAVER, forcing results down to that weaver's own returns and
+  // overriding any weaverId/factoryLoomId the caller might have supplied —
+  // mirrors BatchesService.findAll's weaver scoping, so a WEAVER token can
+  // never see another weaver's (or a factory loom's) return history.
   async findAll(
     query: ListMaterialReturnsQueryDto,
+    scopedWeaverId?: string,
   ): Promise<
     PaginatedResult<Prisma.MaterialReturnRecordGetPayload<{ include: typeof includeItems }>>
   > {
     const where: Prisma.MaterialReturnRecordWhereInput = {
       status: query.status,
-      weaverId: query.weaverId,
-      factoryLoomId: query.factoryLoomId,
+      weaverId: scopedWeaverId ?? query.weaverId,
+      factoryLoomId: scopedWeaverId ? undefined : query.factoryLoomId,
       batchId: query.batchId,
     };
 
@@ -144,12 +157,15 @@ export class MaterialReturnsService {
     return { items, total, page: query.page, pageSize: query.pageSize };
   }
 
-  async findOne(id: string) {
+  // Same weaver-scoping as findAll — a WEAVER token requesting a return that
+  // isn't theirs gets a 404, not a 403, so it doesn't leak the record's
+  // existence (same reasoning as BatchesService.findOne).
+  async findOne(id: string, scopedWeaverId?: string) {
     const record = await this.prisma.materialReturnRecord.findUnique({
       where: { id },
       include: includeItems,
     });
-    if (!record) {
+    if (!record || (scopedWeaverId && record.weaverId !== scopedWeaverId)) {
       throw new NotFoundException(`Material return ${id} not found`);
     }
     return record;
@@ -228,12 +244,19 @@ export class MaterialReturnsService {
   // Issued (non-cancelled) minus already-approved-returned, grouped by
   // material line, in grams — the real backend counterpart to the frontend's
   // previously-mocked WeaverMaterialSummary calc.
-  async getOutstanding(query: GetOutstandingQueryDto): Promise<OutstandingGroup[]> {
-    if ((query.weaverId && query.factoryLoomId) || (!query.weaverId && !query.factoryLoomId)) {
+  // `scopedWeaverId` (WEAVER callers only, see findAll) forces the lookup to
+  // the caller's own weaver record, ignoring whatever weaverId/factoryLoomId
+  // they passed — this is also how a weaver's own outstanding balance gets
+  // exposed to the weaver portal.
+  async getOutstanding(query: GetOutstandingQueryDto, scopedWeaverId?: string): Promise<OutstandingGroup[]> {
+    const effectiveWeaverId = scopedWeaverId ?? query.weaverId;
+    const effectiveFactoryLoomId = scopedWeaverId ? undefined : query.factoryLoomId;
+
+    if ((effectiveWeaverId && effectiveFactoryLoomId) || (!effectiveWeaverId && !effectiveFactoryLoomId)) {
       throw new BadRequestException("Provide exactly one of weaverId or factoryLoomId");
     }
 
-    const recipientWhere = query.weaverId ? { weaverId: query.weaverId } : { factoryLoomId: query.factoryLoomId };
+    const recipientWhere = effectiveWeaverId ? { weaverId: effectiveWeaverId } : { factoryLoomId: effectiveFactoryLoomId };
 
     const [issues, returns] = await Promise.all([
       this.prisma.materialIssueRecord.findMany({
@@ -296,5 +319,164 @@ export class MaterialReturnsService {
       .map((g) => ({ ...g, outstandingGrams: g.issuedGrams - g.returnedGrams }))
       .filter((g) => g.outstandingGrams > 0)
       .sort((a, b) => b.outstandingGrams - a.outstandingGrams);
+  }
+
+  // Auto-close-out for the material weight declared "still with the weaver"
+  // when Worker Staff receives a saree (see BatchesService.receiveRow): the
+  // saree's declared per-material weight is only accepted if the weaver's
+  // outstanding balance for that material can cover it, and on success that
+  // amount is drawn down from outstanding via a synthetic, already-approved
+  // MaterialReturnRecord — no separate physical handover/signature, since the
+  // material never left the saree. Unlike a manual return, this does NOT
+  // restore RawMaterialStock: the material is consumed into the finished
+  // saree, not handed back to the warehouse.
+  async createAutoReturnForReceipt(params: {
+    weaverId: string;
+    batchId: string;
+    receivedById: string;
+    requests: { materialType: MaterialType; grams: number }[];
+  }) {
+    const groups = await this.getOutstanding({ weaverId: params.weaverId });
+
+    const itemsToCreate: Prisma.MaterialReturnItemCreateWithoutReturnInput[] = [];
+
+    for (const req of params.requests) {
+      if (req.grams <= 0) {
+        continue;
+      }
+      const matchingGroups = groups
+        .filter((g) => g.materialType === req.materialType)
+        .sort((a, b) => b.outstandingGrams - a.outstandingGrams);
+      const totalOutstanding = matchingGroups.reduce((sum, g) => sum + g.outstandingGrams, 0);
+
+      if (totalOutstanding < req.grams) {
+        throw new BadRequestException(
+          `Weaver does not have enough outstanding ${req.materialType} material to return ` +
+            `(has ${totalOutstanding}g, saree requires ${req.grams}g) — request material from admin.`,
+        );
+      }
+
+      let remaining = req.grams;
+      for (const group of matchingGroups) {
+        if (remaining <= 0) {
+          break;
+        }
+        const draw = Math.min(group.outstandingGrams, remaining);
+        itemsToCreate.push({
+          materialType: group.materialType as MaterialType,
+          warpSubtype: group.warpSubtype as WarpSubtype | null,
+          quantity: draw,
+          unit: "G",
+          jariType: group.jariType,
+          jariGrade: group.jariGrade as JariGrade | null,
+          jariColor: group.jariColor,
+        });
+        remaining -= draw;
+      }
+    }
+
+    if (itemsToCreate.length === 0) {
+      return null;
+    }
+
+    const weaver = await this.prisma.weaver.findUnique({ where: { id: params.weaverId } });
+    if (!weaver) {
+      throw new NotFoundException(`Weaver ${params.weaverId} not found`);
+    }
+    const parentCode = weaver.code ?? nameSegment(weaver.firstName, "Weaver");
+    const id = await this.idGenerator.nextScoped(MRR_ID_PREFIX_BASE, parentCode);
+
+    return this.prisma.materialReturnRecord.create({
+      data: {
+        id,
+        weaverId: params.weaverId,
+        batchId: params.batchId,
+        receivedById: params.receivedById,
+        status: MaterialReturnStatus.APPROVED,
+        signatureCaptured: false,
+        notes: "Auto-recorded: material weight returned with received saree",
+        items: { create: itemsToCreate },
+      },
+      include: includeItems,
+    });
+  }
+
+  // Same auto-close-out as createAutoReturnForReceipt above, but driven by
+  // the saree's plain received weight instead of a per-material (warp/
+  // resham/jari) split. Worker Staff's receive screen frequently enters only
+  // the weight and skips the split panel, which meant the weight-only path
+  // never drew down the weaver's outstanding balance at all — "Submitted"
+  // stayed at 0 and "Outstanding" never moved from the full issued amount.
+  // This pools the weight across whichever material types the weaver has
+  // outstanding (largest first) rather than requiring the caller to say
+  // which type the weight belongs to.
+  async createAutoReturnForReceiptByWeight(params: {
+    weaverId: string;
+    batchId: string;
+    receivedById: string;
+    grams: number;
+  }) {
+    if (params.grams <= 0) {
+      return null;
+    }
+
+    const groups = (await this.getOutstanding({ weaverId: params.weaverId }))
+      .sort((a, b) => b.outstandingGrams - a.outstandingGrams);
+    const totalOutstanding = groups.reduce((sum, g) => sum + g.outstandingGrams, 0);
+
+    if (totalOutstanding < params.grams) {
+      throw new BadRequestException(
+        `This weaver doesn't have that much material outstanding ` +
+          `(has ${totalOutstanding}g outstanding, saree weighs ${params.grams}g) — ` +
+          `check the entered weight or request more material from admin.`,
+      );
+    }
+
+    const itemsToCreate: Prisma.MaterialReturnItemCreateWithoutReturnInput[] = [];
+    let remaining = params.grams;
+    for (const group of groups) {
+      if (remaining <= 0) {
+        break;
+      }
+      const draw = Math.min(group.outstandingGrams, remaining);
+      if (draw <= 0) {
+        continue;
+      }
+      itemsToCreate.push({
+        materialType: group.materialType as MaterialType,
+        warpSubtype: group.warpSubtype as WarpSubtype | null,
+        quantity: draw,
+        unit: "G",
+        jariType: group.jariType,
+        jariGrade: group.jariGrade as JariGrade | null,
+        jariColor: group.jariColor,
+      });
+      remaining -= draw;
+    }
+
+    if (itemsToCreate.length === 0) {
+      return null;
+    }
+
+    const weaver = await this.prisma.weaver.findUnique({ where: { id: params.weaverId } });
+    if (!weaver) {
+      throw new NotFoundException(`Weaver ${params.weaverId} not found`);
+    }
+    const parentCode = weaver.code ?? nameSegment(weaver.firstName, "Weaver");
+    const id = await this.idGenerator.nextScoped(MRR_ID_PREFIX_BASE, parentCode);
+
+    return this.prisma.materialReturnRecord.create({
+      data: {
+        id,
+        weaverId: params.weaverId,
+        batchId: params.batchId,
+        receivedById: params.receivedById,
+        status: MaterialReturnStatus.APPROVED,
+        signatureCaptured: false,
+        notes: "Auto-recorded: saree received weight drawn down from outstanding material",
+        items: { create: itemsToCreate },
+      },
+      include: includeItems,
+    });
   }
 }

@@ -1,5 +1,7 @@
 import { Body, Controller, Get, Param, Post, Query } from "@nestjs/common";
+import { CurrentUser } from "../auth/decorators/current-user.decorator";
 import { RequireRoles } from "../auth/decorators/require-roles.decorator";
+import type { AuthenticatedUser } from "../auth/strategies/jwt.strategy";
 import { UserRole } from "../generated/prisma/client";
 import { CreateInvoiceDto } from "./dto/create-invoice.dto";
 import { CreatePaymentDto } from "./dto/create-payment.dto";
@@ -28,7 +30,11 @@ export class InvoicesController {
   }
 
   @Post(":id/payments")
-  recordPayment(@Param("id") id: string, @Body() dto: CreatePaymentDto) {
-    return this.invoicesService.recordPayment(id, dto);
+  recordPayment(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("id") id: string,
+    @Body() dto: CreatePaymentDto,
+  ) {
+    return this.invoicesService.recordPayment(id, { ...dto, actorId: user.id });
   }
 }

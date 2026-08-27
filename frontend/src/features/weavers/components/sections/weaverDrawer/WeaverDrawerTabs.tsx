@@ -240,7 +240,7 @@ export function PaymentsTab({ weaver, weaverPayments, filteredWeaverPayments, pa
                       </div>
                       <div>
                         <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, letterSpacing: "1px", textTransform: "uppercase", marginBottom: 3 }}>UTR Number</div>
-                        <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.luxuryBrown }}>{p.utrNumber}</div>
+                        <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.luxuryBrown }}>{p.utrNumber || "—"}</div>
                       </div>
                       <div>
                         <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, letterSpacing: "1px", textTransform: "uppercase", marginBottom: 3 }}>Firm Name</div>
@@ -249,6 +249,22 @@ export function PaymentsTab({ weaver, weaverPayments, filteredWeaverPayments, pa
                       <div>
                         <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, letterSpacing: "1px", textTransform: "uppercase", marginBottom: 3 }}>Payment Date</div>
                         <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{p.paymentDate}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, letterSpacing: "1px", textTransform: "uppercase", marginBottom: 3 }}>Batch No.</div>
+                        <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.luxuryBrown }}>{p.batchNo || "—"}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, letterSpacing: "1px", textTransform: "uppercase", marginBottom: 3 }}>Loom Number</div>
+                        <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.luxuryBrown }}>{p.loomNumber || "—"}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, letterSpacing: "1px", textTransform: "uppercase", marginBottom: 3 }}>No. of Sarees</div>
+                        <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>{p.noOfSarees ?? "—"}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe, letterSpacing: "1px", textTransform: "uppercase", marginBottom: 3 }}>Deduction</div>
+                        <div style={{ fontFamily: F.ui, fontSize: 13, color: p.deduction ? T.crimson : T.luxuryBrown }}>{p.deduction ? formatMoney(rupees(p.deduction)) : "—"}</div>
                       </div>
                     </div>
                   ))}

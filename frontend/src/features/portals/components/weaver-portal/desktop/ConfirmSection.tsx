@@ -11,6 +11,7 @@ import { SectionHeading } from "@/shared/ui/portal/PortalChrome";
 import { DesktopHero } from "./DesktopHero";
 import { useAuth } from "../../../../../contexts/AuthContext";
 import { useCurrentWeaver } from "../useCurrentWeaver";
+import { useMyMaterialReturns } from "../useMyMaterialReturns";
 import { useMaterialIssue } from "@/features/materials";
 import { LoadingState, ErrorState } from "@/shared/ui/state";
 
@@ -40,8 +41,8 @@ export function ConfirmSection({
   setRequestSent: (v: boolean) => void;
 }) {
   const { user } = useAuth();
-  const { weaverCode } = useCurrentWeaver();
   const { isLoading: materialsLoading, isError: materialsError, error: materialsErrorObj, refetch: refetchMaterials, updateSignatureStatus } = useMaterialIssue();
+  const { confirmedRecords: confirmedReturns } = useMyMaterialReturns();
   const [hasSig, setHasSigLocal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const canvasRef = useRef<SignatureCanvasHandle | null>(null);
@@ -321,6 +322,53 @@ export function ConfirmSection({
             </div>
           );
         })()}
+
+        {/* Material Returns — admin-confirmed handovers back, signature included */}
+        {confirmedReturns.length > 0 && (
+          <div style={{ marginTop: 48 }}>
+            <DSectionHeader label="Material Returns Confirmed by Admin" />
+            <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginBottom: 22 }}>
+              Material you returned that Admin has verified and signed off — this amount has already been removed from your outstanding balance above.
+            </div>
+            <div style={{ display: "flex", flexDirection: "column" as const, gap: 14 }}>
+              {confirmedReturns.map(r => (
+                <div key={r.id} style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 16, padding: "20px 22px" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" as const, gap: 10, marginBottom: 12 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      <span style={{ fontFamily: F.m, fontSize: 14, fontWeight: 700, color: C.burg }}>{r.id}</span>
+                      {r.batchId && <span style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>Batch {r.batchId}</span>}
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(30,102,64,0.12)", borderRadius: 999, padding: "5px 14px" }}>
+                      <Check size={14} color={C.green} />
+                      <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 700, color: C.green }}>Confirmed & Signed</span>
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 10, marginBottom: r.signatureUrl ? 12 : 0 }}>
+                    {r.items.map((item, i) => (
+                      // eslint-disable-next-line react/no-array-index-key -- return items have no stable id and material type can repeat.
+                      <span key={`${item.materialType}-${i}`} style={{ fontFamily: F.u, fontSize: 13, color: C.text, background: C.cream, borderRadius: 999, padding: "6px 14px" }}>
+                        {item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari"}: {item.quantity} {item.unit}
+                      </span>
+                    ))}
+                  </div>
+                  <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, display: "flex", flexWrap: "wrap" as const, gap: 18 }}>
+                    <span>Returned {new Date(r.receivedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>
+                    {r.signatureTimestamp && (
+                      <span>Signed {new Date(r.signatureTimestamp).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>
+                    )}
+                  </div>
+                  {r.signatureUrl && (
+                    <img
+                      src={r.signatureUrl}
+                      alt={`Confirmation signature for ${r.id}`}
+                      style={{ marginTop: 12, height: 50, objectFit: "contain" as const, background: C.cream, borderRadius: 10, padding: "6px 12px" }}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {materialsLoading ? (
           <div style={{ marginTop: 48 }}>

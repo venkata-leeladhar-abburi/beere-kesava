@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
-import { Search, Bell, ChevronDown, ChevronLeft, UserRound, LogOut } from "lucide-react";
+import { Search, Bell, ChevronDown, ChevronLeft, UserRound, LogOut, Users, Store, Eye } from "lucide-react";
 import { useResponsive } from "../../../../hooks/useResponsive";
 import {
   SectionNavigator, MAIN_NAV_H, SUB_NAV_H, SectionNavItem,
@@ -16,7 +16,7 @@ import { NAV_GROUPS, findNavGroup } from "./data";
 // mocked two-row version was compared side-by-side and rejected as a real
 // visual-hierarchy regression, not a restyle. Permanent exception.
 
-export function SATopNav({ active, set, onBack, sections, onProfile }: { active: string; set: (v: string) => void; onBack?: () => void; sections?: SectionNavItem[]; onProfile?: () => void }) {
+export function SATopNav({ active, set, onBack, sections, onProfile, onViewAs }: { active: string; set: (v: string) => void; onBack?: () => void; sections?: SectionNavItem[]; onProfile?: () => void; /** Open a staff portal as this superadmin — see AuthContext.enterStaffView. */ onViewAs?: (role: "worker" | "shop") => void }) {
   const { w } = useResponsive();
   const compact = w < 1320;
   const [showProfile, setShowProfile] = useState(false);
@@ -238,6 +238,24 @@ export function SATopNav({ active, set, onBack, sections, onProfile }: { active:
               <div style={{ padding: "6px 0" }}>
                 <DropdownMenuItem onClick={() => onProfile?.()} className="!h-auto !py-[11px] !px-[18px] !text-[#3B2314]">
                   <UserRound size={15} color={T.taupe} /> View Profile
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                {/* Staff oversight — who works in each portal, and what each
+                    of them has actually recorded there. */}
+                <DropdownMenuItem onClick={() => set("WorkerStaff")} className="!h-auto !py-[11px] !px-[18px] !text-[#3B2314]">
+                  <Users size={15} color={T.taupe} /> Worker Staff
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => set("ShopStaff")} className="!h-auto !py-[11px] !px-[18px] !text-[#3B2314]">
+                  <Store size={15} color={T.taupe} /> Shop Staff
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                {/* Opens the staff portal as yourself — not impersonation.
+                    Anything recorded in there is attributed to this admin. */}
+                <DropdownMenuItem onClick={() => onViewAs?.("worker")} className="!h-auto !py-[11px] !px-[18px] !text-[#3B2314]">
+                  <Eye size={15} color={T.taupe} /> View as Worker Staff
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onViewAs?.("shop")} className="!h-auto !py-[11px] !px-[18px] !text-[#3B2314]">
+                  <Eye size={15} color={T.taupe} /> View as Shop Staff
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => onBack?.()} className="!h-auto !py-[11px] !px-[18px] !text-[#3B2314]">
