@@ -59,7 +59,6 @@ export function Select({
   onValueChange,
   onChange,
   disabled,
-<<<<<<< HEAD
   id,
   name,
   align = "end",
