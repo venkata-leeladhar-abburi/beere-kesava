@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { ArrowDownCircle, ArrowUpCircle, CalendarClock, Download, Wallet, type LucideIcon } from "lucide-react";
-import { motion } from "motion/react";
 
 import { DownloadGate } from "../../../shared/ui/DownloadAccess";
 import { F, T } from "../theme";

@@ -208,9 +208,13 @@ function SectionTitle({ title, link, onLink }: { title: string; link?: string; o
 
 function Card({ children, style, leftBorder, onClick }: { children: React.ReactNode; style?: React.CSSProperties; leftBorder?: string; onClick?: () => void }) {
   return (
+    // role/tabIndex/onKeyDown below are all driven by the same `onClick`
+    // condition, so this is a real button when interactive and a plain div
+    // otherwise — the static analysis can't see that correlation.
+    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
     <div
       role={onClick ? "button" : undefined}
-      tabIndex={onClick ? 0 : undefined}
+      tabIndex={onClick ? 0 : undefined} // eslint-disable-line jsx-a11y/no-noninteractive-tabindex
       onClick={onClick}
       onKeyDown={onClick ? (e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } }) : undefined}
       style={{

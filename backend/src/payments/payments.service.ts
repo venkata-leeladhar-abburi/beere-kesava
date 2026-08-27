@@ -3,6 +3,7 @@ import * as ExcelJS from "exceljs";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
 import { Prisma } from "../generated/prisma/client";
+import { businessSegment, IdGeneratorService } from "../id-generator/id-generator.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { PurchasesService } from "../purchases/purchases.service";
 import { VendorBillsService } from "../vendor-bills/vendor-bills.service";
@@ -22,6 +23,8 @@ export interface ImportResult {
   created: number;
   failed: number;
   errors: ImportRowError[];
+  /** Sum of amountPaid across rows actually saved — 0 when nothing was created. */
+  totalAmount: number;
 }
 
 @Injectable()
@@ -31,6 +34,7 @@ export class PaymentsService {
     private readonly auditLog: AuditLogService,
     private readonly vendorBillsService: VendorBillsService,
     private readonly purchasesService: PurchasesService,
+    private readonly idGenerator: IdGeneratorService,
   ) {}
 
   async createWeaverPayment(dto: CreateWeaverPaymentDto) {
@@ -38,8 +42,10 @@ export class PaymentsService {
     if (!weaver) {
       throw new NotFoundException(`Weaver ${dto.weaverId} not found`);
     }
+    const id = await this.idGenerator.nextFormatted("REFERENCE");
     const payment = await this.prisma.weaverPayment.create({
       data: {
+        id,
         weaverId: dto.weaverId,
         amountPaid: dto.amountPaid,
         utrNumber: dto.utrNumber,
@@ -104,8 +110,10 @@ export class PaymentsService {
       }
     }
 
+    const supplierPaymentId = await this.idGenerator.nextScoped("SP", supplier.code ?? businessSegment(supplier.name, "Supplier"));
     const payment = await this.prisma.supplierPayment.create({
       data: {
+        id: supplierPaymentId,
         supplierId: dto.supplierId,
         amount: dto.amount,
         date: dto.date ? new Date(dto.date) : undefined,
@@ -174,8 +182,10 @@ export class PaymentsService {
       }
     }
 
+    const vendorPaymentId = await this.idGenerator.nextScoped("VP", vendor.code ?? businessSegment(vendor.name, "Vendor"));
     const payment = await this.prisma.vendorPayment.create({
       data: {
+        id: vendorPaymentId,
         vendorId: dto.vendorId,
         amount: dto.amount,
         date: dto.date ? new Date(dto.date) : undefined,
@@ -406,7 +416,7 @@ export class PaymentsService {
    * Expected columns (header row required): weaverId, amountPaid, utrNumber, firmId,
    * paymentDate, batchNo, loomNumber, noOfSarees, deduction.
    */
-  async importWeaverPaymentsFromExcel(buffer: Buffer): Promise<ImportResult> {
+  async importWeaverPaymentsFromExcel(buffer: Buffer, recordedById?: string): Promise<ImportResult> {
     const workbook = new ExcelJS.Workbook();
     try {
       // exceljs's bundled .d.ts predates the newer generic Buffer<T>/Uint8Array<T> typings
@@ -414,11 +424,11 @@ export class PaymentsService {
       // mismatch that doesn't exist at runtime.
       await workbook.xlsx.load(buffer as unknown as Parameters<typeof workbook.xlsx.load>[0]);
     } catch {
-      return { created: 0, failed: 0, errors: [{ row: 0, message: "Couldn't read this file — make sure it's a valid .xlsx exported from the template." }] };
+      return { created: 0, failed: 0, errors: [{ row: 0, message: "Couldn't read this file — make sure it's a valid .xlsx exported from the template." }], totalAmount: 0 };
     }
     const sheet = workbook.worksheets[0];
     if (!sheet) {
-      return { created: 0, failed: 0, errors: [{ row: 0, message: "No worksheet found" }] };
+      return { created: 0, failed: 0, errors: [{ row: 0, message: "No worksheet found" }], totalAmount: 0 };
     }
 
     const headerRow = sheet.getRow(1).values as unknown[];
@@ -436,6 +446,7 @@ export class PaymentsService {
           created: 0,
           failed: 0,
           errors: [{ row: 1, message: `Missing required column "${column}"` }],
+          totalAmount: 0,
         };
       }
     }
@@ -486,6 +497,7 @@ export class PaymentsService {
 
       const firmRaw = asString(cell(row, "firmId"));
       const data: Prisma.WeaverPaymentCreateManyInput = {
+        id: "", // placeholder — assigned a real WP-NNN id below once this row is validated
         weaverId,
         amountPaid,
         utrNumber: asString(cell(row, "utrNumber")),
@@ -495,6 +507,7 @@ export class PaymentsService {
         loomNumber: asString(cell(row, "loomNumber")),
         noOfSarees: asNumber(cell(row, "noOfSarees")),
         deduction: asNumber(cell(row, "deduction")),
+        recordedById,
       };
 
       weaverIds.add(weaverId);
@@ -613,6 +626,7 @@ export class PaymentsService {
       }
       runningPaidByWeaver.set(resolvedWeaverId, paidSoFar + row.amountPaid);
 
+      row.data.id = await this.idGenerator.nextFormatted("REFERENCE");
       validRows.push(row.data);
     }
 
@@ -620,6 +634,145 @@ export class PaymentsService {
       await this.prisma.weaverPayment.createMany({ data: validRows });
     }
 
-    return { created: validRows.length, failed: errors.length, errors };
+    const totalAmount = validRows.reduce((sum, r) => sum + Number(r.amountPaid), 0);
+    return { created: validRows.length, failed: errors.length, errors, totalAmount };
+  }
+
+  // Same shape/pattern as importWeaverPaymentsFromExcel above: one real
+  // backend import endpoint, matched and validated server-side against real
+  // records — replaces the vendor upload panel's previous client-side XLSX
+  // parse + one POST per row (which had no server-side row limit, retried
+  // nothing on partial failure, and trusted whatever bill/vendor match the
+  // browser made). Each accepted row goes through createVendorPayment so the
+  // bill-status recompute and audit log stay identical to a manually
+  // recorded payment.
+  async importVendorPaymentsFromExcel(buffer: Buffer, recordedById?: string): Promise<ImportResult> {
+    const workbook = new ExcelJS.Workbook();
+    try {
+      await workbook.xlsx.load(buffer as unknown as Parameters<typeof workbook.xlsx.load>[0]);
+    } catch {
+      return { created: 0, failed: 0, errors: [{ row: 0, message: "Couldn't read this file — make sure it's a valid .xlsx exported from the template." }], totalAmount: 0 };
+    }
+    const sheet = workbook.worksheets[0];
+    if (!sheet) {
+      return { created: 0, failed: 0, errors: [{ row: 0, message: "No worksheet found" }], totalAmount: 0 };
+    }
+
+    const headerRow = sheet.getRow(1).values as unknown[];
+    const columnIndex = new Map<string, number>();
+    headerRow.forEach((value, index) => {
+      if (typeof value === "string") columnIndex.set(value.trim(), index);
+    });
+
+    const requiredColumns = ["poNumber", "amountPaid"];
+    for (const column of requiredColumns) {
+      if (!columnIndex.has(column)) {
+        return { created: 0, failed: 0, errors: [{ row: 1, message: `Missing required column "${column}"` }], totalAmount: 0 };
+      }
+    }
+
+    const cell = (row: ExcelJS.Row, name: string) => {
+      const index = columnIndex.get(name);
+      return index === undefined ? undefined : row.getCell(index).value;
+    };
+    const asString = (value: unknown): string | undefined => {
+      if (value === null || value === undefined || value === "") return undefined;
+      if (typeof value === "string") return value.trim();
+      if (typeof value === "number" || typeof value === "boolean") return String(value);
+      if (value instanceof Date) return value.toISOString();
+      return undefined;
+    };
+    const asNumber = (value: unknown): number | undefined => {
+      const str = asString(value);
+      if (str === undefined) return undefined;
+      const num = Number(str);
+      return Number.isNaN(num) ? undefined : num;
+    };
+
+    interface Row { rowNumber: number; poNumber: string; amountPaid: number; utrNumber?: string; firmRaw?: string; paymentDate?: string }
+    const rows: Row[] = [];
+    const errors: ImportRowError[] = [];
+
+    sheet.eachRow((row, rowNumber) => {
+      if (rowNumber === 1) return;
+      const poNumber = asString(cell(row, "poNumber"));
+      const amountPaid = asNumber(cell(row, "amountPaid"));
+
+      if (!poNumber) {
+        errors.push({ row: rowNumber, message: "Missing poNumber" });
+        return;
+      }
+      if (amountPaid === undefined || amountPaid <= 0) {
+        errors.push({ row: rowNumber, message: "Missing or invalid amountPaid" });
+        return;
+      }
+
+      rows.push({
+        rowNumber,
+        poNumber,
+        amountPaid,
+        utrNumber: asString(cell(row, "utrNumber")),
+        firmRaw: asString(cell(row, "firmName")),
+        paymentDate: asString(cell(row, "paymentDate")),
+      });
+    });
+
+    const [purchaseOrders, firms] = await Promise.all([
+      this.prisma.purchaseOrder.findMany({
+        where: { poNumber: { in: rows.map((r) => r.poNumber) } },
+        include: { vendorBills: { orderBy: { createdAt: "asc" } } },
+      }),
+      this.prisma.firm.findMany({ select: { id: true, firmName: true } }),
+    ]);
+    const poByNumber = new Map(purchaseOrders.map((po) => [po.poNumber.trim().toLowerCase(), po]));
+    const firmIdByName = new Map(firms.map((f) => [f.firmName.trim().toLowerCase(), f.id]));
+
+    let created = 0;
+    let totalAmount = 0;
+    for (const row of rows) {
+      const po = poByNumber.get(row.poNumber.trim().toLowerCase());
+      if (!po) {
+        errors.push({ row: row.rowNumber, message: `No PO found with number "${row.poNumber}"` });
+        continue;
+      }
+      const bill = po.vendorBills[0];
+      if (!bill) {
+        errors.push({ row: row.rowNumber, message: `No bill has been raised against ${po.poNumber} yet` });
+        continue;
+      }
+
+      let firmId: string | undefined;
+      if (row.firmRaw) {
+        firmId = firmIdByName.get(row.firmRaw.trim().toLowerCase());
+        if (!firmId) {
+          errors.push({ row: row.rowNumber, message: `Firm "${row.firmRaw}" not found` });
+          continue;
+        }
+      }
+
+      const paymentDate = row.paymentDate ? new Date(row.paymentDate) : undefined;
+      if (paymentDate && Number.isNaN(paymentDate.getTime())) {
+        errors.push({ row: row.rowNumber, message: `Invalid paymentDate "${row.paymentDate}"` });
+        continue;
+      }
+
+      try {
+        await this.createVendorPayment({
+          vendorId: po.vendorId,
+          amount: row.amountPaid,
+          utr: row.utrNumber,
+          firmId,
+          date: paymentDate?.toISOString(),
+          billId: bill.id,
+          recordedById,
+        });
+        created += 1;
+        totalAmount += row.amountPaid;
+      } catch (err) {
+        errors.push({ row: row.rowNumber, message: err instanceof Error ? err.message : "Failed to save this payment" });
+      }
+    }
+
+    return { created, failed: errors.length, errors, totalAmount };
   }
 }

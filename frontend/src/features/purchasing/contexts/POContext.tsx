@@ -44,19 +44,64 @@ export interface PurchaseOrder {
   receivedBy?: { id: string; firstName: string; lastName: string };
 }
 
+// A PO raised without a price entered stays at ₹0 on its own line items
+// forever — but once it's received, the real price actually paid is known
+// from the GRN receipt. Grouped by material type (weighted-average unit
+// price across every GRN line of that type) since GrnItem doesn't carry a
+// strict per-PO-line FK back to PurchaseOrderItem, only materialType +
+// carried-over description.
+function grnPriceByMaterialType(grnReceipt: BackendPurchaseOrder["grnReceipt"]): Map<string, number> {
+  const totals = new Map<string, { qty: number; price: number }>();
+  for (const item of grnReceipt?.items ?? []) {
+    const entry = totals.get(item.materialType) ?? { qty: 0, price: 0 };
+    entry.qty += Number(item.quantity) || 0;
+    entry.price += Number(item.totalPrice) || 0;
+    totals.set(item.materialType, entry);
+  }
+  const avgPricePerUnit = new Map<string, number>();
+  for (const [materialType, { qty, price }] of totals) {
+    if (qty > 0) avgPricePerUnit.set(materialType, price / qty);
+  }
+  return avgPricePerUnit;
+}
+
 // materials[] line items are populated from backend `items` relation if present.
 function toPurchaseOrder(po: BackendPurchaseOrder, materials: POItem[] = []): PurchaseOrder {
-  const mappedMaterials: POItem[] = (po.items && po.items.length > 0) ? po.items.map(item => ({
-    id: item.id,
-    materialType: (item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari") as "Warp" | "Resham" | "Jari",
-    subtype: item.name,
-    description: item.description ?? undefined,
-    quantity: Number(item.quantity),
-    unit: item.unit,
-    pricePerUnit: Number(item.unitPrice || 0),
-    subtotal: Number(item.totalPrice || 0),
-    invoiceAmount: item.invoicedAmount ? Number(item.invoicedAmount) : undefined,
-  })) : materials;
+  const grnPrices = grnPriceByMaterialType(po.grnReceipt);
+  const mappedMaterials: POItem[] = (po.items && po.items.length > 0) ? po.items.map(item => {
+    let pricePerUnit = Number(item.unitPrice || 0);
+    let subtotal = Number(item.totalPrice || 0);
+    if (subtotal === 0) {
+      // Prefer the vendor's actual invoiced amount for this line (real
+      // committed billing — see VendorBill) over the GRN's own recorded
+      // price: a GRN can be receipted before pricing is known and stays at
+      // ₹0 itself, same as the PO, while invoicedAmount is filled in once
+      // the bill actually arrives.
+      const invoicedAmount = item.invoicedAmount ? Number(item.invoicedAmount) : 0;
+      const grnUnitPrice = grnPrices.get(item.materialType);
+      if (invoicedAmount > 0) {
+        subtotal = invoicedAmount;
+        pricePerUnit = Number(item.quantity) > 0 ? invoicedAmount / Number(item.quantity) : 0;
+      } else if (grnUnitPrice !== undefined) {
+        pricePerUnit = grnUnitPrice;
+        subtotal = grnUnitPrice * Number(item.quantity);
+      }
+    }
+    return {
+      id: item.id,
+      materialType: (item.materialType === "WARP" ? "Warp" : item.materialType === "RESHAM" ? "Resham" : "Jari") as "Warp" | "Resham" | "Jari",
+      subtype: item.name,
+      description: item.description ?? undefined,
+      quantity: Number(item.quantity),
+      unit: item.unit,
+      pricePerUnit,
+      subtotal,
+      invoiceAmount: item.invoicedAmount ? Number(item.invoicedAmount) : undefined,
+    };
+  }) : materials;
+  // Same fallback at the order level — a totalValue of 0 with real GRN
+  // pricing recovered above would otherwise still show "Estimated Total ₹0".
+  const totalValue = Number(po.totalValue) || mappedMaterials.reduce((sum, m) => sum + m.subtotal, 0);
 
   return {
     id: po.id,
@@ -69,7 +114,7 @@ function toPurchaseOrder(po: BackendPurchaseOrder, materials: POItem[] = []): Pu
     vendorContact: po.vendor.contactName ?? undefined,
     deliveryDate: po.deliveryDate ?? "",
     materials: mappedMaterials,
-    totalValue: Number(po.totalValue),
+    totalValue,
     urgency: (po.urgency as PurchaseOrder["urgency"]) ?? "Normal",
     status: (po.status === "PENDING" ? "pending" : po.status === "APPROVED" ? "approved" : po.status === "REJECTED" ? "rejected" : "received") as DocumentStatus,
     submittedDate: po.createdAt,

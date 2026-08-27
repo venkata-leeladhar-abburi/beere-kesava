@@ -24,6 +24,14 @@ export class UpdateVendorBillDto {
   description?: string;
 
   @IsOptional()
+  @IsString()
+  invoiceFileUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  invoiceFileName?: string;
+
+  @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => VendorBillMaterialAmountDto)

@@ -1,12 +1,10 @@
 import { useState } from "react";
-import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
-import { Eye, MapPin, Phone, Edit3, Layers3, Activity, AlertTriangle } from "lucide-react";
-import { Clock, Rows3 as Rows, Eye as PhEye, MapPin as PhMapPin } from "lucide-react";
+import { Rows3 as Rows, Eye as PhEye, MapPin as PhMapPin } from "lucide-react";
 import { T, F } from "../theme";
 import { STATUS_CFG } from "../types";
 import { WEAVERS } from "../data";
-import { FadeUp, qcColor, getTwoLetterInitials } from "../common/primitives";
+import { qcColor, getTwoLetterInitials } from "../common/primitives";
 import { weaversApi, BackendWeaverStats } from "../../../../shared/api/weavers";
 import { Button } from "../../../../shared/ui/primitives";
 import { resolveAssetUrl } from "../../../../shared/api/uploads";

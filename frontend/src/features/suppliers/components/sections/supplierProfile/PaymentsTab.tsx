@@ -5,6 +5,7 @@ import { DateFilterBar, DateFilterState } from "../../../../../shared/ui/DateFil
 import { T, F } from "../../theme";
 import { SupplierPayment } from "../../../contexts/SupplierContext";
 import { formatMoney, rupees } from "@/lib/domain/money";
+import { formatRecordedBy } from "@/lib/domain/actor";
 import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
 
 const paymentColumns: ColumnDef<SupplierPayment>[] = [
@@ -31,6 +32,10 @@ const paymentColumns: ColumnDef<SupplierPayment>[] = [
   {
     id: "amount", header: "Amount", accessor: p => p.amount,
     cell: (_v, p) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, color: T.green }}>{formatMoney(rupees(p.amount))}</span>,
+  },
+  {
+    id: "recordedBy", header: "Recorded By", accessor: p => formatRecordedBy(p.recordedBy), priority: 3,
+    cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{formatRecordedBy(p.recordedBy)}</span>,
   },
 ];
 

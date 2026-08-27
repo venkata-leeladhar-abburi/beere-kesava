@@ -23,6 +23,7 @@ import { useMoneyVisible } from "../../../../shared/ui/MoneyValue";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { Breadcrumbs } from "../../../../shared/ui/nav/Breadcrumbs";
 import { rupees, formatMoney } from "@/lib/domain/money";
+import { formatRecordedBy } from "@/lib/domain/actor";
 import { recordView, useConfirm } from "../../../../shared/ui/overlay";
 import { ImageZoomModal, type ZoomImage } from "../../../../shared/ui/ImageZoomModal";
 
@@ -106,6 +107,7 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
       reference: p.utr || "—",
       firm: p.firmId || "Beere Kesava Silks (Head Firm)",
       notes: "",
+      recordedBy: p.recordedBy ?? null,
     }));
 
     const totalBilled = bills.reduce((a, b) => a + b.amount, 0);
@@ -182,6 +184,7 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
     },
     { id: "reference", header: "UTR / Reference", accessor: p => p.reference, priority: 3, cell: (_v, p) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{p.reference}</span> },
     { id: "firm", header: "Paying Firm", accessor: p => p.firm, priority: 3, cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{p.firm}</span> },
+    { id: "recordedBy", header: "Recorded By", accessor: p => formatRecordedBy(p.recordedBy), priority: 3, cell: (_v, p) => <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{formatRecordedBy(p.recordedBy)}</span> },
     { id: "amount", header: "Amount", accessor: p => p.amount, align: "end", cell: (_v, p) => <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, color: T.greenMid }}>{inr(p.amount)}</span> },
   ];
 

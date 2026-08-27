@@ -9,6 +9,7 @@ import { AnimBar } from "../common/motion";
 import { INV_STATUS_CFG, InvBadge } from "./InvBadge";
 import { Button } from "../../../../shared/ui/primitives";
 import { rupees } from "@/lib/domain/money";
+import { formatRecordedBy } from "@/lib/domain/actor";
 import { EntityCode, Money } from "@/shared/ui/domain";
 
 export function CustomerCard({ inv, onViewInvoice, onRecordPayment, bulkOrderRef, bulkOrderData }: { inv: Invoice, onViewInvoice?: () => void, onRecordPayment?: () => void, bulkOrderRef?: string, bulkOrderData?: BulkOrder }) {
@@ -16,6 +17,10 @@ export function CustomerCard({ inv, onViewInvoice, onRecordPayment, bulkOrderRef
   const pct = Math.round((inv.paid / inv.total) * 100);
   const cfg = INV_STATUS_CFG[inv.status];
   const isPaid = inv.status === "Paid";
+  // Backend returns payments newest-first, so [0] is whoever recorded the
+  // most recent collection — the settling payment once fully paid.
+  const lastPayment = inv.payments?.[0];
+  const recordedByLabel = lastPayment ? formatRecordedBy(lastPayment.recordedBy) : null;
 
   return (
     <motion.div
@@ -39,7 +44,7 @@ export function CustomerCard({ inv, onViewInvoice, onRecordPayment, bulkOrderRef
       <div style={{ padding: "20px 20px 14px", display: "flex", flexDirection: "column", gap: 10, flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", minWidth: 0, maxWidth: "100%" }}>
-            <EntityCode type="invoice" value={inv.id} size="sm" className="break-all whitespace-normal max-w-full" />
+            <EntityCode type="invoice" value={inv.code} size="sm" className="break-all whitespace-normal max-w-full" />
             {bulkOrderRef && (
               <EntityCode type="order" value={bulkOrderRef} size="sm" className="break-all whitespace-normal max-w-full" />
             )}
@@ -109,6 +114,13 @@ export function CustomerCard({ inv, onViewInvoice, onRecordPayment, bulkOrderRef
           </div>
           <AnimBar pct={pct} color={isPaid ? T.green : inv.status === "Overdue" ? T.crimson : T.antiqueGold} height={6} trackBg="rgba(110,15,45,0.06)" />
         </div>
+
+        {recordedByLabel && (
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontFamily: F.ui, fontSize: 12, color: T.taupe, paddingTop: 2 }}>
+            <span>Recorded by</span>
+            <span style={{ fontWeight: 700, color: T.luxuryBrown }}>{recordedByLabel}</span>
+          </div>
+        )}
       </div>
 
       {/* Action buttons */}

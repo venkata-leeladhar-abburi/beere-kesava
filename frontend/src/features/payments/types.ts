@@ -71,10 +71,16 @@ export interface InvoicePayment {
   utr: string;
   method: string;
   firmName?: string;
+  /** Accountant / Shop Staff who recorded this collection; undefined if unattributed. */
+  recordedBy?: { firstName: string; lastName: string; role: string } | null;
 }
 
 export interface Invoice {
-  id: string; customer: string; city: string;
+  id: string;
+  /** Human-facing id (INV-<CustomerCode>-NNN) — the only invoice id ever shown in
+   * the UI. `id` stays the UUID used for joins and API calls. */
+  code: string;
+  customer: string; city: string;
   /** Customer's phone, used to open a WhatsApp reminder. */
   customerPhone?: string;
   invoiceDate: string; dueDate: string;
@@ -96,6 +102,8 @@ export interface VendorPayment {
   utr?: string; vendorId?: string;
   /** Real VendorBill.id — undefined until a bill has been raised against this PO. */
   billId?: string;
+  invoiceFileUrl?: string;
+  invoiceFileName?: string;
 }
 
 // ── Vendor payment Excel upload types ─────────────────────────────────────────

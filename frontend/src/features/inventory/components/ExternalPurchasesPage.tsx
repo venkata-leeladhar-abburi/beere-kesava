@@ -138,6 +138,7 @@ export function ExternalPurchasesPage() {
       notes: form.notes,
       addedBy: "Admin",
       invoiceFileName: form.invoiceFileName || undefined,
+      invoiceFileUrl: form.invoiceFileUrl || undefined,
       sarees,
     });
     setFormModal(null);
@@ -156,6 +157,7 @@ export function ExternalPurchasesPage() {
       status: form.status,
       notes: form.notes,
       invoiceFileName: form.invoiceFileName || undefined,
+      invoiceFileUrl: form.invoiceFileUrl || undefined,
       sarees,
     });
     setFormModal(null);
@@ -187,6 +189,7 @@ export function ExternalPurchasesPage() {
         status: editingPurchase.status,
         notes: editingPurchase.notes,
         invoiceFileName: editingPurchase.invoiceFileName || "",
+        invoiceFileUrl: editingPurchase.invoiceFileUrl || "",
       }
     : null;
 

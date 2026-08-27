@@ -101,6 +101,7 @@ export function SuppliersPage() {
       status: form.status || "Pending",
       notes: form.notes,
       invoiceFileName: form.invoiceFileName || undefined,
+      invoiceFileUrl: form.invoiceFileUrl || undefined,
       sarees,
     });
     setRequestFor(null);

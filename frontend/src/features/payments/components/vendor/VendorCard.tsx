@@ -108,6 +108,11 @@ export function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoic
               </>
             )}
           </div>
+          {matchedPO?.raisedBy && (
+            <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginTop: 4 }}>
+              Created by <span style={{ color: T.royalBurgundy, fontWeight: 600 }}>{matchedPO.raisedBy}</span>
+            </div>
+          )}
         </div>
 
         {/* Materials Grid */}
