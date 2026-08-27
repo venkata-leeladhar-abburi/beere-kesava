@@ -100,7 +100,11 @@ export function ProductionAnalyticsSection() {
       else if (completeCount === b.totalCount && b.totalCount > 0) submitted++;
       else weaving++;
     }
-    const inStock = batches.filter(b => b.status === "completed").length;
+    // Backend never transitions a batch's own status to "completed" (only
+    // draft→active exists), so filtering on b.status here always returned 0.
+    // A batch is actually done — ready for sale — once every row in it has
+    // passed QC, the same per-row criterion used for qcPassed above.
+    const inStock = batches.filter(b => b.totalCount > 0 && b.rows.every(r => r.qcPassed === true)).length;
     const max = Math.max(weaving, submitted, qcPassed, inStock, 1);
     return [
       { label: "Weaving in Progress", count: weaving, color: "#845E04", widthPct: Math.round((weaving / max) * 100) },

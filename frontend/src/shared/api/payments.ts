@@ -11,6 +11,14 @@ export interface ImportResult {
   errors: ImportRowError[];
 }
 
+/** Minimal identity of the staff member who performed an action, for attribution display. */
+export interface BackendActorSummary {
+  id: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+}
+
 export interface CreateSupplierPaymentPayload {
   supplierId: string;
   amount: number;
@@ -28,6 +36,8 @@ export interface BackendSupplierPayment {
   utr: string | null;
   method: string | null;
   firmId: string | null;
+  /** Accountant who recorded this payment. */
+  recordedBy?: BackendActorSummary | null;
 }
 
 interface PaginatedResponse<T> {
@@ -37,12 +47,37 @@ interface PaginatedResponse<T> {
   pageSize: number;
 }
 
+// Every list endpoint here caps pageSize server-side (100 for supplier/
+// vendor, 500 for weaver) — a single page silently dropped records beyond
+// that cap since no caller ever requested page 2+. Walk every page and merge
+// so "list" always means the full list, matching how callers already treat
+// the result (client-side filtering/derivation over "all payments").
+async function fetchAllPages<T>(
+  fetchPage: (page: number, pageSize: number) => Promise<PaginatedResponse<T>>,
+  pageSize: number,
+): Promise<PaginatedResponse<T>> {
+  const first = await fetchPage(1, pageSize);
+  const items = [...first.items];
+  let page = 1;
+  while (items.length < first.total) {
+    page += 1;
+    const next = await fetchPage(page, pageSize);
+    if (next.items.length === 0) break;
+    items.push(...next.items);
+  }
+  return { items, total: first.total, page: 1, pageSize: items.length };
+}
+
 export const supplierPaymentsApi = {
   create: (payload: CreateSupplierPaymentPayload) =>
     apiClient.post<BackendSupplierPayment>("/payments/suppliers", payload),
   list: (supplierId?: string) =>
-    apiClient.get<PaginatedResponse<BackendSupplierPayment>>(
-      `/payments/suppliers?pageSize=100${supplierId ? `&supplierId=${supplierId}` : ""}`,
+    fetchAllPages<BackendSupplierPayment>(
+      (page, pageSize) =>
+        apiClient.get<PaginatedResponse<BackendSupplierPayment>>(
+          `/payments/suppliers?page=${page}&pageSize=${pageSize}${supplierId ? `&supplierId=${supplierId}` : ""}`,
+        ),
+      100,
     ),
 };
 
@@ -70,6 +105,8 @@ export interface BackendWeaverPayment {
   loomNumber: string | null;
   noOfSarees: number | null;
   deduction: string | null;
+  /** Accountant who recorded this payment. */
+  recordedBy?: BackendActorSummary | null;
 }
 
 // Per-saree-type earnings breakdown: count of QC-passed sarees x that saree
@@ -117,8 +154,12 @@ export const weaverPaymentsApi = {
   create: (payload: CreateWeaverPaymentPayload) =>
     apiClient.post<BackendWeaverPayment>("/payments/weavers", payload),
   list: (weaverId?: string) =>
-    apiClient.get<PaginatedResponse<BackendWeaverPayment>>(
-      `/payments/weavers?pageSize=100${weaverId ? `&weaverId=${weaverId}` : ""}`,
+    fetchAllPages<BackendWeaverPayment>(
+      (page, pageSize) =>
+        apiClient.get<PaginatedResponse<BackendWeaverPayment>>(
+          `/payments/weavers?page=${page}&pageSize=${pageSize}${weaverId ? `&weaverId=${weaverId}` : ""}`,
+        ),
+      500,
     ),
   earnings: (weaverId?: string) =>
     apiClient.get<WeaverEarnings[]>(`/payments/weavers/earnings${weaverId ? `?weaverId=${weaverId}` : ""}`),
@@ -144,14 +185,20 @@ export interface BackendVendorPayment {
   method: string | null;
   firmId: string | null;
   billId?: string | null;
+  /** Accountant who recorded this payment. */
+  recordedBy?: BackendActorSummary | null;
 }
 
 export const vendorPaymentsApi = {
   create: (payload: CreateVendorPaymentPayload) =>
     apiClient.post<BackendVendorPayment>("/payments/vendors", payload),
   list: (vendorId?: string) =>
-    apiClient.get<PaginatedResponse<BackendVendorPayment>>(
-      `/payments/vendors?pageSize=100${vendorId ? `&vendorId=${vendorId}` : ""}`,
+    fetchAllPages<BackendVendorPayment>(
+      (page, pageSize) =>
+        apiClient.get<PaginatedResponse<BackendVendorPayment>>(
+          `/payments/vendors?page=${page}&pageSize=${pageSize}${vendorId ? `&vendorId=${vendorId}` : ""}`,
+        ),
+      100,
     ),
 };
 

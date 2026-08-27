@@ -68,6 +68,9 @@ function SalesReport() {
     pay: "Counter",
     amt: formatMoney(rupees(Number(s.amount))),
     src: "factory",
+    // Shop Staff / Accountant who rang up this sale — multiple staff can be
+    // on the counter, so the name (not just "Sold") is what identifies who.
+    soldBy: s.soldBy ? `${s.soldBy.firstName} ${s.soldBy.lastName}`.trim() : null,
   }));
 
   const totalToday = salesList.reduce((sum, s) => sum + Number(s.amount), 0);
@@ -172,7 +175,9 @@ function SalesReport() {
                   <Chip label={s.src === "factory" ? "Factory" : "External"} color={s.src === "factory" ? C.green : C.gold} bg={s.src === "factory" ? "rgba(30,102,64,0.10)" : "rgba(200,155,71,0.12)"} />
                 </div>
                 <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>{s.customer}</div>
-                <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 3 }}>{s.time} · {s.pay}</div>
+                <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 3 }}>
+                  {s.time} · {s.pay}{s.soldBy ? ` · Sold by ${s.soldBy}` : ""}
+                </div>
               </div>
               {canSeePrices && <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 16, color: C.gold, flexShrink: 0, textAlign: "right" as const }}>{s.amt}</div>}
             </div>

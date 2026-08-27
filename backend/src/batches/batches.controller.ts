@@ -73,21 +73,25 @@ export class BatchesController {
   @Patch(":id/rows/:serial/receive")
   @RequireRoles(UserRole.WORKER, UserRole.ADMIN, UserRole.SUPERADMIN)
   receiveRow(
+    @CurrentUser() user: AuthenticatedUser,
     @Param("id") id: string,
     @Param("serial", ParseIntPipe) serial: number,
     @Body() dto: ReceiveBatchRowDto,
   ) {
-    return this.batchesService.receiveRow(id, serial, dto);
+    // actorId is derived from the JWT, not trusted from the request body, so
+    // "received by" always reflects who is actually logged in.
+    return this.batchesService.receiveRow(id, serial, { ...dto, actorId: user.id });
   }
 
   @Patch(":id/rows/:serial/tally")
   @RequireRoles(UserRole.WORKER, UserRole.ADMIN, UserRole.SUPERADMIN)
   tallyRow(
+    @CurrentUser() user: AuthenticatedUser,
     @Param("id") id: string,
     @Param("serial", ParseIntPipe) serial: number,
     @Body() dto: TallyBatchRowDto,
   ) {
-    return this.batchesService.tallyRow(id, serial, dto);
+    return this.batchesService.tallyRow(id, serial, { ...dto, actorId: user.id });
   }
 
   @Post(":id/finalize")

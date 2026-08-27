@@ -23,6 +23,9 @@ import { Button, Input, NumberInput, Select, SelectItem } from "../../../../../s
 import { toPaise, fromPaise } from "../../../../../lib/gst";
 import { resolveAssetUrl } from "@/shared/api/uploads";
 import { useImageUpload } from "@/shared/hooks/useImageUpload";
+import { useAuth } from "../../../../../contexts/AuthContext";
+import { isApiError } from "@/shared/api/client";
+import { Modal } from "@/shared/ui/overlay/Modal";
 
 interface RejectedSaree {
   id: string;
@@ -34,6 +37,7 @@ interface RejectedSaree {
 
 export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onSareeReceived?: (rec: ReceivedSareeLog) => void }) {
   const { getSareeTypeByCode } = useRatesPricing();
+  const { user } = useAuth();
   const { data: weaversRes, isLoading: weaversLoading } = useQuery({
     queryKey: ["worker-receive-weavers"],
     queryFn: () => weaversApi.list(),
@@ -65,6 +69,12 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
   const [selectedSareeNos, setSelectedSareeNos] = useState<Set<number>>(new Set());
   const [sareeSort, setSareeSort] = useState<"serial" | "status">("serial");
   const [isSaving, setIsSaving] = useState(false);
+  // Set when the backend refuses a receipt because the weaver's outstanding
+  // material balance can't cover the entered weight (BatchesService.receiveRow
+  // -> MaterialReturnsService.createAutoReturnForReceiptByWeight/
+  // createAutoReturnForReceipt) — surfaced as a blocking popup rather than a
+  // toast so Worker Staff can't miss it and re-submit the same bad weight.
+  const [insufficientMaterialError, setInsufficientMaterialError] = useState<string | null>(null);
 
   // Default to the first weaver once the real list loads.
   useEffect(() => {
@@ -206,15 +216,28 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
       for (const no of selectedSareeNos) {
         const s = currentBatch.sarees.find(x => x.no === no);
         if (!s) continue;
-        await receiveRow(currentBatch.id, no, {
-          weight: parseFloat(sareeWeight),
-          color: sareeColor,
-          photoUrl: photoUrl ?? undefined,
-          warpG: Number.isFinite(warpG) ? warpG : undefined,
-          reshamG: Number.isFinite(reshamG) ? reshamG : undefined,
-          jariReels: Number.isFinite(jariReels) ? jariReels : undefined,
-          sellingPrice: sareePrice ? fromPaise(toPaise(Number(sareePrice) || 0)) : undefined,
-        });
+        try {
+          await receiveRow(currentBatch.id, no, {
+            weight: parseFloat(sareeWeight),
+            color: sareeColor,
+            photoUrl: photoUrl ?? undefined,
+            warpG: Number.isFinite(warpG) ? warpG : undefined,
+            reshamG: Number.isFinite(reshamG) ? reshamG : undefined,
+            jariReels: Number.isFinite(jariReels) ? jariReels : undefined,
+            sellingPrice: sareePrice ? fromPaise(toPaise(Number(sareePrice) || 0)) : undefined,
+            actorId: user?.id,
+          });
+        } catch (err) {
+          // A 400 here means the weaver doesn't have enough material
+          // outstanding to cover this saree's weight — stop processing the
+          // rest of the batch selection so the same bad weight isn't retried
+          // saree after saree, and surface it as a blocking popup.
+          if (isApiError(err) && err.statusCode === 400) {
+            setInsufficientMaterialError(err.message);
+            return;
+          }
+          throw err;
+        }
         onSareeReceived?.({
           id: s.sareeId, weaver: selectedWeaver.name, wcode: selectedWeaver.code, batch: currentBatch.id,
           weight: `${sareeWeight}g`, date: dateStr,
@@ -545,6 +568,21 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
 
         {activeSection === "own" && <OwnFactoryReceiveTab onSareeReceived={onSareeReceived} />}
       </div>
+
+      <Modal open={insufficientMaterialError !== null} onOpenChange={(open) => { if (!open) setInsufficientMaterialError(null); }} size="xs">
+        <Modal.Header title="Not Enough Material" subtitle="This weaver's outstanding material can't cover this saree" />
+        <Modal.Body>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "4px 0 16px" }}>
+            <AlertTriangle size={20} color={C.crim} style={{ flexShrink: 0, marginTop: 2 }} />
+            <span style={{ fontFamily: F.u, fontSize: 14, color: C.text, lineHeight: 1.5 }}>{insufficientMaterialError}</span>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="primary" onClick={() => setInsufficientMaterialError(null)} className="rounded-full bg-[#6E0F2D] hover:bg-[#6E0F2D]">
+            OK
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </>
   );
 }

@@ -253,7 +253,7 @@ export class AuthService {
 
     // Seed SuperAdmin if not existing
     const superAdmin = await this.prisma.user.findFirst({
-      where: { mobile: "9999999999" },
+      where: { mobile: "9392757489" },
     });
     if (!superAdmin) {
       await this.prisma.user.create({
@@ -261,7 +261,7 @@ export class AuthService {
           empId: "SEED-SUPERADMIN",
           firstName: "Super",
           lastName: "Admin",
-          mobile: "9999999999",
+          mobile: "9392757489",
           email: "superadmin@beerekesava.com",
           role: UserRole.SUPERADMIN,
           accessLevel: AccessLevel.FULL_ACCESS,

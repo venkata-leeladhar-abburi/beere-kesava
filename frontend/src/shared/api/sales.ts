@@ -2,6 +2,14 @@ import { apiClient } from "./client";
 
 export type SalesChannel = "RETAIL" | "WHOLESALE";
 
+/** Minimal identity of the staff member who performed an action, for attribution display. */
+export interface BackendActorSummary {
+  id: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+}
+
 // Raw shapes exactly as Prisma serialises SaleRecord / ReturnRecord — kept
 // private so a backend field-name change can only ever break this one file.
 interface RawSaleRecord {
@@ -15,6 +23,8 @@ interface RawSaleRecord {
   // actually reads are declared here.
   saree?: { designCode: string | null; sareeTypeCode: string | null } | null;
   customer?: { id: string; name: string } | null;
+  /** Shop Staff / Accountant who recorded this sale — who actually rang it up. */
+  soldBy?: BackendActorSummary | null;
 }
 
 interface RawReturnRecord {
@@ -40,6 +50,7 @@ export interface BackendSaleRecord {
   saleDate: string;
   saree?: { designCode: string | null; sareeTypeCode: string | null } | null;
   customer?: { id: string; name: string } | null;
+  soldBy?: BackendActorSummary | null;
 }
 
 export interface BackendSaleReturn {

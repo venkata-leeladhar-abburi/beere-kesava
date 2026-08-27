@@ -2,6 +2,14 @@ import { apiClient } from "./client";
 
 export type BackendInvoiceStatus = "PAID" | "PARTIAL" | "PENDING" | "OVERDUE";
 
+/** Minimal identity of the staff member who performed an action, for attribution display. */
+export interface BackendActorSummary {
+  id: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+}
+
 export interface BackendInvoicePayment {
   id: string;
   invoiceId: string;
@@ -10,6 +18,8 @@ export interface BackendInvoicePayment {
   utr: string | null;
   method: string | null;
   firmId: string | null;
+  /** Accountant / Shop Staff who recorded this collection. */
+  recordedBy?: BackendActorSummary | null;
 }
 
 export interface BackendInvoice {

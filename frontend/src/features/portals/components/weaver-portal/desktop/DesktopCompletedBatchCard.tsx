@@ -4,10 +4,12 @@ import { Layers, Package } from "lucide-react";
 import { C, F, SareeTypeDetailCard, ProgressBar, MyBatchEntry } from "../theme";
 import { DispatchInstructionsBlock, MaterialsGivenBlock } from "./batchCardHelpers";
 import { Button } from "../../../../../shared/ui/primitives";
+import { WeaverBatchSareesModal } from "../WeaverBatchSareesModal";
 
 // Completed batch card — same full info as the active batch card, but with a completed badge
 export function DesktopCompletedBatchCard({ b, bp = "desktop" }: { b: MyBatchEntry; idx: number; bp?: "tablet" | "desktop" }) {
   const [expandedType, setExpandedType] = useState<string | null>(null);
+  const [showSarees, setShowSarees] = useState(false);
   const isTablet = bp === "tablet";
 
   const sareeTypePairs = Array.from(new Map(b.myRows.filter(r => r.sareeTypeCode && r.sareeTypeName).map(r => [r.sareeTypeCode!, r.sareeTypeName!])).entries());
@@ -20,11 +22,19 @@ export function DesktopCompletedBatchCard({ b, bp = "desktop" }: { b: MyBatchEnt
 
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 18, color: C.burg }}>{b.batchId}</span>
+          <button
+            onClick={() => setShowSarees(true)}
+            style={{ fontFamily: F.m, fontWeight: 700, fontSize: 18, color: C.burg, background: "none", border: "none", padding: 0, cursor: "pointer", textDecoration: "underline", textDecorationColor: "transparent" }}
+            onMouseEnter={(e) => { e.currentTarget.style.textDecorationColor = C.burg; }}
+            onMouseLeave={(e) => { e.currentTarget.style.textDecorationColor = "transparent"; }}
+          >
+            {b.batchId}
+          </button>
           <span style={{ fontFamily: F.u, fontSize: 12, color: "#1D4ED8", background: "rgba(29,78,216,0.10)", borderRadius: 999, padding: "4px 12px", fontWeight: 600 }}>
             ✓ Completed
           </span>
         </div>
+        <WeaverBatchSareesModal batch={b} open={showSarees} onOpenChange={setShowSarees} />
 
         {/* Saree count + QC pass rate */}
         <div style={{ display: "flex", flexDirection: isTablet ? "column" as const : "row" as const, gap: 14, alignItems: isTablet ? "stretch" : "center" }}>

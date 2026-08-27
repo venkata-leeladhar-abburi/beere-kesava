@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { PackageCheck, Package, ShieldAlert } from "lucide-react";
 import { C } from "./tokens";
-import { useMaterialIssue } from "@/features/materials";
 import { useBatches } from "@/features/production";
 import { PageHero, StatsStrip, type WorkerStat } from "./primitives";
 import { DesignPlanningPage } from "./weavers/DesignPlanningPage";
@@ -22,7 +21,6 @@ interface WorkerWeaversProps {
 export function WorkerWeavers({ subPage, onSubPageChange }: WorkerWeaversProps) {
   const [localPage, setLocalPage] = useState<WeaversPage>("receive");
   const [liveRecords, setLiveRecords] = useState<ReceivedSareeLog[]>([]);
-  const { addReceivedSaree } = useMaterialIssue();
   const { batches } = useBatches();
   const page = subPage ?? localPage;
   const setPage = onSubPageChange ?? setLocalPage;
@@ -45,20 +43,11 @@ export function WorkerWeavers({ subPage, onSubPageChange }: WorkerWeaversProps) 
 
   const handleSareeReceived = (rec: ReceivedSareeLog) => {
     setLiveRecords(prev => [rec, ...prev]);
-    // Feed into the material ledger so outstanding material at the weaver updates.
-    // eslint-disable-next-line no-restricted-syntax -- saree weight in grams, not money
-    const weightGrams = parseFloat(rec.weight.replace(/[^\d.]/g, "")) || 0;
-    if (rec.wcode && weightGrams > 0) {
-      addReceivedSaree({
-        id: rec.id,
-        weaverId: rec.wcode,
-        batchId: rec.batch,
-        weightGrams,
-        receivedAt: new Date().toISOString(),
-        color: rec.color,
-        status: rec.status === "Defective" ? "defective" : "received",
-      });
-    }
+    // The material ledger itself now updates from the real backend: receiving
+    // a saree (BatchesService.receiveRow) auto-creates a MaterialReturnRecord
+    // that draws the weight down from the weaver's outstanding balance, and
+    // BatchContext's receiveRow mutation invalidates the receivedSarees query
+    // on success. Feeding this local mock in on top would double-count it.
   };
 
   if (page === "design") return <DesignPlanningPage onBack={() => setPage("receive")} />;

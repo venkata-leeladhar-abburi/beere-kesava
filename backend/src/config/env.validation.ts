@@ -35,24 +35,24 @@ class EnvironmentVariables {
   @IsString()
   WHATSAPP_DEFAULT_COUNTRY_CODE?: string;
 
-  // Cloudflare R2 object storage. All optional: when the four required ones
-  // (account id, key pair, bucket) are absent, StorageService falls back to
-  // local-disk uploads so dev and tests need no cloud credentials.
-  @IsOptional()
+  // Cloudflare R2 object storage — required. Invoices, saree photos and
+  // signatures must always be stored in the cloud; StorageService refuses to
+  // start without these, so the app must never fall back to local disk.
   @IsString()
-  R2_ACCOUNT_ID?: string;
+  @IsNotEmpty()
+  R2_ACCOUNT_ID!: string;
 
-  @IsOptional()
   @IsString()
-  R2_ACCESS_KEY_ID?: string;
+  @IsNotEmpty()
+  R2_ACCESS_KEY_ID!: string;
 
-  @IsOptional()
   @IsString()
-  R2_SECRET_ACCESS_KEY?: string;
+  @IsNotEmpty()
+  R2_SECRET_ACCESS_KEY!: string;
 
-  @IsOptional()
   @IsString()
-  R2_BUCKET?: string;
+  @IsNotEmpty()
+  R2_BUCKET!: string;
 
   /** Overrides the default https://<account-id>.r2.cloudflarestorage.com endpoint. */
   @IsOptional()

@@ -400,4 +400,83 @@ export class MaterialReturnsService {
       include: includeItems,
     });
   }
+
+  // Same auto-close-out as createAutoReturnForReceipt above, but driven by
+  // the saree's plain received weight instead of a per-material (warp/
+  // resham/jari) split. Worker Staff's receive screen frequently enters only
+  // the weight and skips the split panel, which meant the weight-only path
+  // never drew down the weaver's outstanding balance at all — "Submitted"
+  // stayed at 0 and "Outstanding" never moved from the full issued amount.
+  // This pools the weight across whichever material types the weaver has
+  // outstanding (largest first) rather than requiring the caller to say
+  // which type the weight belongs to.
+  async createAutoReturnForReceiptByWeight(params: {
+    weaverId: string;
+    batchId: string;
+    receivedById: string;
+    grams: number;
+  }) {
+    if (params.grams <= 0) {
+      return null;
+    }
+
+    const groups = (await this.getOutstanding({ weaverId: params.weaverId }))
+      .sort((a, b) => b.outstandingGrams - a.outstandingGrams);
+    const totalOutstanding = groups.reduce((sum, g) => sum + g.outstandingGrams, 0);
+
+    if (totalOutstanding < params.grams) {
+      throw new BadRequestException(
+        `This weaver doesn't have that much material outstanding ` +
+          `(has ${totalOutstanding}g outstanding, saree weighs ${params.grams}g) — ` +
+          `check the entered weight or request more material from admin.`,
+      );
+    }
+
+    const itemsToCreate: Prisma.MaterialReturnItemCreateWithoutReturnInput[] = [];
+    let remaining = params.grams;
+    for (const group of groups) {
+      if (remaining <= 0) {
+        break;
+      }
+      const draw = Math.min(group.outstandingGrams, remaining);
+      if (draw <= 0) {
+        continue;
+      }
+      itemsToCreate.push({
+        materialType: group.materialType as MaterialType,
+        warpSubtype: group.warpSubtype as WarpSubtype | null,
+        quantity: draw,
+        unit: "G",
+        jariType: group.jariType,
+        jariGrade: group.jariGrade as JariGrade | null,
+        jariColor: group.jariColor,
+      });
+      remaining -= draw;
+    }
+
+    if (itemsToCreate.length === 0) {
+      return null;
+    }
+
+    const weaver = await this.prisma.weaver.findUnique({ where: { id: params.weaverId } });
+    if (!weaver) {
+      throw new NotFoundException(`Weaver ${params.weaverId} not found`);
+    }
+    const parentCode = weaver.code ?? nameSegment(weaver.firstName, "Weaver");
+    const id = await this.idGenerator.nextScoped(MRR_ID_PREFIX_BASE, parentCode);
+
+    return this.prisma.materialReturnRecord.create({
+      data: {
+        id,
+        weaverId: params.weaverId,
+        batchId: params.batchId,
+        receivedById: params.receivedById,
+        status: MaterialReturnStatus.APPROVED,
+        signatureCaptured: false,
+        notes: "Auto-recorded: saree received weight drawn down from outstanding material",
+        items: { create: itemsToCreate },
+      },
+      include: includeItems,
+    });
+  }
 }

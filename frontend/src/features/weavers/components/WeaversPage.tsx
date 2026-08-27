@@ -165,8 +165,12 @@ export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: u
 
       <AnimatePresence>
         {batchDialog && (() => {
+          // Backend never transitions a batch's own status to "completed"
+          // (only draft→active exists), so gating on b.status alone always
+          // returned zero rows here. A batch counts as done once every row
+          // has passed QC — same fallback DraftsTab.tsx already uses.
           const weaverCompletedBatches = batches.filter(b =>
-            b.status === "completed" &&
+            (b.status === "completed" || (b.totalCount > 0 && b.rows.every(r => r.qcPassed === true))) &&
             b.rows.some(r => r.weaverId === batchDialog.id)
           );
 

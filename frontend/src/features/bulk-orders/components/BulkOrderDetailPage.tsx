@@ -11,7 +11,6 @@ import { useFinishing, DispatchRecord, Quotation } from "@/features/finishing";
 import { useBatches } from "@/features/production";
 import { SareeWeightTallyList, type TallyRowItem, type TallyCorrection } from "@/features/production";
 import { useRatesPricing } from "@/features/pricing";
-import { useAuth } from "../../../contexts/AuthContext";
 import { autoMaterialSplit } from "@/features/portals";
 import { trimNum } from "@/features/pricing";
 import { INVOICES } from "@/features/payments";
@@ -62,7 +61,6 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
   const live = bulkOrders.find(o => o.ref === order.ref) ?? order;
   const { readySarees, returns, dispatches, quotations } = useFinishing();
   const { batches, tallyRow } = useBatches();
-  const { user } = useAuth();
   const [tallyBusyKey, setTallyBusyKey] = useState<string | null>(null);
 
   const [tab, setTab] = useState<"overview" | "sarees" | "payments" | "quotations">(initialTab);
@@ -203,7 +201,7 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
           actualReshamG: row?.receivedReshamG ? Number(row.receivedReshamG) : null,
           actualJariReels: row?.receivedJariReels ? Number(row.receivedJariReels) : null,
           tallied: row?.tallied ?? false,
-          talliedBy: row?.talliedBy ?? null,
+          talliedBy: row?.talliedByName ?? null,
           talliedAt: row?.talliedAt ?? null,
         };
       }),
@@ -214,7 +212,7 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
     const key = `${item.batchId}-${item.serial}`;
     setTallyBusyKey(key);
     try {
-      await tallyRow(item.batchId, item.serial, tallied, user?.name);
+      await tallyRow(item.batchId, item.serial, tallied);
     } finally {
       setTallyBusyKey(null);
     }
@@ -226,7 +224,7 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
     const key = `${item.batchId}-${item.serial}`;
     setTallyBusyKey(key);
     try {
-      await tallyRow(item.batchId, item.serial, true, user?.name, correction);
+      await tallyRow(item.batchId, item.serial, true, correction);
     } finally {
       setTallyBusyKey(null);
     }

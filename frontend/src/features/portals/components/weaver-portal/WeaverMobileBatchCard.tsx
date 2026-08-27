@@ -5,6 +5,7 @@ import { SareeRow } from "@/features/production";
 import { Card, ProgressBar, StatusBadge, SareeTypeDetailCard } from "./theme";
 import { Button } from "../../../../shared/ui/primitives";
 import { DispatchInstructionsBlock } from "./desktop/batchCardHelpers";
+import { WeaverBatchSareesModal } from "./WeaverBatchSareesModal";
 
 // Shared tokens
 const C = {
@@ -22,6 +23,7 @@ export type MyBatchEntry = { batchId: string; status: string; dueDate: string; r
 
 export function MobileBatchCard({ b, idx }: { b: MyBatchEntry; idx: number }) {
   const [expandedType, setExpandedType] = useState<string | null>(null);
+  const [showSarees, setShowSarees] = useState(false);
 
   const isActive = b.status === "active";
   const borderColor = idx % 2 === 0 ? C.burg : C.gold;
@@ -44,13 +46,19 @@ export function MobileBatchCard({ b, idx }: { b: MyBatchEntry; idx: number }) {
 
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-          <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 16, color: C.burg }}>{b.batchId}</span>
+          <button
+            onClick={() => setShowSarees(true)}
+            style={{ fontFamily: F.m, fontWeight: 700, fontSize: 16, color: C.burg, background: "none", border: "none", padding: 0, cursor: "pointer" }}
+          >
+            {b.batchId}
+          </button>
           <StatusBadge
             label={isActive ? "🟢 Open — Weaving" : "🟡 Draft"}
             color={isActive ? C.green : C.gold}
             bg={isActive ? "rgba(30,102,64,0.10)" : "rgba(200,155,71,0.15)"}
           />
         </div>
+        <WeaverBatchSareesModal batch={b} open={showSarees} onOpenChange={setShowSarees} />
 
         {/* Saree count */}
         <div style={{ background: C.cream, borderRadius: 12, padding: "12px 16px", marginBottom: 12, textAlign: "center" as const }}>
@@ -164,18 +172,23 @@ export function MobileBatchCard({ b, idx }: { b: MyBatchEntry; idx: number }) {
 
 // Completed batch card — shown only once ALL of the weaver's sarees in the batch have passed QC
 export function CompletedBatchCard({ b }: { b: MyBatchEntry }) {
+  const [showSarees, setShowSarees] = useState(false);
   const produced = b.myRows.filter(r => r.qcPassed === true || r.finished === true).length;
   return (
     <div style={{ margin: "0 16px 12px", background: C.white, borderRadius: 18, border: `1px solid ${C.bdr}`, overflow: "hidden", boxShadow: "0 2px 16px rgba(44,24,16,0.07)" }}>
       {/* Color band + batch id */}
       <div style={{ height: 56, background: "linear-gradient(135deg, #1E6640 0%, #2D9640 100%)", display: "flex", alignItems: "center", padding: "0 16px", gap: 10, position: "relative" as const }}>
         <div style={{ position: "absolute" as const, inset: 0, background: "linear-gradient(to right, rgba(26,5,12,0.45) 0%, transparent 70%)" }} />
-        <div style={{ position: "relative" as const, display: "flex", alignItems: "center", gap: 10, flex: 1 }}>
+        <button
+          onClick={() => setShowSarees(true)}
+          style={{ position: "relative" as const, display: "flex", alignItems: "center", gap: 10, flex: 1, background: "none", border: "none", padding: 0, cursor: "pointer" }}
+        >
           <Flower2 size={18} color="rgba(255,255,255,0.70)" />
           <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 14, color: "#FFF" }}>{b.batchId}</span>
-        </div>
+        </button>
         <span style={{ position: "relative" as const, fontFamily: F.u, fontSize: 12, color: "#1D4ED8", background: "rgba(255,255,255,0.92)", borderRadius: 999, padding: "3px 10px", fontWeight: 600 }}>✓ Completed</span>
       </div>
+      <WeaverBatchSareesModal batch={b} open={showSarees} onOpenChange={setShowSarees} />
 
       <div style={{ padding: "14px 16px" }}>
         {/* Stats grid */}

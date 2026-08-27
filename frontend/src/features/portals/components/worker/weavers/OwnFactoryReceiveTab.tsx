@@ -21,6 +21,7 @@ import { SareeSelectionTable } from "./SareeSelectionTable";
 import { Button, Input, NumberInput, Select, SelectItem, Combobox } from "../../../../../shared/ui/primitives";
 import { resolveAssetUrl } from "@/shared/api/uploads";
 import { useImageUpload } from "@/shared/hooks/useImageUpload";
+import { useAuth } from "../../../../../contexts/AuthContext";
 
 interface RejectedSaree {
   id: string;
@@ -38,6 +39,7 @@ interface RejectedSaree {
 // never picked by hand here.
 export function OwnFactoryReceiveTab({ onSareeReceived }: { onSareeReceived?: (rec: ReceivedSareeLog) => void }) {
   const { getSareeTypeByCode } = useRatesPricing();
+  const { user } = useAuth();
   const { data: loomsRes } = useQuery({
     queryKey: ["worker-receive-factory-looms"],
     queryFn: () => factoryLoomsApi.list(),
@@ -194,6 +196,7 @@ export function OwnFactoryReceiveTab({ onSareeReceived }: { onSareeReceived?: (r
           warpG: Number.isFinite(warpG) ? warpG : undefined,
           reshamG: Number.isFinite(reshamG) ? reshamG : undefined,
           jariReels: Number.isFinite(jariReels) ? jariReels : undefined,
+          actorId: user?.id,
         });
         onSareeReceived?.({
           id: s.sareeId, weaver: loomLabel, wcode: "", batch: currentBatch.id,

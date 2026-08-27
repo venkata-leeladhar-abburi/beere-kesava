@@ -25,7 +25,11 @@ const HISTORY_STATUS_TO_PRODUCTION: Record<ReceivedSareeLog["status"], StatusVal
   "Defective": "qc-failed",
 };
 
-type HistoryRow = ReceivedSareeLog & { isoDate?: string };
+// `id` stays the saree ID (used for display and tag printing), but a saree
+// can pass through QC more than once via rework (SEMI/DEFECTIVE -> reworked
+// -> re-inspected), producing multiple qcHistory rows with the same `id`.
+// `key` disambiguates those for React/DataTable row identity and selection.
+type HistoryRow = ReceivedSareeLog & { isoDate?: string; key: string };
 
 // Module-level so the default is referentially stable. An inline `= []`
 // default allocates a new array on every render, which would defeat the
@@ -66,6 +70,7 @@ export function HistorySection({ liveRecords = NO_LIVE_RECORDS }: { liveRecords?
       const row = rowLookup.get(r.sareeId);
       return {
         id: r.sareeId,
+        key: `${r.sareeId}-${r.qcDate}`,
         weaver: r.weaverName ?? r.factoryLoomNumber ?? "Factory Loom",
         wcode: r.weaverId ?? "",
         batch: r.batchId ?? "—",
@@ -78,12 +83,13 @@ export function HistorySection({ liveRecords = NO_LIVE_RECORDS }: { liveRecords?
         bulkOrder: r.bulkOrderLabel ?? undefined,
         loomNumber: row?.weaverLoom ?? undefined,
         photoUrl: row?.receivedPhotoUrl ?? undefined,
+        receivedBy: row?.receivedByName ?? undefined,
       };
     }),
   [qcRecords, rowLookup]);
 
   const allData: HistoryRow[] = useMemo(() => [
-    ...liveRecords.map(r => ({ ...r, sareeType: "—" })),
+    ...liveRecords.map(r => ({ ...r, sareeType: "—", key: `live-${r.id}` })),
     ...qcHistory,
   ], [liveRecords, qcHistory]);
 
@@ -116,11 +122,11 @@ export function HistorySection({ liveRecords = NO_LIVE_RECORDS }: { liveRecords?
   const allChecked = filtered.length > 0 && selected.size === filtered.length;
   const toggleAll = () => {
     if (allChecked) setSelected(new Set());
-    else setSelected(new Set(filtered.map(h => h.id)));
+    else setSelected(new Set(filtered.map(h => h.key)));
   };
 
   if (showTagPrint) {
-    const selectedRows = filtered.filter(h => selected.has(h.id));
+    const selectedRows = filtered.filter(h => selected.has(h.key));
     const uniqueSelWeavers = Array.from(new Set(selectedRows.map(h => h.weaver)));
     return (
       <TagPreviewScreen
@@ -174,6 +180,10 @@ export function HistorySection({ liveRecords = NO_LIVE_RECORDS }: { liveRecords?
     {
       id: "bulkOrder", header: "Bulk Order", accessor: h => h.bulkOrder ?? "—", priority: 3,
       cell: (_v, h) => <span style={{ fontFamily: F.u, fontSize: 12, color: h.bulkOrder ? C.burg : C.muted }}>{h.bulkOrder || "—"}</span>,
+    },
+    {
+      id: "receivedBy", header: "Received By", accessor: h => h.receivedBy ?? "—", priority: 3,
+      cell: (_v, h) => <span style={{ fontFamily: F.u, fontSize: 12, color: h.receivedBy ? C.text : C.muted }}>{h.receivedBy || "—"}</span>,
     },
     {
       id: "color", header: "Color", accessor: h => h.color, priority: 2,
@@ -282,8 +292,8 @@ export function HistorySection({ liveRecords = NO_LIVE_RECORDS }: { liveRecords?
                   <DataTable
                     columns={columns}
                     data={items}
-                    getRowId={h => h.id}
-                    onRowClick={h => toggleRow(h.id)}
+                    getRowId={h => h.key}
+                    onRowClick={h => toggleRow(h.key)}
                     selectedIds={selected}
                     onSelectionChange={setSelected}
                     responsive
@@ -308,8 +318,8 @@ export function HistorySection({ liveRecords = NO_LIVE_RECORDS }: { liveRecords?
                   <DataTable
                     columns={columns}
                     data={items}
-                    getRowId={h => h.id}
-                    onRowClick={h => toggleRow(h.id)}
+                    getRowId={h => h.key}
+                    onRowClick={h => toggleRow(h.key)}
                     selectedIds={selected}
                     onSelectionChange={setSelected}
                     responsive

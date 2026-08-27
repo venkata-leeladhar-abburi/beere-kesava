@@ -119,4 +119,7 @@ export interface PayHistRecord {
   party: string; refNo: string; description: string;
   invoicePO?: string; amount: number; status: PayHistStatus;
   mode: string; utr?: string; recordedBy: string;
+  // Weaver-payment-only fields, captured on upload (CreateWeaverPaymentDto)
+  // but previously dropped once folded into this shared history shape.
+  batchNo?: string; loomNumber?: string; noOfSarees?: number; deduction?: number;
 }

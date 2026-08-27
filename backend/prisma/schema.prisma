@@ -330,6 +330,7 @@ model User {
   linkedWeaver   Weaver? @relation(fields: [linkedWeaverId], references: [id])
 
   permissionOverrides      UserPermissionOverride[]
+  sentWhatsAppMessages     WhatsAppMessage[]
   auditLogs                AuditLog[]
   actionLogs               ActionLog[]
   notifications            Notification[]
@@ -349,7 +350,13 @@ model User {
   receivedGrnReceipts      GrnReceipt[]
   requestedSupplierReturns SupplierReturnRequest[]  @relation("RequestedSupplierReturns")
   decidedSupplierReturns   SupplierReturnRequest[]  @relation("DecidedSupplierReturns")
-  sentWhatsAppMessages     WhatsAppMessage[]
+  receivedBatchSareeRows   BatchSareeRow[]          @relation("SareeReceivedBy")
+  talliedBatchSareeRows    BatchSareeRow[]          @relation("SareeTalliedBy")
+  soldSales                SaleRecord[]             @relation("SaleSoldBy")
+  recordedSupplierPayments SupplierPayment[]        @relation("SupplierPaymentRecordedBy")
+  recordedWeaverPayments   WeaverPayment[]          @relation("WeaverPaymentRecordedBy")
+  recordedVendorPayments   VendorPayment[]          @relation("VendorPaymentRecordedBy")
+  recordedInvoicePayments  InvoicePayment[]         @relation("InvoicePaymentRecordedBy")
 
   @@index([role])
 }
@@ -580,10 +587,15 @@ model BatchSareeRow {
 
   // Set when Worker Staff physically receives the finished saree from the
   // weaver/loom — a row must be received before it enters the QC queue.
-  receivedAt           DateTime?
-  receivedWeight       Decimal?  @db.Decimal(8, 2)
-  receivedColor        String?
-  receivedPhotoUrl     String?
+  // receivedById records WHICH Worker Staff user performed the receipt
+  // (multiple users can hold the WORKER role, so the role alone isn't
+  // enough to attribute the action to a person).
+  receivedAt     DateTime?
+  receivedById   String?
+  receivedByUser User?     @relation("SareeReceivedBy", fields: [receivedById], references: [id])
+  receivedWeight Decimal?  @db.Decimal(8, 2)
+  receivedColor  String?
+  receivedPhotoUrl String?
   // Actual material split entered at receipt (grams for warp/resham, reels
   // for jari) — defaults to the rate card's standard split scaled to the
   // entered weight, but Worker Staff can override it. Persisted separately
@@ -602,9 +614,10 @@ model BatchSareeRow {
   // BulkOrder.tallied (which only confirms the order's overall saree count).
   // This is the per-saree weight/material check — admin compares what
   // Worker Staff entered at receipt against the SareeTypeRate standard.
-  tallied   Boolean   @default(false)
-  talliedBy String?
-  talliedAt DateTime?
+  tallied      Boolean   @default(false)
+  talliedById  String?
+  talliedByUser User?    @relation("SareeTalliedBy", fields: [talliedById], references: [id])
+  talliedAt    DateTime?
 
   // History: a saree can be re-inspected after a SEMI verdict sends it back
   // to the weaver for rework, so this is one-to-many, newest last by qcDate.
@@ -1002,6 +1015,10 @@ model SaleRecord {
   customerId String
   customer   Customer     @relation(fields: [customerId], references: [id])
   amount     Decimal      @db.Decimal(12, 2)
+  // Shop Staff / Accountant user who recorded this sale — multiple users can
+  // hold either role, so the role alone doesn't say who actually sold it.
+  soldById   String?
+  soldBy     User?        @relation("SaleSoldBy", fields: [soldById], references: [id])
 
   @@index([sareeId])
 }
@@ -1060,15 +1077,19 @@ model Supplier {
 }
 
 model SupplierPayment {
-  id         String   @id @default(uuid())
-  supplierId String
-  supplier   Supplier @relation(fields: [supplierId], references: [id])
-  amount     Decimal  @db.Decimal(12, 2)
-  date       DateTime @default(now())
-  utr        String?
-  method     String?
-  firmId     String?
-  firm       Firm?    @relation(fields: [firmId], references: [id])
+  id          String   @id @default(uuid())
+  supplierId  String
+  supplier    Supplier @relation(fields: [supplierId], references: [id])
+  amount      Decimal  @db.Decimal(12, 2)
+  date        DateTime @default(now())
+  utr         String?
+  method      String?
+  firmId      String?
+  firm        Firm?    @relation(fields: [firmId], references: [id])
+  // Accountant user who recorded this payment — multiple users can hold the
+  // ACCOUNTANT role, so the role alone doesn't say who actually recorded it.
+  recordedById String?
+  recordedBy   User?   @relation("SupplierPaymentRecordedBy", fields: [recordedById], references: [id])
 
   @@index([supplierId])
 }
@@ -1364,6 +1385,10 @@ model WeaverPayment {
   loomNumber  String?
   noOfSarees  Int?
   deduction   Decimal? @db.Decimal(12, 2)
+  // Accountant user who recorded this payment — multiple users can hold the
+  // ACCOUNTANT role, so the role alone doesn't say who actually recorded it.
+  recordedById String?
+  recordedBy   User?   @relation("WeaverPaymentRecordedBy", fields: [recordedById], references: [id])
 
   @@index([weaverId])
 }
@@ -1383,6 +1408,10 @@ model VendorPayment {
   // to any bill — existing behavior is unaffected.
   billId   String?
   bill     VendorBill? @relation(fields: [billId], references: [id])
+  // Accountant user who recorded this payment — multiple users can hold the
+  // ACCOUNTANT role, so the role alone doesn't say who actually recorded it.
+  recordedById String?
+  recordedBy   User?   @relation("VendorPaymentRecordedBy", fields: [recordedById], references: [id])
 
   @@index([vendorId])
   @@index([billId])
@@ -1420,6 +1449,10 @@ model InvoicePayment {
   method    String?
   firmId    String?
   firm      Firm?    @relation(fields: [firmId], references: [id])
+  // Accountant/Shop Staff who recorded this collection — multiple users can
+  // hold either role, so the role alone doesn't say who actually recorded it.
+  recordedById String?
+  recordedBy   User?   @relation("InvoicePaymentRecordedBy", fields: [recordedById], references: [id])
 
   @@index([invoiceId])
 }

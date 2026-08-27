@@ -234,7 +234,7 @@ describe("AuthService", () => {
       expect(prisma.user.create).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
-            mobile: "9999999999",
+            mobile: "9392757489",
             role: UserRole.SUPERADMIN,
             accessLevel: AccessLevel.FULL_ACCESS,
           }),

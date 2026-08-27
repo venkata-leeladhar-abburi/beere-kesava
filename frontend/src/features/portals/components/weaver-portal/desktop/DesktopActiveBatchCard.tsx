@@ -4,9 +4,11 @@ import { Layers, Package, RotateCcw } from "lucide-react";
 import { C, F, SareeTypeDetailCard, ProgressBar, MyBatchEntry } from "../theme";
 import { DispatchInstructionsBlock, MaterialsGivenBlock } from "./batchCardHelpers";
 import { Button } from "../../../../../shared/ui/primitives";
+import { WeaverBatchSareesModal } from "../WeaverBatchSareesModal";
 
 export function DesktopActiveBatchCard({ b, idx, bp = "desktop" }: { b: MyBatchEntry; idx: number; bp?: "tablet" | "desktop" }) {
   const [expandedType,   setExpandedType]   = useState<string | null>(null);
+  const [showSarees, setShowSarees] = useState(false);
   const isTablet = bp === "tablet";
 
   const borderColor    = idx % 2 === 0 ? C.burg : C.gold;
@@ -26,11 +28,19 @@ export function DesktopActiveBatchCard({ b, idx, bp = "desktop" }: { b: MyBatchE
 
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ fontFamily: F.m, fontWeight: 700, fontSize: 18, color: C.burg }}>{b.batchId}</span>
+          <button
+            onClick={() => setShowSarees(true)}
+            style={{ fontFamily: F.m, fontWeight: 700, fontSize: 18, color: C.burg, background: "none", border: "none", padding: 0, cursor: "pointer", textDecoration: "underline", textDecorationColor: "transparent" }}
+            onMouseEnter={(e) => { e.currentTarget.style.textDecorationColor = C.burg; }}
+            onMouseLeave={(e) => { e.currentTarget.style.textDecorationColor = "transparent"; }}
+          >
+            {b.batchId}
+          </button>
           <span style={{ fontFamily: F.u, fontSize: 12, color: b.status === "active" ? C.green : C.gold, background: b.status === "active" ? "rgba(30,102,64,0.10)" : "rgba(200,155,71,0.15)", borderRadius: 999, padding: "4px 12px", fontWeight: 600 }}>
             {b.status === "active" ? "🟢 Weaving in Progress" : "🟡 Draft"}
           </span>
         </div>
+        <WeaverBatchSareesModal batch={b} open={showSarees} onOpenChange={setShowSarees} />
 
         {/* Saree count + Produced/QC progress: side by side on desktop, stacked on tablet */}
         <div style={{ display: "flex", flexDirection: isTablet ? "column" as const : "row" as const, gap: 14, alignItems: isTablet ? "stretch" : "center" }}>

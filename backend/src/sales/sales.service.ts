@@ -21,6 +21,7 @@ import { RegisterReturnedSareeDto } from "./dto/register-returned-saree.dto";
 const saleInclude = {
   saree: true,
   customer: true,
+  soldBy: { select: { id: true, firstName: true, lastName: true, role: true } },
 } satisfies Prisma.SaleRecordInclude;
 
 const returnInclude = {
@@ -129,6 +130,7 @@ export class SalesService {
           channel: dto.channel,
           customerId: dto.customerId,
           amount: dto.amount,
+          soldById: dto.actorId,
         },
       }),
       // Pulls the saree out of the shop-stock browse list

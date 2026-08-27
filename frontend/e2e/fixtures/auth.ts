@@ -3,7 +3,7 @@ import { expect, test as base, type Page } from "@playwright/test";
 /**
  * Logs a real user through the real /auth/request-otp -> /auth/verify-otp
  * flow, the same path a human takes. Two accounts are guaranteed to exist in
- * any environment without seeding: SUPERADMIN (9999999999) and ADMIN
+ * any environment without seeding: SUPERADMIN (9392757489) and ADMIN
  * (8888888888) are upserted idempotently by AuthService.ensureDefaultUsers()
  * on first login (see backend/src/auth/auth.service.ts). Every other role
  * needs a real seeded user or weaver with a matching phone number - see each
@@ -16,7 +16,7 @@ import { expect, test as base, type Page } from "@playwright/test";
  * that will never arrive.
  */
 export const SEEDED_USERS = {
-  superadmin: { phone: "9999999999", dashboardPath: "/superadmin" },
+  superadmin: { phone: "9392757489", dashboardPath: "/superadmin" },
   admin: { phone: "8888888888", dashboardPath: "/admin" },
 } as const;
 

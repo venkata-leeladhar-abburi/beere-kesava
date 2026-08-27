@@ -1,10 +1,6 @@
-import { join } from "path";
 import { BadRequestException } from "@nestjs/common";
 import type { Request } from "express";
 import { memoryStorage } from "multer";
-
-/** Where the local-disk storage driver keeps files (see StorageService). */
-export const UPLOADS_ROOT = join(process.cwd(), "uploads");
 
 const ALLOWED_SIGNATURE_MIME_TYPES = new Set(["image/png", "image/jpeg"]);
 const MAX_SIGNATURE_SIZE_BYTES = 2 * 1024 * 1024;

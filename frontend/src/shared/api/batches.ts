@@ -4,6 +4,14 @@ import { BackendQcResult } from "./qc";
 export type BackendBatchStatus = "DRAFT" | "ACTIVE" | "COMPLETED";
 export type BackendRecipientType = "WEAVER" | "FACTORY_LOOM";
 
+/** Minimal identity of the staff member (any role) who performed an action, for attribution display. */
+export interface BackendActorSummary {
+  id: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+}
+
 export interface BackendBatchSareeRow {
   id: string;
   batchId: string;
@@ -17,6 +25,8 @@ export interface BackendBatchSareeRow {
   bulkOrderRef: string | null;
   qcPassed: boolean | null;
   receivedAt: string | null;
+  /** Worker Staff who physically received this saree — undefined on endpoints that don't select it. */
+  receivedByUser?: BackendActorSummary | null;
   receivedWeight: string | null;
   receivedColor: string | null;
   receivedPhotoUrl: string | null;
@@ -28,7 +38,8 @@ export interface BackendBatchSareeRow {
   // Admin's per-saree weight/material verification against the received
   // entry above — distinct from BulkOrder.tallied (order-level count check).
   tallied: boolean;
-  talliedBy: string | null;
+  /** Admin/staff who tallied this row — undefined on endpoints that don't select it. */
+  talliedByUser?: BackendActorSummary | null;
   talliedAt: string | null;
   finishingAssignment: { status: string; updatedAt: string } | null;
   // Latest QC verdict only (newest-first, capped at one server-side). A saree
@@ -84,11 +95,31 @@ export interface ReceiveBatchRowPayload {
   jariReels?: number;
   /** Retail selling price for this specific saree, overriding the type's shared rate. */
   sellingPrice?: number;
+  /** Required whenever warpG/reshamG/jariReels are set — see BatchesService.receiveRow. */
+  actorId?: string;
 }
 
+const BATCHES_MAX_PAGE_SIZE = 500;
+
 export const batchesApi = {
-  list: (pageSize = 100) =>
-    apiClient.get<PaginatedResponse<BackendBatch>>(`/batches?pageSize=${pageSize}`),
+  // Every caller (BatchContext etc.) treats this as "the full batch list" and
+  // does its own filtering/derivation client-side over the whole set — a
+  // single capped page silently dropped batches past the cap (e.g. older
+  // completed batches), which looked like "completed batches aren't
+  // showing." Walk every backend page and merge them so callers always see
+  // every batch, not just the first pageSize.
+  list: async (pageSize = BATCHES_MAX_PAGE_SIZE): Promise<PaginatedResponse<BackendBatch>> => {
+    const first = await apiClient.get<PaginatedResponse<BackendBatch>>(`/batches?page=1&pageSize=${pageSize}`);
+    const items = [...first.items];
+    let page = 1;
+    while (items.length < first.total) {
+      page += 1;
+      const next = await apiClient.get<PaginatedResponse<BackendBatch>>(`/batches?page=${page}&pageSize=${pageSize}`);
+      if (next.items.length === 0) break;
+      items.push(...next.items);
+    }
+    return { items, total: first.total, page: 1, pageSize: items.length };
+  },
 
   create: (payload: CreateBatchPayload) => apiClient.post<BackendBatch>("/batches", payload),
 
@@ -106,7 +137,7 @@ export const batchesApi = {
   tallyRow: (
     batchId: string,
     serial: number,
-    payload: { tallied: boolean; talliedBy?: string; weight?: number; warpG?: number; reshamG?: number; jariReels?: number },
+    payload: { tallied: boolean; weight?: number; warpG?: number; reshamG?: number; jariReels?: number },
   ) =>
     apiClient.patch<BackendBatchSareeRow>(`/batches/${batchId}/rows/${serial}/tally`, payload),
 

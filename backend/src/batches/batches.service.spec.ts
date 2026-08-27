@@ -88,7 +88,10 @@ describe("BatchesService", () => {
     };
     idGenerator = { nextFormatted: jest.fn().mockResolvedValue("BATCH-0007") };
     auditLog = { recordAction: jest.fn() };
-    materialReturns = { createAutoReturnForReceipt: jest.fn().mockResolvedValue(null) };
+    materialReturns = {
+      createAutoReturnForReceipt: jest.fn().mockResolvedValue(null),
+      createAutoReturnForReceiptByWeight: jest.fn().mockResolvedValue(null),
+    };
     service = new BatchesService(prisma, idGenerator, auditLog, materialReturns);
   });
 
@@ -288,7 +291,7 @@ describe("BatchesService", () => {
         row({ receivedAt: null, qcPassed: false, qcRecords: [{ result: QcResult.SEMI }] }),
       );
 
-      await service.receiveRow("BATCH-0007", 1, { weight: 820 });
+      await service.receiveRow("BATCH-0007", 1, { weight: 820, actorId: "u-1" });
 
       // qcPassed back to null is what puts the reworked saree in the QC queue again.
       expect(prisma.batchSareeRow.update.mock.calls[0][0].data).toEqual(
@@ -384,10 +387,10 @@ describe("BatchesService", () => {
     it("clears the tally attribution when a row is un-tallied", async () => {
       prisma.batchSareeRow.findUnique.mockResolvedValue(row({ receivedAt: new Date() }));
 
-      await service.tallyRow("BATCH-0007", 1, { tallied: false, talliedBy: "admin" });
+      await service.tallyRow("BATCH-0007", 1, { tallied: false, actorId: "u-1" });
 
       const data = prisma.batchSareeRow.update.mock.calls[0][0].data;
-      expect(data).toEqual(expect.objectContaining({ tallied: false, talliedBy: null, talliedAt: null }));
+      expect(data).toEqual(expect.objectContaining({ tallied: false, talliedById: null, talliedAt: null }));
     });
 
     it("notes a weight correction in the audit trail", async () => {

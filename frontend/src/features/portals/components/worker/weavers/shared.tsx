@@ -21,6 +21,8 @@ export interface ReceivedSareeLog {
   loomNumber?: number | string | null;
   sareeType?: string | null;
   bulkOrder?: string | null;
+  /** Full name of the Worker Staff who physically received this saree, when known. */
+  receivedBy?: string | null;
 }
 
 export function FieldLabel({ children }: { children: React.ReactNode }) {

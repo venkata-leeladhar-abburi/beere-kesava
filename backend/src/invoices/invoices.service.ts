@@ -10,7 +10,10 @@ import { ListInvoicesQueryDto } from "./dto/list-invoices-query.dto";
 
 const include = {
   customer: true,
-  payments: { orderBy: { date: "desc" } },
+  payments: {
+    orderBy: { date: "desc" },
+    include: { recordedBy: { select: { id: true, firstName: true, lastName: true, role: true } } },
+  },
 } satisfies Prisma.InvoiceInclude;
 
 @Injectable()
@@ -119,6 +122,7 @@ export class InvoicesService {
           utr: dto.utr,
           method: dto.method,
           firmId: dto.firmId,
+          recordedById: dto.actorId,
         },
       }),
       this.prisma.invoice.update({

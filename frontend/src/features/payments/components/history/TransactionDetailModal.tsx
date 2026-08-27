@@ -30,6 +30,11 @@ export function TransactionDetailModal({ record, onClose }: { record: PayHistRec
     ["Recorded By", record.recordedBy],
     ["Date", record.date],
     ...(record.utr ? [["UTR / Reference ID", <span key="utr" style={{ fontFamily: F.ui, color: T.green, fontWeight: 700 }}>{record.utr}</span>] as [string, React.ReactNode]] : []),
+    // Weaver-payment-only fields, present only for type === "Weaver Payment".
+    ...(record.batchNo ? [["Batch No.", record.batchNo] as [string, React.ReactNode]] : []),
+    ...(record.loomNumber ? [["Loom Number", record.loomNumber] as [string, React.ReactNode]] : []),
+    ...(record.noOfSarees != null ? [["No. of Sarees", String(record.noOfSarees)] as [string, React.ReactNode]] : []),
+    ...(record.deduction ? [["Deduction", <span key="ded" style={{ fontFamily: F.ui, color: T.crimson, fontWeight: 700 }}><Money value={rupees(record.deduction)} /></span>] as [string, React.ReactNode]] : []),
   ];
 
   return (

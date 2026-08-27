@@ -32,6 +32,8 @@ const rowsInclude = {
     include: {
       finishingAssignment: { select: { status: true, updatedAt: true } },
       qcRecords: { orderBy: { qcDate: "desc" as const }, take: 1, select: { result: true, qcDate: true } },
+      receivedByUser: { select: { id: true, firstName: true, lastName: true, role: true } },
+      talliedByUser: { select: { id: true, firstName: true, lastName: true, role: true } },
     },
   },
 } satisfies Prisma.BatchInclude;
@@ -342,10 +344,10 @@ export class BatchesService {
       );
     }
 
-    // The material weight Worker Staff declares as still embedded in the
-    // saree (warp/resham grams, jari reels) can only be accepted if that much
-    // material is still outstanding against the weaver — otherwise the saree
-    // is refused and staff is told to request material from admin instead of
+    // The material Worker Staff declares as still embedded in the received
+    // saree can only be accepted if that much is still outstanding against
+    // the weaver — otherwise the saree is refused and staff is told to check
+    // the entered weight or request more material from admin, instead of
     // silently recording a receipt the material ledger can't back up.
     // Factory-loom rows have no weaver outstanding to check against.
     if (row.weaverId) {
@@ -367,6 +369,23 @@ export class BatchesService {
           receivedById: dto.actorId,
           requests: materialRequests,
         });
+      } else if (dto.weight > 0) {
+        // No per-material split was entered (the receive screen's split
+        // panel is often skipped, leaving only the plain saree weight) — the
+        // weight itself is what "Submitted" material means to the weaver
+        // portal, so draw it straight down from the weaver's outstanding
+        // balance instead of leaving it unaccounted for.
+        if (!dto.actorId) {
+          throw new BadRequestException(
+            "actorId is required to verify and deduct outstanding material against the weaver",
+          );
+        }
+        await this.materialReturns.createAutoReturnForReceiptByWeight({
+          weaverId: row.weaverId,
+          batchId,
+          receivedById: dto.actorId,
+          grams: dto.weight,
+        });
       }
     }
 
@@ -374,6 +393,7 @@ export class BatchesService {
       where: { batchId_serial: { batchId, serial } },
       data: {
         receivedAt: new Date(),
+        receivedById: dto.actorId,
         receivedWeight: dto.weight,
         receivedColor: dto.color,
         receivedPhotoUrl: dto.photoUrl,
@@ -386,6 +406,7 @@ export class BatchesService {
         // receipt, where it is already null. The QcRecord history is untouched.
         qcPassed: null,
       },
+      include: { receivedByUser: { select: { id: true, firstName: true, lastName: true, role: true } } },
     });
 
     await this.auditLog.recordAction({
@@ -423,7 +444,7 @@ export class BatchesService {
       where: { batchId_serial: { batchId, serial } },
       data: {
         tallied: dto.tallied,
-        talliedBy: dto.tallied ? (dto.talliedBy ?? null) : null,
+        talliedById: dto.tallied ? (dto.actorId ?? null) : null,
         talliedAt: dto.tallied ? new Date() : null,
         // Admin's correction to Worker Staff's received weight/material
         // entry, applied in the same action as tallying — each field is
@@ -434,6 +455,7 @@ export class BatchesService {
         ...(dto.reshamG !== undefined ? { receivedReshamG: dto.reshamG } : {}),
         ...(dto.jariReels !== undefined ? { receivedJariReels: dto.jariReels } : {}),
       },
+      include: { talliedByUser: { select: { id: true, firstName: true, lastName: true, role: true } } },
     });
 
     const corrected = dto.weight !== undefined || dto.warpG !== undefined || dto.reshamG !== undefined || dto.jariReels !== undefined;

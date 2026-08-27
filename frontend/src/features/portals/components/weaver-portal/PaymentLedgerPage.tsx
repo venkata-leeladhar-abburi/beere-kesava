@@ -367,6 +367,20 @@ export function PaymentLedgerPage() {
                     <div style={{ fontFamily: F.u, fontSize: 11.5, color: C.muted, marginBottom: 2 }}>Paid By</div>
                     <div style={{ fontFamily: F.u, fontSize: 12.5, color: C.text }}>{rec.firmName || "Beere Kesava Silks"}</div>
                   </div>
+                  <div>
+                    <div style={{ fontFamily: F.u, fontSize: 11.5, color: C.muted, marginBottom: 2 }}>Batch No.</div>
+                    <div style={{ fontFamily: F.m, fontSize: 12.5, color: C.text }}>{rec.batchNo || "—"}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontFamily: F.u, fontSize: 11.5, color: C.muted, marginBottom: 2 }}>Loom Number</div>
+                    <div style={{ fontFamily: F.m, fontSize: 12.5, color: C.text }}>{rec.loomNumber || "—"}</div>
+                  </div>
+                  {!!rec.deduction && (
+                    <div>
+                      <div style={{ fontFamily: F.u, fontSize: 11.5, color: C.muted, marginBottom: 2 }}>Deduction</div>
+                      <div style={{ fontFamily: F.m, fontSize: 12.5, color: C.crim }}>{fmtAmt(rec.deduction)}</div>
+                    </div>
+                  )}
                 </div>
               </div>
             );

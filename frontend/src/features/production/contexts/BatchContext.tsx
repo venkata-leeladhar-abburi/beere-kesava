@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ApiError } from "../../../shared/api/client";
-import { BackendBatch, batchesApi, ReceiveBatchRowPayload } from "../../../shared/api/batches";
+import { BackendActorSummary, BackendBatch, batchesApi, ReceiveBatchRowPayload } from "../../../shared/api/batches";
 import type { BackendQcResult } from "../../../shared/api/qc";
 // Type-only: QcContext imports from this module's sibling API layer, so a
 // value import here would close a cycle at runtime.
@@ -60,8 +60,11 @@ export interface SareeRow {
   // Admin's per-saree weight/material verification against the received
   // entry above — distinct from BulkOrder.tallied (order-level count check).
   tallied: boolean;
-  talliedBy: string | null;
+  talliedByName: string | null;
   talliedAt: string | null;
+  // Full name of the Worker Staff who physically received this saree, for
+  // per-person attribution (multiple users can hold the WORKER role).
+  receivedByName: string | null;
 }
 
 export interface BatchRecord {
@@ -78,6 +81,13 @@ export interface BatchRecord {
   status: "draft" | "active" | "completed";
   createdAt: string;
   updatedAt: string;
+}
+
+// Renders "Firstname Lastname" for a staff attribution field, or null when
+// the action hasn't happened / predates this field (older rows have no actor).
+function formatActorName(actor: BackendActorSummary | null | undefined): string | null {
+  if (!actor) return null;
+  return `${actor.firstName} ${actor.lastName}`.trim();
 }
 
 // ─── Saree ID generation ──────────────────────────────────────────────────────
@@ -102,7 +112,7 @@ interface BatchContextValue {
   updateBatch: (batchId: string, patch: Partial<BatchRecord>) => void;
   receiveRow: (batchId: string, serial: number, payload: ReceiveBatchRowPayload) => Promise<void>;
   tallyRow: (
-    batchId: string, serial: number, tallied: boolean, talliedBy?: string,
+    batchId: string, serial: number, tallied: boolean,
     corrections?: { weight?: number; warpG?: number; reshamG?: number; jariReels?: number },
   ) => Promise<void>;
   finalizeBatch: (batchId: string) => Promise<void>;
@@ -177,6 +187,7 @@ function backendBatchToRecord(
         finished: r.finishingAssignment?.status === "RETURNED",
         finishedAt: r.finishingAssignment?.status === "RETURNED" ? r.finishingAssignment.updatedAt : null,
         receivedAt: r.receivedAt,
+        receivedByName: formatActorName(r.receivedByUser),
         receivedWeight: r.receivedWeight,
         receivedColor: r.receivedColor,
         receivedPhotoUrl: r.receivedPhotoUrl,
@@ -184,7 +195,7 @@ function backendBatchToRecord(
         receivedReshamG: r.receivedReshamG,
         receivedJariReels: r.receivedJariReels,
         tallied: r.tallied,
-        talliedBy: r.talliedBy,
+        talliedByName: formatActorName(r.talliedByUser),
         talliedAt: r.talliedAt,
       };
     }),
@@ -309,9 +320,9 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
   });
 
   const tallyRowMutation = useMutation({
-    mutationFn: (args: { batchId: string; serial: number; tallied: boolean; talliedBy?: string; weight?: number; warpG?: number; reshamG?: number; jariReels?: number }) =>
+    mutationFn: (args: { batchId: string; serial: number; tallied: boolean; weight?: number; warpG?: number; reshamG?: number; jariReels?: number }) =>
       batchesApi.tallyRow(args.batchId, args.serial, {
-        tallied: args.tallied, talliedBy: args.talliedBy,
+        tallied: args.tallied,
         weight: args.weight, warpG: args.warpG, reshamG: args.reshamG, jariReels: args.jariReels,
       }),
     onSuccess: () => {
@@ -330,6 +341,12 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
       batchesApi.receiveRow(args.batchId, args.serial, args.payload),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      // Receiving a saree auto-draws its weight down from the weaver's
+      // outstanding material (BatchesService.receiveRow ->
+      // MaterialReturnsService.createAutoReturnForReceipt(ByWeight)) — refetch
+      // so the weaver portal's "Material Still With You" balance reflects it
+      // immediately instead of only after some unrelated refetch.
+      void queryClient.invalidateQueries({ queryKey: ["materialIssue", "receivedSarees"] });
     },
     onError: (err) => {
        
@@ -378,10 +395,10 @@ export function BatchProvider({ children }: { children: React.ReactNode }) {
   const receiveRow = (batchId: string, serial: number, payload: ReceiveBatchRowPayload) =>
     receiveRowMutation.mutateAsync({ batchId, serial, payload }).then(() => undefined);
   const tallyRow = (
-    batchId: string, serial: number, tallied: boolean, talliedBy?: string,
+    batchId: string, serial: number, tallied: boolean,
     corrections?: { weight?: number; warpG?: number; reshamG?: number; jariReels?: number },
   ) =>
-    tallyRowMutation.mutateAsync({ batchId, serial, tallied, talliedBy, ...corrections }).then(() => undefined);
+    tallyRowMutation.mutateAsync({ batchId, serial, tallied, ...corrections }).then(() => undefined);
   const finalizeBatch = (batchId: string) => finalizeBatchMutation.mutateAsync(batchId).then(() => undefined);
   // A 404 here means the batch is already gone (another tab deleted it, or
   // it's a stale entry) — that's the caller's desired end state either way,
