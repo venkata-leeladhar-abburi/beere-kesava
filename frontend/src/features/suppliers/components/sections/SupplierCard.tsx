@@ -18,7 +18,7 @@ export function SupplierCard({ supplier, onView }: { supplier: Supplier; onView:
     <motion.div whileHover={{ y: -4, boxShadow: "0 16px 48px rgba(74,6,27,0.14)" }} transition={{ duration: 0.22 }}
       onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
       style={{ background: "#FFF", borderRadius: 20, border: `1.5px solid ${hov ? "rgba(110,15,45,0.22)" : T.borderDef}`, overflow: "hidden", display: "flex", flexDirection: "column", boxShadow: "0 2px 12px rgba(74,6,27,0.05)", transition: "border-color 0.2s" }}>
-      <div style={{ height: 6, background: supplier.status === "overdue" ? "linear-gradient(90deg,#C0392B,#E74C3C)" : supplier.status === "inactive" ? `linear-gradient(90deg,${T.taupe},#B0A090)` : `linear-gradient(90deg,${T.deepWine},${T.royalBurgundy})` }} />
+      <div style={{ height: 6, background: T.royalBurgundy }} />
       <div style={{ padding: "20px 22px", display: "flex", flexDirection: "column", gap: 16, flex: 1 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>

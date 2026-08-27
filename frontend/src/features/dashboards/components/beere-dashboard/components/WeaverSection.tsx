@@ -4,7 +4,7 @@ import { ChevronRight } from 'lucide-react';
 import { T, F } from '../theme';
 import { SectionHeader } from '../ui';
 import { useDashboardWeavers } from '../hooks/useDashboardWeavers';
-import { WeaverCardMockupStyle } from '../../../../weavers/components/sections/WeaverCardMockupStyle';
+import { WeaverCardMockupStyle } from "@/features/weavers";
 
 export function WeaverSection({ onNavigate }: { onNavigate: (tab: string, ctx?: unknown) => void }) {
   const { data: weavers = [], isLoading } = useDashboardWeavers();
@@ -53,7 +53,13 @@ export function WeaverSection({ onNavigate }: { onNavigate: (tab: string, ctx?: 
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-5 xl:gap-6" style={{ position: "relative" }}>
         {weavers.map((w, i) => (
-          <div key={w.id} onClick={() => onNavigate("Weavers", { weaverId: w.id, mode: "view" })}>
+          <div
+            key={w.id}
+            role="button"
+            tabIndex={0}
+            onClick={() => onNavigate("Weavers", { weaverId: w.id, mode: "view" })}
+            onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onNavigate("Weavers", { weaverId: w.id, mode: "view" }); } }}
+          >
             <WeaverCardMockupStyle
               weaver={{
                 id: w.id,

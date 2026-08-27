@@ -18,10 +18,10 @@ export function DefectPhotoPrompt({ onCapture, onCancel }: { onCapture: () => vo
           Take a photo of the defect as proof. This is required to complete the rejection.
         </div></Dialog.Description>
         <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-          <Button variant="primary" fullWidth size="sm" iconLeft={Camera} onClick={onCapture} className="h-11 rounded-full bg-[#6E0F2D] hover:bg-[#6E0F2D]">
+          <Button variant="primary" fullWidth size="sm" iconLeft={Camera} onClick={onCapture} className="h-11 rounded-[14px] bg-[#6E0F2D] hover:bg-[#6E0F2D]">
             Take Photo
           </Button>
-          <Button variant="secondary" fullWidth size="sm" iconLeft={UploadCloud} onClick={onCapture} className="h-11 rounded-full border-[#6E0F2D] text-[#6E0F2D]">
+          <Button variant="secondary" fullWidth size="sm" iconLeft={UploadCloud} onClick={onCapture} className="h-11 rounded-[14px] border-[#6E0F2D] text-[#6E0F2D]">
             Upload from Gallery
           </Button>
         </div>

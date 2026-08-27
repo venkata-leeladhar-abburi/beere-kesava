@@ -12,7 +12,7 @@ import {
   ChevronLeft, CheckCircle2, Search, AlertTriangle, ClipboardCheck, User, Package,
 } from "lucide-react";
 import {
-  T, F, SareeItem, InspectionResult, DefectiveLogItem, PassedLogItem, initials, splitDesignField,
+  T, F, SareeItem, InspectionResult, DefectiveLogItem, PassedLogItem, splitDesignField,
 } from "./WorkerQCTypes";
 import { SectionCard } from "./primitives";
 import { WorkerQCInspectionScreen } from "./WorkerQCInspectionScreen";

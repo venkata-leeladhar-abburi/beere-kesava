@@ -11,7 +11,7 @@ import {
   Package,
   Clock,
 } from "lucide-react";
-import { T, F, SareeItem, variance, splitDesignField, initials } from "./WorkerQCTypes";
+import { F, SareeItem, variance, splitDesignField, initials } from "./WorkerQCTypes";
 import { useRatesPricing } from "@/features/pricing";
 
 interface WorkerQCSareeCardProps {

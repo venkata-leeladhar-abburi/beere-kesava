@@ -303,7 +303,7 @@ function SalesReport() {
                     <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, lineHeight: 1.6, marginBottom: 22 }}>
                       Your <strong style={{ color: C.text }}>Today's Sales</strong> report has been exported as <strong style={{ color: C.text }}>{exportFormat.toUpperCase()}</strong>. Check your downloads folder.
                     </div>
-                    <Button variant="primary" onClick={() => { setShowExport(false); setExportDone(false); }} fullWidth className="h-[52px] rounded-full border-none bg-[#6E0F2D] hover:bg-[#4A061B] text-[#FFFDF9] hover:text-[#FFFDF9] font-bold text-sm">Done</Button>
+                    <Button variant="primary" onClick={() => { setShowExport(false); setExportDone(false); }} fullWidth className="h-[52px] rounded-[14px] border-none bg-[#6E0F2D] hover:bg-[#4A061B] text-[#FFFDF9] hover:text-[#FFFDF9] font-bold text-sm">Done</Button>
                   </div>
                 ) : (
                   <>
@@ -341,10 +341,10 @@ function SalesReport() {
                       ))}
                     </div>
                     <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
-                      <Button variant="primary" onClick={() => setExportDone(true)} fullWidth className="h-[52px] rounded-full border-none bg-[#6E0F2D] hover:bg-[#4A061B] text-[#FFFDF9] hover:text-[#FFFDF9] font-bold text-sm gap-2 shadow-[0_4px_16px_rgba(110,15,45,0.30)]">
+                      <Button variant="primary" onClick={() => setExportDone(true)} fullWidth className="h-[52px] rounded-[14px] border-none bg-[#6E0F2D] hover:bg-[#4A061B] text-[#FFFDF9] hover:text-[#FFFDF9] font-bold text-sm gap-2 shadow-[0_4px_16px_rgba(110,15,45,0.30)]">
                         <FileText size={17} /> Export as {exportFormat.toUpperCase()}
                       </Button>
-                      <Button onClick={() => { setShowExport(false); setExportDone(false); }} variant="ghost" fullWidth className="h-[50px] rounded-full border-[1.5px] border-[rgba(110,15,45,0.12)] bg-white hover:bg-[rgba(110,15,45,0.06)] font-semibold text-sm text-[#69635E] hover:text-[#1A0A0F]">Cancel</Button>
+                      <Button onClick={() => { setShowExport(false); setExportDone(false); }} variant="ghost" fullWidth className="h-[50px] rounded-[14px] border-[1.5px] border-[rgba(110,15,45,0.12)] bg-white hover:bg-[rgba(110,15,45,0.06)] font-semibold text-sm text-[#69635E] hover:text-[#1A0A0F]">Cancel</Button>
                     </div>
                   </>
                 )}

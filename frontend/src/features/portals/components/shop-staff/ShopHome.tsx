@@ -147,7 +147,7 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
               <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginTop: 3, lineHeight: 1.4 }}>Record a sale at the counter</div>
             </div>
           </div>
-          <Button variant="primary" onClick={() => onNavigate("sale")} fullWidth className="h-14 rounded-full bg-[#6E0F2D] hover:bg-[#4A061B] text-[#FFFDF9] hover:text-[#FFFDF9] border-none font-bold text-base gap-2 shadow-[0_6px_18px_rgba(110,15,45,0.30)]">
+          <Button variant="primary" onClick={() => onNavigate("sale")} fullWidth className="h-14 rounded-[14px] bg-[#6E0F2D] hover:bg-[#4A061B] text-[#FFFDF9] hover:text-[#FFFDF9] border-none font-bold text-base gap-2 shadow-[0_6px_18px_rgba(110,15,45,0.30)]">
             <ArrowUpRight size={20} /> Start New Sale
           </Button>
         </div>
@@ -299,7 +299,7 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
                   {lowStockError}
                 </div>
               )}
-              <Button onClick={sendLowStockAlert} disabled={lowStockSending} fullWidth className="h-[54px] bg-[#C0392B] border-none rounded-full font-bold text-base text-white gap-2">
+              <Button onClick={sendLowStockAlert} disabled={lowStockSending} fullWidth className="h-[54px] bg-[#C0392B] border-none rounded-[14px] font-bold text-base text-white gap-2">
                 {lowStockSending ? "Sending…" : <><Send size={18} /> Send Report to Admin</>}
               </Button>
             </div>

@@ -5,6 +5,7 @@ import { T, F, EASE } from '../theme';
 import { MATS } from '../data.tsx';
 import { SectionHeader, FadeUp } from '../ui';
 import { rawMaterialsApi } from '../../../../../shared/api/rawMaterials';
+import { jariToReels } from '../../../../../shared/lib/weightUnits';
 
 export function RawMaterial({ onNavigate }: { onNavigate: (tab: string) => void }) {
   const { data: stockRes, isLoading: stockLoading, isError: stockError } = useQuery({
@@ -15,12 +16,16 @@ export function RawMaterial({ onNavigate }: { onNavigate: (tab: string) => void 
 
   const warpStock = stockItems.filter(i => i.materialType === "WARP").reduce((s, i) => s + Number(i.currentStock), 0);
   const reshamStock = stockItems.filter(i => i.materialType === "RESHAM").reduce((s, i) => s + Number(i.currentStock), 0);
-  const jariStock = stockItems.filter(i => i.materialType === "JARI").reduce((s, i) => s + Number(i.currentStock), 0);
+  // Jari stock rows can be recorded in Reels or Buns — sum through a common
+  // unit (Reels) rather than adding raw quantities of mismatched units.
+  const jariReels = stockItems
+    .filter(i => i.materialType === "JARI")
+    .reduce((s, i) => s + jariToReels(Number(i.currentStock), i.unit || "Reels"), 0);
 
   const mats = MATS.map(m => {
     if (m.name === "Warp") return { ...m, stock: `${warpStock} kg in stock` };
     if (m.name === "Resham") return { ...m, stock: `${reshamStock} kg in stock` };
-    if (m.name === "Jari") return { ...m, stock: `${jariStock} Buns in stock` };
+    if (m.name === "Jari") return { ...m, stock: `${jariReels} Reels in stock` };
     return m;
   });
 

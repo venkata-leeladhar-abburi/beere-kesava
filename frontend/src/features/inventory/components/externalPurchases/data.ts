@@ -11,4 +11,5 @@ export const EMPTY_FORM: FormState = {
   status: "Pending",
   notes: "",
   invoiceFileName: "",
+  invoiceFileUrl: "",
 };

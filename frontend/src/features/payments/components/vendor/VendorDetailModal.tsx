@@ -11,6 +11,7 @@ import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
 import { vendorPaymentsApi } from "../../../../shared/api/payments";
 import { rupees } from "@/lib/domain/money";
+import { formatRecordedBy } from "@/lib/domain/actor";
 import { EntityCode, Money } from "@/shared/ui/domain";
 
 // ── Vendor Detail Modal ───────────────────────────────────────────────────────
@@ -31,6 +32,7 @@ export function VendorDetailModal({ vp, matchedPO, onClose }: { vp: VendorPaymen
       firm: firms.find(f => f.id === p.firmId)?.firmName ?? p.firmId ?? "—",
       utr: p.utr ?? "—",
       method: p.method ?? "—",
+      recordedBy: formatRecordedBy(p.recordedBy),
     }));
   const vendorName = matchedPO?.vendor ?? vp.vendor;
 
@@ -108,12 +110,13 @@ export function VendorDetailModal({ vp, matchedPO, onClose }: { vp: VendorPaymen
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {history.map((h) => (
-                  <div key={h.id} className="grid grid-cols-1 md:grid-cols-5" style={{ background: "#FFFFFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, padding: "12px 16px", gap: 10 }}>
+                  <div key={h.id} className="grid grid-cols-1 md:grid-cols-6" style={{ background: "#FFFFFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, padding: "12px 16px", gap: 10 }}>
                     <div><div style={{ fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>Amount</div><div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.green }}><Money value={rupees(h.amount)} /></div></div>
                     <div><div style={{ fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>Date</div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{h.date}</div></div>
                     <div><div style={{ fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>Paying Firm</div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{h.firm}</div></div>
                     <div><div style={{ fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>UTR</div><div style={{ fontSize: 12, color: T.luxuryBrown, fontVariantNumeric: "tabular-nums" }}>{h.utr}</div></div>
                     <div><div style={{ fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>Method</div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{h.method}</div></div>
+                    <div><div style={{ fontSize: 12, color: T.taupe, textTransform: "uppercase" }}>Recorded By</div><div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{h.recordedBy}</div></div>
                   </div>
                 ))}
               </div>
@@ -122,7 +125,7 @@ export function VendorDetailModal({ vp, matchedPO, onClose }: { vp: VendorPaymen
         </div>
 
         <div style={{ padding: "18px 28px", borderTop: `1px solid ${T.borderDef}`, display: "flex", justifyContent: "flex-end", flexShrink: 0 }}>
-          <Button variant="primary" onClick={onClose} className="rounded-full bg-[#6E0F2D]">Close</Button>
+          <Button variant="primary" onClick={onClose} className="rounded-[14px] bg-[#6E0F2D]">Close</Button>
         </div>
       </div>
     </Modal>

@@ -75,6 +75,34 @@ export const PAGE_SECTIONS: Record<string, SectionNavItem[]> = {
   ],
 };
 
+export function getSectionsForPage(nav: string): SectionNavItem[] {
+  if (PAGE_SECTIONS[nav] && PAGE_SECTIONS[nav].length > 0) {
+    return PAGE_SECTIONS[nav];
+  }
+  const aliases: Record<string, string> = {
+    Batches: "Production",
+    Designs: "Production",
+    Finishing: "Production",
+    ReceiveStock: "Materials",
+    IssueMaterial: "Materials",
+    ReturnMaterial: "Materials",
+    ExternalPurchases: "Materials",
+    SupplierReturns: "Materials",
+    Firms: "Payments",
+    Reports: "Payments",
+    Customers: "Weavers",
+    Vendors: "Weavers",
+    Suppliers: "Weavers",
+    FactoryLooms: "Weavers",
+    AllWeavers: "Weavers",
+  };
+  const parentKey = aliases[nav];
+  if (parentKey && PAGE_SECTIONS[parentKey]) {
+    return PAGE_SECTIONS[parentKey];
+  }
+  return PAGE_SECTIONS[nav] || [];
+}
+
 // Global CSS needed by SectionNavigator — render once per dashboard root.
 export const SECTION_NAV_GLOBAL_STYLE = `
   .section-nav-scroll {

@@ -48,7 +48,11 @@ function fmtDate(dateStr: string): string {
 export function ExternalPurchasesSection() {
   const { data: purchasesRes, isLoading, isError } = useQuery({
     queryKey: ["reports", "external-purchases"],
-    queryFn: () => purchasesApi.list(200),
+    // "summary" — this table never shows saree photos, and the full view's
+    // sareeLines carry every purchase's base64 image data (see
+    // ListPurchasesQueryDto.view), which was stalling this request past the
+    // client's 30s timeout as more purchases piled up.
+    queryFn: () => purchasesApi.list(100, 1, undefined, undefined, "summary"),
   });
 
   const rows = purchasesRes?.items ?? [];

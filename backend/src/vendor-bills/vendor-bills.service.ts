@@ -34,6 +34,8 @@ export class VendorBillsService {
         amount: dto.amount,
         dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
         description: dto.description,
+        invoiceFileUrl: dto.invoiceFileUrl,
+        invoiceFileName: dto.invoiceFileName,
       },
       include: { vendor: true, purchaseOrder: true },
     });
@@ -131,6 +133,8 @@ export class VendorBillsService {
         amount: data.amount,
         dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
         description: data.description,
+        invoiceFileUrl: data.invoiceFileUrl,
+        invoiceFileName: data.invoiceFileName,
       },
       include: { vendor: true, purchaseOrder: true },
     });

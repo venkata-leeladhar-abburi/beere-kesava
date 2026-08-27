@@ -81,6 +81,7 @@ function toPurchase(p: BackendPurchase): Purchase {
     status: p.status === "PAID" ? "Paid" : p.status === "PARTIAL" ? "Partial" : "Pending",
     notes: p.notes ?? "",
     invoiceFileName: p.invoiceFileName ?? undefined,
+    invoiceFileUrl: p.invoiceFileUrl ?? undefined,
     sarees: p.sareeLines.map(toSareeTag),
   };
 }
@@ -124,6 +125,7 @@ function toCreatePurchasePayload(p: Omit<Purchase, "id">, addedById: string): Cr
     status: toStatusPayload(p.status),
     notes: p.notes || undefined,
     invoiceFileName: p.invoiceFileName,
+    invoiceFileUrl: p.invoiceFileUrl,
     addedById,
     sarees: p.sarees.map(toSareeLinePayload),
   };
@@ -142,6 +144,7 @@ function toUpdatePurchasePayload(patch: Partial<Purchase>): UpdatePurchasePayloa
     status: patch.status ? toStatusPayload(patch.status) : undefined,
     notes: patch.notes,
     invoiceFileName: patch.invoiceFileName,
+    invoiceFileUrl: patch.invoiceFileUrl,
     sarees: patch.sarees?.map(toSareeLinePayload),
   };
 }
@@ -164,6 +167,8 @@ interface SupplierContextValue {
   addPurchase: (p: Omit<Purchase, "id">) => void;
   updatePurchase: (id: string, patch: Partial<Purchase>) => void;
   deletePurchase: (id: string) => void;
+  /** Full purchase incl. saree photos — `purchases` only carries the "summary" view. */
+  getPurchaseDetail: (id: string) => Promise<Purchase>;
 
   addPayment: (p: Omit<SupplierPayment, "id">) => void;
   raiseRequest: (r: Omit<PurchaseRequest, "id" | "status">) => void;
@@ -233,12 +238,18 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
     queryFn: async () => (await suppliersApi.list()).items.map(toSupplier),
     enabled,
   });
-  const { data: purchases = [] } = useQuery({
+  // "summary" view — the base64 photo data on every sareeLine (imageUrl/
+  // pieceImageUrls) can push a full page of purchases past the frontend's
+  // request timeout (see ListPurchasesQueryDto.view). This list only needs
+  // per-line price/quantity for the buying/selling/profit columns; photos
+  // are fetched on demand per-purchase (see getPurchaseDetail) when a user
+  // opens its detail drawer or saree list.
+  const { data: purchases = [], isError: isPurchasesError, error: purchasesError, refetch: refetchPurchases } = useQuery({
     queryKey: PURCHASES_KEY,
-    queryFn: async () => (await purchasesApi.list()).items.map(toPurchase),
+    queryFn: async () => (await purchasesApi.list(100, 1, undefined, undefined, "summary")).items.map(toPurchase),
     enabled,
   });
-  const { data: payments = [], isError: isPaymentsError, error: paymentsError } = useQuery({
+  const { data: payments = [], isError: isPaymentsError, error: paymentsError, refetch: refetchPayments } = useQuery({
     queryKey: PAYMENTS_KEY,
     queryFn: async () => {
       const res = await supplierPaymentsApi.list();
@@ -250,18 +261,19 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
         mode: (p.method as SupplierPayment["mode"]) ?? "Bank Transfer",
         reference: p.utr ?? "",
         purchaseId: p.purchaseId ?? undefined,
+        recordedBy: p.recordedBy ?? null,
       }));
     },
     enabled,
   });
-  const { data: rawRequests = [], isError: isRequestsError, error: requestsError } = useQuery({
+  const { data: rawRequests = [], isError: isRequestsError, error: requestsError, refetch: refetchRequests } = useQuery({
     queryKey: REQUESTS_KEY,
     queryFn: async () => (await purchaseRequestsApi.list()).items,
     enabled,
   });
 
-  const isError = isSuppliersError || isPaymentsError || isRequestsError;
-  const error = suppliersError ?? paymentsError ?? requestsError ?? null;
+  const isError = isSuppliersError || isPurchasesError || isPaymentsError || isRequestsError;
+  const error = suppliersError ?? purchasesError ?? paymentsError ?? requestsError ?? null;
   const isLoading = isSuppliersLoading;
   const requests = rawRequests.map((r) =>
     toPurchaseRequest(r, suppliers.find((s) => s.id === r.supplierId)?.name ?? "")
@@ -456,6 +468,14 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
   const addPurchase = (p: Omit<Purchase, "id">) => addPurchaseMutation.mutate(p);
   const updatePurchase = (id: string, patch: Partial<Purchase>) => updatePurchaseMutation.mutate({ id, patch });
   const deletePurchase = (id: string) => deletePurchaseMutation.mutate(id);
+  const getPurchaseDetail = async (id: string) =>
+    toPurchase(
+      await qc.fetchQuery({
+        queryKey: [...PURCHASES_KEY, "detail", id],
+        queryFn: () => purchasesApi.getOne(id),
+        staleTime: 60_000,
+      }),
+    );
 
   const addPayment = (p: Omit<SupplierPayment, "id">) => addPaymentMutation.mutate(p);
   const raiseRequest = (r: Omit<PurchaseRequest, "id" | "status">) => raiseRequestMutation.mutate(r);
@@ -483,10 +503,15 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
   const value: SupplierContextValue = {
     suppliers, purchases, payments, requests,
     addSupplier, updateSupplier, deleteSupplier, getSupplier,
-    addPurchase, updatePurchase, deletePurchase,
+    addPurchase, updatePurchase, deletePurchase, getPurchaseDetail,
     addPayment, raiseRequest, decideRequest, statsFor,
     isError, error, isLoading,
-    refetch: () => void refetchSuppliers(),
+    refetch: () => {
+      void refetchSuppliers();
+      void refetchPurchases();
+      void refetchPayments();
+      void refetchRequests();
+    },
   };
 
   return <SupplierContext.Provider value={value}>{children}</SupplierContext.Provider>;

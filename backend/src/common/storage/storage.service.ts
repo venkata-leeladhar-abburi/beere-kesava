@@ -7,7 +7,7 @@ import { ConfigService } from "@nestjs/config";
 /** How long a presigned GET link stays valid when the bucket is private (no public base URL). */
 const PRESIGNED_URL_TTL_SECONDS = 60 * 60;
 
-export type StorageFolder = "signatures" | "photos" | "receipts";
+export type StorageFolder = "signatures" | "photos" | "receipts" | "documents";
 
 /**
  * Object storage for user-uploaded files (signatures, photos, LR receipts).

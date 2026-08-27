@@ -171,7 +171,7 @@ export function WarpSection({
             </div>
             <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 38, color: C.text, marginBottom: 16 }}>Warp Request Sent!</div>
             <div style={{ fontFamily: F.u, fontSize: 16, color: C.muted, lineHeight: 1.7, marginBottom: 36 }}>Your request has been sent to worker staff, admin, and superadmin. You will be notified when a decision is made.</div>
-            <Button onClick={() => { setWarpSubmitted(false); setMaterials({ warp: false, resham: false, jari: false }); setAmounts({ warp: "", resham: "", jari: "" }); setReason(""); }} fullWidth className="block h-[60px] bg-[#6E0F2D] border-none rounded-full font-bold text-lg text-white">
+            <Button onClick={() => { setWarpSubmitted(false); setMaterials({ warp: false, resham: false, jari: false }); setAmounts({ warp: "", resham: "", jari: "" }); setReason(""); }} fullWidth className="block h-[60px] bg-[#6E0F2D] border-none rounded-[14px] font-bold text-lg text-white">
               ← Back to Warp Requests
             </Button>
           </div>

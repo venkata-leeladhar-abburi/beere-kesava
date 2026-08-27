@@ -80,16 +80,31 @@ export class PaymentsController {
 
   @Post("weavers/import")
   @UseInterceptors(FileInterceptor("file"))
-  async importWeaverPayments(@UploadedFile() file?: Express.Multer.File) {
+  async importWeaverPayments(
+    @CurrentUser() user: AuthenticatedUser,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
     if (!file) {
       throw new BadRequestException("No file uploaded");
     }
-    return this.paymentsService.importWeaverPaymentsFromExcel(file.buffer);
+    return this.paymentsService.importWeaverPaymentsFromExcel(file.buffer, user.id);
   }
 
   @Post("vendors")
   createVendorPayment(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreateVendorPaymentDto) {
     return this.paymentsService.createVendorPayment({ ...dto, recordedById: user.id });
+  }
+
+  @Post("vendors/import")
+  @UseInterceptors(FileInterceptor("file"))
+  async importVendorPayments(
+    @CurrentUser() user: AuthenticatedUser,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    if (!file) {
+      throw new BadRequestException("No file uploaded");
+    }
+    return this.paymentsService.importVendorPaymentsFromExcel(file.buffer, user.id);
   }
 
   @Get("vendors")

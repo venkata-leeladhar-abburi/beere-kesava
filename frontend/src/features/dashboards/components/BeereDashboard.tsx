@@ -15,6 +15,7 @@ import type { ReceiptRecord } from "../../portals/components/worker/ReceiptHisto
 import { useQuery } from "@tanstack/react-query";
 import { rawMaterialsApi } from "../../../shared/api/rawMaterials";
 import { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
+import { scrollToTop } from "@/shared/ui/ScrollToTop";
 
 // Lazily loaded so the initial dashboard bundle doesn't pay for every tab's
 // page — only the active tab's chunk is fetched, on first navigation to it.
@@ -75,12 +76,12 @@ const FactoryLoomPage = lazy(() => import("../../production/components/FactoryLo
 // eslint-disable-next-line import/no-restricted-paths -- React.lazy() code-splitting needs the page module imported directly; routing through the feature barrel (index.ts) would pull every export of that feature into this chunk and defeat per-route code splitting.
 const StaffDirectoryPage = lazy(() => import("../../users/components/staff-directory/StaffDirectoryPage").then(m => ({ default: m.StaffDirectoryPage })));
 
-import { WORKER_SCOPE, SHOP_SCOPE } from "../../users/components/staff-directory/portalScopes";
+import { WORKER_SCOPE, SHOP_SCOPE } from "@/features/users";
 import { TabLoadingFallback } from './TabLoadingFallback';
 import { ErrorBoundary } from '../../../components/ErrorBoundary';
 import {
   SectionNavigator, PAGE_SECTIONS, SECTION_NAV_GLOBAL_STYLE,
-  MOBILE_NAV_H,
+  MOBILE_NAV_H, getSectionsForPage,
 } from "../../../shared/ui/SectionNavigator";
 import { PackageCheck, History } from "lucide-react";
 import { AnimatePresence } from "motion/react";
@@ -167,11 +168,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
 
   // Always scroll to top when navigating between pages
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
-    document.body.scrollTop = 0;
-    if (document.documentElement) {
-      document.documentElement.scrollTop = 0;
-    }
+    scrollToTop();
   }, [nav, mobileTab]);
 
   const navigate = (tab: string, ctx?: unknown) => {
@@ -218,8 +215,8 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
     <div id="main-content" style={{ width: "100%", minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui, display: "flex", flexDirection: "column" }}>
       <MobileMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} activeTab={mobileTab} setTab={navigateMobile} />
       <MobileTopNav onMenuOpen={() => setMenuOpen(true)} onBack={onBack} onLogout={handleLogout} onProfile={() => setShowProfileModal(true)} onNotifications={() => navigateMobile("Notifications")} />
-      {PAGE_SECTIONS[mobileTab] && (
-        <SectionNavigator sections={PAGE_SECTIONS[mobileTab]} stickyTop={MOBILE_NAV_H} padding="0 18px" />
+      {getSectionsForPage(mobileTab).length > 0 && (
+        <SectionNavigator sections={getSectionsForPage(mobileTab)} stickyTop={MOBILE_NAV_H} padding="0 18px" />
       )}
       <ErrorBoundary variant="inline" resetKeys={[mobileTab]}>
       <Suspense fallback={<TabLoadingFallback />}>
@@ -372,7 +369,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
     </div>
   ) : (
     <div id="main-content" style={{ width: "100%", minHeight: "100dvh", background: T.silkCream, fontFamily: F.ui, display: "flex", flexDirection: "column" }}>
-      <TopNav active={nav} set={navigate} onBack={onBack} onLogout={handleLogout} sections={PAGE_SECTIONS[nav]} onProfile={() => setShowProfileModal(true)} onViewAs={viewAsStaff} />
+      <TopNav active={nav} set={navigate} onBack={onBack} onLogout={handleLogout} sections={getSectionsForPage(nav)} onProfile={() => setShowProfileModal(true)} onViewAs={viewAsStaff} />
       <ErrorBoundary variant="inline" resetKeys={[nav]}>
       <Suspense fallback={<TabLoadingFallback />}>
       {nav === "Materials" ? (

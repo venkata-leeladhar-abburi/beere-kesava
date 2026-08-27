@@ -11,6 +11,8 @@ import { Modal } from "../../../../shared/ui/overlay";
 import { DatePicker, formatDate } from "../../../../shared/ui/date";
 import { vendorBillsApi } from "../../../../shared/api/vendor-bills";
 import { toPaise, fromPaise } from "@/lib/gst";
+import { useReceiptUpload } from "@/shared/hooks/useReceiptUpload";
+import { resolveAssetUrl } from "@/shared/api/uploads";
 
 const MAT_TAG: Record<string, { col: string; bg: string }> = {
   Warp: { col: "#B85C38", bg: "rgba(184,92,56,0.12)" },
@@ -34,7 +36,10 @@ const MAT_TAG: Record<string, { col: string; bg: string }> = {
 export function AddVendorInvoiceModal({ vp, matchedPO, onClose, onSaved }: { vp: VendorPayment; matchedPO?: PurchaseOrder; onClose: () => void; onSaved?: () => void }) {
   const isEdit = !!vp.billId;
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { upload: uploadInvoiceFile, uploading: uploadingInvoice, error: invoiceUploadError } = useReceiptUpload();
   const [file, setFile] = useState<File | null>(null);
+  const [invoiceFileUrl, setInvoiceFileUrl] = useState(vp.invoiceFileUrl ?? "");
+  const [invoiceFileName, setInvoiceFileName] = useState(vp.invoiceFileName ?? "");
   const [invoiceNo, setInvoiceNo] = useState("");
   const [amount, setAmount] = useState(vp.invoiceAmt > 0 ? String(vp.invoiceAmt) : "");
   const [totalOverridden, setTotalOverridden] = useState(vp.invoiceAmt > 0);
@@ -61,8 +66,17 @@ export function AddVendorInvoiceModal({ vp, matchedPO, onClose, onSaved }: { vp:
     }
   };
 
+  const handleInvoiceFile = (picked: File | null) => {
+    if (!picked) return;
+    setFile(picked);
+    setInvoiceFileName(picked.name);
+    void uploadInvoiceFile(picked).then((url) => {
+      if (url) setInvoiceFileUrl(url);
+    });
+  };
+
   const numericAmount = amount === "" || isNaN(Number(amount)) ? NaN : fromPaise(toPaise(Number(amount)));
-  const canSave = !!vp.vendorId && numericAmount > 0;
+  const canSave = !!vp.vendorId && numericAmount > 0 && !uploadingInvoice;
 
   const handleSave = async () => {
     if (!vp.vendorId || !(numericAmount > 0)) return;
@@ -80,6 +94,8 @@ export function AddVendorInvoiceModal({ vp, matchedPO, onClose, onSaved }: { vp:
           amount: numericAmount,
           dueDate: date || undefined,
           description: invoiceNo.trim() || undefined,
+          invoiceFileUrl: invoiceFileUrl || undefined,
+          invoiceFileName: invoiceFileName || undefined,
           materialAmounts: materialAmountsPayload?.length ? materialAmountsPayload : undefined,
         });
         toast.success(`Invoice updated for ${vp.vendor}`);
@@ -90,6 +106,8 @@ export function AddVendorInvoiceModal({ vp, matchedPO, onClose, onSaved }: { vp:
           amount: numericAmount,
           dueDate: date || undefined,
           description: invoiceNo.trim() || undefined,
+          invoiceFileUrl: invoiceFileUrl || undefined,
+          invoiceFileName: invoiceFileName || undefined,
           materialAmounts: materialAmountsPayload?.length ? materialAmountsPayload : undefined,
         });
         toast.success(`Invoice ${invoiceNo || vp.poNumber} added for ${vp.vendor}`);
@@ -132,11 +150,26 @@ export function AddVendorInvoiceModal({ vp, matchedPO, onClose, onSaved }: { vp:
                 <FileText size={20} color={T.royalBurgundy} />
               </div>
               <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.royalBurgundy, marginBottom: 4 }}>
-                {file ? file.name : "Click to upload invoice"}
+                {uploadingInvoice ? "Uploading…" : file ? file.name : invoiceFileName || "Click to upload invoice"}
               </div>
               <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>PDF, JPG, PNG up to 10MB</div>
-              <Input type="file" ref={fileInputRef} containerClassName="hidden" accept=".pdf,image/*" onChange={e => setFile(e.target.files?.[0] ?? null)} />
+              <Input type="file" ref={fileInputRef} containerClassName="hidden" accept=".pdf,image/*" onChange={e => handleInvoiceFile(e.target.files?.[0] ?? null)} />
             </div>
+            {invoiceUploadError && (
+              <div style={{ fontFamily: F.ui, fontSize: 12, color: "#C0392B", marginTop: 6 }}>{invoiceUploadError}</div>
+            )}
+            {!uploadingInvoice && invoiceFileUrl && (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 6 }}>
+                <a href={resolveAssetUrl(invoiceFileUrl) ?? undefined} target="_blank" rel="noreferrer"
+                  style={{ fontFamily: F.ui, fontSize: 12, color: T.green, textDecoration: "underline" }}>
+                  View uploaded file
+                </a>
+                <button type="button" onClick={() => { setFile(null); setInvoiceFileUrl(""); setInvoiceFileName(""); }}
+                  style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, background: "none", border: "none", cursor: "pointer" }}>
+                  Remove
+                </button>
+              </div>
+            )}
           </div>
           <Field label="Vendor Invoice Number" id="vendor-invoice-number">
             <Input value={invoiceNo} onChange={e => setInvoiceNo(e.target.value)} placeholder="e.g. INV-4821" />

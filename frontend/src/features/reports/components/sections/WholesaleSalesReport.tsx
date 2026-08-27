@@ -127,7 +127,11 @@ export function WholesaleSalesReport() {
   const maxOutstanding = Math.max(1, ...bulkOrders.map(o => (o.amountDue ?? 0) - (o.amountPaid ?? 0)));
   const wsOutstanding = bulkOrders.map(o => {
     const amt = Math.max(0, (o.amountDue ?? 0) - (o.amountPaid ?? 0));
-    return { customer: o.customer, amt, color: amt === 0 ? T.green : (o.status === "overdue" ? T.crimson : T.antiqueGold) };
+    // One row per ORDER, not per customer — a customer with several bulk
+    // orders (e.g. repeat business) would otherwise produce duplicate
+    // `customer` values, so `ref` (the order's own unique reference) is the
+    // list key below rather than the customer name.
+    return { customer: o.customer, ref: o.ref, amt, color: amt === 0 ? T.green : (o.status === "overdue" ? T.crimson : T.antiqueGold) };
   });
 
   const wsInvStatus = (["paid", "partial", "pending"] as const).map(status => ({
@@ -251,7 +255,7 @@ export function WholesaleSalesReport() {
               <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No bulk orders recorded yet.</div>
             )}
             {wsOutstanding.map((d, i) => (
-              <div key={d.customer}>
+              <div key={d.ref}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
                   <span style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{d.customer}</span>
                   <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: d.color }}>{d.amt === 0 ? "Paid ✓" : formatMoney(rupees(d.amt))}</span>

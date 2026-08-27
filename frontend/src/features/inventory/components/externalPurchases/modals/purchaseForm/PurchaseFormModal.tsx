@@ -12,6 +12,7 @@ import { nextRowUid, toSareeRow } from "../../utils";
 import { SupplierSection } from "./SupplierSection";
 import { SareeDetailsEditor } from "./SareeDetailsEditor";
 import { Modal } from "../../../../../../shared/ui/overlay";
+import { useReceiptUpload } from "@/shared/hooks/useReceiptUpload";
 
 /**
  * Add/Edit External Purchase modal — composition of the supplier/basic-fields
@@ -32,6 +33,7 @@ export function PurchaseFormModal({
   onSubmit: (data: FormState, sarees: SareeTag[]) => void;
 }) {
   const { suppliers } = useSuppliers();
+  const { upload: uploadInvoiceFile, uploading: uploadingInvoice, error: invoiceUploadError } = useReceiptUpload();
   const [form, setForm] = useState<FormState>(initial);
   const [sareeDetails, setSareeDetails] = useState(() => initialSarees.map(toSareeRow));
   const selectedSupplier = suppliers.find((s) => s.id === form.supplierId) ?? null;
@@ -66,7 +68,11 @@ export function PurchaseFormModal({
     );
 
   const handleInvoiceFile = (file: File | null) => {
-    if (file) set("invoiceFileName", file.name);
+    if (!file) return;
+    set("invoiceFileName", file.name);
+    void uploadInvoiceFile(file).then((url) => {
+      if (url) set("invoiceFileUrl", url);
+    });
   };
 
   const totals = purchaseTotals(sareeDetails);
@@ -138,6 +144,8 @@ export function PurchaseFormModal({
           pieceCount={pieceCount}
           sareeDetailsCount={sareeDetails.length}
           handleInvoiceFile={handleInvoiceFile}
+          uploadingInvoice={uploadingInvoice}
+          invoiceUploadError={invoiceUploadError}
         />
 
         <SareeDetailsEditor

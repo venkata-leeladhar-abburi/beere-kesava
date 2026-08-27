@@ -10,56 +10,6 @@ import { Button } from "../../../../shared/ui/primitives";
 import { rupees } from "@/lib/domain/money";
 import { EntityCode, Money } from "@/shared/ui/domain";
 
-const TopDivider = () => (
-  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 20, marginBottom: 12 }}>
-    <div style={{ display: "flex", gap: 3, paddingLeft: 4 }}>
-      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
-      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
-      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
-    </div>
-    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginLeft: 8 }} />
-    <svg width="60" height="20" viewBox="0 0 60 20" style={{ margin: "0 8px", flexShrink: 0 }}>
-      <g transform="translate(30, 10)">
-        <polygon points="-16,0 -12,-3 -8,0 -12,3" fill={T.antiqueGold} />
-        <path d="M-5,0 L0,-5 L5,0 L0,5 Z" fill={T.antiqueGold} />
-        <circle cx="0" cy="0" r="1.5" fill="#FFFDF9" />
-        <polygon points="8,0 12,-3 16,0 12,3" fill={T.antiqueGold} />
-      </g>
-    </svg>
-    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginRight: 8 }} />
-    <div style={{ display: "flex", gap: 3, paddingRight: 4 }}>
-      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
-      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
-      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
-    </div>
-  </div>
-);
-
-const BottomDivider = () => (
-  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 20, marginTop: 16 }}>
-    <div style={{ display: "flex", gap: 3, paddingLeft: 4 }}>
-      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
-      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
-      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
-    </div>
-    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginLeft: 8 }} />
-    <svg width="60" height="20" viewBox="0 0 60 20" style={{ margin: "0 8px", flexShrink: 0 }}>
-      <g transform="translate(30, 10)">
-        <polygon points="-16,0 -12,-3 -8,0 -12,3" fill={T.antiqueGold} />
-        <path d="M-5,0 L0,-5 L5,0 L0,5 Z" fill={T.antiqueGold} />
-        <circle cx="0" cy="0" r="1.5" fill="#FFFDF9" />
-        <polygon points="8,0 12,-3 16,0 12,3" fill={T.antiqueGold} />
-      </g>
-    </svg>
-    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginRight: 8 }} />
-    <div style={{ display: "flex", gap: 3, paddingRight: 4 }}>
-      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
-      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
-      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
-    </div>
-  </div>
-);
-
 function formatDisplayDate(dateStr?: string): string {
   if (!dateStr) return "—";
   if (dateStr.includes("T")) {
@@ -116,12 +66,13 @@ export function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoic
 
   return (
     <motion.div
+      whileHover={{ y: -4, boxShadow: "0 18px 45px rgba(74,6,27,0.09)" }}
       transition={{ duration: 0.25 }}
       style={{
-        background: "#FFFDF9",
-        borderRadius: 12,
-        border: `1.5px solid ${T.antiqueGold}`,
-        boxShadow: "0 4px 20px rgba(200,155,71,0.15)",
+        background: "#FFFFFF",
+        borderRadius: 20,
+        border: `1.5px solid ${T.borderDef}`,
+        boxShadow: "0 8px 30px rgba(74,6,27,0.04)",
         overflow: "hidden",
         display: "flex",
         flexDirection: "column",
@@ -130,13 +81,9 @@ export function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoic
       }}
     >
       {/* Top accent bar */}
-      <div style={{ height: 4, background: T.royalBurgundy, width: "100%", opacity: 0.8 }} />
+      <div style={{ height: 6, background: T.royalBurgundy, flexShrink: 0 }} />
 
-      <div style={{ padding: "16px 20px 0" }}>
-        <TopDivider />
-      </div>
-
-      <div style={{ padding: "0 22px 22px", display: "flex", flexDirection: "column", flex: 1 }}>
+      <div style={{ padding: "20px 22px 22px", display: "flex", flexDirection: "column", flex: 1 }}>
         {/* Top row: PO number + Date */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
           <button type="button" onClick={onViewPO} disabled={!onViewPO} style={{ background: "rgba(110,15,45,0.06)", padding: "4px 10px", borderRadius: 8, cursor: onViewPO ? "pointer" : "default", border: "none", maxWidth: "100%" }}>
@@ -161,6 +108,11 @@ export function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoic
               </>
             )}
           </div>
+          {matchedPO?.raisedBy && (
+            <div style={{ fontFamily: F.ui, fontSize: 11.5, color: T.taupe, marginTop: 4 }}>
+              Created by <span style={{ color: T.royalBurgundy, fontWeight: 600 }}>{matchedPO.raisedBy}</span>
+            </div>
+          )}
         </div>
 
         {/* Materials Grid */}
@@ -214,20 +166,16 @@ export function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoic
             </span>
           </div>
         </div>
-
-        <div style={{ padding: "10px 0 0" }}>
-          <BottomDivider />
-        </div>
       </div>
 
       {/* Footer / Actions */}
-      <div className="flex flex-col gap-2.5 flex-shrink-0 w-full" style={{ padding: "0 20px 20px" }}>
+      <div className="bg-[rgba(110,15,45,0.02)] border-t border-[rgba(110,15,45,0.08)] p-3 flex flex-col gap-2.5 flex-shrink-0 w-full">
         <div className="flex items-center justify-between">
           <span className="text-[11px] font-bold text-[#8C7A6B] uppercase tracking-wider">Status & Actions</span>
           <VendorBadge status={vp.status} />
         </div>
 
-        <div className="flex flex-wrap gap-2 w-full">
+        <div className="grid grid-cols-2 gap-2 w-full">
           {actions.map(act => (
             <Button
               key={act.key}
@@ -235,7 +183,7 @@ export function VendorCard({ vp, matchedPO, onPay, onView, onViewPO, onAddInvoic
               size="sm"
               iconLeft={act.icon}
               onClick={act.onClick}
-              className={`flex-1 min-w-[120px] justify-center rounded-[8px] text-[12px] font-bold py-2 whitespace-nowrap ${
+              className={`w-full justify-center rounded-[8px] text-[12px] font-bold py-2 whitespace-nowrap ${
                 act.variant === "po"
                   ? "border-[1.5px] border-[rgba(200,155,71,0.22)] bg-[#F5E8D0] text-[#C89B47]"
                   : act.variant === "primary"

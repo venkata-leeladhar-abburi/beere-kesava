@@ -172,9 +172,12 @@ export interface ExportPdfOptions {
 
 /**
  * Renders `node` offscreen at true A4 width, rasterises every `.bk-doc`
- * sheet in it, and saves the result as a single PDF.
+ * sheet in it, and builds the PDF — shared by exportDocumentPdf (saves it to
+ * disk) and exportDocumentPdfBlob (hands back the bytes, e.g. to upload for
+ * WhatsApp sharing). Returns the jsPDF instance so each caller decides what
+ * to do with it.
  */
-export async function exportDocumentPdf(node: React.ReactNode, options: ExportPdfOptions = {}): Promise<void> {
+async function buildDocumentPdf(node: React.ReactNode, options: ExportPdfOptions = {}) {
   // Both libraries are heavy (~250KB gzipped combined) and only ever needed
   // the moment someone clicks Download, so they're split out of the main
   // bundle rather than loaded on every page view.
@@ -301,11 +304,30 @@ export async function exportDocumentPdf(node: React.ReactNode, options: ExportPd
     }
 
     if (options.title) pdf.setProperties({ title: options.title });
-    pdf.save(`${safeFileName(options.fileName || options.title || "document")}.pdf`);
+    return pdf;
   } finally {
     // Always tear the tree down, even if capture threw — otherwise a failed
     // export leaves a full document mounted offscreen for the rest of the
     // session, holding on to its subscriptions and context.
     pdfRoot.render(null);
   }
+}
+
+/**
+ * Renders `node` offscreen at true A4 width, rasterises every `.bk-doc`
+ * sheet in it, and saves the result as a single PDF.
+ */
+export async function exportDocumentPdf(node: React.ReactNode, options: ExportPdfOptions = {}): Promise<void> {
+  const pdf = await buildDocumentPdf(node, options);
+  pdf.save(`${safeFileName(options.fileName || options.title || "document")}.pdf`);
+}
+
+/**
+ * Same rasterisation as exportDocumentPdf, but hands back the PDF bytes
+ * instead of triggering a browser download — for flows that upload the file
+ * elsewhere (e.g. "Share with Vendor" posting it to /whatsapp/send-po-document).
+ */
+export async function exportDocumentPdfBlob(node: React.ReactNode, options: ExportPdfOptions = {}): Promise<Blob> {
+  const pdf = await buildDocumentPdf(node, options);
+  return pdf.output("blob");
 }

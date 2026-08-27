@@ -22,10 +22,10 @@ export function GRNSuccessView({ grnBatchId, onPrint, onReset }: GRNSuccessProps
       <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, textAlign: "center", lineHeight: 1.6 }}>
         Barcodes are being generated — tap below to print labels
       </div>
-      <Button variant="primary" fullWidth iconLeft={Printer} onClick={onPrint} className="rounded-full bg-[#6E0F2D] hover:bg-[#6E0F2D]">
-        Print Barcode Labels
+      <Button variant="primary" fullWidth iconLeft={Printer} onClick={onPrint} className="rounded-[14px] bg-[#6E0F2D] hover:bg-[#6E0F2D]">
+        Print GRN Label
       </Button>
-      <Button variant="secondary" fullWidth onClick={onReset} className="mt-0.5 rounded-full border-[rgba(110,15,45,0.30)] text-[#6E0F2D]">
+      <Button variant="secondary" fullWidth onClick={onReset} className="mt-0.5 rounded-[14px] border-[rgba(110,15,45,0.30)] text-[#6E0F2D]">
         Back to GRN
       </Button>
     </div>
@@ -74,8 +74,8 @@ export function GRNPrintView({ grn, grnBatchId, onReset }: GRNPrintProps) {
         ))}
       </div>
       <div style={{ padding: "0 20px" }}>
-        <Button variant="primary" fullWidth iconLeft={Printer} onClick={() => toast.success(`${batches.length} label${batches.length === 1 ? "" : "s"} sent to printer`)} className="rounded-full bg-[#6E0F2D] hover:bg-[#6E0F2D] mb-2.5">Print All Labels</Button>
-        {onReset && <Button variant="secondary" fullWidth onClick={onReset} className="rounded-full border-[rgba(110,15,45,0.30)] text-[#6E0F2D]">Done — Skip Printing</Button>}
+        <Button variant="primary" fullWidth iconLeft={Printer} onClick={() => toast.success(`${batches.length} label${batches.length === 1 ? "" : "s"} sent to printer`)} className="rounded-[14px] bg-[#6E0F2D] hover:bg-[#6E0F2D] mb-2.5">Print All Labels</Button>
+        {onReset && <Button variant="secondary" fullWidth onClick={onReset} className="rounded-[14px] border-[rgba(110,15,45,0.30)] text-[#6E0F2D]">Done — Skip Printing</Button>}
       </div>
     </div>
   );

@@ -13,6 +13,12 @@ const MAX_PHOTO_SIZE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_RECEIPT_MIME_TYPES = new Set(["image/png", "image/jpeg", "application/pdf"]);
 const MAX_RECEIPT_SIZE_BYTES = 10 * 1024 * 1024;
 
+// PO/invoice/quotation exports handed to WhatsAppDocumentsService — always
+// the PDF the frontend just rasterised client-side (see exportPdf.ts), never
+// a scan, so unlike receipts there's no image case to allow for.
+const ALLOWED_DOCUMENT_MIME_TYPES = new Set(["application/pdf"]);
+const MAX_DOCUMENT_SIZE_BYTES = 10 * 1024 * 1024;
+
 /**
  * Files are buffered in memory rather than written straight to disk: the
  * destination (local disk or an R2 bucket) is a runtime decision made by
@@ -61,5 +67,14 @@ export function receiptUploadOptions() {
     ALLOWED_RECEIPT_MIME_TYPES,
     MAX_RECEIPT_SIZE_BYTES,
     "Receipt must be a JPG, PNG or PDF file",
+  );
+}
+
+/** Multer options for a generated document PDF (PO/invoice/quotation) shared via WhatsApp. */
+export function documentUploadOptions() {
+  return memoryUploadOptions(
+    ALLOWED_DOCUMENT_MIME_TYPES,
+    MAX_DOCUMENT_SIZE_BYTES,
+    "Document must be a PDF file",
   );
 }

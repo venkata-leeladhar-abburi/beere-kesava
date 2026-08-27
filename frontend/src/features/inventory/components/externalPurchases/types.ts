@@ -12,6 +12,8 @@ export interface FormState {
   status: string;
   notes: string;
   invoiceFileName: string;
+  /** Uploaded invoice file's stored cloud path — set once handleInvoiceFile's upload resolves. */
+  invoiceFileUrl: string;
 }
 
 // Internal per-row state for the saree details editor — carries a stable key

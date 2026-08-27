@@ -289,7 +289,7 @@ export function ProcessReturnRetailFlow({
               title="Which sarees are coming back?"
               subtitle="Scan each saree tag, or tick them off in the sold list. One return covers one customer — tick as many of their pieces as they are bringing back."
               aside={saleFound ? (
-                <Button variant="secondary" size="sm" iconLeft={X} onClick={clearSelection} className="rounded-full border-[rgba(110,15,45,0.20)] px-4 text-[13px] text-[#4F4A45]">
+                <Button variant="secondary" size="sm" iconLeft={X} onClick={clearSelection} className="rounded-[14px] border-[rgba(110,15,45,0.20)] px-4 text-[13px] text-[#4F4A45]">
                   Start over
                 </Button>
               ) : undefined}

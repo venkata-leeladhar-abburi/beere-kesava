@@ -8,11 +8,14 @@ import { useFirms } from "@/features/firms";
 import { VendorPayment } from "../../types";
 import { Button, CurrencyInput, Field, IconButton, Input, Select, SelectItem, Textarea } from "../../../../shared/ui/primitives";
 import { vendorPaymentsApi } from "../../../../shared/api/payments";
+import { vendorBillsApi } from "../../../../shared/api/vendor-bills";
 import { Modal } from "../../../../shared/ui/overlay";
 import { DatePicker, formatDate } from "../../../../shared/ui/date";
 import { rupees } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
 import { toPaise, fromPaise } from "@/lib/gst";
+import { useReceiptUpload } from "@/shared/hooks/useReceiptUpload";
+import { resolveAssetUrl } from "@/shared/api/uploads";
 
 export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; onClose: () => void; onSave: (amount: number, firmId: string) => void }) {
   const { firms } = useFirms();
@@ -41,6 +44,19 @@ export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; 
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { upload: uploadInvoiceFile, uploading: uploadingInvoice, error: invoiceUploadError } = useReceiptUpload();
+  const [invoiceFileUrl, setInvoiceFileUrl] = useState(vp.invoiceFileUrl ?? "");
+  const [invoiceFileName, setInvoiceFileName] = useState(vp.invoiceFileName ?? "");
+
+  const handleInvoiceFile = async (file: File | null) => {
+    if (!file || !vp.billId) return;
+    setInvoiceFileName(file.name);
+    const url = await uploadInvoiceFile(file);
+    if (url) {
+      setInvoiceFileUrl(url);
+      await vendorBillsApi.update(vp.billId, { invoiceFileUrl: url, invoiceFileName: file.name });
+    }
+  };
 
   const handleSave = async () => {
     const numericAmount = amount === "" || isNaN(Number(amount)) ? NaN : fromPaise(toPaise(Number(amount)));
@@ -108,22 +124,36 @@ export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; 
             <div>
               <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, marginBottom: 8 }}>Upload Invoice Document</div>
               <div
-                onClick={() => fileInputRef.current?.click()} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => fileInputRef.current?.click())?.(); } }}
+                onClick={() => vp.billId && fileInputRef.current?.click()} role="button" tabIndex={0} onKeyDown={e => { if (vp.billId && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); fileInputRef.current?.click(); } }}
                 style={{
                   background: "#FFFFFF", border: `1.5px dashed ${T.borderDef}`, borderRadius: 12, padding: "20px",
                   display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-                  cursor: "pointer", transition: "all 0.2s"
+                  cursor: vp.billId ? "pointer" : "not-allowed", opacity: vp.billId ? 1 : 0.6, transition: "all 0.2s"
                 }}
-                onMouseEnter={e => { e.currentTarget.style.background = "rgba(110,15,45,0.02)"; e.currentTarget.style.borderColor = T.royalBurgundy; }}
+                onMouseEnter={e => { if (!vp.billId) return; e.currentTarget.style.background = "rgba(110,15,45,0.02)"; e.currentTarget.style.borderColor = T.royalBurgundy; }}
                 onMouseLeave={e => { e.currentTarget.style.background = "#FFFFFF"; e.currentTarget.style.borderColor = T.borderDef; }}
               >
                 <div style={{ width: 44, height: 44, borderRadius: 22, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 10 }}>
                   <FileText size={20} color={T.royalBurgundy} />
                 </div>
-                <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.royalBurgundy, marginBottom: 4 }}>Click to upload invoice</div>
+                <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.royalBurgundy, marginBottom: 4 }}>
+                  {uploadingInvoice ? "Uploading…" : invoiceFileName || "Click to upload invoice"}
+                </div>
                 <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>PDF, JPG, PNG up to 10MB</div>
-                <Input type="file" ref={fileInputRef} containerClassName="hidden" accept=".pdf,image/*" />
+                <Input type="file" ref={fileInputRef} containerClassName="hidden" accept=".pdf,image/*" onChange={e => void handleInvoiceFile(e.target.files?.[0] ?? null)} disabled={!vp.billId} />
               </div>
+              {!vp.billId && (
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 6 }}>Add an invoice before uploading a document.</div>
+              )}
+              {invoiceUploadError && (
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: "#C0392B", marginTop: 6 }}>{invoiceUploadError}</div>
+              )}
+              {!uploadingInvoice && invoiceFileUrl && (
+                <a href={resolveAssetUrl(invoiceFileUrl) ?? undefined} target="_blank" rel="noreferrer"
+                  style={{ display: "inline-block", marginTop: 6, fontFamily: F.ui, fontSize: 12, color: T.green, textDecoration: "underline" }}>
+                  View uploaded file
+                </a>
+              )}
             </div>
           </div>
 
@@ -171,8 +201,8 @@ export function VendorPayNowModal({ vp, onClose, onSave }: { vp: VendorPayment; 
           </div>
         )}
         <div style={{ padding: "18px 28px 24px", display: "flex", gap: 10, justifyContent: "flex-end", borderTop: `1px solid ${T.borderDef}`, flexShrink: 0 }}>
-          <Button variant="tertiary" onClick={onClose} className="rounded-full text-[var(--text-tertiary)]">Cancel</Button>
-          <Button variant="primary" onClick={handleSave} disabled={saving || !vp.billId} loading={saving} className="rounded-full bg-[#6E0F2D]">
+          <Button variant="tertiary" onClick={onClose} className="rounded-[14px] text-[var(--text-tertiary)]">Cancel</Button>
+          <Button variant="primary" onClick={handleSave} disabled={saving || !vp.billId} loading={saving} className="rounded-[14px] bg-[#6E0F2D]">
             Confirm Payment
           </Button>
         </div>

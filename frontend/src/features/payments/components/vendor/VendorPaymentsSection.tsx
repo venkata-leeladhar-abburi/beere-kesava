@@ -12,7 +12,7 @@ import { vendorBillsApi } from "../../../../shared/api/vendor-bills";
 import { EASE, F, T } from "../../theme";
 import { useFirms } from "@/features/firms";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
-import { VendorMatchedRow, VendorPayment, VendorStatus } from "../../types";
+import { VendorPayment, VendorStatus } from "../../types";
 import { AnimCount, FadeUp } from "../common/motion";
 import { ActionModal, DropBtn, SectionCard } from "../common/primitives";
 import { AddVendorInvoiceModal } from "./AddVendorInvoiceModal";
@@ -90,6 +90,8 @@ export function VendorPaymentsSection() {
         utr: bill ? utrByBillId.get(bill.id) : undefined,
         vendorId: po.vendorId,
         billId: bill?.id,
+        invoiceFileUrl: bill?.invoiceFileUrl ?? undefined,
+        invoiceFileName: bill?.invoiceFileName ?? undefined,
       };
     });
   }, [pos, vendorBillsRes, vendorPaymentsRes]);
@@ -149,11 +151,11 @@ export function VendorPaymentsSection() {
     setPayNowId(null);
   };
 
-  // VendorUploadPanel has already created the real VendorPayment rows by the
-  // time this fires — just refresh the ledger so the new totals show up.
-  const handleExcelMatched = (matched: VendorMatchedRow[]) => {
+  // VendorUploadPanel has already saved the real VendorPayment rows
+  // server-side (POST /payments/vendors/import) by the time this fires —
+  // just refresh the ledger so the new totals show up.
+  const handleExcelUploaded = () => {
     refreshVendorLedger();
-    toast.success(`${matched.length} vendor payment${matched.length !== 1 ? "s" : ""} matched and saved`);
   };
 
   const handleSidebarSavePayment = async () => {
@@ -389,6 +391,7 @@ export function VendorPaymentsSection() {
                 <g transform="translate(150,86)" opacity="0.45">
                   <path d="M-6,0 C-8,-3 -11,-2 -10,0" fill="none" stroke={T.antiqueGold} strokeWidth="0.8" strokeLinecap="round" />
                   <path d="M6,0 C8,-3 11,-2 10,0" fill="none" stroke={T.antiqueGold} strokeWidth="0.8" strokeLinecap="round" />
+                  {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament (a peacock-feather flourish), not a chart data mark */}
                   <rect x="-2" y="-2" width="4" height="4" rx="0.3" fill={T.antiqueGold} transform="rotate(45)" />
                 </g>
               </svg>
@@ -469,7 +472,7 @@ export function VendorPaymentsSection() {
           </div>
         )}
 
-        <VendorUploadPanel vendorPayments={vendorPayments} onMatched={handleExcelMatched} />
+        <VendorUploadPanel onUploaded={handleExcelUploaded} />
 
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, flexWrap: "wrap" as const }}>
           <div className="hidden md:flex" style={{ border: `1px solid ${T.borderDef}`, borderRadius: 9, overflow: "hidden", background: "#fff" }}>

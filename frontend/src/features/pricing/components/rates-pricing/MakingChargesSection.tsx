@@ -216,10 +216,10 @@ export function MakingChargesSection({
                   </div>
 
                   <div style={{ display: "flex", gap: 10 }}>
-                    <Button variant="primary" iconLeft={Check} className="rounded-full bg-[#1E6640] hover:bg-[#1E6640]/90 h-auto py-[9px] px-[22px] text-[13px] font-semibold" onClick={() => saveEdit(row)}>
+                    <Button variant="primary" iconLeft={Check} className="rounded-[14px] bg-[#1E6640] hover:bg-[#1E6640]/90 h-auto py-[9px] px-[22px] text-[13px] font-semibold" onClick={() => saveEdit(row)}>
                       Save Changes
                     </Button>
-                    <Button variant="secondary" iconLeft={X} className="rounded-full h-auto py-[9px] px-[18px] text-[13px]" onClick={() => setEditCode(null)}>
+                    <Button variant="secondary" iconLeft={X} className="rounded-[14px] h-auto py-[9px] px-[18px] text-[13px]" onClick={() => setEditCode(null)}>
                       Cancel
                     </Button>
                   </div>

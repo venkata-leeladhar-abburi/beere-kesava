@@ -1,13 +1,16 @@
 /* eslint-disable no-restricted-syntax */
+import * as React from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, Share2 } from "lucide-react";
 import { PurchaseOrder } from "../contexts/POContext";
 import { toast } from "sonner";
 import { Button, IconButton } from "../../../shared/ui/primitives";
 import { Modal } from "../../../shared/ui/overlay";
-import { DocumentViewer, PurchaseOrderDocument, DEFAULT_LETTERHEAD_FIRM } from "../../../shared/ui/document";
+import { DocumentViewer, PurchaseOrderDocument, DEFAULT_LETTERHEAD_FIRM, exportDocumentPdfBlob } from "../../../shared/ui/document";
 import { StatusPill } from "../../../shared/ui/domain";
 import type { StatusValueOf } from "@/lib/domain/status";
+import { whatsappApi } from "../../../shared/api/whatsapp";
+import { isApiError } from "../../../shared/api/client";
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const T = {
@@ -58,6 +61,8 @@ interface PODocumentModalProps {
 }
 
 export function PODocumentModal({ open, onClose, po, isApproved }: PODocumentModalProps) {
+  const [sharing, setSharing] = React.useState(false);
+
   if (!po) return null;
 
   const todayDisplay = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
@@ -67,11 +72,45 @@ export function PODocumentModal({ open, onClose, po, isApproved }: PODocumentMod
 
   const showApproved = isApproved || po.status === "approved" || po.status === "received";
 
+  const documentNode = (
+    <PurchaseOrderDocument
+      poNumber={po.poNumber}
+      submittedDate={new Date(po.submittedDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
+      deliveryDate={po.deliveryDate ? new Date(po.deliveryDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : undefined}
+      firm={DEFAULT_LETTERHEAD_FIRM}
+      supplier={{ name: po.vendor, city: po.vendorCity, contact: po.vendorContact }}
+      materials={po.materials}
+      totalValue={po.totalValue}
+      urgency={po.urgency}
+      notesVendor={po.notesVendor}
+      notesAdmin={po.notesAdmin}
+      raisedBy={po.raisedBy}
+      approvedBy={showApproved ? "Superadmin" : undefined}
+      approvedDate={showApproved ? approvedDisplay : undefined}
+      statusLabel={po.status === "rejected" ? "REJECTED" : po.status === "received" ? "RECEIVED" : undefined}
+    />
+  );
+
+  const handleShare = async () => {
+    setSharing(true);
+    const toastId = toast.loading(`Preparing ${po.poNumber} for ${po.vendor}…`);
+    try {
+      const pdf = await exportDocumentPdfBlob(documentNode, { fileName: po.poNumber, title: `Purchase Order ${po.poNumber}` });
+      await whatsappApi.sendPoDocument(po.id, pdf);
+      toast.success(`Sent to ${po.vendor} on WhatsApp`, { id: toastId });
+    } catch (err: unknown) {
+      const message = isApiError(err) ? err.message : "Couldn't send the PO on WhatsApp.";
+      toast.error(message, { id: toastId });
+    } finally {
+      setSharing(false);
+    }
+  };
+
   return (
     <Modal open={open} onOpenChange={o => !o && onClose()} size="xl">
-      <div style={{ display: "flex", flexDirection: "column", height: "85vh" }}>
+      <div className="flex flex-col h-[85vh] rounded-2xl overflow-hidden bg-[#FFFDF9]">
         {/* Header */}
-        <div style={{
+        <div className="rounded-t-2xl overflow-hidden" style={{
           background: T.darkBurgundy,
           padding: "16px 20px",
           display: "flex",
@@ -96,20 +135,20 @@ export function PODocumentModal({ open, onClose, po, isApproved }: PODocumentMod
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <Button
-              onClick={() => toast.success("PO document ready — share with vendor via WhatsApp or email")}
+              onClick={handleShare}
+              disabled={sharing}
               variant="secondary" size="sm" iconLeft={Share2}
-              className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+              className="rounded-[10px] bg-white/10 border-white/20 text-white hover:bg-white/20 active:bg-white/30"
             >
-              Share with Vendor
+              {sharing ? "Sending…" : "Share with Vendor"}
             </Button>
             <Dialog.Close asChild>
               <IconButton
                 label="Close"
                 icon={X}
-                variant="secondary"
+                variant="ghost"
                 size="md"
-                shape="circle"
-                className="bg-white/10 border-white/20 text-white"
+                className="h-9 w-9 rounded-[10px] bg-white/10 text-white border border-white/20 hover:bg-white/25 hover:text-white active:bg-white/35 transition-all cursor-pointer shrink-0"
               />
             </Dialog.Close>
           </div>
@@ -120,22 +159,7 @@ export function PODocumentModal({ open, onClose, po, isApproved }: PODocumentMod
             DocumentViewer/useDocument (Part C.1). Replaces the bespoke
             print-area card and its raw calls to window's print method. */}
         <DocumentViewer fileName={po.poNumber} documentTitle={`Purchase Order ${po.poNumber}`}>
-          <PurchaseOrderDocument
-            poNumber={po.poNumber}
-            submittedDate={new Date(po.submittedDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
-            deliveryDate={po.deliveryDate ? new Date(po.deliveryDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : undefined}
-            firm={DEFAULT_LETTERHEAD_FIRM}
-            supplier={{ name: po.vendor, city: po.vendorCity, contact: po.vendorContact }}
-            materials={po.materials}
-            totalValue={po.totalValue}
-            urgency={po.urgency}
-            notesVendor={po.notesVendor}
-            notesAdmin={po.notesAdmin}
-            raisedBy={po.raisedBy}
-            approvedBy={showApproved ? "Superadmin" : undefined}
-            approvedDate={showApproved ? approvedDisplay : undefined}
-            statusLabel={po.status === "rejected" ? "REJECTED" : po.status === "received" ? "RECEIVED" : undefined}
-          />
+          {documentNode}
         </DocumentViewer>
       </div>
     </Modal>

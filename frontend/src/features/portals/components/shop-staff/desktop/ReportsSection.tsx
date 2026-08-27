@@ -111,7 +111,7 @@ export function ReportsSection({
         {/* Period selector */}
         <div style={{ display: "flex", gap: 10, marginBottom: 32 }}>
           {["Today", "This Week", "This Month", "Last 3 Months"].map((p, i) => (
-            <Button key={p} variant={i === 0 ? "primary" : "secondary"} size="md" className={i === 0 ? "rounded-full border border-[rgba(110,15,45,0.12)] bg-[#6E0F2D] hover:bg-[#6E0F2D]" : "rounded-full border border-[rgba(110,15,45,0.12)] bg-white"}>{p}</Button>
+            <Button key={p} variant={i === 0 ? "primary" : "secondary"} size="md" className={i === 0 ? "rounded-[14px] border border-[rgba(110,15,45,0.12)] bg-[#6E0F2D] hover:bg-[#6E0F2D]" : "rounded-[14px] border border-[rgba(110,15,45,0.12)] bg-white"}>{p}</Button>
           ))}
         </div>
 

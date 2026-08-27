@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   useSuppliers, SareeTag, Purchase,
   totalPieces,
@@ -36,7 +36,7 @@ export type { FormState };
 export function ExternalPurchasesPage() {
   // Purchases live in the shared supplier context so the Suppliers page sees the
   // same inventory, spend and payment history that gets entered here.
-  const { purchases, addPurchase, updatePurchase, deletePurchase, isLoading, isError, refetch } = useSuppliers();
+  const { purchases, addPurchase, updatePurchase, deletePurchase, getPurchaseDetail, isLoading, isError, refetch } = useSuppliers();
   const confirm = useConfirm();
   const [detailRow, setDetailRow] = useState<Purchase | null>(null);
   const [search, setSearch] = useState("");
@@ -47,6 +47,37 @@ export function ExternalPurchasesPage() {
 
   const [formModal, setFormModal] = useState<{ mode: "add" | "edit" | "request" | "request"; editId?: string } | null>(null);
   const [sareeListPurchase, setSareeListPurchase] = useState<Purchase | null>(null);
+  // Saree photos (imageUrl/pieceImageUrls) aren't in the list's "summary"
+  // view — fetch the full purchase on demand once a user actually opens its
+  // detail drawer, saree list, or edit form.
+  const [editingFull, setEditingFull] = useState<Purchase | null>(null);
+
+  const openDetail = (row: Purchase) => {
+    setDetailRow(row);
+    getPurchaseDetail(row.id)
+      .then((full) => setDetailRow((prev) => (prev && prev.id === row.id ? full : prev)))
+      .catch(() => { /* keep the summary row on failure */ });
+  };
+
+  const openSareeList = (row: Purchase) => {
+    setSareeListPurchase(row);
+    getPurchaseDetail(row.id)
+      .then((full) => setSareeListPurchase((prev) => (prev && prev.id === row.id ? full : prev)))
+      .catch(() => { /* keep the summary row on failure */ });
+  };
+
+  useEffect(() => {
+    if (formModal?.mode !== "edit" || !formModal.editId) {
+      setEditingFull(null);
+      return;
+    }
+    let cancelled = false;
+    setEditingFull(null);
+    getPurchaseDetail(formModal.editId)
+      .then((full) => { if (!cancelled) setEditingFull(full); })
+      .catch(() => { /* falls back to the summary row below */ });
+    return () => { cancelled = true; };
+  }, [formModal]);
 
   const [fSupplier, setFSupplier] = useState("All Suppliers");
   const [fPurchaseOrder, setFPurchaseOrder] = useState("All Purchase Orders");
@@ -138,6 +169,7 @@ export function ExternalPurchasesPage() {
       notes: form.notes,
       addedBy: "Admin",
       invoiceFileName: form.invoiceFileName || undefined,
+      invoiceFileUrl: form.invoiceFileUrl || undefined,
       sarees,
     });
     setFormModal(null);
@@ -156,6 +188,7 @@ export function ExternalPurchasesPage() {
       status: form.status,
       notes: form.notes,
       invoiceFileName: form.invoiceFileName || undefined,
+      invoiceFileUrl: form.invoiceFileUrl || undefined,
       sarees,
     });
     setFormModal(null);
@@ -174,7 +207,9 @@ export function ExternalPurchasesPage() {
     setDetailRow((d) => (d && d.id === id ? null : d));
   };
 
-  const editingPurchase = formModal?.mode === "edit" ? purchases.find((p) => p.id === formModal.editId) : null;
+  const editingPurchase = formModal?.mode === "edit"
+    ? editingFull ?? purchases.find((p) => p.id === formModal.editId)
+    : null;
   const editingFormInitial: FormState | null = editingPurchase
     ? {
         supplierId: editingPurchase.supplierId || "",
@@ -187,6 +222,7 @@ export function ExternalPurchasesPage() {
         status: editingPurchase.status,
         notes: editingPurchase.notes,
         invoiceFileName: editingPurchase.invoiceFileName || "",
+        invoiceFileUrl: editingPurchase.invoiceFileUrl || "",
       }
     : null;
 
@@ -225,8 +261,8 @@ export function ExternalPurchasesPage() {
           viewMode={viewMode}
           hoveredRow={hoveredRow}
           setHoveredRow={setHoveredRow}
-          onView={setDetailRow}
-          onViewSarees={setSareeListPurchase}
+          onView={openDetail}
+          onViewSarees={openSareeList}
           onEdit={(id) => setFormModal({ mode: "edit", editId: id })}
           onDelete={handleDelete}
           loading={isLoading}
@@ -240,7 +276,7 @@ export function ExternalPurchasesPage() {
         detailRow={detailRow}
         onClose={() => setDetailRow(null)}
         onEdit={(id) => setFormModal({ mode: "edit", editId: id })}
-        onViewSarees={setSareeListPurchase}
+        onViewSarees={openSareeList}
       />
 
       {/* ADD / EDIT FORM MODAL */}
@@ -266,7 +302,7 @@ export function ExternalPurchasesPage() {
       {/* SAREE BARCODE LIST MODAL */}
       {sareeListPurchase && (
         <SareeListModal
-          purchase={purchases.find((p) => p.id === sareeListPurchase.id) || sareeListPurchase}
+          purchase={sareeListPurchase}
           onClose={() => setSareeListPurchase(null)}
         />
       )}

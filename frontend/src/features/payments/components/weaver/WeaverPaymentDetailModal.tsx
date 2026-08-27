@@ -14,7 +14,9 @@ import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import type { WeaverEarningsBreakdown } from "../../../../shared/api/payments";
+import type { WeaverPaymentRecord } from "../../../weavers/contexts/WeaverPaymentsContext";
 import { rupees } from "@/lib/domain/money";
+import { formatRecordedBy } from "@/lib/domain/actor";
 import { EntityCode, Money } from "@/shared/ui/domain";
 
 // ── Weaver Payment Detail Modal ───────────────────────────────────────────────
@@ -40,6 +42,30 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
 
 
   const openSareeType = openSareeTypeCode ? getSareeTypeByCode(openSareeTypeCode) : undefined;
+
+  const paymentColumns: ColumnDef<WeaverPaymentRecord>[] = [
+    {
+      id: "amountPaid", header: "Amount Paid", accessor: r => r.amountPaid, type: "number",
+      cell: (_v, r) => <span style={{ fontWeight: 700, color: T.green }}><Money value={rupees(r.amountPaid)} /></span>,
+    },
+    {
+      id: "utrNumber", header: "UTR Number", accessor: r => r.utrNumber,
+      cell: (_v, r) => <span style={{ fontVariantNumeric: "tabular-nums" }}>{r.utrNumber || "—"}</span>,
+    },
+    { id: "firmName", header: "Firm", accessor: r => r.firmName },
+    { id: "paymentDate", header: "Payment Date", accessor: r => r.paymentDate },
+    { id: "batchNo", header: "Batch No.", accessor: r => r.batchNo, cell: (_v, r) => <>{r.batchNo || "—"}</> },
+    { id: "loomNumber", header: "Loom No.", accessor: r => r.loomNumber, cell: (_v, r) => <>{r.loomNumber || "—"}</> },
+    { id: "noOfSarees", header: "No. of Sarees", accessor: r => r.noOfSarees ?? "", type: "number", cell: (_v, r) => <>{r.noOfSarees ?? "—"}</> },
+    {
+      id: "deduction", header: "Deduction", accessor: r => r.deduction ?? "", type: "number",
+      cell: (_v, r) => <span style={{ color: r.deduction ? T.crimson : T.luxuryBrown }}>{r.deduction ? <Money value={rupees(r.deduction)} /> : "—"}</span>,
+    },
+    {
+      id: "recordedBy", header: "Recorded By", accessor: r => formatRecordedBy(r.recordedBy) ?? "",
+      cell: (_v, r) => <>{formatRecordedBy(r.recordedBy)}</>,
+    },
+  ];
 
   const chargeColumns: ColumnDef<WeaverEarningsBreakdown>[] = [
     {
@@ -123,43 +149,13 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
                 No payments uploaded yet. Upload Excel on this page to see payment history.
               </div>
             ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {payments.map((p) => (
-                  <div key={`${p.utrNumber || "no-utr"}-${p.paymentDate}-${p.firmName}`} className="grid grid-cols-1 md:grid-cols-4" style={{ background: "#FFFFFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, padding: "12px 16px", display: "grid", gap: 10, alignItems: "center" }}>
-                    <div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>Amount Paid</div>
-                      <div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.green }}><Money value={rupees(p.amountPaid)} /></div>
-                    </div>
-                    <div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>UTR Number</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, fontVariantNumeric: "tabular-nums" }}>{p.utrNumber || "—"}</div>
-                    </div>
-                    <div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>Firm</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{p.firmName}</div>
-                    </div>
-                    <div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>Payment Date</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{p.paymentDate}</div>
-                    </div>
-                    <div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>Batch No.</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{p.batchNo || "—"}</div>
-                    </div>
-                    <div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>Loom Number</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{p.loomNumber || "—"}</div>
-                    </div>
-                    <div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>No. of Sarees</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown }}>{p.noOfSarees ?? "—"}</div>
-                    </div>
-                    <div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase", letterSpacing: "0.6px" }}>Deduction</div>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: p.deduction ? T.crimson : T.luxuryBrown }}>{p.deduction ? <Money value={rupees(p.deduction)} /> : "—"}</div>
-                    </div>
-                  </div>
-                ))}
+              <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflowX: "auto" }}>
+                <DataTable
+                  columns={paymentColumns}
+                  data={payments}
+                  getRowId={p => `${p.utrNumber || "no-utr"}-${p.paymentDate}-${p.firmName}`}
+                  density="compact"
+                />
               </div>
             )}
           </div>

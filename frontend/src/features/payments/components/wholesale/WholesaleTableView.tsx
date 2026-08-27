@@ -33,7 +33,7 @@ export function WholesaleTableView({ view, filtered, setViewInvoice, setRecordPa
               }}
             >
               <div style={{ flex: "0 0 130px" }}>
-                <EntityCode type="invoice" value={inv.id} size="sm" />
+                <EntityCode type="invoice" value={inv.code} size="sm" />
               </div>
               <div style={{ flex: "0 0 230px" }}>
                 <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{inv.customer}</div>
@@ -75,10 +75,10 @@ export function WholesaleTableView({ view, filtered, setViewInvoice, setRecordPa
       // Width comes from the cell's own class rather than ColumnDef.width —
       // the two were duplicating the same 320px and the column sizes to its
       // content either way.
-      id: "id", header: "Invoice ID", accessor: inv => inv.id,
+      id: "id", header: "Invoice ID", accessor: inv => inv.code,
       cell: (_v, inv) => (
         <div className="w-[320px] min-w-[320px] whitespace-nowrap">
-          <EntityCode type="invoice" value={inv.id} size="sm" className="whitespace-nowrap" />
+          <EntityCode type="invoice" value={inv.code} size="sm" className="whitespace-nowrap" />
         </div>
       ),
     },

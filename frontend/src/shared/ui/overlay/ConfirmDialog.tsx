@@ -74,7 +74,7 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
             className={cn(
               "fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
               "w-[calc(100vw-32px)] flex flex-col",
-              "bg-[var(--surface-overlay)] rounded-[var(--radius-xl)] shadow-[var(--shadow-xl)]",
+              "bg-[var(--surface-overlay)] rounded-2xl shadow-[var(--shadow-xl)]",
               "p-6"
             )}
             style={{ maxWidth: 400, zIndex: "var(--z-modal)" }}

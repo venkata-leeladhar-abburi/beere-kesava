@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CalendarClock, Receipt, X } from "lucide-react";
+import { CalendarClock, Receipt, User, X } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
 
 import { F, T } from "../../theme";
@@ -11,6 +11,7 @@ import { DatePicker, formatDate } from "../../../../shared/ui/date";
 import { rupees } from "@/lib/domain/money";
 import { EntityCode, Money } from "@/shared/ui/domain";
 import { toPaise, fromPaise } from "@/lib/gst";
+import { formatRecordedBy } from "@/lib/domain/actor";
 
 // ── Record Payment Modal ──────────────────────────────────────────────────────
 export function RecordPaymentModal({ inv, onClose, onSave }: { inv: Invoice; onClose: () => void; onSave: (amount: number, firmId: string, utr: string, date: string, method: string) => void }) {
@@ -36,7 +37,7 @@ export function RecordPaymentModal({ inv, onClose, onSave }: { inv: Invoice; onC
 
   return (
     <Modal open={true} onOpenChange={open => { if (!open) onClose(); }} size="lg">
-      <div style={{ background: T.silkCream, borderRadius: 20, overflow: "hidden", border: `1.5px solid ${T.borderGold}` }}>
+      <div style={{ background: T.silkCream, borderRadius: 20, overflow: "hidden", border: `1.5px solid ${T.borderGold}`, display: "flex", flexDirection: "column", maxHeight: "100%", minHeight: 0 }}>
         <div style={{ background: "linear-gradient(135deg, #6E0F2D 0%, #4A061B 100%)", padding: "20px 28px", display: "flex", justifyContent: "space-between", alignItems: "center", position: "relative" }}>
           <Dialog.Title asChild>
             <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: "#FFFFFF" }}>Record Payment Received</div>
@@ -50,9 +51,9 @@ export function RecordPaymentModal({ inv, onClose, onSave }: { inv: Invoice; onC
           </Dialog.Close>
         </div>
 
-        <div style={{ padding: "24px 28px 8px", display: "flex", flexDirection: "column", gap: 16, overflowY: "auto" }}>
+        <div style={{ padding: "24px 28px 8px", display: "flex", flexDirection: "column", gap: 16, overflowY: "auto", flex: 1, minHeight: 0 }}>
           <div style={{ background: "#FFFFFF", borderRadius: 10, border: `1px solid ${T.borderDef}`, padding: "12px 16px", display: "flex", justifyContent: "space-between" }}>
-            <EntityCode type="invoice" value={inv.id} size="sm" />
+            <EntityCode type="invoice" value={inv.code} size="sm" />
             <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Invoice Reference</span>
           </div>
 
@@ -103,6 +104,9 @@ export function RecordPaymentModal({ inv, onClose, onSave }: { inv: Invoice; onC
                         <div style={{ display: "flex", alignItems: "center", gap: 4, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
                           <CalendarClock size={11} /> {p.date}
                         </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 4, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
+                          <User size={11} /> {formatRecordedBy(p.recordedBy)}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -136,8 +140,8 @@ export function RecordPaymentModal({ inv, onClose, onSave }: { inv: Invoice; onC
         </div>
 
         <div style={{ padding: "18px 28px 24px", display: "flex", gap: 10, justifyContent: "flex-end", flexShrink: 0 }}>
-          <Button variant="tertiary" onClick={onClose} className="rounded-full text-[var(--text-tertiary)]">Cancel</Button>
-          <Button variant="primary" onClick={handleSave} disabled={saving} loading={saving} className="rounded-full bg-[#6E0F2D]">
+          <Button variant="tertiary" onClick={onClose} className="rounded-[14px] text-[var(--text-tertiary)]">Cancel</Button>
+          <Button variant="primary" onClick={handleSave} disabled={saving} loading={saving} className="rounded-[14px] bg-[#6E0F2D]">
             Save Payment
           </Button>
         </div>

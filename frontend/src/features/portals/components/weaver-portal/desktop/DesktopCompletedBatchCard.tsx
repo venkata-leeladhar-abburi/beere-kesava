@@ -39,6 +39,7 @@ export function DesktopCompletedBatchCard({ b, bp = "desktop" }: { b: MyBatchEnt
         {/* Wrapped so a click inside the modal's Radix portal — which still
             bubbles through the React tree, not the DOM tree it's rendered
             into — doesn't reach the card's own onClick and reopen it. */}
+        {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events -- pure event-isolation wrapper (stops a nested portal/button click from bubbling to the card's own onClick); it has no interaction of its own, so it isn't a keyboard target */}
         <div onClick={e => e.stopPropagation()}>
           <WeaverBatchSareesModal batch={b} open={showSarees} onOpenChange={setShowSarees} />
         </div>
@@ -69,6 +70,7 @@ export function DesktopCompletedBatchCard({ b, bp = "desktop" }: { b: MyBatchEnt
         {/* Clickable saree type chips — stop propagation so this doesn't also
             trigger the card's own click-to-open-batch handler above. */}
         {sareeTypePairs.length > 0 && (
+          // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events -- pure event-isolation wrapper (stops a nested portal/button click from bubbling to the card's own onClick); it has no interaction of its own, so it isn't a keyboard target
           <div onClick={e => e.stopPropagation()}>
             <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 7 }}>CLICK TO VIEW SAREE TYPE DETAILS</div>
             <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 7 }}>

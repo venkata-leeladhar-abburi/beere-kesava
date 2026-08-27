@@ -10,10 +10,11 @@ import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter 
 import { FadeUp } from "../common/motion";
 import { DropBtn, SectionCard } from "../common/primitives";
 import { SupplierPayNowModal } from "./SupplierPayNowModal";
+import { SupplierPaymentDetailModal } from "./SupplierPaymentDetailModal";
 import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
-import { Money } from "@/shared/ui/domain";
+import { Money, EntityCode } from "@/shared/ui/domain";
 
 type SupplierStatusKey = "Paid" | "Pending" | "Overdue";
 
@@ -41,56 +42,6 @@ function SupplierStatusBadge({ status }: { status: SupplierStatusKey }) {
   );
 }
 
-const TopDivider = () => (
-  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 20, marginBottom: 12 }}>
-    <div style={{ display: "flex", gap: 3, paddingLeft: 4 }}>
-      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
-      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
-      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
-    </div>
-    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginLeft: 8 }} />
-    <svg width="60" height="20" viewBox="0 0 60 20" style={{ margin: "0 8px", flexShrink: 0 }}>
-      <g transform="translate(30, 10)">
-        <polygon points="-16,0 -12,-3 -8,0 -12,3" fill={T.antiqueGold} />
-        <path d="M-5,0 L0,-5 L5,0 L0,5 Z" fill={T.antiqueGold} />
-        <circle cx="0" cy="0" r="1.5" fill="#FFFDF9" />
-        <polygon points="8,0 12,-3 16,0 12,3" fill={T.antiqueGold} />
-      </g>
-    </svg>
-    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginRight: 8 }} />
-    <div style={{ display: "flex", gap: 3, paddingRight: 4 }}>
-      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
-      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
-      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
-    </div>
-  </div>
-);
-
-const BottomDivider = () => (
-  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 20, marginTop: 16 }}>
-    <div style={{ display: "flex", gap: 3, paddingLeft: 4 }}>
-      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
-      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
-      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
-    </div>
-    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginLeft: 8 }} />
-    <svg width="60" height="20" viewBox="0 0 60 20" style={{ margin: "0 8px", flexShrink: 0 }}>
-      <g transform="translate(30, 10)">
-        <polygon points="-16,0 -12,-3 -8,0 -12,3" fill={T.antiqueGold} />
-        <path d="M-5,0 L0,-5 L5,0 L0,5 Z" fill={T.antiqueGold} />
-        <circle cx="0" cy="0" r="1.5" fill="#FFFDF9" />
-        <polygon points="8,0 12,-3 16,0 12,3" fill={T.antiqueGold} />
-      </g>
-    </svg>
-    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginRight: 8 }} />
-    <div style={{ display: "flex", gap: 3, paddingRight: 4 }}>
-      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
-      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
-      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
-    </div>
-  </div>
-);
-
 export function SupplierPaymentsSection() {
   const { suppliers, purchases, payments, addPayment, statsFor, isLoading, isError, refetch } = useSuppliers();
 
@@ -100,6 +51,7 @@ export function SupplierPaymentsSection() {
   const [search, setSearch] = useState("");
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [payForId, setPayForId] = useState<string | null>(null);
+  const [detailForId, setDetailForId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   const rows: SupplierRow[] = useMemo(() => {
@@ -136,6 +88,14 @@ export function SupplierPaymentsSection() {
   const payFor = payForId ? rows.find(r => r.supplier.id === payForId) ?? null : null;
   const openPurchasesForPayFor: Purchase[] = payFor
     ? purchases.filter(p => p.supplierId === payFor.supplier.id && p.status !== "Paid")
+    : [];
+
+  const detailFor = detailForId ? rows.find(r => r.supplier.id === detailForId) ?? null : null;
+  const purchasesForDetail: Purchase[] = detailFor
+    ? purchases.filter(p => p.supplierId === detailFor.supplier.id || p.supplier === detailFor.supplier.name)
+    : [];
+  const paymentsForDetail = detailFor
+    ? payments.filter(p => p.supplierId === detailFor.supplier.id)
     : [];
 
   const handleSave = (payload: { amount: number; date: string; mode: "Cash" | "Bank Transfer" | "UPI" | "Cheque"; reference: string; purchaseId?: string }) => {
@@ -193,17 +153,23 @@ export function SupplierPaymentsSection() {
     {
       id: "action", header: "Action", accessor: () => null, type: "actions",
       cell: (_v, r) => (
-        r.outstanding === 0 ? (
-          <Button variant="secondary" size="sm" disabled
-            className="rounded-[7px] border-[rgba(30,102,64,0.20)] bg-[rgba(30,102,64,0.09)] text-[#1E6640] disabled:bg-[rgba(30,102,64,0.09)] disabled:text-[#1E6640] disabled:opacity-100">
-            {r.totalPurchased > 0 ? "Paid" : "No Dues"}
+        <div style={{ display: "flex", gap: 6 }}>
+          <Button variant="tertiary" size="sm" onClick={() => setDetailForId(r.supplier.id)}
+            className="rounded-[7px] text-[var(--text-tertiary)]">
+            View Details
           </Button>
-        ) : (
-          <Button variant="secondary" size="sm" onClick={() => setPayForId(r.supplier.id)}
-            className="rounded-[7px] border-[#6E0F2D] text-[#6E0F2D]">
-            Pay Now
-          </Button>
-        )
+          {r.outstanding === 0 ? (
+            <Button variant="secondary" size="sm" disabled
+              className="rounded-[7px] border-[rgba(30,102,64,0.20)] bg-[rgba(30,102,64,0.09)] text-[#1E6640] disabled:bg-[rgba(30,102,64,0.09)] disabled:text-[#1E6640] disabled:opacity-100">
+              {r.totalPurchased > 0 ? "Paid" : "No Dues"}
+            </Button>
+          ) : (
+            <Button variant="secondary" size="sm" onClick={() => setPayForId(r.supplier.id)}
+              className="rounded-[7px] border-[#6E0F2D] text-[#6E0F2D]">
+              Pay Now
+            </Button>
+          )}
+        </div>
       ),
     },
   ];
@@ -297,6 +263,7 @@ export function SupplierPaymentsSection() {
                 <g transform="translate(150,86)" opacity="0.45">
                   <path d="M-6,0 C-8,-3 -11,-2 -10,0" fill="none" stroke={T.antiqueGold} strokeWidth="0.8" strokeLinecap="round" />
                   <path d="M6,0 C8,-3 11,-2 10,0" fill="none" stroke={T.antiqueGold} strokeWidth="0.8" strokeLinecap="round" />
+                  {/* eslint-disable-next-line no-restricted-syntax -- decorative SVG ornament (a peacock-feather flourish), not a chart data mark */}
                   <rect x="-2" y="-2" width="4" height="4" rx="0.3" fill={T.antiqueGold} transform="rotate(45)" />
                 </g>
               </svg>
@@ -409,60 +376,170 @@ export function SupplierPaymentsSection() {
 
         {view === "card" && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8 items-stretch">
-            {filtered.map((r, i) => (
-              <motion.div key={r.supplier.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.07 }}
-                style={{ background: "#FFFDF9", borderRadius: 12, border: `1.5px solid ${T.antiqueGold}`, display: "flex", flexDirection: "column", boxShadow: "0 4px 20px rgba(200,155,71,0.15)", overflow: "hidden", position: "relative" }}>
-                
-                {/* Top accent bar */}
-                <div style={{ height: 4, background: T.royalBurgundy, width: "100%", opacity: 0.8 }} />
-                
-                <div style={{ padding: "16px 20px 0" }}>
-                  <TopDivider />
-                </div>
-                
-                <div style={{ padding: "0 20px 20px", display: "flex", flexDirection: "column", gap: 12, flex: 1 }}>
-                  <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <Store size={16} color={T.royalBurgundy} />
-                      </div>
-                      <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 15, color: T.luxuryBrown }}>{r.supplier.name}</span>
-                    </div>
-                    <SupplierStatusBadge status={r.status} />
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                    <div>
-                      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 2 }}>Purchased</div>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}><Money value={rupees(r.totalPurchased)} /></div>
-                    </div>
-                    <div>
-                      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 2 }}>Paid</div>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: T.green }}><Money value={rupees(r.totalPaid)} /></div>
-                    </div>
-                    <div style={{ gridColumn: "1 / 3" }}>
-                      <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginBottom: 2 }}>Balance Due</div>
-                      <div style={{ fontSize: 16, fontWeight: 700, color: r.outstanding === 0 ? T.green : r.status === "Overdue" ? T.crimson : T.antiqueGold }}>
-                        {r.outstanding === 0 && r.totalPurchased > 0 ? "Paid ✓" : <Money value={rupees(r.outstanding)} />}
-                      </div>
-                    </div>
-                  </div>
-                  <div style={{ padding: "10px 0 0" }}>
-                    <BottomDivider />
-                  </div>
-                </div>
+            {filtered.map((r, i) => {
+              const isPaidRow = r.outstanding === 0 && r.totalPurchased > 0;
+              return (
+              <motion.div
+                key={r.supplier.id}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: i * 0.05 }}
+                whileHover={{ y: -3, boxShadow: "0 14px 35px rgba(110,15,45,0.10)" }}
+                style={{
+                  background: "#FFFDF9",
+                  borderRadius: 20,
+                  border: `1.5px solid ${T.borderDef}`,
+                  boxShadow: "0 4px 20px rgba(74,6,27,0.03)",
+                  overflow: "hidden",
+                  display: "flex",
+                  flexDirection: "column",
+                  width: "100%",
+                  position: "relative",
+                }}
+              >
+                {/* Top accent bar — Royal Burgundy Brown */}
+                <div style={{ height: 6, background: T.royalBurgundy, flexShrink: 0 }} />
 
-                <div style={{ padding: "0 20px 20px" }}>
-                  <Button variant="secondary" size="sm" disabled={r.outstanding === 0} onClick={() => setPayForId(r.supplier.id)}
-                    className={`w-full justify-center rounded-[8px] border-[#6E0F2D] text-[#6E0F2D] disabled:opacity-50 font-bold text-[12px] py-2 ${
-                      r.outstanding === 0
-                        ? "border-[1.5px] border-[rgba(30,102,64,0.18)] bg-[rgba(30,102,64,0.07)] text-[#1E6640] disabled:bg-[rgba(30,102,64,0.07)] disabled:text-[#1E6640] disabled:opacity-100"
-                        : "border-[1.5px] border-[rgba(110,15,45,0.12)] text-[#6E0F2D]"
-                    }`}>
-                    {r.outstanding === 0 ? (r.totalPurchased > 0 ? "Paid" : "No Dues") : "Pay Now"}
-                  </Button>
+                <div style={{ padding: "20px 22px 18px", display: "flex", flexDirection: "column", flex: 1, justifyContent: "space-between" }}>
+                  {/* Top Header: Store Arch Icon + Supplier Name + Status Pill */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
+                      {/* Scalloped Arch Badge */}
+                      <div style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: "14px 14px 12px 12px",
+                        background: "rgba(110, 15, 45, 0.06)",
+                        border: "1px solid rgba(110, 15, 45, 0.12)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}>
+                        <Store size={20} color={T.royalBurgundy} />
+                      </div>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.2 }} className="truncate">
+                          {r.supplier.name}
+                        </div>
+                        <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, marginTop: 2 }}>
+                          {r.supplier.code ? `Code: ${r.supplier.code}` : `Last: ${r.lastPurchaseDate || "—"}`}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Status Pill */}
+                    <span style={{
+                      fontFamily: F.ui,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: r.status === "Paid" ? "#1E6640" : r.status === "Overdue" ? "#C0392B" : "#A06800",
+                      background: r.status === "Paid" ? "rgba(30,102,64,0.08)" : r.status === "Overdue" ? "rgba(192,57,43,0.08)" : "#FFF9EE",
+                      border: `1px solid ${r.status === "Paid" ? "rgba(30,102,64,0.3)" : r.status === "Overdue" ? "rgba(192,57,43,0.3)" : "#E6C687"}`,
+                      padding: "4px 14px",
+                      borderRadius: 999,
+                      whiteSpace: "nowrap",
+                      flexShrink: 0,
+                    }}>
+                      {r.status}
+                    </span>
+                  </div>
+
+                  {/* Diamond Line Separator */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", margin: "16px 0 14px" }}>
+                    <div style={{ flex: 1, height: 1, background: "rgba(200, 155, 71, 0.25)" }} />
+                    <div style={{ width: 6, height: 6, background: "rgba(200, 155, 71, 0.45)", transform: "rotate(45deg)", margin: "0 8px", flexShrink: 0 }} />
+                    <div style={{ flex: 1, height: 1, background: "rgba(200, 155, 71, 0.25)" }} />
+                  </div>
+
+                  {/* Row 1: Purchased & Paid Stats */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    {/* Purchased */}
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, color: "#886A58" }}>
+                        <span style={{ color: "#C89B47", fontSize: 10 }}>●</span> Purchased
+                      </div>
+                      <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown, marginTop: 4 }}>
+                        <Money value={rupees(r.totalPurchased)} />
+                      </div>
+                    </div>
+
+                    {/* Vertical divider */}
+                    <div style={{ width: 1, height: 36, background: "rgba(200, 155, 71, 0.22)", margin: "0 16px", flexShrink: 0 }} />
+
+                    {/* Paid */}
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, color: "#886A58" }}>
+                        <span style={{ color: "#C89B47", fontSize: 10 }}>●</span> Paid
+                      </div>
+                      <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown, marginTop: 4 }}>
+                        <Money value={rupees(r.totalPaid)} />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Line between Purchased/Paid and Balance Due */}
+                  <div style={{ height: 1, background: "rgba(200, 155, 71, 0.2)", margin: "14px 0" }} />
+
+                  {/* Row 2: Balance Due */}
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, color: "#886A58" }}>
+                      <span style={{ color: "#C89B47", fontSize: 10 }}>●</span> Balance Due
+                    </div>
+                    <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: isPaidRow ? T.green : r.status === "Overdue" ? T.crimson : T.royalBurgundy, marginTop: 4 }}>
+                      {isPaidRow ? "Paid ✓" : <Money value={rupees(r.outstanding)} />}
+                    </div>
+                  </div>
+
+                  {/* Bottom Shield / Action Banner */}
+                  <div style={{
+                    marginTop: 18,
+                    background: "linear-gradient(180deg, #FAF4EB 0%, #FFF8F0 100%)",
+                    border: "1px solid rgba(220, 190, 140, 0.4)",
+                    borderRadius: 14,
+                    padding: "12px 14px",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 8,
+                  }}>
+                    <div style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <div style={{ flex: 1, height: 1, background: "rgba(200, 155, 71, 0.3)" }} />
+                      <div style={{ padding: "0 10px", color: "#C89B47", display: "flex", alignItems: "center" }}>
+                        <BadgeCheck size={18} color="#C89B47" />
+                      </div>
+                      <div style={{ flex: 1, height: 1, background: "rgba(200, 155, 71, 0.3)" }} />
+                    </div>
+
+                    {r.outstanding === 0 ? (
+                      <div style={{ fontFamily: F.display, fontSize: 13, fontWeight: 600, color: "#886A58", textAlign: "center" }}>
+                        No Dues
+                      </div>
+                    ) : (
+                      <div style={{ display: "flex", gap: 8, width: "100%", marginTop: 2 }}>
+                        <Button
+                          variant="tertiary"
+                          size="sm"
+                          onClick={() => setDetailForId(r.supplier.id)}
+                          className="flex-1 justify-center rounded-[8px] border border-[rgba(110,15,45,0.15)] text-[#6E0F2D] text-[12px] font-bold py-1.5"
+                        >
+                          Details
+                        </Button>
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={() => setPayForId(r.supplier.id)}
+                          className="flex-1 justify-center rounded-[8px] bg-[#6E0F2D] hover:bg-[#4A0A1D] text-[#FFFDF9] text-[12px] font-bold py-1.5"
+                        >
+                          Pay Now
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </motion.div>
-            ))}
+              );
+            })}
           </div>
         )}
 
@@ -498,6 +575,17 @@ export function SupplierPaymentsSection() {
             saving={saving}
             onClose={() => setPayForId(null)}
             onSave={handleSave}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {detailFor && (
+          <SupplierPaymentDetailModal
+            supplier={detailFor.supplier}
+            purchases={purchasesForDetail}
+            payments={paymentsForDetail}
+            onClose={() => setDetailForId(null)}
           />
         )}
       </AnimatePresence>

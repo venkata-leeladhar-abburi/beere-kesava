@@ -3,7 +3,7 @@ import { motion } from "motion/react";
 
 import { MAIN_NAV_H, SUB_NAV_H, SECTION_NAV_H, MOBILE_NAV_H } from "./section-navigator-data";
 import type { SectionNavItem } from "./section-navigator-data";
-export { MAIN_NAV_H, SUB_NAV_H, SECTION_NAV_H, MOBILE_NAV_H, WORKER_MOBILE_HEADER_H, WORKER_TOPNAV_H, WORKER_SECTION_NAV_H, SHOP_MOBILE_HEADER_H, SHOP_SECTION_NAV_H, PAGE_SECTIONS, SECTION_NAV_GLOBAL_STYLE } from "./section-navigator-data";
+export { MAIN_NAV_H, SUB_NAV_H, SECTION_NAV_H, MOBILE_NAV_H, WORKER_MOBILE_HEADER_H, WORKER_TOPNAV_H, WORKER_SECTION_NAV_H, SHOP_MOBILE_HEADER_H, SHOP_SECTION_NAV_H, PAGE_SECTIONS, SECTION_NAV_GLOBAL_STYLE, getSectionsForPage } from "./section-navigator-data";
 export type { SectionNavItem } from "./section-navigator-data";
 
 const T = { royalBurgundy: "#6E0F2D", taupe: "#69635E", borderDef: "rgba(110,15,45,0.10)" };
@@ -347,7 +347,7 @@ export function SectionNavigator({
                 color: isActive ? "#FFFFFF" : mutedColor,
                 background: "transparent",
                 border: "none",
-                borderRadius: 8,
+                borderRadius: 10,
                 padding: "10px 18px",
                 cursor: "pointer",
                 whiteSpace: "nowrap",
@@ -360,7 +360,7 @@ export function SectionNavigator({
                 <motion.div
                   layoutId={layoutId}
                   transition={{ type: "spring", stiffness: 420, damping: 32 }}
-                  style={{ position: "absolute", inset: 0, background: activeColor, borderRadius: 8, zIndex: 0 }}
+                  style={{ position: "absolute", inset: 0, background: activeColor, borderRadius: 10, zIndex: 0 }}
                 />
               )}
               <span style={{ position: "relative", zIndex: 1 }}>{s.label}</span>

@@ -177,13 +177,13 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
           <Button
             onClick={onClose}
             variant="secondary"
-            className="h-9 sm:h-10 px-3.5 sm:px-5 rounded-full border border-[rgba(110,15,45,0.25)] bg-[#FFFDF9] hover:bg-[#6E0F2D] text-[#6E0F2D] hover:text-white font-bold text-xs sm:text-sm gap-1.5 sm:gap-2 shadow-sm transition-all cursor-pointer"
+            className="h-9 sm:h-10 px-3.5 sm:px-5 rounded-[10px] border border-[rgba(110,15,45,0.25)] bg-[#FFFDF9] hover:bg-[#6E0F2D] text-[#6E0F2D] hover:text-white active:bg-[#4A061B] active:text-white active:border-[#4A061B] font-bold text-xs sm:text-sm gap-1.5 sm:gap-2 shadow-sm transition-all cursor-pointer"
           >
             <ChevronLeftIcon size={16} /> Back to Weavers
           </Button>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="hidden xs:flex items-center gap-2 h-9 sm:h-10 px-3.5 sm:px-4 rounded-full bg-[rgba(110,15,45,0.06)] border border-[rgba(110,15,45,0.18)] text-[#6E0F2D] font-bold text-xs uppercase tracking-wider">
+            <div className="hidden xs:flex items-center gap-2 h-9 sm:h-10 px-3.5 sm:px-4 rounded-[10px] bg-[rgba(110,15,45,0.06)] border border-[rgba(110,15,45,0.18)] text-[#6E0F2D] font-bold text-xs uppercase tracking-wider">
               <UserRound size={14} className="text-[#6E0F2D]" />
               <span>Weaver Profile</span>
             </div>
@@ -200,7 +200,7 @@ export function WeaverDrawer({ weaver, onClose, initialMode = "view", onNavigate
               }}
               variant="secondary"
               disabled={deleteWeaver.isPending}
-              className="h-9 sm:h-10 px-3.5 sm:px-4 rounded-full border border-red-200 bg-red-50 hover:bg-red-600 text-red-700 hover:text-white font-bold text-xs gap-1.5 shadow-sm transition-all cursor-pointer"
+              className="h-9 sm:h-10 px-3.5 sm:px-4 rounded-[10px] border border-red-200 bg-red-50 hover:bg-red-600 text-red-700 hover:text-white active:bg-red-700 active:text-white font-bold text-xs gap-1.5 shadow-sm transition-all cursor-pointer"
             >
               <Trash2 size={14} /> Delete Weaver
             </Button>

@@ -352,8 +352,8 @@ export function POVendorDetailModal({ po, onClose }: { po: PurchaseOrder | null;
           style={{ background: "var(--surface-scrim)", zIndex: "var(--z-modal)" }}
         />
         <Dialog.Content
-          className="fixed right-0 top-0 flex flex-col w-full max-w-[430px] data-[state=open]:animate-in data-[state=open]:slide-in-from-right data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right"
-          style={{ height: "100dvh", background: "#FFFDF9", boxShadow: "-24px 0 64px rgba(74,6,27,0.20)", overflowY: "auto", zIndex: "var(--z-modal)" }}
+          className="fixed right-0 top-0 flex flex-col w-full max-w-[430px] rounded-l-2xl sm:rounded-l-3xl data-[state=open]:animate-in data-[state=open]:slide-in-from-right data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right overflow-hidden"
+          style={{ height: "100dvh", background: "#FFFDF9", boxShadow: "-24px 0 64px rgba(74,6,27,0.20)", overflowY: "auto", zIndex: "var(--z-modal)", borderRadius: "20px 0 0 20px" }}
         >
         {po && cfg && (
           <>
@@ -368,7 +368,7 @@ export function POVendorDetailModal({ po, onClose }: { po: PurchaseOrder | null;
                 <Dialog.Description className="sr-only">Purchase order {po.poNumber} preview</Dialog.Description>
               </div>
               <Dialog.Close asChild>
-                <IconButton icon={X} label="Close" size="md" variant="secondary" className="bg-white/10 text-white border-white/22 hover:bg-white/18" />
+                <IconButton icon={X} label="Close" size="md" variant="ghost" className="h-9 w-9 rounded-[10px] bg-white/10 text-white border border-white/20 hover:bg-white/25 hover:text-white active:bg-white/35 transition-all cursor-pointer shrink-0" />
               </Dialog.Close>
             </div>
             <StatusPill taxonomy="document" status={PO_STATUS_TO_DOCUMENT[po.status]} />

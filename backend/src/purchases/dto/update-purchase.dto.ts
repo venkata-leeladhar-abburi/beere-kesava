@@ -63,6 +63,10 @@ export class UpdatePurchaseDto {
   @IsString()
   invoiceFileName?: string;
 
+  @IsOptional()
+  @IsString()
+  invoiceFileUrl?: string;
+
   // Omitted entirely: leave existing lines untouched. Present: replaces every
   // line wholesale (simplest correct semantics for an edit form that always
   // resubmits its full saree-details table).

@@ -54,10 +54,10 @@ export function JariSettingsSection() {
           </div>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 w-full max-w-[500px] mx-auto">
-            <Button variant="primary" iconLeft={Check} className="w-full sm:w-auto rounded-full bg-[#1E6640] hover:bg-[#1E6640]/90 h-auto py-2.5 px-7 text-[14px] font-semibold whitespace-nowrap">
-              Save Conversion Settings
+            <Button variant="primary" iconLeft={Check} className="w-full sm:w-auto rounded-[14px] bg-[#1E6640] hover:bg-[#1E6640]/90 h-auto py-2.5 px-7 text-[14px] font-semibold whitespace-nowrap">
+              Save Rate
             </Button>
-            <Button variant="secondary" iconLeft={X} className="w-full sm:w-auto rounded-full h-auto py-2.5 px-5 text-[14px] whitespace-nowrap">
+            <Button variant="secondary" iconLeft={X} className="w-full sm:w-auto rounded-[14px] h-auto py-2.5 px-5 text-[14px] whitespace-nowrap">
               Cancel
             </Button>
           </div>

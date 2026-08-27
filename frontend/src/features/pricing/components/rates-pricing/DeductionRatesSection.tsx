@@ -80,10 +80,10 @@ export function DeductionRatesSection() {
                     </span>
                   </div>
                   <div style={{ display: "flex", gap: 8 }}>
-                    <Button variant="primary" iconLeft={Check} className="flex-1 rounded-full bg-[#1E6640] hover:bg-[#1E6640]/90 h-auto py-2 text-[12px] font-semibold">
+                    <Button variant="primary" iconLeft={Check} className="flex-1 rounded-[14px] bg-[#1E6640] hover:bg-[#1E6640]/90 h-auto py-2 text-[12px] font-semibold">
                       Save
                     </Button>
-                    <Button variant="secondary" iconLeft={X} className="flex-1 rounded-full h-auto py-2 text-[12px]" onClick={() => setEditDeduction(null)}>
+                    <Button variant="secondary" iconLeft={X} className="flex-1 rounded-[14px] h-auto py-2 text-[12px]" onClick={() => setEditDeduction(null)}>
                       Cancel
                     </Button>
                   </div>
@@ -149,10 +149,10 @@ export function DeductionRatesSection() {
                     <span style={{ fontFamily: F.ui, fontSize: 12, color: T.crimson }}>Rate applies to all future calculations.</span>
                   </div>
                   <div style={{ display: "flex", gap: 8 }}>
-                    <Button variant="primary" iconLeft={Check} className="flex-1 rounded-full bg-[#1E6640] hover:bg-[#1E6640]/90 h-auto py-2 text-[12px] font-semibold">
+                    <Button variant="primary" iconLeft={Check} className="flex-1 rounded-[14px] bg-[#1E6640] hover:bg-[#1E6640]/90 h-auto py-2 text-[12px] font-semibold">
                       Save
                     </Button>
-                    <Button variant="secondary" className="flex-1 rounded-full h-auto py-2 text-[12px]" onClick={() => setEditDeduction(null)}>
+                    <Button variant="secondary" className="flex-1 rounded-[14px] h-auto py-2 text-[12px]" onClick={() => setEditDeduction(null)}>
                       Cancel
                     </Button>
                   </div>
@@ -222,10 +222,10 @@ export function DeductionRatesSection() {
                     <span style={{ fontFamily: F.ui, fontSize: 12, color: T.crimson }}>Rate applies to all future Jari deduction calculations.</span>
                   </div>
                   <div style={{ display: "flex", gap: 8 }}>
-                    <Button variant="primary" className="flex-1 rounded-full bg-[#1E6640] hover:bg-[#1E6640]/90 h-auto py-2 text-[12px] font-semibold">
+                    <Button variant="primary" className="flex-1 rounded-[14px] bg-[#1E6640] hover:bg-[#1E6640]/90 h-auto py-2 text-[12px] font-semibold">
                       Save
                     </Button>
-                    <Button variant="secondary" className="flex-1 rounded-full h-auto py-2 text-[12px]" onClick={() => setEditDeduction(null)}>
+                    <Button variant="secondary" className="flex-1 rounded-[14px] h-auto py-2 text-[12px]" onClick={() => setEditDeduction(null)}>
                       Cancel
                     </Button>
                   </div>

@@ -22,6 +22,8 @@ export interface WeaverPaymentRecord {
   noOfSarees?: number;
   amount?: number;
   deduction?: number;
+  /** Accountant / Admin who recorded this payment; undefined if unattributed. */
+  recordedBy?: { firstName: string; lastName: string; role: string } | null;
 }
 
 interface WeaverPaymentsContextValue {
@@ -61,6 +63,7 @@ function backendPaymentToFrontend(
     loomNumber: p.loomNumber ?? undefined,
     noOfSarees: p.noOfSarees ?? undefined,
     deduction: p.deduction ? Number(p.deduction) : undefined,
+    recordedBy: p.recordedBy ?? null,
   };
 }
 

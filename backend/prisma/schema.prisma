@@ -1095,7 +1095,7 @@ model Supplier {
 }
 
 model SupplierPayment {
-  id           String    @id @default(uuid())
+  id           String    @id // REFERENCE-NNN
   supplierId   String
   supplier     Supplier  @relation(fields: [supplierId], references: [id])
   amount       Decimal   @db.Decimal(12, 2)
@@ -1172,6 +1172,10 @@ model Purchase {
   status          PurchasePaymentStatus @default(PENDING)
   notes           String?
   invoiceFileName String?
+  // Server-relative path of the uploaded invoice file/photo in cloud storage
+  // ("/uploads/receipts/<uuid>.jpg"), via POST /uploads/receipt — same
+  // Cloudflare R2-backed pattern as PurchaseSareeLine.imageUrl above.
+  invoiceFileUrl  String?
   addedById       String?
   addedBy         User?                 @relation("PurchaseAddedBy", fields: [addedById], references: [id])
   createdAt       DateTime              @default(now())
@@ -1301,6 +1305,8 @@ model VendorBill {
   dueDate       DateTime?
   status        VendorBillStatus @default(PENDING)
   description   String?
+  invoiceFileUrl  String?
+  invoiceFileName String?
   createdAt     DateTime         @default(now())
 
   payments VendorPayment[]
@@ -1398,7 +1404,7 @@ model FirmFinancialEntry {
 }
 
 model WeaverPayment {
-  id          String   @id @default(uuid())
+  id          String   @id // REFERENCE-NNN
   weaverId    String
   weaver      Weaver   @relation(fields: [weaverId], references: [id])
   amountPaid  Decimal  @db.Decimal(12, 2)
@@ -1420,7 +1426,7 @@ model WeaverPayment {
 }
 
 model VendorPayment {
-  id       String      @id @default(uuid())
+  id       String      @id // REFERENCE-NNN
   vendorId String
   vendor   Vendor      @relation(fields: [vendorId], references: [id])
   amount   Decimal     @db.Decimal(12, 2)
