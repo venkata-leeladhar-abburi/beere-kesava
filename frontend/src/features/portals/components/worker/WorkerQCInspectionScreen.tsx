@@ -110,7 +110,7 @@ export function WorkerQCInspectionScreen({
                   </div>
                 );
               })()}
-              <Button variant="primary" fullWidth iconLeft={CheckCircle2} onClick={closeInspect} className="h-12 rounded-full bg-[#6E0F2D] hover:bg-[#6E0F2D] mb-2.5">
+              <Button variant="primary" fullWidth iconLeft={CheckCircle2} onClick={closeInspect} className="h-12 rounded-[14px] bg-[#6E0F2D] hover:bg-[#6E0F2D] mb-2.5">
                 Back to Queue
               </Button>
             </div>
@@ -176,10 +176,10 @@ export function WorkerQCInspectionScreen({
                   <input type="file" accept="image/*" capture="environment" ref={cameraInputRef} style={{ display: 'none' }} onChange={e => void handlePhotoSelect(e)} aria-label="Camera photo input" />
                   <input type="file" accept="image/*" ref={fileInputRef} style={{ display: 'none' }} onChange={e => void handlePhotoSelect(e)} aria-label="Gallery photo input" />
                   <div style={{ display: "flex", gap: 8 }}>
-                    <Button variant="primary" fullWidth size="sm" iconLeft={Camera} onClick={() => cameraInputRef.current?.click()} className="h-11 rounded-full bg-[#6E0F2D] hover:bg-[#6E0F2D]">
+                    <Button variant="primary" fullWidth size="sm" iconLeft={Camera} onClick={() => cameraInputRef.current?.click()} className="h-11 rounded-[14px] bg-[#6E0F2D] hover:bg-[#6E0F2D]">
                       {uploading ? "Uploading…" : "Take Photo"}
                     </Button>
-                    <Button variant="secondary" fullWidth size="sm" iconLeft={UploadCloud} onClick={() => fileInputRef.current?.click()} className="h-11 rounded-full border-[#6E0F2D] text-[#6E0F2D]">
+                    <Button variant="secondary" fullWidth size="sm" iconLeft={UploadCloud} onClick={() => fileInputRef.current?.click()} className="h-11 rounded-[14px] border-[#6E0F2D] text-[#6E0F2D]">
                       Gallery
                     </Button>
                   </div>

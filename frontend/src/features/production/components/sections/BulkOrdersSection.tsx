@@ -137,7 +137,7 @@ export function BulkOrderCard({ o, onView, onSlip, superadmin = false }: { o: Bu
           onClick={(e) => { e.stopPropagation(); onView?.(o); }}
           variant="secondary"
           size="sm"
-          className="flex-1 min-w-0 px-2 text-[12px] whitespace-nowrap justify-center"
+          className="flex-1 min-w-0 px-2 text-[12px] whitespace-nowrap justify-center rounded-[10px]"
         >
           <PhEye size={15} /> View Order
         </Button>
@@ -145,7 +145,7 @@ export function BulkOrderCard({ o, onView, onSlip, superadmin = false }: { o: Bu
           onClick={(e) => { e.stopPropagation(); onSlip?.(o); }}
           variant="secondary"
           size="sm"
-          className="flex-1 min-w-0 px-2 text-[12px] whitespace-nowrap justify-center"
+          className="flex-1 min-w-0 px-2 text-[12px] whitespace-nowrap justify-center rounded-[10px]"
         >
           <CurrencyInr size={15} /> Payment
         </Button>

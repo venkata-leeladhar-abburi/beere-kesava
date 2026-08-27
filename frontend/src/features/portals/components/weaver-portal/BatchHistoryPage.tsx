@@ -127,7 +127,7 @@ export function BatchHistoryPage({ onBack, defaultFilter = "all" }: { onBack: ()
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(13,2,7,0.7) 0%, #0D0207 100%)", pointerEvents: "none" }} />
 
         <div style={{ position: "relative", zIndex: 5, display: "flex", flexDirection: "column", gap: 12 }}>
-          <Button onClick={onBack} variant="ghost" className="flex items-center gap-2 h-auto bg-white/10 border border-white/[0.18] rounded-full px-[18px] py-2 text-[13px] text-white/80 mb-1 w-fit font-medium hover:bg-white/10">
+          <Button onClick={onBack} variant="ghost" className="flex items-center gap-2 h-auto bg-white/10 border border-white/[0.18] rounded-[14px] px-[18px] py-2 text-[13px] text-white/80 mb-1 w-fit font-medium hover:bg-white/10">
             <ChevronLeft size={15} color="rgba(255,255,255,0.80)" /> Back to My Batches
           </Button>
 

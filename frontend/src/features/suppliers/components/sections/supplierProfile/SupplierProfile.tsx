@@ -170,14 +170,14 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
           <Button
             onClick={onBack}
             variant="secondary"
-            className="h-9 sm:h-10 px-3.5 sm:px-5 rounded-full border border-[rgba(110,15,45,0.25)] bg-[#FFFDF9] hover:bg-[#6E0F2D] text-[#6E0F2D] hover:text-white font-bold text-xs sm:text-sm gap-1.5 sm:gap-2 shadow-sm transition-all cursor-pointer whitespace-nowrap"
+            className="h-9 sm:h-10 px-3.5 sm:px-5 rounded-[10px] border border-[rgba(110,15,45,0.25)] bg-[#FFFDF9] hover:bg-[#6E0F2D] text-[#6E0F2D] hover:text-white active:bg-[#4A061B] active:text-white font-bold text-xs sm:text-sm gap-1.5 sm:gap-2 shadow-sm transition-all cursor-pointer whitespace-nowrap"
           >
             <ChevronLeft size={16} /> Back to Suppliers
           </Button>
 
           <Button
             variant="secondary"
-            className="sm:hidden h-9 px-3 rounded-full border border-red-200 bg-red-50 hover:bg-red-600 text-red-700 hover:text-white font-bold text-xs gap-1.5 shadow-sm transition-all cursor-pointer whitespace-nowrap shrink-0"
+            className="sm:hidden h-9 px-3 rounded-[10px] border border-red-200 bg-red-50 hover:bg-red-600 text-red-700 hover:text-white active:bg-red-700 active:text-white font-bold text-xs gap-1.5 shadow-sm transition-all cursor-pointer whitespace-nowrap shrink-0"
             onClick={async () => {
               const ok = await confirm({
                 title: `Delete supplier "${supplier.name}"?`,
@@ -199,7 +199,7 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
             iconLeft={Wallet}
             disabled={stats.outstanding <= 0}
             onClick={() => setPayModalOpen(true)}
-            className="h-9 sm:h-10 px-4 rounded-full border-none shadow-[0_4px_16px_rgba(110,15,45,0.3)] bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#580C24] font-bold text-xs sm:text-sm cursor-pointer disabled:opacity-50"
+            className="h-9 sm:h-10 px-4 rounded-[10px] border-none shadow-[0_4px_16px_rgba(110,15,45,0.3)] bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#580C24] font-bold text-xs sm:text-sm cursor-pointer disabled:opacity-50"
           >
             Pay Supplier
           </Button>
@@ -209,25 +209,25 @@ export function SupplierProfile({ supplier, onBack, onRaiseRequest }: {
             size="md"
             iconLeft={Send}
             onClick={() => onRaiseRequest(supplier.id)}
-            className="h-9 sm:h-10 px-4 rounded-full border-none shadow-[0_4px_16px_rgba(200,155,71,0.3)] bg-[linear-gradient(135deg,#C89B47,#E7C983)] text-[#2C0913] hover:brightness-105 font-bold text-xs sm:text-sm cursor-pointer"
+            className="h-9 sm:h-10 px-4 rounded-[10px] border-none shadow-[0_4px_16px_rgba(200,155,71,0.3)] bg-[linear-gradient(135deg,#C89B47,#E7C983)] text-[#2C0913] hover:brightness-105 font-bold text-xs sm:text-sm cursor-pointer"
           >
             Raise Purchase Request
           </Button>
 
-          <div className="hidden xs:flex items-center gap-2 h-9 sm:h-10 px-3.5 sm:px-4 rounded-full bg-[rgba(110,15,45,0.06)] border border-[rgba(110,15,45,0.18)] text-[#6E0F2D] font-bold text-xs uppercase tracking-wider whitespace-nowrap">
+          <div className="hidden xs:flex items-center gap-2 h-9 sm:h-10 px-3.5 sm:px-4 rounded-[10px] bg-[rgba(110,15,45,0.06)] border border-[rgba(110,15,45,0.18)] text-[#6E0F2D] font-bold text-xs uppercase tracking-wider whitespace-nowrap">
             <UserRound size={14} className="text-[#6E0F2D]" />
             <span>Supplier Profile</span>
           </div>
 
-          <span className={`h-9 sm:h-10 px-3.5 sm:px-4 rounded-full flex items-center justify-center font-bold text-xs uppercase tracking-wider whitespace-nowrap shrink-0 ${supplier.status === "active" ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
+          <span className={`h-9 sm:h-10 px-3.5 sm:px-4 rounded-[10px] flex items-center justify-center font-bold text-xs uppercase tracking-wider whitespace-nowrap shrink-0 ${supplier.status === "active" ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
             {supplier.status}
           </span>
 
-          <EntityCode type="supplier" value={supplier.code || supplier.id} size="md" className="h-9 sm:h-10 px-3.5 sm:px-4 rounded-full bg-[#FFFDF9] border border-[#E8DCC4] text-[#3B2314] font-mono font-bold text-xs flex items-center whitespace-nowrap shrink-0" />
+          <EntityCode type="supplier" value={supplier.code || supplier.id} size="md" className="h-9 sm:h-10 px-3.5 sm:px-4 rounded-[10px] bg-[#FFFDF9] border border-[#E8DCC4] text-[#3B2314] font-mono font-bold text-xs flex items-center whitespace-nowrap shrink-0" />
 
           <Button
             variant="secondary"
-            className="hidden sm:flex h-9 sm:h-10 px-3.5 sm:px-4 rounded-full border border-red-200 bg-red-50 hover:bg-red-600 text-red-700 hover:text-white font-bold text-xs gap-1.5 shadow-sm transition-all cursor-pointer whitespace-nowrap shrink-0"
+            className="hidden sm:flex h-9 sm:h-10 px-3.5 sm:px-4 rounded-[10px] border border-red-200 bg-red-50 hover:bg-red-600 text-red-700 hover:text-white active:bg-red-700 active:text-white font-bold text-xs gap-1.5 shadow-sm transition-all cursor-pointer whitespace-nowrap shrink-0"
             onClick={async () => {
               const ok = await confirm({
                 title: `Delete supplier "${supplier.name}"?`,

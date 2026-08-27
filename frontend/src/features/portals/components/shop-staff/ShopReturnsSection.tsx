@@ -432,7 +432,7 @@ export function ShopReturnsSection() {
                 )}
               </span>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <Button variant="secondary" size="sm" iconLeft={Printer} onClick={() => printTags(selectedRows.map(tagOf))} className="rounded-full">
+                <Button variant="secondary" size="sm" iconLeft={Printer} onClick={() => printTags(selectedRows.map(tagOf))} className="rounded-[14px]">
                   Print {selected.size} tag{selected.size === 1 ? "" : "s"}
                 </Button>
                 {selectedHeld.length > 0 && (

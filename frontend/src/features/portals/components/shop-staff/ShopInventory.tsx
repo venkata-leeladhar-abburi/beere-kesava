@@ -604,7 +604,7 @@ function ShopInventory() {
             {selected.size} saree{selected.size === 1 ? "" : "s"} selected
           </span>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <Button variant="secondary" size="sm" iconLeft={Printer} onClick={printSelected} className="rounded-full">
+            <Button variant="secondary" size="sm" iconLeft={Printer} onClick={printSelected} className="rounded-[14px]">
               Print {selected.size} label{selected.size === 1 ? "" : "s"}
             </Button>
             <Button variant="link" size="sm" iconLeft={X} onClick={() => setSelected(new Set())} className="p-0 text-xs text-[#FFFDF9] underline">

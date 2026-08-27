@@ -234,10 +234,10 @@ function CustomerProfiles() {
 
                 {/* Actions */}
                 <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
-                  <Button fullWidth className="h-[52px] rounded-full border-none bg-[#6E0F2D] font-bold text-sm text-white gap-2 shadow-[0_4px_16px_rgba(110,15,45,0.30)]">
+                  <Button fullWidth className="h-[52px] rounded-[14px] border-none bg-[#6E0F2D] font-bold text-sm text-white gap-2 shadow-[0_4px_16px_rgba(110,15,45,0.30)]">
                     <ShoppingBag size={17} /> Record New Sale
                   </Button>
-                  <Button onClick={() => setSelected(null)} fullWidth className="h-[50px] rounded-full border-[1.5px] border-[rgba(110,15,45,0.12)] bg-white font-semibold text-sm text-[#69635E]">Close</Button>
+                  <Button onClick={() => setSelected(null)} fullWidth className="h-[50px] rounded-[14px] border-[1.5px] border-[rgba(110,15,45,0.12)] bg-white font-semibold text-sm text-[#69635E]">Close</Button>
                 </div>
               </div>
           </>

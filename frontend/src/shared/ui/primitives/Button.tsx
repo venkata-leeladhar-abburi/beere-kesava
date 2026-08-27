@@ -59,7 +59,7 @@ const buttonVariants = cva(
           "bg-[var(--surface-raised)] text-[var(--text-brand)]",
           "border border-[var(--border-default)]",
           "hover:bg-[var(--surface-brand-subtle)] hover:border-[var(--border-brand)]",
-          "active:bg-[var(--bk-burgundy-100)]",
+          "active:bg-[var(--surface-brand-hover)] active:text-white active:border-[var(--surface-brand-hover)]",
         ].join(" "),
         tertiary: [
           "bg-transparent text-[var(--text-secondary)]",
@@ -87,8 +87,8 @@ const buttonVariants = cva(
         ].join(" "),
       },
       size: {
-        sm: "h-8 px-3 text-[13px] [&_svg]:size-3.5",
-        md: "h-10 px-4 text-[14px] [&_svg]:size-4",
+        sm: "h-8 px-3 text-[13px] rounded-[10px] [&_svg]:size-3.5",
+        md: "h-10 px-4 text-[14px] rounded-[10px] [&_svg]:size-4",
         lg: "h-12 px-6 text-[16px] rounded-[10px] [&_svg]:size-5",
       },
       fullWidth: { true: "w-full" },

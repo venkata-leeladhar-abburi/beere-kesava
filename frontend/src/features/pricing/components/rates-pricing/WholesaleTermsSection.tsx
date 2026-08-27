@@ -131,10 +131,10 @@ export function WholesaleTermsSection() {
             >
               <span style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown }}>Alert starts from Day:</span>
               <NumberInput value={tempAlertDay} onValueChange={v => setTempAlertDay(Number(v))} className="w-[70px] bg-[#FFF8F0] border-[rgba(110,15,45,0.18)]" />
-              <Button onClick={() => { setGlobalAlertDay(tempAlertDay); setEditAlertDay(false); }} className="rounded-full bg-[#1E6640] text-white hover:bg-[#1E6640]/90 px-3.5 py-1.5 text-[12px] font-semibold h-auto" variant="primary">
+              <Button onClick={() => { setGlobalAlertDay(tempAlertDay); setEditAlertDay(false); }} className="rounded-[14px] bg-[#1E6640] text-white hover:bg-[#1E6640]/90 px-3.5 py-1.5 text-[12px] font-semibold h-auto" variant="primary">
                 Save
               </Button>
-              <Button variant="secondary" className="rounded-full h-auto px-3 py-1.5 text-[12px]" onClick={() => setEditAlertDay(false)}>
+              <Button variant="secondary" className="rounded-[14px] h-auto px-3 py-1.5 text-[12px]" onClick={() => setEditAlertDay(false)}>
                 Cancel
               </Button>
             </motion.div>

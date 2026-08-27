@@ -1,10 +1,11 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { MapPin, Phone, Package,
   CheckCircle2, FileText, ClipboardCheck,
   Send, ArrowRight, Truck, Scale, AlertTriangle, Trash2,
   ChevronLeft, Boxes, Layers, CreditCard } from "lucide-react";
+import { scrollToTop } from "@/shared/ui/ScrollToTop";
 import type { BulkOrder } from "../contexts/BulkOrderContext";
 import { useBulkOrders } from "../contexts/BulkOrderContext";
 import { useFinishing, DispatchRecord, Quotation } from "@/features/finishing";
@@ -57,6 +58,10 @@ const QUOTE_STATUS_CFG: Record<Quotation["status"], { bg: string; color: string 
 export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: {
   order: BulkOrder; onBack: () => void; initialTab?: "overview" | "sarees" | "payments" | "quotations";
 }) {
+  useEffect(() => {
+    scrollToTop();
+  }, []);
+
   const { bulkOrders, tallyOrder, deleteBulkOrder } = useBulkOrders();
   const live = bulkOrders.find(o => o.ref === order.ref) ?? order;
   const { readySarees, returns, dispatches, quotations } = useFinishing();
@@ -302,7 +307,7 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
           <Button
             onClick={onBack}
             variant="secondary"
-            className="h-9 sm:h-10 px-3.5 sm:px-5 rounded-full border border-[rgba(110,15,45,0.25)] bg-[#FFFDF9] hover:bg-[#6E0F2D] text-[#6E0F2D] hover:text-white font-bold text-xs sm:text-sm gap-1.5 sm:gap-2 shadow-sm transition-all cursor-pointer whitespace-nowrap"
+            className="h-9 sm:h-10 px-3.5 sm:px-5 rounded-[10px] border border-[rgba(110,15,45,0.25)] bg-[#FFFDF9] hover:bg-[#6E0F2D] text-[#6E0F2D] hover:text-white active:bg-[#4A061B] active:text-white active:border-[#4A061B] font-bold text-xs sm:text-sm gap-1.5 sm:gap-2 shadow-sm transition-all cursor-pointer whitespace-nowrap"
           >
             <ChevronLeft size={16} /> Back to Bulk Orders
           </Button>
@@ -310,28 +315,28 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
           <Button
             onClick={() => setDeletePrompt(true)}
             variant="secondary"
-            className="sm:hidden h-9 px-3 rounded-full border border-red-200 bg-red-50 hover:bg-red-600 text-red-700 hover:text-white font-bold text-xs gap-1.5 shadow-sm transition-all cursor-pointer whitespace-nowrap shrink-0"
+            className="sm:hidden h-9 px-3 rounded-[10px] border border-red-200 bg-red-50 hover:bg-red-600 text-red-700 hover:text-white active:bg-red-700 active:text-white font-bold text-xs gap-1.5 shadow-sm transition-all cursor-pointer whitespace-nowrap shrink-0"
           >
             <Trash2 size={14} /> Delete
           </Button>
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap justify-start sm:justify-end w-full sm:w-auto pt-2.5 sm:pt-0 border-t sm:border-t-0 border-slate-100">
-          <div className="hidden xs:flex items-center gap-2 h-9 sm:h-10 px-3.5 sm:px-4 rounded-full bg-[rgba(110,15,45,0.06)] border border-[rgba(110,15,45,0.18)] text-[#6E0F2D] font-bold text-xs uppercase tracking-wider whitespace-nowrap">
+          <div className="hidden xs:flex items-center gap-2 h-9 sm:h-10 px-3.5 sm:px-4 rounded-[10px] bg-[rgba(110,15,45,0.06)] border border-[rgba(110,15,45,0.18)] text-[#6E0F2D] font-bold text-xs uppercase tracking-wider whitespace-nowrap">
             <Package size={14} className="text-[#6E0F2D]" />
             <span>Bulk Order</span>
           </div>
 
-          <span className="h-9 sm:h-10 px-3.5 sm:px-4 rounded-full flex items-center justify-center font-bold text-xs uppercase tracking-wider whitespace-nowrap shrink-0" style={{ background: cfg.bg, color: cfg.color }}>
+          <span className="h-9 sm:h-10 px-3.5 sm:px-4 rounded-[10px] flex items-center justify-center font-bold text-xs uppercase tracking-wider whitespace-nowrap shrink-0" style={{ background: cfg.bg, color: cfg.color }}>
             {cfg.label}
           </span>
 
-          <EntityCode type="order" value={live.ref} size="md" className="h-9 sm:h-10 px-3.5 sm:px-4 rounded-full bg-[#FFFDF9] border border-[#E8DCC4] text-[#3B2314] font-mono font-bold text-xs flex items-center whitespace-nowrap shrink-0" />
+          <EntityCode type="order" value={live.ref} size="md" className="h-9 sm:h-10 px-3.5 sm:px-4 rounded-[10px] bg-[#FFFDF9] border border-[#E8DCC4] text-[#3B2314] font-mono font-bold text-xs flex items-center whitespace-nowrap shrink-0" />
 
           <Button
             onClick={() => setDeletePrompt(true)}
             variant="secondary"
-            className="hidden sm:flex h-9 sm:h-10 px-3.5 sm:px-4 rounded-full border border-red-200 bg-red-50 hover:bg-red-600 text-red-700 hover:text-white font-bold text-xs gap-1.5 shadow-sm transition-all cursor-pointer whitespace-nowrap shrink-0"
+            className="hidden sm:flex h-9 sm:h-10 px-3.5 sm:px-4 rounded-[10px] border border-red-200 bg-red-50 hover:bg-red-600 text-red-700 hover:text-white active:bg-red-700 active:text-white font-bold text-xs gap-1.5 shadow-sm transition-all cursor-pointer whitespace-nowrap shrink-0"
           >
             <Trash2 size={14} /> Delete Order
           </Button>

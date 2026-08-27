@@ -89,10 +89,10 @@ export function LowStockDialog({
               </div>
               {/* Actions */}
               <div style={{ display: "flex", gap: 12 }}>
-                <Button onClick={onClose} variant="ghost" className="flex-1 h-[52px] rounded-full border-[1.5px] border-[rgba(110,15,45,0.12)] bg-white hover:bg-[rgba(110,15,45,0.06)] font-semibold text-sm text-[#69635E] hover:text-[#1A0A0F]">
+                <Button onClick={onClose} variant="ghost" className="flex-1 h-[52px] rounded-[14px] border-[1.5px] border-[rgba(110,15,45,0.12)] bg-white hover:bg-[rgba(110,15,45,0.06)] font-semibold text-sm text-[#69635E] hover:text-[#1A0A0F]">
                   Cancel
                 </Button>
-                <Button onClick={onSend} variant="danger" className="flex-[2] h-[52px] rounded-full border-none bg-[#C0392B] hover:bg-[#962D22] font-bold text-sm text-white hover:text-white gap-2 shadow-[0_4px_18px_rgba(192,57,43,0.35)]">
+                <Button onClick={onSend} variant="danger" className="flex-[2] h-[52px] rounded-[14px] border-none bg-[#C0392B] hover:bg-[#962D22] font-bold text-sm text-white hover:text-white gap-2 shadow-[0_4px_18px_rgba(192,57,43,0.35)]">
                   <Send size={17} /> Send Report to Admin
                 </Button>
               </div>

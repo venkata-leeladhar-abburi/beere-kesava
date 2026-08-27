@@ -15,6 +15,7 @@ import type { ReceiptRecord } from "../../portals/components/worker/ReceiptHisto
 import { useQuery } from "@tanstack/react-query";
 import { rawMaterialsApi } from "../../../shared/api/rawMaterials";
 import { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
+import { scrollToTop } from "@/shared/ui/ScrollToTop";
 
 // Lazily loaded so the initial dashboard bundle doesn't pay for every tab's
 // page — only the active tab's chunk is fetched, on first navigation to it.
@@ -167,11 +168,7 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
 
   // Always scroll to top when navigating between pages
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
-    document.body.scrollTop = 0;
-    if (document.documentElement) {
-      document.documentElement.scrollTop = 0;
-    }
+    scrollToTop();
   }, [nav, mobileTab]);
 
   const navigate = (tab: string, ctx?: unknown) => {
