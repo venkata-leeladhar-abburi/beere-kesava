@@ -16,9 +16,12 @@ services:
       #   DIRECT_URL     — Supabase pooler connection string (session mode, for migrations)
       #   JWT_SECRET     — long random string; the app refuses to boot in
       #                    production without this set (see auth.module.ts)
-      #   CORS_ORIGIN    — your deployed frontend's URL(s), comma-separated
-      #                    (e.g. https://your-app.vercel.app). Leave unset
-      #                    only for a throwaway/staging deploy.
+      #   CORS_ORIGIN    — your Vercel frontend URL(s), comma-separated and
+      #                    exact-match, e.g.
+      #                    https://beere-kesava.vercel.app,https://www.yourdomain.com
+      #                    Include any custom domain and, if you need previews to
+      #                    reach this API, each preview URL. No trailing slash.
+      #   AISENSY_API_KEY — AiSensy campaign API key (WhatsApp sending).
       - key: DATABASE_URL
         sync: false
       - key: DIRECT_URL
@@ -40,10 +43,28 @@ services:
         sync: false
       - key: R2_SECRET_ACCESS_KEY
         sync: false
+      # Optional: overrides https://<account-id>.r2.cloudflarestorage.com
+      - key: R2_ENDPOINT
+        sync: false
       # Optional: public bucket / custom-domain origin (e.g. https://cdn.example.com).
       # Unset, reads are served as 1-hour presigned URLs instead.
       - key: R2_PUBLIC_BASE_URL
         sync: false
+      # --- WhatsApp notifications via AiSensy ---
+      # AISENSY_API_KEY is the only secret here; the rest are plain config and
+      # are checked in so a fresh deploy behaves the same as local.
+      - key: AISENSY_API_KEY
+        sync: false
+      - key: AISENSY_API_URL
+        value: https://backend.aisensy.com/campaign/t1/api/v2
+      - key: AISENSY_SENDER_NAME
+        value: Beere Kesava Silks
+      # Kill switch — set to "false" to log instead of sending.
+      - key: WHATSAPP_ENABLED
+        value: "true"
+      # Country code prefix for the 10-digit numbers stored in the DB.
+      - key: WHATSAPP_DEFAULT_COUNTRY_CODE
+        value: "91"
     # NOTE: free-tier Render services don't support persistent disks, so there
     # is no 'uploads' disk mount here and backend/uploads/ is wiped on every
     # deploy and on free-tier spin-down. That no longer matters as long as the
