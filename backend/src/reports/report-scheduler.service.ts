@@ -1,7 +1,11 @@
 import { Injectable, Logger } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { Cron } from "@nestjs/schedule";
-import { ReportFrequency } from "../generated/prisma/client";
+import { ReportFrequency, WhatsAppMessageKind } from "../generated/prisma/client";
+import { StorageService } from "../common/storage/storage.service";
 import { PrismaService } from "../prisma/prisma.service";
+import { WhatsAppService } from "../whatsapp/whatsapp.service";
+import { buildReportWorkbook, XLSX_MIME_TYPE } from "./report-workbook";
 import { ReportsService } from "./reports.service";
 
 const FREQUENCY_INTERVAL_MS: Record<ReportFrequency, number> = {
@@ -32,9 +36,22 @@ export class ReportSchedulerService {
   private readonly logger = new Logger(ReportSchedulerService.name);
 
   constructor(
+    private readonly config: ConfigService,
     private readonly prisma: PrismaService,
     private readonly reportsService: ReportsService,
+    private readonly storage: StorageService,
+    private readonly whatsapp: WhatsAppService,
   ) {}
+
+  /**
+   * Scheduled reports go to the same owners' list as the sale-alert feed, so
+   * ScheduledReport needs no recipient-phone column of its own — it has only
+   * ever stored an email.
+   */
+  private get recipients(): string[] {
+    const raw = this.config.get<string>("ADMIN_WHATSAPP_NUMBERS") ?? "";
+    return [...new Set(raw.split(",").map((n) => n.trim()).filter(Boolean))];
+  }
 
   @Cron("0 */15 * * * *")
   async checkDueSchedules(): Promise<void> {
@@ -79,17 +96,20 @@ export class ReportSchedulerService {
       `Generated report "${schedule.reportName}" (${schedule.format}) for schedule ${scheduleId}`,
     );
 
-    // TODO(delivery): wire real email/WhatsApp send once a provider is configured.
-    // `reportData` and `schedule.recipientEmail` / `schedule.format` are ready to
-    // hand to a delivery provider here; for now we just record that the report
-    // was generated and would have been sent.
-    void reportData;
+    // Delivered as .xlsx regardless of ScheduledReport.format: PDFs in this
+    // app are rasterised in the browser (see exportPdf.ts) and a cron has no
+    // browser to rasterise in. WhatsApp's DOCUMENT header accepts a workbook
+    // just as happily, and a spreadsheet is the more useful artefact for the
+    // tabular data these reports produce.
+    const key = await this.deliver(schedule, reportData);
 
     await this.prisma.reportDownloadHistory.create({
       data: {
         reportName: schedule.reportName,
-        fileType: schedule.format,
-        downloadUrl: null,
+        fileType: "XLSX",
+        // The storage key, never the resolved URL: a presigned link expires in
+        // an hour and would rot in this table.
+        downloadUrl: key,
         downloadedById: null,
         filtersUsed: { scheduledReportId: schedule.id, trigger: "scheduled" },
       },
@@ -100,4 +120,115 @@ export class ReportSchedulerService {
       data: { lastRunAt: new Date() },
     });
   }
+
+  /**
+   * Builds the workbook, stores it, and pushes it to every number on the
+   * owners' list through `bk_report_share_`. Returns the storage key, or null
+   * if nothing could be delivered.
+   *
+   * Never throws: a failed delivery must still let lastRunAt advance. Leaving
+   * the schedule "due" would have the 15-minute poll regenerate and re-send it
+   * forever, which on a broken number means an unbounded spend rather than a
+   * single logged failure. sendTemplate records each attempt in
+   * WhatsAppMessage, so nothing is lost by moving on.
+   */
+  private async deliver(
+    schedule: { id: string; reportName: string; frequency: ReportFrequency },
+    reportData: unknown,
+  ): Promise<string | null> {
+    const recipients = this.recipients;
+    if (recipients.length === 0) {
+      this.logger.warn(
+        `ADMIN_WHATSAPP_NUMBERS is unset — report "${schedule.reportName}" generated but not delivered`,
+      );
+      return null;
+    }
+
+    try {
+      const now = new Date();
+      const workbook = await buildReportWorkbook(schedule.reportName, reportData);
+      const key = await this.storage.uploadBuffer(workbook, XLSX_MIME_TYPE, "documents");
+      const url = await this.storage.resolveUrl(key.replace(/^\/uploads\//, ""));
+
+      // The stored names read "Outstanding Payments Report", and the template
+      // body already ends in "report" — sending it whole yields "your
+      // Outstanding Payments Report report is attached".
+      const label = titleCase(schedule.reportName).replace(/\s*Report$/i, "").trim() || "Summary";
+      const filename = `${label.replace(/\s+/g, "-")}-${dateStamp(now)}.xlsx`;
+
+      for (const destination of recipients) {
+        await this.whatsapp.sendTemplate({
+          campaignName: "bk_report_share_",
+          destination,
+          recipientName: "Admin",
+          templateParams: [
+            "Admin",
+            label,
+            formatPeriod(schedule.frequency, now),
+            formatDateTime(now),
+            // The enum is stored uppercase; the sentence around {{5}} reads
+            // "an automated Weekly delivery", not "an automated WEEKLY one".
+            titleCase(schedule.frequency),
+          ],
+          media: { url, filename },
+          kind: WhatsAppMessageKind.REPORT,
+          relatedType: "ScheduledReport",
+          relatedId: schedule.id,
+          // sentById is deliberately omitted — a cron has no acting user, and
+          // the column is optional.
+        });
+      }
+
+      return key;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Delivery failed for report "${schedule.reportName}": ${message}`);
+      return null;
+    }
+  }
+}
+
+/** "outstanding-payments" / "WEEKLY" → "Outstanding Payments" / "Weekly" */
+function titleCase(value: string): string {
+  return value
+    .replace(/[_-]+/g, " ")
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+/** "27 Aug 2026, 06:00 AM" */
+function formatDateTime(date: Date): string {
+  return date.toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+}
+
+function formatDay(date: Date): string {
+  return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+/** File-name-safe "2026-08-27". */
+function dateStamp(date: Date): string {
+  return date.toISOString().slice(0, 10);
+}
+
+/**
+ * The window the report covers, ending now — "21–27 Aug 2026" for a weekly
+ * run. Derived from the frequency because ScheduledReport stores no explicit
+ * period, only how often it fires.
+ */
+function formatPeriod(frequency: ReportFrequency, end: Date): string {
+  if (frequency === ReportFrequency.DAILY) return formatDay(end);
+  const start = new Date(end.getTime() - FREQUENCY_INTERVAL_MS[frequency]);
+  // Same month and year on both ends — "21–27 Aug 2026" rather than the
+  // redundant "21 Aug 2026–27 Aug 2026".
+  if (start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear()) {
+    return `${String(start.getDate()).padStart(2, "0")}–${formatDay(end)}`;
+  }
+  return `${formatDay(start)} – ${formatDay(end)}`;
 }

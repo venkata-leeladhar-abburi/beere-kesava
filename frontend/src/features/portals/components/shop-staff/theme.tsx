@@ -142,7 +142,7 @@ function Card({ children, style }: { children: React.ReactNode; style?: React.CS
   );
 }
 
-function Btn({ label, icon, onClick, variant = "burg", style }: { label: string; icon?: React.ReactNode; onClick?: () => void; variant?: "burg" | "green" | "gold" | "ghost" | "crim"; style?: React.CSSProperties }) {
+function Btn({ label, icon, onClick, variant = "burg", style, disabled, title }: { label: string; icon?: React.ReactNode; onClick?: () => void; variant?: "burg" | "green" | "gold" | "ghost" | "crim"; style?: React.CSSProperties; disabled?: boolean; title?: string }) {
   const classByVariant: Record<string, string> = {
     burg: "bg-[#6E0F2D] hover:bg-[#4A061B] text-[#FFFDF9] hover:text-[#FFFDF9] border-none",
     green: "bg-[#1E6640] hover:bg-[#15492D] text-[#FFFDF9] hover:text-[#FFFDF9] border-none",
@@ -151,12 +151,13 @@ function Btn({ label, icon, onClick, variant = "burg", style }: { label: string;
     crim: "bg-[#C0392B] hover:bg-[#962D22] text-[#FFFDF9] hover:text-[#FFFDF9] border-none",
   };
   return (
-    <div style={style}>
+    <div style={style} title={title}>
       <Button
         onClick={onClick}
+        disabled={disabled}
         variant="primary"
         fullWidth
-        className={`inline-flex items-center justify-center gap-2 h-[52px] rounded-full font-semibold text-sm ${classByVariant[variant]}`}
+        className={`inline-flex items-center justify-center gap-2 h-[52px] rounded-full font-semibold text-sm ${classByVariant[variant]} disabled:opacity-50 disabled:cursor-not-allowed`}
       >
         {icon}{label}
       </Button>

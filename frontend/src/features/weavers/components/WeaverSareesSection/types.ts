@@ -41,10 +41,29 @@ export interface WeaverSareeRow {
   /** present when the saree exists in the sales / stock ledger */
   stock: UnifiedSaree | null;
 
+  /** Only set on externally purchased pieces (see useExternalPurchaseRows) —
+   *  the per-piece facts the stock ledger has no place for. */
+  external?: ExternalPieceInfo;
+
   /** Who wove/produced this saree — only populated in "all" (cross-weaver) mode. */
   ownerKind: "weaver" | "loom" | null;
   ownerId: string | null;
   ownerLabel: string | null;
+}
+
+/** Per-piece detail carried by an externally purchased saree row. */
+export interface ExternalPieceInfo {
+  /** Code of the purchase line this physical piece belongs to. */
+  lineCode: string;
+  pieceNo: number;
+  lineQuantity: number;
+  /** Sent back to the supplier — no longer sellable stock. */
+  returned: boolean;
+  /** Payment status of the parent purchase, as shown on External Purchases. */
+  paymentStatus: "Paid" | "Pending" | "Partial";
+  /** The line's own photo, used when the piece has none of its own. */
+  linePhotoUrl: string | null;
+  gstNumber: string | null;
 }
 
 export type TabKey =

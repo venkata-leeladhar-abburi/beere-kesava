@@ -68,14 +68,23 @@ export class StorageService {
    * memoryStorage), so this is the single point where bytes hit the bucket.
    */
   async upload(file: Express.Multer.File, folder: StorageFolder): Promise<string> {
-    const key = `${folder}/${randomUUID()}${extensionFor(file.mimetype)}`;
+    return this.uploadBuffer(file.buffer, file.mimetype, folder);
+  }
+
+  /**
+   * Same as `upload()` for bytes the server produced itself rather than
+   * received — a scheduled report's generated workbook has no incoming
+   * request and so no Express.Multer.File to wrap it in.
+   */
+  async uploadBuffer(buffer: Buffer, mimetype: string, folder: StorageFolder): Promise<string> {
+    const key = `${folder}/${randomUUID()}${extensionFor(mimetype)}`;
 
     await this.client.send(
       new PutObjectCommand({
         Bucket: this.bucket,
         Key: key,
-        Body: file.buffer,
-        ContentType: file.mimetype,
+        Body: buffer,
+        ContentType: mimetype,
       }),
     );
 
@@ -99,6 +108,10 @@ function extensionFor(mimetype: string): string {
   switch (mimetype) {
     case "application/pdf":
       return ".pdf";
+    case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+      return ".xlsx";
+    case "text/csv":
+      return ".csv";
     case "image/png":
       return ".png";
     default:

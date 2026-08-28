@@ -1210,9 +1210,9 @@ model PurchaseSareeLine {
   quantity         Int       @default(1)
   finalAmount      Decimal   @default(0) @db.Decimal(12, 2)
   notes            String?
-  // Photo of the saree — the frontend currently captures this as a data URL,
-  // so it's stored as-is rather than uploaded to disk (see common/storage
-  // for the disk-upload pattern used elsewhere, if this ever needs it).
+  // Photo of the saree — a server-relative path into Cloudflare R2
+  // ("/uploads/photos/<uuid>.jpg") written by POST /uploads/photo. Older rows
+  // may still hold an inline base64 data URL from before photos moved to R2.
   imageUrl         String?   @db.Text
   // Optional photo for individual physical pieces within this line, indexed by
   // piece position (pieceImageUrls[0] is piece 1 of `quantity`). Independent of

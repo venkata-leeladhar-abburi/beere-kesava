@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { AuditLogService } from "../audit-log/audit-log.service";
 import { PaginatedResult } from "../common/pagination";
 import {
@@ -6,12 +6,9 @@ import {
   SalesChannel,
   SareeOrigin,
   SareeStatus,
-  UserRole,
-  WhatsAppMessageKind,
 } from "../generated/prisma/client";
 import { IdGeneratorService, businessSegment, nameSegment } from "../id-generator/id-generator.service";
 import { PrismaService } from "../prisma/prisma.service";
-import { WhatsAppService } from "../whatsapp/whatsapp.service";
 import { CreateReturnDto } from "./dto/create-return.dto";
 import { CreateSaleDto } from "./dto/create-sale.dto";
 import { ListReturnQueryDto } from "./dto/list-return-query.dto";
@@ -60,13 +57,10 @@ export interface ReturnStockItem {
 
 @Injectable()
 export class SalesService {
-  private readonly logger = new Logger(SalesService.name);
-
   constructor(
     private readonly prisma: PrismaService,
     private readonly idGenerator: IdGeneratorService,
     private readonly auditLog: AuditLogService,
-    private readonly whatsapp: WhatsAppService,
   ) {}
 
   async createSale(dto: CreateSaleDto) {
@@ -206,14 +200,6 @@ export class SalesService {
 
     const sale = await this.findOneSale(saleRef);
 
-    // Fire-and-forget: a WhatsApp outage must never fail or roll back a sale.
-    // sendTemplate persists its own failures to WhatsAppMessage, so a failed
-    // notification is recoverable/retryable rather than lost.
-    void this.notifySuperAdminsOfSale(sale, dto.actorId).catch((error: unknown) => {
-      const message = error instanceof Error ? error.message : String(error);
-      this.logger.error(`Retail bill WhatsApp notify failed for ${saleRef}: ${message}`);
-    });
-
     return sale;
   }
 
@@ -286,55 +272,7 @@ export class SalesService {
       newValue: String(dto.amount),
     });
 
-    const sale = await this.findOneSale(saleRef);
-    void this.notifySuperAdminsOfSale(sale, dto.actorId).catch((error: unknown) => {
-      const message = error instanceof Error ? error.message : String(error);
-      this.logger.error(`Retail bill WhatsApp notify failed for ${saleRef}: ${message}`);
-    });
-    return sale;
-  }
-
-  /**
-   * Pushes a bill summary to every SUPERADMIN on WhatsApp after a retail sale.
-   * Wholesale sales are excluded — those go through the dispatch/invoice flow
-   * and would double up on notifications.
-   */
-  private async notifySuperAdminsOfSale(
-    sale: Prisma.SaleRecordGetPayload<{ include: typeof saleInclude }>,
-    actorId?: string,
-  ): Promise<void> {
-    if (sale.channel !== SalesChannel.RETAIL) {
-      return;
-    }
-
-    const [recipients, actor] = await Promise.all([
-      this.prisma.user.findMany({ where: { role: UserRole.SUPERADMIN, status: "ACTIVE" } }),
-      actorId ? this.prisma.user.findUnique({ where: { id: actorId } }) : Promise.resolve(null),
-    ]);
-
-    const staffName = actor ? `${actor.firstName} ${actor.lastName}` : "Shop Staff";
-
-    for (const admin of recipients) {
-      if (!admin.mobile) continue;
-      await this.whatsapp.sendTemplate({
-        campaignName: "bk_retail_bill",
-        destination: admin.mobile,
-        recipientName: `${admin.firstName} ${admin.lastName}`,
-        templateParams: [
-          "Beere Kesava Silks",
-          sale.saleRef,
-          this.whatsapp.sanitiseParam(sale.customer.name),
-          "1",
-          Number(sale.amount).toFixed(2),
-          "—",
-          this.whatsapp.sanitiseParam(staffName),
-        ],
-        kind: WhatsAppMessageKind.RETAIL_BILL,
-        relatedType: "SaleRecord",
-        relatedId: sale.saleRef,
-        sentById: actorId,
-      });
-    }
+    return this.findOneSale(saleRef);
   }
 
   async findAllSales(

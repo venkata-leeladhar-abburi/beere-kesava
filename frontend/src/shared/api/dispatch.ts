@@ -27,6 +27,9 @@ export interface BackendDispatchRecord {
   gstPct: string | null;
   grandTotal: string;
   firmId: string | null;
+  /** Firm the dispatch was billed under — needed for the history table's Firm
+   *  column, which otherwise has only an id to show. */
+  firm: { id: string; firmName: string } | null;
   paymentDueDate: string | null;
   bulkOrderRef: string | null;
   quotationRef: string | null;

@@ -18,12 +18,14 @@ import { UserRole } from "../generated/prisma/client";
 import { documentUploadOptions } from "../common/storage/upload.config";
 import { PrismaService } from "../prisma/prisma.service";
 import { WhatsAppDocumentsService } from "./whatsapp-documents.service";
+import { WhatsAppSalesService } from "./whatsapp-sales.service";
 
 @Controller("whatsapp")
 export class WhatsAppController {
   constructor(
     private readonly prisma: PrismaService,
     private readonly whatsappDocs: WhatsAppDocumentsService,
+    private readonly whatsappSales: WhatsAppSalesService,
   ) {}
 
   // Lets the frontend poll delivery status for a message it just triggered,
@@ -52,5 +54,35 @@ export class WhatsAppController {
     if (!file) throw new BadRequestException("A PDF file is required");
     if (!poId) throw new BadRequestException("poId is required");
     return this.whatsappDocs.sendPurchaseOrder(poId, file, user.id);
+  }
+
+  // "Send to Customer on WhatsApp" on the sale success screen. `saleRefs` is
+  // a JSON array because one counter bill is several SaleRecords — one per
+  // saree — and they must produce a single message, not one per piece.
+  // Guarded to the same roles as POST /sales itself — whoever may raise the
+  // sale may send its bill, and nobody else.
+  @Post("send-sale-bill")
+  @HttpCode(HttpStatus.OK)
+  @RequireRoles(UserRole.SHOP, UserRole.ACCOUNTANT, UserRole.ADMIN, UserRole.SUPERADMIN)
+  @UseInterceptors(FileInterceptor("file", documentUploadOptions()))
+  sendSaleBill(
+    @UploadedFile() file: Express.Multer.File | undefined,
+    @Body("saleRefs") saleRefs: string | undefined,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    if (!file) throw new BadRequestException("A PDF file is required");
+    if (!saleRefs) throw new BadRequestException("saleRefs is required");
+
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(saleRefs);
+    } catch {
+      throw new BadRequestException("saleRefs must be a JSON array of sale references");
+    }
+    if (!Array.isArray(parsed) || parsed.some((ref) => typeof ref !== "string")) {
+      throw new BadRequestException("saleRefs must be a JSON array of sale references");
+    }
+
+    return this.whatsappSales.sendSaleBill(parsed as string[], file, user.id);
   }
 }

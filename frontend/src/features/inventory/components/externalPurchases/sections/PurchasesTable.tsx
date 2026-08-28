@@ -1,6 +1,6 @@
 import React from "react";
 import { Eye, Edit2, Trash2, Tag } from "lucide-react";
-import { Purchase, purchaseTotals } from "@/features/suppliers";
+import { Purchase, purchaseTotals, parseINR } from "@/features/suppliers";
 import { formatMoney, rupees } from "@/lib/domain/money";
 import { T, F } from "../theme";
 import { StatusPill } from "../common/primitives";
@@ -17,6 +17,8 @@ import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
  */
 export function PurchasesTable({
   filtered,
+  paidFor,
+  statusOf,
   totalCount,
   viewMode = "card",
   hoveredRow,
@@ -30,6 +32,10 @@ export function PurchasesTable({
   onClearFilters,
 }: {
   filtered: Purchase[];
+  /** Total already paid against a purchase, summed from its supplier payments. */
+  paidFor?: (row: Purchase) => number;
+  /** Payment status derived from those payments — falls back to the stored one. */
+  statusOf?: (row: Purchase) => Purchase["status"];
   totalCount: number;
   viewMode?: "card" | "table";
   hoveredRow: string | null;
@@ -43,6 +49,9 @@ export function PurchasesTable({
   onRetry?: () => void;
   onClearFilters?: () => void;
 }) {
+  const balanceOf = (row: Purchase) =>
+    Math.max(0, parseINR(row.billAmount) - (paidFor ? paidFor(row) : 0));
+
   const mono = (color: string, extra?: React.CSSProperties): React.CSSProperties => ({
     fontFamily: "var(--font-mono)", fontSize: 12, color, whiteSpace: "nowrap", ...extra,
   });
@@ -100,8 +109,19 @@ export function PurchasesTable({
       cell: (_v, row) => <span style={mono(T.antiqueGold, { fontWeight: 600, fontSize: 13 })}>{row.billAmount}</span>,
     },
     {
-      id: "status", header: "Payment Status", accessor: row => row.status, type: "status",
-      cell: (_v, row) => <StatusPill status={row.status} />,
+      id: "paid", header: "Paid", accessor: row => (paidFor ? paidFor(row) : 0), type: "number", sortable: true, priority: 3,
+      cell: (_v, row) => <span style={mono(T.green, { fontWeight: 600 })}>{formatMoney(rupees(paidFor ? paidFor(row) : 0))}</span>,
+    },
+    {
+      id: "balance", header: "Balance", accessor: row => balanceOf(row), type: "number", sortable: true, priority: 3,
+      cell: (_v, row) => {
+        const balance = balanceOf(row);
+        return <span style={mono(balance > 0 ? T.crimson : T.green, { fontWeight: 700 })}>{formatMoney(rupees(balance))}</span>;
+      },
+    },
+    {
+      id: "status", header: "Payment Status", accessor: row => (statusOf ? statusOf(row) : row.status), type: "status",
+      cell: (_v, row) => <StatusPill status={statusOf ? statusOf(row) : row.status} />,
     },
     {
       id: "addedBy", header: "Added By", accessor: row => row.addedBy, priority: 3,

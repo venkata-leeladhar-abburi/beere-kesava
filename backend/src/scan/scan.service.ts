@@ -25,16 +25,21 @@ export class ScanService {
       throw new NotFoundException(`No saree found for scanned code "${sareeId}"`);
     }
 
-    const [inventory, dispatches, sold] = await Promise.all([
+    const [inventory, dispatches, latestSale, latestReturn] = await Promise.all([
       this.prisma.inventoryRecord.findUnique({ where: { sareeId } }),
       this.prisma.dispatchSaree.findMany({
         where: { sareeId },
         include: { dispatch: { select: { type: true, dispatchDate: true } } },
         orderBy: { dispatch: { dispatchDate: "desc" } },
       }),
-      this.prisma.saleRecord.findFirst({ where: { sareeId } }),
+      this.prisma.saleRecord.findFirst({ where: { sareeId }, orderBy: { date: "desc" } }),
+      this.prisma.returnRecord.findFirst({ where: { sareeId }, orderBy: { createdAt: "desc" } }),
     ]);
     const latestQc = row.qcRecords[0];
+
+    // A saree counts as SOLD only if its most recent sale hasn't since been
+    // returned — a return after the sale date puts it back in sellable stock.
+    const sold = !!latestSale && (!latestReturn || latestSale.date > latestReturn.createdAt);
 
     // Where the saree physically is. A SHOP dispatch delivers it to the shop
     // floor — that is what *makes* it counter stock, not what removes it from

@@ -32,6 +32,16 @@ const DAMAGE_SEVERITY_TO_BACKEND: Record<"Minor" | "Moderate" | "Severe", Backen
   Minor: "MINOR", Moderate: "MODERATE", Severe: "SEVERE",
 };
 
+/** A saree type is stored as a rate-card code; the readable name comes from the
+ *  rate card, falling back to the raw code when the card has no entry yet. */
+function resolveSareeType(
+  code: string | null | undefined,
+  getSareeTypeByCode: (code: string) => SareeTypeRecord | undefined
+): string {
+  if (!code) return "—";
+  return getSareeTypeByCode(code)?.type ?? code;
+}
+
 function backendAssignmentToFrontend(
   a: BackendFinishingAssignment,
   getSareeTypeByCode: (code: string) => SareeTypeRecord | undefined
@@ -39,9 +49,9 @@ function backendAssignmentToFrontend(
   return {
     id: a.id,
     sareeId: a.sareeId,
-    designCode: a.designCode ?? a.batchSareeRow.designCode ?? "—",
-    sareeTypeCode: a.sareeType ?? undefined,
-    sareeType: a.sareeType ? (getSareeTypeByCode(a.sareeType)?.type ?? a.sareeType) : "—",
+    designCode: a.designCode ?? a.batchSareeRow.designCode ?? a.batchSareeRow.design?.code ?? "—",
+    sareeTypeCode: a.sareeType ?? a.batchSareeRow.sareeTypeCode ?? undefined,
+    sareeType: resolveSareeType(a.sareeType ?? a.batchSareeRow.sareeTypeCode, getSareeTypeByCode),
     weaverName: a.batchSareeRow.weaver?.name ?? "—",
     // Backend doesn't track the QC-pass date separately on the assignment —
     // assignedDate is the closest available timestamp.
@@ -70,18 +80,25 @@ function assignmentToReturn(
     id: a.id,
     assignmentId: a.id,
     sareeId: a.sareeId,
-    designCode: a.designCode ?? a.batchSareeRow.designCode ?? "—",
-    sareeTypeCode: a.sareeType ?? undefined,
-    sareeType: a.sareeType ? (getSareeTypeByCode(a.sareeType)?.type ?? a.sareeType) : "—",
+    // The assignment's own copies of design/type are only filled in when the
+    // assign form captured them, so the woven row is the fallback — without
+    // it the dispatch queue showed "—" for design and type on most sarees.
+    designCode: a.designCode ?? a.batchSareeRow.designCode ?? a.batchSareeRow.design?.code ?? "—",
+    sareeTypeCode: a.sareeType ?? a.batchSareeRow.sareeTypeCode ?? undefined,
+    sareeType: resolveSareeType(a.sareeType ?? a.batchSareeRow.sareeTypeCode, getSareeTypeByCode),
     weaverName: a.batchSareeRow.weaver?.name ?? "—",
+    batchId: a.batchSareeRow.batchId,
     condition: a.condition === "DAMAGED" ? "damaged" : "perfect",
     damageType: a.damageType ?? undefined,
     damageSeverity: a.damageSeverity === "MINOR" ? "Minor" : a.damageSeverity === "MODERATE" ? "Moderate" : a.damageSeverity === "SEVERE" ? "Severe" : undefined,
     damageNotes: a.damageNotes ?? undefined,
     damagePhotoUrl: a.damagePhotoUrl ?? undefined,
-    receivedBy: "Worker Staff",
-    // Backend doesn't store a separate returned-at timestamp — assignedDate is the closest available.
-    receivedDate: a.assignedDate,
+    receivedBy: a.finishingStaff ? `${a.finishingStaff.firstName} ${a.finishingStaff.lastName}`.trim() : "Worker Staff",
+    // Backend doesn't store a separate returned-at timestamp — the row's last
+    // write is the closest available, and for a RETURNED assignment that write
+    // *is* the receipt. assignedDate was used before, so every finished saree
+    // read as having come back on the day it was sent out.
+    receivedDate: a.updatedAt ?? a.assignedDate,
     inventoryStatus: a.condition === "DAMAGED" ? "Damaged — Review Needed" : "Ready for Dispatch",
     quotationRef: a.quotation?.quotationNumber ?? undefined,
   };
@@ -109,6 +126,7 @@ function backendDispatchToFrontend(d: BackendDispatchRecord): DispatchRecord {
     gstPct: d.gstPct ? Number(d.gstPct) : undefined,
     grandTotal: Number(d.grandTotal),
     firmId: d.firmId ?? undefined,
+    firmName: d.firm?.firmName ?? undefined,
     paymentDueDate: d.paymentDueDate ?? undefined,
     bulkOrderRef: d.bulkOrderRef ?? undefined,
     pendingTransport: d.pendingTransport,
@@ -252,7 +270,7 @@ export function FinishingProvider({ children }: { children: React.ReactNode }) {
       // A saree that's SEMI or DEFECTIVE should never have reached finishing
       // in the first place — hide any such legacy/bad assignment from the
       // queue rather than surface it as something to receive back.
-      .filter(a => !a.batchSareeRow.qcRecord || a.batchSareeRow.qcRecord.result === "PASSED")
+      .filter(a => a.batchSareeRow.qcRecords.length === 0 || a.batchSareeRow.qcRecords[0].result === "PASSED")
       .map(a => backendAssignmentToFrontend(a, getSareeTypeByCode)),
     [backendAssignments, getSareeTypeByCode],
   );

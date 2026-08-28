@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-syntax */
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
@@ -18,7 +18,8 @@ import { useBatches } from "@/features/production";
 import { useFinishing } from "@/features/finishing";
 import { DefectPhotoPrompt } from "./DefectPhotoPrompt";
 import { SareeSelectionTable } from "./SareeSelectionTable";
-import { Button, Input, NumberInput, Select, SelectItem, Combobox } from "../../../../../shared/ui/primitives";
+import { ReceiveRecipientPicker, type RecipientOption } from "./ReceiveRecipientPicker";
+import { Button, Input, NumberInput } from "../../../../../shared/ui/primitives";
 import { resolveAssetUrl } from "@/shared/api/uploads";
 import { useImageUpload } from "@/shared/hooks/useImageUpload";
 
@@ -46,9 +47,14 @@ export function OwnFactoryReceiveTab({ onSareeReceived }: { onSareeReceived?: (r
     if (!loomsRes?.items) return [];
     return loomsRes.items.map(l => ({
       id: l.id,
-      // Human-facing loom code ("Loom-002"); loomNumber is the legacy label.
-      displayCode: l.code,
+      // Human-facing loom code ("Loom-002"); loomNumber is the loom's own
+      // name on the floor ("FACT-LOOM-1"). Both are shown — the code as the
+      // id chip, the number as the display name — so the picker, the summary
+      // and the saree table can never disagree about which loom this is.
+      displayCode: l.code ?? l.loomNumber,
       loomNumber: l.loomNumber,
+      location: l.location,
+      status: l.status,
       operatorName: l.operatorName,
       avatar: l.loomNumber.replace(/[^0-9A-Za-z]/g, "").slice(-2).toUpperCase() || "FL",
     }));
@@ -135,25 +141,36 @@ export function OwnFactoryReceiveTab({ onSareeReceived }: { onSareeReceived?: (r
   const selectedSarees = currentBatch ? currentBatch.sarees.filter(s => selectedSareeNos.has(s.no)) : [];
   const sareeId = selectedSarees[0]?.sareeId ?? "—";
 
-  const loomLabel = selectedLoom ? `${selectedLoom.displayCode || selectedLoom.loomNumber}${selectedLoom.operatorName ? ` · ${selectedLoom.operatorName}` : ""}` : "—";
+  const loomLabel = selectedLoom ? `${selectedLoom.loomNumber}${selectedLoom.operatorName ? ` · ${selectedLoom.operatorName}` : ""}` : "—";
 
-  const resetEntryFields = () => {
-    setSareeColor(""); setSareeWeight(""); setHasPhoto(false); setMatEdits({});
-  };
+  // Everything the picker shows about a loom — its number, its sequential code,
+  // location and operator.
+  const LOOM_OPTIONS = useMemo<RecipientOption[]>(() => LOOMS.map(l => ({
+    id: l.id,
+    code: l.displayCode,
+    name: l.loomNumber,
+    avatar: l.avatar,
+    status: l.status,
+    subtitle: [l.location, l.operatorName ? `Operator: ${l.operatorName}` : null].filter(Boolean).join(" · "),
+  })), [LOOMS]);
 
-  const pickLoom = (loomId: string) => {
+  const resetEntryFields = useCallback(() => {
+    setSareeColor(""); setSareeWeight(""); setPhotoUrl(null); setMatEdits({});
+  }, []);
+
+  const pickLoom = useCallback((loomId: string) => {
     const l = LOOMS.find(l => l.id === loomId) || null;
     setSelectedLoom(l);
     setSelectedBatchId(l ? (batches[l.id]?.[0]?.id ?? null) : null);
     setSelectedSareeNos(new Set());
     resetEntryFields();
-  };
+  }, [LOOMS, batches, resetEntryFields]);
 
-  const pickBatch = (batchId: string) => {
+  const pickBatch = useCallback((batchId: string) => {
     setSelectedBatchId(batchId);
     setSelectedSareeNos(new Set());
     resetEntryFields();
-  };
+  }, [resetEntryFields]);
 
   const selectSareeSlot = (no: number) => {
     const s = currentBatch?.sarees.find(s => s.no === no);
@@ -226,56 +243,15 @@ export function OwnFactoryReceiveTab({ onSareeReceived }: { onSareeReceived?: (r
 
   return (
     <>
-      <div style={{ margin: "10px 16px 0" }}>
-        <FieldLabel>Select Factory Loom</FieldLabel>
-        <Combobox
-          size="lg"
-          value={selectedLoom?.id ?? ""}
-          onValueChange={pickLoom}
-          placeholder="Select a loom…"
-          searchPlaceholder="Search looms…"
-          emptyMessage="No factory looms found"
-          options={LOOMS.map(l => ({ value: l.id, label: `${l.loomNumber}${l.operatorName ? ` · ${l.operatorName}` : ""}` }))}
-        />
-      </div>
-
-      {selectedLoom && loomBatches.length > 0 && (
-        <div style={{ margin: "10px 16px 0" }}>
-          <FieldLabel>Select Batch</FieldLabel>
-          <Select value={selectedBatchId ?? ""} onValueChange={pickBatch} size="lg">
-            {loomBatches.map(b => {
-              const bDone = b.sarees.filter(s => s.status !== "pending").length;
-              return <SelectItem key={b.id} value={b.id}>{b.id} · {bDone}/{b.total} sarees done</SelectItem>;
-            })}
-          </Select>
-
-          {currentBatch && (
-            <div style={{ ...card, padding: "10px 14px", marginTop: 8 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                <div>
-                  <div style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, color: C.burg }}>{currentBatch.id}</div>
-                  <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 1 }}>
-                    {currentBatch.sareeTypeCode}{currentBatch.bulkOrderLabel ? ` · ${currentBatch.bulkOrderLabel}` : ""}
-                  </div>
-                  <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 1 }}>{doneCount} of {currentBatch.total} sarees done</div>
-                </div>
-                <span style={{ fontFamily: F.u, fontSize: 12, color: allDone ? C.gold : C.green, background: allDone ? "rgba(196,146,58,0.12)" : "rgba(30,102,64,0.10)", padding: "2px 7px", borderRadius: 999 }}>
-                  {allDone ? "Ready for signature" : "Active"}
-                </span>
-              </div>
-              <div style={{ background: "#F0F0F0", borderRadius: 999, height: 5, overflow: "hidden" }}>
-                <div style={{ width: `${(doneCount / currentBatch.total) * 100}%`, height: "100%", background: C.gold, borderRadius: 999 }} />
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {selectedLoom && loomBatches.length === 0 && (
-        <div style={{ margin: "10px 16px 0", padding: "10px 14px", background: "rgba(110,15,45,0.04)", border: `1px dashed ${C.bdr}`, borderRadius: 10, textAlign: "center" }}>
-          <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>No pending sarees for this loom right now.</span>
-        </div>
-      )}
+      <ReceiveRecipientPicker
+        kind="loom"
+        options={LOOM_OPTIONS}
+        batchesByRecipient={batches}
+        selectedId={selectedLoom?.id ?? null}
+        onPickRecipient={pickLoom}
+        selectedBatchId={currentBatch?.id ?? null}
+        onPickBatch={pickBatch}
+      />
 
       {reworkSarees.length > 0 && (
         <div style={{ margin: "10px 16px 0", padding: "10px 14px", background: "rgba(110,15,45,0.05)", border: `1px solid rgba(110,15,45,0.20)`, borderRadius: 10, display: "flex", alignItems: "flex-start", gap: 8 }}>
@@ -296,6 +272,8 @@ export function OwnFactoryReceiveTab({ onSareeReceived }: { onSareeReceived?: (r
           currentBatch={currentBatch}
           entityName={loomLabel}
           entityAvatar={selectedLoom.avatar}
+          entityCode={selectedLoom.displayCode}
+          loomLabel={selectedLoom.loomNumber}
           columnHeader="Loom / Operator"
           doneCount={doneCount}
           sareeSort={sareeSort}

@@ -16,4 +16,5 @@ export { PurchaseOrderDocument, type PODocumentItem, type PurchaseOrderDocumentP
 export { QuotationDocument, toQuotationItems, type QuotationLineItem, type QuotationDocumentProps } from "./QuotationDocument";
 export { DeliveryChallanDocument, type ChallanLineItem, type DeliveryChallanDocumentProps } from "./DeliveryChallanDocument";
 export { ReceiptDocument, type ReceiptDocumentProps } from "./ReceiptDocument";
+export { RetailBillDocument, type RetailBillLineItem, type RetailBillDocumentProps } from "./RetailBillDocument";
 export { StatementOfAccountDocument, type LedgerEntry, type AgeingBucket, type StatementOfAccountDocumentProps } from "./StatementOfAccountDocument";

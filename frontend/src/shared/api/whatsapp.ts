@@ -20,4 +20,25 @@ export const whatsappApi = {
     form.append("file", pdf, `${poId}.pdf`);
     return apiClient.postForm<WhatsAppMessage>("/whatsapp/send-po-document", form);
   },
+
+  // "Send to Customer on WhatsApp" on the sale success screen. One counter
+  // bill is several SaleRecords — one per saree — so every ref goes up
+  // together and the backend produces a single message from them, not one
+  // per piece. Amounts, customer and staff are all re-read server-side from
+  // those records; only the PDF comes from here.
+  sendSaleBill: (saleRefs: string[], pdf: Blob, billRef: string) => {
+    const form = new FormData();
+    form.append("saleRefs", JSON.stringify(saleRefs));
+    form.append("file", pdf, `${billRef}.pdf`);
+    return apiClient.postForm<SendSaleBillResult>("/whatsapp/send-sale-bill", form);
+  },
 };
+
+export interface SendSaleBillResult {
+  billRef: string;
+  mediaUrl: string;
+  /** null when the customer has no phone number on file. */
+  customer: WhatsAppMessage | null;
+  /** One per number on ADMIN_WHATSAPP_NUMBERS. */
+  admins: WhatsAppMessage[];
+}

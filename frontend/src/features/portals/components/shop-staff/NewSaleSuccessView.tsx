@@ -1,28 +1,113 @@
 import React from "react";
 import { motion } from "motion/react";
 import { Check, Printer, MessageSquare, Plus } from "lucide-react";
+import { toast } from "sonner";
 import { C, F, Card, Btn, HeroHeader } from "./theme";
 import type { SaleLine } from "./sale-cart";
+import { isApiError } from "../../../../shared/api/client";
+import { whatsappApi } from "../../../../shared/api/whatsapp";
+import {
+  DEFAULT_LETTERHEAD_FIRM,
+  RetailBillDocument,
+  exportDocumentPdfBlob,
+} from "../../../../shared/ui/document";
 
 interface NewSaleSuccessViewProps {
   lines: SaleLine[];
   custName: string;
+  /** As captured on step 1 — "—" or empty when the walk-in gave no number. */
+  phone: string;
+  custAddress?: string;
   payment: "cash" | "upi" | "card" | "other" | null;
+  payRef?: string;
   total: number;
+  /** One SaleRecord ref per saree, in the order the backend recorded them. */
+  saleRefs: string[];
   fmtPrice: (n: number) => string;
   onShowBill: () => void;
   onResetSale: () => void;
 }
 
+/**
+ * A phone is optional on a retail sale — a cash walk-in who won't leave a
+ * number is a legitimate customer — and the customer list stores a literal
+ * "—" for anyone without one. Either way there is nobody to send a bill to,
+ * so the button explains itself rather than failing on click.
+ */
+function hasSendablePhone(phone: string): boolean {
+  return /\d/.test(phone.trim());
+}
+
 export function NewSaleSuccessView({
   lines,
   custName,
+  phone,
+  custAddress,
   payment,
+  payRef,
   total,
+  saleRefs,
   fmtPrice,
   onShowBill,
   onResetSale,
 }: NewSaleSuccessViewProps) {
+  const [sending, setSending] = React.useState(false);
+  const [sent, setSent] = React.useState(false);
+
+  const canSend = hasSendablePhone(phone) && saleRefs.length > 0;
+  const billRef = saleRefs[0] ?? "";
+  const soldAt = React.useMemo(() => new Date(), []);
+
+  const handleSend = async () => {
+    if (sending || !canSend) return;
+    setSending(true);
+    const toastId = toast.loading(`Preparing bill ${billRef}…`);
+    try {
+      // The same document the Print button shows, rasterised to a PDF the
+      // backend attaches to both the customer's copy and the admin alert.
+      const pdf = await exportDocumentPdfBlob(
+        <RetailBillDocument
+          billRef={billRef}
+          billDate={soldAt.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
+          firm={DEFAULT_LETTERHEAD_FIRM}
+          customerName={custName}
+          customerPhone={phone.trim()}
+          customerAddress={custAddress}
+          lines={lines.map(l => ({
+            sareeId: l.id,
+            name: l.name,
+            type: l.type,
+            design: l.design,
+            soldPrice: l.soldPrice,
+            originalPrice: l.originalPrice,
+          }))}
+          total={total}
+          paymentMethod={payment ?? undefined}
+          paymentRef={payRef}
+          saleRefs={saleRefs}
+        />,
+        { fileName: billRef, title: `Retail Bill ${billRef}` },
+      );
+
+      const result = await whatsappApi.sendSaleBill(saleRefs, pdf, billRef);
+      setSent(true);
+
+      // The customer copy is skipped server-side when no number is on the
+      // customer record — the admin feed still went out, and saying "sent"
+      // flatly would be wrong.
+      if (result.customer) {
+        toast.success(`Bill sent to ${custName || "the customer"} on WhatsApp`, { id: toastId });
+      } else {
+        toast.success("Bill sent to the admin team — the customer has no number on file", { id: toastId });
+      }
+    } catch (err: unknown) {
+      const message = isApiError(err) ? err.message : "Couldn't send the bill on WhatsApp.";
+      toast.error(message, { id: toastId });
+    } finally {
+      setSending(false);
+    }
+  };
+
   return (
     <div style={{ paddingBottom: 32 }}>
       <HeroHeader eyebrow="SINCE 1999 · NEW SALE" title="New Retail" sub="Sale" />
@@ -52,8 +137,9 @@ export function NewSaleSuccessView({
               </div>
             ))}
             {[
+              ["Bill No", billRef || "—", true],
               ["Customer", custName || "—", false],
-              ["Date & Time", new Date().toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }), true],
+              ["Date & Time", soldAt.toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }), true],
               ["Payment", payment?.toUpperCase() ?? "—", true],
             ].map(([k, v, mono]) => (
               <div key={k as string} style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
@@ -70,7 +156,19 @@ export function NewSaleSuccessView({
       </Card>
       <div style={{ padding: "0 20px", display: "flex", flexDirection: "column" as const, gap: 10, marginBottom: 16 }}>
         <Btn label="Print Bill" icon={<Printer size={16} />} onClick={onShowBill} style={{ width: "100%", background: C.burg }} />
-        <Btn label="Send to Customer on WhatsApp" icon={<MessageSquare size={16} />} style={{ width: "100%", background: C.green }} />
+        <Btn
+          label={sending ? "Sending…" : sent ? "Sent on WhatsApp" : "Send to Customer on WhatsApp"}
+          icon={<MessageSquare size={16} />}
+          onClick={handleSend}
+          disabled={!canSend || sending || sent}
+          title={canSend ? undefined : "This customer has no phone number on file"}
+          style={{ width: "100%", background: C.green }}
+        />
+        {!canSend && (
+          <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, textAlign: "center" as const }}>
+            No phone number on file for this customer — add one on their profile to send the bill.
+          </div>
+        )}
       </div>
 
       <div style={{ padding: "0 20px" }}>

@@ -10,7 +10,7 @@ import { TransportData, InvoiceData, InventoryRecord } from "../components/types
 import { rowToDispatchSaree } from "../components/modals/shared/SareePicker";
 import { toast } from "sonner";
 import { toastMessageForError } from "@/shared/ui/state";
-import { WeaverSareeRow, isSareePickable } from "@/features/weavers";
+import { WeaverSareeRow, isSareePickable, useExternalPurchaseRows } from "@/features/weavers";
 
 export function useInventoryPageState() {
   const { returns, dispatches, dispatchSarees, updateDispatch, deleteDispatch, readySarees, raiseQuotation, quotations, markQuotationDispatched } = useFinishing();
@@ -19,6 +19,10 @@ export function useInventoryPageState() {
   const { batches } = useBatches();
   const { firms } = useFirms();
   const { wholesaleCustomers = [] } = useCustomers() || {};
+  // Externally purchased pieces are real finished stock, but they never reach
+  // the QC/finishing ledger the records below are built from — without this
+  // they were missing from every inventory count.
+  const { rows: externalRows } = useExternalPurchaseRows(true);
 
   // ── Clickable code modals ───────────────────────────────────────────────────
   const [openDesignCode, setOpenDesignCode] = useState<string | null>(null);
@@ -100,8 +104,26 @@ export function useInventoryPageState() {
       });
     });
 
+    // 3. Externally purchased pieces — bought in finished, so they skip QC and
+    // finishing and land straight on "ready for dispatch". A piece already sent
+    // back to the supplier is no longer ours and is left out entirely.
+    externalRows.forEach(r => {
+      if (r.external?.returned) return;
+      list.push({
+        id: r.sareeId,
+        designCode: "—",
+        sareeType: r.sareeTypeName ?? "—",
+        weaverName: r.stock?.supplier ?? "External supplier",
+        date: r.stock?.purchaseDate ?? "",
+        status: dispatchedSareeIds.has(r.sareeId) ? "Dispatched" : "Finishing complete",
+        rawType: "external",
+        originalId: r.stock?.purchaseId ?? r.sareeId,
+        supplier: r.stock?.supplier ?? undefined,
+      });
+    });
+
     return list;
-  }, [readySarees, returns, bulkOrders, batches, dispatchedSareeIds]);
+  }, [readySarees, returns, bulkOrders, batches, dispatchedSareeIds, externalRows]);
 
   // ── Stats ──────────────────────────────────────────────────────────────────
   const total        = allRecords.length;
