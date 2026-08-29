@@ -265,6 +265,7 @@ export function HistorySection({
               loading={isLoading}
               error={isError}
               emptyTitle="No approval decisions recorded for this filter yet."
+              pagination
             />
           </div>
         </div>

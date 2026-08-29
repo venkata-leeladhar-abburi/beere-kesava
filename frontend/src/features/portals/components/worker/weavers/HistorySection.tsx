@@ -346,6 +346,7 @@ export function HistorySection({ liveRecords = NO_LIVE_RECORDS }: { liveRecords?
                     onSelectionChange={setSelected}
                     responsive
                     density="compact"
+                    pagination
                   />
                 </div>
               </div>
@@ -372,6 +373,7 @@ export function HistorySection({ liveRecords = NO_LIVE_RECORDS }: { liveRecords?
                     onSelectionChange={setSelected}
                     responsive
                     density="compact"
+                    pagination
                   />
                 </div>
               </div>

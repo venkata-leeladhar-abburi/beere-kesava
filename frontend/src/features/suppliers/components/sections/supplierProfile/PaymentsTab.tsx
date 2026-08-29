@@ -78,6 +78,7 @@ export function PaymentsTab({
             columns={paymentColumns}
             data={filteredPayments}
             getRowId={p => p.id}
+            pagination
           />
         )}
       </div>

@@ -22,6 +22,7 @@ import { LoadingState, ErrorState } from "../../../../shared/ui/state";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money, StatusPill, EntityCode } from "@/shared/ui/domain";
 import type { PaymentStatus } from "@/lib/domain/status";
+import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 
 function formatHistDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
@@ -164,6 +165,8 @@ export function PaymentHistorySection() {
         !r.description.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
+
+  const pag = usePagination(filtered, 8);
 
   const totalIn  = filtered.filter(r => r.type === "Customer Receipt").reduce((s, r) => s + r.amount, 0);
   const totalOut = filtered.filter(r => r.type !== "Customer Receipt").reduce((s, r) => s + r.amount, 0);
@@ -376,7 +379,7 @@ export function PaymentHistorySection() {
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" as const }}>
 
             {/* View toggle */}
-            <div className="hidden md:flex" style={{ alignItems: "center", gap: 3, background: T.warmCream, borderRadius: 9, padding: 3, border: `1px solid ${T.borderDef}`, flexShrink: 0 }}>
+            <div className="flex" style={{ alignItems: "center", gap: 3, background: T.warmCream, borderRadius: 9, padding: 3, border: `1px solid ${T.borderDef}`, flexShrink: 0 }}>
               {viewOptions.map(({ key, Icon: Ico, label }) => (
                 <Button key={key} variant={view === key ? "primary" : "tertiary"} size="sm" iconLeft={Ico}
                   onClick={() => setView(key)}
@@ -409,33 +412,6 @@ export function PaymentHistorySection() {
               Clear
             </Button>
           </div>
-
-          <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
-            <div className="flex items-center gap-1 border border-[#E8DCC4] rounded-[10px] p-1 bg-white shrink-0">
-              <Button
-                onClick={() => setView("card")}
-                variant="ghost"
-                className={`h-auto rounded-[8px] gap-1.5 py-1.5 px-3 text-[12px] sm:text-[13px] font-bold ${
-                  view === "card"
-                    ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
-                    : "bg-transparent text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
-                }`}
-              >
-                <LayoutGrid size={14} /> Card View
-              </Button>
-              <Button
-                onClick={() => setView("table")}
-                variant="ghost"
-                className={`h-auto rounded-[8px] gap-1.5 py-1.5 px-3 text-[12px] sm:text-[13px] font-bold ${
-                  view === "table"
-                    ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
-                    : "bg-transparent text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
-                }`}
-              >
-                <AlignJustify size={14} /> Table View
-              </Button>
-            </div>
-          </div>
         </div>
 
         {/* ── Loading / error states ──────────────────────────── */}
@@ -447,19 +423,24 @@ export function PaymentHistorySection() {
         <>
         {/* ── CARD VIEW ───────────────────────────────────────── */}
         {view === "card" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8 items-stretch">
-            {filtered.map((r, i) => (
-              <motion.div key={r.id} style={{ display: "flex", flexDirection: "column" }}
-                initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.06, ease: EASE }}>
-                <HistoryCard r={r} onView={() => setViewRecord(r)} />
-              </motion.div>
-            ))}
-            {filtered.length === 0 && (
-              <div style={{ gridColumn: "1 / -1", padding: "60px 0", textAlign: "center" as const }}>
-                <Receipt size={40} color={T.borderDef} style={{ marginBottom: 12 }} />
-                <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No transactions match your filters.</div>
-              </div>
+          <div className="mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-6 items-stretch">
+              {pag.pageItems.map((r, i) => (
+                <motion.div key={r.id} style={{ display: "flex", flexDirection: "column" }}
+                  initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.06, ease: EASE }}>
+                  <HistoryCard r={r} onView={() => setViewRecord(r)} />
+                </motion.div>
+              ))}
+              {filtered.length === 0 && (
+                <div style={{ gridColumn: "1 / -1", padding: "60px 0", textAlign: "center" as const }}>
+                  <Receipt size={40} color={T.borderDef} style={{ marginBottom: 12 }} />
+                  <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No transactions match your filters.</div>
+                </div>
+              )}
+            </div>
+            {filtered.length > 0 && (
+              <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start} onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="transactions" />
             )}
           </div>
         )}
@@ -472,69 +453,76 @@ export function PaymentHistorySection() {
                 <Receipt size={40} color={T.borderDef} style={{ marginBottom: 12 }} />
                 <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>No transactions match your filters.</div>
               </div>
-            ) : filtered.map((r, i) => {
-              const typeCfg = HIST_TYPE_CFG[r.type];
-              const { Icon: HistIcon, color: iconColor, iconBg } = getHistTypeIcon(r.type);
-              const isReceipt = r.type === "Customer Receipt";
-              return (
-                <motion.div
-                  key={r.id}
-                  initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: i * 0.04, ease: EASE }}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 16, padding: "16px 20px",
-                    background: i % 2 === 0 ? "#FFFDF9" : T.silkCream,
-                    borderBottom: `1px solid ${T.borderDef}`,
-                    borderLeft: `4px solid ${typeCfg.border}`,
-                  }}
-                >
-                  {/* Icon */}
-                  <div style={{ width: 42, height: 42, borderRadius: 11, background: iconBg, border: `1px solid ${typeCfg.border}22`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <HistIcon size={18} color={iconColor} />
-                  </div>
+            ) : (
+              <div>
+                {pag.pageItems.map((r, i) => {
+                  const typeCfg = HIST_TYPE_CFG[r.type];
+                  const { Icon: HistIcon, color: iconColor, iconBg } = getHistTypeIcon(r.type);
+                  const isReceipt = r.type === "Customer Receipt";
+                  return (
+                    <motion.div
+                      key={r.id}
+                      initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3, delay: i * 0.04, ease: EASE }}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 16, padding: "16px 20px",
+                        background: i % 2 === 0 ? "#FFFDF9" : T.silkCream,
+                        borderBottom: `1px solid ${T.borderDef}`,
+                        borderLeft: `4px solid ${typeCfg.border}`,
+                      }}
+                    >
+                      {/* Icon */}
+                      <div style={{ width: 42, height: 42, borderRadius: 11, background: iconBg, border: `1px solid ${typeCfg.border}22`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <HistIcon size={18} color={iconColor} />
+                      </div>
 
-                  {/* Party + Type */}
-                  <div style={{ flex: "0 0 200px" }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{r.party}</div>
-                    <span style={{ display: "inline-block", marginTop: 3, padding: "2px 8px", borderRadius: 6, fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: typeCfg.bg, color: typeCfg.color }}>{r.type}</span>
-                  </div>
+                      {/* Party + Type */}
+                      <div style={{ flex: "0 0 200px" }}>
+                        <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>{r.party}</div>
+                        <span style={{ display: "inline-block", marginTop: 3, padding: "2px 8px", borderRadius: 6, fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: typeCfg.bg, color: typeCfg.color }}>{r.type}</span>
+                      </div>
 
-                  {/* Description */}
-                  <div style={{ flex: 1, fontFamily: F.ui, fontSize: 13, color: T.taupe, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
-                    {r.description}
-                  </div>
+                      {/* Description */}
+                      <div style={{ flex: 1, fontFamily: F.ui, fontSize: 13, color: T.taupe, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
+                        {r.description}
+                      </div>
 
-                  {/* Ref + PO */}
-                  <div style={{ flex: "0 0 130px" }}>
-                    <div><EntityCode type="payment" value={r.refNo} size="sm" /></div>
-                    {r.invoicePO && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{r.invoicePO}</div>}
-                  </div>
+                      {/* Ref + PO */}
+                      <div style={{ flex: "0 0 130px" }}>
+                        <div><EntityCode type="payment" value={r.refNo} size="sm" /></div>
+                        {r.invoicePO && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>{r.invoicePO}</div>}
+                      </div>
 
-                  {/* Date */}
-                  <div style={{ flex: "0 0 100px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, fontWeight: 600 }}>{r.date}</div>
+                      {/* Date */}
+                      <div style={{ flex: "0 0 100px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, fontWeight: 600 }}>{r.date}</div>
 
-                  {/* Amount */}
-                  <div style={{ flex: "0 0 120px", textAlign: "right" as const }}>
-                    <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: isReceipt ? T.green : T.crimson }}>
-                      {isReceipt ? "+" : "−"}<Money value={rupees(r.amount)} />
-                    </div>
-                    {r.utr && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.green, marginTop: 2 }}>{r.utr}</div>}
-                  </div>
+                      {/* Amount */}
+                      <div style={{ flex: "0 0 120px", textAlign: "right" as const }}>
+                        <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: isReceipt ? T.green : T.crimson }}>
+                          {isReceipt ? "+" : "−"}<Money value={rupees(r.amount)} />
+                        </div>
+                        {r.utr && <div style={{ fontFamily: F.ui, fontSize: 12, color: T.green, marginTop: 2 }}>{r.utr}</div>}
+                      </div>
 
-                  {/* Status badge */}
-                  <StatusPill taxonomy="payment" status={payHistStatusKey(r.status)} className="shrink-0" />
+                      {/* Status badge */}
+                      <StatusPill taxonomy="payment" status={payHistStatusKey(r.status)} className="shrink-0" />
 
-                  {/* Mode + Recorded */}
-                  <div style={{ flex: "0 0 100px", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-                    <div>{r.mode}</div>
-                    <div style={{ marginTop: 2, fontSize: 12 }}>{r.recordedBy}</div>
-                  </div>
+                      {/* Mode + Recorded */}
+                      <div style={{ flex: "0 0 100px", fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
+                        <div>{r.mode}</div>
+                        <div style={{ marginTop: 2, fontSize: 12 }}>{r.recordedBy}</div>
+                      </div>
 
-                  {/* View button */}
-                  <IconButton icon={Eye} label="View" variant="secondary" size="sm" onClick={() => setViewRecord(r)} className="flex-shrink-0 rounded-[8px] text-[#6E0F2D]" />
-                </motion.div>
-              );
-            })}
+                      {/* View button */}
+                      <IconButton icon={Eye} label="View" variant="secondary" size="sm" onClick={() => setViewRecord(r)} className="flex-shrink-0 rounded-[8px] text-[#6E0F2D]" />
+                    </motion.div>
+                  );
+                })}
+                <div style={{ padding: "14px 20px" }}>
+                  <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start} onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="transactions" />
+                </div>
+              </div>
+            )}
             {/* Summary footer */}
             {filtered.length > 0 && (
               <div style={{ padding: "14px 20px", borderTop: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between", background: T.warmCream }}>
@@ -568,26 +556,6 @@ export function PaymentHistorySection() {
                 </div>
               </div>
             )}
-            {/* Pagination */}
-            <div style={{ padding: "14px 20px", borderTop: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between", background: T.warmIvory }}>
-              <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
-                Showing {Math.min(PER_PAGE, filtered.length)} of {filtered.length} results
-              </span>
-              <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                <Button variant="secondary" size="sm" iconLeft={ChevronLeft} className="rounded-[7px] text-[var(--text-tertiary)]">
-                  Prev
-                </Button>
-                {[1,2,3].map(p => (
-                  <Button key={p} variant={page === p ? "primary" : "secondary"} size="sm" onClick={() => setPage(p)}
-                    className={page === p ? "size-[34px] rounded-[7px] bg-[#6E0F2D] p-0 text-[#FFFDF9]" : "size-[34px] rounded-[7px] p-0 text-[#3B2314]"}>
-                    {p}
-                  </Button>
-                ))}
-                <Button variant="secondary" size="sm" iconRight={ChevronRight} className="rounded-[7px] text-[var(--text-tertiary)]">
-                  Next
-                </Button>
-              </div>
-            </div>
           </div>
         )}
         </>

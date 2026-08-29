@@ -356,6 +356,7 @@ export function FactoryLoomPage() {
                   <div className="min-w-[700px]">
                     <DataTable
                       responsive={false}
+                      pagination
                       columns={[
                         {
                           id: "loomNumber", header: "Loom #", accessor: l => loomLabel(l), priority: 1,

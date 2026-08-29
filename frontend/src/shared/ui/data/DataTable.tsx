@@ -110,7 +110,7 @@ export function DataTable<T>({
   }, [data, columns, activeSort]);
 
   const pag = usePagination(sortedData, pageSize);
-  const showPagination = pagination === true && sortedData.length > (pageSize ?? 10);
+  const showPagination = pagination === true && sortedData.length > 0;
   const displayData = showPagination ? pag.pageItems : sortedData;
 
   function handleSortClick(col: ColumnDef<T>) {

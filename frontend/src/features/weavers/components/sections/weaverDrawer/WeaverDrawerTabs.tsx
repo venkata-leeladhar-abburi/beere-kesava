@@ -66,6 +66,7 @@ export function BatchesTab({ sortedAllWeaverBatches, dispatches, weaver, batchDa
                       <div className="min-w-[500px]" style={{ overflowX: "auto", border: `1px solid ${T.borderDef}`, borderRadius: 10, background: "#FFFFFF" }}>
                         <DataTable
                           responsive
+                          pagination
                           columns={[
                             {
                               id: "sareeId", header: "Saree ID", accessor: (row: SareeRow) => row.sareeId, priority: 1,

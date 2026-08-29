@@ -468,6 +468,7 @@ export function ShopReturnsSection() {
               caption="Sarees returned to this shop"
               density="compact"
               responsive
+              pagination
               isFiltered={filtersActive}
               onClearFilters={clearFilters}
               emptyTitle="Nothing matches"

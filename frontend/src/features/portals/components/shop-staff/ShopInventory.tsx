@@ -444,6 +444,7 @@ function ShopInventory() {
       caption={caption}
       density="compact"
       responsive
+      pagination
       loading={isLoading}
       error={isError}
       onRetry={() => void refetch()}

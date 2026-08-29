@@ -258,6 +258,7 @@ export function ExternalOutstanding({ sarees, search, ageFilter }: { sarees: Uni
               getRowId={r => r.supplier}
               caption="Supplier roll-up table"
               emptyTitle="No supplier data yet"
+              pagination
             />
           </div>
         </div>

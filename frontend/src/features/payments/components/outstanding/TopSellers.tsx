@@ -166,6 +166,7 @@ function RankTable({ title, sub, ranks, unitLabel, icon }: { title: string; sub:
             getRowId={r => r.key}
             caption={`${title} table`}
             emptyTitle={`No ${unitLabel.toLowerCase()} data yet`}
+            pagination
           />
         </div>
       </div>

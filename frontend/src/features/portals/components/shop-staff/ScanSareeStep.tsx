@@ -255,6 +255,7 @@ export function ScanSareeStep({
                 caption="Sarees dispatched to this shop and still unsold"
                 density="compact"
                 responsive
+                pagination
                 loading={sareesLoading}
                 selectedIds={selected}
                 onSelectionChange={setSelected}

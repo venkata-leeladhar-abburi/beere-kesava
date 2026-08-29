@@ -27,6 +27,7 @@ import { Button, SearchInput, Select, SelectItem } from "../../../../shared/ui/p
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { EntityCode, Money } from "@/shared/ui/domain";
+import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 import { toPaise, fromPaise } from "@/lib/gst";
 
 const SHOW_OVERDUE_ALERT = false;
@@ -225,8 +226,10 @@ export function VendorPaymentsSection() {
     const matchVendor = vendorFilter === "All Vendors" || v.vendor === vendorFilter;
     const matchSearch = !search || v.vendor.toLowerCase().includes(search.toLowerCase()) || v.poNumber.toLowerCase().includes(search.toLowerCase());
     const matchDate = matchesDateFilter(v.dueDate, dateFilter);
-    return matchStatus && matchVendor && matchSearch && matchDate;
+    return matchSearch && matchStatus && matchVendor && matchDate;
   });
+
+  const pag = usePagination(filtered, 8);
 
   const viewOptions = [
     { key: "card",  Icon: LayoutGrid,   label: "Card View"  },
@@ -547,19 +550,24 @@ export function VendorPaymentsSection() {
         </div>
 
         {view === "card" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8 items-stretch">
-            {filtered.map((vp, i) => (
-              <motion.div key={vp.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.07, ease: EASE }} style={{ display: "flex", flexDirection: "column" }}>
-                <VendorCard vp={vp} matchedPO={matchPO(vp.poNumber)} onPay={() => setPayNowId(vp.id)} onView={() => setViewDetailsId(vp.id)} onViewPO={() => setViewPO(matchPO(vp.poNumber) ?? null)} onAddInvoice={() => setAddInvoiceForId(vp.id)} selected={selVendor === vp.id} />
-              </motion.div>
-            ))}
+          <div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-6 items-stretch">
+              {pag.pageItems.map((vp, i) => (
+                <motion.div key={vp.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.07, ease: EASE }} style={{ display: "flex", flexDirection: "column" }}>
+                  <VendorCard vp={vp} matchedPO={matchPO(vp.poNumber)} onPay={() => setPayNowId(vp.id)} onView={() => setViewDetailsId(vp.id)} onViewPO={() => setViewPO(matchPO(vp.poNumber) ?? null)} onAddInvoice={() => setAddInvoiceForId(vp.id)} selected={selVendor === vp.id} />
+                </motion.div>
+              ))}
+            </div>
+            <div className="mb-8">
+              <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start} onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="vendor bills" />
+            </div>
           </div>
         )}
 
         {view === "list" && (
           <div className="overflow-x-auto w-full mb-8">
             <div className="min-w-[600px]" style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
-              {filtered.map((vp, i) => {
+              {pag.pageItems.map((vp, i) => {
                 const balance = vp.invoiceAmt - vp.paidAmt;
                 const cfg = VENDOR_STATUS_CFG[vp.status];
                 return (
@@ -584,6 +592,9 @@ export function VendorPaymentsSection() {
                   </div>
                 );
               })}
+            </div>
+            <div className="mt-4">
+              <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start} onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="vendor bills" />
             </div>
           </div>
         )}

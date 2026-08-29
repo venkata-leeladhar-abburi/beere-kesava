@@ -176,6 +176,8 @@ export function WeaverMakingChargesSection() {
     return matchSearch && matchVillage && matchStatus;
   });
 
+  const pag = usePagination(filtered, 8);
+
   // Declared for <DataTable> rather than hand-written <th>/<td> — the markup
   // this replaced duplicated the header row, the zebra striping and the
   // selection checkbox column that DataTable already owns.
@@ -663,9 +665,6 @@ export function WeaverMakingChargesSection() {
             </div>
           </div>
         ) : (
-        (() => {
-          const pag = usePagination(filtered, 8);
-          return (
             <>
             {/* ── Card view grid ───────────────────────────────────── */}
             {view === "card" && (
@@ -700,13 +699,12 @@ export function WeaverMakingChargesSection() {
                     selectedIds={selectedIds}
                     onSelectionChange={setSelectedIds}
                     emptyTitle="No weavers match your filters"
+                    pagination
                   />
                 </div>
               </div>
             )}
             </>
-          );
-        })()
         )}
 
       </SectionCard>

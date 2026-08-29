@@ -23,6 +23,7 @@ import { WholesaleTableView } from "./WholesaleTableView";
 import { Button, SearchInput } from "../../../../shared/ui/primitives";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
+import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 
 const INVOICES_QUERY_KEY = ["invoices"] as const;
 
@@ -166,6 +167,8 @@ export function WholesaleCollectionsSection() {
     const matchDate = matchesDateFilter(inv.invoiceDate, dateFilter);
     return matchSearch && matchState && matchDate;
   });
+
+  const pag = usePagination(filtered, 8);
 
   const viewOptions = [
     { key: "card",  Icon: LayoutGrid,   label: "Card View"  },
@@ -408,15 +411,20 @@ export function WholesaleCollectionsSection() {
         </div>
 
         {view === "card" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8 items-stretch">
-            {filtered.map((inv, i) => {
-              const matchingOrder = matchBulkOrder(inv.id);
-              return (
-                <motion.div key={inv.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.06, ease: EASE }} style={{ display: "flex", flexDirection: "column" }}>
-                  <CustomerCard inv={inv} onViewInvoice={() => setViewInvoice(inv)} onRecordPayment={() => setRecordPayment(inv)} bulkOrderRef={matchingOrder?.ref} bulkOrderData={matchingOrder} />
-                </motion.div>
-              );
-            })}
+          <div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-6 items-stretch">
+              {pag.pageItems.map((inv, i) => {
+                const matchingOrder = matchBulkOrder(inv.id);
+                return (
+                  <motion.div key={inv.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.06, ease: EASE }} style={{ display: "flex", flexDirection: "column" }}>
+                    <CustomerCard inv={inv} onViewInvoice={() => setViewInvoice(inv)} onRecordPayment={() => setRecordPayment(inv)} bulkOrderRef={matchingOrder?.ref} bulkOrderData={matchingOrder} />
+                  </motion.div>
+                );
+              })}
+            </div>
+            <div className="mb-8">
+              <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start} onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="invoices" />
+            </div>
           </div>
         )}
 

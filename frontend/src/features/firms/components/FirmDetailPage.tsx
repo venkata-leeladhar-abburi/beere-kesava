@@ -590,7 +590,7 @@ export function FirmDetailPage({ firm, onBack, onEdit, onGoToPayments }: {
                   </div>
                 )
               ) : (
-                <DataTable responsive columns={docColumns} data={visibleDocs} getRowId={d => `${d.type}-${d.id}`} />
+                <DataTable responsive columns={docColumns} data={visibleDocs} getRowId={d => `${d.type}-${d.id}`} pagination />
               )}
             </SectionShell>
 
@@ -614,7 +614,7 @@ export function FirmDetailPage({ firm, onBack, onEdit, onGoToPayments }: {
                   </div>
                 )
               ) : (
-                <DataTable responsive columns={paymentColumns} data={visiblePayments} getRowId={p => `${p.type}-${p.id}`} />
+                <DataTable responsive columns={paymentColumns} data={visiblePayments} getRowId={p => `${p.type}-${p.id}`} pagination />
               )}
             </SectionShell>
 

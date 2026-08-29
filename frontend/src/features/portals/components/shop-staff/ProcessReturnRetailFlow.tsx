@@ -378,6 +378,7 @@ export function ProcessReturnRetailFlow({
                     caption="Sarees sold at this counter and not yet returned"
                     density="compact"
                     responsive
+                    pagination
                     isFiltered={filtersActive}
                     onClearFilters={() => { setSearch(""); setCustomerFilter([]); }}
                     emptyTitle="No eligible sold sarees"
