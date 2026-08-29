@@ -18,6 +18,7 @@ import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { LoadingState, ErrorState, EmptyState } from "../../../../shared/ui/state";
 import { rupees } from "@/lib/domain/money";
 import { EntityCode, Money } from "@/shared/ui/domain";
+import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 
 const TopDivider = () => (
   <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 20, marginBottom: 12 }}>
@@ -224,6 +225,7 @@ export function BulkOrdersSection({ onNavigate, superadmin = false, onOpenOrder 
   const [showCreate, setShowCreate] = useState(false);
   const [successRef, setSuccessRef] = useState<string | null>(null);
   const { bulkOrders, addBulkOrder, nextOrderRef, isLoading, isError, error, refetch } = useBulkOrders();
+  const pag = usePagination(bulkOrders, 8);
   const atRiskCount = bulkOrders.filter(o => o.status === "at-risk" || o.status === "overdue").length;
   return (
     <div id="prod-bulk-orders" className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 36 }}>
@@ -281,12 +283,17 @@ export function BulkOrdersSection({ onNavigate, superadmin = false, onOpenOrder 
           ) : bulkOrders.length === 0 ? (
             <EmptyState title="No bulk orders yet" description="Bulk orders raised for wholesale customers will show up here." />
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5 sm:gap-5 p-2.5 sm:p-5 md:p-6 items-stretch">
-              {bulkOrders.map((o, i) => (
-                <FadeUp key={o.ref} delay={i * 0.07} style={{ height: "100%" }}>
-                  <BulkOrderCard o={o} superadmin={superadmin} onView={(order) => onOpenOrder(order, "overview")} onSlip={(order) => onOpenOrder(order, "payments")} />
-                </FadeUp>
-              ))}
+            <div>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5 sm:gap-5 p-2.5 sm:p-5 md:p-6 items-stretch">
+                {pag.pageItems.map((o, i) => (
+                  <FadeUp key={o.ref} delay={i * 0.07} style={{ height: "100%" }}>
+                    <BulkOrderCard o={o} superadmin={superadmin} onView={(order) => onOpenOrder(order, "overview")} onSlip={(order) => onOpenOrder(order, "payments")} />
+                  </FadeUp>
+                ))}
+              </div>
+              <div className="px-5 pb-4">
+                <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start} onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="orders" />
+              </div>
             </div>
           )}
 

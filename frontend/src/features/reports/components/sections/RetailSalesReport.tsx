@@ -301,10 +301,10 @@ export function RetailSalesReport() {
                 error={!!isError}
                 onRetry={refetchAll}
                 emptyTitle="No retail sales recorded yet."
+                pagination
               />
             </div>
           </div>
-          <TablePager total={retailRows.length} showing={retailRows.length} />
         </div>
       </FadeUp>
     </SectionCard>

@@ -12,6 +12,7 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { LoadingState, ErrorState, EmptyState, FilteredEmptyState } from "../../../../shared/ui/state";
 import { BatchCardGrid, BatchListView, BatchTableView } from "./batches/BatchViews";
 import { rowComplete } from "./batches/ContextBatchCard";
+import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 
 export function ActiveBatchesSection({ onNavigate, onOpenTally }: { onNavigate?: (tab: string) => void; onOpenTally?: (batchId: string) => void } & CodeCallbacks) {
   const { batches, setPendingOpenBatchId, isLoading, isError, error, refetch } = useBatches();
@@ -125,6 +126,8 @@ export function ActiveBatchesSection({ onNavigate, onOpenTally }: { onNavigate?:
     return a.id.localeCompare(b.id);
   });
 
+  const pag = usePagination(visible, 8);
+
   const handleEditBatch = (b: Batch) => {
     setPendingOpenBatchId(b.id);
     onNavigate?.("Batches");
@@ -229,9 +232,12 @@ export function ActiveBatchesSection({ onNavigate, onOpenTally }: { onNavigate?:
               <EmptyState title="No active batches" description="Batches created here will show up as production progresses." />
             )
           ) : (
-            view === "card" ? <BatchCardGrid batches={visible} onView={handleViewBatch} onSlip={(batch) => setBatchDialog({ mode: "slip", batch })} onEdit={handleEditBatch} /> :
-            view === "list" ? <BatchListView batches={visible} onView={handleViewBatch} onEdit={handleEditBatch} /> :
-            <BatchTableView batches={visible} onView={handleViewBatch} onEdit={handleEditBatch} />
+            <>
+              {view === "card" ? <BatchCardGrid batches={pag.pageItems} onView={handleViewBatch} onSlip={(batch) => setBatchDialog({ mode: "slip", batch })} onEdit={handleEditBatch} /> :
+              view === "list" ? <BatchListView batches={pag.pageItems} onView={handleViewBatch} onEdit={handleEditBatch} /> :
+              <BatchTableView batches={pag.pageItems} onView={handleViewBatch} onEdit={handleEditBatch} />}
+              <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start} onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="batches" />
+            </>
           )}
         </div>
         </div>

@@ -10,20 +10,37 @@ import { VendorPaymentsSection } from "./vendor/VendorPaymentsSection";
 import { SupplierPaymentsSection } from "./supplier/SupplierPaymentsSection";
 import { WeaverMakingChargesSection } from "./weaver/WeaverMakingChargesSection";
 import { WholesaleCollectionsSection } from "./wholesale/WholesaleCollectionsSection";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export function PaymentsPage() {
   return (
     <div style={{ fontFamily: F.ui, minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
       <PaymentsHeader />
-      <StatsStrip />
+      <ErrorBoundary variant="inline">
+        <StatsStrip />
+      </ErrorBoundary>
       <div style={{ background: T.silkCream, paddingBottom: 48, flex: 1 }}>
-        <FinancialSummarySection />
-        <WeaverMakingChargesSection />
-        <WholesaleCollectionsSection />
-        <VendorPaymentsSection />
-        <SupplierPaymentsSection />
-        <PaymentAnalyticsSection />
-        <PaymentHistorySection />
+        <ErrorBoundary variant="inline">
+          <FinancialSummarySection />
+        </ErrorBoundary>
+        <ErrorBoundary variant="inline">
+          <WeaverMakingChargesSection />
+        </ErrorBoundary>
+        <ErrorBoundary variant="inline">
+          <WholesaleCollectionsSection />
+        </ErrorBoundary>
+        <ErrorBoundary variant="inline">
+          <VendorPaymentsSection />
+        </ErrorBoundary>
+        <ErrorBoundary variant="inline">
+          <SupplierPaymentsSection />
+        </ErrorBoundary>
+        <ErrorBoundary variant="inline">
+          <PaymentAnalyticsSection />
+        </ErrorBoundary>
+        <ErrorBoundary variant="inline">
+          <PaymentHistorySection />
+        </ErrorBoundary>
       </div>
       <MaterialsFooter />
     </div>

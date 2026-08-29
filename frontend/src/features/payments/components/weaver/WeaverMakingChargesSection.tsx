@@ -17,6 +17,7 @@ import { FadeUp } from "../common/motion";
 import { DropBtn, Pip, SectionCard, StatusBadge } from "../common/primitives";
 import { Button, Checkbox, SearchInput } from "../../../../shared/ui/primitives";
 import { DataTable, exportTable, type ColumnDef } from "../../../../shared/ui/data";
+import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 import { useDocument } from "../../../../shared/ui/document";
 import { BankUploadPanel } from "./BankUploadPanel";
 import { WeaverProductionSummaryPanel } from "./WeaverProductionSummaryPanel";
@@ -662,40 +663,50 @@ export function WeaverMakingChargesSection() {
             </div>
           </div>
         ) : (
-        <>
-        {/* ── Card view grid ───────────────────────────────────── */}
-        {view === "card" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
-            {filtered.map((w, i) => (
-              <motion.div key={w.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.05, ease: EASE }}>
-                <WeaverCard
-                  w={w}
-                  onViewDetails={() => setSelWeaver(w)}
-                  selected={selectedIds.has(w.id)}
-                  onToggleSelect={() => toggleSelection(w.id)}
-                />
-              </motion.div>
-            ))}
-          </div>
-        )}
+        (() => {
+          const pag = usePagination(filtered, 8);
+          return (
+            <>
+            {/* ── Card view grid ───────────────────────────────────── */}
+            {view === "card" && (
+              <div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-4">
+                  {pag.pageItems.map((w, i) => (
+                    <motion.div key={w.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.05, ease: EASE }}>
+                      <WeaverCard
+                        w={w}
+                        onViewDetails={() => setSelWeaver(w)}
+                        selected={selectedIds.has(w.id)}
+                        onToggleSelect={() => toggleSelection(w.id)}
+                      />
+                    </motion.div>
+                  ))}
+                </div>
+                <div className="mb-6">
+                  <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start} onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="weavers" />
+                </div>
+              </div>
+            )}
 
-        {/* ── Table / List view ────────────────────────────────── */}
-        {(view === "list" || view === "table") && (
-          <div className="overflow-x-auto w-full mb-8">
-            <div className="min-w-[1450px]">
-              <DataTable
-                columns={weaverColumns}
-                data={filtered}
-                getRowId={w => w.id}
-                caption="Weaver making charges"
-                selectedIds={selectedIds}
-                onSelectionChange={setSelectedIds}
-                emptyTitle="No weavers match your filters"
-              />
-            </div>
-          </div>
-        )}
-        </>
+            {/* ── Table / List view ────────────────────────────────── */}
+            {(view === "list" || view === "table") && (
+              <div className="overflow-x-auto w-full mb-8">
+                <div className="min-w-[1450px]">
+                  <DataTable
+                    columns={weaverColumns}
+                    data={filtered}
+                    getRowId={w => w.id}
+                    caption="Weaver making charges"
+                    selectedIds={selectedIds}
+                    onSelectionChange={setSelectedIds}
+                    emptyTitle="No weavers match your filters"
+                  />
+                </div>
+              </div>
+            )}
+            </>
+          );
+        })()
         )}
 
       </SectionCard>

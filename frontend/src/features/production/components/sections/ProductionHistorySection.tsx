@@ -309,24 +309,8 @@ export function ProductionHistorySection({ onSareeTypeClick }: CodeCallbacks) {
             error={qcError}
             onRetry={() => void refetchQc()}
             emptyTitle="No completed batches yet."
+            pagination
           />
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 sm:px-6 border-t border-[rgba(110,15,45,0.10)]">
-            <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }} className="w-full sm:w-auto text-center sm:text-left">
-              Showing {HISTORY_BATCHES.length} of {HISTORY_BATCHES.length} entries
-            </span>
-            <div className="flex items-center justify-center gap-1 w-full sm:w-auto">
-              {["Prev", "1", "2", "3", "Next"].map(p => (
-                <Button key={p} onClick={() => typeof p === "string" && !isNaN(Number(p)) && setCurrentPage(Number(p))}
-                  variant={p === String(currentPage) ? "primary" : "secondary"} size="sm">
-                  {p}
-                </Button>
-              ))}
-            </div>
-            <div className="flex items-center justify-center gap-2 w-full sm:w-auto shrink-0">
-              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>Rows per page</span>
-              <HistoryDropBtn label="10" />
-            </div>
-          </div>
         </div>
       </FadeUp>
 

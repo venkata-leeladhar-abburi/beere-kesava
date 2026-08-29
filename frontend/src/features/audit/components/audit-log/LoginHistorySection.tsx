@@ -286,6 +286,7 @@ export function LoginHistorySection() {
                 onRetry={() => refetch()}
                 emptyTitle="No login history yet"
                 emptyDescription="Logins, logouts, and failed attempts will show up here."
+                pagination
               />
 
               {/* Pagination */}

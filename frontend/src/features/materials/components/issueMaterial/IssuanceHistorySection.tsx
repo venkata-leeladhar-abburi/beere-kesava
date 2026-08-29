@@ -244,6 +244,7 @@ export function IssuanceHistorySection({
               isFiltered={!!(histSearch.trim() || histWeaverFilter !== "All Weavers")}
               onClearFilters={() => { setHistSearch(""); setHistWeaverFilter("All Weavers"); }}
               emptyTitle="No issuance records match your filters"
+              pagination
             />
           </div>
         )}
@@ -261,6 +262,7 @@ export function IssuanceHistorySection({
           isFiltered={!!(histSearch.trim() || histWeaverFilter !== "All Weavers")}
           onClearFilters={() => { setHistSearch(""); setHistWeaverFilter("All Weavers"); }}
           emptyTitle="No issuance records match your filters"
+          pagination
         />
       </div>
 

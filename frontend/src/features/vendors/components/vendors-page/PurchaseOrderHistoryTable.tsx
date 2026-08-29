@@ -95,6 +95,7 @@ export function PurchaseOrderHistoryTable({ orders }: { orders: PurchaseOrderHis
           columns={columns}
           data={orders}
           getRowId={o => o.id}
+          pagination
           emptyTitle="No purchase orders yet"
         />
       </div>

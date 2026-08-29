@@ -42,7 +42,7 @@ export function AwaitingDispatchTable({ sarees, loading, error, onRetry }: {
     return [...matched].sort((a, b) => (a.receivedDate ?? "").localeCompare(b.receivedDate ?? ""));
   }, [sarees, query]);
 
-  const pag = usePagination(rows, 25);
+  const pag = usePagination(rows, 10);
 
   const columns: ColumnDef<FinishingReturn>[] = [
     {

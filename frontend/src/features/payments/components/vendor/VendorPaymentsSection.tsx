@@ -603,6 +603,7 @@ export function VendorPaymentsSection() {
                       error={paymentsError || billsError}
                       onRetry={() => { void refetchVendorPayments(); void refetchVendorBills(); }}
                       emptyTitle="No vendor bills match your filters"
+                      pagination
                     />
                   </div>
                 </div>

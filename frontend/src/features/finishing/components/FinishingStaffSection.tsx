@@ -291,6 +291,7 @@ export function FinishingStaffSection({
                             columns={buildAssignmentColumns(returns, setZoomImage)}
                             data={r.visibleAssignments}
                             getRowId={a => a.id}
+                            pagination
                           />
                         </div>
                       </div>

@@ -161,6 +161,7 @@ export function WholesaleTableView({ view, filtered, setViewInvoice, setRecordPa
             data={filtered}
             getRowId={inv => inv.id}
             emptyTitle="No invoices match your filters"
+            pagination
           />
         </div>
       </div>

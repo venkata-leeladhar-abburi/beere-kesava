@@ -195,6 +195,7 @@ export function OverdueAlertsReport() {
                 error={!invoicesLoading && !!invoicesTableError}
                 onRetry={refetchInvoicesTable}
                 emptyTitle="No overdue invoices — everything is on track."
+                pagination
                 responsive={false}
               />
             </div>
@@ -225,6 +226,7 @@ export function OverdueAlertsReport() {
                 error={stockError}
                 onRetry={refetchStock}
                 emptyTitle="No materials currently low in stock."
+                pagination
                 responsive={false}
               />
             </div>
@@ -255,6 +257,7 @@ export function OverdueAlertsReport() {
                 error={batchesError || weaversError}
                 onRetry={() => { void refetchBatches(); void refetchWeavers(); }}
                 emptyTitle="No weavers running behind schedule."
+                pagination
                 responsive={false}
               />
             </div>
@@ -286,6 +289,7 @@ export function OverdueAlertsReport() {
                 error={!bulkOrdersLoading && !!bulkOrdersTableError}
                 onRetry={refetchBulkOrdersTable}
                 emptyTitle="No bulk orders at risk right now."
+                pagination
                 responsive={false}
               />
             </div>

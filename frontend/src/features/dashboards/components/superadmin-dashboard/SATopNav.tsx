@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
-import { Search, Bell, ChevronDown, ChevronLeft, UserRound, LogOut, Users, Store, Eye } from "lucide-react";
+import { Bell, ChevronDown, ChevronLeft, UserRound, LogOut, Users, Store, Eye } from "lucide-react";
 import { useResponsive } from "../../../../hooks/useResponsive";
 import {
   SectionNavigator, MAIN_NAV_H, SUB_NAV_H, SectionNavItem, getSectionsForPage,
@@ -155,7 +155,13 @@ export function SATopNav({ active, set, onBack, onLogout, sections, onProfile, o
                       <DropdownMenuItem
                         key={p.key}
                         aria-current={pActive ? "page" : undefined}
-                        onClick={() => { set(p.key); setOpenGroup(null); }}
+                        onClick={() => {
+                          set(p.key);
+                          setOpenGroup(null);
+                          try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch { window.scrollTo(0, 0); }
+                          document.documentElement.scrollTop = 0;
+                          document.body.scrollTop = 0;
+                        }}
                         className={`!h-auto !justify-between !py-[13px] !px-3.5 !mb-0.5 !rounded-[10px] !text-sm ${
                           pActive
                             ? "!bg-[rgba(110,15,45,0.07)] !text-[#6E0F2D] !font-semibold data-[highlighted]:!bg-[rgba(110,15,45,0.07)] data-[highlighted]:!text-[#6E0F2D]"
@@ -179,16 +185,6 @@ export function SATopNav({ active, set, onBack, onLogout, sections, onProfile, o
         {/* Right actions */}
 
         <div style={{ display: "flex", alignItems: "center", gap: compact ? 6 : 10, flexShrink: 0 }}>
-          {!compact && (
-            <motion.div initial={{ backgroundColor: "rgba(245,232,208,0.06)" }} whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.94 }} style={{ borderRadius: 12 }}>
-              <IconButton
-                icon={Search}
-                label="Search"
-                variant="ghost"
-                className="!size-[38px] !rounded-xl !border !border-white/14 !bg-white/6 hover:!bg-white/12"
-              />
-            </motion.div>
-          )}
           <div style={{ position: "relative" }}>
             <motion.div initial={{ backgroundColor: "rgba(245,232,208,0.06)" }} whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.94 }} style={{ borderRadius: 12 }}>
               <IconButton
@@ -291,7 +287,12 @@ export function SATopNav({ active, set, onBack, onLogout, sections, onProfile, o
                 return (
                   <Button
                     key={p.key}
-                    onClick={() => set(p.key)}
+                    onClick={() => {
+                      set(p.key);
+                      try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch { window.scrollTo(0, 0); }
+                      document.documentElement.scrollTop = 0;
+                      document.body.scrollTop = 0;
+                    }}
                     variant="tertiary"
                     className={`!relative !gap-1.5 !rounded-[10px] !py-[9px] !px-[22px] !whitespace-nowrap !border-none !bg-transparent !text-[13px] ${
                       isActive

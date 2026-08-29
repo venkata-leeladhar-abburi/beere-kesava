@@ -402,7 +402,7 @@ export function SupplierReturnsPage() {
               })}
             </div>
           ) : (
-            <DataTable responsive columns={columns} data={rows} getRowId={r => r.id} />
+            <DataTable responsive columns={columns} data={rows} getRowId={r => r.id} pagination />
           )}
         </div>
 
@@ -419,7 +419,7 @@ export function SupplierReturnsPage() {
               <EmptyState title="No return requests yet" description="Sarees returned to suppliers will show up here." />
             )
           ) : (
-            <DataTable responsive columns={columns} data={rows} getRowId={r => r.id} />
+            <DataTable responsive columns={columns} data={rows} getRowId={r => r.id} pagination />
           )}
         </div>
       </SectionCard>

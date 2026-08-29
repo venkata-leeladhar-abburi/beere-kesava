@@ -476,7 +476,7 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
                     <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No bills raised in this period.</div>
                   ) : (
                     <div className="min-w-[650px]">
-                      <DataTable responsive={false} columns={billColumns} data={filteredBills} getRowId={b => b.id} emptyTitle="No bills raised in this period." />
+                      <DataTable responsive={false} columns={billColumns} data={filteredBills} getRowId={b => b.id} emptyTitle="No bills raised in this period." pagination />
                     </div>
                   )}
                 </div>
@@ -494,7 +494,7 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
                     <div style={{ padding: "40px 24px", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>No payments in this period.</div>
                   ) : (
                     <div className="min-w-[650px]">
-                      <DataTable responsive={false} columns={txnColumns} data={filteredTxns} getRowId={p => p.id} emptyTitle="No payments in this period." />
+                      <DataTable responsive={false} columns={txnColumns} data={filteredTxns} getRowId={p => p.id} emptyTitle="No payments in this period." pagination />
                     </div>
                   )}
                 </div>

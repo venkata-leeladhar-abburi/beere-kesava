@@ -91,6 +91,7 @@ export function ExternalPurchaseHistorySection({ purchases }: { purchases: Purch
             columns={columns}
             data={filtered}
             getRowId={p => p.id}
+            pagination
             emptyTitle="No external purchases recorded in this period"
           />
         </div>

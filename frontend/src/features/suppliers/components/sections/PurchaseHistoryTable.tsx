@@ -87,6 +87,7 @@ export function PurchaseHistoryTable({ purchases }: { purchases: Purchase[] }) {
       columns={columns}
       data={purchases}
       getRowId={p => p.id}
+      pagination
       expandedIds={expandedIds}
       renderExpandedRow={p => (
         <div style={{ padding: "6px 16px 16px", background: "rgba(247,242,234,0.7)" }}>

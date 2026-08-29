@@ -448,6 +448,7 @@ export function SareeProductionReport() {
               loading={isLoading}
               error={!!isError}
               emptyTitle="No sarees assigned to weavers yet."
+              pagination
             />
           </div>
         </div>
@@ -460,7 +461,6 @@ export function SareeProductionReport() {
               <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: T.royalBurgundy }}>{formatMoney(rupees(prodTableRows.reduce((s, r) => s + r.charges, 0)))}</span>
             </div>
           )}
-          <TablePager total={prodTableRows.length} showing={prodTableRows.length} />
         </div>
       </FadeUp>
 

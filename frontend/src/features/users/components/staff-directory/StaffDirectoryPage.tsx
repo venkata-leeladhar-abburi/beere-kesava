@@ -122,9 +122,25 @@ export function StaffDirectoryPage({ scope }: { scope: PortalScope }) {
 
   return (
     <PageShell>
-      <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 28, paddingBottom: 56 }}>
-        <PageShell.Header title={scope.label} subtitle={scope.blurb} />
+      {/* Hero Banner Header */}
+      <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", display: "flex", alignItems: "center" }}>
+        <div className="px-4 md:px-7 xl:px-12 flex-col xl:flex-row" style={{ position: "relative", zIndex: 2, paddingTop: 44, paddingBottom: 60, width: "100%", display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 20 }}>
+          <div>
+            <div style={{ fontFamily: "var(--font-ui, sans-serif)", fontSize: "clamp(11px, 1.4vw, 13px)", color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase", marginBottom: 10 }}>
+              Since 1999 · {scope.label} Directory &amp; Oversight
+            </div>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 8 }}>
+              <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(32px, 6vw, 52px)", fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>{scope.label}</h1>
+              <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(20px, 4.5vw, 32px)", fontStyle: "italic", color: "#C89B47", fontWeight: 400 }}>&amp; Portal Oversight</span>
+            </div>
+            <p className="max-w-[640px]" style={{ fontFamily: "var(--font-ui, sans-serif)", fontWeight: 400, fontSize: "clamp(13px, 2vw, 15px)", color: "rgba(255,253,249,0.70)", lineHeight: 1.6, margin: 0 }}>
+              {scope.blurb}
+            </p>
+          </div>
+        </div>
+      </header>
 
+      <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 32, paddingBottom: 56 }}>
         <PageShell.Toolbar>
           <Input
             value={search}
@@ -154,6 +170,7 @@ export function StaffDirectoryPage({ scope }: { scope: PortalScope }) {
                 getRowId={u => u.id}
                 onRowClick={u => setOpenUser(u)}
                 responsive
+                pagination
               />
             </div>
           )}

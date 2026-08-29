@@ -362,6 +362,7 @@ export function LoomDetailPage({ loom, onBack, onEdit }: {
                     <div style={{ overflowX: "auto" as const, border: `1px solid ${T.borderDef}`, borderRadius: 10, background: "#FFFFFF" }}>
                       <DataTable
                         responsive
+                        pagination
                         columns={[
                           {
                             id: "sareeId", header: "Saree ID", accessor: (row: typeof rowsInBatch[number]) => row.sareeId, priority: 1,

@@ -151,7 +151,8 @@ export function OutstandingPaymentsReport() {
                 getRowId={r => `${r.source}-${r.id}`}
                 loading={isLoading}
                 error={!!isError}
-                emptyTitle="Nothing outstanding — every invoice and bulk order is fully paid."
+                emptyTitle="No outstanding balance records match your search."
+                pagination
               />
             </div>
           </div>

@@ -7,6 +7,7 @@ import { SectionCard, RoleBadge, AccessBadge, StatusBadge } from "./UserBadges";
 import { FinishingStaffMember } from "@/features/finishing";
 import { Button, IconButton, SearchInput, Select, SelectItem } from "../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../shared/ui/data";
+import { Pagination } from "../../../shared/ui/DataPagination";
 
 interface UserTableProps {
   allRows: TableRow[];
@@ -309,20 +310,16 @@ export function UserTable({
       </div>
 
       {/* Pagination */}
-      <div style={{ margin: "16px -28px -28px", padding: "16px 28px", borderTop: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-          Showing {Math.min((page - 1) * ROWS_PER_PAGE + 1, filtered.length)}–{Math.min(page * ROWS_PER_PAGE, filtered.length)} of {filtered.length} users
-        </span>
-        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-          <IconButton label="Previous page" size="sm" variant="tertiary"
-            icon={ChevronLeft} onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} />
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map(pg => (
-            <Button key={pg} size="sm" variant={pg === page ? "primary" : "tertiary"} onClick={() => setPage(pg)}
-            >{pg}</Button>
-          ))}
-          <IconButton label="Next page" size="sm" variant="tertiary"
-            icon={ChevronRight} onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} />
-        </div>
+      <div style={{ margin: "16px -28px -28px", padding: "8px 28px 16px", borderTop: `1px solid ${T.borderDef}` }}>
+        <Pagination
+          page={page}
+          pageCount={totalPages}
+          total={filtered.length}
+          pageSize={ROWS_PER_PAGE}
+          start={(page - 1) * ROWS_PER_PAGE}
+          onPageChange={p => setPage(p)}
+          itemLabel="users"
+        />
       </div>
     </SectionCard>
   );

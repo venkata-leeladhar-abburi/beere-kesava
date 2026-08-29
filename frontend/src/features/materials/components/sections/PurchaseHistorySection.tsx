@@ -420,6 +420,7 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
               error={historyError}
               onRetry={refetchHistory}
               emptyTitle="No purchase history found across vendors."
+              pagination
             />
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: T.warmCream, padding: "16px 18px", borderTop: `1px solid ${T.borderDef}` }}>

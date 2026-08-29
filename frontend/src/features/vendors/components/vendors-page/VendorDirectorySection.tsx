@@ -46,7 +46,7 @@ export function VendorDirectorySection({ vendors, onSelectVendor, onAddClick, lo
     return mSearch && mType && mStatus && mRating;
   });
 
-  const pag = usePagination(filtered, 25);
+  const pag = usePagination(filtered, 8);
 
   return (
     <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40, paddingBottom: 80 }}>

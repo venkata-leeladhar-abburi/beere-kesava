@@ -620,6 +620,7 @@ export function SupplierPaymentsSection() {
                   error={isError}
                   onRetry={refetch}
                   emptyTitle="No suppliers match your filters"
+                  pagination
                 />
               </div>
             </div>

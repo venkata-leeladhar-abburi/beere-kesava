@@ -311,10 +311,10 @@ export function WholesaleSalesReport() {
                 data={bulkOrders}
                 getRowId={o => o.ref}
                 emptyTitle="No bulk orders recorded yet"
+                pagination
               />
             </div>
           </div>
-          <TablePager total={bulkOrders.length} showing={bulkOrders.length} />
         </div>
       </FadeUp>
     </SectionCard>

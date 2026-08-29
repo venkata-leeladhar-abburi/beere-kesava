@@ -97,7 +97,7 @@ export function AllStockPage({ onBack }: { onBack?: () => void }) {
     return matchSearch && matchStatus && matchSource;
   });
 
-  const pag = usePagination(filtered, 25);
+  const pag = usePagination(filtered, 10);
 
   const availableCount  = ALL_STOCK.filter(s => s.status === "available").length;
   const soldCount       = ALL_STOCK.filter(s => s.status === "sold").length;

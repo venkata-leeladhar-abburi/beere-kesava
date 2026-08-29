@@ -161,6 +161,7 @@ export function InactiveCustomersSection({
             columns={inactiveColumns}
             data={filteredInactive.map((row, i) => ({ ...row, _rowIndex: i }))}
             getRowId={row => String(row._rowIndex)}
+            pagination
             isFiltered={activeFilters.length > 0}
             onClearFilters={onClearAllFilters}
             emptyTitle="No inactive customers"

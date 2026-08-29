@@ -194,6 +194,7 @@ function BusinessOverview({ onGoToFirm }: { onGoToFirm?: (firmId: string) => voi
             ) : (
               <DataTable<OverviewRow>
                 responsive
+                pagination
                 columns={overviewColumns(onGoToFirm)}
                 data={rows.map(r => ({ ...r, color: FIRM_COLORS[parseInt(r.firm.id.replace("FIRM-",""), 10) % FIRM_COLORS.length] }))}
                 getRowId={r => r.firm.id}

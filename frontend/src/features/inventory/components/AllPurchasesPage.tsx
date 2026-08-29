@@ -68,7 +68,7 @@ export function AllPurchasesPage({ onBack }: { onBack: () => void }) {
     return matchType && matchSearch;
   });
 
-  const pag = usePagination(filtered, 25);
+  const pag = usePagination(filtered, 10);
 
   const totalSpend = sumMoney(ALL_PURCHASES.map(p => p.totalPaid));
 

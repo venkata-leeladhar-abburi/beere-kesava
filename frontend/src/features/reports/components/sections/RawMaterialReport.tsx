@@ -337,7 +337,8 @@ export function RawMaterialReport() {
               loading={isLoading}
               error={isError}
               onRetry={refetchAll}
-              emptyTitle="No raw material items in stock database yet."
+              emptyTitle="No raw materials in stock."
+              pagination
             />
           </div>
           {rawMaterialRows.length > 0 && (
@@ -363,7 +364,8 @@ export function RawMaterialReport() {
                 loading={grnLoading}
                 error={grnError}
                 onRetry={refetchGrns}
-                emptyTitle="No material receipts recorded yet."
+                emptyTitle="No recent material issues."
+                pagination
               />
             </div>
           </div>

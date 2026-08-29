@@ -9,6 +9,7 @@ import { weaversApi, BackendWeaverStats } from "../../../../shared/api/weavers";
 import { Button } from "../../../../shared/ui/primitives";
 import { resolveAssetUrl } from "../../../../shared/api/uploads";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
+import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 import { WeaverCardMockupStyle } from "./WeaverCardMockupStyle";
 import { toInitials } from "@/shared/lib/initials";
 
@@ -60,9 +61,8 @@ export function useRealWeavers() {
 }
 
 export function WeaverCardGrid({ onSelect, onEdit, onBatches }: { onSelect: (w: typeof WEAVERS[0]) => void; onEdit: (w: typeof WEAVERS[0]) => void; onBatches: (w: typeof WEAVERS[0]) => void }) {
-  const [showAll, setShowAll] = useState(true);
   const allWeavers = useRealWeavers();
-  const visible = showAll ? allWeavers : allWeavers.slice(0, 4);
+  const pag = usePagination(allWeavers, 8);
 
   if (allWeavers.isLoading) {
     return (
@@ -88,8 +88,8 @@ export function WeaverCardGrid({ onSelect, onEdit, onBatches }: { onSelect: (w: 
 
   return (
     <div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24, alignItems: "stretch" }}>
-        {visible.map((w, i) => {
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 items-stretch mb-6">
+        {pag.pageItems.map((w, i) => {
           return (
             <div key={w.id}>
               <WeaverCardMockupStyle
@@ -113,25 +113,14 @@ export function WeaverCardGrid({ onSelect, onEdit, onBatches }: { onSelect: (w: 
           );
         })}
       </div>
-      {!showAll && (
-        <div style={{ display: "flex", justifyContent: "center", marginTop: 32 }}>
-          <Button
-            onClick={() => setShowAll(true)}
-            variant="secondary"
-            size="lg"
-            className="rounded-[14px] bg-white text-[#6E0F2D] border-[1.5px] border-[rgba(110,15,45,0.20)] shadow-[0_4px_12px_rgba(74,6,27,0.07)]"
-          >
-            Load More Weavers
-          </Button>
-        </div>
-      )}
+      <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start} onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="weavers" />
     </div>
   );
 }
+
 export function WeaverListView({ onSelect }: { onSelect: (w: typeof WEAVERS[0]) => void }) {
-  const [showAll, setShowAll] = useState(false);
   const allWeavers = useRealWeavers();
-  const visible = showAll ? allWeavers : allWeavers.slice(0, 5);
+  const pag = usePagination(allWeavers, 10);
 
   if (allWeavers.isLoading) {
     return (
@@ -155,7 +144,7 @@ export function WeaverListView({ onSelect }: { onSelect: (w: typeof WEAVERS[0]) 
     );
   }
 
-  type VisibleWeaver = (typeof visible)[number];
+  type VisibleWeaver = (typeof allWeavers)[number];
 
   const columns: ColumnDef<VisibleWeaver>[] = [
     {
@@ -234,14 +223,12 @@ export function WeaverListView({ onSelect }: { onSelect: (w: typeof WEAVERS[0]) 
       <DataTable
         responsive
         columns={columns}
-        data={visible}
+        data={pag.pageItems}
         getRowId={w => w.id}
       />
-      {!showAll && (
-        <div style={{ padding: "22px 26px", textAlign: "center", borderTop: `1px solid ${T.borderDef}` }}>
-          <Button onClick={() => setShowAll(true)} variant="link" className="text-[16px] font-bold text-[#6E0F2D] underline decoration-[rgba(110,15,45,0.35)]">Load More Weavers</Button>
-        </div>
-      )}
+      <div className="p-3 border-t border-[rgba(110,15,45,0.10)]">
+        <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start} onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="weavers" />
+      </div>
     </div>
   );
 }

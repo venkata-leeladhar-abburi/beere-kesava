@@ -11,6 +11,7 @@ import { weaversApi, BackendWeaverStats } from "../../../../shared/api/weavers";
 import { Button } from "../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { LoadingState, ErrorState, EmptyState } from "../../../../shared/ui/state";
+import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 
 interface WeaverTableRow {
   id: string;
@@ -68,9 +69,8 @@ function useRealTableRows() {
 }
 
 export function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }) {
-  const [showAll, setShowAll] = useState(true);
   const { rows: TABLE_ROWS, isLoading, isError, refetch } = useRealTableRows();
-  const visible = showAll ? TABLE_ROWS : TABLE_ROWS.slice(0, 5);
+  const pag = usePagination(TABLE_ROWS, 10);
 
   const columns: ColumnDef<WeaverTableRow>[] = [
     {
@@ -174,14 +174,12 @@ export function WeaverTableView({ onSelect }: { onSelect: (id: string) => void }
     <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 4px 18px rgba(74,6,27,0.06)" }}>
       <div className="w-full overflow-x-auto section-nav-scroll p-2">
         <div className="min-w-[850px]">
-          <DataTable responsive={false} columns={columns} data={visible} getRowId={r => r.id} />
+          <DataTable responsive={false} columns={columns} data={pag.pageItems} getRowId={r => r.id} />
         </div>
       </div>
-      {!showAll && (
-        <div style={{ padding: "22px 26px", textAlign: "center", borderTop: `1px solid ${T.borderDef}` }}>
-          <Button onClick={() => setShowAll(true)} variant="link" className="text-[16px] font-bold text-[#6E0F2D] underline decoration-[rgba(110,15,45,0.35)]">Load More Weavers</Button>
-        </div>
-      )}
+      <div className="p-3 border-t border-[rgba(110,15,45,0.10)]">
+        <Pagination page={pag.page} pageCount={pag.pageCount} total={pag.total} pageSize={pag.pageSize} start={pag.start} onPageChange={pag.setPage} onPageSizeChange={pag.setPageSize} itemLabel="weavers" />
+      </div>
     </div>
   );
 }

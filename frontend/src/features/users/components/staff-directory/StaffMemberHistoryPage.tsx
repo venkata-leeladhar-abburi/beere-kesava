@@ -116,16 +116,30 @@ export function StaffMemberHistoryPage({
 
   return (
     <PageShell>
-      <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 28, paddingBottom: 56 }}>
-        <PageShell.Header
-          breadcrumb={
-            <Button variant="link" size="sm" iconLeft={ChevronLeft} onClick={onBack} className="h-auto p-0 text-[13px]">
-              All {scope.label}
-            </Button>
-          }
-          title={name}
-          subtitle={`${user.empId} · ${user.mobile} — everything recorded by this ${scope.singular.toLowerCase()} in the ${scope.label} portal.`}
-        />
+      {/* Hero Banner Header */}
+      <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", display: "flex", alignItems: "center" }}>
+        <div className="px-4 md:px-7 xl:px-12 flex-col xl:flex-row" style={{ position: "relative", zIndex: 2, paddingTop: 36, paddingBottom: 50, width: "100%", display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 20 }}>
+          <div>
+            <div style={{ marginBottom: 12 }}>
+              <Button variant="link" size="sm" iconLeft={ChevronLeft} onClick={onBack} className="h-auto p-0 text-[13px] text-[#C89B47] hover:text-[#E8DCC4]">
+                Back to {scope.label} Directory
+              </Button>
+            </div>
+            <div style={{ fontFamily: "var(--font-ui, sans-serif)", fontSize: "clamp(11px, 1.4vw, 13px)", color: "rgba(255,253,249,0.50)", letterSpacing: "1.8px", textTransform: "uppercase", marginBottom: 10 }}>
+              Since 1999 · {scope.singular} Activity Log
+            </div>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 8 }}>
+              <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(32px, 6vw, 48px)", fontWeight: 400, color: "#FFFDF9", margin: 0, lineHeight: 1.1 }}>{name}</h1>
+              <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(18px, 3.5vw, 26px)", fontStyle: "italic", color: "#C89B47", fontWeight: 400 }}>{user.empId}</span>
+            </div>
+            <p className="max-w-[640px]" style={{ fontFamily: "var(--font-ui, sans-serif)", fontWeight: 400, fontSize: "clamp(13px, 2vw, 15px)", color: "rgba(255,253,249,0.70)", lineHeight: 1.6, margin: 0 }}>
+              {user.mobile} — Everything recorded by this {scope.singular.toLowerCase()} in the {scope.label} portal.
+            </p>
+          </div>
+        </div>
+      </header>
+
+      <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 32, paddingBottom: 56 }}>
 
         <PageShell.Toolbar>
           <div className="w-full md:w-[260px]">
@@ -163,7 +177,7 @@ export function StaffMemberHistoryPage({
             />
           ) : (
             <div className="overflow-hidden rounded-2xl border" style={{ borderColor: "var(--border-default)", background: "var(--surface-raised)" }}>
-              <DataTable columns={columns} data={rows} getRowId={a => a.id} responsive density="compact" />
+              <DataTable columns={columns} data={rows} getRowId={a => a.id} responsive density="compact" pagination />
             </div>
           )}
         </PageShell.Content>

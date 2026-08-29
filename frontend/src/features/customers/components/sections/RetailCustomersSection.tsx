@@ -485,6 +485,7 @@ export function RetailCustomersSection({
               columns={retailColumns}
               data={filteredRetail}
               getRowId={r => r.id}
+              pagination
             />
           </div>
         </div>

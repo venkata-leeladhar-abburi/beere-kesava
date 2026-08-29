@@ -210,6 +210,7 @@ export function FinishingQuotationsSection({
                             columns={sareeColumns}
                             data={qt.sarees}
                             getRowId={s => s.sareeId}
+                            pagination
                             emptyTitle="No sarees on this quotation"
                           />
                         </div>

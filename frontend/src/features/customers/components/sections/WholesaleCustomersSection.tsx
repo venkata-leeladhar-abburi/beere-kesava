@@ -484,7 +484,7 @@ export function WholesaleCustomersSection({
       {/* Wholesale List View */}
       {wholesaleView === "list" && (
         <div style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, overflow: "hidden" }}>
-          <DataTable columns={listColumns} data={wholesaleList} getRowId={w => w.id} loading={isLoading} error={!!loadError} onRetry={refetch} emptyTitle="No wholesale customers yet" />
+          <DataTable columns={listColumns} data={wholesaleList} getRowId={w => w.id} loading={isLoading} error={!!loadError} onRetry={refetch} emptyTitle="No wholesale customers yet" pagination />
         </div>
       )}
 
@@ -492,7 +492,7 @@ export function WholesaleCustomersSection({
       {wholesaleView === "table" && (
         <div style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}` }} className="w-full overflow-x-auto section-nav-scroll p-2">
           <div className="min-w-[850px]">
-            <DataTable columns={tableColumns} data={wholesaleList} getRowId={w => w.id} loading={isLoading} error={!!loadError} onRetry={refetch} emptyTitle="No wholesale customers yet" />
+            <DataTable columns={tableColumns} data={wholesaleList} getRowId={w => w.id} loading={isLoading} error={!!loadError} onRetry={refetch} emptyTitle="No wholesale customers yet" pagination />
           </div>
         </div>
       )}

@@ -307,10 +307,10 @@ export function CustomerReport() {
                 error={!!isError}
                 onRetry={refetchAll}
                 emptyTitle="No customers on record yet."
+                pagination
               />
             </div>
           </div>
-          <TablePager total={custRows.length} showing={custRows.length} />
         </div>
       </FadeUp>
 

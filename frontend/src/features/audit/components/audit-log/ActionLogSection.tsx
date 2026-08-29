@@ -362,8 +362,9 @@ export function ActionLogSection({
                 onRetry={() => refetch()}
                 isFiltered={isFiltered}
                 onClearFilters={onClearFilters}
-                emptyTitle="No actions recorded yet"
-                emptyDescription="As weavers, invoices, and purchase orders are created or updated, they'll show up here."
+                emptyTitle="No audit actions match your filters"
+                emptyDescription="Try clearing search or module filters to see more results."
+                pagination
               />
 
               {/* Pagination */}

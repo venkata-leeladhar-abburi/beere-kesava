@@ -238,6 +238,7 @@ export function ReturnHistorySection({
               isFiltered={!!(histSearch.trim() || histWeaverFilter !== "All Weavers")}
               onClearFilters={() => { setHistSearch(""); setHistWeaverFilter("All Weavers"); }}
               emptyTitle="No return records match your filters"
+              pagination
             />
           </div>
         )}
@@ -255,6 +256,7 @@ export function ReturnHistorySection({
           isFiltered={!!(histSearch.trim() || histWeaverFilter !== "All Weavers")}
           onClearFilters={() => { setHistSearch(""); setHistWeaverFilter("All Weavers"); }}
           emptyTitle="No return records match your filters"
+          pagination
         />
       </div>
 

@@ -20,6 +20,7 @@ import type { ColumnDef, SortDirection } from "./columns";
 import { columnAlign, defaultSort } from "./columns";
 import { defaultCell } from "./formatCell";
 import { TableSkeleton, TableEmpty, TableFilteredEmpty, TableError } from "./TableStates";
+import { usePagination, Pagination } from "../DataPagination";
 
 export interface DataTableProps<T> {
   columns: ColumnDef<T>[];
@@ -64,6 +65,11 @@ export interface DataTableProps<T> {
   expandedIds?: Set<string>;
   renderExpandedRow?: (row: T) => ReactNode;
 
+  /** Built-in pagination support. Enabled by default if row count > pageSize (default 10). */
+  pageSize?: number;
+  pagination?: boolean;
+  itemLabel?: string;
+
   className?: string;
 }
 
@@ -88,6 +94,7 @@ export function DataTable<T>({
   selectedIds, onSelectionChange,
   responsive,
   expandedIds, renderExpandedRow,
+  pageSize = 10, pagination = false, itemLabel = "items",
   className,
 }: DataTableProps<T>) {
   const [internalSort, setInternalSort] = useState<{ columnId: string; direction: SortDirection } | undefined>(sort);
@@ -99,12 +106,12 @@ export function DataTable<T>({
     const col = columns.find(c => c.id === activeSort.columnId);
     if (!col) return data;
     const cmp = col.sortFn ?? defaultSort(col);
-    // Direction-aware comparator instead of sort-then-.reverse() — reversing
-    // an ascending sort also reverses tie groups (Array.prototype.sort is
-    // stable since ES2019), so equal-key rows would swap order between asc
-    // and desc instead of holding their original relative order.
     return [...data].sort((a, b) => (activeSort.direction === "desc" ? -cmp(a, b) : cmp(a, b)));
   }, [data, columns, activeSort]);
+
+  const pag = usePagination(sortedData, pageSize);
+  const showPagination = pagination === true && sortedData.length > (pageSize ?? 10);
+  const displayData = showPagination ? pag.pageItems : sortedData;
 
   function handleSortClick(col: ColumnDef<T>) {
     if (!col.sortable) return;
@@ -273,7 +280,7 @@ export function DataTable<T>({
           </tr>
         </thead>
         <tbody>
-          {stateBody ?? sortedData.map((row, rowIndex) => {
+          {stateBody ?? displayData.map((row, rowIndex) => {
               const id = getRowId(row);
               const isExpanded = !!(renderExpandedRow && expandedIds?.has(id));
               return (
@@ -348,28 +355,40 @@ export function DataTable<T>({
     </div>
   );
 
-  if (!responsive) return table;
-
   return (
     <>
       {table}
-      <CardList
-        columns={columns}
-        data={sortedData}
-        getRowId={getRowId}
-        loading={loading}
-        error={error}
-        onRetry={onRetry}
-        isFiltered={isFiltered}
-        onClearFilters={onClearFilters}
-        emptyTitle={emptyTitle}
-        emptyDescription={emptyDescription}
-        onRowClick={onRowClick}
-        selectable={selectable}
-        selectedIds={selectedIds}
-        onToggleRow={toggleRow}
-        className={className}
-      />
+      {responsive && (
+        <CardList
+          columns={columns}
+          data={displayData}
+          getRowId={getRowId}
+          loading={loading}
+          error={error}
+          onRetry={onRetry}
+          isFiltered={isFiltered}
+          onClearFilters={onClearFilters}
+          emptyTitle={emptyTitle}
+          emptyDescription={emptyDescription}
+          onRowClick={onRowClick}
+          selectable={selectable}
+          selectedIds={selectedIds}
+          onToggleRow={toggleRow}
+          className={className}
+        />
+      )}
+      {showPagination && (
+        <Pagination
+          page={pag.page}
+          pageCount={pag.pageCount}
+          total={pag.total}
+          pageSize={pag.pageSize}
+          start={pag.start}
+          onPageChange={pag.setPage}
+          onPageSizeChange={pag.setPageSize}
+          itemLabel={itemLabel}
+        />
+      )}
     </>
   );
 }

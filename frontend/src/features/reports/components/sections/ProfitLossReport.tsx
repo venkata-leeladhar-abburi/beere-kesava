@@ -308,6 +308,7 @@ export function ProfitLossReport() {
               loading={isLoading}
               error={!!error}
               onRetry={refetch}
+              pagination
             />
           </div>
 
@@ -327,7 +328,7 @@ export function ProfitLossReport() {
           <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: T.luxuryBrown, marginBottom: 12 }}>Per-Firm Breakdown</div>
           <div className="w-full overflow-x-auto section-nav-scroll border border-[#E8DCC4] rounded-xl bg-white p-2">
             <div className="min-w-[650px]">
-              <DataTable columns={perFirmColumns} data={perFirm} getRowId={f => f.name} loading={isLoading} error={!!error} onRetry={refetch} />
+              <DataTable columns={perFirmColumns} data={perFirm} getRowId={f => f.name} loading={isLoading} error={!!error} onRetry={refetch} pagination />
             </div>
           </div>
         </div>

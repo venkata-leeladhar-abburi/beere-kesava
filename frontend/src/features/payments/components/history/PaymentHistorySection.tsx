@@ -554,7 +554,7 @@ export function PaymentHistorySection() {
           <div style={{ background: "#FFFFFF", borderRadius: 14, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
             <div className="overflow-x-auto w-full">
               <div className="min-w-[1600px]">
-                <DataTable responsive={false} columns={tableColumns} data={filtered} getRowId={r => r.id} emptyTitle="No transactions match your filters" />
+                <DataTable responsive={false} columns={tableColumns} data={filtered} getRowId={r => r.id} emptyTitle="No transactions match your filters" pagination />
               </div>
             </div>
             {filtered.length > 0 && (

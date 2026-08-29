@@ -316,6 +316,7 @@ export function SareeInventoryTable({
         columns={columns}
         data={rows}
         getRowId={rowId}
+        pagination
         emptyTitle="No sarees match this filter"
         expandedIds={expandedIds}
         renderExpandedRow={s => {

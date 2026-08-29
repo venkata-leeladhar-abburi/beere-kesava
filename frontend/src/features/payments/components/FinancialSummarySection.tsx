@@ -69,13 +69,13 @@ export function FinancialSummarySection() {
     queryFn: () => paymentsApi.getSummary(),
   });
 
-  const totalIn = summary?.totalRevenue ?? 0;
-  const totalOut = summary?.totalExpenses ?? 0;
-  const netCash = summary?.netCashFlow ?? 0;
+  const totalIn = Number(summary?.totalRevenue) || 0;
+  const totalOut = Number(summary?.totalExpenses) || 0;
+  const netCash = Number(summary?.netCashFlow) || 0;
 
-  const weaverTotal = summary?.weaverTotal ?? 0;
-  const vendorTotal = summary?.vendorTotal ?? 0;
-  const supplierTotal = summary?.supplierTotal ?? 0;
+  const weaverTotal = Number(summary?.weaverTotal) || 0;
+  const vendorTotal = Number(summary?.vendorTotal) || 0;
+  const supplierTotal = Number(summary?.supplierTotal) || 0;
 
   const dynamicComingIn = [
     { label: "Retail & Wholesale Sales", value: formatMoney(rupees(totalIn)) },
@@ -88,8 +88,8 @@ export function FinancialSummarySection() {
     { label: "Raw Material Suppliers", value: formatMoney(rupees(supplierTotal)) },
   ];
 
-  const pctIn  = Math.min(100, Math.round((totalIn  / (totalIn + 1841000 || 1)) * 100));
-  const pctOut = Math.min(100, Math.round((totalOut / (totalIn || 1)) * 100));
+  const pctIn  = Math.min(100, Math.round(((totalIn) / ((totalIn) + 1841000 || 1)) * 100)) || 0;
+  const pctOut = Math.min(100, Math.round(((totalOut) / ((totalIn) || 1)) * 100)) || 0;
 
   return (
     <div id="pay-summary" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 32, paddingBottom: 32 }}>

@@ -201,7 +201,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
   // Pagination applies only to what's rendered — `visible` itself stays the full
   // filtered set so select-all and the parent's onVisibleChange (scan / bulk
   // actions) keep working across every matching row, not just the current page.
-  const pag = usePagination(visible, 25);
+  const pag = usePagination(visible, 10);
   // `pag` (from usePagination) is a new object every render, so it can't be
   // added as a dep without resetting the page on every unrelated render;
   // only its setPage function (stable across renders) is actually needed here.

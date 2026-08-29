@@ -349,6 +349,7 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
                       loading={qcLoading}
                       error={qcError}
                       emptyTitle="No defective sarees recorded yet."
+                      pagination
                     />
                   </div>
                 </div>
@@ -365,6 +366,7 @@ export function DefectiveSareesSection({ superadmin = false }: { superadmin?: bo
                   loading={qcLoading}
                   error={qcError}
                   emptyTitle="No defective sarees recorded yet."
+                  pagination
                 />
               </div>
             </div>

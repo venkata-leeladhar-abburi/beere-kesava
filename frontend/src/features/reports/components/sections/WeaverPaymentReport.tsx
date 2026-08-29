@@ -239,11 +239,10 @@ export function WeaverPaymentReport() {
                 loading={weaversLoading}
                 error={!!weaversError}
                 onRetry={() => void refetchWeavers()}
-                emptyTitle="No weavers on record yet."
+                pagination
               />
             </div>
           </div>
-          <TablePager total={weaverPayRows.length} showing={weaverPayRows.length} />
         </div>
       </FadeUp>
     </SectionCard>
