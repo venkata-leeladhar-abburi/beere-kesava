@@ -4,6 +4,36 @@
   display: none;
 }
 
+/* Integrated scrollbars inside modals */
+[data-radix-portal] [role="dialog"] ::-webkit-scrollbar,
+[role="dialog"] ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+[data-radix-portal] [role="dialog"] ::-webkit-scrollbar-track,
+[role="dialog"] ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+[data-radix-portal] [role="dialog"] ::-webkit-scrollbar-thumb,
+[role="dialog"] ::-webkit-scrollbar-thumb {
+  background: rgba(110, 15, 45, 0.2);
+  border-radius: 9999px;
+}
+
+[data-radix-portal] [role="dialog"] ::-webkit-scrollbar-thumb:hover,
+[role="dialog"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(110, 15, 45, 0.35);
+}
+
+[data-radix-portal] [role="dialog"],
+[role="dialog"] {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(110, 15, 45, 0.2) transparent;
+}
+
+
 :root {
   --font-size: 16px;
   --background: #ffffff;

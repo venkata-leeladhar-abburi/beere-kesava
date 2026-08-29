@@ -4,13 +4,14 @@
 // AllWeaversPage.tsx and WeaversPage.tsx's card/list/table directory (both
 // read the real API) so the new weaver shows up everywhere immediately.
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, X } from "lucide-react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { T, F } from "../theme";
 import { FadeUp } from "../common/primitives";
 import { weaversApi, CreateWeaverPayload } from "../../../../shared/api/weavers";
-import { Button, Field, Input, NumberInput } from "../../../../shared/ui/primitives";
+import { Button, Field, Input, NumberInput, IconButton } from "../../../../shared/ui/primitives";
 import { PhotoUploadField } from "../../../../shared/ui/PhotoUploadField";
 import { Modal } from "../../../../shared/ui/overlay";
 
@@ -91,9 +92,6 @@ export function NewWeaverModal({ expanded, setExpanded }: { expanded: boolean; s
 
   const formBody = (
     <>
-      <div style={{ fontFamily: F.display, fontSize: 30, color: T.luxuryBrown, marginBottom: 8 }}>New Weaver Registration</div>
-      <div style={{ fontFamily: F.ui, fontSize: 16, color: T.taupe, marginBottom: 32 }}>Fill in all the details below. Fields marked with * are required.</div>
-
       {/* ── Photo Upload ── */}
       <div style={{ marginBottom: 32 }}>
         <PhotoUploadField
@@ -160,7 +158,23 @@ export function NewWeaverModal({ expanded, setExpanded }: { expanded: boolean; s
   if (expanded) {
     return (
       <Modal open onOpenChange={o => !o && handleCancel()} size="xl">
-        <div style={{ padding: 32, overflowY: "auto" }}>{formBody}</div>
+        <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "24px 32px", position: "relative", flexShrink: 0 }}>
+          <Dialog.Title asChild>
+            <div style={{ fontFamily: F.display, fontSize: 22, fontWeight: 700, color: "#FFFDF9" }}>
+              New Weaver Registration
+            </div>
+          </Dialog.Title>
+          <Dialog.Description style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.85)", marginTop: 4, margin: 0 }}>
+            Fill in all the details below. Fields marked with * are required.
+          </Dialog.Description>
+          <Dialog.Close asChild>
+            <IconButton icon={X} label="Close" variant="ghost" size="sm" onClick={handleCancel}
+              className="absolute right-6 top-6 rounded-[8px] bg-[rgba(255,255,255,0.12)] text-[rgba(255,255,255,0.85)] hover:bg-[rgba(255,255,255,0.20)]" />
+          </Dialog.Close>
+        </div>
+        <div style={{ padding: "28px 32px 32px", overflowY: "auto", flex: 1, minHeight: 0 }}>
+          {formBody}
+        </div>
       </Modal>
     );
   }

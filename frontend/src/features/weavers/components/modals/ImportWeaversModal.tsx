@@ -140,19 +140,22 @@ export function ImportWeaversModal({ open, onClose, onImported }: {
 
   return (
     <Modal open={open} onOpenChange={o => { if (!o) { reset(); onClose(); } }} size="md">
-      <div style={{ padding: 32, overflowY: "auto" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-          <Dialog.Title asChild>
-            <h2 style={{ fontFamily: F.display, fontSize: 24, color: T.luxuryBrown, margin: 0 }}>Import Weavers from Excel</h2>
-          </Dialog.Title>
-          <Dialog.Description className="sr-only">Import multiple weavers from an Excel file</Dialog.Description>
-          <Dialog.Close asChild>
-            <IconButton onClick={() => reset()} variant="ghost" icon={X} label="Close" className="text-[var(--text-tertiary)]" />
-          </Dialog.Close>
-        </div>
-        <p style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, margin: "0 0 24px", lineHeight: 1.6 }}>
-          Upload a .xlsx or .csv file with columns <b>Name</b>, <b>Village</b>, <b>Mobile</b>, and optionally <b>Looms</b> and <b>Status</b>.
-        </p>
+      <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "20px 28px", position: "relative", flexShrink: 0 }}>
+        <Dialog.Title asChild>
+          <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#FFFDF9" }}>
+            Import Weavers from Excel
+          </div>
+        </Dialog.Title>
+        <Dialog.Description style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.85)", marginTop: 4, margin: 0 }}>
+          Upload a .xlsx or .csv file with columns Name, Village, Mobile, and optionally Looms and Status.
+        </Dialog.Description>
+        <Dialog.Close asChild>
+          <IconButton onClick={() => reset()} variant="ghost" icon={X} label="Close" size="sm"
+            className="absolute right-4 top-4 rounded-[8px] bg-[rgba(255,255,255,0.12)] text-[rgba(255,255,255,0.85)] hover:bg-[rgba(255,255,255,0.20)]" />
+        </Dialog.Close>
+      </div>
+
+      <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1, minHeight: 0 }}>
 
         <div
           onClick={() => fileInputRef.current?.click()} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (() => fileInputRef.current?.click())?.(); } }}
