@@ -1,7 +1,7 @@
 import React, { useContext, useState, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "motion/react";
-import { Download, Trash2, ArrowLeftRight } from "lucide-react";
+import { Download, Trash2, ArrowLeftRight, ArrowDownLeft, ArrowUpRight } from "lucide-react";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER } from "../../../../shared/ui/DateFilterBar";
 import { ConfirmDialog } from "../../../../shared/ui/ConfirmDialog";
 import { ApiError } from "../../../../shared/api/client";
@@ -198,11 +198,35 @@ export function MovementHistorySection({ onDownloadMovementReport }: { onDownloa
       </div>
 
       <FadeUp>
-        <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.royalBurgundy}`, boxShadow: "0 2px 14px rgba(74,6,27,0.06)", overflow: "hidden", marginBottom: 28 }}>
-          <div style={{ padding: "22px 28px 18px", borderBottom: `1px solid rgba(200,155,71,0.3)`, display: "flex", alignItems: "baseline", justifyContent: "space-between", flexWrap: "wrap", gap: 8, background: "rgba(200,155,71,0.08)" }}>
-            <div>
-              <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 20, color: T.luxuryBrown, marginBottom: 4 }}>Stock Coming In vs Going Out</div>
-              <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>How much material was received from vendors vs given out to weavers each week</div>
+        <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1.5px solid ${T.royalBurgundy}`, boxShadow: "0 1px 2px rgba(74,6,27,0.03), 0 6px 18px rgba(74,6,27,0.05)", overflow: "hidden", marginBottom: 28, position: "relative" }}>
+          <span aria-hidden style={{
+            position: "absolute", top: -70, right: -70, width: 200, height: 200, borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(110,15,45,0.05) 0%, rgba(110,15,45,0) 70%)",
+            pointerEvents: "none",
+          }} />
+          <div style={{
+            background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`,
+            padding: "18px 24px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{
+                width: 38, height: 38, borderRadius: 10,
+                background: "rgba(255,255,255,0.12)",
+                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+              }}>
+                <ArrowLeftRight size={20} color="#FFFDF9" />
+              </div>
+              <div>
+                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 17, color: "#FFFDF9", letterSpacing: "-0.1px", lineHeight: 1.25 }}>
+                  Stock Coming In vs Going Out
+                </div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.65)", marginTop: 3 }}>
+                  How much material was received from vendors vs given out to weavers each week
+                </div>
+              </div>
             </div>
           </div>
 
@@ -256,59 +280,123 @@ export function MovementHistorySection({ onDownloadMovementReport }: { onDownloa
       </FadeUp>
 
       <FadeUp delay={0.1}>
-        <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.royalBurgundy}`, boxShadow: "0 2px 14px rgba(74,6,27,0.06)", overflow: "hidden", marginBottom: 28 }}>
-          <div style={{ padding: "22px 28px 18px", borderBottom: `1px solid rgba(200,155,71,0.3)`, background: "rgba(200,155,71,0.08)" }}>
-            <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 20, color: T.luxuryBrown, marginBottom: 4 }}>Every Movement Entry</div>
-            <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Each line below is one movement — material arriving or leaving the factory store.</div>
+        <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1.5px solid ${T.royalBurgundy}`, boxShadow: "0 1px 2px rgba(74,6,27,0.03), 0 6px 18px rgba(74,6,27,0.05)", overflow: "hidden", marginBottom: 28, position: "relative" }}>
+          <span aria-hidden style={{
+            position: "absolute", top: -70, right: -70, width: 200, height: 200, borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(110,15,45,0.05) 0%, rgba(110,15,45,0) 70%)",
+            pointerEvents: "none",
+          }} />
+          <div style={{
+            background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`,
+            padding: "18px 24px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{
+                width: 38, height: 38, borderRadius: 10,
+                background: "rgba(255,255,255,0.12)",
+                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+              }}>
+                <ArrowLeftRight size={20} color="#FFFDF9" />
+              </div>
+              <div>
+                <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 17, color: "#FFFDF9", letterSpacing: "-0.1px", lineHeight: 1.25 }}>
+                  Every Movement Entry
+                </div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.65)", marginTop: 3 }}>
+                  Each line below is one movement — material arriving or leaving the factory store.
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div style={{ padding: "24px 28px 28px", display: "flex", flexDirection: "column", gap: 0 }}>
+          <div style={{ padding: "0 0 12px", display: "flex", flexDirection: "column" }}>
             {movementLoading ? (
-              <LoadingState variant="skeleton" rows={4} />
+              <div style={{ padding: 24 }}><LoadingState variant="skeleton" rows={4} /></div>
             ) : movementError ? (
               <ErrorState error={undefined} onRetry={refetchMovement} />
             ) : stats.entries.length === 0 ? (
               <div style={{ padding: "28px", textAlign: "center", fontFamily: F.ui, fontSize: 14, color: T.taupe }}>
                 No material movement entries recorded yet.
               </div>
-            ) : stats.entries.map((entry, i) => (
-              <motion.div
-                key={entry.ref}
-                initial={{ opacity: 0, y: 5 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.3, delay: i * 0.03, ease: EASE }}
-                className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 sm:px-4 sm:py-3 border-b border-[rgba(110,15,45,0.08)] w-full"
-                style={{ background: i % 2 === 0 ? "transparent" : T.silkCream }}
-              >
-                <div className="flex items-start gap-3 w-full sm:flex-1">
-                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: entry.type === "in" ? T.green : T.crimson, flexShrink: 0, marginTop: 6 }} />
-                  <div className="flex flex-col gap-1 w-full">
-                    <div style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 14, color: T.luxuryBrown, lineHeight: 1.4 }}>{entry.desc}</div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                      <span style={{ fontFamily: F.ui, fontSize: 12, color: entry.type === "in" ? T.green : T.crimson, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                        {entry.type === "in" ? "Received" : "Given"}
-                      </span>
-                      <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{entry.time}</span>
-                    </div>
-                  </div>
+            ) : (
+              <div>
+                {/* Table Header */}
+                <div className="hidden sm:grid grid-cols-12 gap-4 px-6 py-3.5 border-b border-[rgba(110,15,45,0.10)] bg-[#FAF8F5]" style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, letterSpacing: "0.5px", textTransform: "uppercase" }}>
+                  <div className="col-span-3">Movement & Date</div>
+                  <div className="col-span-3">Vendor / Recipient</div>
+                  <div className="col-span-3">Items & Quantity</div>
+                  <div className="col-span-2 text-right">Reference Code</div>
+                  <div className="col-span-1 text-center">Action</div>
                 </div>
 
-                <div className="flex items-center justify-between sm:justify-end gap-2.5 w-full sm:w-auto shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[rgba(110,15,45,0.06)]">
-                  <EntityCode type="goodsReceipt" value={entry.ref} size="sm" />
-                  {entry.type === "out" && (
-                    <IconButton
-                      onClick={() => setDeletingRef(entry.ref)}
-                      icon={Trash2}
-                      label="Delete material issue"
-                      variant="ghost"
-                      size="sm"
-                      className="w-8 h-8 shrink-0 text-[#C0392B] bg-[#C0392B]/10 hover:bg-[#C0392B]/20"
-                    />
-                  )}
-                </div>
-              </motion.div>
-            ))}
+                {/* Table Rows */}
+                {stats.entries.map((entry, i) => {
+                  const parts = entry.desc.split(" — ");
+                  const party = parts[0] || entry.desc;
+                  const items = parts[1] || "";
+                  const isIn = entry.type === "in";
+
+                  return (
+                    <motion.div
+                      key={entry.ref}
+                      initial={{ opacity: 0, y: 4 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.25, delay: i * 0.02, ease: EASE }}
+                      className="grid grid-cols-1 sm:grid-cols-12 gap-3 sm:gap-4 px-6 py-3.5 border-b border-[rgba(110,15,45,0.06)] items-center transition-colors hover:bg-[#FDFBF7]"
+                      style={{ background: i % 2 === 0 ? "#FFFFFF" : "rgba(250,248,245,0.4)" }}
+                    >
+                      {/* Movement & Date */}
+                      <div className="sm:col-span-3 flex items-center justify-between sm:justify-start gap-3">
+                        <div style={{
+                          display: "inline-flex", alignItems: "center", gap: 5,
+                          padding: "4px 10px", borderRadius: 20,
+                          background: isIn ? "rgba(24,78,52,0.08)" : "rgba(110,15,45,0.08)",
+                          border: `1px solid ${isIn ? "rgba(24,78,52,0.20)" : "rgba(110,15,45,0.18)"}`,
+                          color: isIn ? T.darkGreen : T.royalBurgundy,
+                          fontFamily: F.ui, fontSize: 11, fontWeight: 700, letterSpacing: "0.4px",
+                          flexShrink: 0,
+                        }}>
+                          {isIn ? <ArrowDownLeft size={13} color={T.darkGreen} /> : <ArrowUpRight size={13} color={T.royalBurgundy} />}
+                          <span>{isIn ? "RECEIVED" : "GIVEN"}</span>
+                        </div>
+                        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 500 }}>{entry.time}</span>
+                      </div>
+
+                      {/* Party */}
+                      <div className="sm:col-span-3">
+                        <div style={{ fontFamily: F.ui, fontWeight: 600, fontSize: 14, color: T.luxuryBrown }}>{party}</div>
+                      </div>
+
+                      {/* Items */}
+                      <div className="sm:col-span-3">
+                        <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, lineHeight: 1.4 }}>
+                          {items || "—"}
+                        </div>
+                      </div>
+
+                      {/* Reference Code & Action */}
+                      <div className="sm:col-span-3 flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-[rgba(110,15,45,0.06)]">
+                        <EntityCode type="goodsReceipt" value={entry.ref} size="sm" />
+                        {entry.type === "out" ? (
+                          <IconButton
+                            onClick={() => setDeletingRef(entry.ref)}
+                            icon={Trash2}
+                            label="Delete material issue"
+                            variant="ghost"
+                            size="sm"
+                            className="w-8 h-8 shrink-0 text-[#C0392B] hover:bg-[#C0392B]/10 rounded-lg transition-colors"
+                          />
+                        ) : null}
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       </FadeUp>

@@ -13,7 +13,7 @@ export function useCanSeePrices() { return React.useContext(ShopPriceContext); }
 const C = {
   burg: brand.burgundy[900], dark: brand.burgundy[950], gold: brand.gold[500], green: semantic.text.success,
   crim: semantic.text.danger, text: semantic.text.primary, muted: semantic.text.tertiary,
-  bdr: "rgba(110,15,45,0.10)", bdrMed: "rgba(110,15,45,0.20)", wine: brand.burgundy[950],
+  bdr: "rgba(110,15,45,0.10)", bdrBurg: "#6E0F2D", bdrMed: "rgba(110,15,45,0.20)", wine: brand.burgundy[950],
   cream: semantic.surface.canvas, inp: "#FFF8E7", white: "#FFFFFF",
 };
 const F = { d: fonts.display, u: fonts.ui, m: fonts.code };

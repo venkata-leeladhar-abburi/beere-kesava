@@ -157,7 +157,7 @@ function SalesReport() {
       {/* Daily Sales Table */}
       <div id="shoprep-today-sales" style={{ margin: "24px 20px 0" }}>
         <SectionTitle title={`Today's Sales — ${new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`} link="Export →" onLink={() => { setExportDone(false); setShowExport(true); }} />
-        <Card style={{ margin: 0, overflow: "hidden", padding: 0 }}>
+        <Card style={{ margin: 0, overflow: "hidden", padding: 0, border: `1px solid rgba(110,15,45,0.18)`, borderRadius: 16 }}>
           {salesLoading ? (
             <TableSkeleton columns={canSeePrices ? 3 : 2} rows={3} />
           ) : salesError ? (
@@ -207,15 +207,15 @@ function SalesReport() {
           </Card>
         ) : (
           returns.map((r) => (
-            <div key={r.returnId} style={{ marginBottom: 10, background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "14px 16px", display: "flex", alignItems: "center", flexWrap: "wrap" as const, gap: 8 }}>
+            <div key={r.returnId} style={{ marginBottom: 12, background: C.white, border: `1px solid rgba(110,15,45,0.18)`, borderRadius: 16, padding: "16px 18px", boxShadow: "0 1px 2px rgba(74,6,27,0.03), 0 6px 18px rgba(74,6,27,0.05)", display: "flex", alignItems: "center", flexWrap: "wrap" as const, gap: 8 }}>
               <div style={{ flex: 1, minWidth: 180 }}>
                 <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" as const }}>
                   <span style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{r.date}</span>
-                  <span style={{ fontFamily: F.m, fontSize: 13, color: C.burg }}>{r.id}</span>
+                  <span style={{ fontFamily: F.m, fontSize: 13, color: C.burg, fontWeight: 700 }}>{r.id}</span>
                 </div>
                 <div style={{ fontFamily: F.u, fontSize: 14, color: C.text, marginTop: 3 }}>{r.customer} · {r.reason}</div>
               </div>
-              {canSeePrices && <div style={{ fontFamily: F.m, fontWeight: 600, fontSize: 14, color: C.crim }}>{r.amt}</div>}
+              {canSeePrices && <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 16, color: C.burg }}>{r.amt}</div>}
             </div>
           ))
         )}
@@ -234,7 +234,7 @@ function SalesReport() {
                   contentStyle={{ fontFamily: F.u, fontSize: 13, border: `1px solid ${C.bdr}`, borderRadius: 8 }}
                   formatter={(v: number) => [`${v} sarees`, "Sold"]}
                 />
-                <Bar dataKey="count" radius={10} barSize={24}>
+                <Bar dataKey="count" radius={[12, 12, 12, 12]} barSize={24}>
                   {designData.map((entry, i) => {
                     let fill: string = C.burg;
                     if (entry.design === "Wholesale Sales") fill = C.gold;
@@ -252,7 +252,7 @@ function SalesReport() {
       {/* Top Customers */}
       <div id="shoprep-top-customers" style={{ margin: "24px 20px 0" }}>
         <SectionTitle title="Top Customers" />
-        <Card style={{ margin: 0, padding: 0, overflow: "hidden" }}>
+        <Card style={{ margin: 0, padding: 0, overflow: "hidden", border: `1px solid rgba(110,15,45,0.18)`, borderRadius: 16 }}>
           {salesLoading || customersLoading ? (
             <div style={{ padding: 16 }}><LoadingState variant="skeleton" rows={3} /></div>
           ) : salesError || customersError ? (

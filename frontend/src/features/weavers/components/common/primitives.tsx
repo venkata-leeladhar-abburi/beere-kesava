@@ -8,7 +8,7 @@ import { IconButton } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
 import { toInitials } from "@/shared/lib/initials";
 
-export function qcColor(r: number) { return r > 95 ? T.green : r >= 85 ? "#8B6018" : T.crimson; }
+export function qcColor(r: number) { return r >= 95 ? T.darkGreen : r >= 85 ? T.antiqueGold : T.darkRed; }
 
 export function FadeUp({ children, delay = 0, style = {} }: { children: React.ReactNode; delay?: number; style?: React.CSSProperties }) {
   const ref = useRef<HTMLDivElement>(null);

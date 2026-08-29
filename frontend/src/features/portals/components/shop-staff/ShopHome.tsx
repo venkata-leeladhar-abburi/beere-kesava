@@ -156,7 +156,7 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
       {/* Recent Sales */}
       <div style={{ margin: "24px 20px 0" }}>
         <SectionTitle title="Recent Sales — Today" link="View All →" onLink={() => onNavigate("reports")} />
-        <Card style={{ margin: 0, padding: 0, overflow: "hidden" }}>
+        <Card style={{ margin: 0, padding: 0, overflow: "hidden", border: `1px solid rgba(110,15,45,0.18)`, borderRadius: 16 }}>
           {salesLoading ? (
             <div style={{ padding: 16 }}>
               <LoadingState variant="skeleton" rows={3} />
@@ -192,7 +192,7 @@ function ShopHome({ onNavigate }: { onNavigate: (tab: TabId | "return") => void 
       {/* Returns Today */}
       <div style={{ margin: "24px 20px 0" }}>
         <SectionTitle title="Returns Today" />
-        <div style={{ background: C.white, border: `1px solid ${C.bdr}`, borderLeft: `3px solid ${C.crim}`, borderRadius: 14, padding: "16px" }}>
+        <div style={{ background: C.white, border: `1px solid rgba(110,15,45,0.18)`, borderLeft: `4px solid ${C.crim}`, borderRadius: 16, padding: "16px" }}>
           {latestReturn ? (
             <div style={{ display: "flex", alignItems: "flex-start", gap: 10, flexWrap: "wrap" as const }}>
               <Chip label="↩ Return" color={C.crim} bg="rgba(192,57,43,0.10)" />

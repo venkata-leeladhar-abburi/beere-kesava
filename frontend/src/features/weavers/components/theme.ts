@@ -13,6 +13,8 @@ export const T = {
   taupe: semantic.text.tertiary,
   crimson: semantic.text.danger,
   green: semantic.text.success,
+  darkGreen: "#184E34",
+  darkRed: "#8A1224",
   borderDef: "rgba(110,15,45,0.10)",
   borderGold: "rgba(200,155,71,0.22)",
 };

@@ -118,7 +118,7 @@ export function ReportsSection({
           {/* Left: Sales table + Returns */}
           <div>
             <DSH label="Today's Sales" link="Export →" onLink={() => { setExportDone(false); setExportDialog({ label: "Today's Sales" }); }} />
-            <div style={{ background: "#FFF", borderRadius: 20, border: `1px solid ${C.bdr}`, overflow: "hidden", boxShadow: "0 4px 24px rgba(44,24,16,0.08)", marginBottom: 32 }}>
+            <div style={{ background: "#FFF", borderRadius: 20, border: `1px solid rgba(110,15,45,0.18)`, overflow: "hidden", boxShadow: "0 1px 2px rgba(74,6,27,0.03), 0 6px 18px rgba(74,6,27,0.05)", marginBottom: 32 }}>
               <div style={{ display: "grid", gridTemplateColumns: `80px 160px 1fr 1fr 80px${canSeePrices ? " 120px" : ""}`, padding: "14px 24px", borderBottom: `1px solid ${C.bdr}`, background: "#FAFAF8" }}>
                 {["Time", "Saree ID", "Customer", "Design", "Payment", ...(canSeePrices ? ["Amount"] : [])].map(h => (
                   <div key={h} style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted, letterSpacing: 0.4 }}>{h}</div>
@@ -153,18 +153,27 @@ export function ReportsSection({
             </div>
 
             <DSH label="Returns This Month" />
-            <div style={{ background: "#FFF", borderRadius: 12, border: `1px solid ${C.bdr}`, overflow: "hidden" }}>
-              {returnsLoading ? (
-                <div style={{ padding: 16 }}><LoadingState variant="skeleton" rows={3} /></div>
-              ) : returnsError ? (
-                <ErrorState error={undefined} onRetry={() => void refetchReturns()} />
-              ) : returnsList.length === 0 ? (
-                <div style={{ padding: "24px 16px", textAlign: "center", fontFamily: F.u, fontSize: 14, color: C.muted }}>
-                  No returns recorded this month.
-                </div>
-              ) : (
-                returnsList.map((r, i) => (
-                  <div key={r.returnRef} className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-4 p-4 sm:p-[20px_24px]" style={{ borderBottom: i < returnsList.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none" }}>
+            {returnsLoading ? (
+              <div style={{ background: "#FFF", borderRadius: 16, border: `1px solid rgba(110,15,45,0.18)`, padding: 16 }}><LoadingState variant="skeleton" rows={3} /></div>
+            ) : returnsError ? (
+              <ErrorState error={undefined} onRetry={() => void refetchReturns()} />
+            ) : returnsList.length === 0 ? (
+              <div style={{ background: "#FFF", borderRadius: 16, border: `1px solid rgba(110,15,45,0.18)`, padding: "24px 16px", textAlign: "center", fontFamily: F.u, fontSize: 14, color: C.muted }}>
+                No returns recorded this month.
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {returnsList.map((r) => (
+                  <div
+                    key={r.returnRef}
+                    className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 sm:p-[18px_24px]"
+                    style={{
+                      background: "#FFFFFF",
+                      borderRadius: 16,
+                      border: `1px solid rgba(110,15,45,0.18)`,
+                      boxShadow: "0 1px 2px rgba(74,6,27,0.03), 0 6px 18px rgba(74,6,27,0.05)",
+                    }}
+                  >
                     <div className="flex items-center gap-4">
                       <div style={{ width: 44, height: 44, borderRadius: "50%", background: "rgba(192,57,43,0.10)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                         <RotateCcw size={20} color={C.crim} />
@@ -189,18 +198,18 @@ export function ReportsSection({
                     {canSeePrices && (
                       <div className="flex justify-between items-center w-full sm:w-auto pt-2 sm:pt-0 border-t border-[rgba(0,0,0,0.06)] sm:border-t-0">
                         <span className="sm:hidden" style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>Refund Amount</span>
-                        <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.crim }}><Money value={rupees(Number(r.refundAmount ?? 0))} /></div>
+                        <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.burg }}><Money value={rupees(Number(r.refundAmount ?? 0))} /></div>
                       </div>
                     )}
                   </div>
-                ))
-              )}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Right: Chart + Top Customers */}
           <div style={{ display: "flex", flexDirection: "column" as const, gap: 22 }}>
-            <div style={{ background: "#FFF", borderRadius: 18, border: `1px solid ${C.bdr}`, padding: "24px", boxShadow: "0 4px 20px rgba(44,24,16,0.08)" }}>
+            <div style={{ background: "#FFF", borderRadius: 18, border: `1px solid rgba(110,15,45,0.18)`, padding: "24px", boxShadow: "0 1px 2px rgba(74,6,27,0.03), 0 6px 18px rgba(74,6,27,0.05)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
                 <BarChart2 size={20} color={C.burg} />
                 <span style={{ fontFamily: F.u, fontSize: 16, fontWeight: 700, color: C.text }}>Sales by Design</span>
@@ -211,7 +220,7 @@ export function ReportsSection({
                     <XAxis type="number" tick={{ fontFamily: F.m, fontSize: 12, fill: C.muted }} axisLine={false} tickLine={false} />
                     <YAxis type="category" dataKey="design" tick={{ fontFamily: F.m, fontSize: 12, fill: C.burg }} axisLine={false} tickLine={false} width={64} />
                     <Tooltip contentStyle={{ fontFamily: F.u, fontSize: 13, border: `1px solid ${C.bdr}`, borderRadius: 10 }} formatter={(v: number) => [`${v} sarees`, "Sold"]} />
-                    <Bar dataKey="count" radius={10} barSize={28}>
+                    <Bar dataKey="count" radius={[14, 14, 14, 14]} barSize={28}>
                       {designData.map((entry, i) => {
                         let fill: string = C.burg;
                         if (entry.design === "Wholesale Sales") fill = C.gold;
@@ -225,7 +234,7 @@ export function ReportsSection({
               </ChartFigure>
             </div>
 
-            <div style={{ background: "#FFF", borderRadius: 18, border: `1px solid ${C.bdr}`, overflow: "hidden", boxShadow: "0 4px 20px rgba(44,24,16,0.08)" }}>
+            <div style={{ background: "#FFF", borderRadius: 18, border: `1px solid rgba(110,15,45,0.18)`, overflow: "hidden", boxShadow: "0 1px 2px rgba(74,6,27,0.03), 0 6px 18px rgba(74,6,27,0.05)" }}>
               <div style={{ padding: "18px 24px", borderBottom: `1px solid ${C.bdr}`, background: "#FAFAF8", display: "flex", alignItems: "center", gap: 10 }}>
                 <div style={{ width: 5, height: 22, background: C.gold, borderRadius: 3 }} />
                 <span style={{ fontFamily: F.u, fontSize: 16, fontWeight: 700, color: C.text }}>Top Customers</span>

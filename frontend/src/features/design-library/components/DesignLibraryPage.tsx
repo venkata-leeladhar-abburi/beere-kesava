@@ -132,7 +132,7 @@ export function DesignLibraryPage() {
             <div className="grid grid-cols-1 md:grid-cols-[1.2fr_1.8fr]" style={{ gap: 32, alignItems: "start" }}>
               {/* Form Side */}
               <div>
-                <div className="p-4 sm:p-7 bg-white rounded-2xl border-[1.5px] border-[#E8DCC4] shadow-[0_4px_20px_rgba(74,6,27,0.05)]">
+                <div className="p-4 sm:p-7 bg-white rounded-2xl border border-[rgba(110,15,45,0.18)] shadow-[0_1px_2px_rgba(74,6,27,0.03),0_6px_18px_rgba(74,6,27,0.05)]">
                   <h3 style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown, marginBottom: 20, display: "flex", alignItems: "center", gap: 10 }}>
                     <SlidersHorizontal size={20} color={T.royalBurgundy} /> Dispatch Settings
                   </h3>
@@ -148,7 +148,7 @@ export function DesignLibraryPage() {
                     {/* Recipient Type Toggle */}
                     <div>
                       <div style={labelStyle}>Recipient Type</div>
-                      <div className="grid grid-cols-2 w-full bg-[rgba(110,15,45,0.05)] rounded-xl p-1 border border-[#E8DCC4]">
+                      <div className="grid grid-cols-2 w-full bg-[rgba(110,15,45,0.05)] rounded-xl p-1 border border-[rgba(110,15,45,0.12)]">
                         <Button type="button" onClick={() => setDispRecipientType("weaver")}
                           variant={dispRecipientType === "weaver" ? "secondary" : "ghost"} size="sm" iconLeft={User} className="w-full justify-center">
                           Weaver
@@ -256,70 +256,117 @@ export function DesignLibraryPage() {
                         );
                       }
 
-                      return filtered.map(h => (
-                        <div key={h.id} style={{ background: "#FFFFFF", borderRadius: 16, border: `1.5px solid ${T.borderDef}`, borderLeft: `5px solid ${h.recipientType === "weaver" ? T.royalBurgundy : T.antiqueGold}`, padding: "18px 20px", boxShadow: "0 2px 10px rgba(74,6,27,0.03)", display: "flex", flexDirection: "column", gap: 10 }}>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                            <div>
-                              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                                <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>Dispatch to {h.recipientName}</span>
+                      return filtered.map(h => {
+                        const isWeaver = h.recipientType === "weaver";
+                        return (
+                          <div
+                            key={h.id}
+                            style={{
+                              background: "#FFFFFF",
+                              borderRadius: 16,
+                              border: `1px solid rgba(110,15,45,0.18)`,
+                              borderLeft: `4px solid ${isWeaver ? T.royalBurgundy : T.antiqueGold}`,
+                              padding: "18px 20px",
+                              boxShadow: "0 1px 2px rgba(74,6,27,0.03), 0 6px 18px rgba(74,6,27,0.05)",
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: 12,
+                              transition: "all 0.2s ease",
+                            }}
+                          >
+                            {/* Card Header */}
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8 }}>
+                              <div>
+                                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                                  <span style={{ fontFamily: F.display, fontSize: 15, fontWeight: 700, color: T.luxuryBrown }}>
+                                    Dispatch to {h.recipientName}
+                                  </span>
+                                </div>
+                                <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
+                                  <CalendarCheck size={13} color={T.royalBurgundy} />
+                                  <span>Sent on {h.sentAt}</span>
+                                </div>
                               </div>
-                              <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-                                <CalendarCheck size={12} /> Sent on {h.sentAt}
+
+                              <span style={{
+                                fontFamily: F.ui,
+                                fontSize: 12,
+                                fontWeight: 700,
+                                background: isWeaver ? "rgba(110,15,45,0.08)" : "rgba(200,155,71,0.12)",
+                                color: isWeaver ? T.royalBurgundy : "#8B6018",
+                                border: `1px solid ${isWeaver ? "rgba(110,15,45,0.18)" : "rgba(200,155,71,0.25)"}`,
+                                borderRadius: 20,
+                                padding: "4px 11px",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 5,
+                              }}>
+                                {isWeaver ? <User size={12} /> : <Buildings size={12} />}
+                                <span>{h.recipientName}</span>
+                              </span>
+                            </div>
+
+                            {/* Instructions Box */}
+                            <div style={{
+                              background: "rgba(110,15,45,0.03)",
+                              border: `1px solid rgba(110,15,45,0.08)`,
+                              borderRadius: 12,
+                              padding: "12px 16px",
+                              wordBreak: "break-word",
+                            }}>
+                              <span style={{ fontFamily: F.m, fontSize: 11, fontWeight: 700, color: T.royalBurgundy, letterSpacing: "0.5px", display: "block", marginBottom: 4 }}>
+                                INSTRUCTIONS:
+                              </span>
+                              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.luxuryBrown, lineHeight: 1.55 }}>
+                                {h.instructions}
                               </div>
                             </div>
-                            <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, background: h.recipientType === "weaver" ? "rgba(110,15,45,0.09)" : "rgba(200,155,71,0.12)", color: h.recipientType === "weaver" ? T.royalBurgundy : "#8B6018", borderRadius: 6, padding: "3px 9px", display: "flex", alignItems: "center", gap: 4 }}>
-                              {h.recipientType === "weaver" ? <User size={11} /> : <Buildings size={11} />}
-                              {h.recipientName}
-                            </span>
-                          </div>
 
-                          <div style={{ background: "rgba(110,15,45,0.03)", border: `1px solid rgba(110,15,45,0.06)`, borderRadius: 10, padding: "10px 14px", fontFamily: F.ui, fontSize: 12, color: T.luxuryBrown, lineHeight: 1.5 }}>
-                            <strong>Instructions:</strong> {h.instructions}
+                            {/* Attachments */}
+                            <div style={{ display: "flex", gap: 14, alignItems: "flex-start", flexWrap: "wrap" as const, marginTop: 2 }}>
+                              {h.colorSlipImage && (
+                                <div style={{ display: "flex", flexDirection: "column" as const, gap: 4 }}>
+                                  <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.4px" }}>Color Slip</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => setZoomImage({ url: h.colorSlipImage!, label: `Color Slip — Dispatch to ${h.recipientName}` })}
+                                    style={{ padding: 0, border: "none", background: "transparent", cursor: "pointer", lineHeight: 0 }}
+                                    aria-label={`Zoom color slip — dispatch to ${h.recipientName}`}
+                                  >
+                                    <img
+                                      src={h.colorSlipImage}
+                                      alt="Color slip"
+                                      style={{ width: 72, height: 72, borderRadius: 12, objectFit: "cover", border: `1.5px solid rgba(110,15,45,0.18)`, boxShadow: "0 2px 8px rgba(74,6,27,0.06)" }}
+                                    />
+                                  </button>
+                                </div>
+                              )}
+                              {h.designGraphImage && (
+                                <div style={{ display: "flex", flexDirection: "column" as const, gap: 4 }}>
+                                  <span style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.4px" }}>Design Graph</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => setZoomImage({ url: h.designGraphImage!, label: `Design Graph — Dispatch to ${h.recipientName}` })}
+                                    style={{ padding: 0, border: "none", background: "transparent", cursor: "pointer", lineHeight: 0 }}
+                                    aria-label={`Zoom design graph — dispatch to ${h.recipientName}`}
+                                  >
+                                    <img
+                                      src={h.designGraphImage}
+                                      alt="Design graph"
+                                      style={{ width: 72, height: 72, borderRadius: 12, objectFit: "cover", border: `1.5px solid rgba(110,15,45,0.18)`, boxShadow: "0 2px 8px rgba(74,6,27,0.06)" }}
+                                    />
+                                  </button>
+                                </div>
+                              )}
+                              {!h.colorSlipImage && !h.designGraphImage && (
+                                <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontStyle: "italic", background: "rgba(110,15,45,0.02)", padding: "4px 10px", borderRadius: 8, border: "1px dashed rgba(110,15,45,0.10)" }}>
+                                  No files attached
+                                </span>
+                              )}
+                            </div>
                           </div>
-
-                          <div style={{ display: "flex", gap: 14, alignItems: "flex-start", flexWrap: "wrap" as const }}>
-                            {h.colorSlipImage && (
-                              <div style={{ display: "flex", flexDirection: "column" as const, gap: 4 }}>
-                                <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.4px" }}>Color Slip</span>
-                                <button
-                                  type="button"
-                                  onClick={() => setZoomImage({ url: h.colorSlipImage!, label: `Color Slip — Dispatch to ${h.recipientName}` })}
-                                  style={{ padding: 0, border: "none", background: "transparent", cursor: "pointer", lineHeight: 0 }}
-                                  aria-label={`Zoom color slip — dispatch to ${h.recipientName}`}
-                                >
-                                  <img
-                                    src={h.colorSlipImage}
-                                    alt="Color slip"
-                                    style={{ width: 72, height: 72, borderRadius: 10, objectFit: "cover", border: `1px solid ${T.borderDef}` }}
-                                  />
-                                </button>
-                              </div>
-                            )}
-                            {h.designGraphImage && (
-                              <div style={{ display: "flex", flexDirection: "column" as const, gap: 4 }}>
-                                <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase" as const, letterSpacing: "0.4px" }}>Design Graph</span>
-                                <button
-                                  type="button"
-                                  onClick={() => setZoomImage({ url: h.designGraphImage!, label: `Design Graph — Dispatch to ${h.recipientName}` })}
-                                  style={{ padding: 0, border: "none", background: "transparent", cursor: "pointer", lineHeight: 0 }}
-                                  aria-label={`Zoom design graph — dispatch to ${h.recipientName}`}
-                                >
-                                  <img
-                                    src={h.designGraphImage}
-                                    alt="Design graph"
-                                    style={{ width: 72, height: 72, borderRadius: 10, objectFit: "cover", border: `1px solid ${T.borderDef}` }}
-                                  />
-                                </button>
-                              </div>
-                            )}
-                            {!h.colorSlipImage && !h.designGraphImage && (
-                              <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontStyle: "italic" }}>
-                                No files attached
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      ));
+                        );
+                      });
                     })()}
                   </div>
                 </div>

@@ -1,12 +1,46 @@
 import React, { useState } from "react";
-import { ArrowLeft, ClipboardCheck } from "lucide-react";
+import { ArrowLeft, ClipboardCheck, ArrowRight } from "lucide-react";
 import { ProductionDialog } from "@/features/production";
 import { PageShell } from "../../../shared/ui/PageShell";
 import { Button } from "../../../shared/ui/primitives";
 import { Breadcrumbs } from "../../../shared/ui/nav/Breadcrumbs";
 
-const T = { silkCream: "#F7F2EA", royalBurgundy: "#6E0F2D", deepWine: "#4A061B", luxuryBrown: "#3B2314", taupe: "#69635E", green: "#1E6640", crimson: "#C0392B", borderDef: "rgba(110,15,45,0.10)" };
+const T = {
+  silkCream: "#F7F2EA",
+  royalBurgundy: "#6E0F2D",
+  deepWine: "#3D0E1A",
+  luxuryBrown: "#3B2314",
+  taupe: "#69635E",
+  antiqueGold: "#C89B47",
+  crimson: "#8A1224",
+  darkGreen: "#184E34",
+  borderDef: "rgba(110,15,45,0.10)",
+};
+
 const F = { display: "'Plus Jakarta Sans', sans-serif", ui: "'Inter', sans-serif", mono: "'JetBrains Mono', monospace" };
+
+function CardBloom() {
+  return (
+    <span aria-hidden style={{
+      position: "absolute", top: -70, right: -70, width: 200, height: 200, borderRadius: "50%",
+      background: "radial-gradient(circle, rgba(110,15,45,0.05) 0%, rgba(110,15,45,0) 70%)",
+      pointerEvents: "none",
+    }} />
+  );
+}
+
+const luxuryCardStyle: React.CSSProperties = {
+  background: "#FFFFFF",
+  borderRadius: 16,
+  border: `1.5px solid ${T.royalBurgundy}`,
+  padding: 22,
+  boxShadow: "0 1px 2px rgba(74,6,27,0.03), 0 6px 18px rgba(74,6,27,0.05)",
+  position: "relative",
+  overflow: "hidden",
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "space-between",
+};
 
 const QC_QUEUE = [
   { batchId: "BATCH-081", weaver: "Suresh Murti", sareeType: "Plain Silk", count: 4, submitted: "20 May 2026" },
@@ -15,13 +49,6 @@ const QC_QUEUE = [
   { batchId: "BATCH-090", weaver: "Kamala B.",    sareeType: "Self Brocade", count: 5, submitted: "22 May 2026" },
 ];
 
-/**
- * Migrated onto PageShell — design-system/02-LAYOUT.md Part E — as the
- * Step 2.6 proof case. Previously this page hand-rolled its own gradient
- * hero, its own minHeight, and a hardcoded `repeat(3, 1fr)` grid; those are
- * now PageShell.Header and the `.bk-layout-cards` recipe respectively
- * (auto-fit/minmax, reflows without a media query).
- */
 export function QcHistoryPage({ onBack }: { onBack?: () => void }) {
   const [selected, setSelected] = useState<typeof QC_QUEUE[0] | null>(null);
 
@@ -64,25 +91,53 @@ export function QcHistoryPage({ onBack }: { onBack?: () => void }) {
                 <div
                   // eslint-disable-next-line react/no-array-index-key
                   key={`${q.batchId}-${i}`}
-                  style={{
-                    background: "#fff", border: `1px solid ${T.borderDef}`,
-                    borderLeft: `5px solid ${i % 3 === 0 ? T.green : T.crimson}`,
-                    borderRadius: 18, padding: 22, boxShadow: "0 6px 24px rgba(74,6,27,0.07)",
-                  }}
+                  style={luxuryCardStyle}
                 >
-                  <div style={{ fontFamily: "var(--font-mono)", color: T.royalBurgundy, fontWeight: 700 }}>{q.batchId}</div>
-                  <h3 style={{ fontFamily: F.display, color: T.luxuryBrown, margin: "8px 0" }}>{q.weaver}</h3>
-                  <div style={{ color: T.taupe, lineHeight: 1.6 }}>
-                    {q.count} sarees · {q.sareeType}
-                    <br />
-                    Submitted {q.submitted}
+                  <CardBloom />
+                  
+                  <div>
+                    {/* Top Row: Batch ID badge & Status Pill */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+                      <div style={{
+                        background: "rgba(110,15,45,0.06)", border: `1px solid rgba(110,15,45,0.15)`,
+                        borderRadius: 8, padding: "4px 10px",
+                        fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.royalBurgundy,
+                      }}>
+                        {q.batchId}
+                      </div>
+                      <div style={{
+                        background: "rgba(200,155,71,0.12)", border: `1px solid rgba(200,155,71,0.25)`,
+                        borderRadius: 20, padding: "3px 10px",
+                        fontFamily: F.ui, fontSize: 11, fontWeight: 600, color: T.antiqueGold,
+                      }}>
+                        Awaiting QC
+                      </div>
+                    </div>
+
+                    {/* Weaver Name */}
+                    <h3 style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown, margin: "0 0 6px 0", lineHeight: 1.2 }}>
+                      {q.weaver}
+                    </h3>
+
+                    {/* Sarees Count & Type */}
+                    <div style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown, marginBottom: 4 }}>
+                      {q.count} sarees <span style={{ color: T.taupe, fontWeight: 400 }}>· {q.sareeType}</span>
+                    </div>
+
+                    {/* Submission Date */}
+                    <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginBottom: 18 }}>
+                      Submitted {q.submitted}
+                    </div>
                   </div>
+
+                  {/* Action Button */}
                   <Button
                     variant="primary"
                     size="md"
                     fullWidth
+                    iconRight={ArrowRight}
                     onClick={() => setSelected(q)}
-                    className="mt-[18px]"
+                    className="rounded-[10px] bg-[#6E0F2D] hover:bg-[#3D0E1A] h-auto py-2.5 text-[13px] font-semibold text-white shadow-xs transition-colors"
                   >
                     Start QC
                   </Button>
