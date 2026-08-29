@@ -2,7 +2,7 @@ import React, { createContext, useContext, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { BackendWeaverPayment, weaverPaymentsApi, WeaverEarnings } from "../../../shared/api/payments";
-import { weaversApi } from "../../../shared/api/weavers";
+import { weaversApi, WEAVERS_LIST_QUERY_KEY } from "../../../shared/api/weavers";
 import { firmsApi, BackendFirm } from "../../../shared/api/firms";
 import { useAuth, useAuthGate } from "../../../contexts/AuthContext";
 
@@ -88,7 +88,10 @@ export function WeaverPaymentsProvider({ children }: { children: React.ReactNode
     queryFn: async () => {
       const [paymentsRes, weaversRes, firmsRes] = await Promise.all([
         weaverPaymentsApi.list(),
-        weaversApi.list(),
+        // Shared cache — see WEAVERS_LIST_QUERY_KEY — instead of a second
+        // independent GET /weavers alongside BatchContext's and
+        // useCurrentWeaver's, all three of which need this same roster.
+        queryClient.fetchQuery({ queryKey: WEAVERS_LIST_QUERY_KEY, queryFn: () => weaversApi.list(), staleTime: 60_000 }),
         canReadFirms ? firmsApi.list().catch(() => ({ items: [] as BackendFirm[] })) : Promise.resolve({ items: [] as BackendFirm[] }),
       ]);
       const weaverLookup = new Map(weaversRes.items.map(w => [w.id, w.name]));
