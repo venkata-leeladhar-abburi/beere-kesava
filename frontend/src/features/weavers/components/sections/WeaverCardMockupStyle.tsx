@@ -106,7 +106,7 @@ export function WeaverCardMockupStyle({
 
   return (
     <div
-      className="relative flex flex-col justify-between rounded-[24px] bg-[#FFFDFB] border border-[#F0E5D8] overflow-hidden text-left shadow-[0_4px_20px_rgba(74,6,27,0.05)] cursor-pointer h-full min-h-[490px]"
+      className="relative flex flex-col justify-between rounded-[12px] bg-[#FFFDFB] border border-[#F0E5D8] overflow-hidden text-left shadow-[0_4px_20px_rgba(74,6,27,0.05)] cursor-pointer h-full min-h-[490px]"
     >
       {/* Upper Header Banner Block (Height 235px) */}
       {hasUploadedImage && uploadedImageUrl ? (
@@ -222,8 +222,8 @@ export function WeaverCardMockupStyle({
           </div>
 
           {/* Looms Spec Box */}
-          <div className="bg-[#FEF6EC] border border-[#F6D9BA] rounded-[16px] p-3 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-white border border-[#F6D9BA] flex items-center justify-center text-[#8D5802] flex-shrink-0 shadow-2xs">
+          <div className="bg-[#FEF6EC] border border-[#F6D9BA] rounded-[8px] p-3 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-[8px] bg-white border border-[#F6D9BA] flex items-center justify-center text-[#8D5802] flex-shrink-0 shadow-2xs">
               <Rows size={15} />
             </div>
             <div className="flex flex-col">
@@ -245,7 +245,7 @@ export function WeaverCardMockupStyle({
               e.stopPropagation();
               onNavigateDetails();
             }}
-            className="flex-1 py-2.5 px-1 rounded-xl bg-[#FFFDFB] border border-[#F0E5D8] text-[#6E0F2D] font-bold text-[12px] flex items-center justify-center gap-1.5 hover:bg-[#FEF4F5] hover:border-[#FEE8EB] transition-all cursor-pointer shadow-2xs"
+            className="flex-1 py-2.5 px-1 rounded-[8px] bg-[#FFFDFB] border border-[#F0E5D8] text-[#6E0F2D] font-bold text-[12px] flex items-center justify-center gap-1.5 hover:bg-[#FEF4F5] hover:border-[#FEE8EB] transition-all cursor-pointer shadow-2xs"
           >
             <Eye size={13} />
             <span>Details</span>
@@ -256,7 +256,7 @@ export function WeaverCardMockupStyle({
               e.stopPropagation();
               onNavigateEdit();
             }}
-            className="flex-1 py-2.5 px-1 rounded-xl bg-[#FFFDFB] border border-[#F0E5D8] text-[#6E0F2D] font-bold text-[12px] flex items-center justify-center gap-1.5 hover:bg-[#FEF4F5] hover:border-[#FEE8EB] transition-all cursor-pointer shadow-2xs"
+            className="flex-1 py-2.5 px-1 rounded-[8px] bg-[#FFFDFB] border border-[#F0E5D8] text-[#6E0F2D] font-bold text-[12px] flex items-center justify-center gap-1.5 hover:bg-[#FEF4F5] hover:border-[#FEE8EB] transition-all cursor-pointer shadow-2xs"
           >
             <Edit3 size={13} />
             <span>Edit</span>
@@ -267,7 +267,7 @@ export function WeaverCardMockupStyle({
               e.stopPropagation();
               onNavigateBatches();
             }}
-            className="flex-1 py-2.5 px-1 rounded-xl bg-[#FFFDFB] border border-[#F0E5D8] text-[#6E0F2D] font-bold text-[12px] flex items-center justify-center gap-1.5 hover:bg-[#FEF4F5] hover:border-[#FEE8EB] transition-all cursor-pointer shadow-2xs"
+            className="flex-1 py-2.5 px-1 rounded-[8px] bg-[#FFFDFB] border border-[#F0E5D8] text-[#6E0F2D] font-bold text-[12px] flex items-center justify-center gap-1.5 hover:bg-[#FEF4F5] hover:border-[#FEE8EB] transition-all cursor-pointer shadow-2xs"
           >
             <Layers3 size={13} />
             <span>Batches</span>

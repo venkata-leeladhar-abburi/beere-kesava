@@ -1,7 +1,7 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import {
   useSuppliers, SareeTag, Purchase,
-  totalPieces,
+  totalPieces, parseINR,
 } from "@/features/suppliers";
 import { DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../shared/ui/DateFilterBar";
 
@@ -36,7 +36,7 @@ export type { FormState };
 export function ExternalPurchasesPage() {
   // Purchases live in the shared supplier context so the Suppliers page sees the
   // same inventory, spend and payment history that gets entered here.
-  const { purchases, addPurchase, updatePurchase, deletePurchase, getPurchaseDetail, isLoading, isError, refetch } = useSuppliers();
+  const { purchases, payments, addPurchase, updatePurchase, deletePurchase, getPurchaseDetail, isLoading, isError, refetch } = useSuppliers();
   const confirm = useConfirm();
   const [detailRow, setDetailRow] = useState<Purchase | null>(null);
   const [search, setSearch] = useState("");
@@ -118,7 +118,29 @@ export function ExternalPurchasesPage() {
     return ["All Serial No.s", ...Array.from(s).sort()];
   }, [purchases, fPurchaseOrder]);
 
-  const filtered = purchases.filter((p) => {
+  // How much has actually been paid against each purchase. The stored status
+  // is recomputed server-side when a payment is linked to a purchase, but
+  // deriving it here as well keeps the pill, the filter and the amounts in
+  // agreement even for rows recorded before that recompute existed.
+  const paidByPurchase = useMemo(() => {
+    const map = new Map<string, number>();
+    payments.forEach(pay => {
+      if (!pay.purchaseId) return;
+      map.set(pay.purchaseId, (map.get(pay.purchaseId) ?? 0) + pay.amount);
+    });
+    return map;
+  }, [payments]);
+
+  const paidFor = useCallback((p: Purchase) => paidByPurchase.get(p.id) ?? 0, [paidByPurchase]);
+  const statusOf = useCallback((p: Purchase): Purchase["status"] => {
+    const bill = parseINR(p.billAmount);
+    const paid = paidFor(p);
+    if (bill > 0 && paid >= bill) return "Paid";
+    if (paid > 0) return "Partial";
+    return p.status === "Paid" && paid === 0 ? "Paid" : p.status;
+  }, [paidFor]);
+
+  const matchesExceptStatus = (p: Purchase) => {
     const matchSearch =
       search === "" ||
       p.supplier.toLowerCase().includes(search.toLowerCase()) ||
@@ -126,7 +148,6 @@ export function ExternalPurchasesPage() {
       p.location.toLowerCase().includes(search.toLowerCase()) ||
       p.gstNumber.toLowerCase().includes(search.toLowerCase()) ||
       p.invoiceNumber.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = statusFilter === "All Status" || p.status === statusFilter;
     const matchDate = matchesDateFilter(p.date, dateFilter);
     const matchSupplier = fSupplier === "All Suppliers" || p.supplier === fSupplier;
     const matchPO = fPurchaseOrder === "All Purchase Orders" || p.id === fPurchaseOrder;
@@ -137,8 +158,25 @@ export function ExternalPurchasesPage() {
       return serial === fSerial;
     });
 
-    return matchSearch && matchStatus && matchDate && matchSupplier && matchPO && matchType && matchColor && matchSerial;
-  });
+    return matchSearch && matchDate && matchSupplier && matchPO && matchType && matchColor && matchSerial;
+  };
+
+  // Counts shown on the status pills — everything the other filters allow,
+  // grouped by payment status, so a pill that would show nothing says so
+  // before it is clicked.
+  const statusCounts = useMemo(() => {
+    const counts = { "All Status": 0, Paid: 0, Pending: 0, Partial: 0 } as Record<string, number>;
+    purchases.filter(matchesExceptStatus).forEach(p => {
+      counts["All Status"] += 1;
+      counts[statusOf(p)] += 1;
+    });
+    return counts;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [purchases, statusOf, search, dateFilter, fSupplier, fPurchaseOrder, fType, fColor, fSerial]);
+
+  const filtered = purchases.filter(
+    p => matchesExceptStatus(p) && (statusFilter === "All Status" || statusOf(p) === statusFilter),
+  );
 
   const filtersActive = search !== "" || statusFilter !== "All Status" || dateFilter.mode !== "all"
     || fSupplier !== "All Suppliers" || fPurchaseOrder !== "All Purchase Orders"
@@ -242,7 +280,7 @@ export function ExternalPurchasesPage() {
 
       <FilterBar
         search={search} setSearch={setSearch}
-        statusFilter={statusFilter} setStatusFilter={setStatusFilter}
+        statusFilter={statusFilter} setStatusFilter={setStatusFilter} statusCounts={statusCounts}
         dateFilter={dateFilter} setDateFilter={setDateFilter}
         viewMode={viewMode} setViewMode={setViewMode}
         fSupplier={fSupplier} setFSupplier={setFSupplier}
@@ -257,6 +295,8 @@ export function ExternalPurchasesPage() {
       >
         <PurchasesTable
           filtered={filtered}
+          paidFor={paidFor}
+          statusOf={statusOf}
           totalCount={purchases.length}
           viewMode={viewMode}
           hoveredRow={hoveredRow}

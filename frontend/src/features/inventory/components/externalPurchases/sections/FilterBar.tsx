@@ -15,7 +15,7 @@ export interface FilterOptions {
 /** Search box, status pills, and the supplier/PO/serial/type/colour dropdown filters. */
 export function FilterBar({
   search, setSearch,
-  statusFilter, setStatusFilter,
+  statusFilter, setStatusFilter, statusCounts,
   dateFilter, setDateFilter,
   viewMode, setViewMode,
   fSupplier, setFSupplier,
@@ -31,6 +31,8 @@ export function FilterBar({
 }: {
   search: string; setSearch: (v: string) => void;
   statusFilter: string; setStatusFilter: (v: string) => void;
+  /** How many purchases each status covers under the other active filters. */
+  statusCounts?: Record<string, number>;
   dateFilter: DateFilterState; setDateFilter: (v: DateFilterState) => void;
   viewMode?: "card" | "table"; setViewMode?: (v: "card" | "table") => void;
   fSupplier: string; setFSupplier: (v: string) => void;
@@ -73,8 +75,10 @@ export function FilterBar({
             {[
               { key: "All Status", label: "All Status" },
               { key: "Paid", label: "Paid" },
-              { key: "Pending", label: "Pending" },
               { key: "Partial", label: "Partial" },
+              // Labelled "Unpaid" to match the pill the table shows for this
+              // status — the stored value is still "Pending".
+              { key: "Pending", label: "Unpaid" },
             ].map(f => (
               <Button
                 key={f.key}
@@ -87,6 +91,9 @@ export function FilterBar({
                 }
               >
                 {f.label}
+                {statusCounts && (
+                  <span className="ml-1.5 opacity-70">{statusCounts[f.key] ?? 0}</span>
+                )}
               </Button>
             ))}
           </div>

@@ -1,6 +1,6 @@
 import React, { useContext, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Trash2, ShoppingCart } from "lucide-react";
+import { Trash2, ShoppingCart, PackageCheck, RefreshCw, FileText, Plus } from "lucide-react";
 import { usePO, PurchaseOrder } from "@/features/purchasing";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER } from "../../../../shared/ui/DateFilterBar";
 import { ConfirmDialog } from "../../../../shared/ui/ConfirmDialog";
@@ -13,6 +13,72 @@ import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { POVendorDetailModal } from "../modals/ReportModals";
 import { rupees } from "@/lib/domain/money";
 import { Money, EntityCode } from "@/shared/ui/domain";
+
+const TopDivider = () => (
+  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 20, marginBottom: 12 }}>
+    <div style={{ display: "flex", gap: 3, paddingLeft: 4 }}>
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+    </div>
+    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginLeft: 8 }} />
+    <svg width="60" height="20" viewBox="0 0 60 20" style={{ margin: "0 8px", flexShrink: 0 }}>
+      <g transform="translate(30, 10)">
+        <polygon points="-16,0 -12,-3 -8,0 -12,3" fill={T.antiqueGold} />
+        <path d="M-5,0 L0,-5 L5,0 L0,5 Z" fill={T.antiqueGold} />
+        <circle cx="0" cy="0" r="1.5" fill="#FFFDF9" />
+        <polygon points="8,0 12,-3 16,0 12,3" fill={T.antiqueGold} />
+      </g>
+    </svg>
+    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginRight: 8 }} />
+    <div style={{ display: "flex", gap: 3, paddingRight: 4 }}>
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+    </div>
+  </div>
+);
+
+const MiddleDivider = () => (
+  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 20, margin: "4px 0 16px 0" }}>
+    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6 }} />
+    <svg width="60" height="20" viewBox="0 0 60 20" style={{ margin: "0 8px", flexShrink: 0 }}>
+      <g transform="translate(30, 10)">
+        <polygon points="-16,0 -12,-3 -8,0 -12,3" fill={T.antiqueGold} />
+        <path d="M-5,0 L0,-5 L5,0 L0,5 Z" fill={T.antiqueGold} />
+        <circle cx="0" cy="0" r="1.5" fill="#FFFDF9" />
+        <polygon points="8,0 12,-3 16,0 12,3" fill={T.antiqueGold} />
+      </g>
+    </svg>
+    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6 }} />
+  </div>
+);
+
+const BottomDivider = () => (
+  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 20, marginTop: 16 }}>
+    <div style={{ display: "flex", gap: 3, paddingLeft: 4 }}>
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+    </div>
+    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginLeft: 8 }} />
+    <svg width="60" height="20" viewBox="0 0 60 20" style={{ margin: "0 8px", flexShrink: 0 }}>
+      <g transform="translate(30, 10)">
+        <polygon points="-16,0 -12,-3 -8,0 -12,3" fill={T.antiqueGold} />
+        <path d="M-5,0 L0,-5 L5,0 L0,5 Z" fill={T.antiqueGold} />
+        <circle cx="0" cy="0" r="1.5" fill="#FFFDF9" />
+        <polygon points="8,0 12,-3 16,0 12,3" fill={T.antiqueGold} />
+      </g>
+    </svg>
+    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginRight: 8 }} />
+    <div style={{ paddingRight: 4, display: "flex", alignItems: "center" }}>
+      <svg width="14" height="14" viewBox="0 0 16 16">
+        <path d="M8,0 C9,3 11,5 16,8 C11,11 9,13 8,16 C7,13 5,11 0,8 C5,5 7,3 8,0 Z" fill={T.antiqueGold} />
+        <circle cx="8" cy="8" r="2" fill="#FFFDF9" />
+      </svg>
+    </div>
+  </div>
+);
 
 export function POTrackerSection({
   onCreatePO,
@@ -78,8 +144,8 @@ export function POTrackerSection({
       title="Purchase Orders"
       subtitle="Orders placed with vendors for material — track approvals, receipts, and delivery deadlines."
       actions={
-        <Button onClick={onCreatePO} variant="secondary" size="sm">
-          ➕ Create New PO
+        <Button onClick={onCreatePO} variant="secondary" size="sm" className="flex items-center gap-1.5">
+          <Plus size={14} /> Create New PO
         </Button>
       }
     >
@@ -120,26 +186,28 @@ export function POTrackerSection({
                 transition={{ duration: 0.3 }}
                 onClick={() => setSelectedPO(po)}
                 style={{
-                  background: "#FFFFFF",
-                  borderRadius: 20,
-                  border: `1.5px solid ${T.borderDef}`,
-                  boxShadow: "0 8px 30px rgba(74,6,27,0.04)",
+                  background: "#FFFDF9",
+                  borderRadius: 12,
+                  border: `1.5px solid ${T.antiqueGold}`,
+                  boxShadow: "0 4px 20px rgba(200,155,71,0.15)",
                   overflow: "hidden",
                   display: "flex",
                   flexDirection: "column",
                   height: "100%",
                   position: "relative",
                   cursor: "pointer",
-                  transition: "transform 0.25s, box-shadow 0.25s",
                 }}
-                whileHover={{ y: -4, boxShadow: "0 18px 45px rgba(74,6,27,0.09)" }}
               >
-                <div style={{ height: 6, background: cfg.border, width: "100%" }} />
+                <div style={{ height: 4, background: T.royalBurgundy, width: "100%", opacity: 0.8 }} />
 
-                <div style={{ padding: "20px 22px 22px", display: "flex", flexDirection: "column", flex: 1 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-                    <EntityCode type="purchaseOrder" value={po.poNumber} size="sm" />
-                    <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, background: "#F7F2EA", padding: "4px 10px", borderRadius: 8 }}>
+                <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", flex: 1 }}>
+                  <TopDivider />
+
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 14 }}>
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <EntityCode type="purchaseOrder" value={po.poNumber} size="sm" />
+                    </div>
+                    <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, background: "#F7F2EA", padding: "4px 10px", borderRadius: 8, whiteSpace: "nowrap", flexShrink: 0 }}>
                       {new Date(po.submittedDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
                     </span>
                   </div>
@@ -168,6 +236,8 @@ export function POTrackerSection({
                       </div>
                     )}
                   </div>
+
+                  <MiddleDivider />
 
                   <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 18, background: "rgba(110,15,45,0.015)", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: 12 }}>
                     <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.taupe, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 4 }}>Materials Requested</div>
@@ -237,7 +307,7 @@ export function POTrackerSection({
                     const hasAnyAmount = po.materials.some(m => !!m.invoiceAmount);
                     if (!hasAnyAmount) return null;
                     return (
-                      <div style={{ border: `1.5px solid ${T.borderGold}`, background: "linear-gradient(135deg, rgba(200,155,71,0.06) 0%, rgba(200,155,71,0.01) 100%)", borderRadius: 12, padding: "12px 14px", marginBottom: 18, marginTop: "auto" }}>
+                      <div style={{ border: `1.5px solid ${T.borderGold}`, background: "linear-gradient(135deg, rgba(200,155,71,0.06) 0%, rgba(200,155,71,0.01) 100%)", borderRadius: 12, padding: "12px 14px", marginBottom: 18 }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                           <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe }}>Total Invoice Value</span>
                           <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 800, color: "#8B6018" }}>
@@ -248,12 +318,19 @@ export function POTrackerSection({
                     );
                   })()}
 
-                  <div style={{ background: cfg.badgeBg, border: `1px solid ${cfg.border}22`, borderRadius: 10, padding: "8px 12px", marginBottom: 18, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: cfg.badgeColor, display: "flex", alignItems: "center", gap: 6 }}>
-                    <span style={{ width: 6, height: 6, borderRadius: "50%", background: cfg.badgeColor }} />
-                    {cfg.badge}
+                  <div className="flex gap-2 mb-[18px] items-stretch w-full">
+                    <div style={{ flex: po.status === "received" && po.grnId ? "0 0 auto" : "1 1 0%", background: cfg.badgeBg, border: `1px solid ${cfg.border}22`, borderRadius: 10, padding: "8px 12px", fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: cfg.badgeColor, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, minWidth: 0 }}>
+                      <div className="shrink-0 flex items-center">{cfg.icon}</div>
+                      <span className="truncate">{cfg.badge}</span>
+                    </div>
+                    {po.status === "received" && po.grnId && (
+                      <div className="flex-1 px-2.5 rounded-[10px] bg-[rgba(30,102,64,0.06)] border border-[rgba(30,102,64,0.18)] text-[11px] font-bold text-[#1E6640] flex items-center justify-center min-w-0">
+                        <span className="truncate">✓ {po.grnId}</span>
+                      </div>
+                    )}
                   </div>
 
-                  <div className="flex flex-col gap-2 w-full">
+                  <div className="flex flex-col gap-2 w-full mt-auto">
                     {po.status === "approved" && (
                       <Button
                         onClick={(e) => {
@@ -262,24 +339,19 @@ export function POTrackerSection({
                         }}
                         variant="primary"
                         size="sm"
-                        className="w-full px-3 text-[12px] whitespace-nowrap justify-center bg-[var(--bk-green-700,#1E6640)] hover:bg-[#154d30]"
+                        className="w-full px-3 text-[12px] whitespace-nowrap justify-center bg-[var(--bk-green-700,#1E6640)] hover:bg-[#154d30] flex items-center gap-1.5"
                       >
-                        📦 Receive
+                        <PackageCheck size={14} /> Receive
                       </Button>
-                    )}
-                    {po.status === "received" && po.grnId && (
-                      <div className="w-full h-[36px] px-2.5 rounded-lg bg-[rgba(30,102,64,0.06)] border border-[rgba(30,102,64,0.18)] text-[11px] font-bold text-[#1E6640] flex items-center justify-center text-center whitespace-nowrap overflow-hidden text-ellipsis">
-                        ✓ {po.grnId}
-                      </div>
                     )}
                     {po.status === "rejected" && (
                       <Button
                         onClick={(e) => { e.stopPropagation(); onCreatePO(); }}
                         variant="secondary"
                         size="sm"
-                        className="w-full px-3 text-[12px] whitespace-nowrap justify-center"
+                        className="w-full px-3 text-[12px] whitespace-nowrap justify-center flex items-center gap-1.5"
                       >
-                        📋 Recreate
+                        <RefreshCw size={14} /> Recreate
                       </Button>
                     )}
                     <div className="flex items-center gap-2 w-full">
@@ -287,9 +359,9 @@ export function POTrackerSection({
                         onClick={(e) => { e.stopPropagation(); onViewPO(po); }}
                         variant="secondary"
                         size="sm"
-                        className="flex-1 px-3 text-[12px] whitespace-nowrap justify-center"
+                        className="flex-1 px-3 text-[12px] whitespace-nowrap justify-center flex items-center gap-1.5"
                       >
-                        📄 View PO
+                        <FileText size={14} /> View PO
                       </Button>
                       {po.status !== "received" && (
                         <IconButton
@@ -297,11 +369,14 @@ export function POTrackerSection({
                           icon={Trash2}
                           label="Delete purchase order"
                           variant="ghost"
-                          className="w-8 h-8 shrink-0 text-[#C0392B] bg-[#C0392B]/10 hover:bg-[#C0392B]/20"
+                          style={{
+                            color: "#C0392B", background: "rgba(192,57,43,0.06)",
+                          }}
                         />
                       )}
                     </div>
                   </div>
+                  <BottomDivider />
                 </div>
               </motion.div>
             );

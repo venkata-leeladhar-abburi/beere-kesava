@@ -1,5 +1,5 @@
 import React from "react";
-import { ChevronLeft, Flower2, Printer, MessageSquare } from "lucide-react";
+import { ChevronLeft, Flower2, Printer } from "lucide-react";
 import { C, F, Btn, Chip } from "./theme";
 import { IconButton } from "../../../../shared/ui/primitives";
 import type { SaleLine } from "./sale-cart";
@@ -10,6 +10,8 @@ interface NewSaleBillModalProps {
   phone: string;
   payment: "cash" | "upi" | "card" | "other" | null;
   total: number;
+  /** The bill's own reference — empty while previewing a sale not yet recorded. */
+  billRef?: string;
   isMobile?: boolean;
   isTablet?: boolean;
   fmtPrice: (n: number) => string;
@@ -22,6 +24,7 @@ export function NewSaleBillModal({
   phone,
   payment,
   total,
+  billRef,
   isMobile,
   isTablet: _isTablet,
   fmtPrice,
@@ -47,7 +50,7 @@ export function NewSaleBillModal({
         </div>
         <div style={{ padding: "18px 20px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
-            <span style={{ fontFamily: F.m, fontSize: 12, color: C.burg }}>Bill No: BKB-2026-1842</span>
+            <span style={{ fontFamily: F.m, fontSize: 12, color: C.burg }}>Bill No: {billRef || "—"}</span>
             <span style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>
               {new Date().toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
             </span>
@@ -97,8 +100,11 @@ export function NewSaleBillModal({
           display: "flex", flexDirection: isMobile ? "column" as const : "row" as const, gap: 10,
         }}
       >
-        <Btn label="Print Bill" icon={<Printer size={16} />} style={{ width: "100%", background: C.burg }} />
-        <Btn label="Send to Customer on WhatsApp" icon={<MessageSquare size={16} />} style={{ width: "100%", background: C.green }} />
+        {/* Sending lives on the success screen, which owns the sale refs the
+            backend needs — a second copy of the button here had no handler
+            and no way to get one. */}
+        <Btn label="Print Bill" icon={<Printer size={16} />} onClick={() => window.print()} style={{ width: "100%", background: C.burg }} />
+        <Btn label="Back to Sale" variant="ghost" onClick={onClose} style={{ width: "100%" }} />
       </div>
     </div>
   );

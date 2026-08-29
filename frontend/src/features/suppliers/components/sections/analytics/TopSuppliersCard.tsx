@@ -8,6 +8,7 @@ import { T, F } from "../../theme";
 import { semantic } from "../../../../../design-system/tokens";
 import { ChartFigure } from "../../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
+import { toInitials } from "@/shared/lib/initials";
 
 export interface PerSupplierEntry {
   id: string; name: string; short: string; initials: string; specialty: string;
@@ -66,7 +67,7 @@ export function TopSuppliersCard({
           <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
             <div style={{ width: 26, height: 26, borderRadius: 8, flexShrink: 0, background: i === 0 ? `linear-gradient(135deg,${T.antiqueGold},${T.goldLight})` : T.silkCream, border: `1px solid ${T.borderGold}`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 800, color: i === 0 ? T.darkBurgundy : T.taupe }}>{i + 1}</div>
             <div style={{ minWidth: 0 }}>
-              <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{s.initials}</div>
+              <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: T.luxuryBrown }}>{toInitials(s.initials)}</div>
               <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: T.taupe }}>{billed ? Math.round((s.billed / billed) * 100) : 0}% share</div>
             </div>
           </div>

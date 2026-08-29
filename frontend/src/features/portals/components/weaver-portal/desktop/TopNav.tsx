@@ -7,6 +7,7 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { useAuth, type Role } from "../../../../../contexts/AuthContext";
 
 import { useCurrentWeaver } from "../useCurrentWeaver";
+import { toInitials } from "@/shared/lib/initials";
 
 function initialsOf(name: string): string {
   return name.split(" ").filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase() || "—";
@@ -109,7 +110,7 @@ export function TopNav({
                 }
               >
                 <div style={{ width: 32, height: 32, borderRadius: "50%", background: C.burg, border: "1px solid rgba(200,155,71,0.30)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#FFF" }}>{initials}</span>
+                  <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#FFF" }}>{toInitials(initials)}</span>
                 </div>
                 <div style={{ textAlign: "left" as const }}>
                   <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: "#F5E8D0", lineHeight: 1.2 }}>{name}</div>
@@ -121,7 +122,7 @@ export function TopNav({
             <DropdownMenuContent align="end" className="!min-w-[240px] !p-0 !rounded-[14px] !overflow-hidden" style={{ background: "#FFF", border: `1px solid ${C.bdr}`, zIndex: "var(--z-tooltip)" }}>
               <div style={{ padding: "16px 18px", background: "rgba(110,15,45,0.04)", borderBottom: `1px solid ${C.bdr}`, display: "flex", alignItems: "center", gap: 12 }}>
                 <div style={{ width: 44, height: 44, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 3px 12px rgba(110,15,45,0.28)" }}>
-                  <span style={{ fontFamily: F.d, fontSize: 16, fontWeight: 700, color: "#FFF" }}>{initials}</span>
+                  <span style={{ fontFamily: F.d, fontSize: 16, fontWeight: 700, color: "#FFF" }}>{toInitials(initials)}</span>
                 </div>
                 <div>
                   <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>{name}</div>

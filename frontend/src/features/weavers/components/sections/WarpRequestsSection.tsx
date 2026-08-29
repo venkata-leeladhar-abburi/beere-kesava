@@ -73,13 +73,13 @@ export function WarpRequestsSection() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: idx * 0.1, ease: [0.25, 0.1, 0.25, 1] }}
                 whileHover={{ y: -4, boxShadow: "0 20px 52px rgba(74,6,27,0.14)" }}
-                style={{ background: T.warmIvory, borderRadius: 18, border: `1px solid rgba(110,15,45,0.12)`, boxShadow: "0 4px 18px rgba(74,6,27,0.07)", overflow: "hidden", display: "flex", flexDirection: "column" }}
+                style={{ background: "#FFFDF9", borderRadius: 12, border: `1.5px solid ${T.antiqueGold}`, boxShadow: "0 4px 20px rgba(200,155,71,0.15)", overflow: "hidden", display: "flex", flexDirection: "column", position: "relative" }}
               >
-                {/* Gold accent top */}
-                <div style={{ height: 4, background: `linear-gradient(90deg, ${T.antiqueGold}, ${T.goldLight})`, flexShrink: 0 }} />
+                {/* Accent top */}
+                <div style={{ height: 4, background: T.royalBurgundy, width: "100%", opacity: 0.8, flexShrink: 0 }} />
 
                 {/* Weaver identity */}
-                <div style={{ padding: "22px 22px 18px", display: "flex", alignItems: "center", gap: 16 }}>
+                <div style={{ padding: "20px 22px 18px", display: "flex", alignItems: "center", gap: 16 }}>
                   <div style={{ width: 64, height: 64, borderRadius: "50%", overflow: "hidden", flexShrink: 0, border: `3px solid ${T.antiqueGold}`, display: "flex", alignItems: "center", justifyContent: "center", background: T.royalBurgundy, fontFamily: F.display, fontSize: 22, fontWeight: 700, color: "#FFF" }}>
                     {r.weaver.initials}
                   </div>
@@ -90,11 +90,8 @@ export function WarpRequestsSection() {
                   </div>
                 </div>
 
-                {/* Divider */}
-                <div style={{ height: 1, background: "rgba(110,15,45,0.08)", margin: "0 22px" }} />
-
                 {/* Info rows */}
-                <div style={{ padding: "18px 22px", display: "flex", flexDirection: "column", gap: 14, flex: 1 }}>
+                <div style={{ padding: "8px 22px 18px", display: "flex", flexDirection: "column", gap: 14, flex: 1 }}>
 
                   {/* Raised */}
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 13 }}>
@@ -120,9 +117,6 @@ export function WarpRequestsSection() {
                   </div>
 
                 </div>
-
-                {/* Divider */}
-                <div style={{ height: 1, background: "rgba(110,15,45,0.08)", margin: "0 22px" }} />
 
                 {/* Action buttons */}
                 <div style={{ padding: "18px 22px 22px", display: "flex", gap: 12 }}>

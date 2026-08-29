@@ -712,7 +712,10 @@ export class PaymentsService {
         poNumber,
         amountPaid,
         utrNumber: asString(cell(row, "utrNumber")),
-        firmRaw: asString(cell(row, "firmName")),
+        // Accept either header — "firmId" mirrors importWeaverPaymentsFromExcel's
+        // template, "firmName" is the header this endpoint originally shipped
+        // with; a sheet with both just prefers firmId.
+        firmRaw: asString(cell(row, "firmId")) ?? asString(cell(row, "firmName")),
         paymentDate: asString(cell(row, "paymentDate")),
       });
     });
@@ -725,6 +728,7 @@ export class PaymentsService {
       this.prisma.firm.findMany({ select: { id: true, firmName: true } }),
     ]);
     const poByNumber = new Map(purchaseOrders.map((po) => [po.poNumber.trim().toLowerCase(), po]));
+    const firmIds = new Set(firms.map((f) => f.id));
     const firmIdByName = new Map(firms.map((f) => [f.firmName.trim().toLowerCase(), f.id]));
 
     let created = 0;
@@ -741,11 +745,14 @@ export class PaymentsService {
         continue;
       }
 
+      // The template's firmId column shows the real firm id (see
+      // handleDownloadTemplate) but an accountant may still hand-type the
+      // firm's name — accept either, same as importWeaverPaymentsFromExcel.
       let firmId: string | undefined;
       if (row.firmRaw) {
-        firmId = firmIdByName.get(row.firmRaw.trim().toLowerCase());
+        firmId = firmIds.has(row.firmRaw) ? row.firmRaw : firmIdByName.get(row.firmRaw.trim().toLowerCase());
         if (!firmId) {
-          errors.push({ row: row.rowNumber, message: `Firm "${row.firmRaw}" not found` });
+          errors.push({ row: row.rowNumber, message: `Firm "${row.firmRaw}" not found (checked both firm ID and firm name)` });
           continue;
         }
       }

@@ -10,15 +10,36 @@ import { Button, Input } from "../../../../shared/ui/primitives";
 import { rupees, formatMoney } from "@/lib/domain/money";
 
 // Header row, in the exact order the backend import expects (see the panel's
-// own copy below), plus one filled-in example row so an accountant can see
-// what a real row looks like — especially the paymentDate format — rather
-// than guessing from a bare header.
-const TEMPLATE_HEADERS = ["poNumber", "amountPaid", "utrNumber", "firmName", "paymentDate"];
-const TEMPLATE_EXAMPLE_ROW = ["PO-2026-001", 25000, "UTR1234567890", "Beere Kesava Silks", "2026-08-27"];
+// own copy below). poNumber/amountPaid/utrNumber/firmId/paymentDate are read
+// by the backend import (see PaymentsService.importVendorPaymentsFromExcel);
+// vendorId/vendorName/totalAmount/remainingAmount are reference-only — kept
+// for readability, ignored on import — same split as the weaver ledger export
+// (WeaverMakingChargesSection.handleExportLedger). The sheet's own "amountPaid"
+// header stays the backend's required column name, but is labelled "Amount
+// Paying" in the UI below — it's what the admin/accountant is paying THIS
+// time, distinct from "remainingAmount" (what's still owed before this payment).
+const TEMPLATE_HEADERS = ["poNumber", "vendorId", "vendorName", "totalAmount", "remainingAmount", "amountPaid", "utrNumber", "firmId", "paymentDate"];
 
-async function downloadVendorPaymentTemplate() {
+export interface VendorTemplateRow {
+  poNumber: string;
+  vendorId: string;
+  vendorName: string;
+  totalAmount: number;
+  /** invoiceAmt - paidSoFar as of this download — still owed, reference only. */
+  remaining: number;
+}
+
+// Real, live-data template — replaces the old static example-row download.
+// Only rows the accountant can actually act on: a PO with a real invoice (a
+// bill with money on it) raised against it. `remainingAmount` is a read-only
+// reference column (what's still owed); the `amountPaid` column — the one
+// the backend import actually reads — is left blank for the admin/accountant
+// to type in how much they're actually paying THIS time (which may be less
+// than the remaining balance for a partial payment).
+async function downloadVendorPaymentTemplate(rows: VendorTemplateRow[]) {
   const XLSX = await import("xlsx");
-  const ws = XLSX.utils.aoa_to_sheet([TEMPLATE_HEADERS, TEMPLATE_EXAMPLE_ROW]);
+  const dataRows = rows.map(r => [r.poNumber, r.vendorId, r.vendorName, r.totalAmount, r.remaining, "", "", "", ""]);
+  const ws = XLSX.utils.aoa_to_sheet([TEMPLATE_HEADERS, ...dataRows]);
   ws["!cols"] = TEMPLATE_HEADERS.map(h => ({ wch: Math.max(h.length, 16) }));
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Vendor Payments");
@@ -30,7 +51,7 @@ async function downloadVendorPaymentTemplate() {
 // processed synchronously against real PO/vendor-bill records — same pattern as
 // BankUploadPanel.tsx (weaver payments) — instead of parsing the file client-side
 // and posting one row at a time.
-export function VendorUploadPanel({ onUploaded }: { onUploaded?: () => void }) {
+export function VendorUploadPanel({ rows, onUploaded }: { rows: VendorTemplateRow[]; onUploaded?: () => void }) {
   const { user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [fileName, setFileName] = useState<string | null>(null);
@@ -82,9 +103,8 @@ export function VendorUploadPanel({ onUploaded }: { onUploaded?: () => void }) {
             <div>
               <div style={{ fontFamily: F.ui, fontSize: 15, fontWeight: 700, color: T.luxuryBrown, marginBottom: 4 }}>Upload Vendor Payment File</div>
               <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, lineHeight: 1.55 }}>
-                Download the template below, fill in the payment amounts, then upload it as an Excel file (.xlsx) with a header row, in this order:
-                {" "}<span style={{ fontWeight: 600, color: T.luxuryBrown }}>poNumber, amountPaid, utrNumber, firmName, paymentDate</span>.
-                {" "}Required: <span style={{ fontWeight: 600, color: T.luxuryBrown }}>poNumber, amountPaid</span>. Optional: <span style={{ fontWeight: 600, color: T.luxuryBrown }}>utrNumber, firmName, paymentDate</span>.
+                Download the template below — pre-filled with every invoiced PO's PO number, vendor, total, and <span style={{ fontWeight: 600, color: T.luxuryBrown }}>Remaining Amount</span> (what's still owed) — then fill in <span style={{ fontWeight: 600, color: T.luxuryBrown }}>Amount Paying</span> (how much is being paid this time) plus the UTR/firm/date, and upload it back as an Excel file (.xlsx).
+                {" "}Required: <span style={{ fontWeight: 600, color: T.luxuryBrown }}>poNumber, amountPaid</span>. Optional: <span style={{ fontWeight: 600, color: T.luxuryBrown }}>utrNumber, firmId, paymentDate</span>.
                 {" "}Rows are matched against real POs and their vendor bills, and saved directly.
               </div>
               {result ? (
@@ -98,7 +118,11 @@ export function VendorUploadPanel({ onUploaded }: { onUploaded?: () => void }) {
             </div>
 
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-              <Button variant="secondary" size="md" iconLeft={Download} onClick={() => void downloadVendorPaymentTemplate()}>
+              <Button
+                variant="secondary" size="md" iconLeft={Download}
+                disabled={rows.length === 0}
+                onClick={() => void downloadVendorPaymentTemplate(rows)}
+              >
                 Download Template
               </Button>
               {result && (

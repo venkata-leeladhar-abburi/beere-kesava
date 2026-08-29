@@ -9,7 +9,17 @@ export function DesignLibraryLinkCard({ onNavigate }: { onNavigate?: (tab: strin
   return (
     <div className="px-4 md:px-7 xl:px-12" style={{ paddingTop: 32 }}>
       <FadeUp>
-        <div className="p-4 sm:p-7 bg-white rounded-2xl border-[1.5px] border-[#E8DCC4] shadow-[0_4px_18px_rgba(74,6,27,0.06)] w-full">
+        <div 
+          className="p-4 sm:p-7 w-full"
+          style={{
+            background: "#FFFDF9",
+            borderRadius: 12,
+            border: `1.5px solid ${T.antiqueGold}`,
+            boxShadow: "0 4px 20px rgba(200,155,71,0.15)",
+            position: "relative",
+            overflow: "hidden",
+          }}
+        >
           <div className="flex items-start gap-3.5 sm:gap-4 w-full">
             <div style={{ width: 48, height: 48, borderRadius: 14, background: `linear-gradient(135deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
               <Swatches size={26} color="#FFFDF9" />

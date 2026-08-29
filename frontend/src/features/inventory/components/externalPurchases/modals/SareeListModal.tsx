@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { X, Printer, Undo2 } from "lucide-react";
@@ -118,13 +118,24 @@ export function SareeListModal({
     });
   };
 
-  const rows = purchase.sarees.map(s => ({ ...s, purchaseId: purchase.id, invoiceNumber: purchase.invoiceNumber, supplier: purchase.supplier }));
+  // The parent owns `purchase` and only refreshes it when the modal opens, so
+  // a photo uploaded now is mirrored locally too — otherwise the new picture
+  // wouldn't appear until the saree list was closed and reopened.
+  const [sarees, setSarees] = useState(purchase.sarees);
+  useEffect(() => { setSarees(purchase.sarees); }, [purchase.sarees]);
 
-  const handleUploadPhoto = (row: (typeof rows)[number], dataUrl: string) =>
-    updatePurchase(purchase.id, { sarees: purchase.sarees.map(s => s.id === row.id ? { ...s, imageUrl: dataUrl } : s) });
+  const rows = sarees.map(s => ({ ...s, purchaseId: purchase.id, invoiceNumber: purchase.invoiceNumber, supplier: purchase.supplier }));
 
-  const handleUploadPieceImage = (row: (typeof rows)[number], pieceNo: number, dataUrl: string) =>
-    updatePurchase(purchase.id, { sarees: purchase.sarees.map(s => s.id === row.id ? withPieceImage(s, pieceNo, dataUrl) : s) });
+  const persistSarees = (next: typeof sarees) => {
+    setSarees(next);
+    updatePurchase(purchase.id, { sarees: next });
+  };
+
+  const handleUploadPhoto = (row: (typeof rows)[number], url: string) =>
+    persistSarees(sarees.map(s => s.id === row.id ? { ...s, imageUrl: url } : s));
+
+  const handleUploadPieceImage = (row: (typeof rows)[number], pieceNo: number, url: string) =>
+    persistSarees(sarees.map(s => s.id === row.id ? withPieceImage(s, pieceNo, url) : s));
 
   const totals = purchaseTotals(purchase.sarees);
 

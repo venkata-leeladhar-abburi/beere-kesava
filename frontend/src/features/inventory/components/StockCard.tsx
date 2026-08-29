@@ -5,6 +5,7 @@ import {
   CheckCircle2 as CheckCircle, Scale as Scales, Calendar as CalendarBlank, Palette, Tag, ShoppingBag, Layers as Stack,
 } from "lucide-react";
 import { Button, IconButton } from "../../../shared/ui/primitives";
+import { toInitials } from "@/shared/lib/initials";
 
 const T = {
   royalBurgundy: "#6E0F2D",
@@ -69,7 +70,7 @@ export function StockCard({ s, onView }: { s: StockSaree; onView: (s: StockSaree
       <div style={{ padding: "20px 20px 14px", display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ width: 44, height: 44, borderRadius: 12, background: s.avatarBg || T.taupe, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 3px 10px rgba(0,0,0,0.18)" }}>
-            <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: "#FFFDF9" }}>{s.initials}</span>
+            <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: "#FFFDF9" }}>{toInitials(s.initials)}</span>
           </div>
           <div>
             <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, color: T.royalBurgundy, marginBottom: 3 }}>{s.id}</div>

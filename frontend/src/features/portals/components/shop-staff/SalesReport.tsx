@@ -208,7 +208,7 @@ function SalesReport() {
           </Card>
         ) : (
           returns.map((r) => (
-            <div key={r.returnId} style={{ marginBottom: 10, background: C.white, border: `1px solid ${C.bdr}`, borderLeft: `3px solid ${C.crim}`, borderRadius: 14, padding: "14px 16px", display: "flex", alignItems: "center", flexWrap: "wrap" as const, gap: 8 }}>
+            <div key={r.returnId} style={{ marginBottom: 10, background: C.white, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: "14px 16px", display: "flex", alignItems: "center", flexWrap: "wrap" as const, gap: 8 }}>
               <div style={{ flex: 1, minWidth: 180 }}>
                 <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" as const }}>
                   <span style={{ fontFamily: F.m, fontSize: 12, color: C.muted }}>{r.date}</span>
@@ -235,8 +235,14 @@ function SalesReport() {
                   contentStyle={{ fontFamily: F.u, fontSize: 13, border: `1px solid ${C.bdr}`, borderRadius: 8 }}
                   formatter={(v: number) => [`${v} sarees`, "Sold"]}
                 />
-                <Bar dataKey="count" radius={[0, 4, 4, 0]}>
-                  {designData.map((entry, i) => <Cell key={`cell-${entry.design}`} fill={semantic.chart.series[i % semantic.chart.series.length]} />)}
+                <Bar dataKey="count" radius={10} barSize={24}>
+                  {designData.map((entry, i) => {
+                    let fill = C.burg;
+                    if (entry.design === "Wholesale Sales") fill = C.gold;
+                    else if (entry.design === "Returns") fill = C.gold;
+                    else if (i % 2 === 1) fill = C.gold;
+                    return <Cell key={`cell-${entry.design}`} fill={fill} />;
+                  })}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>

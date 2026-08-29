@@ -250,7 +250,7 @@ export function ProcessReturnWholesaleConsignment({
     {
       id: "sareeId", header: "Saree ID", type: "code", priority: 1, sortable: true,
       accessor: r => r.sareeId,
-      cell: (_v, r) => <span style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: "#845E04" }}>{r.sareeId}</span>,
+      cell: (_v, r) => <span style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: "#6E0F2D" }}>{r.sareeId}</span>,
     },
     {
       id: "sareeType", header: "Saree Type", priority: 1, sortable: true,
@@ -417,14 +417,14 @@ export function ProcessReturnWholesaleConsignment({
                     }}
                     style={{
                       width: "100%", textAlign: "left", cursor: "pointer",
-                      background: open ? "rgba(200,155,71,0.10)" : "rgba(200,155,71,0.05)",
-                      border: `1px solid ${open ? "rgba(200,155,71,0.45)" : C.bdr}`,
+                      background: open ? "rgba(110,15,45,0.10)" : "rgba(110,15,45,0.05)",
+                      border: `1px solid ${open ? "rgba(110,15,45,0.45)" : C.bdr}`,
                       borderRadius: open ? "14px 14px 0 0" : 14, padding: "12px 14px",
                       display: "flex", alignItems: "center", gap: 10,
                     }}
                   >
-                    {open ? <ChevronDown size={16} color="#845E04" /> : <ChevronRight size={16} color="#845E04" />}
-                    <Truck size={16} color="#845E04" style={{ flexShrink: 0 }} />
+                    {open ? <ChevronDown size={16} color="#6E0F2D" /> : <ChevronRight size={16} color="#6E0F2D" />}
+                    <Truck size={16} color="#6E0F2D" style={{ flexShrink: 0 }} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>
                         {consignmentLabel(d)}
@@ -437,12 +437,12 @@ export function ProcessReturnWholesaleConsignment({
                       </div>
                     </div>
                     {price > 0 && (
-                      <Chip label={`${formatMoney(rupees(price))} each`} color="#845E04" bg="rgba(200,155,71,0.16)" />
+                      <Chip label={`${formatMoney(rupees(price))} each`} color="#6E0F2D" bg="rgba(110,15,45,0.16)" />
                     )}
                   </button>
 
                   {open && (
-                    <div style={{ border: `1px solid rgba(200,155,71,0.45)`, borderTop: "none", borderRadius: "0 0 14px 14px", background: C.white, padding: 12 }}>
+                    <div style={{ border: `1px solid rgba(110,15,45,0.45)`, borderTop: "none", borderRadius: "0 0 14px 14px", background: C.white, padding: 12 }}>
                       <div style={{ marginBottom: 10 }}>
                         <Input
                           value={search}
@@ -478,7 +478,7 @@ export function ProcessReturnWholesaleConsignment({
                         }}
                       />
                       {picked.size > 0 && (
-                        <div style={{ marginTop: 12, padding: "10px 14px", background: "rgba(200,155,71,0.10)", borderRadius: 10, fontFamily: F.u, fontSize: 13, color: C.text }}>
+                        <div style={{ marginTop: 12, padding: "10px 14px", background: "rgba(110,15,45,0.10)", borderRadius: 10, fontFamily: F.u, fontSize: 13, color: C.text }}>
                           <strong>{picked.size}</strong> saree{picked.size === 1 ? "" : "s"} selected
                           {price > 0 && <> · credit of <strong>{formatMoney(rupees(picked.size * price))}</strong></>}
                         </div>
@@ -520,12 +520,12 @@ export function ProcessReturnWholesaleConsignment({
                 <div
                   key={sareeId}
                   style={{
-                    border: `1px solid ${problem ? "rgba(192,57,43,0.28)" : "rgba(200,155,71,0.35)"}`,
+                    border: `1px solid ${problem ? "rgba(192,57,43,0.28)" : "rgba(110,15,45,0.35)"}`,
                     borderRadius: 16, background: C.white, marginBottom: 16, overflow: "hidden",
                   }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: "rgba(200,155,71,0.10)", borderBottom: "1px solid rgba(200,155,71,0.30)" }}>
-                    <span style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 1.4, color: "#845E04", fontWeight: 700, textTransform: "uppercase" as const }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: "rgba(110,15,45,0.10)", borderBottom: "1px solid rgba(110,15,45,0.30)" }}>
+                    <span style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 1.4, color: "#6E0F2D", fontWeight: 700, textTransform: "uppercase" as const }}>
                       Saree {i + 1} of {pickedList.length}
                     </span>
                     <span style={{ flex: 1 }} />
@@ -553,9 +553,9 @@ export function ProcessReturnWholesaleConsignment({
                             onClick={() => patchPiece(sareeId, { reason: r })}
                             style={{
                               padding: "7px 15px", borderRadius: 999, cursor: "pointer",
-                              border: `1px solid ${on ? "#845E04" : C.bdr}`,
-                              background: on ? "rgba(200,155,71,0.16)" : "transparent",
-                              color: on ? "#845E04" : C.muted,
+                              border: `1px solid ${on ? "#6E0F2D" : C.bdr}`,
+                              background: on ? "rgba(110,15,45,0.16)" : "transparent",
+                              color: on ? "#6E0F2D" : C.muted,
                               fontFamily: F.u, fontSize: 13, fontWeight: 600,
                             }}
                           >
@@ -634,8 +634,8 @@ export function ProcessReturnWholesaleConsignment({
                         {preview ? (
                           <img src={preview} alt="" style={{ width: 42, height: 42, objectFit: "cover", borderRadius: 8, border: `1px solid ${C.bdr}`, flexShrink: 0 }} />
                         ) : (
-                          <span aria-hidden style={{ width: 42, height: 42, borderRadius: 8, background: "rgba(200,155,71,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                            <Camera size={16} color="#845E04" />
+                          <span aria-hidden style={{ width: 42, height: 42, borderRadius: 8, background: "rgba(110,15,45,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <Camera size={16} color="#6E0F2D" />
                           </span>
                         )}
                         <span style={{ flex: 1, minWidth: 0 }}>
@@ -655,7 +655,7 @@ export function ProcessReturnWholesaleConsignment({
                   })}
                   <div style={{ borderTop: `1px solid ${C.bdr}`, paddingTop: 12, marginTop: 6, display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
                     <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text }}>Total credit</span>
-                    <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 30, color: "#845E04", letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>
+                    <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 30, color: "#6E0F2D", letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>
                       {formatMoney(rupees(refundTotal))}
                     </span>
                   </div>

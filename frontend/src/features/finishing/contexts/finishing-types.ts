@@ -39,6 +39,9 @@ export interface FinishingReturn {
   sareeTypeCode?: string;
   sareeType: string;
   weaverName: string;
+  /** Batch the saree was woven in — shown in the dispatch queue so staff can
+   *  trace a finished piece back to its production run. */
+  batchId?: string;
   condition: "perfect" | "damaged";
   damageType?: string;
   damageSeverity?: "Minor" | "Moderate" | "Severe";

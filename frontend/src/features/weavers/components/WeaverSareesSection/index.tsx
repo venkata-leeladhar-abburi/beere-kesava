@@ -12,11 +12,19 @@ import { Button, SearchInput } from "../../../../shared/ui/primitives";
 import { MainSareesTable } from "./MainSareesTable";
 import { Select, TabsBar } from "./WeaverSareesControls";
 import { useWeaverSareeRows } from "./useWeaverSareeRows";
+import { useExternalPurchaseRows } from "./useExternalPurchaseRows";
 import { usePrintSareeTags } from "./SareeTagPrint";
 
 
 
 
+
+/** Saree Type filter label — the ST- code where there is one (in-house
+ * production), otherwise the free-text type an external purchase recorded. */
+function sareeTypeLabel(r: WeaverSareeRow): string | null {
+  if (r.sareeTypeCode) return `${r.sareeTypeCode}${r.sareeTypeName ? ` · ${r.sareeTypeName}` : ""}`;
+  return r.sareeTypeName || null;
+}
 
 // ── Main section ─────────────────────────────────────────────────────────────
 export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver", selectable = false, selectedIds, onToggleRow, onToggleAll, onVisibleChange }: {
@@ -35,7 +43,16 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
 }) {
   const isLoom = ownerType === "loom";
   const isAll = ownerType === "all";
-  const rows = useWeaverSareeRows({ weaverId, isLoom, isAll });
+  const ledgerRows = useWeaverSareeRows({ weaverId, isLoom, isAll });
+  // External purchases are only listed in cross-weaver ("all") mode, which is
+  // the only mode that shows the External Purchases tab.
+  const { rows: externalRows, isLoading: externalLoading } = useExternalPurchaseRows(isAll);
+  const rows = useMemo(
+    // The stock ledger has no external sarees of its own; drop any that a
+    // legacy row still claims so a piece can't be listed twice.
+    () => (isAll ? [...ledgerRows.filter(r => r.stock?.origin !== "external"), ...externalRows] : ledgerRows),
+    [isAll, ledgerRows, externalRows],
+  );
   const printTags = usePrintSareeTags();
 
   const [tab, setTab] = useState<TabKey>("assigned");
@@ -54,6 +71,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
   const [fSupplier, setFSupplier] = useState("all");
   const [fPurchaseOrder, setFPurchaseOrder] = useState("all");
   const [fSerial, setFSerial] = useState("all");
+  const [fPayment, setFPayment] = useState("all");
 
   const isExternalTab = tab === "external";
 
@@ -82,7 +100,10 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
       batch: uniq(rows.map(r => r.batchId)),
       loom: uniq(rows.map(r => (r.loomNumber != null ? `Loom ${r.loomNumber}` : null))),
       order: uniq(rows.map(r => r.bulkOrderLabel ?? (r.isAssigned ? "General Stock" : null))),
-      type: uniq(rows.map(r => (r.sareeTypeCode ? `${r.sareeTypeCode}${r.sareeTypeName ? ` · ${r.sareeTypeName}` : ""}` : null))),
+      // External purchases record a free-text saree type with no ST- code, so
+      // the plain name is the label there — without this they could never
+      // match the Saree Type filter and the dropdown looked broken.
+      type: uniq(rows.map(sareeTypeLabel)),
       color: uniq(rows.map(r => r.color)),
       qc: ["all", "QC Passed", "Semi-Approved", "Defective", "In Production"],
       finishing: ["all", "Completed", "In Finishing", "Not Assigned", "Rejected"],
@@ -137,10 +158,8 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
     if (fBatch !== "all" && r.batchId !== fBatch) return false;
     if (fLoom !== "all" && (r.loomNumber == null || `Loom ${r.loomNumber}` !== fLoom)) return false;
     if (fOrder !== "all" && (r.bulkOrderLabel ?? (r.isAssigned ? "General Stock" : null)) !== fOrder) return false;
-    if (fType !== "all") {
-      const label = r.sareeTypeCode ? `${r.sareeTypeCode}${r.sareeTypeName ? ` · ${r.sareeTypeName}` : ""}` : null;
-      if (label !== fType) return false;
-    }
+    if (fType !== "all" && sareeTypeLabel(r) !== fType) return false;
+    if (fPayment !== "all" && (r.external?.paymentStatus ?? null) !== fPayment) return false;
     if (fColor !== "all" && r.color !== fColor) return false;
     if (fQc !== "all" && QC_CFG[r.qcStatus].label !== fQc) return false;
     if (fFinishing !== "all" && FIN_CFG[r.finishingStatus].label !== fFinishing) return false;
@@ -167,7 +186,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
       });
     return c;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rows, selectable, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier, fPurchaseOrder, fSerial]);
+  }, [rows, selectable, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier, fPurchaseOrder, fSerial, fPayment]);
 
   const visible = useMemo(() => rowsForTab(tab)
     .filter(r => inTab(r, tab) && passesFilters(r) && matchesDateFilter(tabDate(r, tab), dateFilter))
@@ -177,7 +196,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
       return a.sareeId.localeCompare(b.sareeId);
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [rows, selectable, tab, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier, fPurchaseOrder, fSerial]);
+    [rows, selectable, tab, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier, fPurchaseOrder, fSerial, fPayment]);
 
   // Pagination applies only to what's rendered — `visible` itself stays the full
   // filtered set so select-all and the parent's onVisibleChange (scan / bulk
@@ -187,7 +206,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
   // added as a dep without resetting the page on every unrelated render;
   // only its setPage function (stable across renders) is actually needed here.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { pag.setPage(1); }, [tab, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier, fPurchaseOrder, fSerial]);
+  useEffect(() => { pag.setPage(1); }, [tab, dateFilter, search, fBatch, fLoom, fOrder, fType, fColor, fQc, fFinishing, fOwnerWeaver, fOwnerLoom, fSupplier, fPurchaseOrder, fSerial, fPayment]);
   const pageRows = pag.pageItems;
 
   // Keep the parent in sync with the currently visible rows (for Scan / bulk actions), without looping.
@@ -214,13 +233,14 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
   const filtersActive = search.trim() !== "" || fBatch !== "all" || fLoom !== "all" || fOrder !== "all"
     || fType !== "all" || fColor !== "all" || fQc !== "all" || fFinishing !== "all"
     || fOwnerWeaver !== "all" || fOwnerLoom !== "all" || fSupplier !== "all" || fPurchaseOrder !== "all"
-    || fSerial !== "all" || dateFilter.mode !== "all";
+    || fSerial !== "all" || fPayment !== "all" || dateFilter.mode !== "all";
 
   const resetFilters = () => {
     setSearch("");
     setFBatch("all"); setFLoom("all"); setFOrder("all");
     setFType("all"); setFColor("all"); setFQc("all"); setFFinishing("all");
     setFOwnerWeaver("all"); setFOwnerLoom("all"); setFSupplier("all"); setFPurchaseOrder("all"); setFSerial("all");
+    setFPayment("all");
     setDateFilter(DEFAULT_DATE_FILTER);
   };
 
@@ -279,6 +299,7 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
             )}
             <Select label="Saree Type" value={fType} options={opts.type} onChange={setFType} />
             <Select label="Colour" value={fColor} options={opts.color} onChange={setFColor} />
+            <Select label="Payment" value={fPayment} options={["all", "Paid", "Partial", "Pending"]} onChange={setFPayment} />
           </>
         ) : (
           <>
@@ -353,7 +374,9 @@ export function WeaverSareesSection({ weaverId, weaverName, ownerType = "weaver"
           background: T.warmIvory, borderRadius: 16, padding: 24, textAlign: "center", color: T.taupe,
           fontFamily: F.ui, fontSize: 14, fontStyle: "italic", border: `1px solid ${T.borderDef}`,
         }}>
-          No sarees match this view{filtersActive ? " with the current filters." : "."}
+          {isExternalTab && externalLoading
+            ? "Loading external purchases…"
+            : `No sarees match this view${filtersActive ? " with the current filters." : "."}`}
         </div>
       ) : isExternalTab ? (
         <ExternalSareesTable pageRows={pageRows} canSeeMoney={canSeeMoney} pag={pag} responsive={viewMode === "card"} />

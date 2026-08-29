@@ -4,6 +4,7 @@ import { Truck, Clock, CheckCircle2, Package } from "lucide-react";
 import { C, F } from "./tokens";
 import { PageHero, StatsStrip, SectionHeading, type WorkerStat } from "./primitives";
 import { useFinishing, DispatchRecord } from "@/features/finishing";
+import { AwaitingDispatchTable } from "./AwaitingDispatchTable";
 import { useFirms } from "@/features/firms";
 // The admin Inventory page's own section and form — reused as-is so the worker
 // screen stays identical to what admin sees.
@@ -12,7 +13,7 @@ import { DispatchHistorySection, ResumeDispatchModal, DispatchInvoiceModal, Disp
 // `isDesktop` is still passed by WorkerPortalDesktop but this view renders the
 // same either way, so the prop is accepted and deliberately unread.
 export function WorkerDispatch(_props: { isDesktop?: boolean }) {
-  const { dispatches, updateDispatch, returns, deleteDispatch } = useFinishing();
+  const { dispatches, updateDispatch, returns, deleteDispatch, isLoading, isError, refetch } = useFinishing();
   const { firms } = useFirms();
   const [resume, setResume] = useState<DispatchRecord | null>(null);
   const [viewingDoc, setViewingDoc] = useState<DispatchRecord | null>(null);
@@ -56,23 +57,15 @@ export function WorkerDispatch(_props: { isDesktop?: boolean }) {
       )}
 
       {/* Sarees Awaiting Dispatch */}
-      {awaitingDispatch.length > 0 && (
-        <div style={{ marginBottom: 24 }}>
-          <SectionHeading title={`Sarees Awaiting Dispatch (${awaitingDispatch.length})`} size="sm" />
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 12 }}>
-            {awaitingDispatch.map(s => (
-              <div key={s.id} style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 16, padding: 16, display: "flex", flexDirection: "column", gap: 4, boxShadow: "0 2px 12px rgba(74,6,27,0.07)" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.text }}>{s.designCode}</div>
-                  <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.green, background: "rgba(30,102,64,0.10)", padding: "2px 6px", borderRadius: 4 }}>Finished</div>
-                </div>
-                <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Type: {s.sareeType}</div>
-                <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Saree ID: {s.sareeId}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      <div style={{ marginBottom: 24 }}>
+        <SectionHeading title={`Sarees Awaiting Dispatch (${awaitingDispatch.length})`} size="sm" />
+        <AwaitingDispatchTable
+          sarees={awaitingDispatch}
+          loading={isLoading}
+          error={isError}
+          onRetry={refetch}
+        />
+      </div>
 
       {/* Dispatch History Section */}
       <DispatchHistorySection 
@@ -108,15 +101,6 @@ export function WorkerDispatch(_props: { isDesktop?: boolean }) {
             }}
             onClose={() => setResume(null)}
           />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {viewingDoc && viewingDoc.type === "shop" && (
-          <DispatchChallanModal dispatch={viewingDoc} onClose={() => setViewingDoc(null)} />
-        )}
-        {viewingDoc && viewingDoc.type !== "shop" && (
-          <DispatchInvoiceModal dispatch={viewingDoc} onClose={() => setViewingDoc(null)} />
         )}
       </AnimatePresence>
 

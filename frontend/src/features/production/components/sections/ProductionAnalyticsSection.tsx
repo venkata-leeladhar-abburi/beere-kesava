@@ -1,11 +1,16 @@
 import React, { useMemo, useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { AnimatePresence } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 import {
-  BarChart3 as ChartBar, Filter as FunnelSimple, Trophy, ShoppingBag, Download as DownloadSimple,
+  BarChart3 as ChartBar, Filter as FunnelSimple, Trophy, ShoppingBag,
+  Download as DownloadSimple,
 } from "lucide-react";
-import { LineChart } from "lucide-react";
+import { LineChart, TrendingUp } from "lucide-react";
 import { T, F } from "../theme";
+import {
+  BAND, CHART, NUM, ChartBand, ChartCard, ChartHint, ChartLegend, ChartState,
+  CountUp, GroupedBarChart, HeroStat, MicroLabel, StatFooter, TrackBar,
+} from "./chart-primitives";
 // STAGE_FUNNEL and ORDER_PROGRESS are derived from real batch/bulk-order
 // data; the monthly production chart is wired to
 // GET /analytics/production-trend-monthly, and the top-weavers chart below
@@ -21,35 +26,10 @@ import { rowComplete } from "./batches/ContextBatchCard";
 import { FadeUp, Pip, ProductionDialog } from "../common/primitives";
 import { Button, CheckboxField } from "../../../../shared/ui/primitives";
 import { pipColor } from "../batch-creation/PickerModals";
-
-const CARD_STYLE: React.CSSProperties = {
-  background: "#FFFFFF",
-  borderRadius: 18,
-  border: `1.5px solid ${T.borderDef}`,
-  padding: "24px 26px",
-  boxShadow: "0 4px 18px rgba(74,6,27,0.07)",
-  display: "flex",
-  flexDirection: "column",
-};
-
-function ChartCardHeader({ icon, title, sub }: { icon: React.ReactNode; title: string; sub: string }) {
-  return (
-    <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 22 }}>
-      <div style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(110,15,45,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
-        {icon}
-      </div>
-      <div>
-        <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.3, marginBottom: 3 }}>{title}</div>
-        <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, lineHeight: 1.4 }}>{sub}</div>
-      </div>
-    </div>
-  );
-}
-
 function formatMonthLabel(month: string): string {
   const [year, m] = month.split("-").map(Number);
   if (!year || !m) return month;
-  return new Date(year, m - 1, 1).toLocaleDateString("en-IN", { month: "short", year: "2-digit" });
+  return new Date(year, m - 1, 1).toLocaleDateString("en-IN", { month: "short" });
 }
 
 export function ProductionAnalyticsSection() {
@@ -84,7 +64,20 @@ export function ProductionAnalyticsSection() {
     ...d,
     label: formatMonthLabel(d.month),
   }));
-  const maxMonthly = Math.max(1, ...monthlyProductionData.map(d => Math.max(d.produced, d.passed)));
+  const monthlyChartData = monthlyProductionData.map(d => ({ label: d.label, a: d.produced, b: d.passed }));
+  const totalProduced = monthlyProductionData.reduce((n, d) => n + d.produced, 0);
+  const totalPassed = monthlyProductionData.reduce((n, d) => n + d.passed, 0);
+  const avgPerMonth = monthlyProductionData.length
+    ? Math.round(totalProduced / monthlyProductionData.length)
+    : 0;
+  // A month's `passed` counts sarees that cleared QC *in* that month, which may
+  // include sarees woven earlier — so passed/produced is not a pass rate and
+  // can exceed 100% (it rendered as "128%"). Show the peak month instead, which
+  // is well-defined from the same series.
+  const peakMonth = monthlyProductionData.reduce(
+    (best, d) => (d.produced > best.produced ? d : best),
+    { produced: 0, label: "—" } as { produced: number; label: string },
+  );
 
   const { batches } = useBatches();
   const { bulkOrders } = useBulkOrders();
@@ -106,11 +99,15 @@ export function ProductionAnalyticsSection() {
     // passed QC, the same per-row criterion used for qcPassed above.
     const inStock = batches.filter(b => b.totalCount > 0 && b.rows.every(r => r.qcPassed === true)).length;
     const max = Math.max(weaving, submitted, qcPassed, inStock, 1);
+    // Stages are consecutive steps of one pipeline, so they read as one
+    // sequential burgundy→gold ramp rather than four unrelated hues (the old
+    // palette gave "QC Passed" and "In Stock" the same green, which made two
+    // distinct stages look like one).
     return [
-      { label: "Weaving in Progress", count: weaving, color: "#845E04", widthPct: Math.round((weaving / max) * 100) },
-      { label: "Submitted — Waiting QC", count: submitted, color: T.blueGray, widthPct: Math.round((submitted / max) * 100) },
-      { label: "Quality Check Passed", count: qcPassed, color: T.green, widthPct: Math.round((qcPassed / max) * 100) },
-      { label: "In Stock — Ready for Sale", count: inStock, color: T.green, widthPct: Math.round((inStock / max) * 100) },
+      { label: "Weaving in Progress", note: "On the loom", count: weaving, color: CHART.ramp[0], widthPct: Math.round((weaving / max) * 100) },
+      { label: "Submitted — Waiting QC", note: "Handed in, not yet checked", count: submitted, color: CHART.ramp[1], widthPct: Math.round((submitted / max) * 100) },
+      { label: "Quality Check Passed", note: "Cleared inspection", count: qcPassed, color: CHART.ramp[2], widthPct: Math.round((qcPassed / max) * 100) },
+      { label: "In Stock — Ready for Sale", note: "Available to sell", count: inStock, color: CHART.ramp[3], widthPct: Math.round((inStock / max) * 100) },
     ];
   }, [batches]);
   const totalActiveBatches = batches.filter(b => b.status === "active" || b.status === "draft").length;
@@ -125,6 +122,11 @@ export function ProductionAnalyticsSection() {
       name: o.customer,
       done: computeBulkOrderProducedSareeIds(o.ref, bulkOrders, readySarees, returns, quotations).size,
       total: o.total,
+    })).map(o => ({
+      ...o,
+      // o.total can legitimately be 0 for a shell order — don't render NaN%.
+      pct: o.total > 0 ? Math.min(100, Math.round((o.done / o.total) * 100)) : 0,
+      remaining: Math.max(0, o.total - o.done),
     })),
     [bulkOrders, readySarees, returns, quotations],
   );
@@ -139,218 +141,266 @@ export function ProductionAnalyticsSection() {
   });
 
   return (
-    <div id="prod-analytics" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 32 }}>
+    <div id="prod-analytics" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 28 }}>
       <FadeUp>
 
-        <div className="p-4 sm:p-6 mb-6 rounded-2xl flex flex-col items-start gap-4 shadow-[0_6px_32px_rgba(74,6,27,0.08)]" style={{ background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)` }}>
-          <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
-            <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
-              <LineChart size={26} color="#FFFDF9" />
-            </div>
-            <div>
-              <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 20, color: "#FFFDF9", letterSpacing: "-0.2px" }}>Production Analytics</div>
-              <div style={{ fontFamily: F.ui, fontSize: 14, color: "rgba(255,253,249,0.65)", marginTop: 3 }}>
-                Charts and numbers showing how production is going this month — weekly output, stage pipeline, top weavers, designs, and bulk orders.
+        {/* One container holds the banner and all four charts, the same shell as
+            the "All Active Production Batches" card, so Analytics reads as a
+            single section rather than four cards floating under a header. */}
+        <div style={{
+          background: T.warmIvory,
+          borderRadius: 20,
+          border: `1px solid ${T.borderDef}`,
+          boxShadow: "0 1px 2px rgba(74,6,27,0.04), 0 10px 34px rgba(74,6,27,0.08)",
+          overflow: "hidden",
+        }}>
+          <div
+            className="p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 relative overflow-hidden"
+            style={{ background: `linear-gradient(104deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)` }}
+          >
+            {/* Gold capillary + corner bloom — the only saturated surface in the
+                section, which is what lets the charts inside stay quiet. */}
+            <span aria-hidden style={{
+              position: "absolute", top: 0, left: 0, right: 0, height: 1,
+              background: "linear-gradient(90deg, rgba(200,155,71,0) 0%, rgba(231,201,131,0.70) 50%, rgba(200,155,71,0) 100%)",
+            }} />
+            <span aria-hidden style={{
+              position: "absolute", top: -90, right: -60, width: 260, height: 260, borderRadius: "50%",
+              background: "radial-gradient(circle, rgba(200,155,71,0.15) 0%, rgba(200,155,71,0) 70%)",
+              pointerEvents: "none",
+            }} />
+
+            <div style={{ display: "flex", alignItems: "center", gap: 13, minWidth: 0, position: "relative" }}>
+              <div style={{
+                width: 38, height: 38, borderRadius: 11, flexShrink: 0,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                background: "rgba(255,253,249,0.10)", border: "1px solid rgba(231,201,131,0.28)",
+              }}>
+                <LineChart size={20} color={T.goldLight} />
               </div>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontFamily: F.display, fontWeight: 400, fontSize: 21, color: "#FFFDF9", letterSpacing: "-0.2px", lineHeight: 1.15 }}>
+                  Production Analytics
+                </div>
+                <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.62)", marginTop: 3, lineHeight: 1.4 }}>
+                  Output, pipeline, weavers and bulk orders at a glance
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 flex-wrap relative shrink-0">
+              <div className="flex items-center gap-1.5 overflow-x-auto max-w-full pb-0.5 scrollbar-none whitespace-nowrap" style={{ WebkitOverflowScrolling: "touch" }}>
+                {ANALYTICS_PERIODS.map(p => (
+                  <Button key={p} onClick={() => setPeriod(p)} variant={period === p ? "primary" : "secondary"} size="sm" className="shrink-0 whitespace-nowrap text-[12px]">
+                    {p}
+                  </Button>
+                ))}
+              </div>
+              <Button onClick={() => setShowExportDialog(true)} variant="secondary" size="sm" className="shrink-0">
+                <DownloadSimple size={15} color={T.antiqueGold} /> Export
+              </Button>
             </div>
           </div>
-          <div className="flex items-center gap-2 flex-wrap max-w-full">
-            <div className="flex items-center gap-1.5 overflow-x-auto max-w-full pb-1 scrollbar-none whitespace-nowrap shrink-0" style={{ WebkitOverflowScrolling: "touch" }}>
-              {ANALYTICS_PERIODS.map(p => (
-                <Button key={p} onClick={() => setPeriod(p)} variant={period === p ? "primary" : "secondary"} size="sm" className="shrink-0 whitespace-nowrap text-[12px]">
-                  {p}
-                </Button>
-              ))}
-            </div>
-            <Button onClick={() => setShowExportDialog(true)} variant="secondary" size="sm" className="shrink-0">
-              <DownloadSimple size={16} color={T.antiqueGold} /> Export Report
-            </Button>
-          </div>
-        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5 items-stretch">
+          <div className="p-3.5 sm:p-5" style={{ background: T.silkCream }}>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 items-stretch">
 
-          <div style={{ ...CARD_STYLE }}>
-            <ChartCardHeader
-              icon={<ChartBar size={22} color={T.royalBurgundy} />}
-              title="Sarees Produced Each Month"
-              sub="Produced vs QC-passed — last 6 months"
-            />
+              {/* ── Monthly output ─────────────────────────────────────────────── */}
+              <ChartCard>
+                <ChartBand
+                  tone="output"
+                  icon={<ChartBar size={19} color={BAND.output.icon} />}
+                  title="Sarees Produced Each Month"
+                  sub="Produced vs QC-passed · last 6 months"
+                />
+                <div className="p-5 sm:p-6" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
+                <ChartHint tone="output">Burgundy is everything woven; gold is what cleared quality check.</ChartHint>
 
-            {productionTrendLoading ? (
-              <div style={{ padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
-                Loading production trend…
-              </div>
-            ) : productionTrendError ? (
-              <div style={{ padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.crimson }}>
-                Failed to load production trend.
-              </div>
-            ) : monthlyProductionData.length === 0 ? (
-              <div style={{ padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
-                No production data yet.
-              </div>
-            ) : (
-              <>
-                <div className="overflow-x-auto w-full pb-2">
-                  <div style={{ display: "flex", alignItems: "flex-end", gap: 10, flex: 1, minWidth: 260, minHeight: 180 }}>
-                    {monthlyProductionData.map(d => (
-                      <div key={d.month} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-                        <div style={{ display: "flex", gap: 3, alignItems: "flex-end" }}>
-                          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.royalBurgundy, fontWeight: 700 }}>{d.produced}</span>
-                          <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>/{d.passed}</span>
+                {productionTrendLoading ? (
+                  <ChartState kind="loading" message="Loading production trend…" />
+                ) : productionTrendError ? (
+                  <ChartState kind="error" message="Failed to load production trend." />
+                ) : monthlyProductionData.length === 0 ? (
+                  <ChartState kind="empty" message="No production data yet." />
+                ) : (
+                  <>
+                    <HeroStat
+                      value={totalProduced}
+                      caption="Sarees produced over these 6 months"
+                      icon={<TrendingUp size={12} color={T.green} />}
+                    />
+                    <div className="overflow-x-auto w-full">
+                      <div style={{ minWidth: 280 }}>
+                        <GroupedBarChart data={monthlyChartData} />
+                      </div>
+                    </div>
+                    <ChartLegend items={[
+                      { color: CHART.primary, label: "Produced" },
+                      { color: CHART.secondary, label: "QC Passed" },
+                    ]} />
+                    <div>
+                      <StatFooter stats={[
+                        { num: <CountUp value={avgPerMonth} />, label: "Avg / Month" },
+                        { num: <CountUp value={totalPassed} />, label: "QC Passed" },
+                        { num: <CountUp value={peakMonth.produced} />, label: `Peak · ${peakMonth.label}` },
+                      ]} />
+                    </div>
+                  </>
+                )}
+                </div>
+              </ChartCard>
+
+              {/* ── Stage pipeline ─────────────────────────────────────────────── */}
+              <ChartCard>
+                <ChartBand
+                  tone="pipeline"
+                  icon={<FunnelSimple size={19} color={BAND.pipeline.icon} />}
+                  title="Where Are All Batches Right Now"
+                  sub={`All ${totalActiveBatches} active batch${totalActiveBatches === 1 ? "" : "es"} by production stage`}
+                />
+                <div className="p-5 sm:p-6" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
+                <ChartHint tone="pipeline">Stages run top to bottom in the order work moves, warming to gold as it nears the shelf.</ChartHint>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: 14, flex: 1, justifyContent: "center", paddingBottom: 2 }}>
+                  {STAGE_FUNNEL.map((s, i) => {
+                    // An empty stage is real information, but it shouldn't pull the
+                    // eye as hard as a stage holding work.
+                    const empty = s.count === 0;
+                    return (
+                      <div key={s.label} style={{ display: "flex", flexDirection: "column", gap: 6, opacity: empty ? 0.5 : 1 }}>
+                        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+                            <span aria-hidden style={{ width: 7, height: 7, borderRadius: "50%", background: s.color, flexShrink: 0 }} />
+                            <div style={{ minWidth: 0 }}>
+                              <div style={{ fontFamily: F.ui, fontSize: 12.5, fontWeight: 600, color: T.luxuryBrown, lineHeight: 1.25 }}>{s.label}</div>
+                              <MicroLabel>{s.note}</MicroLabel>
+                            </div>
+                          </div>
+                          <div style={{ display: "flex", alignItems: "baseline", gap: 5, flexShrink: 0 }}>
+                            <span style={{ fontFamily: F.display, fontSize: 21, fontWeight: 400, color: T.luxuryBrown, ...NUM }}>
+                              <CountUp value={s.count} />
+                            </span>
+                            <span style={{ fontFamily: F.ui, fontSize: 10.5, color: T.taupe }}>
+                              {s.count === 1 ? "batch" : "batches"}
+                            </span>
+                          </div>
                         </div>
-                        <div style={{ display: "flex", alignItems: "flex-end", gap: 4, height: 130, width: "100%", justifyContent: "center" }}>
-                          <motion.div
-                            initial={{ height: 0 }}
-                            whileInView={{ height: `${(d.produced / maxMonthly) * 100}%` }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
-                            style={{ width: 22, background: `linear-gradient(180deg, ${T.royalBurgundy} 0%, #9A1A40 100%)`, borderRadius: "5px 5px 0 0", minHeight: 6 }}
-                          />
-                          <motion.div
-                            initial={{ height: 0 }}
-                            whileInView={{ height: `${(d.passed / maxMonthly) * 100}%` }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.7, delay: 0.08, ease: [0.25, 0.1, 0.25, 1] }}
-                            style={{ width: 22, background: "linear-gradient(180deg, #0F766E 0%, #0D5D57 100%)", borderRadius: "5px 5px 0 0", minHeight: 6, opacity: 0.9 }}
+                        <TrackBar pct={s.widthPct} fill={s.color} height={9} delay={i * 0.08} />
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div>
+                  <StatFooter stats={[
+                    { num: <CountUp value={totalActiveBatches} />, label: "Active Batches" },
+                    { num: <CountUp value={STAGE_FUNNEL[3].count} />, label: "Ready to Sell" },
+                  ]} />
+                </div>
+                </div>
+              </ChartCard>
+
+              {/* ── Weaver leaderboard ─────────────────────────────────────────── */}
+              <ChartCard>
+                <ChartBand
+                  tone="weavers"
+                  icon={<Trophy size={19} color={BAND.weavers.icon} />}
+                  title="Top Weavers This Month"
+                  sub="Ranked by sarees produced · last 6 months"
+                />
+                <div className="p-5 sm:p-6" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
+                <ChartHint tone="weavers">Bars are relative to the leader, who always shows a full bar.</ChartHint>
+
+                {productionLeaderboardLoading ? (
+                  <ChartState kind="loading" message="Loading top weavers…" />
+                ) : productionLeaderboardError ? (
+                  <ChartState kind="error" message="Failed to load top weavers." />
+                ) : topWeavers.length === 0 ? (
+                  <ChartState kind="empty" message="No production data yet." />
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 14, flex: 1, justifyContent: "center" }}>
+                    {topWeavers.map((w, i) => (
+                      <div key={w.weaverId} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        <div style={{
+                          width: 26, height: 26, borderRadius: 8, flexShrink: 0,
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          background: i === 0 ? "rgba(200,155,71,0.18)" : "rgba(110,15,45,0.05)",
+                          border: i === 0 ? `1px solid ${T.borderGold}` : `1px solid ${T.borderDef}`,
+                        }}>
+                          <span style={{ fontFamily: F.display, fontSize: 13, fontWeight: 400, color: i === 0 ? CHART.secondary : T.taupe, ...NUM }}>{i + 1}</span>
+                        </div>
+                        <Pip initials={w.initials} bg={w.bg} size={30} />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, fontWeight: 600, marginBottom: 5, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{w.name}</div>
+                          <TrackBar
+                            pct={(w.sarees / maxWeaverSarees) * 100}
+                            fill={i === 0
+                              ? `linear-gradient(90deg, ${CHART.primary} 0%, ${CHART.secondary} 100%)`
+                              : `linear-gradient(90deg, ${CHART.primaryDeep} 0%, ${CHART.primary} 100%)`}
+                            height={9}
+                            delay={i * 0.07}
                           />
                         </div>
-                        <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.taupe }}>{d.label}</span>
+                        <div style={{ flexShrink: 0, textAlign: "right", minWidth: 46 }}>
+                          <div style={{ fontFamily: F.display, fontSize: 19, fontWeight: 400, color: T.luxuryBrown, lineHeight: 1.1, ...NUM }}>
+                            <CountUp value={w.sarees} />
+                          </div>
+                          <MicroLabel>sarees</MicroLabel>
+                        </div>
                       </div>
                     ))}
                   </div>
+                )}
                 </div>
+              </ChartCard>
 
-                <div style={{ display: "flex", gap: 20, marginTop: 16, justifyContent: "center" }}>
-                  {[{ color: T.royalBurgundy, label: "Produced" }, { color: "#0F766E", label: "QC Passed" }].map(l => (
-                    <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                      <div style={{ width: 12, height: 12, borderRadius: 3, background: l.color }} />
-                      <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, fontWeight: 500 }}>{l.label}</span>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
+              {/* ── Bulk order progress ────────────────────────────────────────── */}
+              <ChartCard>
+                <ChartBand
+                  tone="orders"
+                  icon={<ShoppingBag size={19} color={BAND.orders.icon} />}
+                  title="Bulk Order Production Progress"
+                  sub="Sarees produced so far for each wholesale order"
+                />
+                <div className="p-5 sm:p-6" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
+                <ChartHint tone="orders">A bar turns green only once the order is complete and ready to dispatch.</ChartHint>
 
-          <div style={{ ...CARD_STYLE }}>
-            <ChartCardHeader
-              icon={<FunnelSimple size={22} color={T.royalBurgundy} />}
-              title="Where Are All Batches Right Now"
-              sub={`All ${totalActiveBatches} active batch${totalActiveBatches === 1 ? "" : "es"} by production stage`}
-            />
-
-            <div style={{ display: "flex", flexDirection: "column", gap: 10, flex: 1, justifyContent: "center" }}>
-              {STAGE_FUNNEL.map((s, i) => (
-                <div key={s.label} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>{s.label}</span>
-                    <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: s.color, minWidth: 32, textAlign: "right" }}>{s.count}</span>
-                  </div>
-                  <div style={{ height: 14, background: "rgba(110,15,45,0.08)", borderRadius: 99, overflow: "hidden" }}>
-                    <motion.div
-                      initial={{ width: 0 }}
-                      whileInView={{ width: `${s.widthPct}%` }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.8, delay: i * 0.1, ease: [0.25, 0.1, 0.25, 1] }}
-                      style={{ height: "100%", background: s.color, borderRadius: 99 }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div style={{ marginTop: 18, background: T.warmCream, borderRadius: 10, padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, fontWeight: 500 }}>Total active batches</span>
-              <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.luxuryBrown }}>{totalActiveBatches}</span>
-            </div>
-          </div>
-
-          <div style={{ ...CARD_STYLE }}>
-            <ChartCardHeader
-              icon={<Trophy size={22} color={T.royalBurgundy} />}
-              title="Top 5 Weavers This Month"
-              sub="Ranked by number of sarees produced — last 6 months"
-            />
-
-            {productionLeaderboardLoading ? (
-              <div style={{ padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
-                Loading top weavers…
-              </div>
-            ) : productionLeaderboardError ? (
-              <div style={{ padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.crimson }}>
-                Failed to load top weavers.
-              </div>
-            ) : topWeavers.length === 0 ? (
-              <div style={{ padding: "40px 0", textAlign: "center" as const, fontFamily: F.ui, fontSize: 13, color: T.taupe }}>
-                No production data yet.
-              </div>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 16, flex: 1, justifyContent: "center" }}>
-                {topWeavers.map((w, i) => (
-                  <div key={w.weaverId} style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <div style={{ width: 28, height: 28, borderRadius: 8, background: i === 0 ? "rgba(200,155,71,0.18)" : "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: i === 0 ? T.antiqueGold : T.taupe }}>{i + 1}</span>
-                    </div>
-                    <Pip initials={w.initials} bg={w.bg} size={34} />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, fontWeight: 700, marginBottom: 5, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{w.name}</div>
-                      <div style={{ height: 9, background: "rgba(110,15,45,0.08)", borderRadius: 99, overflow: "hidden" }}>
-                        <motion.div
-                          initial={{ width: 0 }}
-                          whileInView={{ width: `${(w.sarees / maxWeaverSarees) * 100}%` }}
-                          viewport={{ once: true }}
-                          transition={{ duration: 0.8, delay: i * 0.08, ease: [0.25, 0.1, 0.25, 1] }}
-                          style={{ height: "100%", background: `linear-gradient(90deg,${T.royalBurgundy},#A04060)`, borderRadius: 99 }}
+                {ORDER_PROGRESS.length === 0 ? (
+                  <ChartState kind="empty" message="No bulk orders yet." />
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 14, flex: 1, justifyContent: "center" }}>
+                    {ORDER_PROGRESS.map((o, i) => (
+                      <div key={o.ref}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12, marginBottom: 6 }}>
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.luxuryBrown, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{o.name}</div>
+                            <MicroLabel>
+                              {o.remaining === 0 ? "Complete" : `${o.remaining} remaining`}
+                            </MicroLabel>
+                          </div>
+                          <div style={{ display: "flex", gap: 10, alignItems: "baseline", flexShrink: 0 }}>
+                            <span style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, ...NUM }}>{o.done}/{o.total}</span>
+                            <span style={{ fontFamily: F.display, fontSize: 19, fontWeight: 400, color: T.luxuryBrown, minWidth: 44, textAlign: "right", ...NUM }}>
+                              <CountUp value={o.pct} />%
+                            </span>
+                          </div>
+                        </div>
+                        <TrackBar
+                          pct={o.pct}
+                          fill={o.pct >= 100
+                            ? `linear-gradient(90deg, ${CHART.done} 0%, ${CHART.doneLite} 100%)`
+                            : `linear-gradient(90deg, ${CHART.primaryDeep} 0%, ${CHART.primary} 100%)`}
+                          height={10}
+                          delay={i * 0.06}
                         />
                       </div>
-                    </div>
-                    <div style={{ flexShrink: 0, textAlign: "right" }}>
-                      <span style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: T.luxuryBrown }}>{w.sarees}</span>
-                      <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>sarees</div>
-                    </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 20, alignItems: "stretch" }}>
-
-          <div style={{ ...CARD_STYLE }}>
-            <ChartCardHeader
-              icon={<ShoppingBag size={22} color={T.royalBurgundy} />}
-              title="Bulk Order Production Progress"
-              sub="Sarees produced so far for each wholesale order"
-            />
-
-            <div style={{ display: "flex", flexDirection: "column", gap: 16, flex: 1, justifyContent: "center" }}>
-              {ORDER_PROGRESS.map(o => {
-                const pct = Math.round((o.done / o.total) * 100);
-                const color = pct > 80 ? T.green : pct >= 50 ? "#C4923A" : T.crimson;
-                return (
-                  <div key={o.ref}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                      <span style={{ fontFamily: F.ui, fontSize: 14, color: T.luxuryBrown, fontWeight: 700 }}>{o.name}</span>
-                      <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe }}>{o.done}/{o.total}</span>
-                        <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color, minWidth: 42, textAlign: "right" }}>{pct}%</span>
-                      </div>
-                    </div>
-                    <div style={{ height: 12, background: "rgba(110,15,45,0.07)", borderRadius: 99, overflow: "hidden" }}>
-                      <motion.div
-                        initial={{ width: 0 }}
-                        whileInView={{ width: `${pct}%` }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
-                        style={{ height: "100%", background: color, borderRadius: 99 }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
+                )}
+                </div>
+              </ChartCard>
             </div>
+
           </div>
         </div>
 

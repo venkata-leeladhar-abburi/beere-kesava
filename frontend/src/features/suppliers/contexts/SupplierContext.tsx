@@ -62,7 +62,7 @@ function toSareeTag(l: BackendPurchaseSareeLine): SareeTag {
     finalAmount: Number(l.finalAmount),
     notes: l.notes ?? "",
     imageUrl: resolveAssetUrl(l.imageUrl) ?? undefined,
-    pieceImageUrls: l.pieceImageUrls,
+    pieceImageUrls: l.pieceImageUrls?.map(u => resolveAssetUrl(u) ?? ""),
     returnedQuantity: l.returnedQuantity ?? 0,
   };
 }
@@ -108,6 +108,9 @@ function toSareeLinePayload(s: SareeTag): CreatePurchaseSareeLinePayload {
     finalAmount: s.finalAmount,
     notes: s.notes || undefined,
     imageUrl: toStoredAssetPath(s.imageUrl) ?? undefined,
+    // Per-piece photos were silently dropped here before, so a piece photo
+    // never survived a reload — the column exists on the backend DTO.
+    pieceImageUrls: s.pieceImageUrls?.map(u => toStoredAssetPath(u) ?? ""),
     returnedQuantity: s.returnedQuantity ?? 0,
   };
 }
@@ -356,6 +359,10 @@ export function SupplierProvider({ children }: { children: React.ReactNode }) {
       purchasesApi.update(args.id, toUpdatePurchasePayload(args.patch)),
     onSuccess: (updated) => {
       setPurchases(prev => prev.map(p => p.id === updated.id ? toPurchase(updated) : p));
+      // The per-purchase detail query is what carries saree photos (the list
+      // view strips them), so it has to be refreshed too — otherwise a photo
+      // just uploaded disappears again the next time the saree list opens.
+      qc.setQueryData([...PURCHASES_KEY, "detail", updated.id], updated);
       toast.success("Purchase updated");
     },
     onError: (err: unknown) => {

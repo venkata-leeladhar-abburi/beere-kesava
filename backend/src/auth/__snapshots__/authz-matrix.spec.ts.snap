@@ -1879,5 +1879,24 @@ exports[`authz matrix / route inventory matches the committed authorization snap
     "roles": [],
     "route": "GET /whatsapp/messages",
   },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+    ],
+    "route": "POST /whatsapp/send-po-document",
+  },
+  {
+    "permissions": [],
+    "public": false,
+    "roles": [
+      "ACCOUNTANT",
+      "ADMIN",
+      "SHOP",
+      "SUPERADMIN",
+    ],
+    "route": "POST /whatsapp/send-sale-bill",
+  },
 ]
 `;

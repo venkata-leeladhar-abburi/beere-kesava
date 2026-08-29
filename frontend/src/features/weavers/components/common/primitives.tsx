@@ -6,6 +6,7 @@ import { X } from "lucide-react";
 import { T, F, EASE } from "../theme";
 import { IconButton } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
+import { toInitials } from "@/shared/lib/initials";
 
 export function qcColor(r: number) { return r > 95 ? T.green : r >= 85 ? "#8B6018" : T.crimson; }
 
@@ -19,14 +20,9 @@ export function FadeUp({ children, delay = 0, style = {} }: { children: React.Re
     </motion.div>
   );
 }
+/** @deprecated Use `toInitials` from `@/shared/lib/initials` directly. */
 export function getTwoLetterInitials(nameOrInitials?: string): string {
-  if (!nameOrInitials) return "";
-  const parts = nameOrInitials.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "";
-  if (parts.length > 1) {
-    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-  }
-  return parts[0].slice(0, 2).toUpperCase();
+  return toInitials(nameOrInitials, "");
 }
 
 export function Avatar({ photo, initials, name, bg, size = 44 }: { photo: string | null; initials?: string; name?: string; bg: string; size?: number }) {

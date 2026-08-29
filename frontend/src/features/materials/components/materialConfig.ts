@@ -1,5 +1,5 @@
 import React from "react";
-import { AlertTriangle, CheckCircle2, Archive } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Archive, Clock, XCircle, PackageCheck } from "lucide-react";
 import { imgWarp, imgResham, imgJari } from "../../../shared/constants/imageData";
 import { T } from "./theme";
 import { NAV_GROUPS } from "@/features/dashboards";
@@ -28,10 +28,10 @@ export const W_STATUS: Record<WeaverStatus, WeaverStatusCfgEntry> = {
 };
 
 export const PO_STATUS_CFG = {
-  pending:  { border: "#C89B47", badge: "⏳ Awaiting Superadmin Approval", badgeBg: "rgba(200,155,71,0.12)", badgeColor: "#C89B47", label: "Pending Approval" },
-  approved: { border: "#1E6640", badge: "✓ Approved — Ready to Receive",   badgeBg: "rgba(30,102,64,0.10)",  badgeColor: "#1E6640", label: "Approved" },
-  rejected: { border: "#C0392B", badge: "✗ Rejected",                       badgeBg: "rgba(192,57,43,0.09)", badgeColor: "#C0392B", label: "Rejected" },
-  received: { border: "#69635E", badge: "📦 Received",                      badgeBg: "rgba(139,112,96,0.10)", badgeColor: "#69635E", label: "Received" },
+  pending:  { border: "#C89B47", icon: React.createElement(Clock, { size: 14 }), badge: "Awaiting Superadmin Approval", badgeBg: "rgba(200,155,71,0.12)", badgeColor: "#C89B47", label: "Pending Approval" },
+  approved: { border: "#1E6640", icon: React.createElement(CheckCircle2, { size: 14 }), badge: "Approved — Ready to Receive",   badgeBg: "rgba(30,102,64,0.10)",  badgeColor: "#1E6640", label: "Approved" },
+  rejected: { border: "#C0392B", icon: React.createElement(XCircle, { size: 14 }), badge: "Rejected",                       badgeBg: "rgba(192,57,43,0.09)", badgeColor: "#C0392B", label: "Rejected" },
+  received: { border: "#69635E", icon: React.createElement(PackageCheck, { size: 14 }), badge: "Received",                      badgeBg: "rgba(139,112,96,0.10)", badgeColor: "#69635E", label: "Received" },
 };
 
 export const BATCH_IMG: Record<string, string> = { Warp: imgWarp, Resham: imgResham, Jari: imgJari };

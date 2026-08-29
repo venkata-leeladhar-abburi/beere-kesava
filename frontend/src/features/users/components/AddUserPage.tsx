@@ -430,7 +430,7 @@ export function AddUserPage() {
                 className="flex-1 min-w-[150px]"
                 style={{
                   background: "#FFF",
-                  border: `1px solid ${c.border}`,
+                  border: `1.5px solid ${T.antiqueGold}`,
                   borderRadius: 16,
                   padding: "18px 20px",
                   boxShadow: "0 2px 12px rgba(44,24,16,0.05)",

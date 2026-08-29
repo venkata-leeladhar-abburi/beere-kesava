@@ -229,10 +229,10 @@ export function ProcessReturnRetailFlow({
   /** The pieces on this return, itemised — reused by steps 2 and 3 so the
    *  operator never loses sight of what they are returning. */
   const selectionList = (
-    <Card style={{ overflow: "hidden", marginBottom: 18 }}>
-      <div style={{ height: 4, background: `linear-gradient(90deg, ${C.crim}, ${C.gold})` }} />
+    <Card style={{ overflow: "hidden", marginBottom: 18, border: "1px solid rgba(200,155,71,0.4)" }}>
+      <div style={{ height: 4, background: C.burg }} />
       <div style={{
-        padding: "10px 16px", borderBottom: `1px solid ${C.bdr}`, background: "rgba(171,56,50,0.03)",
+        padding: "10px 16px", borderBottom: `1px solid ${C.bdr}`, background: "rgba(110,15,45,0.03)",
         display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" as const,
       }}>
         <span style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 1.5, color: C.muted, textTransform: "uppercase" as const }}>
@@ -250,7 +250,7 @@ export function ProcessReturnRetailFlow({
           }}
         >
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 13, color: C.crim }}>{s.sareeId}</div>
+            <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 13, color: C.burg }}>{s.sareeId}</div>
             <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>
               {typeTextOf(s)} · sold {fmtDate(s.saleDate)} · {s.saleRef}
             </div>
@@ -261,11 +261,11 @@ export function ProcessReturnRetailFlow({
         </div>
       ))}
       <div style={{
-        padding: "14px 16px", borderTop: `1px solid ${C.bdr}`, background: "rgba(171,56,50,0.03)",
+        padding: "14px 16px", borderTop: `1px solid ${C.bdr}`, background: "rgba(110,15,45,0.03)",
         display: "flex", justifyContent: "space-between", alignItems: "baseline",
       }}>
         <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 15, color: C.text }}>Total refund</span>
-        <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 26, color: C.crim, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>
+        <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 26, color: C.burg, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>
           {formatMoney(rupees(refundTotal))}
         </span>
       </div>

@@ -6,6 +6,7 @@ import { Vendor } from "./types";
 import { StatusPill, StarRating } from "./SharedBits";
 import { Button } from "../../../../shared/ui/primitives";
 import { rupees, formatMoney } from "@/lib/domain/money";
+import { toInitials } from "@/shared/lib/initials";
 
 export function VendorCard({ vendor, onView }: { vendor: Vendor; onView: (v: Vendor) => void }) {
   const [hov, setHov] = useState(false);
@@ -18,7 +19,7 @@ export function VendorCard({ vendor, onView }: { vendor: Vendor; onView: (v: Ven
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{ width: 48, height: 48, borderRadius: 14, background: `linear-gradient(135deg,${T.darkBurgundy},${T.royalBurgundy})`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 14px rgba(110,15,45,0.25)" }}>
-              <span style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 800, color: "#FFF" }}>{vendor.initials}</span>
+              <span style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 800, color: "#FFF" }}>{toInitials(vendor.initials)}</span>
             </div>
             <div>
               <div style={{ fontFamily: F.display, fontSize: 14, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.2, marginBottom: 3 }}>{vendor.name}</div>

@@ -136,6 +136,22 @@ export function VendorPaymentsSection() {
 
   const matchPO = (poNumber: string) => pos.find(p => p.poNumber === poNumber);
 
+  // Feeds VendorUploadPanel's "Download Template" — only POs with a real
+  // invoice raised against them (a bill with money on it) AND an actual
+  // balance still owed belong in the payment ledger an accountant fills in;
+  // a PO nobody has billed yet has nothing to pay, and one already paid in
+  // full has nothing left to collect. Recomputed from the same live
+  // `vendorPayments` this section already derives from
+  // vendorBillsRes/vendorPaymentsRes, so a freshly-added invoice
+  // (AddVendorInvoiceModal → refreshVendorLedger) appears on the very next
+  // download, a PO that just got paid off drops out of it, and the
+  // remaining balance shown is always current, not the figure from
+  // whenever the template was first generated.
+  const invoicedVendorPayments = useMemo(
+    () => vendorPayments.filter(v => v.billId && v.invoiceAmt > 0 && v.invoiceAmt - v.paidAmt > 0),
+    [vendorPayments],
+  );
+
   const viewDetails = viewDetailsId ? vendorPayments.find(v => v.id === viewDetailsId) ?? null : null;
   const payNow = payNowId ? vendorPayments.find(v => v.id === payNowId) ?? null : null;
   const addInvoiceFor = addInvoiceForId ? vendorPayments.find(v => v.id === addInvoiceForId) ?? null : null;
@@ -472,7 +488,16 @@ export function VendorPaymentsSection() {
           </div>
         )}
 
-        <VendorUploadPanel onUploaded={handleExcelUploaded} />
+        <VendorUploadPanel
+          onUploaded={handleExcelUploaded}
+          rows={invoicedVendorPayments.map(v => ({
+            poNumber: v.poNumber,
+            vendorId: matchPO(v.poNumber)?.vendorCode ?? v.vendorId ?? "",
+            vendorName: v.vendor,
+            totalAmount: v.invoiceAmt,
+            remaining: v.invoiceAmt - v.paidAmt,
+          }))}
+        />
 
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, flexWrap: "wrap" as const }}>
           <div className="hidden md:flex" style={{ border: `1px solid ${T.borderDef}`, borderRadius: 9, overflow: "hidden", background: "#fff" }}>

@@ -16,6 +16,7 @@ import { useQuery } from '@tanstack/react-query';
 import { customersApi } from '../../../../shared/api/customers';
 import { salesApi } from '../../../../shared/api/sales';
 import { rupees, formatMoney } from "@/lib/domain/money";
+import { toInitials } from "@/shared/lib/initials";
 
 function CustomerProfiles() {
   const canSeePrices = useCanSeePrices();
@@ -142,10 +143,10 @@ function CustomerProfiles() {
       ) : (
       <div style={{ padding: "8px 20px 0", display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 }}>
         {filtered.map((c, i) => (
-          <Card key={c.id} style={{ padding: 20 }}>
+          <Card key={c.id} style={{ padding: 20, border: `1.5px solid ${C.gold}` }}>
             <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
               <div style={{ width: 54, height: 54, borderRadius: "50%", background: C.burg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <span style={{ fontFamily: F.d, fontSize: 18, fontWeight: 700, color: "#FFF" }}>{c.initials}</span>
+                <span style={{ fontFamily: F.d, fontSize: 18, fontWeight: 700, color: "#FFF" }}>{toInitials(c.initials)}</span>
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: C.text }}>{c.name}</div>
@@ -177,7 +178,7 @@ function CustomerProfiles() {
               <div style={{ background: `linear-gradient(135deg, ${C.dark} 0%, #4A061B 100%)`, padding: "16px 20px 24px", flexShrink: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
                   <div style={{ width: 60, height: 60, borderRadius: "50%", background: C.burg, border: "3px solid rgba(200,155,71,0.50)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 20px rgba(110,15,45,0.40)" }}>
-                    <span style={{ fontFamily: F.d, fontSize: 20, fontWeight: 700, color: "#FFF" }}>{activeCustomer.initials}</span>
+                    <span style={{ fontFamily: F.d, fontSize: 20, fontWeight: 700, color: "#FFF" }}>{toInitials(activeCustomer.initials)}</span>
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" as const }}>

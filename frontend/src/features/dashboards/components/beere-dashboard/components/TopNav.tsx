@@ -52,13 +52,82 @@ export function TopNav({
   // which had no aria-expanded/aria-haspopup and didn't work on touch.
   const [openGroup, setOpenGroup] = React.useState<string | null>(null);
   const unreadCount = 0;
+  // Scroll-collapse: with a sub-nav present, the dark main nav slides out of
+  // view on downward scroll (leaving only the sub-nav pinned at the top) and
+  // slides back in as soon as the user scrolls up even slightly.
+  const [mainNavHidden, setMainNavHidden] = React.useState(false);
+  const lastScrollYRef = React.useRef(0);
 
   const activeGroup = findNavGroup(active);
   const resolvedSections = (sections && sections.length > 0) ? sections : getSectionsForPage(active);
   const showSubNav = activeGroup.pages.length > 1 || (resolvedSections && resolvedSections.length > 0);
 
+  // While any nav overlay is open (a group dropdown, the notification popover
+  // or the profile menu) the collapse is frozen. Radix locks body scroll on
+  // open, and that lock fires a scroll event — which used to read as "scrolled
+  // down", slide the main nav out of view and drag the just-opened menu (it is
+  // anchored to its trigger) off-screen with it, so the dropdown looked like it
+  // never opened.
+  const overlayOpen = openGroup !== null || showNotif || showProfile;
+  const overlayOpenRef = React.useRef(overlayOpen);
+  // Assigned during render, not in an effect: Radix applies its scroll lock in
+  // a layout effect of the portalled content, which runs before a parent
+  // effect would — the ref has to already be true by then.
+  overlayOpenRef.current = overlayOpen;
+  // An overlay can only be opened from a visible bar, so keep it visible.
+  React.useEffect(() => { if (overlayOpen) setMainNavHidden(false); }, [overlayOpen]);
+
+  React.useEffect(() => {
+    if (!showSubNav) {
+      setMainNavHidden(false);
+      return;
+    }
+    const readY = () => window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    lastScrollYRef.current = readY();
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        const y = readY();
+        const diff = y - lastScrollYRef.current;
+        if (overlayOpenRef.current) {
+          // Keep tracking the position so closing the menu doesn't produce a
+          // phantom jump, but never change visibility under an open menu.
+          lastScrollYRef.current = y;
+          return;
+        }
+        if (y <= MAIN_NAV_H) {
+          setMainNavHidden(false);
+        } else if (diff > 6) {
+          setMainNavHidden(true);
+        } else if (diff < -6) {
+          setMainNavHidden(false);
+        }
+        lastScrollYRef.current = y;
+      });
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [showSubNav]);
+
   return (
     <>
+      {/* Sticky header stack. With a sub-nav present both bars live inside one
+          sticky wrapper that translates up by MAIN_NAV_H when scrolling down,
+          so only the sub-nav stays pinned; scrolling up brings the main nav
+          back. Without a sub-nav the main nav is sticky on its own. */}
+      <div
+        style={showSubNav ? {
+          position: "sticky",
+          top: 0,
+          zIndex: 100,
+          transform: mainNavHidden ? `translateY(-${MAIN_NAV_H}px)` : "none",
+          transition: "transform 0.32s cubic-bezier(0.4, 0, 0.2, 1)",
+        } : { display: "contents" }}
+      >
       <motion.nav
         initial={{ y: -90, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -73,7 +142,7 @@ export function TopNav({
           boxShadow: "0 4px 40px rgba(0,0,0,0.28)",
           position: showSubNav ? "relative" : "sticky",
           top: 0,
-          zIndex: showSubNav ? 10 : 100,
+          zIndex: showSubNav ? 2 : 100,
         }}
       >
         {/* Logo + Brand */}
@@ -337,9 +406,8 @@ export function TopNav({
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4, ease: EASE }}
           style={{
-            position: "sticky",
-            top: 0,
-            zIndex: 100,
+            position: "relative",
+            zIndex: 1,
             height: SUB_NAV_H,
             display: "flex", alignItems: "center", justifyContent: "flex-start", gap: 20,
             padding: compact ? "0 16px" : "0 28px",
@@ -388,6 +456,7 @@ export function TopNav({
           )}
         </motion.div>
       )}
+      </div>
     </>
   );
 }

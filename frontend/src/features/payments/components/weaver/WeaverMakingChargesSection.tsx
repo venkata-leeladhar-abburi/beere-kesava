@@ -260,9 +260,16 @@ export function WeaverMakingChargesSection() {
   };
 
   const downloadExcelTemplate = async () => {
-    const weaversToExport = selectedIds.size > 0 
-      ? weaversList.filter(w => selectedIds.has(w.id))
-      : filtered;
+    // Always the full on-screen filtered list — `filtered` already reflects
+    // the Search/Village/Payment Status filters above the table, so exactly
+    // what's visible is exactly what's exported. Deliberately ignores row
+    // selection: a leftover checkbox selection from an earlier click here
+    // used to silently shrink the download to just those rows (an admin
+    // downloading their normal ledger got 2 rows instead of every unpaid
+    // weaver, with nothing on the button explaining why). To export unpaid
+    // weavers only, set Payment Status to Pending/Partial before
+    // downloading, same as any other filter.
+    const weaversToExport = filtered;
 
     if (weaversToExport.length === 0) {
       toast.error("No weavers match the current selection/filters.");
@@ -278,6 +285,11 @@ export function WeaverMakingChargesSection() {
       const noOfSarees = calcCompletedSarees(w) || 1;
       const grossAmount = calcCharges(w);
       const deduction = calcDeduction(w);
+      // What's still owed as of this download — earned charges minus
+      // deductions minus everything already paid — same figure calcNet
+      // shows on the weaver's own card, so the ledger and the UI never
+      // disagree about what "remaining" means.
+      const remainingAmount = Math.max(0, calcNet(w));
 
       // Dynamic Batches Info
       const activeBatchesString = activeBatches.map(b => b.batchId).join(", ") || "None";
@@ -291,6 +303,7 @@ export function WeaverMakingChargesSection() {
         noOfSarees,
         grossAmount,
         deduction,
+        remainingAmount,
       };
     });
 
@@ -312,6 +325,10 @@ export function WeaverMakingChargesSection() {
       { id: "noOfSarees", header: "noOfSarees", accessor: r => r.noOfSarees, type: "number" },
       { id: "grossAmount", header: "Making Charges", accessor: r => r.grossAmount, type: "currency" },
       { id: "deduction", header: "deduction", accessor: r => r.deduction, type: "currency" },
+      // Reference-only, like grossAmount/deduction above — ignored on import,
+      // shown right beside amountPaid so whoever fills the sheet can see
+      // what's still owed before typing in what they're actually paying now.
+      { id: "remainingAmount", header: "Remaining Amount", accessor: r => r.remainingAmount, type: "currency" },
       { id: "amountPaid", header: "amountPaid", accessor: () => null },
       { id: "utrNumber", header: "utrNumber", accessor: () => null },
       { id: "paymentDate", header: "paymentDate", accessor: () => null },

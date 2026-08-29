@@ -19,6 +19,56 @@ import { LoadingState, ErrorState, EmptyState } from "../../../../shared/ui/stat
 import { rupees } from "@/lib/domain/money";
 import { EntityCode, Money } from "@/shared/ui/domain";
 
+const TopDivider = () => (
+  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 20, marginBottom: 12 }}>
+    <div style={{ display: "flex", gap: 3, paddingLeft: 4 }}>
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+    </div>
+    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginLeft: 8 }} />
+    <svg width="60" height="20" viewBox="0 0 60 20" style={{ margin: "0 8px", flexShrink: 0 }}>
+      <g transform="translate(30, 10)">
+        <polygon points="-16,0 -12,-3 -8,0 -12,3" fill={T.antiqueGold} />
+        <path d="M-5,0 L0,-5 L5,0 L0,5 Z" fill={T.antiqueGold} />
+        <circle cx="0" cy="0" r="1.5" fill="#FFFDF9" />
+        <polygon points="8,0 12,-3 16,0 12,3" fill={T.antiqueGold} />
+      </g>
+    </svg>
+    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginRight: 8 }} />
+    <div style={{ display: "flex", gap: 3, paddingRight: 4 }}>
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+    </div>
+  </div>
+);
+
+const BottomDivider = () => (
+  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 20, marginTop: 16 }}>
+    <div style={{ display: "flex", gap: 3, paddingLeft: 4 }}>
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+    </div>
+    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginLeft: 8 }} />
+    <svg width="60" height="20" viewBox="0 0 60 20" style={{ margin: "0 8px", flexShrink: 0 }}>
+      <g transform="translate(30, 10)">
+        <polygon points="-16,0 -12,-3 -8,0 -12,3" fill={T.antiqueGold} />
+        <path d="M-5,0 L0,-5 L5,0 L0,5 Z" fill={T.antiqueGold} />
+        <circle cx="0" cy="0" r="1.5" fill="#FFFDF9" />
+        <polygon points="8,0 12,-3 16,0 12,3" fill={T.antiqueGold} />
+      </g>
+    </svg>
+    <div style={{ flex: 1, height: 1, borderTop: `1.5px dashed ${T.antiqueGold}`, opacity: 0.6, marginRight: 8 }} />
+    <div style={{ display: "flex", gap: 3, paddingRight: 4 }}>
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+      <div style={{ width: 3, height: 3, borderRadius: "50%", background: T.antiqueGold }} />
+    </div>
+  </div>
+);
+
 export function BulkOrderCard({ o, onView, onSlip, superadmin = false }: { o: BulkOrder; onView?: (o: BulkOrder) => void; onSlip?: (o: BulkOrder) => void; superadmin?: boolean }) {
   const cfg = ORDER_CFG[o.status];
   const { bulkOrders } = useBulkOrders();
@@ -31,21 +81,33 @@ export function BulkOrderCard({ o, onView, onSlip, superadmin = false }: { o: Bu
   const pct = o.total > 0 ? Math.round((producedCount / o.total) * 100) : 0;
   const remaining = o.total - producedCount;
   const PhStatusIcon = cfg.PhIcon;
-  // Tally state now lives on the order itself (BulkOrderContext) so it survives
-  // navigating away to the full order page and back.
   const tallied = !!o.tallied;
   const talliedBy = o.talliedBy;
 
   return (
     <motion.div
       onClick={() => onView?.(o)}
-      whileHover={{ y: -6, scale: 1.008, boxShadow: "0 24px 60px rgba(110,15,45,0.12)" }}
       transition={{ type: "spring", stiffness: 260, damping: 22 }}
-      style={{ background: "#FFFFFF", borderRadius: 20, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 18px rgba(74,6,27,0.07)", overflow: "hidden", display: "flex", flexDirection: "column", height: "100%", cursor: "pointer" }}
+      style={{
+        background: "#FFFDF9",
+        borderRadius: 12,
+        border: `1.5px solid ${T.antiqueGold}`,
+        boxShadow: "0 4px 20px rgba(200,155,71,0.15)",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+        cursor: "pointer",
+        position: "relative"
+      }}
     >
-      <div style={{ height: 5, background: cfg.strip, flexShrink: 0 }} />
+      <div style={{ height: 4, background: T.royalBurgundy, width: "100%", opacity: 0.8 }} />
 
-      <div style={{ padding: "12px 16px 16px", display: "flex", alignItems: "flex-start", gap: 12 }}>
+      <div style={{ padding: "16px 16px 0" }}>
+        <TopDivider />
+      </div>
+
+      <div style={{ padding: "0 16px 16px", display: "flex", alignItems: "flex-start", gap: 12 }}>
         <div style={{ width: 40, height: 40, borderRadius: 10, background: cfg.iconBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
           <PhStatusIcon size={22} color={cfg.iconColor} />
         </div>
@@ -62,8 +124,6 @@ export function BulkOrderCard({ o, onView, onSlip, superadmin = false }: { o: Bu
         </div>
       </div>
 
-      <div style={{ height: 1, background: "rgba(110,15,45,0.07)", margin: "0 16px" }} />
-
       <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", gap: 12, flex: 1 }}>
 
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -75,8 +135,6 @@ export function BulkOrderCard({ o, onView, onSlip, superadmin = false }: { o: Bu
             <div style={{ fontFamily: F.ui, fontSize: 14.5, fontWeight: 700, color: T.luxuryBrown }}>{o.due}</div>
           </div>
         </div>
-
-        <div style={{ height: 1, background: "rgba(110,15,45,0.07)" }} />
 
         <div>
           <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 8 }}>
@@ -130,7 +188,9 @@ export function BulkOrderCard({ o, onView, onSlip, superadmin = false }: { o: Bu
 
       </div>
 
-      <div style={{ height: 1, background: "rgba(110,15,45,0.07)", margin: "0 16px" }} />
+      <div style={{ padding: "0 16px" }}>
+        <BottomDivider />
+      </div>
 
       <div className="flex items-center gap-1.5 sm:gap-2 p-3 sm:p-4 w-full flex-nowrap min-w-0">
         <Button

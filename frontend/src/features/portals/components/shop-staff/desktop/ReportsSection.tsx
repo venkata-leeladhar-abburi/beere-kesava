@@ -154,7 +154,7 @@ export function ReportsSection({
             </div>
 
             <DSH label="Returns This Month" />
-            <div style={{ background: "#FFF", borderRadius: 18, border: `1px solid ${C.bdr}`, overflow: "hidden", boxShadow: "0 4px 20px rgba(44,24,16,0.07)" }}>
+            <div style={{ background: "#FFF", borderRadius: 12, border: `1px solid ${C.bdr}`, overflow: "hidden" }}>
               {returnsLoading ? (
                 <div style={{ padding: 16 }}><LoadingState variant="skeleton" rows={3} /></div>
               ) : returnsError ? (
@@ -165,18 +165,34 @@ export function ReportsSection({
                 </div>
               ) : (
                 returnsList.map((r, i) => (
-                  <div key={r.returnRef} style={{ display: "flex", alignItems: "center", gap: 16, padding: "20px 24px", borderBottom: i < returnsList.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", borderLeft: `6px solid ${C.crim}` }}>
-                    <div style={{ width: 44, height: 44, borderRadius: "50%", background: "rgba(192,57,43,0.10)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <RotateCcw size={20} color={C.crim} />
+                  <div key={r.returnRef} className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-4 p-4 sm:p-[20px_24px]" style={{ borderBottom: i < returnsList.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none" }}>
+                    <div className="flex items-center gap-4">
+                      <div style={{ width: 44, height: 44, borderRadius: "50%", background: "rgba(192,57,43,0.10)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <RotateCcw size={20} color={C.crim} />
+                      </div>
+                      <div className="sm:hidden flex-1">
+                        <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 4 }}>
+                          <span style={{ fontFamily: F.m, fontSize: 13, color: C.muted }}>{new Date(r.returnDate).toLocaleDateString("en-IN", { month: "short", day: "numeric" })}</span>
+                          <span style={{ fontFamily: F.m, fontSize: 14, fontWeight: 700, color: C.burg }}>{r.sareeId}</span>
+                        </div>
+                        <div style={{ fontFamily: F.u, fontSize: 14, color: C.text }}>Returned Saree · {r.reason}</div>
+                      </div>
                     </div>
-                    <div style={{ flex: 1 }}>
+                    
+                    <div className="hidden sm:block flex-1">
                       <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 4 }}>
                         <span style={{ fontFamily: F.m, fontSize: 13, color: C.muted }}>{new Date(r.returnDate).toLocaleDateString("en-IN", { month: "short", day: "numeric" })}</span>
                         <span style={{ fontFamily: F.m, fontSize: 14, fontWeight: 700, color: C.burg }}>{r.sareeId}</span>
                       </div>
                       <div style={{ fontFamily: F.u, fontSize: 14, color: C.text }}>Returned Saree · {r.reason}</div>
                     </div>
-                    {canSeePrices && <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.crim }}><Money value={rupees(Number(r.refundAmount ?? 0))} /></div>}
+
+                    {canSeePrices && (
+                      <div className="flex justify-between items-center w-full sm:w-auto pt-2 sm:pt-0 border-t border-[rgba(0,0,0,0.06)] sm:border-t-0">
+                        <span className="sm:hidden" style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>Refund Amount</span>
+                        <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.crim }}><Money value={rupees(Number(r.refundAmount ?? 0))} /></div>
+                      </div>
+                    )}
                   </div>
                 ))
               )}
@@ -196,8 +212,14 @@ export function ReportsSection({
                     <XAxis type="number" tick={{ fontFamily: F.m, fontSize: 12, fill: C.muted }} axisLine={false} tickLine={false} />
                     <YAxis type="category" dataKey="design" tick={{ fontFamily: F.m, fontSize: 12, fill: C.burg }} axisLine={false} tickLine={false} width={64} />
                     <Tooltip contentStyle={{ fontFamily: F.u, fontSize: 13, border: `1px solid ${C.bdr}`, borderRadius: 10 }} formatter={(v: number) => [`${v} sarees`, "Sold"]} />
-                    <Bar dataKey="count" radius={[0, 5, 5, 0]}>
-                      {designData.map((entry, i) => <Cell key={`cell-${entry.design}`} fill={semantic.chart.series[i % semantic.chart.series.length]} />)}
+                    <Bar dataKey="count" radius={10} barSize={28}>
+                      {designData.map((entry, i) => {
+                        let fill = C.burg;
+                        if (entry.design === "Wholesale Sales") fill = C.gold;
+                        else if (entry.design === "Returns") fill = C.gold;
+                        else if (i % 2 === 1) fill = C.gold;
+                        return <Cell key={`cell-${entry.design}`} fill={fill} />;
+                      })}
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>

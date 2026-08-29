@@ -19,11 +19,15 @@ export interface InventoryRecord {
   designCode: string;
   sareeType: string;
   weaverName: string;
-  date: string; // qcPassDate or receivedDate
+  date: string; // qcPassDate, receivedDate, or purchase date
   status: "QC Passed" | "Finishing complete" | "Dispatched" | "Damaged — Review Needed";
-  rawType: "readySaree" | "return";
-  originalId: string; // readySaree id or return id
+  // "external" = a physical piece from an external purchase — it never passes
+  // through QC or finishing, so it enters inventory ready for dispatch.
+  rawType: "readySaree" | "return" | "external";
+  originalId: string; // readySaree id, return id, or purchase id
   bulkOrderRef?: string;
   batchId?: string;
   quotationRef?: string;
+  /** Supplier name, for an externally purchased piece. */
+  supplier?: string;
 }

@@ -115,7 +115,7 @@ function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { row
     },
     {
       id: "sarees", header: "Sarees", accessor: d => d.sareeIds.length, type: "number", width: 95,
-      cell: (_v, d) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{d.sareeIds.length} sarees</span>,
+      cell: (_v, d) => <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{d.sareeIds.length} saree{d.sareeIds.length === 1 ? "" : "s"}</span>,
     },
     {
       id: "firm", header: "Firm", accessor: d => d.firmName, width: 150, priority: 3,
@@ -259,7 +259,7 @@ function DataTableBody({ rows, firms, onResume, onDelete, onViewInvoice }: { row
 
                   <div>
                     <div style={{ fontFamily: F.ui, fontSize: 10, fontWeight: 600, color: T.taupe, textTransform: "uppercase" }}>Sarees & Firm</div>
-                    <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, marginTop: 2 }}>{d.sareeIds.length} sarees</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.luxuryBrown, marginTop: 2 }}>{d.sareeIds.length} saree{d.sareeIds.length === 1 ? "" : "s"}</div>
                     <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>{d.firmName || firm?.firmName || "—"}</div>
                   </div>
 

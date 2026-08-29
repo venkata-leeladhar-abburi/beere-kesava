@@ -64,10 +64,11 @@ export function MetricsBar() {
   const reshamColors = new Set(reshamItems.map(i => i.color).filter(Boolean)).size;
 
   // Jari is always tallied in Reels — never sum raw quantities of mismatched
-  // units (a stock row might be recorded in KG or Buns).
+  // units (a stock row might be recorded in KG or Buns). 1 Reel = 4 Buns, so
+  // the Buns figure is derived by multiplying, not dividing.
   const jariItems = stockItems.filter(i => i.materialType === "JARI");
   const displayJariReels = jariItems.reduce((s, i) => s + jariToReels(Number(i.currentStock), i.unit || "Reels"), 0);
-  const displayJariBuns = displayJariReels / 4;
+  const displayJariBuns = displayJariReels * 4;
 
   const totalStockKg = Math.round(warpKg + reshamKg);
 
@@ -92,8 +93,11 @@ export function MetricsBar() {
     },
     {
       label: "Jari Alerts",
-      val: stockLoading ? "0 Buns" : `${Math.round(displayJariBuns)} Buns`,
-      sub: `${Math.round(displayJariReels)} Reels`,
+      // Reels is the canonical unit Jari is tracked in everywhere else in
+      // the app — shown as the headline figure, with the Buns equivalent
+      // (1 Reel = 4 Buns) as the sub-line, not the other way round.
+      val: stockLoading ? "0 Reels" : `${Math.round(displayJariReels)} Reels`,
+      sub: `${Math.round(displayJariBuns)} Buns`,
       hi: true,
     },
   ];

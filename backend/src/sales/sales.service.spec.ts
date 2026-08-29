@@ -6,7 +6,6 @@ describe("SalesService.registerReturnedSaree", () => {
   let prisma: any;
   let idGenerator: any;
   let auditLog: any;
-  let whatsapp: any;
   let service: SalesService;
 
   const dto = (overrides: Partial<RegisterReturnedSareeDto> = {}): RegisterReturnedSareeDto => ({
@@ -27,8 +26,7 @@ describe("SalesService.registerReturnedSaree", () => {
     };
     idGenerator = { nextNamed: jest.fn().mockResolvedValue("RET-SreeKesava-001") };
     auditLog = { recordAction: jest.fn() };
-    whatsapp = { sendTemplate: jest.fn(), sanitiseParam: jest.fn((v) => v) };
-    service = new SalesService(prisma, idGenerator, auditLog, whatsapp);
+    service = new SalesService(prisma, idGenerator, auditLog);
   });
 
   it("registers the saree and its return in a single transaction, held out of stock", async () => {
@@ -148,7 +146,6 @@ describe("SalesService.createReturn", () => {
   let prisma: any;
   let idGenerator: any;
   let auditLog: any;
-  let whatsapp: any;
   let service: SalesService;
 
   beforeEach(() => {
@@ -164,8 +161,7 @@ describe("SalesService.createReturn", () => {
     };
     idGenerator = { nextNamed: jest.fn().mockResolvedValue("RET-SreeGaneshSilks-001") };
     auditLog = { recordAction: jest.fn() };
-    whatsapp = { sendTemplate: jest.fn(), sanitiseParam: jest.fn((v) => v) };
-    service = new SalesService(prisma, idGenerator, auditLog, whatsapp);
+    service = new SalesService(prisma, idGenerator, auditLog);
   });
 
   it("reads the id segment off the wholesale customer's business name", async () => {
@@ -221,12 +217,7 @@ describe("SalesService.sendReturnToInventory", () => {
       $transaction: jest.fn().mockResolvedValue([]),
     };
     auditLog = { recordAction: jest.fn() };
-    service = new SalesService(
-      prisma,
-      { nextNamed: jest.fn() } as any,
-      auditLog,
-      { sendTemplate: jest.fn(), sanitiseParam: jest.fn() } as any,
-    );
+    service = new SalesService(prisma, { nextNamed: jest.fn() } as any, auditLog);
   });
 
   it("flips the return, the saree and the stock row together", async () => {

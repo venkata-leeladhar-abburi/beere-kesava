@@ -47,6 +47,10 @@ export function NewSaleFlow() {
   const [showSareeList, setShowSareeList] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  // The backend writes one SaleRecord per saree, so a basket comes back as
+  // several refs. The success screen needs all of them: they name the bill
+  // the WhatsApp send re-reads its figures from.
+  const [saleRefs, setSaleRefs] = useState<string[]>([]);
 
   const total = cartTotal(cart);
   const originalTotal = cartOriginalTotal(cart);
@@ -211,6 +215,7 @@ export function NewSaleFlow() {
     setCustSearch(""); setSelectedCustomer(null); setIsEditingCustomer(false);
     setIsNewCustomer(false); setShowCustomerList(false);
     setShowSareeList(false); setScanError(null); setSubmitError(null);
+    setSaleRefs([]);
   };
 
   const canProceedStep1 = selectedCustomer !== null || (isNewCustomer && custName.trim() !== "");
@@ -223,6 +228,7 @@ export function NewSaleFlow() {
         phone={phone}
         payment={payment}
         total={total}
+        billRef={saleRefs[0]}
         isMobile={isMobile}
         isTablet={isTablet}
         fmtPrice={fmtPrice}
@@ -236,8 +242,12 @@ export function NewSaleFlow() {
       <NewSaleSuccessView
         lines={cart}
         custName={custName}
+        phone={phone}
+        custAddress={custAddress}
         payment={payment}
+        payRef={payRef}
         total={total}
+        saleRefs={saleRefs}
         fmtPrice={fmtPrice}
         onShowBill={() => setShowBill(true)}
         onResetSale={resetSale}
@@ -344,7 +354,7 @@ export function NewSaleFlow() {
                 where the sarees were picked; repeating the editors here gave
                 two places to change one number. "Edit prices" jumps back. */}
             <Card style={{ marginBottom: 22, overflow: "hidden" }}>
-              <div style={{ height: 4, background: `linear-gradient(90deg, ${C.burg}, ${C.gold})` }} />
+              <div style={{ height: 4, background: C.burg }} />
               <div style={{ padding: "10px 16px", borderBottom: `1px solid ${C.bdr}`, background: "rgba(110,15,45,0.03)", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" as const }}>
                 <span style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 1.5, color: C.muted, textTransform: "uppercase" as const }}>
                   {cart.length} saree{cart.length !== 1 ? "s" : ""} · amount due
@@ -560,9 +570,10 @@ export function NewSaleFlow() {
                 // call mutates that saree's inventory status, and a partial
                 // failure has to name exactly which pieces did go through.
                 const recorded: string[] = [];
+                const refs: string[] = [];
                 try {
                   for (const line of cart) {
-                    await salesApi.create({
+                    const sale = await salesApi.create({
                       sareeId: line.id,
                       channel: "RETAIL",
                       amount: line.soldPrice,
@@ -571,6 +582,7 @@ export function NewSaleFlow() {
                       paymentRef: payRef.trim() || undefined,
                     });
                     recorded.push(line.id);
+                    refs.push(sale.saleRef);
                   }
                 } catch (err) {
                   if (recorded.length > 0) {
@@ -586,6 +598,7 @@ export function NewSaleFlow() {
                 // Inventory tab and the next sale's picker agree with the bill
                 // that was just raised.
                 void queryClient.invalidateQueries({ queryKey: ["shop-stock"] });
+                setSaleRefs(refs);
                 setStep("success");
               } catch (err) {
                 setSubmitError(

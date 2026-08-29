@@ -210,21 +210,98 @@ export function RetailCustomersSection({
       </div>
 
       {/* Retail stat cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 18, marginBottom: 28, alignItems: "stretch" }}>
+      <div className="grid grid-cols-1 md:grid-cols-4" style={{ gap: 22, marginTop: 32, marginBottom: 28, alignItems: "stretch" }}>
         {[
-          { ico: <Users size={24} color={T.royalBurgundy} />, bg: "rgba(110,15,45,0.07)", l: "Total Retail Customers", v: retailCustomers.length.toLocaleString("en-IN"), c: T.luxuryBrown, sub: "Profiles at point of sale" },
-          { ico: <UserPlus size={24} color={T.antiqueGold} />, bg: "rgba(200,155,71,0.09)", l: "New Customers This Month", v: String(newThisMonthCount), c: T.antiqueGold, sub: "Added via new sale entries" },
-          { ico: <IndianRupee size={24} color={T.greenMid} />, bg: T.greenBg, l: "Retail Revenue This Month", v: formatMoney(rupees(totalRetailRevenueMonth)), c: T.greenMid, sub: "Total from all retail sales" },
-          { ico: <AlertTriangle size={24} color={T.taupe} />, bg: "rgba(139,112,96,0.08)", l: "Inactive — No Visit in 6M", v: String(inactiveCount), c: T.taupe, sub: "Consider reaching out" },
-        ].map((st) => (
-          <div key={st.l} style={{ background: "#FFF", padding: "22px 22px 20px", borderRadius: 14, border: `1px solid ${T.borderDef}`, display: "flex", flexDirection: "column", gap: 14, boxShadow: "0 2px 10px rgba(74,6,27,0.04)" }}>
-            <div style={{ width: 52, height: 52, borderRadius: 13, background: st.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              {st.ico}
+          {
+            icon: <Users size={22} color={T.antiqueGold} />,
+            label: "Total Retail Customers",
+            value: retailCustomers.length.toLocaleString("en-IN"),
+            sub: "Profiles at point of sale",
+            gid: "trc",
+          },
+          {
+            icon: <UserPlus size={22} color={T.antiqueGold} />,
+            label: "New Customers This Month",
+            value: String(newThisMonthCount),
+            sub: "Added via new sale entries",
+            gid: "ncm",
+          },
+          {
+            icon: <IndianRupee size={22} color={T.antiqueGold} />,
+            label: "Retail Revenue This Month",
+            value: formatMoney(rupees(totalRetailRevenueMonth)),
+            sub: "Total from all retail sales",
+            gid: "rrm",
+          },
+          {
+            icon: <AlertTriangle size={22} color={T.antiqueGold} />,
+            label: "Inactive — No Visit in 6M",
+            value: String(inactiveCount),
+            sub: "Consider reaching out",
+            gid: "inr",
+          },
+        ].map((s) => (
+          <div key={s.label} style={{ position: "relative", borderRadius: 14, border: `1px solid ${T.borderDef}`, background: "#FFFDF9", boxShadow: "0 2px 16px rgba(0,0,0,0.06), 0 6px 30px rgba(0,0,0,0.04)", overflow: "visible", display: "flex", flexDirection: "column" as const, alignItems: "center", minHeight: 236 }}>
+            {/* ── Header — royal burgundy gradient ── */}
+            <svg viewBox="0 0 300 90" preserveAspectRatio="none" style={{ width: "100%", height: 44, display: "block", borderRadius: "12px 12px 0 0", flexShrink: 0 }}>
+              <defs>
+                <linearGradient id={`bk-head-${s.gid}`} x1="0" y1="0" x2="0.3" y2="1">
+                  <stop offset="0%" stopColor="#7A1232" />
+                  <stop offset="40%" stopColor={T.royalBurgundy} />
+                  <stop offset="100%" stopColor={T.deepWine} />
+                </linearGradient>
+              </defs>
+              <path d="M0,0 L300,0 L300,32 C230,36 190,85 150,88 C110,85 70,36 0,32 Z" fill={`url(#bk-head-${s.gid})`} />
+              <path d="M0,0 L300,0 L300,32 C230,36 190,85 150,88 C110,85 70,36 0,32 Z" fill={`url(#bk-shim-${s.gid})`} opacity="0.4" />
+              <defs>
+                <linearGradient id={`bk-shim-${s.gid}`} x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="rgba(200,155,71,0)" />
+                  <stop offset="50%" stopColor="rgba(200,155,71,0.08)" />
+                  <stop offset="100%" stopColor="rgba(200,155,71,0)" />
+                </linearGradient>
+              </defs>
+              <path d="M0,32 C70,36 110,85 150,88 C190,85 230,36 300,32" fill="none" stroke="rgba(200,155,71,0.30)" strokeWidth="0.7" />
+              <g transform="translate(150,86)" opacity="0.45">
+                <path d="M-6,0 C-8,-3 -11,-2 -10,0" fill="none" stroke={T.antiqueGold} strokeWidth="0.8" strokeLinecap="round" />
+                <path d="M6,0 C8,-3 11,-2 10,0" fill="none" stroke={T.antiqueGold} strokeWidth="0.8" strokeLinecap="round" />
+                <rect x="-2" y="-2" width="4" height="4" rx="0.3" fill={T.antiqueGold} transform="rotate(45)" />
+              </g>
+            </svg>
+
+            {/* ── Circular icon badge ── */}
+            <div style={{ position: "absolute", top: 20, left: "50%", transform: "translateX(-50%)", zIndex: 4 }}>
+              <div style={{ width: 56, height: 56, borderRadius: "50%", background: "linear-gradient(155deg, #7A1232 0%, #6E0F2D 40%, #4A061B 100%)", border: `2.5px solid rgba(200,155,71,0.45)`, boxShadow: "0 4px 14px rgba(74,6,27,0.25), 0 0 0 3px rgba(255,253,249,0.6)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                {s.icon}
+              </div>
             </div>
-            <div>
-              <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 6 }}>{st.l}</div>
-              <div style={{ fontFamily: F.display, fontSize: 30, color: st.c, fontWeight: 700, lineHeight: 1.0 }}>{st.v}</div>
-              <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 6 }}>{st.sub}</div>
+
+            {/* ── Card body content ── */}
+            <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", flex: 1, padding: "34px 20px 0", width: "100%" }}>
+              <div style={{ fontFamily: F.ui, fontSize: 11, fontWeight: 700, color: T.royalBurgundy, letterSpacing: 1, textTransform: "uppercase" as const, textAlign: "center" as const, lineHeight: 1.45 }}>{s.label}</div>
+              <div style={{ fontFamily: F.display, fontSize: 36, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1, marginTop: 14, textAlign: "center" as const }}>{s.value}</div>
+              <div style={{ width: "45%", display: "flex", alignItems: "center", justifyContent: "center", margin: "16px 0 12px" }}>
+                <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, transparent, rgba(110,15,45,0.14), transparent)` }} />
+                <div style={{ width: 5, height: 5, background: "rgba(110,15,45,0.22)", transform: "rotate(45deg)", flexShrink: 0, margin: "0 4px" }} />
+                <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, transparent, rgba(110,15,45,0.14), transparent)` }} />
+              </div>
+              <div style={{ fontFamily: F.ui, fontSize: 12.5, color: T.taupe, textAlign: "center" as const, lineHeight: 1.4 }}>{s.sub}</div>
+            </div>
+
+            {/* ── Footer strip — royal burgundy ── */}
+            <div style={{ width: "100%", marginTop: "auto", position: "relative", overflow: "hidden", borderRadius: "0 0 12px 12px", height: 30, flexShrink: 0 }}>
+              <svg viewBox="0 0 300 40" preserveAspectRatio="none" style={{ width: "100%", height: "100%", display: "block", position: "absolute", top: 0, left: 0 }}>
+                <defs>
+                  <linearGradient id={`bk-foot-${s.gid}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={T.royalBurgundy} />
+                    <stop offset="50%" stopColor="#5A0A22" />
+                    <stop offset="100%" stopColor={T.deepWine} />
+                  </linearGradient>
+                </defs>
+                <path d="M0,28 C60,28 100,10 150,8 C200,10 240,28 300,28 L300,40 L0,40 Z" fill={`url(#bk-foot-${s.gid})`} />
+              </svg>
+              <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "flex-end", justifyItems: "center", justifyContent: "center", paddingBottom: 0 }}>
+                <img src="/assets/gold-fleur-footer.png" alt="Ornament" style={{ height: 26, maxWidth: "100%", objectFit: "contain", opacity: 0.9, transform: "translateY(1px)" }} />
+              </div>
             </div>
           </div>
         ))}
@@ -234,9 +311,11 @@ export function RetailCustomersSection({
       <RetailChartsRow2 />
 
       {/* Toolbar */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap" as const, gap: 12 }}>
-        <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" as const }}>
-          <div style={{ width: 300 }}>
+      <div className="flex flex-col gap-5 mb-6">
+        {/* Top row: search + sort/filters */}
+        <div className="flex flex-col md:flex-row gap-4 justify-between items-stretch md:items-center">
+          {/* Search bar */}
+          <div className="w-full md:w-[280px] lg:w-[400px] relative">
             <SearchInput
               aria-label="Search by customer name or phone"
               value={retailSearch}
@@ -244,23 +323,31 @@ export function RetailCustomersSection({
               placeholder="Search by customer name or phone..."
             />
           </div>
-          <Pill active={retailStatusFilter === "all"} onClick={() => setRetailStatusFilter("all")}>All Retail ({filteredRetail.length})</Pill>
-          <Pill active={retailStatusFilter === "regular"} onClick={() => setRetailStatusFilter("regular")}>Regular Buyers ({filteredRetail.filter(r => r.regular).length})</Pill>
-          <Pill active={retailStatusFilter === "inactive"} onClick={() => setRetailStatusFilter("inactive")}>Inactive ({filteredRetail.filter(r => r.inactive).length})</Pill>
-        </div>
-        <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" as const }}>
-          <div style={{ width: 160 }}>
-            <Select value={retailCityFilter} onValueChange={setRetailCityFilter} size="sm" placeholder="All Cities">
-              <SelectItem value="all">All Cities</SelectItem>
-              {retailCities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-            </Select>
+          
+          {/* Right side: Selects */}
+          <div className="flex flex-wrap gap-3 items-center justify-between md:justify-end w-full md:w-auto">
+            <div className="w-full sm:w-[160px]">
+              <Select value={retailCityFilter} onValueChange={setRetailCityFilter} size="sm" placeholder="All Cities">
+                <SelectItem value="all">All Cities</SelectItem>
+                {retailCities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+              </Select>
+            </div>
+            <div className="w-full sm:w-[200px]">
+              <Select value={retailSort} onValueChange={v => setRetailSort(v as "spend" | "purchases" | "recent")} size="sm">
+                <SelectItem value="spend">Sort: Total Spend</SelectItem>
+                <SelectItem value="purchases">Sort: Total Purchases</SelectItem>
+                <SelectItem value="recent">Sort: Most Recent Visit</SelectItem>
+              </Select>
+            </div>
           </div>
-          <div style={{ width: 200 }}>
-            <Select value={retailSort} onValueChange={v => setRetailSort(v as "spend" | "purchases" | "recent")} size="sm">
-              <SelectItem value="spend">Sort: Total Spend</SelectItem>
-              <SelectItem value="purchases">Sort: Total Purchases</SelectItem>
-              <SelectItem value="recent">Sort: Most Recent Visit</SelectItem>
-            </Select>
+        </div>
+
+        {/* Filter pills row */}
+        <div className="flex flex-wrap items-center justify-between">
+          <div className="flex flex-wrap gap-2.5 items-center">
+            <Pill active={retailStatusFilter === "all"} onClick={() => setRetailStatusFilter("all")}>All Retail ({filteredRetail.length})</Pill>
+            <Pill active={retailStatusFilter === "regular"} onClick={() => setRetailStatusFilter("regular")}>Regular Buyers ({filteredRetail.filter(r => r.regular).length})</Pill>
+            <Pill active={retailStatusFilter === "inactive"} onClick={() => setRetailStatusFilter("inactive")}>Inactive ({filteredRetail.filter(r => r.inactive).length})</Pill>
           </div>
           <div style={{ display: "inline-flex", alignItems: "center", background: "#FFFFFF", border: `1.5px solid ${T.borderDef}`, borderRadius: 999, padding: 3, gap: 2 }}>
             <button
@@ -307,47 +394,83 @@ export function RetailCustomersSection({
       ) : retailView === "card" ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {filteredRetail.map(r => (
-            <div key={r.id} style={{ background: "#FFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: 22, boxShadow: "0 2px 12px rgba(74,6,27,0.04)", display: "flex", flexDirection: "column", gap: 14 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                  <div style={{ width: 44, height: 44, borderRadius: "50%", background: T.silkCream, border: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 16, color: T.royalBurgundy, fontWeight: 700 }}>
+            <div key={r.id} style={{
+              background: "#FFFDF9",
+              borderRadius: 12,
+              border: `1.5px solid ${T.antiqueGold}`,
+              boxShadow: "0 4px 20px rgba(200,155,71,0.15)",
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column",
+              position: "relative",
+              color: T.luxuryBrown,
+            }}>
+              {/* Accent top */}
+              <div style={{ height: 4, background: T.royalBurgundy, width: "100%", opacity: 0.8, flexShrink: 0 }} />
+
+              {/* Card Header */}
+              <div style={{ padding: "20px 22px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                  <div style={{ width: 64, height: 64, borderRadius: "50%", background: T.royalBurgundy, color: "#FFF", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F.display, fontSize: 22, fontWeight: 700, border: `3px solid ${T.antiqueGold}`, flexShrink: 0 }}>
                     {r.name.replace("Smt. ", "").substring(0, 2).toUpperCase()}
                   </div>
-                  <div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <span style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{r.name}</span>
-                      {r.regular && <Star size={14} color="#C89B47" fill="#C89B47" />}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                      <div style={{ fontFamily: F.display, fontSize: 20, color: T.luxuryBrown, fontWeight: 700, lineHeight: 1.2 }}>{r.name}</div>
+                      {r.regular && <Star size={16} color="#C89B47" fill="#C89B47" />}
                     </div>
-                    <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginTop: 2, display: "flex", alignItems: "center", gap: 4 }}>
-                      <MapPin size={12} color={T.taupe} /> {r.city}
-                    </div>
+                    {r.inactive && (
+                      <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.crimson, background: T.crimsonBg, padding: "3px 8px", borderRadius: 6, display: "inline-block", marginBottom: 3 }}>Inactive</span>
+                    )}
+                    <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: T.royalBurgundy, letterSpacing: "0.4px" }}>{r.phone}</div>
                   </div>
                 </div>
-                {r.inactive && (
-                  <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 600, color: T.crimson, background: T.crimsonBg, padding: "3px 8px", borderRadius: 6 }}>Inactive</span>
-                )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 10, background: T.silkCream, padding: 12, borderRadius: 10, border: `1px solid ${T.borderDef}` }}>
-                <div>
-                  <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const }}>Total Spend</div>
-                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 15, fontWeight: 700, color: T.royalBurgundy, marginTop: 2 }}><Money value={rupees(r.totalSpend ?? 0)} /></div>
+              {/* Card Middle: Info */}
+              <div style={{ padding: "8px 22px 18px", display: "flex", flexDirection: "column", gap: 14, flex: 1 }}>
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 13 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <MapPin size={20} color={T.royalBurgundy} />
+                  </div>
+                  <div>
+                    <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 500, color: T.taupe, letterSpacing: "1.6px", textTransform: "uppercase", marginBottom: 3 }}>Location</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{r.city}</div>
+                  </div>
                 </div>
-                <div>
-                  <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textTransform: "uppercase" as const }}>Purchases</div>
-                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 15, fontWeight: 700, color: T.luxuryBrown, marginTop: 2 }}>{r.totalPurchases} sarees</div>
+
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 13 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <ShoppingBag size={20} color={T.royalBurgundy} />
+                  </div>
+                  <div>
+                    <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 500, color: T.taupe, letterSpacing: "1.6px", textTransform: "uppercase", marginBottom: 3 }}>Purchase History</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown, marginBottom: 2 }}>{r.totalPurchases} sarees</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, lineHeight: 1.45 }}>Total Spend: <Money value={rupees(r.totalSpend ?? 0)} /></div>
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 13 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(110,15,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <Calendar size={20} color={T.royalBurgundy} />
+                  </div>
+                  <div>
+                    <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 500, color: T.taupe, letterSpacing: "1.6px", textTransform: "uppercase", marginBottom: 3 }}>Last Visit</div>
+                    <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{r.lastVisit}</div>
+                  </div>
                 </div>
               </div>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: 4, fontFamily: F.ui, fontSize: 12, color: T.taupe }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6 }}><Phone size={12} /> {r.phone}</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 6 }}><Calendar size={12} /> Last visit: {r.lastVisit}</div>
-              </div>
-
-              <div style={{ display: "flex", gap: 8, marginTop: "auto" }}>
-                <Button variant="secondary" size="sm" fullWidth onClick={() => onViewHistory(r)}>Purchase History</Button>
+              {/* Card Actions Footer */}
+              <div style={{ padding: "18px 22px 22px", display: "flex", gap: 12 }}>
+                <Button variant="secondary" className="flex-1 rounded-xl shadow-none border-[#E8DCC4] hover:bg-[#F7F2EA] hover:border-[#D4C3A3] text-[#4A2B1D]" onClick={() => onViewHistory(r)}>
+                  <LayoutGrid size={20} className="mr-2" />
+                  History
+                </Button>
                 <DownloadGate>
-                  <Button variant="tertiary" size="sm" iconLeft={Download} onClick={() => onDownloadConfirm(r)} />
+                  <Button variant="secondary" className="flex-none rounded-xl shadow-none border-[#E8DCC4] hover:bg-[#F7F2EA] hover:border-[#D4C3A3] text-[#4A2B1D] px-3" onClick={() => onDownloadConfirm(r)}>
+                    <Download size={20} />
+                  </Button>
                 </DownloadGate>
               </div>
             </div>

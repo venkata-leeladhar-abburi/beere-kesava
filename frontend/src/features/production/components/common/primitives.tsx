@@ -5,6 +5,7 @@ import type { LucideIcon } from "lucide-react";
 import { T, F, EASE } from "../theme";
 import { IconButton } from "../../../../shared/ui/primitives";
 import { Modal } from "../../../../shared/ui/overlay";
+import { toInitials } from "@/shared/lib/initials";
 
 export function FadeUp({ children, delay = 0, style = {} }: { children: React.ReactNode; delay?: number; style?: React.CSSProperties }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -20,7 +21,7 @@ export function FadeUp({ children, delay = 0, style = {} }: { children: React.Re
 export function Pip({ initials, bg, size = 26 }: { initials: string; bg: string; size?: number }) {
   return (
     <div style={{ width: size, height: size, borderRadius: "50%", background: bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: "1.5px solid rgba(255,255,255,0.55)" }}>
-      <span style={{ fontFamily: F.ui, fontSize: size * 0.35, fontWeight: 700, color: "#FFFDF9", letterSpacing: "-0.3px" }}>{initials}</span>
+      <span style={{ fontFamily: F.ui, fontSize: size * 0.35, fontWeight: 700, color: "#FFFDF9", letterSpacing: "-0.3px" }}>{toInitials(initials)}</span>
     </div>
   );
 }

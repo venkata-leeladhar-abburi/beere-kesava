@@ -42,6 +42,28 @@ class EnvironmentVariables {
   @IsString()
   WHATSAPP_DEFAULT_COUNTRY_CODE?: string;
 
+  /**
+   * Comma-separated numbers that receive the `bk_admin_sale_alert_` feed —
+   * one message per counter sale, each carrying the bill PDF. Deliberately
+   * NOT the SUPERADMIN user list: this is an owners' feed, and the people on
+   * it are not necessarily the people who hold a superadmin login.
+   *
+   * Each number must have messaged the WhatsApp Business number at least once,
+   * or Meta will not reliably deliver a template to it.
+   */
+  @IsOptional()
+  @IsString()
+  ADMIN_WHATSAPP_NUMBERS?: string;
+
+  /**
+   * Fills {{1}} of `bk_admin_sale_alert_` — which shop the sale happened at.
+   * A single-outlet firm still sends it: the variable exists so a second
+   * outlet never requires a new template and a fresh Meta approval.
+   */
+  @IsOptional()
+  @IsString()
+  SHOP_OUTLET_NAME?: string;
+
   // Cloudflare R2 object storage — required. Invoices, saree photos and
   // signatures must always be stored in the cloud; StorageService refuses to
   // start without these, so the app must never fall back to local disk.

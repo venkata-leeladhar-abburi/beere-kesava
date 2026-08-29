@@ -62,7 +62,36 @@ export class WhatsAppService {
   }
 
   async sendTemplate(input: SendTemplateInput) {
-    const destination = this.normalise(input.destination);
+    // An unusable number is a FAILED message, not an exception. normalise()
+    // used to be called bare here, so a customer saved without a phone (the
+    // retail flow stores a literal "—") threw straight out of this method and
+    // 500'd the caller, leaving no WhatsAppMessage row to explain why nothing
+    // was sent. Every other failure mode below records itself; this one must
+    // too, or it is the single blind spot in the log.
+    let destination: string;
+    try {
+      destination = this.normalise(input.destination);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Invalid destination";
+      this.logger.error(`${input.campaignName} not sent: ${message}`);
+      return this.prisma.whatsAppMessage.create({
+        data: {
+          kind: input.kind,
+          campaignName: input.campaignName,
+          // Stored raw: the whole point of this row is to show what the
+          // caller actually handed us.
+          destination: input.destination,
+          templateParams: input.templateParams ?? [],
+          mediaUrl: input.media?.url,
+          relatedType: input.relatedType,
+          relatedId: input.relatedId,
+          sentById: input.sentById,
+          status: WhatsAppMessageStatus.FAILED,
+          errorMessage: message,
+          attempts: 1,
+        },
+      });
+    }
 
     const record = await this.prisma.whatsAppMessage.create({
       data: {

@@ -6,9 +6,10 @@ import { FadeUp, SectionCard } from "../common/primitives";
 import { Button, IconButton, Select, SelectItem, Input } from "../../../../shared/ui/primitives";
 
 // Wired to real backend: GET/POST /reports/schedules, PATCH/DELETE /reports/schedules/:id.
-// Record-keeping only — creating a schedule here persists the record for the
-// admin UI, it does not itself trigger any cron/queue job or WhatsApp delivery.
-// The actual scheduled-delivery executor is a separate, not-yet-built system.
+// ReportSchedulerService polls these rows every 15 minutes, generates the due
+// ones as .xlsx and delivers them on WhatsApp through `bk_report_share_` to
+// ADMIN_WHATSAPP_NUMBERS. Recipients are that env list, not this form's email
+// field — the schedule row has no phone column of its own.
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { reportsApi } from "../../../../shared/api/reports";
@@ -85,7 +86,7 @@ export function ScheduledReportsSection() {
       <SectionCard
         icon={CalendarClock}
         title="Scheduled Reports — Automatic Delivery"
-        subtitle="These reports are automatically generated and sent to admin on WhatsApp at the scheduled time. No manual action needed."
+        subtitle="These reports are generated automatically and sent to the admin team on WhatsApp as a spreadsheet at the scheduled time. No manual action needed."
         actions={
           <Button
             variant="ghost"

@@ -11,6 +11,7 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import type { Role } from "../../../../../contexts/AuthContext";
 import { notificationsApi } from "../../../../../shared/api/notifications";
 import { salesApi } from "../../../../../shared/api/sales";
+import { toInitials } from "@/shared/lib/initials";
 
 function notifEmoji(type: string): string {
   const t = type.toLowerCase();
@@ -242,7 +243,7 @@ export function DesktopTopNav({
                 }
               >
                 <div style={{ width: 34, height: 34, borderRadius: "50%", background: "#6E0F2D", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <span style={{ fontFamily: F.d, fontSize: 13, fontWeight: 700, color: "#FFFFFF" }}>{initials}</span>
+                  <span style={{ fontFamily: F.d, fontSize: 13, fontWeight: 700, color: "#FFFFFF" }}>{toInitials(initials)}</span>
                 </div>
                 <div style={{ textAlign: "left" as const, paddingRight: 4 }}>
                   <div style={{ fontFamily: F.u, fontSize: 14, fontWeight: 700, color: "#FFFDF9", lineHeight: 1.1 }}>{name}</div>
@@ -254,7 +255,7 @@ export function DesktopTopNav({
             <DropdownMenuContent align="end" className="!min-w-[240px] !p-0 !rounded-[14px] !overflow-hidden" style={{ background: C.white, border: `1px solid ${C.bdr}`, zIndex: "var(--z-tooltip)" }}>
               <div style={{ padding: "16px 18px", background: "rgba(200,155,71,0.08)", borderBottom: `1px solid ${C.bdr}`, display: "flex", alignItems: "center", gap: 12 }}>
                 <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#6E0F2D", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 3px 12px rgba(110,15,45,0.28)" }}>
-                  <span style={{ fontFamily: F.d, fontSize: 16, fontWeight: 700, color: "#FFF" }}>{initials}</span>
+                  <span style={{ fontFamily: F.d, fontSize: 16, fontWeight: 700, color: "#FFF" }}>{toInitials(initials)}</span>
                 </div>
                 <div>
                   <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>{name}</div>

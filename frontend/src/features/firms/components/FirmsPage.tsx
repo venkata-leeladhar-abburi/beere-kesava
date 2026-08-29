@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router";
+import { useQueries } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Plus, Edit3, Eye, Building2, CreditCard, Phone,
@@ -9,6 +10,8 @@ import {
 import {
   useFirms, Firm,
 } from "../contexts/FirmsContext";
+import { useFirmActivity, firmActivityKey } from "../hooks/useFirmActivity";
+import { firmsApi } from "../../../shared/api/firms";
 
 import { T, F, EASE } from "./theme";
 import { SectionCard } from "./primitives";
@@ -101,18 +104,36 @@ function overviewColumns(onGoToFirm?: (firmId: string) => void): ColumnDef<Overv
 
 // ─── Business Overview section (redesigned premium table) ─────────────────────
 function BusinessOverview({ onGoToFirm }: { onGoToFirm?: (firmId: string) => void }) {
-  const { firms, getFirmFinancials, isLoading, error, refetch } = useFirms();
+  const { firms, getFirmFinancials, isLoading: firmsLoading, error, refetch } = useFirms();
   const [open, setOpen] = useState(true);
 
   const FIRM_COLORS = ["#6E0F2D","#1E6640","#C89B47","#4A061B","#1565C0"];
 
-  const rows = useMemo(() => firms.map(firm => {
+  // Real money moved (vendor/weaver/supplier payments, customer receipts)
+  // lives on each firm's activity endpoint, not in the manual FirmFinancialEntry
+  // rows below — without it, this aggregate silently excludes every payment
+  // recorded against a firm's linked documents, same as FirmDetailPage's
+  // per-firm total already accounts for (see useFirmActivity).
+  const activityQueries = useQueries({
+    queries: firms.map(firm => ({
+      queryKey: firmActivityKey(firm.id),
+      queryFn: () => firmsApi.activity(firm.id),
+    })),
+  });
+  const activityLoading = activityQueries.some(q => q.isLoading);
+  const isLoading = firmsLoading || activityLoading;
+
+  const rows = useMemo(() => firms.map((firm, i) => {
     const fin = getFirmFinancials(firm.id);
-    const inc = fin.income.reduce((s, e) => s + e.amount, 0) + fin.misc.filter(m => m.type === "income").reduce((s, m) => s + m.amount, 0);
-    const exp = fin.expenses.reduce((s, e) => s + e.amount, 0) + fin.misc.filter(m => m.type === "expense").reduce((s, m) => s + m.amount, 0);
+    const manualInc = fin.income.reduce((s, e) => s + e.amount, 0) + fin.misc.filter(m => m.type === "income").reduce((s, m) => s + m.amount, 0);
+    const manualExp = fin.expenses.reduce((s, e) => s + e.amount, 0) + fin.misc.filter(m => m.type === "expense").reduce((s, m) => s + m.amount, 0);
+    const totals = activityQueries[i]?.data?.totals;
+    const inc = manualInc + (totals?.realizedIncome ?? 0);
+    const exp = manualExp + (totals?.realizedExpense ?? 0);
     const entryCount = fin.income.length + fin.expenses.length + fin.misc.length;
     return { firm, inc, exp, net: inc - exp, entryCount };
-  }), [firms, getFirmFinancials]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [firms, getFirmFinancials, activityQueries.map(q => q.dataUpdatedAt).join(",")]);
 
   const totInc = rows.reduce((s, r) => s + r.inc, 0);
   const totExp = rows.reduce((s, r) => s + r.exp, 0);
@@ -209,11 +230,12 @@ function BusinessOverview({ onGoToFirm }: { onGoToFirm?: (firmId: string) => voi
 // net balance instead of a weaving state).
 const FirmCard = React.forwardRef<HTMLDivElement, { firm: Firm; onEdit: () => void; onView: () => void; onDelete: () => void }>(({ firm, onEdit, onView, onDelete }, ref) => {
   const { getFirmFinancials } = useFirms();
+  const { totals } = useFirmActivity(firm.id);
   const color = cardColor(firm.id);
 
   const fin = getFirmFinancials(firm.id);
-  const inc = fin.income.reduce((s, e) => s + e.amount, 0) + fin.misc.filter(m => m.type === "income").reduce((s, m) => s + m.amount, 0);
-  const exp = fin.expenses.reduce((s, e) => s + e.amount, 0) + fin.misc.filter(m => m.type === "expense").reduce((s, m) => s + m.amount, 0);
+  const inc = fin.income.reduce((s, e) => s + e.amount, 0) + fin.misc.filter(m => m.type === "income").reduce((s, m) => s + m.amount, 0) + totals.realizedIncome;
+  const exp = fin.expenses.reduce((s, e) => s + e.amount, 0) + fin.misc.filter(m => m.type === "expense").reduce((s, m) => s + m.amount, 0) + totals.realizedExpense;
   const net = inc - exp;
   const isPositive = net >= 0;
 
@@ -343,15 +365,22 @@ export function FirmsPage() {
     (f.contactPersonName ?? "").toLowerCase().includes(search.toLowerCase())
   );
 
-  // Real per-firm expense totals (money actually spent — vendor/supplier/
-  // weaver payments recorded against the firm), the same source
+  // Real per-firm expense totals (manual entries plus vendor/supplier/weaver
+  // payments actually recorded against the firm), the same source
   // BusinessOverview below already uses. Previously this summed
   // `firm.purchaseAmount`, a free-text field typed once when a firm is
   // created/edited that's never kept in sync with real payments — showing
   // whatever placeholder number was entered instead of the real total.
-  const firmExpenseTotals = firms.map(f => {
+  const activityQueries = useQueries({
+    queries: firms.map(firm => ({
+      queryKey: firmActivityKey(firm.id),
+      queryFn: () => firmsApi.activity(firm.id),
+    })),
+  });
+  const firmExpenseTotals = firms.map((f, i) => {
     const fin = getFirmFinancials(f.id);
-    return fin.expenses.reduce((s, e) => s + e.amount, 0) + fin.misc.filter(m => m.type === "expense").reduce((s, m) => s + m.amount, 0);
+    const manualExp = fin.expenses.reduce((s, e) => s + e.amount, 0) + fin.misc.filter(m => m.type === "expense").reduce((s, m) => s + m.amount, 0);
+    return manualExp + (activityQueries[i]?.data?.totals.realizedExpense ?? 0);
   });
   const totalPurchase = firmExpenseTotals.reduce((s, v) => s + v, 0);
   const firmsWithBalanceCount = firmExpenseTotals.filter(v => v > 0).length;

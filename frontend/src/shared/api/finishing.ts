@@ -71,12 +71,19 @@ export interface BackendFinishingAssignment {
   damagePhotoUrl: string | null;
   quotationRef: string | null;
   quotation: { quotationNumber: string } | null;
+  /** Last write to the row — the closest thing the backend has to a
+   *  "returned at" timestamp for a RETURNED assignment. */
+  updatedAt: string;
   batchSareeRow: {
     batchId: string;
     designCode: string | null;
     design: { code: string; name: string } | null;
+    sareeTypeCode: string | null;
     weaver: { id: string; name: string } | null;
-    qcRecord: { result: "PASSED" | "SEMI" | "DEFECTIVE" } | null;
+    /** Latest QC verdict only (backend takes 1, newest first). Sent as an
+     *  array — it was typed as a singular `qcRecord` here, which never
+     *  existed on the payload, so every consumer read `undefined`. */
+    qcRecords: { result: "PASSED" | "SEMI" | "DEFECTIVE" }[];
   };
   finishingStaff: BackendFinishingStaff;
 }

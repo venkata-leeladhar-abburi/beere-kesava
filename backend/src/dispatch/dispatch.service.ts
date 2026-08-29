@@ -11,6 +11,10 @@ import { UpdateDispatchDto } from "./dto/update-dispatch.dto";
 const include = {
   sarees: true,
   customer: true,
+  // Both were omitted before, so the Dispatch History table rendered "—" in
+  // its Firm and Dispatched By columns for every row no matter what was stored.
+  firm: { select: { id: true, firmName: true } },
+  dispatchedBy: { select: { id: true, firstName: true, lastName: true } },
 } satisfies Prisma.DispatchRecordInclude;
 
 @Injectable()
@@ -22,6 +26,13 @@ export class DispatchService {
   ) {}
 
   async create(dto: CreateDispatchDto) {
+    // Attribution for the "Dispatched By" column. The id is only written when
+    // it resolves to a real user — actorId can carry a stopgap placeholder,
+    // and an unmatched value would fail the FK and reject the whole dispatch.
+    const dispatchedById = dto.actorId
+      ? (await this.prisma.user.findUnique({ where: { id: dto.actorId }, select: { id: true } }))?.id
+      : undefined;
+
     let customer: { code: string | null; name: string } | null = null;
     if (dto.type === DispatchType.WHOLESALE && dto.customerId) {
       customer = await this.prisma.customer.findUnique({
@@ -142,6 +153,7 @@ export class DispatchService {
         notes: dto.notes,
         expectedDelivery: dto.expectedDelivery ? new Date(dto.expectedDelivery) : undefined,
         specialInstructions: dto.specialInstructions,
+        dispatchedById,
       },
     });
 

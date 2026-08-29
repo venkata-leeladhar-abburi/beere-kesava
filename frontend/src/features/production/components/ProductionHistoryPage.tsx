@@ -11,6 +11,7 @@ import { useBatches } from "../contexts/BatchContext";
 import { qcApi } from "../../../shared/api/qc";
 import type { HistoryBatch } from "./types";
 import { rupees, formatMoney, addMoney, type Paise } from "@/lib/domain/money";
+import { toInitials } from "@/shared/lib/initials";
 
 // ── Design Tokens ─────────────────────────────────────────────────────────────
 const T = {
@@ -143,7 +144,7 @@ function Pip({ initials, bg }: { initials: string; bg: string }) {
       display: "flex", alignItems: "center", justifyContent: "center",
       border: "1.5px solid rgba(255,255,255,0.6)", flexShrink: 0,
     }}>
-      <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "#fff", letterSpacing: "-0.2px" }}>{initials}</span>
+      <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "#fff", letterSpacing: "-0.2px" }}>{toInitials(initials)}</span>
     </div>
   );
 }

@@ -1,10 +1,12 @@
 import { useState, useMemo, type CSSProperties } from "react";
-import { Users, ChevronDown, Camera, Search, LayoutGrid, List, ImageOff } from "lucide-react";
+import { Users, ChevronDown, Camera, LayoutGrid, List, ImageOff } from "lucide-react";
 import { C, F } from "../tokens";
 import { useFinishing, FinishingAssignment, FinishingReturn } from "@/features/finishing";
 import { SectionCard } from "../primitives";
-import { Button, Input } from "../../../../../shared/ui/primitives";
+import { Button, SearchInput, Select, SelectItem } from "../../../../../shared/ui/primitives";
 import { DataTable, type ColumnDef } from "../../../../../shared/ui/data";
+import { EntityCode } from "@/shared/ui/domain";
+import { useSareeDetails, formatDate, formatWeight, type SareeDetail } from "./sareeDetails";
 import { DateFilterBar, type DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../../shared/ui/DateFilterBar";
 import { Pagination, usePagination } from "../../../../../shared/ui/DataPagination";
 import { ImageZoomModal, type ZoomImage } from "../../../../../shared/ui/ImageZoomModal";
@@ -26,16 +28,7 @@ function parseDMYDate(s: string): number {
   return isNaN(t) ? 0 : t;
 }
 
-function formatDateStr(s?: string): string {
-  if (!s) return "—";
-  if (s.includes("T")) {
-    const parsed = new Date(s);
-    if (!isNaN(parsed.getTime())) {
-      return parsed.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
-    }
-  }
-  return s;
-}
+const formatDateStr = (s?: string) => formatDate(s);
 
 function StaffAssignmentsTable({ data, columns }: { data: FinishingAssignment[]; columns: ColumnDef<FinishingAssignment>[] }) {
   const pag = usePagination(data, 10);
@@ -97,20 +90,43 @@ function StaffAssignmentsMobileList({ data, returns, onViewPhoto }: { data: Fini
 
 export function SectionC({ isMobile }: { isMobile?: boolean }) {
   const { assignments, returns, isLoading, isError, error, refetch } = useFinishing();
+  const details = useSareeDetails();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  // "Where is saree X?" is the question this section exists to answer, so the
+  // outcome is filterable rather than something to hunt for row by row.
+  const [conditionFilter, setConditionFilter] = useState<"all" | "awaiting" | "perfect" | "damaged">("all");
   const [dateFilter, setDateFilter] = useState<DateFilterState>(DEFAULT_DATE_FILTER);
   const [zoomImage, setZoomImage] = useState<ZoomImage | null>(null);
   const [viewMode, setViewMode] = useState<"card" | "table">("card");
 
+  const returnBySaree = useMemo(() => {
+    const map = new Map<string, FinishingReturn>();
+    returns.forEach(r => map.set(r.sareeId, r));
+    return map;
+  }, [returns]);
+
   const filteredAssignments = useMemo(() => {
     const q = search.trim().toLowerCase();
     return assignments.filter(a => {
-      const searchOk = !q || a.sareeId.toLowerCase().includes(q) || a.finishingStaffName.toLowerCase().includes(q);
+      const d = details.get(a.sareeId);
+      // Searchable by everything the row actually displays — not just the
+      // saree id and staff name, which meant a batch or loom typed into the
+      // box silently matched nothing.
+      const haystack = [
+        a.sareeId, a.finishingStaffName, a.assignedBy, a.batchId, a.quotationRef,
+        a.sareeTypeCode, a.sareeType, a.weaverName,
+        d?.producerName, d?.weaverCode, d?.loomLabel, d?.sareeTypeCode, d?.sareeTypeName,
+        d?.designCode, d?.bulkOrderRef, d?.color,
+      ].filter(Boolean).join(" ").toLowerCase();
+      const searchOk = !q || haystack.includes(q);
+      const ret = returnBySaree.get(a.sareeId);
+      const conditionOk = conditionFilter === "all"
+        || (conditionFilter === "awaiting" ? !ret : ret?.condition === conditionFilter);
       const dateOk = matchesDateFilter(a.assignedDate, dateFilter);
-      return searchOk && dateOk;
+      return searchOk && conditionOk && dateOk;
     });
-  }, [assignments, search, dateFilter]);
+  }, [assignments, search, dateFilter, details, returnBySaree, conditionFilter]);
 
   const rows = useMemo<StaffTrackingRow[]>(() => {
     const byStaff = new Map<string, FinishingAssignment[]>();
@@ -164,52 +180,122 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
     },
   ];
 
+  const D = (a: FinishingAssignment): SareeDetail | undefined => details.get(a.sareeId);
+  const dash = <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>—</span>;
+  const goldChip: CSSProperties = { fontFamily: F.u, fontSize: 12, fontWeight: 600, color: "#845E04", background: "rgba(200,155,71,0.12)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 8, padding: "3px 9px", whiteSpace: "nowrap" };
+
   const assignmentColumns: ColumnDef<FinishingAssignment>[] = [
-    { id: "sareeId", header: "Saree ID", accessor: a => a.sareeId, cell: v => <span style={{ fontFamily: F.m, fontSize: 12, color: C.burg, fontWeight: 600 }}>{v as string}</span> },
     {
-      id: "weaver", header: "Weaver / Loom", accessor: a => a.weaverName,
-      cell: v => v ? <span style={{ fontFamily: F.u, fontSize: 12, color: C.text }}>{v as string}</span> : <span style={{ color: C.muted, fontSize: 12 }}>—</span>,
+      id: "sareeId", header: "Saree ID", accessor: a => a.sareeId, priority: 1, sortable: true,
+      cell: (_v, a) => <EntityCode type="saree" value={a.sareeId} size="sm" copyable />,
     },
     {
-      id: "sareeType", header: "Saree Type", accessor: a => a.sareeType,
-      cell: v => v ? (
-        <span style={{ fontFamily: F.m, fontSize: 12, fontWeight: 500, color: "#845E04", background: "rgba(200,155,71,0.12)", border: "1px solid rgba(200,155,71,0.30)", borderRadius: 8, padding: "4px 9px", whiteSpace: "nowrap" }}>{v as string}</span>
-      ) : <span style={{ color: C.muted, fontSize: 12 }}>—</span>,
-    },
-    {
-      id: "batch", header: "Batch", accessor: a => a.batchId,
-      cell: v => <span style={{ fontFamily: F.u, fontSize: 12, color: v ? C.burg : C.muted }}>{(v as string) || "—"}</span>,
-    },
-    {
-      id: "quotation", header: "Quotation", accessor: a => a.quotationRef,
-      cell: v => v ? (
-        <span style={{ fontFamily: F.u, fontSize: 11, fontWeight: 700, color: "#8B6018", background: "rgba(200,146,58,0.14)", borderRadius: 999, padding: "2px 8px", display: "inline-block", wordBreak: "break-all" }}>{v as string}</span>
-      ) : <span style={{ color: C.muted, fontSize: 12 }}>—</span>,
-    },
-    {
-      id: "assignedBy", header: "Assigned By", accessor: a => a.assignedBy,
-      cell: v => <span style={{ fontFamily: F.u, fontSize: 12, color: C.text, whiteSpace: "nowrap" }}>{(v as string) || "—"}</span>,
-    },
-    { id: "assignedDate", header: "Assigned Date", accessor: a => formatDateStr(a.assignedDate), cell: v => <span style={{ fontFamily: F.m, fontSize: 12 }}>{v as string}</span> },
-    {
-      id: "returnedDate", header: "Returned Date", accessor: a => returns.find(rt => rt.sareeId === a.sareeId)?.receivedDate,
-      cell: v => <span style={{ fontFamily: F.m, fontSize: 12 }}>{formatDateStr(v as string)}</span>,
-    },
-    {
-      id: "condition", header: "Condition", accessor: a => returns.find(rt => rt.sareeId === a.sareeId)?.condition,
+      // The assignment endpoint returns no weaver for an own-factory saree, so
+      // every factory row printed "—" here. Falling back to the batch row's
+      // loom gives it the name it always had.
+      id: "weaver", header: "Weaver / Loom", accessor: a => D(a)?.producerName ?? a.weaverName, priority: 2, sortable: true,
       cell: (_v, a) => {
-        const ret = returns.find(rt => rt.sareeId === a.sareeId);
-        return !ret ? (
-          <span style={{ fontFamily: F.u, fontSize: 12, color: "#B85C00", fontWeight: 600 }}>Awaiting Return</span>
-        ) : ret.condition === "perfect" ? (
-          <span style={{ fontFamily: F.u, fontSize: 12, color: C.green, fontWeight: 600 }}>Perfect ✓</span>
-        ) : (
-          <span style={{ fontFamily: F.u, fontSize: 12, color: C.crim, fontWeight: 600 }}>Damaged ⚠</span>
+        const d = D(a);
+        const name = d?.producerName ?? (a.weaverName !== "—" ? a.weaverName : null);
+        if (!name) return dash;
+        return (
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <span style={{ fontFamily: F.u, fontSize: 12, color: C.text, whiteSpace: "nowrap" }}>{name}</span>
+            {d?.weaverCode && <span style={{ fontFamily: F.m, fontSize: 10, color: C.muted }}>{d.weaverCode}</span>}
+          </div>
         );
       },
     },
     {
-      id: "photo", header: "Photo", accessor: a => returns.find(rt => rt.sareeId === a.sareeId)?.damagePhotoUrl,
+      id: "loom", header: "Loom No.", accessor: a => D(a)?.loomLabel ?? "", priority: 3,
+      cell: (_v, a) => {
+        const l = D(a)?.loomLabel;
+        return l ? <span style={{ ...goldChip, color: C.burg, background: "rgba(110,15,45,0.07)", borderColor: "rgba(110,15,45,0.14)" }}>{l}</span> : dash;
+      },
+    },
+    {
+      id: "sareeType", header: "Saree Type", accessor: a => a.sareeTypeCode ?? D(a)?.sareeTypeCode ?? "", priority: 3, sortable: true,
+      cell: (_v, a) => {
+        const d = D(a);
+        const code = a.sareeTypeCode ?? d?.sareeTypeCode ?? null;
+        const name = d?.sareeTypeName ?? (a.sareeType !== "—" ? a.sareeType : null);
+        if (!code && !name) return dash;
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: 2, alignItems: "flex-start" }}>
+            {code && <span style={goldChip}>{code}</span>}
+            {name && name.toLowerCase() !== (code ?? "").toLowerCase() && (
+              <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted, whiteSpace: "nowrap" }}>{name}</span>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      id: "batch", header: "Batch", accessor: a => a.batchId ?? D(a)?.batchId ?? "", priority: 3,
+      cell: (_v, a) => {
+        const b = a.batchId ?? D(a)?.batchId;
+        return b ? <EntityCode type="batch" value={b} size="sm" /> : dash;
+      },
+    },
+    {
+      id: "bulkOrder", header: "Bulk Order", accessor: a => D(a)?.bulkOrderRef ?? "", priority: 3,
+      cell: (_v, a) => {
+        const bo = D(a)?.bulkOrderRef;
+        return bo
+          ? <span style={{ fontFamily: F.u, fontSize: 12, color: C.burg }}>{bo}</span>
+          : <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>General stock</span>;
+      },
+    },
+    {
+      id: "weight", header: "Weight", accessor: a => D(a)?.weightG ?? 0, align: "end", priority: 3, sortable: true,
+      cell: (_v, a) => (
+        <span style={{ fontFamily: F.u, fontSize: 12, color: D(a)?.weightG != null ? C.text : C.muted, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
+          {formatWeight(D(a)?.weightG)}
+        </span>
+      ),
+    },
+    {
+      id: "quotation", header: "Quotation", accessor: a => a.quotationRef, priority: 3,
+      cell: v => v ? (
+        <span style={{ fontFamily: F.u, fontSize: 11, fontWeight: 700, color: "#8B6018", background: "rgba(200,146,58,0.14)", borderRadius: 999, padding: "2px 8px", display: "inline-block", whiteSpace: "nowrap" }}>{v as string}</span>
+      ) : <span style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>Stock</span>,
+    },
+    {
+      id: "assignedBy", header: "Assigned By", accessor: a => a.assignedBy, priority: 3,
+      cell: v => <span style={{ fontFamily: F.u, fontSize: 12, color: C.text, whiteSpace: "nowrap" }}>{(v as string) || "—"}</span>,
+    },
+    {
+      id: "assignedDate", header: "Assigned", accessor: a => a.assignedDate, priority: 3, sortable: true,
+      cell: (_v, a) => <span style={{ fontFamily: F.u, fontSize: 12, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{formatDateStr(a.assignedDate)}</span>,
+    },
+    {
+      id: "returnedDate", header: "Returned", accessor: a => returnBySaree.get(a.sareeId)?.receivedDate ?? "", priority: 3,
+      cell: (_v, a) => {
+        const r = returnBySaree.get(a.sareeId);
+        return r
+          ? <span style={{ fontFamily: F.u, fontSize: 12, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{formatDateStr(r.receivedDate)}</span>
+          : dash;
+      },
+    },
+    {
+      id: "condition", header: "Condition", accessor: a => returnBySaree.get(a.sareeId)?.condition ?? "awaiting", type: "status", priority: 1,
+      cell: (_v, a) => {
+        const ret = returnBySaree.get(a.sareeId);
+        const cfg = !ret
+          ? { label: "Awaiting Return", fg: "#8D5802", bg: "rgba(200,155,71,0.14)", bd: "rgba(200,155,71,0.32)" }
+          : ret.condition === "perfect"
+            ? { label: "Perfect", fg: "#1F774E", bg: "rgba(30,102,64,0.10)", bd: "rgba(30,102,64,0.22)" }
+            : { label: `Damaged${ret.damageSeverity ? ` · ${ret.damageSeverity}` : ""}`, fg: "#B03024", bg: "rgba(192,57,43,0.08)", bd: "rgba(192,57,43,0.24)" };
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: 2, alignItems: "flex-start" }}>
+            <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: cfg.fg, background: cfg.bg, border: `1px solid ${cfg.bd}`, borderRadius: 999, padding: "3px 9px", whiteSpace: "nowrap" }}>{cfg.label}</span>
+            {ret?.damageType && <span style={{ fontFamily: F.u, fontSize: 11, color: C.muted }}>{ret.damageType}</span>}
+          </div>
+        );
+      },
+    },
+    {
+      id: "photo", header: "Photo", accessor: a => returnBySaree.get(a.sareeId)?.damagePhotoUrl,
       cell: (v, a) => v ? (
         <button
           type="button"
@@ -235,22 +321,36 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
       actions={
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
           <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: "#FFFDF9", background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.20)", padding: "5px 12px", borderRadius: 999 }}>
-            {rows.length} staff
+            {rows.length} staff · {filteredAssignments.length} sarees
           </span>
         </div>
       }
     >
       {assignments.length > 0 && (
         <>
-          <div style={{ marginBottom: 12 }}>
-            <Input
-              value={search} onChange={e => setSearch(e.target.value)}
-              placeholder="Search staff or saree ID..."
-              iconLeft={Search}
-              className="w-full"
+          <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
+            <SearchInput
+              aria-label="Search assignment history"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              onSearch={setSearch}
+              placeholder="Search by saree ID, staff, weaver, loom, batch, quotation…"
+              className="w-full md:flex-1"
             />
+            <Select
+              value={conditionFilter}
+              onValueChange={v => setConditionFilter(v as typeof conditionFilter)}
+              className="w-full md:w-[220px] shrink-0"
+            >
+              <SelectItem value="all">All outcomes</SelectItem>
+              <SelectItem value="awaiting">Awaiting return</SelectItem>
+              <SelectItem value="perfect">Returned perfect</SelectItem>
+              <SelectItem value="damaged">Returned damaged</SelectItem>
+            </Select>
           </div>
-          <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+          <div className="mb-4">
+            <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
+          </div>
         </>
       )}
 
@@ -363,10 +463,14 @@ export function SectionC({ isMobile }: { isMobile?: boolean }) {
             expandedIds={expanded ? new Set([expanded]) : undefined}
             renderExpandedRow={r => (
               <div style={{ padding: "10px 14px 14px", background: "rgba(110,15,45,0.02)" }}>
-                <StaffAssignmentsTable
-                  columns={assignmentColumns}
-                  data={filteredAssignments.filter(a => a.finishingStaffName === r.name)}
-                />
+                <div className="overflow-x-auto section-nav-scroll">
+                  <div className="min-w-[1080px]">
+                    <StaffAssignmentsTable
+                      columns={assignmentColumns}
+                      data={filteredAssignments.filter(a => a.finishingStaffName === r.name)}
+                    />
+                  </div>
+                </div>
               </div>
             )}
           />

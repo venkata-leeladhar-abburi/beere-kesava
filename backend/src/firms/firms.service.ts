@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { PaginatedResult } from "../common/pagination";
 import { FinancialEntryKind, Prisma } from "../generated/prisma/client";
+import { IdGeneratorService } from "../id-generator/id-generator.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateFinancialEntryDto } from "./dto/create-financial-entry.dto";
 import { CreateFirmDto } from "./dto/create-firm.dto";
@@ -9,12 +10,18 @@ import { ListFirmsQueryDto } from "./dto/list-firms-query.dto";
 import { UpdateFinancialEntryDto } from "./dto/update-financial-entry.dto";
 import { UpdateFirmDto } from "./dto/update-firm.dto";
 
+const FIRM_ID_PREFIX = "FIRM";
+
 @Injectable()
 export class FirmsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly idGenerator: IdGeneratorService,
+  ) {}
 
-  create(dto: CreateFirmDto) {
-    return this.prisma.firm.create({ data: dto });
+  async create(dto: CreateFirmDto) {
+    const id = await this.idGenerator.nextFormatted(FIRM_ID_PREFIX);
+    return this.prisma.firm.create({ data: { id, ...dto } });
   }
 
   async findAll(

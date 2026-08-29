@@ -4,7 +4,7 @@ import {
   Printer, PackageCheck, RotateCcw, Building2, ShoppingBag, Camera, CheckCircle2, Search, X,
 } from "lucide-react";
 
-import { C, F, Card, Chip } from "./theme";
+import { C, F, Card, Chip, SectionCard } from "./theme";
 import { salesApi, type ReturnStockItem } from "../../../../shared/api/sales";
 import { resolveAssetUrl } from "../../../../shared/api/uploads";
 import { Button, IconButton, Input, MultiSelect } from "../../../../shared/ui/primitives";
@@ -316,21 +316,13 @@ export function ShopReturnsSection() {
     <div style={{ margin: "0 20px 20px" }}>
       <ImageZoomModal image={zoom} onClose={() => setZoom(null)} />
 
-      <Card style={{ overflow: "hidden" }}>
-        <div style={{ height: 4, background: `linear-gradient(90deg, ${C.crim}, ${C.gold})` }} />
-        <div style={{ padding: 16 }}>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" as const, marginBottom: 4 }}>
-            <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 20, color: C.text }}>Returned sarees</span>
-            {heldCount > 0 && <Chip label={`${heldCount} awaiting a decision`} color={C.crim} bg="rgba(192,57,43,0.09)" />}
-          </div>
-          <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted, lineHeight: 1.6, marginBottom: 16, maxWidth: "min(680px, 100%)" }}>
-            Pieces that came back — from a customer at the counter, or from a wholesale buyer. A return is
-            <strong style={{ color: C.text }}> held</strong> and not on sale until you check the saree and press
-            <strong style={{ color: C.text }}> Send to inventory</strong>, which is what moves it into the stock
-            table above and into the New Sale picker.
-          </div>
-
-          <div style={{ marginBottom: 12 }}>
+      <SectionCard
+        icon={RotateCcw}
+        title="Returned Sarees"
+        subtitle="Pieces that came back — from a customer at the counter, or from a wholesale buyer. A return is held and not on sale until you check the saree and press Send to inventory, which is what moves it into the stock table above and into the New Sale picker."
+        actions={heldCount > 0 ? <Chip label={`${heldCount} awaiting a decision`} color={C.crim} bg="rgba(192,57,43,0.09)" /> : undefined}
+      >
+        <div style={{ marginBottom: 12 }}>
             <Input
               value={search}
               onChange={e => setSearch(e.target.value)}
@@ -484,8 +476,7 @@ export function ShopReturnsSection() {
               onSelectionChange={setSelected}
             />
           )}
-        </div>
-      </Card>
+      </SectionCard>
     </div>
   );
 }

@@ -18,6 +18,7 @@ import { ConfirmMaterialPage } from './ConfirmMaterialPage';
 import { WarpRequestPage } from './WarpRequestPage';
 import { PaymentLedgerPage } from './PaymentLedgerPage';
 import { NotificationsPage } from './NotificationsPage';
+import { toInitials } from "@/shared/lib/initials";
 
 function WeaverHamburgerMenu({
   open,
@@ -206,7 +207,7 @@ export function MobileWeaverPortal({ active, setActive, onProfile }: { onBack?: 
                 variant="tertiary"
                 className="!size-9 !rounded-[10px] !p-0 !border-none !bg-[#6E0F2D] hover:!bg-[#6E0F2D]"
               >
-                <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 12, color: "#FFFFFF" }}>{initials}</span>
+                <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 12, color: "#FFFFFF" }}>{toInitials(initials)}</span>
               </Button>
             </div>
 

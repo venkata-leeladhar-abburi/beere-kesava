@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-syntax */
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
@@ -19,7 +19,8 @@ import { useFinishing } from "@/features/finishing";
 import { DefectPhotoPrompt } from "./DefectPhotoPrompt";
 import { OwnFactoryReceiveTab } from "./OwnFactoryReceiveTab";
 import { SareeSelectionTable } from "./SareeSelectionTable";
-import { Button, Input, NumberInput, Select, SelectItem } from "../../../../../shared/ui/primitives";
+import { ReceiveRecipientPicker, type RecipientOption } from "./ReceiveRecipientPicker";
+import { Button, Input, NumberInput } from "../../../../../shared/ui/primitives";
 import { toPaise, fromPaise } from "../../../../../lib/gst";
 import { resolveAssetUrl } from "@/shared/api/uploads";
 import { useImageUpload } from "@/shared/hooks/useImageUpload";
@@ -51,7 +52,9 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
       id: w.id,
       code: w.code,
       looms: w.looms,
-      avatar: w.initials || `${w.firstName.charAt(0)}${w.lastName.charAt(0)}`,
+      village: w.village ?? null,
+      status: w.status,
+      avatar: (w.initials || `${w.firstName.charAt(0)}${w.lastName.charAt(0)}`).slice(0, 2).toUpperCase(),
     }));
   }, [weaversRes]);
 
@@ -122,6 +125,19 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
     return result;
   }, [allBatches, dispatchedSareeIds]);
 
+  // Everything the picker shows about a weaver — name, human-facing code,
+  // village and loom count — so a weaver is identifiable without opening the
+  // registry.
+  const WEAVER_OPTIONS = useMemo<RecipientOption[]>(() => WEAVERS.map(w => ({
+    id: w.id,
+    code: w.code,
+    name: w.name,
+    avatar: w.avatar,
+    looms: w.looms,
+    status: w.status,
+    subtitle: [w.village, `${w.looms} loom${w.looms === 1 ? "" : "s"}`].filter(Boolean).join(" · "),
+  })), [WEAVERS]);
+
   const [sareeColor, setSareeColor] = useState("");
   const [sareeWeight, setSareeWeight] = useState("");
   // Retail selling price for this specific saree — optional; when left
@@ -163,7 +179,7 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
   // selected saree — multi-select still supports these incidentally.
   const sareeId = selectedSarees[0]?.sareeId ?? "—";
 
-  const pickWeaver = (id: string) => {
+  const pickWeaver = useCallback((id: string) => {
     // Matched on the weaver's unique id, never `name` -- two weavers can share
     // a display name, and matching by name would silently resolve to whichever
     // one happens to come first, showing the wrong weaver's
@@ -173,13 +189,13 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
     setSelectedBatchId(w ? (batches[w.id]?.[0]?.id ?? null) : null);
     setSelectedSareeNos(new Set());
     setSareeColor(""); setSareeWeight(""); setSareePrice(""); setHasPhoto(false); setMatEdits({});
-  };
+  }, [WEAVERS, batches]);
 
-  const pickBatch = (batchId: string) => {
+  const pickBatch = useCallback((batchId: string) => {
     setSelectedBatchId(batchId);
     setSelectedSareeNos(new Set());
     setSareeColor(""); setSareeWeight(""); setSareePrice(""); setHasPhoto(false); setMatEdits({});
-  };
+  }, []);
 
   const selectSareeSlot = (no: number) => {
     const s = currentBatch?.sarees.find(s => s.no === no);
@@ -282,50 +298,16 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
 
         {activeSection === "outsourced" && (
           <>
-            <div style={{ margin: "10px 16px 0" }}>
-              <FieldLabel>Select Weaver</FieldLabel>
-              <Select
-                value={selectedWeaver?.id ?? ""}
-                onValueChange={pickWeaver}
-                size="lg"
-                disabled={weaversLoading}
-                placeholder={weaversLoading ? "Loading weavers…" : undefined}
-              >
-                {WEAVERS.map(w => <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>)}
-              </Select>
-            </div>
-
-            {selectedWeaver && weaverBatches.length > 0 && (
-              <div style={{ margin: "10px 16px 0" }}>
-                <FieldLabel>Select Batch</FieldLabel>
-                <Select value={selectedBatchId ?? ""} onValueChange={pickBatch} size="lg">
-                  {weaverBatches.map(b => {
-                    const bDone = b.sarees.filter(s => s.status !== "pending").length;
-                    return <SelectItem key={b.id} value={b.id}>{b.id} · {bDone}/{b.total} sarees done</SelectItem>;
-                  })}
-                </Select>
-
-                {currentBatch && (
-                  <div style={{ ...card, padding: "10px 14px", marginTop: 8 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                      <div>
-                        <div style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, color: C.burg }}>{currentBatch.id}</div>
-                        <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 1 }}>
-                          {currentBatch.sareeTypeCode}{currentBatch.bulkOrderLabel ? ` · ${currentBatch.bulkOrderLabel}` : ""}
-                        </div>
-                        <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 1 }}>{doneCount} of {currentBatch.total} sarees done</div>
-                      </div>
-                      <span style={{ fontFamily: F.u, fontSize: 12, color: allDone ? C.gold : C.green, background: allDone ? "rgba(196,146,58,0.12)" : "rgba(30,102,64,0.10)", padding: "2px 7px", borderRadius: 999 }}>
-                        {allDone ? "Ready for signature" : "Active"}
-                      </span>
-                    </div>
-                    <div style={{ background: "#F0F0F0", borderRadius: 999, height: 5, overflow: "hidden" }}>
-                      <div style={{ width: `${(doneCount / currentBatch.total) * 100}%`, height: "100%", background: C.gold, borderRadius: 999 }} />
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
+            <ReceiveRecipientPicker
+              kind="weaver"
+              options={WEAVER_OPTIONS}
+              batchesByRecipient={batches}
+              selectedId={selectedWeaver?.id ?? null}
+              onPickRecipient={pickWeaver}
+              selectedBatchId={currentBatch?.id ?? null}
+              onPickBatch={pickBatch}
+              loading={weaversLoading}
+            />
 
             {reworkSarees.length > 0 && (
               <div style={{ margin: "10px 16px 0", padding: "10px 14px", background: "rgba(110,15,45,0.05)", border: `1px solid rgba(110,15,45,0.20)`, borderRadius: 10, display: "flex", alignItems: "flex-start", gap: 8 }}>
@@ -346,6 +328,7 @@ export function ReceiveSareesPage({ onSareeReceived }: { onBack: () => void; onS
                 currentBatch={currentBatch}
                 entityName={selectedWeaver.name}
                 entityAvatar={selectedWeaver.avatar}
+                entityCode={selectedWeaver.code}
                 doneCount={doneCount}
                 sareeSort={sareeSort}
                 setSareeSort={setSareeSort}
