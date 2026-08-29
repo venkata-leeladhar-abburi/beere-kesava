@@ -124,29 +124,28 @@ function clearSession() {
  * there is genuinely no token to speak of — a session that was never
  * established or has already been cleared elsewhere.
  *
- * Deliberately does NOT nuke the session just because *a* request 401'd
- * while a token IS present. A hard refresh fires a dozen queries in
- * parallel (weavers, batches, payments, QC, …); a single transient 401 on
- * any one of them (backend cold-start reconnecting to the DB, a brief race,
- * a role-scoped endpoint) used to clear localStorage and redirect
- * immediately, logging the user out and wiping every other query's data
- * with it — indistinguishable from "my details got erased on refresh".
- * With a token present, that one request is left to fail as an ApiError
- * (the caller's own error/retry UI handles it) instead of tearing down the
- * whole session. Kept dependency-free (no useAuth import) since this
- * module is used outside React component trees.
- *
- * The one exception is AUTH_SESSION_EXPIRED, which the backend now reports
- * distinctly (jwt-auth.guard.ts): the token is *known* expired, not merely
- * rejected once, so there is no ambiguity to protect against. That case
- * tears the session down and routes to /session-expired — a screen that
- * says what happened and returns the user where they were, rather than a
- * bare login form that looks like they were signed out at random.
+ * Every role/scope failure in this API is a 403 (ForbiddenRoleError,
+ * ForbiddenScopeError, requireWeaverId's ForbiddenException — see
+ * permissions.guard.ts / weaver-scope.ts) — a 401 can only come from
+ * JwtAuthGuard itself rejecting the token outright (jwt-auth.guard.ts). So
+ * with a token present, AUTH_REQUIRED can't be "wrong role for this one
+ * endpoint": it means the token itself is garbage (bad signature, malformed,
+ * or the JWT_SECRET it was signed with no longer matches — e.g. a secret
+ * rotation since this browser last logged in). Previously this case did
+ * nothing, leaving every query silently failing and the page stuck showing
+ * empty/zero state forever with no indication of why. Routed through the
+ * same /session-expired screen as AUTH_SESSION_EXPIRED below — the token
+ * being outright invalid isn't meaningfully different from it being expired
+ * from the user's point of view, and that screen already explains what
+ * happened and returns them where they were instead of looking like a
+ * random logout.
  */
 function handleUnauthorized(code: ErrorCode) {
   if (typeof window === "undefined") return;
 
-  if (code === "AUTH_SESSION_EXPIRED") {
+  const hasToken = !!(localStorage.getItem("token") || sessionStorage.getItem("token"));
+
+  if (code === "AUTH_SESSION_EXPIRED" || (code === "AUTH_REQUIRED" && hasToken)) {
     clearSession();
     if (window.location.pathname !== "/session-expired") {
       const returnTo = `${window.location.pathname}${window.location.search}`;
@@ -155,7 +154,6 @@ function handleUnauthorized(code: ErrorCode) {
     return;
   }
 
-  const hasToken = !!(localStorage.getItem("token") || sessionStorage.getItem("token"));
   if (hasToken) return;
   clearSession();
   if (window.location.pathname !== "/login") {
