@@ -296,7 +296,7 @@ export function CustomerReport() {
 
       <FadeUp>
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
-          <div className="w-full overflow-x-auto section-nav-scroll p-2">
+          <div className="w-full">
             <div className="min-w-[900px]">
               <DataTable
                 responsive={false}

@@ -175,7 +175,7 @@ export function OverdueAlertsReport() {
       <FadeUp>
         <SubAlert label="Overdue Customer Payments — Act Now" color={T.crimson} />
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)", marginBottom: 32 }}>
-          <div className="w-full overflow-x-auto section-nav-scroll p-2">
+          <div className="w-full">
             <div className="min-w-[850px]">
               <DataTable<(typeof overdueCustomers)[number]>
                 columns={[
@@ -207,7 +207,7 @@ export function OverdueAlertsReport() {
       <FadeUp>
         <SubAlert label="Materials Running Low — Order Soon" color={T.antiqueGold} />
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)", marginBottom: 32 }}>
-          <div className="w-full overflow-x-auto section-nav-scroll p-2">
+          <div className="w-full">
             <div className="min-w-[850px]">
               <DataTable<(typeof lowStockMaterials)[number]>
                 columns={[
@@ -238,7 +238,7 @@ export function OverdueAlertsReport() {
       <FadeUp>
         <SubAlert label="Weavers Behind Schedule — Follow Up" color={T.crimson} />
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)", marginBottom: 32 }}>
-          <div className="w-full overflow-x-auto section-nav-scroll p-2">
+          <div className="w-full">
             <div className="min-w-[850px]">
               <DataTable<(typeof lateWeavers)[number]>
                 columns={[
@@ -269,7 +269,7 @@ export function OverdueAlertsReport() {
       <FadeUp>
         <SubAlert label="Bulk Orders That May Miss Deadline" color={T.antiqueGold} />
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
-          <div className="w-full overflow-x-auto section-nav-scroll p-2">
+          <div className="w-full">
             <div className="min-w-[850px]">
               <DataTable<(typeof atRiskOrders)[number]>
                 columns={[

@@ -454,7 +454,7 @@ export function SupplierPaymentsSection() {
                       {/* Header badges: ID & Last activity date */}
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
                         <span style={{
-                          fontFamily: F.m,
+                          fontFamily: F.mono,
                           fontSize: 11,
                           fontWeight: 700,
                           color: T.royalBurgundy,
@@ -467,7 +467,7 @@ export function SupplierPaymentsSection() {
                           SUP-{r.supplier.id.substring(0, 8).toUpperCase()}
                         </span>
                         <span style={{
-                          fontFamily: F.m,
+                          fontFamily: F.mono,
                           fontSize: 11,
                           color: T.taupe,
                           background: "rgba(200,155,71,0.08)",
@@ -501,7 +501,7 @@ export function SupplierPaymentsSection() {
                         flexDirection: "column",
                         gap: 8,
                       }}>
-                        <div style={{ fontFamily: F.m, fontSize: 11, fontWeight: 700, color: T.royalBurgundy, letterSpacing: "0.5px" }}>
+                        <div style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.royalBurgundy, letterSpacing: "0.5px" }}>
                           PURCHASE & SETTLEMENT
                         </div>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -552,7 +552,7 @@ export function SupplierPaymentsSection() {
 
                       {/* STATUS & ACTIONS Header + Badge */}
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "auto" }}>
-                        <span style={{ fontFamily: F.m, fontSize: 11, fontWeight: 700, color: T.taupe, letterSpacing: "0.5px" }}>
+                        <span style={{ fontFamily: F.mono, fontSize: 11, fontWeight: 700, color: T.taupe, letterSpacing: "0.5px" }}>
                           STATUS & ACTIONS
                         </span>
                         <span style={{

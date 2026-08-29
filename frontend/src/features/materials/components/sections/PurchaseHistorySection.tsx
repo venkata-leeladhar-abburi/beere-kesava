@@ -14,6 +14,7 @@ import { DataTable, exportTable, type ColumnDef } from "../../../../shared/ui/da
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Button } from "../../../../shared/ui/primitives";
 import { jariToReels } from "../../../../shared/lib/weightUnits";
+import { Pagination, usePagination } from "../../../../shared/ui/DataPagination";
 
 interface VendorRow {
   name: string;
@@ -283,6 +284,8 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
     };
   }, [rawGrns, rawPos, rawVendors, rawVendorPayments?.items]);
 
+  const vendorPag = usePagination(stats.vendorRows, 10);
+
   const vendorColumns: ColumnDef<VendorRow>[] = [
     {
       id: "name", header: "Vendor Name", accessor: v => v.name, priority: 1,
@@ -431,18 +434,32 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
               </Button>
             </div>
           </div>
-          <div className="overflow-x-auto w-full">
-            <DataTable
-              responsive={vendorViewMode === "card"}
-              columns={vendorColumns}
-              data={stats.vendorRows}
-              getRowId={v => v.name}
-              loading={historyLoading}
-              error={historyError}
-              onRetry={refetchHistory}
-              emptyTitle="No purchase history found across vendors."
-              pagination
-            />
+          <div className="w-full">
+            <div className="overflow-x-auto w-full">
+              <DataTable
+                responsive={vendorViewMode === "card"}
+                columns={vendorColumns}
+                data={vendorPag.pageItems}
+                getRowId={v => v.name}
+                loading={historyLoading}
+                error={historyError}
+                onRetry={refetchHistory}
+                emptyTitle="No purchase history found across vendors."
+                pagination={false}
+              />
+            </div>
+            <div className="p-4 border-t border-[var(--border-default)] bg-white">
+              <Pagination
+                page={vendorPag.page}
+                pageCount={vendorPag.pageCount}
+                total={vendorPag.total}
+                pageSize={vendorPag.pageSize}
+                start={vendorPag.start}
+                onPageChange={vendorPag.setPage}
+                onPageSizeChange={vendorPag.setPageSize}
+                itemLabel="vendors"
+              />
+            </div>
           </div>
           <div style={{
             display: "flex", justifyContent: "space-between", alignItems: "center",

@@ -6,7 +6,7 @@ import type { TooltipProps } from "recharts";
 import type { ValueType, NameType } from "recharts/types/component/DefaultTooltipContent";
 import { T, F } from "../theme";
 import { semantic } from "../../../../design-system/tokens";
-import { FadeUp, ChartCard, SilkSumCard, SectionCard, ReportDLBar, AnimBar, TablePager } from "../common/primitives";
+import { FadeUp, ChartCard, SilkSumCard, SectionCard, ReportDLBar, AnimBar } from "../common/primitives";
 import { salesApi } from "../../../../shared/api/sales";
 import { customersApi } from "../../../../shared/api/customers";
 import { batchesApi } from "../../../../shared/api/batches";
@@ -64,8 +64,6 @@ export function RetailSalesReport() {
     return new Map((customersRes?.items ?? []).map(c => [c.id, c]));
   }, [customersRes]);
 
-  // ReturnRecord has no saleRef FK — the closest linkage back to a sale is
-  // the shared sareeId (a saree only has one active sale at a time).
   const returnBySareeId = useMemo(() => {
     return new Map((returnsRes?.items ?? []).map(r => [r.sareeId, r]));
   }, [returnsRes]);
@@ -122,7 +120,6 @@ export function RetailSalesReport() {
     });
   }, [retailSales]);
 
-  // Top designs sold dynamically from sales & batch saree rows
   const retailDesignSales = useMemo(() => {
     const counts: Record<string, number> = {};
     for (const sale of retailSales) {
@@ -137,7 +134,6 @@ export function RetailSalesReport() {
       .slice(0, 5);
   }, [retailSales, sareeInfoMap]);
 
-  // Dynamic revenue by saree type
   const retailRevenueDonut = useMemo(() => {
     const typeMap: Record<string, number> = {};
     const colors = semantic.chart.series;
@@ -199,7 +195,6 @@ export function RetailSalesReport() {
     >
       <ReportDLBar />
 
-      {/* Weekly saree sales — summary strip + bar chart */}
       <FadeUp>
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, padding: "20px 24px", marginBottom: 24, boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, flexWrap: "wrap", gap: 12 }}>
@@ -291,7 +286,7 @@ export function RetailSalesReport() {
 
       <FadeUp>
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
-          <div className="w-full overflow-x-auto section-nav-scroll p-2">
+          <div className="w-full">
             <div className="min-w-[850px]">
               <DataTable
                 columns={retailColumns}

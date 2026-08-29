@@ -41,8 +41,6 @@ export function PurchaseOrderHistoryTable({ orders }: { orders: PurchaseOrderHis
           {o.materials.map((m, mi: number) => {
             const mt = MAT_TAG_PO[m.type] || MAT_TAG_PO.Warp;
             return (
-              // Material rows have no stable id and type/description can repeat, so pair them with index.
-              // eslint-disable-next-line react/no-array-index-key
               <div key={`${m.type}-${m.description}-${mi}`} style={{ display: "flex", alignItems: "flex-start", gap: 8, paddingBottom: 6, borderBottom: mi < o.materials.length - 1 ? `1px solid ${T.borderDef}` : "none" }}>
                 <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: mt.col, background: mt.bg, borderRadius: 4, padding: "2px 6px", marginTop: 1 }}>{m.type}</span>
                 <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
@@ -88,7 +86,7 @@ export function PurchaseOrderHistoryTable({ orders }: { orders: PurchaseOrderHis
   ];
 
   return (
-    <div className="w-full overflow-x-auto section-nav-scroll p-2">
+    <div className="w-full">
       <div className="min-w-[700px]">
         <DataTable
           responsive={false}

@@ -6,16 +6,12 @@ import { useWeaverPayments } from "@/features/weavers";
 import { weaversApi } from "../../../../shared/api/weavers";
 import { qcApi } from "../../../../shared/api/qc";
 import { T, F } from "../theme";
-import { FadeUp, ChartCard, SilkSumCard, SectionCard, ReportDLBar, AnimBar, TablePager } from "../common/primitives";
+import { FadeUp, ChartCard, SilkSumCard, SectionCard, ReportDLBar, AnimBar } from "../common/primitives";
 import { DataTable } from "../../../../shared/ui/data";
 import { semantic } from "../../../../design-system/tokens";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money, useDataAccess } from "@/shared/ui/domain";
 
-// Same shape as reports/common/primitives.tsx's ChartTip, but routes the
-// value through the Money system (formatMoney/rupees) instead of a raw "₹"
-// prefix + toLocaleString — ChartTip itself is shared across non-money chart
-// tooltips (kg, customers, sarees) and is out of scope for this pass.
 interface MoneyChartTipPayloadEntry {
   name?: string;
   value?: number | string;
@@ -60,7 +56,6 @@ export function WeaverPaymentReport() {
   const weavers = useMemo(() => weaversRes?.items ?? [], [weaversRes]);
   const qcItems = useMemo(() => qcRes?.items ?? [], [qcRes]);
 
-  // Monthly making charges calculated dynamically from live payments
   const weaverPayMonthly = useMemo(() => {
     const monthlyMap: Record<string, number> = {};
     for (const p of payments) {
@@ -72,13 +67,10 @@ export function WeaverPaymentReport() {
 
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const activeMonths = months.filter(m => monthlyMap[m] !== undefined);
-    
-    // Fallback if no payment dates or only current month
     if (activeMonths.length === 0) return [];
     return activeMonths.map(m => ({ month: m, amt: monthlyMap[m] || 0 }));
   }, [payments]);
 
-  // Deduction breakdown dynamically calculated from real QC records & payments
   const deductionBreakdown = useMemo(() => {
     let noDeductionCount = 0;
     let qcDeductionCount = 0;
@@ -88,7 +80,6 @@ export function WeaverPaymentReport() {
       if (!p.deduction || p.deduction === 0) {
         noDeductionCount++;
       } else {
-        // check if weaver has defective / semi QC records
         const hasQcDefect = qcItems.some(q => q.weaverId === p.weaverId && (q.result === "DEFECTIVE" || q.result === "SEMI"));
         if (hasQcDefect) qcDeductionCount++;
         else otherDeductionCount++;
@@ -213,7 +204,7 @@ export function WeaverPaymentReport() {
 
       <FadeUp>
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>
-          <div className="w-full overflow-x-auto section-nav-scroll p-2">
+          <div className="w-full">
             <div className="min-w-[850px]">
               <DataTable<(typeof weaverPayRows)[number]>
                 columns={[
