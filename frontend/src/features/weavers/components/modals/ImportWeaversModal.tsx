@@ -140,7 +140,7 @@ export function ImportWeaversModal({ open, onClose, onImported }: {
 
   return (
     <Modal open={open} onOpenChange={o => { if (!o) { reset(); onClose(); } }} size="md">
-      <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "20px 28px", position: "relative", flexShrink: 0 }}>
+      <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "20px 28px", paddingRight: 56, position: "relative", flexShrink: 0 }}>
         <Dialog.Title asChild>
           <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#FFFDF9" }}>
             Import Weavers from Excel

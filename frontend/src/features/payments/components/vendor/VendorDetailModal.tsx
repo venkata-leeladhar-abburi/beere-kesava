@@ -39,7 +39,7 @@ export function VendorDetailModal({ vp, matchedPO, onClose }: { vp: VendorPaymen
   return (
     <Modal open onOpenChange={o => { if (!o) onClose(); }} size="md">
       <div style={{ display: "flex", flexDirection: "column", overflowY: "auto", maxHeight: "calc(100dvh - 96px)", background: T.warmIvory, borderTopLeftRadius: "var(--radius-xl)", borderTopRightRadius: "var(--radius-xl)" }}>
-        <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "24px 28px", position: "relative", flexShrink: 0 }}>
+        <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "24px 28px", paddingRight: 56, position: "relative", flexShrink: 0 }}>
           <Dialog.Title style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#FFFDF9", margin: 0 }}>{vendorName}</Dialog.Title>
           <Dialog.Description asChild><div style={{ marginTop: 4 }}><EntityCode type="purchaseOrder" value={vp.poNumber} size="sm" /></div></Dialog.Description>
           <Dialog.Close asChild>

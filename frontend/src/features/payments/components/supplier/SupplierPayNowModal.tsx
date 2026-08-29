@@ -33,7 +33,7 @@ export function SupplierPayNowModal({
 
   return (
     <Modal open onOpenChange={o => !o && onClose()} size="md">
-      <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "24px 28px", position: "relative", flexShrink: 0 }}>
+      <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "24px 28px", paddingRight: 56, position: "relative", flexShrink: 0 }}>
         <Dialog.Title asChild>
           <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: "#FFFDF9" }}>Pay Supplier — {supplier.name}</div>
         </Dialog.Title>

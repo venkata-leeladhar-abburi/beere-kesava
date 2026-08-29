@@ -51,7 +51,7 @@ export function PaymentRemindersModal({ open, onClose, overdueInvoices }: { open
 
   return (
     <Modal open={open} onOpenChange={o => !o && onClose()} size="md">
-        <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "24px 28px", position: "relative", flexShrink: 0 }}>
+        <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "24px 28px", paddingRight: 56, position: "relative", flexShrink: 0 }}>
           <Dialog.Title asChild>
             <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 700, color: "#FFFDF9", display: "flex", alignItems: "center", gap: 10 }}>
               <CalendarClock size={22} color={T.antiqueGold} />

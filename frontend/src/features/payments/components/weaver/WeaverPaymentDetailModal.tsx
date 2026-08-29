@@ -107,7 +107,9 @@ export function WeaverPaymentDetailModal({ weaver, onClose }: { weaver: WeaverRe
             <Dialog.Description asChild><div style={{ marginTop: 2 }}><EntityCode type="weaver" value={weaver.code} size="sm" /></div></Dialog.Description>
             <div style={{ fontFamily: F.ui, fontSize: 12, color: "rgba(255,253,249,0.70)", marginTop: 2 }}>📍 {weaver.village}</div>
           </div>
-          <StatusBadge status={weaver.status} />
+          <div style={{ marginRight: 44, flexShrink: 0 }}>
+            <StatusBadge status={weaver.status} />
+          </div>
           <span style={{ position: "absolute", top: 16, right: 16, display: "inline-block", background: "rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.85)", borderRadius: 8 }}>
             <Dialog.Close asChild>
               <IconButton

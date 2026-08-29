@@ -158,7 +158,7 @@ export function NewWeaverModal({ expanded, setExpanded }: { expanded: boolean; s
   if (expanded) {
     return (
       <Modal open onOpenChange={o => !o && handleCancel()} size="xl">
-        <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "24px 32px", position: "relative", flexShrink: 0 }}>
+        <div style={{ background: `linear-gradient(120deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "24px 32px", paddingRight: 64, position: "relative", flexShrink: 0 }}>
           <Dialog.Title asChild>
             <div style={{ fontFamily: F.display, fontSize: 22, fontWeight: 700, color: "#FFFDF9" }}>
               New Weaver Registration

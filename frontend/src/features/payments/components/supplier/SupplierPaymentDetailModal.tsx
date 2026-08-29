@@ -34,7 +34,7 @@ export function SupplierPaymentDetailModal({
   return (
     <Modal open onOpenChange={o => !o && onClose()} size="lg">
       <div style={{ background: T.silkCream, borderRadius: 20, overflow: "hidden", border: `1.5px solid ${T.borderGold}`, display: "flex", flexDirection: "column", maxHeight: "100%", minHeight: 0 }}>
-        <div style={{ background: "linear-gradient(135deg, #6E0F2D 0%, #4A061B 100%)", padding: "20px 28px", display: "flex", justifyContent: "space-between", alignItems: "center", position: "relative" }}>
+        <div style={{ background: "linear-gradient(135deg, #6E0F2D 0%, #4A061B 100%)", padding: "20px 28px", paddingRight: 56, display: "flex", justifyContent: "space-between", alignItems: "center", position: "relative" }}>
           <div>
             <Dialog.Title asChild>
               <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: "#FFFFFF" }}>{supplier.name}</div>
