@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
+import { ViewSelector } from "@/shared/ui/ViewSelector";
 import { EASE, F, T } from "../../theme";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { PayHistRecord } from "../../types";
@@ -378,29 +379,8 @@ export function PaymentHistorySection() {
         <div style={{ background: T.warmIvory, borderRadius: 14, border: `1px solid ${T.borderDef}`, padding: "16px 20px", marginBottom: 20, boxShadow: "0 2px 10px rgba(74,6,27,0.04)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" as const }}>
 
-            {/* View toggle matching Pic 1 design */}
-            <div className="flex items-center border border-[rgba(110,15,45,0.22)] rounded-[12px] bg-white overflow-hidden shrink-0 shadow-xs">
-              {viewOptions.map(({ key, Icon: Ico, label }, idx) => {
-                const active = view === key;
-                return (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => setView(key)}
-                    className={`flex items-center gap-2 px-4 py-2 text-[13px] font-bold transition-all duration-150 cursor-pointer ${
-                      idx > 0 ? "border-l border-[rgba(110,15,45,0.15)]" : ""
-                    } ${
-                      active
-                        ? "bg-[#6E0F2D] text-[#FFFDF9]"
-                        : "bg-white text-[#3B2314] hover:bg-[#FAF4EB]"
-                    }`}
-                  >
-                    <Ico size={15} color={active ? "#FFFDF9" : "#6E0F2D"} />
-                    <span>{label}</span>
-                  </button>
-                );
-              })}
-            </div>
+            {/* View Selector */}
+            <ViewSelector options={viewOptions} activeView={view} onViewChange={setView} />
 
             <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
 

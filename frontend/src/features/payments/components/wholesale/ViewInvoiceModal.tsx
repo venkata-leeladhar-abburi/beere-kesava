@@ -63,48 +63,62 @@ export function ViewInvoiceModal({ inv, bulkOrderData, onClose }: { inv: Invoice
 
   return (
     <Modal open onOpenChange={o => !o && onClose()} size="xl">
-      <div style={{ display: "flex", flexDirection: "column", height: "85vh" }}>
-        {/* Slim close bar — the document's own Letterhead carries the title */}
-        <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", padding: "8px 8px 0", flexShrink: 0 }}>
-          <Dialog.Title className="sr-only">Invoice {inv.code}</Dialog.Title>
-          <Dialog.Description className="sr-only">Invoice details for {inv.customer}</Dialog.Description>
-          {recordedByLabel && (
-            <span style={{ fontFamily: "var(--font-ui, inherit)", fontSize: 12, color: "#69635E", marginRight: "auto", paddingLeft: 8 }}>
-              Payment recorded by <strong style={{ color: "#3B2314" }}>{recordedByLabel}</strong>
-            </span>
-          )}
+      <div style={{ display: "flex", flexDirection: "column", height: "85vh", overflow: "hidden", borderRadius: "1rem", background: "#FFFDF9" }}>
+        {/* Royal Burgundy Banner */}
+        <div style={{
+          background: "linear-gradient(135deg, #6E0F2D 0%, #4A061B 100%)",
+          padding: "20px 24px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexShrink: 0,
+          gap: 16,
+        }}>
+          <div>
+            <Dialog.Title style={{ fontFamily: "var(--font-display, serif)", fontSize: 20, fontWeight: 700, color: "#FFFDF9", margin: 0 }}>
+              Tax Invoice — {inv.code}
+            </Dialog.Title>
+            <Dialog.Description style={{ fontFamily: "var(--font-ui, sans-serif)", fontSize: 13, color: "rgba(255,253,249,0.85)", marginTop: 4, margin: 0 }}>
+              {inv.customer} {recordedByLabel ? `· Payment recorded by ${recordedByLabel}` : "· Official Tax Invoice"}
+            </Dialog.Description>
+          </div>
           <Dialog.Close asChild>
-            <IconButton icon={X} label="Close" variant="ghost" size="sm" />
+            <IconButton icon={X} label="Close" variant="ghost" size="sm" onClick={onClose}
+              className="rounded-[8px] bg-[rgba(255,255,255,0.14)] text-[#FFFDF9] hover:bg-[rgba(255,255,255,0.25)]" />
           </Dialog.Close>
         </div>
+
         {dispatchesError && (
-          <div style={{ margin: "0 16px", background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)", borderRadius: 8, padding: "10px 12px", fontSize: 12, color: "#C0392B", fontWeight: 600 }}>
+          <div style={{ margin: "12px 20px 0", background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)", borderRadius: 8, padding: "10px 12px", fontSize: 12, color: "#C0392B", fontWeight: 600 }}>
             Failed to load dispatch details — some fields below may be showing fallback values.
           </div>
         )}
-        <DocumentViewer fileName={inv.code} documentTitle={`Tax Invoice ${inv.code}`}>
-          <InvoiceDocument
-            invoiceNumber={inv.code}
-            invoiceDate={inv.invoiceDate}
-            dueDate={inv.dueDate}
-            firm={DEFAULT_LETTERHEAD_FIRM}
-            customer={{
-              name: inv.customer,
-              address: inv.city || undefined,
-              phone: dispatch?.customerPhone,
-            }}
-            items={items}
-            applyGst={applyGst}
-            bulkOrderRef={bulkOrderData?.ref}
-            dispatch={dispatch ? {
-              lrNumber: dispatch.lrNumber,
-              transportCompany: dispatch.transportCompany,
-              vehicleNumber: dispatch.vehicleNumber,
-              dispatchDate: dispatch.dispatchDate,
-            } : undefined}
-            statusLabel={inv.status === "Paid" ? "PAID" : inv.status === "Partial" ? "PARTIALLY PAID" : undefined}
-          />
-        </DocumentViewer>
+
+        <div style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
+          <DocumentViewer fileName={inv.code} documentTitle={`Tax Invoice ${inv.code}`}>
+            <InvoiceDocument
+              invoiceNumber={inv.code}
+              invoiceDate={inv.invoiceDate}
+              dueDate={inv.dueDate}
+              firm={DEFAULT_LETTERHEAD_FIRM}
+              customer={{
+                name: inv.customer,
+                address: inv.city || undefined,
+                phone: dispatch?.customerPhone,
+              }}
+              items={items}
+              applyGst={applyGst}
+              bulkOrderRef={bulkOrderData?.ref}
+              dispatch={dispatch ? {
+                lrNumber: dispatch.lrNumber,
+                transportCompany: dispatch.transportCompany,
+                vehicleNumber: dispatch.vehicleNumber,
+                dispatchDate: dispatch.dispatchDate,
+              } : undefined}
+              statusLabel={inv.status === "Paid" ? "PAID" : inv.status === "Partial" ? "PARTIALLY PAID" : undefined}
+            />
+          </DocumentViewer>
+        </div>
       </div>
     </Modal>
   );

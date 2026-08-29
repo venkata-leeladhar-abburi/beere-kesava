@@ -21,6 +21,7 @@ import {
   DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter,
 } from "../../../shared/ui/DateFilterBar";
 import { useConfirm } from "../../../shared/ui/overlay";
+import { RoyalSubTabStrip } from "@/shared/ui/RoyalSubTabStrip";
 
 // ── Document/payment presentation config ──────────────────────────────────────
 const DOC_CFG: Record<FirmDocumentType, { label: string; icon: React.ElementType }> = {
@@ -401,33 +402,15 @@ export function FirmDetailPage({ firm, onBack, onEdit, onGoToPayments }: {
           </div>
         </div>
 
-        {/* Sub-tab Navigation Strip Card */}
-        <div className="bg-white rounded-[10px] border border-[#E8DCC4] px-3 sm:px-5 pt-2 pb-0 mb-6 shadow-sm overflow-x-auto section-nav-scroll">
-          <div className="flex items-center gap-1 min-w-max">
-            {[
-              { key: "finance" as const, label: "Financial Tracking", icon: <CreditCard size={18} /> },
-              { key: "info" as const, label: "Firm Info", icon: <Building2 size={18} /> },
-            ].map(t => {
-              const isActive = tab === t.key;
-              return (
-                <Button
-                  key={t.key}
-                  variant="tertiary"
-                  onClick={() => setTab(t.key)}
-                  className={
-                    "rounded-none px-4 sm:px-6 py-3 shrink-0 text-sm sm:text-base cursor-pointer flex items-center gap-2.5 transition-all " +
-                    (isActive
-                      ? "border-b-[3px] border-[#6E0F2D] text-[#6E0F2D] font-bold"
-                      : "border-b-[3px] border-transparent text-[#9C8672] hover:text-[#6E0F2D] font-medium")
-                  }
-                >
-                  {t.icon}
-                  <span>{t.label}</span>
-                </Button>
-              );
-            })}
-          </div>
-        </div>
+        {/* Royal Sub-Tab Strip */}
+        <RoyalSubTabStrip
+          tabs={[
+            { key: "finance" as const, label: "Financial Tracking", icon: <CreditCard size={18} /> },
+            { key: "info" as const, label: "Firm Info", icon: <Building2 size={18} /> },
+          ]}
+          activeTab={tab}
+          onTabChange={setTab}
+        />
 
       <motion.div
         initial={{ opacity: 0, y: 10 }}

@@ -85,7 +85,7 @@ Thank you.`;
 
   return (
     <Modal open onOpenChange={o => { if (!o) onClose(); }} size="md">
-      <div style={{ display: "flex", flexDirection: "column", overflowY: "auto", maxHeight: "calc(100dvh - 96px)", background: T.warmIvory, borderTopLeftRadius: "var(--radius-xl)", borderTopRightRadius: "var(--radius-xl)" }}>
+      <div style={{ display: "flex", flexDirection: "column", height: "100%", maxHeight: "calc(100dvh - 96px)", background: T.warmIvory, borderRadius: "1rem", overflow: "hidden" }}>
         {/* Header */}
         <div style={{ background: `linear-gradient(135deg, ${T.royalBurgundy} 0%, ${T.deepWine} 100%)`, padding: "26px 28px", position: "relative", flexShrink: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 6 }}>
@@ -103,7 +103,7 @@ Thank you.`;
           </Dialog.Close>
         </div>
 
-        <div style={{ padding: "26px 28px 28px", display: "flex", flexDirection: "column", gap: 22 }}>
+        <div style={{ padding: "26px 28px 28px", display: "flex", flexDirection: "column", gap: 22, flex: 1, minHeight: 0, overflowY: "auto" }}>
 
           {vendorsError && (
             <div style={{ background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)", borderRadius: 10, padding: "10px 14px", fontFamily: F.ui, fontSize: 12, color: "#C0392B", fontWeight: 600 }}>

@@ -130,10 +130,17 @@ export function SectionCard({
 }
 
 export function ModalOverlay({ open, onClose, children }: { open: boolean; onClose: () => void; children: React.ReactNode }) {
+  const childrenArray = React.Children.toArray(children);
+  const header = childrenArray.find(child => React.isValidElement(child) && (child.type === ModalHeader || (child as any).type?.name === "ModalHeader"));
+  const bodyChildren = childrenArray.filter(child => child !== header);
+
   return (
     <Modal open={open} onOpenChange={o => { if (!o) onClose(); }} size="md">
-      <div style={{ display: "flex", flexDirection: "column", overflowY: "auto", maxHeight: "calc(100dvh - 96px)", background: "#FFFDF9", borderTopLeftRadius: "var(--radius-xl)", borderTopRightRadius: "var(--radius-xl)" }}>
-        {children}
+      <div style={{ display: "flex", flexDirection: "column", height: "100%", maxHeight: "calc(100dvh - 96px)", background: "#FFFDF9", overflow: "hidden", borderRadius: "1rem" }}>
+        {header}
+        <div style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
+          {bodyChildren}
+        </div>
       </div>
     </Modal>
   );

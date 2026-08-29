@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
 
 import { useSuppliers } from "@/features/suppliers";
+import { ViewSelector } from "@/shared/ui/ViewSelector";
 import { Supplier, Purchase } from "@/features/suppliers";
 import { F, T, EASE } from "../../theme";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
@@ -387,15 +388,14 @@ export function SupplierPaymentsSection() {
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, flexWrap: "wrap" as const }}>
-          <div className="hidden md:flex" style={{ border: `1px solid ${T.borderDef}`, borderRadius: 9, overflow: "hidden", background: "#fff" }}>
-            {([{ key: "card", Icon: LayoutGrid, label: "Card View" }, { key: "table", Icon: AlignJustify, label: "Table View" }] as const).map(({ key, Icon, label }) => (
-              <Button key={key} variant={view === key ? "primary" : "tertiary"} size="sm" iconLeft={Icon}
-                onClick={() => setView(key)}
-                className={view === key ? "rounded-none bg-[#6E0F2D] text-[#FFFDF9]" : "rounded-none bg-white text-[var(--text-tertiary)]"}>
-                {label}
-              </Button>
-            ))}
-          </div>
+          <ViewSelector
+            options={[
+              { key: "card", Icon: LayoutGrid, label: "Card View" },
+              { key: "table", Icon: AlignJustify, label: "Table View" },
+            ]}
+            activeView={view}
+            onViewChange={setView}
+          />
           <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
           <DropBtn value={supplierFilter} options={["All Suppliers", ...suppliers.map(s => s.name)]} onChange={setSupplierFilter} />
           <Select value={statusFilter} onValueChange={setStatusFilter} size="sm" containerClassName="w-auto shrink-0" className="w-[145px] font-semibold">
@@ -403,33 +403,6 @@ export function SupplierPaymentsSection() {
           </Select>
           <div style={{ flex: 1, minWidth: 200 }}>
             <SearchInput aria-label="Search supplier" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search supplier..." size="sm" />
-          </div>
-        </div>
-
-        <div className="flex md:hidden items-center justify-between gap-3 mb-4 flex-wrap">
-          <div className="flex items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0">
-            <Button
-              onClick={() => setView("card")}
-              variant="ghost"
-              className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
-                view === "card"
-                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
-                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
-              }`}
-            >
-              <LayoutGrid size={14} /> Card View
-            </Button>
-            <Button
-              onClick={() => setView("table")}
-              variant="ghost"
-              className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
-                view === "table"
-                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
-                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
-              }`}
-            >
-              <AlignJustify size={14} /> Table View
-            </Button>
           </div>
         </div>
 
@@ -505,15 +478,27 @@ export function SupplierPaymentsSection() {
                 <DataTable
                   responsive={false}
                   columns={supplierTableColumns}
-                  data={filtered}
+                  data={pag.pageItems}
                   getRowId={r => r.supplier.id}
                   loading={isLoading}
                   error={isError}
                   onRetry={refetch}
                   emptyTitle="No suppliers match your filters"
-                  pagination
+                  pagination={false}
                 />
               </div>
+            </div>
+            <div className="p-4 border-t border-[var(--border-default)] bg-white">
+              <Pagination
+                page={pag.page}
+                pageCount={pag.pageCount}
+                total={pag.total}
+                pageSize={pag.pageSize}
+                start={pag.start}
+                onPageChange={pag.setPage}
+                onPageSizeChange={pag.setPageSize}
+                itemLabel="suppliers"
+              />
             </div>
             <div style={{ padding: "12px 18px", borderTop: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Showing {filtered.length} of {rows.length} suppliers</span>

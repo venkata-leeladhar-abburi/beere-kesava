@@ -6,6 +6,7 @@ import {
   AlertTriangle, Package, Trash2, ChevronLeft, UserRound, Boxes, ShoppingBag, CreditCard, UserCheck, Edit3 } from "lucide-react";
 import { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
 import { SectionCard } from "@/shared/ui/SectionCard";
+import { RoyalSubTabStrip } from "@/shared/ui/RoyalSubTabStrip";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER, matchesDateFilter } from "../../../../shared/ui/DateFilterBar";
 import { T, F } from "./theme";
 import { Vendor, VendorBill, VendorPaymentTxn } from "./types";
@@ -323,30 +324,12 @@ export function VendorProfile({ vendor, onBack, onUpdate, onDelete }: { vendor: 
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="w-full overflow-x-auto section-nav-scroll pb-1 mb-6 border-b-2 border-[var(--border-default)]">
-        <div className="flex items-center gap-1 min-w-max">
-          {tabs.map(t => {
-            const isActive = tab === t.key;
-            return (
-              <Button
-                key={t.key}
-                onClick={() => setTab(t.key)}
-                variant="tertiary"
-                className={
-                  "rounded-none px-4 sm:px-6 py-3 mb-[-6px] shrink-0 text-sm sm:text-base cursor-pointer flex items-center gap-2.5 transition-all " +
-                  (isActive
-                    ? "border-b-[3px] border-[#6E0F2D] text-[#6E0F2D] font-bold"
-                    : "border-b-[3px] border-transparent text-[#9C8672] hover:text-[#6E0F2D] font-medium")
-                }
-              >
-                {t.icon}
-                <span>{t.label}</span>
-              </Button>
-            );
-          })}
-        </div>
-      </div>
+      {/* Royal Sub-Tab Strip */}
+      <RoyalSubTabStrip
+        tabs={tabs}
+        activeTab={tab}
+        onTabChange={setTab}
+      />
 
       <AnimatePresence mode="wait">
         <motion.div key={tab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>

@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
+import { ViewSelector } from "@/shared/ui/ViewSelector";
 import { PurchaseOrder, usePO } from "@/features/purchasing";
 import { PODocumentModal } from "@/features/purchasing";
 import { vendorPaymentsApi } from "../../../../shared/api/payments";
@@ -503,15 +504,7 @@ export function VendorPaymentsSection() {
         />
 
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, flexWrap: "wrap" as const }}>
-          <div className="hidden md:flex" style={{ border: `1px solid ${T.borderDef}`, borderRadius: 9, overflow: "hidden", background: "#fff" }}>
-            {viewOptions.map(({ key, Icon, label }) => (
-              <Button key={key} variant={view === key ? "primary" : "tertiary"} size="sm" iconLeft={Icon}
-                onClick={() => setView(key)}
-                className={view === key ? "rounded-none bg-[#6E0F2D] text-[#FFFDF9]" : "rounded-none bg-white text-[var(--text-tertiary)]"}>
-                {label}
-              </Button>
-            ))}
-          </div>
+          <ViewSelector options={viewOptions} activeView={view} onViewChange={setView} />
           <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
           <DropBtn value={vendorFilter} options={vendorFilterOptions} onChange={setVendorFilter} />
           <Select value={statusFilter} onValueChange={setStatusFilter} size="sm" containerClassName="w-auto shrink-0" className="w-[145px] font-semibold">
@@ -522,32 +515,7 @@ export function VendorPaymentsSection() {
           </div>
         </div>
 
-        <div className="flex md:hidden items-center justify-between gap-3 mb-4 flex-wrap">
-          <div className="flex items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0">
-            <Button
-              onClick={() => setView("card")}
-              variant="ghost"
-              className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
-                view === "card"
-                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
-                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
-              }`}
-            >
-              <LayoutGrid size={14} /> Card View
-            </Button>
-            <Button
-              onClick={() => setView("table")}
-              variant="ghost"
-              className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
-                view === "table"
-                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
-                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
-              }`}
-            >
-              <AlignJustify size={14} /> Table View
-            </Button>
-          </div>
-        </div>
+
 
         {view === "card" && (
           <div>
@@ -608,15 +576,27 @@ export function VendorPaymentsSection() {
                     <DataTable
                       responsive={false}
                       columns={vendorTableColumns}
-                      data={filtered}
+                      data={pag.pageItems}
                       getRowId={vp => vp.id}
                       loading={paymentsLoading || billsLoading}
                       error={paymentsError || billsError}
                       onRetry={() => { void refetchVendorPayments(); void refetchVendorBills(); }}
                       emptyTitle="No vendor bills match your filters"
-                      pagination
+                      pagination={false}
                     />
                   </div>
+                </div>
+                <div className="p-4 border-t border-[var(--border-default)] bg-white">
+                  <Pagination
+                    page={pag.page}
+                    pageCount={pag.pageCount}
+                    total={pag.total}
+                    pageSize={pag.pageSize}
+                    start={pag.start}
+                    onPageChange={pag.setPage}
+                    onPageSizeChange={pag.setPageSize}
+                    itemLabel="vendor bills"
+                  />
                 </div>
                 <div style={{ padding: "12px 18px", borderTop: `1px solid ${T.borderDef}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Showing {filtered.length} of {vendorPayments.length} vendor bills</span>

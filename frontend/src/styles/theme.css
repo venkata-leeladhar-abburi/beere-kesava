@@ -4,7 +4,14 @@
   display: none;
 }
 
-/* Integrated scrollbars inside modals */
+/* Integrated scrollbars inside modals (under the banner & inside the modal body) */
+[data-radix-portal] [role="dialog"],
+[role="dialog"] {
+  overflow: hidden !important;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(110, 15, 45, 0.28) transparent;
+}
+
 [data-radix-portal] [role="dialog"] ::-webkit-scrollbar,
 [role="dialog"] ::-webkit-scrollbar {
   width: 6px;
@@ -14,23 +21,19 @@
 [data-radix-portal] [role="dialog"] ::-webkit-scrollbar-track,
 [role="dialog"] ::-webkit-scrollbar-track {
   background: transparent;
+  margin-top: 4px;
+  margin-bottom: 4px;
 }
 
 [data-radix-portal] [role="dialog"] ::-webkit-scrollbar-thumb,
 [role="dialog"] ::-webkit-scrollbar-thumb {
-  background: rgba(110, 15, 45, 0.2);
+  background: rgba(110, 15, 45, 0.28);
   border-radius: 9999px;
 }
 
 [data-radix-portal] [role="dialog"] ::-webkit-scrollbar-thumb:hover,
 [role="dialog"] ::-webkit-scrollbar-thumb:hover {
-  background: rgba(110, 15, 45, 0.35);
-}
-
-[data-radix-portal] [role="dialog"],
-[role="dialog"] {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(110, 15, 45, 0.2) transparent;
+  background: rgba(110, 15, 45, 0.50);
 }
 
 

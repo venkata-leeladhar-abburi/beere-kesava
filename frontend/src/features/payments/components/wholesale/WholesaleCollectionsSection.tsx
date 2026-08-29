@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { DownloadGate } from "../../../../shared/ui/DownloadAccess";
+import { ViewSelector } from "@/shared/ui/ViewSelector";
 import { useFinishing } from "@/features/finishing";
 import { invoicesApi, BackendInvoice } from "../../../../shared/api/invoices";
 import { EASE, F, T } from "../../theme";
@@ -365,48 +366,13 @@ export function WholesaleCollectionsSection() {
         )}
 
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, flexWrap: "wrap" as const }}>
-          <div className="hidden md:flex" style={{ border: `1px solid ${T.borderDef}`, borderRadius: 9, overflow: "hidden", background: "#fff" }}>
-            {viewOptions.map(({ key, Icon, label }) => (
-              <Button key={key} variant={view === key ? "primary" : "tertiary"} size="sm" iconLeft={Icon}
-                onClick={() => setView(key)}
-                className={view === key ? "rounded-none bg-[#6E0F2D] text-[#FFFDF9]" : "rounded-none bg-white text-[var(--text-tertiary)]"}>
-                {label}
-              </Button>
-            ))}
-          </div>
+          <ViewSelector options={viewOptions} activeView={view} onViewChange={setView} />
           <DateFilterBar filter={dateFilter} onChange={setDateFilter} />
           <DropBtn value={filterState} options={["All States", "Varanasi", "Surat", "Mumbai", "Hyderabad", "Chennai", "Bengaluru"]} onChange={setFilterState} />
           <DropBtn value={filterCust} options={["All Customers", "Lakshmi Silks", "Padmavathi Textiles", "Vijaya Silk House", "Narayana Silk Emporium", "Meenakshi Silks"]} onChange={setFilterCust} />
           <DropBtn value={filterType} options={["All Invoice Types", "Wholesale", "Retail", "Export"]} onChange={setFilterType} />
           <div style={{ flex: 1, minWidth: 200 }}>
             <SearchInput aria-label="Search invoice or customer" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search invoice or customer..." size="sm" />
-          </div>
-        </div>
-
-        <div className="flex md:hidden items-center justify-between gap-3 mb-4 flex-wrap">
-          <div className="flex items-center border border-[#E8DCC4] rounded-xl overflow-hidden bg-white shrink-0">
-            <Button
-              onClick={() => setView("card")}
-              variant="ghost"
-              className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
-                view === "card"
-                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
-                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
-              }`}
-            >
-              <LayoutGrid size={14} /> Card View
-            </Button>
-            <Button
-              onClick={() => setView("table")}
-              variant="ghost"
-              className={`h-auto rounded-none gap-1.5 py-1.5 px-3 text-[12px] font-bold ${
-                view === "table"
-                  ? "bg-[#6E0F2D] text-[#FFFDF9] hover:bg-[#6E0F2D]"
-                  : "bg-white text-[var(--text-tertiary)] hover:bg-[#F7F2EA]"
-              }`}
-            >
-              <AlignJustify size={14} /> Table View
-            </Button>
           </div>
         </div>
 

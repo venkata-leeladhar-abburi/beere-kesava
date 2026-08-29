@@ -26,6 +26,7 @@ import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money, EntityCode } from "@/shared/ui/domain";
 import { BG_IMAGE } from "@/shared/ui/heroBackgrounds";
 import { SectionCard } from "@/shared/ui/SectionCard";
+import { RoyalSubTabStrip } from "@/shared/ui/RoyalSubTabStrip";
 
 const T = {
   silkCream: "#F7F2EA", royalBurgundy: "#6E0F2D",
@@ -504,30 +505,12 @@ export function BulkOrderDetailPage({ order, onBack, initialTab = "overview" }: 
         </SectionCard>
       </div>
 
-      {/* Sub-tab strip */}
-      <div className="w-full overflow-x-auto section-nav-scroll pb-1 mb-6 border-b-2 border-[var(--border-default)]">
-        <div className="flex items-center gap-1 min-w-max">
-          {tabs.map(t => {
-            const isActive = tab === t.key;
-            return (
-              <Button
-                key={t.key}
-                variant="tertiary"
-                onClick={() => setTab(t.key)}
-                className={
-                  "rounded-none px-4 sm:px-6 py-3 mb-[-6px] shrink-0 text-sm sm:text-base cursor-pointer flex items-center gap-2.5 transition-all " +
-                  (isActive
-                    ? "border-b-[3px] border-[#6E0F2D] text-[#6E0F2D] font-bold"
-                    : "border-b-[3px] border-transparent text-[#9C8672] hover:text-[#6E0F2D] font-medium")
-                }
-              >
-                {t.icon}
-                <span>{t.label}</span>
-              </Button>
-            );
-          })}
-        </div>
-      </div>
+      {/* Royal Sub-tab strip */}
+      <RoyalSubTabStrip
+        tabs={tabs}
+        activeTab={tab}
+        onTabChange={setTab}
+      />
 
       <AnimatePresence mode="wait">
         <motion.div key={tab} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>

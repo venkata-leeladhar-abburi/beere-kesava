@@ -689,17 +689,31 @@ export function WeaverMakingChargesSection() {
 
             {/* ── Table / List view ────────────────────────────────── */}
             {(view === "list" || view === "table") && (
-              <div className="overflow-x-auto w-full mb-8">
-                <div className="min-w-[1450px]">
-                  <DataTable
-                    columns={weaverColumns}
-                    data={filtered}
-                    getRowId={w => w.id}
-                    caption="Weaver making charges"
-                    selectedIds={selectedIds}
-                    onSelectionChange={setSelectedIds}
-                    emptyTitle="No weavers match your filters"
-                    pagination
+              <div className="w-full mb-8">
+                <div className="overflow-x-auto w-full">
+                  <div className="min-w-[1450px]">
+                    <DataTable
+                      columns={weaverColumns}
+                      data={pag.pageItems}
+                      getRowId={w => w.id}
+                      caption="Weaver making charges"
+                      selectedIds={selectedIds}
+                      onSelectionChange={setSelectedIds}
+                      emptyTitle="No weavers match your filters"
+                      pagination={false}
+                    />
+                  </div>
+                </div>
+                <div className="p-4 border-t border-[var(--border-default)] bg-white rounded-b-xl">
+                  <Pagination
+                    page={pag.page}
+                    pageCount={pag.pageCount}
+                    total={pag.total}
+                    pageSize={pag.pageSize}
+                    start={pag.start}
+                    onPageChange={pag.setPage}
+                    onPageSizeChange={pag.setPageSize}
+                    itemLabel="weavers"
                   />
                 </div>
               </div>
