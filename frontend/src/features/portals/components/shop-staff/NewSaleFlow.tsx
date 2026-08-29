@@ -354,7 +354,7 @@ export function NewSaleFlow() {
                 where the sarees were picked; repeating the editors here gave
                 two places to change one number. "Edit prices" jumps back. */}
             <Card style={{ marginBottom: 22, overflow: "hidden" }}>
-              <div style={{ height: 4, background: `linear-gradient(90deg, ${C.burg}, ${C.gold})` }} />
+              <div style={{ height: 4, background: C.burg }} />
               <div style={{ padding: "10px 16px", borderBottom: `1px solid ${C.bdr}`, background: "rgba(110,15,45,0.03)", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" as const }}>
                 <span style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 1.5, color: C.muted, textTransform: "uppercase" as const }}>
                   {cart.length} saree{cart.length !== 1 ? "s" : ""} · amount due

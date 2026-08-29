@@ -5,6 +5,7 @@ import { BatchRecord } from "@/features/production";
 import { F, STATUS_CFG, T, WeaverLite } from "./theme";
 import { Button, SearchInput } from "../../../../shared/ui/primitives";
 import { EntityCode } from "@/shared/ui/domain";
+import { toInitials } from "@/shared/lib/initials";
 
 export function RecipientSelector({
   recipientType, setRecipientType,
@@ -86,7 +87,7 @@ export function RecipientSelector({
                         className={`transition-colors ${isSelected ? "bg-[#F8EFE0]" : "bg-white hover:bg-[#F9F0E1]/70"}`}
                       >
                         <div style={{ width: 38, height: 38, borderRadius: "50%", background: w.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                          <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 12, color: "#FFF" }}>{w.initials.slice(0, 2)}</span>
+                          <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 12, color: "#FFF" }}>{toInitials(w.initials)}</span>
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: isSelected ? "#2C0913" : T.luxuryBrown, display: "flex", alignItems: "center", gap: 6 }}>{w.name} <EntityCode type="weaver" value={w.code} size="sm" /></div>
@@ -104,7 +105,7 @@ export function RecipientSelector({
           <>
             <div style={{ background: T.warmIvory, border: `1px solid ${T.borderDef}`, borderRadius: 14, padding: 16, display: "flex", alignItems: "center", gap: 14, marginBottom: 12 }}>
               <div style={{ width: 46, height: 46, borderRadius: "50%", background: selectedWeaver.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: "#FFF" }}>{selectedWeaver.initials.slice(0, 2)}</span>
+                <span style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: "#FFF" }}>{toInitials(selectedWeaver.initials)}</span>
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown, display: "flex", alignItems: "center", gap: 6 }}>{selectedWeaver.name} <EntityCode type="weaver" value={selectedWeaver.code} size="sm" /></div>

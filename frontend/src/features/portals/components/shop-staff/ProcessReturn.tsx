@@ -259,13 +259,13 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
           <div role="radiogroup" aria-label="Return type" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 18 }}>
             {[
               {
-                id: "retail" as const, Icon: ShoppingBag, accent: "#AB3832", soft: "rgba(171,56,50,0.08)",
+                id: "retail" as const, Icon: ShoppingBag, accent: C.burg, soft: "rgba(110,15,45,0.08)",
                 title: "Retail Return",
                 desc: "A customer is bringing back a saree they bought here.",
                 need: "Needs the saree barcode or the original bill",
               },
               {
-                id: "wholesale" as const, Icon: Building2, accent: "#845E04", soft: "rgba(200,155,71,0.14)",
+                id: "wholesale" as const, Icon: Building2, accent: C.gold, soft: "rgba(200,155,71,0.14)",
                 title: "Wholesale Return",
                 desc: "A wholesale buyer is sending stock back to us.",
                 need: "No barcode — a new tag is generated and the saree joins inventory",
@@ -278,7 +278,7 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
                   fullWidth
                   role="radio"
                   aria-checked={false}
-                  className="h-full flex-col items-start justify-start gap-4 whitespace-normal rounded-[18px] border border-[rgba(110,15,45,0.12)] bg-white p-6 text-left shadow-[0_2px_12px_rgba(74,6,27,0.06)] transition-all hover:border-[var(--rt)] hover:shadow-[0_8px_28px_rgba(74,6,27,0.12)]"
+                  className="h-full flex-col items-start justify-start gap-4 whitespace-normal rounded-xl border border-[rgba(200,155,71,0.4)] bg-white p-6 text-left transition-all hover:border-[#6E0F2D] hover:bg-[#F8F4F0]"
                 >
                   <span style={{ width: 52, height: 52, borderRadius: 14, background: o.soft, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <o.Icon size={26} color={o.accent} />
@@ -492,7 +492,7 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
       <div style={{ display: "flex", justifyContent: "center", padding: "16px 20px 0" }}>
         <div role="tablist" aria-label="Wholesale return path" style={{
           display: "inline-flex", gap: 4, padding: 4, borderRadius: 999,
-          background: "rgba(200,155,71,0.10)", border: "1px solid rgba(200,155,71,0.30)",
+          background: "rgba(110,15,45,0.06)", border: "1px solid rgba(110,15,45,0.20)",
           maxWidth: "100%", overflowX: "auto" as const,
         }}>
           {([
@@ -510,7 +510,7 @@ function ProcessReturn({ onBack }: { onBack: () => void }) {
                 style={{
                   padding: "7px 16px", borderRadius: 999, border: "none", cursor: "pointer",
                   whiteSpace: "nowrap" as const,
-                  background: on ? "#845E04" : "transparent",
+                  background: on ? C.burg : "transparent",
                   color: on ? "#FFFDF9" : C.muted,
                   fontFamily: F.u, fontSize: 13, fontWeight: 700,
                 }}

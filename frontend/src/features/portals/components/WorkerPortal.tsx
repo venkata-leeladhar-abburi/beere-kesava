@@ -23,6 +23,7 @@ import type { IconComponent } from "../../../lib/icon";
 import { Button, IconButton } from "../../../shared/ui/primitives";
 
 import { imgBKLogo } from "../../../shared/constants/weaverImages";
+import { toInitials } from "@/shared/lib/initials";
 
 type Tab = "home" | "qc" | "weavers" | "finishing" | "dispatch" | "profile";
 
@@ -169,7 +170,7 @@ function WorkerMobileTopNav({ onMenuOpen, onProfile }: { onMenuOpen: () => void;
               variant="tertiary"
               className="!size-9 !rounded-[10px] !p-0 !border-none !bg-[#6E0F2D] hover:!bg-[#6E0F2D]"
             >
-              <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 12, color: "#FFFFFF" }}>{initials}</span>
+              <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 12, color: "#FFFFFF" }}>{toInitials(initials)}</span>
             </Button>
           </div>
 
@@ -226,7 +227,7 @@ function MobileProfile({ onClose }: { onClose?: () => void }) {
       <div style={{ background: C.burg, padding: "20px 20px 28px", borderBottom: "1px solid rgba(255,255,255,0.10)" }}>
         <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
           <div style={{ width: 68, height: 68, borderRadius: "50%", background: "rgba(255,255,255,0.15)", border: "2px solid rgba(255,255,255,0.30)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <span style={{ fontFamily: F.d, fontSize: 24, fontWeight: 700, color: "#FFF" }}>{initials}</span>
+            <span style={{ fontFamily: F.d, fontSize: 24, fontWeight: 700, color: "#FFF" }}>{toInitials(initials)}</span>
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontFamily: F.d, fontSize: 22, fontWeight: 700, color: "#FFF", lineHeight: 1.2 }}>{userName}</div>

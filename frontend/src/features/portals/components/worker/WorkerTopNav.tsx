@@ -12,6 +12,7 @@ import { Button, IconButton } from "../../../../shared/ui/primitives";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, Popover } from "../../../../shared/ui/overlay";
 import { formatRelativeTime, notificationBody, notificationTitle, useNotificationBell } from "@/features/notifications";
 import { roleLabel, staffIdentitySubtitle, useAdminStaffView } from "@/shared/ui/portal/AdminStaffView";
+import { toInitials } from "@/shared/lib/initials";
 
 type Tab = "home" | "qc" | "weavers" | "finishing" | "dispatch" | "profile";
 type NavTab = "home" | "qc" | "weavers" | "finishing" | "dispatch";
@@ -202,7 +203,7 @@ export function WorkerTopNav({ active, onSelect, bp, pendingQcCount = 0 }: Worke
               style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", padding: "5px 10px 5px 5px", borderRadius: 10, border: "1px solid rgba(200,155,71,0.22)", backgroundColor: "rgba(245,232,208,0.06)" }}
             >
               <div style={{ width: 28, height: 28, borderRadius: 8, background: C.burg, border: "1px solid rgba(200,155,71,0.30)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 12, color: "#FFF" }}>{initials}</span>
+                <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 12, color: "#FFF" }}>{toInitials(initials)}</span>
               </div>
               <span style={{ fontFamily: F.u, fontWeight: 500, fontSize: 13, color: C.cream }}>{name}</span>
             </motion.div>

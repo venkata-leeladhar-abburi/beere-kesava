@@ -76,16 +76,21 @@ export function ReturnHistorySection({ returnLog, canSeePrices, isLoading, isErr
       ) : returnLog.length === 0 ? (
         <EmptyState title="No returns processed yet" description="Returns recorded here will show up in this history." compact />
       ) : returnLog.map((r) => (
-        <div key={r.id} style={{ background: C.white, border: `1px solid ${C.bdr}`, borderLeft: `3px solid ${r.type === "retail" ? C.crim : C.gold}`, borderRadius: 12, padding: "12px 14px", marginBottom: 8 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-            <span style={{ background: r.type === "retail" ? "rgba(192,57,43,0.10)" : "rgba(200,155,71,0.15)", color: r.type === "retail" ? C.crim : "#8B6520", borderRadius: 999, padding: "2px 8px", fontFamily: F.m, fontSize: 12, fontWeight: 600 }}>{r.id}</span>
-            <span style={{ background: r.type === "retail" ? "rgba(192,57,43,0.07)" : "rgba(200,155,71,0.10)", color: r.type === "retail" ? C.crim : C.gold, borderRadius: 999, padding: "2px 8px", fontFamily: F.u, fontSize: 12, fontWeight: 600 }}>{r.type === "retail" ? "Retail" : "Wholesale"}</span>
-            <span style={{ marginLeft: "auto", fontFamily: F.m, fontSize: 12, color: C.muted }}>{r.date}</span>
+        <div key={r.id} style={{ background: C.white, border: `1px solid rgba(200,155,71,0.4)`, borderRadius: 14, padding: "16px 18px", marginBottom: 12, boxShadow: "0 2px 10px rgba(74,6,27,0.02)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+            <span style={{ background: r.type === "retail" ? "rgba(110,15,45,0.08)" : "rgba(200,155,71,0.15)", color: r.type === "retail" ? C.burg : "#8B6520", borderRadius: 999, padding: "4px 10px", fontFamily: F.m, fontSize: 12, fontWeight: 700 }}>{r.id}</span>
+            <span style={{ background: r.type === "retail" ? "rgba(110,15,45,0.05)" : "rgba(200,155,71,0.10)", color: r.type === "retail" ? C.burg : "#8B6520", borderRadius: 999, padding: "4px 10px", fontFamily: F.u, fontSize: 12, fontWeight: 700 }}>{r.type === "retail" ? "Retail" : "Wholesale"}</span>
+            <span style={{ marginLeft: "auto", fontFamily: F.m, fontSize: 13, color: C.muted, fontWeight: 500 }}>{r.date}</span>
           </div>
           {r.type === "retail" ? (
-            <div style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{r.customer} · {r.originalSaleId} · {r.reason}{canSeePrices && <> · <span style={{ color: C.gold, fontWeight: 600 }}>{r.amount}</span></>}</div>
+            <div style={{ fontFamily: F.u, fontSize: 14, color: C.text, lineHeight: 1.5 }}>
+              <span style={{ fontWeight: 600 }}>{r.customer}</span> <span style={{ color: C.muted }}>·</span> {r.originalSaleId} <span style={{ color: C.muted }}>·</span> {r.reason}
+              {canSeePrices && <> <span style={{ color: C.muted }}>·</span> <span style={{ color: C.gold, fontWeight: 700 }}>{r.amount}</span></>}
+            </div>
           ) : (
-            <div style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{r.vendor} · {r.design} · {r.color} · {r.weight} · {r.wsReason}</div>
+            <div style={{ fontFamily: F.u, fontSize: 14, color: C.text, lineHeight: 1.5 }}>
+              <span style={{ fontWeight: 600 }}>{r.vendor}</span> <span style={{ color: C.muted }}>·</span> {r.design} <span style={{ color: C.muted }}>·</span> {r.color} <span style={{ color: C.muted }}>·</span> {r.weight} <span style={{ color: C.muted }}>·</span> {r.wsReason}
+            </div>
           )}
         </div>
       ))}

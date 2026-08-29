@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Truck, Package, ChevronDown, ChevronRight, Printer, X } from "lucide-react";
+import { Search, Truck, Package, ChevronDown, ChevronRight, Printer, X, CheckCircle } from "lucide-react";
 
-import { C, F, TEAL, Card, Chip } from "./theme";
+import { C, F, TEAL, Card, Chip, PortalStatsStrip, type PortalStat, PageHero, SectionCard } from "./theme";
 import { sareeTypeName, sareeTypeText } from "./stock-format";
 import { inventoryApi, type ShopStockItem } from "../../../../shared/api/inventory";
 import { Button, Input, IconButton, MultiSelect } from "../../../../shared/ui/primitives";
@@ -62,27 +62,6 @@ const fmtRetail = (retailRupees: number | null): string | null =>
 type AvailabilityFilter = "all" | "available" | "sold";
 type OriginFilter = "all" | "dispatch" | "return";
 type ViewMode = "all" | "dispatch" | "type" | "origin";
-
-function StatCard({ label, value, sub, tone }: {
-  label: string;
-  value: string;
-  sub: string;
-  tone: "dark" | "gold" | "teal";
-}) {
-  const skin = {
-    dark: { bg: C.dark, label: "rgba(255,255,255,0.60)", value: "#FFF", sub: "rgba(255,255,255,0.55)", border: "none" },
-    gold: { bg: C.gold, label: "rgba(26,10,15,0.65)", value: C.text, sub: "rgba(26,10,15,0.55)", border: "none" },
-    teal: { bg: "rgba(15,118,110,0.10)", label: TEAL, value: TEAL, sub: TEAL, border: `1px solid rgba(15,118,110,0.30)` },
-  }[tone];
-
-  return (
-    <div style={{ flex: "1 1 160px", background: skin.bg, border: skin.border, borderRadius: 16, padding: "16px 18px" }}>
-      <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 12, color: skin.label, marginBottom: 6 }}>{label}</div>
-      <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 24, color: skin.value, lineHeight: 1.1 }}>{value}</div>
-      <div style={{ fontFamily: F.u, fontSize: 12, color: skin.sub, opacity: 0.85, marginTop: 4 }}>{sub}</div>
-    </div>
-  );
-}
 
 /**
  * One segmented control, not a scrolling row of look-alike pills. A single
@@ -479,30 +458,37 @@ function ShopInventory() {
   return (
     <div style={{ paddingBottom: 32 }}>
       {/* Hero */}
-      <div style={{ background: C.dark, padding: "26px 20px 24px" }}>
-        <div style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 3, color: "rgba(255,255,255,0.55)", textTransform: "uppercase" as const, marginBottom: 8 }}>
-          SINCE 1999 · SHOP INVENTORY
-        </div>
-        <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 38, color: "#FFF", lineHeight: 1.15, marginBottom: 5 }}>Shop Inventory</div>
-        <div style={{ fontFamily: F.d, fontStyle: "italic", fontWeight: 500, fontSize: 18, color: C.gold }}>
-          Sarees dispatched to this shop
-        </div>
-      </div>
+      <PageHero
+        eyebrow="SINCE 1999 · SHOP INVENTORY"
+        title="Shop Inventory"
+        titleAccent="Sarees dispatched to this shop"
+      />
 
       {/* Stats */}
-      <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 10, padding: "16px 20px 4px" }}>
-        <StatCard tone="dark" label="Total Received" value={`${stock.length}`} sub={`Across ${dispatches.length} dispatch${dispatches.length === 1 ? "" : "es"}`} />
-        <StatCard tone="gold" label="Available for Sale" value={`${availableCount}`} sub="Ready for customers" />
-        <StatCard tone="teal" label="Sold" value={`${soldCount}`} sub="Already billed" />
-      </div>
+      <PortalStatsStrip 
+        overlap={true}
+        stats={[
+          { label: "Total Received", value: stock.length, sub: `Across ${dispatches.length} dispatch${dispatches.length === 1 ? "" : "es"}`, icon: Truck },
+          { label: "Available for Sale", value: availableCount, sub: "Ready for customers", icon: Package, highlight: true },
+          { label: "Sold", value: soldCount, sub: "Already billed", icon: CheckCircle }
+        ]} 
+      />
 
       {/* Returns — their own stock, and the gate that lets them be sold. */}
-      <ShopReturnsSection />
+      <div style={{ marginTop: 32 }}>
+        <ShopReturnsSection />
+      </div>
 
       {/* Search + filters — one row of controls, in the order they get used:
           find it, narrow it, then choose how to read it. */}
-      <Card style={{ margin: "16px 20px", padding: 16 }}>
-        <div style={{ marginBottom: 14 }}>
+      <div style={{ margin: "0 20px" }}>
+        <SectionCard
+          icon={Package}
+          title="All Sarees Inventory"
+          subtitle="Track every saree end to end, across all weavers and in-house looms combined"
+          bodyPadding="20px"
+        >
+          <div style={{ marginBottom: 16 }}>
           <Input
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -590,13 +576,12 @@ function ShopInventory() {
             </Button>
           )}
         </div>
-      </Card>
 
       {/* Selection bar — the one thing you can do to a set of sarees from here
           is print their tags, so it is the only action offered. */}
       {selected.size > 0 && (
         <div style={{
-          position: "sticky", top: 0, zIndex: 5, margin: "0 20px 12px", padding: "10px 14px",
+          position: "sticky", top: 0, zIndex: 5, margin: "0 0 16px", padding: "10px 14px",
           background: C.burg, borderRadius: 12, display: "flex", alignItems: "center",
           justifyContent: "space-between", gap: 12, flexWrap: "wrap" as const,
         }}>
@@ -615,19 +600,19 @@ function ShopInventory() {
       )}
 
       {isLoading && (
-        <div style={{ margin: "0 20px 12px" }}>
+        <div style={{ margin: "0 0 12px" }}>
           <LoadingState variant="skeleton" rows={4} />
         </div>
       )}
 
       {isError && (
-        <div style={{ margin: "0 20px 12px" }}>
+        <div style={{ margin: "0 0 12px" }}>
           <ErrorState error={error} onRetry={() => void refetch()} />
         </div>
       )}
 
       {!isLoading && !isError && stock.length === 0 && (
-        <div style={{ margin: "0 20px 12px" }}>
+        <div style={{ margin: "0 0 12px" }}>
           <EmptyState
             icon="goodsReceipt"
             title="Nothing dispatched to the shop yet"
@@ -638,9 +623,9 @@ function ShopInventory() {
 
       {/* ── One list ─────────────────────────────────────────────────────── */}
       {!isLoading && !isError && stock.length > 0 && view === "all" && (
-        <Card style={{ margin: "0 20px 14px", padding: 8 }}>
+        <div style={{ margin: "0 0 14px", padding: 0 }}>
           {table(filtered, "Sarees in shop stock")}
-        </Card>
+        </div>
       )}
 
       {/* ── Grouped: a collapsible table per dispatch / per saree type ────── */}
@@ -648,7 +633,7 @@ function ShopInventory() {
         const isCollapsed = collapsed.has(group.key);
         const groupAvailable = group.sarees.filter(s => s.status !== "sold").length;
         return (
-          <div key={group.key} style={{ margin: "0 20px 14px" }}>
+          <div key={group.key} style={{ margin: "0 0 14px" }}>
             <button
               type="button"
               onClick={() => setCollapsed(prev => {
@@ -690,6 +675,8 @@ function ShopInventory() {
           </div>
         );
       })}
+        </SectionCard>
+      </div>
     </div>
   );
 }

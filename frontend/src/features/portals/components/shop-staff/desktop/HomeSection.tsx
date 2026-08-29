@@ -125,7 +125,7 @@ export function HomeSection({
           {/* Left */}
           <div>
             {/* New Sale CTA */}
-            <div style={{ background: "#FFF", border: `2px solid ${C.burg}`, borderRadius: 20, padding: "28px 30px", marginBottom: 28, display: "flex", alignItems: "center", gap: 22, boxShadow: "0 4px 24px rgba(110,15,45,0.10)" }}>
+            <div className="flex flex-col md:flex-row items-center text-center md:text-left gap-4 md:gap-[22px]" style={{ background: "#FFF", border: `2px solid ${C.burg}`, borderRadius: 20, padding: "28px 30px", marginBottom: 28, boxShadow: "0 4px 24px rgba(110,15,45,0.10)" }}>
               <div style={{ width: 72, height: 72, borderRadius: "50%", background: C.gold, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 16px rgba(200,155,71,0.35)" }}>
                 <ShoppingBag size={34} color={C.dark} />
               </div>
@@ -133,19 +133,19 @@ export function HomeSection({
                 <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 30, color: C.text, marginBottom: 6 }}>New Retail Sale</div>
                 <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>Record a sale at the counter — scan saree barcode, select payment, generate bill</div>
               </div>
-              <Button variant="primary" onClick={() => setActive("sale")} className="h-14 px-7 rounded-full bg-[#6E0F2D] hover:bg-[#4A061B] text-[#FFFDF9] hover:text-[#FFFDF9] border-none font-bold text-base gap-2 shrink-0 shadow-[0_4px_16px_rgba(110,15,45,0.30)]">
+              <Button variant="primary" onClick={() => setActive("sale")} className="h-14 px-7 rounded-full bg-[#6E0F2D] hover:bg-[#4A061B] text-[#FFFDF9] hover:text-[#FFFDF9] border-none font-bold text-base gap-2 shrink-0 shadow-[0_4px_16px_rgba(110,15,45,0.30)] w-full md:w-auto mt-2 md:mt-0">
                 <ArrowUpRight size={18} /> Start New Sale
               </Button>
             </div>
 
             {/* Recent Sales */}
             <DSH label="Recent Sales — Today" link="View All →" onLink={() => setActive("reports")} />
-            <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 18, overflow: isTablet ? "auto" : "hidden", boxShadow: "0 4px 20px rgba(44,24,16,0.08)", marginBottom: 32 }}>
+            <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${C.bdr}`, overflow: isTablet ? "auto" : "hidden", marginBottom: 32 }}>
               <div role="table" aria-label="Recent Sales — Today" className={isTablet ? "min-w-[640px]" : undefined}>
                 <div role="rowgroup">
-                  <div role="row" style={{ display: "grid", gridTemplateColumns: `1fr 1fr 120px 80px${canSeePrices ? " 100px" : ""}`, padding: "14px 24px", borderBottom: `1px solid ${C.bdr}`, background: "#FAFAF8" }}>
-                    {["Saree ID", "Customer", "Design", "Payment", ...(canSeePrices ? ["Amount"] : [])].map(h => (
-                      <div key={h} role="columnheader" style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted, letterSpacing: 0.4 }}>{h}</div>
+                  <div role="row" style={{ display: "grid", gridTemplateColumns: `50px 1.2fr 1fr 1.2fr 100px${canSeePrices ? " 120px" : ""}`, padding: "16px 24px", borderBottom: `1px solid ${C.bdr}`, background: "#FDFBF7" }}>
+                    {["S.No", "Saree ID", "Customer", "Design", "Payment", ...(canSeePrices ? ["Amount"] : [])].map(h => (
+                      <div key={h} role="columnheader" style={{ fontFamily: F.u, fontSize: 12, fontWeight: 700, color: C.muted, letterSpacing: 0.4, textTransform: "uppercase" }}>{h}</div>
                     ))}
                   </div>
                 </div>
@@ -160,18 +160,18 @@ export function HomeSection({
                 ) : (
                   <div role="rowgroup">
                     {recentSales.map((s, i) => (
-                      <div key={s.id} role="row" style={{ display: "grid", gridTemplateColumns: `1fr 1fr 120px 80px${canSeePrices ? " 100px" : ""}`, padding: "18px 24px", borderBottom: i < recentSales.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", alignItems: "center" }}>
-                        <div role="cell" style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                          <div style={{ width: 8, height: 36, borderRadius: 4, background: s.color, flexShrink: 0 }} />
-                          <div>
-                            <div style={{ fontFamily: F.m, fontSize: 13, fontWeight: 700, color: C.burg }}>{s.id}</div>
-                            {s.ext && <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.gold, background: "rgba(200,155,71,0.12)", padding: "1px 7px", borderRadius: 999 }}>External</span>}
+                      <div key={s.id} role="row" style={{ display: "grid", gridTemplateColumns: `50px 1.2fr 1fr 1.2fr 100px${canSeePrices ? " 120px" : ""}`, padding: "16px 24px", borderBottom: i < recentSales.length - 1 ? `1px solid rgba(110,15,45,0.06)` : "none", alignItems: "center" }}>
+                        <div role="cell" style={{ fontFamily: F.m, fontSize: 13, color: C.muted, fontWeight: 600 }}>{String(i + 1).padStart(2, '0')}</div>
+                        <div role="cell" style={{ display: "flex", alignItems: "center" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <div style={{ fontFamily: F.m, fontSize: 12, fontWeight: 600, color: C.text, background: "#F5F2EC", padding: "4px 8px", borderRadius: 6 }}>{s.id}</div>
+                            {s.ext && <span style={{ fontFamily: F.u, fontSize: 11, fontWeight: 600, color: C.gold, background: "rgba(200,155,71,0.12)", padding: "2px 8px", borderRadius: 999 }}>External</span>}
                           </div>
                         </div>
                         <div role="cell" style={{ fontFamily: F.u, fontSize: 14, fontWeight: 600, color: C.text }}>{s.customer}</div>
-                        <div role="cell" style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{s.design}</div>
+                        <div role="cell" style={{ fontFamily: F.u, fontSize: 13, color: C.text }}>{s.design}</div>
                         <div role="cell" style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>{s.pay}</div>
-                        {canSeePrices && <div role="cell" style={{ fontFamily: F.d, fontWeight: 700, fontSize: 18, color: C.gold }}>{s.amt}</div>}
+                        {canSeePrices && <div role="cell" style={{ fontFamily: F.d, fontWeight: 700, fontSize: 16, color: C.burg }}>{s.amt}</div>}
                       </div>
                     ))}
                   </div>
@@ -181,20 +181,29 @@ export function HomeSection({
 
             {/* Returns Today */}
             <DSH label="Returns Today" />
-            <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderLeft: `6px solid ${C.crim}`, borderRadius: 16, padding: "22px 26px", boxShadow: "0 3px 16px rgba(44,24,16,0.07)" }}>
+            <div style={{ background: "#FFF", border: `1px solid ${C.bdr}`, borderRadius: 12 }} className="p-4 sm:p-[22px_26px]">
               {latestReturn ? (
-                <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                  <div style={{ width: 48, height: 48, borderRadius: "50%", background: "rgba(192,57,43,0.10)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <RotateCcw size={22} color={C.crim} />
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
+                  <div className="flex items-center gap-4">
+                    <div style={{ width: 48, height: 48, borderRadius: "50%", background: "rgba(192,57,43,0.10)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <RotateCcw size={22} color={C.crim} />
+                    </div>
+                    <div className="sm:hidden flex-1">
+                      <div style={{ fontFamily: F.m, fontSize: 14, fontWeight: 700, color: C.burg, marginBottom: 4 }}>{latestReturn.sareeId}</div>
+                      <div style={{ fontFamily: F.u, fontSize: 14, color: C.text }}>
+                        {latestReturn.reason}
+                        {canSeePrices && latestReturn.refundAmount ? ` · ${formatMoney(rupees(Number(latestReturn.refundAmount)))}` : ""}
+                      </div>
+                    </div>
                   </div>
-                  <div style={{ flex: 1 }}>
+                  <div className="hidden sm:block flex-1">
                     <div style={{ fontFamily: F.m, fontSize: 14, fontWeight: 700, color: C.burg, marginBottom: 4 }}>{latestReturn.sareeId}</div>
                     <div style={{ fontFamily: F.u, fontSize: 14, color: C.text }}>
                       {latestReturn.reason}
                       {canSeePrices && latestReturn.refundAmount ? ` · ${formatMoney(rupees(Number(latestReturn.refundAmount)))}` : ""}
                     </div>
                   </div>
-                  <div>
+                  <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center w-full sm:w-auto pt-2 sm:pt-0 border-t border-[rgba(0,0,0,0.06)] sm:border-t-0">
                     <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginBottom: 4 }}>{dateLabel(latestReturn.returnDate)}</div>
                     <span style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.crim, background: "rgba(192,57,43,0.10)", padding: "3px 12px", borderRadius: 999 }}>Return</span>
                   </div>

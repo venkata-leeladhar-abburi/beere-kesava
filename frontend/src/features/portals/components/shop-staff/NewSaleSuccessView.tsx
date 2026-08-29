@@ -121,7 +121,7 @@ export function NewSaleSuccessView({
         <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted, marginBottom: 24 }}>Bill has been generated successfully.</div>
       </div>
       <Card style={{ margin: "0 20px 16px", overflow: "hidden" }}>
-        <div style={{ height: 4, background: `linear-gradient(90deg, ${C.burg}, ${C.gold})` }} />
+        <div style={{ height: 4, background: C.burg }} />
         <div style={{ padding: 20 }}>
           <div style={{ fontFamily: F.d, fontWeight: 600, fontSize: 14, color: C.burg, textAlign: "center" as const, marginBottom: 14 }}>Beere Kesava & Brothers Silks · Est. 1999</div>
           <div style={{ borderTop: `1px solid ${C.bdr}`, paddingTop: 12 }}>

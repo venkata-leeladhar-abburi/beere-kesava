@@ -45,6 +45,7 @@ import { UserProfileModal } from "../../../shared/ui/UserProfileModal";
 import { imgBKLogo } from "../../../shared/constants/weaverImages";
 import type { IconComponent } from "../../../lib/icon";
 import { layout } from "../../../design-system/tokens";
+import { toInitials } from "@/shared/lib/initials";
 
 // ── Design tokens (aligned with the rest of the app) ────────────────────────────
 const T = {
@@ -170,7 +171,7 @@ function TopNav({ active, set, onLogout, onProfile }: {
                 }}
               >
                 <div style={{ width: 30, height: 30, borderRadius: 9, background: "#C4923A", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 10px rgba(196,146,58,0.35)" }}>
-                  <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 12, color: "#FFFFFF" }}>{initials}</span>
+                  <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 12, color: "#FFFFFF" }}>{toInitials(initials)}</span>
                 </div>
                 {!compact && <span style={{ fontFamily: F.ui, fontWeight: 500, fontSize: 12, color: T.warmCream, letterSpacing: "0.1px" }}>{userName}</span>}
                 <ChevronDown size={13} color="rgba(245,232,208,0.75)" style={{ transform: showProfile ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
@@ -179,7 +180,7 @@ function TopNav({ active, set, onLogout, onProfile }: {
             <DropdownMenuContent align="end" className="!min-w-[240px] !p-0 !rounded-[14px] !overflow-hidden" style={{ background: "#FFFDF9", border: "1px solid rgba(110,15,45,0.14)", zIndex: "var(--z-tooltip)" }}>
               <div style={{ padding: "16px 18px", background: "rgba(196,146,58,0.06)", borderBottom: "1px solid rgba(110,15,45,0.10)", display: "flex", alignItems: "center", gap: 12 }}>
                 <div style={{ width: 42, height: 42, borderRadius: "50%", background: "#C4923A", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 3px 12px rgba(196,146,58,0.35)" }}>
-                  <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 15, color: "#FFF" }}>{initials}</span>
+                  <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 15, color: "#FFF" }}>{toInitials(initials)}</span>
                 </div>
                 <div>
                   <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 14, color: T.luxuryBrown }}>{userName}</div>
@@ -341,7 +342,7 @@ export function AcctMobileTopNav({ onMenuOpen, onProfile, onLogout }: {
             variant="tertiary"
             className="!size-9 !rounded-[10px] !p-0 !border-none !bg-[#C4923A] hover:!bg-[#C4923A]"
           >
-            <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 12, color: "#FFFFFF" }}>{initials}</span>
+            <span style={{ fontFamily: F.display, fontWeight: 700, fontSize: 12, color: "#FFFFFF" }}>{toInitials(initials)}</span>
           </Button>
         </div>
         {showProfile && (

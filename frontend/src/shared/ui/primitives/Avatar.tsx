@@ -11,16 +11,12 @@ import * as React from "react";
 import * as AvatarPrimitive from "@radix-ui/react-avatar";
 import { cn } from "../utils";
 import { avatarColorFor } from "../domain/avatarColor";
+import { toInitials } from "@/shared/lib/initials";
 
 const SIZE_PX = { xs: 24, sm: 32, md: 40, lg: 48, xl: 64, "2xl": 96 } as const;
 export type AvatarSize = keyof typeof SIZE_PX;
 
-function initialsOf(name: string): string {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "?";
-  if (parts.length === 1) return parts[0]!.slice(0, 2).toUpperCase();
-  return (parts[0]![0]! + parts[parts.length - 1]![0]!).toUpperCase();
-}
+const initialsOf = (name: string) => toInitials(name);
 
 export interface AvatarProps extends React.ComponentProps<typeof AvatarPrimitive.Root> {
   src?: string;

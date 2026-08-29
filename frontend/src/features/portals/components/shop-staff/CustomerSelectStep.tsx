@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import { motion } from "motion/react";
-import { Search, PhoneCall, UserPlus, Pencil, Check, MapPin } from "lucide-react";
+import { Search, PhoneCall, UserPlus, Pencil, Check, MapPin, ArrowLeft } from "lucide-react";
 import { C, F, Card } from "./theme";
 import { StepHeader, StepBody, FlowActions, ACCENT_SALE } from "./flow-kit";
 import { Button, Input, Textarea } from "../../../../shared/ui/primitives";
+import { toInitials } from "@/shared/lib/initials";
 
 export interface Customer {
   id: string;
@@ -66,6 +67,22 @@ export function CustomerSelectStep({
   canProceedStep1,
   onNext,
 }: CustomerSelectStepProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setShowCustomerList(false);
+      }
+    };
+    if (showCustomerList) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showCustomerList, setShowCustomerList]);
+
   return (
     <>
       <StepBody>
@@ -76,7 +93,7 @@ export function CustomerSelectStep({
 
       {/* Customer Search Input */}
       {!isNewCustomer && (
-        <div style={{ marginBottom: 14, position: "relative" as const }}>
+        <div ref={containerRef} style={{ marginBottom: 20, position: "relative" as const, zIndex: 50 }}>
           <div style={{ position: "relative" as const }}>
             <Input
               value={custSearch}
@@ -86,52 +103,56 @@ export function CustomerSelectStep({
               size="lg"
               iconLeft={Search}
               iconRight={PhoneCall}
-              className={showCustomerList && !selectedCustomer ? "rounded-b-none border-[#6E0F2D]" : ""}
             />
           </div>
 
           {/* Customer dropdown */}
           {showCustomerList && !selectedCustomer && (
             <div style={{
-              background: C.white, border: `1.5px solid ${C.burg}`, borderTop: "none",
-              borderRadius: "0 0 14px 14px",
-              boxShadow: "0 8px 24px rgba(44,24,16,0.12)", overflow: "hidden",
+              position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0,
+              background: C.white, border: `1px solid ${C.bdr}`,
+              borderRadius: 16,
+              boxShadow: "0 12px 40px rgba(74,6,27,0.12)", overflow: "hidden",
             }}>
-              <div style={{ padding: "8px 14px", background: "rgba(110,15,45,0.03)", borderBottom: `1px solid ${C.bdr}` }}>
+              <div style={{ padding: "16px 20px", background: "#FDFBF7", borderBottom: `1px solid rgba(0,0,0,0.04)` }}>
                 <span style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 1.5, color: C.muted, textTransform: "uppercase" as const }}>
                   {customersLoading ? "Loading…" : custSearch.length >= 2 ? `${filteredCustomers.length} result${filteredCustomers.length !== 1 ? "s" : ""} for "${custSearch}"` : "Recent Customers"}
                 </span>
               </div>
-              {customersLoading ? (
-                <div style={{ padding: "16px 14px", fontFamily: F.u, fontSize: 13, color: C.muted, textAlign: "center" as const }}>Loading customers…</div>
-              ) : filteredCustomers.length > 0 ? filteredCustomers.slice(0, 4).map((c, i) => (
-                <Button key={c.id} variant="tertiary" fullWidth onClick={() => handleSelectCustomer(c)}
-                  className={`justify-start gap-3 rounded-none border-0 px-3.5 py-3 ${i < Math.min(filteredCustomers.length, 4) - 1 ? "border-b border-[rgba(110,15,45,0.12)]" : ""}`}>
-                  <div style={{ width: 38, height: 38, borderRadius: "50%", background: `linear-gradient(135deg, ${C.burg}, ${C.dark})`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 12, color: "#FFF" }}>{c.initials}</span>
+              <div style={{ display: "flex", flexDirection: "column", padding: 12, gap: 8, maxHeight: 320, overflowY: "auto" }}>
+                {customersLoading ? (
+                  <div style={{ padding: "24px", fontFamily: F.u, fontSize: 14, color: C.muted, textAlign: "center" as const }}>Loading customers…</div>
+                ) : filteredCustomers.length > 0 ? filteredCustomers.map((c) => (
+                  <Button key={c.id} variant="tertiary" fullWidth onClick={() => handleSelectCustomer(c)}
+                    className="justify-start gap-4 rounded-xl border-0 px-4 py-3.5 hover:bg-[rgba(110,15,45,0.04)] transition-colors">
+                    <div style={{ width: 44, height: 44, borderRadius: "50%", background: `linear-gradient(135deg, ${C.burg}, ${C.dark})`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: "#FFF" }}>{toInitials(c.initials)}</span>
+                    </div>
+                    <div style={{ flex: 1, textAlign: "left" as const }}>
+                      <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>{c.name}</div>
+                      <div style={{ fontFamily: F.m, fontSize: 13, color: C.muted, marginTop: 2 }}>+91 {c.phone}</div>
+                    </div>
+                    <div style={{ textAlign: "right" as const, flexShrink: 0 }}>
+                      <div style={{ fontFamily: F.u, fontSize: 13, fontWeight: 500, color: C.text }}>{c.purchases} purchases</div>
+                      <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.gold, marginTop: 2 }}>{c.lastPurchase}</div>
+                    </div>
+                  </Button>
+                )) : (
+                  <div style={{ padding: "24px", textAlign: "center" as const }}>
+                    <div style={{ fontFamily: F.u, fontSize: 14, color: C.muted }}>No customer found for "{custSearch}"</div>
                   </div>
-                  <div style={{ flex: 1, textAlign: "left" as const }}>
-                    <div style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, color: C.text }}>{c.name}</div>
-                    <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 1 }}>+91 {c.phone}</div>
-                  </div>
-                  <div style={{ textAlign: "right" as const, flexShrink: 0 }}>
-                    <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted }}>{c.purchases} purchases</div>
-                    <div style={{ fontFamily: F.u, fontSize: 12, color: C.gold }}>{c.lastPurchase}</div>
-                  </div>
-                </Button>
-              )) : (
-                <div style={{ padding: "14px", textAlign: "center" as const }}>
-                  <div style={{ fontFamily: F.u, fontSize: 13, color: C.muted }}>No customer found for "{custSearch}"</div>
-                </div>
-              )}
+                )}
+              </div>
               {/* Add new customer option */}
-              <Button variant="tertiary" fullWidth onClick={handleAddNew}
-                className="justify-start gap-2.5 rounded-none border-0 border-t border-[rgba(110,15,45,0.12)] bg-[rgba(110,15,45,0.04)] px-3.5 py-3 hover:bg-[rgba(110,15,45,0.04)]">
-                <div style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(110,15,45,0.10)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <UserPlus size={14} color={C.burg} />
-                </div>
-                <span style={{ fontFamily: F.u, fontWeight: 600, fontSize: 13, color: C.burg }}>Add New Customer</span>
-              </Button>
+              <div style={{ padding: "0 12px 12px 12px" }}>
+                <Button variant="tertiary" fullWidth onClick={handleAddNew}
+                  className="justify-start gap-3.5 rounded-xl border-0 bg-[rgba(110,15,45,0.04)] px-4 py-3.5 hover:bg-[rgba(110,15,45,0.08)] transition-colors">
+                  <div style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(110,15,45,0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <UserPlus size={16} color={C.burg} />
+                  </div>
+                  <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.burg }}>Add New Customer</span>
+                </Button>
+              </div>
             </div>
           )}
         </div>
@@ -140,42 +161,40 @@ export function CustomerSelectStep({
       {/* Selected customer card */}
       {selectedCustomer && !isEditingCustomer && (
         <motion.div key="selected-cust" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-          <Card style={{ marginBottom: 16, overflow: "hidden" }}>
-            <div style={{ height: 3, background: `linear-gradient(90deg, ${C.green}, rgba(30,102,64,0.3))` }} />
-            <div style={{ padding: 16 }}>
-              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 14 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <div style={{ width: 50, height: 50, borderRadius: "50%", background: `linear-gradient(135deg, ${C.burg}, ${C.dark})`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 16, color: "#FFF" }}>{selectedCustomer.initials}</span>
-                  </div>
-                  <div>
-                    <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 14, color: C.text }}>{selectedCustomer.name}</div>
-                    <div style={{ fontFamily: F.m, fontSize: 12, color: C.muted, marginTop: 2 }}>+91 {selectedCustomer.phone}</div>
-                  </div>
+          <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${C.bdr}`, padding: "20px", marginBottom: 16 }}>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ width: 48, height: 48, borderRadius: "50%", background: `linear-gradient(135deg, ${C.burg}, ${C.dark})`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <span style={{ fontFamily: F.u, fontWeight: 700, fontSize: 15, color: "#FFF" }}>{toInitials(selectedCustomer.initials)}</span>
                 </div>
-                <Button variant="tertiary" size="sm" iconLeft={Pencil} onClick={() => setIsEditingCustomer(true)}
-                  className="rounded-lg border border-[rgba(110,15,45,0.12)] bg-[rgba(110,15,45,0.07)] px-2.5 py-1.5 hover:bg-[rgba(110,15,45,0.07)]">
-                  <span style={{ fontFamily: F.u, fontSize: 12, color: C.burg }}>Edit</span>
-                </Button>
+                <div>
+                  <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 15, color: C.text }}>{selectedCustomer.name}</div>
+                  <div style={{ fontFamily: F.m, fontSize: 13, color: C.muted, marginTop: 2 }}>+91 {selectedCustomer.phone}</div>
+                </div>
               </div>
-              <div className="grid-cols-1 md:grid-cols-3" style={{ display: "grid", gap: 8, marginBottom: 12 }}>
-                {[
-                  { val: String(selectedCustomer.purchases), label: "Purchases", color: C.burg },
-                  { val: selectedCustomer.total, label: "Lifetime", color: C.gold },
-                  { val: selectedCustomer.lastPurchase, label: "Last Visit", color: C.green },
-                ].map((s) => (
-                  <div key={s.label} style={{ background: "rgba(110,15,45,0.04)", borderRadius: 10, padding: "8px 10px", textAlign: "center" as const }}>
-                    <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 14, color: s.color, lineHeight: 1.3 }}>{s.val}</div>
-                    <div style={{ fontFamily: F.u, fontSize: 12, color: C.muted, marginTop: 2 }}>{s.label}</div>
-                  </div>
-                ))}
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(30,102,64,0.06)", border: `1px solid rgba(30,102,64,0.20)`, borderRadius: 8, padding: "8px 12px" }}>
-                <Check size={13} color={C.green} />
-                <span style={{ fontFamily: F.u, fontSize: 12, color: C.green }}>Existing customer — details filled automatically</span>
-              </div>
+              <Button variant="secondary" size="sm" iconLeft={Pencil} onClick={() => setIsEditingCustomer(true)}>
+                Edit
+              </Button>
             </div>
-          </Card>
+            
+            <div className="grid-cols-1 md:grid-cols-3" style={{ display: "grid", gap: 12, marginBottom: 16 }}>
+              {[
+                { val: String(selectedCustomer.purchases), label: "Purchases", color: C.text },
+                { val: selectedCustomer.total, label: "Lifetime", color: C.text },
+                { val: selectedCustomer.lastPurchase, label: "Last Visit", color: C.text },
+              ].map((s) => (
+                <div key={s.label} style={{ background: "#FDFBF7", border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "12px 14px", textAlign: "center" as const }}>
+                  <div style={{ fontFamily: F.d, fontWeight: 700, fontSize: 15, color: s.color, lineHeight: 1.3 }}>{s.val}</div>
+                  <div style={{ fontFamily: F.u, fontSize: 12, fontWeight: 600, color: C.muted, marginTop: 4, textTransform: "uppercase" as const }}>{s.label}</div>
+                </div>
+              ))}
+            </div>
+            
+            <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#FDFBF7", border: `1px solid ${C.bdr}`, borderRadius: 8, padding: "10px 14px" }}>
+              <Check size={14} color={C.green} />
+              <span style={{ fontFamily: F.u, fontSize: 13, fontWeight: 600, color: C.muted }}>Existing customer — details filled automatically</span>
+            </div>
+          </div>
         </motion.div>
       )}
 
@@ -217,13 +236,13 @@ export function CustomerSelectStep({
               />
             </div>
             {isEditingCustomer && (
-              <Button variant="link" onClick={() => setIsEditingCustomer(false)} className="mb-3.5 p-0 text-xs text-[#69635E] underline">
-                ← Cancel — keep original details
+              <Button variant="secondary" onClick={() => setIsEditingCustomer(false)} iconLeft={ArrowLeft} className="mb-4">
+                Cancel — keep original details
               </Button>
             )}
             {isNewCustomer && (
-              <Button variant="link" onClick={() => { setIsNewCustomer(false); setCustSearch(""); }} className="mb-3.5 p-0 text-xs text-[#69635E] underline">
-                ← Search existing customers instead
+              <Button variant="secondary" onClick={() => { setIsNewCustomer(false); setCustSearch(""); }} iconLeft={ArrowLeft} className="mb-4">
+                Search existing customers instead
               </Button>
             )}
           </div>

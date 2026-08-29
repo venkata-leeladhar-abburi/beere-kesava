@@ -82,9 +82,9 @@ export function ExternalPurchasesSection() {
         <div style={{ fontFamily: F.display, fontWeight: 700, fontSize: 18, color: T.luxuryBrown, marginBottom: 4 }}>External Purchases</div>
         <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe, marginBottom: 14 }}>Sarees purchased ready-made from external suppliers — separate from factory production.</div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16, marginBottom: 18 }}>
-          <SumCard icon={<Package size={22} color={T.royalBurgundy} />} label="Total External Sarees Purchased" value={`${totalSarees} sarees`} sub="All recorded purchases" />
-          <SumCard icon={<IndianRupee size={22} color={T.antiqueGold} />} label="Total Bill Amount" value={formatMoney(rupees(totalBill))} sub="Across all suppliers" hi />
+        <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 22, marginBottom: 24, alignItems: "stretch" }}>
+          <SilkSumCard icon={<Package size={22} color={T.antiqueGold} />} label="Total External Sarees Purchased" value={`${totalSarees} sarees`} sub="All recorded purchases" gid="ep-s" />
+          <SilkSumCard icon={<IndianRupee size={22} color={T.antiqueGold} />} label="Total Bill Amount" value={formatMoney(rupees(totalBill))} sub="Across all suppliers" gid="ep-b" />
         </div>
 
         <div style={{ background: "#FFFFFF", borderRadius: 12, border: `1px solid ${T.borderDef}`, overflow: "hidden", boxShadow: "0 2px 14px rgba(74,6,27,0.06)" }}>

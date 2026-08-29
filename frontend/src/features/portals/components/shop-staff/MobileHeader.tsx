@@ -13,6 +13,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import type { Role } from "../../../../contexts/AuthContext";
 import { notificationsApi } from "../../../../shared/api/notifications";
 import { salesApi } from "../../../../shared/api/sales";
+import { toInitials } from "@/shared/lib/initials";
 
 function notifEmoji(type: string): string {
   const t = type.toLowerCase();
@@ -249,7 +250,7 @@ export function MobileHeader({
                   outline: "none",
                 }}
               >
-                <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 13, color: "#FFFDF9" }}>{initials}</span>
+                <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 13, color: "#FFFDF9" }}>{toInitials(initials)}</span>
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="!min-w-[220px] !p-0 !rounded-[14px] !overflow-hidden" style={{ background: "#FFFDF9", border: `1px solid ${C.bdr}`, zIndex: 2000 }}>
@@ -371,7 +372,7 @@ export function MobileHeader({
           <div style={{ padding: "16px", borderTop: "1px solid rgba(255,255,255,0.08)", background: "rgba(0,0,0,0.20)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <div style={{ width: 36, height: 36, borderRadius: "50%", background: C.burg, border: "1px solid rgba(200,155,71,0.30)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 13, color: "#FFF" }}>{initials}</span>
+                <span style={{ fontFamily: F.d, fontWeight: 700, fontSize: 13, color: "#FFF" }}>{toInitials(initials)}</span>
               </div>
               <div>
                 <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 13, color: "#FFFDF9" }}>{name}</div>

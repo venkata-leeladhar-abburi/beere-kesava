@@ -128,13 +128,13 @@ function DraftCard({
         display: "flex", alignItems: "center", gap: 10, padding: "10px 14px",
         background: ACCENT_WHOLESALE.soft, borderBottom: `1px solid ${ACCENT_WHOLESALE.softBorder}`,
       }}>
-        <span style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 1.4, color: "#845E04", fontWeight: 700, textTransform: "uppercase" as const }}>
+        <span style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 1.4, color: "#6E0F2D", fontWeight: 700, textTransform: "uppercase" as const }}>
           Saree {index + 1} of {total}
         </span>
         <span style={{ flex: 1 }} />
         <Button
           variant="tertiary" size="sm" iconLeft={Copy} onClick={onDuplicate}
-          className="h-8 px-2.5 text-[13px] text-[#845E04]"
+          className="h-8 px-2.5 text-[13px] text-[#6E0F2D]"
         >
           Duplicate
         </Button>
@@ -158,7 +158,7 @@ function DraftCard({
               <Button
                 variant="tertiary" size="sm"
                 onClick={() => onChange({ noTagId: !draft.noTagId, sareeId: "" })}
-                className="h-7 px-2 text-[12.5px] text-[#845E04]"
+                className="h-7 px-2 text-[12.5px] text-[#6E0F2D]"
               >
                 {draft.noTagId ? "I have a tag" : "No tag / not in our records"}
               </Button>
@@ -170,7 +170,7 @@ function DraftCard({
                 border: `1px dashed ${ACCENT_WHOLESALE.softBorder}`,
                 fontFamily: F.u, fontSize: 13, color: "#4F4A45",
               }}>
-                <AlertCircle size={14} color="#845E04" />
+                <AlertCircle size={14} color="#6E0F2D" />
                 No tag will be attached — a return id is generated automatically from the saree type and vendor below.
               </div>
             ) : (
@@ -185,7 +185,7 @@ function DraftCard({
                 />
                 <Button
                   variant="secondary" iconLeft={ScanLine} onClick={() => setScannerOpen(true)}
-                  className="h-12 shrink-0 rounded-xl border border-[rgba(200,155,71,0.45)] px-4 text-[14px] text-[#845E04]"
+                  className="h-12 shrink-0 rounded-xl border border-[rgba(110,15,45,0.45)] px-4 text-[14px] text-[#6E0F2D]"
                 >
                   Scan
                 </Button>
@@ -264,7 +264,7 @@ function DraftCard({
                 aria-checked={draft.reason === r}
                 onClick={() => onChange({ reason: r, reasonNote: r === "Other" ? draft.reasonNote : "" })}
                 className={draft.reason === r
-                  ? "h-9 rounded-full border-2 border-[#845E04] bg-[rgba(200,155,71,0.14)] px-4 text-[13.5px] font-semibold text-[#845E04] hover:bg-[rgba(200,155,71,0.14)]"
+                  ? "h-9 rounded-full border-2 border-[#6E0F2D] bg-[rgba(110,15,45,0.14)] px-4 text-[13.5px] font-semibold text-[#6E0F2D] hover:bg-[rgba(110,15,45,0.14)]"
                   : "h-9 rounded-full border border-[rgba(110,15,45,0.16)] bg-white px-4 text-[13.5px] text-[#4F4A45] hover:border-[rgba(110,15,45,0.32)]"}
               >
                 {r}
@@ -473,7 +473,7 @@ export function ProcessReturnWholesaleFlow({
             <Button
               variant="secondary" fullWidth iconLeft={Plus}
               onClick={() => setDrafts(prev => [...prev, emptyDraft()])}
-              className="h-[50px] rounded-xl border-[1.5px] border-dashed border-[rgba(200,155,71,0.45)] bg-transparent text-[#845E04]"
+              className="h-[50px] rounded-xl border-[1.5px] border-dashed border-[rgba(110,15,45,0.45)] bg-transparent text-[#6E0F2D]"
             >
               Add another saree
             </Button>
@@ -501,7 +501,7 @@ export function ProcessReturnWholesaleFlow({
               aside={
                 <Button
                   variant="secondary" size="sm" iconLeft={Printer} onClick={onPrintTags}
-                  className="rounded-full border-[rgba(200,155,71,0.45)] px-4 text-[13px] text-[#845E04]"
+                  className="rounded-full border-[rgba(110,15,45,0.45)] px-4 text-[13px] text-[#6E0F2D]"
                 >
                   Print {drafts.length} tag{drafts.length === 1 ? "" : "s"}
                 </Button>
@@ -539,11 +539,11 @@ export function ProcessReturnWholesaleFlow({
                         width: 64, height: 64, borderRadius: 10, flexShrink: 0,
                         background: ACCENT_WHOLESALE.soft, display: "flex", alignItems: "center", justifyContent: "center",
                       }}>
-                        <Camera size={20} color="#845E04" />
+                        <Camera size={20} color="#6E0F2D" />
                       </div>
                     )}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 13.5, color: "#845E04" }}>
+                      <div style={{ fontFamily: F.m, fontWeight: 700, fontSize: 13.5, color: "#6E0F2D" }}>
                         {d.noTagId ? "ID generated on submit" : d.sareeId}
                       </div>
                       <div style={{ fontFamily: F.u, fontSize: 13, color: C.text, marginTop: 3 }}>

@@ -9,6 +9,7 @@ import { RecentReceivedDetailModal } from "../modals/ReportModals";
 import { Button } from "../../../../shared/ui/primitives";
 import { EntityCode } from "@/shared/ui/domain";
 import { jariToReels, formatBunsReels } from "../../../../shared/lib/weightUnits";
+import { toInitials } from "@/shared/lib/initials";
 
 export function RecentProcurementSection({ onViewAllPurchases }: { onViewAllPurchases: () => void }) {
   const { isMobile, px } = useContext(MobileCtx);
@@ -87,7 +88,7 @@ export function RecentProcurementSection({ onViewAllPurchases }: { onViewAllPurc
 
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                       <div style={{ width: 38, height: 38, borderRadius: 10, background: typeGrad, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 2px 8px rgba(74,6,27,0.15)" }}>
-                        <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 800, color: "#FFFFFF" }}>{initials}</span>
+                        <span style={{ fontFamily: F.ui, fontSize: 12, fontWeight: 800, color: "#FFFFFF" }}>{toInitials(initials)}</span>
                       </div>
                       <div style={{ minWidth: 0 }}>
                         <div style={{ fontFamily: F.ui, fontWeight: 700, fontSize: 13, color: T.luxuryBrown, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{r.vendor}</div>

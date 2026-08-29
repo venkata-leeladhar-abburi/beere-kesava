@@ -8,6 +8,7 @@ import { Button, IconButton } from "../../../../../shared/ui/primitives";
 import { salesApi } from "../../../../../shared/api/sales";
 import { Modal } from "../../../../../shared/ui/overlay";
 import { rupees, formatMoney } from "@/lib/domain/money";
+import { toInitials } from "@/shared/lib/initials";
 
 export function CustomerProfileDialog({
   customer, onClose, canSeePrices, isTablet,
@@ -38,7 +39,7 @@ export function CustomerProfileDialog({
             <div style={{ background: `linear-gradient(135deg, ${C.dark} 0%, #4A061B 100%)`, padding: "32px 32px 28px", flexShrink: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
                 <div style={{ width: 72, height: 72, borderRadius: "50%", background: C.burg, border: "3px solid rgba(200,155,71,0.50)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 20px rgba(110,15,45,0.40)" }}>
-                  <span style={{ fontFamily: F.d, fontSize: 30, fontWeight: 700, color: "#FFF" }}>{customer.initials}</span>
+                  <span style={{ fontFamily: F.d, fontSize: 30, fontWeight: 700, color: "#FFF" }}>{toInitials(customer.initials)}</span>
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>

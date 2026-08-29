@@ -8,6 +8,7 @@ import { MATS } from './data';
 import { useDashboardWeavers } from './hooks/useDashboardWeavers';
 import { rawMaterialsApi } from '../../../../shared/api/rawMaterials';
 import { Button } from "../../../../shared/ui/primitives";
+import { toInitials } from "@/shared/lib/initials";
 
 export function MobileWeavers({ onNavigate }: { onNavigate: (tab: string, ctx?: { weaverId: string; mode: "view" | "edit" }) => void }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -60,7 +61,7 @@ export function MobileWeavers({ onNavigate }: { onNavigate: (tab: string, ctx?: 
                 />
               ) : (
                 <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, ${w.bg} 0%, ${T.luxuryBrown} 100%)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <span style={{ fontFamily: F.display, fontSize: 48, fontWeight: 700, color: "#FFFDF9", letterSpacing: "1px" }}>{w.initials}</span>
+                  <span style={{ fontFamily: F.display, fontSize: 48, fontWeight: 700, color: "#FFFDF9", letterSpacing: "1px" }}>{toInitials(w.initials)}</span>
                 </div>
               )}
 

@@ -14,6 +14,7 @@ import { useCurrentWeaver } from "../useCurrentWeaver";
 import { useMyMaterialReturns } from "../useMyMaterialReturns";
 import { useMaterialIssue } from "@/features/materials";
 import { LoadingState, ErrorState } from "@/shared/ui/state";
+import { toInitials } from "@/shared/lib/initials";
 
 
 /** Thin wrapper on the shared portal heading — see PaymentsSection. */
@@ -146,7 +147,7 @@ export function ConfirmSection({
           <div style={{ background: "rgba(200,155,71,0.12)", border: `2px solid ${C.gold}`, borderRadius: 20, padding: "26px 30px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
               <div style={{ width: 56, height: 56, borderRadius: "50%", background: C.burg, border: `2px solid ${C.gold}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <span style={{ fontFamily: F.d, fontSize: 18, fontWeight: 700, color: "#FFF" }}>{initials}</span>
+                <span style={{ fontFamily: F.d, fontSize: 18, fontWeight: 700, color: "#FFF" }}>{toInitials(initials)}</span>
               </div>
               <div>
                 <div style={{ fontFamily: F.u, fontWeight: 700, fontSize: 20, color: C.text }}>{name}, your materials are ready</div>

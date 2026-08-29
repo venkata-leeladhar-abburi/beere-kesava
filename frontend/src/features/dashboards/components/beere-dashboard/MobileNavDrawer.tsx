@@ -6,6 +6,7 @@ import { imgBKLogo } from '../../../../shared/constants/weaverImages';
 import { T, F, G, EASE, findNavGroup, NAV_GROUPS } from './theme';
 import { Button, IconButton } from '../../../../shared/ui/primitives';
 import { Drawer } from '../../../../shared/ui/overlay';
+import { MOBILE_NAV_H } from '../../../../shared/ui/SectionNavigator';
 
 export function MobileMenuDrawer({ open, onClose, activeTab, setTab }: {
   open: boolean; onClose: () => void; activeTab: string; setTab: (v: string) => void;
@@ -132,29 +133,50 @@ export function MobileMenuDrawer({ open, onClose, activeTab, setTab }: {
 export function MobileTopNav({ onMenuOpen, onBack, onLogout, onProfile, onNotifications }: { onMenuOpen: () => void; onBack?: () => void; onLogout?: () => void; onProfile?: () => void; onNotifications?: () => void }) {
   const [showProfile, setShowProfile] = React.useState(false);
   const [showNotif, setShowNotif] = React.useState(false);
-  const [scrollDirection, setScrollDirection] = React.useState<"up" | "down">("up");
+  // Scroll-collapse — same behaviour as the desktop TopNav: the bar slides out
+  // of view on downward scroll (leaving the sticky section-nav pinned at the
+  // top on its own) and slides back in on the smallest upward scroll.
+  const [isHidden, setIsHidden] = React.useState(false);
   const lastScrollYRef = React.useRef(0);
 
-  React.useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY || document.documentElement.scrollTop;
-      const diff = currentScrollY - lastScrollYRef.current;
+  // While the bell or profile popover is open the collapse is frozen — those
+  // menus are absolutely positioned inside this bar, so hiding it mid-tap
+  // would take the just-opened menu off-screen with it. Assigned during render
+  // so the ref is already true for any scroll event the open triggers.
+  const overlayOpen = showNotif || showProfile;
+  const overlayOpenRef = React.useRef(overlayOpen);
+  overlayOpenRef.current = overlayOpen;
+  React.useEffect(() => { if (overlayOpen) setIsHidden(false); }, [overlayOpen]);
 
-      if (currentScrollY < 30) {
-        setScrollDirection("up");
-      } else if (diff > 8) {
-        setScrollDirection("down");
-      } else if (diff < -8) {
-        setScrollDirection("up");
-      }
-      lastScrollYRef.current = currentScrollY;
+  React.useEffect(() => {
+    const readY = () => window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    lastScrollYRef.current = readY();
+    let ticking = false;
+    const handleScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        const y = readY();
+        const diff = y - lastScrollYRef.current;
+        if (overlayOpenRef.current) {
+          lastScrollYRef.current = y;
+          return;
+        }
+        if (y <= MOBILE_NAV_H) {
+          setIsHidden(false);
+        } else if (diff > 6) {
+          setIsHidden(true);
+        } else if (diff < -6) {
+          setIsHidden(false);
+        }
+        lastScrollYRef.current = y;
+      });
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  const isHidden = scrollDirection === "down";
 
   return (
     <motion.nav
@@ -165,7 +187,7 @@ export function MobileTopNav({ onMenuOpen, onBack, onLogout, onProfile, onNotifi
         position: "sticky",
         top: 0,
         zIndex: 100,
-        height: 60,
+        height: MOBILE_NAV_H,
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
@@ -175,8 +197,8 @@ export function MobileTopNav({ onMenuOpen, onBack, onLogout, onProfile, onNotifi
         WebkitBackdropFilter: "blur(24px)",
         borderBottom: `1px solid rgba(110,15,45,0.08)`,
         boxShadow: "0 2px 20px rgba(74,6,27,0.05)",
-        transform: isHidden ? "translateY(-100%)" : "translateY(0%)",
-        transition: "transform 0.3s ease",
+        transform: isHidden ? `translateY(-${MOBILE_NAV_H}px)` : "translateY(0%)",
+        transition: "transform 0.32s cubic-bezier(0.4, 0, 0.2, 1)",
       }}
     >
       <IconButton

@@ -10,6 +10,7 @@ import { Button } from "../../../../shared/ui/primitives";
 import { resolveAssetUrl } from "../../../../shared/api/uploads";
 import { DataTable, type ColumnDef } from "../../../../shared/ui/data";
 import { WeaverCardMockupStyle } from "./WeaverCardMockupStyle";
+import { toInitials } from "@/shared/lib/initials";
 
 export function useRealWeavers() {
   const { data: weaversRes, isLoading: rosterLoading, isError: rosterError } = useQuery({
@@ -165,7 +166,7 @@ export function WeaverListView({ onSelect }: { onSelect: (w: typeof WEAVERS[0]) 
             {w.photo
               ? <img src={w.photo} alt={w.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               : <div style={{ width: "100%", height: "100%", background: w.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <span style={{ fontFamily: F.display, fontSize: 20, color: "#FFFDF9" }}>{w.initials}</span>
+                <span style={{ fontFamily: F.display, fontSize: 20, color: "#FFFDF9" }}>{toInitials(w.initials)}</span>
               </div>
             }
           </div>

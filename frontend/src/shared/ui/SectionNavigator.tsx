@@ -288,11 +288,14 @@ export function SectionNavigator({
       const currentScrollY = window.scrollY || document.documentElement.scrollTop;
       const diff = currentScrollY - lastScrollYRef.current;
 
-      if (currentScrollY < 30) {
+      // Thresholds kept identical to the mobile/desktop top bars
+      // (MobileNavDrawer.tsx, beere-dashboard/components/TopNav.tsx) so this
+      // bar's `top` slides in lockstep with the bar collapsing above it.
+      if (currentScrollY <= MOBILE_NAV_H) {
         setScrollDirection("up");
-      } else if (diff > 8) {
+      } else if (diff > 6) {
         setScrollDirection("down");
-      } else if (diff < -8) {
+      } else if (diff < -6) {
         setScrollDirection("up");
       }
       lastScrollYRef.current = currentScrollY;
@@ -324,7 +327,7 @@ export function SectionNavigator({
         padding,
         overflowX: "hidden",
         maxWidth: "100%",
-        transition: "top 0.3s ease",
+        transition: "top 0.32s cubic-bezier(0.4, 0, 0.2, 1)",
       }}
     >
       <span style={{ flexShrink: 0, fontFamily, fontWeight: 600, fontSize: 12, color: mutedColor, letterSpacing: "1.3px", textTransform: "uppercase" as const }}>

@@ -44,14 +44,12 @@ export const ACCENT_SALE: FlowAccent = {
   soft: "rgba(110,15,45,0.06)", softBorder: "rgba(110,15,45,0.20)",
 };
 export const ACCENT_RETURN: FlowAccent = {
-  base: "#AB3832", deep: "#8C2B26",
-  soft: "rgba(171,56,50,0.06)", softBorder: "rgba(171,56,50,0.22)",
+  base: "#6E0F2D", deep: "#4A061B",
+  soft: "rgba(110,15,45,0.06)", softBorder: "rgba(110,15,45,0.20)",
 };
 export const ACCENT_WHOLESALE: FlowAccent = {
-  // Gold is decoration-only as a *text* colour, so the accent's readable
-  // partner is gold-700 (#845E04, 5.86:1) — never the #C89B47 brand gold.
-  base: "#845E04", deep: "#6B4B01",
-  soft: "rgba(200,155,71,0.12)", softBorder: "rgba(200,155,71,0.35)",
+  base: "#6E0F2D", deep: "#4A061B",
+  soft: "rgba(110,15,45,0.06)", softBorder: "rgba(110,15,45,0.20)",
 };
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -494,21 +492,21 @@ export function OptionCard({
         aria-checked={selected}
         name={name}
         onClick={onSelect}
-        className={`relative h-full min-h-[104px] flex-col items-start justify-start gap-3 whitespace-normal rounded-[16px] p-[18px] text-left transition-all ${
+        className={`relative h-full min-h-[104px] flex-col items-start justify-start gap-3 whitespace-normal rounded-[14px] p-[18px] text-left transition-all ${
           selected
-            ? "border-2 border-[var(--opt)] bg-[var(--opt-soft)] shadow-[0_4px_18px_rgba(74,6,27,0.10)]"
-            : "border border-[rgba(110,15,45,0.12)] bg-white hover:border-[rgba(110,15,45,0.28)]"
+            ? "border-[1.5px] border-[var(--opt)] bg-[#F8F4F0] shadow-none"
+            : "border border-[#EAE3D5] bg-white hover:border-[rgba(200,155,71,0.5)] hover:bg-[#F8F4F0] shadow-none"
         }`}
       >
         <span
           style={{
-            width: 44, height: 44, borderRadius: 12, flexShrink: 0,
-            background: selected ? "rgba(255,255,255,0.75)" : "rgba(110,15,45,0.05)",
+            width: 44, height: 44, borderRadius: 10, flexShrink: 0,
+            background: selected ? "rgba(255,255,255,1)" : "#F8F4F0",
             border: selected ? `1px solid ${accent.softBorder}` : "1px solid transparent",
             display: "flex", alignItems: "center", justifyContent: "center",
           }}
         >
-          <Icon size={22} color={selected ? accent.base : C.muted} />
+          <Icon size={20} color={selected ? accent.base : C.muted} />
         </span>
         <span style={{ display: "block", minWidth: 0 }}>
           <span style={{ display: "block", fontFamily: F.u, fontWeight: 600, fontSize: 15, color: selected ? accent.base : C.text }}>{label}</span>

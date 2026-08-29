@@ -15,6 +15,7 @@ import { SectionNavigator, PAGE_SECTIONS } from "../../../shared/ui/SectionNavig
 
 import { LogOut } from "lucide-react";
 import { Button } from "../../../shared/ui/primitives";
+import { toInitials } from "@/shared/lib/initials";
 
 type Tab = "home" | "qc" | "weavers" | "finishing" | "dispatch" | "profile";
 type WeaversSubPage = "menu" | "design" | "issue" | "receive-sarees";
@@ -48,7 +49,7 @@ function DesktopProfile() {
       <div style={{ background: `linear-gradient(135deg, ${C.dark} 0%, ${C.burg} 60%, #8B1A30 100%)`, borderRadius: 20, padding: "28px 36px", marginBottom: 24, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 28, boxShadow: "0 8px 32px rgba(74,6,27,0.18)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
           <div style={{ width: 80, height: 80, borderRadius: "50%", background: "rgba(255,255,255,0.15)", border: "2px solid rgba(255,255,255,0.35)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <span style={{ fontFamily: F.d, fontSize: 30, fontWeight: 700, color: "#FFF" }}>{initials}</span>
+            <span style={{ fontFamily: F.d, fontSize: 30, fontWeight: 700, color: "#FFF" }}>{toInitials(initials)}</span>
           </div>
           <div>
             <div style={{ fontFamily: F.d, fontSize: 24, fontWeight: 700, color: "#FFF", marginBottom: 4 }}>{userName}</div>

@@ -11,6 +11,7 @@ import { resolveAssetUrl } from "../../../shared/api/uploads";
 import { Button, SearchInput, Select, SelectItem } from "../../../shared/ui/primitives";
 import { useUrlFilters } from "../../../shared/ui/filter";
 import { ErrorState } from "../../../shared/ui/state";
+import { toInitials } from "@/shared/lib/initials";
 
 // ── Design tokens ─────────────────────────────────────────────────────────
 const T = {
@@ -321,7 +322,7 @@ export function AllWeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?
                       />
                     ) : (
                       <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, ${w.avatarBg} 0%, ${T.luxuryBrown} 100%)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <span style={{ fontFamily: F.display, fontSize: 48, fontWeight: 700, color: "#FFFDF9", letterSpacing: "1px" }}>{w.initials}</span>
+                        <span style={{ fontFamily: F.display, fontSize: 48, fontWeight: 700, color: "#FFFDF9", letterSpacing: "1px" }}>{toInitials(w.initials)}</span>
                       </div>
                     )}
 

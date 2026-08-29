@@ -146,7 +146,7 @@ export function ScanSareeStep({
         {cart.length > 0 && (
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
             <Card style={{ marginTop: 18, overflow: "hidden" }}>
-              <div style={{ height: 4, background: `linear-gradient(90deg, ${C.burg}, ${C.gold})` }} />
+              <div style={{ height: 4, background: C.burg }} />
               <div style={{ padding: "10px 16px", borderBottom: `1px solid ${C.bdr}`, background: "rgba(110,15,45,0.03)", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
                 <span style={{ fontFamily: F.m, fontSize: 12, letterSpacing: 1.5, color: C.muted, textTransform: "uppercase" as const }}>
                   {cart.length} saree{cart.length !== 1 ? "s" : ""} in this sale

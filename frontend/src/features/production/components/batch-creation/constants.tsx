@@ -1,5 +1,6 @@
 import React from "react";
 import type { SareeRow } from "../../contexts/BatchContext";
+import { toInitials } from "@/shared/lib/initials";
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 export const T = {
@@ -77,7 +78,7 @@ export function rowEmpty(r: SareeRow) {
 export function Pip({ initials, bg, size = 28 }: { initials: string; bg: string; size?: number }) {
   return (
     <div style={{ width: size, height: size, borderRadius: "50%", background: bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-      <span style={{ fontFamily: F.ui, fontSize: size * 0.38, fontWeight: 700, color: "#fff", letterSpacing: "-0.5px" }}>{initials}</span>
+      <span style={{ fontFamily: F.ui, fontSize: size * 0.38, fontWeight: 700, color: "#fff", letterSpacing: "-0.5px" }}>{toInitials(initials)}</span>
     </div>
   );
 }
