@@ -208,7 +208,7 @@ export function POTrackerSection({
                   cursor: "pointer",
                 }}
               >
-                <div style={{ height: 4, background: T.royalBurgundy, width: "100%", opacity: 0.8 }} />
+                <div style={{ height: 4, background: T.royalBurgundy, width: "100%" }} />
 
                 <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", flex: 1 }}>
                   <TopDivider />

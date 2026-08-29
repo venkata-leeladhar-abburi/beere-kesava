@@ -76,7 +76,7 @@ export function WarpRequestsSection() {
                 style={{ background: "#FFFDF9", borderRadius: 12, border: `1.5px solid ${T.antiqueGold}`, boxShadow: "0 4px 20px rgba(200,155,71,0.15)", overflow: "hidden", display: "flex", flexDirection: "column", position: "relative" }}
               >
                 {/* Accent top */}
-                <div style={{ height: 4, background: T.royalBurgundy, width: "100%", opacity: 0.8, flexShrink: 0 }} />
+                <div style={{ height: 4, background: T.royalBurgundy, width: "100%", flexShrink: 0 }} />
 
                 {/* Weaver identity */}
                 <div style={{ padding: "20px 22px 18px", display: "flex", alignItems: "center", gap: 16 }}>
