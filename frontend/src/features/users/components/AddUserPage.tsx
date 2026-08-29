@@ -493,6 +493,7 @@ export function AddUserPage() {
         </motion.div>
 
         {/* ── ADD NEW USER FORM ─────────────────────────────────────────────── */}
+        <div id="adduser-form">
         <motion.div
           initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.18, ease: EASE }}
@@ -535,8 +536,10 @@ export function AddUserPage() {
             handleCancel={handleCancel}
           />
         </motion.div>
+        </div>
 
         {/* ── ALL USERS TABLE ──────────────────────────────────────────────── */}
+        <div id="adduser-table">
         <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.26, ease: EASE }}>
           <UserTable
             allRows={allRows}
@@ -567,6 +570,7 @@ export function AddUserPage() {
             onClearFilters={() => { setSearchQ(""); setRoleFilter("All Roles"); }}
           />
         </motion.div>
+        </div>
 
       </div>
 

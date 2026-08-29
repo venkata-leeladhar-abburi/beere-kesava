@@ -126,7 +126,7 @@ export function DesignLibraryPage() {
 
 
       {/* ── Main content ── */}
-      <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 32, paddingBottom: 48 }}>
+      <div id="design-control" className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 32, paddingBottom: 48 }}>
         <FadeUp>
         <SectionCard icon={PaperPlaneTilt} title="Weaver Dispatch Control" subtitle="Dispatch production design slips to weavers or factory looms.">
             <div className="grid grid-cols-1 md:grid-cols-[1.2fr_1.8fr]" style={{ gap: 32, alignItems: "start" }}>

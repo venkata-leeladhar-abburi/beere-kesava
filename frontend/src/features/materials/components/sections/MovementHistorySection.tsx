@@ -198,8 +198,8 @@ export function MovementHistorySection({ onDownloadMovementReport }: { onDownloa
       </div>
 
       <FadeUp>
-        <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 20px rgba(74,6,27,0.07)", overflow: "hidden", marginBottom: 28 }}>
-          <div style={{ padding: "22px 28px 18px", borderBottom: `1px solid rgba(110,15,45,0.07)`, display: "flex", alignItems: "baseline", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+        <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.royalBurgundy}`, boxShadow: "0 2px 14px rgba(74,6,27,0.06)", overflow: "hidden", marginBottom: 28 }}>
+          <div style={{ padding: "22px 28px 18px", borderBottom: `1px solid rgba(200,155,71,0.3)`, display: "flex", alignItems: "baseline", justifyContent: "space-between", flexWrap: "wrap", gap: 8, background: "rgba(200,155,71,0.08)" }}>
             <div>
               <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 20, color: T.luxuryBrown, marginBottom: 4 }}>Stock Coming In vs Going Out</div>
               <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>How much material was received from vendors vs given out to weavers each week</div>
@@ -214,11 +214,15 @@ export function MovementHistorySection({ onDownloadMovementReport }: { onDownloa
                   <div style={{ flex: 1, display: "flex", alignItems: "flex-end", gap: 10, minHeight: 220 }}>
                     {stats.chartData.map(d => (
                       <div key={d.label} style={{ flex: 1, height: "100%", display: "flex", flexDirection: "column", alignItems: "center", gap: 0 }}>
-                        <div style={{ flex: 1, display: "flex", alignItems: "flex-end", gap: 5, width: "100%", justifyContent: "center" }}>
-                          <motion.div initial={{ scaleY: 0 }} whileInView={{ scaleY: 1 }} viewport={{ once: true }} transition={{ duration: 0.65, ease: EASE }} style={{ width: 18, height: `${(d.received / maxVal) * 100}%`, background: T.royalBurgundy, borderRadius: "5px 5px 0 0", minHeight: 4, transformOrigin: "bottom" }} />
-                          <motion.div initial={{ scaleY: 0 }} whileInView={{ scaleY: 1 }} viewport={{ once: true }} transition={{ duration: 0.65, delay: 0.1, ease: EASE }} style={{ width: 18, height: `${(d.given / maxVal) * 100}%`, background: T.antiqueGold, borderRadius: "5px 5px 0 0", minHeight: 4, transformOrigin: "bottom" }} />
+                        <div style={{ flex: 1, display: "flex", alignItems: "flex-end", gap: 8, width: "100%", justifyContent: "center" }}>
+                          <div style={{ width: 24, height: "100%", background: "transparent", borderRadius: 100, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
+                            <motion.div initial={{ scaleY: 0 }} whileInView={{ scaleY: 1 }} viewport={{ once: true }} transition={{ duration: 0.65, ease: EASE }} style={{ width: "100%", height: `${Math.max(4, (d.received / maxVal) * 100)}%`, background: T.royalBurgundy, borderRadius: 100, minHeight: 12, transformOrigin: "bottom" }} />
+                          </div>
+                          <div style={{ width: 24, height: "100%", background: "transparent", borderRadius: 100, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
+                            <motion.div initial={{ scaleY: 0 }} whileInView={{ scaleY: 1 }} viewport={{ once: true }} transition={{ duration: 0.65, delay: 0.1, ease: EASE }} style={{ width: "100%", height: `${Math.max(4, (d.given / maxVal) * 100)}%`, background: T.antiqueGold, borderRadius: 100, minHeight: 12, transformOrigin: "bottom" }} />
+                          </div>
                         </div>
-                        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textAlign: "center", lineHeight: 1.35, marginTop: 8, flexShrink: 0 }}>{d.label}</span>
+                        <span style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, textAlign: "center", lineHeight: 1.35, marginTop: 12, flexShrink: 0, fontWeight: 500 }}>{d.label}</span>
                       </div>
                     ))}
                   </div>
@@ -252,8 +256,8 @@ export function MovementHistorySection({ onDownloadMovementReport }: { onDownloa
       </FadeUp>
 
       <FadeUp delay={0.1}>
-        <div style={{ background: "#FFFFFF", borderRadius: 18, border: `1px solid ${T.borderDef}`, boxShadow: "0 4px 20px rgba(74,6,27,0.06)", overflow: "hidden" }}>
-          <div style={{ padding: "22px 28px 18px", borderBottom: `1px solid rgba(110,15,45,0.07)` }}>
+        <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.royalBurgundy}`, boxShadow: "0 2px 14px rgba(74,6,27,0.06)", overflow: "hidden", marginBottom: 28 }}>
+          <div style={{ padding: "22px 28px 18px", borderBottom: `1px solid rgba(200,155,71,0.3)`, background: "rgba(200,155,71,0.08)" }}>
             <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 20, color: T.luxuryBrown, marginBottom: 4 }}>Every Movement Entry</div>
             <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe }}>Each line below is one movement — material arriving or leaving the factory store.</div>
           </div>

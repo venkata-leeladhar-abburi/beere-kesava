@@ -182,6 +182,7 @@ export function SupplierReturnsPage() {
   return (
     <div>
       {/* Hero Banner Header */}
+      <div id="sr-form">
       <header style={{ background: "#0D0207", position: "relative", overflow: "hidden", display: "flex", alignItems: "center" }}>
         <div className="px-4 md:px-7 xl:px-12 flex-col xl:flex-row" style={{ position: "relative", zIndex: 2, paddingTop: 44, paddingBottom: 80, width: "100%", display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 20 }}>
           <div>
@@ -203,8 +204,9 @@ export function SupplierReturnsPage() {
       <div className="px-4 md:px-7 xl:px-14 -mt-6 md:-mt-8 xl:-mt-[36px]" style={{ zIndex: 20, position: "relative" }}>
         <LuxuryStatsCard stats={statItems} />
       </div>
+      </div>
 
-      <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 32, paddingBottom: 60 }}>
+      <div id="sr-history" className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 32, paddingBottom: 60 }}>
         <SectionCard
           icon={RotateCcw}
           title="Supplier Returns Queue"

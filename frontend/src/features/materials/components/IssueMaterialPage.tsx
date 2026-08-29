@@ -309,7 +309,7 @@ export function IssueMaterialPage() {
 
         {/* ═══ APPROVED WARP REQUESTS — READY TO ISSUE ═══ */}
         {approvedWarpRequests.length > 0 && (
-          <div style={{ marginBottom: 32 }}>
+          <div id="issue-warp-requests" style={{ marginBottom: 32 }}>
             <SectionCard icon={Scissors} title="Approved Warp Requests" subtitle="A weaver raised these and superadmin approved them — issue the material to close them out.">
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {approvedWarpRequests.map(r => (
@@ -403,14 +403,16 @@ export function IssueMaterialPage() {
         </div>
 
         {/* ═══ SECTION B — ISSUANCE HISTORY ═══ */}
-        <IssuanceHistorySection
-          weaverNames={weaverNames}
-          histSearch={histSearch} setHistSearch={v => { setHistSearch(v); setHistPage(1); }}
-          histWeaverFilter={histWeaverFilter} setHistWeaverFilter={v => { setHistWeaverFilter(v); setHistPage(1); }}
-          histDateFilter={histDateFilter} setHistDateFilter={f => { setHistDateFilter(f); setHistPage(1); }}
-          pagedHistory={pagedHistory} histPage={histPage} setHistPage={setHistPage} totalPages={totalPages}
-          setViewRecord={setViewRecord}
-        />
+        <div id="issue-history">
+          <IssuanceHistorySection
+            weaverNames={weaverNames}
+            histSearch={histSearch} setHistSearch={v => { setHistSearch(v); setHistPage(1); }}
+            histWeaverFilter={histWeaverFilter} setHistWeaverFilter={v => { setHistWeaverFilter(v); setHistPage(1); }}
+            histDateFilter={histDateFilter} setHistDateFilter={f => { setHistDateFilter(f); setHistPage(1); }}
+            pagedHistory={pagedHistory} histPage={histPage} setHistPage={setHistPage} totalPages={totalPages}
+            setViewRecord={setViewRecord}
+          />
+        </div>
       </div>
 
       <AnimatePresence>

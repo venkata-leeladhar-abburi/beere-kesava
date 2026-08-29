@@ -155,10 +155,10 @@ export function IssuedThisMonthCard({ onNavigate }: { onNavigate?: (tab: string)
     <section id="mat-issued" style={{ padding: `24px ${px}px 0` }}>
       <div style={{
         background: `linear-gradient(135deg, ${T.warmIvory} 0%, #FFFFFF 100%)`,
-        border: `1.5px solid ${T.borderDef}`,
+        border: issueError ? "2px solid #C0392B" : "2px solid rgba(200,155,71,0.5)",
         borderRadius: 20,
         padding: "24px 30px",
-        boxShadow: "0 10px 30px rgba(74,6,27,0.04), 0 1px 3px rgba(0,0,0,0.02)",
+        boxShadow: "0 2px 14px rgba(74,6,27,0.06)",
         display: "flex",
         flexDirection: isMobile ? "column" : "row",
         alignItems: isMobile ? "stretch" : "center",
@@ -167,7 +167,6 @@ export function IssuedThisMonthCard({ onNavigate }: { onNavigate?: (tab: string)
         position: "relative",
         overflow: "hidden",
       }}>
-        <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 4, background: issueError ? "#C0392B" : G_GOLD }} />
         {issueError && (
           <div style={{ position: "absolute", top: 10, right: 14, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "#C0392B" }}>
             Failed to load issued materials.
@@ -270,10 +269,10 @@ export function ReturnedThisMonthCard({ onNavigate }: { onNavigate?: (tab: strin
     <section id="mat-returned" style={{ padding: `24px ${px}px 0` }}>
       <div style={{
         background: `linear-gradient(135deg, ${T.warmIvory} 0%, #FFFFFF 100%)`,
-        border: `1.5px solid ${T.borderDef}`,
+        border: returnError ? "2px solid #C0392B" : "2px solid rgba(200,155,71,0.5)",
         borderRadius: 20,
         padding: "24px 30px",
-        boxShadow: "0 10px 30px rgba(74,6,27,0.04), 0 1px 3px rgba(0,0,0,0.02)",
+        boxShadow: "0 2px 14px rgba(74,6,27,0.06)",
         display: "flex",
         flexDirection: isMobile ? "column" : "row",
         alignItems: isMobile ? "stretch" : "center",
@@ -282,7 +281,6 @@ export function ReturnedThisMonthCard({ onNavigate }: { onNavigate?: (tab: strin
         position: "relative",
         overflow: "hidden",
       }}>
-        <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 4, background: returnError ? "#C0392B" : T.green }} />
         {returnError && (
           <div style={{ position: "absolute", top: 10, right: 14, fontFamily: F.ui, fontSize: 12, fontWeight: 700, color: "#C0392B" }}>
             Failed to load returned materials.

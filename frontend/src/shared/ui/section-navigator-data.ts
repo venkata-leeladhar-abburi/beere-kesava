@@ -53,11 +53,83 @@ export const PAGE_SECTIONS: Record<string, SectionNavItem[]> = {
     { id: "pay-analytics", label: "Analytics" },
     { id: "pay-history", label: "Payment History" },
   ],
-  Reports: [],
+  Reports: [
+    { id: "rep-summary", label: "Live Summary" },
+    { id: "rep-scheduled", label: "Scheduled Reports" },
+    { id: "rep-history", label: "Download History" },
+  ],
+  Firms: [
+    { id: "firm-overview", label: "Business Overview" },
+    { id: "firm-directory", label: "Firms Directory" },
+  ],
+  Batches: [
+    { id: "batch-setup", label: "Batch Setup" },
+    { id: "batch-materials", label: "Materials Given" },
+    { id: "batch-table", label: "Sarees List" },
+  ],
+  Designs: [
+    { id: "design-control", label: "Dispatch Control" },
+  ],
+  Finishing: [
+    { id: "finishing-quotations", label: "Quotations" },
+    { id: "finishing-staff", label: "Staff Tracking" },
+  ],
+  Materials: [
+    { id: "mat-pos", label: "Purchase Orders" },
+    { id: "mat-stock", label: "Stock Overview" },
+    { id: "mat-issued-returned", label: "Issued & Returned" },
+    { id: "mat-batches", label: "Active Batches" },
+    { id: "mat-purchase", label: "Purchase History" },
+    { id: "mat-movement", label: "Movement History" },
+  ],
+  ReceiveStock: [
+    { id: "rs-form", label: "Receive Stock Form" },
+    { id: "rs-history", label: "Goods Receipt History" },
+  ],
+  IssueMaterial: [
+    { id: "issue-warp-requests", label: "Approved Warp Requests" },
+    { id: "issue-material-form", label: "Issue Material Form" },
+    { id: "issue-history", label: "Issuance History" },
+  ],
+  ReturnMaterial: [
+    { id: "return-form", label: "Return Materials Form" },
+    { id: "return-history", label: "Return History" },
+  ],
+  ExternalPurchases: [
+    { id: "ep-form", label: "Record Purchase" },
+    { id: "ep-history", label: "Purchase History" },
+  ],
+  SupplierReturns: [
+    { id: "sr-form", label: "Record Supplier Return" },
+    { id: "sr-history", label: "Returns History" },
+  ],
   Weavers: [
     { id: "weav-all-weavers", label: "All Weavers" },
     { id: "weav-performance", label: "Performance" },
     { id: "weav-activities", label: "Activities" },
+  ],
+  Customers: [
+    { id: "cust-analytics", label: "Analytics" },
+    { id: "cust-wholesale-list", label: "Wholesale Customers" },
+    { id: "cust-retail-list", label: "Retail Customers" },
+    { id: "cust-inactive", label: "Inactive Customers" },
+  ],
+  Vendors: [
+    { id: "vend-analytics", label: "Analytics" },
+    { id: "vend-directory", label: "Vendor Directory" },
+  ],
+  Suppliers: [
+    { id: "supp-analytics", label: "Analytics" },
+    { id: "supp-directory", label: "Supplier Directory" },
+    { id: "supp-history", label: "Purchase History" },
+  ],
+  FactoryLooms: [
+    { id: "loom-analytics", label: "Analytics" },
+    { id: "loom-directory", label: "Looms Directory" },
+  ],
+  AddUser: [
+    { id: "adduser-form", label: "Add New User" },
+    { id: "adduser-table", label: "All Users" },
   ],
   WorkerQC: [
     { id: "wqc-pending", label: "Pending QC" },
@@ -79,28 +151,7 @@ export function getSectionsForPage(nav: string): SectionNavItem[] {
   if (PAGE_SECTIONS[nav] && PAGE_SECTIONS[nav].length > 0) {
     return PAGE_SECTIONS[nav];
   }
-  const aliases: Record<string, string> = {
-    Batches: "Production",
-    Designs: "Production",
-    Finishing: "Production",
-    ReceiveStock: "Materials",
-    IssueMaterial: "Materials",
-    ReturnMaterial: "Materials",
-    ExternalPurchases: "Materials",
-    SupplierReturns: "Materials",
-    Firms: "Payments",
-    Reports: "Payments",
-    Customers: "Weavers",
-    Vendors: "Weavers",
-    Suppliers: "Weavers",
-    FactoryLooms: "Weavers",
-    AllWeavers: "Weavers",
-  };
-  const parentKey = aliases[nav];
-  if (parentKey && PAGE_SECTIONS[parentKey]) {
-    return PAGE_SECTIONS[parentKey];
-  }
-  return PAGE_SECTIONS[nav] || [];
+  return [];
 }
 
 // Global CSS needed by SectionNavigator — render once per dashboard root.

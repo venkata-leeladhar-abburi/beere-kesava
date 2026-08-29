@@ -131,7 +131,7 @@ export function FinishingQuotationsSection({
             const isOpen = openQuotation === qt.id;
             const received = qt.sarees.filter(s => s.finishingStatus === "received").length;
             return (
-              <div key={qt.id} style={{ border: `1px solid ${T.borderDef}`, borderRadius: 14, overflow: "hidden" }}>
+              <div key={qt.id} style={{ border: `1px solid rgba(110,15,45,0.3)`, borderRadius: 14, overflow: "hidden" }}>
                 <Button variant="ghost" onClick={() => setOpenQuotation(isOpen ? null : qt.id)}
                   className={`w-full h-auto justify-start text-left p-4 sm:p-4.5 rounded-none ${isOpen ? "bg-[rgba(110,15,45,0.04)]" : "bg-white"}`}>
                   <div className="w-full flex flex-col gap-2.5 min-w-0">

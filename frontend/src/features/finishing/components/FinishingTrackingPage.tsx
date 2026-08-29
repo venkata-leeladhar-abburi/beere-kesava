@@ -171,19 +171,23 @@ export function FinishingTrackingPage() {
             </div>
 
             {/* Quotations for Finishing */}
-            <FinishingQuotationsSection
-              filteredQuotations={filteredQuotations}
-              openQuotation={openQuotation}
-              setOpenQuotation={setOpenQuotation}
-            />
+            <div id="finishing-quotations">
+              <FinishingQuotationsSection
+                filteredQuotations={filteredQuotations}
+                openQuotation={openQuotation}
+                setOpenQuotation={setOpenQuotation}
+              />
+            </div>
 
             {/* Staff-wise tracking */}
-            <FinishingStaffSection
-              filteredRows={filteredRows}
-              open={open}
-              setOpen={setOpen}
-              returns={returns}
-            />
+            <div id="finishing-staff">
+              <FinishingStaffSection
+                filteredRows={filteredRows}
+                open={open}
+                setOpen={setOpen}
+                returns={returns}
+              />
+            </div>
           </>
         )}
       </div>

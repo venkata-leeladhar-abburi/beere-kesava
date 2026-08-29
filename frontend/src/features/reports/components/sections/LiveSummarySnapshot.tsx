@@ -58,7 +58,7 @@ export function LiveSummarySnapshot() {
   ];
 
   return (
-    <div className="px-4 md:px-7 xl:px-12" style={{ marginTop: 20 }}>
+    <div id="rep-summary" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 32 }}>
       <div className="grid grid-cols-1 md:grid-cols-5" style={{
         gap: 14,
         background: "#FFFFFF", border: `1px solid ${T.borderDef}`, borderRadius: 12, padding: "16px 20px",

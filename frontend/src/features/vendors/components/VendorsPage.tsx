@@ -171,16 +171,19 @@ export function VendorsPage() {
             )}
           </AnimatePresence>
 
-          <VendorAnalyticsSection vendors={vendorsWithRollup} />
+          <div id="vend-analytics"><VendorAnalyticsSection vendors={vendorsWithRollup} /></div>
 
-          <VendorDirectorySection
-            vendors={vendorsWithRollup}
-            onSelectVendor={setSelectedVendor}
-            onAddClick={() => setShowAddForm(v => !v)}
-            loading={vendorsLoading}
-            error={vendorsError}
-            onRetry={loadVendors}
-          />
+          <div id="vend-directory">
+            <VendorDirectorySection
+              vendors={vendorsWithRollup}
+              onSelectVendor={setSelectedVendor}
+              onEditVendor={(v) => { setSelectedVendor(v); setDrawerMode("edit"); setShowAddForm(true); }}
+              onAddClick={() => { setDrawerMode("add"); setShowAddForm(true); }}
+              loading={vendorsLoading}
+              error={vendorsError}
+              onRetry={loadVendors}
+            />
+          </div>
         </>
       )}
       <div style={{ marginTop: "auto" }}>

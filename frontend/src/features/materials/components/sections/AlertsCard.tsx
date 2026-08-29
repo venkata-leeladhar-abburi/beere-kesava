@@ -53,7 +53,7 @@ export function AlertsCard({ onCreatePO }: { onCreatePO?: () => void }) {
 
   return (
     <FadeUp id="mat-alerts" style={{ padding: `28px ${px}px 0` }}>
-      <div style={{ background: "#FFFFFF", borderRadius: 14, border: "1px solid rgba(110,15,45,0.08)", borderTop: `3px solid ${dynamicAlerts.length > 0 ? T.crimson : T.green}`, boxShadow: "0 4px 24px rgba(192,57,43,0.08)", padding: "26px 32px 28px" }}>
+      <div style={{ background: "#FFFFFF", borderRadius: 14, border: `2px solid ${T.royalBurgundy}`, boxShadow: "0 2px 14px rgba(74,6,27,0.06)", padding: "26px 32px 28px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 14, marginBottom: 8 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             {dynamicAlerts.length > 0 ? <AlertTriangle size={22} color={T.crimson} /> : <CheckCircle2 size={22} color={T.green} />}

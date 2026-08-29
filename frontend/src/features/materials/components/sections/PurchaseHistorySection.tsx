@@ -1,6 +1,6 @@
 import React, { useContext, useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { PieChart, Pie, Cell } from "recharts";
+import { PieChart, Pie, Cell, RadialBarChart, RadialBar } from "recharts";
 import { Layers, Tag, Sparkles, Calculator, Users, IndianRupee, Download, History, LayoutGrid, List } from "lucide-react";
 import { DateFilterBar, DateFilterState, DEFAULT_DATE_FILTER } from "../../../../shared/ui/DateFilterBar";
 import { T, F, MobileCtx } from "../theme";
@@ -260,9 +260,9 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
     const jariPct = spendTotalForChart > 0 ? Math.max(0, 100 - warpPct - reshamPct) : 0;
 
     const spendData = [
-      { name: "Warp", pct: warpPct, value: formatCurrency(warpSpend), color: T.royalBurgundy },
-      { name: "Resham", pct: reshamPct, value: formatCurrency(reshamSpend), color: T.antiqueGold },
-      { name: "Jari", pct: jariPct, value: formatCurrency(jariSpend), color: T.luxuryBrown },
+      { name: "Warp", pct: warpPct, value: formatCurrency(warpSpend), color: T.royalBurgundy, fill: T.royalBurgundy },
+      { name: "Resham", pct: reshamPct, value: formatCurrency(reshamSpend), color: T.antiqueGold, fill: T.antiqueGold },
+      { name: "Jari", pct: jariPct, value: formatCurrency(jariSpend), color: T.luxuryBrown, fill: T.luxuryBrown },
     ];
 
     return {
@@ -359,7 +359,7 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
           { Icon: IndianRupee, label: "TOTAL AMOUNT SPENT",     amount: formatCurrency(stats.totalSpent), cost: "", sub: "Total raw materials", dark: true },
         ].map((card, i) => (
           <FadeUp key={card.label} delay={i * 0.09} style={{ height: "100%" }}>
-            <div style={{ background: card.dark ? T.darkBurgundy : "#FFFFFF", borderRadius: 16, border: `1px solid ${card.dark ? "transparent" : T.borderDef}`, padding: "22px 22px 20px", boxShadow: card.dark ? "0 8px 32px rgba(61,14,26,0.30)" : "0 2px 12px rgba(74,6,27,0.06)", position: "relative", overflow: "hidden", display: "flex", flexDirection: "column", height: "100%" }}>
+            <div style={{ background: card.dark ? T.darkBurgundy : "#FFFFFF", borderRadius: 16, border: "1px solid rgba(200,155,71,0.4)", padding: "22px 22px 20px", boxShadow: card.dark ? "0 8px 32px rgba(61,14,26,0.30)" : "0 2px 12px rgba(74,6,27,0.06)", position: "relative", overflow: "hidden", display: "flex", flexDirection: "column", height: "100%" }}>
               {card.dark && <>
                 <div style={{ position: "absolute", top: "-30%", right: "-10%", width: 140, height: 140, borderRadius: "50%", background: "rgba(200,155,71,0.07)", pointerEvents: "none" }} />
                 <div style={{ position: "absolute", bottom: "-20%", left: "-10%", width: 100, height: 100, borderRadius: "50%", background: "rgba(200,155,71,0.05)", pointerEvents: "none" }} />
@@ -431,16 +431,23 @@ export function PurchaseHistorySection({ onDownloadReport }: { onDownloadReport:
 
       <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 22 }}>
         <FadeUp delay={0.1}>
-          <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.borderDef}`, padding: "24px 26px 22px", boxShadow: "0 2px 16px rgba(74,6,27,0.06)", height: "100%" }}>
+          <div style={{ background: "#FFFFFF", borderRadius: 16, border: `1px solid rgba(200,155,71,0.4)`, padding: "24px 26px 22px", boxShadow: "0 2px 14px rgba(74,6,27,0.06)", height: "100%" }}>
             <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 20, color: T.luxuryBrown, marginBottom: 6 }}>Total Spend Split</div>
             <div style={{ fontFamily: F.ui, fontSize: 14, color: T.taupe, marginBottom: 22, lineHeight: 1.5 }}>How much of your total spend goes to each material type</div>
             <div className="flex flex-col sm:flex-row items-center sm:items-center gap-5 sm:gap-6 w-full">
-              <div style={{ flexShrink: 0, margin: "0 auto" }}>
-                <PieChart width={160} height={160}>
-                  <Pie data={stats.spendData} cx={80} cy={80} innerRadius={48} outerRadius={72} dataKey="pct" paddingAngle={3}>
-                    {stats.spendData.map((entry) => <Cell key={`spend-cell-${entry.name}`} fill={entry.color} />)}
-                  </Pie>
-                </PieChart>
+              <div style={{ flexShrink: 0, margin: "0 auto", position: "relative" }}>
+                <RadialBarChart 
+                  width={160} 
+                  height={160} 
+                  innerRadius="30%" 
+                  outerRadius="100%" 
+                  data={[...stats.spendData].reverse()} 
+                  startAngle={90} 
+                  endAngle={-270}
+                >
+                  <RadialBar minAngle={15} background={{ fill: 'rgba(110,15,45,0.05)' }} clockWise={true} dataKey="pct" cornerRadius={10} />
+                </RadialBarChart>
+                <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, pointerEvents: "none", borderRadius: "50%", boxShadow: "inset 0 4px 20px rgba(0,0,0,0.02)" }} />
               </div>
               <div className="flex-1 w-full flex flex-col gap-3">
                 {stats.spendData.map(s => (

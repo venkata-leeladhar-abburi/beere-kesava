@@ -246,7 +246,7 @@ export function FactoryLoomPage() {
           </div>
 
           {/* Main Body */}
-          <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 32 }}>
+          <div id="loom-directory" className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 32 }}>
             <SectionCard
               icon={Factory}
               title="Looms Directory"
@@ -392,7 +392,9 @@ export function FactoryLoomPage() {
             </SectionCard>
           </div>
 
-          <LoomAnalytics looms={looms} batches={batches} materials={materials} sarees={sarees} />
+          <div id="loom-analytics">
+            <LoomAnalytics looms={looms} batches={batches} materials={materials} sarees={sarees} />
+          </div>
         </>
       )}
 

@@ -310,9 +310,11 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
 
           <div style={{ padding: "20px 16px 80px", display: "flex", flexDirection: "column", gap: 20 }}>
             {/* Section 1: Receive Stock Form SectionCard */}
-            <SectionCard icon={PackageCheck} title="Receive Stock" subtitle="Record incoming raw materials from vendors and generate a GRN number.">
-              <WorkerGRN mode="form" history={grnHistory} setHistory={setGrnHistory} initialPOId={(state as { poId?: string } | null)?.poId} />
-            </SectionCard>
+            <div id="rs-form">
+              <SectionCard icon={PackageCheck} title="Receive Stock" subtitle="Record incoming raw materials from vendors and generate a GRN number.">
+                <WorkerGRN mode="form" history={grnHistory} setHistory={setGrnHistory} initialPOId={(state as { poId?: string } | null)?.poId} />
+              </SectionCard>
+            </div>
 
             {/* Current Stock Card */}
             <div style={{ background: "rgba(200,155,71,0.10)", border: `1px solid rgba(200,155,71,0.25)`, borderRadius: 16, padding: "18px 22px" }}>
@@ -342,9 +344,11 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
             </div>
 
             {/* Section 2: Goods Receipt History SectionCard */}
-            <SectionCard icon={History} title="Goods Receipt History" subtitle="Every GRN recorded so far, with vendor, materials, and quantities.">
-              <WorkerGRN mode="history" history={grnHistory} setHistory={setGrnHistory} />
-            </SectionCard>
+            <div id="rs-history">
+              <SectionCard icon={History} title="Goods Receipt History" subtitle="Every GRN recorded so far, with vendor, materials, and quantities.">
+                <WorkerGRN mode="history" history={grnHistory} setHistory={setGrnHistory} />
+              </SectionCard>
+            </div>
           </div>
         </div>
       ) : mobileTab === "Batches" ? (
@@ -437,9 +441,11 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
           <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 32, paddingBottom: 80, display: "flex", flexDirection: "column", gap: 24 }}>
             <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-6 items-start">
               {/* Section 1: Receive Stock Form SectionCard */}
-              <SectionCard icon={PackageCheck} title="Receive Stock" subtitle="Record incoming raw materials from vendors and generate a GRN number.">
-                <WorkerGRN mode="form" history={grnHistory} setHistory={setGrnHistory} initialPOId={(state as { poId?: string } | null)?.poId} />
-              </SectionCard>
+              <div id="rs-form">
+                <SectionCard icon={PackageCheck} title="Receive Stock" subtitle="Record incoming raw materials from vendors and generate a GRN number.">
+                  <WorkerGRN mode="form" history={grnHistory} setHistory={setGrnHistory} initialPOId={(state as { poId?: string } | null)?.poId} />
+                </SectionCard>
+              </div>
 
               {/* Current Stock Sidebar */}
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -472,9 +478,11 @@ export function BeereDashboard({ onBack }: { onBack?: () => void } = {}) {
             </div>
 
             {/* Section 2: Goods Receipt History SectionCard (Full Width) */}
-            <SectionCard icon={History} title="Goods Receipt History" subtitle="Every GRN recorded so far, with vendor, materials, and quantities.">
-              <WorkerGRN mode="history" history={grnHistory} setHistory={setGrnHistory} />
-            </SectionCard>
+            <div id="rs-history">
+              <SectionCard icon={History} title="Goods Receipt History" subtitle="Every GRN recorded so far, with vendor, materials, and quantities.">
+                <WorkerGRN mode="history" history={grnHistory} setHistory={setGrnHistory} />
+              </SectionCard>
+            </div>
           </div>
         </div>
       ) : nav === "Customers" ? (

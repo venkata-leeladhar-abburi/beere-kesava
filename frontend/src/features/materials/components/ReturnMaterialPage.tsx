@@ -257,7 +257,7 @@ export function ReturnMaterialPage() {
         </AnimatePresence>
 
         {/* ═══ SECTION A — RETURN MATERIAL FORM ═══ */}
-        <div style={{ marginBottom: 48 }}>
+        <div id="return-form" style={{ marginBottom: 48 }}>
         <SectionCard icon={Undo2} title="Return Material" subtitle="Take raw materials back from a weaver or factory loom and record who signed for it.">
 
           {/* STEP 1 — Select Recipient */}
@@ -322,14 +322,16 @@ export function ReturnMaterialPage() {
         </div>
 
         {/* ═══ SECTION B — RETURN HISTORY ═══ */}
-        <ReturnHistorySection
-          weaverNames={weaverNames}
-          histSearch={histSearch} setHistSearch={v => { setHistSearch(v); setHistPage(1); }}
-          histWeaverFilter={histWeaverFilter} setHistWeaverFilter={v => { setHistWeaverFilter(v); setHistPage(1); }}
-          histDateFilter={histDateFilter} setHistDateFilter={f => { setHistDateFilter(f); setHistPage(1); }}
-          pagedHistory={pagedHistory} histPage={histPage} setHistPage={setHistPage} totalPages={totalPages}
-          setViewRecord={setViewRecord}
-        />
+        <div id="return-history">
+          <ReturnHistorySection
+            weaverNames={weaverNames}
+            histSearch={histSearch} setHistSearch={v => { setHistSearch(v); setHistPage(1); }}
+            histWeaverFilter={histWeaverFilter} setHistWeaverFilter={v => { setHistWeaverFilter(v); setHistPage(1); }}
+            histDateFilter={histDateFilter} setHistDateFilter={f => { setHistDateFilter(f); setHistPage(1); }}
+            pagedHistory={pagedHistory} histPage={histPage} setHistPage={setHistPage} totalPages={totalPages}
+            setViewRecord={setViewRecord}
+          />
+        </div>
       </div>
 
       <AnimatePresence>

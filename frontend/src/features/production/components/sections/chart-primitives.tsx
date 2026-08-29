@@ -111,16 +111,11 @@ export function ChartCard({ children, className = "", style }: {
       className={className}
       initial={{ opacity: 0, y: 32, scale: 0.97 }}
       animate={inView ? { opacity: 1, y: 0, scale: 1 } : undefined}
-      whileHover={{
-        y: -3,
-        boxShadow: "0 1px 2px rgba(74,6,27,0.04), 0 14px 34px rgba(74,6,27,0.10)",
-        borderColor: "rgba(200,155,71,0.34)",
-      }}
       transition={{ type: "spring", stiffness: 250, damping: 25, opacity: { duration: 0.45 } }}
       style={{
         background: "linear-gradient(162deg, #FFFDF9 0%, #FDF8F1 58%, #FBF3E8 100%)",
         borderRadius: 16,
-        border: `1px solid ${T.borderDef}`,
+        border: `2px solid rgba(200,155,71,0.5)`,
         boxShadow: "0 1px 2px rgba(74,6,27,0.03), 0 6px 18px rgba(74,6,27,0.05)",
         display: "flex",
         flexDirection: "column",
@@ -129,9 +124,6 @@ export function ChartCard({ children, className = "", style }: {
         ...style,
       }}
     >
-      {/* Top gold accent border */}
-      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, ${T.antiqueGold}, ${T.goldLight})`, zIndex: 10 }} />
-
       {/* Warm burgundy bloom in the top-right, kept under 4% so it never
           competes with the data ink. */}
       <span aria-hidden style={{

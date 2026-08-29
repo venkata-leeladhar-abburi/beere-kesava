@@ -211,14 +211,18 @@ export function SuperadminDashboard({ onBack }: { onBack?: () => void } = {}) {
           {/* Content */}
           <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 32, paddingBottom: 80, display: "flex", flexDirection: "column", gap: 24 }}>
             {/* Section 1: Receive Stock Form SectionCard */}
-            <SectionCard icon={PackageCheck} title="Receive Stock" subtitle="Record incoming raw materials from vendors and generate a GRN number.">
-              <WorkerGRN mode="form" />
-            </SectionCard>
+            <div id="rs-form">
+              <SectionCard icon={PackageCheck} title="Receive Stock" subtitle="Record incoming raw materials from vendors and generate a GRN number.">
+                <WorkerGRN mode="form" />
+              </SectionCard>
+            </div>
 
             {/* Section 2: Goods Receipt History SectionCard */}
-            <SectionCard icon={History} title="Goods Receipt History" subtitle="Every GRN recorded so far, with vendor, materials, and quantities.">
-              <WorkerGRN mode="history" />
-            </SectionCard>
+            <div id="rs-history">
+              <SectionCard icon={History} title="Goods Receipt History" subtitle="Every GRN recorded so far, with vendor, materials, and quantities.">
+                <WorkerGRN mode="history" />
+              </SectionCard>
+            </div>
           </div>
         </div>
       );

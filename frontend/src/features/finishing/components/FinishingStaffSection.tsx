@@ -218,7 +218,7 @@ export function FinishingStaffSection({
           {filteredRows.map(r => {
             const isOpen = open === r.name;
             return (
-              <div key={r.name} style={{ border: `1px solid ${T.borderDef}`, borderRadius: 14, overflow: "hidden" }}>
+              <div key={r.name} style={{ border: `1px solid rgba(110,15,45,0.3)`, borderRadius: 14, overflow: "hidden" }}>
                 <Button variant="ghost" onClick={() => setOpen(isOpen ? null : r.name)}
                   className={`w-full h-auto justify-start text-left p-4 sm:p-4.5 rounded-none ${isOpen ? "bg-[rgba(110,15,45,0.04)]" : "bg-white"}`}>
                   <div className="w-full flex flex-col gap-3 min-w-0">

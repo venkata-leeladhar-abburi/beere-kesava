@@ -35,7 +35,7 @@ export function DownloadHistorySection() {
   };
 
   return (
-    <div className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 36, paddingBottom: 40 }}>
+    <div id="rep-history" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 36, paddingBottom: 40 }}>
       <FadeUp>
       <SectionCard
         icon={Download}

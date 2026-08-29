@@ -81,7 +81,7 @@ export function ScheduledReportsSection() {
   ];
 
   return (
-    <div className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 36 }}>
+    <div id="rep-scheduled" className="px-4 md:px-7 xl:px-10" style={{ paddingTop: 36, paddingBottom: 16 }}>
       <FadeUp>
       <SectionCard
         icon={CalendarClock}

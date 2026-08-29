@@ -151,11 +151,13 @@ export function WeaversPage({ onNavigate }: { onNavigate?: (tab: string, ctx?: u
       <PageHeader />
       <StatsStrip stats={realStats} />
       <WarpRequestsSection />
-      <AllWeaversControls view={view} setView={setView} filter={filter} setFilter={setFilter} search={search} setSearch={setSearch} onAddWeaver={() => setNewWeaverExpanded(true)} onViewAll={() => onNavigate?.("AllWeavers")} onImport={() => setImportOpen(true)}>
-        <WeaverDirectory view={view} onSelect={(w) => { setDrawerMode("view"); setSelectedWeaver(w); }} onEdit={(w) => { setDrawerMode("edit"); setSelectedWeaver(w); }} onBatches={setBatchDialog} />
-      </AllWeaversControls>
-      <WeaverAnalytics />
-      <LeaderboardAndQC onActivities={() => onNavigate?.("Notifications")} onNavigate={onNavigate} />
+      <div id="weav-all-weavers">
+        <AllWeaversControls view={view} setView={setView} filter={filter} setFilter={setFilter} search={search} setSearch={setSearch} onAddWeaver={() => setNewWeaverExpanded(true)} onViewAll={() => onNavigate?.("AllWeavers")} onImport={() => setImportOpen(true)}>
+          <WeaverDirectory view={view} onSelect={(w) => { setDrawerMode("view"); setSelectedWeaver(w); }} onEdit={(w) => { setDrawerMode("edit"); setSelectedWeaver(w); }} onBatches={setBatchDialog} />
+        </AllWeaversControls>
+      </div>
+      <div id="weav-performance"><WeaverAnalytics /></div>
+      <div id="weav-activities"><LeaderboardAndQC onActivities={() => onNavigate?.("Notifications")} onNavigate={onNavigate} /></div>
       <NewWeaverModal expanded={newWeaverExpanded} setExpanded={setNewWeaverExpanded} />
       <ImportWeaversModal
         open={importOpen}

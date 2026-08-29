@@ -19,7 +19,7 @@ import { ChartFigure } from "../../../../shared/ui/data";
 import { rupees, formatMoney } from "@/lib/domain/money";
 import { Money } from "@/shared/ui/domain";
 
-const DIST_PALETTE = ["#4A061B", "#6E0F2D", "#8B3050", "#845E04", "#69635E"];
+const DIST_PALETTE = [T.royalBurgundy, T.deepWine, "#901A3F", T.antiqueGold, "rgba(200,155,71,0.7)"];
 
 function formatMonthLabel(month: string): string {
   const [year, m] = month.split("-").map(Number);
@@ -99,8 +99,8 @@ export function PaymentAnalyticsSection() {
     return [
       { name: "Paid", value: paid, color: "#1E6640" },
       { name: "Partial", value: partial, color: "#845E04" },
-      { name: "Overdue", value: overdue, color: "#C0392B" },
-      { name: "Pending", value: pending, color: "#69635E" },
+      { name: "Overdue", value: overdue, color: T.royalBurgundy },
+      { name: "Pending", value: pending, color: T.taupe },
     ].filter(d => d.value > 0);
   }, [invoicesRes]);
 
@@ -259,12 +259,12 @@ export function PaymentAnalyticsSection() {
         <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 22, alignItems: "stretch" }}>
 
           {/* Chart 1 — Cash Flow Overview */}
-          <div style={{ display: "flex", flexDirection: "column", background: T.warmIvory, borderRadius: 18, border: `1px solid ${T.borderDef}`, boxShadow: "0 2px 14px rgba(74,6,27,0.07)", overflow: "hidden" }}>
+          <div style={{ display: "flex", flexDirection: "column", background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.royalBurgundy}`, boxShadow: "0 2px 14px rgba(74,6,27,0.06)", overflow: "hidden" }}>
             {/* Card header */}
-            <div style={{ padding: "20px 22px 16px", borderBottom: `1px solid ${T.borderDef}`, flexShrink: 0 }}>
+            <div style={{ padding: "20px 22px 16px", borderBottom: `1px solid rgba(200,155,71,0.3)`, background: "rgba(200,155,71,0.08)", flexShrink: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
-                <div style={{ width: 46, height: 46, borderRadius: 12, background: T.greenBg, border: "1px solid rgba(30,102,64,0.18)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <TrendingUp size={22} color={T.green} />
+                <div style={{ width: 46, height: 46, borderRadius: 12, background: "rgba(110,15,45,0.08)", border: `1px solid rgba(110,15,45,0.15)`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <TrendingUp size={22} color={T.royalBurgundy} />
                 </div>
                 <div>
                   <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>Cash Flow Overview</div>
@@ -295,15 +295,15 @@ export function PaymentAnalyticsSection() {
                     <XAxis         key="cf-xaxis"    dataKey="month" tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} />
                     <YAxis         key="cf-yaxis"    tick={{ fontFamily: F.ui, fontSize: 12, fill: T.taupe }} axisLine={false} tickLine={false} tickFormatter={(v: number) => formatMoney(rupees(v), { compact: true })} width={46} />
                     <Tooltip       key="cf-tooltip"  content={<CashFlowTooltip />} cursor={{ fill: "rgba(110,15,45,0.04)" }} />
-                    <Bar           key="cf-income"   dataKey="income"   name="Income"   fill={T.green}  radius={[5,5,0,0] as [number, number, number, number]} />
-                    <Bar           key="cf-expenses" dataKey="expenses" name="Expenses" fill={T.crimson} radius={[5,5,0,0] as [number, number, number, number]} opacity={0.80} />
+                    <Bar           key="cf-income"   dataKey="income"   name="Income"   fill={T.royalBurgundy}  radius={[100,100,100,100] as [number, number, number, number]} maxBarSize={24} />
+                    <Bar           key="cf-expenses" dataKey="expenses" name="Expenses" fill={T.antiqueGold} radius={[100,100,100,100] as [number, number, number, number]} opacity={0.9} maxBarSize={24} />
                   </BarChart>
                 </ResponsiveContainer>
               </ChartFigure>
               <div style={{ display: "flex", justifyContent: "center", gap: 20, marginTop: 8 }}>
-                {[{ color: T.green, label: "Income" }, { color: T.crimson, label: "Expenses" }].map(l => (
+                {[{ color: T.royalBurgundy, label: "Income" }, { color: T.antiqueGold, label: "Expenses" }].map(l => (
                   <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                    <div style={{ width: 11, height: 11, borderRadius: 4, background: l.color }} />
+                    <div style={{ width: 11, height: 11, borderRadius: 100, background: l.color }} />
                     <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>{l.label}</span>
                   </div>
                 ))}
@@ -314,9 +314,9 @@ export function PaymentAnalyticsSection() {
           </div>
 
           {/* Chart 2 — Customer Payment Compliance */}
-          <div style={{ display: "flex", flexDirection: "column", background: T.warmIvory, borderRadius: 18, border: `1px solid ${T.borderDef}`, boxShadow: "0 2px 14px rgba(74,6,27,0.07)", overflow: "hidden" }}>
+          <div style={{ display: "flex", flexDirection: "column", background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.royalBurgundy}`, boxShadow: "0 2px 14px rgba(74,6,27,0.06)", overflow: "hidden" }}>
             {/* Card header */}
-            <div style={{ padding: "20px 22px 16px", borderBottom: `1px solid ${T.borderDef}`, flexShrink: 0 }}>
+            <div style={{ padding: "20px 22px 16px", borderBottom: `1px solid rgba(200,155,71,0.3)`, background: "rgba(200,155,71,0.08)", flexShrink: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
                 <div style={{ width: 46, height: 46, borderRadius: 12, background: "rgba(200,155,71,0.12)", border: `1px solid ${T.borderGold}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   <CheckCircle2 size={22} color={T.antiqueGold} />
@@ -374,11 +374,11 @@ export function PaymentAnalyticsSection() {
           </div>
 
           {/* Chart 3 — Top Weaver Making Distribution */}
-          <div style={{ display: "flex", flexDirection: "column", background: T.warmIvory, borderRadius: 18, border: `1px solid ${T.borderDef}`, boxShadow: "0 2px 14px rgba(74,6,27,0.07)", overflow: "hidden" }}>
+          <div style={{ display: "flex", flexDirection: "column", background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.royalBurgundy}`, boxShadow: "0 2px 14px rgba(74,6,27,0.06)", overflow: "hidden" }}>
             {/* Card header */}
-            <div style={{ padding: "20px 22px 16px", borderBottom: `1px solid ${T.borderDef}`, flexShrink: 0 }}>
+            <div style={{ padding: "20px 22px 16px", borderBottom: `1px solid rgba(200,155,71,0.3)`, background: "rgba(200,155,71,0.08)", flexShrink: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
-                <div style={{ width: 46, height: 46, borderRadius: 12, background: "rgba(110,15,45,0.08)", border: T.borderDef, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <div style={{ width: 46, height: 46, borderRadius: 12, background: "rgba(110,15,45,0.08)", border: `1px solid rgba(110,15,45,0.15)`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   <Users size={22} color={T.royalBurgundy} />
                 </div>
                 <div>

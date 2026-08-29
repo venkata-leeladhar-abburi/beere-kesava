@@ -140,7 +140,7 @@ function BusinessOverview({ onGoToFirm }: { onGoToFirm?: (firmId: string) => voi
   const totNet = totInc - totExp;
 
   return (
-    <div className="mx-4 md:mx-7 xl:mx-14" style={{ marginTop: 28, borderRadius: 22, overflow: "hidden", background: "#FFF", boxShadow: "0 4px 28px rgba(44,24,16,0.10)", border: `1px solid ${T.borderDef}` }}>
+    <div id="firm-overview" className="mx-4 md:mx-7 xl:mx-14" style={{ marginTop: 28, borderRadius: 22, overflow: "hidden", background: "#FFF", boxShadow: "0 4px 28px rgba(44,24,16,0.10)", border: `1px solid ${T.borderDef}` }}>
       {/* Header */}
       <div
         className="p-4 sm:p-6 cursor-pointer"
@@ -482,7 +482,7 @@ export function FirmsPage() {
       <BusinessOverview onGoToFirm={openFirmView} />
 
       {/* Firms directory */}
-      <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40, paddingBottom: 80 }}>
+      <div id="firm-directory" className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 40, paddingBottom: 80 }}>
       <SectionCard
         icon={Building2}
         title="Firms Directory"

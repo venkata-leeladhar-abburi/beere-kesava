@@ -274,9 +274,10 @@ export function ExternalPurchasesPage() {
         paddingBottom: 80,
       }}
     >
-      <PageHeader onAdd={() => setFormModal({ mode: "add" })} />
+      <div id="ep-form"><PageHeader onAdd={() => setFormModal({ mode: "add" })} /></div>
 
-      <SummaryCards purchases={purchases} totalSarees={totalSarees} />
+      <div id="ep-history">
+        <SummaryCards purchases={purchases} totalSarees={totalSarees} />
 
       <FilterBar
         search={search} setSearch={setSearch}
@@ -310,7 +311,8 @@ export function ExternalPurchasesPage() {
           onRetry={refetch}
           onClearFilters={clearFilters}
         />
-      </FilterBar>
+        </FilterBar>
+      </div>
 
       <DetailDrawer
         detailRow={detailRow}

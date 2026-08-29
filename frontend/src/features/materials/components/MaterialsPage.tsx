@@ -92,18 +92,22 @@ export function MaterialsPage({ onNavigate }: { onNavigate?: (tab: string, ctx?:
             </div>
           )}
 
-          <AlertsCard onCreatePO={() => setShowCreatePO(true)} />
-          <POTrackerSection
-            onCreatePO={() => setShowCreatePO(true)}
-            onViewPO={(po) => setViewPO(po)}
-            onNavigate={onNavigate}
-          />
-          <StockOverview onSeeFullReports={() => setShowFullReports(true)} />
-          <IssuedThisMonthCard onNavigate={onNavigate} />
-          <ReturnedThisMonthCard onNavigate={onNavigate} />
-          <BatchesSection onAddNewStock={() => onNavigate?.("ReceiveStock")} />
-          <PurchaseHistorySection onDownloadReport={fn => setPurchaseExport(() => fn)} />
-          <MovementHistorySection onDownloadMovementReport={fn => setMovementExport(() => fn)} />
+          <div id="mat-alerts"><AlertsCard onCreatePO={() => setShowCreatePO(true)} /></div>
+          <div id="mat-pos">
+            <POTrackerSection
+              onCreatePO={() => setShowCreatePO(true)}
+              onViewPO={(po) => setViewPO(po)}
+              onNavigate={onNavigate}
+            />
+          </div>
+          <div id="mat-stock"><StockOverview onSeeFullReports={() => setShowFullReports(true)} /></div>
+          <div id="mat-issued-returned">
+            <IssuedThisMonthCard onNavigate={onNavigate} />
+            <ReturnedThisMonthCard onNavigate={onNavigate} />
+          </div>
+          <div id="mat-batches"><BatchesSection onAddNewStock={() => onNavigate?.("ReceiveStock")} /></div>
+          <div id="mat-purchase"><PurchaseHistorySection onDownloadReport={fn => setPurchaseExport(() => fn)} /></div>
+          <div id="mat-movement"><MovementHistorySection onDownloadMovementReport={fn => setMovementExport(() => fn)} /></div>
         </div>
         <MaterialsFooter />
 

@@ -263,11 +263,14 @@ export function CustomersPage() {
         />
       ) : (
         <>
+        <div id="cust-analytics">
           <CustomerAnalyticsSection
             analyticsDateFilter={analyticsDateFilter}
             setAnalyticsDateFilter={setAnalyticsDateFilter}
           />
+        </div>
 
+        <div id="cust-wholesale-list">
           <WholesaleCustomersSection
             wholesaleList={wholesaleList}
             wholesaleView={wholesaleView}
@@ -277,7 +280,9 @@ export function CustomersPage() {
             onView={w => { setSelectedWholesaleCust(w); setWholesaleTab("Overview"); }}
             onEdit={w => { setSelectedWholesaleCust(w); setWholesaleTab("Edit Profile"); }}
           />
+        </div>
 
+        <div id="cust-retail-list">
           <RetailCustomersSection
             retailView={retailView}
             setRetailView={setRetailView}
@@ -296,7 +301,9 @@ export function CustomersPage() {
             onViewHistory={setModalRetail}
             onDownloadConfirm={setDownloadConfirmRetail}
           />
+        </div>
 
+        <div id="cust-inactive">
           <InactiveCustomersSection
             inactiveSearch={inactiveSearch}
             setInactiveSearch={setInactiveSearch}
@@ -313,6 +320,7 @@ export function CustomersPage() {
             retailCount={inactiveData.filter(r => r.type === "Retail").length}
             onClearAllFilters={clearInactiveFilters}
           />
+        </div>
         </>
       )}
 

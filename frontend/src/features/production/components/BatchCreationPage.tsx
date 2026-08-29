@@ -320,8 +320,9 @@ export function BatchCreationPage() {
       {tab === "new" && (
         <div className="px-4 md:px-7 xl:px-14" style={{ paddingTop: 28, paddingBottom: 64 }}>
 
-          <BatchSetupStep
-            batchId={batchId}
+          <div id="batch-setup">
+            <BatchSetupStep
+              batchId={batchId}
             totalCount={totalCount}
             setTotalCount={setTotalCount}
             dueDate={dueDate}
@@ -331,9 +332,9 @@ export function BatchCreationPage() {
             generated={generated}
             incompleteRows={incompleteRows}
             isEditing={!!editingBatchId}
-            rowCount={rows.length}
-            batchStatus={editingBatchId ? batches.find(b => b.batchId === editingBatchId)?.status : undefined}
-          />
+              batchStatus={editingBatchId ? batches.find(b => b.batchId === editingBatchId)?.status : undefined}
+            />
+          </div>
 
           {/* Add more sarees to the table without losing existing rows */}
           {generated && rows.length > 0 && (
@@ -369,7 +370,7 @@ export function BatchCreationPage() {
           {/* Materials Given — above the saree table, where it is visible
               without scrolling past every row. */}
           {generated && rows.length > 0 && (
-            <div style={{ marginBottom: 20 }}>
+            <div id="batch-materials" style={{ marginBottom: 20 }}>
               <SectionCard
                 icon={PackageCheck}
                 title="Materials Given"
@@ -382,8 +383,9 @@ export function BatchCreationPage() {
 
           {/* Step 2+3: Table */}
           {generated && rows.length > 0 && (
-            <BatchTable
-              weavers={weavers}
+            <div id="batch-table">
+              <BatchTable
+                weavers={weavers}
               looms={looms}
               rows={rows}
               displayRows={displayRows}
@@ -416,6 +418,7 @@ export function BatchCreationPage() {
               setLoomPickerRow={setLoomPickerRow}
               openSareeTypeCard={openSareeTypeCard}
             />
+          </div>
           )}
 
           {/* Step 5: Save buttons (also pinned above the table) */}
@@ -439,13 +442,15 @@ export function BatchCreationPage() {
 
       {/* ════════════════════ TAB: DRAFTS ════════════════════ */}
       {tab === "drafts" && (
-        <DraftsTab
-          batches={batches}
+        <div id="batch-drafts">
+          <DraftsTab
+            batches={batches}
           batchDateFilter={batchDateFilter}
           setBatchDateFilter={setBatchDateFilter}
           setTab={setTab}
-          openDraft={openDraft}
-        />
+            openDraft={openDraft}
+          />
+        </div>
       )}
 
       {/* ── Picker modals ── */}
