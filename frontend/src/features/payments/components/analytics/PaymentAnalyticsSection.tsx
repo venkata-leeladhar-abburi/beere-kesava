@@ -27,6 +27,12 @@ function formatMonthLabel(month: string): string {
   return new Date(year, m - 1, 1).toLocaleDateString("en-IN", { month: "short", year: "2-digit" });
 }
 
+function CardBloom() {
+  return (
+    <div style={{ position: "absolute", top: -40, right: -40, width: 140, height: 140, borderRadius: "50%", background: "radial-gradient(circle, rgba(200,155,71,0.22) 0%, rgba(200,155,71,0) 70%)", pointerEvents: "none", zIndex: 1 }} />
+  );
+}
+
 export function PaymentAnalyticsSection() {
 
   const { data: cashFlowRes, isLoading: cashFlowLoading, isError: cashFlowError } = useQuery({
@@ -259,16 +265,17 @@ export function PaymentAnalyticsSection() {
         <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 22, alignItems: "stretch" }}>
 
           {/* Chart 1 — Cash Flow Overview */}
-          <div style={{ display: "flex", flexDirection: "column", background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.royalBurgundy}`, boxShadow: "0 2px 14px rgba(74,6,27,0.06)", overflow: "hidden" }}>
+          <div style={{ position: "relative", display: "flex", flexDirection: "column", background: "#FFFFFF", borderRadius: 16, border: `1.5px solid ${T.royalBurgundy}`, boxShadow: "0 2px 14px rgba(74,6,27,0.06)", overflow: "hidden" }}>
+            <CardBloom />
             {/* Card header */}
-            <div style={{ padding: "20px 22px 16px", borderBottom: `1px solid rgba(200,155,71,0.3)`, background: "rgba(200,155,71,0.08)", flexShrink: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
-                <div style={{ width: 46, height: 46, borderRadius: 12, background: "rgba(110,15,45,0.08)", border: `1px solid rgba(110,15,45,0.15)`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <TrendingUp size={22} color={T.royalBurgundy} />
+            <div style={{ position: "relative", padding: "18px 22px 16px", background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`, flexShrink: 0, overflow: "hidden" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, position: "relative", zIndex: 2, flexWrap: "wrap" }}>
+                <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.20)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <TrendingUp size={22} color="#FFFDF9" />
                 </div>
                 <div>
-                  <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>Cash Flow Overview</div>
-                  <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Income vs. expenses · Last 6 months</div>
+                  <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: "#FFFFFF", letterSpacing: "0.2px" }}>Cash Flow Overview</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.78)", marginTop: 2 }}>Income vs. expenses · Last 6 months</div>
                 </div>
               </div>
             </div>
@@ -315,16 +322,17 @@ export function PaymentAnalyticsSection() {
           </div>
 
           {/* Chart 2 — Customer Payment Compliance */}
-          <div style={{ display: "flex", flexDirection: "column", background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.royalBurgundy}`, boxShadow: "0 2px 14px rgba(74,6,27,0.06)", overflow: "hidden" }}>
+          <div style={{ position: "relative", display: "flex", flexDirection: "column", background: "#FFFFFF", borderRadius: 16, border: `1.5px solid ${T.royalBurgundy}`, boxShadow: "0 2px 14px rgba(74,6,27,0.06)", overflow: "hidden" }}>
+            <CardBloom />
             {/* Card header */}
-            <div style={{ padding: "20px 22px 16px", borderBottom: `1px solid rgba(200,155,71,0.3)`, background: "rgba(200,155,71,0.08)", flexShrink: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
-                <div style={{ width: 46, height: 46, borderRadius: 12, background: "rgba(200,155,71,0.12)", border: `1px solid ${T.borderGold}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <CheckCircle2 size={22} color={T.antiqueGold} />
+            <div style={{ position: "relative", padding: "18px 22px 16px", background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`, flexShrink: 0, overflow: "hidden" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, position: "relative", zIndex: 2, flexWrap: "wrap" }}>
+                <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.20)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <CheckCircle2 size={22} color="#FFFDF9" />
                 </div>
                 <div>
-                  <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>Payment Compliance</div>
-                  <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Invoice status breakdown · May 2026</div>
+                  <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: "#FFFFFF", letterSpacing: "0.2px" }}>Payment Compliance</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.78)", marginTop: 2 }}>Invoice status breakdown · May 2026</div>
                 </div>
               </div>
             </div>
@@ -375,16 +383,17 @@ export function PaymentAnalyticsSection() {
           </div>
 
           {/* Chart 3 — Top Weaver Making Distribution */}
-          <div style={{ display: "flex", flexDirection: "column", background: "#FFFFFF", borderRadius: 16, border: `1px solid ${T.royalBurgundy}`, boxShadow: "0 2px 14px rgba(74,6,27,0.06)", overflow: "hidden" }}>
+          <div style={{ position: "relative", display: "flex", flexDirection: "column", background: "#FFFFFF", borderRadius: 16, border: `1.5px solid ${T.royalBurgundy}`, boxShadow: "0 2px 14px rgba(74,6,27,0.06)", overflow: "hidden" }}>
+            <CardBloom />
             {/* Card header */}
-            <div style={{ padding: "20px 22px 16px", borderBottom: `1px solid rgba(200,155,71,0.3)`, background: "rgba(200,155,71,0.08)", flexShrink: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
-                <div style={{ width: 46, height: 46, borderRadius: 12, background: "rgba(110,15,45,0.08)", border: `1px solid rgba(110,15,45,0.15)`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <Users size={22} color={T.royalBurgundy} />
+            <div style={{ position: "relative", padding: "18px 22px 16px", background: `linear-gradient(100deg, ${T.deepWine} 0%, ${T.royalBurgundy} 100%)`, flexShrink: 0, overflow: "hidden" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, position: "relative", zIndex: 2, flexWrap: "wrap" }}>
+                <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.20)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <Users size={22} color="#FFFDF9" />
                 </div>
                 <div>
-                  <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>Top Weaver Earnings</div>
-                  <div style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Highest-paid weavers · May 2026</div>
+                  <div style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: "#FFFFFF", letterSpacing: "0.2px" }}>Top Weaver Earnings</div>
+                  <div style={{ fontFamily: F.ui, fontSize: 13, color: "rgba(255,253,249,0.78)", marginTop: 2 }}>Highest-paid weavers · May 2026</div>
                 </div>
               </div>
             </div>
