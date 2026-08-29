@@ -407,7 +407,7 @@ export function RetailCustomersSection({
               color: T.luxuryBrown,
             }}>
               {/* Accent top */}
-              <div style={{ height: 4, background: T.royalBurgundy, width: "100%", opacity: 0.8, flexShrink: 0 }} />
+              <div style={{ height: 4, background: T.royalBurgundy, width: "100%", flexShrink: 0 }} />
 
               {/* Card Header */}
               <div style={{ padding: "20px 22px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>

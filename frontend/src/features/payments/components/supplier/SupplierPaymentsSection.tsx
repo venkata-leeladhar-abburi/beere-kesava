@@ -412,52 +412,189 @@ export function SupplierPaymentsSection() {
               {pag.pageItems.map((r, i) => {
                 const isPaid = r.status === "Paid";
                 const isOverdue = r.status === "Overdue";
-                const borderLeftColor = isPaid ? T.green : isOverdue ? T.crimson : T.antiqueGold;
+                const statusColor = isPaid ? T.green : isOverdue ? T.crimson : T.antiqueGold;
+                const statusBg = isPaid ? "rgba(46,125,50,0.08)" : isOverdue ? "rgba(192,57,43,0.08)" : "rgba(200,155,71,0.12)";
+                const borderAccent = isPaid ? T.green : isOverdue ? T.crimson : T.royalBurgundy;
 
                 return (
-                  <motion.div key={r.supplier.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.05, ease: EASE }} style={{ display: "flex", flexDirection: "column" }}>
-                    <div style={{ position: "relative", borderRadius: 14, border: `1px solid ${T.borderDef}`, borderLeft: `5px solid ${borderLeftColor}`, background: "#FFFDF9", boxShadow: "0 2px 14px rgba(74,6,27,0.06)", padding: 20, display: "flex", flexDirection: "column", flex: 1 }}>
-                      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 12 }}>
-                        <div>
-                          <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: T.luxuryBrown }}>{r.supplier.name}</div>
-                          <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 2 }}>📍 {r.supplier.city} · {r.supplier.specialty || "General Supplier"}</div>
+                  <motion.div
+                    key={r.supplier.id}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: i * 0.05, ease: EASE }}
+                    style={{ display: "flex", flexDirection: "column" }}
+                  >
+                    <div style={{
+                      position: "relative",
+                      borderRadius: 16,
+                      border: `1.5px solid ${T.antiqueGold}`,
+                      borderTop: `4px solid ${T.royalBurgundy}`,
+                      background: "#FFFFFF",
+                      boxShadow: "0 1px 2px rgba(74,6,27,0.03), 0 6px 18px rgba(74,6,27,0.05)",
+                      padding: "18px 20px",
+                      display: "flex",
+                      flexDirection: "column",
+                      flex: 1,
+                      gap: 12,
+                      transition: "all 0.2s ease",
+                    }}>
+                      {/* Top luxury ornamental line divider */}
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, margin: "0 0 2px" }}>
+                        <div style={{ width: 4, height: 4, borderRadius: "50%", background: T.antiqueGold, opacity: 0.7 }} />
+                        <div style={{ flex: 1, height: 1, borderTop: `1px dashed ${T.antiqueGold}`, opacity: 0.4 }} />
+                        <div style={{ display: "flex", gap: 3, alignItems: "center" }}>
+                          <div style={{ width: 3.5, height: 3.5, background: T.antiqueGold, transform: "rotate(45deg)" }} />
+                          <div style={{ width: 5.5, height: 5.5, background: T.antiqueGold, transform: "rotate(45deg)" }} />
+                          <div style={{ width: 3.5, height: 3.5, background: T.antiqueGold, transform: "rotate(45deg)" }} />
                         </div>
-                        <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 9px", borderRadius: 99, background: isPaid ? "rgba(46,125,50,0.1)" : isOverdue ? "rgba(192,57,43,0.1)" : "rgba(200,155,71,0.12)", color: borderLeftColor }}>
-                          {r.status}
+                        <div style={{ flex: 1, height: 1, borderTop: `1px dashed ${T.antiqueGold}`, opacity: 0.4 }} />
+                        <div style={{ width: 4, height: 4, borderRadius: "50%", background: T.antiqueGold, opacity: 0.7 }} />
+                      </div>
+
+                      {/* Header badges: ID & Last activity date */}
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
+                        <span style={{
+                          fontFamily: F.m,
+                          fontSize: 11,
+                          fontWeight: 700,
+                          color: T.royalBurgundy,
+                          background: "rgba(110,15,45,0.07)",
+                          border: "1px solid rgba(110,15,45,0.12)",
+                          borderRadius: 8,
+                          padding: "3px 9px",
+                          letterSpacing: "0.4px",
+                        }}>
+                          SUP-{r.supplier.id.substring(0, 8).toUpperCase()}
+                        </span>
+                        <span style={{
+                          fontFamily: F.m,
+                          fontSize: 11,
+                          color: T.taupe,
+                          background: "rgba(200,155,71,0.08)",
+                          border: "1px solid rgba(200,155,71,0.18)",
+                          borderRadius: 8,
+                          padding: "3px 9px",
+                        }}>
+                          {r.lastPurchaseDate && r.lastPurchaseDate !== "—" ? r.lastPurchaseDate : "Active"}
                         </span>
                       </div>
 
-                      <div style={{ gridTemplateColumns: "1fr 1fr", display: "grid", gap: 12, padding: "12px 14px", background: T.silkCream, borderRadius: 10, marginBottom: 14 }}>
-                        <div>
-                          <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, textTransform: "uppercase", letterSpacing: 0.5 }}>Total Purchases</div>
-                          <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown, marginTop: 2 }}><Money value={rupees(r.totalPurchased)} /></div>
+                      {/* Supplier Title & Subtitle */}
+                      <div>
+                        <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 700, color: T.luxuryBrown, lineHeight: 1.25 }}>
+                          {r.supplier.name}
                         </div>
-                        <div>
-                          <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe, textTransform: "uppercase", letterSpacing: 0.5 }}>Paid</div>
-                          <div style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.green, marginTop: 2 }}><Money value={rupees(r.totalPaid)} /></div>
+                        <div style={{ fontFamily: F.ui, fontSize: 12, color: T.taupe, marginTop: 3, display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap" }}>
+                          <span>📍 {r.supplier.city || "Dharmavaram"}</span>
+                          <span>·</span>
+                          <span>{r.supplier.specialty || "General Supplier"}</span>
                         </div>
                       </div>
 
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "auto", paddingTop: 10, borderTop: `1px solid ${T.borderDef}` }}>
-                        <div>
-                          <div style={{ fontFamily: F.ui, fontSize: 11, color: T.taupe }}>Balance Due</div>
-                          <div style={{ fontFamily: F.ui, fontSize: 16, fontWeight: 700, color: r.outstanding === 0 ? T.green : isOverdue ? T.crimson : T.antiqueGold }}>
-                            {r.outstanding === 0 && r.totalPurchased > 0 ? "Paid ✓" : <Money value={rupees(r.outstanding)} />}
-                          </div>
+                      {/* Inner Summary Box */}
+                      <div style={{
+                        background: "rgba(110,15,45,0.03)",
+                        border: `1px solid rgba(110,15,45,0.08)`,
+                        borderRadius: 12,
+                        padding: "12px 14px",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 8,
+                      }}>
+                        <div style={{ fontFamily: F.m, fontSize: 11, fontWeight: 700, color: T.royalBurgundy, letterSpacing: "0.5px" }}>
+                          PURCHASE & SETTLEMENT
                         </div>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Total Purchases</span>
+                          <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.luxuryBrown }}>
+                            <Money value={rupees(r.totalPurchased)} />
+                          </span>
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <span style={{ fontFamily: F.ui, fontSize: 13, color: T.taupe }}>Paid Amount</span>
+                          <span style={{ fontFamily: F.ui, fontSize: 14, fontWeight: 700, color: T.green }}>
+                            <Money value={rupees(r.totalPaid)} />
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Balance Row */}
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "2px 2px 4px" }}>
+                        <span style={{ fontFamily: F.ui, fontSize: 13, fontWeight: 600, color: T.luxuryBrown }}>Balance Due</span>
+                        <span style={{
+                          fontFamily: F.ui,
+                          fontSize: 15,
+                          fontWeight: 700,
+                          color: r.outstanding === 0 ? T.green : isOverdue ? T.crimson : T.antiqueGold,
+                        }}>
+                          {r.outstanding === 0 && r.totalPurchased > 0 ? (
+                            <span style={{ display: "flex", alignItems: "center", gap: 4, color: T.green, fontWeight: 700 }}>
+                              Fully Paid ✓
+                            </span>
+                          ) : (
+                            <Money value={rupees(r.outstanding)} />
+                          )}
+                        </span>
+                      </div>
+
+                      {/* Bottom luxury ornamental line divider */}
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, margin: "2px 0" }}>
+                        <div style={{ width: 4, height: 4, borderRadius: "50%", background: T.antiqueGold, opacity: 0.7 }} />
+                        <div style={{ flex: 1, height: 1, borderTop: `1px dashed ${T.antiqueGold}`, opacity: 0.4 }} />
+                        <div style={{ display: "flex", gap: 3, alignItems: "center" }}>
+                          <div style={{ width: 3.5, height: 3.5, background: T.antiqueGold, transform: "rotate(45deg)" }} />
+                          <div style={{ width: 5.5, height: 5.5, background: T.antiqueGold, transform: "rotate(45deg)" }} />
+                          <div style={{ width: 3.5, height: 3.5, background: T.antiqueGold, transform: "rotate(45deg)" }} />
+                        </div>
+                        <div style={{ flex: 1, height: 1, borderTop: `1px dashed ${T.antiqueGold}`, opacity: 0.4 }} />
+                        <div style={{ width: 4, height: 4, borderRadius: "50%", background: T.antiqueGold, opacity: 0.7 }} />
+                      </div>
+
+                      {/* STATUS & ACTIONS Header + Badge */}
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "auto" }}>
+                        <span style={{ fontFamily: F.m, fontSize: 11, fontWeight: 700, color: T.taupe, letterSpacing: "0.5px" }}>
+                          STATUS & ACTIONS
+                        </span>
+                        <span style={{
+                          fontFamily: F.ui,
+                          fontSize: 12,
+                          fontWeight: 700,
+                          background: statusBg,
+                          color: statusColor,
+                          border: `1px solid ${statusColor}40`,
+                          borderRadius: 999,
+                          padding: "3px 11px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 4,
+                        }}>
+                          {isPaid ? "✓ Paid" : r.status}
+                        </span>
+                      </div>
+
+                      {/* Action Buttons Grid */}
+                      <div style={{ display: "flex", gap: 8, width: "100%", marginTop: 4 }}>
+                        <Button
+                          variant="tertiary"
+                          size="sm"
+                          onClick={() => setDetailForId(r.supplier.id)}
+                          className="flex-1 justify-center rounded-xl border border-[rgba(110,15,45,0.18)] text-[#6E0F2D] hover:bg-[rgba(110,15,45,0.04)] text-[13px] font-bold py-2"
+                        >
+                          Details
+                        </Button>
                         {isPaid ? (
-                          <div style={{ fontSize: 12, fontWeight: 600, color: T.green, background: "rgba(46,125,50,0.08)", padding: "4px 10px", borderRadius: 6 }}>
+                          <div className="flex-1 flex items-center justify-center rounded-xl bg-[rgba(46,125,50,0.08)] border border-[rgba(46,125,50,0.2)] text-[12px] font-bold color-[#2E7D32] py-2 text-[#2E7D32]">
                             No Dues
                           </div>
                         ) : (
-                          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 2 }}>
-                            <Button variant="tertiary" size="sm" onClick={() => setDetailForId(r.supplier.id)} className="rounded-[8px] border border-[rgba(110,15,45,0.15)] text-[#6E0F2D] text-[12px] font-bold py-1.5 px-3">
-                              Details
-                            </Button>
-                            <Button variant="primary" size="sm" onClick={() => setPayForId(r.supplier.id)} className="rounded-[8px] bg-[#6E0F2D] hover:bg-[#4A0A1D] text-[#FFFDF9] text-[12px] font-bold py-1.5 px-3">
-                              Pay Now
-                            </Button>
-                          </div>
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={() => setPayForId(r.supplier.id)}
+                            className="flex-1 justify-center rounded-xl bg-[#6E0F2D] hover:bg-[#4A0A1D] text-[#FFFDF9] text-[13px] font-bold py-2"
+                          >
+                            Pay Now
+                          </Button>
                         )}
                       </div>
                     </div>

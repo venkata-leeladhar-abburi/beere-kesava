@@ -108,7 +108,7 @@ export function BulkOrderCard({ o, onView, onSlip, superadmin = false }: { o: Bu
         position: "relative"
       }}
     >
-      <div style={{ height: 4, background: T.royalBurgundy, width: "100%", opacity: 0.8 }} />
+      <div style={{ height: 4, background: T.royalBurgundy, width: "100%" }} />
 
       <div style={{ padding: "16px 16px 0" }}>
         <TopDivider />

@@ -102,7 +102,7 @@ export function WeaverCard({ w, onViewDetails, selected, onToggleSelect }: { w: 
       }}
     >
       {/* Top accent bar */}
-      <div style={{ height: 4, background: T.royalBurgundy, width: "100%", opacity: 0.8, flexShrink: 0 }} />
+      <div style={{ height: 4, background: T.royalBurgundy, width: "100%", flexShrink: 0 }} />
       
       <div style={{ padding: "16px 20px 0" }}>
         <TopDivider />
